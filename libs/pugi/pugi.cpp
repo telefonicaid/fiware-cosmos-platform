@@ -47,9 +47,7 @@ namespace pugi
         // Childrens
         for( pugi::xml_node_iterator n = xml_node.begin() ; n != xml_node.end() ; n++)
             str( *n , level+1 , output );
-        
     }
-    
     
     void str( const xpath_node_set & xpath_node_set , std::ostringstream &output )
     {

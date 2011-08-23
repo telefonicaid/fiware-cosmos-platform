@@ -17,17 +17,17 @@
 
 #include "au/list.h"      // au::list
 #include "au/Info.h"      // au::Info
-#include "au/Cronometer.h"              // au::cronometer
+
+#include "au/Cronometer.h"                  // au::cronometer
 
 #include "samson/common/coding.h"           // FullKVInfo
 
-#include "samson/common/samson.pb.h"    // network::
+#include "samson/common/samson.pb.h"        // network::
 
-#include "engine/Object.h"        // engine::Object
+#include "engine/Object.h"                  // engine::Object
 
-#include "samson/stream/BlockMatrix.h"      // samson::Stream::BlockMatrix
+#include "samson/stream/BlockList.h"        // samson::Stream::BlockList
 
-#define notification_review_task_for_queue "notification_review_task_for_queue"
 
 namespace samson {
     
@@ -42,61 +42,28 @@ namespace samson {
         
         class Queue : engine::Object
         {
-            QueuesManager * qm;
-
-            friend class QueuesManager;
+            friend class QueuesManager; 
+            
+            QueuesManager * qm;                 // Pointer to the queue manager
             
             std::string name;                   // Name of the queue
+
             au::Cronometer cronometer;          // Time since the last command execution
-            
-            BlockMatrix matrix;                 // Matrix of blocks ( one list per input channel )
-            
-            std::set<size_t> running_tasks;     // Tasks currently running 
                         
         public:
+
+            BlockList *list;                     // List of blocks contained in this queue
             
-            // Information about how to process this queue ( from controller )
-            network::StreamQueue *streamQueue;
             
             Queue( std::string _name , QueuesManager * _qm );
-            
-            ~Queue()
-            {
-                if( streamQueue )
-                    delete streamQueue;
-                
-            }
-            
-            void setStreamQueue( network::StreamQueue& new_streamQueue )
-            {
-                
-                if( streamQueue )
-                    delete streamQueue;
-                
-                streamQueue = new network::StreamQueue();
-                streamQueue->CopyFrom(new_streamQueue);
-                
-            }
-            
-            void add( int channel , Block *block );
-            
-            
-            // Create new tasks if necessary
-            void scheduleNewTasksIfNecessary();
-
-            // Create tasks if necessary for a pop-queue operation ( from delilah )
-            void scheduleTasksForPopQueue( PopQueue *popQueue );
-           
+            ~Queue();
+                       
             std::string getStatus();
             
             // Notifications    
-            void notify( engine::Notification* notification );
-            
-            void notifyFinishTask( size_t task_id );
-
+            //void notify( engine::Notification* notification );
             
             // Get information for monitorization
-            
             void getInfo( std::ostringstream& output);
             
             

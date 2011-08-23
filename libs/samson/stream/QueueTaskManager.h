@@ -14,6 +14,7 @@ namespace samson {
         
         class QueueTask;
         class QueuesManager;
+        class PopQueueTask;
         
         class QueueTaskManager : public ::engine::Object
         {
@@ -21,6 +22,9 @@ namespace samson {
 
             au::list< QueueTask > queueTasks;           // List of pending task to be executed
             au::map< size_t , QueueTask > runningTasks; // Map of running tasks
+
+            au::list< PopQueueTask > popQueueTasks;                 // List of pending pop queue tasks to be executed
+            au::map< size_t , PopQueueTask > runningPopQueueTasks;  // Map of running pop queue tasks
             
             QueuesManager* qm;
             
@@ -31,8 +35,10 @@ namespace samson {
             size_t getNewId();
             
             void add( QueueTask* task );
+            void add( PopQueueTask* task );
             
             void runTasksIfNecessary();
+            void runPopTasksIfNecessary();
             
             std::string getStatus();
             

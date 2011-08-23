@@ -84,6 +84,9 @@ namespace samson {
 		
 		// Sent an "ls" to get the list of files ( to remove the rest )
 		void sendFilesMessage();
+
+        // Run a particular worker command sent from delilah
+        void runWorkercommand( Packet* p );
         
 	};
 	

@@ -18,7 +18,7 @@ namespace samson {
     void copy( FullKVInfo * from , network::KVInfo* to);
  
  
-    std::string getStatus( network::StreamQueue *queue );
+    std::string getStatus( network::StreamOperation *streamOperation );
     
     // Get a debug string for generic messages
     std::string strMessage( network::Message *message );

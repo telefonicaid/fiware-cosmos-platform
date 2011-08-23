@@ -25,7 +25,6 @@
 #include "samson/common/samson.pb.h"    // network::
 #include "engine/Object.h"        // engine::Object
 
-#define notification_review_task_for_queue "notification_review_task_for_queue"
 
 namespace samson {
 
@@ -36,71 +35,7 @@ namespace samson {
         class Block;
         class QueuesManager;
         class BlockMatrix;
-        
-        class BlockList
-        {
-            friend class BlockMatrix;
-            friend class Queue;
-            friend class ParserQueueTask;
-            friend class MapQueueTask;
-            friend class ReduceQueueTask;
-            friend class ParserOutQueueTask;
-
-            
-            // Blocks currently in the input queue
-            au::list< Block > blocks;
-            
-            FullKVInfo accumulated_info;            // Accumulated transit information
-            
-        public:
-            
-            void add( Block *b );
-            Block* extract( );
-            
-            // Get information
-            size_t getSize();
-            
-            // String describing the stats of this
-            std::string str();
-            
-            bool isEmpty();
-
-            void retain();
-            void release();
-            
-            void retain( size_t id );
-            void release( size_t id );
-            
-            void lock();
-            void unlock();
-            
-            bool isContentOnMemory();
-            
-            size_t getNumBlocks();
-            
-            FullKVInfo getFullKVInfo();
-            
-            void copyFrom( BlockMatrix* matrix , int channel );
-            void copyFrom( BlockList* list );
-            
-            std::string getSummary()
-            {
-                FullKVInfo info =  getFullKVInfo();
-                size_t num_blocks = getNumBlocks();
-                
-                return au::Format::string("BlockList with %s containing %s" , au::Format::string(num_blocks ,"Blocks").c_str() , info.str().c_str() );
-            }
-            
-            
-        private:
-            
-            au::list< Block >::iterator _find_pos( Block *b );
-            
-            // Get information for monitorization
-            void getInfo( std::ostringstream& output);
-            
-        };
-        
+/*        
         class BlockMatrix
         {
             friend class BlockList;
@@ -187,6 +122,7 @@ namespace samson {
             void getInfo( std::ostringstream& output);
             
         };
+*/
         
     }
 }

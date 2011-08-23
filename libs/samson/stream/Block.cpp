@@ -6,92 +6,72 @@
 #include "engine/DiskManager.h"        // notification_disk_operation_request_response
 #include "engine/Engine.h"              // engine::Engine
 #include "engine/Notification.h"       // engine::Notification
-
 #include "engine/MemoryManager.h"       // engine::MemoryManager
-#include "samson/common/MemoryTags.h"                 // MemoryBlocks
 
+#include "samson/common/MemoryTags.h"                 // MemoryBlocks
+#include "samson/common/SamsonSetup.h"                // samson::SamsonSetup
+
+
+#include "BlockManager.h"               // BlockManager
+#include "BlockList.h"                  // BlockList
 
 #include "Block.h"                      // Own interface
-#include "BlockManager.h"               // BlockManager
-#include "samson/common/SamsonSetup.h"                // samson::SamsonSetup
 
 namespace samson {
     namespace stream
     {
 
-        
-        std::ostream &operator<<(std::ostream &out, const Block &b)
+        const char* Block::getState()
         {
-            out << "[";
-            
-            out << " " << b.id;
-            
-            if( b.tasks.size() > 0 )
-            {
-                out << " Tasks: <";
-                std::set<size_t>::iterator i;
-                for ( i=b.tasks.begin() ; i != b.tasks.end() ; )
-                {
-                    out << *i;
-                    i++;
-                    if( i != b.tasks.end() )
-                        out << ",";
-                }
-                out << "> ";
-            }
-            
-            if( b.retain_counter > 0 )
-                out << " Retain " << b.retain_counter << " ";
-            
-            if( b.priority != 0)
-                out <<  " Priority (" << b.priority << ")";
-            
-            switch (b.state) {
+            switch (state) {
                 case Block::on_memory:
-                    out << " M ";
+                    return " M ";
                     break;
                 case Block::on_disk:
-                    out << "  D";
+                    return "  D";
                     break;
                 case Block::ready:
-                    out << " MD";
+                    return " MD";
                     break;
                 case Block::writing:
-                    out << " MW";
+                    return " MW";
                     break;
                 case Block::reading:
-                    out << " RD";
+                    return " RD";
                     break;
             }
             
-            out << " ]";
-            return out;
+            return "Unknown";
         }
-     
+        
         
         Block::Block( engine::Buffer *_buffer , bool txt )
         {
+            
+            // Get a new unique id from the block manager
+            id = BlockManager::shared()->getNextBlockId();
+            
             // Buffer of data
             buffer = _buffer;  
             buffer->tag = MemoryBlocks;     // Set the tag to MemoryBlock to controll the memory used by this system
             
-            // DEfault priority
-            priority = 0;
-            
             // Get the size of the packet
             size = buffer->getSize();
+
+            /*
+            // Default priority
+            priority = 0;
             
             // By default it is used when created
             retain_counter = 1;
             
             // Currenyly not used
             lock_counter = 0;
-
+             */
+            
             // Default state is on_memory because the buffer has been given at memory
             state = on_memory;
             
-            // Add automatically to the Block Manager
-            BlockManager::shared()->add(this);   
 
             if( !txt )
             {
@@ -101,11 +81,8 @@ namespace samson {
             else
                 header = NULL;
 
-            // By default worker (-1) , no task & no order ( push from delilah )
-            
-            worker = -1;
-            task_id = 0;             
-            task_order = 0;
+            // By default no copy of the per-hashgroup information is keept in memory
+            info = NULL;
             
         }
 
@@ -115,47 +92,43 @@ namespace samson {
             // Destroy buffer if still in memory
             if( buffer )
                 engine::MemoryManager::shared()->destroyBuffer( buffer );
+            
+            if( info )
+                free( info );
         }
         
         
-        // Set priority
-        void Block::setPriority( int _priority )
+        bool Block::isLockedInMemory()
         {
-            priority = _priority;
-            BlockManager::shared()->reorder( this );
+            
+            std::set< BlockList* >::iterator l;
+            for ( l = lists.begin() ; l != lists.end() ; l++ )
+                if( (*l)->lock_in_memory )
+                    return true;
+            
+            return false;
+        }
+
+        size_t Block::getMinTaskId()
+        {
+            size_t _task_id = (size_t) -1;
+            
+            std::set< BlockList* >::iterator l;
+            for ( l = lists.begin() ; l != lists.end() ; l++ )
+                if( (*l)->task_id < _task_id )
+                    _task_id= (*l)->task_id;
+            
+            return _task_id;
         }
         
-        int Block::getPriority()
-        {
-            return priority;
-        }
         
         bool Block::compare( Block *b )
         {
-            if( tasks.size() > 0 )
-            {
-                if( b->tasks.size() > 0)
-                {
-                    
-                    // Both are associated to some task
-                    
-                    size_t my_task_id = *tasks.begin();
-                    size_t your_task_id = *b->tasks.begin();
-                    
-                    return( my_task_id < your_task_id );
-                }
-                else
-                    return true;// I am retained by some task
-            }
-            else
-            {
-                if ( b->tasks.size() > 0)
-                    return false;
-            }
             
-            // Here no one of the blocks are retained by any task, so this is just a matter of priority
-            return ( priority >= b->priority);
+            size_t my_task_id   = getMinTaskId();
+            size_t your_task_id = b->getMinTaskId();
             
+            return( my_task_id < your_task_id );
         }
         
         ::engine::DiskOperation* Block::getWriteOperation()
@@ -165,6 +138,10 @@ namespace samson {
             
             engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer ,  getFileName() , getEngineId()  );
             operation->addListener( BlockManager::shared()->getEngineId() );
+            
+            // set my id as environment property
+            operation->environment.set("block_id" , id );
+            
             return operation;
             
         }
@@ -176,6 +153,10 @@ namespace samson {
             
             engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( getFileName(), 0, size, buffer->getSimpleBuffer() , getEngineId() );
             operation->addListener( BlockManager::shared()->getEngineId() );
+            
+            // set my id as environment property
+            operation->environment.set("block_id" , id );
+            
             return operation;
         }
         
@@ -236,7 +217,7 @@ namespace samson {
                 return;
             }
 
-            if( lock_counter > 0 )
+            if( isLockedInMemory() )
             {
                 LM_W(("Not possible to free from memory a block that is locked "));
                 return;
@@ -269,6 +250,10 @@ namespace samson {
 
                 // What ever operation it was it is allways ready
                 state = ready;
+                
+                
+                if( canBeRemoved() )
+                    BlockManager::shared()->check( this );
             }
             
         }
@@ -304,6 +289,16 @@ namespace samson {
             return output.str();
         }
         
+        void Block::getInfo( std::ostringstream& output)
+        {
+            output << "<block id=\"" << id << "\" size=\"" << size << "\" state=\"" << getState() << "\">\n";
+
+            std::set< BlockList* >::iterator l;
+            for (l = lists.begin() ; l != lists.end() ; l++)
+                output << "<list name=\"" << (*l)->name << "\" />";
+
+            output << "</block>\n";
+        }
         
         
         

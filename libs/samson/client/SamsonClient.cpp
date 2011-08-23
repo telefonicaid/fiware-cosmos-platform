@@ -115,7 +115,10 @@ namespace samson {
         
         samson::BufferDataSource * ds = new samson::BufferDataSource( data , length );
         
-        size_t id = delilah->addPushData( ds , queue );
+        std::vector<std::string>queues;
+        queues.push_back( queue );
+        
+        size_t id = delilah->addPushData( ds , queues );
 
         // Save the id to make sure it is finish before quiting...
         delilah_ids.push_back( id );

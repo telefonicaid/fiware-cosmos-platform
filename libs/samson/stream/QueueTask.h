@@ -29,51 +29,52 @@ namespace samson {
             
             size_t id;                          // Id of the operation
             
-            BlockMatrix matrix;                 // Matrix of blocks involved in this operation
+            BlockList *list;                    // List of blocks to be processed
+            BlockList *state;                   // blocks of the state ( in reduce-like operations )
+
+            BlockList *list_lock;               // A list to block the input blocks
+            BlockList *state_lock;              // A list to block the state
             
-            QueueTask( size_t _id , network::StreamQueue * streamQueue  ) : StreamProcessBase( _id , streamQueue )
+            bool ready_flag;
+            
+            QueueTask( size_t _id , const network::StreamOperation& streamOperation  ) : StreamProcessBase( _id , streamOperation )
             {
                 // Set the id of this task
                 id = _id;
                 
                 // Set in the environemtn variables
                 environment.setSizeT("id",id);
-            }
-
-            QueueTask( size_t _id , PopQueue *_pq ) : StreamProcessBase( _id , _pq )
-            {
-                // Set the id of this task
-                id = _id;
-
-                // Set in the environemtn variables
-                environment.setSizeT("id",id);
+                
+                // Create the block list
+                list  = new BlockList( au::Format::string("Task %lu input" , id ) , id , false );
+                state  = new BlockList( au::Format::string("Task %lu state" , id ) , id , false );
+                
+                // Create the lock block list
+                list_lock  = new BlockList( au::Format::string("Task %lu input lock" , id ) , id , true );
+                state_lock  = new BlockList( au::Format::string("Task %lu state lock" , id ) , id , true );
+                
+                ready_flag = false;
             }
             
             
             virtual ~QueueTask()
             {
+                delete list;
+                delete state;
+                
+                delete list_lock;
+                delete state_lock;
             }
             
             
-            // Funciton to check if all the blocks are in memory
+            // Funciton to check if all the blocks are in memory 
             bool ready();
-            
-            // retain and release all the blocks considered in this task
-            void retain();
-            void release();
-            
-            // Lock and unlock all the blocks used in this operations
-            bool lock();
-            void unlock();
             
             virtual std::string getStatus()
             {
                 return au::Format::string("No task description for task %lu", id );
             }
             
-            // Function to return the process to be executed
-            virtual StreamProcessBase* getStreamProcess()=0;
-
             // Get information for monitorization
             void getInfo( std::ostringstream& output);
             

@@ -8,34 +8,20 @@ namespace samson {
         
         bool QueueTask::ready()
         {
-            return matrix.isContentOnMemory();
-        }
-        
-        void QueueTask::retain()
-        {
-            matrix.retain(id);
-        }
-        
-        void QueueTask::release()
-        {
-            matrix.release(id);
-        }
-
-        bool QueueTask::lock()
-        {
-            if( matrix.isContentOnMemory() )
-            {
-                matrix.lock();
+            if( ready_flag )
                 return true;
+
+            ready_flag = (list->isContentOnMemory() && state->isContentOnMemory() ) ;
+            
+            if( ready_flag )
+            {
+                state_lock->copyFrom( state );
+                list_lock->copyFrom( list );
             }
-            else
-                return false;
+            
+            return ready_flag;
         }
         
-        void QueueTask::unlock()
-        {
-            matrix.unlock();
-        }
         
         void QueueTask::getInfo( std::ostringstream& output)
         {
@@ -43,18 +29,13 @@ namespace samson {
             
             output << "<id>" << id << "</id>\n";
             
-            matrix.getInfo( output );
+            list->getInfo( output );
 
-            if( streamQueue )
+            if( streamOperation )
             {
-                output << "<description>" << streamQueue->operation() << "</description>\n";
+                output << "<description>" << streamOperation->operation() << "</description>\n";
             }
-            
-            // Information about pop queue operation( parser Out from delilah )
-            if ( pq )
-            {
-            }
-            
+                        
             // Get all process item related information ( like progress )
             ProcessItem::getInfo( output );
             

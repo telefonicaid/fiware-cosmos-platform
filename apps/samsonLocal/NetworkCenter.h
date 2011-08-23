@@ -110,7 +110,7 @@ namespace samson {
 		{
 			std::map<int,NetworkFake*>::iterator i =  network.find( worker_id );
 			if( i == network.end() )
-			  LM_X(1,("Error is NetworkFage::getNetwork"));
+			  LM_X(1,("Error in NetworkFake::getNetwork for worker %d", worker_id));
 			return i->second;
 		}
 		
@@ -118,7 +118,7 @@ namespace samson {
 		{
 			std::map<int,FakeEndpoint*>::iterator i =  endpoint.find( worker_id );
 			if( i == endpoint.end() )
-			  LM_X(1,("Error is NetworkFage::getEndpoint"));
+			  LM_X(1,("Error in NetworkFake::getEndpoint for endpoint %d",worker_id));
 
 			return i->second;
 		}

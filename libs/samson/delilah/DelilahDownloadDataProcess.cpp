@@ -29,9 +29,8 @@ namespace samson {
 		if( !file )
 		{
 			status = finish_with_error;
-			error.set("Not possible to open local file");
-			delilah->downloadDataConfirmation(this);
-			component_finished = true;
+
+            setComponentFinishedWithError( "Not possible to open local file" );
 			return;
 		}
 
@@ -91,8 +90,7 @@ namespace samson {
 			{
 				error.set( download_data_init_response->error().message() );
 				status = finish_with_error;
-				delilah->downloadDataConfirmation(this);
-				component_finished = true;
+                setComponentFinished();
 				return;
 			}
 			
@@ -236,10 +234,8 @@ namespace samson {
 					
 					// Set the finish state
 					status = finish;
-					delilah->downloadDataConfirmation(this);
-					
 					// Mark as ready to be cleared from the list
-					component_finished = true;
+                    setComponentFinished();
 					return;
 				}				
 				

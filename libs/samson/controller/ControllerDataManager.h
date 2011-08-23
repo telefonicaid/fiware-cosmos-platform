@@ -41,15 +41,14 @@ namespace samson {
 	{
 		//au::Lock lock;	(lock is included in DataManager generic object )
 		
-		KVInfo info_kvs;										// Global info of the entire system ( all types of key-values )
-		KVInfo info_txt;										// Global info of the entire system ( txt files )
+		KVInfo info_kvs;							// Global info of the entire system ( all types of key-values )
+		KVInfo info_txt;							// Global info of the entire system ( txt files )
 		
-		au::map< std::string , Queue> queues;						// List of ALL KeyValue queues
-		au::map< size_t , ActiveTask > tasks;						// List of active tasks ( information about the files that should not be deleted )
+		au::map< std::string , Queue> queues;		// List of ALL KeyValue queues
+		au::map< size_t , ActiveTask > tasks;		// List of active tasks ( information about the files that should not be deleted )
 		
-        
-        // List of stream - queues contained in the system
-        au::map< std::string , network::StreamQueue > stream_queues;    
+        // List of stream operations to be distributed to all the nodes
+        au::map< std::string , network::StreamOperation > streamOperations;    
 
         SamsonController *controller;
 		

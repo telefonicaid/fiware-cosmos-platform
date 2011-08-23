@@ -27,6 +27,7 @@ namespace samson {
     namespace stream
     {
         
+        class BlockList;
         
         /**
          Main class to hold a block on memory
@@ -35,22 +36,29 @@ namespace samson {
         class Block :  public engine::Object
         {
             
-            friend class BlockList;     // List of blocks
-            friend class BlockManager;  // Friend class to create Blocks
-            int priority;               // Priority of the block ( to be reordered )
-            
-            engine::Buffer *buffer;     // Buffer of data if is on memory
-            
-            size_t size;                // Size of the buffer
-            KVHeader*header;            // always on memory copy of the header
-            
-            int lock_counter;           // Counter to indicate that we are currenltly using this block for processing ( should not be removed from memory )
+            friend class BlockManager;  
+            friend class BlockList;
+            friend class PopQueueTask;
             
             size_t id;                  // Identifier of the block ( in this node )
-
-            std::set< size_t > tasks;   // Tasks that has this block retained to be used in that operation
             
-            int retain_counter;         // General counter of retain-release ( by a task or by a queue / state )
+            engine::Buffer *buffer;     // Buffer of data if content of this block is on memory
+            
+            KVHeader* header;           // Always on memory copy of the header
+            size_t size;                // Size of the buffer ( Not that buffer is NULL is content is not on memory )
+
+            
+            KVInfo *info;   // Information about  content per hash-group ( in memory if required. Only used in "state" blocks  )
+            
+            /*
+            int priority;               // Priority of the block ( to be reordered )            
+            int lock_counter;           // Counter to indicate that we are currently using this block for processing 
+            std::set< size_t > tasks;       // Tasks that has this block retained to be used in that operation
+            std::set< std::string > queues; // Queues currently containing this block
+            int retain_counter;             // General counter of retain-release ( by a task or by a queue / state )
+            */
+
+            std::set< BlockList* > lists;   // List where this block is contained
             
             typedef enum
             {
@@ -63,22 +71,39 @@ namespace samson {
 
             BlockState state;
             
-        public:
-
-            int worker;
-            size_t task_id;
-            size_t task_order;
+        private:
             
-            // Constructor with automatic add to the BlockManager
+            // Constructor only visible in a BlockList
             Block( engine::Buffer *buffer , bool txt );
+            
+        public:
+            
             ~Block();
+            
+            // Check if this block is not in any list anymore
+            int getNumberOfLists()
+            {
+                return lists.size();
+            }
+
+            int canBeRemoved()
+            {
+                if( lists.size() != 0)
+                    return false;
+                
+                if( state == reading )
+                    return false;
+                
+                if( state == writing )
+                    return false;
+
+                return true;
+            }
+            
             
             // Set and Get priority
             void setPriority( int _priority );
             int getPriority();
-            
-            // Funtion for debuggin
-            friend std::ostream &operator<<(std::ostream &out, const Block &b);
                         
         private:
             
@@ -137,10 +162,7 @@ namespace samson {
                 return (  (state == ready ) || (state == on_disk) || ( state == reading ));
             }
             
-            bool isLocked()
-            {
-                return (lock_counter > 0);
-            }
+            bool isLockedInMemory();
             
             size_t getSize()
             {
@@ -170,13 +192,6 @@ namespace samson {
                 else
                     return 0;
             }
-
-            bool isRetained()
-            {
-                if( ( tasks.size() == 0 ) && (retain_counter == 0) )
-                    return false;
-                return true;
-            }
             
             bool isNecessaryForHashGroups( int _hg_begin , int _hg_end )
             {
@@ -198,7 +213,16 @@ namespace samson {
             
             // Debug string    
             std::string str();
+
+            void getInfo( std::ostringstream& output);
             
+            const char* getState();
+            
+        private:
+            
+            // Get the minimum task id to get the order of the blocks
+            size_t getMinTaskId();
+
             
         };
             

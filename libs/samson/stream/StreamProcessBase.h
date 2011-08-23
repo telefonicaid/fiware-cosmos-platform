@@ -46,22 +46,17 @@ namespace samson
             
         public:
             
-            
             size_t task_id;                         // Id of the operation
             size_t task_order;                      // Order of the task
             
             Environment operation_environment;                // Environment of the operation
             
-            // Information about how to process this queue ( from controller )
-            network::StreamQueue *streamQueue;
-            
-            // Information about pop queue operation( parser Out from delilah )
-            PopQueue *pq;
+            // Information about how to process this queue
+            network::StreamOperation *streamOperation;
             
         public:
             
-            StreamProcessBase( size_t _task_id , network::StreamQueue *streamQueue );
-            StreamProcessBase( size_t _task_id , PopQueue *pq );
+            StreamProcessBase( size_t _task_id , const network::StreamOperation& _streamOperation );
             virtual ~StreamProcessBase();
             
             
@@ -78,6 +73,11 @@ namespace samson
             // Function to process the output of the operations
             void processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish );
             void processOutputTXTBuffer( engine::Buffer *buffer , bool finish );
+            
+        protected:
+            
+            void sendBufferToQueue( engine::Buffer *buffer , int outputWorker , std::string queue_name , bool flag_txt );
+
             
         };
         

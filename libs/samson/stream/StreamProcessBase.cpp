@@ -2,6 +2,7 @@
 
 #include "logMsg/logMsg.h"                 // LM_X
 
+#include "au/CommandLine.h"				// au::CommandLine
 
 #include "engine/Object.h"              // engine::Object
 #include "engine/Notification.h"      // engine::Notification
@@ -24,8 +25,8 @@ namespace samson {
         
 #pragma mark ProcessItemKVGenerator
         
-        StreamProcessBase::StreamProcessBase( size_t _task_id , network::StreamQueue *_streamQueue ) 
-        : ProcessIsolated( _streamQueue->operation() , ProcessIsolated::key_value , _streamQueue->output_size() , _streamQueue->num_workers() )
+        StreamProcessBase::StreamProcessBase( size_t _task_id , const network::StreamOperation& _streamOperation ) 
+        : ProcessIsolated( _streamOperation.operation() , ProcessIsolated::key_value , _streamOperation.output_queues_size() , _streamOperation.num_workers() )
         {
             
             // Get the task_id
@@ -38,42 +39,19 @@ namespace samson {
             //copyEnviroment( task->workerTask.environment() , &environment ); 
             
             // Copy queue information for this task
-            if( _streamQueue )
-            {
-                streamQueue = new network::StreamQueue();
-                streamQueue->CopyFrom( *_streamQueue );
-            }
-            else
-                streamQueue = NULL;
+            streamOperation = new network::StreamOperation();
+            streamOperation->CopyFrom( _streamOperation );
 
                 
         }
 
-        StreamProcessBase::StreamProcessBase( size_t _task_id , PopQueue * _pq  ) 
-                : ProcessIsolated( _pq->getParserOut() , ProcessIsolated::txt , 0 , 0 )
-        {
-            
-            // Get the task_id
-            task_id = _task_id;
-            
-            // Set the order of the task
-            task_order = 0;
-            
-            // Copy environemnt
-            //copyEnviroment( task->workerTask.environment() , &environment ); 
-            
-            // Copy queue information for this task
-            streamQueue = NULL;
-            
-            // Keep here to decide
-            pq = _pq;
-        }
+
         
         
         StreamProcessBase::~StreamProcessBase()
         {
-            if( streamQueue )
-                delete streamQueue;
+            if( streamOperation )
+                delete streamOperation;
         }
         
         void StreamProcessBase::runIsolated()
@@ -97,32 +75,25 @@ namespace samson {
         
         void StreamProcessBase::processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )
         {
-            //LM_M(("Emiting a buffer for task %lu:%lu", task_id , task_order));
+            //LM_M(("[%s] Processing buffer %s" , streamOperation->operation().c_str(), au::Format::string(buffer->getSize()).c_str() ));
             
-            //LM_M(("Processing an output buffer of stream operation buffer_size=%s output=%d outputWorker=%d " , au::Format::string(buffer->getSize()).c_str() , output , outputWorker ));
+            sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues(output) , false );
             
+        }
+        
+        void StreamProcessBase::sendBufferToQueue( engine::Buffer *buffer , int outputWorker , std::string queue_name , bool flag_txt )
+        {
             Packet* packet = new Packet( Message::PushBlock );
             packet->buffer = buffer;    // Set the buffer of data
             packet->message->set_delilah_id( 0 );
             
             network::PushBlock* pb =  packet->message->mutable_push_block();
             pb->set_size( buffer->getSize() );
-            pb->set_txt(false); // To review when txt buffers are sended to a queue produced by a parserOut operation
+            pb->set_txt(flag_txt); // To review when txt buffers are sended to a queue produced by a parserOut operation
             
-            pb->set_worker( 0 );                    // Information about the worker
-            pb->set_task_id( task_id );             // Task id
-            pb->set_task_order( task_order++ );     // Order inside the task
-            
-            for ( int i = 0 ; i < streamQueue->output(output).target_size() ; i++)
-            {
-                std::string queue_name = streamQueue->output(output).target(i).queue();
-                int channel = streamQueue->output(output).target(i).channel();
-                network::QueueChannel *target = pb->add_target();
-                target->set_queue( queue_name );
-                target->set_channel(channel);
-                
-                //LM_M(("Sending a block to queue %s:%d" ,  queue_name.c_str() , channel ));
-            }
+            std::vector<std::string> queue_names = au::split( queue_name , ',' );
+            for ( size_t i = 0 ; i < queue_names.size() ; i++)
+                pb->add_queue( queue_names[i] );
             
             
             // Send the packet using the "notification_send_to_worker"
@@ -130,14 +101,19 @@ namespace samson {
             notification->environment.setInt("outputWorker", outputWorker );
             engine::Engine::shared()->notify( notification );
             
+            
         }
+        
+        
         
         void StreamProcessBase::processOutputTXTBuffer( engine::Buffer *buffer , bool finish )
         {
-            if( !pq )
-                LM_X(1, ("PopQueue is not present. This is not acceptable..."));
+            LM_M(("[%s] Processing buffer %s" , streamOperation->operation().c_str(), au::Format::string(buffer->getSize()).c_str() ));
+
+            int output = 0;
+            int outputWorker = -1;  // Send always to myself ( txt is not distributed )
             
-            pq->sendMessage( buffer );
+            sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues(output) , true );
             
         }
         

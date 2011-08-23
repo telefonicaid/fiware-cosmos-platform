@@ -190,6 +190,7 @@ namespace samson
 		commandLine.set_flag_boolean("plain");
 		commandLine.set_flag_boolean("gz");			// Flag to indicate compression
 		commandLine.set_flag_int("threads",4);
+        commandLine.set_flag_boolean("force");      // Force to remove directory if exist before in pop operations
 		commandLine.parse( command );
 
 		std::string mainCommand;
@@ -313,106 +314,7 @@ namespace samson
 			Console::quitConsole();	// Quit the console
 			return 0;
 		}
-
 		
-        if ( mainCommand == "e" )
-        {
-            // Experimental
-            
-            if( commandLine.get_num_arguments() == 1)
-                return 0;
-            
-            if( commandLine.get_argument(1) == "show" )
-                writeOnConsole( stream::BlockManager::shared()->str() );
-
-            if( commandLine.get_argument(1) == "set" )
-            {
-                if ( commandLine.get_num_arguments() < 4 )
-                {
-                    writeOnConsole("Not enougth parameters. e set (id) (priority)");
-                    return 0;
-                }
-                
-                int id = atoi( commandLine.get_argument(2).c_str() );
-                int priority = atoi( commandLine.get_argument(3).c_str() );
-                
-                stream::Block*b = stream::BlockManager::shared()->getBlock(id);
-                if( b )
-                {
-                    b->setPriority(priority);
-                    writeOnConsole( au::Format::string("Seting priority %d to id %d", priority , id ) );
-                }
-                else
-                {
-                    writeOnConsole( au::Format::string("Block %d not found", id ) );
-                }
-                
-            }
-            
-            if( commandLine.get_argument(1) == "retain" )
-            {
-                if ( commandLine.get_num_arguments() < 4 )
-                {
-                    writeOnConsole("Not enougth parameters. e retain (id) (task_id) ");
-                    return 0;
-                }
-                
-                int id = atoi( commandLine.get_argument(2).c_str() );
-                int task_id = atoi( commandLine.get_argument(3).c_str() );
-                
-                stream::Block*b = stream::BlockManager::shared()->getBlock(id);
-                if( b )
-                {
-                    stream::BlockManager::shared()->retain( b , task_id );
-                    writeOnConsole( au::Format::string("Retained %d by task %d", id , task_id ) );
-                }
-                else
-                {
-                    writeOnConsole( au::Format::string("Block %d not found", id ) );
-                }
-                
-            }
-
-            if( commandLine.get_argument(1) == "release" )
-            {
-                if ( commandLine.get_num_arguments() < 4 )
-                {
-                    writeOnConsole("Not enougth parameters. e release (id) (task_id) ");
-                    return 0;
-                }
-                
-                int id = atoi( commandLine.get_argument(2).c_str() );
-                int task_id = atoi( commandLine.get_argument(3).c_str() );
-                
-                stream::Block*b = stream::BlockManager::shared()->getBlock(id);
-                if( b )
-                {
-                    stream::BlockManager::shared()->release( b , task_id );
-                    writeOnConsole( au::Format::string("Released %d by task %d", id , task_id ) );
-                }
-                else
-                {
-                    writeOnConsole( au::Format::string("Block %d not found", id ) );
-                }
-                
-            }
-            
-            if( commandLine.get_argument(1) == "add" )
-            {
-                                
-                engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer("example", 100000000, 0 );
-                buffer->setSize( buffer->getMaxSize() );    // Full the buffer with crap content ;)
-                stream::Block *block = new stream::Block( buffer , true );
-
-                // Change priority
-                int new_priority = rand()%10;
-                writeOnConsole( au::Format::string("Setting priority to  %d", new_priority ) );
-                block->setPriority(new_priority);
-
-            }
-            
-            return 0;
-        }
         
 		if ( mainCommand == "set")
 		{
@@ -572,14 +474,13 @@ namespace samson
         {
             au::TokenTaker tt( &info_lock );
             
-            
             if( commandLine.get_num_arguments() == 1 )
             {
                 writeErrorOnConsole("Usage: info txt/xml/select/values/num/str/double [options]");
                 return 0;
             }
-            
-            
+
+            // Parse the xml document
             std::istringstream is_xml_document( xml_info );
             pugi::xml_document doc;
             pugi::xml_parse_result result = doc.load( is_xml_document );
@@ -590,7 +491,7 @@ namespace samson
                 return 0;
             }
             
-            
+            // Main xml command
             std::string command = commandLine.get_argument(1);
             
             if( command == "xml" )
@@ -601,38 +502,8 @@ namespace samson
             
             if ( command == "txt" )
             {
-                writeOnConsole(  xml_info );
+                writeOnConsole( xml_info );
                 return 0;
-            }
-            
-            if ( command == "select")
-            {
-                if( commandLine.get_num_arguments() < 3 )
-                {
-                    writeErrorOnConsole("Usage info_query select select-query");
-                    return 0;
-                }
-                
-                std::string query = commandLine.get_argument(2);
-                writeWarningOnConsole(au::Format::string("Running select %s" , query.c_str()));
-                
-                pugi::xpath_node_set result;
-                try {
-                    result = doc.select_nodes( query.c_str() );
-                } catch (pugi::xpath_exception& ex) 
-                {
-                    writeErrorOnConsole( au::Format::string( "Error in xpath query: %s" , ex.what() ) );
-                    return 0;
-                }
-                
-                // Transform the results into a string
-                std::ostringstream result_txt;
-                pugi::str( result , result_txt );
-                
-                writeOnConsole(result_txt.str());
-                
-                return 0;
-                
             }
             
             if( command == "values" )
@@ -705,6 +576,35 @@ namespace samson
                 return 0;
             }            
             
+            if ( command == "select")
+            {
+                if( commandLine.get_num_arguments() < 3 )
+                {
+                    writeErrorOnConsole("Usage info_query select select-query");
+                    return 0;
+                }
+                
+                std::string query = commandLine.get_argument(2);
+                writeWarningOnConsole(au::Format::string("Running select %s" , query.c_str()));
+                
+                pugi::xpath_node_set result;
+                try {
+                    result = doc.select_nodes( query.c_str() );
+                } catch (pugi::xpath_exception& ex) 
+                {
+                    writeErrorOnConsole( au::Format::string( "Error in xpath query: %s" , ex.what() ) );
+                    return 0;
+                }
+                
+                // Transform the results into a string
+                std::ostringstream result_txt;
+                pugi::str( result , result_txt ); // Orignal command is passed for addicional flag promcessing (-full -filter
+                
+                writeOnConsole(result_txt.str());
+                
+                return 0;
+                
+            }
             
             writeWarningOnConsole("Non implemented option");
             
@@ -825,7 +725,7 @@ namespace samson
 		{
 			if( commandLine.get_num_arguments() < 3 )
 			{
-				writeErrorOnConsole("Usage: push file <file2> .... <fileN> queue");
+				writeErrorOnConsole("Usage: push file <file2> .... <fileN> queue1,queue2,queue3 ");
 				return 0;
 			}
 			
@@ -893,9 +793,11 @@ namespace samson
 				}
 			}
 			
-			std::string queue = commandLine.get_argument( commandLine.get_num_arguments()-1 );
+			std::string queues_txt = commandLine.get_argument( commandLine.get_num_arguments()-1 );
+
+            std::vector<std::string> queues = au::split( queues_txt , ',' );
             
-			size_t id = addPushData(fileNames, queue );
+			size_t id = addPushData(fileNames, queues );
 			
 			std::ostringstream o;
 			o << "[ " << id << " ] Push data process started with " << fileNames.size() << " files";
@@ -908,24 +810,56 @@ namespace samson
         
         if( mainCommand == "pop" )
 		{
-			if( commandLine.get_num_arguments() < 5 )
+			if( commandLine.get_num_arguments() < 3 )
 			{
-				writeErrorOnConsole("Usage: pop queue channel parserOut fileName");
+				writeErrorOnConsole("Usage: pop queue fileName");
 				return 0;
 			}
             
-            std::string queue_name = commandLine.get_argument(1);
-            int channel = atoi( commandLine.get_argument(2).c_str() );
-            std::string parserOut = commandLine.get_argument(3);
-            std::string fileName = commandLine.get_argument(4);
+            std::string queue_name  = commandLine.get_argument(1);
+            std::string fileName    = commandLine.get_argument(2);
+
+            bool force_flag = commandLine.get_flag_bool("force");
             
-			size_t id = addPopData( queue_name , channel , parserOut , fileName );
+			size_t id = addPopData( queue_name  , "" ,  fileName , force_flag );
 			
 			std::ostringstream o;
-			o << "[ " << id << " ] Pop from queue " << queue_name << ":" << channel << " started. ParserOut " << parserOut << " LocalFile: " << fileName;
+			o << "[ " << id << " ] Pop from queue " << queue_name << " to localFile: " << fileName;
 			writeWarningOnConsole(o.str());
 			return id;
 		}
+
+        if( mainCommand == "pop_state" )
+		{
+			if( commandLine.get_num_arguments() < 3 )
+			{
+				writeErrorOnConsole("Usage: pop_state state fileName");
+				return 0;
+			}
+            
+            std::string state_name = commandLine.get_argument(1);
+            std::string fileName = commandLine.get_argument(2);
+            bool force_flag = commandLine.get_flag_bool("force");
+            
+			size_t id = addPopData( "" , state_name  , fileName , force_flag );
+			
+			std::ostringstream o;
+			o << "[ " << id << " ] Pop from state " << state_name << " to localFile: " << fileName;
+			writeWarningOnConsole(o.str());
+			return id;
+		}
+        
+        // Spetial command to use "worker command"
+        if( mainCommand == "push_state_to_queue" )
+        {
+			if( commandLine.get_num_arguments() < 3 )
+			{
+				writeErrorOnConsole("Usage: push_state_to_queue state queue");
+				return 0;
+			}
+            
+            return sendWorkerCommand( command , NULL );
+        }
         
         
 		// Normal command send to the controller
@@ -1067,99 +1001,18 @@ namespace samson
 		
 		return 0;
 	}	
-	
-	void DelilahConsole::uploadDataConfirmation( DelilahUploadDataProcess *process)
-	{
-		if( process->error.isActivated() )
-		{
-			std::ostringstream o;
-			o << "[ " << process->id << " ] Upload data process finished with error ("<< process->error.getMessage() << "). Type XXX for more information";
-			writeErrorOnConsole(o.str());
-		}
-		else
-		{
-			std::ostringstream o;
-			o << "[ " << process->id << " ] Upload data process finished correctly\n";
-			writeWarningOnConsole(o.str());
-		}
-	};
-	
-	void DelilahConsole::downloadDataConfirmation( DelilahDownloadDataProcess *process)
-	{
-		if( process->error.isActivated() )
-		{
-			std::ostringstream o;
-			o << "[ " << process->id << " ] Download data process finished with error ( "<< process->getDescription() << " )\n";
-			o << "\tERROR: " << process->error.getMessage();
-			writeErrorOnConsole(o.str());
-		}
-		else
-		{
-			std::ostringstream o;
-			o << "[ " << process->id << " ] Download data process finished correctly ( "<< process->getDescription() << " )";
-			writeWarningOnConsole(o.str());
-		}
-	};
     
-    void DelilahConsole::pushConfirmation( PushComponent *process )
+    void DelilahConsole::delilahComponentFinishNotification( DelilahComponent *component )
     {
-		if( process->error.isActivated() )
-		{
-			std::ostringstream o;
-			o << "[ " << process->id << " ] Push data process finished with error ( " << process->getStatus() << " )\n";
-			o << "\tERROR: " << process->error.getMessage();
-			writeErrorOnConsole(o.str());
-		}
-		else
-		{
-			std::ostringstream o;
-			o << "[ " << process->id << " ] Push data process finished correctly ( " << process->getStatus() << " )";
-			writeWarningOnConsole(o.str());
-		}
-        
-    }
+        std::ostringstream o;
+        o << "Finished notification " << component->getDescription();
 
-    void DelilahConsole::popConfirmation( PopComponent *process )
-    {
-		if( process->error.isActivated() )
-		{
-			std::ostringstream o;
-			o << "[ " << process->id << " ] Pop process finished with error ( " << process->getStatus() << " )\n";
-			o << "\tERROR: " << process->error.getMessage();
-			writeErrorOnConsole(o.str());
+        if( component->error.isActivated() )
+            writeErrorOnConsole(o.str());        
+        else
+            writeWarningOnConsole(o.str());        
             
-		}
-		else
-		{
-			std::ostringstream o;
-			o << "[ " << process->id << " ] Pop  process finished correctly ( " << process->getStatus() << " )";
-			writeWarningOnConsole(o.str());
-            
-            size_t file_size = au::Format::sizeOfFile( process->fileName );
-            
-            if( file_size < 10000 )
-            {
-                writeOnConsole("Content: --------------------------------------------------------------");
-                FILE *file = fopen( process->fileName.c_str() , "r" );
-                char * buffer = (char*) malloc( file_size );
-                int nb = fread( buffer , file_size , 1 , file );
-		if (nb == 0)
-		{
-			writeWarningOnConsole("fread reads 0 instead of " + au::Format::string(file_size));	
-		}
-                
-                writeOnConsole( buffer );
-                
-                writeOnConsole("End of Content: -------------------------------------------------------");
-                free( buffer );
-            }
-            else
-                writeWarningOnConsole("Not showing on screen since file is too large ( " + au::Format::string(file_size) + " )" );
-            
-		}
-        
     }
-	
     
 	void DelilahConsole::showQueues( const network::QueueList ql)
 	{
@@ -1183,10 +1036,13 @@ namespace samson
 		}
 		txt << "------------------------------------------------------------------------------------------------" << std::endl;
         
-		for (int i = 0 ; i < ql.stream_queue_size() ; i++)
+        
+        const network::StreamOperationList& ol = ql.stream_operation_list();
+        
+		for (int i = 0 ; i < ol.operation_size() ; i++)
 		{
-			network::StreamQueue queue = ql.stream_queue(i);
-            txt << getStatus( &queue );
+			network::StreamOperation streamOperation = ol.operation(i);
+            txt << getStatus( &streamOperation );
 			txt << std::endl;
 		}
 
@@ -1226,7 +1082,7 @@ namespace samson
 		for (int i = 0 ; i < ol.operation_size() ; i++)
 		{
 			network::Operation operation = ol.operation(i);
-			txt << "** " << operation.name();
+			txt << "** " << operation.name() << " ( " << operation.type() << " )";
 			txt << "\n\t\tInputs: ";
 			for (int i = 0 ; i < operation.input_size() ; i++)
 				txt << "[" << operation.input(i).keyformat() << "-" << operation.input(i).valueformat() << "] ";

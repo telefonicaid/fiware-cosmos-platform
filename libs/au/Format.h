@@ -52,8 +52,12 @@ namespace au {
         static std::string getRoot( std::string& path );
         static std::string getRest( std::string& path );
         
-        
 	};
+
+    
+    void removeDirectory(std::string path);
+    bool isDirectory(char path[]);
+    bool isRegularFile(char path[]);
     
 }
 

@@ -12,12 +12,22 @@
 
 #include "samson/common/Info.h"     // samson::Info
 
+#include "samson/module/ModulesManager.h"   // ModulesManager
+
 #include "samson/stream/PopQueue.h" // stream::PopQueue
 
 #include "samson/worker/SamsonWorker.h"
 
 #include "samson/stream/QueueTask.h"
 
+#include "samson/stream/State.h"
+#include "samson/stream/StateItem.h"
+
+#include "ParserQueueTask.h"            // ParserQueueTask
+
+#include "State.h"          // samson::stream::State
+
+#include "BlockList.h"          // BlockList
 
 #include "samson/stream/Queue.h"
 
@@ -27,11 +37,9 @@ namespace samson {
         QueuesManager::QueuesManager(::samson::SamsonWorker* _worker) : queueTaskManager( this )
         {
             worker = _worker;
-            
-            // add a generic periodic notification to check tasks for stream queues
-            engine::Notification *notification = new engine::Notification( notification_review_task_for_queue );
-            engine::Engine::shared()->notify( notification , 1 );
-            
+                        
+            operation_list = NULL;
+
         }
         
         std::string QueuesManager::getStatus()
@@ -45,6 +53,14 @@ namespace samson {
             for ( q = queues.begin() ; q != queues.end() ; q++)
                 output <<  au::Format::indent( q->second->getStatus()  ) << "\n";
 
+            
+            output << "States:\n";
+            
+            au::map< std::string , State >::iterator s;
+            for ( s = states.begin() ; s != states.end() ; s++)
+                output <<  au::Format::indent( s->second->getStatus()  ) << "\n";
+            
+            
             // Queue task Manager status
             output << queueTaskManager.getStatus();
 
@@ -56,26 +72,46 @@ namespace samson {
         }
 
 
-        void QueuesManager::addBlock( std::string queue_name , int channel ,  Block *b )
+        void QueuesManager::addBlocks( std::string queue_name ,  BlockList *bl )
         {
             // Get or create the queue
             Queue *queue = getQueue( queue_name );
             
             // Add the block to the queue
-            queue->add( channel , b );
-            
-            // First rudimentary system to thrigger queue-processing
-            queue->scheduleNewTasksIfNecessary();
-            
+            queue->list->copyFrom( bl );
+
+            // review all the automatic operations ( maybe we can only review affected operations in the future... )
+            reviewStreamOperations();            
         }
      
-        void QueuesManager::setInfo( network::StreamQueue &stream_queue )
+        void QueuesManager::setOperationList( network::StreamOperationList *list )
         {
-            // Get or create the queue
-            Queue *queue = getQueue( stream_queue.name() );
-            queue->setStreamQueue( stream_queue );
+            if( operation_list) 
+                delete operation_list;
             
+            operation_list = new network::StreamOperationList();
+            operation_list->CopyFrom( *list );
+            
+            
+            // review all the operations...
+            reviewStreamOperations();
         }
+        
+        void QueuesManager::push_state_to_queue( std::string state_name , std::string queue_name )
+        {
+            State *state = getState( state_name );
+            Queue* queue = getQueue( queue_name );
+            
+            // Copy from all the items included in this state
+            au::list< StateItem >::iterator item;
+            for (item = state->items.begin() ; item != state->items.end() ; item++ )
+            {
+                StateItem *stateItem = (*item);
+                
+                queue->list->copyFrom( stateItem->state );
+            }
+        }
+        
         
         Queue* QueuesManager::getQueue( std::string queue_name )
         {
@@ -89,62 +125,410 @@ namespace samson {
             return queue;
             
         }
+        
+        State* QueuesManager::getState( std::string name )
+        {
+            State *state = states.findInMap( name );
+            if( !state )
+            {
+                state = new State( name );
+                states.insertInMap( name , state );
+            }
+            
+            return state;
+        }
 
+        
         void QueuesManager::notifyFinishTask( QueueTask *task )
         {
             
-            std::string queue  = task->environment.get("queue","--");
-            size_t task_id = task->id;
+        }
+        
+        void QueuesManager::notifyFinishTask( PopQueueTask *task )
+        {
+            // Recover identifiers
+            size_t pop_queue_id = task->pop_queue_id;
+            size_t task_id      = task->id;
             
-            //LM_M(("Operation %lu finished for queue %s", task_id, queue.c_str() ));
-            
-            if( queue != "--" )
-                getQueue( queue )->notifyFinishTask( task_id );
-            
-            
-            // Notify to the popQueue operations
-            size_t pop_queue_id = task->environment.getSizeT("pop_queue_id", 0);
-            
-            //LM_M(("notify finish task for pop_queue_id %lu" , pop_queue_id));
-            
-            if( pop_queue_id != 0 )
-                popQueueManager.notifyFinishTask( pop_queue_id , task_id , &task->error );
+            popQueueManager.notifyFinishTask( pop_queue_id , task_id , &task->error );
             
         }
 
         void QueuesManager::addPopQueue(const network::PopQueue& pq , size_t delilahId, int fromId )
         {
-            std::string queue_name = pq.target().queue();
-            Queue* q = queues.findInMap( queue_name );
-            
+            // Create a new pop queue
             PopQueue *popQueue = new PopQueue( pq , delilahId, fromId );
             popQueueManager.add( popQueue );
+ 
+
+            if( pq.has_queue() )
+            {
+                
+                std::string queue_name = pq.queue();
+                Queue* q = getQueue( queue_name );
+                
+                au::list< Block >::iterator b;
+                for ( b = q->list->blocks.begin() ; b != q->list->blocks.end() ; b++ )
+                {
+                    size_t id = queueTaskManager.getNewId();
+                    
+                    popQueue->addTask( id );
+                    
+                    PopQueueTask *tmp = new PopQueueTask( id , popQueue ); 
+                    
+                    tmp->addBlock( *b );
+                    
+                    // Schedule tmp task into QueueTaskManager
+                    queueTaskManager.add( tmp );
+                    
+                }
+                
+            }
             
-            // Run the pop queue operation with the current queue information
-            popQueue->run( q );
+            if( pq.has_state() )
+            {
+                
+                std::string state_name = pq.state();
+                State* state = getState( state_name );
+                
+                au::list< StateItem >::iterator item;
+                for (item = state->items.begin() ; item != state->items.end() ; item++ )
+                {
+                    StateItem *stateItem = (*item);
+                    
+                    au::list< Block >::iterator b;
+                    for ( b = stateItem->state->blocks.begin() ; b != stateItem->state->blocks.end() ; b++ )
+                    {
+                        size_t id = queueTaskManager.getNewId();
+                        
+                        popQueue->addTask( id );
+                        
+                        PopQueueTask *tmp = new PopQueueTask( id , popQueue ); 
+                        
+                        tmp->addBlock( *b );
+                        
+                        // Schedule tmp task into QueueTaskManager
+                        queueTaskManager.add( tmp );
+                        
+                    }
+                }
+                
+            }
+            
+            
+            
+            
+            popQueue->check();
         }
         
 
         // Get information for monitorization
         void QueuesManager::getInfo( std::ostringstream& output)
         {
-            output << "<queues_manager>\n";
+            output << "<queues>\n";
 
             au::map< std::string , Queue >::iterator q;
             for ( q = queues.begin() ; q != queues.end() ; q++ )
                 q->second->getInfo(output);
 
-            output << "</queues_manager>\n";
-            
-            output << "<queues_task_manager>\n";
+            output << "</queues>\n";
 
-            queueTaskManager.getInfo( output );
+            // States
+            output << "<states>\n";
+            au::map< std::string , State>::iterator state;
+            for( state = states.begin() ; state != states.end() ; state++ )
+                state->second->getInfo( output );
+            output << "</states>\n";
             
-            output << "</queues_task_manager>\n";
+            // Tasks
+            output << "<queue_tasks>\n";
+            queueTaskManager.getInfo( output );
+            output << "</queue_tasks>\n";
 
             
         }
         
-    }
+        void QueuesManager::reviewStreamOperations()
+        {
+            // Review all the stream operations to see if a new squedule is necessary
+            if( operation_list )
+            {
+                for ( int i = 0 ; i < operation_list->operation_size() ; i++)
+                {
+                    const network::StreamOperation& operation = operation_list->operation(i);
+                    reviewStreamOperation( operation );
+                }
+            }
+        }
+        
+        void QueuesManager::reviewStreamOperation(const network::StreamOperation& operation)
+        {
+            // Get the operation
+            Operation* op = samson::ModulesManager::shared()->getOperation( operation.operation() );
+            
+            // No valid operation
+            if( !op )
+            {
+                LM_W(("StreamOperation %s failed since operation %s is not valid",operation.name().c_str(), operation.operation().c_str()));
+                return;
+            }
 
+            /*
+            // Get the limit information for this operation    
+            samson::Environment environment;
+            copyEnviroment(operation.environment(), &environment);
+            
+            // Get limits to consider
+            size_t max_time             = environment.getSizeT("max_time", 0);
+            size_t max_size             = environment.getSizeT("max_size", 0);
+            */
+            
+            switch (op->getType()) {
+                    
+                case Operation::parser:
+                {
+                    
+                    //LM_W(("Reviwing StreamOperation parser %s " , operation.name().c_str()));
+                    
+                    if( operation.input_queues_size() != 1 )
+                    {
+                        //LM_W(("StreamOperation %s failed since has no input queue", operation.name().c_str()));
+                        return;
+                    }
+                    
+                    // Get the input queue
+                    std::string input_queue_name = operation.input_queues(0);
+                    Queue *inputQueue = getQueue( input_queue_name );
+                    
+                    while( true )
+                    {
+                        
+                        if( inputQueue->list->isEmpty() )
+                        {
+                            /*
+                            LM_W(("Review of StreamOperation %s finished since queue %s is empty"
+                                  , operation.name().c_str() 
+                                  , input_queue_name.c_str() 
+                                  ));
+                             */
+                            return;
+                        }
+                        
+                        ParserQueueTask *tmp = new ParserQueueTask( queueTaskManager.getNewId() , operation ); 
+                        tmp->environment.set("queue" , inputQueue->name );
+                        tmp->setOutputFormats( &op->outputFormats );
+
+                        tmp->getBlocks( inputQueue->list );
+                        
+                        // Schedule tmp task into QueueTaskManager
+                        queueTaskManager.add( tmp );
+                        
+                    }
+                    
+                }
+                    break;
+
+                case Operation::parserOut:
+                {
+                    
+                    //LM_W(("Reviwing StreamOperation parser %s " , operation.name().c_str()));
+                    
+                    if( operation.input_queues_size() != 1 )
+                    {
+                        //LM_W(("StreamOperation %s failed since has no input queue", operation.name().c_str()));
+                        return;
+                    }
+                    
+                    // Get the input queue
+                    std::string input_queue_name = operation.input_queues(0);
+                    Queue *inputQueue = getQueue( input_queue_name );
+                    
+                    while( true )
+                    {
+                        
+                        if( inputQueue->list->isEmpty() )
+                        {
+                            return;
+                        }
+                        
+                        ParserOutQueueTask *tmp = new ParserOutQueueTask( queueTaskManager.getNewId() , operation ); 
+                        tmp->environment.set("queue" , inputQueue->name );
+                        
+                        tmp->getBlocks( inputQueue->list );
+                        
+                        // Schedule tmp task into QueueTaskManager
+                        LM_M(("Scheduled parserOut "));
+                        queueTaskManager.add( tmp );
+                        
+                    }
+                    
+                }
+                    break;
+                    
+                case Operation::map:
+                {
+                    
+                    if( operation.input_queues_size() != 1 )
+                    {
+                        //LM_W(("StreamOperation %s failed since has no input queue", operation.name().c_str()));
+                        return;
+                    }
+                    
+                    // Get the input queue
+                    std::string input_queue_name = operation.input_queues(0);
+                    Queue *inputQueue = getQueue( input_queue_name );
+                    
+                    
+                    while( true )
+                    {
+                        
+                        
+                        if( inputQueue->list->isEmpty() )
+                        {
+                            /*
+                             LM_W(("Review of StreamOperation %s finished since queue %s is empty"
+                             , operation.name().c_str() 
+                             , input_queue_name.c_str() 
+                             ));
+                             */
+                            return;
+                        }
+                        
+                        
+                        MapQueueTask *tmp = new MapQueueTask( queueTaskManager.getNewId() , operation ); 
+                        tmp->environment.set("queue" , inputQueue->name );
+                        tmp->setOutputFormats( &op->outputFormats );
+                        
+                        tmp->getBlocks( inputQueue->list );
+                        
+                        // Schedule tmp task into QueueTaskManager
+                        queueTaskManager.add( tmp );
+                        
+                    }
+                    
+                    
+                }
+                    break;
+                case Operation::reduce:
+                {
+                    
+                    if( operation.input_queues_size() != 2 )
+                    {
+                        LM_W(("StreamOperation %s failed since reduce has not 2 inputs", operation.name().c_str()));
+                        return;
+                    }
+                    
+                    
+                    // Get "pre input queue" and input queue
+                    Queue *pre_inputQueue   = getQueue( operation.input_queues(0) );
+                    Queue *inputQueue       = getQueue( operation.input_queues(0) + "_sorted" );
+                    
+                    // Get state state associated with the second input
+                    State *state = getState( operation.input_queues(1) );
+                    
+                    while( !pre_inputQueue->list->isEmpty() )
+                    {
+                        //Special streamOperation for the sort part
+                        network::StreamOperation * sortOperation = new network::StreamOperation();
+                        sortOperation->set_operation( operation.operation() );
+                        sortOperation->add_input_queues( operation.input_queues(0) );
+                        sortOperation->add_output_queues( operation.input_queues(0) + "_sorted" );
+                        sortOperation->set_num_workers( operation.num_workers() );
+                        
+                        SortQueueTask *tmp = new SortQueueTask( queueTaskManager.getNewId() , *sortOperation ); 
+                        tmp->setOutputFormats( &op->outputFormats );
+                        
+                        tmp->getBlocks( pre_inputQueue->list );
+                        
+                        // Schedule tmp task into QueueTaskManager
+                        queueTaskManager.add( tmp );
+                        
+                        
+                        delete sortOperation;
+                    }
+                    
+                    
+                    if( !inputQueue->list->isEmpty() )
+                    {
+                        state->push( inputQueue->list );
+
+                        // Remove all the blocks from the original queue
+                        inputQueue->list->clearBlockList();
+                        
+                    }
+                    
+                    // Check all the stateItems here to run new operations
+                    // Check all the elements in the list
+                    au::list< StateItem >::iterator item;
+                    for (item = state->items.begin() ; item != state->items.end() ; item++ )
+                    {
+                        StateItem *stateItem = (*item);
+                        
+                        int hg_begin = stateItem->hg_begin;
+                        int hg_end = stateItem->hg_end;
+                        int hg_mid = ( hg_begin + hg_end ) / 2;
+                        
+                        if( stateItem->isReadyToRun() )
+                        {
+                            
+                            if( stateItem->state->getSize() > 1000000000 )
+                            {
+                                ReduceQueueTask *tmp = new ReduceQueueTask( queueTaskManager.getNewId() , operation , stateItem , hg_begin , hg_mid ); 
+                                ReduceQueueTask *tmp2 = new ReduceQueueTask( queueTaskManager.getNewId() , operation , stateItem , hg_mid , hg_end ); 
+                                
+                                // Set the format of the outputs
+                                tmp->setOutputFormats( &op->outputFormats );
+                                tmp2->setOutputFormats( &op->outputFormats );
+                                
+                                // Setup content of this task ( not that input is common for both operations )
+                                BlockList tmp_list("tmp input for state");
+                                BlockList tmp_list2("tmp input for state 2");
+                                tmp_list.extractFrom ( stateItem->list , 100000000 );
+                                tmp_list2.copyFrom ( &tmp_list );
+
+                                tmp->getBlocks( &tmp_list  , stateItem->state );
+                                tmp->getBlocks( &tmp_list2  , stateItem->state );
+                                
+                                // Set this item to "running mode"
+                                stateItem->setRunning( tmp , tmp2 );
+                                
+                                // Schedule tmp task into QueueTaskManager
+                                queueTaskManager.add( tmp );
+                                queueTaskManager.add( tmp2 );
+                                
+                            }
+                            else
+                            {
+                            
+                                ReduceQueueTask *tmp = new ReduceQueueTask( queueTaskManager.getNewId() , operation , stateItem , hg_begin , hg_end ); 
+                                
+                                // Set the format of the outputs
+                                tmp->setOutputFormats( &op->outputFormats );
+                                
+                                // Setup content of this task
+                                tmp->getBlocks( stateItem->list , stateItem->state );
+                                
+                                // Set this item to "running mode"
+                                stateItem->setRunning( tmp );
+                                
+                                // Schedule tmp task into QueueTaskManager
+                                queueTaskManager.add( tmp );
+                            }
+                            
+                        }
+                    }
+
+                    
+                    
+                }
+                    break;
+                  
+                    
+                default:
+                    // Not supported operation at the moment
+                    break;
+            }
+            
+        }
+    }
 }

@@ -249,7 +249,6 @@ namespace samson
 
         add("worker.period_check_finish_tasks", "5", "Period to review finished tasks in samsonWorker, to be clean from memory" );
         
-        
         add("controller.max_worker_disconnected_time", "120" , "Maximum acceptable time for a worker to be disconnected." );
 	}
 

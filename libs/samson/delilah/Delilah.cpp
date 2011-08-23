@@ -281,15 +281,18 @@ namespace samson {
      *
      * pushData - 
      */
-	size_t Delilah::addPushData( std::vector<std::string> fileNames , std::string queue )
+	size_t Delilah::addPushData( std::vector<std::string> fileNames , std::vector<std::string> queues )
 	{
         TXTFileSet *txtFileSet = new TXTFileSet( fileNames );
-        return addPushData( txtFileSet , queue );
+        return addPushData( txtFileSet , queues );
 	}
     
-    size_t Delilah::addPushData( DataSource* dataSource , std::string queue )
+    size_t Delilah::addPushData( DataSource* dataSource , std::vector<std::string> queues )
     {
-		PushComponent * d = new PushComponent( dataSource , queue );
+		PushComponent * d = new PushComponent( dataSource , queues[0] );
+        for ( size_t i = 1 ; i < queues.size() ; i++)
+            d->addQueue( queues[i] );
+        
 		size_t tmp_id = addComponent(d);	
         
 		d->run();
@@ -303,12 +306,19 @@ namespace samson {
      *
      * popData - 
      */
-	size_t Delilah::addPopData( std::string queue , int channel, std::string parserOut , std::string fileName )
+    
+	size_t Delilah::addPopData( std::string queue_name , std::string state_name ,  std::string fileName , bool force_flag )
 	{
-		PopComponent * d = new PopComponent( queue , channel , parserOut , fileName );
+		PopComponent * d = new PopComponent( queue_name , state_name  , fileName , force_flag );
 		size_t tmp_id = addComponent(d);	
-        
-		d->run();
+
+        if( d->error.isActivated() )
+        {
+            
+            
+        }
+        else
+            d->run();
         
 		return tmp_id;
 	}
@@ -336,7 +346,7 @@ namespace samson {
 		
 		
 		for ( au::map<size_t , DelilahComponent>::iterator c =  components.begin() ;  c != components.end() ; c++)
-			if ( c->second->component_finished )
+			if ( c->second->isComponentFinished() )
 				components_to_remove.push_back( c->first );
         
 		for (size_t i = 0 ; i < components_to_remove.size() ; i++)
@@ -406,14 +416,7 @@ namespace samson {
 		std::map<size_t,DelilahComponent*>::iterator iter;
 		for (iter = components.begin() ; iter != components.end() ; iter++)
 		{
-            output << "[ " << iter->second->id << " ] ";
-            output << iter->second->getCodeName();
-            if( iter->second->component_finished )
-                output << " [ FINISHED ] ";
-            else
-                output << "              ";
-            
-            output << iter->second->getShortStatus() << "\n";
+            output << iter->second->getDescription() << "\n";
             present = true;
 		}
 		
@@ -440,6 +443,21 @@ namespace samson {
 		return tmp_id;
 	}	
     
+    size_t Delilah::sendWorkerCommand( std::string command , engine::Buffer *buffer )
+	{
+		
+		// Add a components for the reception
+		WorkerCommandDelilahComponent *c = new WorkerCommandDelilahComponent( command , buffer );
+        
+		// Get the id of this operation
+		size_t tmp_id = addComponent( c );
+		
+		// Send the packet to the controller
+		c->run();
+		
+		return tmp_id;
+	}	
+    
 	
 	bool Delilah::isActive( size_t id )
 	{
@@ -450,7 +468,7 @@ namespace samson {
         if( !c )
             return false;
         
-		return( !c->component_finished );
+		return( !c->isComponentFinished() );
         
     }
     

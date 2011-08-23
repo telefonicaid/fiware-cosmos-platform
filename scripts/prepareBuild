@@ -1,9 +1,0 @@
-cd build 2> /dev/null
-if [ "$?" != 0 ]
-then
-	echo "You need be on trunk to build"
-	exit 1
-fi
-
-export PATH=/usr/local/bin:$PATH
-cmake .. -DCMAKE_BUILD_TYPE=DEBUG

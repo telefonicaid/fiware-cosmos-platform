@@ -81,6 +81,8 @@ typedef enum MessageCode
     PopQueueResponse                = CODE('P', 'Q', 'R', ' '),
     PushBlock                       = CODE('P', 'B', 'l', ' '),
     PushBlockResponse               = CODE('P', 'B', 'r', ' '),
+    WorkerCommand                   = CODE('W', 'C', '-', ' '),
+    WorkerCommandResponse           = CODE('W', 'C', 'R', ' '),
 	Id                              = CODE('I', 'd', ' ', ' '),
 	Ping                            = CODE('P', 'i', 'n', ' '),
     Unknown                         = CODE('U', 'n', 'k', ' ')

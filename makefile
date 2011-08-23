@@ -4,6 +4,23 @@ default:
 	make dd
 
 
+
+
+# ------------------------------------------------
+# Prepare CMAKE
+# ------------------------------------------------
+
+
+prepare_release:
+	mkdir BUILD_RELEASE || true
+	cd BUILD_RELEASE; cmake .. -DCMAKE_BUILD_TYPE=RELEASE
+
+prepare_debug:
+	mkdir BUILD_DEBUG || true
+	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG
+
+prepare: prepare_release prepare_debug
+
 # ------------------------------------------------
 # Global install scripts
 # ------------------------------------------------
@@ -22,19 +39,16 @@ clean:
 # RELEASE Version
 # ------------------------------------------------
 
-release:
-	mkdir BUILD_RELEASE || true
-	cd BUILD_RELEASE; cmake .. -DCMAKE_BUILD_TYPE=RELEASE
+
+release: prepare_release
 	make -C BUILD_RELEASE #-j 7
 
 # ------------------------------------------------
 # DEBUG Version
 # ------------------------------------------------
 
-debug:
-	mkdir BUILD_DEBUG || true
-	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG
-	make -j 4 -C BUILD_DEBUG 
+debug: prepare_debug
+	make -C BUILD_DEBUG #-j 4
 
 # ------------------------------------------------
 # DEBUG Version
@@ -43,7 +57,7 @@ debug:
 debug_coverage:
 	mkdir BUILD_DEBUG_COVERAGE || true
 	cd BUILD_DEBUG_COVERAGE; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCOVERAGE=True
-	make -C BUILD_DEBUG_COVERAGE -j8
+	make -C BUILD_DEBUG_COVERAGE # -j8
 
 # ------------------------------------------------
 # Testing

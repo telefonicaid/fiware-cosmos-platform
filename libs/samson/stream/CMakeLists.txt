@@ -3,6 +3,7 @@ SET (HEADERS
     Block.h
     BlockManager.h
     BlockMatrix.h
+    BlockList.h
     Queue.h
     QueuesManager.h
     QueueTask.h
@@ -11,6 +12,10 @@ SET (HEADERS
     ParserQueueTask.h
     PopQueue.h
     PopQueueManager.h
+    StatesManager.h
+    State.h
+    StateItem.h
+    StreamOperation.h
 )
 
 SET (SOURCES
@@ -18,6 +23,7 @@ SET (SOURCES
     BlockManager.cpp
     Queue.cpp
     BlockMatrix.cpp
+    BlockList.cpp
     QueuesManager.cpp
     QueueTask.cpp
     QueueTaskManager.cpp    
@@ -25,6 +31,10 @@ SET (SOURCES
     ParserQueueTask.cpp
     PopQueueManager.cpp
     PopQueue.cpp
+    StatesManager.cpp
+    State.cpp
+    StateItem.cpp
+    StreamOperation.cpp
 )
 
 

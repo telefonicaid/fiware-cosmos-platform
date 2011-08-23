@@ -198,8 +198,10 @@ namespace samson
 					buffer->skipWrite(KVFILE_TOTAL_HEADER_SIZE);
                     
 					//KVFormat format = KVFormat( output_queue.format().keyformat() , output_queue.format().valueformat() );
-					KVFormat format = KVFormat( "no-used" , "no-used" );
-					header->init( format , _channel->info );
+                    if( outputFormats.size() > (size_t)o )
+                        header->init( outputFormats[o] , _channel->info );
+                    else
+                        header->init( KVFormat( "no-used" , "no-used" ) , _channel->info );
 					
 					for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ; i++)
 					{

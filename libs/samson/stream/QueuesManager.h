@@ -14,16 +14,19 @@
  */
 
 #include <sstream>
+#include <string>
 
 #include "au/map.h"     // au::map
 #include "au/Info.h"     // au::Info
 #include "au/Format.h"  // au::Format
 
-#include <string>
 #include "samson/common/samson.pb.h"        // network::...
 #include "samson/stream/QueueTaskManager.h" // samson::stream::QueueTaskManager
-#include "engine/Object.h"                  // engine::Object
 
+#include "engine/Object.h"                  // engine::Object
+#include "engine/Buffer.h"                  // engine::Buffer
+
+#include "samson/stream/StreamOperation.h"  // Operation
 #include "samson/stream/PopQueueManager.h"  // PopQueueManager
 
 namespace samson {
@@ -35,19 +38,32 @@ namespace samson {
     {
         
         class Queue;
+        class State;
         class Block;
+        class BlockList;
             
         class QueuesManager
         {
             
             friend class Queue;
             
-            au::map< std::string , Queue > queues;  // Map with the current queues
+            // Map with the current queues
+            au::map< std::string , Queue > queues;                
+
+            // list of automatic operation ( updated from controller )
+            network::StreamOperationList *operation_list;    
+
+            // List of states
+            au::map< std::string , State> states;
             
-            QueueTaskManager queueTaskManager;      // Manager of the tasks associated with the queues
-            PopQueueManager popQueueManager;        // Manager for the pop queue operations
+            // Manager of the tasks associated with the queues
+            QueueTaskManager queueTaskManager;      
             
-            ::samson::SamsonWorker* worker;         // Pointer to the controller to send messages
+            // Manager for the pop queue operations
+            PopQueueManager popQueueManager;        
+            
+            // Pointer to the controller to send messages
+            ::samson::SamsonWorker* worker;         
             
         public:
             
@@ -55,13 +71,17 @@ namespace samson {
             std::string getStatus();
 
             // Add a block to a particular queue ( ususally from the network interface )
-            void addBlock( std::string queue , int channel , Block *b);
+            void addBlocks( std::string queue_name ,  BlockList *bl );
             
-            // set info ( from controller )
-            void setInfo( network::StreamQueue &queue );
-
+            // set list of automatic operations( from controller )
+            void setOperationList( network::StreamOperationList *list );
+            
+            // Push content of a state into a queue
+            void push_state_to_queue( std::string state_name , std::string queue_name );
+            
             // Notify finish task
             void notifyFinishTask( QueueTask *task );
+            void notifyFinishTask( PopQueueTask *task );
             
             // Add a pop queue operation
             void addPopQueue(const network::PopQueue& pq , size_t delilahId, int fromId );
@@ -72,6 +92,11 @@ namespace samson {
         private:
             
             Queue* getQueue( std::string name );
+            State* getState( std::string name );
+            
+            void reviewStreamOperations();
+            void reviewStreamOperation(const network::StreamOperation& operation);
+            
         };
     }
 }

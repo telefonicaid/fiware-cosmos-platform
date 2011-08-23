@@ -71,6 +71,8 @@ char* messageCode(MessageCode code)
     case PushBlockResponse:                return (char*) "PushBlockResponse";
     case PopQueue:                         return (char*) "PopQueue";
     case PopQueueResponse:                 return (char*) "PopQueueResponse";
+    case WorkerCommand:                    return (char*) "WorkerCommand";
+    case WorkerCommandResponse:            return (char*) "WorkerCommandResponse";
 	case Id:                               return (char*) "Id";
 	case Ping:                             return (char*) "Ping";
 	case Unknown:                          return (char*) "Unknown";

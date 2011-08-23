@@ -59,7 +59,6 @@ namespace engine
         // Start listening a particular notification
         void listen( const char* notification_name );
 
-        // Function to send a notification to this object
         virtual void notify( Notification* notification );
  
         

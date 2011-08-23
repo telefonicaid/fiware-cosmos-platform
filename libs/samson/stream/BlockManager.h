@@ -14,6 +14,8 @@
 namespace samson {
     namespace stream {
         
+        class BlockList;
+        
         /**
          Manager of all the blocks running on the system
          */
@@ -22,20 +24,21 @@ namespace samson {
         {
             
             std::list<Block*> blocks;       // List of blocks in the system ( ordered by priority )
-
+            
             BlockManager();                 // Private constructor for singleton implementation
+            ~BlockManager();
             
             size_t id;                      // Next id to give to a block
 
             
             int num_writing_operations;     // Number of writing operations ( low priority blocks )
             int num_reading_operations;     // Number of reading operations ( high priority blocks )
-
             
             size_t memory;                  // Total amount of memory used by all blocks
             size_t max_memory;              // Maximum amount of memory to be used
-        public:
             
+        public:
+                        
             static void init();
 
             static BlockManager* shared(); 
@@ -44,10 +47,17 @@ namespace samson {
             
         public:
 
-            // Add a block to the block manager
-            void add( Block* b )
+            size_t getNextBlockId()
             {
-                b->id = id++;       // Set the new id
+                return id++;
+            }
+            
+            // Add a block to the block manager
+            // It is assumed block is NOT inside the list "blocks"
+            
+            void insert( Block* b )
+            {
+                // Insert the new block in the rigth posistion
                 blocks.insert( _find_pos(b),b );
                 
                 // Increase the amount of memory used by all blocks
@@ -56,120 +66,37 @@ namespace samson {
                 // Review if new free,  write or reads are necessary
                 _review();
             }
-
-            // --------------------------------------------------------
-            // Retain - Release model
-            // --------------------------------------------------------
             
-            // Retain by a particular task ( it changes the preference in the list of blocks )
-            void retain( Block* b , size_t task_id )
+            // Reconsider the position of this block in the global list 
+            // it will affect who is loaded from disk / saved to disk or event flush out from memory
+            // It is assumed block is inside the list "blocks"
+            
+            void check( Block* b )
             {
-                b->tasks.insert( task_id );
-
-                // Reconsider the position of this block in the global list
-                reorder( b );
+                blocks.remove( b );
                 
-            }
-
-            // Release by a particular task ( it changes the preference in the list of blocks )
-            void release( Block* b, size_t task_id )
-            {
-                b->tasks.erase( task_id );
-
-                // Reconsider the position of this block in the global list
-                reorder( b );
-
-                // Review if the block should be removed
-                reviewBlock( b );
-
-            }
-            
-            void retain( Block* b )
-            {
-                b->retain_counter++;
-            }
-            
-            void release( Block* b )
-            {
-                b->retain_counter--;
-
-                // Review if the block should be removed
-                reviewBlock( b );
+                // Check if the block should be removed, otherwise insert back in the list....
                 
-                // Review pending tasks to be scheduled
-                _review();
-            }      
-            
-            void reviewBlock( Block *b )
-            {
-                // If no retained by anyone, remove...
-                if( !b->isRetained() )
+                // If it can be removed, just remove...
+                if( b->canBeRemoved() )
                 {
                     if( b->isContentOnMemory() )
                         memory -= b->size;
                     
-                    blocks.remove( b );
-                    
                     if( b->isWriting() || b->isReading() )
-                        LM_X(1,("Not allowed to remove an object that is reading..."));
+                        LM_X(1,("Not allowed to remove an object that is reading or writting..."));
                     
                     delete b;
+                    
                 }
-                
-            }
-            
-            
-            static bool lock( Block *block  )
-            {
-                if( ! block->isContentOnMemory() )
-                    LM_X(1, ("Internal error loking blocks of memory"));
-                block->lock_counter++;
-                return true;   
-            }
-            
-            static void unlock( Block *block   )
-            {
-                block->lock_counter--;
-                if( block->lock_counter < 0 )
-                    LM_X(1,("Internal error, Lock counter cannot be negative"));
-            }
-            
-            
-
-            // Reconsider the position of this block in the global list ( will affect who is loaded from disk / saved to disk or event flush out from memory
-            void reorder( Block* b )
-            {
-                blocks.remove( b );
-                blocks.insert( _find_pos( b ) , b );
+                else
+                {
+                    // Insert back in the global list of blocks
+                    blocks.insert( _find_pos( b ) , b );
+                }
                 
                 // Review if new free, write or reads are necessary
                 _review();
-                
-            }
-
-            // Experimental function ( only for debuggin that changes completelly the order of the blocks to get read / write / free )
-            Block* getBlock( size_t id )
-            {
-                for ( std::list<Block*>::iterator i = blocks.begin() ; i != blocks.end() ; i++ )
-                    if( (*i)->id == id )
-                        return *i;
-                return NULL;
-            }
-            
-            
-            std::string str()
-            {
-                std::ostringstream output;
-                output <<"BLockManager: <Reads: " << num_reading_operations << " // Writes: " << num_writing_operations << " > [ " << au::Format::string( memory ) << " / " << au::Format::string(max_memory) << " ] " ;
-                for (std::list<Block*>::iterator i = blocks.begin() ; i != blocks.end() ; )
-                {
-                    output << *(*i);
-                    
-                    i++;
-                    if( i!=blocks.end() )
-                        output << ",";
-                }
-                return output.str();
                 
             }
             
@@ -177,8 +104,8 @@ namespace samson {
 
             // Function to review pending read / free / write operations
             void _review();
-            
-            
+
+            // Function used in the order of blocks
             std::list<Block*>::iterator _find_pos( Block *b )
             {
                 for (std::list<Block*>::iterator i = blocks.begin() ; i != blocks.end() ; i++)
@@ -188,7 +115,36 @@ namespace samson {
                 }
                 return blocks.end();
             }
-             
+
+            
+        public:
+            
+            // Get a particular block ( only for debugging )
+            Block* getBlock( size_t id )
+            {
+                for ( std::list<Block*>::iterator i = blocks.begin() ; i != blocks.end() ; i++ )
+                    if( (*i)->id == id )
+                        return *i;
+                return NULL;
+            }
+            
+            // debug message
+            std::string str()
+            {
+                std::ostringstream output;
+                output <<"BLockManager: <Reads: " << num_reading_operations << " // Writes: " << num_writing_operations << " > [ " << au::Format::string( memory ) << " / " << au::Format::string(max_memory) << " ] " ;
+                for (std::list<Block*>::iterator i = blocks.begin() ; i != blocks.end() ; )
+                {
+                    output << (*i)->str();
+                    
+                    i++;
+                    if( i!=blocks.end() )
+                        output << ",";
+                }
+                return output.str();
+                
+            }
+
         public:
             
             virtual void notify( engine::Notification* notification );

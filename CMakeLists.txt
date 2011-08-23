@@ -46,6 +46,11 @@ if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
 
+# Common include
+include_directories("/usr/include")
+include_directories("/usr/local/include")
+
+
 
 # Package
 # ----------------------------------------------------------------------

@@ -5,21 +5,21 @@
 
 #include "samson/common/SamsonSetup.h"      // samson::SamsonSetup
 
+#include "BlockList.h"          // BlockList
 #include "BlockManager.h"       // Own interface
 
 
 #define BLOCK_MANAGEMENT_MAX_WRITE_OPERATIONS   3
-#define BLOCK_MANAGEMENT_MAX_READ_OPERATIONS   3
+#define BLOCK_MANAGEMENT_MAX_READ_OPERATIONS    3
 
 namespace samson {
     namespace stream {
-
 
         BlockManager *blockManager = NULL;
         
         BlockManager::BlockManager()
         {
-            id = 0;
+            id = 1; // Start blocks by 1
  
             num_writing_operations=0;     // Number of writing operations ( low priority blocks )
             num_reading_operations=0;     // Number of reading operations ( high priority blocks )
@@ -27,6 +27,11 @@ namespace samson {
             memory = 0;
             
             max_memory = SamsonSetup::getUInt64("general.memory")/2;
+            
+        }
+        
+        BlockManager::~BlockManager()
+        {
         }
         
         void BlockManager::init()
@@ -109,7 +114,7 @@ namespace samson {
                     
                     if( block->isReady() )  // Both on disk and on memory
                     {
-                        if( !block->isLocked() )
+                        if( !block->isLockedInMemory() )
                         {
                             //LM_M(("Free block"));
                             block->freeBlock();
@@ -172,7 +177,7 @@ namespace samson {
                 
                 if( block_to_be_free->isReady() )  // Both on disk and on memory
                 {
-                    if( !block_to_be_free->isLocked() ) // Check that is not locked ( using in a process )
+                    if( !block_to_be_free->isLockedInMemory() ) // Check that is not locked ( using in a process )
                     {
                         block_to_be_free->freeBlock();
                         memory -= block_to_be_free->size;
@@ -189,9 +194,13 @@ namespace samson {
         void BlockManager::getInfo( std::ostringstream& output)
         {
             output << "<block_manager>\n";
+
             
-            output << "<block_manager>\n";
+            std::list<Block*>::iterator bi;
+            for (bi = blocks.begin() ; bi != blocks.end() ; bi++)
+                (*bi)->getInfo( output );
             
+            output << "</block_manager>\n";
         }
         
         

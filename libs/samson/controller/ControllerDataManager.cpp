@@ -218,13 +218,13 @@ namespace samson {
 			return response;
 		}
 
-        if( commandLine.get_argument(0) == "add_queue" )
+        if( commandLine.get_argument(0) == "add_stream_operation" )
 		{
 			
 			
 			if( commandLine.get_num_arguments() < 3 )
 			{
-				response.output = "Usage: add_queue name operation outputs1 outputs2 output3. Where format = { txt , key_format-value_format } and outputs1 = { stream_queue_name , q1,q2,q3 } ";
+				response.output = "Usage: add_stream_operation name operation input1 input2 ... outputs1 outputs2 output3";
 				response.error = true;
 				return response;
 			}
@@ -234,13 +234,13 @@ namespace samson {
 
 
             // Check it the queue already exists
-            network::StreamQueue *_queue = stream_queues.findInMap( name );
+            network::StreamOperation *_operation = streamOperations.findInMap( name );
 			
 			// Check if queue exist
-			if( _queue != NULL )
+			if( _operation != NULL )
 			{
                 std::ostringstream output;
-                output << "Queue " + name + " already exist";
+                output << "StreamOperation " + name + " already exist";
                 response.output = output.str();
                 response.error = true;
                 return response;
@@ -292,11 +292,27 @@ namespace samson {
                     
                     break;
 
+                case Operation::parserOut:
+                    
+                    // Check with the number of outputs
+                    if( commandLine.get_num_arguments() < ( 3 + op->getNumOutputs() ) )
+                    {
+                        std::ostringstream output;
+                        output << "Not enought outputs for operation " + operation + ". It has " << op->getNumOutputs() << " outputs";
+                        response.output = output.str();
+                        response.error = true;
+                        return response;
+                        
+                    }
+                    
+                    break;
+                    
+                    
                 case Operation::reduce:
                 {
                     if( op->getNumInputs() != 2 )
                     {
-                        response.output = au::Format::string("Only reduce operations with 2 inputs are supported at the moment. ( In the furure, reducers with 3 or more will be supported");
+                        response.output = au::Format::string("Only reduce operations with 2 inputs are supported at the moment. ( In the furure, reducers with 3 or more inputs will be supported.");
                         response.error = true;
                         return response;
                     }
@@ -313,15 +329,30 @@ namespace samson {
                     
                     
                     // Check with the number of outputs
-                    if( commandLine.get_num_arguments() < ( 3 + op->getNumOutputs() - 1 ) )
+                    if( commandLine.get_num_arguments() < ( 3 + op->getNumInputs() + op->getNumOutputs() ) )
                     {
                         std::ostringstream output;
-                        output << "Not enought outputs specified for operation " + operation + ". It has " << op->getNumOutputs() << " outputs";
+                        output << "Not enought outputs specified for operation " << operation << ". It has " << op->getNumOutputs() << " inputs and " << op->getNumOutputs() << " outputs.";
                         response.output = output.str();
                         response.error = true;
                         return response;
                         
                     }
+                     
+                    // Check that the last input and the last output are indeed the same
+                    
+                    std::string last_input = commandLine.get_argument( 3 + op->getNumInputs() - 1 );
+                    std::string last_output = commandLine.get_argument( 3 + op->getNumInputs() + op->getNumOutputs() -1 );
+                    if(  last_input !=  last_output )
+                    {
+                        std::ostringstream output;
+                        output << "Last input and last output should be the same state. ( " << last_input << " != " << last_output << ")";
+                        response.output = output.str();
+                        response.error = true;
+                        return response;
+                        
+                    }
+                    
                 }
                     break;
                     
@@ -352,74 +383,52 @@ namespace samson {
             
             // Create the new queue
 			
-            network::StreamQueue *tmp = new network::StreamQueue();
-            tmp->set_num_workers( controller->network->getNumWorkers() );
+            network::StreamOperation *tmp = new network::StreamOperation();
             tmp->set_name(name);
             tmp->set_operation( operation );
 
+            tmp->set_num_workers( controller->network->getNumWorkers() );
+            
+            int num_inputs  = op->getNumInputs();
             int num_outputs = op->getNumOutputs();
+
+            
+			if( commandLine.get_num_arguments() < ( 3 + num_inputs + num_outputs ) )
+            {
+                response.output = 
+                    au::Format::string("Not enougth parameters for this operation. Required %d inputs and &d outputs" , 
+                                num_inputs , num_outputs );
+                response.error = true;
+                return response;
+            }
+                        
+            for (int i = 0 ; i < num_inputs ; i++ )
+            {
+                std::string queue_name = commandLine.get_argument( 3 + i );
+                tmp->add_input_queues( queue_name );
+            }
             
             for (int i = 0 ; i < num_outputs ; i++ )
             {
-                network::StreamQueueOutput * output = tmp->add_output();
-
-                
-                // In the reduce operations, there is no ouput for the last output ( state )
-                if( (  op->getType() == Operation::reduce )   && ( i == (num_outputs-1) ) )
-                {
-                    // Special case sinse this is the auto-loop for stream-reduce 
-                    network::QueueChannel *qc = output->add_target();
-                    qc->set_queue( name );  // My queue
-                    qc->set_channel( op->getNumInputs() - 1 );  // State channel
-                    
-                }
-                else
-                {
-                    
-                    // Get comma separated elements
-                    std::vector<std::string> queues = au::split( commandLine.get_argument( 3 + i) , ',' );
-
-                    for ( size_t j = 0 ; j < queues.size() ; j++ )
-                    {
-                        std::vector<std::string> queue_channel = au::split( queues[j] , ':' );
-                        if( queue_channel.size() == 1 ) 
-                        {
-                            network::QueueChannel *qc = output->add_target();
-                            qc->set_queue(queue_channel[0]);
-                            qc->set_channel(0);
-                        } 
-                        else if( queue_channel.size() == 2 )
-                        {
-                            network::QueueChannel *qc = output->add_target();
-                            qc->set_queue(queue_channel[0]);
-                            qc->set_channel( atoi( queue_channel[1].c_str() ) );
-                        }
-                        else
-                            LM_W(("Error considering queue-channel %s", queues[j].c_str()));
-                        
-                    }
-                }                
+                std::string queue_name = commandLine.get_argument( 3 + num_inputs + i );
+                tmp->add_output_queues( queue_name );
             }
-
-            
-            // copy the environemnt properties
-
             
             // Insert the queue in the global list of stream-queues
-			stream_queues.insertInMap( name , tmp );
+			streamOperations.insertInMap( name , tmp );
             
             
 			response.output = "OK";
 			return response;
 		}
 
-        if( commandLine.get_argument(0) == "set_queue_property" )
+        if( commandLine.get_argument(0) == "set_stream_operation_property" )
 		{
 			
 			
 			if( commandLine.get_num_arguments() < 4 )
 			{
-				response.output = "Usage: set_queue_property queue_name property value";
+				response.output = "Usage: set_stream_operation_property stream_operation_name property value";
 				response.error = true;
 				return response;
 			}
@@ -430,20 +439,20 @@ namespace samson {
             
             
             // Check it the queue already exists
-            network::StreamQueue *_queue = stream_queues.findInMap( name );
+            network::StreamOperation *stream_operation = streamOperations.findInMap( name );
 			
 			// Check if queue exist
-			if( _queue == NULL )
+			if( stream_operation == NULL )
 			{
                 std::ostringstream output;
-                output << "Queue " + name + " not found";
+                output << "Stream Operation " + name + " not found";
                 response.output = output.str();
                 response.error = true;
                 return response;
 			}			
 
             // Add a propery here
-            network::EnvironmentVariable* ev = _queue->mutable_environment()->add_variable();
+            network::EnvironmentVariable* ev = stream_operation->mutable_environment()->add_variable();
             ev->set_name( property );
             ev->set_value( value );
             
@@ -459,7 +468,7 @@ namespace samson {
 			queues.clearMap();
             
             // remove completelly stream_queues
-            stream_queues.clearMap();
+            streamOperations.clearMap();
 
 			// Clear the total counter of data
 			info_kvs.clear();
@@ -923,16 +932,17 @@ namespace samson {
 		}
 		
 		// List of stream queues
+        network::StreamOperationList *ol = ql->mutable_stream_operation_list();
         {
-            std::map< std::string , network::StreamQueue*>::iterator i;
-            for (i = stream_queues.begin() ; i!= stream_queues.end() ;i++)
+            std::map< std::string , network::StreamOperation*>::iterator i;
+            for (i = streamOperations.begin() ; i!= streamOperations.end() ;i++)
             {
-                network::StreamQueue *queue = i->second;
+                network::StreamOperation * streamOperation = i->second;
                 
                 if( filterName( i->first , begin, end) )
                 {                
-                    network::StreamQueue *fq = ql->add_stream_queue();
-                    fq->CopyFrom(*queue);
+                    network::StreamOperation *so = ol->add_operation();
+                    so->CopyFrom(*streamOperation);
                 }
             }
         }

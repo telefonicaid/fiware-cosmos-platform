@@ -55,6 +55,9 @@ namespace samson {
         int num_outputs;// Number of outputs
         int num_workers;// Number of workers in the cluster
         
+        // Auxiliar information to give correct format to output buffers
+        std::vector<KVFormat> outputFormats;
+        
     public:
         
         ProcessIsolated( std::string description,  ProcessBaseType _type , int _num_outputs , int _num_workers );
@@ -86,7 +89,16 @@ namespace samson {
         // Pure virtual methods to process output buffers of data
         virtual void processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )=0;
         virtual void processOutputTXTBuffer( engine::Buffer *buffer , bool finish )=0;
+      
         
+        void setOutputFormats( std::vector<KVFormat> *_outputFormats )
+        {
+            // copy output formats
+            outputFormats.clear();
+            for ( size_t i = 0 ; i < _outputFormats->size() ; i++ )
+                outputFormats.push_back( (*_outputFormats)[i] );
+        }
+
         
         
     };

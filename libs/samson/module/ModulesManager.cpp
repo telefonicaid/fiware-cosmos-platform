@@ -160,6 +160,7 @@ namespace samson
 		Operation *compact = new Operation( "samson.compact" , Operation::system );
 		compact->inputFormats.push_back( samson::KVFormat::format("*" ,"*") );
 		add( compact );
+        
 		
 	}
 	
@@ -258,6 +259,7 @@ namespace samson
 					
 					network::Operation *o = ol->add_operation();
 					o->set_name( j->first );
+                    o->set_type( op->getTypeName() );
 					o->set_help( op->help() );
 					o->set_help_line( op->helpLine() );
 					

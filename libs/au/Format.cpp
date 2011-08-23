@@ -4,6 +4,8 @@
 #include <stdarg.h>             /* va_start, va_arg, va_end                  */
 #include <string.h>             // strchr
 #include <sstream>              // std::ostringstream
+#include <dirent.h>
+#include <string>
 
 namespace au
 {
@@ -279,6 +281,65 @@ namespace au
         
         return path.substr( pos+1 , path.length() );
     }    
+    
+    
+    
+    bool isDirectory( std::string fileName ) 
+    {
+        struct stat buf;
+        stat( fileName.c_str() , &buf );
+        return S_ISDIR(buf.st_mode);
+    }
+
+    bool isRegularFile( std::string fileName ) 
+    {
+        struct stat buf;
+        stat( fileName.c_str() , &buf );
+        return S_ISREG(buf.st_mode);
+    }
+    
+    void removeDirectory( std::string fileName ) 
+    {
+        if( isRegularFile( fileName ) )
+        {
+            // Just remove
+            remove( fileName.c_str() );
+            return;
+        }
+        
+        // Navigate in the directory
+        if( !isDirectory( fileName ) )
+            return;
+        
+        // first off, we need to create a pointer to a directory
+        DIR *pdir = opendir (fileName.c_str()); // "." will refer to the current directory
+        struct dirent *pent = NULL;
+        if (pdir != NULL) // if pdir wasn't initialised correctly
+        {
+            while ((pent = readdir (pdir))) // while there is still something in the directory to list
+                if (pent != NULL)
+                {
+                    
+                    if( strcmp( "." , pent->d_name ) )
+                        break;
+                    if( strcmp( ".." , pent->d_name ) )
+                        break;
+                    
+                    std::ostringstream localFileName;
+                    localFileName << fileName << "/" << pent->d_name;
+                    
+                    removeDirectory( localFileName.str() );
+                    
+                }
+            // finally, let's close the directory
+            closedir (pdir);						
+        }
+        
+        // Remove the directory properly
+        rmdir(fileName.c_str());
+        
+    }
+    
     
 	
 }

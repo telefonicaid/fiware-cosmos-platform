@@ -10,6 +10,7 @@
 #include "au/ErrorManager.h"
 
 #include "engine/Object.h"                      // engine::Object
+#include "engine/ProcessItem.h"                 // engine::ProcessItem
 
 #include "samson/common/samson.pb.h"            // network::...
 #include "samson/stream/QueueTaskManager.h"     // samson::stream::QueueTaskManager
@@ -27,23 +28,33 @@ namespace samson {
     {
         
         class Queue;
+        class BlockList;
+        class Block; 
         
-        // Class with information about a pop queue operations
+        /*
+         
+            Class with information about a pop queue operations
+            A pop queue operations allows to recover the content of a txt queue from delilah
+
+         */
+
         class PopQueue : public engine::Object
         {
             friend class Queue;
             friend class PopQueueManager;
+            friend class QueuesManager;
+            friend class PopQueueTask;
             
-            size_t id;      // Id of this pop queue operation ( given by the PopQueueManager )
+            size_t id;              // Id of this pop queue operation ( given by the PopQueueManager )
             
-            network::PopQueue *pq;
-            size_t delilahId;
-            int fromId ;
+            network::PopQueue *pq;  // Message from delilah containing information about the pop operation
             
-            // Tasks that are currently running
-            std::set<size_t> running_tasks;
+            size_t delilahId;       // Identifier of the operation at delilah side
+            int fromId ;            // Identifier of delilah to send packets back
             
-            bool finished;
+            std::set<size_t> running_tasks;             // Tasks that are currently running
+            
+            bool finished;                              // Flag to identify that data generation is finished
             
         public:
 
@@ -51,47 +62,58 @@ namespace samson {
             
             PopQueue( const network::PopQueue& _pq , size_t _delilahId, int _fromId  );
             
-            ~PopQueue()
-            {
-                delete pq;
-            }
+            ~PopQueue();
             
-            void run( Queue * q );
+            void addTask( size_t id );
             
             std::string getStatus();
             
             void sendFinalMessage();
             
-            void sendMessage( engine::Buffer *buffer );
 
             void check();
 
-            int getChannel()
-            {
-                return pq->target().channel();
-            }
-            
-            std::string getQueue()
-            {
-                return pq->target().queue();
-            }
-            
-            std::string getParserOut()
-            {
-                return pq->parserout();
-            }
-            
-            
-            void notifyFinishTask( size_t task_id , au::ErrorManager *_error )
-            {
-                running_tasks.erase( task_id );
-                
-                error.set( _error );
-                
-                check();
-            }
+            void notifyFinishTask( size_t task_id , au::ErrorManager *_error );
             
         };
+        
+        
+        /**
+         Task in a pop queue task
+         */
+        
+        class PopQueueTask : public engine::ProcessItem
+        {
+            friend class QueueTaskManager;
+            friend class QueuesManager;
+            
+            BlockList *list;
+            BlockList *list_lock;
+
+            bool             ready_flag;
+            
+            size_t id;              // Id of this task ( in the QueueTaskManager )
+            
+            size_t pop_queue_id;    // Id of the pop queue
+            size_t delilahId;       // Identifier of the operation at delilah side
+            int fromId ;            // Identifier of delilah to send packets back
+
+            
+        public:
+
+            PopQueueTask( size_t _id , PopQueue *pq );
+            ~PopQueueTask();
+            
+            void addBlock( Block *b );
+
+            void sendMessage( engine::Buffer *buffer );
+            
+            bool ready();
+            
+            void run();
+            
+        };
+        
     }
 }
 

@@ -32,15 +32,67 @@ namespace samson {
     std::string DelilahComponent::getCodeName()
     {
         switch (type) {
-            case command:   return "[ Command ]";
-            case load:      return "[ Load    ]";
-            case updater:   return "[ Updater ]";
-            case push:      return "[ Push    ]";
-            case pop:       return "[ Pop     ]";
+            case command:               return "[ Command   ]";
+            case load:                  return "[ Load      ]";
+            case updater:               return "[ Updater   ]";
+            case push:                  return "[ Push      ]";
+            case pop:                   return "[ Pop       ]";
+            case worker_command:        return "[ W Comamnd ]";
         }
         
         LM_X(1, ("Impossible error"));
         return "";
+    }
+
+    std::string DelilahComponent::getDescription()
+    {
+        std::ostringstream output;
+        
+        output << "[ " << id << " ] ";
+        output << getCodeName();
+        
+        if( component_finished )
+            output << " [ FINISHED ] ";
+        else
+            output << " [ RUNNING  ] ";
+        
+        if( error.isActivated() )
+            output << "[ ERROR ] ";
+        else
+            output << "          ";
+        
+        output << getShortStatus();
+        
+        return output.str();
+        
+    }
+    
+    bool DelilahComponent::isComponentFinished()
+    {
+        return component_finished;
+    }
+
+    void DelilahComponent::setComponentFinished()
+    {
+        // Only mark as finished once
+        if( component_finished )
+            return;
+        
+        component_finished = true;
+        delilah->delilahComponentFinishNotification( this );
+    }
+
+    void DelilahComponent::setComponentFinishedWithError( std::string error_message )
+    {
+        // Only mark as finished once
+        if( component_finished )
+            return;
+
+        component_finished = true;
+        
+        error.set( error_message );
+        
+        delilah->delilahComponentFinishNotification( this );
     }
     
     
@@ -100,10 +152,10 @@ namespace samson {
 		if( msgCode == Message::CommandResponse )
 		{
             if( packet->message->command_response().has_finish_command() && packet->message->command_response().finish_command() )
-                component_finished = true;
+                setComponentFinished();
             
 			if( packet->message->command_response().has_finish_job_id() || packet->message->command_response().has_error_job_id() )
-				component_finished = true;	
+                setComponentFinished();
 		}
 		
 		// Always forward the message to delilah
@@ -173,6 +225,96 @@ namespace samson {
 		std::ostringstream o;
 		o << "Command Component: " << command;
 		return o.str();
+	}
+    
+#pragma mark ----
+	
+	WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _command , engine::Buffer * _buffer) 
+        : DelilahComponent( DelilahComponent::worker_command )
+	{
+		command = _command;
+        buffer = _buffer;
+	}
+	
+	void WorkerCommandDelilahComponent::run()
+	{
+        num_workers = delilah->network->getNumWorkers();
+        num_confirmed_workers = 0;
+        
+        
+        for ( int worker = 0 ; worker < num_workers ; worker++ )
+        {
+            Packet*           p = new Packet( Message::WorkerCommand );
+            network::WorkerCommand* c = p->message->mutable_worker_command();
+            c->set_command( command );
+            p->message->set_delilah_id( id );
+            
+            Environment e;
+            e.copyFrom( &delilah->environment );
+            
+            // Tokenie the command line to add new environment parameters
+            std::vector<std::string> words =  simpleTockenize( command );
+            std::string current_param = "";
+            std::string param_name;
+            
+            for ( int i = 0 ; i < (int)words.size() ; i++)
+            {
+                
+                current_param = words[i];
+                
+                if( param_name != "" )
+                {
+                    if( current_param.c_str()[0] == '-' )
+                        e.set(param_name, "true" );
+                    else
+                        e.set(param_name, current_param );
+                    
+                }
+                
+                if( current_param.c_str()[0] == '-' )
+                    param_name = current_param.substr(1, current_param.length() - 1 );
+                
+                else
+                    param_name = "";
+            }       
+            
+            copyEnviroment( &e , c->mutable_environment() );
+            
+            // Set the buffer data ( if any )
+            p->buffer = buffer;
+            
+            LM_M(("Sending worker command to worker %d (%p)", worker , p ));
+            delilah->network->sendToWorker( worker , p );            
+            
+            
+        }
+		
+	}	    
+    
+	void WorkerCommandDelilahComponent::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+	{
+		if( msgCode == Message::WorkerCommandResponse )
+            num_confirmed_workers++;
+        
+        if( num_confirmed_workers == num_workers )
+            setComponentFinished();
+        
+        
+        if( packet->message->worker_command_response().has_error() )
+            error.set( packet->message->worker_command_response().error().message()  );
+	}
+	
+	
+	std::string WorkerCommandDelilahComponent::getStatus()
+	{
+		std::ostringstream o;
+		o << "Running '" << command << "' : Confirmed " << num_confirmed_workers << " / " << num_workers << " workers";
+		return o.str();
+	}
+    
+	std::string WorkerCommandDelilahComponent::getShortStatus()
+	{
+        return getStatus();
 	}
 	
 	

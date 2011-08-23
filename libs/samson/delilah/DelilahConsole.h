@@ -66,6 +66,7 @@ namespace samson {
             addOption("upload");
             addOption("push");
             addOption("pop");
+            addOption("pop_state");
             addOption("download");
             addOption("load");
             addOption("load_clear");
@@ -87,8 +88,9 @@ namespace samson {
             addOption("info_engine");
             addOption("info_setup");
             addOption("info_query");
-            addOption("add_queue");
-            addOption("set_queue_property");
+            addOption("add_stream_operation");
+            addOption("set_stream_operation_property");
+            addOption("push_state_to_queue");               // Push content of a state in a particular queue
         }
         
         void addOperations()
@@ -276,14 +278,7 @@ namespace samson {
 		// Functions overloaded from Delilah
 		// --------------------------------------------------------
 		
-		// Confirmation that a loading process has finished
-		void uploadDataConfirmation( DelilahUploadDataProcess *process);
-		void downloadDataConfirmation( DelilahDownloadDataProcess *process );
-		
-        // confirmation that a push/pop operation has finished
-		void pushConfirmation( PushComponent *process );
-		void popConfirmation( PopComponent *process );
-
+        void delilahComponentFinishNotification( DelilahComponent *component);
         
 		// Function to process messages from network elements not handled by Delila class
 		int _receive(int fromId, Message::MessageCode msgCode, Packet* packet);		

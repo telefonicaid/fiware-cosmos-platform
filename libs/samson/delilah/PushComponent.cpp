@@ -1,5 +1,6 @@
 
 
+#include <sys/stat.h>		// mkdir
 
 #include "engine/MemoryManager.h"					// samson::MemoryManager
 #include "engine/MemoryRequest.h"
@@ -22,11 +23,11 @@
 namespace samson
 {
 
-	PushComponent::PushComponent( DataSource * _dataSource , std::string _queue  ) : DelilahComponent(DelilahComponent::push) 
+	PushComponent::PushComponent( DataSource * _dataSource , std::string _queue  ) : DelilahComponent( DelilahComponent::push ) 
 	{
 		
 		// Queue name 
-		queue = _queue;
+		queues.insert( _queue );
 
         // Data source
         dataSource = _dataSource;
@@ -40,11 +41,13 @@ namespace samson
         
         // Set this to false ( true will be the end of processing data )
         finish_process = false;
-        
-        
-        
 		
 	}	
+    
+    void PushComponent::addQueue( std::string  _queue )
+    {
+		queues.insert( _queue );
+    }
     
     void PushComponent::run()
     {
@@ -56,9 +59,8 @@ namespace samson
 		if( totalSize == 0)
 		{
 			error.set("Not data to upload.");
-            component_finished = true;
             finish_process = true;
-            delilah->pushConfirmation(this);
+            setComponentFinished();
 		}
         else
         {
@@ -95,9 +97,8 @@ namespace samson
             if( totalSize == uploadedSize )
             {
                 // Set this flag to indicate that the process has finished
-                component_finished = true;
                 finish_process = true;
-                delilah->pushConfirmation(this);
+                setComponentFinished();
             }
         }
     }
@@ -135,10 +136,10 @@ namespace samson
             network::PushBlock* pb =  packet->message->mutable_push_block();
             pb->set_txt(true);  // This is always txt blocks
 
-            // Unique target
-            network::QueueChannel *target = pb->add_target();
-            target->set_queue( queue );
-            target->set_channel( 0 );
+            // Add queue
+            std::set<std::string>::iterator q;
+            for (q = queues.begin() ; q != queues.end() ; q++)
+                pb->add_queue( *q );
             
             pb->set_size( buffer->getSize() );
             
@@ -162,7 +163,12 @@ namespace samson
     std::string PushComponent::getStatus()
     {
         std::ostringstream output;
-        output << "Pushing " << au::Format::string( totalSize , "Bytes" ) << " to queue " << queue;
+        output << "Pushing " << au::Format::string( totalSize , "Bytes" ) << " to queues ";
+        
+        std::set<std::string>::iterator q;
+        for (q = queues.begin() ; q != queues.end() ; q++)
+            output << *q;
+        
         output << " ( Processed " << au::Format::percentage_string(processedSize, totalSize) << " ) "; 
         output << " ( Uploaded  " << au::Format::percentage_string(uploadedSize, totalSize) << " ) "; 
         return output.str();
@@ -170,8 +176,14 @@ namespace samson
     
     std::string PushComponent::getShortStatus()
     {
+
         std::ostringstream output;
-        output << "Pushing " << au::Format::string( totalSize , "Bytes" ) << " to queue " << queue;
+        output << "Pushing " << au::Format::string( totalSize , "Bytes" ) << " to queues ";
+        
+        std::set<std::string>::iterator q;
+        for (q = queues.begin() ; q != queues.end() ; q++)
+            output << *q;
+        
         output << " ( Processed " << au::Format::percentage_string(processedSize, totalSize) << " ) "; 
         output << " ( Uploaded  " << au::Format::percentage_string(uploadedSize, totalSize) << " ) "; 
         return output.str();
@@ -181,12 +193,93 @@ namespace samson
     
 #pragma mark pop
     
+    PopComponent::PopComponent( std::string _queue , std::string _state , std::string _fileName , bool _force_flag ) : DelilahComponent( DelilahComponent::pop )
+    {
+        
+        LM_M(("POP Component "));
+        
+        queue = _queue;
+        state = _state;
+        
+        fileName = _fileName;
+        
+        num_write_operations = 0;
+        
+        num_outputs = 0;
+
+        force_flag = _force_flag;
+        
+    }
+    
+    PopComponent::~PopComponent()
+    {
+    }
+    
+    std::string PopComponent::getShortStatus()
+    {
+        
+        std::ostringstream message;
+        
+        message << "Popping from ";
+        
+        if( queue.length() > 0 )
+            message << "queue " << queue;
+        else if ( state.length() > 0 )
+            message << "state " << state;
+        
+        if ( error.isActivated() )
+            message << " ( " << error.getMessage() << " ) ";
+        else
+            message << " ( Completed " << num_finish_worker << " / " << num_workers << " workers )";
+        
+        return message.str();
+    }
+    
+    // Function to get the status
+    std::string PopComponent::getStatus()
+    {
+        return getShortStatus();
+    }
+    
+    
+    void PopComponent::run()
+    {
+
+        if( force_flag )
+            au::removeDirectory( fileName );
+        
+        if( mkdir( fileName.c_str() , 0755 ) )
+        {
+            setComponentFinishedWithError( au::Format::string( "Not possible to create directory %s." , fileName.c_str() ) );
+            return;
+        }
+                
+        // Send to all the workers a message to pop a queue
+        num_workers = delilah->network->getNumWorkers();
+        num_finish_worker = 0;
+        
+        for ( int w = 0 ; w < num_workers ; w++ )
+        {
+            Packet *p = new Packet( Message::PopQueue );
+            
+            network::PopQueue *pq = p->message->mutable_pop_queue();
+            
+            if( queue.length() > 0 )
+                pq->set_queue( queue );                     // Set the name of the queue
+            else if( state.length() > 0 )
+                pq->set_state( state );                     // Set the name of the queue
+            
+            p->message->set_delilah_id(id);             // Identifier of the component at this delilah
+            
+            delilah->network->sendToWorker( w, p);
+        }
+        
+    }
     
     void PopComponent::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
     {
         if( msgCode != Message::PopQueueResponse )
         {
-            LM_M(("Received an unexpected message of type %s. Ignoring... ", messageCode(msgCode ) ));
             delete packet;
             return;
         }
@@ -194,16 +287,15 @@ namespace samson
         
         if( packet->buffer )
         {
-            LM_M(("Received a pop queue response with buffer %lu" , packet->buffer->getSize() ));
             
             num_write_operations++;
+         
+            std::string _fileName = au::Format::string("%s/file_%d" , fileName.c_str() , num_outputs++ );
             
-            engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( packet->buffer , fileName , getEngineId() );
+            engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( packet->buffer , _fileName , getEngineId() );
             engine::DiskManager::shared()->add( operation );                
             
         }
-        else
-            LM_M(("Received a pop queue response without buffer "));
         
         // If finished,
         if( packet->message->pop_queue_response().finish() )
@@ -234,13 +326,12 @@ namespace samson
     void PopComponent::check()
     {
         if ( error.isActivated() )
-            component_finished = true;
+            setComponentFinished();
         
         if( ( num_finish_worker == num_workers ) && (num_write_operations==0) )
         {
             // Finish operation
-            delilah->popConfirmation( this );
-            component_finished = true;
+            setComponentFinished();
         }
         
     }

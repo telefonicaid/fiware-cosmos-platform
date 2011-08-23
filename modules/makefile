@@ -1,6 +1,7 @@
 all:
 	make -C system
 	make -C txt
+#	make -C txt_md
 	make -C example
 	make -C tienda
 	make -C cdr
@@ -17,8 +18,9 @@ all:
 	make -C hit
 
 reset:
-	make reset -C system 
-	make reset -C txt
+	make reset -C system
+	make reset -C txt 
+#	make reset -C txt_md
 	make reset -C example 
 	make reset -C tienda 
 	make reset -C cdr
@@ -36,7 +38,7 @@ reset:
 
 eclipse:
 	make eclipse -C system
-	make eclipse -C txt
+#	make eclipse -C txt_md
 	make eclipse -C example
 	make eclipse -C tienda
 	make eclipse -C cdr

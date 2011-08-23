@@ -83,7 +83,7 @@ namespace samson
 		
 		if( status == finish_with_error )
 		{
-			delilah->uploadDataConfirmation(this);
+            setComponentFinished();
 			return; // Nothing else to do
 		}
 		
@@ -272,13 +272,11 @@ namespace samson
 			if( packet->message->upload_data_init_response().has_error() )
 			{
 				error.set(  packet->message->upload_data_init_response().error().message() );
-                component_finished = true;
 				status = finish_with_error;
 				
 				lock.unlock();
 				
-				// Notify to the client to show on scren the result of this load process
-				delilah->uploadDataConfirmation( this );
+                setComponentFinished();
 				
 				lock.lock();
 				
@@ -365,12 +363,7 @@ namespace samson
             // Set the final time
             final_time_in_seconds = au::Format::ellapsedSeconds(&init_time);
 
-            
-			// Notify to the client to show on scren the result of this load process
-			delilah->uploadDataConfirmation( this );
-			
-			// mark the component as finished to be removed by Delilah component
-			component_finished = true;
+            setComponentFinished();
 			
 			std::ostringstream output;
 			output << "[ " << id << " ] Received upload data confirmation from controller\n";

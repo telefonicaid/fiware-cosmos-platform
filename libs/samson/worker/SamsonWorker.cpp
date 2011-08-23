@@ -34,6 +34,7 @@
 #include "samson/common/MemoryTags.h"                 // MemoryInput , MemoryOutputNetwork ,...
 
 #include "samson/stream/Block.h"            // samson::stream::Block
+#include "samson/stream/BlockList.h"            // samson::stream::BlockList
 #include "samson/stream/BlockManager.h"     // samson::stream::BlockManager
 
 
@@ -42,6 +43,7 @@
 #include "samson/network/NetworkInterface.h"    // samson::NetworkInterface
 
 #define notification_worker_update_files    "notification_worker_update_files"
+
 
 namespace samson {
 	
@@ -105,9 +107,6 @@ namespace samson {
             engine::Engine::shared()->notify( notification, check_finish_tasks_period );
             
         }
-        
-        
-        
         
         // Send a "hello" command message just to notify the controller about me
         Packet *p = new Packet( Message::Command );
@@ -288,31 +287,18 @@ namespace samson {
                 LM_M(("Received a block of kv"));
             */
             
-            // Create the new block with the buffer
-            stream::Block *block = new stream::Block( packet->buffer , txt );
+
+            // Tmp list with the created block
+            stream::BlockList my_list( au::Format::string("TmpList for PushBlock") );
+            my_list.createBlock( packet->buffer , txt );
             
-            // Information about the block
-            if( packet->message->push_block().has_worker() )
-                block->worker = packet->message->push_block().worker();
-            if( packet->message->push_block().has_task_id() )
-                block->task_id = packet->message->push_block().task_id();
-            if( packet->message->push_block().has_task_order() )
-                block->task_order = packet->message->push_block().task_order();
             
             // Push the packet to a particular stream-queue
-            for ( int i = 0 ; i < packet->message->push_block().target_size() ; i++)
+            for ( int i = 0 ; i < packet->message->push_block().queue_size() ; i++)
             {
-                std::string queue = packet->message->push_block().target(i).queue();
-                int _channel = (int)packet->message->push_block().target(i).channel();
-                
-                //LM_M(("Adding a block to queue %s", queue.c_str()));
-                
-                queuesManager.addBlock(queue, _channel , block  );
+                std::string queue = packet->message->push_block().queue(i);
+                queuesManager.addBlocks( queue , &my_list  );
             }
-
-            // Release the block ( it should be reteained by all the queues where it has been added )
-            stream::BlockManager::shared()->release( block );
-   
             
             // Send a message back if delilah_id is > 0
             if( packet->message->delilah_id() > 0)
@@ -419,8 +405,13 @@ namespace samson {
             return;
         }
         
+        if( msgCode == Message::WorkerCommand )
+        {
+            runWorkercommand( packet );
+            return;
+        }
+        
         LM_W((" Received a message with type %s. Just ignoring...", messageCode( msgCode )  ));
-		
 		
 	}
 	
@@ -439,9 +430,14 @@ namespace samson {
                 // No packet could mean that other samsonWorker ( in samsonLocal mode has send the packet )
                 
                 int outputWorker = notification->environment.getInt("outputWorker", -1);
-                if ( ( outputWorker < 0 ) || (outputWorker >= network->getNumWorkers() ) )
+
+                // If outputWorker is not present, send to myself
+                if ( outputWorker == -1 )
+                    outputWorker = network->getWorkerId();
+                
+                if ( (outputWorker >= network->getNumWorkers() ) )
                 {
-                    LM_W(("Notification to send a packet to a worker without outputWorker. Deleting packet..."));
+                    LM_W(("Notification to send a packet to a worker. Deleting packet..."));
                     delete packet;
                     return;
                 }
@@ -498,16 +494,9 @@ namespace samson {
 	
 	void SamsonWorker::processListOfFiles( const ::samson::network::QueueList& ql)
 	{
-        
-        // Update information about how to process queue
-        for ( int i = 0 ; i < ql.stream_queue_size() ; i++ )
-        {
-            network::StreamQueue q = ql.stream_queue(i);
-            queuesManager.setInfo( q );
-        }
-        
-        
-        
+        // update the list of automatic operations
+        network::StreamOperationList ol =  ql.stream_operation_list();
+        queuesManager.setOperationList( &ol );
         
 		// Generate list of local files ( to not remove them )
 		std::set<std::string> files;
@@ -610,9 +599,78 @@ namespace samson {
 		
 	}
     
+    void SamsonWorker::runWorkercommand( Packet * packet )
+    {
+        
+        if( !packet->message->has_worker_command() )
+        {
+            LM_W(("Trying to run a WorkerCommand from a packet without that message"));
+            return;
+        }
+        
+        
+        std::string command = packet->message->worker_command().command();
+        
+        au::CommandLine cmd;
+        cmd.parse( command );
+        
+        std::string main_command = cmd.get_argument(0);
+        
+        au::ErrorManager error;
+        
+        if ( cmd.get_argument(0) == "push_state_to_queue" )
+        {
+            if( cmd.get_num_arguments() < 3 )
+            {
+                error.set( au::Format::string("Not enougth parameters for command %s" , main_command.c_str() ) ); 
+            }
+            else
+            {
+                std::string state_name = cmd.get_argument(1);
+                std::string queue_name = cmd.get_argument(2);
+                
+                queuesManager.push_state_to_queue( state_name , queue_name );
+            }
+            
+        }
+        else
+        {
+            error.set( au::Format::string("Unknown command %s" , main_command.c_str() ) ); 
+        }
+        
+        
+        
+        // Send an answer back to delilah
+        if( packet->message->delilah_id() > 0)
+        {
+            Packet *p = new Packet( Message::WorkerCommandResponse );
+            network::WorkerCommandResponse *worker_command_response = p->message->mutable_worker_command_response();
+
+            // Copy original message
+            worker_command_response->mutable_worker_command()->CopyFrom( packet->message->worker_command() );
+            
+            // Set the error if necessary
+            if ( error.isActivated() )
+                worker_command_response->mutable_error()->set_message( error.getMessage() );
+            
+            // Main delilah identifier
+            p->message->set_delilah_id( packet->message->delilah_id()  );
+            
+            // Send back to delilah
+            network->send( packet->fromId , p );
+            
+        }
+        
+    }
+    
+    
     // Get information for monitorization
     void SamsonWorker::getInfo( std::ostringstream& output)
     {
+        
+        // Block manager
+        stream::BlockManager::shared()->getInfo( output );
+        
         // Queues manager information
         queuesManager.getInfo(output);
     }

@@ -37,29 +37,29 @@ message Queue
 	optional KVInfo info 		 = 3;
 }
 
-// StreamQueue: All the information related with a particular queue
-
-message QueueChannel
+message StringVector
 {
-	required string queue = 1;	// Name of the queue
-	required uint32 channel = 2;	// Channel inside the queue
+	repeated string value = 1;
 }
 
-message StreamQueueOutput
+// Stream operation: Automatic operation to be performed between stream-queues
+
+message StreamOperationList
 {
-	repeated QueueChannel target  = 1;      // List of queue names to "send" blocks of data
+	repeated StreamOperation operation =1;	// List of operationso
 }
 
-message StreamQueue
+message StreamOperation
 {
-	required string name		= 1;	// Name of the stream queue
-	required string operation	= 3;	// Name of the operation to process this queue ( parser , map , reduce with 2 inputs )
-	required uint32 num_workers	= 4;	// Number of workers involved in this operation
-	repeated StreamQueueOutput output = 6;	// Outputs to send the packets
+	required string name		= 1;	// Name of this stream operation ( easy way to remove them )
+	required string operation	= 2;	// Name of the operation to process this queue ( parser , map , reduce with 2 inputs , ... )
 
-	optional Environment environment = 5;	// Environment properties
+	repeated string input_queues	= 3;	// Name of the input stream queue
+	repeated string output_queues	= 4;	// Name of the output stream queue ( we can export to multiple stream queues )
 
+	required uint32 num_workers	= 5;	// Number of workers involved in this operation
 
+	optional Environment environment = 6;	// Environment properties for this particular operation
 
 }
 
@@ -86,10 +86,11 @@ message KVFormat
 message Operation
 {
 	required string name		= 1;		// Name of the operation
-	required string help   		= 2;		// Some help for this opertion
-	required string help_line 	= 3;		// Some help for this opertion ( just one line )
-	repeated KVFormat input   	= 4;		// KV types for inputs
-	repeated KVFormat output  	= 5;		// KV types for output
+	required string type 		= 2;		// String describing the type ( map, reduce, etc...)
+	required string help   		= 3;		// Some help for this opertion
+	required string help_line 	= 4;		// Some help for this opertion ( just one line )
+	repeated KVFormat input   	= 5;		// KV types for inputs
+	repeated KVFormat output  	= 6;		// KV types for output
 }
 
 message Data
@@ -238,7 +239,7 @@ message QueueList
 	repeated ActiveTask tasks = 2;    // List of active tasks ( files associated with this tasks can not be removed at workers )
 	repeated uint64 load_id = 3;	  // Ids of active load operations ( not remove incomming files )
 
-	repeated StreamQueue stream_queue = 4;     // List of strema queues
+	optional StreamOperationList stream_operation_list = 4; // List of stream operations to be reported to all the workers
 
 }
 
@@ -574,13 +575,9 @@ message MessagePlatformProcess
 
 message PushBlock
 {
-	repeated QueueChannel target	= 1;	// Target QueueuChannels to push this block
+	repeated string queue		= 1;	// Target QueueuChannels to push this block
 	optional uint64 size	     	= 2;	// size of the block we are uploading 
 	required bool txt 		= 3;	// Special flag for txt buffers ( no header )
-
-	optional int32 worker		= 4;	// Id of the worker that generated this block
-	optional uint64 task_id		= 5;	// Id of the task that generate the 
-	optional uint64 task_order	= 6;	// Order of the generated block
 }
 
 message PushBlockResponse
@@ -597,10 +594,9 @@ message PushBlockResponse
 
 message PopQueue
 {
-	required QueueChannel target	= 1;	// Channel to extract information
-	required string parserOut	= 2;	// Name of the parser out to transform internal binary data into txt
+	optional string queue		= 1;	// Queue we are interested in extracting data
+	optional string state		= 2;	// Name of the state ( if we are interested in extracting a state )
 }
-
 
 message PopQueueResponse
 {
@@ -610,6 +606,24 @@ message PopQueueResponse
 	optional Error error		= 3;	// Optional flag to notify errors
 }
 
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Message to send a command to a particular worker
+//
+
+
+message WorkerCommand
+{
+	required string command			= 1;	// Command
+	optional Environment environment    	= 3;	
+}
+
+message WorkerCommandResponse
+{
+	required WorkerCommand worker_command = 1;	// Copy of the original command 
+	optional Error error   = 2;	      		// Optional error message
+}
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -662,6 +676,9 @@ message Message
 
 	optional PopQueue			pop_queue			= 125;	// Pop content of a queue
 	optional PopQueueResponse		pop_queue_response		= 126;	// Response message from the worker
+
+	optional WorkerCommand			worker_command			= 200;
+	optional WorkerCommandResponse		worker_command_response		= 201;
 
 	optional WorkerStatus worker_status = 170;			// Worker status update
 

@@ -43,31 +43,26 @@ namespace samson {
     }
     
     
-    std::string getStatus( network::StreamQueue *queue )
+    std::string getStatus( network::StreamOperation *streamOperation )
     {
         std::ostringstream txt;
         
-        txt << std::setw(15) << queue->name();
+        txt << std::setw(15) << streamOperation->name();
         
         std::ostringstream format_string;
         
         txt << " ";
         std::string _format_string = format_string.str();
         txt << std::setw(30) << _format_string;
-        txt << " --> " << std::setw(15) << queue->operation() << " --> ";
+        txt << std::setw(15) << streamOperation->operation() << " : ";        
         
-        for (int j = 0 ;  j < queue->output_size() ; j++)
-        {
-            txt << " [ ";
-            for (int k = 0 ; k < queue->output(j).target_size() ; k++ )
-            {
-                txt << queue->output(j).target(k).queue() << ":" << queue->output(j).target(k).channel() ;
-                if( k != (queue->output(j).target_size()-1) )
-                    txt << ",";
-            }
-            txt << " ] ";
-        }
+        for (int i = 0 ;  i < streamOperation->input_queues_size() ; i++)
+            txt << streamOperation->input_queues(i) << " ";
         
+        txt << " --> ";        
+        
+        for (int i = 0 ;  i < streamOperation->output_queues_size() ; i++)
+            txt << streamOperation->output_queues(i) << " ";
         
         return txt.str();
     }

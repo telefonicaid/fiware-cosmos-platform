@@ -12,6 +12,8 @@ namespace samson
     
     namespace stream
     {
+        class StateItem;
+        
         // Parser QueueTask ( at the same time is the ProcessItem in the engine library to be executed )
         
         class ParserQueueTask : public stream::QueueTask 
@@ -19,9 +21,9 @@ namespace samson
             
         public:
             
-            ParserQueueTask( size_t id  , network::StreamQueue * streamQueue  ) : stream::QueueTask(id , streamQueue )
+            ParserQueueTask( size_t id  , const network::StreamOperation& streamOperation  ) : stream::QueueTask(id , streamOperation )
             {
-                operation_name = "stream:" + streamQueue->operation();
+                operation_name = "stream:" + streamOperation.operation();
             }
             
             ~ParserQueueTask()
@@ -29,19 +31,13 @@ namespace samson
             }
 
             // Get the required blocks to process
-            void getBlocks( BlockMatrix *matrix );
+            void getBlocks( BlockList * input );
             
             // Function to generate output key-values
             void generateKeyValues( KVWriter *writer );
 
             // Get a string with the status of this task
             virtual std::string getStatus();
-
-            
-            StreamProcessBase* getStreamProcess()
-            {
-                return this;
-            }
             
         };
 
@@ -53,7 +49,14 @@ namespace samson
             
         public:
             
-            ParserOutQueueTask( size_t id , PopQueue* pq  );
+            ParserOutQueueTask( size_t id  , const network::StreamOperation& streamOperation  ) : stream::QueueTask(id , streamOperation )
+            {
+                operation_name = "stream:" + streamOperation.operation();
+                
+                // Change to txt mode ( not key-value )
+                setProcessBaseMode(ProcessIsolated::txt);
+
+            }
             
             ~ParserOutQueueTask()
             {
@@ -68,12 +71,6 @@ namespace samson
             // Get a string with the status of this task
             virtual std::string getStatus();
             
-            
-            StreamProcessBase* getStreamProcess()
-            {
-                return this;
-            }
-            
         };
         
         
@@ -85,9 +82,9 @@ namespace samson
             
         public:
             
-            MapQueueTask( size_t id , network::StreamQueue * streamQueue  ) :stream::QueueTask(id , streamQueue )
+            MapQueueTask( size_t id , const network::StreamOperation& streamOperation  ) :stream::QueueTask(id , streamOperation )
             {
-                operation_name = "stream:" + streamQueue->operation();
+                operation_name = "stream:" + streamOperation.operation();
             }
             
             ~MapQueueTask()
@@ -95,7 +92,7 @@ namespace samson
             }
             
             // Get the required blocks to process
-            void getBlocks( BlockMatrix *matrix );
+            void getBlocks( BlockList *input );
             
             // Function to generate output key-values
             void generateKeyValues( KVWriter *writer );
@@ -103,41 +100,58 @@ namespace samson
             // Get a string with the status of this task
             virtual std::string getStatus();
             
+        };
+
+        
+        // Parser QueueTask ( at the same time is the ProcessItem in the engine library to be executed )
+        
+        class SortQueueTask : public stream::QueueTask 
+        {
             
+        public:
             
-            StreamProcessBase* getStreamProcess()
+            SortQueueTask( size_t id , const network::StreamOperation& streamOperation  ) :stream::QueueTask(id , streamOperation )
             {
-                return this;
+                operation_name = "stream:" + streamOperation.operation();
             }
             
+            ~SortQueueTask()
+            {
+            }
+            
+            // Get the required blocks to process
+            void getBlocks( BlockList *input );
+            
+            // Function to generate output key-values
+            void generateKeyValues( KVWriter *writer );
+            
+            // Get a string with the status of this task
+            virtual std::string getStatus();
+                        
         };
+        
 
         // Parser QueueTask ( at the same time is the ProcessItem in the engine library to be executed )
         
         class ReduceQueueTask : public stream::QueueTask 
         {
-            int hg_begin;
+            
+            StateItem *stateItem;       // Pointer to notify state vectors
+            
+            int hg_begin; 
             int hg_end;
             
         public:
             
-            ReduceQueueTask( size_t id , network::StreamQueue * streamQueue  ) : stream::QueueTask(id , streamQueue )
-            {
-                operation_name = "stream:" + streamQueue->operation();
-                hg_begin = -1;
-                hg_end = -1;
-            }
+            ReduceQueueTask( size_t id , const network::StreamOperation& streamOperation , StateItem *_stateItem , int _hg_begin , int _hg_end  );
             
             ~ReduceQueueTask()
             {
             }
-            
-            void setHashGroups( int _hg_begin , int _hg_end )
-            {
-                hg_begin = _hg_begin;
-                hg_end = _hg_end;
-            }
                         
+            void getBlocks( BlockList *input , BlockList *state );
+
+            
             // Function to generate output key-values
             void generateKeyValues( KVWriter *writer );
             
@@ -148,6 +162,9 @@ namespace samson
             {
                 return this;
             }
+
+            // Particular way to process data    
+            void processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish );
             
         };        
         

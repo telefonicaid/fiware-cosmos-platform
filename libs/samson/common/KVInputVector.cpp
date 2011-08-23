@@ -43,6 +43,7 @@ namespace samson
 		compare = operation->getInputCompareFunction();
         
     }
+
     
 	KVInputVector::KVInputVector( int _num_inputs )
 	{

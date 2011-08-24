@@ -1,7 +1,7 @@
 all:
 	make -C system
 	make -C txt
-#	make -C txt_md
+	make -C txt_md
 	make -C example
 	make -C tienda
 	make -C cdr

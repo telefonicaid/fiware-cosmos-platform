@@ -1,0 +1,25 @@
+Module txt
+{
+	title	"txt extension for mondo connection"
+	author	"Andreu & Ken"
+	version "0.1"
+}
+
+generator import_from_mongo
+{
+	out system.String system.UInt
+    helpLine "Import data from a mongoDb server at 'mongo.ip' from table 'mongo.table'"
+}
+
+map export_to_mongo
+{
+	in system.String system.UInt
+	helpLine "Export data to a mongoDb server at 'txt.mongo' to table 'txt.mongo_table'"
+}
+
+map hdfs_dump_to_file
+{
+	in system.String system.UInt
+	helpLine "Dump KV data to a HDFS file in server 'hdfs.ip' and with path 'hdfs.path'"
+}
+

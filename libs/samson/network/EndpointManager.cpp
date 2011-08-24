@@ -153,7 +153,7 @@ static Process* platformProcessLookup(HostMgr* hostMgr, ProcessVector* procVec, 
 	{
 	case Endpoint2::Worker:        initWorker();                 break;
 	case Endpoint2::Controller:    initController();             break;
-	case Endpoint2::Spawner:       initSpawner();                break;
+	case Endpoint2::Spawner:       break;
 	case Endpoint2::Delilah:       initDelilah(controllerIp);    break;
 	case Endpoint2::Supervisor:    initSupervisor();             break;
 	case Endpoint2::Setup:         initSetup();                  break;
@@ -348,29 +348,6 @@ void EndpointManager::initController(void)
 		LM_W(("error creating web listener endpoint!"));
 
 	workersAdd();
-}
-
-
-
-/* ****************************************************************************
-*
-* initSpawner - 
-*
-* This method should probably be moved to apps/spawner
-*/
-void EndpointManager::initSpawner(void)
-{
-	me->portSet(SPAWNER_PORT);
-
-	listener = (ListenerEndpoint*) add(Endpoint2::Listener, 0, me->hostGet(), me->portGet(), -1, -1);
-
-	if ((procVec = platformProcessesGet()) == NULL)
-	{
-		setupAwait();
-		
-		LM_T(LmtProcessVector, ("************* SAVING Process Vector"));
-		platformProcessesSave(procVec);
-	}
 }
 
 

@@ -22,8 +22,10 @@
 #include "samson/common/samsonVersion.h"
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/samsonDirectories.h"
-
+#include "samson/common/Process.h"
+#include "samson/common/ports.h"
 #include "samson/common/daemonize.h"
+
 #include "SamsonSpawner.h"
 
 
@@ -35,6 +37,7 @@
 bool  fg;
 bool  noRestarts;
 bool  reset;
+bool  local;
 char  workingDir[1024];
 
 
@@ -47,6 +50,7 @@ char  workingDir[1024];
 PaArgument paArgs[] =
 {
 	{ "-fg",      &fg,          "FOREGROUND",   PaBool,    PaOpt,  false,    false,   true,  "don't start as daemon"   },
+	{ "-local",   &local,       "LOCAL",        PaBool,    PaOpt,  false,    false,   true,  "local"                   },
 	{ "-nr",      &noRestarts,  "NO_RESTARTS",  PaBool,    PaOpt,  false,    false,   true,  "don't restart processes" },
 	{ "-reset",   &reset,       "RESET",        PaBool,    PaOpt,  false,    false,   true,  "reset"                   },
 	{ "-working",  workingDir,  "WORKING",      PaString,  PaOpt,  DEF_WD,   PaNL,    PaNL,  "working directory"       },
@@ -161,7 +165,7 @@ int main(int argC, const char *argV[])
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
-	if (reset == true)
+	if ((reset == true) || (local == true))
 	{
 		if (access(SAMSON_PLATFORM_PROCESSES, R_OK) == 0)
 		{
@@ -169,9 +173,15 @@ int main(int argC, const char *argV[])
 				LM_X(1, ("Sorry, unable to remove '%s'", SAMSON_PLATFORM_PROCESSES));
 		}
 
-		int sys_res = system("killall samsonSpawner");
-		if( sys_res != 0 )
-		   LM_W(("system call with killall failed"));
+		int res;
+		res = system("killall samsonWorker");
+		if (res != 0)
+			LM_W(("killall samsonWorker failed"));
+		usleep(200000);
+
+		res = system("killall samsonController");
+		if (res != 0)
+			LM_W(("killall samsonController failed"));
 		usleep(200000);
 	}
 
@@ -190,8 +200,10 @@ int main(int argC, const char *argV[])
 	engine::Engine::init();
 	engine::MemoryManager::init( samson::SamsonSetup::getUInt64("general.memory") );
 
+	LM_M(("Creating SamsonSpawner"));
 	spawnerP = new samson::SamsonSpawner();
 	spawnerP->init();	
+
 	spawnerP->run();
 
 	return 0;

@@ -44,6 +44,7 @@ private:
 	void          reset(Endpoint2* ep);
 	void          processVector(Endpoint2* ep, ProcessVector* procVec);
 	void          spawn(Process* process);
+	void          localProcVecGenerate(void);
 
 	void          processesStart(ProcessVector* procVec);
 	void          processesTest(ProcessVector* procVec);

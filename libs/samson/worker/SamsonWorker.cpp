@@ -144,6 +144,7 @@ namespace samson {
 	 */
 	void SamsonWorker::sendWorkerStatus(void)
 	{
+#if 0
 		Packet*                  p  = new Packet(Message::WorkerStatus);
 		network::WorkerStatus*   ws = p->message->mutable_worker_status();
 		
@@ -247,7 +248,7 @@ namespace samson {
         
 		// Send the message
 		network->sendToController( p );
-        
+#endif        
 	}
 	
 	/* ****************************************************************************

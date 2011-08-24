@@ -18,6 +18,7 @@
 * Variables
 */
 extern bool  fg;
+extern bool  local;
 extern bool  noRestarts;
 extern int   logFd;
 

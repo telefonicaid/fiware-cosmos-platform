@@ -96,7 +96,6 @@ public:
 
 	void               initWorker();
 	void               initController();
-	void               initSpawner();
 	void               initDelilah(const char* controllerIp);
 	void               initSupervisor();
 	void               initSetup();

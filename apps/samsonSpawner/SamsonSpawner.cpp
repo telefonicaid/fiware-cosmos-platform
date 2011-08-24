@@ -98,6 +98,47 @@ SamsonSpawner::~SamsonSpawner()
 
 /* ****************************************************************************
 *
+*  localProcVecGenerate - 
+*/ 
+void SamsonSpawner::localProcVecGenerate(void)
+{
+	samson::ProcessVector* pVec;
+	samson::Process*       p;
+
+	LM_M(("Creating process vector file with a local Controller and a local Worker"));
+
+	pVec = (samson::ProcessVector*) malloc(sizeof(samson::ProcessVector) + 2 * sizeof(samson::Process));
+	if (pVec == NULL)
+		LM_X(1, ("error allocating room for two processes: %s", strerror(errno)));
+
+	pVec->processes      = 2;
+	pVec->processVecSize = 2 * sizeof(samson::Process);
+
+	// Controller
+	p = &pVec->processV[0];
+	p->type = samson::PtController;
+	p->id   = 1;
+	strcpy(p->name, "samsonController");
+	strcpy(p->alias, "NO ALIAS");
+	strcpy(p->host, "localhost");
+	p->port = CONTROLLER_PORT;
+
+	// Worker
+	p = &pVec->processV[1];
+	p->type = samson::PtWorker;
+	p->id   = 1;
+	strcpy(p->name, "samsonWorker");
+	strcpy(p->alias, "NO ALIAS");
+	strcpy(p->host, "localhost");
+	p->port = WORKER_PORT;
+
+	networkP->epMgr->procVecSet(pVec);
+}
+
+
+
+/* ****************************************************************************
+*
 * SamsonSpawner::init - 
 */
 void SamsonSpawner::init()
@@ -107,6 +148,23 @@ void SamsonSpawner::init()
 	restartInProgress    = true;
 	localProcessesKill();
 	restartInProgress    = false;
+
+	if (local)
+	{
+		LM_M(("'-local' option set - generating process vector"));
+		localProcVecGenerate();
+	}
+
+	networkP->epMgr->me->portSet(SPAWNER_PORT);
+	networkP->epMgr->listener = (ListenerEndpoint*) networkP->epMgr->add(Endpoint2::Listener, 0, networkP->epMgr->me->hostGet(), networkP->epMgr->me->portGet(), -1, -1);
+
+	if ((platformProcessesGet()) == NULL)
+	{
+		networkP->epMgr->setupAwait();
+		
+		LM_T(LmtProcessVector, ("************* SAVING Process Vector"));
+		platformProcessesSave(networkP->epMgr->procVecGet());
+	}
 
 	processesStart(networkP->epMgr->procVecGet());
 	processListShow("INIT", true);

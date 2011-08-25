@@ -39,4 +39,19 @@ namespace au {
             return "Error:" + message;
     }
 
+    void ErrorManager::getInfo( std::ostringstream& output)
+    {
+        output << "<error>";
+        
+        if( error )
+            output << "<activated>YES</activated>\n";
+        else
+            output << "<activated>NO</activated>\n";
+        
+        output << "<message>" << message << "</message>";
+        
+        output << "</error>";
+
+    }
+    
 }

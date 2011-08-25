@@ -78,13 +78,13 @@ public:
 
             if( !samson::SamsonSetup::shared()->isParameterDefined( property ) )
             {
-                writeErrorOnConsole(au::Format::string("Paramter '%s' not defined" , property.c_str()) );
+                writeErrorOnConsole(au::str("Paramter '%s' not defined" , property.c_str()) );
                 return;
             }
             
             samson::SamsonSetup::shared()->setValueForParameter( property , value );
             modified = true;
-            writeWarningOnConsole(au::Format::string("Property '%s' set to '%s'", property.c_str() , value.c_str() ));
+            writeWarningOnConsole(au::str("Property '%s' set to '%s'", property.c_str() , value.c_str() ));
             
             return;
 
@@ -95,7 +95,7 @@ public:
         {
             samson::SamsonSetup::shared()->save();  // Save a new file with the current setup
             std::string fileName = samson::SamsonSetup::shared()->setupFile;
-            writeWarningOnConsole(  au::Format::string("Saved file at %s", fileName.c_str() ) );
+            writeWarningOnConsole(  au::str("Saved file at %s", fileName.c_str() ) );
             
             modified = false;
             
@@ -134,7 +134,7 @@ public:
                 {
                     samson::SamsonSetup::shared()->save();  // Save a new file with the current setup
                     std::string fileName = samson::SamsonSetup::shared()->setupFile;
-                    writeWarningOnConsole(  au::Format::string("Saved file at %s", fileName.c_str() ) );
+                    writeWarningOnConsole(  au::str("Saved file at %s", fileName.c_str() ) );
                 }
                 
             }
@@ -158,7 +158,7 @@ public:
         
         
         
-        writeErrorOnConsole(au::Format::string("Unknown command '%s'" , main_command.c_str() ));
+        writeErrorOnConsole(au::str("Unknown command '%s'" , main_command.c_str() ));
         
         
     }

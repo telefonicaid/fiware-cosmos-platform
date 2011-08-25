@@ -79,6 +79,15 @@ namespace samson {
             // Push content of a state into a queue
             void push_state_to_queue( std::string state_name , std::string queue_name );
             
+            // Remove a particular queue or state
+            
+            void remove_queue( std::string queue_name );
+            bool remove_state( std::string state_name );
+            
+            // Pause and Play a particular state
+            void pause_state( std::string state_name );
+            void play_state( std::string state_name );
+            
             // Notify finish task
             void notifyFinishTask( QueueTask *task );
             void notifyFinishTask( PopQueueTask *task );

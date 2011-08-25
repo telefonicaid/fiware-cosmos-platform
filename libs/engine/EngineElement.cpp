@@ -58,7 +58,7 @@ namespace engine {
         std::string EngineElement::getShortDescription()
         {
             if( repeated )
-                return au::Format::string( "R[%d/%d]:%s" , counter, delay , shortDescription.c_str() );
+                return au::str( "R[%d/%d]:%s" , counter, delay , shortDescription.c_str() );
             else
                 return shortDescription;
         }

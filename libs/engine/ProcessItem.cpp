@@ -46,6 +46,41 @@ namespace engine
     {
     }
 	
+    void ProcessItem::getInfo( std::ostringstream& output)
+    {
+        output << "<process_item>\n";
+
+        output << "<progress>" << progress << "</progress>\n";
+        
+
+		output << "<state>";
+		switch (state) {
+			case queued:
+				output << "queued";
+				break;
+			case running:
+				output << "running";
+				break;
+			case halted:
+				output << "halted";
+				break;
+		}
+		output << "</state>\n";
+
+		// Inform about priority
+		output << "<priority>"<<priority<<"</priority>\n";
+
+        // Inform about operation name
+        output << "<operation_name>" << operation_name << "</operation_name>\n";
+
+        // Inform about sub status for this operation
+        output << "<sub_status>" << sub_status << "</sub_status>\n";
+
+        // Inform about the error
+        error.getInfo( output );
+        
+        output << "</process_item>\n";
+    }
 	
 	std::string ProcessItem::getStatus()
 	{
@@ -128,13 +163,6 @@ namespace engine
     void ProcessItem::setListenerId( size_t _listenerId )
     {
         listenerId = _listenerId;
-    }
-    
-    void ProcessItem::getInfo( std::ostringstream& output)
-    {
-        output << "<operation_name>" << operation_name  << "</operation_name>\n";
-        output << "<progress>"      << progress         << "</progress>\n";
-        output << "<sub_status>"    << sub_status       << "</sub_status>\n";
     }
     
 	

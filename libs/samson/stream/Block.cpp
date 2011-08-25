@@ -162,7 +162,7 @@ namespace samson {
         
         std::string Block::getFileName()
         {
-            return au::Format::string( "%s/block_%lu", SamsonSetup::shared()->blocksDirectory.c_str()  , id );
+            return au::str( "%s/block_%lu", SamsonSetup::shared()->blocksDirectory.c_str()  , id );
         }
 
 

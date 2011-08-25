@@ -41,7 +41,7 @@ namespace samson {
         
         if( cmdLine.get_num_arguments() < (int)(1 + operation->getNumInputs() + operation->getNumOutputs() ) )
         {
-            error.set( au::Format::string( "Not enougth parameters for operation %s" , operation_name.c_str() ) );
+            error.set( au::str( "Not enougth parameters for operation %s" , operation_name.c_str() ) );
             return;
         }
 

@@ -63,7 +63,7 @@ namespace samson {
             output << "Pending tasks:\n";
             au::list< QueueTask >::iterator i;
             for ( i = queueTasks.begin() ; i!= queueTasks.end() ; i++ )
-                output <<  au::Format::indent( (*i)->getStatus() ) << "\n";
+                output <<  au::indent( (*i)->getStatus() ) << "\n";
 
             {
                 output << "Running tasks:\n";
@@ -71,7 +71,7 @@ namespace samson {
                 for ( i = runningTasks.begin() ; i!= runningTasks.end() ; i++ )
                 {
                     QueueTask*tmp = i->second;
-                    output << au::Format::indent( tmp->getStatus() ) << "\n";
+                    output << au::indent( tmp->getStatus() ) << "\n";
                 }
             }
             
@@ -182,6 +182,9 @@ namespace samson {
                     
                     if( _task )
                     {
+                        
+                        // Final process for this task
+                        _task->finalize();
                         
                         // Notify that this stream task is finished
                         qm->notifyFinishTask( _task );

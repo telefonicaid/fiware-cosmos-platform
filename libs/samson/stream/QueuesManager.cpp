@@ -23,7 +23,7 @@
 #include "samson/stream/State.h"
 #include "samson/stream/StateItem.h"
 
-#include "ParserQueueTask.h"            // ParserQueueTask
+#include "samson/stream/ParserQueueTask.h"            // samson::stream::ParserQueueTask
 
 #include "State.h"          // samson::stream::State
 
@@ -51,14 +51,14 @@ namespace samson {
             
             au::map< std::string , Queue >::iterator q;
             for ( q = queues.begin() ; q != queues.end() ; q++)
-                output <<  au::Format::indent( q->second->getStatus()  ) << "\n";
+                output <<  au::indent( q->second->getStatus()  ) << "\n";
 
             
             output << "States:\n";
             
             au::map< std::string , State >::iterator s;
             for ( s = states.begin() ; s != states.end() ; s++)
-                output <<  au::Format::indent( s->second->getStatus()  ) << "\n";
+                output <<  au::indent( s->second->getStatus()  ) << "\n";
             
             
             // Queue task Manager status
@@ -109,6 +109,57 @@ namespace samson {
                 StateItem *stateItem = (*item);
                 
                 queue->list->copyFrom( stateItem->state );
+            }
+        }
+        
+        void QueuesManager::remove_queue( std::string queue_name )
+        {
+            Queue *queue = queues.extractFromMap(queue_name);
+            
+            if( queue )
+            {
+                delete queue;
+            }
+
+        }
+        
+        bool QueuesManager::remove_state( std::string state_name )
+        {
+            State *state = states.extractFromMap(state_name);
+            
+            if( state )
+            {
+                if( state->isWorking() )
+                {
+                    // Insert back and return false
+                    states.insertInMap( state_name, state );
+                    return false;
+                }
+                else
+                    delete state;
+            }
+          
+            return true;
+            
+        }
+        
+        void QueuesManager::pause_state( std::string state_name )
+        {
+            State *state = states.extractFromMap(state_name);
+            
+            if( state )
+                state->paused = true;
+            
+        }
+        
+        void QueuesManager::play_state( std::string state_name )
+        {
+            State *state = states.extractFromMap(state_name);
+            
+            if( state )
+            {
+                state->paused = false;
+                reviewStreamOperations();
             }
         }
         
@@ -420,34 +471,13 @@ namespace samson {
                     
                     
                     // Get "pre input queue" and input queue
-                    Queue *pre_inputQueue   = getQueue( operation.input_queues(0) );
-                    Queue *inputQueue       = getQueue( operation.input_queues(0) + "_sorted" );
+                    Queue *inputQueue       = getQueue( operation.input_queues(0) );
                     
                     // Get state state associated with the second input
                     State *state = getState( operation.input_queues(1) );
                     
-                    while( !pre_inputQueue->list->isEmpty() )
-                    {
-                        //Special streamOperation for the sort part
-                        network::StreamOperation * sortOperation = new network::StreamOperation();
-                        sortOperation->set_operation( operation.operation() );
-                        sortOperation->add_input_queues( operation.input_queues(0) );
-                        sortOperation->add_output_queues( operation.input_queues(0) + "_sorted" );
-                        sortOperation->set_num_workers( operation.num_workers() );
-                        
-                        SortQueueTask *tmp = new SortQueueTask( queueTaskManager.getNewId() , *sortOperation ); 
-                        tmp->setOutputFormats( &op->outputFormats );
-                        
-                        tmp->getBlocks( pre_inputQueue->list );
-                        
-                        // Schedule tmp task into QueueTaskManager
-                        queueTaskManager.add( tmp );
-                        
-                        
-                        delete sortOperation;
-                    }
-                    
-                    
+
+                    // Push input data to the state
                     if( !inputQueue->list->isEmpty() )
                     {
                         state->push( inputQueue->list );
@@ -456,6 +486,8 @@ namespace samson {
                         inputQueue->list->clearBlockList();
                         
                     }
+                    
+                    size_t max_state_item_size = SamsonSetup::shared()->getUInt64("stream.max_state_item_size");
                     
                     // Check all the stateItems here to run new operations
                     // Check all the elements in the list
@@ -471,7 +503,7 @@ namespace samson {
                         if( stateItem->isReadyToRun() )
                         {
                             
-                            if( stateItem->state->getSize() > 1000000000 )
+                            if( stateItem->state->getSize() > max_state_item_size )
                             {
                                 ReduceQueueTask *tmp = new ReduceQueueTask( queueTaskManager.getNewId() , operation , stateItem , hg_begin , hg_mid ); 
                                 ReduceQueueTask *tmp2 = new ReduceQueueTask( queueTaskManager.getNewId() , operation , stateItem , hg_mid , hg_end ); 
@@ -487,7 +519,7 @@ namespace samson {
                                 tmp_list2.copyFrom ( &tmp_list );
 
                                 tmp->getBlocks( &tmp_list  , stateItem->state );
-                                tmp->getBlocks( &tmp_list2  , stateItem->state );
+                                tmp2->getBlocks( &tmp_list2  , stateItem->state );
                                 
                                 // Set this item to "running mode"
                                 stateItem->setRunning( tmp , tmp2 );

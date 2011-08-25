@@ -35,49 +35,6 @@ namespace au
 		
 	}
 	
-	std::string Format::string( double value, char  letter )
-	{
-		char line[2000];
-		
-		if ( value < 10 )
-			sprintf(line, "%4.2f%c",value,letter);
-		else if ( value < 100 )
-			sprintf(line, "%4.1f%c",value,letter);
-		else 
-			sprintf(line, "%4.0f%c",value,letter);
-		
-		
-		return std::string( line );
-	}
-	
-	
-	std::string Format::string( size_t memory )
-	{
-		
-		if (memory < 1000)
-			return string( (double)memory , ' ' );
-		else if( memory < 10000000)
-			return string( (double)memory/ 1000.0 , 'K');
-		else if( memory < 1000000000)
-			return string( (double)memory/ 1000000.0 , 'M');
-		else 
-			return string( (double)memory/ 1000000000.0 , 'G');
-		
-	}
-	
-	std::string Format::string( size_t memory , std::string postfix )
-	{
-		
-		if (memory < 1000)
-			return string( (double)memory , ' ' ) + postfix;
-		else if( memory < 10000000)
-			return string( (double)memory/ 1000.0 , 'K')+ postfix;
-		else if( memory < 1000000000)
-			return string( (double)memory/ 1000000.0 , 'M')+ postfix;
-		else 
-			return string( (double)memory/ 1000000000.0 , 'G')+ postfix;
-		
-	}
 	
 	
 	std::string Format::int_string(int value, int digits)
@@ -130,22 +87,7 @@ namespace au
 		return time_string( ellapsedSeconds( init_time ) );
 	}
 	
-    std::string Format::string(const char* format, ...)
-    {
-        va_list        args;
-        char           vmsg[2048];
-        
-        /* "Parse" the varible arguments */
-        va_start(args, format);
-        
-        /* Print message to variable */
-        vsnprintf(vmsg, sizeof(vmsg), format, args);
-        //vmsg[2047] = 0;
-        va_end(args);
-        
-        return std::string(vmsg);
-    }        
-    
+
     std::string Format::progress_bar( double p , int len )
     {
         std::ostringstream output;
@@ -250,18 +192,6 @@ namespace au
         }
     }
     
-    
-    std::string Format::indent( std::string txt )
-    {
-        
-        find_and_replace( txt , "\n" , "\n\t" );
-        // Insert the first tab
-        txt.insert(0, "\t");
-        return txt;
-        
-    }
-    
-    
     std::string Format::getRoot( std::string& path )
     {
         size_t pos = path.find( "." , 0 );
@@ -282,6 +212,34 @@ namespace au
         return path.substr( pos+1 , path.length() );
     }    
     
+    
+    std::string indent( std::string txt )
+    {
+        // Replace all "returns" by "return and tab"
+        find_and_replace( txt , "\n" , "\n\t" );
+        
+        // Insert the first tab
+        txt.insert(0, "\t");
+        return txt;
+    }
+    
+    std::string indent( std::string txt , int num_spaces )
+    {
+        std::string sep;
+        for (int i = 0 ; i < num_spaces ; i++ )
+            sep.insert(0, " ");
+        
+        // Replace all "returns" by "return and tab"
+        find_and_replace( txt , "\n" , "\n" + sep );
+        
+        // Insert the first tab
+        txt.insert(0, sep);
+        return txt;
+        
+    }
+    
+    
+    // Working with directories and files
     
     
     bool isDirectory( std::string fileName ) 
@@ -340,6 +298,63 @@ namespace au
         
     }
     
+    
+    // Strings with format
+    
+    std::string str( double value, char  letter )
+	{
+		char line[2000];
+		
+		if ( value < 10 )
+			sprintf(line, "%4.2f%c",value,letter);
+		else if ( value < 100 )
+			sprintf(line, "%4.1f%c",value,letter);
+		else 
+			sprintf(line, "%4.0f%c",value,letter);
+		
+		
+		return std::string( line );
+	}
+	
+	
+	std::string str( size_t value )
+	{
+		
+		if (value < 1000)
+			return au::str( (double)value , ' ' );
+		else if( value < 1000000)
+			return au::str( (double)value/ 1000.0 , 'K');
+		else if( value < 1000000000)
+			return au::str( (double)value/ 1000000.0 , 'M');
+		else if( value < 1000000000000)
+			return au::str( (double)value/ 1000000000.0 , 'G');
+		else if( value < 1000000000000000)
+			return au::str( (double)value/ 1000000000000.0 , 'T');
+		else 
+			return au::str( (double)value/ 1000000000000000.0 , 'P');
+		
+	}
+	
+	std::string str( size_t value , std::string postfix )
+	{
+		return str( value ) + postfix;
+	}
+    
+    std::string str(const char* format, ...)
+    {
+        va_list        args;
+        char           vmsg[2048];
+        
+        /* "Parse" the varible arguments */
+        va_start(args, format);
+        
+        /* Print message to variable */
+        vsnprintf(vmsg, sizeof(vmsg), format, args);
+        //vmsg[2047] = 0;
+        va_end(args);
+        
+        return std::string(vmsg);
+    }        
     
 	
 }

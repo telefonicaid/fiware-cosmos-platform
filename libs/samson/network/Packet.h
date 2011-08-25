@@ -105,7 +105,7 @@ namespace samson
             std::ostringstream output;
             output << "Packet " << messageCode( msgCode ) << " " << strMessage( message );
             if ( buffer )
-                output << "[ Buffer " << au::Format::string(  buffer->getSize() ) << "/" << au::Format::string(  buffer->getMaxSize() ) << " ]" ;
+                output << "[ Buffer " << au::str(  buffer->getSize() ) << "/" << au::str(  buffer->getMaxSize() ) << " ]" ;
             else
                 output << "[ No buffer ]";
             return output.str();

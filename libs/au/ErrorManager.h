@@ -25,6 +25,9 @@ namespace au
         void set( ErrorManager *otherError );
         
         std::string str(); 
+      
+        // Get XML info for debuggin
+        void getInfo( std::ostringstream& output);
         
 	};
 	

@@ -129,7 +129,7 @@ namespace samson {
 		std::string str()
 		{
 			std::ostringstream o;
-			o <<  "( " << au::Format::string( kvs , "kvs" ) << " in " << au::Format::string( size ,"bytes" ) << " )";  
+			o <<  "( " << au::str( kvs , "kvs" ) << " in " << au::str( size ,"bytes" ) << " )";  
 			return o.str();
 		}
 		
@@ -227,7 +227,7 @@ namespace samson {
 		std::string str()
 		{
 			std::ostringstream o;
-			o <<  "( " << au::Format::string( kvs , "kvs" ) << " in " << au::Format::string( size ,"bytes" ) << " )";  
+			o <<  "( " << au::str( kvs , "kvs" ) << " in " << au::str( size ,"bytes" ) << " )";  
 			return o.str();
 		}
 		

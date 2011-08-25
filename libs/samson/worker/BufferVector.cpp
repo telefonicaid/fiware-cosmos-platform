@@ -53,7 +53,7 @@ namespace samson {
         std::ostringstream output;
         output << "Queue " << queue->name() << "";
         for (  au::list<engine::Buffer>::iterator iter = buffers.begin() ; iter != buffers.end() ; iter++)
-            output << "[" << au::Format::string( (*iter)->getSize() ,"B" ) << "]";
+            output << "[" << au::str( (*iter)->getSize() ,"B" ) << "]";
         return output.str();
     }
     

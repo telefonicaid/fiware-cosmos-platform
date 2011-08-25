@@ -42,7 +42,7 @@ namespace samson {
             
             au::map< size_t , PopQueue >::iterator q;
             for ( q = popQueues.begin() ; q != popQueues.end() ; q++)
-                output <<  au::Format::indent( q->second->getStatus()  ) << "\n";
+                output <<  au::indent( q->second->getStatus()  ) << "\n";
             
             return output.str();
             

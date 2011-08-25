@@ -51,12 +51,13 @@ namespace samson {
         
 	public:
 
-        NetworkInterface *network;
+        NetworkInterface *network;                      // Network interface to communicate with the rest of the system
 		
-		WorkerTaskManager    taskManager;               // Task manager
-		LoadDataManager      loadDataManager;           // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
+		WorkerTaskManager taskManager;                  // Task manager for bath processing operations
+        
+		LoadDataManager loadDataManager;                // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
 		
-        stream::QueuesManager   queuesManager;          // Manager of all the stream-processing queues in the system
+        stream::QueuesManager queuesManager;            // Manager of all the stream-processing queues in the system
         
 	public:
 

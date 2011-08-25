@@ -6,6 +6,7 @@
 
 #include "au/list.h"        // au::list
 
+#include "samson/common/coding.h"       // KVFullInfo
 #include "samson/common/samson.pb.h"    // samson::network::...
 
 namespace samson {
@@ -27,6 +28,9 @@ namespace samson {
             // List of state items in this state
             au::list< StateItem > items;
             
+            // Flag to avoid creating new operations ( necessary for removing a state )
+            bool paused;
+            
         public:
             
             State( std::string _name );
@@ -37,8 +41,14 @@ namespace samson {
             // Get Information in XML format
             void getInfo( std::ostringstream& output);
 
+            // Get Information in txt format
             std::string getStatus();
             
+            // Function to check if any of the items is working ( if so, it can not be removed )
+            bool isWorking();
+            
+            // Get information about the state
+            FullKVInfo getFullKVInfo();
             
         private:
             

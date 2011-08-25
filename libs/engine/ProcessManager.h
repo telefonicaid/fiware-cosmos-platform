@@ -71,6 +71,7 @@ namespace engine
         static void init( int _num_processes);
         static ProcessManager* shared();
         static std::string str();
+        
         static int getNumCores();
         static int getNumUsedCores();
 
@@ -86,6 +87,11 @@ namespace engine
 
 		void add( ProcessItem *item , size_t listenerId );                      // Function to add a Process. It will be notifier by delegate mechanism
 		void cancel( ProcessItem *item );                   // Function to cancel a Process. 
+        
+    public:
+        
+        // Get information for monitorization
+        void getInfo( std::ostringstream& output);
         
     private:
 		

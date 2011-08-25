@@ -115,7 +115,7 @@ namespace engine
 
         if( running_element && ( time_in_seconds > ENGINE_MAX_RUNNING_TIME  ) )
         {
-            LM_X(1,("Excesive time for and engine simple task (%d secs, max %d secs) for engine Element '%s'." ,  
+            LM_X(1,("Excesive time for an engine simple task (%d secs, max %d secs) for engine Element '%s'." ,  
                   time_in_seconds , ENGINE_MAX_RUNNING_TIME, running_element->getDescription().c_str() ));
         }
         

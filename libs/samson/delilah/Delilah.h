@@ -18,6 +18,8 @@
 #include "au/Cronometer.h"      // au::Cronometer
 #include "au/Info.h"                // au::Info
 
+#include "pugi/pugi.h"          // pugi::...
+
 #include "samson/module/Environment.h"	// samson::Environment
 #include "samson/common/samson.pb.h"			// samson::network::..
 
@@ -79,6 +81,9 @@ namespace samson {
 
         // Global xml-based information from the system
         std::string xml_info;
+        // General document with the content of xml_info
+        pugi::xml_document doc;
+        
         
 	public:
 		

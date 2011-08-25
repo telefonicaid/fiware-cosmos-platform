@@ -266,8 +266,8 @@ namespace engine
             if( shared_memory_used_buffers[i] )
                 used_shared_memory_num_buffers++;
         
-        output << au::Format::string("Size: %s Used %d/%d", 
-                                     au::Format::string(shared_memory_size_per_buffer).c_str() , 
+        output << au::str("Size: %s Used %d/%d", 
+                                     au::str(shared_memory_size_per_buffer).c_str() , 
                                      used_shared_memory_num_buffers , 
                                      shared_memory_num_buffers);
         

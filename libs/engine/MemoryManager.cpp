@@ -104,7 +104,7 @@ namespace engine
         // Remove from the temporal list of buffer
         buffers.erase( b );
         
-        LM_T(LmtMemory, ("Destroying buffer with max size %sbytes", au::Format::string( b->getMaxSize() ).c_str() ) );
+        LM_T(LmtMemory, ("Destroying buffer with max size %sbytes", au::str( b->getMaxSize() ).c_str() ) );
         
         
         b->free();
@@ -125,11 +125,11 @@ namespace engine
         if( request->size > memory )
             LM_X(-1,("Error managing memory: excesive memory request"));	
         
-        LM_T( LmtMemory , ("Adding memory request for %s" , au::Format::string( request->size , "B" ).c_str() ));
+        LM_T( LmtMemory , ("Adding memory request for %s" , au::str( request->size , "B" ).c_str() ));
         
         memoryRequests.push_back( request );
         
-        LM_T( LmtMemory , ("[DONE] Adding memory request for %s" , au::Format::string( request->size , "B" ).c_str() ));
+        LM_T( LmtMemory , ("[DONE] Adding memory request for %s" , au::str( request->size , "B" ).c_str() ));
         
         checkMemoryRequests();
         

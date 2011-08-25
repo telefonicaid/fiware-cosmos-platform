@@ -11,7 +11,6 @@
 
 #include "samson/stream/StreamProcessBase.h"        // parent class 
 #include "samson/stream/Block.h"                    // samson::Stream::Block
-#include "samson/stream/BlockMatrix.h"              // samson::stream::BlockMatrix
 
 namespace samson {
     namespace stream {
@@ -46,12 +45,12 @@ namespace samson {
                 environment.setSizeT("id",id);
                 
                 // Create the block list
-                list  = new BlockList( au::Format::string("Task %lu input" , id ) , id , false );
-                state  = new BlockList( au::Format::string("Task %lu state" , id ) , id , false );
+                list  = new BlockList( au::str("Task %lu input" , id ) , id , false );
+                state  = new BlockList( au::str("Task %lu state" , id ) , id , false );
                 
                 // Create the lock block list
-                list_lock  = new BlockList( au::Format::string("Task %lu input lock" , id ) , id , true );
-                state_lock  = new BlockList( au::Format::string("Task %lu state lock" , id ) , id , true );
+                list_lock  = new BlockList( au::str("Task %lu input lock" , id ) , id , true );
+                state_lock  = new BlockList( au::str("Task %lu state lock" , id ) , id , true );
                 
                 ready_flag = false;
             }
@@ -72,8 +71,11 @@ namespace samson {
             
             virtual std::string getStatus()
             {
-                return au::Format::string("No task description for task %lu", id );
+                return au::str("No task description for task %lu", id );
             }
+            
+            // Function executed just before task is deleted
+            virtual void finalize(){};
             
             // Get information for monitorization
             void getInfo( std::ostringstream& output);

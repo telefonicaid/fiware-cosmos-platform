@@ -110,9 +110,10 @@ namespace stream
 
         void StateItem::setRunning( ReduceQueueTask* _task , ReduceQueueTask* _task2 )
         {
+            
             // Set this as the task that is currently running ( or at least scheduled )
             task = _task;
-            task = _task2;
+            task2 = _task2;
             
             // Schedule the task?
             mode = running_dividing;
@@ -149,7 +150,6 @@ namespace stream
             
             if( mode == running_dividing )
             {
-                LM_M(("Notified finish of a reduce task ( diving a state item )"));
                 
                 if( _task == task )
                     task = NULL;
@@ -158,6 +158,7 @@ namespace stream
                 
                 if( !task && !task2 )
                 {
+                    
                     int hg_mid = ( hg_begin + hg_end ) / 2;
                     StateItem *item1 = new StateItem( myState , hg_begin , hg_mid );
                     StateItem *item2 = new StateItem( myState , hg_mid , hg_end );
@@ -170,8 +171,10 @@ namespace stream
                     item1->push(list);
                     item2->push(list);
 
+                    
                     // Divide this item in two
                     myState->divide( this , item1 , item2 );
+
                     
                     return;
                 }
@@ -182,14 +185,48 @@ namespace stream
         
         void StateItem::addStateBuffer( ReduceQueueTask* _task , engine::Buffer* buffer)
         {
-            if ( _task == task )
-                future_state->createBlock(buffer, false);
-            else if( _task == task2 )
-                future_state2->createBlock(buffer, false);
-            else
-                LM_W(("Adding a buffer to a state that is not related with this operation"));
+            
+            switch (mode) {
+                case running:
+                    
+                    if ( _task == task )
+                        future_state->createBlock(buffer, false);
+                    else
+                    {
+                        LM_W(("Adding a buffer to a state that is not related with this operation ( mode = running)"));
+                        LM_W(("Current tasks [%p %p] reported task %p", task , task2 , _task ));
+                    }
+                    
+                    break;
+                    
+                case running_dividing:
+
+                    if ( _task == task )
+                        future_state->createBlock(buffer, false);
+                    else if( _task == task2 )
+                        future_state2->createBlock(buffer, false);
+                    else
+                    {
+                        LM_W(("Adding a buffer to a state that is not related with this operation ( mode = running_divide)"));
+                        LM_W(("Current tasks [%p %p] reported task %p", task , task2 , _task ));
+                        
+                    }
+                    
+                    break;
+                    
+                case ready:
+                    LM_W(("Received a state buffer while er are in ready mode. This is a serious error..."));
+                    break;
+            }
+            
                 
         }
+        
+        bool StateItem::isWorking()
+        {
+            return ( (mode == running) || ( mode == running_dividing ) );
+        }
+
         
         
     }

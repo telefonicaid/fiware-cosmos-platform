@@ -53,7 +53,7 @@ public:
         int nb = fread(&header, 1, sizeof(samson::KVHeader), file);
         
         if (nb != sizeof(samson::KVHeader))
-            error.set(au::Format::string("Getting header: read only %d bytes (wanted to read %ld)\n", nb, (long int) sizeof(samson::KVHeader)));
+            error.set(au::str("Getting header: read only %d bytes (wanted to read %ld)\n", nb, (long int) sizeof(samson::KVHeader)));
         
         if (!header.check())
         {

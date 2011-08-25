@@ -75,7 +75,7 @@ namespace samson {
         
         void StreamProcessBase::processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )
         {
-            //LM_M(("[%s] Processing buffer %s" , streamOperation->operation().c_str(), au::Format::string(buffer->getSize()).c_str() ));
+            //LM_M(("[%s] Processing buffer %s" , streamOperation->operation().c_str(), au::str(buffer->getSize()).c_str() ));
             
             sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues(output) , false );
             
@@ -108,7 +108,7 @@ namespace samson {
         
         void StreamProcessBase::processOutputTXTBuffer( engine::Buffer *buffer , bool finish )
         {
-            LM_M(("[%s] Processing buffer %s" , streamOperation->operation().c_str(), au::Format::string(buffer->getSize()).c_str() ));
+            LM_M(("[%s] Processing buffer %s" , streamOperation->operation().c_str(), au::str(buffer->getSize()).c_str() ));
 
             int output = 0;
             int outputWorker = -1;  // Send always to myself ( txt is not distributed )

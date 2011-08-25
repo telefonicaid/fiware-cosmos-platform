@@ -59,8 +59,8 @@ namespace samson {
         samson::SamsonSetup::init();    
 
         // Change the values for this parameters
-        samson::SamsonSetup::shared()->setValueForParameter("general.memory", au::Format::string("%lu",memory) );
-        samson::SamsonSetup::shared()->setValueForParameter("load.buffer_size",  au::Format::string("%lu",load_buffer_size) );
+        samson::SamsonSetup::shared()->setValueForParameter("general.memory", au::str("%lu",memory) );
+        samson::SamsonSetup::shared()->setValueForParameter("load.buffer_size",  au::str("%lu",load_buffer_size) );
         
         // Init the engine sussytem
         engine::Engine::init();
@@ -91,7 +91,7 @@ namespace samson {
 
         if( !networkP->ready() )
         {
-            error_message = au::Format::string( "Not possible to connect with controller '%s'", controller.c_str() );
+            error_message = au::str( "Not possible to connect with controller '%s'", controller.c_str() );
             return false;
         }
         

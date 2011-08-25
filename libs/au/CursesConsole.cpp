@@ -75,7 +75,7 @@ namespace au
                 options.clear();
                 
                 // Path to discover new keys
-                //command.append( au::Format::string("<%d>" , ch) );
+                //command.append( au::str("<%d>" , ch) );
 
                 switch (ch) {
                         

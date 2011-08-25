@@ -177,47 +177,47 @@ namespace samson
             txt << " ( updated: " << au::Format::time_string( cronometer_samsonStatus.diffTimeInSeconds() + worker_status.update_time() ) << " ) ]";
 
             print("");
-            print( au::Format::string("Worker %03d %s", i , txt.str().c_str()) );           
+            print( au::str("Worker %03d %s", i , txt.str().c_str()) );           
             print("");
             
 
-            print( au::Format::string("\tCores  [ %s ] %s / %s : %s" , 
+            print( au::str("\tCores  [ %s ] %s / %s : %s" , 
                                       au::Format::percentage_string(per_cores).c_str() , 
-                                      au::Format::string(used_cores).c_str() , 
-                                      au::Format::string(total_cores).c_str(),      
+                                      au::str(used_cores).c_str() , 
+                                      au::str(total_cores).c_str(),      
                                       au::Format::progress_bar( per_cores , getCols() - 50 ).c_str()
                       ));
             
-            print( au::Format::string("\tMemory [ %s ] %s / %s : %s" , 
+            print( au::str("\tMemory [ %s ] %s / %s : %s" , 
                                       au::Format::percentage_string(per_memory).c_str() , 
-                                      au::Format::string(used_memory).c_str() , 
-                                      au::Format::string(total_memory).c_str(),     
+                                      au::str(used_memory).c_str() , 
+                                      au::str(total_memory).c_str(),     
                                       au::Format::progress_bar( per_memory , getCols() - 50 ).c_str()
                       ));
                         
             // Disk operations
             
-            print( au::Format::string("\tDisk                      %s : %s" , 
-                                        au::Format::string(disk_pending_operations).c_str() ,
+            print( au::str("\tDisk                      %s : %s" , 
+                                        au::str(disk_pending_operations).c_str() ,
                                         au::Format::progress_bar( per_disk , getCols() - 50 ).c_str() ));
 
-            print( au::Format::string("\t                  Read   %s: %s  " , 
-                                          au::Format::string(read_rate,"Bs").c_str() ,
+            print( au::str("\t                  Read   %s: %s  " , 
+                                          au::str(read_rate,"Bs").c_str() ,
                                           au::Format::progress_bar( (double)read_rate /(double) (200*(1024*1024)) , getCols() - 50 ).c_str() ));
 
-            print( au::Format::string("\t                  Write  %s: %s  " , 
-                                          au::Format::string(write_rate,"Bs").c_str() ,
+            print( au::str("\t                  Write  %s: %s  " , 
+                                          au::str(write_rate,"Bs").c_str() ,
                                           au::Format::progress_bar( (double)write_rate /(double) (200*(1024*1024)) , getCols() - 50 ).c_str() ));
 
             
-            print( au::Format::string("\tNetwork                 " )); 
+            print( au::str("\tNetwork                 " )); 
             
-            print( au::Format::string("\t                  Read   %s: %s  " , 
-                                          au::Format::string(network_read_rate,"Bs").c_str() ,
+            print( au::str("\t                  Read   %s: %s  " , 
+                                          au::str(network_read_rate,"Bs").c_str() ,
                                           au::Format::progress_bar( (double)network_read_rate /(double) (200*(1024*1024)) , getCols() - 50 ).c_str() ));
             
-            print( au::Format::string("\t                  Write  %s: %s  " , 
-                                          au::Format::string(network_write_rate,"Bs").c_str() ,
+            print( au::str("\t                  Write  %s: %s  " , 
+                                          au::str(network_write_rate,"Bs").c_str() ,
                                           au::Format::progress_bar( (double)network_write_rate /(double) (200*(1024*1024)) , getCols() - 50 ).c_str() ));
             
             
@@ -245,7 +245,7 @@ namespace samson
             
             std::stringstream txt;
             
-            txt << "\t" << au::Format::string( "[ %04lu / Job: %04lu ] " , task.task_id() , task.job_id() );
+            txt << "\t" << au::str( "[ %04lu / Job: %04lu ] " , task.task_id() , task.job_id() );
             
             switch (task.state()) {
                 case network::ControllerTask_ControllerTaskState_ControllerTaskInit:
@@ -266,7 +266,7 @@ namespace samson
             
             if( task.has_error() )
             {
-                print( au::Format::string( "  --> Error: ( %s )" ,  task.error().message().c_str() ) );
+                print( au::str( "  --> Error: ( %s )" ,  task.error().message().c_str() ) );
             }
            
             if( task.state() == network::ControllerTask_ControllerTaskState_ControllerTaskRunning )
@@ -286,9 +286,9 @@ namespace samson
                 
                 std::stringstream txt;
                 txt << "\t\tProgress : ";
-                txt << au::Format::string( task.processed_info().size() );
-                txt << " / " << au::Format::string( task.running_info().size() );
-                txt << "/" << au::Format::string( task.total_info().size() ) << " ";
+                txt << au::str( task.processed_info().size() );
+                txt << " / " << au::str( task.running_info().size() );
+                txt << "/" << au::str( task.total_info().size() ) << " ";
                 txt << au::Format::double_progress_bar(processed_completed, running_progress, '*', '-', ' ' , getCols() - 55  );
                 
                 print( txt.str().c_str() );
@@ -312,7 +312,7 @@ namespace samson
         print("");
         std::ostringstream header;
         header << "Stream Queues          ";
-        header << "( Reference " << au::Format::string( reference ) << " )";
+        header << "( Reference " << au::str( reference ) << " )";
         print( header.str() );
         print("");
         print("");
@@ -326,7 +326,7 @@ namespace samson
             std::string running_operations = pugi::String( doc, "//queue[@name='" + queues[i] + "']/running_tasks");
             
             std::stringstream txt;
-            txt << au::Format::string("   %s : (running %s operations) ", queues[i].c_str() , running_operations.c_str() );
+            txt << au::str("   %s : (running %s operations) ", queues[i].c_str() , running_operations.c_str() );
             print( txt.str().c_str() );
             
             
@@ -344,15 +344,15 @@ namespace samson
                 
                 {
                     std::stringstream txt;
-                    txt << au::Format::string("   \tChannel %s : " ,  channels[c].c_str() );
-                    txt << au::Format::string( size ) << "( #kvs: " << au::Format::string( kvs ) << " ) ";
+                    txt << au::str("   \tChannel %s : " ,  channels[c].c_str() );
+                    txt << au::str( size ) << "( #kvs: " << au::str( kvs ) << " ) ";
                     print( txt.str().c_str() );
                 }
                 
                 // Size total
                 {
                     std::stringstream txt;
-                    txt << au::Format::string("   \t\tSize      %s : ", au::Format::string(s_total).c_str() );
+                    txt << au::str("   \t\tSize      %s : ", au::str(s_total).c_str() );
                     txt << au::Format::progress_bar( (double)s_total / (double) reference , getCols() - 65  );
                     print( txt.str().c_str() );
                 }
@@ -360,7 +360,7 @@ namespace samson
                 // Size on memory 
                 {
                     std::stringstream txt;
-                    txt << au::Format::string("   \t\tOn memory %s : ", au::Format::string(s_memory).c_str() );
+                    txt << au::str("   \t\tOn memory %s : ", au::str(s_memory).c_str() );
                     txt << au::Format::progress_bar( (double)s_memory / (double) reference , getCols() - 65  );
                     print( txt.str().c_str() );
                 }
@@ -368,7 +368,7 @@ namespace samson
                 // Size on disk
                 {
                     std::stringstream txt;
-                    txt << au::Format::string("   \t\tOn disk   %s : ", au::Format::string(s_disk).c_str() );
+                    txt << au::str("   \t\tOn disk   %s : ", au::str(s_disk).c_str() );
                     txt << au::Format::progress_bar( (double)s_disk / (double) reference , getCols() - 65  );
                     print( txt.str().c_str() );
                 }
@@ -392,7 +392,7 @@ namespace samson
         print("");
         std::ostringstream header;
         header << "Stream Queue Tasks          ";
-        header << "( Reference " << au::Format::string( reference ) << " )";
+        header << "( Reference " << au::str( reference ) << " )";
         print( header.str() );
         print("");
         print("");
@@ -407,7 +407,7 @@ namespace samson
             // Get the collection of tasks
             pugi::ValuesCollection tasks = pugi::values(doc, q_worker + "//queues_task_manager/queue_task/attribute::id" ).uniq();
            
-            print(au::Format::string("Worker %s:     %lu queue-tasks " , workers[i].c_str() , tasks.size() ) );
+            print(au::str("Worker %s:     %lu queue-tasks " , workers[i].c_str() , tasks.size() ) );
             
             for ( size_t t = 0 ; t < tasks.size() ; t++ )
             {
@@ -422,8 +422,8 @@ namespace samson
                 double progress = pugi::Double( doc , q_task + "/progress" );
                 //double progress = 0.5;
                 
-                std::string line = au::Format::string("     Task %5s %s :" , tasks[t].c_str(), description.c_str() );
-                line += "[ Size " +  au::Format::string(size_total);
+                std::string line = au::str("     Task %5s %s :" , tasks[t].c_str(), description.c_str() );
+                line += "[ Size " +  au::str(size_total);
                 line += " Memory: " + au::Format::percentage_string(size_on_memory, size_total);
                 line += " Disk: "   + au::Format::percentage_string(size_on_disk, size_total);
                 line += " ] ";

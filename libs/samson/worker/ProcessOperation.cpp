@@ -310,7 +310,7 @@ namespace samson {
 
             // Update the progress of this report
             double p = (double) cumulated_size / (double) total_size;
-            reportProgress( p , au::Format::string("R %d/%d %s %f",hg,num_hash_groups, au::Format::string(size_hg).c_str() , p) );
+            reportProgress( p , au::str("R %d/%d %s %f",hg,num_hash_groups, au::str(size_hg).c_str() , p) );
             
 			
 			// Counte the number of key-values I will have in this round
@@ -375,7 +375,7 @@ namespace samson {
 					}
 				}
 				
-                reportProgress( p , au::Format::string("RO %d/%d %s %f",hg,num_hash_groups, au::Format::string(size_hg).c_str() , p) );
+                reportProgress( p , au::str("RO %d/%d %s %f",hg,num_hash_groups, au::str(size_hg).c_str() , p) );
 				parserOutReduce->run(inputStructs, writer);
 				
 				// Go to the next position

@@ -11,7 +11,7 @@ namespace engine
     NotificationElement::NotificationElement(  Notification * _notification )
     {
         notification = _notification;
-        description = au::Format::string("Notification %s", notification->getDescription().c_str() );
+        description = au::str("Notification %s", notification->getDescription().c_str() );
         shortDescription = "Not:" + notification->getShortDescription();
     }
  
@@ -24,7 +24,7 @@ namespace engine
     NotificationElement::NotificationElement(  Notification * _notification , int seconds ) : EngineElement( seconds )
     {
         notification = _notification;
-        description = au::Format::string("Notification %s", notification->getDescription().c_str() );
+        description = au::str("Notification %s", notification->getDescription().c_str() );
         shortDescription = "Not:" + notification->getShortDescription();
     }
     

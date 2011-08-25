@@ -218,6 +218,40 @@ namespace samson {
 			return response;
 		}
 
+        
+        if( commandLine.get_argument(0) == "rm_stream_operation" )
+        {
+            // Remove a particular stream operation
+            
+			
+			if( commandLine.get_num_arguments() < 2 )
+			{
+				response.output = "Usage: rm_stream_operation name ";
+				response.error = true;
+				return response;
+			}
+            
+			std::string name            = commandLine.get_argument( 1 );
+			std::string operation       = commandLine.get_argument( 2 );
+            
+            
+            // Check it the queue already exists
+            network::StreamOperation *_operation = streamOperations.extractFromMap( name );
+			
+			// Check if queue exist
+			if( _operation  )
+                delete _operation;
+            else
+            {
+				response.output = au::str("StreamOperation %s does not exist" , name.c_str() );
+				response.error = true;
+				return response;
+            }
+            
+			response.output = "OK";
+			return response;            
+        }
+        
         if( commandLine.get_argument(0) == "add_stream_operation" )
 		{
 			
@@ -312,7 +346,7 @@ namespace samson {
                 {
                     if( op->getNumInputs() != 2 )
                     {
-                        response.output = au::Format::string("Only reduce operations with 2 inputs are supported at the moment. ( In the furure, reducers with 3 or more inputs will be supported.");
+                        response.output = au::str("Only reduce operations with 2 inputs are supported at the moment. ( In the furure, reducers with 3 or more inputs will be supported.");
                         response.error = true;
                         return response;
                     }
@@ -322,7 +356,7 @@ namespace samson {
 
                     if( !a.isEqual(b)  )
                     {
-                        response.output = au::Format::string("Last input and output should be the same data type to qualify as stream-reduce");
+                        response.output = au::str("Last input and output should be the same data type to qualify as stream-reduce");
                         response.error = true;
                         return response;                        
                     }
@@ -396,7 +430,7 @@ namespace samson {
 			if( commandLine.get_num_arguments() < ( 3 + num_inputs + num_outputs ) )
             {
                 response.output = 
-                    au::Format::string("Not enougth parameters for this operation. Required %d inputs and &d outputs" , 
+                    au::str("Not enougth parameters for this operation. Required %d inputs and &d outputs" , 
                                 num_inputs , num_outputs );
                 response.error = true;
                 return response;
@@ -995,7 +1029,7 @@ namespace samson {
         
         if( !q )
         {
-            error.set( au::Format::string("Select: Unkwown queue %s" , fromQueue.c_str() ) );
+            error.set( au::str("Select: Unkwown queue %s" , fromQueue.c_str() ) );
             return;
         }
         
@@ -1003,8 +1037,8 @@ namespace samson {
         // Take the format of the input queue
         KVFormat format = q->format();
 
-        command.append(au::Format::string(" -input_key_format %s " , format.keyFormat.c_str() ) );
-        command.append(au::Format::string(" -input_value_format %s " , format.valueFormat.c_str() ) );
+        command.append(au::str(" -input_key_format %s " , format.keyFormat.c_str() ) );
+        command.append(au::str(" -input_value_format %s " , format.valueFormat.c_str() ) );
         
 
         Data *key_data = ModulesManager::shared()->getData( format.keyFormat );
@@ -1042,7 +1076,7 @@ namespace samson {
         {
             delete key_data_instance;
             delete value_data_instance;
-            error.set( au::Format::string( "Path %s not valid. Should start with 'value' or 'key' " , path_key.c_str() ) );
+            error.set( au::str( "Path %s not valid. Should start with 'value' or 'key' " , path_key.c_str() ) );
             return;
         }
         
@@ -1055,7 +1089,7 @@ namespace samson {
         {
             delete key_data_instance;
             delete value_data_instance;
-            error.set( au::Format::string( "Path %s not valid. Should start with 'value' or 'key' " , path_key.c_str() ) );
+            error.set( au::str( "Path %s not valid. Should start with 'value' or 'key' " , path_key.c_str() ) );
             return;
         }
         
@@ -1063,8 +1097,8 @@ namespace samson {
         // This is the input format
         LM_M(("Output formats: %s %s" , output_key_format.c_str() , output_value_format.c_str() ));
         
-        command.append(au::Format::string(" -output_key_format %s " , output_key_format.c_str() ) );
-        command.append(au::Format::string(" -output_value_format %s " , output_value_format.c_str() ) );
+        command.append(au::str(" -output_key_format %s " , output_key_format.c_str() ) );
+        command.append(au::str(" -output_value_format %s " , output_value_format.c_str() ) );
         
         command.append( " -select_complete "  );
         
@@ -1159,7 +1193,7 @@ namespace samson {
 
                 if( !q )
                 {
-                    info->error.set( au::Format::string("Queue %s not found even after trying to add for the -create flag" , queue_name.c_str() ) );
+                    info->error.set( au::str("Queue %s not found even after trying to add for the -create flag" , queue_name.c_str() ) );
                     return; 
                 }
             }

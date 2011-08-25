@@ -50,7 +50,7 @@ namespace engine {
 	std::string Buffer::str()
 	{
 		std::ostringstream output;
-		output << "[ Buffer size:" << au::Format::string( _size ) << " max:" << au::Format::string( _max_size ) ;
+		output << "[ Buffer size:" << au::str( _size ) << " max:" << au::str( _max_size ) ;
 		return output.str();
 	}
 

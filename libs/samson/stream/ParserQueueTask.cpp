@@ -59,7 +59,7 @@ namespace samson {
                 char *data = b->getData();
                 size_t size = b->getSize();
                 
-                //LM_M(("Stream Parsing a block of size %s", au::Format::string(size).c_str() ));
+                //LM_M(("Stream Parsing a block of size %s", au::str(size).c_str() ));
                 
                 parser->run( data , size ,  writer );
                 
@@ -154,9 +154,9 @@ namespace samson {
                 KVInfo* info = (KVInfo*) ( block->getData() + sizeof(KVHeader) );
                 
                 LM_M(("Stream Mapping a block of size %s with %s kvs in %s ", 
-                      au::Format::string( block->getSize() ).c_str() ,  
-                      au::Format::string(header->info.kvs).c_str()  ,
-                      au::Format::string(header->info.size,"Bytes").c_str()  
+                      au::str( block->getSize() ).c_str() ,  
+                      au::str(header->info.kvs).c_str()  ,
+                      au::str(header->info.size,"Bytes").c_str()  
                       ));
                 
                 char *data = block->getData() + KVFILE_TOTAL_HEADER_SIZE;
@@ -165,7 +165,7 @@ namespace samson {
                 {
                     if( info[hg].size > 0 )
                     {
-                        //LM_M(("Stream Mapping a block of size %s hasg group %d %s ", au::Format::string( (*b)->getSize() ).c_str() , hg , info[hg].str().c_str() ));
+                        //LM_M(("Stream Mapping a block of size %s hasg group %d %s ", au::str( (*b)->getSize() ).c_str() , hg , info[hg].str().c_str() ));
                         
                         inputVector.prepareInput( info[hg].kvs );
                         inputVector.addKVs( 0 , info[hg] , data );
@@ -259,7 +259,7 @@ namespace samson {
                 {
                     if( info[hg].size > 0 )
                     {
-                        //LM_M(("Stream Mapping a block of size %s hasg group %d %s ", au::Format::string( (*b)->getSize() ).c_str() , hg , info[hg].str().c_str() ));
+                        //LM_M(("Stream Mapping a block of size %s hasg group %d %s ", au::str( (*b)->getSize() ).c_str() , hg , info[hg].str().c_str() ));
                         
                         inputVector.prepareInput( info[hg].kvs );
                         inputVector.addKVs( 0 , info[hg] , data );
@@ -302,24 +302,20 @@ namespace samson {
         public:
             
             KVInfo *info;       // Pointer to the info data
+            int channel;        // Input channel associated to this block
+            
             int current_hg;     // Current hash-group
             char *data;         // Pointer to the key-values
-            int channel;        // Input channel associated to this block
             
             BlockReader( Block* block , int _channel )
             {
                 info = (KVInfo *) ( block->getData() + sizeof( KVHeader ) );
                 data = block->getData() + KVFILE_TOTAL_HEADER_SIZE;
-                
-                current_hg = 0;
                 channel = _channel;
-                /*                
-                 LM_M(("New block reader"));
-                 for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ; i++)
-                 if( info[i].kvs > 0 )
-                 LM_M(("Information for hash-group %d -> %s" , i , info[i].str().c_str() ));
-                 */
-                
+
+                // We start always at hash-group "0"
+                current_hg = 0;
+
             }
             
             void prepare ( int hg )
@@ -337,19 +333,21 @@ namespace samson {
                 }
             }            
             
+        
+            
         };
         
-        class BlockReaderList
+        
+        class BlockListCollection
         {
-            std::vector<BlockReader> blockReaders;
-            
+
         public:
             
-            KVInputVector inputVector;
+            std::vector<BlockReader> blockReaders;
+            KVInputVector kvVector;
             
-            BlockReaderList( Operation*operation ) : inputVector( operation )
+            BlockListCollection( Operation *operation ) : kvVector( operation )
             {
-                
             }
             
             void insert( Block *block , int channel )
@@ -359,193 +357,89 @@ namespace samson {
             
             size_t prepare( int hg )
             {
-                //LM_M(("Preparing hash-group %d",hg));
-                
+                // Putting data in place
                 for ( size_t i = 0 ; i < blockReaders.size() ; i++)
                     blockReaders[i].prepare(hg);
-                
+
+                // Getting the number of key-values
                 size_t num_kvs = 0 ;
                 for ( size_t i = 0 ; i < blockReaders.size() ; i++)
                     num_kvs += blockReaders[i].info[hg].kvs;
+
+                // Prepare KV Vector with the total number of kvs
+                kvVector.prepareInput( num_kvs );
                 
                 if ( num_kvs > 0 )
                 {
-                    inputVector.prepareInput( num_kvs );
-                    
                     // Get data
                     for ( size_t i = 0 ; i < blockReaders.size() ; i++)
-                        inputVector.addKVs( blockReaders[i].channel, blockReaders[i].info[hg],  blockReaders[i].data );
+                        kvVector.addKVs( blockReaders[i].channel, blockReaders[i].info[hg],  blockReaders[i].data );
                 }
                 
-                //LM_M(("Finish Preparing hash-group %d with %lu key-values",hg, num_kvs));
-                
                 return num_kvs;
+            }                
+            
+            
+            void sort()
+            {
+                kvVector.sort();
+            }
+            
+        };
+        
+        class BlockReaderSystem
+        {
+            
+        public:
+            
+            BlockListCollection input;
+            BlockListCollection state;
+            
+            Operation *operation;
+            
+            
+            BlockReaderSystem( Operation* _operation ) : input( _operation ) , state( _operation )
+            {
+                operation = _operation;
+            }
+            
+            void insertInput( Block *block , int channel )
+            {
+                if ( ( channel < 0 ) || ( channel >= ( operation->getNumInputs() - 1 ) ) )
+                    LM_X(1,("Internal error"));
+                
+                input.insert( block, channel );
+            }
+
+            void insertState( Block *block  )
+            {
+                // The last input is the state
+                state.insert( block, operation->getNumInputs() - 1 );
+            }
+            
+            
+            size_t prepare( int hg )
+            {
+
+                size_t num_kvs_input = input.prepare( hg );
+                size_t num_kvs_state = state.prepare( hg );
+
+                // Sorting only the input
+                input.sort();
+                
+                return num_kvs_input + num_kvs_state;
             }
             
         };
 
         
-#pragma mark Sort
-        
-        // Get the required blocks to process
-        void SortQueueTask::getBlocks( BlockList * input )
-        {
-            list->extractFrom ( input , 100000000 );
-        }
-        
-        void SortQueueTask::generateKeyValues( KVWriter *writer )
-        {
-            
-            //LM_M(("Sorting....%s -> %s" , streamOperation->input_queues(0).c_str() , streamOperation->output_queues(0).c_str()  ));
-            
-            if( state_lock->blocks.size() != 0 )
-            {
-                setUserError("Sort operation not ready to receive state blocks");
-                return;
-            }
-
-        
-            // Get the operation ( reduce operation )
-            Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation() );
-            
-            // Get the operation instance 
-            Reduce *reduce = (Reduce*) operation->getInstance();
-            
-            reduce->environment = &operation_environment;
-            reduce->tracer = this;
-            reduce->operationController = this;
-            
-            reduce->init( writer );
-            
-            
-            // Get the block reader list to prepare inputs for operation
-            BlockReaderList blockReaderList( operation );
-
-            // Put all the "input blocks inside"
-            std::list< Block* >::iterator b;
-            for ( b = list_lock->blocks.begin() ; b != list_lock->blocks.end() ; b++)
-                blockReaderList.insert( *b , 0 );
-            
-            // structure used to input reduce operations    
-            int num_inputs = operation->getNumInputs();
-            KVSetStruct* inputStructs = (KVSetStruct*) malloc( sizeof(KVSetStruct) * num_inputs );
-            
-            // compare functions necessary for sorting and grouping key-values
-            KVInputVector &inputs = blockReaderList.inputVector;
-            inputs.compare = operation->getInputCompareFunction();
-            OperationInputCompareFunction compareKey = operation->getInputCompareByKeyFunction();
-            
-            
-            // Get Data for input
-            Data *keyData =  ModulesManager::shared()->getData( operation->getInputFormats()[0].keyFormat );
-            Data *valueData =  ModulesManager::shared()->getData( operation->getInputFormats()[0].valueFormat );
-
-            DataInstance *keyDataInstance   = (DataInstance*)keyData->getInstance();
-            DataInstance *valueDataInstance = (DataInstance*)valueData->getInstance();
-            
-            for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)
-            {
-                {
-                    
-                    // Prepare all the inputs for this hash.group
-                    size_t num_kvs = blockReaderList.prepare(hg);
-                    
-                    if( num_kvs > 0 )
-                    {
-                        
-                        // Sorting 
-                        inputs.sort();
-                        
-                        //LM_M(("Running reduce over %lu kvs for hg [ %d in ( %d - %d ) ]", num_kvs , hg , hg_begin , hg_end ));
-                        
-                        // Run a reduce for each "key"
-                        //std::cout << "Hash group with " << num_kvs << " kvs inputs sorted\n";
-                        
-                        // Process all the key-values in order
-                        size_t pos_begin = 0;	// Position where the next group of key-values begin
-                        size_t pos_end	 = 1;	// Position where the next group of key-values finish
-                        
-                        //std::cout << "Hash group with " << num_kvs << " kvs processing\n";
-                        
-                        
-                        while( pos_begin < num_kvs )
-                        {
-                            //std::cout << "PB: " << pos_begin << " PE: " << pos_end << "\n";
-                            // Identify the number of key-values with the same key
-                            while( ( pos_end < num_kvs ) && ( compareKey( inputs._kv[pos_begin] , inputs._kv[pos_end] ) == 0) )
-                                pos_end++;
-                            
-                            size_t pos_pointer = pos_begin;
-                            for (int i = 0 ; i < num_inputs ;i++)
-                            {
-                                if( (pos_pointer == pos_end) || ( inputs._kv[pos_pointer]->input != i) )
-                                    inputStructs[i].num_kvs = 0;
-                                else
-                                {
-                                    inputStructs[i].kvs = &inputs._kv[pos_pointer];
-                                    inputStructs[i].num_kvs = 0;
-                                    while( ( pos_pointer < pos_end ) && ( inputs._kv[pos_pointer]->input == i) )
-                                    {
-                                        inputStructs[i].num_kvs++;
-                                        pos_pointer++;
-                                    }
-                                }
-                            }
-                            
-
-                            // Just emit the output
-                            for ( size_t i = 0 ; i < inputStructs[0].num_kvs ; i++ )
-                            {
-                                keyDataInstance->parse( inputStructs[0].kvs[i]->key );
-                                valueDataInstance->parse( inputStructs[0].kvs[i]->value );
-                                
-                                writer->emit(0, keyDataInstance, valueDataInstance );
-                                
-                            }
-                            //reduce->run(inputStructs, writer);
-                            
-                            // Go to the next position
-                            pos_begin = pos_end;
-                            pos_end = pos_begin + 1;
-                            
-                            
-                        }                        
-                        
-                    }
-                    
-                }
-            }
-            
-            
-            reduce->finish( writer  );
-            
-            // Detele the created instance
-            delete reduce;            
-            
-            free( inputStructs ) ;
-            
-            //LM_M(("Finish Reducing from %d - %d" , hg_begin , hg_end ));
-            
-            
-            
-        }        
-        
-        std::string SortQueueTask::getStatus()
-        {
-            std::ostringstream output;
-            output << "[" << id << "] ";
-            output << "Sort processing " << list->str();
-            return output.str();
-        }        
-        
 #pragma mark ReduceQueueTask
         
-        
         ReduceQueueTask::ReduceQueueTask( size_t id , const network::StreamOperation& streamOperation , StateItem *_stateItem , int _hg_begin , int _hg_end  ) 
-                : stream::QueueTask(id , streamOperation )
+        : stream::QueueTask(id , streamOperation )
         {
             operation_name = "stream:" + streamOperation.operation();
-
+            
             hg_begin = _hg_begin;
             hg_end = _hg_end;
             
@@ -556,118 +450,165 @@ namespace samson {
         // Get the required blocks to process
         void ReduceQueueTask::getBlocks( BlockList *input , BlockList * _state )
         {
-            // copy input as mush as possible
+            // Extract necessary blocks
             list->extractFrom ( input , 100000000 );
             
             // copy all the blocks from the previous state
             state->copyFrom( _state );
         }
         
+        
+
+        // Structure to decide where to take key-values
+        enum kvs_source
+        {
+            undefined,
+            input_only,
+            state_only,
+            input_and_state
+        };
+        
+        
         void ReduceQueueTask::generateKeyValues( KVWriter *writer )
         {
             
-            LM_M(("Reducing ( HG %d - %d ) Input: %s State: %s" , stateItem->hg_begin , stateItem->hg_end , list->getFullKVInfo().str().c_str() , state->getFullKVInfo().str().c_str() ));
+            //LM_M(("Reducing ( HG %d - %d )" , stateItem->hg_begin , stateItem->hg_end ));
+            //LM_M(("Reducing input %s", list->getFullKVInfo().str().c_str() ));
+            //LM_M(("Reducing state %s", state->getFullKVInfo().str().c_str() ));
             
             // Get the operation
             Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation() );
             
             // Get the operation instance 
             Reduce *reduce = (Reduce*) operation->getInstance();
-            
+
+            // Prepare the operation
             reduce->environment = &operation_environment;
             reduce->tracer = this;
             reduce->operationController = this;
-            
+
+            // Init function
             reduce->init( writer );
-
-             
+            
             // Get the block reader list to prepare inputs for operation
-            BlockReaderList blockReaderList( operation );
-
-            // Put all the blocks from list
+            BlockReaderSystem blockReaderSystem( operation );
+            
+            // Insert all the blocks involved in this operation
             {
                 std::list< Block* >::iterator b;
                 for ( b = list->blocks.begin() ; b != list->blocks.end() ; b++)
-                    blockReaderList.insert( *b , 0 );
+                    blockReaderSystem.insertInput( *b , 0 );
             }
-
+            
             // Put all the blocks from state
             {
                 std::list< Block* >::iterator b;
                 for ( b = state->blocks.begin() ; b != state->blocks.end() ; b++)
-                    blockReaderList.insert( *b , 1 );
+                    blockReaderSystem.insertState( *b );
             }
             
             
-            // structure used to input reduce operations    
+            // Structure used to input reduce operations    
             int num_inputs = operation->getNumInputs();
             KVSetStruct* inputStructs = (KVSetStruct*) malloc( sizeof(KVSetStruct) * num_inputs );
-
-            // compare functions necessary for sorting and grouping key-values
-            KVInputVector &inputs = blockReaderList.inputVector;
-            inputs.compare = operation->getInputCompareFunction();
-            OperationInputCompareFunction compareKey = operation->getInputCompareByKeyFunction();
             
+            
+            // Function used to compare keys
+            OperationInputCompareFunction compareKey = operation->getInputCompareByKeyFunction();
+
             
             for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)
             {
+                
                 if( ( hg >= hg_begin ) && (hg < hg_end) )
                 {
                     
+                    
                     // Prepare all the inputs for this hash.group
-                    size_t num_kvs = blockReaderList.prepare(hg);
+                    size_t num_kvs = blockReaderSystem.prepare( hg );
                     
                     if( num_kvs > 0 )
                     {
                         
-                        // Sorting 
-                        inputs.sort();
                         
-                        //LM_M(("Running reduce over %lu kvs for hg [ %d in ( %d - %d ) ]", num_kvs , hg , hg_begin , hg_end ));
+                        size_t num_kvs_input = blockReaderSystem.input.kvVector.num_kvs;
+                        size_t num_kvs_state = blockReaderSystem.state.kvVector.num_kvs;
+
+                        //LM_M(("Processing hash-group %d :  %lu key-values ( %lu / %lu ) " , hg , num_kvs , num_kvs_input  , num_kvs_state ));
                         
-                        // Run a reduce for each "key"
-                        //std::cout << "Hash group with " << num_kvs << " kvs inputs sorted\n";
-                        
-                        // Process all the key-values in order
-                        size_t pos_begin = 0;	// Position where the next group of key-values begin
-                        size_t pos_end	 = 1;	// Position where the next group of key-values finish
-                        
-                        //std::cout << "Hash group with " << num_kvs << " kvs processing\n";
+                        KVInputVector &inputVector = blockReaderSystem.input.kvVector;
+                        KVInputVector &stateVector = blockReaderSystem.state.kvVector;
                         
                         
-                        while( pos_begin < num_kvs )
+                        size_t pos_input = 0;
+                        size_t pos_state = 0;
+
+                        
+                        while ( ( pos_input < num_kvs_input ) || ( pos_state < num_kvs_state) )
                         {
-                            //std::cout << "PB: " << pos_begin << " PE: " << pos_end << "\n";
-                            // Identify the number of key-values with the same key
-                            while( ( pos_end < num_kvs ) && ( compareKey( inputs._kv[pos_begin] , inputs._kv[pos_end] ) == 0) )
-                                pos_end++;
+                            // Let's decide where we will take key-values from ( input / state / both )
+                            // ---------------------------------------------------------------------------------------
+                            kvs_source source = undefined;
                             
-                            size_t pos_pointer = pos_begin;
-                            for (int i = 0 ; i < num_inputs ;i++)
+                            if( pos_input >= num_kvs_input )
+                                source = state_only;
+                            else if( pos_state >= num_kvs_state )
+                                source = input_only;
+                            else
                             {
-                                if( (pos_pointer == pos_end) || ( inputs._kv[pos_pointer]->input != i) )
-                                    inputStructs[i].num_kvs = 0;
+                                // We compare both first keys to decide source
+                                int res = compareKey( inputVector._kv[pos_input] , stateVector._kv[pos_state] );
+                                
+                                if ( res == 0)
+                                    source = input_and_state;
+                                else if (res < 0)
+                                    source = input_only;
                                 else
-                                {
-                                    inputStructs[i].kvs = &inputs._kv[pos_pointer];
-                                    inputStructs[i].num_kvs = 0;
-                                    while( ( pos_pointer < pos_end ) && ( inputs._kv[pos_pointer]->input == i) )
-                                    {
-                                        inputStructs[i].num_kvs++;
-                                        pos_pointer++;
-                                    }
-                                }
+                                    source = state_only;
+                            }
+
+                            // Based on the current sources , let's prepare the vector
+                            // ---------------------------------------------------------------------------------------
+                            
+                            if( source == undefined )
+                                LM_X(1,("Internal error"));
+                            
+                            if( ( source == input_only ) || ( source == input_and_state) )
+                            {
+                                inputStructs[0].kvs     = &inputVector._kv[pos_input];
+                                inputStructs[0].num_kvs = inputVector.getNumKeyValueWithSameKey(pos_input);
+                            }
+                            else
+                            {
+                                inputStructs[0].kvs = NULL;
+                                inputStructs[0].num_kvs = 0;
+                            }
+
+                            if( ( source == state_only ) || ( source == input_and_state) )
+                            {
+                                inputStructs[1].kvs     = &stateVector._kv[pos_state];
+                                inputStructs[1].num_kvs = stateVector.getNumKeyValueWithSameKey(pos_state);
+                            }
+                            else
+                            {
+                                inputStructs[1].kvs = NULL;
+                                inputStructs[1].num_kvs = 0;
                             }
                             
-                            reduce->run(inputStructs, writer);
+                            // Call the reduce operation
+                            // ---------------------------------------------------------------------------------------
                             
-                            // Go to the next position
-                            pos_begin = pos_end;
-                            pos_end = pos_begin + 1;
+                            reduce->run( inputStructs, writer );
                             
+                            // Update the position of both pointers
+                            // ---------------------------------------------------------------------------------------
                             
-                        }                        
-                        
+                            pos_input += inputStructs[0].num_kvs;
+                            pos_state += inputStructs[1].num_kvs;
+                            
+
+                        }
+
                     }
                     
                 }
@@ -681,10 +622,10 @@ namespace samson {
             
             free( inputStructs ) ;
             
-            LM_M(("Finish Reducing from %d - %d" , stateItem->hg_begin , stateItem->hg_end ));
-        
+            //LM_M(("Finish Reducing from %d - %d" , stateItem->hg_begin , stateItem->hg_end ));
+            
         }          
-
+        
         
         
         std::string ReduceQueueTask:: getStatus()
@@ -702,18 +643,19 @@ namespace samson {
             if( output == ( streamOperation->output_queues_size() - 1 ) )
             {
                 stateItem->addStateBuffer( this, buffer );
-                
-                if( finish )
-                    stateItem->notifyFinishOperation( this );
-                
                 return;
             }
             
             // Send a packet to be push in a queue ( normal behaviour in stream operations )
             sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues(output) , false );
-
-        
+            
+            
         }
+        
+        void ReduceQueueTask::finalize()
+        {
+            stateItem->notifyFinishOperation( this );
+        };
         
         
     }

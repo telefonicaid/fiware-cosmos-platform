@@ -144,7 +144,7 @@ namespace samson {
 	 */
 	void SamsonWorker::sendWorkerStatus(void)
 	{
-#if 0
+
 		Packet*                  p  = new Packet(Message::WorkerStatus);
 		network::WorkerStatus*   ws = p->message->mutable_worker_status();
 		
@@ -167,31 +167,31 @@ namespace samson {
         engine::MemoryManager *mm = engine::MemoryManager::shared();
         
             size_t memory = mm->getMemory();
-            memory_status << "\t Total memory: " << au::Format::string( memory ) << "\n";
+            memory_status << "\t Total memory: " << au::str( memory ) << "\n";
 
         {
             size_t size = mm->getUsedMemoryByTag( MemoryInput );
-            memory_status << "\t\t Input memory    " << au::Format::string( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
+            memory_status << "\t\t Input memory    " << au::str( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
         }
 
         {
             size_t size = mm->getUsedMemoryByTag( MemoryOutputDisk );
-            memory_status << "\t\t Output disk     " << au::Format::string( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
+            memory_status << "\t\t Output disk     " << au::str( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
         }
 
         {
             size_t size = mm->getUsedMemoryByTag( MemoryOutputNetwork );
-            memory_status << "\t\t Output network  " << au::Format::string( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
+            memory_status << "\t\t Output network  " << au::str( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
         }
 
         {
             size_t size = mm->getUsedMemoryByTag( MemoryAccumulated );
-            memory_status << "\t\t Accumulated     " << au::Format::string( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
+            memory_status << "\t\t Accumulated     " << au::str( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
         }
         
         {
             size_t size = mm->getUsedMemoryByTag( MemoryBlocks );
-            memory_status << "\t\t Blocks          " << au::Format::string( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
+            memory_status << "\t\t Blocks          " << au::str( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
         }
         
         
@@ -248,7 +248,7 @@ namespace samson {
         
 		// Send the message
 		network->sendToController( p );
-#endif        
+
 	}
 	
 	/* ****************************************************************************
@@ -290,7 +290,7 @@ namespace samson {
             
 
             // Tmp list with the created block
-            stream::BlockList my_list( au::Format::string("TmpList for PushBlock") );
+            stream::BlockList my_list( au::str("TmpList for PushBlock") );
             my_list.createBlock( packet->buffer , txt );
             
             
@@ -623,7 +623,7 @@ namespace samson {
         {
             if( cmd.get_num_arguments() < 3 )
             {
-                error.set( au::Format::string("Not enougth parameters for command %s" , main_command.c_str() ) ); 
+                error.set( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
             }
             else
             {
@@ -634,9 +634,52 @@ namespace samson {
             }
             
         }
+        else if ( cmd.get_argument(0) == "rm_queue" )
+        {
+            if( cmd.get_num_arguments() < 2 )
+                error.set( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
+            else
+            {
+                std::string queue_name = cmd.get_argument(1);
+                
+                queuesManager.remove_queue(  queue_name );
+            }
+        }
+        else if ( cmd.get_argument(0) == "rm_state" )
+        {
+            if( cmd.get_num_arguments() < 2 )
+                error.set( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
+            else
+            {
+                std::string state_name = cmd.get_argument(1);
+                
+                if( !queuesManager.remove_state( state_name ) )
+                    error.set( au::str("There was some error while trying to remove state %s. Possible it is working" , state_name.c_str() ) );
+            }
+        }
+        else if ( cmd.get_argument(0) == "pause_state" )
+        {
+            if( cmd.get_num_arguments() < 2 )
+                error.set( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
+            else
+            {
+                std::string state_name = cmd.get_argument(1);
+                queuesManager.pause_state( state_name );
+            }
+        }
+        else if ( cmd.get_argument(0) == "play_state" )
+        {
+            if( cmd.get_num_arguments() < 2 )
+                error.set( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
+            else
+            {
+                std::string state_name = cmd.get_argument(1);
+                queuesManager.play_state( state_name );
+            }
+        }
         else
         {
-            error.set( au::Format::string("Unknown command %s" , main_command.c_str() ) ); 
+            error.set( au::str("Unknown command %s" , main_command.c_str() ) ); 
         }
         
         
@@ -661,20 +704,23 @@ namespace samson {
             network->send( packet->fromId , p );
             
         }
-        
     }
-    
     
     // Get information for monitorization
     void SamsonWorker::getInfo( std::ostringstream& output)
     {
-        
         // Block manager
         stream::BlockManager::shared()->getInfo( output );
         
         // Queues manager information
         queuesManager.getInfo(output);
+        
+        // Process Manager
+        engine::ProcessManager::shared()->getInfo( output );
+        
     }
+    
+    
 
 	
 }

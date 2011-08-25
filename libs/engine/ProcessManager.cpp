@@ -317,6 +317,40 @@ namespace engine
         
     }	
     
+    void ProcessManager::getInfo( std::ostringstream& output)
+    {
+        output << "<process_manager>\n";
+
+        output << "<queued>\n";
+        {
+            au::set<ProcessItem>::iterator i;
+            for ( i = items.begin() ; i != items.end() ; i++)
+                (*i)->getInfo( output );
+        }
+        output << "</queued>\n";
+        
+        output << "<running>\n";
+        {
+            au::set<ProcessItem>::iterator i;
+            for ( i = running_items.begin() ; i != running_items.end() ; i++)
+                (*i)->getInfo( output );
+        }
+        output << "</running>\n";
+
+        output << "<halted>\n";
+        {
+            au::set<ProcessItem>::iterator i;
+            for ( i = halted_items.begin() ; i != halted_items.end() ; i++)
+                (*i)->getInfo( output );
+        }
+        output << "</halted>\n";
+        
+        output << "</process_manager>\n";
+        
+    }
+    
+    
+    
     void ProcessManager::quit()
     {
         

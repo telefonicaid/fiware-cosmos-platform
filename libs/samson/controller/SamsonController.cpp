@@ -123,7 +123,7 @@ namespace samson {
             {
                 // If execessive time .... kill all the tasks
                 LM_W(("Killed all task since there is a worker that has been %lu seconds disconnected" , last_update ));
-                jobManager.killAll( au::Format::string("Error since a worker has been %lu seconds disconnected", last_update ) );
+                jobManager.killAll( au::str("Error since a worker has been %lu seconds disconnected", last_update ) );
             }
         }
         else
@@ -409,7 +409,7 @@ namespace samson {
                     else
                     {
                         // Kill all current tasks
-                        jobManager.killAll( au::Format::string("Worker %d restarted", worker )  );
+                        jobManager.killAll( au::str("Worker %d restarted", worker )  );
                     }
                     
                     return;

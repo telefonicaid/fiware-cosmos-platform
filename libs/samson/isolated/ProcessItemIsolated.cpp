@@ -366,7 +366,7 @@ namespace samson
             if ( c != au::OK )
             {
                 LM_T( LmtIsolated , ("Isolated process %s: Problems reading the 'begin' message [error code '%s'] ",getStatus().c_str() , au::status(c)));
-                error.set( au::Format::string( "Problems starting background process '%s'", au::status(c)) );
+                error.set( au::str( "Problems starting background process '%s'", au::status(c)) );
                 return;     // Problem with this read
             }
             
@@ -423,7 +423,7 @@ namespace samson
                 // Not possible to read the message for any reason
 				LM_T(LmtIsolated, ("Isolated process %s: Not possible to read a message with error_code' %s'", getStatus().c_str() , au::status(c) ));
                 
-				error.set( au::Format::string( "Third party operation '%s' has crashed - [ Error code %s ]", processItemIsolated_description.c_str() ,  au::status(c) ) );
+				error.set( au::str( "Third party operation '%s' has crashed - [ Error code %s ]", processItemIsolated_description.c_str() ,  au::status(c) ) );
                 return;
             }
             

@@ -63,7 +63,7 @@ namespace engine {
     
     std::string Notification::getShortDescription()
     {
-        return au::Format::string("[ Not: %s]" , name );
+        return au::str("[ Not: %s]" , name );
     }
     
     

@@ -115,7 +115,7 @@ namespace engine {
         
 		// Status management
 		std::string getStatus();
-		
+        
 		// What to do when processor is available
 		virtual void run()=0;
 

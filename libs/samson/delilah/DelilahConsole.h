@@ -69,7 +69,6 @@ namespace samson {
             addOption("pop_state");
             addOption("download");
             addOption("load");
-            addOption("load_clear");
             addOption("clear");
             addOption("help");
             addOption("set");
@@ -81,16 +80,22 @@ namespace samson {
             addOption("info_modules");
             addOption("info_task_manager");
             addOption("info_disk_manager");
-            addOption("info_process_manager");
             addOption("info_memory_manager");
             addOption("info_load_data_manager");
-            addOption("info_queues");
             addOption("info_engine");
             addOption("info_setup");
             addOption("info_query");
             addOption("add_stream_operation");
+            addOption("rm_stream_operation");
             addOption("set_stream_operation_property");
             addOption("push_state_to_queue");               // Push content of a state in a particular queue
+            addOption("rm_queue");                          // Remove a queue
+            addOption("rm_state");                          // Remove a state
+            addOption("pause_state");                       // Pause and Play a state ( to remove it )
+            addOption("play_state");                          
+            addOption("ls_processes");                      // Get a list of all current tasks in the system
+            addOption("ls_queues");                      // Get a list of all current tasks in the system
+            addOption("ls_states");                      // Get a list of all current tasks in the system
         }
         
         void addOperations()

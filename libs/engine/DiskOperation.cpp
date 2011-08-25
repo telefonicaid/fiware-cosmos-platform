@@ -175,13 +175,13 @@ namespace engine {
 		
 		switch (type) {
 			case write:
-				o << "Write to file: '" << fileName << "' Size:" << au::Format::string(size,"B");
+				o << "Write to file: '" << fileName << "' Size:" << au::str(size,"B");
 				break;
 			case append:
-				o << "Append to file: '" << fileName << "' Size:" << au::Format::string(size,"B");
+				o << "Append to file: '" << fileName << "' Size:" << au::str(size,"B");
 				break;
 			case read:
-				o << "Read from file: '" << fileName << "' Size:" << au::Format::string(size,"B") << " ["<< size << "B] Offset:" << offset;
+				o << "Read from file: '" << fileName << "' Size:" << au::str(size,"B") << " ["<< size << "B] Offset:" << offset;
 				break;
 			case remove:
 				o << "Remove file: '" << fileName << "'";
@@ -198,13 +198,13 @@ namespace engine {
 		
 		switch (type) {
 			case write:
-				o << "W:" << au::Format::string( size );
+				o << "W:" << au::str( size );
 				break;
 			case append:
-				o << "A:" << au::Format::string( size );
+				o << "A:" << au::str( size );
 				break;
 			case read:
-				o << "R:" << au::Format::string( size );
+				o << "R:" << au::str( size );
 				break;
 			case remove:
 				o << "X";
@@ -313,11 +313,11 @@ namespace engine {
 			else
 			{
                 if( rf->seek( offset ) )
-                    setError( au::Format::string("Error while seeking data from file %s" , fileName.c_str()));
+                    setError( au::str("Error while seeking data from file %s" , fileName.c_str()));
 
                 
                 if( rf->read(read_buffer, size ) )
-                    setError( au::Format::string("Error while reading data from file %s" , fileName.c_str()));
+                    setError( au::str("Error while reading data from file %s" , fileName.c_str()));
                 
 			}
             

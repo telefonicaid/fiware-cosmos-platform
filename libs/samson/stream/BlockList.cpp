@@ -16,8 +16,8 @@
 #include "QueueTask.h"
 #include "samson/network/NetworkInterface.h"
 #include "samson/worker/SamsonWorker.h"
-#include "samson/stream/ParserQueueTask.h"          // samson::stream::ParserQueueTask
 
+#include "samson/stream/ParserQueueTask.h"          // samson::stream::ParserQueueTask
 
 #include "BlockList.h"                              // Own interface
 
@@ -192,7 +192,7 @@ namespace samson {
             {
                 output << "\n\tTotal info          " << info.str();
                 output << "\n\tAccumulated info    " << accumulated_info.str();
-                output << "\n\tBlock information   " << "( " << blocks.size() << " blocks with " << au::Format::string( size, "Bytes" );
+                output << "\n\tBlock information   " << "( " << blocks.size() << " blocks with " << au::str( size, "Bytes" );
                 output << " " << au::Format::percentage_string(size_on_memory, size) << " on memory";
                 output << " & " << au::Format::percentage_string(size_on_disk, size) << " on disk )";
             }
@@ -240,7 +240,7 @@ namespace samson {
             FullKVInfo info =  getFullKVInfo();
             size_t num_blocks = getNumBlocks();
             
-            return au::Format::string("BlockList with %s containing %s" , au::Format::string(num_blocks ,"Blocks").c_str() , info.str().c_str() );
+            return au::str("BlockList with %s containing %s" , au::str(num_blocks ,"Blocks").c_str() , info.str().c_str() );
         }
         
         

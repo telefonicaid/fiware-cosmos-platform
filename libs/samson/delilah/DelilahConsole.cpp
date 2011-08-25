@@ -22,6 +22,8 @@
 
 #include "samson/common/Info.h"                     // samson::Info
 
+#include "samson/module/ModulesManager.h"           // samson::ModulesManager
+
 #include "samson/delilah/Delilah.h"					// samson::Delailh
 #include "samson/delilah/DelilahConsole.h"				// Own interface
 
@@ -87,19 +89,23 @@ namespace samson
         else
         {
             // Parse the current introduced line to know how to auto-complete...
+            // Note: We are having problems since "rl_line_buffer" is empty :(
             
 			au::CommandLine cmdLine;
 			cmdLine.parse( rl_line_buffer );
 			std::string mainCommand = cmdLine.get_argument(0);
             
-			//std::cout << "Completion for " << mainCommand << " \n";
-			
 			if( ( mainCommand == "clear" ) || ( mainCommand == "rm" ) || ( mainCommand == "cp" ) || ( mainCommand == "mv" ) )
             {
                 // Add all the queues
                 op.addQueueOptions( NULL );
             }
-			else
+            else if( mainCommand == "help" )
+            {
+                op.addMainCommands();
+                op.addOperations();
+            }
+			else 
 			{
 				// Get the argument position depending of the number of arguments written in the command line
 				int argument_pos = cmdLine.get_num_arguments() - 1;
@@ -111,22 +117,8 @@ namespace samson
             
 	    }
         
-        char ** matches = op.get(text);
+        return  op.get(text);
 
-        /*
-        if( matches )
-        {
-            int pos = 0;
-            while( matches[pos] != NULL)
-            {
-                std::cerr << "Options " << matches[pos] << "\n";
-                pos++;
-            }
-        }
-         */
-        
-        return matches;
-        
 	}	
 	
 	void DelilahConsole::evalCommand(std::string command)
@@ -180,7 +172,120 @@ namespace samson
     }
     
     
-	size_t DelilahConsole::runAsyncCommand( std::string command )
+    const char* help_message =
+        "Samson is a distributed platform to process big-data sources. It has been specially\n"
+        "designed to process the output of log-systems like CDRs or DPI's output\n"
+        "\n"
+        "For more help type help <command>\n"
+        "\n"
+        "General platform commands:             operations, datas, reload_modules, set, unset\n"
+        "\n"
+        "Getting information from platform:     ps , ls_processes\n"
+        "\n"
+        "Bath processing commands:              ls , add , rm , mv , clear , jobs , clear_jobs , kill , upload , download \n"
+        "\n"
+        "Getting info for bath processing:      ??? \n"
+        "\n"
+        "Stream processing commands:            push , pop , add_stream_operation , rm_stream_operation , set_stream_operation_property\n"
+        "                                       push_state_to_queue , rm_queue , rm_state , play_state , pause_state\n" 
+        "\n"
+        "Getting info for stream processing:    ls_queues , ls_states , ps_stream \n"
+        "\n"
+    ;
+
+    const char* help_commands[][2] =                                            
+    {                                                                           
+        { "ls"                      , "ls          Show a list of all the key-value sets" } ,                
+        { "rm"                      , "rm <set>    Remove a key-value set. Usage rm <set>" },              
+        { "mv"                      , "mv <set> <new_set>     Change the name of a particular key-value set"},
+        { "clear"                   , "clear <set>    Clear the content of a particular key-value set"},
+        { "ls_processes"            , "ls_processes     Shows a list with all the processes ( batch and stream ) running on all the workers"},
+        
+        { "ps"                      , "ps [-clear]          Show all current process running on delilah client\n" 
+                                      "                     [-clear] removes finished or error processes"} ,                
+        
+        { "reload_modules"          , "reload_modules        reload_modules used by the platform"},
+                
+        
+        { "add"                     , "add <set> <key-format> <value-format>\n"
+                                      "add <set> -txt\n"
+                                      "Add a key-value set with a particular format. ( -txt create text sets )" },              
+
+        { "set"                     , "set <var> <value>       Set environment variables ( all operations can use them )" },
+        { "unset"                   , "unset <var>             Remove a environment variables " },
+
+        { "operations"              , "operations [-begin X] [-end -X]      Get a list of the available operations ( parser, map, reduce, script, etc)"},
+        { "datas"                   , "datas [-begin X] [-end -X]           Get a list of available data types for keys and values"},
+                        
+        { "jobs"                    , "jobs (j)          Get a list of running jobs" },
+        { "clear_jobs"              , "clear_jobs (cj)   Clear finish or error jobs" },
+        { "kill"                    , "kill (k)          Kill a particular job and all its sub-tasks" },
+
+        { "upload"                  , "upload  <local_file_name> <set>       Load txt files to the platform" },
+        { "download"                , "download  <set> <local_file_name>     Download txt sets from the platform to local file" },
+        
+        { "push"                    , "push <local_file_or_dir> <queue>        Push content of a local file/directory to a queue"},
+        { "pop"                     , "pop <queue> <local_dir>                 Pop content of a queue to a local dir. Use samsonCat to check content in binary data"},
+        
+        { "add_stream_operation"    , "add_stream_operation <name> <operation> <input .. output queues>\n"
+                                      "\n"
+                                      "Add an operation to automatically process data from queues to queues"},
+        
+        { "rm_stream_operation"     , "rm_stream_operation <name>    Remove a previously introducted operation with add_stream_operation"},
+        
+        { "push_state_to_queue"     , "push_state_to_queue <state> <queue>     Push content of a state ( used in stream reduce ) to a queue"},
+        
+        { "rm_queue"                , "rm_queue <queue>         Remove a queue" },
+        { "rm_state"                , "rm_state <state>         Remove a state ( stream reduce operations ) " },
+        
+        { "pause_state"             , "pause_state <state>        Pause an state, so no new stream reduce operation are scheduled " },
+        { "play_state"              , "play_state <state>         Cancel pause_state command over a state " },
+        
+        { "ls_queues"               , "ls_queues        Show a list of current queues in all the workers" },
+        { "ls_states"               , "ls_states        Show a list of current states in all the workers ( used in the stream reduce operations )" },
+        
+        { "ps_stream"               , "ps_stream        Get a list of current stream tasks"},
+        
+        { NULL , NULL }   
+    };
+
+    /*
+     output << "---------------------------------------------------------------------\n";
+     output << "\n";
+     output << " trace       Activate or deactivate traces\n";
+     output << "             Usage: trace on/off\n";
+     output << "---------------------------------------------------------------------\n";
+     output << "\n";
+     output << " info                General information about Controller and Workers status\n";
+     output << "                     Usage: info\n";
+     output << "\n";
+     output << " info_cores          Similar to info, with graphical representation for Worker status\n";
+     output << "                     Usage: info_cores\n";
+     output << "\n";
+     output << " info_modules        Show current modules used in all the nodes \n";
+     output << "\n";
+     output << " info_disk_manager   Information about disk operations (read and write) for every Worker\n";
+     output << "\n";
+     output << " info_engine         Information about the task scheduling in Engines\n";
+     output << "\n";
+     output << " info_full           A very detailed information for every Worker\n";
+     output << "\n";
+     output << " info_load_data_manager      Similar to info, with information of uploads and downloads per Worker\n";
+     output << "\n";
+     output << " info_memory_manager Similar to info, with detailed information of the memory assigned to every Worker\n";
+     output << "\n";
+     output << " info_net            Detailed information about the network traffic between nodes in the cluster\n";
+     output << "\n";
+     output << " info_process_manager        For every Worker, it shows the list of operations in every possible state (Running, Halting, Queued)\n";
+     output << "\n";
+     output << " info_task_manager   For the Controller, it gives information about the jobs completed and running, and the tasks in the case of scripts\n;";
+     output << "                     For every Worker, for every task, it shows the component process and their state\n";
+     output << "\n";
+     output << "---------------------------------------------------------------------\n";
+     
+     */
+
+        size_t DelilahConsole::runAsyncCommand( std::string command )
 	{
 		
 		au::CommandLine commandLine;
@@ -191,6 +296,7 @@ namespace samson
 		commandLine.set_flag_boolean("gz");			// Flag to indicate compression
 		commandLine.set_flag_int("threads",4);
         commandLine.set_flag_boolean("force");      // Force to remove directory if exist before in pop operations
+        commandLine.set_flag_boolean("clear");      // Used in the ps command
 		commandLine.parse( command );
 
 		std::string mainCommand;
@@ -206,107 +312,44 @@ namespace samson
 		if ( commandLine.isArgumentValue(0,"help","h") )
 		{
 			
-			std::ostringstream output;
-
-			output << "SAMSON v " << SAMSON_VERSION << "\n";
-			output << "==============================================================\n";
+            if( commandLine.get_num_arguments() == 1 )
+            {
+                
+                std::ostringstream output;
+                output << "\n";
+                output << "SAMSON v " << SAMSON_VERSION << "\n";
+                output << "==============================================================\n";
+                output << "\n";
+                output << help_message;
+                output << "\n";
+                
+                writeOnConsole( au::indent( output.str() ) );
+                return 0;
+            }
+            else
+            {
+                std::string command = commandLine.get_argument(1);
+                
+                // Search into defined commands for help
+                int  i = 0 ;
+                while( help_commands[i][0] != NULL )
+                {
+                    if( strcmp( command.c_str()  , help_commands[i][0] ) == 0 )
+                    {
+                        std::ostringstream output;
                         output << "\n";
-                        output << " ls          Get a list of current data-sets\n";
-                        output << "             Usage: ls [-begin name] [-end name]\n";
+                        output << help_commands[i][1];
                         output << "\n";
-                        output << " add         Add a data set with a particular format for the key and for the value\n";
-                        output << "             Usage: add set_name key_type value_type (i.e. add pairs system.UInt system.UInt )\n";
-                        output << "             Usage: add set_name -txt (i.e. add txt_cdrs )\n";
-                        output << "             Option -f to avoid error if the data set already exist\n";
-                        output << "\n";
-                        output << " rm          Remove a given data set\n";
-                        output << "             Usage: rm set_name\n";
-                        output << "\n";
-                        output << " mv          Change the name of a particular set\n";
-                        output << "             Usage: mv set_name set_name2\n";
-                        output << "\n";
-                        output << " clear       Clear the content of a particular data set\n";
-                        output << "             Usage: clear set_name\n";
-                        output << "\n";
-                        output << "---------------------------------------------------------------------\n";
-                        output << "\n";
-                        output << " set/unset   Set and unset environment variables that go to all operations\n";
-                        output << "             Usage: set var_name value or unset var_name\n";
-                        output << "\n";
-                        output << "---------------------------------------------------------------------\n";
-                        output << "\n";
-                        output << " operations  Get a list of the available operations ( parser, map, reduce, script, etc)\n";
-                        output << "             Usage: operations/o [-begin X] [-end -X]\n";
-                        output << "\n";
-                        output << " datas       Get a list of available data types for keys and values\n";
-                        output << "             Usage: datas/d [-begin X] [-end -X]\n";
-                        output << "\n";
-                        output << "---------------------------------------------------------------------\n";
-                        output << "\n";
-                        output << " jobs (j)    Get a list of running jobs\n";
-                        output << "             Usage: jobs/j\n";
-                        output << " clear_jobs (cj)    Clear finish or error jobs\n";
-                        output << "             Usage: clear_jobs/cj\n";
-                        output << " kill (k)    Kill a particular job and all its sub-tasks\n";
-                        output << "             Usage: kill job_id\n";
-                        output << "\n";
-                        output << " workers (w) Get information about what is running on workers and controller\n";
-                        output << "             Usage: workers/w\n";
-                        output << "\n";
-                        output << " reload_modules Reload modules present used by the platform.\n";
-                        output << "             Usage: reload_modules/reload\n";
-                        output << "\n";
-                        output << "---------------------------------------------------------------------\n";
-                        output << "\n";
-                        output << " upload      Load txt files to the platform\n";
-                        output << "             Usage: load local_file_name set_name [-plain] [-gz] \n";
-                        output << "\n";
-                        output << " download    Download txt files from the platform\n";
-                        output << "             Usage: download set_name local_file_name (only txt txt at the moment)/w\n";
-                        output << "\n";
-                        output << " load        Check status of upload and downloads \n";
-                        output << "             Usage: load\n";
-                        output << "\n";
-                        output << " load_clear  Clear complete upload and download processes\n";
-                        output << "             Usage: load_clear\n";
-                        output << "\n";
-                        output << "---------------------------------------------------------------------\n";
-                        output << "\n";
-                        output << " trace       Activate or deactivate traces\n";
-                        output << "             Usage: trace on/off\n";
-                        output << "---------------------------------------------------------------------\n";
-                        output << "\n";
-                        output << " info                General information about Controller and Workers status\n";
-                        output << "                     Usage: info\n";
-                        output << "\n";
-                        output << " info_cores          Similar to info, with graphical representation for Worker status\n";
-                        output << "                     Usage: info_cores\n";
-                        output << "\n";
-                        output << " info_modules        Show current modules used in all the nodes \n";
-                        output << "\n";
-                        output << " info_disk_manager   Information about disk operations (read and write) for every Worker\n";
-                        output << "\n";
-                        output << " info_engine         Information about the task scheduling in Engines\n";
-                        output << "\n";
-                        output << " info_full           A very detailed information for every Worker\n";
-                        output << "\n";
-                        output << " info_load_data_manager      Similar to info, with information of uploads and downloads per Worker\n";
-                        output << "\n";
-                        output << " info_memory_manager Similar to info, with detailed information of the memory assigned to every Worker\n";
-                        output << "\n";
-                        output << " info_net            Detailed information about the network traffic between nodes in the cluster\n";
-                        output << "\n";
-                        output << " info_process_manager        For every Worker, it shows the list of operations in every possible state (Running, Halting, Queued)\n";
-                        output << "\n";
-                        output << " info_task_manager   For the Controller, it gives information about the jobs completed and running, and the tasks in the case of scripts\n;";
-                        output << "                     For every Worker, for every task, it shows the component process and their state\n";
-                        output << "\n";
-                        output << "---------------------------------------------------------------------\n";
-			output << "\n";
-			
-			
-			writeOnConsole( output.str() );
-			return 0;
+                        writeOnConsole( au::indent( output.str() ) );
+                        return 0;
+                    }
+                    i++;
+                }
+             
+                writeWarningOnConsole(au::str("\nNot help for %s\n\n" , command.c_str()));
+                return 0;
+            }
+            
 		}
 		
 		if ( commandLine.isArgumentValue(0, "quit", "") )
@@ -395,12 +438,6 @@ namespace samson
 			return 0;
 		}
 		
-		if ( mainCommand == "load_clear" )
-		{
-			// Clear completed upload and download process
-			clearComponents();
-			return 0;
-		}
 		
 		if ( mainCommand == "clear_components" )
 		{
@@ -443,6 +480,10 @@ namespace samson
 
 		if ( mainCommand == "ps" )
 		{
+            
+            if( commandLine.get_flag_bool("clear") )
+                clearComponents();
+            
 			std::ostringstream output;
 			output << getListOfComponents();
 			writeOnConsole(output.str());
@@ -479,17 +520,6 @@ namespace samson
                 writeErrorOnConsole("Usage: info txt/xml/select/values/num/str/double [options]");
                 return 0;
             }
-
-            // Parse the xml document
-            std::istringstream is_xml_document( xml_info );
-            pugi::xml_document doc;
-            pugi::xml_parse_result result = doc.load( is_xml_document );
-            
-            if (!result)
-            {
-                writeErrorOnConsole( au::Format::string("Error parsing xml from samson platform %s", result.description() ) );
-                return 0;
-            }
             
             // Main xml command
             std::string command = commandLine.get_argument(1);
@@ -515,7 +545,7 @@ namespace samson
                 }
                 
                 std::string query = commandLine.get_argument(2);
-                writeWarningOnConsole(au::Format::string("Running select %s" , query.c_str()));
+                writeWarningOnConsole(au::str("Running select %s" , query.c_str()));
                 
                 pugi::ValuesCollection vc = pugi::values(doc, query);
                 
@@ -537,7 +567,7 @@ namespace samson
 
                 size_t result = pugi::UInt64( doc , query_str );
 
-                writeWarningOnConsole(au::Format::string("Running query %s wiht result %lu" , query_str.c_str() , result ) );
+                writeWarningOnConsole(au::str("Running query %s wiht result %lu" , query_str.c_str() , result ) );
                 
                 return 0;
             }            
@@ -554,7 +584,7 @@ namespace samson
                 
                 double result = pugi::Double( doc , query_str );
                 
-                writeWarningOnConsole(au::Format::string("Running query %s wiht result %f" , query_str.c_str() , result ) );
+                writeWarningOnConsole(au::str("Running query %s wiht result %f" , query_str.c_str() , result ) );
                 
                 return 0;
             }            
@@ -571,7 +601,7 @@ namespace samson
                 
                 std::string result = pugi::String( doc , query_str );
                 
-                writeWarningOnConsole(au::Format::string("Running query %s wiht result %s" , query_str.c_str() , result.c_str() ) );
+                writeWarningOnConsole(au::str("Running query %s wiht result %s" , query_str.c_str() , result.c_str() ) );
                 
                 return 0;
             }            
@@ -585,14 +615,14 @@ namespace samson
                 }
                 
                 std::string query = commandLine.get_argument(2);
-                writeWarningOnConsole(au::Format::string("Running select %s" , query.c_str()));
+                writeWarningOnConsole(au::str("Running select %s" , query.c_str()));
                 
                 pugi::xpath_node_set result;
                 try {
                     result = doc.select_nodes( query.c_str() );
                 } catch (pugi::xpath_exception& ex) 
                 {
-                    writeErrorOnConsole( au::Format::string( "Error in xpath query: %s" , ex.what() ) );
+                    writeErrorOnConsole( au::str( "Error in xpath query: %s" , ex.what() ) );
                     return 0;
                 }
                 
@@ -849,26 +879,96 @@ namespace samson
 			return id;
 		}
         
-        // Spetial command to use "worker command"
-        if( mainCommand == "push_state_to_queue" )
+        // WorkerCommands
+        std::string main_command = commandLine.get_argument(0);
+        
+        if( main_command == "push_state_to_queue" )
         {
-			if( commandLine.get_num_arguments() < 3 )
-			{
-				writeErrorOnConsole("Usage: push_state_to_queue state queue");
-				return 0;
-			}
-            
-            return sendWorkerCommand( command , NULL );
+            if( commandLine.get_num_arguments() < 3 )
+            {
+                writeErrorOnConsole( au::str("Usage: push_state_to_queue state queue" ) );
+                return 0;
+            }
+            else
+                return sendWorkerCommand( command , NULL );
         }
         
         
-		// Normal command send to the controller
+        // Command to remove queues / states 
+        if( main_command == "rm_queue" )
+        {
+            if( commandLine.get_num_arguments() < 2 )
+            {
+                writeErrorOnConsole( au::str("Usage: rm_queue queue" ) );
+                return 0;
+            }
+            else
+                return sendWorkerCommand( command , NULL );
+        }
+        
+        if( main_command == "rm_state" )
+        {
+            if( commandLine.get_num_arguments() < 2 )
+            {
+                writeErrorOnConsole( au::str("Usage: rm_state state" ) );
+                return 0;
+            }
+            else
+                return sendWorkerCommand( command , NULL );
+        }
+        
+        // Command to play / pause statess
+        if( main_command == "pause_state" )
+        {
+            if( commandLine.get_num_arguments() < 2 )
+            {
+                writeErrorOnConsole( au::str("Usage: pause_state state" ) );
+                return 0;
+            }
+            else
+                return sendWorkerCommand( command , NULL );
+            
+        }
+        
+        if( main_command == "play_state" )
+        {
+            if( commandLine.get_num_arguments() < 2 )
+            {
+                writeErrorOnConsole( au::str("Usage: play_state state" ) );
+                return 0;
+            }
+            else
+                return sendWorkerCommand( command , NULL );
+        }
+        
+        if( main_command == "ls_queues" )
+        {
+            showInfo("info_queues");
+            return 0;
+        }
+        if( main_command == "ls_states" )
+        {
+            showInfo("info_queues");
+            return 0;
+        }
+
+        if( main_command == "ps_stream" )
+        {
+            showInfo("info_queues");
+            return 0;
+        }
+        
+        if( main_command == "ls_processes" )
+        {
+            showInfo("info_process_manager");
+            return 0;
+        }
+        
+        
+		// By default, we consider a normal command sent to controller
+
 		return sendCommand( command , NULL );
 
-		//std::ostringstream o;
-		//o << "Sent command to controller (id="<<id<<") : " << command;
-		//writeWarningOnConsole(o.str());
-		
 	}
 	
 	int DelilahConsole::_receive(int fromId, Message::MessageCode msgCode, Packet* packet)
@@ -884,7 +984,7 @@ namespace samson
                 std::string fname   = packet->message->trace().fname();
                 std::string stre    = packet->message->trace().stre();
                 
-                //writeOnConsole( au::Format::string("Trace: %s", _text.c_str() ) );
+                //writeOnConsole( au::str("Trace: %s", _text.c_str() ) );
                 if( trace_on )
                 {
 				   
@@ -1027,9 +1127,9 @@ namespace samson
 			
 			txt << std::setw(30) << queue.name();
 			txt << " ";
-			txt << au::Format::string( queue.info().kvs() );
+			txt << au::str( queue.info().kvs() );
 			txt << " kvs in ";
-			txt << au::Format::string( queue.info().size() ) << " bytes";
+			txt << au::str( queue.info().size() ) << " bytes";
 			txt << " #File: " << ql.queue(i).file_size();
 			txt << " (" << queue.format().keyformat() << " " << queue.format().valueformat() << ") ";
 			txt << std::endl;
@@ -1159,9 +1259,9 @@ namespace samson
                             txt << "\n" << std::setw(10 + item*2) << " ";
                             
                             txt << "\tProgress: ";
-                            txt << au::Format::string( task.processed_info().size() );
-                            txt << " / " << au::Format::string( task.running_info().size() );
-                            txt << "/" << au::Format::string( task.total_info().size() ) << " ";
+                            txt << au::str( task.processed_info().size() );
+                            txt << " / " << au::str( task.running_info().size() );
+                            txt << "/" << au::str( task.total_info().size() ) << " ";
                             txt << au::Format::double_progress_bar(processed_completed, running_progress, '*', '-', ' ' ,  60);
                             break;
                             
@@ -1268,9 +1368,9 @@ namespace samson
                             processed_completed = (double) task.processed_info().size() / (double) task.total_info().size();
                         
                         txt << "\n\t\tProgress: " << task.task_description() << " : ";
-                        txt << au::Format::string( task.processed_info().size() );
-                        txt << " / " << au::Format::string( task.running_info().size() );
-                        txt << "/" << au::Format::string( task.total_info().size() ) << " ";
+                        txt << au::str( task.processed_info().size() );
+                        txt << " / " << au::str( task.running_info().size() );
+                        txt << "/" << au::str( task.total_info().size() ) << " ";
                         txt << au::Format::double_progress_bar(processed_completed, running_progress, '*', '-', ' ' ,  60);
                         break;
                         
@@ -1340,7 +1440,7 @@ namespace samson
 
             if( ( command == "info_full" ) || (command == "info_queues" ) )
             {
-                txt << "** Queues info:\n" << au::Format::indent( worker_status.queues_status() ) << "\n";
+                txt << "** Queues info:\n" << au::indent( worker_status.queues_status() ) << "\n";
                 //txt << "** QueuesTasks: " << worker_status.queues_tasks_status() << "\n";
             }
             
@@ -1361,28 +1461,28 @@ namespace samson
             
             if( command == "info_cores" )
             {
-                txt << au::Format::string("Worker %03d", i);
+                txt << au::str("Worker %03d", i);
                 
                 
-                txt << au::Format::string("\n\tCores  [ %s ] %s / %s :" , 
+                txt << au::str("\n\tCores  [ %s ] %s / %s :" , 
                                           au::Format::percentage_string(per_cores).c_str() , 
-                                          au::Format::string(used_cores).c_str() , 
-                                          au::Format::string(total_cores).c_str() );
+                                          au::str(used_cores).c_str() , 
+                                          au::str(total_cores).c_str() );
                 
                 txt << au::Format::progress_bar( per_cores , 50 );
                 
                 
-                txt << au::Format::string("\n\tMemory [ %s ] %s / %s :" , 
+                txt << au::str("\n\tMemory [ %s ] %s / %s :" , 
                                           au::Format::percentage_string(per_memory).c_str() , 
-                                          au::Format::string(used_memory).c_str() , 
-                                          au::Format::string(total_memory).c_str() );
+                                          au::str(used_memory).c_str() , 
+                                          au::str(total_memory).c_str() );
                 
                 txt << au::Format::progress_bar( per_memory , 50 );
                 
                 // Disk operations
                 
-                txt << au::Format::string("\n\tDisk                     %s :" , 
-                                          au::Format::string(disk_pending_operations).c_str() );
+                txt << au::str("\n\tDisk                     %s :" , 
+                                          au::str(disk_pending_operations).c_str() );
                 
                 txt << au::Format::progress_bar( per_disk , 50 );
 				txt << "\n";                    

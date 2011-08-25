@@ -163,7 +163,7 @@ namespace samson
     std::string PushComponent::getStatus()
     {
         std::ostringstream output;
-        output << "Pushing " << au::Format::string( totalSize , "Bytes" ) << " to queues ";
+        output << "Pushing " << au::str( totalSize , "Bytes" ) << " to queues ";
         
         std::set<std::string>::iterator q;
         for (q = queues.begin() ; q != queues.end() ; q++)
@@ -178,7 +178,7 @@ namespace samson
     {
 
         std::ostringstream output;
-        output << "Pushing " << au::Format::string( totalSize , "Bytes" ) << " to queues ";
+        output << "Pushing " << au::str( totalSize , "Bytes" ) << " to queues ";
         
         std::set<std::string>::iterator q;
         for (q = queues.begin() ; q != queues.end() ; q++)
@@ -250,7 +250,7 @@ namespace samson
         
         if( mkdir( fileName.c_str() , 0755 ) )
         {
-            setComponentFinishedWithError( au::Format::string( "Not possible to create directory %s." , fileName.c_str() ) );
+            setComponentFinishedWithError( au::str( "Not possible to create directory %s." , fileName.c_str() ) );
             return;
         }
                 
@@ -290,7 +290,7 @@ namespace samson
             
             num_write_operations++;
          
-            std::string _fileName = au::Format::string("%s/file_%d" , fileName.c_str() , num_outputs++ );
+            std::string _fileName = au::str("%s/file_%d" , fileName.c_str() , num_outputs++ );
             
             engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( packet->buffer , _fileName , getEngineId() );
             engine::DiskManager::shared()->add( operation );                

@@ -73,7 +73,7 @@ namespace engine
         
         EngineElementSleepTest() : EngineElement(10)
         {
-            description = au::Format::string("Sleep element just to sleep %d seconds", 10 );    
+            description = au::str("Sleep element just to sleep %d seconds", 10 );    
             shortDescription = description;
         }
         

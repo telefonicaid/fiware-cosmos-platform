@@ -29,7 +29,7 @@
 #include "Alarm.h"              // ALARM
 #include "samson/common/ports.h"  // Port numbers for samson processes
 
-#include "au/Format.h"             // au::Format::string
+#include "au/Format.h"             // au::str
 #include "samson/common/samsonConfig.h"       // SAMSON_MAX_HOSTS
 #include "samson/module/Log.h"			// LogLineData
 #include "samson/common/platformProcesses.h"  // platformProcessesGet
@@ -1139,9 +1139,9 @@ void Network::endpointListShow(const char* why, bool forced)
 			  endpoint[ix]->stateName(),
 			  endpoint[ix]->rFd,
 			  endpoint[ix]->msgsIn,
-			  au::Format::string(endpoint[ix]->bytesIn, "B").c_str(),
+			  au::str(endpoint[ix]->bytesIn, "B").c_str(),
 			  endpoint[ix]->msgsOut,
-			  au::Format::string(endpoint[ix]->bytesOut, "B").c_str(),
+			  au::str(endpoint[ix]->bytesOut, "B").c_str(),
 			  endpoint[ix]->rMbps,
 			  endpoint[ix]->rAccMbps,
 			  endpoint[ix]->wMbps,
@@ -3508,9 +3508,9 @@ std::string Network::getState(std::string selector)
 					 endpoint[ix]->stateName(),
 					 endpoint[ix]->rFd,
 					 endpoint[ix]->msgsIn,
-					 au::Format::string(endpoint[ix]->bytesIn, "B").c_str(),
+					 au::str(endpoint[ix]->bytesIn, "B").c_str(),
 					 endpoint[ix]->msgsOut,
-					 au::Format::string(endpoint[ix]->bytesOut, "B").c_str());
+					 au::str(endpoint[ix]->bytesOut, "B").c_str());
 		}
 		else
 		{
@@ -3525,9 +3525,9 @@ std::string Network::getState(std::string selector)
 					 endpoint[ix]->stateName(),
 					 endpoint[ix]->rFd,
 					 endpoint[ix]->msgsIn,
-                     au::Format::string(endpoint[ix]->bytesIn, "B").c_str(),
+                     au::str(endpoint[ix]->bytesIn, "B").c_str(),
 					 endpoint[ix]->msgsOut,
-                     au::Format::string(endpoint[ix]->bytesOut, "B").c_str());
+                     au::str(endpoint[ix]->bytesOut, "B").c_str());
 
 		}
 

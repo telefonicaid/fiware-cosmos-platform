@@ -51,10 +51,7 @@ namespace txt{
 			// Emit the result			
 			writer->emit( 0, &word , &total );
 
-			OLM_M(("Word: %s -> %d", word.value.c_str() , (int)total.value  ));
-
 		}
-
 
 	};
 

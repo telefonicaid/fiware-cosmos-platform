@@ -166,7 +166,7 @@ namespace samson
 			
 			// Send the packet
 			std::ostringstream message;
-			message << "[ " << id << " ] < Buffer " << file_id << " > Created with size: " << au::Format::string( b->getSize() , "B" );
+			message << "[ " << id << " ] < Buffer " << file_id << " > Created with size: " << au::str( b->getSize() , "B" );
 			delilah->showTrace( message.str() );
 
 			lock.lock();
@@ -237,7 +237,7 @@ namespace samson
 		// Send the packet
 		{
 			std::ostringstream message;
-			message << "[ " << id << " ] < Buffer " << file_id << " > Sending ( Compresed Size: " << au::Format::string(compress_size) << " Original Size: " << au::Format::string(original_size) << ")";
+			message << "[ " << id << " ] < Buffer " << file_id << " > Sending ( Compresed Size: " << au::str(compress_size) << " Original Size: " << au::str(original_size) << ")";
 			pd->delilah->showTrace( message.str() );
 		}
 		
@@ -411,8 +411,8 @@ namespace samson
 			r = 0;
 		
 		size_t r2 = r / num_workers;
-		output << " [ "<< title << " " << au::Format::string( size , "B" ) << " " << p << "% "; 
-		output << au::Format::string( r , "bps" ) << "  " << au::Format::string( r2 , "bps/w" ) << "  ]";
+		output << " [ "<< title << " " << au::str( size , "B" ) << " " << p << "% "; 
+		output << au::str( r , "bps" ) << "  " << au::str( r2 , "bps/w" ) << "  ]";
 		
 		return output.str();
 	}
@@ -423,7 +423,7 @@ namespace samson
 		
 		int seconds = au::Format::ellapsedSeconds(&init_time);
 		
-		output << "Uploading " << au::Format::string( totalSize ,"B" ) << " to queue: " << queue << " ( Status ";
+		output << "Uploading " << au::str( totalSize ,"B" ) << " to queue: " << queue << " ( Status ";
         
 		switch (status) {
 			case uninitialized:
@@ -466,7 +466,7 @@ namespace samson
 		
 		int seconds = au::Format::ellapsedSeconds(&init_time);
 		
-		output << "[ "<< id << " ] Uploading " << au::Format::string( totalSize ,"B" ) << " to queue: " << queue << " ( Status ";
+		output << "[ "<< id << " ] Uploading " << au::str( totalSize ,"B" ) << " to queue: " << queue << " ( Status ";
 
 		switch (status) {
 			case uninitialized:
@@ -502,7 +502,7 @@ namespace samson
         // Memory and process
         output << "\n\tParalel processes: " << num_threads << " / " << max_num_threads;
         output << "\n\tOutput memory usage " << au::Format::percentage_string( engine::MemoryManager::shared()->getMemoryUsageByTag( MemoryOutputNetwork  ) );
-        output << " of " << au::Format::string( engine::MemoryManager::shared()->getMemory() , "B" );
+        output << " of " << au::str( engine::MemoryManager::shared()->getMemory() , "B" );
         
         // Status of the file source
 		output << "\n\tFile source: " << fileSet.getStatus();

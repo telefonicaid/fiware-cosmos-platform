@@ -68,6 +68,9 @@ namespace samson {
             void setRunning( ReduceQueueTask* task );
             void setRunning( ReduceQueueTask* task , ReduceQueueTask* task2 );
             
+            bool isWorking();
+
+            
             FullKVInfo getFullKVInfo();
             
         };

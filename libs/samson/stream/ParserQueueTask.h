@@ -103,42 +103,12 @@ namespace samson
         };
 
         
-        // Parser QueueTask ( at the same time is the ProcessItem in the engine library to be executed )
-        
-        class SortQueueTask : public stream::QueueTask 
-        {
-            
-        public:
-            
-            SortQueueTask( size_t id , const network::StreamOperation& streamOperation  ) :stream::QueueTask(id , streamOperation )
-            {
-                operation_name = "stream:" + streamOperation.operation();
-            }
-            
-            ~SortQueueTask()
-            {
-            }
-            
-            // Get the required blocks to process
-            void getBlocks( BlockList *input );
-            
-            // Function to generate output key-values
-            void generateKeyValues( KVWriter *writer );
-            
-            // Get a string with the status of this task
-            virtual std::string getStatus();
-                        
-        };
-        
-
-        // Parser QueueTask ( at the same time is the ProcessItem in the engine library to be executed )
-        
         class ReduceQueueTask : public stream::QueueTask 
         {
             
             StateItem *stateItem;       // Pointer to notify state vectors
             
-            int hg_begin; 
+            int hg_begin;               // Limits in the hash-group considered in this operation
             int hg_end;
             
         public:
@@ -148,26 +118,23 @@ namespace samson
             ~ReduceQueueTask()
             {
             }
-                        
-            void getBlocks( BlockList *input , BlockList *state );
 
+            // Get the blocks for this operation
+            void getBlocks( BlockList *input , BlockList *state );
             
             // Function to generate output key-values
             void generateKeyValues( KVWriter *writer );
             
             // Get a string with the status of this task
             virtual std::string getStatus();
-            
-            StreamProcessBase* getStreamProcess()
-            {
-                return this;
-            }
 
             // Particular way to process data    
             void processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish );
+
+            // Funcion executed when task is finished
+            void finalize();
             
-        };        
-        
+        };          
         
         
         
@@ -175,3 +142,4 @@ namespace samson
 }
 
 #endif
+

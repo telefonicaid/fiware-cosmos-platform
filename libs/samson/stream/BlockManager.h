@@ -132,7 +132,7 @@ namespace samson {
             std::string str()
             {
                 std::ostringstream output;
-                output <<"BLockManager: <Reads: " << num_reading_operations << " // Writes: " << num_writing_operations << " > [ " << au::Format::string( memory ) << " / " << au::Format::string(max_memory) << " ] " ;
+                output <<"BLockManager: <Reads: " << num_reading_operations << " // Writes: " << num_writing_operations << " > [ " << au::str( memory ) << " / " << au::str(max_memory) << " ] " ;
                 for (std::list<Block*>::iterator i = blocks.begin() ; i != blocks.end() ; )
                 {
                     output << (*i)->str();

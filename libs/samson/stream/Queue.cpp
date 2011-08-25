@@ -34,7 +34,7 @@ namespace samson {
             name = _name;
             qm = _qm;
                         
-            list = new BlockList( au::Format::string( "Queue %s" , name.c_str() ) );
+            list = new BlockList( au::str( "Queue %s" , name.c_str() ) );
         }
         
         Queue::~Queue()
@@ -51,7 +51,7 @@ namespace samson {
             std::ostringstream output;
             
             output << "Queue " << name << "\n";            
-            output << au::Format::indent( list->str() ) << "\n";
+            output << au::indent( list->str() ) << "\n";
             
             return output.str();
         }

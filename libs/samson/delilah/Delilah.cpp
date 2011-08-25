@@ -5,6 +5,7 @@
 #include "au/CommandLine.h"		// CommandLine
 #include "au/Cronometer.h"      // au::Cronometer
 
+
 #include "engine/Buffer.h"      // engine::Buffer
 #include "engine/Notification.h"    // engine::Notificaiton
 
@@ -229,6 +230,16 @@ namespace samson {
             au::TokenTaker tt( &info_lock );
 
             xml_info = packet->message->info();
+
+            std::istringstream is_xml_document( xml_info );
+            
+            doc.reset();
+            pugi::xml_parse_result result = doc.load( is_xml_document );
+            
+            if( !result )
+            {
+                // Do something with this error
+            }
             
 
         }

@@ -230,26 +230,35 @@ namespace samson
 	SamsonSetup::SamsonSetup( )
 	{
         
+        // General Platform parameters
         add( "general.memory" , "10000000000" , "Global available memory " );                                    // Memory 2G
         add( "general.num_processess" , "16" , "Number of cores" );                                              // Number of cores 2
         add( "general.max_file_size" , "1000000000" , "Max size for generated files" );                          // Max file size 100 Mb
         add( "general.shared_memory_size_per_buffer" , "268435456" , "Size of the shared memory segments" );            // Shared memory suze 64Mb
 
 		add( "general.max_parallel_outputs" , "2" , "Max number of parallel outputs");
-        
+
+        // Isolation Process
 		add( "isolated.timeout" , "300" , "Timeout for all 3rd partty operations" );                            // Max time isolated
 
+        // Upload & Download operations
 		add( "load.buffer_size" , "67108864" , "Size of the data block for load operations" );                  // Load in blocks of 64 Mbytes
         
-        add("delilah.automatic_update_period" , "2" , "Period for the automatic update of information from the samson cluster" );                          // Seconds to update delilah
-        
-        
+        // Delilah Client
+        add("delilah.automatic_update_period" , "2" , "Period for the automatic update of information from the samson cluster" );      
+
+        // Worker Parameters
         add("worker.update_files_period" ,"5" , "Period for the automatic update of files for each worker" );
         add("worker.update_status_period", "3" , "Period for the automatic update from workers to controller" );        
-
         add("worker.period_check_finish_tasks", "5", "Period to review finished tasks in samsonWorker, to be clean from memory" );
-        
+
+        // Controller
         add("controller.max_worker_disconnected_time", "120" , "Maximum acceptable time for a worker to be disconnected." );
+        
+        // Stream processing
+        add("stream.max_input_size_for_stream_task" , "1000000000" , "Maximum input data ( in bytes ) processed by a single stream task");
+        add("stream.max_state_item_size", "1000000000" , "Maximum size for a stream-state item. If higher, it is divided in two");
+        
 	}
 
     std::string SamsonSetup::get( std::string name )
@@ -305,7 +314,7 @@ namespace samson
 		}
 		
 		if ( num_paralell_outputs < 2 )
-            error->set(  au::Format::string("Num  of paralell outputs is lower than 2. Please review property 'general.max_parallel_outputs'" ) );
+            error->set(  au::str("Num  of paralell outputs is lower than 2. Please review property 'general.max_parallel_outputs'" ) );
         
 	}
 

@@ -70,10 +70,10 @@ namespace au {
         last_minute.review();
         last_hour.review();
         
-        return au::Format::string( "Last minute: [ %s ] %s || Last hour %s" , 
-                 au::Format::string( last_minute.getNumOperation() ,"Ops").c_str() , 
-                 au::Format::string( last_minute.getRate() , "Bps" ).c_str(),
-                 au::Format::string( last_hour.getTotalSize() , "B" ).c_str() );
+        return au::str( "Last minute: [ %s ] %s || Last hour %s" , 
+                 au::str( last_minute.getNumOperation() ,"Ops").c_str() , 
+                 au::str( last_minute.getRate() , "Bps" ).c_str(),
+                 au::str( last_hour.getTotalSize() , "B" ).c_str() );
     }
 
     size_t Rate::getLastMinuteRate()

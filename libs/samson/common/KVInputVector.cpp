@@ -42,6 +42,9 @@ namespace samson
 		
 		compare = operation->getInputCompareFunction();
         
+        compareKey = operation->getInputCompareByKeyFunction();
+
+        
     }
 
     

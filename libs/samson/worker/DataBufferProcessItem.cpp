@@ -28,7 +28,7 @@ namespace samson {
 		
 		// Set the status 
 		std::ostringstream statusStream;
-		statusStream << "Prewrite " << au::Format::string( bv->getTotalSize() ,"Bytes" ) ;
+		statusStream << "Prewrite " << au::str( bv->getTotalSize() ,"Bytes" ) ;
 		operation_name = statusStream.str();
 	}
     

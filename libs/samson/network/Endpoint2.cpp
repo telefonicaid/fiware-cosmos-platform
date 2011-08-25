@@ -1309,9 +1309,9 @@ const char* Endpoint2::statusString(char* buf, int bufLen, int ix)
 			 port,
 			 fd,
 			 msgsIn,
-			 au::Format::string(bytesIn, "B").c_str(),
+			 au::str(bytesIn, "B").c_str(),
 			 msgsOut,
-			 au::Format::string(bytesOut, "B").c_str(),
+			 au::str(bytesOut, "B").c_str(),
 			 jq);
 
 	return buf;

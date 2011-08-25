@@ -159,7 +159,7 @@ namespace samson {
                 cmdLine.set_flag_string("output_value_format", "no-format");
                 cmdLine.parse(command);
                 
-                std::string add_command = au::Format::string("add %s %s %s", 
+                std::string add_command = au::str("add %s %s %s", 
                             selectCommandLine.get_argument(2).c_str() ,  
                             cmdLine.get_flag_string("output_key_format").c_str() , 
                             cmdLine.get_flag_string("output_value_format").c_str()
@@ -456,7 +456,7 @@ namespace samson {
 	std::string Job::getStatus()
 	{
 		std::ostringstream output;
-        output << "id " << au::Format::string("%05lu", id ) << " ";
+        output << "id " << au::str("%05lu", id ) << " ";
         
 		switch (_status) {
 			case error:

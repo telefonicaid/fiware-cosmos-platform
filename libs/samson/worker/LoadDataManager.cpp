@@ -48,9 +48,9 @@ namespace samson
         int worker_id = dataManager->worker->network->getWorkerId();    // Get the worker id information
         
 #ifdef __LP64__
-        fileName = au::Format::string( "worker_%d_job_%lu_id_%lu.txt", worker_id, load_id, id);
+        fileName = au::str( "worker_%d_job_%lu_id_%lu.txt", worker_id, load_id, id);
 #else
-        fileName = au::Format::string( "worker_%d_job_%d_id_%d.txt", worker_id, load_id, id);
+        fileName = au::str( "worker_%d_job_%d_id_%d.txt", worker_id, load_id, id);
 #endif
 
         
@@ -106,7 +106,7 @@ namespace samson
     std::string UploadItem::getStatus( )
     {
         std::ostringstream output;
-        output << "<Up:" << au::Format::string(size,"B") << ">";
+        output << "<Up:" << au::str(size,"B") << ">";
         return output.str();
     }	
 	

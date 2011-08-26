@@ -57,9 +57,25 @@ namespace samson {
         
         void State::getInfo( std::ostringstream& output)
         {
-            output << "<state>\n";
+            output << "<state name=\"" << name << "\">\n";
+
             output << "<name>" << name << "</name>\n";
+
+            output << "<num_state_items>" << items.size() << "</num_state_items>\n";
             
+            BlockList stateFullList("tmp state full list");
+            copyStateList( &stateFullList );
+            
+            output << "<state_info>\n";
+            stateFullList.getInfo( output );
+            output << "</state_info>\n";
+
+            BlockList inputFullList("tmp input full list");
+            copyInputList( &inputFullList );
+            
+            output << "<input_info>\n";
+            inputFullList.getInfo( output );
+            output << "</input_info>\n";
             
             au::list< StateItem >::iterator item;
             for (item = items.begin() ; item != items.end() ; item++ )
@@ -90,39 +106,10 @@ namespace samson {
                     
                 }
             }
-
             
         }
         
-        std::string State::getStatus()
-        {
-            
-            std::ostringstream output;
-            
-            output << "State " << name;
 
-            output << " ( " << items.size() << " items containing " << getFullKVInfo().str() << " ) ";
-            
-            if( paused )
-                output << " [ PAUSED ]";
-                
-            output << "\n";            
-            output << "\n";            
-            
-            au::list< StateItem >::iterator item;
-            for ( item = items.begin() ; item != items.end() ; item++ )
-            {
-                StateItem *stateItem = *item;
-                output << "\tItem [ " << stateItem->hg_begin << " " << stateItem->hg_end << " ]\n";
-                output << "\t  Input:\n";
-                output << au::indent( stateItem->list->str() ) << "\n";
-                output << "\t  State:\n";
-                output << au::indent( stateItem->state->str() ) << "\n";
-                
-            }
-            return output.str();
-        }
-        
         bool State::isWorking()
         {
             au::list< StateItem >::iterator item;
@@ -134,19 +121,26 @@ namespace samson {
             
         }
         
-        FullKVInfo State::getFullKVInfo()
+        void State::copyStateList( BlockList * list  )
         {
-            FullKVInfo info;
             au::list< StateItem >::iterator item;
             for ( item = items.begin() ; item != items.end() ; item++ )
             {
                 StateItem *StateItem = *item;
-                info.append( StateItem->state->getFullKVInfo() );
+                list->copyFrom( StateItem->state );
             }
             
-            return info;
-            
-            
         }
+        
+        void State::copyInputList( BlockList * list  )
+        {
+            au::list< StateItem >::iterator item;
+            for ( item = items.begin() ; item != items.end() ; item++ )
+            {
+                StateItem *StateItem = *item;
+                list->copyFrom( StateItem->input );
+            }
+            
+        }        
     }
 }

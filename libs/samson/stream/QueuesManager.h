@@ -68,7 +68,6 @@ namespace samson {
         public:
             
             QueuesManager( ::samson::SamsonWorker* worker );
-            std::string getStatus();
 
             // Add a block to a particular queue ( ususally from the network interface )
             void addBlocks( std::string queue_name ,  BlockList *bl );

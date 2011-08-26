@@ -271,6 +271,8 @@ namespace samson {
             
             output << "<size>" << info.size << "</size>\n";
             output << "<kvs>" << info.kvs << "</kvs>\n";
+
+            output << "<num_blocks>" << blocks.size() << "</num_blocks>\n";
             
             output << "</block_list>\n";
         }

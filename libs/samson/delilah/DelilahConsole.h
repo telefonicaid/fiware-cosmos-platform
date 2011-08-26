@@ -96,6 +96,7 @@ namespace samson {
             addOption("ls_processes");                      // Get a list of all current tasks in the system
             addOption("ls_queues");                      // Get a list of all current tasks in the system
             addOption("ls_states");                      // Get a list of all current tasks in the system
+            addOption("ps_stream");                     // Get a list of stream task
         }
         
         void addOperations()

@@ -37,22 +37,24 @@ namespace samson {
             ~State();
             
             void push( BlockList *list );
-                        
-            // Get Information in XML format
-            void getInfo( std::ostringstream& output);
-
-            // Get Information in txt format
-            std::string getStatus();
             
             // Function to check if any of the items is working ( if so, it can not be removed )
             bool isWorking();
             
-            // Get information about the state
-            FullKVInfo getFullKVInfo();
+            
+        public:
+            
+            // Getting XML information
+            void getInfo( std::ostringstream& output);
             
         private:
             
             void divide( StateItem *item , StateItem *item1 , StateItem *item2 );
+
+            
+            // Get information about the state and input
+            void copyStateList( BlockList * list  );
+            void copyInputList( BlockList * list  );
             
         };
         

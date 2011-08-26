@@ -322,11 +322,9 @@ namespace samson
         for ( int i = 0 ; i < (int) queues.size() ; i++)
         {
             std::string queue_name = queues[i];
-            
-            std::string running_operations = pugi::String( doc, "//queue[@name='" + queues[i] + "']/running_tasks");
-            
+                        
             std::stringstream txt;
-            txt << au::str("   %s : (running %s operations) ", queues[i].c_str() , running_operations.c_str() );
+            txt << au::str("   %s:", queues[i].c_str() );
             print( txt.str().c_str() );
             
             

@@ -33,7 +33,7 @@ namespace samson {
             State * myState;
             
             
-            BlockList* list;            // Block list of pending blocks to be processed
+            BlockList* input;            // Block list of pending blocks to be processed
             BlockList* state;           // Block list containing current state
 
             Mode mode;

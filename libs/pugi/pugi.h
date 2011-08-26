@@ -33,6 +33,8 @@
 namespace pugi 
 {
     
+    typedef const xml_node& node;
+    
     class ValuesCollection : public std::vector<std::string>
     {
         
@@ -97,6 +99,9 @@ namespace pugi
         
     };
     
+    xpath_node_set select_nodes( const xml_node& _node , std::string query );
+        
+    
     // Function to transform pugi elements to string
     std::string str( const xml_document& xml_document );
     void str( const xml_node& xml_node , int level , std::ostringstream &output );
@@ -108,6 +113,12 @@ namespace pugi
     size_t UInt64( const xml_document & doc , std::string query_str );
     std::string String( const xml_document & doc , std::string query_str );
     double Double( const xml_document & doc , std::string query_str );
+ 
     
+    // Function to extract information form xml_node in an easy way
+    
+    size_t getUInt64( const xml_node& node , std::string child_name );
+    size_t getInt( const xml_node& node , std::string child_name );
+    std::string get( const xml_node& node , std::string child_name );
 }
 #endif

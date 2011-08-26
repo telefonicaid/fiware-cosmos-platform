@@ -186,9 +186,35 @@ message ControllerStatus
 
 
 
+// Information report
+
+message InfoKVInfo
+{
+        optional uint64 size=1;         // Size in bytes
+	optional uint64 kvs=2;          // Number of kvs
+}
+
+message InfoState
+{
+	optional string name = 1;	
+	
+	optional InfoKVInfo input = 2;
+	optional InfoKVInfo state = 3;
+}
+
+
+message InfoStreamManager
+{
+	repeated InfoState state = 1;	// List of sttae
+}
 
 message WorkerStatus
 {
+	optional InfoStreamManager stream_manager	= 100;		// Information about the stream manager
+
+
+	// Old string-based information to be removed
+
 	optional uint64 up_time = 23;					// Time since the the worker started
 	optional uint64 update_time = 8;				// Time since the last update from the worker
 

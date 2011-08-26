@@ -217,10 +217,7 @@ namespace samson {
 
         // Set up time information
         ws->set_up_time(au::Format::ellapsedSeconds(&init_time));
-        
-        // Set information about queues
-        ws->set_queues_status( queuesManager.getStatus() );
-        
+                
         // Set information about queue operations
         // ws->set_queues_tasks_status( queueTaskManager.getStatus() );
         // Note: Since queueTaskManager is now inside queueManager, it is not visible here any more

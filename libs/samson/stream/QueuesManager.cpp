@@ -41,36 +41,6 @@ namespace samson {
             operation_list = NULL;
 
         }
-        
-        std::string QueuesManager::getStatus()
-        {
-            
-            std::ostringstream output;
-            
-            output << "Queues:\n";
-            
-            au::map< std::string , Queue >::iterator q;
-            for ( q = queues.begin() ; q != queues.end() ; q++)
-                output <<  au::indent( q->second->getStatus()  ) << "\n";
-
-            
-            output << "States:\n";
-            
-            au::map< std::string , State >::iterator s;
-            for ( s = states.begin() ; s != states.end() ; s++)
-                output <<  au::indent( s->second->getStatus()  ) << "\n";
-            
-            
-            // Queue task Manager status
-            output << queueTaskManager.getStatus();
-
-            // Queue pop quuee
-            output << popQueueManager.getStatus();
-            
-            return output.str();
-            
-        }
-
 
         void QueuesManager::addBlocks( std::string queue_name ,  BlockList *bl )
         {
@@ -276,6 +246,8 @@ namespace samson {
         // Get information for monitorization
         void QueuesManager::getInfo( std::ostringstream& output)
         {
+            output << "<stream_manager>\n";
+            
             output << "<queues>\n";
 
             au::map< std::string , Queue >::iterator q;
@@ -296,6 +268,7 @@ namespace samson {
             queueTaskManager.getInfo( output );
             output << "</queue_tasks>\n";
 
+            output << "</stream_manager>\n";
             
         }
         
@@ -515,7 +488,7 @@ namespace samson {
                                 // Setup content of this task ( not that input is common for both operations )
                                 BlockList tmp_list("tmp input for state");
                                 BlockList tmp_list2("tmp input for state 2");
-                                tmp_list.extractFrom ( stateItem->list , 100000000 );
+                                tmp_list.extractFrom ( stateItem->input , 100000000 );
                                 tmp_list2.copyFrom ( &tmp_list );
 
                                 tmp->getBlocks( &tmp_list  , stateItem->state );
@@ -538,7 +511,7 @@ namespace samson {
                                 tmp->setOutputFormats( &op->outputFormats );
                                 
                                 // Setup content of this task
-                                tmp->getBlocks( stateItem->list , stateItem->state );
+                                tmp->getBlocks( stateItem->input , stateItem->state );
                                 
                                 // Set this item to "running mode"
                                 stateItem->setRunning( tmp );

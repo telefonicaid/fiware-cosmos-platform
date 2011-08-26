@@ -69,6 +69,7 @@ namespace pugi
     
     
     // Run a query to get values
+
     
     ValuesCollection values( const xml_document & doc , std::string query )
     {
@@ -121,5 +122,40 @@ namespace pugi
         return query.evaluate_string( doc );
     }
     
+    
+    // Getting nodes from a query
+    
+    xpath_node_set select_nodes( const xml_node& _node , std::string query )
+    {
+        pugi::xpath_node_set result;
+        
+        try {
+            result = _node.select_nodes( query.c_str() );
+            return result;
+            
+        } catch (pugi::xpath_exception& ex) 
+        {
+            pugi::xpath_node_set result2;
+            return result2;
+        }
+        
+    }    
+    
+    size_t getUInt64( const xml_node& node , std::string child_name )
+    {
+        return strtoll(  node.first_element_by_path( child_name.c_str()  ).child_value()  , (char **)NULL, 10);
+    }
+
+    size_t getInt( const xml_node& node , std::string child_name )
+    {
+        return (int)strtol(  node.first_element_by_path( child_name.c_str()  ).child_value()  , (char **)NULL, 10);
+    }
+    
+    std::string get( const xml_node& node , std::string child_name )
+    {
+        return node.first_element_by_path( child_name.c_str() ).child_value();
+        
+    }
+
     
 }

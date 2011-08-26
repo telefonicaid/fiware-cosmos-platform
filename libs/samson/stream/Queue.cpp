@@ -42,20 +42,7 @@ namespace samson {
             delete list;
             
         }
-                
-        // Print the status of a particular queue
-        
-        std::string Queue::getStatus()
-        {
-            
-            std::ostringstream output;
-            
-            output << "Queue " << name << "\n";            
-            output << au::indent( list->str() ) << "\n";
-            
-            return output.str();
-        }
-        
+                        
         void Queue::getInfo( std::ostringstream& output)
         {
             

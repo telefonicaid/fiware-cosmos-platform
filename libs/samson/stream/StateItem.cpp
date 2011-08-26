@@ -21,7 +21,7 @@ namespace stream
             hg_begin = _hg_begin;
             hg_end  = _hg_end;
             
-            list = new BlockList( _myState->name + "_list" );
+            input = new BlockList( _myState->name + "_list" );
             state = new BlockList( _myState->name + "_state" );;      
             
             future_state = new BlockList( _myState->name + "_future_state" );
@@ -37,7 +37,7 @@ namespace stream
         
         StateItem::~StateItem()
         {
-            delete list;
+            delete input;
             delete state;
             delete future_state;
             
@@ -47,7 +47,7 @@ namespace stream
         {
             //LM_M(("Pushing block list to state_item"));
 
-            list->copyFrom(_list);
+            input->copyFrom(_list);
         }
 
         void StateItem::getInfo( std::ostringstream& output)
@@ -68,31 +68,31 @@ namespace stream
                     break;
             }
             
-            output << "<list>";
-            list->getInfo(output);
-            output << "</list>\n";
+            output << "<list_input>";
+            input->getInfo(output);
+            output << "</list_input>\n";
 
-            output << "<state>";
+            output << "<list_state>";
             state->getInfo(output);
-            output << "</state>\n";
+            output << "</list_state>\n";
 
-            output << "<future_state>";
+            output << "<list_future_state>";
             future_state->getInfo(output);
-            output << "</future_state>\n";
+            output << "</list_future_state>\n";
             
             output << "</state_item>\n";
         }
 
         FullKVInfo StateItem::getFullKVInfo()
         {
-            return list->getFullKVInfo();
+            return input->getFullKVInfo();
         }
         
         bool StateItem::isReadyToRun()
         {
             if (mode != ready)
                 return false;
-            if( list->getSize() <= 0)
+            if( input->getSize() <= 0)
                 return false;
             
             return true;
@@ -168,8 +168,8 @@ namespace stream
                     future_state->clearBlockList();
                     
                     // Push pending blocks to be processed
-                    item1->push(list);
-                    item2->push(list);
+                    item1->push(input);
+                    item2->push(input);
 
                     
                     // Divide this item in two

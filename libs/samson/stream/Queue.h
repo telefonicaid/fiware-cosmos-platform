@@ -57,8 +57,6 @@ namespace samson {
             
             Queue( std::string _name , QueuesManager * _qm );
             ~Queue();
-                       
-            std::string getStatus();
             
             // Notifications    
             //void notify( engine::Notification* notification );

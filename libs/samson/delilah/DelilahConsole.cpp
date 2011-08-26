@@ -249,6 +249,39 @@ namespace samson
         { NULL , NULL }   
     };
 
+    
+    std::string getBLockListString( pugi::node node )
+    {
+        
+        
+        size_t size_total =  pugi::getUInt64( node , "size_total" );
+        size_t size_on_memory =  pugi::getUInt64( node , "size_on_memory" );
+        size_t size_on_disk =  pugi::getUInt64( node , "size_on_disk" );
+
+        int num_blocks = pugi::getInt( node , "num_blocks" );
+        size_t kvs = pugi::getUInt64( node , "kvs" );
+        size_t size = pugi::getUInt64( node , "size" );
+        
+        if( ( kvs == 0 ) && (size == 0) )
+            return "Empty";
+        
+        std::ostringstream output;
+        output << num_blocks << " blocks with ";
+        output << au::str( kvs , "kvs" ) << " in ";
+        output << au::str( size , "bytes" )  ;
+        output << " ";
+        if( size_total > 0 )
+        {
+            double p_memory = (double) size_on_memory / (double) size_total;
+            double p_disk = (double) size_on_disk / (double) size_total;
+            
+            output << au::Format::percentage_string( p_memory ) << " on memory & " << au::Format::percentage_string( p_disk ) << " on disk";
+        }
+        
+        return output.str();
+    }
+    
+    
     /*
      output << "---------------------------------------------------------------------\n";
      output << "\n";
@@ -943,19 +976,126 @@ namespace samson
         
         if( main_command == "ls_queues" )
         {
-            showInfo("info_queues");
+            std::ostringstream output;
+            
+            // Get all the workers node
+            pugi::xpath_node_set workers  = pugi::select_nodes( doc , "//worker" );
+            
+            for ( size_t w = 0 ; w < workers.size() ; w++ )
+            {
+                const pugi::xml_node& worker = workers[w].node(); 
+                
+                output << "------------------------------------------------------------\n";
+                output << "Worker " << worker.attribute("id").value() << ":\n";
+                output << "------------------------------------------------------------\n";
+                
+                pugi::xpath_node_set queues  = pugi::select_nodes( worker , "//stream_manager//queue" );
+                
+                for ( size_t q = 0 ; q < queues.size() ; q++ )
+                {
+                    const pugi::xml_node& queue = queues[q].node(); 
+                    
+                    // Get information for this state    
+                    std::string name = pugi::get( queue , "name" );
+                    
+                    const pugi::node block_list = queue.first_element_by_path("block_list");
+                    
+                    output << "Queue " << name << ": [ "  << getBLockListString (block_list ) << " ]";
+                    output << "\n";
+                    
+                    //pugi::str( state , 2 , output );
+                }
+                
+            }
+            
+            writeOnConsole( output.str() );
             return 0;
         }
         if( main_command == "ls_states" )
         {
-            showInfo("info_queues");
+            
+            std::ostringstream output;
+
+            // Get all the workers node
+            pugi::xpath_node_set workers  = pugi::select_nodes( doc , "//worker" );
+                        
+            for ( size_t w = 0 ; w < workers.size() ; w++ )
+            {
+                const pugi::xml_node& worker = workers[w].node(); 
+                
+                output << "------------------------------------------------------------\n";
+                output << "Worker " << worker.attribute("id").value() << ":\n";
+                output << "------------------------------------------------------------\n";
+
+                pugi::xpath_node_set states  = pugi::select_nodes( worker , "//stream_manager/states/state" );
+                
+                for ( size_t s = 0 ; s < states.size() ; s++ )
+                {
+                    const pugi::xml_node& state = states[s].node(); 
+
+                    // Get information for this state    
+                    std::string name = pugi::get( state, "name" );
+                    
+                    int num_state_items =  pugi::getInt( state , "num_state_items" );
+                    
+                    const pugi::node state_info = state.first_element_by_path("state_info").first_element_by_path("block_list");
+                    const pugi::node input_info = state.first_element_by_path("input_info").first_element_by_path("block_list");
+                    
+                    output << "State " << name << ": ( " << num_state_items << " state items ) ";
+                    output << " State: [ " << getBLockListString( state_info ) << " ] ";
+                    
+                    
+                    output << " Input: [ " << getBLockListString( input_info ) << " ] ";
+                    
+                    output << "\n";
+                    
+                    //pugi::str( state , 2 , output );
+                }
+                
+            }
+            
+            writeOnConsole( output.str() );
             return 0;
         }
 
         if( main_command == "ps_stream" )
         {
-            showInfo("info_queues");
-            return 0;
+            
+            std::ostringstream output;
+            
+            // Get all the workers node
+            pugi::xpath_node_set workers  = pugi::select_nodes( doc , "//worker" );
+            
+            for ( size_t w = 0 ; w < workers.size() ; w++ )
+            {
+                const pugi::xml_node& worker = workers[w].node(); 
+                
+                output << "------------------------------------------------------------\n";
+                output << "Worker " << worker.attribute("id").value() << ":\n";
+                output << "------------------------------------------------------------\n";
+                
+                pugi::xpath_node_set queue_tasks  = pugi::select_nodes( worker , "//stream_manager//queue_task" );
+                
+                for ( size_t s = 0 ; s < queue_tasks.size() ; s++ )
+                {
+                    const pugi::xml_node& queue_task = queue_tasks[s].node(); 
+                    
+                    // Get information for this state    
+                    std::string id              = pugi::get( queue_task , "id" );
+                    std::string description     = pugi::get( queue_task , "description" );
+                    
+                    const pugi::node block_list = queue_task.first_element_by_path("block_list");
+                    
+                    output << "Task " << id << " : " << description << "\n";
+                    output << "            -> Input " << getBLockListString( block_list ) << "\n";
+                    
+                    //pugi::str( state , 2 , output );
+                }
+                
+            }
+            
+            writeOnConsole( output.str() );
+            return 0;            
         }
         
         if( main_command == "ls_processes" )

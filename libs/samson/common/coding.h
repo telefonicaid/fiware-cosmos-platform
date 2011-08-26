@@ -137,7 +137,13 @@ namespace samson {
 		{
 			return ((kvs==0)&&(size==0));
 		}
-		
+
+        void getInfo( std::ostringstream& output)
+        {
+            output << "<kvs>"<<kvs<<"</kvs>\n";
+            output << "<size>"<<kvs<<"</size>\n";
+        }
+        
 	};	
 	
 	/***********************************************************************
@@ -231,6 +237,12 @@ namespace samson {
 			return o.str();
 		}
 		
+        void getInfo( std::ostringstream& output)
+        {
+            output << "<kvs>"<<kvs<<"</kvs>\n";
+            output << "<size>"<<kvs<<"</size>\n";
+        }
+        
 		bool isEmpty()
 		{
 			return ((kvs==0)&&(size==0));

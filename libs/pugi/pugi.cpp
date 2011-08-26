@@ -131,13 +131,11 @@ namespace pugi
         
         try {
             result = _node.select_nodes( query.c_str() );
-            return result;
             
         } catch (pugi::xpath_exception& ex) 
         {
-            pugi::xpath_node_set result2;
-            return result2;
         }
+        return result;
         
     }    
     

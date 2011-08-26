@@ -543,7 +543,8 @@ namespace samson {
                     
                     for (int i = 0 ; i < num_workers ; i++ )
                     {
-                        output << "<worker id=\"" << i << "\">\n";
+                        output << "<worker>\n";
+                        output << "<id>" << i << "</id>\n";
                         output << worker_xml_info[i];
                         output << "</worker>\n";
                     }

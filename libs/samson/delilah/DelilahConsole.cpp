@@ -979,17 +979,16 @@ namespace samson
             std::ostringstream output;
             
             // Get all the workers node
-            pugi::xpath_node_set workers  = pugi::select_nodes( doc , "//worker" );
+            pugi::ValuesCollection workers_ids = pugi::values(doc, "//worker/id");
             
-            for ( size_t w = 0 ; w < workers.size() ; w++ )
+            for ( size_t w = 0 ; w < workers_ids.size() ; w++ )
             {
-                const pugi::xml_node& worker = workers[w].node(); 
                 
                 output << "------------------------------------------------------------\n";
-                output << "Worker " << worker.attribute("id").value() << ":\n";
+                output << "Worker " << workers_ids[w] << ":\n";
                 output << "------------------------------------------------------------\n";
                 
-                pugi::xpath_node_set queues  = pugi::select_nodes( worker , "//stream_manager//queue" );
+                pugi::xpath_node_set queues  = pugi::select_nodes( doc , "//worker[id=" + workers_ids[w] + "]/stream_manager/queues/queue" );
                 
                 for ( size_t q = 0 ; q < queues.size() ; q++ )
                 {
@@ -1017,17 +1016,16 @@ namespace samson
             std::ostringstream output;
 
             // Get all the workers node
-            pugi::xpath_node_set workers  = pugi::select_nodes( doc , "//worker" );
-                        
-            for ( size_t w = 0 ; w < workers.size() ; w++ )
+            pugi::ValuesCollection workers_ids = pugi::values(doc, "//worker/id");
+            
+            for ( size_t w = 0 ; w < workers_ids.size() ; w++ )
             {
-                const pugi::xml_node& worker = workers[w].node(); 
                 
                 output << "------------------------------------------------------------\n";
-                output << "Worker " << worker.attribute("id").value() << ":\n";
+                output << "Worker " << workers_ids[w] << ":\n";
                 output << "------------------------------------------------------------\n";
 
-                pugi::xpath_node_set states  = pugi::select_nodes( worker , "//stream_manager/states/state" );
+                pugi::xpath_node_set states  = pugi::select_nodes( doc , "//worker[id=" + workers_ids[w] + "]/stream_manager/states/state" );
                 
                 for ( size_t s = 0 ; s < states.size() ; s++ )
                 {
@@ -1064,17 +1062,16 @@ namespace samson
             std::ostringstream output;
             
             // Get all the workers node
-            pugi::xpath_node_set workers  = pugi::select_nodes( doc , "//worker" );
+            pugi::ValuesCollection workers_ids = pugi::values(doc, "//worker/id");
             
-            for ( size_t w = 0 ; w < workers.size() ; w++ )
+            for ( size_t w = 0 ; w < workers_ids.size() ; w++ )
             {
-                const pugi::xml_node& worker = workers[w].node(); 
                 
                 output << "------------------------------------------------------------\n";
-                output << "Worker " << worker.attribute("id").value() << ":\n";
+                output << "Worker " << workers_ids[w] << ":\n";
                 output << "------------------------------------------------------------\n";
                 
-                pugi::xpath_node_set queue_tasks  = pugi::select_nodes( worker , "//stream_manager//queue_task" );
+                pugi::xpath_node_set queue_tasks  = pugi::select_nodes( doc , "//worker[id=" + workers_ids[w] + "]/stream_manager//queue_task" );
                 
                 for ( size_t s = 0 ; s < queue_tasks.size() ; s++ )
                 {

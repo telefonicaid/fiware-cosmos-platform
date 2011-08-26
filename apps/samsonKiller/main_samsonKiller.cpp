@@ -108,9 +108,9 @@ int main(int argC, const char *argV[])
 			return killProcess("samsonSpawner", SPAWNER_PORT);
 		else if (strcasecmp(name, "all") == 0)
 		{
+		   killProcess("samsonSpawner",    SPAWNER_PORT);
 		   killProcess("samsonWorker",     WORKER_PORT);
 		   killProcess("samsonController", CONTROLLER_PORT);
-		   killProcess("samsonSpawner",    SPAWNER_PORT);
 
 		   return 0;
 		}

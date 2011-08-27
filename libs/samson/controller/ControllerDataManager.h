@@ -103,6 +103,9 @@ namespace samson {
 
 		void getQueuesMonitorInfo( std::vector<QueueMonitorInfo> &queues_names );
 				
+        // get xml information
+        void getInfo( std::ostringstream& output);
+        
 	private:
 
 		

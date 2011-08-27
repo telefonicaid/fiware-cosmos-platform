@@ -68,7 +68,7 @@ namespace samson {
 		
 		// Status information of the workers
 		network::WorkerStatus** worker_status;				// Status of the workers reported periodically
-        std::string* worker_xml_info;                              // XML version of the worker related information
+        std::string* worker_xml_info;                       // XML version of the worker related information
         au::Cronometer *worker_status_cronometer;           // Cronometer to count the last update from workers
 		int num_workers;
 

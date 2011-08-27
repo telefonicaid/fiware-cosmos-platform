@@ -87,6 +87,7 @@ namespace samson {
             addOption("info_query");
             addOption("add_stream_operation");
             addOption("rm_stream_operation");
+            addOption("ls_stream_operation");
             addOption("set_stream_operation_property");
             addOption("push_state_to_queue");               // Push content of a state in a particular queue
             addOption("rm_queue");                          // Remove a queue

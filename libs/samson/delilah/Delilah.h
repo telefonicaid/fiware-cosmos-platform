@@ -72,10 +72,10 @@ namespace samson {
 		// Private token to protect the local list of components
 		au::Token token;
         
+    protected:
+        
 		// Map of components that intercept messages
 		au::map<size_t , DelilahComponent> components;			
-		
-        protected:
         
         bool trace_on;
 

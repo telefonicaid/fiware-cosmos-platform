@@ -23,15 +23,14 @@ namespace samson {
 	
 	class Queue
 	{
-		std::string _name;				// Name of this queue
-		KVFormat _format;				// Format of the queue
+		std::string _name;                              // Name of this queue
+		KVFormat _format;                               // Format of the queue
 
 		// Global information
-		FullKVInfo _info;				// Information about this queue
-		int _num_files;					// Thread safe number of files ( only for monitoring )
+		FullKVInfo _info;                               // Information about this queue
+		int _num_files;                                 // Thread safe number of files ( only for monitoring )
 
 		au::map< std::string , QueueFile > files;		// Map of files included in this queue
-		
 		
 		/**
 		 Monitoring system
@@ -49,6 +48,9 @@ namespace samson {
 		Queue( std::string name , KVFormat format );
 		
 		~Queue();
+
+        // get xml information
+        void getInfo( std::ostringstream& output);
 		
 		std::string getName(){ return _name; }
 		KVFormat format() { return _format; }

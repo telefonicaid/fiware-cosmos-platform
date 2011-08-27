@@ -141,7 +141,7 @@ namespace samson {
         void getInfo( std::ostringstream& output)
         {
             output << "<kvs>"<<kvs<<"</kvs>\n";
-            output << "<size>"<<kvs<<"</size>\n";
+            output << "<size>"<<size<<"</size>\n";
         }
         
 	};	
@@ -240,7 +240,7 @@ namespace samson {
         void getInfo( std::ostringstream& output)
         {
             output << "<kvs>"<<kvs<<"</kvs>\n";
-            output << "<size>"<<kvs<<"</size>\n";
+            output << "<size>"<<size<<"</size>\n";
         }
         
 		bool isEmpty()

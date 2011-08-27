@@ -109,9 +109,6 @@ namespace samson {
         
         bool force_flag;                    // Flag to remove previos directory
         
-		// Error log ( public since it is access from delilah )
-		au::ErrorManager error;
-        
         PopComponent( std::string _queue , std::string _state , std::string _fileName , bool force_flag );
         
         ~PopComponent();

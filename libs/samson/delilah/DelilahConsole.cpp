@@ -189,7 +189,7 @@ namespace samson
         "Stream processing commands:            push , pop , add_stream_operation , rm_stream_operation , set_stream_operation_property\n"
         "                                       push_state_to_queue , rm_queue , rm_state , play_state , pause_state\n" 
         "\n"
-        "Getting info for stream processing:    ls_queues , ls_states , ps_stream \n"
+        "Getting info for stream processing:    ls_queues , ls_states , ps_stream , ls_stream_operation \n"
         "\n"
     ;
 
@@ -201,8 +201,9 @@ namespace samson
         { "clear"                   , "clear <set>    Clear the content of a particular key-value set"},
         { "ls_processes"            , "ls_processes     Shows a list with all the processes ( batch and stream ) running on all the workers"},
         
-        { "ps"                      , "ps [-clear]          Show all current process running on delilah client\n" 
-                                      "                     [-clear] removes finished or error processes"} ,                
+        { "ps"                      , "ps [-clear] [id]     Show all current process running on delilah client\n" 
+                                      "                     [-clear] removes finished or error processes\n"
+                                      "                     [id] get more help about a particular process" } ,                
         
         { "reload_modules"          , "reload_modules        reload_modules used by the platform"},
                 
@@ -222,7 +223,8 @@ namespace samson
         { "kill"                    , "kill (k)          Kill a particular job and all its sub-tasks" },
 
         { "upload"                  , "upload  <local_file_name> <set>       Load txt files to the platform" },
-        { "download"                , "download  <set> <local_file_name>     Download txt sets from the platform to local file" },
+        { "download"                , "download  <set> <local_file_name> [-force]     Download txt sets from the platform to local file\n" 
+                                      "                                               [-force] Remove local directory first"  },
         
         { "push"                    , "push <local_file_or_dir> <queue>        Push content of a local file/directory to a queue"},
         { "pop"                     , "pop <queue> <local_dir>                 Pop content of a queue to a local dir. Use samsonCat to check content in binary data"},
@@ -232,6 +234,8 @@ namespace samson
                                       "Add an operation to automatically process data from queues to queues"},
         
         { "rm_stream_operation"     , "rm_stream_operation <name>    Remove a previously introducted operation with add_stream_operation"},
+        
+        { "ls_stream_operations"    , "ls_stream_operation           Show a list of active stream operations"},
         
         { "push_state_to_queue"     , "push_state_to_queue <state> <queue>     Push content of a state ( used in stream reduce ) to a queue"},
         
@@ -324,7 +328,6 @@ namespace samson
 		au::CommandLine commandLine;
 		commandLine.set_flag_string("name", "null");
 		commandLine.set_flag_string("begin", "null");
-		commandLine.set_flag_boolean("show");
 		commandLine.set_flag_boolean("plain");
 		commandLine.set_flag_boolean("gz");			// Flag to indicate compression
 		commandLine.set_flag_int("threads",4);
@@ -493,7 +496,7 @@ namespace samson
 			std::string queue_name = commandLine.get_argument(1);
 			std::string fileName = commandLine.get_argument(2);
 
-			size_t id = addDownloadProcess(queue_name, fileName , commandLine.get_flag_bool("show"));
+			size_t id = addDownloadProcess(queue_name, fileName , commandLine.get_flag_bool("force"));
 
 			std::ostringstream o;
 			o << "[ " << id << " ] Download data process started.";
@@ -516,6 +519,32 @@ namespace samson
             
             if( commandLine.get_flag_bool("clear") )
                 clearComponents();
+            
+            if( commandLine.get_num_arguments() > 1 )
+            {
+                size_t id = atoi( commandLine.get_argument(1).c_str() );
+                
+                DelilahComponent *component = components.findInMap( id );
+                if( !component )
+                    writeErrorOnConsole( au::str("Unkown process with id %d", id ) );
+                else
+                {
+                    std::ostringstream output;
+                    output << "------------------------------------------------\n";
+                    output << " Process " << id << "\n";
+                    output << "------------------------------------------------\n";
+                    output << "\n";
+                    if( component->error.isActivated() )
+                        output << "ERROR: " << component->error.getMessage() << "\n";
+                    output << "\n";
+                    output << component->getStatus();
+                    output << "\n";
+                    writeOnConsole(output.str());
+                    
+                }
+                
+                return 0;
+            }
             
 			std::ostringstream output;
 			output << getListOfComponents();
@@ -1010,6 +1039,83 @@ namespace samson
             writeOnConsole( output.str() );
             return 0;
         }
+        
+        if( main_command == "ls_stream_operation" )
+        {
+            std::ostringstream output;
+            
+            // Get all the workers node
+            pugi::xpath_node_set stream_operations  = pugi::select_nodes( doc , "//controller//stream_operation" );
+            
+            output << "------------------------------------------------------------------------------------------------" << std::endl;
+            output << "Stream Operations" << std::endl;
+            output << "------------------------------------------------------------------------------------------------" << std::endl;
+            
+            for ( size_t q = 0 ; q < stream_operations.size() ; q++ )
+            {
+                // Get the queue
+                const pugi::xml_node& stream_operation = stream_operations[q].node(); 
+                
+                // Get information for this state    
+                std::string name = pugi::get( stream_operation , "name" );
+                std::string description = pugi::get( stream_operation , "description" );
+                
+                output << std::setw(15) << name << "  " << description << "\n";
+            }
+            
+            output << "------------------------------------------------------------------------------------------------" << std::endl;
+            
+            
+            
+            writeOnConsole( output.str() );
+            return 0;
+        }
+        
+        if( main_command == "ls" )
+        {
+            std::ostringstream output;
+            
+            // Get all the workers node
+            pugi::xpath_node_set queues  = pugi::select_nodes( doc , "//controller//queue" );
+            
+            output << "------------------------------------------------------------------------------------------------" << std::endl;
+            output << "Queues" << std::endl;
+            output << "------------------------------------------------------------------------------------------------" << std::endl;
+            
+            for ( size_t q = 0 ; q < queues.size() ; q++ )
+            {
+                // Get the queue
+                const pugi::xml_node& queue = queues[q].node(); 
+                
+                // Get information for this state    
+                std::string name = pugi::get( queue , "name" );
+                
+                size_t kvs = pugi::getUInt64( queue , "kvs" );
+                size_t size = pugi::getUInt64( queue , "size" );
+                
+                size_t num_files = pugi::getUInt64( queue , "num_files" );
+
+                std::string key_format = pugi::get( queue , "key_format" );
+                std::string value_format = pugi::get( queue , "value_format" );
+                
+                
+                output << std::setw(30) << name;
+                output << " ";
+                output << au::str( kvs );
+                output << " kvs in ";
+                output << au::str( size ) << " bytes";
+                output << " #File: " << num_files;
+                output << " (" << key_format << " " << value_format << ") ";
+                output << std::endl;
+            }
+            output << "------------------------------------------------------------------------------------------------" << std::endl;
+            
+            
+            
+            writeOnConsole( output.str() );
+            return 0;
+        }
+        
         if( main_command == "ls_states" )
         {
             

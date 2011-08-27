@@ -279,9 +279,9 @@ namespace samson {
 	 */
 	
 	
-	size_t Delilah::addDownloadProcess( std::string queue , std::string fileName , bool show_on_screen )
+	size_t Delilah::addDownloadProcess( std::string queue , std::string fileName , bool force_flag )
 	{
-		DelilahDownloadDataProcess *d = new DelilahDownloadDataProcess( queue , fileName , show_on_screen );
+		DelilahDownloadDataProcess *d = new DelilahDownloadDataProcess( queue , fileName , force_flag );
 		size_t tmp_id = addComponent(d);	
 		d->run();
 		

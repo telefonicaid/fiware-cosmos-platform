@@ -11,6 +11,7 @@
 */
 #include <string>
 #include <vector>
+#include <sstream>
 
 #pragma mark ************************************************
 #pragma mark KVFormat key-value format definition
@@ -111,7 +112,15 @@ namespace samson {
 			tmp.init( key_format , value_format );
 			return tmp;
 		}
-		
+	
+        // get xml information
+        void getInfo( std::ostringstream& output )
+        {
+            output << "<key_format>" << keyFormat << "</key_format>\n";
+            output << "<value_format>" << valueFormat << "</value_format>\n";
+        }
+        
+        
 	};
 }
 

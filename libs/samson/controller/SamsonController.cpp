@@ -694,6 +694,10 @@ namespace samson {
 	
     void SamsonController::getInfo( std::ostringstream& output )
     {
+        output << "<data_manager>\n";
+        data.getInfo( output );
+        output << "</data_manager>\n";
+        
         // Nothing at the moment
     }
 

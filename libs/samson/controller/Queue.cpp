@@ -136,6 +136,22 @@ namespace samson
 		}
 		
 	}
+
+    // get xml information
+    void Queue::getInfo( std::ostringstream& output)
+    {
+        output << "<queue>\n";
+        
+        output << "<name>" << _name << "</name>\n";
+        
+        output << "<num_files>" << files.size() << "</num_files>\n"; 
+        
+        _format.getInfo( output );
+        
+		_info.getInfo( output );;                               // Information about this queue
+        
+        output << "</queue>\n";
+    }
 	
 	
 }

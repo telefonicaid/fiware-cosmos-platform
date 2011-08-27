@@ -1,45 +1,42 @@
 
+#include <sys/stat.h>		// mkdir
+
+
+#include "engine/MemoryManager.h"					// samson::MemoryManager
+#include "engine/MemoryRequest.h"
+#include "engine/Notification.h"                // engine::Notification
+
+#include "engine/Buffer.h"							// engine::Buffer
+#include "engine/Notification.h"                    // engine::Notificaiton
+
+#include "engine/DiskOperation.h"                   // engine::DiskOperation
+#include "engine/DiskManager.h"                     // endinge::DiskManager
+
 #include "DelilahDownloadDataProcess.h"
 #include "samson/delilah/Delilah.h"				// samson::Delilah
 
 namespace samson {
 
-	void* runDelilahDownloadDataProcessThread( void* p)
-	{
-		// Run the thread process
-		((DelilahDownloadDataProcess*)p)->runThread();
-		return NULL;
-	}
 	
-	DelilahDownloadDataProcess::DelilahDownloadDataProcess( std::string _queue , std::string _fileName , bool _show_on_screen ) : DelilahComponent(DelilahComponent::load) , stopLock(&lock) 
+	DelilahDownloadDataProcess::DelilahDownloadDataProcess( std::string _queue , std::string _fileName , bool _force_flag ) 
+        : DelilahComponent(DelilahComponent::load)
 	{
 		queue = _queue;
 		fileName = _fileName;
+        force_flag = _force_flag;
 
-		show_on_screen = _show_on_screen;
-		
+        // We still have not received init response
+		received_init_response = false;
+        
 		// Initial state until we receive information about queue
 		num_files_to_download = -1;
 		num_files_downloaded = 0;
 		
-		total_size = 0;
-		
-		file = fopen( fileName.c_str() , "w" );
-		
-		if( !file )
-		{
-			status = finish_with_error;
-
-            setComponentFinishedWithError( "Not possible to open local file" );
-			return;
-		}
-
-		// Pending to send the message to the controller
-		status = uninitialized;
-		
-		// Received message from the controller initially NULL
-		download_data_init_response = NULL;
-		
+        // Counter of write operation ( to wait for them before seting this component as finished )
+        num_write_operations = 0;
+        
+        // Counter to give numbers to the generated files
+        num_outputs = 0;
 	}
 	
 	std::string DelilahDownloadDataProcess::getDescription()
@@ -52,11 +49,16 @@ namespace samson {
 
 	void DelilahDownloadDataProcess::run()
 	{
-		
-		if( status != uninitialized )
-			LM_X(1,("Unexpected status in an download data process"));
-
-		status = waiting_controller_init_response;
+        // Create firectory    
+        if( force_flag )
+            au::removeDirectory( fileName );
+        
+        if( mkdir( fileName.c_str() , 0755 ) )
+        {
+            setComponentFinishedWithError( au::str( "Not possible to create directory %s." , fileName.c_str() ) );
+            return;
+        }
+        
 		
 		// Send the message to the controller
 		Packet *p = new Packet(Message::DownloadDataInit);
@@ -65,8 +67,6 @@ namespace samson {
 		download_data_init->set_queue( queue );	// Set the queue we want to download
 		delilah->network->sendToController( p );
 		
-		// Init the thread to process data in background
-		pthread_create(&t, 0, runDelilahDownloadDataProcessThread, this);
 	}
 	
 	void DelilahDownloadDataProcess::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
@@ -74,41 +74,29 @@ namespace samson {
 		
 		if (msgCode == Message::DownloadDataInitResponse )
 		{
-			// Reponse from the controller
-			if( status != waiting_controller_init_response)
-				LM_X(1,("Unexpected status in an download data process"));
-
-			// Copy the message received from the controller
-			download_data_init_response = new samson::network::DownloadDataInitResponse();
-			download_data_init_response->CopyFrom( packet->message->download_data_init_response() );
-
-			// Chage the status to download files
-			status = downloading_files_from_workers;
-			
-
-			if( download_data_init_response->has_error() )
+            received_init_response = true;
+            
+            const network::DownloadDataInitResponse & download_data_init_response = packet->message->download_data_init_response();
+            
+            // Error in the init response
+			if( download_data_init_response.has_error() )
 			{
-				error.set( download_data_init_response->error().message() );
-				status = finish_with_error;
+				error.set( download_data_init_response.error().message() );
                 setComponentFinished();
 				return;
 			}
 			
 			// Set the number of files to download
-			num_files_to_download = download_data_init_response->queue().file_size();
+			num_files_to_download = download_data_init_response.queue().file_size();
 
-			status = downloading_files_from_workers;
-			
             if( num_files_to_download == 0)
             {
-                // no file, go to the next step
-                status = waiting_file_downloads_confirmations;
+                // Nothing to be downloaded
+                setComponentFinished();
             }
             
-			// Request for all the files
-            size_t offset = 0;
-            
-			for ( int i = 0 ; i < download_data_init_response->queue().file_size() ; i++)
+            // Send packet to each worker asking for the associated files
+			for ( int i = 0 ; i < download_data_init_response.queue().file_size() ; i++)
 			{
 				Packet *p = new Packet( Message::DownloadDataFile);
 				p->message->set_delilah_id( id );
@@ -116,204 +104,82 @@ namespace samson {
 				samson::network::DownloadDataFile *download_data_file = p->message->mutable_download_data_file();
 
                 // Set the load id ( at controller )
-                download_data_file->set_load_id( download_data_init_response->load_id() );
+                download_data_file->set_load_id( download_data_init_response.load_id() );
                 
                 // Order in witch the files will be downloaded
                 download_data_file->set_file_id( i );
                 
 				// Copy the file information
-				download_data_file->mutable_file()->CopyFrom( download_data_init_response->queue().file(i) );
+				download_data_file->mutable_file()->CopyFrom( download_data_init_response.queue().file(i) );
 				
 				// Send to the rigth worker
-				int worker = download_data_init_response->queue().file(i).worker();
+				int worker = download_data_init_response.queue().file(i).worker();
                 
 				delilah->network->sendToWorker( worker , p);
-                
-                offset_per_file.push_back( offset );
-                offset += download_data_init_response->queue().file(i).info().size();
 			}
-			
-			
 			
 		}
 		else if (msgCode == Message::DownloadDataFileResponse)
 		{
 			
-			lock.lock();
-
+            // Increase the counter of number of files already downloaded
 			num_files_downloaded ++;
 			
-			if ( num_files_downloaded == num_files_to_download)
-				status = waiting_file_downloads_confirmations;
-
-            packet->buffer->tag =  (int) packet->message->download_data_file_response().query().file_id();
-			buffers.push_back( packet->buffer );
-			
-			lock.unlock();
-
-			
-			
-			// Wake up the backgroun thread ( if sleept to save this buffer to disk )
-			lock.wakeUpStopLock( &stopLock );
+			// Create a disk-write operation to save this buffer 
+            num_write_operations++;
+            std::string _fileName = au::str("%s/file_%d" , fileName.c_str() , num_outputs++ );
+            engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( packet->buffer , _fileName , getEngineId() );
+            engine::DiskManager::shared()->add( operation );                
 			
 		}
 		
 	}
-	
-	void DelilahDownloadDataProcess::runThread()
-	{
-		
-		while ( true )
-		{
-			if ( ( status == finish_with_error ) || ( status == finish ) )
-				return;
-			
-			lock.lock();
-			
-            engine::Buffer *buffer = NULL;
-			
-			if( buffers.size() > 0)
-			{
-				buffer = buffers.front();
-				buffers.pop_front();
-			}
-						
-			lock.unlock();
-			
-			if( buffer )
-			{
-				// Write stuff to disk
-				std::ostringstream out;
 
-				int file_id = buffer->tag;
-                
-                if( ( file_id < 0 ) || (file_id >= (int)offset_per_file.size() ) )
-                    LM_X(1,("Wrong file id while downloading data from SAMSON"));
-                
-                fseek( file, offset_per_file[file_id], SEEK_SET );  // Position in the rigth place
-				fwrite( buffer->getData(), buffer->getSize() , 1 , file );
-				total_size += buffer->getSize();
-                
-                engine::MemoryManager::shared()->destroyBuffer(buffer);
-                buffer = NULL;
-				
-			}
-			else
-			{
-				if( status == waiting_file_downloads_confirmations )
-				{
-					// No buffer and all files downloaded
-					
-					fclose( file );	// Close the file
-					delilah->showTrace("Download completed");
-					
-					if( show_on_screen )
-					{
-						if( total_size > 10000)
-						{
-							delilah->showMessage("It is not allowed to show files with more than 10Kbyes on screen");
-						}
-						else
-						{
-							char *fileBuffer = (char*)malloc( total_size+1);
-							fileBuffer[total_size] = '\0';
-							
-							FILE*  file = fopen(fileName.c_str(), "r");
-							size_t nb;
-
-							nb = fread(fileBuffer, 1, total_size, file);
-							if (nb != total_size)
-								LM_W(("read only %d bytes (wanted to read %d)", nb, total_size));
-							
-							delilah->showMessage(fileBuffer);
-							fclose( file );
-							
-							free( fileBuffer );
-						}
-					}
-					
-					// Set the finish state
-					status = finish;
-					// Mark as ready to be cleared from the list
-                    setComponentFinished();
-					return;
-				}				
-				
-				lock.lock();
-				lock.unlock_waiting_in_stopLock( &stopLock , 1 );
-			}
-		}
-	}
+    void DelilahDownloadDataProcess::notify( engine::Notification* notification )
+    {
+        if( notification->isName(notification_disk_operation_request_response) )
+        {
+            num_write_operations--;
+            check();
+        }
+        else
+            LM_W(("Unexpected notification %s" , notification->getName() ));
+        
+    }
 	
+    void DelilahDownloadDataProcess::check()
+    {
+        if( !received_init_response )
+            return;
+        
+        if( num_files_to_download == num_files_downloaded )
+            if ( num_write_operations == 0 )
+                setComponentFinished();
+    }
+    
 	std::string DelilahDownloadDataProcess::getStatus()
 	{
 		std::ostringstream output;
-		output << "[ "<< id << " ] Downloading queue " << queue << " to " << fileName << " ( STATE: ";
-		
-		switch (status) {
-			case uninitialized:
-				output << "Uninitialized";
-				break;
-			case waiting_controller_init_response:
-				output << "Waiting controller response to our init message";
-				break;
-			case downloading_files_from_workers:
-				output << "Downloading data";
-				break;
-			case waiting_file_downloads_confirmations:
-				output << "Waiting confirmation of downloaded data";
-				break;
-			case waiting_controller_finish_response:
-				output << "Waiting final message confirmation from controller";
-				break;
-			case finish_with_error:
-				output << "ERROR: " << error.getMessage();
-				break;
-			case finish:
-				output << "Finished correctly";
-				break;
-		}
-		output << " )";
-		
-		
-		output << "\n\tTotal files: " << num_files_downloaded << "/" << num_files_to_download;
-		output << " Buffers: " << buffers.size() << "\n";
+		output << "[ "<< id << " ] Downloading queue " << queue << " to " << fileName << " || ";
+
+		if( !received_init_response )
+            output << " Waiting controller response";
+        else
+        {
+            if( num_files_downloaded == num_files_to_download )
+                output << " ( All files downloaded )";
+            else
+                output << " ( Downloaded: " << num_files_downloaded << "/" << num_files_to_download << " files ) ";
+            
+            if( num_write_operations > 0 )
+                output << " ( Pending " << num_write_operations << " local-writes operations )"; 
+        }
 		return output.str();
 	}
 	
 	std::string DelilahDownloadDataProcess::getShortStatus()
 	{
-		std::ostringstream output;
-		output << "Downloading queue " << queue << " to " << fileName << " ( STATE: ";
-		
-		switch (status) {
-			case uninitialized:
-				output << "Uninitialized";
-				break;
-			case waiting_controller_init_response:
-				output << "Waiting controller response to our init message";
-				break;
-			case downloading_files_from_workers:
-				output << "Downloading data";
-				break;
-			case waiting_file_downloads_confirmations:
-				output << "Waiting confirmation of downloaded data";
-				break;
-			case waiting_controller_finish_response:
-				output << "Waiting final message confirmation from controller";
-				break;
-			case finish_with_error:
-				output << "ERROR: " << error.getMessage();
-				break;
-			case finish:
-				output << "Finished correctly";
-				break;
-		}
-		output << " )";
-		
-		
-		output << " Total files: " << num_files_downloaded << "/" << num_files_to_download;
-		output << " Buffers: " << buffers.size() << "\n";
-		return output.str();
+        return getStatus();
+
 	}    
 }

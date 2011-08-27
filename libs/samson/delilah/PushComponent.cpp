@@ -284,7 +284,6 @@ namespace samson
             return;
         }
         
-        
         if( packet->buffer )
         {
             

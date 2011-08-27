@@ -9,6 +9,7 @@
 #include "au/map.h"							// au::insertInMap
 #include "au/Format.h"                      // au::Format
 
+#include "samson/common/EnvironmentOperations.h"			// Own definition of this methods
 
 #include "samson/data/DataManager.h"					// samson::DataManagerCommandResponse
 #include "samson/controller/SamsonController.h"				// samson::SamsonController
@@ -1238,6 +1239,34 @@ namespace samson {
 		
 	}
 	
+    void ControllerDataManager::getInfo( std::ostringstream& output)
+    {
+        output << "<queues>\n";
+
+		au::map< std::string , Queue>::iterator queue;
+        for ( queue = queues.begin() ; queue != queues.end() ; queue++ )
+            queue->second->getInfo( output );
+        output << "</queues>\n";
+        
+        output << "<stream_operations>\n";
+        
+        au::map< std::string , network::StreamOperation >::iterator so;
+        for (so = streamOperations.begin() ; so != streamOperations.end() ; so++)
+        {
+            output << "<stream_operation>\n";
+            
+            output << "<name>" << so->second->name() << "</name>";
+            const network::StreamOperation& stream_operation = *so->second; 
+            output << "<description>" << samson::getInfo( stream_operation ) << "</description>";
+            
+            output << "</stream_operation>\n";
+        }
+        
+        output << "</stream_operations>\n";
+        
+
+        
+    }
 	
 #pragma mark Monitorization
 	

@@ -29,6 +29,9 @@ namespace samson
 */
 class Network2 : public NetworkInterface
 {
+    
+    Endpoint2::Type main_type;  // Main type of this network element
+    
 public:
 	EndpointManager*  epMgr;
 	

@@ -33,6 +33,9 @@ namespace samson
 */
 Network2::Network2(Endpoint2::Type _type, const char* controllerIp )
 {
+    // Andreu: Keep the main type
+    main_type = _type;
+    
     // Andreu: Create the endpoint manager inside Network2 ( now everything is isolated inside network library )
     epMgr = new EndpointManager( _type , controllerIp );
 
@@ -106,9 +109,9 @@ void Network2::setPacketReceiver(PacketReceiverInterface* receiver)
 */
 bool Network2::ready(void)
 {
-	Endpoint2* controller;
+	Endpoint2* controller = epMgr->lookup(Endpoint2::Controller);
 
-	if ((controller = epMgr->lookup(Endpoint2::Controller)) == NULL)
+	if (controller==NULL)
 		return false;
 
 	if (controller->stateGet() == Endpoint2::Ready)

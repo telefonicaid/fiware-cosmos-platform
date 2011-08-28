@@ -71,12 +71,11 @@ static void periodic(void* nada, void* vP)
 */
 SamsonSpawner::SamsonSpawner()
 {
-	EndpointManager* epMgr = new EndpointManager(Endpoint2::Spawner);
-	networkP               = new Network2(epMgr);
+	networkP               = new Network2(Endpoint2::Spawner);
 	restartInProgress      = false;
 
 	networkP->setPacketReceiver(this);
-	epMgr->callbackSet(samson::EndpointManager::Periodic, periodic, this);
+	networkP->epMgr->callbackSet(samson::EndpointManager::Periodic, periodic, this);
 	networkP->tmoSet(0, 500000);
 }
 

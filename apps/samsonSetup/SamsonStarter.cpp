@@ -21,9 +21,7 @@
 */
 SamsonStarter::SamsonStarter()
 {
-	samson::EndpointManager* epMgr = new samson::EndpointManager(samson::Endpoint2::Setup);
-
-	networkP = new samson::Network2(epMgr);
+	networkP = new samson::Network2( samson::Endpoint2::Setup );
 }
 
 

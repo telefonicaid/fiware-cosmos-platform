@@ -31,9 +31,11 @@ namespace samson
 *
 * Constructor
 */
-Network2::Network2(EndpointManager* _epMgr)
+Network2::Network2(Endpoint2::Type _type, const char* controllerIp )
 {
-	epMgr          = _epMgr;
+    // Andreu: Create the endpoint manager inside Network2 ( now everything is isolated inside network library )
+    epMgr = new EndpointManager( _type , controllerIp );
+
     epMgr->networkInterface = this;
 	packetReceiver = NULL;
 }

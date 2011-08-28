@@ -178,8 +178,7 @@ int main(int argC, const char *argV[])
     
 	
 	// Initialize the network element for delilah
-	samson::EndpointManager* epMgr     = new samson::EndpointManager(samson::Endpoint2::Delilah, controller);
-	samson::Network2*        networkP  = new samson::Network2(epMgr);
+	samson::Network2*        networkP  = new samson::Network2( samson::Endpoint2::Delilah, controller );
 
 	networkP->runInBackground();
 
@@ -201,7 +200,7 @@ int main(int argC, const char *argV[])
 	samson::Packet*  packetP  = new samson::Packet(samson::Message::Msg, samson::Message::ProcessVector);
 
 	LM_TODO(("I should probably go through NetworkInterface here ..."));
-	epMgr->controller->send( packetP );
+	networkP->epMgr->controller->send( packetP );
 
 	// Create a DelilahControler once network is ready
 	samson::DelilahConsole* delilahConsole = NULL;

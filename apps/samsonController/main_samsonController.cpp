@@ -110,7 +110,6 @@ static const char* manVersion       = SAMSON_VERSION;
 */
 int main(int argC, const char* argV[])
 {
-	samson::EndpointManager* epMgr;
 
 	paConfig("prefix",                        (void*) "SSC_");
 	paConfig("usage and exit on any warning", (void*) true);
@@ -159,8 +158,7 @@ int main(int argC, const char* argV[])
 	engine::MemoryManager::init(samson::SamsonSetup::getUInt64("general.memory"));
 	// Goyo. End of groping in the dark
 
-	epMgr     = new samson::EndpointManager(samson::Endpoint2::Controller);
-	networkP  = new samson::Network2(epMgr);
+	networkP  = new samson::Network2(samson::Endpoint2::Controller);
 
 	networkP->runInBackground();
    	samson::SamsonController controller(networkP);

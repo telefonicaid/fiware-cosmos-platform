@@ -32,7 +32,7 @@ class Network2 : public NetworkInterface
 public:
 	EndpointManager*  epMgr;
 	
-	Network2(EndpointManager* epMgr);
+	Network2(Endpoint2::Type _type, const char* controllerIp = NULL);
 	~Network2();
 
 	void  tmoSet(int secs, int usecs);  // Set timeout for select loop

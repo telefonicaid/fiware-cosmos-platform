@@ -166,8 +166,7 @@ int main(int argC, const char *argV[])
     
 	// Instance of network object and initialization
 	// --------------------------------------------------------------------
-	samson::EndpointManager* epMgr     = new samson::EndpointManager(samson::Endpoint2::Worker);
-	samson::Network2*        networkP  = new samson::Network2(epMgr);
+	samson::Network2*        networkP  = new samson::Network2(samson::Endpoint2::Worker);
 
 
 	LM_T(LmtInit, ("Waiting for network connection ..."));

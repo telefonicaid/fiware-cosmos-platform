@@ -73,8 +73,7 @@ namespace samson {
         
         
         // Initialize the network element for delilah
-        epMgr     = new samson::EndpointManager(samson::Endpoint2::Delilah, controller.c_str() );
-        networkP  = new samson::Network2(epMgr);
+        networkP  = new samson::Network2( samson::Endpoint2::Delilah, controller.c_str() );
         
         // Init the network connection in background
         networkP->runInBackground();

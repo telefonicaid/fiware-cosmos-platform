@@ -9,7 +9,7 @@ message Command
 		Comment			= 3;	  // A simple coment that is log but never acts on data
 		Finish			= 4;	  // The task has been finally validated
 		Cancel			= 5;	  // The task has been canceled, so everything is undone
-		Session			= 6;	  // Flag to indicate a new session ( previous elements are cleared at this point )	  
+		Session			= 6;	  // Flag to indicate a new session ( previous non-closed  elements are closed at this point )
 	};
 
 	required uint64 task_id = 1;  // Controller top-level task id (jobs)

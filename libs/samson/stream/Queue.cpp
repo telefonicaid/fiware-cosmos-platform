@@ -40,9 +40,40 @@ namespace samson {
         Queue::~Queue()
         {
             delete list;
-            
         }
-                        
+        
+        void Queue::copyFrom( BlockList* _list )
+        {
+            // Report command to worker "log"
+            std::ostringstream log_command;
+            
+            log_command << "push " << name << " ";
+            for ( au::list<Block>::iterator b = _list->blocks.begin() ; b!= _list->blocks.end() ; b++)
+                log_command << (*b)->getId();
+            qm->worker->dataManager->simple_log( log_command.str() );
+
+            // Copy the modules properly
+            list->copyFrom( _list );
+        }
+        
+        void Queue::extractTo( BlockList* output_list , size_t max_size )
+        {
+            // Report command to worker "log"
+            std::ostringstream log_command;
+            
+            BlockList _list("tmp extractTo");
+            list->extractTo( &_list , max_size );
+
+            // Report the blocks we are extracting
+            log_command << "pop " << name << " ";
+            for ( au::list<Block>::iterator b = _list.blocks.begin() ; b!= _list.blocks.end() ; b++)
+                log_command << (*b)->getId();
+            qm->worker->dataManager->simple_log( log_command.str() );
+            
+            // Copy the blocks we have just extracted
+            output_list->copyFrom( &_list );
+        }
+        
         void Queue::getInfo( std::ostringstream& output)
         {
             
@@ -54,7 +85,6 @@ namespace samson {
             list->getInfo(output);
             
             output << "</queue>\n";
-            
         }
   
         

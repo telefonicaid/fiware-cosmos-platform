@@ -29,7 +29,7 @@ int main( int argc , char *argv[] )
         exit(0);
     }
     
-    
+    // Instance of the client to connect to SAMSON system
     samson::SamsonClient client;
     
     // Set 1G RAM for uploading content
@@ -47,34 +47,41 @@ int main( int argc , char *argv[] )
     // Read from the stdin and push to que selected queue
     fprintf(stderr , "Connected to %s\n", argv[1] );
 
+    sleep( 2 );
+    
     char line[1024];
-    char * buffer = (char*) malloc(  BUFFER_SIZE );
+    char * buffer = (char*) malloc( BUFFER_SIZE );
     size_t size = 0;
     
     while( fgets(line, 1024, stdin) )
     {
-        size_t line_length  = strlen(line);
+        size_t line_length  = strlen(line) + 1;
+        //fprintf(stderr , "Read %s -> %d bytes" , line , (int) strlen( line ) );
         
         if( (size + line_length ) > BUFFER_SIZE )
         {
             // Process buffer
-		    fprintf(stderr , "Flushing %lu bytes to queue %s\n", (unsigned long int) size , argv[2]);
-            client.push(  argv[2]  , 0 , buffer, size );
+            fprintf(stderr , "Flushing %lu bytes to queue %s\n", (unsigned long int) size , argv[2]);
+            client.push(  argv[2] , buffer, size );
             
             // Process buffer
             size = 0;
         }
     
-        memcpy(buffer + size, line, line_length);
+        memcpy( buffer + size, line , line_length );
         size+= line_length;
         
     }
     
     // Process last buffer
-    fprintf(stderr , "Flushing %lu bytes to queue %s\n", (unsigned long int) size , argv[2] );
-    client.push(  argv[2]  , 0 , buffer, size );
+    if( size > 0 )
+    {
+      fprintf(stderr , "Flushing %lu bytes to queue %s\n", (unsigned long int) size , argv[2] );
+      client.push(  argv[2] , buffer, size );
+    }
     
     // Wait until all operations are complete
+    fprintf(stderr , "Waiting for all the push operations to complete..." );
     client.waitUntilFinish();
     
 	

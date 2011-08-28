@@ -15,7 +15,6 @@
 
 namespace samson {
 
-
 	class LogFile
 	{
 		std::string fileName;
@@ -25,7 +24,17 @@ namespace samson {
 		
 		char *buffer;			// Buffer to serialize GPB elements
 		size_t buffer_size;		// Size of the previous buffer
-		
+
+        enum OpenMode
+        {
+            undefinied,
+            open_to_read,
+            open_to_append
+        };
+        
+        OpenMode openMode;
+        
+        
 	public:
 		
 		LogFile( std::string _fileName )
@@ -34,6 +43,8 @@ namespace samson {
 			
 			buffer = NULL;
 			buffer_size = 0;
+            
+            openMode = undefinied;
 		}
 		
 		~LogFile()
@@ -47,18 +58,19 @@ namespace samson {
 		
 		void close();
 		
+        // Read a new command from file ( if open as roRead )
 		bool read( data::Command &c );		
+
+        // Write a command to file ( if open as toAppend )
 		void write( data::Command &c );
 		void write( size_t task_id , std::string command , data::Command::Action action );
-		
-		std::string getFileName()
-		{
-			return fileName;
-		}
-		
+
+		// Get the fileName used with this LogFile
+		std::string getFileName();
 		
 	private:
 		
+        // Check that we have enougth space to write in the buffer the provided command
 		void checkBuffer( size_t size ) ;
 		
 	};

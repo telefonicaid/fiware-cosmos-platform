@@ -109,7 +109,7 @@ namespace samson {
         
     }
     
-    size_t SamsonClient::push( std::string queue , int channel , char *data , size_t length )
+    size_t SamsonClient::push( std::string queue , char *data , size_t length )
     {
         // Do something
         

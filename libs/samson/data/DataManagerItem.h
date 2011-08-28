@@ -21,15 +21,15 @@ namespace samson {
 	{
 	public:
 		
-		size_t task_id;						// Id of the task
-		std::vector<std::string> command;	// List of commands for this task
+		size_t task_id;                         // Id of the task
+		std::vector<std::string> command;       // List of commands for this task
 		
 		DataManagerItem( size_t id )
 		{
 			task_id = id;
 		}
 		
-		void addCommand( std::string c)
+		void addCommand( std::string c )
 		{
 			command.push_back(c);
 		}

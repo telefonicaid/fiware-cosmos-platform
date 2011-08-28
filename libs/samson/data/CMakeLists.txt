@@ -1,4 +1,5 @@
 SET (HEADERS
+    SimpleDataManager.h
     DataManager.h
     DataManagerItem.h
     DataManagerCommandResponse.h
@@ -7,6 +8,7 @@ SET (HEADERS
 )
 
 SET (SOURCES
+    SimpleDataManager.cpp
     DataManager.cpp
     DataManagerItem.cpp
     DataManagerCommandResponse.cpp
@@ -29,4 +31,5 @@ add_custom_command (
 # Library declaration
 # -----------------------------------------------------------------
 ADD_LIBRARY(samsonDataLib STATIC ${SOURCES} ${HEADERS} )
+
 

@@ -30,8 +30,6 @@ namespace samson
             {
             }
 
-            // Get the required blocks to process
-            void getBlocks( BlockList * input );
             
             // Function to generate output key-values
             void generateKeyValues( KVWriter *writer );

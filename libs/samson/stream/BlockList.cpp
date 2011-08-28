@@ -154,6 +154,26 @@ namespace samson {
             }
             
         }
+
+        void BlockList::extractTo( BlockList* output_list , size_t max_size )
+        {
+            size_t total_size = 0 ;
+            
+            while( top() != NULL )
+            {
+                Block *b = top();
+                total_size += max_size;
+                
+                if (( max_size > 0) && ( total_size > max_size ))
+                    return;
+                
+                output_list->add( b );
+                remove( b );
+                
+            }
+            
+        }
+        
         
         
         std::string BlockList::str()

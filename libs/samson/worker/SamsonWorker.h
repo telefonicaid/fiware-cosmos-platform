@@ -31,6 +31,8 @@
 #include "WorkerTaskManager.h"	// samson::WorkerTaskManager
 #include "LoadDataManager.h"	// samson::LoadDataManager
 
+#include "samson/data/SimpleDataManager.h"          // samson::SimpleDataManager
+
 #include "samson/common/NotificationMessages.h"
 
 namespace samson {
@@ -38,7 +40,11 @@ namespace samson {
     class NetworkInterface;
     class Info;
     
-	class SamsonWorker :  public PacketReceiverInterface, public PacketSenderInterface, public engine::Object
+	class SamsonWorker : 
+        public PacketReceiverInterface, 
+        public PacketSenderInterface, 
+        public engine::Object , 
+        public samson::SimpleDataManagerInterface
 	{
 		
 		// Initial time stamp 
@@ -48,6 +54,8 @@ namespace samson {
 		
 		SamsonWorker(NetworkInterface* network);
         
+        SimpleDataManager *dataManager;                 // Data manager to keep data after a reboot
+        friend class QueuesManager;                     // Friend to be able to log to dataManager
         
 	public:
 
@@ -89,6 +97,11 @@ namespace samson {
         // Run a particular worker command sent from delilah
         void runWorkercommand( Packet* p );
         
+        
+    public:
+        // Running recovery commands    
+        void runRecoveryCommand( std::string command );
+
 	};
 	
 }

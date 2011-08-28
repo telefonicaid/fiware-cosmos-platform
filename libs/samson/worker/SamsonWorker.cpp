@@ -108,6 +108,11 @@ namespace samson {
             
         }
         
+        // Init the data manager ( recovery of the state comes here )
+        std::string log_file = SamsonSetup::shared()->controllerDirectory + "/log_worker";
+        dataManager = new SimpleDataManager(log_file,this);
+        
+        
         // Send a "hello" command message just to notify the controller about me
         Packet *p = new Packet( Message::Command );
         network::Command *command = p->message->mutable_command();
@@ -717,6 +722,10 @@ namespace samson {
         
     }
     
+    void SamsonWorker::runRecoveryCommand( std::string command )
+    {
+        // To be implemented
+    }
     
 
 	

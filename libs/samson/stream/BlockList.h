@@ -119,8 +119,10 @@ namespace samson {
             
             //void copyFrom( BlockMatrix* matrix , int channel );
             void copyFrom( BlockList* list );
-            
+
+            // Extract blocks of data
             void extractFrom( BlockList* list , size_t max_size );
+            void extractTo( BlockList* list , size_t max_size );
             
             std::string getSummary();
             

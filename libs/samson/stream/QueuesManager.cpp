@@ -47,8 +47,8 @@ namespace samson {
             // Get or create the queue
             Queue *queue = getQueue( queue_name );
             
-            // Add the block to the queue
-            queue->list->copyFrom( bl );
+            // Add the block to the queue ( no information about any particular task at the moment )
+            queue->copyFrom( bl );
 
             // review all the automatic operations ( maybe we can only review affected operations in the future... )
             reviewStreamOperations();            
@@ -78,7 +78,7 @@ namespace samson {
             {
                 StateItem *stateItem = (*item);
                 
-                queue->list->copyFrom( stateItem->state );
+                queue->copyFrom( stateItem->state );
             }
         }
         
@@ -140,7 +140,7 @@ namespace samson {
             if (! queue )
             {
                 queue = new Queue( queue_name , this );
-                queues.insertInMap( queue->name, queue );
+                queues.insertInMap( queue_name, queue );
             }
             
             return queue;
@@ -327,7 +327,7 @@ namespace samson {
                     while( true )
                     {
                         
-                        if( inputQueue->list->isEmpty() )
+                        if( inputQueue->isEmpty() )
                         {
                             /*
                             LM_W(("Review of StreamOperation %s finished since queue %s is empty"
@@ -339,10 +339,10 @@ namespace samson {
                         }
                         
                         ParserQueueTask *tmp = new ParserQueueTask( queueTaskManager.getNewId() , operation ); 
-                        tmp->environment.set("queue" , inputQueue->name );
                         tmp->setOutputFormats( &op->outputFormats );
 
-                        tmp->getBlocks( inputQueue->list );
+                        // Extract the rigth blocks from queue
+                        inputQueue->extractTo( tmp->list  , 1000000000 );
                         
                         // Schedule tmp task into QueueTaskManager
                         queueTaskManager.add( tmp );
@@ -370,15 +370,15 @@ namespace samson {
                     while( true )
                     {
                         
-                        if( inputQueue->list->isEmpty() )
+                        if( inputQueue->isEmpty() )
                         {
                             return;
                         }
                         
                         ParserOutQueueTask *tmp = new ParserOutQueueTask( queueTaskManager.getNewId() , operation ); 
-                        tmp->environment.set("queue" , inputQueue->name );
                         
-                        tmp->getBlocks( inputQueue->list );
+                        // Extract the rigth blocks from queue
+                        inputQueue->extractTo( tmp->list  , 1000000000 );
                         
                         // Schedule tmp task into QueueTaskManager
                         LM_M(("Scheduled parserOut "));
@@ -407,7 +407,7 @@ namespace samson {
                     {
                         
                         
-                        if( inputQueue->list->isEmpty() )
+                        if( inputQueue->isEmpty() )
                         {
                             /*
                              LM_W(("Review of StreamOperation %s finished since queue %s is empty"
@@ -420,10 +420,10 @@ namespace samson {
                         
                         
                         MapQueueTask *tmp = new MapQueueTask( queueTaskManager.getNewId() , operation ); 
-                        tmp->environment.set("queue" , inputQueue->name );
                         tmp->setOutputFormats( &op->outputFormats );
                         
-                        tmp->getBlocks( inputQueue->list );
+                        // Extract the rigth blocks from queue
+                        inputQueue->extractTo( tmp->list  , 1000000000 );
                         
                         // Schedule tmp task into QueueTaskManager
                         queueTaskManager.add( tmp );

@@ -48,7 +48,7 @@ namespace  samson {
         bool init( std::string controller );
         
         // Push content to a particular queue
-        size_t push( std::string queue , int channel , char *data , size_t length );
+        size_t push( std::string queue , char *data , size_t length );
         
         // Get error message
         std::string getErrorMessage();

@@ -13,6 +13,7 @@ SET (LIBS
     samsonModule
     samsonCommon
     samsonStream
+    samsonDataLib
     engine
     au
     pa

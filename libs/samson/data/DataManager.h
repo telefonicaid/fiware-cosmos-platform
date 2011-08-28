@@ -25,7 +25,6 @@ namespace samson
 	{
 		LogFile file;							// File to write
 		size_t task_counter;					// Internal counter to give new task ids
-
 		
 	protected:
 		
@@ -34,8 +33,7 @@ namespace samson
 		
 	public:
 		
-		DataManager( std::string  fileName );
-		
+		DataManager( std::string  fileName );   // Contructor providing the file used as log
 		virtual ~DataManager() {}
 
 		// Init session
@@ -54,7 +52,6 @@ namespace samson
 	protected:
 		
 		DataManagerCommandResponse _runOperation( size_t task_id , std::string command );
-
 		
 	protected:
 		
@@ -80,7 +77,6 @@ namespace samson
 			lock.unlock();
 			return id;
 		}
-		
 		
 	private:
 

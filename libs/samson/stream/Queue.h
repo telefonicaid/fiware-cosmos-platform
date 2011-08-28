@@ -42,28 +42,35 @@ namespace samson {
         
         class Queue : engine::Object
         {
-            friend class QueuesManager; 
             
             QueuesManager * qm;                 // Pointer to the queue manager
             
             std::string name;                   // Name of the queue
-
             au::Cronometer cronometer;          // Time since the last command execution
-                        
-        public:
 
+            friend class QueuesManager;          // To be removed for a complete activity-log  with queues
             BlockList *list;                     // List of blocks contained in this queue
             
+        public:
             
             Queue( std::string _name , QueuesManager * _qm );
             ~Queue();
-            
-            // Notifications    
-            //void notify( engine::Notification* notification );
+
+            // Put content on the queue
+            void copyFrom( BlockList* _list );
+                      
+            // Extract data
+            void extractTo( BlockList* list , size_t max_size );
+
             
             // Get information for monitorization
             void getInfo( std::ostringstream& output);
             
+            // Report empty
+            bool isEmpty()
+            {
+                return list->isEmpty();
+            }
             
         };
         

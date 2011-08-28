@@ -1014,7 +1014,7 @@ namespace samson
             {
                 
                 output << "------------------------------------------------------------\n";
-                output << "Worker " << workers_ids[w] << ":\n";
+                output << "Queues at worker " << workers_ids[w] << ":\n";
                 output << "------------------------------------------------------------\n";
                 
                 pugi::xpath_node_set queues  = pugi::select_nodes( doc , "//worker[id=" + workers_ids[w] + "]/stream_manager/queues/queue" );
@@ -1028,7 +1028,7 @@ namespace samson
                     
                     const pugi::node block_list = queue.first_element_by_path("block_list");
                     
-                    output << "Queue " << name << ": [ "  << getBLockListString (block_list ) << " ]";
+                    output << std::setw(15) << name << ": [ "  << getBLockListString (block_list ) << " ]";
                     output << "\n";
                     
                     //pugi::str( state , 2 , output );

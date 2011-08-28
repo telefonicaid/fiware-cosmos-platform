@@ -22,11 +22,6 @@ namespace samson {
         
 #pragma mark ParserQueueTask
         
-        // Get the required blocks to process
-        void ParserQueueTask::getBlocks( BlockList * input )
-        {
-            list->extractFrom ( input , 100000000 );
-        }
         
         void ParserQueueTask::generateKeyValues( KVWriter *writer )
         {

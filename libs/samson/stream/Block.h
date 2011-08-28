@@ -218,6 +218,11 @@ namespace samson {
             
             const char* getState();
             
+            size_t getId()
+            {
+                return id;
+            }
+            
         private:
             
             // Get the minimum task id to get the order of the blocks

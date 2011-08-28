@@ -7,7 +7,14 @@ namespace samson
 
 	bool LogFile::openToRead( )
 	{
+        if ( openMode != undefinied )
+        {
+            LM_W(("LogFile can only be open once..."));
+            return false;
+        }
+        
 		LM_T(LmtFile, ("opening '%s' to read", fileName.c_str()));
+        openMode = open_to_read;
 		
 		input.open( fileName.c_str() );
 		return input.is_open();
@@ -15,7 +22,14 @@ namespace samson
 	
 	bool LogFile::openToAppend( )
 	{
+        if ( openMode != undefinied )
+        {
+            LM_W(("LogFile can only be open once..."));
+            return false;
+        }
+        
 		LM_T(LmtFile, ("opening '%s' to append", fileName.c_str()));
+        openMode = open_to_append;
 		
 		output.open( fileName.c_str() , std::ios::app );
 		return output.is_open();
@@ -33,6 +47,12 @@ namespace samson
 	
 	bool LogFile::read( data::Command &c )
 	{
+        if( openMode != open_to_read )
+        {
+            LM_W(("LogFile not open correctly"));
+            return false;
+        }
+        
 		if( !input.is_open() )
 			LM_X(1, ("Error in log-file processing in read operation"));
 		
@@ -55,6 +75,12 @@ namespace samson
 	
 	void LogFile::write( data::Command &c )
 	{
+        if( openMode != open_to_append )
+        {
+            LM_W(("LogFile not open correctly"));
+            return;
+        }
+        
 		if ( !output.is_open() )
 			LM_X(1, ("Error in log-file processing in write operation"));
 
@@ -81,18 +107,6 @@ namespace samson
 		}
 	}	
 	
-	void LogFile::checkBuffer( size_t size ) 
-	{
-		if( buffer_size < size )
-		{
-			if( buffer )
-				free(buffer);
-			
-			buffer =  (char *) malloc(size);
-			buffer_size = size;
-		}
-	}
-	
 	void LogFile::write( size_t task_id , std::string command , data::Command::Action action )
 	{
 		data::Command c;
@@ -106,5 +120,25 @@ namespace samson
 		
 		write( c );
 	}	
+    
+	void LogFile::checkBuffer( size_t size ) 
+	{
+		if( buffer_size < size )
+		{
+			if( buffer )
+				free(buffer);
+			
+			buffer =  (char *) malloc(size);
+			buffer_size = size;
+		}
+	}
+    
+    std::string LogFile::getFileName()
+    {
+        return fileName;
+    }
+
+	
+
 
 }

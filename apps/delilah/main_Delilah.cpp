@@ -182,8 +182,6 @@ int main(int argC, const char *argV[])
 
 	networkP->runInBackground();
 
-
-
 	//
 	// What until the network is ready
 	//

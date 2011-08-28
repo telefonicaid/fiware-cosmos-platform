@@ -48,9 +48,7 @@ public:
         return "SamsonConfig > ";
     }
     
-    
     //!< function to process a command instroduced by user	
-    
     void evalCommand( std::string command )
     {
         
@@ -156,10 +154,8 @@ public:
             return;
         }
         
-        
-        
         writeErrorOnConsole(au::str("Unknown command '%s'" , main_command.c_str() ));
-        
+        writeWarningOnConsole("Type help to get a list of valid commands ");
         
     }
     
@@ -171,18 +167,17 @@ int main(int argc, const char *argv[])
 	au::CommandLine cmdLine;
 	cmdLine.set_flag_string("working",SAMSON_DEFAULT_WORKING_DIRECTORY);
     cmdLine.set_flag_boolean("check");
-    cmdLine.set_flag_boolean("edit");
     cmdLine.set_flag_boolean("help");
     cmdLine.set_flag_boolean("-help");
 	cmdLine.parse(argc , argv);
 
 	samson::SamsonSetup::init(  );
-    samson::SamsonSetup::shared()->setWorkingDirectory(cmdLine.get_flag_string("working"));
+    samson::SamsonSetup::shared()->setWorkingDirectory( cmdLine.get_flag_string("working") );
 
     
     if( cmdLine.get_flag_bool("check") )
     {
-        std::cout << "Checking setup...";
+        std::cout << "Checking setup file ( " << samson::SamsonSetup::shared()->setupFile << " ) ...";
         
         // Check everything looks ok
         au::ErrorManager errorManager;
@@ -195,27 +190,21 @@ int main(int argc, const char *argv[])
         
         return 0;
     }
-
-    
-    if( cmdLine.get_flag_bool("edit") )
-    {
-        // Edit mode
-        
-        samson::SamsonSetup::shared()->edit();  // Enter in edit mode from command line
-        samson::SamsonSetup::shared()->save();  // Save a new file with the current setup
-        
-        std::cout << "File " << samson::SamsonSetup::shared()->setupFile << " has been successfully generated\n\n";
-        
-        return 0;
-    }
-
     
     if( cmdLine.get_flag_bool("help") || cmdLine.get_flag_bool("-help") )
     {
-        std::cout << "samsonConfig [-check][-edit] : Samson config tool. Use -edit to create a new setup file\n\n";
+        std::cout << "\n";
+        std::cout << "samsonConfig [-check] : Samson configuration tool.\n";
+        std::cout << "\n";
+        std::cout << "\t -check : Verify current setup\n";
+        std::cout << "\n";
+        std::cout << "\t samsonConfig is an iterative tool to specify all the setup values in a Samson deployment\n";
+        std::cout << "\t Just type help inside samsonConfig to get a list of valid commands\n";
+        std::cout << "\n";
         return 0;
     }
     
+    std::cout << "\nType help to get a list of valid command\n\n";
     SamsonConfigConsole console;
     console.runConsole();
     

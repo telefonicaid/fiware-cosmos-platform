@@ -139,6 +139,8 @@ namespace engine {
 		
     public:
         
+        // get xml information
+        void getInfo( std::ostringstream& output);
         
         // Public identifiers to be removed
         

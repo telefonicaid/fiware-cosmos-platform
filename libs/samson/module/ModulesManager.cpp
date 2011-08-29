@@ -311,15 +311,6 @@ namespace samson
 	}
 	
     
-    // Fill status information	
-    void ModulesManager::fill( network::WorkerStatus* ws)
-    {
-        ws->set_modules_manager_status(getStatus());
-    }
-    void ModulesManager::fill( network::ControllerStatus *cs )
-    {
-        cs->set_modules_manager_status(getStatus());
-    }
     
     std::string ModulesManager::getStatus()
     {

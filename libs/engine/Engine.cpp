@@ -7,6 +7,8 @@
 
 #include "logMsg/logMsg.h"                          // LM_X
 
+#include "au/Format.h"                             // au::xml_...
+
 #include "au/Stopper.h"                             // au::Stopper
 #include "au/ErrorManager.h"                       // au::ErrorManager
 #include "au/Token.h"                       // au::Token
@@ -255,34 +257,27 @@ namespace engine
 	
 #pragma mark ----
 
-    std::string Engine::str()
+    // get xml information
+    void Engine::getInfo( std::ostringstream& output)
 	{
         // Mutex protection
         au::TokenTaker tt(token , "Engine::str");
-
-	return _str();
-
-	}
-
-    std::string Engine::_str()
-	{
-		
-        std::ostringstream engine_state;
         
-        engine_state << "Engine Loops: " << counter << "\n";
+        au::xml_open(output, "engine");
+        
+        au::xml_simple(output , "loops" , counter );
         
         if( running_element )
-            engine_state << "\t\t\tCurrent:\n\t\t\t\t" << running_element->getDescription() << "\n";
+            au::xml_simple( output , "running_element" , running_element->getDescription() );
         else
-            engine_state << "( Sleeping for " << sleeping_time_seconds << ")\n";
+            au::xml_simple( output , "running_element" , au::str("Sleeping %d seconds",sleeping_time_seconds ) );
+
+        au::xml_iterate_list( output , "elements" , elements );
         
-        engine_state <<  "\t\t\tQueue: " << elements.size() << "\n";
-        for ( au::list<EngineElement>::iterator el = elements.begin() ; el != elements.end() ; el++)
-            engine_state << "\t\t\t\t[" << (*el)->getShortDescription() <<"]\n";
-                
-        return engine_state.str();
+        au::xml_close(output , "engine");
         
-	}	
+	}
+
     
     // Functions to register objects ( general and for a particular notification )
     void Engine::register_object( Object* object )

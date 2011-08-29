@@ -299,6 +299,5 @@ namespace samson
 		
 		lock.unlock();
 		
-		ws->set_load_data_manager_status( output.str() );
 	}
 }

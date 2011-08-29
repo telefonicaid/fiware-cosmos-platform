@@ -356,5 +356,16 @@ namespace au
         return std::string(vmsg);
     }        
     
+#pragma mark XML functions
+    
+    void xml_open( std::ostringstream& output , std::string name )
+    {
+        output << "<" << name << ">\n";
+    }
+    
+    void xml_close( std::ostringstream& output , std::string name )
+    {
+        output << "</" << name << ">\n";
+    }
 	
 }

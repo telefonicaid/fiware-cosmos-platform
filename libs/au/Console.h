@@ -36,7 +36,9 @@ namespace au {
 	{
 		Lock lock;				//!< Lock as a control mechanism to log things into the console
 		bool quit_console;		//!< Flag to indicate that we want the console to quit ( can be set from outside the class with quit )
+
         
+        std::list<std::string> pending_messages;
         pthread_t t;
 	public:		
         

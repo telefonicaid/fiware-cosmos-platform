@@ -540,8 +540,6 @@ namespace samson {
                     // Fill all the information of the "info" structure
                     std::ostringstream output;
                     
-                    output << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n";
-                    output << "<samson>\n";
                     
                     output << "<controller>\n";
                     getInfo( output );
@@ -554,8 +552,6 @@ namespace samson {
                         output << worker_xml_info[i];
                         output << "</worker>\n";
                     }
-
-                    output << "</samson>\n";
                     
                     p2->message->set_info( output.str() );                    
                     
@@ -633,8 +629,6 @@ namespace samson {
             //Setup status
             status->set_setup_status( SamsonSetup::shared()->str() );
             
-            ModulesManager::shared()->fill( status );
-            
             // Set up time information
             status->set_up_time(au::Format::ellapsedSeconds(&init_time));
 
@@ -700,6 +694,9 @@ namespace samson {
 	
     void SamsonController::getInfo( std::ostringstream& output )
     {
+        // Engine
+        engine::Engine::shared()->getInfo( output );
+        
         output << "<data_manager>\n";
         data.getInfo( output );
         output << "</data_manager>\n";

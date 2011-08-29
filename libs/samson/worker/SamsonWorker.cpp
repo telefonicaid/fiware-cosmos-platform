@@ -156,14 +156,6 @@ namespace samson {
 		// This message is not critical - to be thrown away if worker not connected
 		p->disposable = true;
 
-		// Fill to all data related with task manager
-		taskManager.fill(ws);
-		
-		// Fill information related with file manager and disk manager
-        ws->set_engine_status( engine::Engine::shared()->str() );
-
-        // Modules manager
-        ModulesManager::shared()->fill( ws );
         
         // Memory manager
         std::ostringstream memory_status;
@@ -200,25 +192,9 @@ namespace samson {
         }
         
         
-        ws->set_memory_status( memory_status.str() );
-
-        //Setup
-        ws->set_setup_status( SamsonSetup::shared()->str() );
-        
-        // Process manager
-        ws->set_process_manager_status( engine::ProcessManager::str() );
-
-        // Disk manager
-        ws->set_disk_manager_status( engine::DiskManager::shared()->str() );
-        
 		// Load data manager
 		loadDataManager.fill( ws );
 		
-        // Network status
-        ws->set_network_status( network->getState("") );
-        
-        // Shared memory manager status
-        ws->set_shared_memory_status( engine::SharedMemoryManager::str() );
 
         // Set up time information
         ws->set_up_time(au::Format::ellapsedSeconds(&init_time));
@@ -711,6 +687,10 @@ namespace samson {
     // Get information for monitorization
     void SamsonWorker::getInfo( std::ostringstream& output)
     {
+        
+        // Engine
+        engine::Engine::shared()->getInfo( output );
+        
         // Block manager
         stream::BlockManager::shared()->getInfo( output );
         

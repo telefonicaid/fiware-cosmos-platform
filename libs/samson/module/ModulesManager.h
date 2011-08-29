@@ -56,9 +56,6 @@ namespace samson {
 		void fill( network::OperationList *ol , std::string command  );
 		void fill( network::DataList *dl, std::string command  );
 	
-		// Fill status information	
-		void fill( network::WorkerStatus* ws);
-        void fill( network::ControllerStatus *cs );        
         std::string getStatus();
         
 	};

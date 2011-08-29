@@ -229,6 +229,20 @@ namespace samson {
             
             au::TokenTaker tt( &info_lock );
 
+            std::ostringstream output;
+            
+            output << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n";
+            output << "<samson>\n";
+            
+            std::string controller_and_worker_status = packet->message->info();
+            output << controller_and_worker_status;
+
+            // Get my own status here
+            getInfo( output );
+            
+            output << "</samson>\n";
+            
+            
             xml_info = packet->message->info();
 
             std::istringstream is_xml_document( xml_info );
@@ -518,6 +532,18 @@ namespace samson {
         return time;
     }
     
+    // Get information for monitorization
+    void Delilah::getInfo( std::ostringstream& output)
+    {
+        
+        au::xml_open(output, "delilah");
+        
+        // Engine
+        engine::Engine::shared()->getInfo( output );
+
+        au::xml_close(output, "delilah");
+        
+    }    
     
 }
 

@@ -54,13 +54,17 @@ namespace au
 
 	void Console::write( std::string message )
 	{
+        if( pthread_self() != t )
+        {
+            // Accumulate message
+            pending_messages.push_back( message );
+        }
+        
 		std::ostringstream output;
 		output << "\r" << message << "\n";
 		std::cout << output.str();
 		std::cout.flush();
 
-		rl_forced_update_display();
-		rl_redisplay();
 	}
 
 	void Console::write2( std::string message )
@@ -95,17 +99,30 @@ namespace au
 			std::cout.flush();
 			std::cerr.flush();
 			fprintf(stdout, "\n");
+            
 			char *line = readline(getPrompt().c_str());
 			
 			if (line)
 			{
 				if (line[0] != 0)
 					add_history(line);
+                
 				evalCommand(line);
+                
 				free(line);
+                
+                if ( pending_messages.size() > 0 )
+                {
+                    write( "----------------------------------------------------" );
+                    while( pending_messages.size() > 0 )
+                    {   
+                        write( pending_messages.front() );
+                        pending_messages.pop_front();
+                    }
+                    write( "----------------------------------------------------" );
+                }
 			}
             
-			// rl_line_buffer[0] = '\0';
 		}
 
 		write_history(NULL);

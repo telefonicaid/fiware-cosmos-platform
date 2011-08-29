@@ -88,7 +88,7 @@ namespace samson {
 		size_t getId();
 		size_t getJobId();
         ControllerTaskState getState();
-		std::string getStatus();
+        void getInfo( std::ostringstream& output);
 		int getNumUsedOutputs();
 		int getNumOutputs();
 		void fillInfo( network::WorkerTask *t , int workerIdentifier );		

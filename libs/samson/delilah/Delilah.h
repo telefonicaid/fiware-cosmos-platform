@@ -165,6 +165,7 @@ namespace samson {
         
         int getUpdateSeconds();     // Get the update time
         
+        void getInfo( std::ostringstream& output);
         
 	private:		
 		

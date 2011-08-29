@@ -193,21 +193,6 @@ message WorkerStatus
 	optional uint64 up_time = 23;					// Time since the the worker started
 	optional uint64 update_time = 8;				// Time since the last update from the worker
 
-	optional string task_manager_status=7;				// Information about task manager
-	optional string disk_manager_status=3;				// Information about the disk manager
-	optional string load_data_manager_status=14;			// Information about load ( upload / download ) data manager
-	optional string process_manager_status=1;			// Information about the process manager
-	optional string network_status=20;				// Information about the network
-	optional string memory_status=6;				// Information about memory status
-	optional string shared_memory_status=22;			// Information about shared memory
-	optional string engine_status=24;				// Informaiion about the engine
-	optional string queues_status=25;				// Information about the Queues
-	optional string queues_tasks_status=26;				// Information about queue tasks
-
-	optional string modules_manager_status=28;			// Information about modules manager
-
-	optional string setup_status = 40;				// Information about the current setup
-
 	// Numerical values for quick system evaluation
 
 	optional uint64 used_memory=10;

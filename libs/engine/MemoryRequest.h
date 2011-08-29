@@ -20,7 +20,6 @@
 #include <cstring>
 #include "engine/Object.h"      // engine::Object
 
-
 namespace engine {
 
     /**
@@ -45,6 +44,10 @@ namespace engine {
 
         // Basic constructor
         MemoryRequest( size_t _size , size_t _listener_id );
+
+        // Get information in xml mode
+        void getInfo( std::ostringstream& output);
+
         
     };    
     

@@ -151,7 +151,10 @@ namespace engine {
 		
 		// Function for the main thread of memory
 		void runThread();        
-        
+
+        // get xml information
+        void getInfo( std::ostringstream& output);
+
 	};
 	
 };

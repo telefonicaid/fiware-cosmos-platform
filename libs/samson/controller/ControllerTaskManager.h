@@ -67,11 +67,9 @@ namespace samson {
 		
 		void removeTask( size_t task_id );
 		
-		/**
-		 Status string of the Controller Task Manager
-		 */
 		
-		std::string getStatus();
+        // Get information for monitorization
+        void getInfo( std::ostringstream& output);
 
 		/**
          Fill information in a message  to report status

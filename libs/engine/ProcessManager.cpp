@@ -319,33 +319,15 @@ namespace engine
     
     void ProcessManager::getInfo( std::ostringstream& output)
     {
-        output << "<process_manager>\n";
-
-        output << "<queued>\n";
-        {
-            au::set<ProcessItem>::iterator i;
-            for ( i = items.begin() ; i != items.end() ; i++)
-                (*i)->getInfo( output );
-        }
-        output << "</queued>\n";
+        au::xml_open(output, "process_manager");
         
-        output << "<running>\n";
-        {
-            au::set<ProcessItem>::iterator i;
-            for ( i = running_items.begin() ; i != running_items.end() ; i++)
-                (*i)->getInfo( output );
-        }
-        output << "</running>\n";
+        au::xml_iterate_list(output, "queues", items);
 
-        output << "<halted>\n";
-        {
-            au::set<ProcessItem>::iterator i;
-            for ( i = halted_items.begin() ; i != halted_items.end() ; i++)
-                (*i)->getInfo( output );
-        }
-        output << "</halted>\n";
-        
-        output << "</process_manager>\n";
+        au::xml_iterate_list(output, "running", running_items);
+
+        au::xml_iterate_list(output, "halted", halted_items);
+
+        au::xml_close(output, "process_manager");
         
     }
     

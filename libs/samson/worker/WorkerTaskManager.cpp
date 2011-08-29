@@ -157,10 +157,6 @@ namespace samson {
         t->finishWorker( worker_from );
 	}
 
-	void WorkerTaskManager::fill(network::WorkerStatus*  ws)
-	{
-		ws->set_task_manager_status( getStatus() );
-	}
 	
 	// Check if a particular task is still active
 	bool WorkerTaskManager::checkTask( size_t task_id )

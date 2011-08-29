@@ -196,6 +196,11 @@ namespace engine {
 		return SimpleBuffer( _data + offset , _max_size - offset );
 	}
 	
+    void Buffer::getInfo( std::ostringstream& output)
+    {
+        au::xml_open(output , "buffer");
+        au::xml_close(output , "buffer");
+    }
 
 	
 }

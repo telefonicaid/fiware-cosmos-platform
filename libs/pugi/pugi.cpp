@@ -23,45 +23,67 @@
 namespace pugi
 {
     
-    std::string str( const xml_document& xml_document )
+    std::string str( const xml_document& xml_document , int deep )
     {
         std::ostringstream output;
         
-        str( xml_document , 0 , output );
+        str( xml_document , 0 , output , deep );
         
         return output.str();
     }
     
-    void str( const xml_node& xml_node , int level , std::ostringstream &output )
+    void str( const xml_node& xml_node , int level , std::ostringstream &output , int deep )
     {
-        output << au::F::tabs(level) << xml_node.name() << " ( " << xml_node.value() << " ) ";
+        if( deep <= 0)
+            return;
         
-        // Print attributes
-        output << " ( ";
-        for (pugi::xml_attribute_iterator ait = xml_node.attributes_begin(); ait != xml_node.attributes_end(); ++ait)
-            output << ait->name() << "=" << ait->value() << " ";
-        output << ")\n";
-                
+        std::string name =  xml_node.name();
+        std::string value =  xml_node.value();
+        
+        output << au::F::tabs(level) << name  << " " << value;
+        
+        int num_attributes = 0;
+        std::ostringstream attributes_txt;
+        {
+            // Print attributes
+            attributes_txt << " ( ";
+            for (pugi::xml_attribute_iterator ait = xml_node.attributes_begin(); ait != xml_node.attributes_end(); ++ait)
+            {
+                attributes_txt << ait->name() << "=" << ait->value() << " ";
+                num_attributes++;
+            }
+            attributes_txt << " " << num_attributes << " attributes";
+            
+            attributes_txt << ")";
+        }
+        if( num_attributes > 0 )
+            output << attributes_txt.str();
+        
+        output << "\n";
+        
         // Childrens
         for( pugi::xml_node_iterator n = xml_node.begin() ; n != xml_node.end() ; n++)
-            str( *n , level+1 , output );
+            str( *n , level+1 , output , deep - 1 );
     }
     
-    void str( const xpath_node_set & xpath_node_set , std::ostringstream &output )
+    void str( const xpath_node_set & xpath_node_set , std::ostringstream &output , int deep )
     {
         for( size_t i = 0 ; i < xpath_node_set.size() ; i++ )
-            str( xpath_node_set[i] , output );
+            str( xpath_node_set[i] , output , deep - 1 );
     }
     
-    void str( const xpath_node& xpath_node , std::ostringstream &output )
+    void str( const xpath_node& xpath_node , std::ostringstream &output , int deep )
     {
+        if( deep <= 0)
+            return;
+        
         // Check if this is an attribute
         std::string attr_value = xpath_node.attribute().value();
         
         if( attr_value != ""  )
             output << "Attribute " << xpath_node.attribute().name() << ": " << xpath_node.attribute().value() << "\n";
         else
-            str( xpath_node.node() , 0 , output );
+            str( xpath_node.node() , 0 , output , deep - 1 );
     }
     
     

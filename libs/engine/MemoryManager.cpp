@@ -277,6 +277,25 @@ namespace engine
     }
    
 
+    void MemoryManager::getInfo( std::ostringstream& output)
+    {
+        au::TokenTaker tk( &token );
+        
+        au::xml_open(output, "memory_manager");
+
+        // Globla memory
+        au::xml_simple(output, "memory", memory );
+
+        // Memory request
+        au::xml_iterate_list( output , "memory_requests" , memoryRequests);
+        
+        // Buffers information
+        au::xml_iterate_list( output , "buffers" , buffers );
+
+        
+        au::xml_close(output, "memory_manager");
+        
+    }
     
 
     

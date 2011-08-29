@@ -74,17 +74,6 @@ namespace samson {
             addOption("set");
             addOption("unset");
             addOption("info");
-            addOption("info_full");
-            addOption("info_net");
-            addOption("info_cores");
-            addOption("info_modules");
-            addOption("info_task_manager");
-            addOption("info_disk_manager");
-            addOption("info_memory_manager");
-            addOption("info_load_data_manager");
-            addOption("info_engine");
-            addOption("info_setup");
-            addOption("info_query");
             addOption("add_stream_operation");
             addOption("rm_stream_operation");
             addOption("ls_stream_operation");
@@ -310,16 +299,6 @@ namespace samson {
 				writeWarningOnConsole( message );
 		}
 
-		
-		// Private functions to show content on the console
-		// --------------------------------------------------------
-		
-		void showQueues( const network::QueueList ql );
-		void showDatas( const network::DataList ql);
-		void showOperations( const network::OperationList ql);
-		void showJobs( const network::JobList ql);
-        
-        void showInfo( std::string command );
       
     private:
 

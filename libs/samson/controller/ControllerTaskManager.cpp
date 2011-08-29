@@ -1,3 +1,8 @@
+
+
+#include <sstream>          // std::otringstream
+
+
 #include "ControllerTaskManager.h"		// Own interface
 #include "ControllerTask.h"				// samson::ControllerTask
 #include "samson/controller/SamsonController.h"			// samson::SamsonController
@@ -97,13 +102,14 @@ namespace samson
 	
     
 	
-	std::string ControllerTaskManager::getStatus()
+    // Get information for monitorization
+    void ControllerTaskManager::getInfo( std::ostringstream& output)
 	{
-		std::ostringstream output;
-		std::map< size_t , ControllerTask* >::iterator iter;
-		for( iter = task.begin() ; iter != task.end() ; iter++)
-			output << "\n\t\t\t[" << iter->second->getStatus() << "]";
-		return output.str();
+        au::xml_open(output , "controller_task_manager");
+
+        au::xml_iterate_map( output , "controller_tasks" , task );
+        
+        au::xml_close( output , "controller_task_manager");
 	}
 	
     void ControllerTaskManager::fill( network::ControllerTaskManagerStatus * status )

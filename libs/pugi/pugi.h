@@ -99,14 +99,15 @@ namespace pugi
         
     };
     
+    // Main function to select a set of nodes with an xpath query
     xpath_node_set select_nodes( const xml_node& _node , std::string query );
         
     
     // Function to transform pugi elements to string
-    std::string str( const xml_document& xml_document );
-    void str( const xml_node& xml_node , int level , std::ostringstream &output );
-    void str( const xpath_node_set & xpath_node_set , std::ostringstream &output );
-    void str( const xpath_node& xpath_node , std::ostringstream &output );
+    std::string str( const xml_document& xml_document , int deep );
+    void str( const xml_node& xml_node , int level , std::ostringstream &output , int deep );
+    void str( const xpath_node_set & xpath_node_set , std::ostringstream &output , int deep );
+    void str( const xpath_node& xpath_node , std::ostringstream &output , int deep );
     
     // Run a query to get values , uint64 or string
     ValuesCollection values( const xml_document & doc , std::string query );

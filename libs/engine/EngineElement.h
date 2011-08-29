@@ -62,6 +62,9 @@ namespace engine
 		std::string getDescription();
         std::string getShortDescription();
 		
+        // get xml information
+        void getInfo( std::ostringstream& output);
+        
 	};
 
     // Class used only to test the automatic cancelation works

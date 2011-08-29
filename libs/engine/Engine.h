@@ -95,12 +95,8 @@ namespace engine
 
     public:
         
-        // Information string for debugging
-        std::string str();
-
-   private:
-
-        std::string _str();
+        // get xml information
+        void getInfo( std::ostringstream& output);
 
     private:
 

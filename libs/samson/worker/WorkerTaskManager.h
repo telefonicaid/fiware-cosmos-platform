@@ -48,8 +48,6 @@ namespace samson {
 		// Notification that a worker has finish produccing data for a task
 		void finishWorker( int worker_from , size_t task_id );
 
-		// Full with information about status
-		void fill(network::WorkerStatus*  ws);
 		
 		// Check if a particular task is still active
 		bool checkTask( size_t task_id );

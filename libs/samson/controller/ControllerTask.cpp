@@ -217,29 +217,36 @@ namespace samson {
     }
     
     
-    std::string ControllerTask::getStatus()
+    void ControllerTask::getInfo( std::ostringstream& output)
     {
-        std::ostringstream o;
-        o << id << " (job: " << job->getId() << ") ";
+        au::xml_open(output, "controller_task");
+        
+        au::xml_simple(output , "id" , job->getId() );
         
         switch ( state ) {
             case init:
-                o << " (init) ";
+                au::xml_simple(output , "state" , "init" );
                 break;
             case running:
-                o << " running ";
-                o << " Workers:" << finished_workers << " / " << complete_workers << " / " << num_workers;
-                o << " Progress: " << processed_info.str() << " / " << running_info.str() << " / " << total_info.str(); 
+                au::xml_simple(output , "state" , "running" );
+
+                au::xml_simple(output , "finished_workers" , "finished_workers" );
+                au::xml_simple(output , "num_workers" , "num_workers" );
+
+                au::xml_single_element( output , "total_info" , &total_info );
+                au::xml_single_element( output , "running_info" , &running_info );
+                au::xml_single_element( output , "processed_info" , &processed_info );
+
                 break;
             case finished:
-                o << " finished ";
+                au::xml_simple(output , "state" , "finished" );
                 break;
             case completed:
             {
+                au::xml_simple(output , "state" , "completed" );
+
                 if( error.isActivated() )
-                    o << "error (" << error.getMessage() << ")";
-                else
-                    o << " completed ";
+                    au::xml_simple(output , "error" , error.getMessage() );
             }
                 break;
                 
@@ -247,7 +254,7 @@ namespace samson {
                 break;
         }
         
-        return o.str();
+        au::xml_close(output ,"controller_task");
     }
     
     void ControllerTask::fill( network::ControllerTask* task )

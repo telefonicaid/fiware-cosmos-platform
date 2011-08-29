@@ -174,6 +174,32 @@ namespace engine
         
         return rate;
     }
+
+    void DiskManager::getInfo( std::ostringstream& output)
+    {
+		pthread_mutex_lock(&mutex);
+		
+        output << "<disk_manager>\n";
+        
+		output << "<running>\n";
+		for ( std::set<DiskOperation*>::iterator i = running_operations.begin() ; i != running_operations.end() ; i++)
+			(*i)->getInfo(output);
+		output << "</running>\n";
+		
+        output << "<queued>\n";
+		for ( std::list<DiskOperation*>::iterator i = pending_operations.begin() ; i != pending_operations.end() ; i++)
+			(*i)->getInfo(output);
+        output << "</queued>\n";
+
+        output << "<statistics>\n";
+		diskStatistics.getInfo( output );
+        output << "</statistics>\n";
+        
+        output << "</disk_manager>\n";
+        
+		pthread_mutex_unlock(&mutex);
+        
+    }
     
     std::string DiskManager::str()
 	{

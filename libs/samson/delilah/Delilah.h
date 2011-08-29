@@ -83,7 +83,8 @@ namespace samson {
         std::string xml_info;
         // General document with the content of xml_info
         pugi::xml_document doc;
-        
+        // Cronometer for xml_info update
+        au::Cronometer cronometer_xml_info;
         
 	public:
 		
@@ -161,6 +162,10 @@ namespace samson {
 		void clearComponents();
         void clearAllComponents();  // Force all of them to be removed
 		
+        
+        int getUpdateSeconds();     // Get the update time
+        
+        
 	private:		
 		
 		size_t addComponent( DelilahComponent* component );

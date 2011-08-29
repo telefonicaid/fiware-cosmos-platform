@@ -64,9 +64,11 @@ namespace samson {
 			LM_X(1,("Internal error: SamsonController starts with %d workers",num_workers));
 		
 		worker_status               = (network::WorkerStatus**) malloc( sizeof(network::WorkerStatus*) * num_workers);
-        worker_xml_info             = new std::string[num_workers];
         worker_status_cronometer    = new au::Cronometer[ num_workers ];  // Cronometer to count the last update from workers
 
+        worker_xml_info             = new std::string[num_workers];
+        cronometer_worker_xml_info = new au::Cronometer[ num_workers ];
+        
 		for (int i = 0 ; i < num_workers ; i++ )
 		{
 			worker_status[i] = new network::WorkerStatus();
@@ -95,6 +97,9 @@ namespace samson {
 		free(worker_status);
         delete[] worker_status_cronometer;
         delete[] worker_xml_info;
+        
+        delete[] worker_xml_info;
+        delete[] cronometer_worker_xml_info;
         
 	}
     
@@ -170,6 +175,7 @@ namespace samson {
                     if( packet->message->has_info() )
                     {
                         worker_xml_info[workerId] = packet->message->info();
+                        cronometer_worker_xml_info[workerId].reset();
                     }
                     
 				}
@@ -697,6 +703,16 @@ namespace samson {
         output << "<data_manager>\n";
         data.getInfo( output );
         output << "</data_manager>\n";
+
+        int update_time = 0;
+        
+        for (int i = 0 ; i < num_workers ; i++ )
+        {
+            int tmp_time = cronometer_worker_xml_info[i].diffTimeInSeconds();
+            if(  tmp_time > update_time )
+                update_time = tmp_time;
+        }        
+        output << "<update_time>" << update_time << "</update_time>\n";
         
         // Nothing at the moment
     }

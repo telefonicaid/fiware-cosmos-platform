@@ -717,6 +717,9 @@ namespace samson {
         // Queues manager information
         queuesManager.getInfo(output);
         
+        // Disk manager
+        engine::DiskManager::shared()->getInfo( output );
+        
         // Process Manager
         engine::ProcessManager::shared()->getInfo( output );
         

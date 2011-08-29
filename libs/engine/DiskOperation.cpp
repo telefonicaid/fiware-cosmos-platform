@@ -392,6 +392,38 @@ namespace engine {
         
         return false;
     }
+    
+    void DiskOperation::getInfo( std::ostringstream& output)
+    {
+        output << "<disk_operation>\n";
+
+        output << "<type>";
+        switch (type) {
+            case read:
+                output << "read";
+                break;
+            case write:
+                output << "write";
+                break;
+            case append:
+                output << "append";
+                break;
+            case remove:
+                output << "remove";
+                break;
+                
+            default:
+                break;
+        }
+        output << "</type>\n";
+        
+        output << "<file_name>" << fileName << "</file_name>\n";
+        
+        output << "<size>" << size << "</size>\n";
+        output << "<offset>" << offset << "</offset>\n";
+        
+        output << "</disk_operation>\n";
+    }
 
 	
 }

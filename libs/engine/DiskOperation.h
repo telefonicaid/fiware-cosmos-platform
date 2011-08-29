@@ -164,7 +164,11 @@ namespace engine {
         {
             listeners.insert( id );
         }
+      
+    public:
         
+        void getInfo( std::ostringstream& output);
+
 		
 	};
 	

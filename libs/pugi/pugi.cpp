@@ -40,10 +40,8 @@ namespace pugi
         output << " ( ";
         for (pugi::xml_attribute_iterator ait = xml_node.attributes_begin(); ait != xml_node.attributes_end(); ++ait)
             output << ait->name() << "=" << ait->value() << " ";
-        output << ") ";
-        
-        output << " [" << xml_node.child_value() << "]\n";
-        
+        output << ")\n";
+                
         // Childrens
         for( pugi::xml_node_iterator n = xml_node.begin() ; n != xml_node.end() ; n++)
             str( *n , level+1 , output );

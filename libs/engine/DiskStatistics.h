@@ -46,6 +46,12 @@ namespace engine {
         {
             return rate.getLastMinuteRate();
         }
+        
+        void getInfo( std::ostringstream& output)
+        {
+            output << "<description>" << rate.str() << "</description>\n";
+        }
+        
 		
 	};	
 
@@ -72,6 +78,22 @@ namespace engine {
 			gettimeofday(&now, NULL);
 			return timevaldiff(starttime, &now);
 		}
+        
+        void getInfo( std::ostringstream& output)
+        {
+            output << "<read>\n";
+            item_read.getInfo( output );
+            output << "</read>\n";
+            
+            output << "<write>\n";
+            item_write.getInfo( output );
+            output << "</write>\n";
+
+            output << "<total>\n";
+            item_total.getInfo( output );
+            output << "</total>\n";
+            
+        }
 		
 	};
 }

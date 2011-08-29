@@ -233,6 +233,8 @@ namespace samson {
 
             std::istringstream is_xml_document( xml_info );
             
+            cronometer_xml_info.reset();
+            
             doc.reset();
             pugi::xml_parse_result result = doc.load( is_xml_document );
             
@@ -505,5 +507,17 @@ namespace samson {
         return 0;
     }    
 	
+    int Delilah::getUpdateSeconds()
+    {
+        int time = cronometer_xml_info.diffTimeInSeconds();
+   
+        int worker_update_time = (int) pugi::UInt64( doc , "//controller/update_time" );
+        
+        time += worker_update_time;
+        
+        return time;
+    }
+    
+    
 }
 

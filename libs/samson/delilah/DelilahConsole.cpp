@@ -1005,6 +1005,9 @@ namespace samson
         
         if( main_command == "ls_queues" )
         {
+            if( !checkXMLInfoUpdate() )
+                return 0;
+
             std::ostringstream output;
             
             // Get all the workers node
@@ -1042,6 +1045,9 @@ namespace samson
         
         if( main_command == "ls_stream_operation" )
         {
+            if( !checkXMLInfoUpdate() )
+                return 0;
+
             std::ostringstream output;
             
             // Get all the workers node
@@ -1073,7 +1079,13 @@ namespace samson
         
         if( main_command == "ls" )
         {
+            if( !checkXMLInfoUpdate() )
+                return 0;
+            
             std::ostringstream output;
+            
+            int time = getUpdateSeconds();
+            output << "Time: " << time << "\n";
             
             // Get all the workers node
             pugi::xpath_node_set queues  = pugi::select_nodes( doc , "//controller//queue" );
@@ -1207,9 +1219,7 @@ namespace samson
             return 0;
         }
         
-        
 		// By default, we consider a normal command sent to controller
-
 		return sendCommand( command , NULL );
 
 	}
@@ -1740,4 +1750,25 @@ namespace samson
         writeOnConsole( txt.str() );
         
     }
+    
+    bool DelilahConsole::checkXMLInfoUpdate()
+    {
+        int soft_limit = 10;
+        int hard_limit  = 60;
+        
+        int time = getUpdateSeconds();
+        
+        if( time < soft_limit )
+            return true;
+
+        if( time < hard_limit )
+        {
+            writeWarningOnConsole( au::str( "Monitorization information is %d seconds old" , time ) );
+            return true;
+        }
+        
+        writeErrorOnConsole( au::str( "Monitorization information is %d seconds old" , time ) );
+        return false;
+    }
+    
 }

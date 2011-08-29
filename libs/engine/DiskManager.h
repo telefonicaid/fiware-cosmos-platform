@@ -83,7 +83,9 @@ namespace engine
         int getNumOperations();                  // get the number of pending operations ( shown at information screen);
         size_t getReadRate();                  
         size_t getWriteRate();                 
+
         std::string str();
+        void getInfo( std::ostringstream& output);
         
     private:
         

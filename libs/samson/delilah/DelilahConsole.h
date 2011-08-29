@@ -320,6 +320,10 @@ namespace samson {
 		void showJobs( const network::JobList ql);
         
         void showInfo( std::string command );
+      
+    private:
+
+        bool checkXMLInfoUpdate();
         
         
 	};

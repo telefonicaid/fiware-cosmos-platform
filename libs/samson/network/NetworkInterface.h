@@ -162,6 +162,7 @@ public:
 
 	// Inform about everything ready to start
 	virtual bool ready() = 0;
+	virtual bool ready(bool connectedToAllWorkers) { return false; };
 
 	// Init functions of the network element - not used in Network2
 	virtual void init(Endpoint::Type type, const char* alias, unsigned short port = 0, const char* controllerName = NULL) {};

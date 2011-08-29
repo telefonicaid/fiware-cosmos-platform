@@ -56,6 +56,7 @@ public:
 	// NetworkInterface stuff
 	//
 	bool         ready(void);
+	bool         ready(bool connectedToAllWorkers);
 	void         initAsSamsonController(void);
 	int          controllerGetIdentifier(void);
 	int          workerGetIdentifier(int);

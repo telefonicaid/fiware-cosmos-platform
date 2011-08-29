@@ -187,7 +187,7 @@ int main(int argC, const char *argV[])
 	//
 	std::cout << "\nAwaiting network ready ...";
 	while (!networkP->ready())
-		usleep(10000);
+		usleep(1000);
 	std::cout << "\nNetwork OK\n";
 
 	//
@@ -199,6 +199,15 @@ int main(int argC, const char *argV[])
 
 	LM_TODO(("I should probably go through NetworkInterface here ..."));
 	networkP->epMgr->controller->send( packetP );
+
+	//
+	// What until the network is ready II
+	//
+	std::cout << "\nAwaiting network ready ...";
+	while (!networkP->ready(true))
+		sleep(1);
+	std::cout << "\nNetwork OK\n";
+
 
 	// Create a DelilahControler once network is ready
 	samson::DelilahConsole* delilahConsole = NULL;

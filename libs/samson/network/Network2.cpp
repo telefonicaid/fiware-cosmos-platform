@@ -31,13 +31,13 @@ namespace samson
 *
 * Constructor
 */
-Network2::Network2(Endpoint2::Type _type, const char* controllerIp )
+Network2::Network2(Endpoint2::Type _type, const char* controllerIp)
 {
     // Andreu: Keep the main type
     main_type = _type;
     
     // Andreu: Create the endpoint manager inside Network2 ( now everything is isolated inside network library )
-    epMgr = new EndpointManager( _type , controllerIp );
+    epMgr = new EndpointManager(_type , controllerIp);
 
     epMgr->networkInterface = this;
 	packetReceiver = NULL;
@@ -111,7 +111,7 @@ bool Network2::ready(void)
 {
 	Endpoint2* controller = epMgr->lookup(Endpoint2::Controller);
 
-	if (controller==NULL)
+	if (controller == NULL)
 		return false;
 
 	if (controller->stateGet() == Endpoint2::Ready)
@@ -120,6 +120,58 @@ bool Network2::ready(void)
 	return false;
 }
 
+
+
+/* ****************************************************************************
+*
+* ready - 
+*/
+bool Network2::ready(bool connectedToAllWorkers)
+{
+	if (ready() == false)
+	{
+		LM_M(("Normal ready failed - not even the Controller is ready ..."));
+		return false;
+	}
+
+	if (connectedToAllWorkers == true)
+	{
+		ProcessVector* procVec;
+
+		procVec = epMgr->procVecGet();
+		if (procVec == NULL)
+		{
+			LM_M(("NULL process vector ..."));
+			return false;
+		}
+
+
+		// Check connection to each worker
+		for (int pIx = 1; pIx < procVec->processes; pIx++)
+		{
+			Endpoint2* ep;
+			
+			LM_M(("Looking up worker %d in host '%s'", pIx - 1, procVec->processV[pIx].host));
+			ep = epMgr->lookup(Endpoint2::Worker, procVec->processV[pIx].host);
+			if (ep == NULL)
+			{
+				LM_M(("Error looking up worker %d", pIx - 1));
+				return false;
+			}
+
+			if (ep->state != Endpoint2::Ready)
+			{
+				LM_M(("Worker %d is not ready", pIx - 1));
+				return false;
+			}
+		}
+
+		LM_M(("Ready!"));
+		return true;
+	}
+
+	return true;
+}
 
 
 /* ****************************************************************************

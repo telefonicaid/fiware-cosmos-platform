@@ -48,7 +48,7 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 	pv->processes      = workers + 1;
 	pv->processVecSize = size;
 
-	LM_M(("Process Vector of %d processes:", pv->processes));
+	LM_T(LmtProcessVector, ("Process Vector of %d processes:", pv->processes));
 	for (int ix = 0; ix < pv->processes; ix++)
 	{
 		p = &pv->processV[ix];
@@ -103,7 +103,7 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 		else
 			LM_W(("Spawner endpoint for %s already created", hostP->name));
 
-		LM_M(("  Process %02d: %s%d@%s", ix, samson::Endpoint2::typeName((samson::Endpoint2::Type) p->type), p->id, p->host));
+		LM_T(LmtProcessVector, ("  Process %02d: %s%d@%s", ix, samson::Endpoint2::typeName((samson::Endpoint2::Type) p->type), p->id, p->host));
 	}
 
 	networkP->epMgr->procVecSet(pv, false);

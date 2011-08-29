@@ -140,7 +140,7 @@ void readyCheck(void* callbackData, void* userParam)
 			else
 				++helloed;
 
-			LM_M(("Spawner endpoint in '%s'. helloed: %d, unhelloed: %d", ep->hostGet()->name, helloed, unhelloed));
+			LM_D(("Spawner endpoint in '%s'. helloed: %d, unhelloed: %d", ep->hostGet()->name, helloed, unhelloed));
 		}			
 
 		if (ep->typeGet() == samson::Endpoint2::Unhelloed)
@@ -149,13 +149,13 @@ void readyCheck(void* callbackData, void* userParam)
 
 	samsonStarter->networkP->epMgr->show("readyCheck");
 
-	LM_M(("helloed: %d, unhelloed: %d", helloed, unhelloed));
+	LM_D(("helloed: %d, unhelloed: %d", helloed, unhelloed));
 	if (unhelloed == 0)
 	{
 		if (helloed != samsonStarter->spawners)
 			LM_X(1, ("Helloed: %d, Spawners: %d - what has happened?", helloed, samsonStarter->spawners));
 
-		LM_M(("All Helloes interchanged - READY TO ROLL!"));
+		LM_D(("All Helloes interchanged - READY TO ROLL!"));
 		if (pList)
 			plist();
 		else
@@ -308,7 +308,7 @@ int main(int argC, const char *argV[])
 	if (samsonStarter->connect() != samson::OK)
 		LM_X(1, ("Error connecting to all spawners"));
 
-	LM_M(("Connected to all spawners"));
+	LM_D(("Connected to all spawners"));
 
 	samsonStarter->networkP->epMgr->callbackSet(samson::EndpointManager::Timeout,  readyCheck, NULL);
 	samsonStarter->networkP->epMgr->callbackSet(samson::EndpointManager::Periodic, readyCheck, NULL);

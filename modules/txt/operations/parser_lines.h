@@ -43,8 +43,8 @@ helpLine: Parse a txt file emiting every line as an independent string ( return 
 		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
 		  
-			int pos_begin=0;
-			int pos_end;
+			size_t pos_begin=0;
+			size_t pos_end;
 
 			while( pos_begin < length )
 			{

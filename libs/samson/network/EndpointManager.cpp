@@ -606,10 +606,10 @@ Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, int _id, int* ixP)
 
     // andreu: Converted to a trace ( not a warning anymore )
     // Not a warning since a loopup is perform averytime and unhelloed connection send a hellp to make sure we do not duplicate...
-	LM_T( LmtEndpointLookup ,("No %s endpoint with id %d found", Endpoint2::typeName(typ), _id));
 
 	if (ixP != NULL)
 	{
+		LM_W(("No '%s' endpoint with id %d found - returning an index of -94 ...", Endpoint2::typeName(typ), _id));
 		*ixP = -94;
 		badLookup();
 	}
@@ -1233,6 +1233,9 @@ void EndpointManager::show(const char* why, bool forced)
 int EndpointManager::procVecSet(ProcessVector* _procVec, bool save)
 {
 	int size;
+
+	if (_procVec == NULL)
+		return 0;
 
 	if ((_procVec->processes <= 0) || (_procVec->processes > 100))
 		LM_RE(1, ("Bad number of processes in process vector: %d", _procVec->processes));

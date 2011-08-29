@@ -125,7 +125,7 @@ void SamsonSpawner::localProcVecGenerate(void)
 	// Worker
 	p = &pVec->processV[1];
 	p->type = samson::PtWorker;
-	p->id   = 1;
+	p->id   = 0;
 	strcpy(p->name, "samsonWorker");
 	strcpy(p->alias, "NO ALIAS");
 	strcpy(p->host, "localhost");
@@ -157,7 +157,10 @@ void SamsonSpawner::init()
 	networkP->epMgr->me->portSet(SPAWNER_PORT);
 	networkP->epMgr->listener = (ListenerEndpoint*) networkP->epMgr->add(Endpoint2::Listener, 0, networkP->epMgr->me->hostGet(), networkP->epMgr->me->portGet(), -1, -1);
 
-	if ((platformProcessesGet()) == NULL)
+	ProcessVector* pv = platformProcessesGet();
+
+	networkP->epMgr->procVecSet(pv);
+	if (pv == NULL)
 	{
 		networkP->epMgr->setupAwait();
 		

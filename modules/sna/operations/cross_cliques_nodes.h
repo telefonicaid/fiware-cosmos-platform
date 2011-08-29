@@ -37,7 +37,7 @@ namespace sna{
 			node.parse( inputs[1].kvs[0]->value );
 
 
-			for (int i = 0 ; i < inputs[0].num_kvs ; i++)
+			for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
 			{
 				//Parse the clique-link
 				clique.parse( inputs[0].kvs[i]->value );

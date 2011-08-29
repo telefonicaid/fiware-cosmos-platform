@@ -43,11 +43,26 @@ public:
 	{
 		Place place;
 		samson::cdr::Cell cell;
+		samson::system::UInt cellId;
+
+
 
 		if( inputs[1].num_kvs > 0 )
 		{
+			if (inputs[0].num_kvs > 0)
+			{
+				cellId.parse(inputs[0].kvs[0]->key);
+			}
+			else
+			{
+				//cellId.parse(inputs[1].kvs[0]->key);
+				//OLM_T(LMT_User06, ("Aborts  cellId:%lu with inputs[0].num_kvs:%lu, inputs[1].num_kvs:%lu", cellId.value, inputs[0].num_kvs, inputs[1].num_kvs));
+				return;
+			}
+
 			cell.parse( inputs[1].kvs[0]->value );
-			for( int i=0; i<inputs[0].num_kvs; i++ )
+
+			for( size_t i=0; i<inputs[0].num_kvs; i++ )
 			{
 				place.parse( inputs[0].kvs[i]->value );
 
@@ -59,11 +74,13 @@ public:
 				{
 					place.btsId = cell.btsId;
 					place.btsDaysWithCalls = place.cellDaysWithCalls;
+					//OLM_T(LMT_User06, ("For cellId: %lu, (place.btsId(%lu) != cell.btsId(%lu)), update place.btsDaysWithCalls:%lu", cellId.value, place.btsId.value, cell.btsId.value, place.cellDaysWithCalls.value));
 				}
 				else
 				{
 					if( place.btsDaysWithCalls < place.cellDaysWithCalls )
 					{
+						//OLM_T(LMT_User06, ("For cellId: %lu, (place.btsDaysWithCalls(%lu) < place.cellDaysWithCalls(%lu)), update place.btsDaysWithCalls:%lu", cellId.value, place.btsDaysWithCalls.value, place.cellDaysWithCalls.value, place.cellDaysWithCalls.value));
 						place.btsDaysWithCalls = place.cellDaysWithCalls;
 					}
 				}
@@ -98,6 +115,14 @@ public:
 
 				// emit
 				writer->emit(0, &place.phone, &place );
+			}
+		}
+		else
+		{
+			if (inputs[0].num_kvs != 0)
+			{
+				cellId.parse(inputs[0].kvs[0]->key);
+				OLM_T(LMT_User06, ("Aborts with cellId: %lu, unknown cell: inputs[0].num_kvs:%lu, inputs[1].num_kvs:%lu", cellId.value, inputs[0].num_kvs, inputs[1].num_kvs));
 			}
 		}
 	}

@@ -19,6 +19,8 @@ class parse_users_O2UK: public samson::Parser
 	{
 		*node = (size_t) atoll(line);
 		user->id = (size_t) atoll(line);
+
+		return true;
 	}
 
 public:

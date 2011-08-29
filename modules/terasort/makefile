@@ -2,15 +2,26 @@ all:
 	make compile
 	sudo make install
 
+release: 
+	make compile_release
+	sudo make install
+
 test:
 	make test -C build
 
 compile: prepare
 	make -C build
 
+compile_release: prepare_release
+	make -C build
+
 prepare:
 	mkdir build;cd build;samsonModuleParser ../module ../ Module
-	mkdir build;cd build;cmake ..;cd ..
+	mkdir build;cd build;cmake ..  -DCMAKE_BUILD_TYPE=DEBUG;cd ..
+
+prepare_release:
+	mkdir build;cd build;samsonModuleParser ../module ../ Module
+	mkdir build;cd build;cmake .. -DCMAKE_BUILD_TYPE=RELEASE ;cd ..
 
 xcode:
 	mkdir xcodeProj;cd xcodeProj;cmake .. -G Xcode;make;cd ..

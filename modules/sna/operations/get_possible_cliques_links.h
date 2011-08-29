@@ -47,11 +47,11 @@ namespace sna{
 			nodeId.parse(inputs[0].kvs[0]->key);
 
 			// Parse all cliques connected througth this node
-			for (int i = 0  ; i < inputs[0].num_kvs ; i++)
+			for (size_t i = 0  ; i < inputs[0].num_kvs ; i++)
 				cliques[i].parse( inputs[0].kvs[i]->value );
 
-			for (int i = 0 ; i < inputs[0].num_kvs ; i++)
-				for (int j = i+1 ; j < inputs[0].num_kvs ; j++)
+			for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
+				for (size_t j = i+1 ; j < inputs[0].num_kvs ; j++)
 				{
 					// We will only generate output for thouse connection where I am the samller common element
 					if (cliques[i].fistElementInCommonWithOtherClique(&cliques[j]) == nodeId.value )

@@ -9,17 +9,17 @@
 #include <cstdlib>
 #include <sstream>
 
-namespace ss{
+namespace samson{
 namespace test{
 
 
-	class Integer : public ss::DataInstance{
+	class Integer : public samson::DataInstance{
 		
 	public:
 
                 int value;
 		
-		Integer() : ss::DataInstance(){
+		Integer() : samson::DataInstance(){
 
 		}
 		
@@ -83,7 +83,7 @@ namespace test{
 	}; 	
 
 
-} // end of namespace ss
-} // end of namespace system
+} // end of namespace samson
+} // end of namespace test
 
 #endif

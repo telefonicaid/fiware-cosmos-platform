@@ -57,7 +57,7 @@ namespace url{
 
 			categories_out.categorySetLength(num_categories);
 
-			for (int i = 0; (i < inputs[1].num_kvs); i++)
+			for (size_t i = 0; (i < inputs[1].num_kvs); i++)
 			{
 				users.parse(inputs[1].kvs[i]->value);
 
@@ -79,7 +79,7 @@ namespace url{
 
 
 					//OLM_T(LMT_User06,("For server:%d working with userId:%d, count:%d", serverIdRef.value, userId.value, count));
-					for (int k = 0; (k < num_categories); k++)
+					for (size_t k = 0; (k < num_categories); k++)
 					{
 						// New weight is computed directly with the scaled integers (perhaps losing precision)
 						// Should be improved, using the ratio between count and total count (no countRef),

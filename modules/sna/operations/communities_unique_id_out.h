@@ -43,7 +43,7 @@ namespace sna{
 			  int num_orphan;
 			  int orphans;
 
-			  for (int i  =0 ;  i< inputs[0].num_kvs ; i++) {
+			  for (size_t i  =0 ;  i< inputs[0].num_kvs ; i++) {
 			    num_total = 0;
 			    num_regular = 0;
 			    num_orphan = 0;

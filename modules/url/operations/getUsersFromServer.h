@@ -43,7 +43,7 @@ namespace url{
 
 			serverId.parse(inputs[0].kvs[0]->key);
 
-			for (int i = 0; (i < inputs[0].num_kvs); i++)
+			for (size_t i = 0; (i < inputs[0].num_kvs); i++)
 			{
 				userId.parse(inputs[0].kvs[i]->value);
 				//OLM_T(LMT_User06,("For serverId:%d  user:%d", serverId.value, userId.value));

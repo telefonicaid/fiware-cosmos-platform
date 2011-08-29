@@ -64,7 +64,7 @@ namespace sna{
 
 			  if( selecting_customer_nodes )
 			  {
-			    for (int i = 0 ; i < inputs[0].num_kvs ; i++)
+			    for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
 			    {
 			      nodeId.parse(inputs[0].kvs[i]->key);
 			      node.parse(inputs[0].kvs[i]->value);
@@ -78,7 +78,7 @@ namespace sna{
 
 			    // Selecting some nodes
 
-			    for (int i = 0 ; i < inputs[0].num_kvs ; i++)
+			    for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
 			    {
 			      nodeId.parse(inputs[0].kvs[i]->key);
 

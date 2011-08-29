@@ -26,7 +26,7 @@ namespace sort{
 		{
 			//OLM_T(LMT_User01, ("reduce_to_common_key: inputs[0].num_kvs:%lu", inputs[0].num_kvs));
 			key.value = 1;
-			for (int i = 0; (i < inputs[0].num_kvs); ++i)
+			for (size_t i = 0; (i < inputs[0].num_kvs); ++i)
 			{
 				val.parse(inputs[0].kvs[i]->key);
 				writer->emit(0, &key, &val);

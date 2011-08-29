@@ -55,16 +55,16 @@ namespace url{
 
 			size_t num_categories = categories.category_length;
 
-			for (int i = 0; (i < inputs[1].num_kvs); i++)
+			for (size_t i = 0; (i < inputs[1].num_kvs); i++)
 			{
 				path.parse(inputs[1].kvs[i]->value);
 
 				serverPath.server = serverIdRef;
 				serverPath.path = path;
 
-				size_t countRef = 1;
+				//size_t countRef = 1;
 
-				for (int k = 0; (k < num_categories); k++)
+				for (size_t k = 0; (k < num_categories); k++)
 				{
 					catId.value = k;
 

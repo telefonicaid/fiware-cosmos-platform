@@ -57,7 +57,7 @@ extendedHelp: 		Convert three sources of CDRs from Gasset format to Mob format.
 
 			for(int j=0; j<num_inputs; j++)
 			{
-				for (int i=0  ; i< inputs[j].num_kvs ;i++)
+				for (size_t i=0  ; i< inputs[j].num_kvs ;i++)
 				{
 
 					cdr.parse(inputs[j].kvs[i]->value);

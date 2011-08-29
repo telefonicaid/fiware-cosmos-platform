@@ -87,6 +87,8 @@ int secsFrom2000_01_01(samson::system::Date *date, samson::system::Time *time)
         const int SECS_PER_DAY = 86400;
 
         duration_secs += SECS_PER_DAY * duration_days;
+
+        return (duration_secs);
 }
 	
 	bool getCDRFromLine_TME( char *line, samson::system::UInt* node, samson::cdr::CDR * cdr )
@@ -721,7 +723,7 @@ bool getCDRFromLine_O2UK_mms( char *line, samson::system::UInt* node, samson::cd
 			size_t line_begin = 0;
 			size_t offset = 0;
 			enum CDRsSources { TME, O2UKsmsc, O2UKmms, O2UKp2p };
-			CDRsSources codSource;
+			CDRsSources codSource = TME;
 
 			std::string source = environment->get( "cdr.CDRs_source", "TME");
 			

@@ -31,7 +31,7 @@ public:
 		for (int j = 0; j < num_inputs; j++)
 		{
 
-			for (int i = 0; i < inputs[j].num_kvs; i++)
+			for (size_t i = 0; i < inputs[j].num_kvs; i++)
 			{
 				clique_id.parse(inputs[j].kvs[i]->key);
 				clique_out.parse(inputs[j].kvs[i]->value);

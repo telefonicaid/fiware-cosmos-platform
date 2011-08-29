@@ -33,12 +33,16 @@ public:
 
 	samson::system::Void void_data;
 
+	samson::cdr::mobCdr cdr;
+	samson::system::UInt cellId;
+	samson::system::UInt64 key;
+
 	/**
 	 * Function to reset the fake cell id.
 	 */
 	void ResetFakeCellId()
 	{
-		OLM_T(LMT_User06, ("ResetFakeCellId"));
+	  //OLM_T(LMT_User06, ("ResetFakeCellId"));
 		seqFakeCellId = 0;
 	}
 
@@ -68,7 +72,7 @@ public:
 	input: system.UInt64 system.Void
 	input: system.UInt64 cdr.mobCdr
 	output: system.UInt cdr.mobCdr
-	output: system.Time system.Void
+	output: system.Date system.Void
 
 	helpLine: Extract only CDRs where the TEF phone is in the client sample.
 	extendedHelp: 		Extract only CDRs where the TEF phone is in the client sample.
@@ -94,12 +98,14 @@ public:
 	 */
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
-		samson::cdr::mobCdr cdr;
-		samson::system::UInt cellId;
+
 
 		if( inputs[0].num_kvs > 0 )
 		{
-			for( int i=0; i<inputs[1].num_kvs; i++ )
+			//key.parse(inputs[0].kvs[0]->key);
+			//OLM_T(LMT_User06, ("Starts run for key:%lu with cdrs: inputs[1].num_kvs:%lu\n", key.value, inputs[1].num_kvs));
+
+			for( size_t i=0; i<inputs[1].num_kvs; i++ )
 			{
 				cdr.parse( inputs[1].kvs[i]->value );
 				// cellId.value = cdr.cellId;
@@ -108,10 +114,11 @@ public:
 				// file_00000 would be too large, since
 				// it would store all CDR's that do not
 				// have cell info
+
 				if( cdr.cellId.value == 0 )
 				{
 					GetFakeCellId( &(cellId) );
-					OLM_T(LMT_User06, ("For cdr.phone:%lu cdr without cellId, assigns cellId:%lu", cdr.phone.value, cellId.value));
+					//OLM_T(LMT_User06, ("For cdr.phone:%lu cdr without cellId, assigns cellId:%lu", cdr.phone.value, cellId.value));
 				}
 				else
 				{
@@ -130,14 +137,16 @@ public:
 					mob_month.month.value = tm.tm_mon;
 					mob_month.day.value = 1;
 
-					OLM_T( LMT_User06, ("Month being processed: '%s'\n", mob_month.str().c_str() ));
+					//OLM_T( LMT_User06, ("Month being processed: '%s'\n", mob_month.str().c_str() ));
 					// save month for further occasions
 					writer->emit(1, &mob_month, &void_data );
 					hasMonth = true;
 				}
+
 				//OLM_T(LMT_User06, ("For cdr.phone:%lu emits cdr with cellId:%lu", cdr.phone.value, cellId.value));
 				writer->emit(0, &cellId, &cdr );
 			}
+			//OLM_T(LMT_User06, ("Ends run for key:%lu with cdrs: inputs[1].num_kvs:%lu\n", key.value, inputs[1].num_kvs));
 		}
 	}
 

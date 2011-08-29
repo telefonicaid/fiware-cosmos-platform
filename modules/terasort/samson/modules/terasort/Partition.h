@@ -21,7 +21,7 @@ namespace terasort{
 		public:
 
 		// Function to get a value depending on the range of the string key
-		inline int set ( const char * _value)
+		inline void set ( const char * _value)
 		{
 			// We compute the partition based on the two first characters.
 			// As they are ASCII (95 values, in fact), we use the extra bit to partitionate

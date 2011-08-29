@@ -86,7 +86,7 @@ public:
 
 		killNode.linksSetLength(0); //A node with no links will be identified as a mark to be removed
 
-		for (int i = 0 ; i < inputs[0].num_kvs ; ++i)
+		for (size_t i = 0 ; i < inputs[0].num_kvs ; ++i)
 		{
 			//Parsing key and value
 			node_id.parse( inputs[0].kvs[i]->key );

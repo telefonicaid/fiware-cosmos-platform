@@ -53,7 +53,7 @@ namespace url{
 			//OLM_T(LMT_User06,("For userId:%d  inputs[0].num_kvs:%d", userId.value, inputs[0].num_kvs));
 
 
-			for (int i = 0; (i < inputs[0].num_kvs); i++)
+			for (size_t i = 0; (i < inputs[0].num_kvs); i++)
 			{
 				serverPath.parse(inputs[0].kvs[i]->value);
 				serverId = serverPath.server.value;

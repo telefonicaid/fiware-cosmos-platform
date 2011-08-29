@@ -11,6 +11,7 @@
 
 #include <samson/modules/system/FixedLengthDataInstance.h>
 #include <samson/modules/system/Date.h>
+#include <samson/modules/system/DateComplete.h>
 #include <samson/modules/system/Time.h>
 
 #undef DEBUG_FILES
@@ -302,7 +303,7 @@ public:
 		register int tm_year;
 		int yday, month;
 		register unsigned long seconds = 0;
-		int overflow = 0;
+		//int overflow = 0;
 		//unsigned dst;
 
 		/* Assume that when day becomes negative, there will certainly
@@ -380,7 +381,7 @@ public:
 		/* Now adjust according to timezone and daylight saving time */
 
 		/* Not for us */
-		/***********************************************************
+#ifdef ELIMINADO
 
 				if (((_timezone > 0) && (TIME_MAX - _timezone < seconds))
 						|| ((_timezone < 0) && (seconds < -_timezone)))
@@ -398,19 +399,16 @@ public:
 					overflow++; // dst is always non-negative
 				seconds -= dst;
 
-				/************************************************************/
-
-		/***********************************************************
 
 				if (overflow)
 				{
 					value = (time_t) -1;
 					return;
 				}
-				/************************************************************/
+#endif /* de ELIMINADO */
 
 
-		if ((time_t) seconds != seconds)
+		if ((time_t) seconds != (signed) seconds)
 		{
 			value = (time_t) -1;
 		}
@@ -437,13 +435,30 @@ public:
 		date->day.value = timeCalendar.tm_mday;
 		date->week_day.value = timeCalendar.tm_wday;
 		date->week_day_SetAssigned(true);
-		date->days_2000_SetAssigned(false);
+		date->days_2000 = timeCalendar.tm_yday + 365 * (date->year.value) + (date->year.value - 1)/4;
+		date->days_2000_SetAssigned(true);
 
 		time->hour.value = timeCalendar.tm_hour;
 		time->minute.value = timeCalendar.tm_min;
 		time->seconds.value = timeCalendar.tm_sec;
 	}
 
+	void getDateTimeFromTimeUTC (DateComplete *date, Time *time)
+	{
+		struct tm timeCalendar;
+
+		gmtime_r(&value,&timeCalendar);
+
+		date->year.value = timeCalendar.tm_year - 100;
+		date->month.value = timeCalendar.tm_mon + 1;
+		date->day.value = timeCalendar.tm_mday;
+		date->week_day.value = timeCalendar.tm_wday;
+		date->days_2000 = timeCalendar.tm_yday + 365 * (date->year.value) + (date->year.value - 1)/4;
+
+		time->hour.value = timeCalendar.tm_hour;
+		time->minute.value = timeCalendar.tm_min;
+		time->seconds.value = timeCalendar.tm_sec;
+	}
 
 };
 

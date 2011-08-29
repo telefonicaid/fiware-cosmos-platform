@@ -56,7 +56,7 @@ namespace sna{
 
 			// Eval a link with all involved nodes
 			nodes.itemsSetLength(0);
-			for (int i = 0 ; i < inputs[0].num_kvs ; i++ )
+			for (size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
 				nodes.itemsAdd()->parse(inputs[0].kvs[i]->value);
 
 			double connection_strength =  nodes.internalConnectionStrength( penalization_missing_link , penalization_missing_link_externals );

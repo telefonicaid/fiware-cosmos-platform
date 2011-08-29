@@ -42,7 +42,7 @@ namespace sna{
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
-			for (int i = 0; i < inputs[0].num_kvs; i++)
+			for (size_t i = 0; i < inputs[0].num_kvs; i++)
 			{
 				nodeId.parse(inputs[0].kvs[i]->key);
 				if (nodeId.value == searchId.value)

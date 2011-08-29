@@ -26,10 +26,10 @@ public:
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
 	input: system.UInt64 CellCounter
-	output: mob.PhoneLoc system.Void
-	output: mob.PhoneLoc system.Void
-	output: mob.PhoneLoc system.Void
-	output: mob.PhoneLoc system.Void
+	output: mob.PhoneLocCounter system.Void
+	output: mob.PhoneLocCounter system.Void
+	output: mob.PhoneLocCounter system.Void
+	output: mob.PhoneLocCounter system.Void
 
 #endif // de INFO_COMMENT
 
@@ -49,9 +49,9 @@ public:
 		}
 		phone.parse(inputs[0].kvs[0]->key);
 
-		for (int i = 0; i < inputs[0].num_kvs; i++ )
+		for (size_t i = 0; i < inputs[0].num_kvs; i++ )
 		{
-			cellCounter.parse(inputs[0].kvs[i]->key);
+			cellCounter.parse(inputs[0].kvs[i]->value);
 
 			phoneLocCounter.phone.value = phone.value;
 			phoneLocCounter.count.value = cellCounter.count.value;

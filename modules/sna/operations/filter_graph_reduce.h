@@ -47,7 +47,7 @@ public:
 		int nRemoved = 0;
 
 		Node tmp_node;
-		for (int i = 0 ; i < inputs[0].num_kvs ; ++i)
+		for (size_t i = 0 ; i < inputs[0].num_kvs ; ++i)
 		{
 			tmp_node.parse(inputs[0].kvs[i]->value);
 			if ( tmp_node.id.value == node_id.value )

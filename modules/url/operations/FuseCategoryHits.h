@@ -74,7 +74,7 @@ namespace url{
 					size_t count = paths.serverPath[j].count.value;
 
 					bool found = false;
-					for (int k = 0; (!found && (k < vpaths_out.size())); k++)
+					for (size_t k = 0; (!found && (k < vpaths_out.size())); k++)
 					{
 						if ((server == vpaths_out[k].server.value) && (!path.compare(vpaths_out[k].path.value)))
 						{
@@ -93,7 +93,7 @@ namespace url{
 
 			std::sort ( vpaths_out.begin() , vpaths_out.end(), ServerPathCount::compare_by_weight_and_count );
 
-			int count_hits = 0;
+			size_t count_hits = 0;
 			ServerPathCount serverPath;
 			size_t countRef = 0;
 			ServerPathVector paths_out;

@@ -88,7 +88,7 @@ namespace sna{
 				  //OLM_T(LMT_User01, ("Starts social_graph_parse_out_sinks::run() with inputs[0].num_kvs == 0"));
 			  }
 
-			  for (int i  =0 ;  i< inputs[0].num_kvs ; ++i) {
+			  for (size_t i  =0 ;  i< inputs[0].num_kvs ; ++i) {
 			    node_data.parse( inputs[0].kvs[i]->value );
 		    	//OLM_T(LMT_User01, ("node_id:%ld, numberOfLinksWithWeightEqualOrHigher(1.0):%d, numberOfLinksWithWeightEqualOrHigher(0.0):%d, max_strong_connections:%d , max_connections:%d ", node_data.id.value, node_data.numberOfLinksWithWeightEqualOrHigher( 1.0 ), node_data.numberOfLinksWithWeightEqualOrHigher( 0.0 ), max_strong_connections, max_connections));
 

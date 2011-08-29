@@ -44,7 +44,7 @@ namespace sna{
 
 			// Acumulate all the connected cliques in the node_clique structure
 			node_clique.linksSetLength(0);
-			for (int i = 0 ; i < inputs[0].num_kvs ; i++)
+			for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
 				node_clique.linksAdd()->parse( inputs[0].kvs[i]->value );
 
 			//Sort by weight

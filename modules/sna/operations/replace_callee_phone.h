@@ -33,7 +33,7 @@ namespace sna{
 
 			  users=0;
 			  repetitions=0;
-			  for (int i=0  ; i< inputs[0].num_kvs ;i++)
+			  for (size_t i=0  ; i< inputs[0].num_kvs ;i++)
 			  {
 			    cdr.parse(inputs[0].kvs[i]->value);
 			    calleeNumber.parse(inputs[0].kvs[i]->key);
@@ -54,7 +54,7 @@ namespace sna{
 			      //Meaning: if the callee number belongs to more than one customer, it is assumed all those
 			      //customer were called, since there is no way at the moment to tell the customer that was called.
 
-			      for (int j=0  ; j< inputs[1].num_kvs ;j++)
+			      for (size_t j=0  ; j< inputs[1].num_kvs ;j++)
 			      {
 			        //Replace the node in the cdr with the callee memberID
 			        user.parse(inputs[1].kvs[j]->value);

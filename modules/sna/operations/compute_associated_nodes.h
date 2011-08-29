@@ -41,7 +41,7 @@ namespace sna{
 			clique.parse( inputs[0].kvs[0]->key );
 
 			nodes.itemsSetLength(0);
-			for (int i = 0 ; i < inputs[0].num_kvs ; i++)
+			for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
 				nodes.itemsAdd()->parse( inputs[0].kvs[i]->value );
 
 			//Compute associated members

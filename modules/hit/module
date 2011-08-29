@@ -28,6 +28,30 @@ data HitsState
 	vector hit.Hit hits;			# Top hits associated with the previous one  
 }
 
+#
+# Simple generator to create "hit.num_samples" random strings at the output
+#
+
+generator generate_words
+{
+        out system.String system.UInt
+
+        helpLine "Generate 'hit.num_samples' random words with 'hit.word_length' chars. By default it generates 1M words with 6 letters"
+}
+
+
+#
+# Parser for words
+#
+parser parser_words
+{
+	out system.String system.UInt
+	
+	helpLine "Parse input txt queue to generate individual counts of words"
+}
+
+
+
 reduce reduceHitCounts
 {
 	in system.String system.UInt		# Input concepts and number of hits
@@ -47,6 +71,19 @@ parserOut getHitCounts
 }
 
 
+map mapHits
+{
+	in system.String hit.HitCount
+	out system.UInt hit.Hit
+	
+	helpLine "Map to transform aggregate HitCount information into Hits"
+}
+
+parserOutReduce reduceGetHits
+{
+	in system.UInt hit.Hit
+	helpLine "Sorts hits and prints txt output"
+}
 
 reduce reduceHits
 {
@@ -58,3 +95,13 @@ reduce reduceHits
 	helpLine "Reduce to accumulate top entries"
 
 }
+
+parserOut getHits
+{
+	in system.UInt hit.HitsState
+
+	helpLine "Just get the current hitsState"
+}
+
+
+

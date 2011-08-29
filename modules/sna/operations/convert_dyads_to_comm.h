@@ -30,7 +30,7 @@ namespace sna{
 			  Clique clique_id;
 			  Clique clique_out;
 
-			  for (int i = 0; i < inputs[0].num_kvs; i++) {
+			  for (size_t i = 0; i < inputs[0].num_kvs; i++) {
 			    id_link.parse(inputs[0].kvs[i]->key );
 			    link.parse(inputs[0].kvs[i]->value );
 

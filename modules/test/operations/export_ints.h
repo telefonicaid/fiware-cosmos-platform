@@ -7,20 +7,20 @@
 #define _H_SAMSON_test_export_ints
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 #include <samson/modules/test/Integer.h>
 #include <sstream>
 
-namespace ss{
+namespace samson{
 namespace test{
 
 
-	class export_ints : public ss::ParserOut
+	class export_ints : public samson::ParserOut
 	{
 
 	public:
 
-		ss::test::Integer key, value;
+		samson::test::Integer key, value;
 
 		void run(KVSetStruct* inputs , TXTWriter *writer )
 		{
@@ -43,7 +43,7 @@ namespace test{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace test
 
 #endif

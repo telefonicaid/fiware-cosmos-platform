@@ -50,7 +50,7 @@ namespace graph{
 			value_out.links[j] = value_in.links[j];
 		      }
 
-		      if (key.value == first_node)
+		      if (key.value == (size_t) first_node)
 		      {
 #ifdef DEBUG_FILES
                         {

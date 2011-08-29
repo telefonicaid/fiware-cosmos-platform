@@ -25,7 +25,8 @@ namespace example{
 
 		  int a = 0 ;
 		  int b = 0;
-		  int c = a / b ; // this will clearly cause a run-time error  
+		  int c = a / b ; // this will clearly cause a run-time error
+		  c++; // To avoid unused variable error
 		}
 
 

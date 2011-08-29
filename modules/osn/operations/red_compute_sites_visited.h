@@ -29,7 +29,7 @@ namespace osn{
 
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-			ss:system::UInt total;
+			samson::system::UInt total;
 
 			if (inputs[0].num_kvs == 0)
 			{

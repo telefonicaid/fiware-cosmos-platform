@@ -45,7 +45,7 @@ namespace sna{
 			reduce_input_nodes_clique.itemsSetLength(0);
 
 			Clique_Node tmp_node_clique;
-			for (int i = 0 ; i < inputs[0].num_kvs ; i++)
+			for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
 			{
 				tmp_node_clique.parse(inputs[0].kvs[i]->value);
 

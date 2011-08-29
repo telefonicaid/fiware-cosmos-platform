@@ -42,7 +42,7 @@ namespace sort{
             for (size_t i = 0; (i < num_samples); i++)
             {
                     val1.value = rand();
-                    val2.value = val1.value << 31 + rand();
+                    val2.value = (val1.value << 31) + rand();
 
                     writer->emit(0, &val2, &dummy);
             }

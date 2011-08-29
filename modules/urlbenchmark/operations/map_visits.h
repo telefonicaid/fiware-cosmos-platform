@@ -35,7 +35,7 @@ namespace urlbenchmark{
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
-            bool found;
+            //bool found;
 
             for (size_t i = 0; (i < inputs[0].num_kvs); ++i)
             {

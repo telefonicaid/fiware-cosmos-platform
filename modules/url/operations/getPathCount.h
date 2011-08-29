@@ -43,7 +43,7 @@ namespace url{
 			serverId.parse(inputs[0].kvs[0]->key);
 			pathStdVector.clear();
 
-			for (int i = 0; (i < inputs[0].num_kvs); i++)
+			for (size_t i = 0; (i < inputs[0].num_kvs); i++)
 			{
 				pathStr.parse(inputs[0].kvs[i]->value);
 				//OLM_T(LMT_User06,("For serverId:%d  path:%s", serverId.value, pathStr.value.c_str()));
@@ -76,7 +76,7 @@ namespace url{
 			PathCountVector paths;
 
 			size_t countRef = 0;
-			int count_hits = 0;
+			size_t count_hits = 0;
 			for ( std::vector<PathCount>::iterator iter = pathStdVector.begin() ; ((iter < pathStdVector.end()) && (count_hits < num_hits)) ; iter++, count_hits++)
 			{
 				pathCount = *iter;

@@ -173,8 +173,8 @@ namespace graph{
 		
 		void generateNodes(int *nodes_s , int length , samson::KVWriter *writer  )
 		{
-			int node;
-			bool extern_node;
+			int node = 0;
+			bool extern_node = false;
 			int links[1000];
 			double weights[1000];
 			int pos=-1;

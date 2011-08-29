@@ -56,7 +56,7 @@ public:
 		MobilityDegree md;
 		LocCounter locCounter;
 
-		if (inputs[0].kvs[0]->key)
+		if (inputs[0].num_kvs  == 0)
 		{
 			return;
 		}
@@ -123,7 +123,7 @@ public:
 		}
 
 		// national and international calls
-		for( int i=0; i<inputs[0].num_kvs; i++ )
+		for( size_t i=0; i<inputs[0].num_kvs; i++ )
 		{
 			cdr.parse( inputs[0].kvs[i]->value );
 			if( cdr.cellId == 0 )

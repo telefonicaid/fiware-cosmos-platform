@@ -48,10 +48,10 @@ namespace url{
 
 			serverStrPath.server = serverStr;
 
-			bool first = true;
-			size_t n_items = 0;
+			//bool first = true;
+			//size_t n_items = 0;
 
-			for (int i = 0; (i < inputs[1].num_kvs); i++)
+			for (size_t i = 0; (i < inputs[1].num_kvs); i++)
 			{
 				catPath.parse(inputs[1].kvs[i]->value);
 

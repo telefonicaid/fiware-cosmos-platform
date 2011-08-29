@@ -29,7 +29,7 @@ i: install
 
 install: release 
 	sudo make -C BUILD_RELEASE install
-	make -C modules
+	make release -C modules
 
 clean:
 	make -C BUILD_DEBUG clean

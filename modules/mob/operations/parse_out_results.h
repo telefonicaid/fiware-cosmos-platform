@@ -47,12 +47,12 @@ extendedHelp: 		Write results file in the appropriate readable format.
 			samson::system::UInt64 phone;
 			Results results;
 
-			  for (int i  =0 ;  i < inputs[0].num_kvs ; ++i)
+			  for (size_t i  =0 ;  i < inputs[0].num_kvs ; ++i)
 			  {
 			      phone.parse( inputs[0].kvs[i]->key );
 			      results.parse( inputs[0].kvs[i]->value );
 
-			      int _total = 0;
+			      size_t _total = 0;
 
 			      if( (results.mobilityDegree.value >= 0) ||
 				      (results.homeCellId.value > 0) || (results.homeBtsId.value > 0) || (results.homeLacId.value > 0) || (results.homeStateId.value > 0) ||
@@ -88,7 +88,7 @@ extendedHelp: 		Write results file in the appropriate readable format.
 
 		void finish(TXTWriter *writer )
 		{
-			   int _total = 0;
+			size_t _total = 0;
 
 			   _total += snprintf( output, MAX_STR_LEN, "phone%c", CONF_SEP );
 			   _total += snprintf( output+_total, MAX_STR_LEN, "mobility_degree%c", CONF_SEP );

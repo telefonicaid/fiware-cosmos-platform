@@ -114,8 +114,8 @@ extendedHelp: 		Parse txt-file of CDRS in  different formats.
 
 			  unsigned int _pos=0;
 			  unsigned int _pos_field=0;
-			  unsigned int _cellId = 0;
-			  unsigned int _mobScope;
+			  size_t _cellId = 0;
+			  //unsigned int _mobScope;
 
 			  struct tm timeExpanded;
 

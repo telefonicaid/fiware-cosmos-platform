@@ -26,7 +26,7 @@ namespace example{
 
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-		    for (int i = 0 ; i < inputs[0].num_kvs ; i++)
+		    for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
 		    {
 		      key.parse( inputs[0].kvs[i]->key );
 		      value.parse( inputs[0].kvs[i]->value );
@@ -38,6 +38,7 @@ namespace example{
 		    int a = 0 ;
 		    int b = 0; 
 		    int c = a / b ; // this will clearly cause a run-time error
+		    c++; // To avoid unused variable error
 		  
 
 		}

@@ -31,7 +31,7 @@ namespace sna{
 		{
 			  size_t total = 0;
 
-			  for (int i  =0 ;  i< inputs[0].num_kvs  ; i++)
+			  for (size_t i  =0 ;  i< inputs[0].num_kvs  ; i++)
 			  {
 
 			    node.parse( inputs[0].kvs[i]->key);

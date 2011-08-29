@@ -69,7 +69,7 @@ void cdrGetNextField(char *line, unsigned int *pos, unsigned int *pos_field){
 ///
 ///@param strCellId Pointer to the string cell id.
 ///@param cellId Pointer to the integer cell id.
-void cdrStrCellToInt( char *strCellId, unsigned int *cellId ){
+void cdrStrCellToInt( char *strCellId, size_t *cellId ){
 	int _cellLength = 0;
 	char *_endptr;
 
@@ -80,7 +80,7 @@ void cdrStrCellToInt( char *strCellId, unsigned int *cellId ){
 		*cellId = strtoul( strCellId, &_endptr, 16 );
 	}
 
-	if( strcmp( "", _endptr ) != 0 ){
+	if( *_endptr != '\0' ){
 		*cellId = 0;
 		//OLM_D(("Wrong CellId format: strCellId:'%s' -> celId:%u\n", strCellId, cellId ));
 	}
@@ -178,7 +178,7 @@ void cdrPhoneToNumber (char *line, size_t *phone, int max_client ){
 
 	*phone = strtoul( &(line[_pos]), &_endptr, 10 );
 
-	if( strcmp( "", _endptr ) != 0 ){
+	if( *_endptr != '\0' ){
 		*phone = 0L;
 	}
 }

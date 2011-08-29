@@ -148,9 +148,9 @@ public:
 			duration_days += 334 + offsetBisiesto;
 			break;
 		}
-		const int YEAR_2000 = 2000;
+		//const int YEAR_2000 = 2000;
 		const int DAYS_PER_YEAR = 365;
-		const int SECS_PER_DAY = 86400;
+		//const int SECS_PER_DAY = 86400;
 
 		duration_days += DAYS_PER_YEAR * (year.value) + ((year.value - 1) / 4);
 

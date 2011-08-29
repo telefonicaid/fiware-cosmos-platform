@@ -50,7 +50,7 @@ extendedHelp: 		Removes location information and keeps only day information.
 
 			samson::system::Void void_data;
 
-			for (int i = 0 ; i < inputs[0].num_kvs ; ++i)
+			for (size_t i = 0 ; i < inputs[0].num_kvs ; ++i)
 			{
 				//Parsing key and value
 				phoneLocCounter.parse( inputs[0].kvs[i]->key );

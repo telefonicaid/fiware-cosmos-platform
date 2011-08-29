@@ -68,7 +68,7 @@ namespace url{
 
 				//OLM_T(LMT_User06,("Working with serverIdRef:%d ", serverIdRef.value));
 
-				for (int i = 0; (i < inputs[1].num_kvs); i++)
+				for (size_t i = 0; (i < inputs[1].num_kvs); i++)
 				{
 					servers.parse(inputs[1].kvs[i]->value);
 
@@ -93,7 +93,7 @@ namespace url{
 							size_t count = servers.serversCount[j].count.value;
 							double confidence = sqrt(countRef * count)/countRef;
 
-							for (int k = 0; (k < num_categories); k++)
+							for (size_t k = 0; (k < num_categories); k++)
 							{
 								// New weight is computed directly with the scaled integers (perhaps losing precision)
 								categories_out.category[k].weight = categories.category[k].weight;

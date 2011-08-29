@@ -80,7 +80,7 @@ namespace sna{
 			//OLM_T ( LMT_User01, ("Leyendo telefono: %ld", node.id.value));
 			//OLM_T ( LMT_User01, ("Leyendo telefono: %ld contacto: %d th: %d", node.id.value, cdr.node, num_cdrs_for_strong));
 
-			for (int i=1 ; i < inputs[0].num_kvs ; ++i) {
+			for (size_t i=1 ; i < inputs[0].num_kvs ; ++i) {
 				//destination.parse( inputs[0].kvs[i].value );    //Parse the value for a new cdr
 				cdr.parse( inputs[0].kvs[i]->value); //Parse the value for a new cdr
 				//mobile = cdr.node ;

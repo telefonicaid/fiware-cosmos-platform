@@ -52,7 +52,7 @@ namespace url{
 
 			pathsRef.parse(inputs[0].kvs[0]->value);
 
-			for (int i = 0; (i < inputs[1].num_kvs); i++)
+			for (size_t i = 0; (i < inputs[1].num_kvs); i++)
 			{
 				userId.parse(inputs[1].kvs[i]->value);
 				//OLM_T(LMT_User06,("Working with: cat:%d user:%d", catIdRef.value, userId.value));

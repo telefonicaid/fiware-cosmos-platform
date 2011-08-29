@@ -9,6 +9,7 @@
 
 #include <samson/modules/system/ComplexTimeSlot_base.h>
 #include <samson/modules/system/Date.h>
+#include <samson/modules/system/DateComplete.h>
 #include <samson/modules/system/Time.h>
 #include <samson/modules/system/TimeUnix.h>
 
@@ -65,7 +66,7 @@ public:
 			size_t _pos = 0;
 			std::string _strTs = "";
 			std::string _tmp = "";
-			unsigned char _wdaysMask;
+			//unsigned char _wdaysMask;
 
 			_pos = str.find( '|', 0 );
 			if( _pos > 0 )
@@ -104,7 +105,7 @@ public:
 					wdaysMask = WDAY_NONE;
 
 					_pos++;
-					for( int i=0; i<nts; i++ )
+					for( unsigned int i=0; i<nts; i++ )
 					{
 						_strTs = str.substr( _pos, 25 );
 
@@ -183,6 +184,29 @@ public:
 	 * @param date MACRO structure that stores the date.
 	 * @param time MACRO structure that stores the time.
 	 */
+	bool includes( DateComplete *date, Time *time )
+	{
+		for( int i=0; i<ts_length; i++ )
+		{
+			if( ts[i].includes( date, time ) == true )
+			{
+				return true;
+			}
+		}
+
+		// if this point is reached, the time is not included
+		// inside any of the simple timeslots of the complex one
+		return false;
+	}
+
+	/**
+	 * Method that tests if a certain date
+	 * and time is included into the complex
+	 * time slot.
+	 *
+	 * @param date MACRO structure that stores the date.
+	 * @param time MACRO structure that stores the time.
+	 */
 	bool includes( TimeUnix *time )
 	{
 		for( int i=0; i<ts_length; i++ )
@@ -214,6 +238,22 @@ public:
 		monthDays.value = date->GetMonthDays();
 	}
 
+
+	/**
+	 * Method that computes the week day of the date,
+	 * and the number of days in the month (to be used
+	 * in computing the covered days
+	 */
+	void setWeekDayFirstDay(DateComplete *date)
+	{
+		if (date->week_day.value == 7)
+		{
+			date->compute_day_of_the_week();
+		}
+		wdayFirstDay.value = date->week_day.value;
+
+		monthDays.value = date->GetMonthDays();
+	}
 
 	/**
 	 * Method that computes the number of days

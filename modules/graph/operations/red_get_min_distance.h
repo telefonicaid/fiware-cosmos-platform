@@ -49,9 +49,9 @@ namespace graph{
 
 			//Element to get all information from the keyNode
 			const int INFINIT = 999999;
-			int distMin = INFINIT;
+			size_t distMin = INFINIT;
 			
-			for (int i = 0 ; i < inputs[1].num_kvs ; i++)
+			for (size_t i = 0 ; i < inputs[1].num_kvs ; i++)
 			{
 				distance.parse(inputs[1].kvs[i]->value);
 				if (distance.value < distMin)

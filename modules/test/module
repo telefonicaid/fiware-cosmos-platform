@@ -35,14 +35,23 @@ parserOut export_ints
 script test_1
 {
 	code
-	"
+	{
 		remove_all;
 		test.generator a -create;
 		test.map a b -create;
 		test.export_ints b out.txt -create;
 		rm a;
 		rm b;
-	"
+	}
 
 	helpLine "Simple test script that produce a out_txt queue with some results to be compared"
+}
+
+map newtest
+{
+        in test.Integer test.Integer
+        out test.Integer test.Integer
+
+        helpLine "Simple map that inverts the order of the key and the value"
+
 }

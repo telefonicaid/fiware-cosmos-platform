@@ -27,7 +27,7 @@ namespace samson{
             //uchar value;
             
             // Function to get a value depending on the range of size_t    
-            int set( size_t _value )
+            void set( size_t _value )
             {
                 size_t threshold = std::numeric_limits<std::size_t>::max()/NUM_PARTITIONS;
                 value = _value/threshold;

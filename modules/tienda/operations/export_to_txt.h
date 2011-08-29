@@ -37,7 +37,7 @@ namespace tienda{
                                 output.str(""); // Clear content
 
                                 output << key.str() << separator;
-                                for (size_t j = 0; (j < value.products_length);j++)
+                                for (int j = 0; (j < value.products_length);j++)
                                 {
                                         output << value.products[j].str() << ",";
                                 }

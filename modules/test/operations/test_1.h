@@ -7,14 +7,14 @@
 #define _H_SAMSON_test_test_1
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 
 
-namespace ss{
+namespace samson{
 namespace test{
 
 
-	class test_1 : public ss::Script
+	class test_1 : public samson::Script
 	{
 
 	public:
@@ -25,7 +25,7 @@ namespace test{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace test
 
 #endif

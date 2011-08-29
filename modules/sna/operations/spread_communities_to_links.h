@@ -27,7 +27,7 @@ namespace sna{
 			samson::system::UInt pivotNode;
 			Clique cliqueOut;
 
-			for (int i=0; i < inputs[0].num_kvs; i++)
+			for (size_t i=0; i < inputs[0].num_kvs; i++)
 			{
 				//Get the clique N
 				clique.nodesSetLength(0);

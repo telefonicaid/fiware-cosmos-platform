@@ -27,8 +27,8 @@ namespace sort{
 				samson::system::UInt val;
 				samson::system::Void dummy;
 
-				size_t offset = 0;
-				size_t line_begin = 0;
+				//size_t offset = 0;
+				//size_t line_begin = 0;
 
 				char *p_data = data;
 				char *p_line_begin = data;

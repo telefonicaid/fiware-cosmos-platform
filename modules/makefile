@@ -5,6 +5,7 @@ all:
 	make -C example
 	make -C tienda
 	make -C cdr
+	make -C mob
 	make -C graph
 	make -C sna
 #	make -C snalight
@@ -17,6 +18,25 @@ all:
 	make -C testcomparefunctions
 	make -C hit
 
+release:
+	make release -C system
+	make release -C txt
+	make release -C example
+	make release -C tienda
+	make release -C cdr
+	make release -C mob
+	make release -C graph
+	make release -C sna
+#	make release -C snalight
+	make release -C osn
+	make release -C url
+	make release -C urlbenchmark
+	make release -C sort
+	make release -C terasort
+	make release -C testtime
+	make release -C testcomparefunctions
+	make release -C hit
+
 reset:
 	make reset -C system
 	make reset -C txt 
@@ -24,6 +44,7 @@ reset:
 	make reset -C example 
 	make reset -C tienda 
 	make reset -C cdr
+	make reset -C mob
 	make reset -C graph
 	make reset -C sna
 	make reset -C snalight 
@@ -42,6 +63,7 @@ eclipse:
 	make eclipse -C example
 	make eclipse -C tienda
 	make eclipse -C cdr
+	make eclipse -C mob
 	make eclipse -C graph
 	make eclipse -C sna
 	make eclipse -C snalight

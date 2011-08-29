@@ -29,7 +29,7 @@ namespace sna{
 			bool found ;
 
 			//Iterate the graph to get all the links
-			for (int i=0; i < inputs[0].num_kvs; i++)
+			for (size_t i=0; i < inputs[0].num_kvs; i++)
 			{
 				node.parse(inputs[0].kvs[i]->value);
 				//Iterate each link of each node to check if that link is a dyad
@@ -42,7 +42,7 @@ namespace sna{
 					{
 						//Is the node to compare in any community?
 						found = false;
-						for (int k=0; k < inputs[1].num_kvs; k++)
+						for (size_t k=0; k < inputs[1].num_kvs; k++)
 						{
 							clique.parse(inputs[1].kvs[k]->value);
 							if (clique.containtsNode(nodeToCompare.id.value))

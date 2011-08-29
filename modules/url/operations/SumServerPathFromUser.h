@@ -50,7 +50,7 @@ namespace url{
 
 			//OLM_T(LMT_User06,("Working with userId:%d with inputs[0].num_kvs:%d", userId.value, inputs[0].num_kvs));
 
-			for (int i = 0; (i < inputs[0].num_kvs); i++)
+			for (size_t i = 0; (i < inputs[0].num_kvs); i++)
 			{
 				serverPath.parse(inputs[0].kvs[i]->value);
 

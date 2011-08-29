@@ -44,7 +44,7 @@ public:
 				associated[ clique.nodes[i].value ] = 0;
 			}
 
-			for (int i = 0  ; i < inputs[0].num_kvs ; i++)
+			for (size_t i = 0  ; i < inputs[0].num_kvs ; i++)
 			{
 				clique_value_tmp.parse ( inputs[0].kvs[0]->value );
 

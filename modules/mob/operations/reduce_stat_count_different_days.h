@@ -48,6 +48,7 @@ public:
 			phone.parse( inputs[0].kvs[0]->key );
 			number_days.value = inputs[0].num_kvs;
 			writer->emit(0, &phone, &number_days );
+			//OLM_T(LMT_User06, ("For phone:%lu, number_days:%lu", phone.value, number_days.value));
 		}
 	}
 

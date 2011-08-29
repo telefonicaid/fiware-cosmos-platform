@@ -38,7 +38,7 @@ namespace url{
 
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-			bool ref_emitted = false;
+			//bool ref_emitted = false;
 
 			//OLM_T(LMT_User06, ("inputs[0].num_kvs:%ld inputs[1].num_kvs:%ld", inputs[0].num_kvs, inputs[1].num_kvs));
 
@@ -95,7 +95,7 @@ namespace url{
 			}
 
 
-			for (int i = 1; (i < inputs[1].num_kvs); i++)
+			for (size_t i = 1; (i < inputs[1].num_kvs); i++)
 			{
 				categories.parse(inputs[1].kvs[i]->value);
 

@@ -7,22 +7,22 @@
 #define _H_SAMSON_test_generator
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 #include <samson/modules/test/Integer.h>
 
-namespace ss{
+namespace samson{
 namespace test{
 
 
-	class generator : public ss::Generator
+	class generator : public samson::Generator
 	{
 
 	public:
 
-	  ss::test::Integer key,value;
+	  samson::test::Integer key,value;
 	  
 
-		void run( ss::KVWriter *writer )
+		void run( samson::KVWriter *writer )
 		{
 
 		  for ( int i = 0 ; i < 1000 ; i++)
@@ -38,7 +38,7 @@ namespace test{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace test
 
 #endif

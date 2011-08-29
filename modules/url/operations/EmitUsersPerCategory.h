@@ -43,7 +43,7 @@ namespace url{
 			categories.parse(inputs[0].kvs[0]->value);
 			size_t weightMedia = CategoryVector::double_2_intScaled(1.0/categories.category_length);
 
-			for (int i = 0; (i < inputs[0].num_kvs); i++)
+			for (size_t i = 0; (i < inputs[0].num_kvs); i++)
 			{
 				userId.parse(inputs[0].kvs[i]->key);
 				categories.parse(inputs[0].kvs[i]->value);

@@ -34,7 +34,7 @@ namespace sna{
 			node_clique.clique.copyFrom( &clique );
 
 			node_clique.linksSetLength(0);
-			for (int i = 0 ; i < inputs[1].num_kvs ; i++)
+			for (size_t i = 0 ; i < inputs[1].num_kvs ; i++)
 			{
 				clique_link.parse( inputs[1].kvs[i]->value );
 				node_clique.linksAdd()->copyFrom( &clique_link );

@@ -28,7 +28,7 @@ namespace sna{
 			samson::system::UInt phone_rev;
 			samson::sna::CDR cdr_rev;
 
-			for (int i=0  ; i< inputs[0].num_kvs ;++i)
+			for (size_t i=0  ; i< inputs[0].num_kvs ;++i)
 			{
 				phone.parse(inputs[0].kvs[i]->key);
 				cdr.parse(inputs[0].kvs[i]->value);

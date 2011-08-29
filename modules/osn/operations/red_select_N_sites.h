@@ -26,9 +26,9 @@ namespace osn{
 
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-			int num_sites = environment->getInt ("osn.num_sites", 10);
+			size_t num_sites = environment->getInt ("osn.num_sites", 10);
 			std::string total_visits_str = environment->get ("osn.total_count", "1");
-			int total_visits = strtol(total_visits_str.c_str(), NULL, 10);
+			//int total_visits = strtol(total_visits_str.c_str(), NULL, 10);
 
 
 

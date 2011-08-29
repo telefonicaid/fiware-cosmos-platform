@@ -31,7 +31,7 @@ class reduce_add_cell_info : public samson::Reduce
 	samson::cdr::Cell cell;
 	CellCounter cellCounter;
 
-	samson::system::Date lDate;
+	samson::system::DateComplete lDate;
 	samson::system::Time lTime;
 
 
@@ -72,7 +72,7 @@ public:
 		std::string conf_timeslot_work = environment->get(MOB_PARAMETER_CONF_TIMESLOT_WORK, MOB_PARAMETER_CONF_TIMESLOT_WORK_DEFAULT);
 		ctsW.set( conf_timeslot_work );
 
-		OLM_T(LMT_User06, ("init with '%s' and '%s'\n", conf_timeslot_home.c_str(), conf_timeslot_work.c_str()));
+		//OLM_T(LMT_User06, ("init of 0x%0x with '%s' and '%s'\n", this, conf_timeslot_home.c_str(), conf_timeslot_work.c_str()));
 	}
 
 	/**
@@ -102,8 +102,8 @@ public:
 
 			key.parse(inputs[0].kvs[0]->key);
 
-			//OLM_T(LMT_User06, ("Process key:0x%0x with cell:0x%0x with inputs[0].num_kvs:%lu", key.value, cell.cellId.value, inputs[0].num_kvs))
-			for( int i=0; i<inputs[0].num_kvs; i++ )
+			//OLM_T(LMT_User06, ("Process of 0x%0x key:0x%0x with cell:0x%0x with inputs[0].num_kvs:%lu", this, key.value, cell.cellId.value, inputs[0].num_kvs));
+			for( size_t i=0; i<inputs[0].num_kvs; i++ )
 			{
 				cdr.parse( inputs[0].kvs[i]->value );
 
@@ -123,47 +123,10 @@ public:
 				// get phone number
 				phone.value = cdr.phone.value;
 
-#ifdef PARA_LUEGO
-				// include also the day of the week and the absolute day
-				//cdr.date.computeDayOfTheWeek();
-				mobComputeDayOfTheWeek( &cdr.date );
-				mobComputeAbsoluteDay( &cdr.date, &cdr.absDay );
-#endif // de PARA_LUEGO
 
 				// emit first output to keep complete cdrs
 				writer->emit(0, &phone, &cdr );
 
-
-
-#ifdef PARA_LUEGO
-				phoneLoc.phone.value = phone.value;
-
-				// mobility degree
-
-				// cell level
-				// fill structure
-				phoneLoc.loc = cdr.cellId;
-				// emit output to compute the reference cell
-				writer[1]->emit( &phoneLoc, &void_data );
-
-				// bts level
-				// fill structure
-				phoneLoc.loc = cdr.btsId;
-				// emit output to compute the reference cell
-				writer[2]->emit( &phoneLoc, &void_data );
-
-				// lac level
-				// fill structure
-				phoneLoc.loc = cdr.lacId;
-				// emit output to compute the reference cell
-				writer[3]->emit( &phoneLoc, &void_data );
-
-				// state level
-				// fill structure
-				phoneLoc.loc = cdr.stateId;
-				// emit output to compute the reference cell
-				writer[4]->emit( &phoneLoc, &void_data );
-#endif // de PARA_LUEGO
 
 				writer->emit(1, &phone, &cell);
 
@@ -176,71 +139,32 @@ public:
 
 					//OLM_T(LMT_User06, ("timeUnix :%s", cdr.timeUnix.str().c_str()));
 
+
 					cdr.timeUnix.getDateTimeFromTimeUTC(&lDate, &lTime);
 
-					if (lDate.days_2000_GetAssigned() == false)
-					{
-						lDate.daysFrom2000_01_01();
-						//OLM_T(LMT_User06, ("For key:0x%0x computes days_2000", key.value));
-
-					}
 					cellCounter.count = lDate.days_2000;
-
 
 					// emit CDR's for the place of home
 					if( ctsH.includes( &lDate, &lTime ) == true )
 					{
-
-#ifdef PARA_LUEGO
-						phoneLocCounter.phone.value = phone.value;
-						phoneLocCounter.count = cdr.absDay;
-
-						// cell level
-						phoneLocCounter.loc = cdr.cellId;
-						writer[5]->emit( &phoneLocCounter, &void_data );
-						// bts level
-						phoneLocCounter.loc = cdr.btsId;
-						writer[6]->emit( &phoneLocCounter, &void_data );
-						// lac level
-						phoneLocCounter.loc = cdr.lacId;
-						writer[7]->emit( &phoneLocCounter, &void_data );
-						// state level
-						phoneLocCounter.loc = cdr.stateId;
-						writer[8]->emit( &phoneLocCounter, &void_data );
-#endif // de PARA_LUEGO
 						writer->emit(2, &phone, &cellCounter);
-						OLM_T(LMT_User06, ("For key:0x%0x time:'%s' detects home", key.value, cdr.timeUnix.str().c_str()));
+						//OLM_T(LMT_User06, ("For key:0x%0x, cdr:'%s' detects home", key.value, cdr.str().c_str()));
+					}
+					else
+					{
+						//OLM_T(LMT_User06, ("For key:0x%0x, cdr:'%s' NOT detects home", key.value, cdr.str().c_str()));
 					}
 
 					// emit CDR's for the place of work
 					if( ctsW.includes( &lDate, &lTime ) == true )
 					{
-#ifdef PARA_LUEGO
-						phoneLocCounter.phone.value = phone.value;
-						phoneLocCounter.count = cdr.absDay;
-
-						// cell level
-						phoneLocCounter.loc = cdr.cellId;
-						writer[9]->emit( &phoneLocCounter, &void_data );
-						// bts level
-						phoneLocCounter.loc = cdr.btsId;
-						writer[10]->emit( &phoneLocCounter, &void_data );
-						// lac level
-						phoneLocCounter.loc = cdr.lacId;
-						writer[11]->emit( &phoneLocCounter, &void_data );
-						// state level
-						phoneLocCounter.loc = cdr.stateId;
-						writer[12]->emit( &phoneLocCounter, &void_data );
-#endif // de PARA_LUEGO
-
 						writer->emit(3, &phone, &cellCounter);
-						OLM_T(LMT_User06, ("For key:0x%0x time:'%s' detects work", key.value, cdr.timeUnix.str().c_str()));
-
+						//OLM_T(LMT_User06, ("For key:0x%0x, cdr:'%s' detects work", key.value, cdr.str().c_str()));
 					}
-				}
-				else
-				{
-					//OLM_T(LMT_User06, ("No cell info for key:0x%0x, phone:%lu", key.value, phone.value));
+					else
+					{
+						//OLM_T(LMT_User06, ("For key:0x%0x, cdr:'%s' NOT detects work", key.value, cdr.str().c_str()));
+					}
 				}
 			}
 		}

@@ -50,7 +50,7 @@ public:
 		refLocCounter.loc = 0;
 		refLocCounter.count = 0;
 
-		for( int i=0; i<inputs[0].num_kvs; i++ )
+		for( size_t i=0; i<inputs[0].num_kvs; i++ )
 		{
 			locCounter.parse( inputs[0].kvs[i]->value );
 			if( locCounter.count >= refLocCounter.count )

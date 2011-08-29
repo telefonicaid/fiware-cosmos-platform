@@ -31,13 +31,18 @@ class TopElementList
 
 
     std::list< TopElement > elements; 
-    int max_num_elements;
+    size_t max_num_elements;
 
 public:
     
     TopElementList( int _max_num_elements )
     {
         max_num_elements = _max_num_elements;
+    }
+
+    int size()
+    {
+    	return elements.size();
     }
 
     void fill( unsigned long time ,  samson::hit::HitsState* state )
@@ -57,7 +62,7 @@ public:
 
     void insert( size_t hits , std::string & concept )
     {
-        // If not enougth element, just inser where 
+        // If not enough elements, just insert where
         if( elements.size() == 0 )
         {
             TopElement _new_element( hits , concept );

@@ -41,6 +41,15 @@ data Date
      optional system.Int8 week_day; 
 }
 
+data DateComplete
+{
+     system.UInt8 year;
+     system.Int8 month;
+     system.Int8 day;
+     system.UInt days_2000;
+     system.Int8 week_day; 
+}
+
 # Time slot. Useful in mobility solution, and perhaps in other scenarios
 data TimeSlot
 {

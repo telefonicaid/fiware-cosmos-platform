@@ -62,6 +62,8 @@ public:
 			number_days.parse( inputs[0].kvs[0]->value );
 			place.totalDaysWithCalls = number_days.value;
 
+			//OLM_T(LMT_User06, ("For phone:%lu, totalDaysWithCalls:%lu", place.phone.value, place.totalDaysWithCalls.value));
+
 			// only emit phones with location information
 			if( place.totalDaysWithCalls > 0 )
 			{
@@ -71,6 +73,7 @@ public:
 					locCounter.parse( inputs[1].kvs[0]->value );
 					place.cellId = locCounter.loc;
 					place.cellDaysWithCalls = locCounter.count;
+					//OLM_T(LMT_User06, ("For phone:%lu, totalDaysWithCalls:%lu, cellDaysWithCalls:%lu", place.phone.value, place.totalDaysWithCalls.value, place.cellDaysWithCalls.value));
 				}
 				else
 				{

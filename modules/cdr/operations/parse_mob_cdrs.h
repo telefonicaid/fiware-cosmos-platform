@@ -37,7 +37,7 @@ public:
 	bool mobGetCdrInfo_MX( char *line, mobCdr *cdr )
 	{
 		size_t _phone = 0L;
-		unsigned int _cellId = 0;
+		size_t _cellId = 0;
 		size_t _mobScope;
 		unsigned int _pos = 0;
 		unsigned int _pos_field = 0;

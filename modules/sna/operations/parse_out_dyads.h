@@ -42,7 +42,7 @@ namespace sna{
 
 			  int total = 0;
 
-			  for (int i  =0 ;  i < inputs[0].num_kvs ; ++i) {
+			  for (size_t i  =0 ;  i < inputs[0].num_kvs ; ++i) {
 			    uint_key.parse( inputs[0].kvs[i]->key );
 			    link_value.parse( inputs[0].kvs[i]->value );
 

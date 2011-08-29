@@ -142,8 +142,6 @@ public:
 		// Mon-Fri from 09:00:00 to 14:59:59
 		std::string conf_timeslot_work = environment->get(MOB_PARAMETER_CONF_TIMESLOT_WORK, MOB_PARAMETER_CONF_TIMESLOT_WORK_DEFAULT);
 		ctsW.set( conf_timeslot_work );
-
-
 	}
 
 	/**
@@ -193,7 +191,12 @@ public:
 			place.parse( inputs[1].kvs[0]->value );
 
 			// cell
+			if (place.totalDaysWithCalls.value == 0)
+			{
+				OLM_T(LMT_User06, ("Error, 0 days with calls"));
+			}
 			results.homeCellFreq.value = (100*place.cellDaysWithCalls.value)/place.totalDaysWithCalls.value;
+			//OLM_T(LMT_User06, ("For phone:%lu, homeCellFreq:(%d) = (100*cellDaysWithCalls(%lu)/totalDaysWithCalls(%lu))", place.phone.value, results.homeCellFreq.value, place.cellDaysWithCalls.value, place.totalDaysWithCalls.value));
 			if( (place.cellDaysWithCalls.value >= numDaysMin_cell_home) &&
 					(results.homeCellFreq.value >= freqMin_cell_home))
 			{
@@ -205,6 +208,7 @@ public:
 			}
 
 			// bts
+
 			results.homeBtsFreq.value = (100*place.btsDaysWithCalls.value)/place.totalDaysWithCalls.value;
 			if( (place.btsDaysWithCalls.value >= numDaysMin_bts_home) &&
 					(results.homeBtsFreq.value >= freqMin_bts_home))

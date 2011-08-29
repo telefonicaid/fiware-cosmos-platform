@@ -49,9 +49,9 @@ public:
 		}
 		phone.parse(inputs[0].kvs[0]->key);
 
-		for (int i = 0; i < inputs[0].num_kvs; i++ )
+		for (size_t i = 0; i < inputs[0].num_kvs; i++ )
 		{
-			cell.parse(inputs[0].kvs[i]->key);
+			cell.parse(inputs[0].kvs[i]->value);
 
 			phoneLoc.phone.value = phone.value;
 

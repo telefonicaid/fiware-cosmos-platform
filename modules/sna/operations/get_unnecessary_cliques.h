@@ -40,14 +40,14 @@ namespace sna{
 				OLM_E(("Error: ( inputs[0].num_kvs(%d) >= MAX_COMMUNITIES_PER_NODE(%d) )", inputs[0].num_kvs, MAX_COMMUNITIES_PER_NODE))
 			}
 
-			for (int i = 0  ; i < inputs[0].num_kvs ; i++)
+			for (size_t i = 0  ; i < inputs[0].num_kvs ; i++)
 				cliques[i].parse( inputs[0].kvs[i]->value );
 
 			//Compare all possible combinations
 
-			for (int i = 0 ; i < inputs[0].num_kvs ; i++)
+			for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
 			{
-				for (int j = i+1 ; j < inputs[0].num_kvs ; j++)
+				for (size_t j = i+1 ; j < inputs[0].num_kvs ; j++)
 				{
 					// Clique already emited
 					if(cliques[j].nodes_length == 0)

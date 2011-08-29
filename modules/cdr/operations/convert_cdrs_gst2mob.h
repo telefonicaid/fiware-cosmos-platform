@@ -45,7 +45,7 @@ extendedHelp: 		Convert CDRs from Gasset format to Mob format.
 			mobCdr  cdr_out;
 			samson::system::UInt64 phone_out;
 
-			for (int i=0  ; i< inputs[0].num_kvs ;i++)
+			for (size_t i=0  ; i< inputs[0].num_kvs ;i++)
 			{
 				phone.parse(inputs[0].kvs[i]->key);
 				cdr.parse(inputs[0].kvs[i]->value);

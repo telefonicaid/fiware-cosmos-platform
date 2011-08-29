@@ -32,7 +32,7 @@ namespace sort{
 
 			key.parse(inputs[0].kvs[0]->key);
 			//OLM_T(LMT_User01, ("reduce_identity_common_key: key:%d inputs[0].num_kvs:%lu", key.value, inputs[0].num_kvs));
-			for (int i = 0; (i < inputs[0].num_kvs); ++i)
+			for (size_t i = 0; (i < inputs[0].num_kvs); ++i)
 			{
 				val.parse(inputs[0].kvs[i]->value);
 				writer->emit(0, &key, &val);

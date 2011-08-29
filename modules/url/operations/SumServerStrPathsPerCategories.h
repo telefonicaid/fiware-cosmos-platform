@@ -43,7 +43,7 @@ namespace url{
 			size_t n_items = 0;
 			ServerStrPathVector paths;
 
-			for (int i = 0; (i < inputs[0].num_kvs); i++)
+			for (size_t i = 0; (i < inputs[0].num_kvs); i++)
 			{
 				serverStrPath.parse(inputs[0].kvs[i]->value);
 

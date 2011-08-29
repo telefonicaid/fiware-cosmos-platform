@@ -3,7 +3,7 @@ Module mob
 
 	title	"mob  module"
 	author 	"Manuel Martin, ported to SAMSON by Gregorio Escalada"
-	version "1.1"
+	version "1.2"
 	
 }
 
@@ -170,9 +170,6 @@ parserOut parse_out_results
 {
    in system.UInt64 mob.Results
 
-   #extern MRData_Uint64 phone;
-   #extern MRData_MOB.Results results;
-   
    helpLine "Write results file in the appropriate readable format."
 
    help
@@ -187,8 +184,6 @@ parserOut parse_out_results
 parserOut parse_out_month
 {
    in system.Date system.Void
-
-   #extern MRData_Date date;
 
    helpLine "Write month into a readable file."
 
@@ -214,10 +209,6 @@ map map_stat_days
    in mob.PhoneLocCounter system.Void
    out mob.PhoneCounter system.Void
 
-   #extern MRData_MOB.PhoneLocCounter phoneLocCounter;
-   #extern MRData_MOB.PhoneCounter phoneCounter;
-   #extern MRData_Void void_data;
-   
    helpLine "Removes location information and keeps only day information."
    help
    {
@@ -231,9 +222,6 @@ map map_get_month
    in system.Date system.Void
    out system.Void system.Void
 
-   #extern MRData_Date month;
-   #extern MRData_Void void_data;
-   
    helpLine "Gets month being processed."
    
    help
@@ -248,9 +236,6 @@ map map_place_cell
 {
    in system.UInt64 mob.Place
    out system.UInt mob.Place
-
-   #extern MRData_UInt cellId;
-   #extern MRData_MOB.Place place;
 
    helpLine "Maps place results into a set of data where the key is the cell id."
 
@@ -275,11 +260,7 @@ reduce reduce_cdrs_clients
    in system.UInt64 system.Void
    in system.UInt64 cdr.mobCdr
    out system.UInt cdr.mobCdr
-   out system.Time system.Void
-
-   #extern MRData_MOB.Cdr cdr;
-   #extern MRData_UInt cellId;
-   #extern MRData_Void void_data;
+   out system.Date system.Void
 
    helpLine "Extract only CDRs where the TEF phone is in the client sample."
 
@@ -313,13 +294,6 @@ reduce reduce_add_cell_info
    #out MOB.PhoneLocCounter system.Void # Work - lac level
    #out MOB.PhoneLocCounter system.Void # Work - state level
 
-   #extern MRData_MOB.Cdr cdr;
-   #extern MRData_MOB.Cell cell;
-   #extern MRData_Uint64 phone;
-   #extern MRData_MOB.PhoneLoc phoneLoc;
-   #extern MRData_Void void_data;
-   #extern MRData_MOB.PhoneLocCounter phoneLocCounter;
-
    helpLine "Keep only CDRs with known cell id and add cell info from the catalogue."
 
    help
@@ -349,11 +323,11 @@ map map_distribute_cell_info_location
 # these are too manys) 
 map map_distribute_cellCounter_info_location
 {
-	in system.UInt64 CellCounter # cell info
-	out mob.PhoneLoc system.Void # info cell level
-	out mob.PhoneLoc system.Void # info bts level
-	out mob.PhoneLoc system.Void # info lac level
-	out mob.PhoneLoc system.Void # info state level
+	in system.UInt64 mob.CellCounter # cell info
+	out mob.PhoneLocCounter system.Void # info cell level
+	out mob.PhoneLocCounter system.Void # info bts level
+	out mob.PhoneLocCounter system.Void # info lac level
+	out mob.PhoneLocCounter system.Void # info state level
 }
 
 # Count number of calls sent/received inside
@@ -365,10 +339,6 @@ reduce reduce_count_calls_per_location
    in mob.PhoneLoc system.Void
    out system.UInt64 mob.LocCounter
 
-   #extern MRData_MOB.PhoneLoc phoneLoc;
-   #extern MRData_Uint64 phone;
-   #extern MRData_MOB.LocCounter locCounter;
-   
    helpLine "Count number of calls indide a certain location."
 
    help
@@ -386,10 +356,6 @@ reduce reduce_compute_reference_location
    in system.UInt64 mob.LocCounter
    out system.UInt64 mob.LocCounter
 
-   #extern MRData_Uint64 phone;
-   #extern MRData_MOB.LocCounter locCounter;
-   #extern MRData_MOB.LocCounter refLocCounter;
-   
    helpLine "Get the location with the highest number of calls or days with calls."
 
    help
@@ -410,11 +376,6 @@ reduce reduce_compute_mobility_degree
    in system.UInt64 mob.LocCounter
    out system.UInt64 mob.MobilityDegree
 
-   #extern MRData_Uint64 phone;
-   #extern MRData_MOB.Cdr cdr;
-   #extern MRData_MOB.LocCounter locCounter;
-   #extern MRData_MOB.MobilityDegree md;
-   
    helpLine "Compute all the values necessary to get the mobility degree."
 
    help
@@ -431,10 +392,6 @@ reduce reduce_remove_duplicate_days
    in mob.PhoneLocCounter system.Void
    out mob.PhoneLoc system.Void
 
-   #extern MRData_Void void_data;
-   #extern MRData_MOB.PhoneLocCounter phoneLocCounter;
-   #extern MRData_MOB.PhoneLoc phoneLoc;
-   
    helpLine "Keep only different days per location."
 
    help
@@ -451,11 +408,6 @@ reduce reduce_count_different_days
    in mob.PhoneLoc system.Void
    out system.UInt64 mob.LocCounter
 
-   #extern MRData_Void void_data;
-   #extern MRData_Uint64 phone;
-   #extern MRData_mob.PhoneLoc phoneLoc;
-   #extern MRData_mob.LocCounter locCounter;
-   
    helpLine "Count different days with calls."
 
    help
@@ -476,11 +428,6 @@ reduce reduce_bring_place
    in system.UInt64 mob.LocCounter
    out system.UInt64 mob.Place
 
-   #extern MRData_Uint64 phone;
-   #extern MRData_UInt number_days;
-   #extern MRData_MOB.LocCounter locCounter;
-   #extern MRData_MOB.Place place;
-   
    helpLine "Bring together all the information about the place of home/work."
 
    help
@@ -497,10 +444,6 @@ reduce reduce_stat_remove_duplicate_days
    in mob.PhoneCounter system.Void
    out system.UInt64 system.Void
 
-   #extern MRData_Void void_data;
-   #extern MRData_Uint64 phone;
-   #extern MRData_MOB.PhoneCounter phoneCounter;
-   
    helpLine "Keep only different days per phone."
 
    help
@@ -517,9 +460,6 @@ reduce reduce_stat_count_different_days
    in system.UInt64 system.Void
    out system.UInt64 system.UInt
 
-   #extern MRData_Uint64 phone;
-   #extern MRData_UInt number_days;
-   
    helpLine "Count different days with calls per phone."
 
    help
@@ -538,12 +478,6 @@ reduce reduce_results
    in system.UInt64 mob.Place
    out system.UInt64 mob.Results
 
-   #extern MRData_MOB.Levels conf;
-   
-#   #extern MRData_Uint64 phone;
-#   #extern MRData_MOB.MobilityDegree md;
-#   #extern MRData_MOB.Place place;
-#   #extern MRData_MOB.Results results;
 
    helpLine "Apply thresholds and compute final mobility results."
   
@@ -561,10 +495,6 @@ reduce reduce_set_consistency
    in system.UInt mob.Place
    in system.UInt cdr.Cell
    out system.UInt64 mob.Place
-
-   #extern MRData_MOB.Cell cell;
-   #extern MRData_Uint64 phone;
-   #extern MRData_MOB.Place place;
 
    helpLine "Make location results consistent."
 
@@ -594,24 +524,23 @@ script script_clean
 
    code
    {
-      rm $1/month -f;
-      rm $1/mobility_degree -f;
-      rm $1/place_home_consistent -f;
-      rm $1/place_work_consistent -f;
-      rm $1/results -f;
-      rm $1/results_export -f;
-      rm $1/month_export -f;
+      rm $1.month -f;
+      rm $1.mobility_degree -f;
+      rm $1.place_home_consistent -f;
+      rm $1.place_work_consistent -f;
+      rm $1.results -f;
+      rm $1.results_export -f;
+      rm $1.month_export -f;
    }
 }
 
 ###########################################
 # Parse input files
 ###########################################
-script script_parse
+script script_parse_from_gasset
 {
    in txt txt  # Source data folder
    in txt txt  # Results folder
-   out system.Void system.Void
 
    top
 
@@ -623,25 +552,50 @@ script script_parse
    code
    {
       # Parse CDR's
-      gst_parse_cdrs $1/cdrs $2/cdrs_gst;
-      mob.convert_cdrs $2/cdrs_gst $2/cdrs;
+      gst_parse_cdrs $1.cdrs $2.cdrs_gst -create -clear;
+      mob.convert_cdrs $2.cdrs_gst $2.cdrs -create -clear;
       
-      rm $2/cdrs_gst -f;
+      rm $2.cdrs_gst -f;
 
       # Parse clients sample      
-      mob.gst_parse_clients $1/clients $2/clients_gst;
-      mob.convert_client $2/clients_gst $2/clients;
+      mob.gst_parse_clients $1.clients $2.clients_gst -create -clear;
+      mob.convert_client $2.clients_gst $2.clients -create -clear;
       
-      rm $2/clients_gst -f;
+      rm $2.clients_gst -f;
       
       # Parse cell catalogue 
-      gst_parse_cell_catalogue $1/cells $2/cells_gst;
-      mob.convert_cell $2/cells_gst $2/cells;
+      gst_parse_cell_catalogue $1.cells $2.cells_gst -create -clear;
+      mob.convert_cell $2.cells_gst $2.cells -create -clear;
       
-      rm $2/cells_gst -f  ;
+      rm $2.cells_gst -f  ;
    }
 }
 
+script script_parse
+{
+   in txt txt  # Source data folder
+
+   top
+
+   help
+   {
+      "Script to parse input files."
+   }
+
+   code
+   {
+      # Parse CDR's
+      cdr.parse_mob_cdrs $1.cdrstxt $1.cdrs -create -clear;
+      
+      # Parse clients sample      
+      cdr.parse_clients $1.userstxt $1.users -create -clear;
+      cdr.convert_client $1.users $1.clients -create -clear;
+      
+      # Parse cell catalogue 
+      cdr.parse_cell_catalogue $1.cellstxt $1.cells -create -clear;
+   }
+}
+      
 ###########################################
 # Convert common data to necessary
 # mobility data
@@ -661,9 +615,9 @@ script script_convert_data_1
 	code
 	{
 		# Delete intermediate objects
-		rm $1/cdrs_mob -f;
+		rm $1.cdrs_mob -f;
 		# Convert common cdrs to mobility cdrs
-		mob.convert_cdrs $1/calls $1/cdrs_mob;
+		mob.convert_cdrs $1.calls $1.cdrs_mob -create -clear;
 	}
 }
 
@@ -682,9 +636,9 @@ script script_convert_data_2
 	code
 	{
 		# Delete intermediate objects
-		rm $1/cdrs_mob -f;
+		rm $1.cdrs_mob -f;
 		# Convert common cdrs to mobility cdrs
-		mob.convert_cdrs_two $1/calls $1/sms $1/cdrs_mob;
+		mob.convert_cdrs_two $1.calls $1.sms $1.cdrs_mob -create -clear;
 	}
 }
 
@@ -703,9 +657,9 @@ script script_convert_data_3
 	code
 	{
 		# Delete intermediate objects
-		rm $1/cdrs_mob -f;
+		rm $1.cdrs_mob -f;
 		# Convert common cdrs to mobility cdrs
-		mob.convert_cdrs_three $1/calls $1/sms $1/mms $1/cdrs_mob;
+		mob.convert_cdrs_three $1.calls $1.sms $1.mms $1.cdrs_mob -create -clear;
 	}
 }
 
@@ -716,7 +670,6 @@ script script_convert_data_3
 script script_generate_workdata
 {
    in txt txt  # Results folder
-   out system.Void system.Void
 
    top
 
@@ -728,44 +681,38 @@ script script_generate_workdata
    code
    {
 	  # Delete intermediate objects
-#	  rm $1/cdrs_mob -f;
-	  rm $1/cells_mob -f;
-	  rm $1/clients_mob -f;
-	  rm $1/reduced_cdrs_clients -f;
-	  rm $1/month -f;
-	  rm $1/cells_mob -f;
-	  rm $1/reduced_cdrs_cells -f;
-	  rm $1/phone_cell -f;
-	  rm $1/phone_bts -f;
-	  rm $1/phone_lac -f;
-	  rm $1/phone_state -f;
-	  rm $1/phone_cell_day_home -f;
-	  rm $1/phone_bts_day_home -f;
-	  rm $1/phone_lac_day_home -f;
-	  rm $1/phone_state_day_home -f;
-	  rm $1/phone_cell_day_work -f;
-	  rm $1/phone_bts_day_work -f;
-	  rm $1/phone_lac_day_work -f;
-	  rm $1/phone_state_day_work -f;
-	  
-	  # Adapt the general cdrs to mobility cdrs
-#	  mob.convert_cdrs $1/cdrs $1/cdrs_mob;
-	  # Adapt the general cells info to mobility cells info
-	  mob.convert_cell $1/cells $1/cells_mob;
-	  # Adapt the general clients info to mobility clients info
-	  mob.convert_client $1/subscribers $1/clients_mob;
 
+	  rm $1.reduced_cdrs_clients -f;
+	  rm $1.month -f;
+	  rm $1.cells_mob -f;
+	  rm $1.reduced_cdrs_cells -f;
+	  rm $1.phone_cell -f;
+	  rm $1.phone_bts -f;
+	  rm $1.phone_lac -f;
+	  rm $1.phone_state -f;
+	  rm $1.phone_cell_day_home -f;
+	  rm $1.phone_bts_day_home -f;
+	  rm $1.phone_lac_day_home -f;
+	  rm $1.phone_state_day_home -f;
+	  rm $1.phone_cell_day_work -f;
+	  rm $1.phone_bts_day_work -f;
+	  rm $1.phone_lac_day_work -f;
+	  rm $1.phone_state_day_work -f;
+	  
       # Keep only our clients' CDR's
-      mob.reduce_cdrs_clients $1/clients_mob $1/cdrs_mob $1/reduced_cdrs_clients $1/month;
+      mob.reduce_cdrs_clients $1.clients $1.cdrs $1.reduced_cdrs_clients $1.month -create -clear;
 
       # Add cell info
       # All levels
-      mob.reduce_add_cell_info $1/reduced_cdrs_clients $1/cells_mob $1/reduced_cdrs_cells $1/phone_cell $1/phone_bts $1/phone_lac $1/phone_state $1/phone_cell_day_home $1/phone_bts_day_home $1/phone_lac_day_home $1/phone_state_day_home $1/phone_cell_day_work $1/phone_bts_day_work $1/phone_lac_day_work $1/phone_state_day_work;
+      mob.reduce_add_cell_info $1.reduced_cdrs_clients $1.cells $1.reduced_cdrs_cells $1.cellmd $1.cellChome $1.cellCwork -create -clear;
+      mob.map_distribute_cell_info_location $1.cellmd $1.phone_cell $1.phone_bts $1.phone_lac $1.phone_state -create -clear;
+      mob.map_distribute_cellCounter_info_location $1.cellChome $1.phone_cell_day_home $1.phone_bts_day_home $1.phone_lac_day_home $1.phone_state_day_home -create -clear;
+      mob.map_distribute_cellCounter_info_location $1.cellCwork $1.phone_cell_day_work $1.phone_bts_day_work $1.phone_lac_day_work $1.phone_state_day_work -create -clear;
 
       # Save space
-      rm $1/reduced_cdrs_clients -f;
-      rm $1/cdrs_mob -f;
-      rm $1/clients_mob -f;
+      rm $1.reduced_cdrs_clients -f;
+      rm $1.cdrs_mob -f;
+      rm $1.clients_mob -f;
    }
 }
 
@@ -776,7 +723,6 @@ script script_generate_workdata
 script script_mobility_degree
 {
    in txt txt  # Results folder
-   out system.Void system.Void
 
    top
 
@@ -788,70 +734,70 @@ script script_mobility_degree
    code
    {
       # Delete intermediate objects
-      rm $1/calls_per_phone_cell -f;
-      rm $1/calls_per_phone_bts -f;
-      rm $1/calls_per_phone_lac -f;
-      rm $1/calls_per_phone_state -f;
-      rm $1/reference_cell -f;
-      rm $1/reference_bts -f;
-      rm $1/reference_lac -f;
-      rm $1/reference_state -f;
+      rm $1.calls_per_phone_cell -f;
+      rm $1.calls_per_phone_bts -f;
+      rm $1.calls_per_phone_lac -f;
+      rm $1.calls_per_phone_state -f;
+      rm $1.reference_cell -f;
+      rm $1.reference_bts -f;
+      rm $1.reference_lac -f;
+      rm $1.reference_state -f;
       
       ############
       # cell level
       ############
 
       # Count calls per cell
-      mob.reduce_count_calls_per_location $1/phone_cell $1/calls_per_phone_cell;
+      mob.reduce_count_calls_per_location $1.phone_cell $1.calls_per_phone_cell -create -clear;
       # Compute reference cell
-      mob.reduce_compute_reference_location $1/calls_per_phone_cell $1/reference_cell;
+      mob.reduce_compute_reference_location $1.calls_per_phone_cell $1.reference_cell -create -clear;
 
       ###########
       # bts level
       ###########
 
       # Count calls per bts
-      mob.reduce_count_calls_per_location $1/phone_bts $1/calls_per_phone_bts;
+      mob.reduce_count_calls_per_location $1.phone_bts $1.calls_per_phone_bts -create -clear;
       # Compute reference bts
-      mob.reduce_compute_reference_location $1/calls_per_phone_bts $1/reference_bts;
+      mob.reduce_compute_reference_location $1.calls_per_phone_bts $1.reference_bts -create -clear;
 
       ###########
       # lac level
       ###########
 
       # Count calls per lac
-      mob.reduce_count_calls_per_location $1/phone_lac $1/calls_per_phone_lac;
+      mob.reduce_count_calls_per_location $1.phone_lac $1.calls_per_phone_lac -create -clear;
       # Compute reference lac
-      mob.reduce_compute_reference_location $1/calls_per_phone_lac $1/reference_lac;
+      mob.reduce_compute_reference_location $1.calls_per_phone_lac $1.reference_lac -create -clear;
 
       #############
       # state level
       #############
 
       # Count calls per state
-      mob.reduce_count_calls_per_location $1/phone_state $1/calls_per_phone_state;
+      mob.reduce_count_calls_per_location $1.phone_state $1.calls_per_phone_state -create -clear;
       # Compute reference state
-      mob.reduce_compute_reference_location $1/calls_per_phone_state $1/reference_state;
+      mob.reduce_compute_reference_location $1.calls_per_phone_state $1.reference_state -create -clear;
 
       # Proper computation of mobility degree, taking all levels
       # into account if necessary
-      mob.reduce_compute_mobility_degree $1/reduced_cdrs_cells $1/reference_cell $1/reference_bts $1/reference_lac $1/reference_state $1/mobility_degree;
+      mob.reduce_compute_mobility_degree $1.reduced_cdrs_cells $1.reference_cell $1.reference_bts $1.reference_lac $1.reference_state $1.mobility_degree -create -clear;
 
 
       # Save space
-      rm $1/reduced_cdrs_cells -f;
-      rm $1/reference_cell -f;
-      rm $1/reference_bts -f;
-      rm $1/reference_lac -f;
-      rm $1/reference_state -f;
-      rm $1/phone_cell -f;
-      rm $1/calls_per_phone_cell -f;
-      rm $1/phone_bts -f;
-      rm $1/calls_per_phone_bts -f;
-      rm $1/phone_lac -f;
-      rm $1/calls_per_phone_lac -f;
-      rm $1/phone_state -f;
-      rm $1/calls_per_phone_state -f;
+      rm $1.reduced_cdrs_cells -f;
+      rm $1.reference_cell -f;
+      rm $1.reference_bts -f;
+      rm $1.reference_lac -f;
+      rm $1.reference_state -f;
+      rm $1.phone_cell -f;
+      rm $1.calls_per_phone_cell -f;
+      rm $1.phone_bts -f;
+      rm $1.calls_per_phone_bts -f;
+      rm $1.phone_lac -f;
+      rm $1.calls_per_phone_lac -f;
+      rm $1.phone_state -f;
+      rm $1.calls_per_phone_state -f;
    }
 }
 
@@ -863,7 +809,6 @@ script script_location
 {
    in txt txt  # Results folder
    in txt txt  # Type of location ("home" or "work")
-   out system.Void system.Void
 
    top
 
@@ -875,110 +820,110 @@ script script_location
    code
    {
 	  # Delete intermediate objects
-	  rm $1/phone_cell_singleday_$2 -f;
-	  rm $1/phone_cell_number_days_$2 -f;
-	  rm $1/place_$2_cell -f;
-	  rm $1/phone_bts_singleday_$2 -f;
-	  rm $1/phone_bts_number_days_$2 -f;
-	  rm $1/place_$2_bts -f;
-	  rm $1/phone_lac_singleday_$2 -f;
-	  rm $1/phone_lac_number_days_$2 -f;
-	  rm $1/place_$2_lac -f;
-	  rm $1/phone_state_singleday_$2 -f;
-	  rm $1/phone_state_number_days_$2 -f;
-	  rm $1/place_$2_state -f;
-	  rm $1/phone_day_$2 -f;
-      rm $1/phone_singleday_$2 -f;
-      rm $1/phone_number_days_$2 -f;
-      rm $1/place_$2 -f;
-      rm $1/place_$2_key_cell -f;
+	  rm $1.phone_cell_singleday_$2 -f;
+	  rm $1.phone_cell_number_days_$2 -f;
+	  rm $1.place_$2_cell -f;
+	  rm $1.phone_bts_singleday_$2 -f;
+	  rm $1.phone_bts_number_days_$2 -f;
+	  rm $1.place_$2_bts -f;
+	  rm $1.phone_lac_singleday_$2 -f;
+	  rm $1.phone_lac_number_days_$2 -f;
+	  rm $1.place_$2_lac -f;
+	  rm $1.phone_state_singleday_$2 -f;
+	  rm $1.phone_state_number_days_$2 -f;
+	  rm $1.place_$2_state -f;
+	  rm $1.phone_day_$2 -f;
+      rm $1.phone_singleday_$2 -f;
+      rm $1.phone_number_days_$2 -f;
+      rm $1.place_$2 -f;
+      rm $1.place_$2_key_cell -f;
 	  
       ############
       # cell level 
       ############
 
       # Remove duplicate days
-      mob.reduce_remove_duplicate_days $1/phone_cell_day_$2 $1/phone_cell_singleday_$2;
+      mob.reduce_remove_duplicate_days $1.phone_cell_day_$2 $1.phone_cell_singleday_$2 -create -clear;
 
       # Count different days with calls per cell
-      mob.reduce_count_different_days $1/phone_cell_singleday_$2 $1/phone_cell_number_days_$2;
+      mob.reduce_count_different_days $1.phone_cell_singleday_$2 $1.phone_cell_number_days_$2 -create -clear;
 
       # Compute the cell with a highest number of days with calls
-      mob.reduce_compute_reference_location $1/phone_cell_number_days_$2 $1/place_$2_cell;
+      mob.reduce_compute_reference_location $1.phone_cell_number_days_$2 $1.place_$2_cell -create -clear;
 
       ############
       # bts level 
       ############
 
       # Remove duplicate days
-      mob.reduce_remove_duplicate_days $1/phone_bts_day_$2 $1/phone_bts_singleday_$2;
+      mob.reduce_remove_duplicate_days $1.phone_bts_day_$2 $1.phone_bts_singleday_$2 -create -clear;
 
       # Count different days with calls per bts
-      mob.reduce_count_different_days $1/phone_bts_singleday_$2 $1/phone_bts_number_days_$2;
+      mob.reduce_count_different_days $1.phone_bts_singleday_$2 $1.phone_bts_number_days_$2 -create -clear;
 
       # Compute the bts with a highest number of days with calls
-      mob.reduce_compute_reference_location $1/phone_bts_number_days_$2 $1/place_$2_bts;
+      mob.reduce_compute_reference_location $1.phone_bts_number_days_$2 $1.place_$2_bts -create -clear;
 
       ############
       # lac level 
       ############
 
       # Remove duplicate days
-      mob.reduce_remove_duplicate_days $1/phone_lac_day_$2 $1/phone_lac_singleday_$2;
+      mob.reduce_remove_duplicate_days $1.phone_lac_day_$2 $1.phone_lac_singleday_$2 -create -clear;
 
       # Count different days with calls per lac
-      mob.reduce_count_different_days $1/phone_lac_singleday_$2 $1/phone_lac_number_days_$2;
+      mob.reduce_count_different_days $1.phone_lac_singleday_$2 $1.phone_lac_number_days_$2 -create -clear;
 
       # Compute the lac with a highest number of days with calls
-      mob.reduce_compute_reference_location $1/phone_lac_number_days_$2 $1/place_$2_lac;
+      mob.reduce_compute_reference_location $1.phone_lac_number_days_$2 $1.place_$2_lac -create -clear;
 
       #############
       # state level 
       #############
 
       # Remove duplicate days
-      mob.reduce_remove_duplicate_days $1/phone_state_day_$2 $1/phone_state_singleday_$2;
+      mob.reduce_remove_duplicate_days $1.phone_state_day_$2 $1.phone_state_singleday_$2 -create -clear;
 
       # Count different days with calls per state
-      mob.reduce_count_different_days $1/phone_state_singleday_$2 $1/phone_state_number_days_$2;
+      mob.reduce_count_different_days $1.phone_state_singleday_$2 $1.phone_state_number_days_$2 -create -clear;
 
       # Compute the state with a highest number of days with calls
-      mob.reduce_compute_reference_location $1/phone_state_number_days_$2 $1/place_$2_state;
+      mob.reduce_compute_reference_location $1.phone_state_number_days_$2 $1.place_$2_state -create -clear;
 
       # Some statistics to try to measure the level of confidence
-      mob.map_stat_days $1/phone_state_day_$2 $1/phone_day_$2;
-      mob.reduce_stat_remove_duplicate_days $1/phone_day_$2 $1/phone_singleday_$2;
-      mob.reduce_stat_count_different_days $1/phone_singleday_$2 $1/phone_number_days_$2;
+      mob.map_stat_days $1.phone_state_day_$2 $1.phone_day_$2 -create -clear;
+      mob.reduce_stat_remove_duplicate_days $1.phone_day_$2 $1.phone_singleday_$2 -create -clear;
+      mob.reduce_stat_count_different_days $1.phone_singleday_$2 $1.phone_number_days_$2 -create -clear;
 
       # Bring all the information about place of $2 together
-      mob.reduce_bring_place $1/phone_number_days_$2 $1/place_$2_cell $1/place_$2_bts $1/place_$2_lac $1/place_$2_state $1/place_$2;
+      mob.reduce_bring_place $1.phone_number_days_$2 $1.place_$2_cell $1.place_$2_bts $1.place_$2_lac $1.place_$2_state $1.place_$2 -create -clear;
 
       # Set consistency
-      mob.map_place_cell $1/place_$2 $1/place_$2_key_cell;
-      mob.reduce_set_consistency $1/place_$2_key_cell $1/cells_mob $1/place_$2_consistent;
+      mob.map_place_cell $1.place_$2 $1.place_$2_key_cell -create -clear;
+      mob.reduce_set_consistency $1.place_$2_key_cell $1.cells $1.place_$2_consistent -create -clear;
 
       # Save space
-      rm $1/phone_cell_day_$2 -f;
-      rm $1/phone_number_days_$2 -f;
-      rm $1/place_$2_cell -f;
-      rm $1/place_$2_bts -f;
-      rm $1/place_$2_lac -f;
-      rm $1/place_$2_state -f;
-      rm $1/place_$2 -f;
-      rm $1/place_$2_key_cell -f;
-      rm $1/phone_cell_singleday_$2 -f;
-      rm $1/phone_cell_number_days_$2 -f;
-      rm $1/phone_bts_day_$2 -f;
-      rm $1/phone_bts_singleday_$2 -f;
-      rm $1/phone_bts_number_days_$2 -f;
-      rm $1/phone_lac_day_$2 -f;
-      rm $1/phone_lac_singleday_$2 -f;
-      rm $1/phone_lac_number_days_$2 -f;
-      rm $1/phone_state_singleday_$2 -f;
-	  rm $1/phone_state_number_days_$2 -f;
-	  rm $1/phone_state_day_$2 -f;
-      rm $1/phone_day_$2 -f;
-      rm $1/phone_singleday_$2 -f;
+      rm $1.phone_cell_day_$2 -f;
+      rm $1.phone_number_days_$2 -f;
+      rm $1.place_$2_cell -f;
+      rm $1.place_$2_bts -f;
+      rm $1.place_$2_lac -f;
+      rm $1.place_$2_state -f;
+      rm $1.place_$2 -f;
+      rm $1.place_$2_key_cell -f;
+      rm $1.phone_cell_singleday_$2 -f;
+      rm $1.phone_cell_number_days_$2 -f;
+      rm $1.phone_bts_day_$2 -f;
+      rm $1.phone_bts_singleday_$2 -f;
+      rm $1.phone_bts_number_days_$2 -f;
+      rm $1.phone_lac_day_$2 -f;
+      rm $1.phone_lac_singleday_$2 -f;
+      rm $1.phone_lac_number_days_$2 -f;
+      rm $1.phone_state_singleday_$2 -f;
+	  rm $1.phone_state_number_days_$2 -f;
+	  rm $1.phone_state_day_$2 -f;
+      rm $1.phone_day_$2 -f;
+      rm $1.phone_singleday_$2 -f;
    }
 }
 
@@ -989,7 +934,6 @@ script script_location
 script script_generate_results
 {
    in txt txt  # Results folder
-   out system.Void system.Void
 
    top
 
@@ -1001,19 +945,19 @@ script script_generate_results
    code
    {
       # Delete intermediate objects
-      rm $1/results -f;
+      rm $1.results -f;
       
       # Apply thresholds
-      mob.reduce_results $1/mobility_degree $1/place_home_consistent $1/place_work_consistent $1/results;
+      mob.reduce_results $1.mobility_degree $1.place_home_consistent $1.place_work_consistent $1.results -create -clear;
 
       # Export to a readable file with the correct layout
-      mob.parse_out_results $1/results $1/results_export;
+      mob.parse_out_results $1.results $1.results_export -create -clear;
 
       # Export month
-      mob.parse_out_month $1/month $1/month_export;
+      mob.parse_out_month $1.month $1.month_export -create -clear;
 
       # Save space
-      rm $1/cells_mob -f;
+      rm $1.cells_mob -f;
    }
 }
 
@@ -1023,9 +967,6 @@ script script_generate_results
 script script_mobility
 {
    in txt txt  # Results folder
-   out system.Void system.Void
-
-   top
 
    help
    {
@@ -1034,12 +975,13 @@ script script_mobility
 
    code
    {
-      mob.script_clean $1;
-      mob.script_generate_workdata $1;
-      mob.script_mobility_degree $1;
-      mob.script_location $1 home;
-      mob.script_location $1 work;
-      mob.script_generate_results $1;
+      #mob.script_clean $1 -create -clear;
+      mob.script_parse $1 -create -clear;
+      mob.script_generate_workdata $1 -create -clear;
+      mob.script_mobility_degree $1 -create -clear;
+      mob.script_location $1 home -create -clear;
+      mob.script_location $1 work -create -clear;
+      mob.script_generate_results $1 -create -clear;
    }
 }
 
@@ -1089,19 +1031,19 @@ script script_generate_workdata_QA
 	  rm $9_day_work -f;
 	  
 	  # Adapt the general clients info to mobility clients info
-	  mob.convert_client $1 $1_mob;
+	  mob.convert_client $1 $1_mob -create -clear;
 	  # Adapt the general cdrs to mobility cdrs
-	  mob.convert_cdrs $2 $2_mob;
+	  mob.convert_cdrs $2 $2_mob -create -clear;
 	  # Adapt the general cells info to mobility cells info
-	  mob.convert_cell $3 $3_mob;
+	  mob.convert_cell $3 $3_mob -create -clear;
 	  
    
       # Keep only our clients' CDR's
-      mob.reduce_cdrs_clients $1_mob $2_mob reduced_cdrs_clients $4;
+      mob.reduce_cdrs_clients $1_mob $2_mob reduced_cdrs_clients $4 -create -clear;
 
       # Add cell info
       # All levels
-      mob.reduce_add_cell_info reduced_cdrs_clients $3_mob $5 $6 $7 $8 $9 $6_day_home $7_day_home $8_day_home $9_day_home $6_day_work $7_day_work $8_day_work $9_day_work;
+      mob.reduce_add_cell_info reduced_cdrs_clients $3_mob $5 $6 $7 $8 $9 $6_day_home $7_day_home $8_day_home $9_day_home $6_day_work $7_day_work $8_day_work $9_day_work -create -clear;
 
       # Save space
       rm reduced_cdrs_clients -f;
@@ -1142,40 +1084,40 @@ script script_mobility_degree_QA
       #
 
       # Count calls per cell
-      mob.reduce_count_calls_per_location $2 calls_per_phone_cell;
+      mob.reduce_count_calls_per_location $2 calls_per_phone_cell -create -clear;
       # Compute reference cell
-      mob.reduce_compute_reference_location calls_per_phone_cell reference_cell;
+      mob.reduce_compute_reference_location calls_per_phone_cell reference_cell -create -clear;
 
       #
       # bts level
       #
 
       # Count calls per bts
-      mob.reduce_count_calls_per_location $3 calls_per_phone_bts;
+      mob.reduce_count_calls_per_location $3 calls_per_phone_bts -create -clear;
       # Compute reference bts
-      mob.reduce_compute_reference_location calls_per_phone_bts reference_bts;
+      mob.reduce_compute_reference_location calls_per_phone_bts reference_bts -create -clear;
 
       #
       # lac level
       #
 
       # Count calls per lac
-      mob.reduce_count_calls_per_location $4 calls_per_phone_lac;
+      mob.reduce_count_calls_per_location $4 calls_per_phone_lac -create -clear;
       # Compute reference lac
-      mob.reduce_compute_reference_location calls_per_phone_lac reference_lac;
+      mob.reduce_compute_reference_location calls_per_phone_lac reference_lac -create -clear;
 
       #
       # state level
       #
 
       # Count calls per state
-      mob.reduce_count_calls_per_location $5 calls_per_phone_state;
+      mob.reduce_count_calls_per_location $5 calls_per_phone_state -create -clear;
       # Compute reference state
-      mob.reduce_compute_reference_location calls_per_phone_state reference_state;
+      mob.reduce_compute_reference_location calls_per_phone_state reference_state -create -clear;
 
       # Proper computation of mobility degree, taking all levels
       # into account if necessary
-      mob.reduce_compute_mobility_degree $1 reference_cell reference_bts reference_lac reference_state $6;
+      mob.reduce_compute_mobility_degree $1 reference_cell reference_bts reference_lac reference_state $6 -create -clear;
 
       # Save space
       rm reduced_cdrs_cells -f;
@@ -1233,66 +1175,66 @@ script script_location_QA
       ############
 
       # Remove duplicate days
-      mob.reduce_remove_duplicate_days phone_cell_day_$1 phone_cell_singleday_$1;
+      mob.reduce_remove_duplicate_days phone_cell_day_$1 phone_cell_singleday_$1 -create -clear;
 
       # Count different days with calls per cell
-      mob.reduce_count_different_days phone_cell_singleday_$1 phone_cell_number_days_$1;
+      mob.reduce_count_different_days phone_cell_singleday_$1 phone_cell_number_days_$1 -create -clear;
 
       # Compute the cell with a highest number of days with calls
-      mob.reduce_compute_reference_location phone_cell_number_days_$1 place_$1_cell;
+      mob.reduce_compute_reference_location phone_cell_number_days_$1 place_$1_cell -create -clear;
 
       ###########
       # bts level 
       ###########
 
       # Remove duplicate days
-      mob.reduce_remove_duplicate_days phone_bts_day_$1 phone_bts_singleday_$1;
+      mob.reduce_remove_duplicate_days phone_bts_day_$1 phone_bts_singleday_$1 -create -clear;
 
       # Count different days with calls per bts
-      mob.reduce_count_different_days phone_bts_singleday_$1 phone_bts_number_days_$1;
+      mob.reduce_count_different_days phone_bts_singleday_$1 phone_bts_number_days_$1 -create -clear;
 
       # Compute the bts with a highest number of days with calls
-      mob.reduce_compute_reference_location phone_bts_number_days_$1 place_$1_bts;
+      mob.reduce_compute_reference_location phone_bts_number_days_$1 place_$1_bts -create -clear;
 
       ###########
       # lac level 
       ###########
 
       # Remove duplicate days
-      mob.reduce_remove_duplicate_days phone_lac_day_$1 phone_lac_singleday_$1;
+      mob.reduce_remove_duplicate_days phone_lac_day_$1 phone_lac_singleday_$1 -create -clear;
 
       # Count different days with calls per lac
-      mob.reduce_count_different_days phone_lac_singleday_$1 phone_lac_number_days_$1;
+      mob.reduce_count_different_days phone_lac_singleday_$1 phone_lac_number_days_$1 -create -clear;
 
       # Compute the lac with a highest number of days with calls
-      mob.reduce_compute_reference_location phone_lac_number_days_$1 place_$1_lac;
+      mob.reduce_compute_reference_location phone_lac_number_days_$1 place_$1_lac -create -clear;
 
       #############
       # state level 
       #############
 
       # Remove duplicate days
-      mob.reduce_remove_duplicate_days phone_state_day_$1 phone_state_singleday_$1;
+      mob.reduce_remove_duplicate_days phone_state_day_$1 phone_state_singleday_$1 -create -clear;
 
       # Count different days with calls per state
-      mob.reduce_count_different_days phone_state_singleday_$1 phone_state_number_days_$1;
+      mob.reduce_count_different_days phone_state_singleday_$1 phone_state_number_days_$1 -create -clear;
 
       # Compute the state with a highest number of days with calls
-      mob.reduce_compute_reference_location phone_state_number_days_$1 place_$1_state;
+      mob.reduce_compute_reference_location phone_state_number_days_$1 place_$1_state -create -clear;
 
 	  ##################
       # Some statistics to try to measure the level of confidence
       ##################
-      mob.map_stat_days phone_state_day_$1 phone_day_$1;
-      mob.reduce_stat_remove_duplicate_days phone_day_$1 phone_singleday_$1;
-      mob.reduce_stat_count_different_days phone_singleday_$1 phone_number_days_$1;
+      mob.map_stat_days phone_state_day_$1 phone_day_$1 -create -clear;
+      mob.reduce_stat_remove_duplicate_days phone_day_$1 phone_singleday_$1 -create -clear;
+      mob.reduce_stat_count_different_days phone_singleday_$1 phone_number_days_$1 -create -clear;
 
       # Bring all the information about place of $1 together
-      mob.reduce_bring_place phone_number_days_$1 place_$1_cell place_$1_bts place_$1_lac place_$1_state place_$1;
+      mob.reduce_bring_place phone_number_days_$1 place_$1_cell place_$1_bts place_$1_lac place_$1_state place_$1 -create -clear;
 
       # Set consistency
-      mob.map_place_cell place_$1 place_$1_key_cell;
-      mob.reduce_set_consistency place_$1_key_cell $2 place_$1_consistent;
+      mob.map_place_cell place_$1 place_$1_key_cell -create -clear;
+      mob.reduce_set_consistency place_$1_key_cell $2 place_$1_consistent -create -clear;
 
       # Save space
       rm phone_number_days_$1 -f;
@@ -1343,16 +1285,16 @@ script script_generate_results_QA
       #rm foo -f;
 
       # Apply thresholds
-      mob.reduce_results $2 $3 $4 $5;
+      mob.reduce_results $2 $3 $4 $5 -create -clear;
 
       # Export to a readable file with the correct layout
-      #mob.parse_out_results results results_export;
+      #mob.parse_out_results results results_export -create -clear;
 
       # Export month
-      #mob.parse_out_month month month_export;
+      #mob.parse_out_month month month_export -create -clear;
 
       # Save space
-      #rm $1/results;
+      #rm $1.results;
    }
 }
 

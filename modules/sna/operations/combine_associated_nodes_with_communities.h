@@ -29,7 +29,7 @@ namespace sna{
 
 			std::vector<uint> nodes;
 
-			for (int i = 0 ; i < inputs[0].num_kvs ; i++)
+			for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
 			{
 				clique1.parse( inputs[0].kvs[i]->key );
 				clique2.parse( inputs[0].kvs[i]->value );

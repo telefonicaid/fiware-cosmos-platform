@@ -60,7 +60,7 @@ namespace sna{
 		{
 			  Node node_data;
 
-			  for (int i  =0 ;  i< inputs[0].num_kvs ; i++) {
+			  for (size_t i  =0 ;  i< inputs[0].num_kvs ; i++) {
 			    node_data.parse( inputs[0].kvs[i]->value );
 
 			    for (int j = 0 ; j < node_data.links_length ; j++) {

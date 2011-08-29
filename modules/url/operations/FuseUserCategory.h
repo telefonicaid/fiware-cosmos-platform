@@ -58,7 +58,7 @@ namespace url{
 				count_acum[k] = categories.category[k].countServer.value;
 			}
 
-			for (int i = 1; (i < inputs[0].num_kvs); i++)
+			for (size_t i = 1; (i < inputs[0].num_kvs); i++)
 			{
 				categories.parse(inputs[0].kvs[i]->value);
 

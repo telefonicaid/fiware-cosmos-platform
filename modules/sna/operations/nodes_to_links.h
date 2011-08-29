@@ -31,7 +31,7 @@ namespace sna{
 			  Link link_value;
 
 
-			  for (int i=0; i < inputs[0].num_kvs; i++) {
+			  for (size_t i=0; i < inputs[0].num_kvs; i++) {
 
 			    node_id.parse(inputs[0].kvs[i]->key);
 			    node.parse(inputs[0].kvs[i]->value);

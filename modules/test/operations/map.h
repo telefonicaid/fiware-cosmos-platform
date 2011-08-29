@@ -7,22 +7,22 @@
 #define _H_SAMSON_test_map
 
 
-#include <samson/samson.h>
+#include <samson/module/samson.h>
 #include <samson/modules/test/Integer.h>
 
-namespace ss{
+namespace samson{
 namespace test{
 
 
-	class map : public ss::Map
+	class map : public samson::Map
 	{
 
 	public:
 
-	  ss::test::Integer key, value;
+	  samson::test::Integer key, value;
 
 
-		void run(  ss::KVSetStruct* inputs , ss::KVWriter *writer )
+		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 		  for (size_t i = 0 ; i < inputs->num_kvs ; i++ )
 		  {
@@ -37,7 +37,7 @@ namespace test{
 	};
 
 
-} // end of namespace ss
+} // end of namespace samson
 } // end of namespace module_test
 
 #endif

@@ -75,7 +75,7 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 		hostP = networkP->epMgr->hostMgr->lookup(p->host);
 		if (hostP == NULL)
 		{
-			LM_W(("The host '%s' not found in host manager - adding it", p->host));
+			LM_T(LmtHost, ("The host '%s' not found in host manager - adding it", p->host));
 			hostP = networkP->epMgr->hostMgr->insert(p->host, NULL);
 			if (hostP == NULL)
 				LM_X(1, ("error adding host '%s'", p->host));
@@ -101,7 +101,7 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 			++spawnerId;
 		}
 		else
-			LM_W(("Spawner endpoint for %s already created", hostP->name));
+			LM_T(LmtProcessVector, ("Spawner endpoint for %s already created", hostP->name));
 
 		LM_T(LmtProcessVector, ("  Process %02d: %s%d@%s", ix, samson::Endpoint2::typeName((samson::Endpoint2::Type) p->type), p->id, p->host));
 	}

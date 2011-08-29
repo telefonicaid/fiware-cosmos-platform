@@ -392,7 +392,7 @@ void EndpointManager::initSupervisor(void)
 */
 void EndpointManager::initSetup(void)
 {
-	LM_W(("Nothing done here, not sure if anything is needed ..."));
+	// LM_W(("Nothing done here, not sure if anything is needed ..."));
 }
 
 

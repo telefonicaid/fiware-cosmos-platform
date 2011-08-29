@@ -35,7 +35,7 @@ namespace samson
 */
 HostMgr::HostMgr(unsigned int size)
 {
-	LM_M(("Creating Host Manager of size %d", size));
+	LM_T(LmtHost, ("Creating Host Manager of size %d", size));
 	this->size = size;
 
 	hostV = (Host**) calloc(size, sizeof(Host*));

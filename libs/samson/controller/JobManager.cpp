@@ -121,43 +121,6 @@ namespace samson {
 
     }
     
-    
-    void JobManager::fill(network::JobList *jl , std::string command)
-    {
-        
-        std::map<size_t,Job*>::iterator iter;
-        for( iter = job.begin() ; iter != job.end() ; iter++)
-        {
-            Job *job = iter->second;
-            
-            network::Job *j = jl->add_job();
-            
-            job->fill( j );
-        }
-        
-    }
-    
-    
-    void JobManager::fill( network::ControllerStatus * status )
-    {
-        
-        
-        status->set_job_manager_status( _getStatus() );
-        taskManager.fill( status->mutable_task_manager_status() );
-        
-    }
-    
-    std::string JobManager::_getStatus()
-    {
-        std::ostringstream output;	
-        std::map<size_t ,Job*>::iterator iter;
-        
-        for (iter = job.begin() ; iter !=job.end() ; iter++)
-            output << "[" << iter->second->getStatus() << "]";
-        return output.str();
-        
-    }
-    
     void JobManager::removeAllFinishJobs()
     {
         
@@ -200,6 +163,12 @@ namespace samson {
         
     }
 
+    void JobManager::getInfo( std::ostringstream& output)
+    {
+        au::xml_open(output , "job_manager");
+        au::xml_iterate_map( output , "jobs" , job );
+        au::xml_close(output , "job_manager");
+    }
 
 
 }

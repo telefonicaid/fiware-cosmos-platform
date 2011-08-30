@@ -119,8 +119,6 @@ namespace samson {
         void notify( engine::Notification* notification );
         void setNotificationCommonEnvironment( engine::Notification* notification );
 
-		// Fill status information	
-		void fill( network::WorkerStatus* ws);
 		
 	};
 

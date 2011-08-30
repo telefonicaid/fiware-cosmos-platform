@@ -191,6 +191,27 @@ namespace samson {
 		virtual ~Operation()
 		{
 		}
+        
+        void getInfo( std::ostringstream& output)
+        {
+            output << "<operation>\n";
+            output << "<name>" << _name << "</name>\n";
+            output << "<type>" << getTypeName() << "</type>\n";
+            
+            output << "<input_formats>\n";
+            for ( size_t i = 0 ; i < inputFormats.size() ; i++)
+                inputFormats[i].getInfo( output );
+            output << "</input_formats>\n";
+
+            output << "<output_formats>\n";
+            for ( size_t i = 0 ; i < outputFormats.size() ; i++)
+                outputFormats[i].getInfo( output );
+            output << "</output_formats>\n";
+            
+            
+            output << "</operation>\n";
+        }
+        
 
 		void setHelpLine( std::string line )
 		{

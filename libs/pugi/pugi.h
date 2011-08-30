@@ -117,9 +117,12 @@ namespace pugi
  
     
     // Function to extract information form xml_node in an easy way
-    
     size_t getUInt64( const xml_node& node , std::string child_name );
     size_t getInt( const xml_node& node , std::string child_name );
     std::string get( const xml_node& node , std::string child_name );
+    
+    int getNumChildrens( const xml_node& node , std::string child_name );
+    
+    
 }
 #endif

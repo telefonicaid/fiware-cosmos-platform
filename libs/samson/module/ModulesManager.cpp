@@ -279,6 +279,16 @@ namespace samson
 		
 	}
 	
+    
+    void ModulesManager::getInfo( std::ostringstream& output)
+    {
+        au::TokenTaker tt(&token);			//!< General lock for modules access
+        
+        au::xml_open(output , "modules_manager" );
+        au::xml_iterate_map( output , "modules" , modules );
+        au::xml_close(output , "modules_manager" );
+    }
+    
 	void ModulesManager::fill( network::DataList *dl, std::string command  )
 	{
         au::TokenTaker tt( &token , "ModulesManager::fill");
@@ -309,30 +319,5 @@ namespace samson
 		}
 		
 	}
-	
-    
-    
-    std::string ModulesManager::getStatus()
-    {
-        std::ostringstream output;
-        
-        output.setf(std::ios::left);
-        
-        au::map< std::string  , Module >::iterator m; 
-        for ( m =  modules.begin(); m != modules.end() ; m++)
-        {
-            Module *module = m->second;
-            if( module )
-            {
-                output << std::setw(10) << module->version;
-                output << " " << std::setw(30) << module->name << " " << module->author << "\n";
-            }
-            else
-                output << "Not valid module " << m->first << "\n";
-        }
-        
-        return output.str();
-    }
-    
 	
 }

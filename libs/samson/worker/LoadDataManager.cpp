@@ -274,30 +274,4 @@ namespace samson
         
     }
 	
-
-	void LoadDataManager::fill( network::WorkerStatus* ws)
-	{
-		lock.lock();
-		
-		std::ostringstream output; 
-
-		output << "Download: ";
-		{
-			au::map<size_t,DownloadItem>::iterator iter;
-			for ( iter = downloadItem.begin() ; iter != downloadItem.end() ; iter++)
-				output << iter->second->getStatus();
-		}
-
-		output << "Upload: ";
-		{
-			au::map<size_t,UploadItem>::iterator iter;
-			for ( iter = uploadItem.begin() ; iter != uploadItem.end() ; iter++)
-				output << iter->second->getStatus();
-		}
-
-		upload_size = 0;	// Reset the counter of upload bytes
-		
-		lock.unlock();
-		
-	}
 }

@@ -23,6 +23,8 @@
 namespace pugi
 {
     
+    
+    
     std::string str( const xml_document& xml_document , int deep )
     {
         std::ostringstream output;
@@ -173,6 +175,15 @@ namespace pugi
     {
         return node.first_element_by_path( child_name.c_str() ).child_value();
         
+    }
+    
+    int getNumChildrens( const xml_node& xml_node , std::string child_name )
+    {
+        int num = 0;
+        for( pugi::xml_node_iterator n = xml_node.begin() ; n != xml_node.end() ; n++)
+            if( n->name() == child_name )
+                num++;
+        return num;
     }
 
     

@@ -46,6 +46,28 @@ namespace samson
 		
 	public:		
 		
+        void getInfo( std::ostringstream& output)
+        {
+            output << "<module>\n";
+            
+            output << "<name>" << name << "</name>\n";
+            output << "<version>" << version << "</version>\n";
+            output << "<author>" << author << "</author>\n";
+            
+            output << "<operations>\n";
+            for ( std::map<std::string, Operation*>::iterator o = operations.begin() ; o != operations.end() ; o++ )
+                o->second->getInfo( output );
+            output << "</operations>\n";
+
+            output << "<datas>\n";
+            for ( std::map<std::string, Data*>::iterator d = datas.begin() ; d != datas.end() ; d++ )
+                d->second->getInfo( output );
+            output << "</datas>\n";
+            
+            output << "</module>\n";
+        }
+        
+        
 		Operation* getOperation( std::string name )
 		{
 			std::map<std::string , Operation*>::iterator i;

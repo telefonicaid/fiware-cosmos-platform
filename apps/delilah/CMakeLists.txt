@@ -15,7 +15,8 @@ SET (STATIC_LIBS
      curses
      readline
      samsonNetwork
-     samsonStream 
+     samsonStream
+     samsonModule
      engine
      au
      pugi

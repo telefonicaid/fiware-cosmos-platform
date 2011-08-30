@@ -419,60 +419,29 @@ namespace samson {
 		setStatus( error );
 	}
 	
-	void Job::fill( network::Job *job )
+    void Job::getInfo( std::ostringstream& output)
 	{
-		job->set_id( id );
-		job->set_status( getStatus() );
-
-		if( status() == error )
-			job->set_main_command( mainCommand + " [ " + error_line + " ]" );
-		else 
-		{
-			job->set_main_command( mainCommand );
-		
-			if ( _status == running )
-			{
-				std::list<JobItem>::iterator iter;
-				for ( iter=items.begin() ; iter != items.end() ; iter++ )
-				{
-					network::JobItem *j = job->add_item();
-					iter->fill( j );
-				}
-				
-				if (( currenTask ))
-				{
-					// Artifitial jobitem to show current task
-					network::JobItem *j = job->add_item();
-					j->set_command( currenTask->info->operation_name );
-					j->set_line( 0 );
-					j->set_num_lines( 0 );
-                    currenTask->fill( j->mutable_controller_task() );
-                    
-				}
-			}
-		}
-	}
-
-	std::string Job::getStatus()
-	{
-		std::ostringstream output;
-        output << "id " << au::str("%05lu", id ) << " ";
+        au::xml_open(output , "job" );
+        
+        au::xml_simple( output , "id" , id );
         
 		switch (_status) {
 			case error:
-				output << "Error     ";
+                au::xml_simple( output , "status" , "error" );
 				break;
 			case saving:
-				output << "Writing   ";
+                au::xml_simple( output , "status" , "writing" );
 				break;
 			case running:
-				output << "Running   " << au::Format::time_string( difftime( time(NULL), time_init ) );
+                au::xml_simple( output , "status" , "running" );
+                au::xml_simple( output , "time" , au::Format::time_string( difftime( time(NULL), time_init ) ) );
 				break;
 			case finish:
-				output << "Finished  ";
+                au::xml_simple( output , "status" , "finish" );
 		}
+        
+        au::xml_close(output , "job" );
 		
-		return output.str();
 	}
 	
 

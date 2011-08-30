@@ -55,10 +55,6 @@ namespace samson {
     
 	extern network::OperationList *ol;              // List of available opertions ( updated periodically for autocompletion )
 	extern network::QueueList *ql;                  // List of queues in the system ( updated periodically for autocompletion )
-
-    extern network::SamsonStatus *samsonStatus;     // Global status information of the platform            
-    extern au::Cronometer cronometer_samsonStatus;  // Cronometer for this updated message
-	
     
 	/**
 	   Main class for the samson client element

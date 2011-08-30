@@ -29,7 +29,9 @@
 
 namespace samson {
 	
-	char * command_generator (const char * text, int state);
+	typedef std::string(* node_to_string_function)(const pugi::xml_node&);		
+	
+    char * command_generator (const char * text, int state);
 	char ** readline_completion ( const char* text, int start,int end );	
 
 	
@@ -87,6 +89,7 @@ namespace samson {
             addOption("ls_queues");                      // Get a list of all current tasks in the system
             addOption("ls_states");                      // Get a list of all current tasks in the system
             addOption("ps_stream");                     // Get a list of stream task
+            addOption("ls_modules");                     // Get a list of stream task
         }
         
         void addOperations()
@@ -303,7 +306,14 @@ namespace samson {
     private:
 
         bool checkXMLInfoUpdate();
-        
+
+        // Generic function to get lists of informations
+        std::string getInfo( 
+                    std::string path , 
+                    node_to_string_function _node_to_string_function  , 
+                    bool info_controller , bool info_workers , bool info_delilah 
+                    );
+
         
 	};
 

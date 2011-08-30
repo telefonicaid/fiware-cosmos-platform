@@ -6,6 +6,7 @@
 
 
 #include "au/Token.h"                /* Lock                            */
+#include "au/Format.h"              // au::xml_...
 #include "au/ErrorManager.h"                /* Lock                            */
 #include "au/CommandLine.h"			/* AUCommandLine                            */
 #include "au/map.h"                 // au::map
@@ -55,8 +56,9 @@ namespace samson {
 		// Fill Information for network messages
 		void fill( network::OperationList *ol , std::string command  );
 		void fill( network::DataList *dl, std::string command  );
-	
-        std::string getStatus();
+        
+        // get xml information
+        void getInfo( std::ostringstream& output);
         
 	};
 	

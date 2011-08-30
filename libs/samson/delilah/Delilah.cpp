@@ -18,6 +18,8 @@
 #include "samson/network/Network.h"			// NetworkInterface
 #include "samson/network/Endpoint.h"			// Endpoint
 
+#include "samson/module/ModulesManager.h"       // samson::ModulesManager
+
 #include "samson/delilah/Delilah.h"			// Own interfce
 #include "samson/network/Packet.h"				// samson::Packet
 #include "DelilahUploadDataProcess.h"	// samson::DelilahLoadDataProcess
@@ -35,7 +37,6 @@ namespace samson {
 	au::Token info_lock("info_lock");
 	network::OperationList *ol = NULL;              // List of operations ( for auto-completion )
 	network::QueueList *ql = NULL;                  // List of queues ( for auto-completion )
-    network::SamsonStatus *samsonStatus=NULL;       // Information about workers ( updated continuously )
     
     au::Cronometer cronometer_samsonStatus;      // Cronometer for this updated message
     
@@ -108,11 +109,8 @@ namespace samson {
             
             {
                 // Message to update the worker status list
-                Packet*           p = new Packet(Message::Command);
-                network::Command* c = p->message->mutable_command();
-                c->set_command( "w -global_update" );
+                Packet*           p = new Packet(Message::StatusRequest);
                 p->message->set_delilah_id( 1 );    // Spetial id for global update
-                //copyEnviroment( &environment , c->mutable_environment() );
                 network->sendToController( p );
             }	
             
@@ -160,6 +158,44 @@ namespace samson {
             
         }
         
+        // StatusResponses are processed here
+        
+        if( msgCode == Message::StatusResponse )
+        {
+            au::TokenTaker tt( &info_lock );
+            
+            std::ostringstream output;
+            
+            output << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n";
+            output << "<samson>\n";
+            
+            std::string controller_and_worker_status = packet->message->info();
+            output << controller_and_worker_status;
+            
+            // Get my own status here ( delilah )
+            getInfo( output );
+            
+            output << "</samson>\n";
+
+            // Get the resulting string
+            xml_info = output.str();
+            
+            std::istringstream is_xml_document( xml_info );
+            
+            cronometer_xml_info.reset();
+            
+            doc.reset();
+            pugi::xml_parse_result result = doc.load( is_xml_document );
+            
+            if( !result )
+            {
+                // Do something with this error
+            }
+            
+            return;
+        }
+        
+        
         // spetial case for global_update messages
         
         if( (msgCode == Message::CommandResponse) && (packet->message->delilah_id() == 1 ))
@@ -206,58 +242,6 @@ namespace samson {
             ol = new network::OperationList();
             ol->CopyFrom( packet->message->command_response().operation_list() );
             
-        }
-        
-        // Update of the samson status
-        if( packet->message->command_response().has_samson_status() )
-        {
-            // Reset the cronometer of the samsonStatus report
-            cronometer_samsonStatus.reset();
-            
-            au::TokenTaker tt( &info_lock );
-            
-            if( samsonStatus )
-                delete samsonStatus;
-            samsonStatus = new network::SamsonStatus();
-            samsonStatus->CopyFrom( packet->message->command_response().samson_status() );
-            
-        }
-        
-        
-        if( packet->message->has_info() )
-        {
-            
-            au::TokenTaker tt( &info_lock );
-
-            std::ostringstream output;
-            
-            output << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n";
-            output << "<samson>\n";
-            
-            std::string controller_and_worker_status = packet->message->info();
-            output << controller_and_worker_status;
-
-            // Get my own status here
-            getInfo( output );
-            
-            output << "</samson>\n";
-            
-            
-            xml_info = packet->message->info();
-
-            std::istringstream is_xml_document( xml_info );
-            
-            cronometer_xml_info.reset();
-            
-            doc.reset();
-            pugi::xml_parse_result result = doc.load( is_xml_document );
-            
-            if( !result )
-            {
-                // Do something with this error
-            }
-            
-
         }
         
     }        
@@ -541,6 +525,9 @@ namespace samson {
         // Engine
         engine::Engine::shared()->getInfo( output );
 
+        // Modules manager
+        ModulesManager::shared()->getInfo( output );
+        
         au::xml_close(output, "delilah");
         
     }    

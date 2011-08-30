@@ -61,15 +61,12 @@ namespace samson {
 		void notifyWorkerConfirmation( int worker_id , network::WorkerTaskConfirmation* confirmationMessage );
 		
 		// Fill information of this packet
-		void fill(network::JobList *jl , std::string command);
-		void fill( network::ControllerStatus * status );
-
 		void removeAllFinishJobs();
-		
-	private:
 
-		// Get an string about the internal status
-		std::string _getStatus();
+        // get xml information
+        void getInfo( std::ostringstream& output); 
+        
+	private:
 
 		// Remove a job
 		void _removeJob( Job *j );

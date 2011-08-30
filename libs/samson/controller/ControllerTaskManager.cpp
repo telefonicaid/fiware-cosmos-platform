@@ -94,13 +94,7 @@ namespace samson
 			}
 			
 		}
-		
-		
-		
 	};
-	
-	
-    
 	
     // Get information for monitorization
     void ControllerTaskManager::getInfo( std::ostringstream& output)
@@ -111,13 +105,5 @@ namespace samson
         
         au::xml_close( output , "controller_task_manager");
 	}
-	
-    void ControllerTaskManager::fill( network::ControllerTaskManagerStatus * status )
-    {
-		std::map< size_t , ControllerTask* >::iterator iter;
-		for( iter = task.begin() ; iter != task.end() ; iter++)
-			iter->second->fill( status->add_task() );
-        
-    }
 	
 }

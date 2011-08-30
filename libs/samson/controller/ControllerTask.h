@@ -95,8 +95,6 @@ namespace samson {
         
     private:
         
-        // Send messages
-        void fill( network::ControllerTask* task );
 
         // Send a message to controller
         void sendWorkerTasks( );

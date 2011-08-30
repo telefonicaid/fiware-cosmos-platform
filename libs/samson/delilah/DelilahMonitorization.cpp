@@ -69,7 +69,7 @@ namespace samson
     std::string DelilahMonitorization::getHeaderRight()
     {
         std::ostringstream txt;
-        txt << " ( Updated: " << cronometer_samsonStatus.str() <<  " )";
+        txt << " ( Updated: " << getUpdateSeconds() <<  " )";
         return txt.str();
     }
     
@@ -112,12 +112,6 @@ namespace samson
     
     void DelilahMonitorization::printContent()
     {
-        if ( !samsonStatus )
-        {
-            print( "" );
-            print( " Waiting for information from SAMSON platform.... " );
-            return;
-        }
 
         print("");
         
@@ -145,6 +139,7 @@ namespace samson
     
     void DelilahMonitorization::printGeneral()
     {
+        /*
         if( !samsonStatus )
             return;
         
@@ -222,13 +217,14 @@ namespace samson
             
             
         }        
-        
+*/        
     }
  
     
     void DelilahMonitorization::printTask()
     {
 
+        /*
         if ( !samsonStatus )
             return;
         
@@ -296,7 +292,7 @@ namespace samson
             }
             
         }
-
+*/
     }
 
     void DelilahMonitorization::printQueues()

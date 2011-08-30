@@ -257,41 +257,6 @@ namespace samson {
         au::xml_close(output ,"controller_task");
     }
     
-    void ControllerTask::fill( network::ControllerTask* task )
-    {
-        switch (state) {
-            case init:
-                task->set_state( network::ControllerTask_ControllerTaskState_ControllerTaskRunning );
-                break;
-            case running:
-                task->set_state( network::ControllerTask_ControllerTaskState_ControllerTaskRunning );
-                break;
-            case finished:
-                task->set_state( network::ControllerTask_ControllerTaskState_ControllerTaskFinish );
-                break;
-            case completed:
-                task->set_state( network::ControllerTask_ControllerTaskState_ControllerTaskCompleted );
-                break;
-            default:
-                break;
-        }
-        
-        if( error.isActivated() )
-            task->mutable_error()->set_message( error.getMessage() );
-        
-        
-        // set job & task id
-        task->set_job_id( job->getId() );
-        task->set_task_id( id );
-        task->set_task_description( info->operation_name );
-        
-        // KVInfo for total running and process
-        copy( &total_info , task->mutable_total_info() );
-        copy( &running_info , task->mutable_running_info() );
-        copy( &processed_info , task->mutable_processed_info() );
-        
-    }
-    
     /* ****************************************************************************
      *
      * sendWorkerTasks - 

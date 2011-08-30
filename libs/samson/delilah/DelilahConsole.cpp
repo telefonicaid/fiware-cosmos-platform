@@ -180,7 +180,7 @@ namespace samson
     "\n"
     "General platform commands:             operations, datas, reload_modules, set, unset\n"
     "\n"
-    "Getting information from platform:     info , ps , ls_processes\n"
+    "Getting information from platform:     info , ps , ls_processes, ls_modules\n"
     "\n"
     "Bath processing commands:              ls , add , rm , mv , clear , jobs , clear_jobs , kill , upload , download \n"
     "\n"
@@ -200,6 +200,7 @@ namespace samson
                                       "                                     [-limit n] Limit the deepth of the information tree"
         },
         { "ls"                      , "ls          Show a list of all the key-value sets" } ,                
+        { "ls_modules"              , "ls_modules          Show a list of modules installed at controller, workers and delilah" } ,                
         { "rm"                      , "rm <set>    Remove a key-value set. Usage rm <set>" },              
         { "mv"                      , "mv <set> <new_set>     Change the name of a particular key-value set"},
         { "clear"                   , "clear <set>    Clear the content of a particular key-value set"},
@@ -288,6 +289,98 @@ namespace samson
         
         return output.str();
     }
+    
+    
+    // Generic list of information from the xml document
+    
+    std::string generic_node_to_string_function( const pugi::xml_node& node )
+    {
+        std::ostringstream output;
+        pugi::str( node , 0 ,  output , 1000 );
+        return output.str();
+    }
+
+    std::string getModuleInfo( const pugi::xml_node& node )
+    {
+        std::ostringstream output;
+
+        std::string name = pugi::get( node , "name" );
+        std::string version = pugi::get( node , "version" );
+        std::string author = pugi::get( node , "author" );
+
+        
+        int num_operations  = getNumChildrens( node.first_element_by_path("operations") , "operation" );
+        int num_datas       = getNumChildrens( node.first_element_by_path("datas") , "dats" );
+        
+        output << "  Module " << std::left << std::setw(25) << name << " " << std::setw(10) << version;
+        output << std::setw(15) << au::str("[ #ops: %3d #datas: %3d ]",num_operations, num_datas);
+        output << " ( " << author << ")\n";
+        
+        return output.str();
+    }
+    
+    
+    std::string DelilahConsole::getInfo( std::string path , node_to_string_function _node_to_string_function  , bool info_controller , bool info_workers , bool info_delilah )
+    {
+        if( !checkXMLInfoUpdate() )
+            return 0;
+        
+        std::ostringstream output;
+        {
+            output << "------------------------------------------------------------\n";
+            output << "Controller :\n";
+            output << "------------------------------------------------------------\n";
+            
+            pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//controller//modules_manager//module" );
+            
+            for ( size_t i = 0 ; i < nodes.size() ; i++ )
+            {
+                const pugi::xml_node& node = nodes[i].node(); 
+                std::string txt = _node_to_string_function( node );
+                output << ( txt );
+            }      
+        }
+        
+        {
+            pugi::ValuesCollection workers_ids = pugi::values(doc, "//worker/id");
+            
+            for ( size_t w = 0 ; w < workers_ids.size() ; w++ )
+            {
+                
+                output << "------------------------------------------------------------\n";
+                output << "Queues at worker " << workers_ids[w] << ":\n";
+                output << "------------------------------------------------------------\n";
+                
+                pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//worker[id=" + workers_ids[w] + "]" + "//modules_manager//module" );
+                
+                for ( size_t i = 0 ; i < nodes.size() ; i++ )
+                {
+                    const pugi::xml_node& node = nodes[i].node(); 
+                    std::string txt = _node_to_string_function( node );
+                    output << ( txt );
+                }            
+            }
+        }
+        
+        {
+            output << "------------------------------------------------------------\n";
+            output << "Delilah :\n";
+            output << "------------------------------------------------------------\n";
+            
+            pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//delilah//modules_manager//module" );
+            
+            for ( size_t i = 0 ; i < nodes.size() ; i++ )
+            {
+                const pugi::xml_node& node = nodes[i].node(); 
+                std::string txt = _node_to_string_function( node );
+                output << ( txt );
+            }            
+        }
+        
+        return output.str();
+        
+    }
+    
     
     size_t DelilahConsole::runAsyncCommand( std::string command )
 	{
@@ -990,6 +1083,13 @@ namespace samson
             }
             
             writeOnConsole( output.str() );
+            return 0;
+        }
+        
+        if( main_command == "ls_modules" )
+        {
+            std::string txt = getInfo("//modules_manager//module", getModuleInfo, true, true, true ); 
+            writeOnConsole( txt );
             return 0;
         }
         

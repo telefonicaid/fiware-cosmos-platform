@@ -76,13 +76,6 @@ namespace samson {
 			
 			return command[command_pos-1];
 		}
-	
-		void fill( network::JobItem *item)
-		{
-			item->set_command( parent_command );
-			item->set_num_lines( num_lines );
-			item->set_line( command_pos - 1);
-		}
 		
 		std::string getMainCommand()
 		{
@@ -188,9 +181,7 @@ namespace samson {
 			return error_line;
 		}
 		
-		void fill( network::Job *job );
-		
-		std::string getStatus();
+        void getInfo( std::ostringstream& output);
 		
 		void kill(std::string message);	// Kill this job ( similar to error )
 

@@ -151,74 +151,10 @@ namespace samson {
 	{
 
 		Packet*                  p  = new Packet(Message::WorkerStatus);
-		network::WorkerStatus*   ws = p->message->mutable_worker_status();
-		
+
 		// This message is not critical - to be thrown away if worker not connected
 		p->disposable = true;
 
-        
-        // Memory manager
-        std::ostringstream memory_status;
-
-        memory_status << "\n";
-        engine::MemoryManager *mm = engine::MemoryManager::shared();
-        
-            size_t memory = mm->getMemory();
-            memory_status << "\t Total memory: " << au::str( memory ) << "\n";
-
-        {
-            size_t size = mm->getUsedMemoryByTag( MemoryInput );
-            memory_status << "\t\t Input memory    " << au::str( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
-        }
-
-        {
-            size_t size = mm->getUsedMemoryByTag( MemoryOutputDisk );
-            memory_status << "\t\t Output disk     " << au::str( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
-        }
-
-        {
-            size_t size = mm->getUsedMemoryByTag( MemoryOutputNetwork );
-            memory_status << "\t\t Output network  " << au::str( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
-        }
-
-        {
-            size_t size = mm->getUsedMemoryByTag( MemoryAccumulated );
-            memory_status << "\t\t Accumulated     " << au::str( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
-        }
-        
-        {
-            size_t size = mm->getUsedMemoryByTag( MemoryBlocks );
-            memory_status << "\t\t Blocks          " << au::str( size  ) << " ( " << au::Format::percentage_string( size, memory ) << " )\n";
-        }
-        
-        
-		// Load data manager
-		loadDataManager.fill( ws );
-		
-
-        // Set up time information
-        ws->set_up_time(au::Format::ellapsedSeconds(&init_time));
-                
-        // Set information about queue operations
-        // ws->set_queues_tasks_status( queueTaskManager.getStatus() );
-        // Note: Since queueTaskManager is now inside queueManager, it is not visible here any more
-        
-        // Numerical information for better presentation
-        
-        ws->set_total_memory( engine::MemoryManager::shared()->getMemory() );
-        ws->set_used_memory( engine::MemoryManager::shared()->getUsedMemory());
-        
-        ws->set_total_cores(engine::ProcessManager::getNumCores());
-        ws->set_used_cores(engine::ProcessManager::getNumUsedCores());
-
-        ws->set_disk_pending_operations(engine::DiskManager::shared()->getNumOperations());
-        
-        ws->set_disk_read_rate( engine::DiskManager::shared()->getReadRate() );
-        ws->set_disk_write_rate( engine::DiskManager::shared()->getWriteRate() );
-
-        ws->set_network_read_rate( network->statistics->item_read.getLastMinuteRate() );
-        ws->set_network_write_rate( network->statistics->item_write.getLastMinuteRate() );
-     
         // Include generic information about this worker
         std::ostringstream info_str;
         getInfo( info_str );
@@ -226,7 +162,7 @@ namespace samson {
         
 		// Send the message
 		network->sendToController( p );
-
+        
 	}
 	
 	/* ****************************************************************************
@@ -687,9 +623,11 @@ namespace samson {
     // Get information for monitorization
     void SamsonWorker::getInfo( std::ostringstream& output)
     {
-        
         // Engine
         engine::Engine::shared()->getInfo( output );
+
+        // Modules manager
+        ModulesManager::shared()->getInfo( output );
         
         // Block manager
         stream::BlockManager::shared()->getInfo( output );

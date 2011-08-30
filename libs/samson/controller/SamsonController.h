@@ -55,6 +55,9 @@ namespace samson {
 		
 		// Data manager for the controller
 		ControllerDataManager data;							
+
+		// Load manager
+		ControllerLoadManager loadManager;
 		
 		// Top level job manager
 		JobManager jobManager;								
@@ -63,13 +66,7 @@ namespace samson {
 		friend class SamsonControllerMonitor;
 		Monitor monitor;									
 		
-		// Load manager
-		ControllerLoadManager loadManager;
-		
 		// Status information of the workers
-		network::WorkerStatus** worker_status;				// Status of the workers reported periodically
-        au::Cronometer *worker_status_cronometer;           // Cronometer to count the last update from workers
-
         std::string* worker_xml_info;                       // XML version of the worker related information
         au::Cronometer *cronometer_worker_xml_info;           // Cronometer to count the last update from workers
 		
@@ -100,8 +97,6 @@ namespace samson {
 		{
 			return monitor.getJSONString( in );
 		}
-	
-		void fill( network::ControllerStatus *status );
 		
 		void pushSystemMonitor( MonitorBlock  *);
         

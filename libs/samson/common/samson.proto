@@ -99,24 +99,6 @@ message Data
 	required string help = 2;	// Some string showing help for this data type
 }
 
-message JobItem
-{
-	required string command=1;	// Command of this item
-	required int32 line=2;		// Current line inside the script
-	required int32 num_lines=3; 	// Total lines in the script
-	
-	optional ControllerTask controller_task = 4;	// Optional information about the progress of this task ( if it is really a task )
-}
-
-message Job
-{
-	required uint64 id = 1;		// Id of the job
-	required string status = 3;	// String describing the status ( running , error, time ellapsed...)
-
-	required string main_command=2;	// Command that originated the job
-	repeated JobItem item = 10;	// Stack of Items in this job
-}
-
 message Error
 {
 	// When Error is used inside another message, it is always optional
@@ -135,82 +117,6 @@ message Trace
 	required string stre	=7;	
 }
 
-
-// Information about a worker ( diskManager / fileManager / Process runing / etc..)
-
-message ControllerTask
-{
-	enum ControllerTaskState
-	{
-		ControllerTaskInit	 = 1;
-		ControllerTaskRunning 	 = 4;
-		ControllerTaskFinish     = 2;
-		ControllerTaskCompleted  = 3;
-	}
-
-	required ControllerTaskState state = 1;
-
-	required int64 job_id = 2;
-	required int64 task_id = 3;
-
-	required string task_description = 11;		// Irmation about the task running
-
-	optional Error error = 10;			// Optional error only activated if state = completed
-
-        optional KVInfo total_info=4;                  // Total amount of information to be processed
-        optional KVInfo running_info=5;                // Total amount that started to run at some point ( accumulated )
-        optional KVInfo processed_info=6;               // Total amount that has been processed
-
-}
-
-message ControllerTaskManagerStatus
-{
-	repeated ControllerTask task = 1;		// Task currently running 
-
-}
-
-
-message ControllerStatus
-{
-	optional uint64 up_time = 8;					// Time since the the worker started
-
-	optional string job_manager_status=1;				// Status of the job manager
-	optional string network_status=3;				// Information about the network connections
-
-	optional string setup_status=6;					// Information avout setup
-
-	optional string modules_manager_status = 4;			// Information about the modules
-
-	optional ControllerTaskManagerStatus task_manager_status = 5;	// Status of the task manager
-}
-
-
-message WorkerStatus
-{
-
-	// Old string-based information to be removed
-
-	optional uint64 up_time = 23;					// Time since the the worker started
-	optional uint64 update_time = 8;				// Time since the last update from the worker
-
-	// Numerical values for quick system evaluation
-
-	optional uint64 used_memory=10;
-	optional uint64 total_memory=11;
-
-	optional int32 total_cores=16;
-	optional int32 used_cores=13;
-
-	optional int32 disk_pending_operations=17;
-
-	optional uint64 disk_read_rate=30;
-	optional uint64 disk_write_rate=31;
-
-	optional uint64 network_read_rate=32;
-	optional uint64 network_write_rate=33;
-
-
-}
 
 message ActiveTask
 {
@@ -239,16 +145,7 @@ message OperationList
 	repeated Operation operation = 1;
 }
 
-message JobList
-{
-	repeated Job job = 1;
-}
 
-message SamsonStatus
-{
-	optional ControllerStatus controller_status = 1;		// Status of the controller
-	repeated WorkerStatus worker_status = 2;			// Status of all the workers
-}
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -349,13 +246,10 @@ message CommandResponse
 
 	// Information to the user about the status of the controller
 
-	optional JobList       job_list			         = 100;
 	optional OperationList operation_list		         = 101;
 	optional DataList      data_list	  	         = 102;
-	optional QueueList     queue_list		         = 103;
 
-	// System wide status information
-	optional SamsonStatus samson_status 	      		 = 104;
+	optional QueueList     queue_list		         = 103;
 }
 
 
@@ -665,8 +559,6 @@ message Message
 
 	optional WorkerCommand			worker_command			= 200;
 	optional WorkerCommandResponse		worker_command_response		= 201;
-
-	optional WorkerStatus worker_status = 170;			// Worker status update
 
 	optional Trace trace = 171;	      				// optional trace to all delilahs;
 

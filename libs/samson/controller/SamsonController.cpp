@@ -63,16 +63,11 @@ namespace samson {
 		if( num_workers <= 0)
 			LM_X(1,("Internal error: SamsonController starts with %d workers",num_workers));
 		
-		worker_status               = (network::WorkerStatus**) malloc( sizeof(network::WorkerStatus*) * num_workers);
-        worker_status_cronometer    = new au::Cronometer[ num_workers ];  // Cronometer to count the last update from workers
 
+        // XML status information commected from workers
         worker_xml_info             = new std::string[num_workers];
         cronometer_worker_xml_info = new au::Cronometer[ num_workers ];
         
-		for (int i = 0 ; i < num_workers ; i++ )
-		{
-			worker_status[i] = new network::WorkerStatus();
-		}	
 
 		// Description for the PacketReceiver
 		packetReceiverDescription = "samsonController";
@@ -90,17 +85,8 @@ namespace samson {
 	
 	SamsonController::~SamsonController()
 	{
-		
-		for (int i = 0 ; i < num_workers ; i++ )
-			delete worker_status[i];
-        
-		free(worker_status);
-        delete[] worker_status_cronometer;
-        delete[] worker_xml_info;
-        
         delete[] worker_xml_info;
         delete[] cronometer_worker_xml_info;
-        
 	}
     
     void SamsonController::notify( engine::Notification* notification )
@@ -117,7 +103,7 @@ namespace samson {
 
             for ( int w = 0 ; w < num_workers ; w++)
             {
-                size_t tmp_time = worker_status_cronometer[w].diffTimeInSeconds();
+                size_t tmp_time = cronometer_worker_xml_info[w].diffTimeInSeconds();
                 if( tmp_time > last_update )
                     last_update = tmp_time;
             }
@@ -169,15 +155,12 @@ namespace samson {
 				// Copy all the information here to be accessed when requesting that info
 				if (workerId != -1)
 				{
-					worker_status[workerId]->CopyFrom( packet->message->worker_status() );
-                    worker_status_cronometer[workerId].reset();
-                    
+                    // Update of the xml information contained here
                     if( packet->message->has_info() )
                     {
                         worker_xml_info[workerId] = packet->message->info();
                         cronometer_worker_xml_info[workerId].reset();
                     }
-                    
 				}
                 else
                 {
@@ -381,6 +364,29 @@ namespace samson {
 			}
 			break;
 				
+            case Message::StatusRequest:
+            {
+                Packet *p2 = new Packet(Message::StatusResponse);
+                p2->message->set_delilah_id( packet->message->delilah_id() );
+                
+                std::ostringstream output;
+                
+                au::xml_single_element(output, "controller", this );
+
+                for (int i = 0 ; i < num_workers ; i++ )
+                {
+                    output << "<worker>\n";
+                    au::xml_simple( output , "id" , i );
+                    output << worker_xml_info[i];
+                    output << "</worker>\n";
+                }
+                    
+                p2->message->set_info( output.str() );
+                
+                network->send( fromId,  p2);
+            }
+                break;
+                
 			case Message::Command:
 			{
 				
@@ -473,21 +479,6 @@ namespace samson {
 					return;
 				}
 
-				if( cmdLine.isArgumentValue( 0 , "j" , "jobs" ) )
-				{
-					// Send a message with the list of jobs
-					
-					Packet *p2 = new Packet(Message::CommandResponse);
-					network::CommandResponse *response = p2->message->mutable_command_response();
-                    response->set_finish_command(true);
-					response->mutable_command()->CopyFrom(packet->message->command());
-					p2->message->set_delilah_id( packet->message->delilah_id() );
-					jobManager.fill( response->mutable_job_list() , command );
-					network->send( fromId, p2);
-					
-					return;
-				}
-
 				// Spetial commands
 				if( cmdLine.isArgumentValue( 0 , "kill" , "k" ) )
 				{
@@ -512,53 +503,6 @@ namespace samson {
 					
 					return;
 				}				
-				
-				if( cmdLine.isArgumentValue( 0 , "w" , "workers" ) )
-				{
-					// Send a message with the list of jobs
-					
-					Packet *p2 = new Packet(Message::CommandResponse);
-					network::CommandResponse *response = p2->message->mutable_command_response();
-                    response->set_finish_command(true);
-					response->mutable_command()->CopyFrom(packet->message->command());
-					p2->message->set_delilah_id( packet->message->delilah_id() );
-					
-                    network::SamsonStatus *samsonStatus = response->mutable_samson_status();
-                    
-					int i;
-					
-					for (i = 0 ; i < num_workers ; i++)
-					{
-						network::WorkerStatus *ws =samsonStatus->add_worker_status();
-						ws->CopyFrom( *worker_status[i] );
-                        // Modify the update time
-						ws->set_update_time(  worker_status_cronometer[i].diffTimeInSeconds() );
-					}
-					
-					fill( samsonStatus->mutable_controller_status() );
-
-                    // Fill all the information of the "info" structure
-                    std::ostringstream output;
-                    
-                    
-                    output << "<controller>\n";
-                    getInfo( output );
-                    output << "</controller>\n";
-                    
-                    for (int i = 0 ; i < num_workers ; i++ )
-                    {
-                        output << "<worker>\n";
-                        output << "<id>" << i << "</id>\n";
-                        output << worker_xml_info[i];
-                        output << "</worker>\n";
-                    }
-                    
-                    p2->message->set_info( output.str() );                    
-                    
-					network->send( fromId, p2);
-					
-					return;
-				}
 
 				if( cmdLine.isArgumentValue(0, "clear_jobs", "cj" ) )
 				{
@@ -620,20 +564,6 @@ namespace samson {
 
 	}
 
-		
-		void SamsonController::fill( network::ControllerStatus *status )
-		{
-			jobManager.fill( status );
-            status->set_network_status(network->getState(""));
-
-            //Setup status
-            status->set_setup_status( SamsonSetup::shared()->str() );
-            
-            // Set up time information
-            status->set_up_time(au::Format::ellapsedSeconds(&init_time));
-
-		}
-
 
 		void SamsonController::pushSystemMonitor( MonitorBlock  *system)
 		{
@@ -644,20 +574,6 @@ namespace samson {
 			size_t used_cores = 0;
 
 			size_t upload_size = 0;
-			
-
-			for (int i = 0 ; i < num_workers ; i++)
-			{
-				if( worker_status[i] )
-				{
-					total_memory += worker_status[i]->total_memory();			
-					used_memory += worker_status[i]->used_memory();		
-					
-					used_cores  += worker_status[i]->used_cores();
-					total_cores += worker_status[i]->total_cores();
-					
-				}
-			}
 			
 			system->push( "memory"			, used_memory );
 			system->push( "total_memory"	, total_memory );
@@ -697,12 +613,17 @@ namespace samson {
         // Engine
         engine::Engine::shared()->getInfo( output );
         
-        output << "<data_manager>\n";
-        data.getInfo( output );
-        output << "</data_manager>\n";
-
-        int update_time = 0;
+        // Modules manager
+        ModulesManager::shared()->getInfo( output );
         
+        // Data manager
+        au::xml_single_element(output, "data_manager", &data);
+
+        // Load manager
+        au::xml_single_element( output , "load_manager" , &loadManager );
+        
+        // Compute up time
+        int update_time = 0;
         for (int i = 0 ; i < num_workers ; i++ )
         {
             int tmp_time = cronometer_worker_xml_info[i].diffTimeInSeconds();

@@ -67,6 +67,13 @@ namespace samson {
 			_helpMessage = d->_helpMessage;
 		}
 		
+        void getInfo( std::ostringstream& output)
+        {
+            output << "<data>\n";
+            output << "<name>" << _name << "</name>\n";
+            output << "<help>" << _helpMessage << "</help>\n";
+            output << "</data>\n";
+        }
         
 		std::string getName()
 		{

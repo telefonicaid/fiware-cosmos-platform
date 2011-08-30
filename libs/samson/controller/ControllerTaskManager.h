@@ -71,12 +71,6 @@ namespace samson {
         // Get information for monitorization
         void getInfo( std::ostringstream& output);
 
-		/**
-         Fill information in a message  to report status
-         */
-        
-        void fill( network::ControllerTaskManagerStatus * status );
-		
 		
 	};
 

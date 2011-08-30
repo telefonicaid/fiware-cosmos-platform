@@ -20,6 +20,9 @@
 #include "engine/MemoryManager.h"
 #include "engine/Engine.h"
 #include "engine/DiskManager.h"
+#include "engine/ProcessManager.h"
+
+#include "samson/module/ModulesManager.h"       // samson::ModulesManager
 
 #include "samson/common/samsonVersion.h"
 #include "samson/common/SamsonSetup.h"
@@ -166,30 +169,32 @@ int main(int argC, const char *argV[])
 	samson::SamsonSetup::shared()->setValueForParameter("general.memory", memory.str() );
     samson::SamsonSetup::shared()->setValueForParameter("load.buffer_size",  load_buffer_size.str() );
 
-	std::cout << "Waiting for network connection ...";
 
 	engine::Engine::init();
-	// Goyo. Groping in the dark (blind sticks for an easier translation)
-	engine::MemoryManager::init(  samson::SamsonSetup::getUInt64("general.memory") );
-	// Goyo. End of groping in the dark
-
-    // Init the disk manager for the popQueue operations
-    engine::DiskManager::init( 1 );
+	engine::DiskManager::init(1);
+	engine::ProcessManager::init(samson::SamsonSetup::getInt("general.num_processess"));
+	engine::MemoryManager::init(samson::SamsonSetup::getUInt64("general.memory"));
     
+	samson::ModulesManager::init();         // Init the modules manager
 	
 	// Initialize the network element for delilah
 	samson::Network2*        networkP  = new samson::Network2( samson::Endpoint2::Delilah, controller );
 
 	networkP->runInBackground();
 
+	std::cout << "\nConnecting to SAMSOM controller " << controller << " ...";
+    std::cout.flush();
+    
 	//
 	// What until the network is ready
 	//
-	std::cout << "\nAwaiting network ready ...";
 	while (!networkP->ready())
 		usleep(1000);
-	std::cout << "\nNetwork OK\n";
+	std::cout << " OK\n";
 
+	std::cout << "Connecting to all workers ...";
+    std::cout.flush();
+    
 	//
 	// Ask the Controller for the platform process list
 	//
@@ -203,10 +208,9 @@ int main(int argC, const char *argV[])
 	//
 	// What until the network is ready II
 	//
-	std::cout << "\nAwaiting network ready ...";
 	while (!networkP->ready(true))
 		sleep(1);
-	std::cout << "\nNetwork OK\n";
+	std::cout << " OK\n";
 
 
 	// Create a DelilahControler once network is ready

@@ -82,4 +82,16 @@ namespace samson {
 		// Nothing to do here
 	}
 
+    void NetworkFake::getInfo( std::ostringstream& output )
+    {
+        au::xml_open(output,"network");
+        au::xml_open(output,"description");
+        
+        output << "This is network fake... it is always working ;)";
+
+        au::xml_close(output,"description");
+        au::xml_close(output,"network");
+    }
+    
+    
 }

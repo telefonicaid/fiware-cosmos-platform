@@ -13,7 +13,8 @@
 
 
 #include "au/CommandLine.h"				// au::CommandLine
-#include "au/Format.h"						// au::Format
+#include "au/Format.h"					// au::Format
+#include "au/Descriptors.h"             // au::Descriptors
 
 #include "pugi/pugi.h"                  // pugi::Pugi
 #include "pugi/pugixml.hpp"             // pugi:...
@@ -98,7 +99,7 @@ namespace samson
 			if( ( mainCommand == "clear" ) || ( mainCommand == "rm" ) || ( mainCommand == "cp" ) || ( mainCommand == "mv" ) )
             {
                 // Add all the queues
-                op.addQueueOptions( NULL );
+                op.addQueues( );
             }
             else if( mainCommand == "help" )
             {
@@ -180,11 +181,11 @@ namespace samson
     "\n"
     "General platform commands:             operations, datas, reload_modules, set, unset\n"
     "\n"
-    "Getting information from platform:     info , ps , ls_processes, ls_modules\n"
+    "Getting information from platform:     info , ps , ls_modules, engine_show , ps_network\n"
     "\n"
-    "Bath processing commands:              ls , add , rm , mv , clear , jobs , clear_jobs , kill , upload , download \n"
+    "Batch processing commands:              ls , add , rm , mv , clear , clear_jobs , kill , upload , download \n"
     "\n"
-    "Getting info for bath processing:      ??? \n"
+    "Getting info for batch processing:      ps_jobs , ps_tasks \n"
     "\n"
     "Stream processing commands:            push , pop , add_stream_operation , rm_stream_operation , set_stream_operation_property\n"
     "                                       push_state_to_queue , rm_queue , rm_state , play_state , pause_state\n" 
@@ -214,6 +215,7 @@ namespace samson
             "                     [-clear] removes finished or error processes\n"
             "                     [id] get more help about a particular process" } ,                
         
+        { "ps_network"              , "ps_network           Get information about network connections in a SAMSON cluster"},
         { "reload_modules"          , "reload_modules        reload_modules used by the platform"},
         
         
@@ -227,7 +229,8 @@ namespace samson
         { "operations"              , "operations [-begin X] [-end -X]      Get a list of the available operations ( parser, map, reduce, script, etc)"},
         { "datas"                   , "datas [-begin X] [-end -X]           Get a list of available data types for keys and values"},
         
-        { "jobs"                    , "jobs (j)          Get a list of running jobs" },
+        { "ps_jobs"                 , "ps_jobs           Get a list of running (batch processing) jobs" },
+        { "ps_tasks"                , "ps_tasks          Get a list of running batch processing tasks on controller and workers" },
         { "clear_jobs"              , "clear_jobs (cj)   Clear finish or error jobs" },
         { "kill"                    , "kill (k)          Kill a particular job and all its sub-tasks" },
         
@@ -258,6 +261,8 @@ namespace samson
         { "ls_states"               , "ls_states        Show a list of current states in all the workers ( used in the stream reduce operations )" },
         
         { "ps_stream"               , "ps_stream        Get a list of current stream tasks"},
+        
+        { "engine_show"             , "engine_show      Show a status information of the engine platform running on all the elements of SAMSON platform"},
         
         { NULL , NULL }   
     };
@@ -308,7 +313,7 @@ namespace samson
         std::string description = pugi::get( node , "description" );
         
         std::ostringstream output;
-        output << std::setw(15) << name << "  " << description << "\n";
+        output << std::setw(15) << name << "  " << description;
         return output.str();
         
     }
@@ -323,7 +328,6 @@ namespace samson
         
         std::ostringstream output;
         output << std::setw(15) << name << ": [ "  << getBLockListInfo (block_list ) << " ]";
-        output << "\n";
         
         return output.str();
     }
@@ -347,7 +351,7 @@ namespace samson
         std::string name = pugi::get( node , "name" );
         std::string help = pugi::get( node , "help" );
         
-        output << "** " << std::left << std::setw(40) << name << " - " << help << "\n";
+        output << "** " << std::left << std::setw(40) << name << " - " << help;
         
         return output.str();
     }
@@ -376,11 +380,91 @@ namespace samson
             output << getFormatInfo(*n) << " ";
         output << "\n";
         output << "\t\tHelp: " << help << "\n";
-        
-        output << "\n";
 
         return output.str();
         
+    }
+    
+    std::string getTaskInfo( const pugi::xml_node& node )
+    {
+        std::string id = pugi::get( node , "id" );
+        std::string job_id = pugi::get( node , "job_id" );
+        std::string name = pugi::get( node , "name" );
+        std::string state = pugi::get( node , "state" );
+
+        std::ostringstream output;
+        output << "[ " << id << " ] [ Job " << job_id << " ] [ " << state << " ] " << name << " " ;
+        
+        if( state == "running" )
+        {
+            size_t total_info = pugi::getUInt64( node , "total_info" );
+            size_t running_info = pugi::getUInt64( node , "running_info" );
+            size_t processed_info = pugi::getUInt64( node , "processed_info" );
+            
+            output << "[ Progress: ";
+            output << au::str( running_info , "bytes" ) << " / ";
+            output << au::str( processed_info , "bytes" ) << " / ";
+            output << au::str( total_info , "bytes" );
+            output << "]";
+        }
+        
+        return output.str();
+        
+    }
+    
+    std::string getWorkerTaskInfo( const pugi::xml_node& node )
+    {
+        std::string task_id = pugi::get( node , "task_id" );
+        std::string operation = pugi::get( node , "operation" );
+        std::string status = pugi::get( node , "status" );
+        
+        int num_workers = (int) pugi::getUInt64( node , "num_workers" );
+        int num_finished_workers = (int) pugi::getUInt64( node , "num_finished_workers" );
+        
+        std::ostringstream output;
+        output << "[ " << task_id << " ] [ " << status << " ] " << operation << " " ;
+
+        if( num_finished_workers == num_workers )
+            output << " All workers finised ";
+        else
+            output << " Completed workers " << num_finished_workers << " / " << num_workers;
+
+        
+        au::Descriptors descriptors;
+        pugi::xml_node node_worker_subtasks = node.first_element_by_path("worker_subtasks");        
+        for( pugi::xml_node_iterator n = node_worker_subtasks.begin() ; n != node_worker_subtasks.end() ; n++)
+        {
+            std::string description = pugi::get(*n, "description" );
+            std::string state = pugi::get(*n, "state" );
+            descriptors.add( au::str( "[ %s : %s ]" , description.c_str() , state.c_str() ) );
+        }
+        
+        output << "\n\t SubTasks: " << descriptors.str();
+        
+        
+        
+        
+        return output.str();
+        
+    }    
+    
+    
+    std::string getJobInfo( const pugi::xml_node& node )
+    {
+        std::ostringstream output;
+        
+        std::string id = pugi::get( node , "id" );
+        std::string command = pugi::get( node , "command" );
+        std::string status = pugi::get( node , "status" );
+        
+        output << "  [ " << id << " ] [ " << std::setw(10) << std::left <<  status << " ] " << command;
+
+        pugi::xml_node current_task = node.first_element_by_path("current_task").first_element_by_path("controller_task");
+        
+        if( pugi::get( current_task , "id" ) != "" )
+            output << "\n\tCurrent task: " << getTaskInfo( current_task );
+        
+        return output.str();
     }
     
     std::string getModuleInfo( const pugi::xml_node& node )
@@ -397,10 +481,84 @@ namespace samson
         
         output << "  Module " << std::left << std::setw(25) << name << " " << std::setw(10) << version;
         output << std::setw(15) << au::str("[ #ops: %3d #datas: %3d ]",num_operations, num_datas);
-        output << " ( " << author << ")\n";
+        output << " ( " << author << ")";
         
         return output.str();
     }
+
+    std::string getNetworkInfo( const pugi::xml_node& node )
+    {
+        std::ostringstream output;
+        
+        std::string description = pugi::get( node , "description" );
+        output << description << "\n";
+        return output.str();
+    }
+    
+    std::string getEngineSystemInfo( const pugi::xml_node& node )
+    {
+        
+        pugi::xml_node node_memory_manager = node.first_element_by_path("memory_manager");
+        pugi::xml_node node_disk_manager = node.first_element_by_path("disk_manager");
+        pugi::xml_node node_process_manager = node.first_element_by_path("process_manager");
+        
+        std::ostringstream output;
+        
+        size_t memory       = pugi::getUInt64( node_memory_manager , "memory" );
+        size_t used_memory  = pugi::getUInt64( node_memory_manager , "used_memory" );
+        int num_buffers  = (int) pugi::getUInt64( node_memory_manager , "num_buffers" );
+        
+        output << "** Memory: " << au::str( used_memory , "bytes" ) << " / " << au::str( memory , "bytes" ) << " ( " << num_buffers << " buffers )\n";
+
+        
+        size_t num_pending_operations = pugi::getUInt64( node_disk_manager , "num_pending_operations" );
+        size_t num_running_operations = pugi::getUInt64( node_disk_manager , "num_running_operations" );
+
+        std::string t_statistics = pugi::get( node_disk_manager.first_element_by_path("statistics").first_element_by_path("total") , "description" );
+        std::string r_statistics = pugi::get( node_disk_manager.first_element_by_path("statistics").first_element_by_path("read") , "description" );
+        std::string w_statistics = pugi::get( node_disk_manager.first_element_by_path("statistics").first_element_by_path("write") , "description" );
+
+        output << "\n";
+        
+        output << "** Disk: Running " << num_running_operations << " ops, waiting " << num_pending_operations << " ops\n";
+        output << "      READ  [ " << r_statistics << " ]\n"; 
+        output << "      WRITE [ " << w_statistics << " ]\n"; 
+        output << "      TOTAL [ " << t_statistics << " ]\n"; 
+
+
+        pugi::xml_node running = node_process_manager.first_element_by_path("running");
+        pugi::xml_node queued = node_process_manager.first_element_by_path("queued");
+        pugi::xml_node halted = node_process_manager.first_element_by_path("halted");
+        
+        au::Descriptors queued_elements;
+        pugi::xml_node_iterator n;
+        for( n = queued.begin() ; n != queued.end() ; n++)
+            queued_elements.add( pugi::get(*n , "operation_name" ) );
+
+        au::Descriptors halted_elements;
+        for( n = halted.begin() ; n != halted.end() ; n++)
+            halted_elements.add( pugi::get(*n , "operation_name" ) );
+
+        output << "\n";
+        
+        output << "** Process manager:\n";
+        output << "      QUEUED:  " << queued_elements.str() << "\n";
+        output << "      HALTED:  " << halted_elements.str() << "\n";
+        output << "      RUNNING:\n";
+
+        for(  n = running.begin() ; n != running.end() ; n++)
+        {
+            output << "         ";
+            output << "[ Priority " << pugi::get( *n , "priority") << " ] ";
+            output << "[ Progress " << au::Format::percentage_string( pugi::getDouble( *n , "progress") ) << " ] ";
+            output << pugi::get( *n , "operation_name");
+            output << "\n";
+            
+        }
+        
+        
+        return output.str();
+    }    
     
     std::string getSetInfo( const pugi::xml_node& queue )
     {
@@ -413,10 +571,8 @@ namespace samson
         size_t size = pugi::getUInt64( queue , "size" );
         
         size_t num_files = pugi::getUInt64( queue , "num_files" );
-        
-        std::string key_format = pugi::get( queue , "key_format" );
-        std::string value_format = pugi::get( queue , "value_format" );
-        
+
+        pugi::xml_node format_node = queue.first_element_by_path("format");
         
         output << std::setw(30) << name;
         output << " ";
@@ -424,9 +580,7 @@ namespace samson
         output << " kvs in ";
         output << au::str( size ) << " bytes";
         output << " #File: " << num_files;
-        output << " (" << key_format << " " << value_format << ") ";
-        output << std::endl;
-        
+        output << " " << getFormatInfo( format_node );
         
         return output.str();
     }
@@ -439,20 +593,24 @@ namespace samson
             return 0;
         
         std::ostringstream output;
+        
+        output << "\n";
+        
         if( info_controller )
         {
-            output << "------------------------------------------------------------\n";
+            output << "============================================================\n";
             output << "Controller :\n";
-            output << "------------------------------------------------------------\n";
+            output << "============================================================\n";
+            output << "\n";
             
             pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//controller" + path );
             
             for ( size_t i = 0 ; i < nodes.size() ; i++ )
             {
                 const pugi::xml_node& node = nodes[i].node(); 
-                std::string txt = _node_to_string_function( node );
-                output << ( txt );
+                output << _node_to_string_function( node ) << "\n" ;
             }      
+            output << "\n";
         }
         
         if( info_workers )
@@ -462,36 +620,44 @@ namespace samson
             for ( size_t w = 0 ; w < workers_ids.size() ; w++ )
             {
                 
-                output << "------------------------------------------------------------\n";
-                output << "Queues at worker " << workers_ids[w] << ":\n";
-                output << "------------------------------------------------------------\n";
+                output << "============================================================\n";
+                output << "Worker " << workers_ids[w] << ":\n";
+                output << "============================================================\n";
+                output << "\n";
                 
                 pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//worker[id=" + workers_ids[w] + "]" + path );
                 
                 for ( size_t i = 0 ; i < nodes.size() ; i++ )
                 {
                     const pugi::xml_node& node = nodes[i].node(); 
-                    std::string txt = _node_to_string_function( node );
-                    output << ( txt );
+                    output << _node_to_string_function( node ) << "\n" ;
                 }            
+                
+                output << "\n";
+
             }
         }
         
+        if( info_delilah && info_workers )
+            output << "\n\n";     // Separation just in case
+        
         if( info_delilah )
         {
-            output << "------------------------------------------------------------\n";
+            output << "============================================================\n";
             output << "Delilah :\n";
-            output << "------------------------------------------------------------\n";
+            output << "============================================================\n";
+            output << "\n";
             
             pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//delilah" + path );
             
             for ( size_t i = 0 ; i < nodes.size() ; i++ )
             {
                 const pugi::xml_node& node = nodes[i].node(); 
-                std::string txt = _node_to_string_function( node );
-                output << ( txt );
+                output << _node_to_string_function( node ) << "\n" ;
             }            
         }
+
+        output << "\n";
         
         return output.str();
         
@@ -1168,6 +1334,7 @@ namespace samson
             return 0;
         }
 
+        
         if( main_command == "ls_operations" )
         {
             au::TokenTaker tt( &token_xml_info );
@@ -1270,6 +1437,39 @@ namespace samson
             writeOnConsole( output.str() );
             return 0;
         }
+
+        if( main_command == "ps_network" )
+        {
+            au::TokenTaker tt( &token_xml_info );
+            
+            std::string txt = getInfo("/network", getNetworkInfo, true, true, true ); 
+            writeOnConsole( txt );
+            return 0;
+        }
+        
+        if( main_command == "ps_jobs" )
+        {
+            au::TokenTaker tt( &token_xml_info );
+            
+            std::string txt = getInfo("/job_manager//job", getJobInfo, true, false, false ); 
+            writeOnConsole( txt );
+            return 0;
+        }
+
+        if( main_command == "ps_tasks" )
+        {
+            au::TokenTaker tt( &token_xml_info );
+            
+            std::string txt = getInfo("/controller_task_manager//controller_task", getTaskInfo, true, false, false ); 
+            
+
+            std::string txt2 = getInfo("/worker_task_manager//worker_task", getWorkerTaskInfo, false, true, false ); 
+
+            
+            writeOnConsole( txt + txt2 );
+            return 0;
+        }
+        
         
         if( main_command == "ps_stream" )
         {
@@ -1310,11 +1510,12 @@ namespace samson
             return 0;            
         }
         
-        if( main_command == "ls_processes" )
+        if( main_command == "engine_show" )
         {
+            au::TokenTaker tt( &token_xml_info );
             
-            writeWarningOnConsole("Still not implemented...");
-            
+            std::string txt = getInfo("/engine_system", getEngineSystemInfo, true, true, true ); 
+            writeOnConsole( txt );
             return 0;
         }
         

@@ -320,8 +320,8 @@ namespace engine
     void ProcessManager::getInfo( std::ostringstream& output)
     {
         au::xml_open(output, "process_manager");
-        
-        au::xml_iterate_list(output, "queues", items);
+
+        au::xml_iterate_list(output, "queued", items);
 
         au::xml_iterate_list(output, "running", running_items);
 

@@ -2,6 +2,7 @@
 #include "logMsg/traceLevels.h"          // Trace Levels
 
 #include "au/CommandLine.h"                     // au::CommandLine
+#include "au/Format.h"                          // au::xml_..
 
 #include "engine/DiskOperation.h"               // engine::DiskOperation
 #include "engine/Notification.h"                // engine::Notification
@@ -164,20 +165,11 @@ namespace samson {
 		return ( task.findInMap( task_id ) != NULL);
 	}
 	
-	std::string WorkerTaskManager::getStatus()
+    void WorkerTaskManager::getInfo( std::ostringstream& output)
 	{
-		
-		std::ostringstream output;
-		
-		std::map<size_t,WorkerTask*>::iterator iter;
-		
-		output << "\n";
-        
-        
-		for ( iter = task.begin() ; iter != task.end() ; iter++)
-			output << iter->second->getStatus() << "\n";
-		
-		return output.str();
+        au::xml_open( output , "worker_task_manager" );
+        au::xml_iterate_map( output , "worker_tasks" , task );
+        au::xml_close( output , "worker_task_manager" );
 	}
 	
 	

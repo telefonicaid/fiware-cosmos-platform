@@ -190,7 +190,7 @@ public:
 	}
 
 	// Get information about network state
-	virtual std::string getState(std::string selector) { return std::string("No network state available"); }
+    virtual void getInfo( std::ostringstream& output )=0;
 
 	// Get the "worker cardinal" from the idenfitier
 	// This method should return a value between 0 and (num_workers - 1) or -1 if the identifier provided is not related to any worker

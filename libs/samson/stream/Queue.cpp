@@ -76,15 +76,14 @@ namespace samson {
         
         void Queue::getInfo( std::ostringstream& output)
         {
-            
-            output << "<queue name=\"" << name << "\">\n"; 
+            au::xml_open(output,"queue");
 
-            output << "<name>" << name << "</name>\n";
+            au::xml_simple( output , "name" , name );
             
             // Put the matrix information here
             list->getInfo(output);
             
-            output << "</queue>\n";
+            au::xml_close(output,"queue");
         }
   
         

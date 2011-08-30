@@ -340,65 +340,66 @@ namespace samson
 		check();
 	}
 	
-	std::string WorkerTask::getStatus()
-	{
-		std::ostringstream output;
-		output << "\t\t[ ID:" << task_id << " OP:" << operation << " State:";
-
+    
+    const char* getStatusString( WorkerTask::WorkerTaskStatus status )
+    {
 		switch (status) {
-			case pending_definition:
-				output << "Def";
+			case WorkerTask::pending_definition:
+                return "definition";
 				break;
-			case running:
-				output << "Running";
+			case WorkerTask::running:
+                return "running";
 				break;
-			case finish:
-				output << "Finish";
+			case WorkerTask::finish:
+                return "finish";
 				break;
-			case completed:
-            {
-				output << "Completed";
-                if ( error.isActivated() )
-                {
-                    output << " with error: " << error.getMessage() << " ";
-                }
-            }
+			case WorkerTask::completed:
+                return "completed";
 				break;
-			case local_content_finished:
-				output << "Local content finish";
+			case WorkerTask::local_content_finished:
+                return "local content finish";
 				break;
-			case all_content_finish:
-				output << "All content finish";
+			case WorkerTask::all_content_finish:
+                return "all content finish";
 				break;
 		}
+        
+        return "Unknown";
+    }
+    
+    void WorkerTask::getInfo( std::ostringstream& output)
+	{
+        
+        au::xml_open(output , "worker_task");
+        
+        au::xml_simple( output , "task_id" , task_id );
+
+        au::xml_simple( output , "operation" , operation );
+        
+
+        au::xml_simple( output , "status" , getStatusString(status) );
 
         if( status != completed )
-            output << " Workers " << num_finished_workers << "/" << num_workers;
+        {
+            au::xml_simple( output , "num_workers" , num_workers );
+            au::xml_simple( output , "num_finished_workers" , num_finished_workers );
+        }
         
         if ( status == running )
         {
-            output << " DiskOperations " << num_disk_operations;
-            output << " BufferPreproces " << num_process_items;
-            output << " PendingSubTasks " << num_subtasks;
+            au::xml_simple( output , "num_disk_operations" , num_disk_operations );
+            au::xml_simple( output , "num_process_items" , num_process_items );
+            au::xml_simple( output , "num_subtasks" , num_subtasks ); 
         }
         
-        output << " ]";
-        
-        
         if( canBeRemoved() )
-            output << "[ TO BE REMOVED ]";
+            au::xml_simple( output , "can_be_removed" , "yes" );
+        else
+            au::xml_simple( output , "can_be_removed" , "NO" );
         
-		output << "\n\t\t\t Subtasks:";
-
+        au::xml_iterate_map( output , "worker_subtasks" , subTasks );
         
-        au::Descriptors descriptors;
-        for (au::map<size_t,WorkerSubTask>::iterator i = subTasks.begin() ; i != subTasks.end() ; i++)
-            descriptors.add( i->second->getStatus() ); 
-
-        output << descriptors.str();
-		
-        output << "\n\t\t\t Pending: " << num_disk_operations << " disk operations and " << num_process_items << " process items ";
-		return output.str();
+        au::xml_close(output , "worker_task");
 	}
 	
 	

@@ -15,8 +15,12 @@
 
 #include "parseArgs/parseArgs.h"
 #include "au/LockDebugger.h"
+
 #include "engine/MemoryManager.h"
+#include "engine/DiskManager.h"
+#include "engine/ProcessManager.h"
 #include "engine/Engine.h"
+
 #include "samson/common/samsonVersion.h"
 #include "samson/common/platformProcesses.h"
 #include "samson/common/SamsonSetup.h"
@@ -151,12 +155,12 @@ int main(int argC, const char* argV[])
     samson::SamsonSetup::shared()->setWorkingDirectory(workingDir);
     
     
-	engine::Engine::init();                 // Init the SamsonEngine
-	samson::ModulesManager::init();         // Init the modules manager
-
-	// Goyo. Groping in the dark (blind sticks for an easier translation)
+	engine::Engine::init();
+	engine::DiskManager::init(1);
+	engine::ProcessManager::init(samson::SamsonSetup::getInt("general.num_processess"));
 	engine::MemoryManager::init(samson::SamsonSetup::getUInt64("general.memory"));
-	// Goyo. End of groping in the dark
+    
+	samson::ModulesManager::init();         // Init the modules manager
 
 	networkP  = new samson::Network2(samson::Endpoint2::Controller);
 

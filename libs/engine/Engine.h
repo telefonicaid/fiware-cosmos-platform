@@ -131,7 +131,9 @@ namespace engine
         void send( Notification * notification );
         
     };
-    
+
+    // Engine system get info
+    void getInfo( std::ostringstream& output );
     
 	
 };

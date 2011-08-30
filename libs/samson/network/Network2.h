@@ -68,7 +68,7 @@ public:
 	void         delilahSend(PacketSenderInterface*, Packet*);
 	void         _send(PacketSenderInterface*, int, Packet*);
 	size_t       send(PacketSenderInterface*, int, Packet*);
-	std::string  getState(std::string selector = NULL);
+    void         getInfo( std::ostringstream& output );
 	bool         isConnected(unsigned int identifier);
 };
 

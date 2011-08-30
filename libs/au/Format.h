@@ -106,6 +106,21 @@ namespace au {
         
     }
 
+    template< typename T>
+    void xml_iterate_list_object( std::ostringstream& output , std::string name , T& vector )
+    {
+        au::xml_open(output, name);
+        
+		//typename std::map<K, V* >::iterator iter;
+		typename T::iterator iter;
+        
+        for (iter = vector.begin() ; iter != vector.end() ; iter++)
+            (iter)->getInfo( output );
+        
+        au::xml_close(output, name);
+        
+    }
+    
     template< typename K, typename V>
     void xml_iterate_map( std::ostringstream& output , std::string name , au::map< K , V >& vector )
     {

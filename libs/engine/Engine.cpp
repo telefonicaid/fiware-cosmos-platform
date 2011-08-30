@@ -21,6 +21,10 @@
 #include "engine/DiskOperation.h"					// engine::DiskOperation
 #include "engine/NotificationElement.h"       // engine::EngineNotificationElement
 
+#include "engine/MemoryManager.h"
+#include "engine/DiskManager.h"
+#include "engine/ProcessManager.h"
+
 #include "engine/Engine.h"							// Own interface
 
 #define ENGINE_MAX_RUNNING_TIME     60
@@ -260,10 +264,11 @@ namespace engine
     // get xml information
     void Engine::getInfo( std::ostringstream& output)
 	{
-        // Mutex protection
-        au::TokenTaker tt(token , "Engine::str");
         
         au::xml_open(output, "engine");
+
+        // Mutex protection
+        au::TokenTaker tt(token , "Engine::str");
         
         au::xml_simple(output , "loops" , counter );
         
@@ -352,5 +357,15 @@ namespace engine
         
     }
     
+    void getInfo( std::ostringstream& output )
+    {
+        au::xml_open(output, "engine_system");
+        
+        MemoryManager::shared()->getInfo( output );
+        DiskManager::shared()->getInfo( output );
+        ProcessManager::shared()->getInfo( output );
+        
+        au::xml_close(output, "engine_system");
+    }
     
 }

@@ -33,18 +33,23 @@
 
 
 namespace samson {
+
+    // Private token to protect the local list of components
+    au::Token token_xml_info("token_xml_info");
+    // Global xml-based information from the system
+    std::string xml_info;
+    // General document with the content of xml_info
+    pugi::xml_document doc;
+    // Cronometer for xml_info update
+    au::Cronometer cronometer_xml_info;
+
     
-	au::Token info_lock("info_lock");
-	network::OperationList *ol = NULL;              // List of operations ( for auto-completion )
-	network::QueueList *ql = NULL;                  // List of queues ( for auto-completion )
-    
-    au::Cronometer cronometer_samsonStatus;      // Cronometer for this updated message
     
     /* ****************************************************************************
      *
      * Delilah::Delilah
      */
-    Delilah::Delilah( NetworkInterface* _network , bool automatic_update ) : token("Delilah_token") , token_xml_info("Delilah_token_xml_info")
+    Delilah::Delilah( NetworkInterface* _network , bool automatic_update ) : token("Delilah_token")
     {
 		
         // Description for the PacketReceiver
@@ -68,6 +73,7 @@ namespace samson {
         int delilah_automatic_update_period = samson::SamsonSetup::getInt( "delilah.automatic_update_period" );
         engine::Engine::shared()->notify( new engine::Notification( notification_delilah_automatic_update ) , delilah_automatic_update_period );
 
+        
     }
     
     
@@ -138,7 +144,7 @@ namespace samson {
         
         if( msgCode == Message::StatusResponse )
         {
-            au::TokenTaker tt( &info_lock );
+            au::TokenTaker tt( &token_xml_info );
             
             std::ostringstream output;
             
@@ -172,15 +178,6 @@ namespace samson {
         }
         
         
-        // spetial case for global_update messages
-        
-        if( (msgCode == Message::CommandResponse) && (packet->message->delilah_id() == 1 ))
-        {
-            // Global update messages
-            _receive_global_update( packet );
-            return;
-        }
-        
         if( !component )
         {
             
@@ -191,36 +188,6 @@ namespace samson {
     }
 	
 
-    void Delilah::_receive_global_update( Packet *packet )
-    {
-		// Process to update the local list of queues and operations
-		std::ostringstream  txt;
-		
-        if( packet->message->command_response().has_queue_list() )
-        {
-            // Copy the list of queues for auto-completion
-            au::TokenTaker tt( &info_lock );
-            
-            if( ql )
-                delete ql;
-            ql = new network::QueueList();
-            ql->CopyFrom( packet->message->command_response().queue_list() );
-            
-            
-        }
-        
-        if( packet->message->command_response().has_operation_list() )
-        {
-            au::TokenTaker tt( &info_lock );
-            
-            if( ol )
-                delete ol;
-            ol = new network::OperationList();
-            ol->CopyFrom( packet->message->command_response().operation_list() );
-            
-        }
-        
-    }        
 
 /* ****************************************************************************
      *
@@ -501,8 +468,14 @@ namespace samson {
         // Engine
         engine::Engine::shared()->getInfo( output );
 
+        // Engine system
+        engine::getInfo(output);
+        
         // Modules manager
         ModulesManager::shared()->getInfo( output );
+        
+        // Network
+        network->getInfo( output );
         
         au::xml_close(output, "delilah");
         

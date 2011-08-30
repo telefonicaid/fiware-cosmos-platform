@@ -63,7 +63,8 @@ namespace samson {
             addOption("add");
             addOption("operations");
             addOption("datas");
-            addOption("jobs");
+            addOption("ps_jobs");
+            addOption("ps_tasks");
             addOption("workers");
             addOption("upload");
             addOption("push");
@@ -85,102 +86,60 @@ namespace samson {
             addOption("rm_state");                          // Remove a state
             addOption("pause_state");                       // Pause and Play a state ( to remove it )
             addOption("play_state");                          
-            addOption("ls_processes");                      // Get a list of all current tasks in the system
             addOption("ls_queues");                      // Get a list of all current tasks in the system
             addOption("ls_states");                      // Get a list of all current tasks in the system
             addOption("ps_stream");                     // Get a list of stream task
             addOption("ls_modules");                     // Get a list of stream task
             addOption("ls_operations");         
             addOption("ls_datas");         
+            addOption("ps_network");         
+            addOption("engine_show");
         }
         
         void addOperations()
         {
-            LM_TODO(("Implement add operations..."));
+            std::vector<std::string> operation_names = pugi::values( doc , "//controller//operation/name" );
 
-            /*
-            if( ol )
-                for (int i = 0 ; i < ol->operation_size()  ; i++)
-                    addOption( ol->operation(i).name() );
-             */
-            
+            for ( size_t i = 0 ;  i < operation_names.size() ; i++)
+                addOption( operation_names[i] );
         }
-        
-        void addQueueOptions( network::KVFormat *format )
+
+        void addQueues( )
         {
-            LM_TODO(("Add queue options..."));
-            /*
-            // add available queues...
-            au::TokenTaker tt( &info_lock );
+            std::vector<std::string> queue_names = pugi::values( doc , "//controller//queue" );
             
-            if( ql )
-                for (int i = 0 ; i < ql->queue_size()  ; i++)
-                {
-                    
-                    const network::Queue &queue = ql->queue(i).queue();
-                    
-                    //std::cout << "Considering " << queue.name() << "\n";
-                    
-                    if( !format )
-                        addOption( queue.name() );
-                    else
-                    {
-                        //std::cout << "Checkling formats "  << queue.format().keyformat() << " " << queue.format().valueformat()<<   "\n";
-                        if( ( queue.format().keyformat() == format->keyformat() ) )
-                            if ( queue.format().valueformat() == format->valueformat() )
-                            {
-                                addOption( ql->queue(i).queue().name() );
-                                //std::cout << "added\n";
-                            }
-                        
-                    }
-                }
-*/            
+            for ( size_t i = 0 ;  i < queue_names.size() ; i++)
+                addOption( queue_names[i] );
             
+        }        
+        
+        void addQueueOptions( std::string key_format , std::string value_format )
+        {
+            std::string c = au::str( "//controller//queue[format/key_format=\"%s\"][format/value_format=\"%s\"]" 
+                                    , key_format.c_str() , value_format.c_str() ); 
+            
+            std::vector<std::string> queue_names = pugi::values( doc , c );
+            
+            for ( size_t i = 0 ;  i < queue_names.size() ; i++)
+                addOption( queue_names[i] );
+           
         }        
         
         
         void addQueueForOperation( std::string mainCommand , int argument_pos )
         {
-            /*
-            network::KVFormat *format = NULL;
             
+            std::string c = au::str( "//controller//operation[name=\"%s\"]/input_formats/format[%d]" ,  mainCommand.c_str() , argument_pos+1 );
+            
+            pugi::xpath_node_set node_set = pugi::select_nodes(doc, c );
+            
+            if( node_set.size() > 0 )
             {
-                // If it is a particular operation... lock for the rigth queue
-                au::TokenTaker tt( &info_lock );
+                std::string key_format = pugi::get( node_set[0].node() , "key_format" );
+                std::string value_format = pugi::get( node_set[0].node() , "value_format" );
                 
-                if( ol )
-                    for (int i = 0 ; i < ol->operation_size() ; i++)
-                        if( ol->operation(i).name() == mainCommand )
-                        {
-                            //std::cout << "op found " << ol->operation(i).input_size() << "/" << ol->operation(i).output_size() <<  " ("<< argument_pos << ")\n";
-                            
-                            if( argument_pos < ol->operation(i).input_size() )
-                            {
-                                format = new network::KVFormat();
-                                format->CopyFrom( ol->operation(i).input(argument_pos) );
-                            }
-                            else
-                            {
-                                argument_pos -= ol->operation(i).input_size();
-                                if( argument_pos < ol->operation(i).output_size() )
-                                {
-                                    format = new network::KVFormat();
-                                    format->CopyFrom( ol->operation(i).output(argument_pos) );
-                                }
-                            }
-                            break; // No more for...
-                        }
-                
-            }
-             
-            addQueueOptions(format);
-            
-            if( format )
-                delete format;
-             
-             */
-
+                addQueueOptions(key_format, value_format);
+            } 
         }
         
         

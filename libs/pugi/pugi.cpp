@@ -160,6 +160,11 @@ namespace pugi
         return result;
         
     }    
+
+    double getDouble( const xml_node& node , std::string child_name )
+    {
+        return strtod(  node.first_element_by_path( child_name.c_str()  ).child_value()  , (char **)NULL );
+    }
     
     size_t getUInt64( const xml_node& node , std::string child_name )
     {

@@ -123,7 +123,10 @@ namespace samson {
 			sentConfirmationToDelilah();
 			jobManager->controller->data.finishTask( getId() );
 		}
-
+        
+        // Put null internal pointer to current task
+        if ( ( _status == finish) || ( _status == error)  || ( _status == saving )  )
+            currenTask = NULL;
 		
 	}
 	
@@ -439,6 +442,13 @@ namespace samson {
 			case finish:
                 au::xml_simple( output , "status" , "finish" );
 		}
+        
+        if( currenTask )
+            au::xml_single_element(output, "current_task", currenTask );
+     
+        au::xml_simple(output, "command",  mainCommand );
+        
+        au::xml_iterate_list_object(output, "job_items", items);
         
         au::xml_close(output , "job" );
 		

@@ -1241,6 +1241,8 @@ namespace samson {
 	
     void ControllerDataManager::getInfo( std::ostringstream& output)
     {
+        au::xml_open(output,"data_manager");
+        
         output << "<queues>\n";
 
 		au::map< std::string , Queue>::iterator queue;
@@ -1265,6 +1267,8 @@ namespace samson {
         output << "</stream_operations>\n";
         
 
+        au::xml_close(output,"data_manager");
+        
         
     }
 	

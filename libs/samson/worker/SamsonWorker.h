@@ -61,7 +61,7 @@ namespace samson {
 
         NetworkInterface *network;                      // Network interface to communicate with the rest of the system
 		
-		WorkerTaskManager taskManager;                  // Task manager for bath processing operations
+		WorkerTaskManager taskManager;                  // Task manager for batch processing operations
         
 		LoadDataManager loadDataManager;                // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
 		

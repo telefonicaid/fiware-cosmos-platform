@@ -275,34 +275,42 @@ namespace samson
     }
     
     
-    std::string WorkerSubTask::getStatus()
+    void WorkerSubTask::getInfo( std::ostringstream& output)
     {
-        std::ostringstream output;
-        output << "[" << description << ":";
-
+        au::xml_open( output , "worker_subtask" );
+        
+        au::xml_simple( output , "description" , description );
+        
         if( error.isActivated() )
-            output << "Error " << error.getMessage();
-        else
-        {
-            switch (status) {
-                case init: output << "Init"; break;
-                case waiting_memory: output << "Waiting Memory"; break;
-                case waiting_reads: output << "Reading"; break;
-                case waiting_process: output << "Running"; break;
-                case finished: output << "Finished"; break;
-            }
+            au::xml_simple( output , "error" , error.getMessage() );
+        
+        
+        switch (status) {
+                
+            case init: 
+                au::xml_simple( output , "state" , "init" );
+                break;
+            case waiting_memory: 
+                au::xml_simple( output , "state" , "waiting_memory" );
+                break;
+            case waiting_reads:
+                au::xml_simple( output , "state" , "waiting_reads" );
+                break;
+            case waiting_process:
+                au::xml_simple( output , "state" , "waiting_process" );
+                break;
+            case finished: 
+                au::xml_simple( output , "state" , "finished" );
+                break;
         }
-        output << "]";
         
-        //output << "(" << getOperationsContainerStr() << ")";
-        
-        return output.str();
+        au::xml_close( output , "worker_subtask" );
     }
     
-	
-	
+    
+    
 #pragma mark GeneratorSubTask
-	
+        
 	GeneratorSubTask::GeneratorSubTask(WorkerTask * task , int _num_operation , int _num_operations ) : WorkerSubTask( task  )
 	{
 		description = "Generator ";

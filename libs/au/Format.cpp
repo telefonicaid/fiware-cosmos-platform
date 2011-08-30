@@ -360,12 +360,12 @@ namespace au
     
     void xml_open( std::ostringstream& output , std::string name )
     {
-        output << "<" << name << ">\n";
+        output << "<" << name << ">";
     }
     
     void xml_close( std::ostringstream& output , std::string name )
     {
-        output << "</" << name << ">\n";
+        output << "</" << name << ">";
     }
 	
 }

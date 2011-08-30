@@ -613,14 +613,23 @@ namespace samson {
         // Engine
         engine::Engine::shared()->getInfo( output );
         
+        // Engine system
+        engine::getInfo(output);
+        
         // Modules manager
         ModulesManager::shared()->getInfo( output );
         
         // Data manager
-        au::xml_single_element(output, "data_manager", &data);
+        data.getInfo(output);
 
         // Load manager
-        au::xml_single_element( output , "load_manager" , &loadManager );
+        loadManager.getInfo(output);
+        
+        // Job manager
+        jobManager.getInfo(output);
+        
+        // Network
+        network->getInfo( output );
         
         // Compute up time
         int update_time = 0;
@@ -632,7 +641,6 @@ namespace samson {
         }        
         output << "<update_time>" << update_time << "</update_time>\n";
         
-        // Nothing at the moment
     }
 
 

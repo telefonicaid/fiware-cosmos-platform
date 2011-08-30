@@ -626,20 +626,23 @@ namespace samson {
         // Engine
         engine::Engine::shared()->getInfo( output );
 
+        // Engine system
+        engine::getInfo(output);
+        
         // Modules manager
         ModulesManager::shared()->getInfo( output );
+        
+        // Worker task manager
+        taskManager.getInfo(output);
         
         // Block manager
         stream::BlockManager::shared()->getInfo( output );
         
         // Queues manager information
         queuesManager.getInfo(output);
-        
-        // Disk manager
-        engine::DiskManager::shared()->getInfo( output );
-        
-        // Process Manager
-        engine::ProcessManager::shared()->getInfo( output );
+
+        // Network
+        network->getInfo( output );
         
     }
     

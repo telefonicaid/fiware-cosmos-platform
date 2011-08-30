@@ -51,9 +51,9 @@ namespace samson {
 		
 		// Check if a particular task is still active
 		bool checkTask( size_t task_id );
-		
-		// Get a debugging string
-		std::string getStatus();
+
+		// xml information
+        void getInfo( std::ostringstream& output);
 	
         // Notification from the engine about finished tasks
         void notify( engine::Notification* notification );

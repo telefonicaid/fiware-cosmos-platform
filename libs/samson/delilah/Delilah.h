@@ -51,6 +51,17 @@ namespace samson {
     class PopComponent;
     class DataSource;
     
+
+    // Private token to protect the local list of components
+    extern au::Token token_xml_info;
+    // Global xml-based information from the system
+    extern std::string xml_info;
+    // General document with the content of xml_info
+    extern pugi::xml_document doc;
+    // Cronometer for xml_info update
+    extern au::Cronometer cronometer_xml_info;
+   
+    
 	/**
 	   Main class for the samson client element
 	 */
@@ -70,14 +81,6 @@ namespace samson {
         
         bool trace_on;
 
-		// Private token to protect the local list of components
-		au::Token token_xml_info;
-        // Global xml-based information from the system
-        std::string xml_info;
-        // General document with the content of xml_info
-        pugi::xml_document doc;
-        // Cronometer for xml_info update
-        au::Cronometer cronometer_xml_info;
         
 	public:
 		
@@ -163,9 +166,6 @@ namespace samson {
 	private:		
 		
 		size_t addComponent( DelilahComponent* component );
-        
-        void _receive_global_update( Packet *packet );
-        
 		
 	};
 }

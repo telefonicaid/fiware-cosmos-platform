@@ -181,6 +181,9 @@ namespace engine
 		
         output << "<disk_manager>\n";
         
+        au::xml_simple( output , "num_pending_operations" , pending_operations.size() );
+        au::xml_simple( output , "num_running_operations" , pending_operations.size() );
+        
 		output << "<running>\n";
 		for ( std::set<DiskOperation*>::iterator i = running_operations.begin() ; i != running_operations.end() ; i++)
 			(*i)->getInfo(output);

@@ -90,9 +90,9 @@ namespace samson
 
         // Add process ( calls to addProcess are extected here )
         virtual void run_process(){}
-        
-        // Get a debugging string
-        std::string getStatus();
+
+        // xml info
+        void getInfo( std::ostringstream& output);
 	
         // General notification function ( memory requests / disk operations / process )
         void notify( engine::Notification* notification );

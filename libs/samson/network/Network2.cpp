@@ -337,27 +337,29 @@ void Network2::endpointListShow(const char* why, bool forced)
 *
 * getState - 
 */
-std::string Network2::getState(std::string selector)
+void Network2::getInfo( std::ostringstream& output )
 {
-	std::string  output;
+	std::ostringstream  txt;
 	char         partString[256];
 	Endpoint2*   ep;
 	int          eps = 0;
 
-	output = "";
+    au::xml_open(output,"network");
+    au::xml_open(output,"description");
 
 	for (unsigned int ix = 0; ix < epMgr->endpoints; ix++)
 	{
 		ep = epMgr->endpoint[ix];
 		if (ep == NULL)
 			continue;
-
-		output += ep->statusString(partString, sizeof(partString), ix);
+        ep->statusString(partString, sizeof(partString), ix);
+		output << partString;
 		++eps;
 	}
 
-	snprintf(partString, sizeof(partString), "Connected to %d endpoints:\n", eps);
-	return std::string(partString) + output;
+    au::xml_close(output,"description");
+    au::xml_close(output,"network");
+    
 }
 
 

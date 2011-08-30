@@ -58,6 +58,7 @@ namespace au
         {
             // Accumulate message
             pending_messages.push_back( message );
+            return;
         }
         
 		std::ostringstream output;

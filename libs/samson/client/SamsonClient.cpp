@@ -20,8 +20,11 @@
 #include "engine/Engine.h"                      // engine::Engine
 #include "engine/MemoryManager.h"               // engine::MemoryManager
 #include "engine/DiskManager.h"                 // engine::DiskManager
+#include "engine/ProcessManager.h"              // engine::ProcessManager
 
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
+
+#include "samson/module/ModulesManager.h"       // samson::ModulesManager
 
 #include "samson/network/Network2.h"
 #include "samson/network/EndpointManager.h"
@@ -62,15 +65,12 @@ namespace samson {
         samson::SamsonSetup::shared()->setValueForParameter("general.memory", au::str("%lu",memory) );
         samson::SamsonSetup::shared()->setValueForParameter("load.buffer_size",  au::str("%lu",load_buffer_size) );
         
-        // Init the engine sussytem
         engine::Engine::init();
-
-        // Init the memory manager
-        engine::MemoryManager::init(  samson::SamsonSetup::getUInt64("general.memory") );
+        engine::DiskManager::init(1);
+        engine::ProcessManager::init(samson::SamsonSetup::getInt("general.num_processess"));
+        engine::MemoryManager::init(samson::SamsonSetup::getUInt64("general.memory"));
         
-        // Init the disk manager for the popQueue operations
-        engine::DiskManager::init( 1 );
-        
+        samson::ModulesManager::init();         // Init the modules manager
         
         // Initialize the network element for delilah
         networkP  = new samson::Network2( samson::Endpoint2::Delilah, controller.c_str() );
@@ -78,28 +78,31 @@ namespace samson {
         // Init the network connection in background
         networkP->runInBackground();
         
-        
-        // Check connection is ok...
-        for (int i = 0 ; i < 10 ; i++ )
-        {
-            if( networkP->ready() )
-                break;
-            else
-                sleep(1);
-        }
-
-        if( !networkP->ready() )
-        {
-            error_message = au::str( "Not possible to connect with controller '%s'", controller.c_str() );
-            return false;
-        }
+        //
+        // What until the network is ready
+        //
+        //std::cout << "\nConnecting to SAMSOM controller " << controller << " ...";
+        while (!networkP->ready())
+            usleep(1000);
+        //std::cout << " OK\n";
         
         //
         // Ask the Controller for the platform process list
+        //
+        // First, give controller some time for the interchange of Hello messages
+        //
         samson::Packet*  packetP  = new samson::Packet(samson::Message::Msg, samson::Message::ProcessVector);
         
         LM_TODO(("I should probably go through NetworkInterface here ..."));
-        epMgr->controller->send( packetP );
+        networkP->epMgr->controller->send( packetP );
+        
+        //
+        // What until the network is ready II
+        //
+        //std::cout << "Connecting to all workers ...";
+        while (!networkP->ready(true))
+            sleep(1);
+        //std::cout << " OK\n";
         
         // Create a DelilahControler once network is ready
         delilah = new Delilah( networkP, true );
@@ -141,12 +144,13 @@ namespace samson {
             while (delilah->isActive( id ) )
             {
                 std::string description =  delilah->getDescription( id );
+/*
 #ifdef __LP64__
                 printf("Waiting %lu: %s\n" , id , description.c_str() );
 #else
                 printf("Waiting %d: %s\n" , id , description.c_str() );
 #endif
-                
+*/              
                 sleep(1);
             }
         }

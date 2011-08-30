@@ -93,6 +93,9 @@ namespace samson {
 			command.clear();
 		}
 		
+        void getInfo( std::ostringstream& output)
+        {
+        }
 		
 		
 	};
@@ -121,6 +124,8 @@ namespace samson {
 		JobManager *jobManager;			// Pointer to the job manager
 		size_t id;						// Identifier of the job ( this is the one reported to delialh to monitorize a job)
 
+		JobStatus _status;	// Status of this job
+
 		// Basic information about this job
 		time_t time_init;					// Init time of this job ( to monitor the operation )
 		int fromIdentifier;					// Identifier of the delailah that ordered this job
@@ -128,8 +133,6 @@ namespace samson {
 		
 		std::string error_line;				// One line message for the error ( used in the cancel message of the data log)
 		std::string error_message;			// Complete error description
-		
-		JobStatus _status;	// Status of this job
 		
 		// Information about current running task
 		ControllerTask *currenTask;

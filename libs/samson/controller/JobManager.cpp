@@ -168,6 +168,8 @@ namespace samson {
         au::xml_open(output , "job_manager");
         au::xml_iterate_map( output , "jobs" , job );
         au::xml_close(output , "job_manager");
+        
+        taskManager.getInfo(output);        
     }
 
 

@@ -58,6 +58,8 @@ namespace samson {
 		virtual void quit();	
         
         void delilahSend(PacketSenderInterface* packetSender, Packet* packetP);
+
+        void getInfo( std::ostringstream& output );
         
 	};
 	

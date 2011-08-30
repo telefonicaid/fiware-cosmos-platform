@@ -126,8 +126,8 @@ namespace samson {
 		// Common information for this task
 		ProcessAssistantSharedFileCollection *reduceInformation;
 		
-		// Debuggin string
-		std::string getStatus();
+		// xml information
+        void getInfo( std::ostringstream& output);
 		
 		// Set of vectorBuffers for each output queue
 		au::map<std::string , QueueuBufferVector> queueBufferVectors;		// Buffer of vector for key-value outputs ( buffered in memory for performance )	

@@ -221,7 +221,10 @@ namespace samson {
     {
         au::xml_open(output, "controller_task");
         
-        au::xml_simple(output , "id" , job->getId() );
+        au::xml_simple(output , "id" , id );
+        au::xml_simple(output , "job_id" , job->getId() );
+        
+        au::xml_simple(output, "name", info->operation_name );
         
         switch ( state ) {
             case init:

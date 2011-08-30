@@ -90,22 +90,26 @@ namespace samson {
             addOption("ls_states");                      // Get a list of all current tasks in the system
             addOption("ps_stream");                     // Get a list of stream task
             addOption("ls_modules");                     // Get a list of stream task
+            addOption("ls_operations");         
+            addOption("ls_datas");         
         }
         
         void addOperations()
         {
-            au::TokenTaker tt( &info_lock );
-            
-            
+            LM_TODO(("Implement add operations..."));
+
+            /*
             if( ol )
                 for (int i = 0 ; i < ol->operation_size()  ; i++)
                     addOption( ol->operation(i).name() );
+             */
             
         }
         
         void addQueueOptions( network::KVFormat *format )
         {
-                        
+            LM_TODO(("Add queue options..."));
+            /*
             // add available queues...
             au::TokenTaker tt( &info_lock );
             
@@ -131,13 +135,14 @@ namespace samson {
                         
                     }
                 }
-            
+*/            
             
         }        
         
         
         void addQueueForOperation( std::string mainCommand , int argument_pos )
         {
+            /*
             network::KVFormat *format = NULL;
             
             {
@@ -168,11 +173,14 @@ namespace samson {
                         }
                 
             }
-            
+             
             addQueueOptions(format);
             
             if( format )
                 delete format;
+             
+             */
+
         }
         
         

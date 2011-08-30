@@ -116,8 +116,10 @@ namespace samson {
         // get xml information
         void getInfo( std::ostringstream& output )
         {
+            output << "<format>\n";
             output << "<key_format>" << keyFormat << "</key_format>\n";
             output << "<value_format>" << valueFormat << "</value_format>\n";
+            output << "</format>\n";
         }
         
         

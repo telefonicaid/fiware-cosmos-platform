@@ -298,6 +298,7 @@ namespace samson
     void DelilahMonitorization::printQueues()
     {
         
+        /*
         au::TokenTaker tt( &info_lock );
 
         
@@ -371,12 +372,13 @@ namespace samson
             print(" ");
             
         }
+         */
 
     }
 
     void DelilahMonitorization::printQueuesTasks()
     {
-
+/*
         au::TokenTaker tt( &info_lock );
 
         std::istringstream is_xml_document( xml_info );
@@ -428,6 +430,7 @@ namespace samson
             }
             
         }
+ */
         
     }    
     

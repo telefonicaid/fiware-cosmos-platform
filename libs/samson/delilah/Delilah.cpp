@@ -44,7 +44,7 @@ namespace samson {
      *
      * Delilah::Delilah
      */
-    Delilah::Delilah( NetworkInterface* _network , bool automatic_update ) : token("Delilah")
+    Delilah::Delilah( NetworkInterface* _network , bool automatic_update ) : token("Delilah_token") , token_xml_info("Delilah_token_xml_info")
     {
 		
         // Description for the PacketReceiver
@@ -86,34 +86,10 @@ namespace samson {
         // Send a message to the controller to receive an update of the information
         if( network->isConnected( network->controllerGetIdentifier()  ) )
         {
-            
-            {
-				// Message to update the local list of queues
-				Packet*           p = new Packet( Message::Command );
-				network::Command* c = p->message->mutable_command();
-				c->set_command( "ls -global_update" );
-				p->message->set_delilah_id( 1 );    // Spetial id for global update
-				//copyEnviroment( &environment , c->mutable_environment() );
-				network->sendToController( p );
-            }
-            
-            {
-				// Message to update the local list of operations
-				Packet*           p = new Packet(Message::Command);
-				network::Command* c = p->message->mutable_command();
-				c->set_command( "o -global_update" );
-				p->message->set_delilah_id( 1 );    // Spetial id for global update
-				//copyEnviroment( &environment , c->mutable_environment() );
-				network->sendToController( p );
-            }	
-            
-            {
-                // Message to update the worker status list
-                Packet*           p = new Packet(Message::StatusRequest);
-                p->message->set_delilah_id( 1 );    // Spetial id for global update
-                network->sendToController( p );
-            }	
-            
+            // Message to update the worker status list
+            Packet*           p = new Packet(Message::StatusRequest);
+            p->message->set_delilah_id( 1 );    // Spetial id for global update
+            network->sendToController( p );
         }
         
         

@@ -208,6 +208,7 @@ namespace samson {
                 outputFormats[i].getInfo( output );
             output << "</output_formats>\n";
             
+            output << "<help>" << _helpLine << "</help>\n";
             
             output << "</operation>\n";
         }

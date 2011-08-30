@@ -51,11 +51,6 @@ namespace samson {
     class PopComponent;
     class DataSource;
     
-	extern au::Token info_lock;						// Lock to protect the information provided here
-    
-	extern network::OperationList *ol;              // List of available opertions ( updated periodically for autocompletion )
-	extern network::QueueList *ql;                  // List of queues in the system ( updated periodically for autocompletion )
-    
 	/**
 	   Main class for the samson client element
 	 */
@@ -75,6 +70,8 @@ namespace samson {
         
         bool trace_on;
 
+		// Private token to protect the local list of components
+		au::Token token_xml_info;
         // Global xml-based information from the system
         std::string xml_info;
         // General document with the content of xml_info

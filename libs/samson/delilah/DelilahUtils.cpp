@@ -265,7 +265,7 @@ namespace samson {
         
         
         int num_operations  = getNumChildrens( node.first_element_by_path("operations") , "operation" );
-        int num_datas       = getNumChildrens( node.first_element_by_path("datas") , "dats" );
+        int num_datas       = getNumChildrens( node.first_element_by_path("datas") , "data" );
         
         output << "  Module " << std::left << std::setw(25) << name << " " << std::setw(10) << version;
         output << std::setw(15) << au::str("[ #ops: %3d #datas: %3d ]",num_operations, num_datas);

@@ -235,13 +235,6 @@ namespace samson {
 			// A packet with a particular command is received (controller expect to send a confirmation message)
 			LM_T(LmtTask, ("Got a WorkerTask message"));
 			
-			if( packet->message->worker_task().operation() == "reload_modules" )
-			{
-				// Spetial operation to reload modules
-				ModulesManager::shared()->reloadModules();
-				return;
-			}
-			
 			// add task to the task manager
 			taskManager.addTask( packet->message->worker_task() );
 			return;
@@ -532,6 +525,12 @@ namespace samson {
         std::string main_command = cmd.get_argument(0);
         
         au::ErrorManager error;
+        
+        if( main_command == "reload_modules" )
+        {
+            // Spetial operation to reload modules
+            ModulesManager::shared()->reloadModules();
+        }
         
         if ( cmd.get_argument(0) == "push_state_to_queue" )
         {

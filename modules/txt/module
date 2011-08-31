@@ -2,7 +2,7 @@ Module txt
 {
 	title	"Basic txt manipulation"
 	author	"Andreu Urruela"
-	version "0.1.1"
+	version "0.1.2"
 }
 
 data Collocation

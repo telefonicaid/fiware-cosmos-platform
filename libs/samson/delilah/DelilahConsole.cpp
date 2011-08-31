@@ -961,9 +961,20 @@ namespace samson
         
         if( main_command == "ls_modules" )
         {
-            std::string txt = getStringInfo("//modules_manager//module", getModuleInfo, i_controller | i_worker | i_delilah ); 
+            
+            std::string command;
+            if( commandLine.get_num_arguments() > 1 )
+            {
+                std::string argument =  commandLine.get_argument(1);
+                command = au::str("//modules_manager//module[starts-with(name,'%s')]" , argument.c_str() );
+            }
+            else
+                command = "//modules_manager//module";
+            
+            std::string txt = getStringInfo( command , getModuleInfo, i_controller | i_worker | i_delilah ); 
             writeOnConsole( txt );
             return 0;
+            
         }
 
         

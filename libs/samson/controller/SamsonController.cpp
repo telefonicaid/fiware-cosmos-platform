@@ -529,12 +529,11 @@ namespace samson {
 					// Send a message to each worker to also reload modules
 					for (int i = 0 ; i < num_workers ; i++)
 					{
-						Packet *p = new Packet(Message::WorkerTask);
-						network::WorkerTask* wt=  p->message->mutable_worker_task();
-						wt->set_operation( "reload_modules" );	// Spetial operation to reload modules
+						Packet *p = new Packet(Message::WorkerCommand);
+                        p->message->set_delilah_id(0);
+                        network::WorkerCommand *wc = p->message->mutable_worker_command();
 
-                        wt->set_task_id(0); // Special case for reload operation
-                        
+						wc->set_command("reload_modules");
 						network->send(  network->workerGetIdentifier(i) ,  p);
 					}
 

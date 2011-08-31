@@ -64,10 +64,10 @@ namespace samson {
             
             
             // Main commands
-            main_commands.push_back("show_general");
-            main_commands.push_back("show_tasks");
-            main_commands.push_back("show_queues");
-            main_commands.push_back("show_queues_tasks");
+            main_commands.push_back("engine_show");
+            main_commands.push_back("ps_tasks");
+            main_commands.push_back("ls_queues");
+            main_commands.push_back("ps_stream");
 		}
 		
 		~DelilahMonitorization()
@@ -120,13 +120,6 @@ namespace samson {
 
         // Autocompletion function
         void auto_complete( std::vector<std::string>& previous_words , std::string& current_word ,std::vector<std::string>& command_options );
-        
-    private:
-
-        void printGeneral();
-        void printTask();
-        void printQueues();
-        void printQueuesTasks();
         
         
 	};

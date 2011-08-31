@@ -450,6 +450,8 @@ namespace samson {
 	
     int Delilah::getUpdateSeconds()
     {
+        au::TokenTaker tt( &token_xml_info );
+        
         int time = cronometer_xml_info.diffTimeInSeconds();
    
         int worker_update_time = (int) pugi::UInt64( doc , "//controller/update_time" );
@@ -480,6 +482,116 @@ namespace samson {
         au::xml_close(output, "delilah");
         
     }    
+    
+    std::string Delilah::getStringInfo( std::string path , node_to_string_function _node_to_string_function  , int options )
+    {
+        
+        if( !checkXMLInfoUpdate() )
+            return 0;
+        
+        {
+            au::TokenTaker tt( &token_xml_info );
+            
+            
+            std::ostringstream output;
+            
+            output << "\n";
+            
+            if( options & i_controller )
+            {
+                if( !(options & i_no_title ) )
+                {
+                    output << "============================================================\n";
+                    output << "Controller :\n";
+                    output << "============================================================\n";
+                    output << "\n";
+                }
+                
+                pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//controller" + path );
+                
+                for ( size_t i = 0 ; i < nodes.size() ; i++ )
+                {
+                    const pugi::xml_node& node = nodes[i].node(); 
+                    output << _node_to_string_function( node ) << "\n" ;
+                }      
+                output << "\n";
+            }
+            
+            if( options & i_worker )
+            {
+                pugi::ValuesCollection workers_ids = pugi::values(doc, "//worker/id");
+                
+                for ( size_t w = 0 ; w < workers_ids.size() ; w++ )
+                {
+                    
+                    if( !(options & i_no_title ) )
+                    {
+                        output << "============================================================\n";
+                        output << "Worker " << workers_ids[w] << ":\n";
+                        output << "============================================================\n";
+                        output << "\n";
+                    }
+                    
+                    pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//worker[id=" + workers_ids[w] + "]" + path );
+                    
+                    for ( size_t i = 0 ; i < nodes.size() ; i++ )
+                    {
+                        const pugi::xml_node& node = nodes[i].node(); 
+                        output << _node_to_string_function( node ) << "\n" ;
+                    }            
+                    
+                    output << "\n";
+                    
+                }
+            }
+            
+            
+            if( options & i_delilah )
+            {
+                if( !(options & i_no_title ) )
+                {
+                    output << "============================================================\n";
+                    output << "Delilah :\n";
+                    output << "============================================================\n";
+                    output << "\n";
+                }
+                
+                pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//delilah" + path );
+                
+                for ( size_t i = 0 ; i < nodes.size() ; i++ )
+                {
+                    const pugi::xml_node& node = nodes[i].node(); 
+                    output << _node_to_string_function( node ) << "\n" ;
+                }            
+            }
+            
+            output << "\n";
+            return output.str();
+            
+        }
+        
+        
+    }    
+    
+    bool Delilah::checkXMLInfoUpdate()
+    {
+        int soft_limit = 10;
+        int hard_limit  = 60;
+        
+        int time = getUpdateSeconds();
+        
+        if( time < soft_limit )
+            return true;
+        
+        if( time < hard_limit )
+        {
+            showWarningMessage( au::str( "Monitorization information is %d seconds old" , time ) );
+            return true;
+        }
+        
+        showErrorMessage( au::str( "Monitorization information is %d seconds old" , time ) );
+        return false;
+    }
     
 }
 

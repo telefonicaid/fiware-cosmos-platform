@@ -26,16 +26,15 @@
 #include "samson/module/ModulesManager.h"           // samson::ModulesManager
 
 #include "samson/delilah/Delilah.h"					// samson::Delailh
-#include "samson/delilah/DelilahConsole.h"				// Own interface
+#include "samson/delilah/DelilahConsole.h"			// Own interface
 
-#include "DelilahUploadDataProcess.h"		// samson::DelilahUpLoadDataProcess
-#include "DelilahDownloadDataProcess.h"		// samson::DelilahDownLoadDataProcess
-#include "engine/MemoryManager.h"				// samson::MemoryManager
-#include "samson/common/EnvironmentOperations.h"						// Environment operations (CopyFrom)
-#include "samson/module/samsonVersion.h"		// SAMSON_VERSION
+#include "DelilahUploadDataProcess.h"               // samson::DelilahUpLoadDataProcess
+#include "DelilahDownloadDataProcess.h"             // samson::DelilahDownLoadDataProcess
+#include "engine/MemoryManager.h"                   // samson::MemoryManager
+#include "samson/common/EnvironmentOperations.h"	// Environment operations (CopyFrom)
+#include "samson/module/samsonVersion.h"            // SAMSON_VERSION
 
-
-#include "samson/stream/BlockManager.h"     // samson::stream::BlockManager
+#include "samson/stream/BlockManager.h"             // samson::stream::BlockManager
 
 #include "PushComponent.h"  
 
@@ -267,35 +266,7 @@ namespace samson
         { NULL , NULL }   
     };
     
-    std::string getBLockListInfo( pugi::node node )
-    {
-        size_t size_total =  pugi::getUInt64( node , "size_total" );
-        size_t size_on_memory =  pugi::getUInt64( node , "size_on_memory" );
-        size_t size_on_disk =  pugi::getUInt64( node , "size_on_disk" );
-        
-        int num_blocks = pugi::getInt( node , "num_blocks" );
-        size_t kvs = pugi::getUInt64( node , "kvs" );
-        size_t size = pugi::getUInt64( node , "size" );
-        
-        if( ( kvs == 0 ) && (size == 0) )
-            return "Empty";
-        
-        std::ostringstream output;
-        output << num_blocks << " blocks with ";
-        output << au::str( kvs , "kvs" ) << " in ";
-        output << au::str( size , "bytes" )  ;
-        output << " ";
-        if( size_total > 0 )
-        {
-            double p_memory = (double) size_on_memory / (double) size_total;
-            double p_disk = (double) size_on_disk / (double) size_total;
-            
-            output << au::Format::percentage_string( p_memory ) << " on memory & " << au::Format::percentage_string( p_disk ) << " on disk";
-        }
-        
-        return output.str();
-    }
-    
+
     
     // Generic list of information from the xml document
     
@@ -305,363 +276,9 @@ namespace samson
         pugi::str( node , 0 ,  output , 1000 );
         return output.str();
     }
+      
     
-    std::string getStreamOperationInfo( const pugi::xml_node& node )
-    {
-        // Get information for this state    
-        std::string name = pugi::get( node , "name" );
-        std::string description = pugi::get( node , "description" );
-        
-        std::ostringstream output;
-        output << std::setw(15) << name << "  " << description;
-        return output.str();
-        
-    }
-    
-    std::string getQueueInfo( const pugi::xml_node& queue )
-    {
-        
-        // Get information for this state    
-        std::string name = pugi::get( queue , "name" );
-        
-        const pugi::node block_list = queue.first_element_by_path("block_list");
-        
-        std::ostringstream output;
-        output << std::setw(15) << name << ": [ "  << getBLockListInfo (block_list ) << " ]";
-        
-        return output.str();
-    }
 
-    std::string getFormatInfo( const pugi::xml_node& node )
-    {
-        // Get information for this state    
-        std::string key_format = pugi::get( node , "key_format" );
-        std::string value_format = pugi::get( node , "value_format" );
-
-        std::ostringstream output;
-        output << "[" << key_format << "-" << value_format << "]";
-        return output.str();
-    }
-
-    std::string getDataInfo( const pugi::xml_node& node )
-    {
-        std::ostringstream output;
-        
-        // Get information for this state    
-        std::string name = pugi::get( node , "name" );
-        std::string help = pugi::get( node , "help" );
-        
-        output << "** " << std::left << std::setw(40) << name << " - " << help;
-        
-        return output.str();
-    }
-    
-    
-    std::string getOperationInfo( const pugi::xml_node& node )
-    {
-        std::ostringstream output;
-
-        // Get information for this state    
-        std::string name = pugi::get( node , "name" );
-        std::string type = pugi::get( node , "type" );
-        std::string help = pugi::get( node , "help" );
-        
-        output << "** " << name << " ( " << type << " )\n";
-
-        output << "\t\tInputs: ";
-        pugi::xml_node input_formats = node.first_element_by_path("input_formats");
-        for( pugi::xml_node_iterator n = input_formats.begin() ; n != input_formats.end() ; n++)
-            output << getFormatInfo(*n) << " ";
-        output << "\n";
-
-        output << "\t\tOutputs: ";
-        pugi::xml_node output_formats = node.first_element_by_path("output_formats");
-        for( pugi::xml_node_iterator n = output_formats.begin() ; n != output_formats.end() ; n++)
-            output << getFormatInfo(*n) << " ";
-        output << "\n";
-        output << "\t\tHelp: " << help << "\n";
-
-        return output.str();
-        
-    }
-    
-    std::string getTaskInfo( const pugi::xml_node& node )
-    {
-        std::string id = pugi::get( node , "id" );
-        std::string job_id = pugi::get( node , "job_id" );
-        std::string name = pugi::get( node , "name" );
-        std::string state = pugi::get( node , "state" );
-
-        std::ostringstream output;
-        output << "[ " << id << " ] [ Job " << job_id << " ] [ " << state << " ] " << name << " " ;
-        
-        if( state == "running" )
-        {
-            size_t total_info = pugi::getUInt64( node , "total_info" );
-            size_t running_info = pugi::getUInt64( node , "running_info" );
-            size_t processed_info = pugi::getUInt64( node , "processed_info" );
-            
-            output << "[ Progress: ";
-            output << au::str( running_info , "bytes" ) << " / ";
-            output << au::str( processed_info , "bytes" ) << " / ";
-            output << au::str( total_info , "bytes" );
-            output << "]";
-        }
-        
-        return output.str();
-        
-    }
-    
-    std::string getWorkerTaskInfo( const pugi::xml_node& node )
-    {
-        std::string task_id = pugi::get( node , "task_id" );
-        std::string operation = pugi::get( node , "operation" );
-        std::string status = pugi::get( node , "status" );
-        
-        int num_workers = (int) pugi::getUInt64( node , "num_workers" );
-        int num_finished_workers = (int) pugi::getUInt64( node , "num_finished_workers" );
-        
-        std::ostringstream output;
-        output << "[ " << task_id << " ] [ " << status << " ] " << operation << " " ;
-
-        if( num_finished_workers == num_workers )
-            output << " All workers finised ";
-        else
-            output << " Completed workers " << num_finished_workers << " / " << num_workers;
-
-        
-        au::Descriptors descriptors;
-        pugi::xml_node node_worker_subtasks = node.first_element_by_path("worker_subtasks");        
-        for( pugi::xml_node_iterator n = node_worker_subtasks.begin() ; n != node_worker_subtasks.end() ; n++)
-        {
-            std::string description = pugi::get(*n, "description" );
-            std::string state = pugi::get(*n, "state" );
-            descriptors.add( au::str( "[ %s : %s ]" , description.c_str() , state.c_str() ) );
-        }
-        
-        output << "\n\t SubTasks: " << descriptors.str();
-        
-        
-        
-        
-        return output.str();
-        
-    }    
-    
-    
-    std::string getJobInfo( const pugi::xml_node& node )
-    {
-        std::ostringstream output;
-        
-        std::string id = pugi::get( node , "id" );
-        std::string command = pugi::get( node , "command" );
-        std::string status = pugi::get( node , "status" );
-        
-        output << "  [ " << id << " ] [ " << std::setw(10) << std::left <<  status << " ] " << command;
-
-        pugi::xml_node current_task = node.first_element_by_path("current_task").first_element_by_path("controller_task");
-        
-        if( pugi::get( current_task , "id" ) != "" )
-            output << "\n\tCurrent task: " << getTaskInfo( current_task );
-        
-        return output.str();
-    }
-    
-    std::string getModuleInfo( const pugi::xml_node& node )
-    {
-        std::ostringstream output;
-
-        std::string name = pugi::get( node , "name" );
-        std::string version = pugi::get( node , "version" );
-        std::string author = pugi::get( node , "author" );
-
-        
-        int num_operations  = getNumChildrens( node.first_element_by_path("operations") , "operation" );
-        int num_datas       = getNumChildrens( node.first_element_by_path("datas") , "dats" );
-        
-        output << "  Module " << std::left << std::setw(25) << name << " " << std::setw(10) << version;
-        output << std::setw(15) << au::str("[ #ops: %3d #datas: %3d ]",num_operations, num_datas);
-        output << " ( " << author << ")";
-        
-        return output.str();
-    }
-
-    std::string getNetworkInfo( const pugi::xml_node& node )
-    {
-        std::ostringstream output;
-        
-        std::string description = pugi::get( node , "description" );
-        output << description << "\n";
-        return output.str();
-    }
-    
-    std::string getEngineSystemInfo( const pugi::xml_node& node )
-    {
-        
-        pugi::xml_node node_memory_manager = node.first_element_by_path("memory_manager");
-        pugi::xml_node node_disk_manager = node.first_element_by_path("disk_manager");
-        pugi::xml_node node_process_manager = node.first_element_by_path("process_manager");
-        
-        std::ostringstream output;
-        
-        size_t memory       = pugi::getUInt64( node_memory_manager , "memory" );
-        size_t used_memory  = pugi::getUInt64( node_memory_manager , "used_memory" );
-        int num_buffers  = (int) pugi::getUInt64( node_memory_manager , "num_buffers" );
-        
-        output << "** Memory: " << au::str( used_memory , "bytes" ) << " / " << au::str( memory , "bytes" ) << " ( " << num_buffers << " buffers )\n";
-
-        
-        size_t num_pending_operations = pugi::getUInt64( node_disk_manager , "num_pending_operations" );
-        size_t num_running_operations = pugi::getUInt64( node_disk_manager , "num_running_operations" );
-
-        std::string t_statistics = pugi::get( node_disk_manager.first_element_by_path("statistics").first_element_by_path("total") , "description" );
-        std::string r_statistics = pugi::get( node_disk_manager.first_element_by_path("statistics").first_element_by_path("read") , "description" );
-        std::string w_statistics = pugi::get( node_disk_manager.first_element_by_path("statistics").first_element_by_path("write") , "description" );
-
-        output << "\n";
-        
-        output << "** Disk: Running " << num_running_operations << " ops, waiting " << num_pending_operations << " ops\n";
-        output << "      READ  [ " << r_statistics << " ]\n"; 
-        output << "      WRITE [ " << w_statistics << " ]\n"; 
-        output << "      TOTAL [ " << t_statistics << " ]\n"; 
-
-
-        pugi::xml_node running = node_process_manager.first_element_by_path("running");
-        pugi::xml_node queued = node_process_manager.first_element_by_path("queued");
-        pugi::xml_node halted = node_process_manager.first_element_by_path("halted");
-        
-        au::Descriptors queued_elements;
-        pugi::xml_node_iterator n;
-        for( n = queued.begin() ; n != queued.end() ; n++)
-            queued_elements.add( pugi::get(*n , "operation_name" ) );
-
-        au::Descriptors halted_elements;
-        for( n = halted.begin() ; n != halted.end() ; n++)
-            halted_elements.add( pugi::get(*n , "operation_name" ) );
-
-        output << "\n";
-        
-        output << "** Process manager:\n";
-        output << "      QUEUED:  " << queued_elements.str() << "\n";
-        output << "      HALTED:  " << halted_elements.str() << "\n";
-        output << "      RUNNING:\n";
-
-        for(  n = running.begin() ; n != running.end() ; n++)
-        {
-            output << "         ";
-            output << "[ Priority " << pugi::get( *n , "priority") << " ] ";
-            output << "[ Progress " << au::Format::percentage_string( pugi::getDouble( *n , "progress") ) << " ] ";
-            output << pugi::get( *n , "operation_name");
-            output << "\n";
-            
-        }
-        
-        
-        return output.str();
-    }    
-    
-    std::string getSetInfo( const pugi::xml_node& queue )
-    {
-        std::ostringstream output;
-        
-        // Get information for this state    
-        std::string name = pugi::get( queue , "name" );
-        
-        size_t kvs = pugi::getUInt64( queue , "kvs" );
-        size_t size = pugi::getUInt64( queue , "size" );
-        
-        size_t num_files = pugi::getUInt64( queue , "num_files" );
-
-        pugi::xml_node format_node = queue.first_element_by_path("format");
-        
-        output << std::setw(30) << name;
-        output << " ";
-        output << au::str( kvs );
-        output << " kvs in ";
-        output << au::str( size ) << " bytes";
-        output << " #File: " << num_files;
-        output << " " << getFormatInfo( format_node );
-        
-        return output.str();
-    }
-    
-    
-    std::string DelilahConsole::getInfo( std::string path , node_to_string_function _node_to_string_function  , 
-                                        bool info_controller , bool info_workers , bool info_delilah )
-    {
-        if( !checkXMLInfoUpdate() )
-            return 0;
-        
-        std::ostringstream output;
-        
-        output << "\n";
-        
-        if( info_controller )
-        {
-            output << "============================================================\n";
-            output << "Controller :\n";
-            output << "============================================================\n";
-            output << "\n";
-            
-            pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//controller" + path );
-            
-            for ( size_t i = 0 ; i < nodes.size() ; i++ )
-            {
-                const pugi::xml_node& node = nodes[i].node(); 
-                output << _node_to_string_function( node ) << "\n" ;
-            }      
-            output << "\n";
-        }
-        
-        if( info_workers )
-        {
-            pugi::ValuesCollection workers_ids = pugi::values(doc, "//worker/id");
-            
-            for ( size_t w = 0 ; w < workers_ids.size() ; w++ )
-            {
-                
-                output << "============================================================\n";
-                output << "Worker " << workers_ids[w] << ":\n";
-                output << "============================================================\n";
-                output << "\n";
-                
-                pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//worker[id=" + workers_ids[w] + "]" + path );
-                
-                for ( size_t i = 0 ; i < nodes.size() ; i++ )
-                {
-                    const pugi::xml_node& node = nodes[i].node(); 
-                    output << _node_to_string_function( node ) << "\n" ;
-                }            
-                
-                output << "\n";
-
-            }
-        }
-        
-        if( info_delilah && info_workers )
-            output << "\n\n";     // Separation just in case
-        
-        if( info_delilah )
-        {
-            output << "============================================================\n";
-            output << "Delilah :\n";
-            output << "============================================================\n";
-            output << "\n";
-            
-            pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//delilah" + path );
-            
-            for ( size_t i = 0 ; i < nodes.size() ; i++ )
-            {
-                const pugi::xml_node& node = nodes[i].node(); 
-                output << _node_to_string_function( node ) << "\n" ;
-            }            
-        }
-
-        output << "\n";
-        
-        return output.str();
-        
-    }
     
     
     size_t DelilahConsole::runAsyncCommand( std::string command )
@@ -896,136 +513,7 @@ namespace samson
 			return 0;
 			
 		}
-        
-        if ( ( mainCommand == "info" ) || ( mainCommand == "i" ) )
-        {
-
-            if( commandLine.get_num_arguments() == 1 )
-            {
-                writeErrorOnConsole("Usage: info txt/xml/select/values/num/str/double [options]");
-                return 0;
-            }
-            
-            // Main xml command
-            std::string command = commandLine.get_argument(1);
-            
-            if( command == "xml" )
-            {
-                writeOnConsole( pugi::str( doc  , commandLine.get_flag_int("limit") ) );
-                return 0;
-            }
-            
-            if ( command == "txt" )
-            {
-                writeOnConsole( xml_info );
-                return 0;
-            }
-            
-            if( command == "values" )
-            {
-                if( commandLine.get_num_arguments() < 3 )
-                {
-                    writeErrorOnConsole("Usage info_query select select-query");
-                    return 0;
-                }
-                
-                std::string query = commandLine.get_argument(2);
-                writeWarningOnConsole(au::str("Running select %s" , query.c_str()));
-                
-                pugi::ValuesCollection vc = pugi::values(doc, query);
-                
-                writeWarningOnConsole( "Values: " + vc.str() );
-                
-                return 0;
-                
-            }
-            
-            if ( command == "num" )
-            {
-                if( commandLine.get_num_arguments() < 3 )
-                {
-                    writeErrorOnConsole("Usage info_query num query");
-                    return 0;
-                }
-                
-                std::string query_str = commandLine.get_argument(2);
-                
-                size_t result = pugi::UInt64( doc , query_str );
-                
-                writeWarningOnConsole(au::str("Running query %s wiht result %lu" , query_str.c_str() , result ) );
-                
-                return 0;
-            }            
-            
-            if ( command == "double" )
-            {
-                if( commandLine.get_num_arguments() < 3 )
-                {
-                    writeErrorOnConsole("Usage info double query");
-                    return 0;
-                }
-                
-                std::string query_str = commandLine.get_argument(2);
-                
-                double result = pugi::Double( doc , query_str );
-                
-                writeWarningOnConsole(au::str("Running query %s wiht result %f" , query_str.c_str() , result ) );
-                
-                return 0;
-            }            
-            
-            if ( command == "str" )
-            {
-                if( commandLine.get_num_arguments() < 3 )
-                {
-                    writeErrorOnConsole("Usage info_query num query");
-                    return 0;
-                }
-                
-                std::string query_str = commandLine.get_argument(2);
-                
-                std::string result = pugi::String( doc , query_str );
-                
-                writeWarningOnConsole(au::str("Running query %s wiht result %s" , query_str.c_str() , result.c_str() ) );
-                
-                return 0;
-            }            
-            
-            if ( ( command == "select" ) || ( command == "s" ) )
-            {
-                if( commandLine.get_num_arguments() < 3 )
-                {
-                    writeErrorOnConsole("Usage info_query select select-query");
-                    return 0;
-                }
-                
-                std::string query = commandLine.get_argument(2);
-                writeWarningOnConsole(au::str("Running select %s" , query.c_str()));
-                
-                pugi::xpath_node_set result;
-                try {
-                    result = doc.select_nodes( query.c_str() );
-                } catch (pugi::xpath_exception& ex) 
-                {
-                    writeErrorOnConsole( au::str( "Error in xpath query: %s" , ex.what() ) );
-                    return 0;
-                }
-                
-                // Transform the results into a string
-                std::ostringstream result_txt;
-                pugi::str( result , result_txt , commandLine.get_flag_int("limit") +2 ); // Orignal command is passed for addicional flag promcessing (-full -filter
-                
-                writeOnConsole(result_txt.str());
-                
-                return 0;
-                
-            }
-            
-            writeWarningOnConsole("Non implemented option");
-            
-            return 0;
-        }
-        
+          
         // Upload and download operations
         // ------------------------------------------------------------------------------------
         
@@ -1316,20 +804,153 @@ namespace samson
                 return sendWorkerCommand( command , NULL );
         }
         
+        if ( ( mainCommand == "info" ) || ( mainCommand == "i" ) )
+        {
+            
+            if( commandLine.get_num_arguments() == 1 )
+            {
+                writeErrorOnConsole("Usage: info txt/xml/select/values/num/str/double [options]");
+                return 0;
+            }
+            
+            // Main xml command
+            std::string command = commandLine.get_argument(1);
+            
+            if( command == "xml" )
+            {
+                writeOnConsole( pugi::str( doc  , commandLine.get_flag_int("limit") ) );
+                return 0;
+            }
+            
+            if ( command == "txt" )
+            {
+                writeOnConsole( xml_info );
+                return 0;
+            }
+            
+            if( command == "values" )
+            {
+                if( commandLine.get_num_arguments() < 3 )
+                {
+                    writeErrorOnConsole("Usage info_query select select-query");
+                    return 0;
+                }
+                
+                std::string query = commandLine.get_argument(2);
+                writeWarningOnConsole(au::str("Running select %s" , query.c_str()));
+                
+                pugi::ValuesCollection vc = pugi::values(doc, query);
+                
+                writeWarningOnConsole( "Values: " + vc.str() );
+                
+                return 0;
+                
+            }
+            
+            if ( command == "num" )
+            {
+                if( commandLine.get_num_arguments() < 3 )
+                {
+                    writeErrorOnConsole("Usage info_query num query");
+                    return 0;
+                }
+                
+                std::string query_str = commandLine.get_argument(2);
+                
+                size_t result = pugi::UInt64( doc , query_str );
+                
+                writeWarningOnConsole(au::str("Running query %s wiht result %lu" , query_str.c_str() , result ) );
+                
+                return 0;
+            }            
+            
+            if ( command == "double" )
+            {
+                if( commandLine.get_num_arguments() < 3 )
+                {
+                    writeErrorOnConsole("Usage info double query");
+                    return 0;
+                }
+                
+                std::string query_str = commandLine.get_argument(2);
+                
+                double result = pugi::Double( doc , query_str );
+                
+                writeWarningOnConsole(au::str("Running query %s wiht result %f" , query_str.c_str() , result ) );
+                
+                return 0;
+            }            
+            
+            if ( command == "str" )
+            {
+                if( commandLine.get_num_arguments() < 3 )
+                {
+                    writeErrorOnConsole("Usage info_query num query");
+                    return 0;
+                }
+                
+                std::string query_str = commandLine.get_argument(2);
+                
+                std::string result = pugi::String( doc , query_str );
+                
+                writeWarningOnConsole(au::str("Running query %s wiht result %s" , query_str.c_str() , result.c_str() ) );
+                
+                return 0;
+            }            
+            
+            if ( ( command == "select" ) || ( command == "s" ) )
+            {
+                if( commandLine.get_num_arguments() < 3 )
+                {
+                    writeErrorOnConsole("Usage info_query select select-query");
+                    return 0;
+                }
+                
+                std::string query = commandLine.get_argument(2);
+                writeWarningOnConsole(au::str("Running select %s" , query.c_str()));
+                
+                pugi::xpath_node_set result;
+                try {
+                    result = doc.select_nodes( query.c_str() );
+                } catch (pugi::xpath_exception& ex) 
+                {
+                    writeErrorOnConsole( au::str( "Error in xpath query: %s" , ex.what() ) );
+                    return 0;
+                }
+                
+                // Transform the results into a string
+                std::ostringstream result_txt;
+                pugi::str( result , result_txt , commandLine.get_flag_int("limit") +2 ); // Orignal command is passed for addicional flag promcessing (-full -filter
+                
+                writeOnConsole(result_txt.str());
+                
+                return 0;
+                
+            }
+            
+            writeWarningOnConsole("Non implemented option");
+            
+            return 0;
+        }
+        
+        
         if( main_command == "ls_queues" )
         {
-            au::TokenTaker tt( &token_xml_info );
-            
-            std::string txt = getInfo("/stream_manager/queues/queue", getQueueInfo, false, true, false ); 
+            std::string txt = getStringInfo("/stream_manager/queues/queue", getQueueInfo, i_worker ); 
+            writeOnConsole( txt );
+            return 0;
+        }
+        
+        if( main_command == "ls_states" )
+        {
+            std::string txt = getStringInfo("/stream_manager/states/state", getStateInfo, i_worker ); 
             writeOnConsole( txt );
             return 0;
         }
         
         if( main_command == "ls_modules" )
         {
-            au::TokenTaker tt( &token_xml_info );
-            
-            std::string txt = getInfo("//modules_manager//module", getModuleInfo, true, true, true ); 
+            std::string txt = getStringInfo("//modules_manager//module", getModuleInfo, i_controller | i_worker | i_delilah ); 
             writeOnConsole( txt );
             return 0;
         }
@@ -1337,8 +958,6 @@ namespace samson
         
         if( main_command == "ls_operations" )
         {
-            au::TokenTaker tt( &token_xml_info );
-         
             std::string command;
             if( commandLine.get_num_arguments() > 1 )
             {
@@ -1348,16 +967,13 @@ namespace samson
             else
                 command = "/modules_manager//operation";
                 
-            std::string txt = getInfo( command , getOperationInfo, true, false, false ); 
+            std::string txt = getStringInfo( command , getOperationInfo, i_controller ); 
             writeOnConsole( txt );
             return 0;
-            
         }
 
         if( main_command == "ls_datas" )
         {
-            au::TokenTaker tt( &token_xml_info );
-            
             std::string command;
             if( commandLine.get_num_arguments() > 1 )
             {
@@ -1367,154 +983,59 @@ namespace samson
             else
                 command = "/modules_manager//data";
             
-            std::string txt = getInfo( command , getDataInfo, true, false, false ); 
+            std::string txt = getStringInfo( command , getDataInfo, i_controller ); 
             writeOnConsole( txt );
             return 0;
-            
         }
-        
-        
         
         if( main_command == "ls_stream_operation" )
         {
-            au::TokenTaker tt( &token_xml_info );
-            
-            std::string txt = getInfo("//stream_operation", getStreamOperationInfo, true, false, false ); 
+            std::string txt = getStringInfo("//stream_operation", getStreamOperationInfo, i_controller  ); 
             writeOnConsole( txt );
             return 0;
         }
         
         if( main_command == "ls" )
         {
-            au::TokenTaker tt( &token_xml_info );
-            std::string txt = getInfo("//queue", getSetInfo, true, false, false ); 
+            std::string txt = getStringInfo("//queue", getSetInfo, i_controller  ); 
             writeOnConsole( txt );
             return 0;
         }
         
-        if( main_command == "ls_states" )
-        {
-            
-            std::ostringstream output;
-            
-            // Get all the workers node
-            pugi::ValuesCollection workers_ids = pugi::values(doc, "//worker/id");
-            
-            for ( size_t w = 0 ; w < workers_ids.size() ; w++ )
-            {
-                
-                output << "------------------------------------------------------------\n";
-                output << "Worker " << workers_ids[w] << ":\n";
-                output << "------------------------------------------------------------\n";
-                
-                pugi::xpath_node_set states  = pugi::select_nodes( doc , "//worker[id=" + workers_ids[w] + "]/stream_manager/states/state" );
-                
-                for ( size_t s = 0 ; s < states.size() ; s++ )
-                {
-                    const pugi::xml_node& state = states[s].node(); 
-                    
-                    // Get information for this state    
-                    std::string name = pugi::get( state, "name" );
-                    
-                    int num_state_items =  pugi::getInt( state , "num_state_items" );
-                    
-                    const pugi::node state_info = state.first_element_by_path("state_info").first_element_by_path("block_list");
-                    const pugi::node input_info = state.first_element_by_path("input_info").first_element_by_path("block_list");
-                    
-                    output << "State " << name << ": ( " << num_state_items << " state items ) ";
-                    output << " State: [ " << getBLockListInfo( state_info ) << " ] ";
-                    
-                    
-                    output << " Input: [ " << getBLockListInfo( input_info ) << " ] ";
-                    
-                    output << "\n";
-                    
-                    //pugi::str( state , 2 , output );
-                }
-                
-            }
-            
-            writeOnConsole( output.str() );
-            return 0;
-        }
 
         if( main_command == "ps_network" )
         {
-            au::TokenTaker tt( &token_xml_info );
-            
-            std::string txt = getInfo("/network", getNetworkInfo, true, true, true ); 
+            std::string txt = getStringInfo("/network", getNetworkInfo, i_controller | i_worker | i_delilah ); 
             writeOnConsole( txt );
             return 0;
         }
         
         if( main_command == "ps_jobs" )
         {
-            au::TokenTaker tt( &token_xml_info );
-            
-            std::string txt = getInfo("/job_manager//job", getJobInfo, true, false, false ); 
+            std::string txt = getStringInfo("/job_manager//job", getJobInfo,i_controller  ); 
             writeOnConsole( txt );
             return 0;
         }
 
         if( main_command == "ps_tasks" )
         {
-            au::TokenTaker tt( &token_xml_info );
             
-            std::string txt = getInfo("/controller_task_manager//controller_task", getTaskInfo, true, false, false ); 
-            
-
-            std::string txt2 = getInfo("/worker_task_manager//worker_task", getWorkerTaskInfo, false, true, false ); 
-
-            
+            std::string txt = getStringInfo("/controller_task_manager//controller_task", getTaskInfo, i_controller  ); 
+            std::string txt2 = getStringInfo("/worker_task_manager//worker_task", getWorkerTaskInfo, i_worker  ); 
             writeOnConsole( txt + txt2 );
             return 0;
         }
         
-        
         if( main_command == "ps_stream" )
         {
-            
-            std::ostringstream output;
-            
-            // Get all the workers node
-            pugi::ValuesCollection workers_ids = pugi::values(doc, "//worker/id");
-            
-            for ( size_t w = 0 ; w < workers_ids.size() ; w++ )
-            {
-                
-                output << "------------------------------------------------------------\n";
-                output << "Worker " << workers_ids[w] << ":\n";
-                output << "------------------------------------------------------------\n";
-                
-                pugi::xpath_node_set queue_tasks  = pugi::select_nodes( doc , "//worker[id=" + workers_ids[w] + "]/stream_manager//queue_task" );
-                
-                for ( size_t s = 0 ; s < queue_tasks.size() ; s++ )
-                {
-                    const pugi::xml_node& queue_task = queue_tasks[s].node(); 
-                    
-                    // Get information for this state    
-                    std::string id              = pugi::get( queue_task , "id" );
-                    std::string description     = pugi::get( queue_task , "description" );
-                    
-                    const pugi::node block_list = queue_task.first_element_by_path("block_list");
-                    
-                    output << "Task " << id << " : " << description << "\n";
-                    output << "            -> Input " << getBLockListInfo( block_list ) << "\n";
-                    
-                    //pugi::str( state , 2 , output );
-                }
-                
-            }
-            
-            writeOnConsole( output.str() );
-            return 0;            
+            std::string txt = getStringInfo("/stream_manager//queue_task", getQueueTaskInfo, i_worker ); 
+            writeOnConsole( txt );
+            return 0;
         }
         
         if( main_command == "engine_show" )
         {
-            au::TokenTaker tt( &token_xml_info );
-            
-            std::string txt = getInfo("/engine_system", getEngineSystemInfo, true, true, true ); 
+            std::string txt = getStringInfo("/engine_system", getEngineSystemInfo, i_controller | i_worker | i_delilah ); 
             writeOnConsole( txt );
             return 0;
         }
@@ -1973,24 +1494,5 @@ namespace samson
     }
     */
     
-    bool DelilahConsole::checkXMLInfoUpdate()
-    {
-        int soft_limit = 10;
-        int hard_limit  = 60;
-        
-        int time = getUpdateSeconds();
-        
-        if( time < soft_limit )
-            return true;
-        
-        if( time < hard_limit )
-        {
-            writeWarningOnConsole( au::str( "Monitorization information is %d seconds old" , time ) );
-            return true;
-        }
-        
-        writeErrorOnConsole( au::str( "Monitorization information is %d seconds old" , time ) );
-        return false;
-    }
     
 }

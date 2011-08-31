@@ -187,15 +187,13 @@ namespace au
         virtual std::string getPrompt(){ return " > "; };
         virtual void printContent()=0;
         
-        virtual void auto_complete( std::vector<std::string>& previous_words , std::string& current_word ,std::vector<std::string>& command_options )
-        {
-        }
-
+        virtual void auto_complete( std::vector<std::string>& previous_words , std::string& current_word ,std::vector<std::string>& command_options ){}
         
         virtual void evalComamnd( ){};
         virtual void evalRealTimeComamnd( ){};
         
         // Functions to be used int the virtual print() function
+        void printLines( std::string txt );
         void print( std::string line );
         void print( std::string left_line ,std::string rigth_line  );
         void printLine();

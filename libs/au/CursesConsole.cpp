@@ -185,6 +185,15 @@ namespace au
     
 #pragma mark Internal functions used in the print()
     
+    void CursesConsole::printLines( std::string txt )
+    {
+        std::vector<std::string> lines;
+        au::split(txt, '\n', lines);
+        
+        for ( size_t i = 0 ; i < lines.size() ; i++ )
+            print(lines[i]);
+    }
+    
     void CursesConsole::print( std::string line )
     {
         if( current_row > (rows-1) )

@@ -27,9 +27,10 @@
 #include <readline/history.h>
 #include <algorithm>
 
+#include "samson/delilah/DelilahUtils.h"        // getXXXInfo()
+
 namespace samson {
 	
-	typedef std::string(* node_to_string_function)(const pugi::xml_node&);		
 	
     char * command_generator (const char * text, int state);
 	char ** readline_completion ( const char* text, int start,int end );	
@@ -98,6 +99,7 @@ namespace samson {
         
         void addOperations()
         {
+            au::TokenTaker tt( &token_xml_info );
             std::vector<std::string> operation_names = pugi::values( doc , "//controller//operation/name" );
 
             for ( size_t i = 0 ;  i < operation_names.size() ; i++)
@@ -106,6 +108,7 @@ namespace samson {
 
         void addQueues( )
         {
+            au::TokenTaker tt( &token_xml_info );
             std::vector<std::string> queue_names = pugi::values( doc , "//controller//queue" );
             
             for ( size_t i = 0 ;  i < queue_names.size() ; i++)
@@ -115,6 +118,7 @@ namespace samson {
         
         void addQueueOptions( std::string key_format , std::string value_format )
         {
+            au::TokenTaker tt( &token_xml_info );
             std::string c = au::str( "//controller//queue[format/key_format=\"%s\"][format/value_format=\"%s\"]" 
                                     , key_format.c_str() , value_format.c_str() ); 
             
@@ -128,10 +132,13 @@ namespace samson {
         
         void addQueueForOperation( std::string mainCommand , int argument_pos )
         {
+            pugi::xpath_node_set node_set;
             
-            std::string c = au::str( "//controller//operation[name=\"%s\"]/input_formats/format[%d]" ,  mainCommand.c_str() , argument_pos+1 );
-            
-            pugi::xpath_node_set node_set = pugi::select_nodes(doc, c );
+            {
+                au::TokenTaker tt( &token_xml_info );
+                std::string c = au::str( "//controller//operation[name=\"%s\"]/input_formats/format[%d]" ,  mainCommand.c_str() , argument_pos+1 );
+                node_set = pugi::select_nodes(doc, c );
+            }
             
             if( node_set.size() > 0 )
             {
@@ -258,28 +265,26 @@ namespace samson {
 		}
 		
 		// Show a message on screen
-		virtual void showMessage( std::string message)
+		void showMessage( std::string message)
 		{
-			writeWarningOnConsole( message );
+			writeOnConsole( message );
 		}
+		void showWarningMessage( std::string message)
+        {
+			writeWarningOnConsole( message );
+        }
+        
+		void showErrorMessage( std::string message)
+        {
+			writeErrorOnConsole( message );
+        };
+
 		
 		virtual void showTrace( std::string message)
 		{
 			if( trace_on )
 				writeWarningOnConsole( message );
 		}
-
-      
-    private:
-
-        bool checkXMLInfoUpdate();
-
-        // Generic function to get lists of informations
-        std::string getInfo( 
-                    std::string path , 
-                    node_to_string_function _node_to_string_function  , 
-                    bool info_controller , bool info_workers , bool info_delilah 
-                    );
 
         
 	};

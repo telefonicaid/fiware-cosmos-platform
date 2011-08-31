@@ -40,9 +40,14 @@ namespace  engine {
 }
 
 namespace samson {
-	
+
+    const int i_controller  = 1;    
+    const int i_worker      = 1<<1;    
+    const int i_delilah     = 1<<2;    
+    const int i_no_title    = 1<<3;    
     
-	// Thread method
+	typedef std::string(* node_to_string_function)(const pugi::xml_node&);		
+    
 	class DelilahClient;
 	class DelilahComponent;
 	class DelilahUploadDataProcess;
@@ -137,10 +142,10 @@ namespace samson {
         virtual void delilahComponentFinishNotification( DelilahComponent *component){};
 
 		// Write something on screen
-		virtual void showMessage( std::string message)
-        {
-        }
-
+		virtual void showMessage( std::string message){};
+		virtual void showWarningMessage( std::string message){};
+		virtual void showErrorMessage( std::string message){};
+        
 		// Show traces  ( by default it does nothing )
 		virtual void showTrace( std::string message){};
 		
@@ -162,6 +167,11 @@ namespace samson {
         int getUpdateSeconds();     // Get the update time
         
         void getInfo( std::ostringstream& output);
+
+        // Generic function to get lists of informations
+        std::string getStringInfo( std::string path , node_to_string_function _node_to_string_function  ,  int options );
+        
+        bool checkXMLInfoUpdate();
         
 	private:		
 		

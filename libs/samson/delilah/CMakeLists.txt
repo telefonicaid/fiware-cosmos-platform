@@ -1,6 +1,7 @@
 
 SET (HEADERS
 	Delilah.h
+	DelilahUtils.h
 	DelilahConsole.h
 	DelilahMonitorization.h
 	DelilahClient.h
@@ -13,6 +14,7 @@ SET (HEADERS
 
 SET (SOURCES
 	Delilah.cpp
+	DelilahUtils.cpp
 	DelilahConsole.cpp
 	DelilahMonitorization.cpp
 	DelilahComponent.cpp

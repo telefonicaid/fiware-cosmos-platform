@@ -936,9 +936,20 @@ namespace samson
         
         if( main_command == "ls_queues" )
         {
-            std::string txt = getStringInfo("/stream_manager/queues/queue", getQueueInfo, i_worker ); 
+            
+            std::string command;
+            if( commandLine.get_num_arguments() > 1 )
+            {
+                std::string argument =  commandLine.get_argument(1);
+                command = au::str("/stream_manager/queues/queue[starts-with(name,'%s')]" , argument.c_str() );
+            }
+            else
+                command = "/stream_manager/queues/queue";
+            
+            std::string txt = getStringInfo( command , getQueueInfo, i_worker ); 
             writeOnConsole( txt );
             return 0;
+            
         }
         
         if( main_command == "ls_states" )

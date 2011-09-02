@@ -20,15 +20,11 @@
 
 #include "samson/stream/QueueTask.h"
 
-#include "samson/stream/State.h"
-#include "samson/stream/StateItem.h"
-
 #include "samson/stream/Queue.h"
 #include "samson/stream/QueueItem.h"
 
 #include "samson/stream/ParserQueueTask.h"            // samson::stream::ParserQueueTask
 
-#include "State.h"          // samson::stream::State
 
 #include "BlockList.h"          // BlockList
 

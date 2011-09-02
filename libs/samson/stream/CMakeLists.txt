@@ -12,8 +12,6 @@ SET (HEADERS
     PopQueue.h
     PopQueueManager.h
     StatesManager.h
-    State.h
-    StateItem.h
     StreamOperation.h
     ParserQueueTask.h
 
@@ -33,8 +31,6 @@ SET (SOURCES
     PopQueueManager.cpp
     PopQueue.cpp
     StatesManager.cpp
-    State.cpp
-    StateItem.cpp
     StreamOperation.cpp
     ParserQueueTask.cpp
 

@@ -174,14 +174,14 @@ int main(int argC, const char *argV[])
 		}
 
 		int res;
-		res = system("killall samsonWorker");
+		res = system("killall samsonWorker > /dev/null 2>&1");
 		if (res != 0)
-			LM_W(("killall samsonWorker failed"));
+			LM_T(LmtSpawner,("killall samsonWorker failed"));
 		usleep(200000);
 
-		res = system("killall samsonController");
+		res = system("killall samsonController > /dev/null 2>&1");
 		if (res != 0)
-			LM_W(("killall samsonController failed"));
+			LM_T(LmtSpawner,("killall samsonController failed"));
 		usleep(200000);
 	}
 
@@ -200,7 +200,6 @@ int main(int argC, const char *argV[])
 	engine::Engine::init();
 	engine::MemoryManager::init( samson::SamsonSetup::getUInt64("general.memory") );
 
-	LM_M(("Creating SamsonSpawner"));
 	spawnerP = new samson::SamsonSpawner();
 	spawnerP->init();	
 

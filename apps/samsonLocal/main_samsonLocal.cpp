@@ -133,7 +133,7 @@ int main(int argC, const char *argV[])
     
     if( thread_mode )
     {
-        LM_M(("samsonLocal started in thread mode"));
+        LM_M(("samsonLocal: started in thread mode"));
         samson::ProcessItemIsolated::isolated_process_as_tread = true;
     }
     
@@ -161,7 +161,7 @@ int main(int argC, const char *argV[])
 	// Google protocol buffer deallocation
 	atexit(	google::protobuf::ShutdownProtobufLibrary );
 	
-	LM_M(("samsonLocal started with memory=%s and #processors=%d", au::str( samson::SamsonSetup::getUInt64("general.memory") , "B").c_str() , samson::SamsonSetup::getInt("general.num_processess") ));
+	LM_M(("samsonLocal: Started with memory=%s and #processors=%d", au::str( samson::SamsonSetup::getUInt64("general.memory") , "B").c_str() , samson::SamsonSetup::getInt("general.num_processess") ));
 	
 	// Fake network element with N workers
     center = new samson::NetworkFakeCenter(workers);

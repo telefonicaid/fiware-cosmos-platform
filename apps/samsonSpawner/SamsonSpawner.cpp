@@ -551,20 +551,20 @@ void SamsonSpawner::localProcessesKill(void)
 
 	s = system("killall samsonWorker > /dev/null 2>&1");
 	if (s != 0)
-		LM_E((" system(\"killall samsonWorker\") returned %d (strerror: %s)", s, strerror(errno)));
+		LM_T(LmtSpawn, (" system(\"killall samsonWorker\") returned %d (strerror: %s)", s, strerror(errno)));
 	usleep(200000);
 	s = system("killall -9 samsonWorker > /dev/null 2>&1");
 	if (s != 0)
-		LM_E((" system(\"killall -9 samsonWorker\") returned %d (strerror: %s)", s, strerror(errno)));
+		LM_T(LmtSpawn, (" system(\"killall -9 samsonWorker\") returned %d (strerror: %s)", s, strerror(errno)));
 
 
 	s = system("killall samsonController > /dev/null 2>&1");
 	if (s != 0)
-		LM_E((" system(\"killall samsonController\") returned %d (strerror: %s)", s, strerror(errno)));
+		LM_T(LmtSpawn, (" system(\"killall samsonController\") returned %d (strerror: %s)", s, strerror(errno)));
 	usleep(200000);
 	s = system("killall -9 samsonController > /dev/null 2>&1");
 	if (s != 0)
-		LM_E((" system(\"killall -9 samsonController\") returned %d (strerror: %s)", s, strerror(errno)));
+		LM_T(LmtSpawn, (" system(\"killall -9 samsonController\") returned %d (strerror: %s)", s, strerror(errno)));
 }
 
 }

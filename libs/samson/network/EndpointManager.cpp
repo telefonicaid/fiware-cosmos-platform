@@ -773,7 +773,9 @@ Status EndpointManager::setupAwait(void)
 			else if (header.code == Message::ProcessVector)
 				break;
 			else if (header.code == Message::Reset)
-				LM_W(("Got a reset, and that's OK but I don't need to do anything, I have nothing started ... Let's just keep reading ..."));
+            {
+				LM_T(LmtSpawner,("Got a reset, and that's OK but I don't need to do anything, I have nothing started ... Let's just keep reading ..."));
+            }
 			else if (header.code == Message::ProcessList)
 			{
 				LM_T(LmtSetup, ("Got a ProcessList, and that's OK, but I have nothing ... Let's Ack with NO DATA and continue to wait for a Process Vector ..."));

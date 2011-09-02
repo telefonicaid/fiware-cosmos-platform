@@ -498,7 +498,7 @@ Host* HostMgr::lookup(const char* name)
 		if (onlyDigitsAndDots(name) == true)
 			return NULL;
 
-		LM_W(("Host '%s' was not found and has a dot in it - possible domain name poking us - lets remove it and try again ...", name));
+		LM_T(LmtHost, ("Host '%s' was not found and has a dot in it - possible domain name poking us - lets remove it and try again ...", name));
 		newName = strdup(name);
 		dot     = strstr(newName, ".");
 		if (dot != NULL)  // I'm a bit paranoid, sorry.

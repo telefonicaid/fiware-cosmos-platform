@@ -69,6 +69,32 @@ script compute_graph
 }
 
 
+reduce compute_links_from_simple_links
+{
+        in      system.UInt system.UInt
+	out 	system.UInt graph.Link
+	
+	helpLine "Transform simple links ( pairs of system.UInts into links )"
+
+}
+
+script compute_graph_from_simple_links
+{
+        in      system.UInt system.UInt
+        out     system.UInt graph.Node
+
+        helpLine "Compute a graph from a set of pairs of connections between nodes"
+
+        code
+        {
+				
+		graph.compute_links_from_simple_links $1 $1.links;
+                graph.get_graph_from_links $1.links $2 -create -clear;
+
+                rm $1.links -f;
+        }
+}
+
 
 script compute_graph_O2
 {
@@ -187,8 +213,8 @@ reduce filter_graph_reduce
 
 script filter_graph
 {
-	in		system.UInt graph.Node
-	out	 system.UInt graph.Node
+	in	   system.UInt graph.Node
+	out	   system.UInt graph.Node
 
 	helpLine "*Remove nodes with more than graph.max_strong_connections strong connections or more than graph.max_connections connections" 
 

@@ -32,9 +32,9 @@ namespace samson
     
     void ControllerDownloadOperation::getInfo( std::ostringstream& output)
     {
-        au::xml_open( output, "downdaload_operation");
+        au::xml_open( output, "downdload_operation");
         au::xml_simple( output , "task_id" , task_id );
-        au::xml_close( output, "downupdaload_operation");
+        au::xml_close( output, "downdload_operation");
     }
     
     ControllerLoadManager::ControllerLoadManager() : token( "ControllerLoadManager" )

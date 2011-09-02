@@ -283,7 +283,7 @@ namespace samson {
             output << "[ ";
             //output << "Task:" << task_id << " order: " << task_order << " ";
             if( header )
-                output << "HG: " << header->hg_begin << "-" << header->hg_end;
+                output << "HG " << header->range.str();
             output << " ]";
             return output.str();
         }

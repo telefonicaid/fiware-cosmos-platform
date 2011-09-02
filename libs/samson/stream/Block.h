@@ -192,15 +192,8 @@ namespace samson {
             {
                 if( !header )
                     return true;
-
                 
-                if( range.hg_end <= (int)header->hg_begin )
-                    return false;
-                
-                if( range.hg_begin >= (int)header->hg_end )
-                    return false;
-                
-                return true;
+                return header->range.overlap( range );
             }
             
             // Get information

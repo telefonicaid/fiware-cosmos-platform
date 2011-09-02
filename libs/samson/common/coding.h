@@ -27,21 +27,27 @@ namespace samson {
 	 
 	 This file defines all the formats used to store key-values in files , network-buffers and shared-memory buffers
 
-	 FILE & Network messages: (KVFile)
+	 Generic samson format
 	 --------------------------------------------------------------------------------
 	 	 
-	 SAMSON platforms stores all key-values in a set of files with the following format:
-	 
+	 SAMSON platforms stores all key-values in files with the following format:
+
+	 Binarary files: ( containing key-values)
+
 	 [KVHeader][KVInfo for each hash-group][data]
+     
+     Txt files containing only txt content   
+     
+     [KVHeader][txt-data]
 	 
 	 Where
 	 
-	 * KVHeader is a struct with some information about the format and content of the file
+	 * KVHeader is a struct with some information about the format and content of the file ( it also indicated if it is a txt file )
 	 * Info for each hash-group is a vector of "KV_NUM_HASH_GROUPS" structs of type KVInfo
 	 * data is the buffer of real data with the key-values cofidied using the rigth serialization
+     * txt-data is the buffer containing txt data
 
 	 Note: In this case, all hash-groups are allways present
-	 
 	 
 	 SHARED MEMORY: (KVSharedFile)
 	 --------------------------------------------------------------------------------
@@ -274,6 +280,12 @@ namespace samson {
             hg_begin = _hg_begin;
             hg_end = _hg_end;
         }
+
+        void set( int _hg_begin , int _hg_end )
+        {
+            hg_begin = _hg_begin;
+            hg_end = _hg_end;
+        }
         
         bool isValid()
         {
@@ -349,6 +361,11 @@ namespace samson {
             return true;
         }
         
+        int getNumHashGroups()
+        {
+            return hg_end - hg_begin;
+        }
+        
     };
     
     bool operator<(const KVRange & left, const KVRange & right);
@@ -370,9 +387,7 @@ namespace samson {
 		char valueFormat[100];		// Format for the value
 		KVInfo info;				// Total information in this package ( in all hash-groups )
 
-		uint32 hg_begin;			// Hash group range it covers
-		uint32 hg_end;
-		
+        KVRange range;              // Range of has-groups used in this file
 		
 		// Specific fields only used in particular operations
 		// ---------------------------------------------------------------
@@ -380,7 +395,6 @@ namespace samson {
 		int input;				// Input channel
 		int num_inputs;			// Total number of inputs
 
-		
 		// Init header
 		// ---------------------------------------------------------------
 		
@@ -392,8 +406,7 @@ namespace samson {
 			setInfo( _info );
 			
 			// Default initialization of the hash-group to full-files
-			hg_begin = 0;
-			hg_end = KVFILE_NUM_HASHGROUPS;
+            range.set( 0 , KVFILE_NUM_HASHGROUPS );
 
 			// Default init for the input/num_inputs field ( only used in particular operations )
 			input = 0 ;
@@ -402,16 +415,15 @@ namespace samson {
 
 		void setHashGroups( uint32 _hg_begin , uint32 _hg_end )
 		{
-			hg_begin = _hg_begin;
-			hg_end = _hg_end;
+            range.set( _hg_begin , _hg_end );
 		}
         
         void setHashGroups( KVInfo *info )
         {
                 
             // Key-value 
-            hg_begin = 0;
-            hg_end = KVFILE_NUM_HASHGROUPS-1;   // Search for the first element without presence
+            int hg_begin = 0;
+            int hg_end = KVFILE_NUM_HASHGROUPS-1;   // Search for the first element without presence
             
             while( ( info[hg_begin].kvs == 0 ) && hg_begin<(KVFILE_NUM_HASHGROUPS-1) )
                 hg_begin++;
@@ -432,6 +444,8 @@ namespace samson {
             {
                 LM_X(1, ("Internal error seting limits of the hash groups"));
             }
+            
+            range.set( hg_begin , hg_end );
         }
 		
 		void setFormat( KVFormat format )
@@ -457,7 +471,7 @@ namespace samson {
 
 		uint32 getNumHashGroups()
 		{
-			return hg_end - hg_begin;
+            return range.getNumHashGroups();
 		}
 		
 		// Format operations
@@ -641,8 +655,7 @@ namespace samson {
 			header.info = getKVInfo( hg_begin , hg_end);	
 			
 			// Hash group range we are processing
-			header.hg_begin = hg_begin;			
-			header.hg_end = hg_end;			
+            header.range.set( hg_begin , hg_end );
 			
 			if( !header.check() )
 			  LM_X(1,("Error cheking magic number of KVHeader"));

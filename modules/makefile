@@ -17,6 +17,7 @@ all:
 	make -C testtime
 	make -C testcomparefunctions
 	make -C hit
+	make -C gg
 
 release:
 	make release -C system
@@ -36,6 +37,7 @@ release:
 	make release -C testtime
 	make release -C testcomparefunctions
 	make release -C hit
+	make release -C gg
 
 reset:
 	make reset -C system
@@ -56,6 +58,7 @@ reset:
 	make reset -C testtime
 	make reset -C testcomparefunctions
 	make reset -C hit
+	make reset -C gg
 
 eclipse:
 	make eclipse -C system

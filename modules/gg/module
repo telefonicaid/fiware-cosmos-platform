@@ -1,0 +1,27 @@
+Module gg
+{
+	title	"GiffGaff operations"
+	author	"Andreu Urruela"
+	version "0.1"
+}
+
+data CDR
+{
+	system.UInt caller;
+	system.UInt called;
+	system.Double price;	
+}
+
+parser parser_cdrs
+{
+	out system.UInt gg.CDR
+	helpLine "Parse a GiffGaff cdrs"
+}
+
+
+map select_cdrs_for_price
+{
+	in system.UInt gg.CDR
+	out system.UInt gg.CDR
+	helpLine "Select a set of cdrs acording to the price. Use gg.min_price and gg.max_price to select range of valid prices"
+}

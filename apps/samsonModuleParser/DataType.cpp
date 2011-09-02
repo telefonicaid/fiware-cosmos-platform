@@ -594,9 +594,12 @@ namespace samson
 
 		o << pre_line << "{// toString of vector " << name << "\n";
 		o << pre_line << "\tfor(int i = 0 ; i < " << name << "_length ; i++)\n";
+        o << pre_line << "\t{\n";
 		pre_line_local = pre_line + "\t";
 		o << getToStringCommandIndividual(pre_line_local, name+"[i]");
 		o << pre_line << "\t\t o << \" \";\n";
+        o << pre_line << "\t}\n";
+
 		o << pre_line << "}\n";
 		return o.str();
 	}

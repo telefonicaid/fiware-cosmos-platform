@@ -14,6 +14,7 @@ namespace samson {
     namespace stream
     {
         
+        /*
         State::State( std::string _name )
         {
             name = _name;
@@ -141,6 +142,7 @@ namespace samson {
                 list->copyFrom( StateItem->input );
             }
             
-        }        
+        }  
+         */
     }
 }

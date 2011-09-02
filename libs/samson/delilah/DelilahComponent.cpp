@@ -20,6 +20,8 @@ namespace samson {
 	{
 		component_finished =  false;
 		type = _type;
+        
+        cronometer.start();
 	}
 	
 	void DelilahComponent::setId( Delilah * _delilah ,  size_t _id )
@@ -51,15 +53,17 @@ namespace samson {
         output << "[ " << id << " ] ";
         output << getCodeName();
         
-        if( component_finished )
-            output << " [ FINISHED ] ";
-        else
-            output << " [ RUNNING  ] ";
-        
         if( error.isActivated() )
-            output << "[ ERROR ] ";
+            output << " [ ERROR    ] ";
         else
-            output << "          ";
+        {
+            
+            if( component_finished )
+                output << " [ FINISHED ] ";
+            else
+                output << " [ RUNNING  ] ";
+        }
+        output << "[ " << cronometer.str() << " ] ";
         
         output << getShortStatus();
         
@@ -77,6 +81,8 @@ namespace samson {
         // Only mark as finished once
         if( component_finished )
             return;
+
+        cronometer.stop();
         
         component_finished = true;
         delilah->delilahComponentFinishNotification( this );
@@ -155,11 +161,16 @@ namespace samson {
                 setComponentFinished();
             
 			if( packet->message->command_response().has_finish_job_id() || packet->message->command_response().has_error_job_id() )
-                setComponentFinished();
+            {
+                if( packet->message->command_response().has_error_job_id() )
+                    setComponentFinishedWithError( packet->message->command_response().error_message() );
+                else
+                    setComponentFinished();
+            }
 		}
 		
 		// Always forward the message to delilah
-		delilah->_receive( fromId , msgCode , packet );
+		//delilah->_receive( fromId , msgCode , packet );
 	}
 	
 	void CommandDelilahComponent::run()
@@ -216,7 +227,7 @@ namespace samson {
 	std::string CommandDelilahComponent::getStatus()
 	{
 		std::ostringstream o;
-		o << "Command Component: " << command;
+		o << "Command: '" << command << "'";
 		return o.str();
 	}
     
@@ -283,7 +294,6 @@ namespace samson {
             // Set the buffer data ( if any )
             p->buffer = buffer;
             
-            LM_M(("Sending worker command to worker %d (%p)", worker , p ));
             delilah->network->sendToWorker( worker , p );            
             
             

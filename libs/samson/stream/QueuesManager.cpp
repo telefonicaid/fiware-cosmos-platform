@@ -23,6 +23,9 @@
 #include "samson/stream/State.h"
 #include "samson/stream/StateItem.h"
 
+#include "samson/stream/Queue.h"
+#include "samson/stream/QueueItem.h"
+
 #include "samson/stream/ParserQueueTask.h"            // samson::stream::ParserQueueTask
 
 #include "State.h"          // samson::stream::State
@@ -37,9 +40,7 @@ namespace samson {
         QueuesManager::QueuesManager(::samson::SamsonWorker* _worker) : queueTaskManager( this )
         {
             worker = _worker;
-                        
             operation_list = NULL;
-
         }
 
         void QueuesManager::addBlocks( std::string queue_name ,  BlockList *bl )
@@ -47,8 +48,8 @@ namespace samson {
             // Get or create the queue
             Queue *queue = getQueue( queue_name );
             
-            // Add the block to the queue ( no information about any particular task at the moment )
-            queue->copyFrom( bl );
+            // Add the blocks to the queue ( no information about any particular task at the moment )
+            queue->push( bl );
 
             // review all the automatic operations ( maybe we can only review affected operations in the future... )
             reviewStreamOperations();            
@@ -67,20 +68,6 @@ namespace samson {
             reviewStreamOperations();
         }
         
-        void QueuesManager::push_state_to_queue( std::string state_name , std::string queue_name )
-        {
-            State *state = getState( state_name );
-            Queue* queue = getQueue( queue_name );
-            
-            // Copy from all the items included in this state
-            au::list< StateItem >::iterator item;
-            for (item = state->items.begin() ; item != state->items.end() ; item++ )
-            {
-                StateItem *stateItem = (*item);
-                
-                queue->copyFrom( stateItem->state );
-            }
-        }
         
         void QueuesManager::remove_queue( std::string queue_name )
         {
@@ -93,44 +80,21 @@ namespace samson {
 
         }
         
-        bool QueuesManager::remove_state( std::string state_name )
+        void QueuesManager::pause_queue( std::string queue_name )
         {
-            State *state = states.extractFromMap(state_name);
+            Queue *queue = queues.extractFromMap(queue_name);
             
-            if( state )
-            {
-                if( state->isWorking() )
-                {
-                    // Insert back and return false
-                    states.insertInMap( state_name, state );
-                    return false;
-                }
-                else
-                    delete state;
-            }
-          
-            return true;
+            if( queue )
+                queue->paused = true;
             
         }
         
-        void QueuesManager::pause_state( std::string state_name )
+        void QueuesManager::play_queue( std::string queue_name )
         {
-            State *state = states.extractFromMap(state_name);
+            Queue *queue = queues.extractFromMap(queue_name);
             
-            if( state )
-                state->paused = true;
-            
-        }
-        
-        void QueuesManager::play_state( std::string state_name )
-        {
-            State *state = states.extractFromMap(state_name);
-            
-            if( state )
-            {
-                state->paused = false;
-                reviewStreamOperations();
-            }
+            if( queue )
+                queue->paused = false;
         }
         
         
@@ -139,26 +103,13 @@ namespace samson {
             Queue *queue = queues.findInMap( queue_name );
             if (! queue )
             {
-                queue = new Queue( queue_name , this );
+                queue = new Queue( queue_name , this , 1 );
                 queues.insertInMap( queue_name, queue );
             }
             
             return queue;
             
         }
-        
-        State* QueuesManager::getState( std::string name )
-        {
-            State *state = states.findInMap( name );
-            if( !state )
-            {
-                state = new State( name );
-                states.insertInMap( name , state );
-            }
-            
-            return state;
-        }
-
         
         void QueuesManager::notifyFinishTask( QueueTask *task )
         {
@@ -180,65 +131,35 @@ namespace samson {
             // Create a new pop queue
             PopQueue *popQueue = new PopQueue( pq , delilahId, fromId );
             popQueueManager.add( popQueue );
- 
 
             if( pq.has_queue() )
             {
                 
                 std::string queue_name = pq.queue();
                 Queue* q = getQueue( queue_name );
-                
-                au::list< Block >::iterator b;
-                for ( b = q->list->blocks.begin() ; b != q->list->blocks.end() ; b++ )
+
+                // Iterate thougth all the queue-items
+                au::list< QueueItem >::iterator item;
+                for ( item = q->items.begin() ; item != q->items.end() ; item++ )
                 {
-                    size_t id = queueTaskManager.getNewId();
                     
-                    popQueue->addTask( id );
-                    
-                    PopQueueTask *tmp = new PopQueueTask( id , popQueue ); 
-                    
-                    tmp->addBlock( *b );
-                    
-                    // Schedule tmp task into QueueTaskManager
-                    queueTaskManager.add( tmp );
-                    
-                }
-                
-            }
-            
-            if( pq.has_state() )
-            {
-                
-                std::string state_name = pq.state();
-                State* state = getState( state_name );
-                
-                au::list< StateItem >::iterator item;
-                for (item = state->items.begin() ; item != state->items.end() ; item++ )
-                {
-                    StateItem *stateItem = (*item);
-                    
+                    // Create a pop operation for each element in the blocks
                     au::list< Block >::iterator b;
-                    for ( b = stateItem->state->blocks.begin() ; b != stateItem->state->blocks.end() ; b++ )
+                    for ( b = (*item)->list->blocks.begin() ; b != (*item)->list->blocks.end() ; b++ )
                     {
                         size_t id = queueTaskManager.getNewId();
                         
                         popQueue->addTask( id );
                         
-                        PopQueueTask *tmp = new PopQueueTask( id , popQueue ); 
+                        PopQueueTask *tmp = new PopQueueTask( id , popQueue , (*item)->range ); 
                         
                         tmp->addBlock( *b );
                         
                         // Schedule tmp task into QueueTaskManager
                         queueTaskManager.add( tmp );
-                        
                     }
                 }
-                
             }
-            
-            
-            
-            
             popQueue->check();
         }
         
@@ -255,13 +176,6 @@ namespace samson {
                 q->second->getInfo(output);
 
             output << "</queues>\n";
-
-            // States
-            output << "<states>\n";
-            au::map< std::string , State>::iterator state;
-            for( state = states.begin() ; state != states.end() ; state++ )
-                state->second->getInfo( output );
-            output << "</states>\n";
             
             // Tasks
             output << "<queue_tasks>\n";
@@ -322,31 +236,31 @@ namespace samson {
                     
                     // Get the input queue
                     std::string input_queue_name = operation.input_queues(0);
-                    Queue *inputQueue = getQueue( input_queue_name );
+                    Queue *q = getQueue( input_queue_name );
                     
-                    while( true )
+                    if( q->items.size() != 1 )
+                        LM_W(("Queue to be processed by a parser has got more that one items. This is a strange behavious"));
+                    
+                    // Iterate thougth all the queue-items
+                    au::list< QueueItem >::iterator item;
+                    for ( item = q->items.begin() ; item != q->items.end() ; item++ )
                     {
+                        QueueItem *queueItem = *item;
                         
-                        if( inputQueue->isEmpty() )
+                        while( !queueItem->list->isEmpty() )
                         {
-                            /*
-                            LM_W(("Review of StreamOperation %s finished since queue %s is empty"
-                                  , operation.name().c_str() 
-                                  , input_queue_name.c_str() 
-                                  ));
-                             */
-                            return;
+                            
+                            // Create a parser queue tasks
+                            ParserQueueTask *tmp = new ParserQueueTask( queueTaskManager.getNewId() , operation ); 
+                            tmp->setOutputFormats( &op->outputFormats );
+                            
+                            // Extract the rigth blocks from queue
+                            tmp->list->extractFrom( queueItem->list , 1000000000 );
+                            
+                            // Schedule tmp task into QueueTaskManager
+                            queueTaskManager.add( tmp );
+                            
                         }
-                        
-                        ParserQueueTask *tmp = new ParserQueueTask( queueTaskManager.getNewId() , operation ); 
-                        tmp->setOutputFormats( &op->outputFormats );
-
-                        // Extract the rigth blocks from queue
-                        inputQueue->extractTo( tmp->list  , 1000000000 );
-                        
-                        // Schedule tmp task into QueueTaskManager
-                        queueTaskManager.add( tmp );
-                        
                     }
                     
                 }
@@ -365,25 +279,27 @@ namespace samson {
                     
                     // Get the input queue
                     std::string input_queue_name = operation.input_queues(0);
-                    Queue *inputQueue = getQueue( input_queue_name );
+                    Queue *q = getQueue( input_queue_name );
                     
-                    while( true )
+                    // Iterate thougth all the queue-items
+                    au::list< QueueItem >::iterator item;
+                    for ( item = q->items.begin() ; item != q->items.end() ; item++ )
                     {
                         
-                        if( inputQueue->isEmpty() )
+                        QueueItem *queueItem = *item;
+                        
+                        while( !queueItem->list->isEmpty() )
                         {
-                            return;
+                            //Create the parserout operation
+                            ParserOutQueueTask *tmp = new ParserOutQueueTask( queueTaskManager.getNewId() , operation , (*item)->range ); 
+                            
+                            // Extract the rigth blocks from queue
+                            tmp->list->extractFrom( queueItem->list , 1000000000 );
+                            
+                            // Schedule tmp task into QueueTaskManager
+                            queueTaskManager.add( tmp );
+                            
                         }
-                        
-                        ParserOutQueueTask *tmp = new ParserOutQueueTask( queueTaskManager.getNewId() , operation ); 
-                        
-                        // Extract the rigth blocks from queue
-                        inputQueue->extractTo( tmp->list  , 1000000000 );
-                        
-                        // Schedule tmp task into QueueTaskManager
-                        LM_M(("Scheduled parserOut "));
-                        queueTaskManager.add( tmp );
-                        
                     }
                     
                 }
@@ -400,42 +316,35 @@ namespace samson {
                     
                     // Get the input queue
                     std::string input_queue_name = operation.input_queues(0);
-                    Queue *inputQueue = getQueue( input_queue_name );
+                    Queue *q = getQueue( input_queue_name );
                     
-                    
-                    while( true )
+                    // Iterate thougth all the queue-items
+                    au::list< QueueItem >::iterator item;
+                    for ( item = q->items.begin() ; item != q->items.end() ; item++ )
                     {
                         
+                        QueueItem *queueItem = *item;
                         
-                        if( inputQueue->isEmpty() )
+                        while( !queueItem->list->isEmpty() )
                         {
-                            /*
-                             LM_W(("Review of StreamOperation %s finished since queue %s is empty"
-                             , operation.name().c_str() 
-                             , input_queue_name.c_str() 
-                             ));
-                             */
-                            return;
+                            // Create the map operation
+                            MapQueueTask *tmp = new MapQueueTask( queueTaskManager.getNewId() , operation , (*item)->range ); 
+                            tmp->setOutputFormats( &op->outputFormats );
+                            
+                            // Extract the rigth blocks from queue
+                            tmp->list->extractFrom( queueItem->list , 1000000000 );
+                            
+                            // Schedule tmp task into QueueTaskManager
+                            queueTaskManager.add( tmp );
+                            
                         }
-                        
-                        
-                        MapQueueTask *tmp = new MapQueueTask( queueTaskManager.getNewId() , operation ); 
-                        tmp->setOutputFormats( &op->outputFormats );
-                        
-                        // Extract the rigth blocks from queue
-                        inputQueue->extractTo( tmp->list  , 1000000000 );
-                        
-                        // Schedule tmp task into QueueTaskManager
-                        queueTaskManager.add( tmp );
-                        
                     }
-                    
                     
                 }
                     break;
                 case Operation::reduce:
                 {
-                    
+
                     if( operation.input_queues_size() != 2 )
                     {
                         LM_W(("StreamOperation %s failed since reduce has not 2 inputs", operation.name().c_str()));
@@ -444,21 +353,52 @@ namespace samson {
                     
                     
                     // Get "pre input queue" and input queue
-                    Queue *inputQueue       = getQueue( operation.input_queues(0) );
+                    Queue *inputQueue = getQueue( operation.input_queues(0) );
                     
                     // Get state state associated with the second input
-                    State *state = getState( operation.input_queues(1) );
+                    Queue *stateQueue = getQueue( operation.input_queues(1) );
+  
+                    if( stateQueue->paused )
+                    {
+                        // no new tasks since state queue is paused
+                        return;
+                    }
+
+                    // distribute the input queue in the same way state queue ( same items )
+                    inputQueue->distributeItemsAs( stateQueue );
+
                     
 
-                    // Push input data to the state
-                    if( !inputQueue->list->isEmpty() )
+                    au::list< QueueItem >::iterator input_item = inputQueue->items.begin();
+                    au::list< QueueItem >::iterator state_item = stateQueue->items.begin();
+                    
+                    for (  ; state_item != stateQueue->items.end() ; input_item++ , state_item++  )
                     {
-                        state->push( inputQueue->list );
-
-                        // Remove all the blocks from the original queue
-                        inputQueue->list->clearBlockList();
+                        QueueItem * stateItem = *state_item;
+                        QueueItem * inputItem = *input_item;
+                        
+                        if( ( !stateItem->isWorking() )  && ( !inputItem->list->isEmpty() ) )
+                        {
+                            // Create a reduce task with all possible input
+                            ReduceQueueTask *tmp = new ReduceQueueTask( queueTaskManager.getNewId() , operation , stateItem , stateItem->range ); 
+                            
+                            // Set the format of the outputs
+                            tmp->setOutputFormats( &op->outputFormats );
+                            
+                            // Setup content of this task
+                            tmp->getBlocks( inputItem->list , stateItem->list );
+                            
+                            // Set this item to "running mode"
+                            stateItem->setRunning( tmp );
+                            
+                            // Schedule tmp task into QueueTaskManager
+                            queueTaskManager.add( tmp );
+                            
+                        }
                         
                     }
+                    
+/*
                     
                     size_t max_state_item_size = SamsonSetup::shared()->getUInt64("stream.max_state_item_size");
                     
@@ -522,7 +462,7 @@ namespace samson {
                             
                         }
                     }
-
+*/
                     
                     
                 }

@@ -36,6 +36,29 @@ namespace au {
         
     };
     
+    class CronometerSystem
+    {
+        Cronometer c;
+        int seconds;
+        bool running;
+        
+    public:
+
+        CronometerSystem();
+        
+        void start();
+        void stop();
+        
+        // Reset the count to 0
+        void reset();
+        
+        // Get a string with the time ellapsed since last reset or creation
+        std::string str();
+        
+        int getSeconds();
+        
+    };   
+    
 }
 
 #endif

@@ -38,7 +38,6 @@ namespace samson {
     {
         
         class Queue;
-        class State;
         class Block;
         class BlockList;
             
@@ -53,9 +52,6 @@ namespace samson {
             // list of automatic operation ( updated from controller )
             network::StreamOperationList *operation_list;    
 
-            // List of states
-            au::map< std::string , State> states;
-            
             // Manager of the tasks associated with the queues
             QueueTaskManager queueTaskManager;      
             
@@ -74,18 +70,14 @@ namespace samson {
             
             // set list of automatic operations( from controller )
             void setOperationList( network::StreamOperationList *list );
-            
-            // Push content of a state into a queue
-            void push_state_to_queue( std::string state_name , std::string queue_name );
-            
+                        
             // Remove a particular queue or state
             
             void remove_queue( std::string queue_name );
-            bool remove_state( std::string state_name );
             
             // Pause and Play a particular state
-            void pause_state( std::string state_name );
-            void play_state( std::string state_name );
+            void pause_queue( std::string queue_name );
+            void play_queue( std::string queue_name );
             
             // Notify finish task
             void notifyFinishTask( QueueTask *task );
@@ -100,7 +92,6 @@ namespace samson {
         private:
             
             Queue* getQueue( std::string name );
-            State* getState( std::string name );
             
             void reviewStreamOperations();
             void reviewStreamOperation(const network::StreamOperation& operation);

@@ -327,6 +327,11 @@ namespace engine
 
         au::xml_iterate_list(output, "halted", halted_items);
 
+        // General information
+        
+        au::xml_simple( output , "num_processes" ,  num_processes );
+        au::xml_simple( output , "num_running_processes" ,  running_items.size() );
+        
         au::xml_close(output, "process_manager");
         
     }

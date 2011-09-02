@@ -140,8 +140,10 @@ namespace samson {
 
         void getInfo( std::ostringstream& output)
         {
-            output << "<kvs>"<<kvs<<"</kvs>\n";
-            output << "<size>"<<size<<"</size>\n";
+            au::xml_open(output,"kv_info");
+            au::xml_simple( output , "kvs" , kvs );
+            au::xml_simple( output , "size" , size );
+            au::xml_close(output,"kv_info");
         }
         
 	};	
@@ -239,8 +241,10 @@ namespace samson {
 		
         void getInfo( std::ostringstream& output)
         {
-            output << "<kvs>"<<kvs<<"</kvs>\n";
-            output << "<size>"<<size<<"</size>\n";
+            au::xml_open(output,"kv_info");
+            au::xml_simple( output , "kvs" , kvs );
+            au::xml_simple( output , "size" , size );
+            au::xml_close(output,"kv_info");
         }
         
 		bool isEmpty()
@@ -249,7 +253,108 @@ namespace samson {
 		}
 		
 	};	
+
+	/**
+        KVRange keeps information about a particular range of hash-groups
+	 */
 	
+	struct KVRange
+    {
+        int hg_begin;
+        int hg_end;
+        
+        KVRange()
+        {
+            hg_begin = 0;
+            hg_end = KVFILE_NUM_HASHGROUPS;
+        }
+        
+        KVRange( int _hg_begin , int _hg_end )
+        {
+            hg_begin = _hg_begin;
+            hg_end = _hg_end;
+        }
+        
+        bool isValid()
+        {
+            if ( ( hg_begin < 0 ) || (hg_begin > (KVFILE_NUM_HASHGROUPS) ) )
+                return false;
+            if ( ( hg_end < 0 ) || (hg_end > KVFILE_NUM_HASHGROUPS ) )
+                return false;
+            
+            if( hg_begin >= hg_end )
+                return false;
+            
+            return true;
+        }
+        
+        KVRange firstHalf( )
+        {
+            int hg_mid = ( hg_begin + hg_end ) / 2;
+            return KVRange( hg_begin , hg_mid );
+        }
+
+        KVRange secondHalf( )
+        {
+            int hg_mid = ( hg_begin + hg_end ) / 2;
+            return KVRange( hg_mid , hg_end );
+        }
+
+        
+        KVRange firstQuarter( )
+        {
+            int hg_quad = ( hg_begin + hg_end ) / 4;
+            return KVRange( hg_begin , hg_quad );
+        }
+        
+        KVRange secondQuarter( )
+        {
+            int hg_quad = ( hg_begin + hg_end ) / 4;
+            return KVRange( hg_quad , 2*hg_quad );
+        }
+
+        KVRange thirdQuarter( )
+        {
+            int hg_quad = ( hg_begin + hg_end ) / 4;
+            return KVRange( 2*hg_quad , 3*hg_quad );
+        }
+        
+        KVRange fourthQuarter( )
+        {
+            int hg_quad = ( hg_begin + hg_end ) / 4;
+            return KVRange( 3*hg_quad , hg_end );
+        }
+      
+        void getInfo( std::ostringstream& output)
+        {
+            au::xml_open(output, "kv_range");
+            au::xml_simple( output , "hg_begin" , hg_begin );
+            au::xml_simple( output , "hg_end" , hg_end );
+            au::xml_close(output, "kv_range");
+        }
+        
+        std::string str()
+        {
+            return au::str("[%d %d]", hg_begin , hg_end);
+        }
+        
+        bool overlap( KVRange range )
+        {
+            if( range.hg_end <= hg_begin )
+                return false;
+            
+            if( range.hg_begin >= hg_end )
+                return false;
+            
+            return true;
+        }
+        
+    };
+    
+    bool operator<(const KVRange & left, const KVRange & right);
+    bool operator==(const KVRange & left, const KVRange & right);
+    bool operator!=(const KVRange & left, const KVRange & right);
+    
 	/**
 	 Header used in KV-Sets ( Files, Network messages, Operations, etc...)
 	 */

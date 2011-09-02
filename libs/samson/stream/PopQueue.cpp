@@ -118,10 +118,13 @@ namespace samson {
         
 #pragma marg PopQueueTask
         
-        PopQueueTask::PopQueueTask( size_t _id , PopQueue *pq ) : engine::ProcessItem( PI_PRIORITY_NORMAL_OPERATION )
+
+        PopQueueTask::PopQueueTask( size_t _id , PopQueue *pq , KVRange _range ) : engine::ProcessItem( PI_PRIORITY_NORMAL_OPERATION )
         {
             id = _id;
             pop_queue_id =  pq->id;
+            
+            range = _range;
             
             delilahId = pq->delilahId;
             fromId = pq->fromId;

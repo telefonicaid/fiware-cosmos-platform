@@ -12,7 +12,11 @@
  *
  */
 
+
+#include "au/map.h"                         // au::simple_map
+
 #include "engine/MemoryManager.h"
+
 #include "samson/common/coding.h"
 
 #include "engine/DiskOperation.h"       // engine::DiskOperation
@@ -45,18 +49,7 @@ namespace samson {
             engine::Buffer *buffer;     // Buffer of data if content of this block is on memory
             
             KVHeader* header;           // Always on memory copy of the header
-            size_t size;                // Size of the buffer ( Not that buffer is NULL is content is not on memory )
-
-            
-            KVInfo *info;   // Information about  content per hash-group ( in memory if required. Only used in "state" blocks  )
-            
-            /*
-            int priority;               // Priority of the block ( to be reordered )            
-            int lock_counter;           // Counter to indicate that we are currently using this block for processing 
-            std::set< size_t > tasks;       // Tasks that has this block retained to be used in that operation
-            std::set< std::string > queues; // Queues currently containing this block
-            int retain_counter;             // General counter of retain-release ( by a task or by a queue / state )
-            */
+            size_t size;                // Size of the buffer ( Not that buffer is NULL if content is not on memory )
 
             std::set< BlockList* > lists;   // List where this block is contained
             
@@ -70,6 +63,8 @@ namespace samson {
             } BlockState;
 
             BlockState state;
+
+            au::simple_map< KVRange , KVInfo > infos; // Map containing sevel divisions of information
             
         private:
             
@@ -193,23 +188,24 @@ namespace samson {
                     return 0;
             }
             
-            bool isNecessaryForHashGroups( int _hg_begin , int _hg_end )
+            bool isNecessaryForKVRange( KVRange range )
             {
                 if( !header )
-                    LM_X(1,("Internal error managing blocks"));
+                    return true;
+
                 
-                if( _hg_end <= (int)header->hg_begin )
+                if( range.hg_end <= (int)header->hg_begin )
                     return false;
                 
-                if( _hg_begin >= (int)header->hg_end )
+                if( range.hg_begin >= (int)header->hg_end )
                     return false;
                 
                 return true;
-                
             }
             
             // Get information
-            KVInfo getInfo();
+            KVInfo getKVInfo();
+            KVInfo getKVInfo( KVRange r);
             
             // Debug string    
             std::string str();
@@ -223,11 +219,67 @@ namespace samson {
                 return id;
             }
             
+            
+            
+            // Info for KVRanges
+            
+            void computeKVInfoForRange( KVRange r )
+            {
+                //LM_M(("Computing info for range..%s" , r.str().c_str() ));
+                
+                if( !r.isValid() )
+                {
+                    LM_W(("Not possible to compute info for range %s sice the range is not valid" , r.str().c_str()));
+                    return;
+                }
+                
+                if( !header )
+                {
+                    //LM_W(("Not possible to compute info for range sice the block is a txt block"));
+                    // A warning is not necessary since it is part of the protocol for QueueItem
+                    return;
+                }
+                
+                // See if already comptued
+                if( infos.isInMap(r) )
+                    return;
+                
+                if( !isContentOnMemory() )
+                {
+                    LM_W(("Not possible to compute info for range %s sice the block is not in memory" , r.str().c_str()));
+                    return;
+                }
+                
+                KVInfo *info = (KVInfo *) ( buffer->getData() + sizeof( KVHeader ) );
+
+                KVInfo total;
+                for ( int i = r.hg_begin ; i < r.hg_end ; i++ )
+                    total.append( info[i] );
+
+                
+                infos.insertInMap ( r , total );
+                
+                //LM_M(("Finish Computing info for range.."));
+                
+            }
+            
+            bool isKVInfoForRange( KVRange r )
+            {
+                return infos.isInMap(r);
+            }
+            
+            KVInfo getKVInfoForRange( KVRange r )
+            {
+                if( !infos.isInMap(r) )
+                    LM_X(1,("Internal error"));
+                
+                return infos.findInMap(r);
+            }
+            
         private:
             
             // Get the minimum task id to get the order of the blocks
             size_t getMinTaskId();
-
             
         };
             

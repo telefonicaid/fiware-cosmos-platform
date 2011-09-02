@@ -6,7 +6,7 @@
 
 #include "StateItem.h"  // Own interface
 
-
+/*
 
 namespace samson {
 
@@ -231,3 +231,4 @@ namespace stream
         
     }
 }
+*/

@@ -13,7 +13,7 @@ namespace samson {
     
     namespace stream
     {
-
+/*
         class StateItem;
         class BlockList;
         class ReduceQueueTask;
@@ -58,7 +58,7 @@ namespace samson {
             
         };
         
-        
+*/        
     }
 }
 

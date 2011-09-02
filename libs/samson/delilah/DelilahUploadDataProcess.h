@@ -72,20 +72,11 @@ namespace samson {
 		size_t uploadedSize;			// Total size of uploaded files
 		size_t uploadedCompressedSize;	// Total size uploaded to workers ( compressed )
 
-
-		// Initial time stamp of the operation
-		struct timeval init_time;
-		
 		// Worker to send the next packet
 		int worker;
-		
-        // final time in seconds
-        int final_time_in_seconds;
         
 	public:
 
-		// Error log ( public since it is access from delilah )
-		au::ErrorManager error;
 		
         // Public since it has to be accessible from the thread
 		bool compression;	

@@ -531,22 +531,6 @@ namespace samson {
             // Spetial operation to reload modules
             ModulesManager::shared()->reloadModules();
         }
-        
-        if ( cmd.get_argument(0) == "push_state_to_queue" )
-        {
-            if( cmd.get_num_arguments() < 3 )
-            {
-                error.set( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
-            }
-            else
-            {
-                std::string state_name = cmd.get_argument(1);
-                std::string queue_name = cmd.get_argument(2);
-                
-                queuesManager.push_state_to_queue( state_name , queue_name );
-            }
-            
-        }
         else if ( cmd.get_argument(0) == "rm_queue" )
         {
             if( cmd.get_num_arguments() < 2 )
@@ -558,36 +542,24 @@ namespace samson {
                 queuesManager.remove_queue(  queue_name );
             }
         }
-        else if ( cmd.get_argument(0) == "rm_state" )
+        else if ( cmd.get_argument(0) == "pause_queue" )
         {
             if( cmd.get_num_arguments() < 2 )
                 error.set( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
             else
             {
-                std::string state_name = cmd.get_argument(1);
-                
-                if( !queuesManager.remove_state( state_name ) )
-                    error.set( au::str("There was some error while trying to remove state %s. Possible it is working" , state_name.c_str() ) );
+                std::string queue_name = cmd.get_argument(1);
+                queuesManager.pause_queue( queue_name );
             }
         }
-        else if ( cmd.get_argument(0) == "pause_state" )
+        else if ( cmd.get_argument(0) == "play_queue" )
         {
             if( cmd.get_num_arguments() < 2 )
                 error.set( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
             else
             {
-                std::string state_name = cmd.get_argument(1);
-                queuesManager.pause_state( state_name );
-            }
-        }
-        else if ( cmd.get_argument(0) == "play_state" )
-        {
-            if( cmd.get_num_arguments() < 2 )
-                error.set( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
-            else
-            {
-                std::string state_name = cmd.get_argument(1);
-                queuesManager.play_state( state_name );
+                std::string queue_name = cmd.get_argument(1);
+                queuesManager.play_queue( queue_name );
             }
         }
         else

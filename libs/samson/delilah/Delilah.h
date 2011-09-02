@@ -119,7 +119,7 @@ namespace samson {
 		size_t addDownloadProcess( std::string queue , std::string fileName , bool show_on_screen );
         size_t addPushData( std::vector<std::string> fileNames , std::vector<std::string> queues );
         size_t addPushData( DataSource* dataSource , std::vector<std::string> queues );
-        size_t addPopData( std::string queue_name , std::string state_name , std::string fileName , bool force_flag );
+        size_t addPopData( std::string queue_name , std::string fileName , bool force_flag );
 
 		size_t sendCommand( std::string command , engine::Buffer *buffer );
 		size_t sendWorkerCommand( std::string command , engine::Buffer *buffer );
@@ -139,6 +139,7 @@ namespace samson {
 		virtual int _receive(int fromId, Message::MessageCode msgCode, Packet* packet);
 
         // Notification form a delilah component
+        virtual void delilahComponentStartNotification( DelilahComponent *component){};
         virtual void delilahComponentFinishNotification( DelilahComponent *component){};
 
 		// Write something on screen

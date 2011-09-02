@@ -70,7 +70,6 @@ namespace samson {
             addOption("upload");
             addOption("push");
             addOption("pop");
-            addOption("pop_state");
             addOption("download");
             addOption("load");
             addOption("clear");
@@ -82,13 +81,10 @@ namespace samson {
             addOption("rm_stream_operation");
             addOption("ls_stream_operation");
             addOption("set_stream_operation_property");
-            addOption("push_state_to_queue");               // Push content of a state in a particular queue
             addOption("rm_queue");                          // Remove a queue
-            addOption("rm_state");                          // Remove a state
-            addOption("pause_state");                       // Pause and Play a state ( to remove it )
-            addOption("play_state");                          
+            addOption("pause_queue");                       // Pause and Play a state ( to remove it )
+            addOption("play_queue");                          
             addOption("ls_queues");                      // Get a list of all current tasks in the system
-            addOption("ls_states");                      // Get a list of all current tasks in the system
             addOption("ps_stream");                     // Get a list of stream task
             addOption("ls_modules");                     // Get a list of stream task
             addOption("ls_operations");         
@@ -252,6 +248,7 @@ namespace samson {
 		// --------------------------------------------------------
 		
         void delilahComponentFinishNotification( DelilahComponent *component);
+        void delilahComponentStartNotification( DelilahComponent *component);
         
 		// Function to process messages from network elements not handled by Delila class
 		int _receive(int fromId, Message::MessageCode msgCode, Packet* packet);		

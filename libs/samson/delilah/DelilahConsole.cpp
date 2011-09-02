@@ -187,9 +187,9 @@ namespace samson
     "Getting info for batch processing:      ps_jobs , ps_tasks \n"
     "\n"
     "Stream processing commands:            push , pop , add_stream_operation , rm_stream_operation , set_stream_operation_property\n"
-    "                                       push_state_to_queue , rm_queue , rm_state , play_state , pause_state\n" 
+    "                                       rm_queue , play_queue , pause_queue\n" 
     "\n"
-    "Getting info for stream processing:    ls_queues , ls_states , ps_stream , ls_stream_operation \n"
+    "Getting info for stream processing:    ls_queues , ps_stream , ls_stream_operation \n"
     "\n"
     ;
     
@@ -247,17 +247,13 @@ namespace samson
         { "rm_stream_operation"     , "rm_stream_operation <name>    Remove a previously introducted operation with add_stream_operation"},
         
         { "ls_stream_operations"    , "ls_stream_operation           Show a list of active stream operations"},
-        
-        { "push_state_to_queue"     , "push_state_to_queue <state> <queue>     Push content of a state ( used in stream reduce ) to a queue"},
-        
+                
         { "rm_queue"                , "rm_queue <queue>         Remove a queue" },
-        { "rm_state"                , "rm_state <state>         Remove a state ( stream reduce operations ) " },
         
-        { "pause_state"             , "pause_state <state>        Pause an state, so no new stream reduce operation are scheduled " },
-        { "play_state"              , "play_state <state>         Cancel pause_state command over a state " },
+        { "pause_queue"             , "pause_queue <queue>        Pause an queue, so no new stream operation are scheduled over this queue " },
+        { "play_queue"              , "play_queue <queue>         Cancel pause_queue command over a queue " },
         
         { "ls_queues"               , "ls_queues        Show a list of current queues in all the workers" },
-        { "ls_states"               , "ls_states        Show a list of current states in all the workers ( used in the stream reduce operations )" },
         
         { "ps_stream"               , "ps_stream        Get a list of current stream tasks"},
         
@@ -491,7 +487,7 @@ namespace samson
                 {
                     std::ostringstream output;
                     output << "------------------------------------------------\n";
-                    output << " Process " << id << "\n";
+                    output << " Process " << id << " " << component->cronometer.str() << "\n";
                     output << "------------------------------------------------\n";
                     output << "\n";
                     if( component->error.isActivated() )
@@ -605,9 +601,10 @@ namespace samson
 			
 			size_t id = addUploadData(fileNames, queue,compresion , max_num_thread);
 			
-			std::ostringstream o;
-			o << "[ " << id << " ] Load data process started with " << fileNames.size() << " files";
-			writeWarningOnConsole(o.str());
+			//std::ostringstream o;
+			//o << "[ " << id << " ] Load data process started with " << fileNames.size() << " files";
+			//writeWarningOnConsole(o.str());
+            
 			return id;
 		}
 		
@@ -714,7 +711,7 @@ namespace samson
             
             bool force_flag = commandLine.get_flag_bool("force");
             
-			size_t id = addPopData( queue_name  , "" ,  fileName , force_flag );
+			size_t id = addPopData( queue_name ,  fileName , force_flag );
 			
 			std::ostringstream o;
 			o << "[ " << id << " ] Pop from queue " << queue_name << " to localFile: " << fileName;
@@ -722,42 +719,12 @@ namespace samson
 			return id;
 		}
         
-        if( mainCommand == "pop_state" )
-		{
-			if( commandLine.get_num_arguments() < 3 )
-			{
-				writeErrorOnConsole("Usage: pop_state state fileName");
-				return 0;
-			}
-            
-            std::string state_name = commandLine.get_argument(1);
-            std::string fileName = commandLine.get_argument(2);
-            bool force_flag = commandLine.get_flag_bool("force");
-            
-			size_t id = addPopData( "" , state_name  , fileName , force_flag );
-			
-			std::ostringstream o;
-			o << "[ " << id << " ] Pop from state " << state_name << " to localFile: " << fileName;
-			writeWarningOnConsole(o.str());
-			return id;
-		}
         
         // WorkerCommands
         std::string main_command = commandLine.get_argument(0);
         
-        if( main_command == "push_state_to_queue" )
-        {
-            if( commandLine.get_num_arguments() < 3 )
-            {
-                writeErrorOnConsole( au::str("Usage: push_state_to_queue state queue" ) );
-                return 0;
-            }
-            else
-                return sendWorkerCommand( command , NULL );
-        }
         
-        
-        // Command to remove queues / states 
+        // Command to remove queues 
         if( main_command == "rm_queue" )
         {
             if( commandLine.get_num_arguments() < 2 )
@@ -769,23 +736,12 @@ namespace samson
                 return sendWorkerCommand( command , NULL );
         }
         
-        if( main_command == "rm_state" )
-        {
-            if( commandLine.get_num_arguments() < 2 )
-            {
-                writeErrorOnConsole( au::str("Usage: rm_state state" ) );
-                return 0;
-            }
-            else
-                return sendWorkerCommand( command , NULL );
-        }
-        
         // Command to play / pause statess
-        if( main_command == "pause_state" )
+        if( main_command == "pause_queue" )
         {
             if( commandLine.get_num_arguments() < 2 )
             {
-                writeErrorOnConsole( au::str("Usage: pause_state state" ) );
+                writeErrorOnConsole( au::str("Usage: pause_queue queue" ) );
                 return 0;
             }
             else
@@ -793,11 +749,11 @@ namespace samson
             
         }
         
-        if( main_command == "play_state" )
+        if( main_command == "play_queue" )
         {
             if( commandLine.get_num_arguments() < 2 )
             {
-                writeErrorOnConsole( au::str("Usage: play_state state" ) );
+                writeErrorOnConsole( au::str("Usage: play_queue queue" ) );
                 return 0;
             }
             else
@@ -951,14 +907,7 @@ namespace samson
             return 0;
             
         }
-        
-        if( main_command == "ls_states" )
-        {
-            std::string txt = getStringInfo("/stream_manager/states/state", getStateInfo, i_worker ); 
-            writeOnConsole( txt );
-            return 0;
-        }
-        
+                
         if( main_command == "ls_modules" )
         {
             
@@ -1161,17 +1110,35 @@ namespace samson
 		
 		return 0;
 	}	
-    
-    void DelilahConsole::delilahComponentFinishNotification( DelilahComponent *component )
+
+    void DelilahConsole::delilahComponentStartNotification( DelilahComponent *component)
     {
         std::ostringstream o;
-        o << "Finished notification " << component->getDescription();
+        o << "\n";
+        o << "Local process started:\n  " << component->getDescription();
+        o << "\n";
         
         if( component->error.isActivated() )
             writeErrorOnConsole(o.str());        
         else
             writeWarningOnConsole(o.str());        
+    }
+    
+    void DelilahConsole::delilahComponentFinishNotification( DelilahComponent *component )
+    {
+        std::ostringstream o;
+        o << "\n";
+        o << "Local process finished:\n  " << component->getDescription();
+        o << "\n";
+
+        // Include error if any
+        if( component->error.isActivated() )
+            o << "\n" << component->error.getMessage() << "\n";
         
+        if( component->error.isActivated() )
+            writeErrorOnConsole(o.str());        
+        else
+            writeWarningOnConsole(o.str());        
     }
     /*
     

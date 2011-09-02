@@ -97,7 +97,6 @@ namespace samson {
     public:
         
         std::string queue;                  // Name of the queue we are recovering
-        std::string state;                  // Name of the state we are recovering
         std::string fileName;               // Name of the file to create
         
         int num_workers;                    // Number of workers ( where we have send the request )
@@ -109,7 +108,7 @@ namespace samson {
         
         bool force_flag;                    // Flag to remove previos directory
         
-        PopComponent( std::string _queue , std::string _state , std::string _fileName , bool force_flag );
+        PopComponent( std::string _queue , std::string _fileName , bool force_flag );
         
         ~PopComponent();
         

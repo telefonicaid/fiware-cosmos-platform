@@ -27,7 +27,6 @@ namespace samson {
     std::string getBLockListInfo( pugi::node node );
     std::string getStreamOperationInfo( const pugi::xml_node& node );
     std::string getQueueInfo( const pugi::xml_node& queue );
-    std::string getStateInfo( const pugi::xml_node& state );
     std::string getFormatInfo( const pugi::xml_node& node );
     std::string getDataInfo( const pugi::xml_node& node );
     std::string getOperationInfo( const pugi::xml_node& node );
@@ -39,6 +38,7 @@ namespace samson {
     std::string getEngineSystemInfo( const pugi::xml_node& node );
     std::string getSetInfo( const pugi::xml_node& queue );
     std::string getQueueTaskInfo( const pugi::xml_node& queue_task );
+    std::string getKVInfoInfo( const pugi::xml_node& node );
     
 }
 

@@ -21,6 +21,7 @@
 #include <string>
 #include <sstream>
 
+#include "au/Cronometer.h"              // au::CronometerSystem
 #include "au/Stopper.h"                // au::Stopper
 #include "au/Environment.h"            // au::Environment
 #include "au/Token.h"                  // au::Token
@@ -76,19 +77,23 @@ namespace engine {
         
         // Internal state of the process
 		ProcessItemStatus  state;
-		
         
         // Pointer to the process manager to notify 'halt' 'finish' and so...
         ProcessManager* processManager;
 
 		// Thread used to run this in background
 		pthread_t t;
-		
+
+    public:
+        
+        //Cronometer to measure time running
+        au::CronometerSystem cronometer;
+        
 	private:
 		
         // Token used to protect state and block main thread when necessary
 		au::Token token;	
-		
+        
 	protected:
 
 		// Information about the status of this process

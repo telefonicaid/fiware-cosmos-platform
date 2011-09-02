@@ -261,9 +261,9 @@ namespace samson {
      * popData - 
      */
     
-	size_t Delilah::addPopData( std::string queue_name , std::string state_name ,  std::string fileName , bool force_flag )
+	size_t Delilah::addPopData( std::string queue_name , std::string fileName , bool force_flag )
 	{
-		PopComponent * d = new PopComponent( queue_name , state_name  , fileName , force_flag );
+		PopComponent * d = new PopComponent( queue_name , fileName , force_flag );
 		size_t tmp_id = addComponent(d);	
 
         if( d->error.isActivated() )
@@ -284,11 +284,13 @@ namespace samson {
 	{
         au::TokenTaker tk( &token );
         
-        
 		size_t tmp_id = id++;
 		component->setId(this, tmp_id);
 		components.insertInMap( tmp_id , component );
-		
+
+        // Call the notifier
+        delilahComponentStartNotification( component );
+        
 		return tmp_id;
 	}
 	

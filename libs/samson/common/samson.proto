@@ -475,7 +475,6 @@ message PushBlockResponse
 message PopQueue
 {
 	optional string queue		= 1;	// Queue we are interested in extracting data
-	optional string state		= 2;	// Name of the state ( if we are interested in extracting a state )
 }
 
 message PopQueueResponse

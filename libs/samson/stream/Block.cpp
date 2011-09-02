@@ -58,17 +58,6 @@ namespace samson {
             // Get the size of the packet
             size = buffer->getSize();
 
-            /*
-            // Default priority
-            priority = 0;
-            
-            // By default it is used when created
-            retain_counter = 1;
-            
-            // Currenyly not used
-            lock_counter = 0;
-             */
-            
             // Default state is on_memory because the buffer has been given at memory
             state = on_memory;
             
@@ -81,8 +70,6 @@ namespace samson {
             else
                 header = NULL;
 
-            // By default no copy of the per-hashgroup information is keept in memory
-            info = NULL;
             
         }
 
@@ -92,9 +79,6 @@ namespace samson {
             // Destroy buffer if still in memory
             if( buffer )
                 engine::MemoryManager::shared()->destroyBuffer( buffer );
-            
-            if( info )
-                free( info );
         }
         
         
@@ -257,12 +241,27 @@ namespace samson {
             }
             
         }
-        
 
-        KVInfo Block::getInfo()
+        KVInfo Block::getKVInfo()
         {
             if( header )
                 return header->info;
+            else
+                return KVInfo( size , 0 );
+        }
+
+        KVInfo Block::getKVInfo( KVRange r )
+        {
+            if( header )
+            {
+                if( !infos.isInMap(r) )
+                {
+                    LM_W(("Information for this range %s was not previously computed" , r.str().c_str()));
+                    return KVInfo( 0 , 0 );
+                }
+                
+                return infos.findInMap( r );
+            }
             else
                 return KVInfo( size , 0 );
         }

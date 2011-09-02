@@ -1,76 +1,70 @@
-#ifndef _H_STREAM_QUEUE
-#define _H_STREAM_QUEUE
 
-/* ****************************************************************************
- *
- * FILE                      Queue.h
- *
- * AUTHOR                    Andreu Urruela Planas
- *
- * All the information related with a queue ( data and state )
- *
- */
+#ifndef _H_SAMSON_STREAM_QUEUE
+#define _H_SAMSON_STREAM_QUEUE
 
+#include <string>           // std::string
 
-#include <ostream>      // std::ostream
-#include <string>       // std::string
+#include "au/list.h"        // au::list
 
-#include "au/list.h"      // au::list
-#include "au/Info.h"      // au::Info
-
-#include "au/Cronometer.h"                  // au::cronometer
-
-#include "samson/common/coding.h"           // FullKVInfo
-
-#include "samson/common/samson.pb.h"        // network::
-
-#include "engine/Object.h"                  // engine::Object
-
-#include "samson/stream/BlockList.h"        // samson::Stream::BlockList
-
+#include "samson/common/coding.h"       // KVFullInfo
+#include "samson/common/samson.pb.h"    // samson::network::...
 
 namespace samson {
     
-    class NetworkInterface;
-    class Info;
-    
     namespace stream
     {
-        class Block;
+
+        class QueueItem;
+        class BlockList;
+        class ReduceQueueTask;
         class QueuesManager;
-        class PopQueue;
         
-        class Queue : engine::Object
+        class Queue
         {
             
-            QueuesManager * qm;                 // Pointer to the queue manager
+            friend class QueueItem;
+            friend class QueuesManager;
             
-            std::string name;                   // Name of the queue
-            au::Cronometer cronometer;          // Time since the last command execution
+            // Pointer to QueuesManager
+            QueuesManager* qm;
+            
+            // Name of this queue
+            std::string name;
 
-            friend class QueuesManager;          // To be removed for a complete activity-log  with queues
-            BlockList *list;                     // List of blocks contained in this queue
+            // List of state items in this state
+            au::list< QueueItem > items;
+            
+            // Flag to avoid creating loking for operations
+            bool paused;
             
         public:
             
-            Queue( std::string _name , QueuesManager * _qm );
+            Queue( std::string _name , QueuesManager* _qm ,  int num_items );
             ~Queue();
 
-            // Put content on the queue
-            void copyFrom( BlockList* _list );
-                      
-            // Extract data
-            void extractTo( BlockList* list , size_t max_size );
-
+            // Push content form a block list ( do not remove original list )
+            void push( BlockList *list );
             
-            // Get information for monitorization
+            //Distribute items in the same way
+            void distributeItemsAs( Queue* otherQueue );
+            
+            //Check if distribution is the same
+            bool isDistributedAs( Queue* otherQueue );
+            
+            // Function to check if any of the items is working ( if so, it can not be removed , clered or whatever )
+            bool isWorking();
+            
+            // Get information about the queue
+            FullKVInfo getFullKVInfo();
+            FullKVInfo getWorkingFullKVInfo();
+                        
+            // Getting XML information
             void getInfo( std::ostringstream& output);
             
-            // Report empty
-            bool isEmpty()
-            {
-                return list->isEmpty();
-            }
+        private:
+            
+            void divide( QueueItem *item , QueueItem *item1 , QueueItem *item2 );
+
             
         };
         

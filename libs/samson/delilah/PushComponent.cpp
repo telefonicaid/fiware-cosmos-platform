@@ -193,13 +193,12 @@ namespace samson
     
 #pragma mark pop
     
-    PopComponent::PopComponent( std::string _queue , std::string _state , std::string _fileName , bool _force_flag ) : DelilahComponent( DelilahComponent::pop )
+    PopComponent::PopComponent( std::string _queue , std::string _fileName , bool _force_flag ) : DelilahComponent( DelilahComponent::pop )
     {
         
         LM_M(("POP Component "));
         
         queue = _queue;
-        state = _state;
         
         fileName = _fileName;
         
@@ -220,12 +219,7 @@ namespace samson
         
         std::ostringstream message;
         
-        message << "Popping from ";
-        
-        if( queue.length() > 0 )
-            message << "queue " << queue;
-        else if ( state.length() > 0 )
-            message << "state " << state;
+        message << "Popping from queue " << queue;
         
         if ( error.isActivated() )
             message << " ( " << error.getMessage() << " ) ";
@@ -264,10 +258,7 @@ namespace samson
             
             network::PopQueue *pq = p->message->mutable_pop_queue();
             
-            if( queue.length() > 0 )
-                pq->set_queue( queue );                     // Set the name of the queue
-            else if( state.length() > 0 )
-                pq->set_state( state );                     // Set the name of the queue
+            pq->set_queue( queue );                     // Set the name of the queue
             
             p->message->set_delilah_id(id);             // Identifier of the component at this delilah
             

@@ -6,9 +6,8 @@
 
 #include "samson/common/samson.pb.h"    // samson::network::....
 
-
+/*
 namespace samson {
-    
     namespace stream
     {
         
@@ -77,3 +76,4 @@ namespace samson {
         
     }
 }
+*/

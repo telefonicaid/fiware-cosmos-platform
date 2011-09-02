@@ -27,7 +27,6 @@ namespace samson {
     
     std::string getStreamOperationInfo( const pugi::xml_node& node )
     {
-        // Get information for this state    
         std::string name = pugi::get( node , "name" );
         std::string description = pugi::get( node , "description" );
         
@@ -70,44 +69,40 @@ namespace samson {
     std::string getQueueInfo( const pugi::xml_node& queue )
     {
         
-        // Get information for this state    
-        std::string name = pugi::get( queue , "name" );
-        
-        const pugi::node block_list = queue.first_element_by_path("block_list");
-        
         std::ostringstream output;
-        output << std::setw(15) << name << ": [ "  << getBLockListInfo (block_list ) << " ]";
+        
+        std::string name = pugi::get( queue, "name" );
+        int num_items =  pugi::getInt( queue , "num_items" );
+        int num_blocks =  pugi::getInt( queue , "num_blocks" );
+        
+        output << "  " << std::setw(20) << std::left << name << ": ";
+        const pugi::node kv_info = queue.first_element_by_path("content").first_element_by_path("kv_info");
+        const pugi::node working_kv_info = queue.first_element_by_path("working_content").first_element_by_path("kv_info");
+        
+        output << getKVInfoInfo( kv_info ) << "[ Working on " << getKVInfoInfo( working_kv_info ) << " ]";
+        
+        output << " ( " << num_blocks << " blocks in " << num_items << " items ) ";
+        
+        if( pugi::get(queue,"paused" ) == "YES" )
+            output << " [PAUSED]";
         
         return output.str();
     }
     
-    std::string getStateInfo( const pugi::xml_node& state )
+    
+    std::string getKVInfoInfo( const pugi::xml_node& node )
     {
         std::ostringstream output;
         
-        // Get information for this state    
-        std::string name = pugi::get( state, "name" );
-        
-        int num_state_items =  pugi::getInt( state , "num_state_items" );
-        
-        const pugi::node state_info = state.first_element_by_path("state_info").first_element_by_path("block_list");
-        const pugi::node input_info = state.first_element_by_path("input_info").first_element_by_path("block_list");
-        
-        output << "State " << name << ": ( " << num_state_items << " state items ) ";
-        output << " State: [ " << getBLockListInfo( state_info ) << " ] ";
-        
-        
-        output << " Input: [ " << getBLockListInfo( input_info ) << " ] ";
-        
-        output << "\n";
-        
+        size_t kvs  = pugi::getUInt64( node , "kvs" );
+        size_t size = pugi::getUInt64( node , "size" );
+        output << "[ " << au::str( kvs , "kvs" ) << " in " << au::str( size , "bytes" ) << " ]";
         return output.str();
-        
     }
+
     
     std::string getQueueTaskInfo( const pugi::xml_node& queue_task )
     {
-        // Get information for this state    
         std::string id              = pugi::get( queue_task , "id" );
         std::string description     = pugi::get( queue_task , "description" );
         
@@ -122,7 +117,6 @@ namespace samson {
     
     std::string getFormatInfo( const pugi::xml_node& node )
     {
-        // Get information for this state    
         std::string key_format = pugi::get( node , "key_format" );
         std::string value_format = pugi::get( node , "value_format" );
         
@@ -135,7 +129,6 @@ namespace samson {
     {
         std::ostringstream output;
         
-        // Get information for this state    
         std::string name = pugi::get( node , "name" );
         std::string help = pugi::get( node , "help" );
         
@@ -149,7 +142,6 @@ namespace samson {
     {
         std::ostringstream output;
         
-        // Get information for this state    
         std::string name = pugi::get( node , "name" );
         std::string type = pugi::get( node , "type" );
         std::string help = pugi::get( node , "help" );
@@ -329,7 +321,10 @@ namespace samson {
         
         output << "\n";
         
-        output << "** Process manager:\n";
+        int num_processes = pugi::getInt( node_process_manager ,"num_processes");
+        int num_running_processes = pugi::getInt( node_process_manager ,"num_running_processes");
+        
+        output << "** Process manager: " << num_running_processes << " / " << num_processes << "\n";
         output << "      QUEUED:  " << queued_elements.str() << "\n";
         output << "      HALTED:  " << halted_elements.str() << "\n";
         output << "      RUNNING:\n";
@@ -337,6 +332,7 @@ namespace samson {
         for(  n = running.begin() ; n != running.end() ; n++)
         {
             output << "         ";
+            output << "[ " << pugi::get( *n , "time") << " ] ";
             output << "[ Priority " << pugi::get( *n , "priority") << " ] ";
             output << "[ Progress " << au::Format::percentage_string( pugi::getDouble( *n , "progress") ) << " ] ";
             output << pugi::get( *n , "operation_name");
@@ -355,8 +351,10 @@ namespace samson {
         // Get information for this state    
         std::string name = pugi::get( queue , "name" );
         
-        size_t kvs = pugi::getUInt64( queue , "kvs" );
-        size_t size = pugi::getUInt64( queue , "size" );
+        pugi::xml_node node_kv_info = queue.first_element_by_path("kv_info");
+        
+        size_t kvs = pugi::getUInt64( node_kv_info , "kvs" );
+        size_t size = pugi::getUInt64( node_kv_info , "size" );
         
         size_t num_files = pugi::getUInt64( queue , "num_files" );
         

@@ -43,7 +43,7 @@ namespace samson {
             
         }
         
-        void BlockList::createBlock( engine::Buffer *buffer , bool txt )
+        Block* BlockList::createBlock( engine::Buffer *buffer , bool txt )
         {
             // create a new block
             Block *block  = new Block( buffer , txt );
@@ -56,6 +56,8 @@ namespace samson {
             
             // Add automatically to the Block Manager
             BlockManager::shared()->insert( block );   
+            
+            return block;
         }
         
         
@@ -63,7 +65,7 @@ namespace samson {
         {
             
             // Accumulated information
-            accumulated_info.append( block->getInfo() );
+            accumulated_info.append( block->getKVInfo() );
             
             // Insert this block in my list
             blocks.push_back( block );
@@ -104,6 +106,8 @@ namespace samson {
         
         Block* BlockList::top( )
         {
+            if( blocks.size() == 0 )
+                return NULL;
             return blocks.front();
         }
         
@@ -136,46 +140,40 @@ namespace samson {
             
         }
 
+        void BlockList::copyFrom( BlockList* list , KVRange range )
+        {
+            au::list< Block >::iterator b;
+            for (b = list->blocks.begin() ;  b != list->blocks.end() ; b++)
+                if( (*b)->isNecessaryForKVRange( range ) )
+                    add( *b );
+        }
+        
         void BlockList::extractFrom( BlockList* list , size_t max_size )
         {
             size_t total_size = 0 ;
+            int num_blocks = 0;
             
-            while( list->top() != NULL )
+            Block* nextBlock = list->top();
+            
+            while( nextBlock )
             {
-                Block *b = list->top();
-                total_size += max_size;
+                // Increment the size
+                total_size += nextBlock->getSize();
 
-                if (( max_size > 0) && ( total_size > max_size ))
-                    return;
+                if( num_blocks  > 0 )
+                    if (( max_size > 0) && ( total_size > max_size ))
+                        return;
                 
-                add( b );
-                list->remove( b );
+                add( nextBlock );
+                list->remove( nextBlock );
+                num_blocks++;
                 
+                // Get the next one
+                nextBlock = list->top();
             }
             
         }
 
-        void BlockList::extractTo( BlockList* output_list , size_t max_size )
-        {
-            size_t total_size = 0 ;
-            
-            while( top() != NULL )
-            {
-                Block *b = top();
-                total_size += max_size;
-                
-                if (( max_size > 0) && ( total_size > max_size ))
-                    return;
-                
-                output_list->add( b );
-                remove( b );
-                
-            }
-            
-        }
-        
-        
-        
         std::string BlockList::str()
         {
             size_t size             = 0;
@@ -192,7 +190,7 @@ namespace samson {
                 size            += (*b)->getSize();
                 size_on_memory  += (*b)->getSizeOnMemory();
                 size_on_disk    += (*b)->getSizeOnDisk();
-                info.append( (*b)->getInfo() );
+                info.append( (*b)->getKVInfo() );
                 
             }
             
@@ -246,9 +244,20 @@ namespace samson {
             FullKVInfo info;
             std::list<Block*>::iterator b;
             for ( b = blocks.begin() ; b != blocks.end() ; b++ )
-                info.append( ( *b )->getInfo() );
+                info.append( ( *b )->getKVInfo() );
             return info;
         }
+
+        FullKVInfo BlockList::getFullKVInfo( KVRange r )
+        {
+            FullKVInfo info;
+            std::list<Block*>::iterator b;
+            for ( b = blocks.begin() ; b != blocks.end() ; b++ )
+                info.append( ( *b )->getKVInfo( r ) );
+            return info;
+        }
+        
+        
         
         size_t BlockList::getNumBlocks()
         {
@@ -279,7 +288,7 @@ namespace samson {
                 size_total      += (*b)->getSize();
                 size_on_memory  += (*b)->getSizeOnMemory();
                 size_on_disk    += (*b)->getSizeOnDisk();
-                info.append( (*b)->getInfo() );
+                info.append( (*b)->getKVInfo() );
                 
             }
             

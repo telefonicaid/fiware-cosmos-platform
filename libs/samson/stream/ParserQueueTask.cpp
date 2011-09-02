@@ -1,20 +1,20 @@
 
 
 
-#include "engine/Object.h"              // engine::Object
-#include "engine/Notification.h"      // engine::Notification
+#include "engine/Object.h"                          // engine::Object
+#include "engine/Notification.h"                    // engine::Notification
 
-#include "samson/module/ModulesManager.h"      // samson::module::ModulesManager
-#include "samson/common/KVInputVector.h"        // samson::KVInputVector
+#include "samson/module/ModulesManager.h"           // samson::module::ModulesManager
+#include "samson/common/KVInputVector.h"            // samson::KVInputVector
 #include "samson/network/Packet.h"					// samson::Packet
 
-#include "samson/common/NotificationMessages.h" // Notifications
+#include "samson/common/NotificationMessages.h"     // Notifications
 
-#include "PopQueue.h"               // engine::PopQueue
+#include "PopQueue.h"                               // engine::PopQueue
 
-#include "StateItem.h"              // stateItem
+#include "QueueItem.h"                              // QueueItem
 
-#include "ParserQueueTask.h"        // Own interface
+#include "ParserQueueTask.h"                        // Own interface
 
 
 namespace samson {
@@ -158,18 +158,25 @@ namespace samson {
                 
                 for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)
                 {
+                    
                     if( info[hg].size > 0 )
                     {
-                        //LM_M(("Stream Mapping a block of size %s hasg group %d %s ", au::str( (*b)->getSize() ).c_str() , hg , info[hg].str().c_str() ));
                         
-                        inputVector.prepareInput( info[hg].kvs );
-                        inputVector.addKVs( 0 , info[hg] , data );
-                        
-                        KVSetStruct inputStruct;
-                        inputStruct.num_kvs = inputVector.num_kvs;
-                        inputStruct.kvs = inputVector._kv;
-                        
-                        parserOut->run( &inputStruct , writer );
+                        if( ( hg >= range.hg_begin ) && ( hg < range.hg_end) )
+                        {
+                            
+                            //LM_M(("Stream Mapping a block of size %s hasg group %d %s ", au::str( (*b)->getSize() ).c_str() , hg , info[hg].str().c_str() ));
+                            
+                            inputVector.prepareInput( info[hg].kvs );
+                            inputVector.addKVs( 0 , info[hg] , data );
+                            
+                            KVSetStruct inputStruct;
+                            inputStruct.num_kvs = inputVector.num_kvs;
+                            inputStruct.kvs = inputVector._kv;
+                            
+                            parserOut->run( &inputStruct , writer );
+                            
+                        }
                         
                         // Update the data pointer    
                         data +=  info[hg].size;
@@ -254,23 +261,26 @@ namespace samson {
                 {
                     if( info[hg].size > 0 )
                     {
-                        //LM_M(("Stream Mapping a block of size %s hasg group %d %s ", au::str( (*b)->getSize() ).c_str() , hg , info[hg].str().c_str() ));
+                        if( ( hg >= range.hg_begin ) || ( hg < range.hg_end) )
+                        {
+                            
+                            inputVector.prepareInput( info[hg].kvs );
+                            inputVector.addKVs( 0 , info[hg] , data );
+                            
+                            KVSetStruct inputStruct;
+                            inputStruct.num_kvs = inputVector.num_kvs;
+                            inputStruct.kvs = inputVector._kv;
+                            
+                            map->run( &inputStruct , writer );
+                            
+                        }
                         
-                        inputVector.prepareInput( info[hg].kvs );
-                        inputVector.addKVs( 0 , info[hg] , data );
-
-                        KVSetStruct inputStruct;
-                        inputStruct.num_kvs = inputVector.num_kvs;
-                        inputStruct.kvs = inputVector._kv;
-                        
-                        map->run( &inputStruct , writer );
-
                         // Update the data pointer    
                         data +=  info[hg].size;
                         
                     }
                 }
-                 
+                
                 
             }
             
@@ -430,16 +440,16 @@ namespace samson {
         
 #pragma mark ReduceQueueTask
         
-        ReduceQueueTask::ReduceQueueTask( size_t id , const network::StreamOperation& streamOperation , StateItem *_stateItem , int _hg_begin , int _hg_end  ) 
+        ReduceQueueTask::ReduceQueueTask( size_t id , const network::StreamOperation& streamOperation , QueueItem * _queueItem , KVRange _range  ) 
         : stream::QueueTask(id , streamOperation )
         {
             operation_name = "stream:" + streamOperation.operation();
             
-            hg_begin = _hg_begin;
-            hg_end = _hg_end;
+            //Range of activity
+            range = _range;
             
             // Pointer to the state item
-            stateItem = _stateItem;
+            queueItem = _queueItem;
         }
         
         // Get the required blocks to process
@@ -451,8 +461,7 @@ namespace samson {
             // copy all the blocks from the previous state
             state->copyFrom( _state );
         }
-        
-        
+                
 
         // Structure to decide where to take key-values
         enum kvs_source
@@ -515,7 +524,7 @@ namespace samson {
             for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)
             {
                 
-                if( ( hg >= hg_begin ) && (hg < hg_end) )
+                if( ( hg >= range.hg_begin ) && (hg < range.hg_end) )
                 {
                     
                     
@@ -621,8 +630,6 @@ namespace samson {
             
         }          
         
-        
-        
         std::string ReduceQueueTask:: getStatus()
         {
             std::ostringstream output;
@@ -637,7 +644,7 @@ namespace samson {
             
             if( output == ( streamOperation->output_queues_size() - 1 ) )
             {
-                stateItem->addStateBuffer( this, buffer );
+                queueItem->push( this, buffer );
                 return;
             }
             
@@ -649,7 +656,7 @@ namespace samson {
         
         void ReduceQueueTask::finalize()
         {
-            stateItem->notifyFinishOperation( this );
+            queueItem->notifyFinishOperation( this );
         };
         
         

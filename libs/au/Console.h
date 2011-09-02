@@ -20,7 +20,7 @@
 #include <list>
 
 #include "au/Lock.h"             /* Lock                            */
-
+#include "au/Token.h"                   // au::Token
 #include <stdio.h>
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -37,7 +37,7 @@ namespace au {
 		Lock lock;				//!< Lock as a control mechanism to log things into the console
 		bool quit_console;		//!< Flag to indicate that we want the console to quit ( can be set from outside the class with quit )
 
-        
+        au::Token token_pending_messages;
         std::list<std::string> pending_messages;
         pthread_t t;
 	public:		
@@ -64,7 +64,6 @@ namespace au {
 		void print();
 		
         void write( std::string message );
-        void write2( std::string message );
         
 	public:
 

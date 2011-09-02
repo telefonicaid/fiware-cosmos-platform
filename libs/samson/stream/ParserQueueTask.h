@@ -44,12 +44,17 @@ namespace samson
         
         class ParserOutQueueTask : public stream::QueueTask 
         {
+            KVRange range;
             
         public:
             
-            ParserOutQueueTask( size_t id  , const network::StreamOperation& streamOperation  ) : stream::QueueTask(id , streamOperation )
+            ParserOutQueueTask( size_t id  , const network::StreamOperation& streamOperation , KVRange _range  ) : stream::QueueTask(id , streamOperation )
             {
+                // Set operation name for debugging
                 operation_name = "stream:" + streamOperation.operation();
+
+                // Set the limits
+                range = _range;
                 
                 // Change to txt mode ( not key-value )
                 setProcessBaseMode(ProcessIsolated::txt);
@@ -77,12 +82,17 @@ namespace samson
         
         class MapQueueTask : public stream::QueueTask 
         {
+            KVRange range;
             
         public:
             
-            MapQueueTask( size_t id , const network::StreamOperation& streamOperation  ) :stream::QueueTask(id , streamOperation )
+            MapQueueTask( size_t id , const network::StreamOperation& streamOperation , KVRange _range  ) :stream::QueueTask(id , streamOperation )
             {
+                // Set operation name for debugging
                 operation_name = "stream:" + streamOperation.operation();
+                
+                // Set the limits
+                range = _range;
             }
             
             ~MapQueueTask()
@@ -104,14 +114,13 @@ namespace samson
         class ReduceQueueTask : public stream::QueueTask 
         {
             
-            StateItem *stateItem;       // Pointer to notify state vectors
+            QueueItem *queueItem;       // Pointer to notify state vectors
             
-            int hg_begin;               // Limits in the hash-group considered in this operation
-            int hg_end;
+            KVRange range;              // Range of hash-groups
             
         public:
             
-            ReduceQueueTask( size_t id , const network::StreamOperation& streamOperation , StateItem *_stateItem , int _hg_begin , int _hg_end  );
+            ReduceQueueTask( size_t id , const network::StreamOperation& streamOperation , QueueItem * _queueItem , KVRange range  );
             
             ~ReduceQueueTask()
             {

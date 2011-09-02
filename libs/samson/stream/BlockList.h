@@ -45,6 +45,7 @@ namespace samson {
     {
         class Block;
         class QueuesManager;
+        class QueueItem;
         class BlockMatrix;
         
         class BlockList
@@ -53,6 +54,7 @@ namespace samson {
             
             friend class QueuesManager;
             friend class Queue;
+            friend class QueueItem;
             friend class ParserQueueTask;
             friend class MapQueueTask;
             friend class ReduceQueueTask;
@@ -87,10 +89,10 @@ namespace samson {
             ~BlockList();
 
             // Create a block for this BlockList
-            void createBlock( engine::Buffer *buffer , bool txt );
+            Block* createBlock( engine::Buffer *buffer , bool txt );
 
-            // Get access to the top block ( next to be process ? )
-            Block* top( );      
+            // Get the next element to be processed
+            Block* top( );
 
             // Simple add or remove blocks
             void add( Block *b );
@@ -98,7 +100,6 @@ namespace samson {
 
             // remove a particular block with this id
             void remove( size_t id );
-            
             
             // Remove all the blocks contained in the list
             void clearBlockList();
@@ -116,13 +117,14 @@ namespace samson {
             size_t getNumBlocks();
             
             FullKVInfo getFullKVInfo();
+            FullKVInfo getFullKVInfo( KVRange r);
             
             //void copyFrom( BlockMatrix* matrix , int channel );
             void copyFrom( BlockList* list );
+            void copyFrom( BlockList* list , KVRange range );
 
             // Extract blocks of data
             void extractFrom( BlockList* list , size_t max_size );
-            void extractTo( BlockList* list , size_t max_size );
             
             std::string getSummary();
             

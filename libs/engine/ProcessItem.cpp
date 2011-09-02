@@ -16,8 +16,12 @@ namespace engine
 		
 		ProcessItem* processItem = (ProcessItem*) p;
 		
+        processItem->cronometer.start();
+        
 		// Run the process
 		processItem->run();
+
+        processItem->cronometer.stop();
 		
 		// Notify the process manager that we have finished
 		processItem->processManager->finishProcessItem( processItem );
@@ -50,6 +54,8 @@ namespace engine
     {
         output << "<process_item>\n";
 
+        au::xml_simple( output , "time"  , cronometer.str() ); 
+        
         output << "<progress>" << progress << "</progress>\n";
         
 

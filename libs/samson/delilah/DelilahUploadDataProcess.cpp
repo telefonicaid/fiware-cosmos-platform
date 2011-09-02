@@ -23,8 +23,6 @@ namespace samson
 	
 	DelilahUploadDataProcess::DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue , bool _compression, int _max_num_threads ) : DelilahComponent(DelilahComponent::load) , fileSet( fileNames ) 
 	{
-		// Get initial time
-		gettimeofday(&init_time, NULL);
 		
 		// Queue name 
 		queue = _queue;
@@ -54,12 +52,11 @@ namespace samson
 
 		// Unninitialized status
 		status = uninitialized;
-
+        
 		if( totalSize == 0)
 		{
-			error.set("Not data to upload");
 			status = finish_with_error;
-            final_time_in_seconds = au::Format::ellapsedSeconds(&init_time);
+            setComponentFinishedWithError("Not data to upload");
 		}
 		
 	}	
@@ -359,9 +356,6 @@ namespace samson
 			}
 			else
 				status = finish;
-			
-            // Set the final time
-            final_time_in_seconds = au::Format::ellapsedSeconds(&init_time);
 
             setComponentFinished();
 			
@@ -395,7 +389,6 @@ namespace samson
 	std::string DelilahUploadDataProcess::showProgress( std::string title,  size_t size )
 	{
 		std::ostringstream output;
-		int seconds = au::Format::ellapsedSeconds(&init_time);
 
 		int p;
 		if( size > 0)
@@ -404,7 +397,10 @@ namespace samson
 			p = 0;
 		
 		size_t r;
+
 		
+        int seconds = cronometer.getSeconds();
+        
 		if ( seconds > 0 )
 			r = ((double) size * 8.0 / (double) seconds);
 		else
@@ -420,9 +416,7 @@ namespace samson
     std::string DelilahUploadDataProcess::getShortStatus()
     {
 		std::ostringstream output;
-		
-		int seconds = au::Format::ellapsedSeconds(&init_time);
-		
+				
 		output << "Uploading " << au::str( totalSize ,"B" ) << " to queue: " << queue << " ( Status ";
         
 		switch (status) {
@@ -449,13 +443,7 @@ namespace samson
 				break;
 		}
 		output << " )";
-        
-        if ( ( status == finish ) || ( status == finish_with_error) )
-            output << " [ " << au::Format::time_string( final_time_in_seconds ) << " ] ";
-        
-		if( status == sending_files_to_workers )
-			output << " Running time: " << au::Format::time_string(seconds) << " " ;
-        
+                
 		return output.str();        
     }
     
@@ -464,7 +452,6 @@ namespace samson
 		
 		std::ostringstream output;
 		
-		int seconds = au::Format::ellapsedSeconds(&init_time);
 		
 		output << "[ "<< id << " ] Uploading " << au::str( totalSize ,"B" ) << " to queue: " << queue << " ( Status ";
 
@@ -493,8 +480,6 @@ namespace samson
 		}
 		output << " )";
 
-        if ( ( status == finish ) || ( status == finish_with_error) )
-            output << " [ " << au::Format::time_string( final_time_in_seconds ) << " ] ";
         
         // General status
         output << "\n\tConfirmed " << num_confirmed_files << " buffers of " << num_files;
@@ -509,11 +494,11 @@ namespace samson
         
 		if( status == sending_files_to_workers )
 		{
-			output << "\n\tRunning time: " << au::Format::time_string(seconds) << " " ;
 			output << " [ " << num_threads << " threads compressing data ]";
 
 			if( uploadedSize > 0)
 			{
+                int seconds = cronometer.getSeconds();
 				size_t pending_secs =  ( totalSize - uploadedSize ) * seconds / uploadedSize;
 				output << "[ETA " << au::Format::time_string( pending_secs ) << "] ";
 			}

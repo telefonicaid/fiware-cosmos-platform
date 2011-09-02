@@ -3,10 +3,12 @@
 #define _H_DELILAH_COMPONENT
 
 #include "au/ErrorManager.h"        // au::ErrorManager
+#include "au/Cronometer.h"          // au::CronometerSystem
 
 #include <cstring>
 #include "samson/network/Message.h"		// Message::MessageCode 
 #include "samson/network/Packet.h"			// samson::Packet
+
 
 namespace engine {
     class Buffer;
@@ -21,8 +23,10 @@ namespace samson {
 	{
 
 		bool component_finished;		// Flag to be removed when indicated by user
-		
+
 	public:
+        
+        au::CronometerSystem  cronometer;
 		
 		typedef enum 
 		{

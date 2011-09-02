@@ -9,6 +9,7 @@
 
 #include "engine/ProcessItem.h"                     // engine::ProcessItem
 
+#include "samson/stream/BlockList.h"                // stream::BlockList
 #include "samson/stream/StreamProcessBase.h"        // parent class 
 #include "samson/stream/Block.h"                    // samson::Stream::Block
 

@@ -12,6 +12,8 @@
 #include "engine/Object.h"                      // engine::Object
 #include "engine/ProcessItem.h"                 // engine::ProcessItem
 
+
+#include "samson/common/coding.h"               // KVRange
 #include "samson/common/samson.pb.h"            // network::...
 #include "samson/stream/QueueTaskManager.h"     // samson::stream::QueueTaskManager
 #include "engine/Object.h"                      // engine::Object
@@ -98,10 +100,12 @@ namespace samson {
             size_t delilahId;       // Identifier of the operation at delilah side
             int fromId ;            // Identifier of delilah to send packets back
 
+            // Limits of operation for this pop queue
+            KVRange range;
             
         public:
 
-            PopQueueTask( size_t _id , PopQueue *pq );
+            PopQueueTask( size_t _id , PopQueue *pq , KVRange _range );
             ~PopQueueTask();
             
             void addBlock( Block *b );

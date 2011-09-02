@@ -10,7 +10,7 @@
 #include <samson/module/samson.h>
 
 #include "samson/modules/gg/CDR.h"       // gg::CDR                                                                                     
-#include "samson/modules/system/Uint.h"  // system::UInt   
+#include "samson/modules/system/UInt.h"  // system::UInt   
 
 namespace samson{
 namespace gg{

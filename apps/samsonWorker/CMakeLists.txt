@@ -11,8 +11,8 @@ SET (LIBS
     samsonIsolated
     samsonNetwork
     samsonModule
-    samsonCommon
     samsonStream
+    samsonCommon
     samsonDataLib
     engine
     au

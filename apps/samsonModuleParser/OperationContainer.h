@@ -124,6 +124,22 @@ namespace samson
                 std::cerr << "samsonModuleParser: Error in operation " << name << ": Maps can only contain one input\n";
                 exit(1);
             }
+
+	    if (type != "script")
+	    {
+		    size_t found=input_dataset.key_values.keyFormat.find('.');
+		    if (found == std::string::npos)
+		    {
+			std::cerr << "samsonModuleParser: Error in operation " << name << ": Input key without module specification(" << input_dataset.key_values.keyFormat << ")\n";
+			exit(1);
+		    }
+		    found=input_dataset.key_values.valueFormat.find('.');
+		    if (found == std::string::npos)
+		    {
+			std::cerr << "samsonModuleParser: Error in operation " << name << ": Input value without module specification(" << input_dataset.key_values.valueFormat << ")\n";
+			exit(1);
+		    }
+		}
                 
             inputs.push_back(input_dataset);
         }
@@ -255,6 +271,14 @@ namespace samson
 			file << "\n";
 			
 			file << "#include <samson/module/samson.h>\n";
+			if (type != "script")
+			{
+				std::set<std::string> includes ;
+				getIncludes(includes);
+				for( std::set<std::string>::iterator iter = includes.begin() ; iter != includes.end() ; iter++)
+				file << *iter;
+			}
+
 			
 			file << "\n";
 			file << "\n";
@@ -348,6 +372,11 @@ namespace samson
 			{
 				includes.insert( getIncludeForData( inputs[i].key_values.keyFormat ) );
 				includes.insert( getIncludeForData( inputs[i].key_values.valueFormat ) );
+			}
+			for (size_t i = 0 ; i < outputs.size() ; i++)
+			{
+				includes.insert( getIncludeForData( outputs[i].key_values.keyFormat ) );
+				includes.insert( getIncludeForData( outputs[i].key_values.valueFormat ) );
 			}
 		}
 		

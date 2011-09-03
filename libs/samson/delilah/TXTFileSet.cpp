@@ -31,7 +31,7 @@ namespace samson
 		{
 			
 			b->write( inputStream );
-			
+            
 			// Open the next file if necessary
 			if( inputStream.eof() )
 			{
@@ -44,11 +44,10 @@ namespace samson
 				}
 			}
 		}
-		
+
 		// Full buffer
 		// Remove the last chars until a complete line and keep for the next read
 		previousBufferSize =  b->removeLastUnfinishedLine( previousBuffer );
-		
 		
 		
 	}

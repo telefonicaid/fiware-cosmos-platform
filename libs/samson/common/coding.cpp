@@ -3,7 +3,17 @@
 namespace samson
 {
 
+    bool operator==(const KVFormat & left, const KVFormat & right)
+    {
+        if ( left.keyFormat != right.keyFormat )
+            return false;
+        if ( left.valueFormat != right.valueFormat )
+            return false;
+        return true;
+    }
 	
+    
+    
     bool operator<(const KVRange & left, const KVRange & right)
     {
         if( left.hg_begin < left.hg_begin )

@@ -93,7 +93,6 @@ namespace samson {
 		
 		std::vector<std::string> failedFiles;		// List of files that could not be uploaded		
 		
-		
 	public:
 		
 		TXTFileSet( std::vector<std::string> &_fileNames )

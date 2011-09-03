@@ -260,25 +260,29 @@ namespace samson
 		
 		
 		// Size if the firt thing in the buffer
-		size_t *size = (size_t*) item->data;
+		size_t size = *( (size_t*) item->data );
 		
-		// Init the data buffer used here	
+		// Init the data buffer used here
 		char *data = item->data + sizeof(size_t);
 		
 #pragma mark ---		
 		
-		if( *size > 0 )
+		if( size > 0 )
 		{
 			
 			//size_t task_id = task->workerTask.task_id();
 			
-			engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer( "ProcessTXTWriter", *size , MemoryOutputNetwork );
+			engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer( "ProcessTXTWriter", sizeof(KVHeader) + size , MemoryOutputNetwork );
+
 			if( !buffer )
 				LM_X(1,("Internal error"));
 			
+            KVHeader *header = (KVHeader *) buffer->getData();
+            header->initForTxt( size );
+            
 			// copy the entire buffer to here
-			memcpy(buffer->getData(), data, *size);
-			buffer->setSize(*size);
+			memcpy(buffer->getData() + sizeof( KVHeader ) , data, size);
+			buffer->setSize( sizeof(KVHeader) + size );
             
             processOutputTXTBuffer(buffer, finish);
 		}

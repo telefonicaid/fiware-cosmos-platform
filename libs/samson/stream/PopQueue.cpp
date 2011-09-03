@@ -109,9 +109,7 @@ namespace samson {
             
             running_tasks.erase( task_id );
             error.set( _error );
-            
-            LM_M(("Received notificaiton that task %lu finished. Now pending %lu tasks", task_id , running_tasks.size() ));
-            
+                        
             check();
         }
 
@@ -170,7 +168,6 @@ namespace samson {
         void PopQueueTask::sendMessage( engine::Buffer *buffer )
         {
             
-            LM_M(("Sending a message..."));
             
             // Send the packet using notification mecanism
             samson::Packet *packet = new Packet( Message::PopQueueResponse );
@@ -205,9 +202,7 @@ namespace samson {
                 {
                     
                     size_t  size = block->buffer->getSize();
-                    
-                    LM_M(("Run pop queue task... buffer of %lu bytes" , size));
-                    
+                                        
                     engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer("PopQueueTask_run", size, 0 );
                     
                     memcpy( buffer->getData(), block->buffer->getData(), size );

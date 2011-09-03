@@ -89,7 +89,7 @@ namespace samson {
             ~BlockList();
 
             // Create a block for this BlockList
-            Block* createBlock( engine::Buffer *buffer , bool txt );
+            Block* createBlock( engine::Buffer *buffer );
 
             // Get the next element to be processed
             Block* top( );

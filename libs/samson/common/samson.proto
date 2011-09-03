@@ -456,8 +456,7 @@ message MessagePlatformProcess
 message PushBlock
 {
 	repeated string queue		= 1;	// Target QueueuChannels to push this block
-	optional uint64 size	     	= 2;	// size of the block we are uploading 
-	required bool txt 		= 3;	// Special flag for txt buffers ( no header )
+	required uint64 size		= 2;	// Size of the uploaded block ( used when comming back to delilah )
 }
 
 message PushBlockResponse

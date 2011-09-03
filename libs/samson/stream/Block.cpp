@@ -45,7 +45,7 @@ namespace samson {
         }
         
         
-        Block::Block( engine::Buffer *_buffer , bool txt )
+        Block::Block( engine::Buffer *_buffer )
         {
             
             // Get a new unique id from the block manager
@@ -60,16 +60,10 @@ namespace samson {
 
             // Default state is on_memory because the buffer has been given at memory
             state = on_memory;
-            
 
-            if( !txt )
-            {
-                header = (KVHeader*) malloc( sizeof( KVHeader ) );
-                memcpy(header, buffer->getData(), sizeof(KVHeader));
-            }
-            else
-                header = NULL;
-
+            // Get a copy of the header
+            header = (KVHeader*) malloc( sizeof( KVHeader ) );
+            memcpy(header, buffer->getData(), sizeof(KVHeader));
             
         }
 
@@ -244,26 +238,21 @@ namespace samson {
 
         KVInfo Block::getKVInfo()
         {
-            if( header )
-                return header->info;
-            else
-                return KVInfo( size , 0 );
+            return header->info;
         }
 
         KVInfo Block::getKVInfo( KVRange r )
         {
-            if( header )
+            if( r == KVRange(0,KVFILE_NUM_HASHGROUPS) )
+                return header->info;
+            
+            if( !infos.isInMap(r) )
             {
-                if( !infos.isInMap(r) )
-                {
-                    LM_W(("Information for this range %s was not previously computed" , r.str().c_str()));
-                    return KVInfo( 0 , 0 );
-                }
-                
-                return infos.findInMap( r );
+                LM_W(("Information for this range %s was not previously computed" , r.str().c_str()));
+                return KVInfo( 0 , 0 );
             }
-            else
-                return KVInfo( size , 0 );
+            
+            return infos.findInMap( r );
         }
         
         size_t getSize( std::set<Block*> &blocks )
@@ -290,13 +279,21 @@ namespace samson {
         
         void Block::getInfo( std::ostringstream& output)
         {
-            output << "<block id=\"" << id << "\" size=\"" << size << "\" state=\"" << getState() << "\">\n";
+            au::xml_open(output, "block");
 
+            au::xml_simple(output, "id", id);
+            au::xml_simple(output, "size", size);
+            au::xml_simple(output, "state", getState());
+
+            au::xml_open(output, "lists");
             std::set< BlockList* >::iterator l;
             for (l = lists.begin() ; l != lists.end() ; l++)
-                output << "<list name=\"" << (*l)->name << "\" />";
+                au::xml_simple(output, "list", (*l)->name );
+            au::xml_close(output, "lists");
+            
+            header->getInfo( output );
 
-            output << "</block>\n";
+            au::xml_close(output, "block");
         }
         
         

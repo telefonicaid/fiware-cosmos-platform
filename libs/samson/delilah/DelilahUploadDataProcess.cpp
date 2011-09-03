@@ -136,10 +136,18 @@ namespace samson
             size_t load_size_buffer = samson::SamsonSetup::getUInt64("load.buffer_size");
             engine::Buffer *b = engine::MemoryManager::shared()->newBuffer( "Loading buffer" , load_size_buffer , MemoryOutputNetwork );
 			
+            // Fill the header first
+            b->skipWrite( sizeof(KVHeader) );
+            
 			// Fill the buffer with the contents from the file
 			fileSet.fill( b );
 
-			// Insert into the list of pending elements
+            // Set the header
+            KVHeader* _header = (KVHeader*) b->getData();
+            _header->initForTxt( b->getSize() - sizeof( KVHeader ) );
+			
+            
+            // Insert into the list of pending elements
 			size_t file_id = num_files++;
 			
 			// Activate the finish flag if necessary before sending the packet ( so at the reception the flag is activated )

@@ -25,8 +25,10 @@ namespace samson
             ModulesManager *modulesManager = ModulesManager::shared();
             operation = modulesManager->getOperation( operation_name );
 
-            data = parserSubTask->buffer->getData();
-            size = parserSubTask->buffer->getSize();		
+            // Note that the first sizeof(KVheader) bytes are the header
+            
+            data = parserSubTask->buffer->getData() + sizeof(KVHeader);
+            size = parserSubTask->buffer->getSize() -  sizeof(KVHeader);		
         }
         else
         {

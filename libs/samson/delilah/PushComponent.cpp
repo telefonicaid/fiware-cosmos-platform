@@ -34,9 +34,6 @@ namespace samson
         
 		uploadedSize = 0;
 		processedSize = 0;
-		totalSize = 0;	
-		
-
         totalSize = dataSource->getTotalSize();
         
         // Set this to false ( true will be the end of processing data )
@@ -94,6 +91,7 @@ namespace samson
         
         if( finish_process )
         {
+            
             if( totalSize == uploadedSize )
             {
                 // Set this flag to indicate that the process has finished
@@ -101,6 +99,8 @@ namespace samson
                 setComponentFinished();
             }
         }
+        
+        
     }
 
     
@@ -121,10 +121,17 @@ namespace samson
             
             engine::Buffer *buffer = memoryRequest->buffer;
             delete memoryRequest;
-            
+
+            // Skip to write the header at the end
+            buffer->skipWrite( sizeof(KVHeader) );
             
             // Full the buffer with the content from the files
             dataSource->fill( buffer );
+
+            // Set the header    
+            KVHeader *header = (KVHeader*) buffer->getData();
+            header->initForTxt( buffer->getSize() - sizeof(KVHeader) );
+
             
             // Get the size to update the total process info
             processedSize += buffer->getSize();
@@ -134,14 +141,13 @@ namespace samson
             packet->message->set_delilah_id( id );
 
             network::PushBlock* pb =  packet->message->mutable_push_block();
-            pb->set_txt(true);  // This is always txt blocks
 
             // Add queue
             std::set<std::string>::iterator q;
             for (q = queues.begin() ; q != queues.end() ; q++)
                 pb->add_queue( *q );
             
-            pb->set_size( buffer->getSize() );
+            pb->set_size( buffer->getSize() - sizeof(KVHeader) );
             
             delilah->network->sendToWorker( worker, packet);
             worker++;
@@ -304,7 +310,6 @@ namespace samson
     {
         if( notification->isName(notification_disk_operation_request_response) )
         {
-            LM_M(("Received a disk operation notification"));
             num_write_operations--;
             check();
         }

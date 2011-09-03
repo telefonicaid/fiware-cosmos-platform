@@ -49,6 +49,7 @@ namespace samson {
             engine::Buffer *buffer;     // Buffer of data if content of this block is on memory
             
             KVHeader* header;           // Always on memory copy of the header
+            
             size_t size;                // Size of the buffer ( Not that buffer is NULL if content is not on memory )
 
             std::set< BlockList* > lists;   // List where this block is contained
@@ -69,7 +70,7 @@ namespace samson {
         private:
             
             // Constructor only visible in a BlockList
-            Block( engine::Buffer *buffer , bool txt );
+            Block( engine::Buffer *buffer  );
             
         public:
             
@@ -226,7 +227,7 @@ namespace samson {
                     return;
                 }
                 
-                if( !header )
+                if( header->isTxt() )
                 {
                     //LM_W(("Not possible to compute info for range sice the block is a txt block"));
                     // A warning is not necessary since it is part of the protocol for QueueItem

@@ -182,7 +182,9 @@ namespace samson {
             {
                 if ( packet->buffer )
                     engine::MemoryManager::shared()->destroyBuffer( packet->buffer );
+                
                 LM_W(("Internal error. Received a push block message without the push_object included"));
+                
                 return;
             }
 
@@ -192,20 +194,10 @@ namespace samson {
                 return;
             }
             
-            // Get the flag of txt buffer
-            bool txt = packet->message->push_block().txt();
-
-            /*
-            if ( txt )
-                LM_M(("Received a block of txt"));
-            else
-                LM_M(("Received a block of kv"));
-            */
-            
 
             // Tmp list with the created block
             stream::BlockList my_list( au::str("TmpList for PushBlock") );
-            my_list.createBlock( packet->buffer , txt );
+            my_list.createBlock( packet->buffer );
             
             
             // Push the packet to a particular stream-queue
@@ -216,6 +208,7 @@ namespace samson {
             }
             
             // Send a message back if delilah_id is > 0
+            
             if( packet->message->delilah_id() > 0)
             {
                 Packet *p = new Packet( Message::PushBlockResponse );

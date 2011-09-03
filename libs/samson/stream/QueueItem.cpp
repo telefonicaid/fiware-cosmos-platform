@@ -53,7 +53,7 @@ namespace stream
         {
             if ( _task == task )
             {
-                Block* b = future_list->createBlock(buffer, false);
+                Block* b = future_list->createBlock(buffer);
                 prepareBlock(b);
             }
             else

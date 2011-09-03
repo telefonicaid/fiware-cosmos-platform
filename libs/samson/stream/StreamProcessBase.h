@@ -76,7 +76,7 @@ namespace samson
             
         protected:
             
-            void sendBufferToQueue( engine::Buffer *buffer , int outputWorker , std::string queue_name , bool flag_txt );
+            void sendBufferToQueue( engine::Buffer *buffer , int outputWorker , std::string queue_name );
 
             
         };

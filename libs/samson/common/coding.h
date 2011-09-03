@@ -260,6 +260,9 @@ namespace samson {
 		
 	};	
 
+    
+    bool operator==(const KVFormat & left, const KVFormat & right);
+    
 	/**
         KVRange keeps information about a particular range of hash-groups
 	 */
@@ -385,8 +388,8 @@ namespace samson {
 		int magic_number;			// Magic number to make sure reception is correct
 		char keyFormat[100];		// Format for the key
 		char valueFormat[100];		// Format for the value
+        
 		KVInfo info;				// Total information in this package ( in all hash-groups )
-
         KVRange range;              // Range of has-groups used in this file
 		
 		// Specific fields only used in particular operations
@@ -406,13 +409,31 @@ namespace samson {
 			setInfo( _info );
 			
 			// Default initialization of the hash-group to full-files
-            range.set( 0 , KVFILE_NUM_HASHGROUPS );
+			range.set( 0 , KVFILE_NUM_HASHGROUPS );
 
 			// Default init for the input/num_inputs field ( only used in particular operations )
 			input = 0 ;
 			num_inputs = 0;
 		}
 
+        void initForTxt( size_t size )
+        {
+	    magic_number =  4652783;
+	    setFormat( KVFormat("txt","txt") );
+            range.set( 0 , KVFILE_NUM_HASHGROUPS );
+
+	    info.kvs = 0;// In txt data-sets there are not "key-values"
+	    info.size = size;
+            
+            input = 0;
+            num_inputs=0;
+        }
+        
+        bool isTxt()
+        {
+            return (getFormat() == KVFormat("txt","txt") );
+        }
+        
 		void setHashGroups( uint32 _hg_begin , uint32 _hg_end )
 		{
             range.set( _hg_begin , _hg_end );
@@ -499,6 +520,26 @@ namespace samson {
 			return true;
 		}
 		
+        std::string str()
+        {
+            std::ostringstream output;
+            output << "KVHeader: " << info.str() << " (" << getFormat().str() << ")";
+            return output.str();
+        }
+        
+        void getInfo( std::ostringstream &output )
+        {
+            au::xml_open(output , "kv_header" );
+            
+            getFormat().getInfo( output );
+            info.getInfo( output );
+            range.getInfo(output);
+            
+            au::xml_close(output , "kv_header" );
+        }
+            
+        
+        
 	};
 	
 	/**

@@ -24,13 +24,13 @@ class SamsonFile
 
 	FILE *file;
     
+public:
+
     samson::KVHeader header;
     
     samson::KVFormat format;
-   
-    samson::KVInfo*  info;
     
-public:
+    samson::KVInfo*  info;
     
     ~SamsonFile()
     {
@@ -68,37 +68,71 @@ public:
         struct stat filestatus;
         stat( fileName.c_str() , &filestatus );
         
-        size_t expected_size =   (size_t)( sizeof(samson::KVHeader) + (sizeof(samson::KVInfo)*KVFILE_NUM_HASHGROUPS) + header.info.size ) ;
-        if( (size_t)filestatus.st_size != expected_size)
+        if ( header.getFormat() == samson::KVFormat("txt","txt") )
         {
-            std::ostringstream message;
-            message << "Worng file length\n";
-            message << "Expected:";
-            message << " Header: " << sizeof(samson::KVHeader);
-            message << " + Info: " << (sizeof(samson::KVInfo)*KVFILE_NUM_HASHGROUPS);
-            message << " + Data: " <<  header.info.size;
-            message << " = " << expected_size << "\n";
-            message << "File size: " << filestatus.st_size << " bytes\n";
+            size_t expected_size =   (size_t)( sizeof(samson::KVHeader)  + header.info.size );
             
-            error.set( message.str() );
-            return;
+            if( (size_t)filestatus.st_size != expected_size)
+            {
+                std::ostringstream message;
+                message << "Wrong file length\n";
+                message << "Expected:";
+                message << " Header: " << sizeof(samson::KVHeader);
+                message << " + Data: " <<  header.info.size;
+                message << " = " << expected_size << "\n";
+                message << "File size: " << filestatus.st_size << " bytes\n";
+                
+                error.set( message.str() );
+                
+                std::cout << header.str() << "\n";
+                
+                return;
+            }
+            
         }
+        else
+        {
+            size_t expected_size =   (size_t)( sizeof(samson::KVHeader) + (sizeof(samson::KVInfo)*KVFILE_NUM_HASHGROUPS) + header.info.size ) ;            
+            
+            if( (size_t)filestatus.st_size != expected_size)
+            {
+                std::ostringstream message;
+                message << "Wrong file length\n";
+                message << "Expected:";
+                message << " Header: " << sizeof(samson::KVHeader);
+                message << " + Info: " << (sizeof(samson::KVInfo)*KVFILE_NUM_HASHGROUPS);
+                message << " + Data: " <<  header.info.size;
+                message << " = " << expected_size << "\n";
+                message << "File size: " << filestatus.st_size << " bytes\n";
+                
+                error.set( message.str() );
+                return;
+            }
+            
+        }
+        
         
         
         // Get format
         format = header.getFormat(); 
 
         // Get hash-group information
-        info = (samson::KVInfo*) malloc(  sizeof(samson::KVInfo)*(KVFILE_NUM_HASHGROUPS));
-        int          total_size =  sizeof(samson::KVInfo) * (KVFILE_NUM_HASHGROUPS);
-        nb = fread(info, 1, total_size, file);
-
-        if (nb != total_size)
+        if ( header.getFormat() == samson::KVFormat("txt","txt") )
+            info = NULL;
+        else
         {
-            error.set("Error reading information about hash-groups");
-            return;
-        }
+            
+            info = (samson::KVInfo*) malloc(  sizeof(samson::KVInfo)*(KVFILE_NUM_HASHGROUPS));
+            int          total_size =  sizeof(samson::KVInfo) * (KVFILE_NUM_HASHGROUPS);
+            nb = fread(info, 1, total_size, file);
 
+            if (nb != total_size)
+            {
+                error.set("Error reading information about hash-groups");
+                return;
+            }
+            
+        }
         
     }
     
@@ -115,16 +149,12 @@ public:
             exit(1);
         }
     }
-    
-    std::string strHeader()
-    {
-        std::ostringstream output;
-        output << header.info.str() << " (" << format.str() << ")";
-        return output.str();
-    }
 
     void printHashGroups()
     {
+        if( !info)
+            return;
+        
         for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ; i++)
         {
             size_t s = info[i].size ;
@@ -134,6 +164,22 @@ public:
     
     void printContent( int limit )
     {
+        if ( header.getFormat() == samson::KVFormat("txt","txt") )
+        {
+            // txt content
+            char buffer[1025];
+            int n = fread(buffer, 1, 1024, file);
+            
+            while( n > 0)
+            {
+                write(1, buffer, n);
+                n = fread(buffer, 1,1024, file);
+            }
+            
+            return;
+        }
+        
+        
         samson::ModulesManager* modulesManager = samson::ModulesManager::shared();
         
         samson::Data *keyData = modulesManager->getData(format.keyFormat);
@@ -238,7 +284,7 @@ int main(int argc, const char *argv[])
         
         if( cmdLine.get_flag_bool("header") )
         {
-            std::cout << samsonFile.strHeader();
+            std::cout << samsonFile.header.str() << " " << " [ " << samsonFile.header.info.kvs << " kvs in " << samsonFile.header.info.size << "bytes\n";            
             exit(0);
         }
         
@@ -274,7 +320,7 @@ int main(int argc, const char *argv[])
                         samsonFile.printErrorAndExitIfAny();
                         
                         if( cmdLine.get_flag_bool("header") )
-                            std::cout << localFileName << ": " << samsonFile.strHeader() << std::endl;
+                            std::cout << localFileName.str() << ": " << samsonFile.header.str() << std::endl;
                         else if( cmdLine.get_flag_bool("hg" ) )
                         {
                             std::cout << "File: " << localFileName;

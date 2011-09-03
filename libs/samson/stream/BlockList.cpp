@@ -43,10 +43,10 @@ namespace samson {
             
         }
         
-        Block* BlockList::createBlock( engine::Buffer *buffer , bool txt )
+        Block* BlockList::createBlock( engine::Buffer *buffer )
         {
             // create a new block
-            Block *block  = new Block( buffer , txt );
+            Block *block  = new Block( buffer );
 
             // Insert this block in my list
             blocks.push_back( block );

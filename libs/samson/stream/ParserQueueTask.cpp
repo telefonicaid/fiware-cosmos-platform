@@ -51,8 +51,8 @@ namespace samson {
                 
                 Block *b = *bi;
                 
-                char *data = b->getData();
-                size_t size = b->getSize();
+                char *data = b->getData() + sizeof( KVHeader );
+                size_t size = b->getSize() - sizeof( KVHeader );
                 
                 //LM_M(("Stream Parsing a block of size %s", au::str(size).c_str() ));
                 
@@ -649,7 +649,7 @@ namespace samson {
             }
             
             // Send a packet to be push in a queue ( normal behaviour in stream operations )
-            sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues(output) , false );
+            sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues(output) );
             
             
         }

@@ -49,9 +49,7 @@ namespace engine {
 	
 	std::string Buffer::str()
 	{
-		std::ostringstream output;
-		output << "[ Buffer size:" << au::str( _size ) << " max:" << au::str( _max_size ) ;
-		return output.str();
+        return au::str("[ Buffer (%s) MaxSize: %lu Size: %lu Offset %lu ]" , _name.c_str() , _max_size , _size , _offset );
 	}
 
 	
@@ -199,6 +197,10 @@ namespace engine {
     void Buffer::getInfo( std::ostringstream& output)
     {
         au::xml_open(output , "buffer");
+        au::xml_simple(output, "max_size", _max_size);
+        au::xml_simple(output, "size", _size);
+        au::xml_simple(output, "offset", _offset);
+        au::xml_simple(output, "name", _name);
         au::xml_close(output , "buffer");
     }
 

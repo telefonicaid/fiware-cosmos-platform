@@ -77,11 +77,11 @@ namespace samson {
         {
             //LM_M(("[%s] Processing buffer %s" , streamOperation->operation().c_str(), au::str(buffer->getSize()).c_str() ));
             
-            sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues(output) , false );
+            sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues(output) );
             
         }
         
-        void StreamProcessBase::sendBufferToQueue( engine::Buffer *buffer , int outputWorker , std::string queue_name , bool flag_txt )
+        void StreamProcessBase::sendBufferToQueue( engine::Buffer *buffer , int outputWorker , std::string queue_name  )
         {
             Packet* packet = new Packet( Message::PushBlock );
             packet->buffer = buffer;    // Set the buffer of data
@@ -89,7 +89,6 @@ namespace samson {
             
             network::PushBlock* pb =  packet->message->mutable_push_block();
             pb->set_size( buffer->getSize() );
-            pb->set_txt(flag_txt); // To review when txt buffers are sended to a queue produced by a parserOut operation
             
             std::vector<std::string> queue_names = au::split( queue_name , ',' );
             for ( size_t i = 0 ; i < queue_names.size() ; i++)
@@ -113,7 +112,7 @@ namespace samson {
             int output = 0;
             int outputWorker = -1;  // Send always to myself ( txt is not distributed )
             
-            sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues(output) , true );
+            sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues(output) );
             
         }
         

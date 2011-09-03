@@ -80,9 +80,10 @@ namespace engine {
 		// Get used size of this buffer ( not necessary the maximum )
 		size_t getSize();
 		
-		// Get a description of the buffer
+		// Get a description of the buffer ( debugging )
 		std::string str();
-		
+
+        
 		// Writing content to the buffer
 		// ------------------------------------------
 		

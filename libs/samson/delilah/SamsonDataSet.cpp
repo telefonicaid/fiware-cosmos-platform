@@ -77,6 +77,11 @@ namespace samson {
         
     }
 
+    SamsonDataSet::~SamsonDataSet()
+    {
+        files.clearMap();
+    }
+    
     std::string SamsonDataSet::str()
     {
         std::ostringstream output;

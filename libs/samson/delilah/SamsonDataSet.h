@@ -21,6 +21,7 @@ namespace samson {
         au::ErrorManager error;
         
         SamsonDataSet( std::string directory );
+        ~SamsonDataSet();
 
         void printHashGroups();
         void printHeaders();

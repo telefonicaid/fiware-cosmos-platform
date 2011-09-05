@@ -12,9 +12,13 @@ namespace samson {
     {
         fileName = _fileName;
         file = fopen( fileName.c_str() , "r" );        
+        info = NULL;
         
         if( !file )
+        {
             error.set("Not possible to open file");
+            return;
+        }
         
         // Read header
         int nb = fread(&header, 1, sizeof(samson::KVHeader), file);
@@ -139,6 +143,9 @@ namespace samson {
     
     void SamsonFile::printContent( size_t &limit )
     {
+        if( error.isActivated())
+            return;
+        
         if ( header.getFormat() == samson::KVFormat("txt","txt") )
         {
             // txt content

@@ -17,7 +17,7 @@
 
 namespace samson {
 
-	class DelilahDownloadDataProcess : public DelilahComponent , public engine::Object
+	class DelilahDownloadComponent : public DelilahComponent , public engine::Object
 	{
 		
         bool force_flag;            // Flag to force delete of directory first
@@ -33,7 +33,7 @@ namespace samson {
         
 	public:
 		
-		DelilahDownloadDataProcess( std::string _queue , std::string _fileName , bool force_flag );
+		DelilahDownloadComponent( std::string _queue , std::string _fileName , bool force_flag );
 
 		void run();
 		

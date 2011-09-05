@@ -91,6 +91,8 @@ namespace samson {
             addOption("ls_datas");         
             addOption("ps_network");         
             addOption("engine_show");
+            addOption("ls_local");
+            addOption("rm_local");
         }
         
         void addOperations()
@@ -283,6 +285,10 @@ namespace samson {
 				writeWarningOnConsole( message );
 		}
 
+        
+    private:
+        
+        std::string getLsLocal();
         
 	};
 

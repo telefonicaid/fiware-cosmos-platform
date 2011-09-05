@@ -80,9 +80,9 @@ namespace samson {
         void printContent();
         
 		// Notifications from delilah
-		void uploadDataConfirmation( DelilahUploadDataProcess *process ){};
-		void downloadDataConfirmation( DelilahDownloadDataProcess *process ){};
-		void pushConfirmation( PushComponent *process ){};
+		void uploadDataConfirmation( DelilahUploadComponent *process ){};
+		void downloadDataConfirmation( DelilahDownloadComponent *process ){};
+		void pushConfirmation( PushDelilahComponent *process ){};
 		virtual void notifyFinishOperation( size_t id ){};
         
 		// Function to process messages from network elements not handled by Delila class

@@ -12,13 +12,13 @@
 #include "engine/DiskOperation.h"                   // engine::DiskOperation
 #include "engine/DiskManager.h"                     // endinge::DiskManager
 
-#include "DelilahDownloadDataProcess.h"
+#include "DownloadDelilahComponent.h"
 #include "samson/delilah/Delilah.h"				// samson::Delilah
 
 namespace samson {
 
 	
-	DelilahDownloadDataProcess::DelilahDownloadDataProcess( std::string _queue , std::string _fileName , bool _force_flag ) 
+	DelilahDownloadComponent::DelilahDownloadComponent( std::string _queue , std::string _fileName , bool _force_flag ) 
         : DelilahComponent(DelilahComponent::load)
 	{
 		queue = _queue;
@@ -37,9 +37,11 @@ namespace samson {
         
         // Counter to give numbers to the generated files
         num_outputs = 0;
+        
+        setConcept(au::str("Downloading data-set %s to local directory %s", queue.c_str() , fileName.c_str() ));
 	}
 	
-	std::string DelilahDownloadDataProcess::getDescription()
+	std::string DelilahDownloadComponent::getDescription()
 	{
 		std::ostringstream o;
 		o << "Downloading from queue " << queue << " to local file " << fileName;
@@ -47,11 +49,16 @@ namespace samson {
 	}
 
 
-	void DelilahDownloadDataProcess::run()
+	void DelilahDownloadComponent::run()
 	{
         // Create firectory    
         if( force_flag )
-            au::removeDirectory( fileName );
+        {
+            au::ErrorManager error;
+            au::removeDirectory( fileName , error );
+            if( error.isActivated() )
+                delilah->showWarningMessage( error.getMessage() );
+        }
         
         if( mkdir( fileName.c_str() , 0755 ) )
         {
@@ -69,7 +76,7 @@ namespace samson {
 		
 	}
 	
-	void DelilahDownloadDataProcess::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+	void DelilahDownloadComponent::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 	{
 		
 		if (msgCode == Message::DownloadDataInitResponse )
@@ -135,7 +142,7 @@ namespace samson {
 		
 	}
 
-    void DelilahDownloadDataProcess::notify( engine::Notification* notification )
+    void DelilahDownloadComponent::notify( engine::Notification* notification )
     {
         if( notification->isName(notification_disk_operation_request_response) )
         {
@@ -147,7 +154,7 @@ namespace samson {
         
     }
 	
-    void DelilahDownloadDataProcess::check()
+    void DelilahDownloadComponent::check()
     {
         if( !received_init_response )
             return;
@@ -157,7 +164,7 @@ namespace samson {
                 setComponentFinished();
     }
     
-	std::string DelilahDownloadDataProcess::getStatus()
+	std::string DelilahDownloadComponent::getStatus()
 	{
 		std::ostringstream output;
 		output << "[ "<< id << " ] Downloading queue " << queue << " to " << fileName << " || ";
@@ -177,7 +184,7 @@ namespace samson {
 		return output.str();
 	}
 	
-	std::string DelilahDownloadDataProcess::getShortStatus()
+	std::string DelilahDownloadComponent::getShortStatus()
 	{
         return getStatus();
 

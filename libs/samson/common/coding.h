@@ -262,6 +262,7 @@ namespace samson {
 
     
     bool operator==(const KVFormat & left, const KVFormat & right);
+    bool operator!=(const KVFormat & left, const KVFormat & right);
     
 	/**
         KVRange keeps information about a particular range of hash-groups

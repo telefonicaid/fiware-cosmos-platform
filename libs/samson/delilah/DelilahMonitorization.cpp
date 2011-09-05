@@ -30,12 +30,12 @@
 #include "samson/module/samsonVersion.h"
 
 #include "samson/delilah/Delilah.h"					// samson::Delailh
-
 #include "samson/stream/BlockManager.h"     // samson::stream::BlockManager
-#include "DelilahUploadDataProcess.h"		// samson::DelilahUpLoadDataProcess
-#include "DelilahDownloadDataProcess.h"		// samson::DelilahDownLoadDataProcess
 
-#include "PushComponent.h"
+#include "UploadDelilahComponent.h"		// samson::DelilahUploadComponent
+#include "DownloadDelilahComponent.h"		// samson::DelilahDownloadComponent
+#include "PushDelilahComponent.h"
+#include "PopDelilahComponent.h"
 
 #include "samson/delilah/DelilahUtils.h"        // getXXXInfo()
 

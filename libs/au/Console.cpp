@@ -136,9 +136,11 @@ namespace au
                     {
                         // remove the prompt
                         //printf("\r" );
-                        printf("\r                                     \r" );
+                        printf("\r                                                 \r" );
                         fflush(stdout);
                         
+                        fprintf(stdout, "\n");
+                        fflush(stdout);
                         
                         while( pending_messages.size() > 0 )
                         {   
@@ -146,7 +148,11 @@ namespace au
                             pending_messages.pop_front();
                         }
                         
-                        // Print the prompt
+                        fprintf(stdout, "\n");
+                        fflush(stdout);
+                        
+                        
+                        // Print the prompt again
                         printf("%s", getPrompt().c_str() );
                         fflush(stdout);
                         
@@ -168,7 +174,13 @@ namespace au
 				if (line[0] != 0)
 					add_history(line);
                 
+                fprintf(stdout, "\n");
+                fflush(stdout);
+                
 				evalCommand(line);
+                
+                fprintf(stdout, "\n");
+                fflush(stdout);
                 
 				free(line);
 			}

@@ -26,7 +26,7 @@ namespace samson {
 	
 	
 	// All the information related with a load process
-	class DelilahUploadDataProcess : public DelilahComponent
+	class DelilahUploadComponent : public DelilahComponent
 	{
 		
 		typedef enum
@@ -81,8 +81,8 @@ namespace samson {
         // Public since it has to be accessible from the thread
 		bool compression;	
 		
-		DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue , bool _compression , int _max_num_threads );		
-		~DelilahUploadDataProcess();
+		DelilahUploadComponent( std::vector<std::string> &fileNames , std::string _queue , bool _compression , int _max_num_threads );		
+		~DelilahUploadComponent();
 		
 		void run();     // Main method to start the upload process ( sending an init message to controller )
 		

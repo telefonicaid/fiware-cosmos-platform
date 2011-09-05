@@ -7,7 +7,8 @@
 #include <sstream>              // std::ostringstream
 #include "logMsg/logMsg.h"             // LM_W
 
-#include "au/map.h"
+#include "au/ErrorManager.h"        // au::ErrorManager
+#include "au/map.h"                 // au::map
 
 namespace au {
 
@@ -51,6 +52,11 @@ namespace au {
         
 	};
 
+    // Tokenize a string
+    std::vector<std::string> simpleTockenize( std::string txt );
+
+    // Check is char is one of the possible values
+    bool isOneOf( char c , std::string s );
     
     // Getting strings with format
     std::string str(const char* format, ...);
@@ -65,7 +71,7 @@ namespace au {
 
     
     // Working with files and directories
-    void removeDirectory(std::string path);
+    void removeDirectory( std::string fileName , au::ErrorManager & error ); 
     bool isDirectory(char path[]);
     bool isRegularFile(char path[]);
  

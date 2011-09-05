@@ -10,12 +10,7 @@
 #include "samson/network/Packet.h"			// samson::Packet
 
 
-namespace engine {
-    class Buffer;
-}
-
 namespace samson {
-
 	
 	class Delilah;
 	
@@ -40,8 +35,10 @@ namespace samson {
 		
 		DelilaComponentType type;
 		
-		size_t id;
-		Delilah *delilah;
+		size_t id;                      // Identifier of this component
+		Delilah *delilah;               // Pointer to delilah to notify finish or show messages
+        std::string concept;            // Concept of this component to print list of components
+        double progress;
 
         au::ErrorManager error;         // Manager of the error in this operation
         
@@ -51,20 +48,24 @@ namespace samson {
 		void setId( Delilah * _delilah ,  size_t _id );
 		virtual void receive(int fromId, Message::MessageCode msgCode, Packet* packet)=0;
 
-        // General function to give one-line description
-        virtual std::string getShortStatus()=0;
-        
-		// General function to give a long description status
+		// General function to give a long description status ( used when typing ps X )
 		virtual std::string getStatus()=0;
-	
-        // Get main code name ( dependent on type )
-        std::string getCodeName();
-        
-        // Description string to show messages
-        std::string getDescription();
 
         // Check if the component is finished
         bool isComponentFinished();
+        
+        // A string description of the type of operation
+        std::string getTypeName();
+
+        // One line description to show in lists
+        std::string getDescription();
+        std::string getIdAndConcept();
+        
+    protected:
+        
+        void setConcept( std::string _concept );
+        void setProgress( double p );
+        
         
     protected:
         
@@ -72,58 +73,6 @@ namespace samson {
         void setComponentFinishedWithError( std::string error_message );
         
 	};
-	
-	
-	/**
-	 Simple component created when a command is send to the controller ( waiting for answeres )
-	 */
-	
-	class CommandDelilahComponent : public DelilahComponent
-	{
-		std::string command;
-		engine::Buffer *buffer;
-        
-	public:
-		
-		CommandDelilahComponent( std::string _command , engine::Buffer *buffer );
-		
-		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
-
-		void run();
-		
-		std::string getStatus();
-		std::string getShortStatus();
-		
-	};
-
-	
-	/**
-	 Simple component created when a command is send to the controller ( waiting for answeres )
-	 */
-	
-	class WorkerCommandDelilahComponent : public DelilahComponent
-	{
-		std::string command;
-		engine::Buffer *buffer;
-        
-        int num_workers;
-        int num_confirmed_workers;
-        
-        
-	public:
-		
-		WorkerCommandDelilahComponent( std::string _command , engine::Buffer *buffer );
-		
-		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
-        
-		void run();
-		
-		std::string getStatus();
-		std::string getShortStatus();
-		
-	};
-    
-	
 	
 }
 

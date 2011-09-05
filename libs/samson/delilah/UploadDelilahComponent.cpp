@@ -1,6 +1,5 @@
 
 
-#include "DelilahUploadDataProcess.h"			// Own interface
 #include "engine/MemoryManager.h"					// samson::MemoryManager
 #include "engine/Buffer.h"							// samson::Buffer
 #include "samson/network/Packet.h"							// samson::Packet
@@ -10,6 +9,9 @@
 #include "DelilahClient.h"					// samson::DelilahClient
 #include "samson/common/SamsonSetup.h"					// samson::SamsonSetup
 #include "samson/common/MemoryTags.h"                     // samson::MemoryInput , samson::MemoryOutput...
+
+
+#include "UploadDelilahComponent.h"			// Own interface
 
 namespace samson
 {
@@ -21,7 +23,7 @@ namespace samson
 	
 #pragma mark -
 	
-	DelilahUploadDataProcess::DelilahUploadDataProcess( std::vector<std::string> &fileNames , std::string _queue , bool _compression, int _max_num_threads ) : DelilahComponent(DelilahComponent::load) , fileSet( fileNames ) 
+	DelilahUploadComponent::DelilahUploadComponent( std::vector<std::string> &fileNames , std::string _queue , bool _compression, int _max_num_threads ) : DelilahComponent(DelilahComponent::load) , fileSet( fileNames ) 
 	{
 		
 		// Queue name 
@@ -58,10 +60,15 @@ namespace samson
 			status = finish_with_error;
             setComponentFinishedWithError("Not data to upload");
 		}
-		
+        
+        if( fileNames.size() == 1 )
+            setConcept(au::str("Uploading %s (%s) to queue %s", fileNames[0].c_str() , au::str( fileSet.getTotalSize(),"bytes" ).c_str() ,  queue.c_str() ));
+        else
+            setConcept(au::str("Uploading %s to queue %s", au::str( fileSet.getTotalSize(),"bytes" ).c_str() ,  queue.c_str() ));
+        
 	}	
 	
-	DelilahUploadDataProcess::~DelilahUploadDataProcess()
+	DelilahUploadComponent::~DelilahUploadComponent()
 	{
 		if ( upload_data_finish ) 
 			delete upload_data_finish;
@@ -69,13 +76,13 @@ namespace samson
 	
 	void* runThreadDelilahLoadDataProcess(void *p)
 	{
-		DelilahUploadDataProcess *d = ((DelilahUploadDataProcess*)p);
+		DelilahUploadComponent *d = ((DelilahUploadComponent*)p);
 		d->_run();
 		return NULL;
 	}
 
 	
-	void DelilahUploadDataProcess::run()
+	void DelilahUploadComponent::run()
 	{
 		
 		if( status == finish_with_error )
@@ -112,11 +119,11 @@ namespace samson
 		network::UploadDataFile *loadDataFile;				// Message inside the packet to complete information about upload 
 		int worker;											// Worker to send this packet
 		Delilah* delilah;									// Delilah client pointer to use the network element
-		DelilahUploadDataProcess* uploadDataProcess;		// Pointer to the global upload to get information about compression and report finish
+		DelilahUploadComponent* uploadDataProcess;		// Pointer to the global upload to get information about compression and report finish
 	};
 	
 	
-	void DelilahUploadDataProcess::_run()
+	void DelilahUploadComponent::_run()
 	{
 		
 		while( !fileSet.isFinish() )
@@ -255,7 +262,7 @@ namespace samson
 	}
 	
 	
-	void DelilahUploadDataProcess::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+	void DelilahUploadComponent::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
 	{
 		
 		if( status == finish_with_error )
@@ -318,6 +325,9 @@ namespace samson
 			// Update the uploaded size
 			uploadedSize +=  packet->message->upload_data_file_response().query().file_size();
 
+            if( totalSize > 0 )
+                setProgress((double) uploadedSize / (double) totalSize );
+            
 			// Get the uploaded file_id 
 			size_t file_id = packet->message->upload_data_file_response().query().file_id();
 			
@@ -384,7 +394,7 @@ namespace samson
 	}
 	
 	
-	void DelilahUploadDataProcess::finishCompressionThread( size_t process_size )		
+	void DelilahUploadComponent::finishCompressionThread( size_t process_size )		
 	{
 		lock.lock();
 		processedSize += process_size;
@@ -394,7 +404,7 @@ namespace samson
 	
 
 	
-	std::string DelilahUploadDataProcess::showProgress( std::string title,  size_t size )
+	std::string DelilahUploadComponent::showProgress( std::string title,  size_t size )
 	{
 		std::ostringstream output;
 
@@ -421,7 +431,7 @@ namespace samson
 		return output.str();
 	}
 	
-    std::string DelilahUploadDataProcess::getShortStatus()
+    std::string DelilahUploadComponent::getShortStatus()
     {
 		std::ostringstream output;
 				
@@ -455,7 +465,7 @@ namespace samson
 		return output.str();        
     }
     
-	std::string DelilahUploadDataProcess::getStatus()
+	std::string DelilahUploadComponent::getStatus()
 	{
 		
 		std::ostringstream output;

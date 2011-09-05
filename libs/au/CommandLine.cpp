@@ -82,49 +82,6 @@ namespace au
 		flags.insert( std::pair<std::string , CommandLineFlag>( name , flag) );
 	}
 	
-	/*
-	void CommandLine::parse( std::string _command )
-	{
-		
-#ifdef CommandLine_DEBUG
-		fprintf(stderr, "Parsing command: %s\n", _command.c_str() );
-#endif
-		
-		clear_values();
-		
-		std::vector<std::string> tockens;
-		
-		// Copy the original command
-		command = _command;
-		
-		std::string delimiters = " \t\n";	//All possible delimiters
-		
-		// Skip delimiters at beginning.
-		std::string::size_type lastPos = command.find_first_not_of(delimiters, 0);
-		
-		// Find first "non-delimiter".
-		std::string::size_type pos     = command.find_first_of(delimiters, lastPos);
-		
-		while (std::string::npos != pos || std::string::npos != lastPos)
-		{
-			// Found a token, add it to the vector.
-			tockens.push_back(command.substr(lastPos, pos - lastPos));
-			// Skip delimiters.  Note the "not_of"
-			lastPos = command.find_first_not_of(delimiters, pos);
-			// Find next "non-delimiter"
-			pos = command.find_first_of(delimiters, lastPos);
-		}
-		
-#ifdef CommandLine_DEBUG
-		fprintf(stderr, "List of %d tockens\n", tockens.size() );
-#endif
-		
-		
-		parse_tockens( tockens );
-		
-	}	
-	
-	*/
 	
 	void CommandLine::parse( std::string _command )
 	{

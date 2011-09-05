@@ -50,10 +50,10 @@ namespace samson {
     
 	class DelilahClient;
 	class DelilahComponent;
-	class DelilahUploadDataProcess;
-	class DelilahDownloadDataProcess;
-    class PushComponent;
-    class PopComponent;
+	class DelilahUploadComponent;
+	class DelilahDownloadComponent;
+    class PushDelilahComponent;
+    class PopDelilahComponent;
     class DataSource;
     
 

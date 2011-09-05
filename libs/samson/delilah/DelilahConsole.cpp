@@ -16,27 +16,29 @@
 #include "au/Format.h"					// au::Format
 #include "au/Descriptors.h"             // au::Descriptors
 
+#include "engine/MemoryManager.h"                   // samson::MemoryManager
+
 #include "pugi/pugi.h"                  // pugi::Pugi
 #include "pugi/pugixml.hpp"             // pugi:...
 
+#include "samson/common/Info.h"                     // samson::Info
+#include "samson/common/EnvironmentOperations.h"	// Environment operations (CopyFrom)
+
 #include "samson/network/Packet.h"						// ss:Packet
 
-#include "samson/common/Info.h"                     // samson::Info
-
 #include "samson/module/ModulesManager.h"           // samson::ModulesManager
-
-#include "samson/delilah/Delilah.h"					// samson::Delailh
-#include "samson/delilah/DelilahConsole.h"			// Own interface
-
-#include "DelilahUploadDataProcess.h"               // samson::DelilahUpLoadDataProcess
-#include "DelilahDownloadDataProcess.h"             // samson::DelilahDownLoadDataProcess
-#include "engine/MemoryManager.h"                   // samson::MemoryManager
-#include "samson/common/EnvironmentOperations.h"	// Environment operations (CopyFrom)
 #include "samson/module/samsonVersion.h"            // SAMSON_VERSION
 
 #include "samson/stream/BlockManager.h"             // samson::stream::BlockManager
 
-#include "PushComponent.h"  
+#include "samson/delilah/SamsonDataSet.h"
+#include "samson/delilah/Delilah.h"					// samson::Delailh
+#include "samson/delilah/DelilahConsole.h"			// Own interface
+#include "UploadDelilahComponent.h"                 // samson::DelilahLoadDataProcess
+#include "DownloadDelilahComponent.h"               // samson::DelilahLoadDataProcess
+#include "PushDelilahComponent.h"                   // samson::PushDelilahComponent
+#include "PushDelilahComponent.h"                   // PushDataComponent
+
 
 #define DEF1             "TYPE:EXEC/FUNC: TEXT"
 
@@ -178,7 +180,7 @@ namespace samson
     "\n"
     "For more help type help <command>\n"
     "\n"
-    "General platform commands:             operations, datas, reload_modules, set, unset\n"
+    "General platform commands:             operations, datas, reload_modules, set, unset , ls_local , rm_local\n"
     "\n"
     "Getting information from platform:     info , ps , ls_modules, engine_show , ps_network\n"
     "\n"
@@ -200,6 +202,8 @@ namespace samson
                                       "                                     [-limit n] Limit the deepth of the information tree"
         },
         { "ls"                      , "ls          Show a list of all the key-value sets" } ,                
+        { "ls_local"                , "ls_local      Show a list of current directory with relevant information about local data-sets" } ,                
+        { "rm_local"                , "rm_local dir_name      Remove a local directory and all its contents" } ,                
         { "ls_modules"              , "ls_modules          Show a list of modules installed at controller, workers and delilah" } ,                
         { "rm"                      , "rm <set>    Remove a key-value set. Usage rm <set>" },              
         { "mv"                      , "mv <set> <new_set>     Change the name of a particular key-value set"},
@@ -689,9 +693,6 @@ namespace samson
             
 			size_t id = addPushData(fileNames, queues );
 			
-			std::ostringstream o;
-			o << "[ " << id << " ] Push data process started with " << fileNames.size() << " files";
-			writeWarningOnConsole(o.str());
 			return id;
 		}
         
@@ -713,9 +714,6 @@ namespace samson
             
 			size_t id = addPopData( queue_name ,  fileName , force_flag );
 			
-			std::ostringstream o;
-			o << "[ " << id << " ] Pop from queue " << queue_name << " to localFile: " << fileName;
-			writeWarningOnConsole(o.str());
 			return id;
 		}
         
@@ -1011,6 +1009,34 @@ namespace samson
             return 0;
         }
         
+        if( main_command == "ls_local" )
+        {
+            std::string txt = getLsLocal( ); 
+            writeOnConsole( txt );
+            return 0;
+        }
+
+        if( main_command == "rm_local" )
+        {
+            if( commandLine.get_num_arguments() < 2 )
+            {
+                writeErrorOnConsole( "Usage: rm_local <dir>");
+                return 0;
+            }
+
+            au::ErrorManager error;
+            au::removeDirectory( commandLine.get_argument(1) , error );
+            
+            if( error.isActivated() )
+                writeErrorOnConsole( error.getMessage() );
+            else
+                writeWarningOnConsole("OK");
+            return 0;
+        }
+
+        
+        
+        
 		// By default, we consider a normal command sent to controller
 		return sendCommand( command , NULL );
         
@@ -1114,9 +1140,7 @@ namespace samson
     void DelilahConsole::delilahComponentStartNotification( DelilahComponent *component)
     {
         std::ostringstream o;
-        o << "\n";
-        o << "Local process started:\n  " << component->getDescription();
-        o << "\n";
+        o << "Local process started: " << component->getIdAndConcept() << "\n";
         
         if( component->error.isActivated() )
             writeErrorOnConsole(o.str());        
@@ -1127,9 +1151,7 @@ namespace samson
     void DelilahConsole::delilahComponentFinishNotification( DelilahComponent *component )
     {
         std::ostringstream o;
-        o << "\n";
-        o << "Local process finished:\n  " << component->getDescription();
-        o << "\n";
+        o << "Local process finished: " << component->getIdAndConcept() << "\n";
 
         // Include error if any
         if( component->error.isActivated() )
@@ -1140,348 +1162,55 @@ namespace samson
         else
             writeWarningOnConsole(o.str());        
     }
-    /*
     
-	void DelilahConsole::showQueues( const network::QueueList ql)
-	{
-		std::ostringstream txt;
-		
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		txt << "Queues" << std::endl;
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		for (int i = 0 ; i < ql.queue_size() ; i++)
-		{
-			network::Queue queue = ql.queue(i).queue();
-			
-			txt << std::setw(30) << queue.name();
-			txt << " ";
-			txt << au::str( queue.info().kvs() );
-			txt << " kvs in ";
-			txt << au::str( queue.info().size() ) << " bytes";
-			txt << " #File: " << ql.queue(i).file_size();
-			txt << " (" << queue.format().keyformat() << " " << queue.format().valueformat() << ") ";
-			txt << std::endl;
-		}
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
+    std::string DelilahConsole::getLsLocal()
+    {
+        std::ostringstream output;
         
-        
-        const network::StreamOperationList& ol = ql.stream_operation_list();
-        
-		for (int i = 0 ; i < ol.operation_size() ; i++)
-		{
-			network::StreamOperation streamOperation = ol.operation(i);
-            txt << getStatus( &streamOperation );
-			txt << std::endl;
-		}
-        
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		
-		txt << std::endl;
-		
-		writeOnConsole( txt.str() );
-		
-	}
-	
-	void DelilahConsole::showDatas( const network::DataList dl)
-	{
-		std::ostringstream txt;
-		
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		txt << "Datas" << std::endl;
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		for (int i = 0 ; i < dl.data_size() ; i++)
-		{
-			network::Data data = dl.data(i);
-			txt << std::setw(20) << data.name() << " " << data.help() << std::endl;
-		}
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		txt << std::endl;
-		
-		writeOnConsole( txt.str() );
-		
-	}
-	void DelilahConsole::showOperations( const network::OperationList ol)
-	{
-		std::ostringstream txt;
-		
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		txt << "Operations" << std::endl;
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		for (int i = 0 ; i < ol.operation_size() ; i++)
-		{
-			network::Operation operation = ol.operation(i);
-			txt << "** " << operation.name() << " ( " << operation.type() << " )";
-			txt << "\n\t\tInputs: ";
-			for (int i = 0 ; i < operation.input_size() ; i++)
-				txt << "[" << operation.input(i).keyformat() << "-" << operation.input(i).valueformat() << "] ";
-			txt << "\n\t\tOutputs: ";
-			for (int i = 0 ; i < operation.output_size() ; i++)
-				txt << "[" << operation.output(i).keyformat() << "-" << operation.output(i).valueformat() << "] ";
-			
-			txt << "\n\t\tHelp: " << operation.help_line() << std::endl;
-			txt << "\n";
-		}
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		txt << std::endl;
-		
-		writeOnConsole( txt.str() );
-		
-	}
-	void DelilahConsole::showJobs( const network::JobList jl)
-	{
-		std::ostringstream txt;
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		txt << "Jobs" << std::endl;
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		for (int i = 0 ; i < jl.job_size() ; i++)
-		{
-			
-			const network::Job job = jl.job(i);
-			
-			txt << setiosflags(std::ios::right);
-			//txt << std::setw(10) << jl.job(i).id();
-			//txt << " ";
-			txt << std::setw(10) << jl.job(i).status();
-			txt << " ";
-			txt << jl.job(i).main_command();
-			txt << "\n";
-            
-			for (int item = 0 ; item < job.item_size() ; item++)
-			{
-				txt << std::setw(10 + item*2) << " ";
-				
-                if( job.item(item).has_controller_task() )
+        // first off, we need to create a pointer to a directory
+        DIR *pdir = opendir ("."); // "." will refer to the current directory
+        struct dirent *pent = NULL;
+        if (pdir != NULL) // if pdir wasn't initialised correctly
+        {
+            while ((pent = readdir (pdir))) // while there is still something in the directory to list
+                if (pent != NULL)
                 {
                     
-                    const network::ControllerTask &task =  job.item(item).controller_task();
+                    std::string fileName = pent->d_name;
                     
-                    txt << "[ Task " << task.task_id() << " ] ";
-                    
-                    switch (task.state()) {
-                        case network::ControllerTask_ControllerTaskState_ControllerTaskInit:
-                            txt << "Init";
-                            break;
-                        case network::ControllerTask_ControllerTaskState_ControllerTaskCompleted:
-                            txt << "Completed";
-                            break;
-                        case network::ControllerTask_ControllerTaskState_ControllerTaskFinish:
-                            txt << "Finished";
-                            break;
-                        case network::ControllerTask_ControllerTaskState_ControllerTaskRunning:
-                            txt << "Running";
+                    if( ( fileName != ".") && ( fileName != "..") )
+                    {
+                        
+                        struct stat buf2;
+                        stat( pent->d_name , &buf2 );
+                        
+                        if( S_ISREG(buf2.st_mode) )
+                        {
+                            size_t size = buf2.st_size;
+                            output << "\t FILE      " << std::setw(20) << std::left <<  pent->d_name << " " << au::str(size,"bytes") << "\n";
+                        }
+                        if( S_ISDIR(buf2.st_mode) )
+                        {
                             
-                            double running_progress;
-                            if( task.total_info().size() == 0 )
-                                running_progress = 0;
+                            SamsonDataSet dataSet( pent->d_name );
+
+                            if( dataSet.error.isActivated() )
+                                output << "\t DIR       " << std::setw(20) << std::left << pent->d_name << "\n";
                             else
-                                running_progress  =  (double) task.running_info().size() / (double) task.total_info().size();
-                            
-                            double processed_completed;
-                            if( task.processed_info().size() == 0)
-                                processed_completed = 0;
-                            else
-                                processed_completed = (double) task.processed_info().size() / (double) task.total_info().size();
-                            
-                            txt << " " << task.task_description();
-                            
-                            txt << "\n" << std::setw(10 + item*2) << " ";
-                            
-                            txt << "\tProgress: ";
-                            txt << au::str( task.processed_info().size() );
-                            txt << " / " << au::str( task.running_info().size() );
-                            txt << "/" << au::str( task.total_info().size() ) << " ";
-                            txt << au::Format::double_progress_bar(processed_completed, running_progress, '*', '-', ' ' ,  60);
-                            break;
-                            
+                                output << "\t DATA-SET  " << std::setw(20) << std::left << pent->d_name << " " << dataSet.str() << "\n";
+                                
+                        }
+                        
                     }
                     
-                    if( task.has_error() )
-                        txt << "Error: (" << task.error().message() <<  ")";
-                    
-                    txt << "\n";                    
-                    
                 }
-                else
-                {
-                    
-                    
-                    txt << job.item(item).command();
-                }
-				
-				txt << "\n";
-				//txt << au::Format::int_string( jl.job(i).progress()*100 , 2) << "%";
-			}
-			
-		}
-		txt << "------------------------------------------------------------------------------------------------" << std::endl;
-		txt << std::endl;
-		
-		writeOnConsole( txt.str() );
-		
-	}
-    
-    void DelilahConsole::showInfo( std::string command )
-    {
-        if ( !samsonStatus )
-        {
-            // If samsonStatus is not received, show a message informing about this
-            writeWarningOnConsole("Worker status still not received from SAMSON platform");
-            return;
+            // finally, let's close the directory
+            closedir (pdir);						
         }
         
-        // Lock the info vector to avoid other thread access this information
-        au::TokenTaker tt( &info_lock );
         
-        // Common string buffer to accumulate the output of the info message        
-        std::ostringstream txt;
-        
-        
-        txt << "================================================================================================" << std::endl;
-        txt << "SAMSON STATUS" << std::endl;
-        txt << "================================================================================================" << std::endl;
-        
-        txt << "------------------------------------------------------------------------------------------------" << std::endl;
-        txt << "Controller      ( uptime: " << au::Format::time_string( samsonStatus->controller_status().up_time() ) << " )";
-        txt << " ( updated: " << cronometer_samsonStatus.str() <<  " )" <<  std::endl;
-        txt << "------------------------------------------------------------------------------------------------" << std::endl;
-        
-        
-        if( (command == "info_modules" ) )
-            txt << "** Modules:\n" << samsonStatus->controller_status().modules_manager_status() << "\n";
-        
-        if( ( command == "info_full" ) || ( command == "info_setup" ))
-            txt << samsonStatus->controller_status().setup_status() << "\n";
-        
-        if( ( command == "info_full" ) || ( command == "info_task_manager" ))
-        {
-            txt << "\tJobManager: " << samsonStatus->controller_status().job_manager_status() << std::endl;
-            txt << "\tTaskManager: " << std::endl;
-            
-            for ( int i = 0 ; i < samsonStatus->controller_status().task_manager_status().task_size() ; i++)
-            {
-                const network::ControllerTask &task =  samsonStatus->controller_status().task_manager_status().task(i);
-                
-                txt << "\t\t" << "[" << task.task_id() << " / Job: " << task.job_id() << " ] ";
-                
-                switch (task.state()) {
-                    case network::ControllerTask_ControllerTaskState_ControllerTaskInit:
-                        txt << "Init";
-                        break;
-                    case network::ControllerTask_ControllerTaskState_ControllerTaskCompleted:
-                        txt << "Completed";
-                        break;
-                    case network::ControllerTask_ControllerTaskState_ControllerTaskFinish:
-                        txt << "Finished";
-                        break;
-                    case network::ControllerTask_ControllerTaskState_ControllerTaskRunning:
-                        txt << "Running";
-                        
-                        double running_progress;
-                        if( task.total_info().size() == 0 )
-                            running_progress = 0;
-                        else
-                            running_progress  =  (double) task.running_info().size() / (double) task.total_info().size();
-                        
-                        double processed_completed;
-                        if( task.processed_info().size() == 0)
-                            processed_completed = 0;
-                        else
-                            processed_completed = (double) task.processed_info().size() / (double) task.total_info().size();
-                        
-                        txt << "\n\t\tProgress: " << task.task_description() << " : ";
-                        txt << au::str( task.processed_info().size() );
-                        txt << " / " << au::str( task.running_info().size() );
-                        txt << "/" << au::str( task.total_info().size() ) << " ";
-                        txt << au::Format::double_progress_bar(processed_completed, running_progress, '*', '-', ' ' ,  60);
-                        break;
-                        
-                }
-                
-                if( task.has_error() )
-                    txt << "Error: (" << task.error().message() <<  ")";
-                
-                txt << "\n";
-                
-                
-                
-                //samsonStatus->controller_status().task_manager_status();
-            }
-            
-            
-            txt << std::endl;
-        }
-        
-        if ( command == "info_net" ) 
-        {
-            txt << samsonStatus->controller_status().network_status() << "\n";
-            txt << std::endl;
-        }
-        
-        txt << std::endl;
-        
-        
-        for (int i = 0 ; i < samsonStatus->worker_status_size() ; i++)
-        {
-            const network::WorkerStatus worker_status = samsonStatus->worker_status(i);
-            
-            int used_cores = worker_status.used_cores();
-            int total_cores = worker_status.total_cores();
-            double per_cores = (total_cores==0)?0:((double) used_cores / (double) total_cores);
-            size_t used_memory = worker_status.used_memory();
-            size_t total_memory = worker_status.total_memory();
-            double per_memory = (total_memory==0)?0:((double) used_memory / (double) total_memory);
-            int disk_pending_operations = worker_status.disk_pending_operations();
-            double per_disk = (total_memory==0)?0:((double) disk_pending_operations / (double) 40);
-            
-            txt << "------------------------------------------------------------------------------------------------" << std::endl;
-            txt << "Worker " << i;
-            txt << "  Process: " << au::Format::percentage_string(per_cores).c_str();
-            txt << " Memory: " << au::Format::percentage_string(per_memory);
-            txt << " Disk: " << disk_pending_operations;
-            txt << "  ( uptime: " << au::Format::time_string( worker_status.up_time() ) << " )";
-            txt << " ( updated: " << au::Format::time_string( cronometer_samsonStatus.diffTimeInSeconds() + worker_status.update_time() ) << " )" << std::endl;
-            txt << "------------------------------------------------------------------------------------------------" << std::endl;
-            
-            
-            if( command == "info_cores" )
-            {
-                txt << au::str("Worker %03d", i);
-                
-                
-                txt << au::str("\n\tCores  [ %s ] %s / %s :" , 
-                               au::Format::percentage_string(per_cores).c_str() , 
-                               au::str(used_cores).c_str() , 
-                               au::str(total_cores).c_str() );
-                
-                txt << au::Format::progress_bar( per_cores , 50 );
-                
-                
-                txt << au::str("\n\tMemory [ %s ] %s / %s :" , 
-                               au::Format::percentage_string(per_memory).c_str() , 
-                               au::str(used_memory).c_str() , 
-                               au::str(total_memory).c_str() );
-                
-                txt << au::Format::progress_bar( per_memory , 50 );
-                
-                // Disk operations
-                
-                txt << au::str("\n\tDisk                     %s :" , 
-                               au::str(disk_pending_operations).c_str() );
-                
-                txt << au::Format::progress_bar( per_disk , 50 );
-				txt << "\n";                    
-            }
-        }
-        
-        txt << "================================================================================================" << std::endl;
-        txt << std::endl;
-        
-        
-        // Send to the console screen
-        writeOnConsole( txt.str() );
-        
+        return output.str();
     }
-    */
-    
+
     
 }

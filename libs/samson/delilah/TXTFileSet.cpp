@@ -1,5 +1,5 @@
 
-#include "DelilahUploadDataProcess.h"			// Own interface
+#include "UploadDelilahComponent.h"			// Own interface
 #include "engine/MemoryManager.h"					// samson::MemoryManager
 #include "engine/Buffer.h"							// samson::Buffer
 #include "samson/network/Packet.h"							// samson::Packet

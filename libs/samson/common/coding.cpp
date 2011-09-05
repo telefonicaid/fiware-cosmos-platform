@@ -11,6 +11,15 @@ namespace samson
             return false;
         return true;
     }
+
+    bool operator!=(const KVFormat & left, const KVFormat & right)
+    {
+        if ( left.keyFormat != right.keyFormat )
+            return true;
+        if ( left.valueFormat != right.valueFormat )
+            return true;
+        return false;
+    }
 	
     
     

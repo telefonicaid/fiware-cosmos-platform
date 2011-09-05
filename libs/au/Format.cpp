@@ -256,12 +256,14 @@ namespace au
         return S_ISREG(buf.st_mode);
     }
     
-    void removeDirectory( std::string fileName ) 
-    {
+    void removeDirectory( std::string fileName , au::ErrorManager & error ) 
+    {        
         if( isRegularFile( fileName ) )
         {
             // Just remove
-            remove( fileName.c_str() );
+            int s = remove( fileName.c_str() );
+            if (s != 0)
+                error.set( au::str("Not possible to remove file %s" , fileName.c_str() ) );
             return;
         }
         
@@ -276,17 +278,16 @@ namespace au
         {
             while ((pent = readdir (pdir))) // while there is still something in the directory to list
                 if (pent != NULL)
-                {
-                    
-                    if( strcmp( "." , pent->d_name ) )
-                        break;
-                    if( strcmp( ".." , pent->d_name ) )
-                        break;
+                {                    
+                    if( strcmp( "." , pent->d_name )==0 )
+                        continue;
+                    if( strcmp( ".." , pent->d_name )==0 )
+                        continue;
                     
                     std::ostringstream localFileName;
                     localFileName << fileName << "/" << pent->d_name;
                     
-                    removeDirectory( localFileName.str() );
+                    removeDirectory( localFileName.str() , error );
                     
                 }
             // finally, let's close the directory
@@ -294,7 +295,10 @@ namespace au
         }
         
         // Remove the directory properly
-        rmdir(fileName.c_str());
+        int s = rmdir(fileName.c_str());
+        if (s != 0)
+            error.set( au::str("Not possible to remove directory %s" , fileName.c_str() ) );
+        
         
     }
     
@@ -368,4 +372,49 @@ namespace au
         output << "</" << name << ">";
     }
 	
+    
+#pragma mark String functions
+    
+    bool isOneOf( char c , std::string s )
+	{
+		for (size_t i = 0 ; i < s.size() ; i++)
+			if( s[i] == c )
+				return true;
+		
+		return false;
+	}
+    
+    std::vector<std::string> simpleTockenize( std::string txt )
+	{
+		std::string tockens = " #\r\t\r\n{};\"";//All possible delimiters
+		
+		std::vector<std::string> items;
+		
+		// Simple parser
+		size_t pos = 0;
+		for (size_t i = 0 ; i < txt.size() ; i++)
+		{
+			if ( isOneOf( txt[i] , tockens ) )
+			{
+				if ( i > pos )
+					items.push_back(txt.substr(pos, i - pos ));
+				/*
+                 //Emit the literal with one letter if that is the case
+                 std::ostringstream o;
+                 o << txt[i];
+                 items.push_back( o.str() );
+                 */
+				pos = i+1;
+			}
+		}
+        
+        if ( txt.size() > pos )
+            items.push_back(txt.substr(pos, txt.size() - pos ));
+		
+		
+		return items;
+	}
+	
+	
+    
 }

@@ -6,10 +6,15 @@ SET (HEADERS
 	DelilahMonitorization.h
 	DelilahClient.h
 	DelilahComponent.h
-	DelilahDownloadDataProcess.h
-	DelilahUploadDataProcess.h
-	PushComponent.h
+	CommandDelilahComponent.h
+	WorkerCommandDelilahComponent.h
+	PushDelilahComponent.h
+	PopDelilahComponent.h
+	DownloadDelilahComponent.h
+	UploadDelilahComponent.h
 	TXTFileSet.h
+	SamsonDataSet.h
+	SamsonFile.h
 )
 
 SET (SOURCES
@@ -18,10 +23,16 @@ SET (SOURCES
 	DelilahConsole.cpp
 	DelilahMonitorization.cpp
 	DelilahComponent.cpp
-	DelilahDownloadDataProcess.cpp
-	DelilahUploadDataProcess.cpp
-	PushComponent.cpp
+	CommandDelilahComponent.cpp
+	WorkerCommandDelilahComponent.cpp
+	PushDelilahComponent.cpp
+	PopDelilahComponent.cpp
+	DownloadDelilahComponent.cpp
+	UploadDelilahComponent.cpp
 	TXTFileSet.cpp
+	SamsonDataSet.cpp
+	SamsonFile.cpp
+
 )
 	
 	

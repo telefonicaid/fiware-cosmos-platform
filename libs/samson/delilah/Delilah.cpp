@@ -12,6 +12,7 @@
 #include "samson/common/Info.h"                 // samson::Info
 #include "samson/common/Macros.h"             // EXIT, ...
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
+#include "samson/common/EnvironmentOperations.h"
 
 #include "samson/network/Message.h"            // Message::MessageCode, ...
 #include "samson/network/Packet.h"				// samson::Packet
@@ -20,14 +21,16 @@
 
 #include "samson/module/ModulesManager.h"       // samson::ModulesManager
 
-#include "samson/delilah/Delilah.h"			// Own interfce
 #include "samson/network/Packet.h"				// samson::Packet
-#include "DelilahUploadDataProcess.h"	// samson::DelilahLoadDataProcess
-#include "DelilahDownloadDataProcess.h"	// samson::DelilahLoadDataProcess
-#include "samson/common/EnvironmentOperations.h"
-#include "PushComponent.h"          // samson::PushComponent
+#include "UploadDelilahComponent.h"           // samson::DelilahLoadDataProcess
+#include "DownloadDelilahComponent.h"         // samson::DelilahLoadDataProcess
+#include "PushDelilahComponent.h"               // samson::PushDelilahComponent
+#include "PopDelilahComponent.h"                // samson::PopDelilahComponent
+#include "CommandDelilahComponent.h"            // samson::CommandDelilahComponent
+#include "WorkerCommandDelilahComponent.h"      // samson::WorkerCommandDelilahComponent
 
-#include "PushComponent.h"   // PushDataComponent
+
+#include "samson/delilah/Delilah.h"             // Own interfce
 
 #define notification_delilah_automatic_update "notification_delilah_automatic_update"
 
@@ -207,7 +210,7 @@ namespace samson {
      */
 	size_t Delilah::addUploadData( std::vector<std::string> fileNames , std::string queue , bool compresion ,int max_num_threads)
 	{
-		DelilahUploadDataProcess * d = new DelilahUploadDataProcess( fileNames , queue , compresion, max_num_threads );
+		DelilahUploadComponent * d = new DelilahUploadComponent( fileNames , queue , compresion, max_num_threads );
 		
 		size_t tmp_id = addComponent(d);	
 		
@@ -224,7 +227,7 @@ namespace samson {
 	
 	size_t Delilah::addDownloadProcess( std::string queue , std::string fileName , bool force_flag )
 	{
-		DelilahDownloadDataProcess *d = new DelilahDownloadDataProcess( queue , fileName , force_flag );
+		DelilahDownloadComponent *d = new DelilahDownloadComponent( queue , fileName , force_flag );
 		size_t tmp_id = addComponent(d);	
 		d->run();
 		
@@ -243,7 +246,7 @@ namespace samson {
     
     size_t Delilah::addPushData( DataSource* dataSource , std::vector<std::string> queues )
     {
-		PushComponent * d = new PushComponent( dataSource , queues[0] );
+		PushDelilahComponent * d = new PushDelilahComponent( dataSource , queues[0] );
         for ( size_t i = 1 ; i < queues.size() ; i++)
             d->addQueue( queues[i] );
         
@@ -263,7 +266,7 @@ namespace samson {
     
 	size_t Delilah::addPopData( std::string queue_name , std::string fileName , bool force_flag )
 	{
-		PopComponent * d = new PopComponent( queue_name , fileName , force_flag );
+		PopDelilahComponent * d = new PopDelilahComponent( queue_name , fileName , force_flag );
 		size_t tmp_id = addComponent(d);	
 
         if( d->error.isActivated() )

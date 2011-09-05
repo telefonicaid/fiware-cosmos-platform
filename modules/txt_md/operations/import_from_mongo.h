@@ -30,6 +30,7 @@ class import_from_mongo : public samson::Generator
 	std::string          mongo_collection;
 	std::string          mongo_db_path;
 	DBClientConnection*  mdbConnection;
+	bool                 active;
 
 public:
 
@@ -48,6 +49,8 @@ void init(samson::KVWriter* writer)
 
 	mdbConnection = new DBClientConnection();
 	mdbConnection->connect(mongo_ip);
+
+	active = false;
 }
 
 
@@ -59,6 +62,11 @@ void init(samson::KVWriter* writer)
 void setup(int worker, int num_workers, int process, int num_processes)
 {
 	// Remember that num_workers * num_processes operation will be executed in parallel
+
+	if ((worker == 0) && (process == 0))
+		active = true;
+	else
+		active = false;
 }
 
 
@@ -69,6 +77,9 @@ void setup(int worker, int num_workers, int process, int num_processes)
 */
 void run(samson::KVWriter* writer)
 {
+	if (active == false)
+		return;
+
 	if (mongo_ip == "no-mongo-ip")
 	{
 		tracer->setUserError("No mongo ip is specified. Please specify mongo ip with 'mongo.ip' environment variable");

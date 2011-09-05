@@ -23,6 +23,16 @@
 
 namespace samson {
 	
+#pragma mark ----
+	
+	void ActiveTask::addFiles( Queue *q )
+	{
+		// Add the files from this queue
+		for ( au::map< std::string , QueueFile >::iterator i = q->files.begin() ; i != q->files.end() ; i++ )
+			files.insert( i->first );
+	}
+    
+#pragma mark ----
 
     
 	ControllerDataManager::ControllerDataManager( SamsonController * _controller ) : DataManager( getLogFileName() )
@@ -62,17 +72,6 @@ namespace samson {
 			 (iter->second)->fill( file );
 		 }		
 	}
-
-#pragma mark ----
-	
-	void ActiveTask::addFiles( Queue *q )
-	{
-		// Add the files from this queue
-		for ( au::map< std::string , QueueFile >::iterator i = q->files.begin() ; i != q->files.end() ; i++ )
-			files.insert( i->first );
-	}
-
-#pragma mark ----
 
 	void ControllerDataManager::_beginTask( size_t task )
 	{
@@ -114,6 +113,12 @@ namespace samson {
 	
 	DataManagerCommandResponse ControllerDataManager::_run( size_t task_id, std::string command )
 	{
+        ActiveTask *active_task = tasks.findInMap( task_id );
+
+        if(!active_task)
+            LM_X(1,("Internal error. Non active task %lu" , task_id ));
+        
+        
 		DataManagerCommandResponse response;
 		
 		au::CommandLine  commandLine;
@@ -545,10 +550,7 @@ namespace samson {
 				else
 				{
 					// Add the removed files to the associated list to be preserved until the task is not completed
-					ActiveTask *at = tasks.findInMap( task_id );
-					if(at)
-						at->addFiles( tmp );
-					
+                    active_task->addFiles( tmp );
 					delete tmp;
 				}
 			}
@@ -619,10 +621,7 @@ namespace samson {
 				else
 				{
 					// Protect this files until task is confirmed
-					ActiveTask *at = tasks.findInMap( task_id );
-					if(at)
-						at->addFiles( tmp );
-					
+                    active_task->addFiles( tmp );
 					tmp->clear();
 				}
 			}

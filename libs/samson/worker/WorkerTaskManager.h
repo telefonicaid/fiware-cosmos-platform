@@ -57,7 +57,10 @@ namespace samson {
 	
         // Notification from the engine about finished tasks
         void notify( engine::Notification* notification );
-                
+ 
+        // Add files of the running tasks
+        void addCurrentGeneratedFiles( std::set<std::string> &file_names );
+        
 	};
 	 
 }

@@ -173,4 +173,21 @@ namespace samson {
 	}
 	
 	
+    void WorkerTaskManager::addCurrentGeneratedFiles( std::set<std::string> &file_names )
+    {
+		au::map<size_t,WorkerTask>::iterator t;
+        for (t = task.begin() ; t != task.end() ; t++)
+        {
+            WorkerTask *task = t->second;
+            
+            au::map<std::string , WorkerTaskOutputFile>::iterator o;
+            for ( o = task->outputFiles.begin() ; o != task->outputFiles.end() ; o++ )
+                file_names.insert( o->first );
+            
+        }
+        
+    }
+    
+    
+    
 }

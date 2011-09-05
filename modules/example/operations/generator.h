@@ -26,10 +26,23 @@ namespace example{
 	class generator : public samson::Generator
 	{
 
+	  bool active;
+
 	public:
+
+	        void setup( int worker , int num_workers, int process , int num_processes )
+		{
+		  if( ( worker == 0 ) && ( process == 0 ) )
+		    active = true;
+		  else
+		    active = false;
+		}
 
 		void run( samson::KVWriter *writer )
 		{
+
+		  if(!active)
+		    return;
 
 		  // Recover the number of samples from the environment variables
 		  size_t num_samples = environment->getSizeT( "example.samples" ,  10 );

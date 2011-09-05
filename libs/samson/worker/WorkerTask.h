@@ -77,6 +77,7 @@ namespace samson {
 	class WorkerTask : public engine::Object , public engine::OperationsContainer
 	{
 		
+        friend class WorkerTaskManager;
         
 		// List of subtasks
         au::map<size_t,WorkerSubTask> subTasks;

@@ -9,8 +9,8 @@ SET( STATIC_LIBS
      samsonNetwork
      engine
      samsonModule
-     samsonCommon
      delilahLib
+     samsonCommon
      protobuf
      pthread
      au

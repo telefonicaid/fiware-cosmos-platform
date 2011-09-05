@@ -31,7 +31,7 @@ int main(int argc, const char *argv[])
 	cmdLine.set_flag_boolean("header");
 	cmdLine.set_flag_boolean("hg");
 	cmdLine.set_flag_boolean("debug");
-	cmdLine.set_flag_uint64("limit" , 100 );
+	cmdLine.set_flag_uint64("limit" , 1000000000 );
 	cmdLine.set_flag_string("working",SAMSON_DEFAULT_WORKING_DIRECTORY);
 	cmdLine.parse(argc , argv);
 
@@ -84,6 +84,7 @@ int main(int argc, const char *argv[])
     }
     else if( S_ISDIR( filestatus.st_mode ) )
     {
+        
         samson::SamsonDataSet samsonDataSet( fileName );
         
         if( samsonDataSet.error.isActivated() )

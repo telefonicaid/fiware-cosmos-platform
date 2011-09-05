@@ -189,7 +189,6 @@ namespace samson {
         {
             if( limit <= 0 )
                 return;
-            limit--;
             
             size_t size = info[i].size;
             size_t kvs = info[i].kvs; 
@@ -213,6 +212,11 @@ namespace samson {
                     offset += value->parse(data+offset);
                     
                     std::cout << key->str() << " " << value->str() << std::endl;
+
+                    limit--;
+                    if( limit == 0)
+                        break;
+
                 }
                 
                 if( offset != size)

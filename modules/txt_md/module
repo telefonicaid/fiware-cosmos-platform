@@ -1,6 +1,6 @@
-Module txt
+Module txt_md
 {
-	title	"txt extension for mondo connection"
+	title	"txt extension for mongo connection"
 	author	"Andreu & Ken"
 	version "0.1"
 }
@@ -14,7 +14,7 @@ generator import_from_mongo
 map export_to_mongo
 {
 	in system.String system.UInt
-	helpLine "Export data to a mongoDb server at 'txt.mongo' to table 'txt.mongo_table'"
+	helpLine "Export data to a mongoDb server at 'txt_md.mongo' to table 'txt_md.mongo_table'"
 }
 
 map hdfs_dump_to_file
@@ -23,3 +23,20 @@ map hdfs_dump_to_file
 	helpLine "Dump KV data to a HDFS file in server 'hdfs.ip' and with path 'hdfs.path'"
 }
 
+data BulkData
+{
+	system.UInt position;
+	system.UInt timestamp;
+}
+
+map mongo_bulk_load
+{
+	in system.UInt txt_md.BulkData
+	helpLine "Bulk load to mongodb server at 'txt_md.mongo' to table 'txt_md.mongo_table'"
+}
+
+generator mongo_data_gen
+{
+	out system.UInt txt_md.BulkData
+	helpLine "helper function to create input for 'mongo_bulk_load'"
+}

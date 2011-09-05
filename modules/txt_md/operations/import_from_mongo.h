@@ -19,25 +19,19 @@ using namespace mongo;
 
 namespace samson
 {
-namespace txt
+namespace txt_md
 {
 
 
 class import_from_mongo : public samson::Generator
 {
 	std::string          mongo_ip;
-	std::string          mongo_table;
+	std::string          mongo_db;
+	std::string          mongo_collection;
 	std::string          mongo_db_path;
 	DBClientConnection*  mdbConnection;
 
 public:
-#ifdef INFO_COMMENT //Just to include a comment without conflicting anything
-// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
-
-output: system.String system.UInt
-helpLine: Import data from a mongoDb server at 'mongo.ip' from table 'mongo.table'
-#endif // de INFO_COMMENT
-
 
 
 /* ****************************************************************************
@@ -46,13 +40,11 @@ helpLine: Import data from a mongoDb server at 'mongo.ip' from table 'mongo.tabl
 */
 void init(samson::KVWriter* writer)
 {
-	mongo_ip    =  environment->get( "mongo.ip" ,  "no-mongo-ip" );
-	mongo_table =  environment->get( "mongo.table" ,  "no-mongo-table" );
-	
-	if (strstr(mongo_table.c_str(), ".") != NULL)
-		mongo_db_path = mongo_table;
-	else
-		mongo_db_path = "samson." + mongo_table;
+	mongo_ip           = environment->get("mongo.ip",    "no-mongo-ip");
+	mongo_db           = environment->get("mongo.db",    "no-mongo-db");
+	mongo_collection   = environment->get("mongo.collection", "no-mongo-collection");
+
+	mongo_db_path = mongo_db + "." + mongo_collection;
 
 	mdbConnection = new DBClientConnection();
 	mdbConnection->connect(mongo_ip);
@@ -83,9 +75,15 @@ void run(samson::KVWriter* writer)
 		return;
 	}
 
-	if (mongo_table == "no-mongo-table")
+	if (mongo_db == "no-mongo-db")
 	{
-		tracer->setUserError("No table is specified. Please specify mongo table with 'mongo.table' environment variable");
+		tracer->setUserError("No db specified. Please specify mongo database db name with 'mongo.db' environment variable");
+		return;
+	}
+
+	if (mongo_collection == "no-mongo-collection")
+	{
+		tracer->setUserError("No collection is specified. Please specify mongo collection with 'mongo.collection' environment variable");
 		return;
 	}
 
@@ -119,7 +117,7 @@ void finish(samson::KVWriter* writer)
 };
 
 
-} // end of namespace txt
+} // end of namespace txt_md
 } // end of namespace samson
 
 #endif

@@ -13,7 +13,7 @@
 namespace samson
 {
 
-namespace txt
+namespace txt_md
 {
 
 
@@ -83,7 +83,7 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 		key.parse(inputs[0].kvs[i]->key);
 		value.parse(inputs[0].kvs[i]->value);
 
-		sprintf(cval, "%d", value.value);
+		sprintf(cval, "%lu", value.value);
 		line = std::string("K:") + key.value.c_str() + std::string("::V:") + cval + std::string("\n");
 		hdfsWrite(hdfs_fs, hdfs_fd, (void*) line.c_str(), strlen(line.c_str()));
 	}
@@ -105,7 +105,7 @@ void finish(samson::KVWriter* writer)
 };
 
 
-} // end of namespace txt
+} // end of namespace txt_md
 } // end of namespace samson
 
 #endif

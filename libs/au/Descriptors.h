@@ -72,6 +72,43 @@ namespace au {
         
     };
 
+    
+    class Counter
+    {
+        int c;
+        
+    public:
+        
+        Counter()
+        {
+            c = 0;
+        }
+        
+        int get()
+        {
+            return c++;
+        }
+    };
+    
+    template <typename T>
+    class CounterCollection
+    {
+        au::map<T,Counter> counters;
+
+    public:
+
+        int getCounterFor(T t)
+        {
+            Counter *c = counters.findInMap( t );
+            if( !c )
+            {
+                c = new Counter();
+                counters.insertInMap( t , c);
+            }
+            return c->get();
+        }
+    };
+    
 }
 
 #endif

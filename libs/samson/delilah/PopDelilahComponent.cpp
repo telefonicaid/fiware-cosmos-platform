@@ -35,7 +35,6 @@ namespace samson
         
         num_write_operations = 0;
         
-        num_outputs = 0;
 
         force_flag = _force_flag;
         
@@ -111,7 +110,12 @@ namespace samson
             
             num_write_operations++;
          
-            std::string _fileName = au::str("%s/file_%d" , fileName.c_str() , num_outputs++ );
+            int worker_id = delilah->network->getWorkerFromIdentifier( fromId );
+            int num_output = counter_per_worker.getCounterFor( worker_id );
+            
+            std::string _fileName = au::str("%s/worker_%d_file_%d" , fileName.c_str() , worker_id, num_output );
+
+            
             
             engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( packet->buffer , _fileName , getEngineId() );
             engine::DiskManager::shared()->add( operation );                

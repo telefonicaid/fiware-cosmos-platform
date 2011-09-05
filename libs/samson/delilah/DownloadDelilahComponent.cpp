@@ -35,9 +35,6 @@ namespace samson {
         // Counter of write operation ( to wait for them before seting this component as finished )
         num_write_operations = 0;
         
-        // Counter to give numbers to the generated files
-        num_outputs = 0;
-        
         setConcept(au::str("Downloading data-set %s to local directory %s", queue.c_str() , fileName.c_str() ));
 	}
 	
@@ -134,7 +131,11 @@ namespace samson {
 			
 			// Create a disk-write operation to save this buffer 
             num_write_operations++;
-            std::string _fileName = au::str("%s/file_%d" , fileName.c_str() , num_outputs++ );
+            
+            int worker_id = delilah->network->getWorkerFromIdentifier( fromId );
+            int num_output = counter_per_worker.getCounterFor( worker_id );
+            
+            std::string _fileName = au::str("%s/worker_%d_file_%d" , fileName.c_str() , worker_id, num_output );
             engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( packet->buffer , _fileName , getEngineId() );
             engine::DiskManager::shared()->add( operation );                
 			

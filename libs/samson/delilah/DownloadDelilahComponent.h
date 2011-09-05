@@ -8,6 +8,8 @@
 
 #include "au/ErrorManager.h"			// au::ErrorManager
 
+#include "au/Descriptors.h"             // au::CounterCollection
+
 #include "engine/Object.h"              // engine::Object
 
 #include "samson/delilah/Delilah.h"		// samson::Delilah
@@ -17,6 +19,7 @@
 
 namespace samson {
 
+    
 	class DelilahDownloadComponent : public DelilahComponent , public engine::Object
 	{
 		
@@ -29,7 +32,7 @@ namespace samson {
 		int num_files_downloaded;       // Number of files already downloaded
         int num_write_operations;       // Number of pending write operations
 				
-        int num_outputs;
+        au::CounterCollection<int> counter_per_worker;     // Count the number of outputs per worker
         
 	public:
 		

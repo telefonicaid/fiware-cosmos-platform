@@ -12,6 +12,7 @@
 #include "au/ErrorManager.h"			// au::ErrorManager
 #include "au/Cronometer.h"      // au::Cronometer
 #include "au/Lock.h"				// au::Lock
+#include "au/Descriptors.h"         // au::CounterCollection
 
 #include "engine/Engine.h"          // engine::Object
 #include "engine/Object.h"          // engine::Object
@@ -44,7 +45,7 @@ namespace samson {
         
         int num_write_operations;           // Number of pending local write operations
         
-        int num_outputs;                    // counter of the number of outputs ( to change the filename )
+        au::CounterCollection<int> counter_per_worker;     // Count the number of outputs per worker
         
         bool force_flag;                    // Flag to remove previos directory
         

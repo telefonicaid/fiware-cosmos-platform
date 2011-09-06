@@ -18,10 +18,15 @@ class mongo_data_gen : public samson::Generator
 {
 public:
 	bool active;
-
+	int  mongo_size;
 	
-	void init( samson::KVWriter *writer )
+	void init(samson::KVWriter* writer)
 	{
+		string size = environment->get("mongo.size",    "10000");
+		mongo_size  = atoi(size.c_str());
+
+		if (mongo_size <= 0)
+			mongo_size = 10000;
 	}
 
 	void setup( int worker , int num_workers, int process , int num_processes )
@@ -40,17 +45,17 @@ public:
 		samson::system::UInt      key;
 		samson::txt_md::BulkData  value;
 		
-		for (int ix = 0; ix < 1000; ix++)
+		for (int ix = 0; ix < mongo_size; ix++)
 		{
-			key.value = ix;
-			value.position.value = ix * ix;
+			key.value             = ix;
+			value.position.value  = ix * ix;
 			value.timestamp.value = ix * ix * ix;
 
 			writer->emit(0, &key, &value);
 		}
 	}
 
-	void finish( samson::KVWriter *writer )
+	void finish(samson::KVWriter* writer)
 	{
 	}
 };

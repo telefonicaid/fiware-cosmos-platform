@@ -23,36 +23,37 @@ namespace txt_md
 class mongo_bulk_load : public samson::Map
 {
 public:
-	std::string            mongo_ip;
-	std::string            mongo_db;
-	std::string            mongo_collection;
-	std::string            mongo_db_path;
-	DBClientConnection*    mdbConnection;
+	std::string          mongo_ip;
+	std::string          mongo_db;
+	std::string          mongo_collection;
+	std::string          mongo_bulkload;
+	std::string          mongo_ensure_index;
+	int                  mongo_max_bulksize;
+
+	std::string          mongo_db_path;
+	DBClientConnection*  mdbConnection;
 
 
 
 void init(samson::KVWriter* writer)
 {
-	mongo_ip           = environment->get("mongo.ip",    "no-mongo-ip");
-	mongo_db           = environment->get("mongo.db",    "no-mongo-db");
-	mongo_collection   = environment->get("mongo.collection", "no-mongo-collection");
+	mdbConnection        = NULL;
+
+	mongo_ip             = environment->get("mongo.ip",           "no-mongo-ip");
+	mongo_db             = environment->get("mongo.db",           "no-mongo-db");
+	mongo_collection     = environment->get("mongo.collection",   "no-mongo-collection");
+	mongo_bulkload       = environment->get("mongo.bulkload",     "no");
+	mongo_ensure_index   = environment->get("mongo.ensureindex",  "no");
+
+	std::string bulksize = environment->get("mongo.maxbulksize", "1000");
+
+	mongo_max_bulksize   = atoi(bulksize.c_str());
 
 	mongo_db_path = mongo_db + "." + mongo_collection;
 
-	mdbConnection = new DBClientConnection();
-	mdbConnection->connect(mongo_ip);
-}
-
-
-
-void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
-{
-	if (inputs[0].num_kvs == 0)
-		return;
-
 	if (mongo_ip == "no-mongo-ip")
 	{
-		tracer->setUserError("No mongo ip specified. Please specify mongo ip with 'mongo.ip' environment variable");
+		tracer->setUserError("No mongo ip specified. Please specify mongo ip with 'mongo.ip' environment variable");		
 		return;
 	}
 
@@ -68,21 +69,77 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 		return;
 	}
 
-	std::vector<mongo::BSONObj> bulk_data;
-	for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
+	mdbConnection = new DBClientConnection();
+	mdbConnection->connect(mongo_ip);
+}
+
+
+
+void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
+{
+	if (inputs[0].num_kvs == 0)
 	{
-		samson::system::UInt      key;
-		samson::txt_md::BulkData  value;
-
-        key.parse(inputs[0].kvs[i]->key);
-        value.parse(inputs[0].kvs[i]->value);
-
-		mongo::BSONObj record = BSON("I" << (long long int) key.value << "P" << (long long int) value.position.value << "T" << (long long int) value.timestamp.value);
-		bulk_data.push_back(record);
+		tracer->setUserError("Zero input key values ...");
+		return;
+	}
+	
+	if (mdbConnection == NULL)
+	{
+		tracer->setUserError("Not connected to MongoDB - please check parameters");
+		return;
 	}
 
-	mdbConnection->insert(mongo_db_path, bulk_data);
-	bulk_data.clear();
+	if ((mongo_bulkload == "yes") || (mongo_bulkload == "Yes") || (mongo_bulkload == "YES"))
+	{
+		std::vector<mongo::BSONObj>  bulk_data;
+		int                          inserts = 0;
+
+		for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
+		{
+			samson::system::UInt      key;
+			samson::txt_md::BulkData  value;
+
+			key.parse(inputs[0].kvs[i]->key);
+			value.parse(inputs[0].kvs[i]->value);
+
+			mongo::BSONObj record = BSON("I" << (long long int) key.value << "P" << (long long int) value.position.value << "T" << (long long int) value.timestamp.value);
+			bulk_data.push_back(record);
+
+			++inserts;
+			if ((inserts % mongo_max_bulksize) == 0)
+			{
+				mdbConnection->insert(mongo_db_path, bulk_data);
+				bulk_data.clear();
+				inserts = 0;
+			}
+		}
+
+		if (inserts != 0)
+		{
+			mdbConnection->insert(mongo_db_path, bulk_data);
+			bulk_data.clear();
+		}
+	}
+	else
+	{
+		// Access data and emit with "writer" object
+		BSONObj bo;
+	
+		for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
+		{
+			samson::system::UInt      key;
+			samson::txt_md::BulkData  value;
+		
+			key.parse(inputs[0].kvs[i]->key);
+			value.parse(inputs[0].kvs[i]->value);
+			
+			bo = BSON("I" << (long long int) key.value << "P" << (long long int) value.position.value << "T" << (long long int) value.timestamp.value);
+			mdbConnection->insert(mongo_db_path, bo);
+		}
+	}
+
+	if ((mongo_ensure_index == "yes") || (mongo_ensure_index == "Yes") || (mongo_ensure_index == "YES"))
+		mdbConnection->ensureIndex(mongo_db_path, fromjson("{key:1}"));
 }
 
 

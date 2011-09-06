@@ -2,7 +2,8 @@
 
 #include "logMsg/logMsg.h"				// LM_X
 
-#include "au/Format.h"          // au::xml_
+#include "au/xml.h"         // au::xml...
+
 
 #include "engine/MemoryRequest.h"		// Own interface
 #include "engine/Buffer.h"				// samson::Buffer

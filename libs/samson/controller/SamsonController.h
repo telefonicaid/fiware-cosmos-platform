@@ -14,7 +14,6 @@
 
 #include "au/CommandLine.h"                // au::CommandLine
 #include "au/Cronometer.h"              // au::Cronometer
-#include "au/Info.h"                    // au::Info
 
 #include "engine/Object.h"         // samson::EngineNotificationListener
 #include "engine/Object.h"                  // engine::Object

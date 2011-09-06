@@ -38,7 +38,7 @@
 
 #include "au/Lock.h"			// au::Lock
 #include "au/StopLock.h"		// au::StopLock
-#include "au/Format.h"			// au::Format
+#include "au/string.h"			// au::Format
 #include "au/ErrorManager.h"			// samson::Error
 #include "au/Environment.h"     // au::Environment
 

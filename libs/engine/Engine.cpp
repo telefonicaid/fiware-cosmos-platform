@@ -7,11 +7,11 @@
 
 #include "logMsg/logMsg.h"                          // LM_X
 
-#include "au/Format.h"                             // au::xml_...
-
-#include "au/Stopper.h"                             // au::Stopper
+#include "au/string.h"                             // au::xml_...
+#include "au/TokenTaker.h"                          // au::TokenTake
 #include "au/ErrorManager.h"                       // au::ErrorManager
 #include "au/Token.h"                       // au::Token
+#include "au/xml.h"         // au::xml...
 
 
 #include "Notification.h"                           // engine::Notification

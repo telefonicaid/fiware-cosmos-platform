@@ -1,3 +1,22 @@
+
+/* ****************************************************************************
+ *
+ * FILE            status.h
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            Septembre 2011
+ *
+ * DESCRIPTION
+ *
+ *      Definition of all the returned values in au library
+ *
+ * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
+ *
+ * ****************************************************************************/
+
 #ifndef _H_AU_STATUS
 #define _H_AU_STATUS
 

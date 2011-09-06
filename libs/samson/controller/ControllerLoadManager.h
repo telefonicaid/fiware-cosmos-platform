@@ -2,7 +2,7 @@
 #define CONTROLLER_LOAD_MANAGER
 
 #include "au/Token.h"		// au::Token
-#include "au/Format.h"      // au::xml_...
+#include "au/string.h"      // au::xml_...
 
 #include "samson/common/samson.pb.h"        // samson::network..
 

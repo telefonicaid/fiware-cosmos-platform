@@ -3,12 +3,11 @@
 
 #include "logMsg/logMsg.h"          // LM_M
 
+#include "au/TokenTaker.h"
 #include "au/Console.h"	            // Own interface
-
 
 namespace au
 {
-
     
     bool isInputReady()
     {

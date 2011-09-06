@@ -23,7 +23,7 @@
 #include "logMsg/logMsg.h"              // Lmt
 #include "logMsg/traceLevels.h"         // LmtEngine
 
-#include "au/Format.h"                  // au::Format
+#include "au/string.h"                  // au::Format
 
 namespace engine
 {

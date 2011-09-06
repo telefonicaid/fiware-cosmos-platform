@@ -7,7 +7,7 @@
 #include "Queue.h"				// samson::Queue
 
 #include "au/map.h"							// au::insertInMap
-#include "au/Format.h"                      // au::Format
+#include "au/string.h"                      // au::Format
 
 #include "samson/common/EnvironmentOperations.h"			// Own definition of this methods
 
@@ -1068,10 +1068,10 @@ namespace samson {
 
 
         // Get the data for the output key
-        if( au::Format::getRoot( path_key ) == "key" )
-            output_key_format = key_data_instance->getTypeFromPath( au::Format::getRest( path_key ) );
-        else if( au::Format::getRoot( path_key ) == "value" )
-            output_key_format = value_data_instance->getTypeFromPath( au::Format::getRest( path_key ) );
+        if( au::getRoot( path_key ) == "key" )
+            output_key_format = key_data_instance->getTypeFromPath( au::getRest( path_key ) );
+        else if( au::getRoot( path_key ) == "value" )
+            output_key_format = value_data_instance->getTypeFromPath( au::getRest( path_key ) );
         else
         {
             delete key_data_instance;
@@ -1081,10 +1081,10 @@ namespace samson {
         }
         
         // Get the data type for the output value
-        if( au::Format::getRoot( path_value ) == "key" )
-            output_value_format = key_data_instance->getTypeFromPath( au::Format::getRest( path_value ) );
-        else if( au::Format::getRoot( path_value ) == "value" )
-            output_value_format = value_data_instance->getTypeFromPath( au::Format::getRest( path_value ) );
+        if( au::getRoot( path_value ) == "key" )
+            output_value_format = key_data_instance->getTypeFromPath( au::getRest( path_value ) );
+        else if( au::getRoot( path_value ) == "value" )
+            output_value_format = value_data_instance->getTypeFromPath( au::getRest( path_value ) );
         else
         {
             delete key_data_instance;

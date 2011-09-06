@@ -437,7 +437,7 @@ namespace samson {
 				break;
 			case running:
                 au::xml_simple( output , "status" , "running" );
-                au::xml_simple( output , "time" , au::Format::time_string( difftime( time(NULL), time_init ) ) );
+                au::xml_simple( output , "time" , au::time_string( difftime( time(NULL), time_init ) ) );
 				break;
 			case finish:
                 au::xml_simple( output , "status" , "finish" );

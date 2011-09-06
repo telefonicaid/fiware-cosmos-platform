@@ -1,20 +1,11 @@
 
-/* ****************************************************************************
- *
- * FILE                     Cronometer.cpp - Cronometer to meassure the ellapsed time
- *
- * AUTHOR                   Andreu Urruela
- *
- * CREATION DATE            April 2011
- *
- */
-
+#include "time.h"         // au::Format
+#include "au/string.h"      
 
 #include "Cronometer.h"     // Own interface
-#include "Format.h"         // au::Format
 
 namespace au {
-
+    
     Cronometer::Cronometer()
     {
         t = time( NULL );
@@ -32,9 +23,9 @@ namespace au {
     
     std::string Cronometer::str()
     {
-        return Format::time_string(diffTimeInSeconds());
+        return time_string(diffTimeInSeconds());
     }
-
+    
 #pragma mark CronometerSystem    
     
     CronometerSystem::CronometerSystem()
@@ -64,7 +55,7 @@ namespace au {
     // Get a string with the time ellapsed since last reset or creation
     std::string CronometerSystem::str()
     {
-        return Format::time_string( getSeconds() );
+        return time_string( getSeconds() );
     }
     
     int CronometerSystem::getSeconds()
@@ -73,9 +64,6 @@ namespace au {
             return (seconds + c.diffTimeInSeconds() );
         else
             return seconds;
-        
     }
-
     
-
 }

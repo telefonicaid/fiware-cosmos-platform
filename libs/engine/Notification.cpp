@@ -2,7 +2,7 @@
 #include "logMsg/logMsg.h"      // Log system
 #include "logMsg/traceLevels.h" // LmtEngine
 
-#include "au/Format.h"          // au::Format
+#include "au/string.h"          // au::Format
 
 #include "Object.h"         // engine::Object
 

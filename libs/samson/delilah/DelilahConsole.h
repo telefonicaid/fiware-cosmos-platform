@@ -10,14 +10,8 @@
 */
 #include <cstdlib>				// atexit
 
-#include "logMsg/logMsg.h"				
-
-#include "au/Console.h"			// au::Console
-#include "DelilahClient.h"      // ss:DelilahClient
-#include "samson/delilah/Delilah.h"			// samson::Delilah
 #include <sstream>                  // std::ostringstream
 #include <time.h>
-
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <fcntl.h>
@@ -27,6 +21,14 @@
 #include <readline/history.h>
 #include <algorithm>
 
+#include "logMsg/logMsg.h"				
+
+#include "au/TokenTaker.h"                          // au::TokenTake
+
+#include "au/Console.h"			// au::Console
+#include "DelilahClient.h"      // ss:DelilahClient
+
+#include "samson/delilah/Delilah.h"			// samson::Delilah
 #include "samson/delilah/DelilahUtils.h"        // getXXXInfo()
 
 namespace samson {

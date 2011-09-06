@@ -1,4 +1,5 @@
 
+#include "au/file.h"
 
 
 #include "engine/DiskOperation.h"					// samson::DiskOperation
@@ -530,7 +531,7 @@ namespace samson
 		buffer = NULL;
 		
 		// Compute the required size for this operation
-		fileSize = au::Format::sizeOfFile( SamsonSetup::shared()->dataDirectory + "/" + fileName );	
+		fileSize = au::sizeOfFile( SamsonSetup::shared()->dataDirectory + "/" + fileName );	
 		
         info.append( fileSize , 1 );    // Accumulated total input data
         

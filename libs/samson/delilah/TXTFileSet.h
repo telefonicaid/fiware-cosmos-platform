@@ -1,6 +1,8 @@
 #ifndef _H_TXT_FILE_SET
 #define _H_TXT_FILE_SET
 
+#include "au/file.h"
+
 namespace samson {
 
 	
@@ -159,7 +161,7 @@ namespace samson {
             
             // Compute the total size for all the files
             for ( size_t i =  0 ; i < fileNames.size() ; i++)
-                totalSize += au::Format::sizeOfFile( fileNames[i] );
+                totalSize += au::sizeOfFile( fileNames[i] );
 
             return totalSize;
         }

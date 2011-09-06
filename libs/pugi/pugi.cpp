@@ -17,8 +17,9 @@
  *
  * ****************************************************************************/
 
-#include "pugi.h"			// Own interface
+#include "au/string.h"      // au::tabs
 
+#include "pugi.h"			// Own interface
 
 namespace pugi
 {
@@ -42,7 +43,7 @@ namespace pugi
         std::string name =  xml_node.name();
         std::string value =  xml_node.value();
         
-        output << au::F::tabs(level) << name  << " " << value;
+        output << au::tabs(level) << name  << " " << value;
         
         int num_attributes = 0;
         std::ostringstream attributes_txt;

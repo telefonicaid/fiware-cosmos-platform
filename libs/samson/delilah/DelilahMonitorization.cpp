@@ -12,10 +12,8 @@
 #include <iostream>
 #include <iomanip>
 
-#include "au/Format.h"						// au::Format
+#include "au/string.h"						// au::Format
 #include "au/CommandLine.h"				// au::CommandLine
-#include "au/Info.h"                    // au::Info
-
 
 #include "pugi/pugi.h"                      // pugi::Pugi
 

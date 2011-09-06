@@ -1,3 +1,23 @@
+
+/* ****************************************************************************
+ *
+ * FILE            ListMap
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            Septembre 2011
+ *
+ * DESCRIPTION
+ *
+ *  Combination of a set::map and std::list when objects included are pointers.
+ *  It contains convinient methods to simplify development
+ *
+ * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
+ *
+ * ****************************************************************************/
+
 #ifndef _H_AU_LIST_MAP
 #define _H_AU_LIST_MAP
 

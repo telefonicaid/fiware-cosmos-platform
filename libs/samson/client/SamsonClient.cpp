@@ -15,7 +15,7 @@
  *
  * ****************************************************************************/
 
-#include "au/Format.h"                          // au::Format
+#include "au/string.h"                          // au::Format
 
 #include "engine/Engine.h"                      // engine::Engine
 #include "engine/MemoryManager.h"               // engine::MemoryManager

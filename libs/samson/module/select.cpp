@@ -2,7 +2,7 @@
 #include "select.h" // Own interface
 
 #include "au/CommandLine.h"         // au::CommandLine
-#include "au/Format.h"              // au::Format
+#include "au/string.h"              // au::Format
 
 namespace samson
 {
@@ -26,15 +26,15 @@ namespace samson
         value_data_instance = inputData[0].value;
         
         // Get the data for the output key
-        if( au::Format::getRoot( path_key ) == "key" )
+        if( au::getRoot( path_key ) == "key" )
         {
             output_key_data_instance = key_data_instance;
-            output_key_path = key_data_instance->getDataPath( au::Format::getRest( path_key ) );
+            output_key_path = key_data_instance->getDataPath( au::getRest( path_key ) );
         }
-        else if( au::Format::getRoot( path_key ) == "value" )
+        else if( au::getRoot( path_key ) == "value" )
         {
             output_key_data_instance = value_data_instance;
-            output_key_path = value_data_instance->getDataPath( au::Format::getRest( path_key ) );
+            output_key_path = value_data_instance->getDataPath( au::getRest( path_key ) );
         }
         else
         {
@@ -43,15 +43,15 @@ namespace samson
         
 
         // Get the data for the output key
-        if( au::Format::getRoot( path_value ) == "key" )
+        if( au::getRoot( path_value ) == "key" )
         {
             output_value_data_instance = key_data_instance;
-            output_value_path = key_data_instance->getDataPath( au::Format::getRest( path_value ) );
+            output_value_path = key_data_instance->getDataPath( au::getRest( path_value ) );
         }
-        else if( au::Format::getRoot( path_value ) == "value" )
+        else if( au::getRoot( path_value ) == "value" )
         {
             output_value_data_instance = value_data_instance;
-            output_value_path = value_data_instance->getDataPath( au::Format::getRest( path_value ) );
+            output_value_path = value_data_instance->getDataPath( au::getRest( path_value ) );
         }
         else
         {

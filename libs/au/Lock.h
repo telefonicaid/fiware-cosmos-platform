@@ -1,15 +1,26 @@
+
+
+/* ****************************************************************************
+ *
+ * FILE            Lock.h
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            Septembre 2011
+ *
+ * DESCRIPTION
+ *
+ *  Wrapper of the mutex included in the pthreadlibrary with usefull methods to simplify development
+ *
+ * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
+ *
+ * ****************************************************************************/
+
 #ifndef SAMSON_LOCK_H
 #define SAMSON_LOCK_H
 
-/* ****************************************************************************
-*
-* FILE                 Lock.h - 
-*
-* AUTHOR               Ken Zangelin, Andreu Urruela
-*
-* CREATION DATE        Oct 5 2010
-*
-*/
 #include <pthread.h>             /* pthread_mutex_t                          */
 #include <string>                /* std::string                              */
 

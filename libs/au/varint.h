@@ -1,3 +1,23 @@
+
+/* ****************************************************************************
+ *
+ * FILE            varint.h
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            Septembre 2011
+ *
+ * DESCRIPTION
+ *
+ *  Serialization and Deserializarion methods for variable-length integer codificiation
+ *  It can codify a 64 bits unsigned integer into a 1,2,3,4,5,6,8 bytes length number
+ *
+ * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
+ *
+ * ****************************************************************************/
+
 #ifdef _H_VAR_INT
 #define _H_VAR_INT
 

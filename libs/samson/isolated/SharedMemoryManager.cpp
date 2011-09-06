@@ -8,16 +8,23 @@
 *
 */
 
+#include <sstream>				// std::stringstream
+
 #include "logMsg/logMsg.h"             // LM_*
 #include "logMsg/traceLevels.h"        // Trace Levels
 
-#include "samson/isolated/SharedMemoryManager.h"		// Own interface
+#include "au/string.h"             // au::Format
+#include "au/TokenTaker.h"                          // au::TokenTake
+#include "au/file.h"                    // au::sizeOfFile
+
 #include "engine/Buffer.h"				// samson::Buffer
-#include <sstream>				// std::stringstream
 #include "engine/MemoryRequest.h"		// samson::MemoryRequest
 #include "engine/Engine.h"				// samson::Engine
 #include "SharedMemoryItem.h"   // samson::SharedMemoryItem
-#include "au/Format.h"             // au::Format
+
+
+#include "samson/isolated/SharedMemoryManager.h"		// Own interface
+
 #include "samson/common/SamsonSetup.h"   // samson::SamsonSetup
 
 namespace engine
@@ -102,7 +109,7 @@ namespace engine
         
         // Get the size of the file ( if exist )
         {
-            size_t fileSize = au::Format::sizeOfFile( sharedMemoryIdsFileName );
+            size_t fileSize = au::sizeOfFile( sharedMemoryIdsFileName );
             
             int length = fileSize / sizeof(int);
             int *ids = (int*) malloc( length * sizeof(int) );

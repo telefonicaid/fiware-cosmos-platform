@@ -1,4 +1,23 @@
 
+/* ****************************************************************************
+ *
+ * FILE            Token
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            Septembre 2011
+ *
+ * DESCRIPTION
+ *
+ *  Wrapper of the mutex included in pthread library.
+ *  Used to simplify development of multi-thread apps
+ *
+ * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
+ *
+ * ****************************************************************************/
+
 #ifndef _H_AU_TOCKEN
 #define _H_AU_TOCKEN
 
@@ -28,28 +47,6 @@ namespace au
 		void release();
 	  
 	};
-	
-    // Class to hold the lock during the life-span
-    
-    class TokenTaker
-    {
-        const char* name;
-        Token* token;
-        
-    public:
-        
-        TokenTaker( Token* _token );
-        TokenTaker( Token* _token, const char* name );
-        ~TokenTaker();
-        
-        void stop( int time_out );
-        
-        void wakeUp();
-        void wakeUpAll();
-
-        
-        
-    };
     
     
 }

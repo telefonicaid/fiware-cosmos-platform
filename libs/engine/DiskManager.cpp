@@ -1,8 +1,11 @@
 
 
-#include "logMsg/logMsg.h"				// LM_X
 #include <time.h>
 #include <sys/time.h>
+
+#include "logMsg/logMsg.h"				// LM_X
+
+#include "au/xml.h"         // au::xml...
 
 #include "engine/Engine.h"							// engine::Engine
 #include "engine/EngineElement.h"					// engine::EngineElement

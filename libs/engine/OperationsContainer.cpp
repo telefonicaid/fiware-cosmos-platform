@@ -3,6 +3,8 @@
 #include "DiskOperation.h"
 #include "ProcessItem.h"
 
+#include "au/TokenTaker.h"                          // au::TokenTake
+
 #include "Engine.h"                         // engine::Engine
 
 #include "DiskManager.h"                    // notification_disk_operation_cancel

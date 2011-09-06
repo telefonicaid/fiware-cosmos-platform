@@ -11,7 +11,7 @@
 #include "samson/delilah/Delilah.h"			// samson::Delilah
 
 #include <sstream>			// std::ostringstream
-#include "au/Format.h"			// au::Format
+#include "au/string.h"			// au::Format
 #include <list>				// std::list
 #include "TXTFileSet.h"		// samson::TXTFileSet
 #include "au/ErrorManager.h"			// au::ErrorManager

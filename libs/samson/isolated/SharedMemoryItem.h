@@ -24,9 +24,8 @@
 
 #include "engine/Buffer.h"					// samson::Buffer
 #include "au/Token.h"					// au::Token
-#include "au/Stopper.h"				// au::Stopper
 #include "au/map.h"					// au::map
-#include "au/Format.h"					// au::Format
+#include "au/string.h"					// au::Format
 
 #include "samson/common/samson.pb.h"				// network::..
 

@@ -2,7 +2,7 @@
 #include "logMsg/traceLevels.h"          // Trace Levels
 
 #include "au/CommandLine.h"                     // au::CommandLine
-#include "au/Format.h"                          // au::xml_..
+#include "au/string.h"                          // au::xml_..
 
 #include "engine/DiskOperation.h"               // engine::DiskOperation
 #include "engine/Notification.h"                // engine::Notification

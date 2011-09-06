@@ -8,11 +8,12 @@
 #include <sstream>			// std::ostringstream
 #include <list>				// std::list
 
-#include "au/Format.h"			// au::Format
+#include "au/string.h"			// au::Format
 #include "au/ErrorManager.h"			// au::ErrorManager
 #include "au/Cronometer.h"      // au::Cronometer
 #include "au/Lock.h"				// au::Lock
 #include "au/Descriptors.h"         // au::CounterCollection
+#include "au/CounterCollection.h"   // au::CounterCollection
 
 #include "engine/Engine.h"          // engine::Object
 #include "engine/Object.h"          // engine::Object

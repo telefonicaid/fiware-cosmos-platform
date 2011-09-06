@@ -20,6 +20,7 @@
 #include <string>       // size_t
 
 #include "au/map.h"     // au::map
+#include "au/simple_map.h"     // au::simple_map
 #include "au/Token.h"     // au::Token
 
 namespace engine {

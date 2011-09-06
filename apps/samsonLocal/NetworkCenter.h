@@ -6,14 +6,16 @@
 #include <list>					// std::list
 #include <iostream>				// std::cout
 
+#include "au/Token.h"				// au::Token
+#include "au/TokenTaker.h"                          // au::TokenTake
+
+#include "samson/network/Packet.h"				// samson::Packet
 #include "samson/delilah/Delilah.h"			// ss:Delilah
 #include "samson/worker/SamsonWorker.h"		// samson::SamsonWorker
 #include "samson/controller/SamsonController.h"	// samson:: SasonController
+
 #include "FakeEndpoint.h"		// samson::EndPoint
 #include "NetworkFake.h"        // NetworkFake
-#include "samson/network/Packet.h"				// samson::Packet
-#include "au/Token.h"				// au::Token
-#include "au/Stopper.h"			// au::Stopper
 
 namespace samson {
 	

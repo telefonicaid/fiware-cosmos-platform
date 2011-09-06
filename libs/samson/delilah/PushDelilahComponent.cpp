@@ -173,8 +173,8 @@ namespace samson
     std::string PushDelilahComponent::getStatus()
     {
         std::ostringstream output;
-        output << " ( Processed " << au::Format::percentage_string(processedSize, totalSize) << " )\n"; 
-        output << " ( Uploaded  " << au::Format::percentage_string(uploadedSize, totalSize) << " )\n"; 
+        output << " ( Processed " << au::percentage_string(processedSize, totalSize) << " )\n"; 
+        output << " ( Uploaded  " << au::percentage_string(uploadedSize, totalSize) << " )\n"; 
         return output.str();
     }
     

@@ -1,6 +1,7 @@
 
 #include <sys/stat.h>		// mkdir
 
+#include "au/file.h"
 
 #include "engine/MemoryManager.h"					// samson::MemoryManager
 #include "engine/MemoryRequest.h"

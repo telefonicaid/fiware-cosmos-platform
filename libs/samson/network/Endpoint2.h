@@ -18,7 +18,6 @@
 #include "logMsg/logMsg.h"          // LM_X
 
 #include "au/Token.h"
-#include "au/Stopper.h"
 #include "au/list.h"
 #include "samson/common/status.h"
 #include "samson/common/Process.h"  // PtWorker, PtController

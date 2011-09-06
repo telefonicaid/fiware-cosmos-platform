@@ -1,15 +1,15 @@
 
+#include "au/string.h"
 #include "Rate.h"        // au::Rate
-#include "Format.h"      // au::Format
 
 namespace au {
-
+    
     RateItem::RateItem( int _max_time )
     {
         total_size = 0;
         max_time = _max_time;
     }
-
+    
     // Puch a new value into the rate-system
     void RateItem::push( size_t value )
     {
@@ -20,7 +20,7 @@ namespace au {
         values.push_back(rv);
         total_size+= value;
     }
-
+    
     void RateItem::review()
     {
         time_t t =  time(NULL);
@@ -71,16 +71,15 @@ namespace au {
         last_hour.review();
         
         return au::str( "Last minute: [ %s ] %s || Last hour %s" , 
-                 au::str( last_minute.getNumOperation() ,"Ops").c_str() , 
-                 au::str( last_minute.getRate() , "Bps" ).c_str(),
-                 au::str( last_hour.getTotalSize() , "B" ).c_str() );
+                       au::str( last_minute.getNumOperation() ,"Ops").c_str() , 
+                       au::str( last_minute.getRate() , "Bps" ).c_str(),
+                       au::str( last_hour.getTotalSize() , "B" ).c_str() );
     }
-
+    
     size_t Rate::getLastMinuteRate()
     {
         last_minute.review();
         return last_minute.getRate();
     }
-    
     
 }

@@ -1,5 +1,7 @@
 
 #include "au/ErrorManager.h"                  // au::ErrorManager
+#include "au/xml.h"                         // au::xml...
+#include "au/TokenTaker.h"                          // au::TokenTake
 
 #include "engine/Engine.h"					// engine::Engine
 #include "engine/ProcessManager.h"          // engine::ProcessManager

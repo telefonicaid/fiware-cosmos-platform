@@ -28,7 +28,7 @@
 
 #include "pugi/pugixml.hpp"     // pugi::...
 
-#include "au/Format.h"          // au::F
+#include "au/string.h"          // au::F
 
 namespace pugi 
 {

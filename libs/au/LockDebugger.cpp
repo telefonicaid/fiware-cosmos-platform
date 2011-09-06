@@ -1,12 +1,6 @@
-/* ****************************************************************************
-*
-* FILE                 LockDebugger.cpp - 
-*
-* AUTHOR               Ken Zangelin, Andreu Urruela
-*
-* CREATION DATE        Oct 5 2010
-*
-*/
+
+
+#include <assert.h>
 #include <string>                /* std::string                              */
 #include <map>                   /* map                                      */
 #include <set>                   /* set                                      */
@@ -14,20 +8,12 @@
 #include <sstream>               /* std::ostringstream                       */
 #include <iostream>              /* std::cout                                */
 
+#include "logMsg/logMsg.h"					 // LM_M()
+
 #include "LockDebugger.h"        /* Own interface                            */
 
-#include "logMsg/logMsg.h"					 // LM_M()
-#include <assert.h>
-
-
-/* ****************************************************************************
-*
-* 
-*/
 //#define DEBUG_AU_THREADS
 //#define FULL_DEBUG_AU_THREADS
-
-
 
 namespace au {
 

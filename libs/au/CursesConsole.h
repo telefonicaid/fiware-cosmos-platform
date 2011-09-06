@@ -1,16 +1,17 @@
 
 /* ****************************************************************************
  *
- * FILE            CursesConsole.h
+ * FILE            -
  *
  * AUTHOR          Andreu Urruela
  *
- * PROJECT         au lib
+ * PROJECT         au library
  *
- * DATE            7/16/11
+ * DATE            Septembre 2011
  *
  * DESCRIPTION
  *
+ *      Console based on the curses library to get continously-refresh information
  *
  * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
  *

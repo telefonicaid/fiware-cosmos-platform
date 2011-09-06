@@ -1,19 +1,12 @@
-/* ****************************************************************************
-*
-* FILE                 Lock.cpp - 
-*
-* AUTHOR               Andreu Urruela, Ken Zangelin
-*
-* CREATION DATE        Oct 5 2010
-*
-*/
+
 #include <sys/time.h>            // struct timeval
 #include <pthread.h>             // pthread_mutex_init, ...
 
 #include "logMsg/logMsg.h"              // LM_*
+
 #include "StopLock.h"            // StopLock
-#include "au/Lock.h"                // Own interface
 #include "LockDebugger.h"		// au:;:LockDebugger
+#include "au/Lock.h"                // Own interface
 
 //#define DEBUG_SS_THREADS
 
@@ -36,21 +29,21 @@ namespace au
 		LockDebugger::shared()->add_lock( this );
 #endif
 		int ans = pthread_mutex_lock(&_lock);	// Block until the mutex is free
-
+        
 		if (ans != 0)
 			LM_X(1,("pthread_mutex_lock returned %d: %s", ans, strerror(errno)));
 	}
-
+    
 	void Lock::unlock()
 	{
-
+        
 #ifdef DEBUG_SS_THREADS		
 		LockDebugger::shared()->remove_lock( this );
 #endif		
 		pthread_mutex_unlock(&_lock);
 	}
-
-
+    
+    
 	void Lock::unlock_waiting_in_stopLock( StopLock *stopLock )
 	{
 #ifdef DEBUG_SS_THREADS		

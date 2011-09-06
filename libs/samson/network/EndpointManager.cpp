@@ -13,6 +13,8 @@
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 
+#include "au/TokenTaker.h"                          // au::TokenTake
+
 #include "samson/common/status.h"
 #include "samson/common/ports.h"
 #include "samson/common/Process.h"

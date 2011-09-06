@@ -6,7 +6,7 @@
 
 
 #include "au/Token.h"                /* Lock                            */
-#include "au/Format.h"              // au::xml_...
+#include "au/string.h"              // au::xml_...
 #include "au/ErrorManager.h"                /* Lock                            */
 #include "au/CommandLine.h"			/* AUCommandLine                            */
 #include "au/map.h"                 // au::map

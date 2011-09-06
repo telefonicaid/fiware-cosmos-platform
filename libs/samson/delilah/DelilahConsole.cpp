@@ -13,7 +13,7 @@
 
 
 #include "au/CommandLine.h"				// au::CommandLine
-#include "au/Format.h"					// au::Format
+#include "au/string.h"					// au::Format
 #include "au/Descriptors.h"             // au::Descriptors
 
 #include "engine/MemoryManager.h"                   // samson::MemoryManager
@@ -1103,7 +1103,7 @@ namespace samson
 					std::ostringstream message;
 					message << "Job finished  [" << packet->message->command_response().finish_job_id() << "] ";
 					message << " ( " << packet->message->command_response().command().command() << ")";
-					message << " ["<< au::Format::time_string( packet->message->command_response().ellapsed_seconds() ) << "] ";
+					message << " ["<< au::time_string( packet->message->command_response().ellapsed_seconds() ) << "] ";
 					writeWarningOnConsole( message.str() );
 					return 0;
 				}

@@ -1,12 +1,22 @@
+
 /* ****************************************************************************
  *
- * FILE                     Cronometer.h - Cronometer to meassure the ellapsed time
+ * FILE            Cronometer
  *
- * AUTHOR                   Andreu Urruela
+ * AUTHOR          Andreu Urruela
  *
- * CREATION DATE            April 2011
+ * PROJECT         au library
  *
- */
+ * DATE            Septembre 2011
+ *
+ * DESCRIPTION
+ *
+ *      Easy to use class to cound how much seconds something happened.
+ *      Used in situations where time-precision is not required ( seconds are ok)
+ *
+ * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
+ *
+ * ****************************************************************************/
 
 #ifndef SAMSON_CRONOMETER_H
 #define SAMSON_CRONOMETER_H

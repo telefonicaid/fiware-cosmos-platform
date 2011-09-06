@@ -59,7 +59,7 @@ namespace samson {
             double p_memory = (double) size_on_memory / (double) size_total;
             double p_disk = (double) size_on_disk / (double) size_total;
             
-            output << au::Format::percentage_string( p_memory ) << " on memory & " << au::Format::percentage_string( p_disk ) << " on disk";
+            output << au::percentage_string( p_memory ) << " on memory & " << au::percentage_string( p_disk ) << " on disk";
         }
         
         return output.str();
@@ -334,7 +334,7 @@ namespace samson {
             output << "         ";
             output << "[ " << pugi::get( *n , "time") << " ] ";
             output << "[ Priority " << pugi::get( *n , "priority") << " ] ";
-            output << "[ Progress " << au::Format::percentage_string( pugi::getDouble( *n , "progress") ) << " ] ";
+            output << "[ Progress " << au::percentage_string( pugi::getDouble( *n , "progress") ) << " ] ";
             output << pugi::get( *n , "operation_name");
             output << "\n";
             

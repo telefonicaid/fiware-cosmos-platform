@@ -1,3 +1,24 @@
+
+/* ****************************************************************************
+ *
+ * FILE            set
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            Septembre 2011
+ *
+ * DESCRIPTION
+ *
+ *      Specialized version of the std::set when included objects are pointers.
+ *      In this case, we can return NULL if object is not found in the set
+ *      It greatly simplifies development of objects managers in memory
+ *
+ * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
+ *
+ * ****************************************************************************/
+
 #ifndef _H_AU_SET
 #define _H_AU_SET
 

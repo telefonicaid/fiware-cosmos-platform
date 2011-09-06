@@ -1,17 +1,28 @@
+
+/* ****************************************************************************
+ *
+ * FILE            Console.h
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            Septembre 2011
+ *
+ * DESCRIPTION
+ *
+ * Class that implement a simple console to interact with the user.
+ * Subclass this class implementing the evalCommand( std::string command )
+ * 
+ * To run the console, you have the bloquing "runConsole" method. 
+ *
+ * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
+ *
+ * ****************************************************************************/
+
 #ifndef SAMSON_CONSOLE_H
 #define SAMSON_CONSOLE_H
 
-/* ****************************************************************************
-*
-* FILE                      AUConsole.h
-*
-* AUTHOR                    Andreu Urruela Planas
-*
-* Class that implement a simple console to interact with the user.
-* Subclass this class implementing the evalCommand( std::string command )
-* 
-* To run the console, you have the bloquink "run" method.
-*/
 #include <string.h>           /* memcpy, ... */
 #include <istream>
 #include <cstdlib>

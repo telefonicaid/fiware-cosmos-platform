@@ -1,21 +1,6 @@
 
-/* ****************************************************************************
- *
- * FILE            CursesConsole.cpp
- *
- * AUTHOR          Andreu Urruela
- *
- * PROJECT         Samson
- *
- * DATE            7/16/11
- *
- * DESCRIPTION
- *
- *  Copyright 2011 Andreu Urruela. All rights reserved.
- *
- * ****************************************************************************/
 
-#include "au/Format.h"              // au::Format
+#include "au/string.h"              
 #include "au/CommandLine.h"
 
 #include "CursesConsole.h"			// Own interface
@@ -34,8 +19,6 @@ namespace au
         // Default constructor
         quitConsole = false;
     }
- 
-    
     
 #pragma mark Main functions
     
@@ -60,10 +43,10 @@ namespace au
                 return;
             
             refresh();
-
+            
             // Sleep a bit
             usleep( 10000 );
-
+            
             // Eval commands in real time
             evalRealTimeComamnd( );
             
@@ -76,7 +59,7 @@ namespace au
                 
                 // Path to discover new keys
                 //command.append( au::str("<%d>" , ch) );
-
+                
                 switch (ch) {
                         
                     case 127:
@@ -104,7 +87,7 @@ namespace au
                         command += (char)ch;
                         break;
                 }
- 
+                
             }
         }
         
@@ -126,13 +109,13 @@ namespace au
         
         // Print the user content
         printContent();
-
+        
         if( options.command_options.size() == 0 )
         {
             // Clean the bottom part of the screen
             clearLine( rows - 2 );
             clearLine( rows - 1 );
-
+            
             printLine( rows - 2 );
             
             move(rows-1, 0);
@@ -154,7 +137,7 @@ namespace au
             printw( command.c_str() );
             
         }
-
+        
     }
     
     void CursesConsole::clearLine( int r )
@@ -245,7 +228,7 @@ namespace au
     {
         au::CommandLine cmdLine;
         cmdLine.parse( command );
-
+        
         // Vector containing all the previous words introduced
         std::vector<std::string> previous_words;
         
@@ -265,13 +248,13 @@ namespace au
             if( cmdLine.get_num_arguments() > 0 )
                 current_word = cmdLine.get_argument( cmdLine.get_num_arguments() - 1 );
         }
-
+        
         LM_M(("Auto-complete %lu previous words & current_command '%s'" , previous_words.size() , current_word.c_str() ));
         
         // Check the autocompletion options
         options.clear();
         auto_complete( previous_words ,current_word , options.command_options );
-
+        
         LM_M(("Options: %lu" , options.command_options.size() ));
         
         // Get the auto-complete string and use it with the current command line
@@ -281,6 +264,6 @@ namespace au
         
         
     }
-
+    
     
 }

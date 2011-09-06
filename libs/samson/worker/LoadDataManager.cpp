@@ -1,3 +1,6 @@
+
+#include "au/file.h"
+
 #include "engine/Buffer.h"					// samson::Buffer
 #include "engine/DiskOperation.h"			// samson::DiskOperation
 #include "engine/Engine.h"                 // samson::Engine
@@ -129,7 +132,7 @@ namespace samson
 	void DownloadItem::submitToFileManager()
 	{
 		std::string fileName = download_data_file->file().name();
-		size_t size = au::Format::sizeOfFile( SamsonSetup::shared()->dataDirectory + "/" + fileName );
+		size_t size = au::sizeOfFile( SamsonSetup::shared()->dataDirectory + "/" + fileName );
 
 		buffer = engine::MemoryManager::shared()->newBuffer( "Buffer for downloading data" , size , MemoryOutputNetwork );
 		buffer->setSize( size );

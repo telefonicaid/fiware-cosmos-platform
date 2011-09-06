@@ -211,8 +211,8 @@ namespace samson {
                 output << "\n\tTotal info          " << info.str();
                 output << "\n\tAccumulated info    " << accumulated_info.str();
                 output << "\n\tBlock information   " << "( " << blocks.size() << " blocks with " << au::str( size, "Bytes" );
-                output << " " << au::Format::percentage_string(size_on_memory, size) << " on memory";
-                output << " & " << au::Format::percentage_string(size_on_disk, size) << " on disk )";
+                output << " " << au::percentage_string(size_on_memory, size) << " on memory";
+                output << " & " << au::percentage_string(size_on_disk, size) << " on disk )";
             }
             
             

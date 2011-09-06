@@ -7,8 +7,7 @@
 #include <list>							// std::list
 
 #include "au/ErrorManager.h"			// au::ErrorManager
-
-#include "au/Descriptors.h"             // au::CounterCollection
+#include "au/CounterCollection.h"             // au::CounterCollection
 
 #include "engine/Object.h"              // engine::Object
 

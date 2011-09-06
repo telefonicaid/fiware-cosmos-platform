@@ -7,7 +7,10 @@
 *
 */
 #include <samson/module/Data.h>
-#include "au/Format.h"                  // au::Format
+
+#include "au/string.h"                  // au::Format
+#include "au/xml.h"                     // au::xml...
+
 #include "samson/module/KVFormat.h"	        // samson::KVFormat
 #include "samson/common/samson.pb.h"                  // network:...
 #include <string.h>                     // std::string

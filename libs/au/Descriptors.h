@@ -1,4 +1,24 @@
 
+
+/* ****************************************************************************
+ *
+ * FILE            Descriptors.h
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            Septembre 2011
+ *
+ * DESCRIPTION
+ *
+ *      Descriptors solves the situation where you have a list of strings where some
+ *      of them are the same. This helps you to group equal strings to display a unified message
+ *
+ * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
+ *
+ * ****************************************************************************/
+
 #ifndef _H_AU_DESCRIPTORS
 #define _H_AU_DESCRIPTORS
 
@@ -7,31 +27,18 @@
 #include "au/map.h"       // au::map
 
 namespace au {
-
     
     class DescriptorsCounter
     {
         std::string description;
         int counter;
+        
     public:
-        DescriptorsCounter( std::string _description)
-        {
-            description = _description;
-            counter = 0;
-        }
         
-        void increase()
-        {
-            counter++;
-        }
-        
-        std::string str()
-        {
-            std::ostringstream output;
-            output << counter << " X " << description; 
-            return output.str();
-        }
-        
+        DescriptorsCounter( std::string _description);
+        void increase();
+        std::string str();
+                
     };
     
     class Descriptors
@@ -41,74 +48,13 @@ namespace au {
         
     public:
         
-        ~Descriptors()
-        {
-            // Delete is called for each conunter
-            concepts.clearMap();
-        }
+        ~Descriptors();
         
-        void add( std::string txt )
-        {
-            DescriptorsCounter* counter = concepts.findInMap( txt );
-            
-            if( !counter )
-            {
-                counter = new DescriptorsCounter( txt );
-                concepts.insertInMap( txt, counter );
-            }
-            
-            counter->increase();
-        }
+        void add( std::string txt );
         
-        std::string str()
-        {
-            au::map< std::string , DescriptorsCounter>::iterator i;
-            
-            std::ostringstream output;
-            for ( i =  concepts.begin() ; i != concepts.end() ; i++)
-                output << i->second->str() << " "; 
-            return output.str();
-        }
+        std::string str();
         
     };
-
-    
-    class Counter
-    {
-        int c;
-        
-    public:
-        
-        Counter()
-        {
-            c = 0;
-        }
-        
-        int get()
-        {
-            return c++;
-        }
-    };
-    
-    template <typename T>
-    class CounterCollection
-    {
-        au::map<T,Counter> counters;
-
-    public:
-
-        int getCounterFor(T t)
-        {
-            Counter *c = counters.findInMap( t );
-            if( !c )
-            {
-                c = new Counter();
-                counters.insertInMap( t , c);
-            }
-            return c->get();
-        }
-    };
-    
 }
 
 #endif

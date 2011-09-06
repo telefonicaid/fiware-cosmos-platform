@@ -1,3 +1,22 @@
+
+/* ****************************************************************************
+ *
+ * FILE            gpb.h
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            Septembre 2011
+ *
+ * DESCRIPTION
+ *
+ *  read and write operations using google prototol buffer to comunicate using a pipe
+ *
+ * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
+ *
+ * ****************************************************************************/
+
 #ifndef _H_AU_GPB
 #define _H_AU_GPB
 

@@ -42,7 +42,7 @@ namespace samson
 		
 		// Compute the total size for all the files
 		for ( size_t i =  0 ; i < fileNames.size() ; i++)
-			totalSize += au::Format::sizeOfFile( fileNames[i] );
+			totalSize += au::sizeOfFile( fileNames[i] );
 
 		// Init counters of created and confirmed files
 		num_files = 0;
@@ -504,7 +504,7 @@ namespace samson
         
         // Memory and process
         output << "\n\tParalel processes: " << num_threads << " / " << max_num_threads;
-        output << "\n\tOutput memory usage " << au::Format::percentage_string( engine::MemoryManager::shared()->getMemoryUsageByTag( MemoryOutputNetwork  ) );
+        output << "\n\tOutput memory usage " << au::percentage_string( engine::MemoryManager::shared()->getMemoryUsageByTag( MemoryOutputNetwork  ) );
         output << " of " << au::str( engine::MemoryManager::shared()->getMemory() , "B" );
         
         // Status of the file source
@@ -518,7 +518,7 @@ namespace samson
 			{
                 int seconds = cronometer.getSeconds();
 				size_t pending_secs =  ( totalSize - uploadedSize ) * seconds / uploadedSize;
-				output << "[ETA " << au::Format::time_string( pending_secs ) << "] ";
+				output << "[ETA " << au::time_string( pending_secs ) << "] ";
 			}
 		
 			output <<"\n\tProgress: ";

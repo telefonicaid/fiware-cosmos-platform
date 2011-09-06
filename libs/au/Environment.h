@@ -1,3 +1,23 @@
+
+/* ****************************************************************************
+ *
+ * FILE            Enviroment.h
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            Septembre 2011
+ *
+ * DESCRIPTION
+ *
+ *  Collection of enviroment variables. It is a key-value colection usign strings
+ *  Convenient functions are provided to use values as integers, doubles, etc...
+ *
+ * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
+ *
+ * ****************************************************************************/
+
 #ifndef _H_ENGINE_ENVIRONMENT
 #define _H_ENGINE_ENVIRONMENT
 
@@ -8,10 +28,6 @@
 
 namespace au {
 	
-	/** 
-	 Class used to hold environment variables
-	 */
-	
 	class Environment
 	{
 		
@@ -19,74 +35,15 @@ namespace au {
 		
 		std::map<std::string,std::string> environment;	
 		
-        void clearEnvironment()
-        {
-            environment.clear();
-        }
+        void clearEnvironment();
         
-		std::string get( std::string name , std::string default_value )
-		{
-			std::map<std::string, std::string>::iterator iter = environment.find(name);
-			
-			if( iter == environment.end() )
-				return default_value;
-			else
-				return iter->second;
-		}
-		
-		void set( std::string name , std::string value )
-		{
-			std::map<std::string, std::string>::iterator iter = environment.find(name);
-			
-			if( iter == environment.end() )
-				environment.insert ( std::pair<std::string, std::string>( name , value ) );
-			else
-				iter->second = value;
-			
-		}
+		std::string get( std::string name , std::string default_value );
+		void set( std::string name , std::string value );
+		void unset( std::string name );
+		bool isSet( std::string name );
 
-		void unset( std::string name )
-		{
-			std::map<std::string, std::string>::iterator iter = environment.find(name);
-			
-			if( iter != environment.end() )
-				environment.erase(iter );
-			
-		}
+		void copyFrom( Environment *other );
 		
-		
-		bool isSet( std::string name )
-		{
-			std::map<std::string, std::string>::iterator iter = environment.find(name);
-			
-			if( iter == environment.end() )
-				return false;
-			else
-				return true;
-			
-		}
-		
-		void copyFrom( Environment *other )
-		{
-			std::map<std::string, std::string>::iterator iter;
-			for ( iter = other->environment.begin() ; iter != other->environment.end() ; iter++)
-				environment.insert ( std::pair<std::string, std::string>( iter->first , iter->second ) );
-		}
-		
-		
-		std::string toString()
-		{
-			std::ostringstream o;
-			
-			std::map<std::string, std::string>::iterator iter;
-			for (iter = environment.begin() ; iter != environment.end() ; iter++)
-				o << iter->first << " : " << iter->second << "\n";
-			return o.str();
-		}
-		
-		// Varialbes as ints / size_t / double
-
-
 		template<typename T>
 		void set( std::string name  , T value)
 		{
@@ -95,60 +52,16 @@ namespace au {
 			set( name , v.str() ); 
 		}	
 		
-		void setInt( std::string name  , int value)
-		{
-			std::ostringstream v;
-			v << value;
-			set( name , v.str() ); 
-		}	
-		void setSizeT( std::string name  , size_t value)
-		{
-			std::ostringstream v;
-			v << value;
-			set( name , v.str() ); 
-		}	
-
-		void setDouble( std::string name  , double value)
-		{
-			std::ostringstream v;
-			v << value;
-			set( name , v.str() ); 
-		}	
-        
-        
-		int getInt( std::string name , int defaultValue)
-		{
-			if( !isSet(name) )
-				return defaultValue;
-			return atoi( get( name , "0" ).c_str() );
-		}
-
-		size_t getSizeT( std::string name , size_t defaultValue)
-		{
-			if( !isSet(name) )
-				return defaultValue;
-			return atoll( get( name , "0" ).c_str() );
-		}
-
-		double getDouble( std::string name , double defaultValue)
-		{
-			if( !isSet(name) )
-				return defaultValue;
-			return atof( get( name , "0" ).c_str() );
-		}
+		void setInt( std::string name  , int value);
+		void setSizeT( std::string name  , size_t value);
+		void setDouble( std::string name  , double value);
+		int getInt( std::string name , int defaultValue);
+		size_t getSizeT( std::string name , size_t defaultValue);
+		double getDouble( std::string name , double defaultValue);
         
         // Description
-        
-        std::string getEnvironmentDescription()
-        {
-            std::ostringstream output;
-            output << "(";
-            for( std::map<std::string,std::string>::iterator i = environment.begin() ; i != environment.end() ; i++ )	
-                output << i->first << "=" << i->second << ",";
-            output << ")";
-
-            return output.str();
-        }
+		std::string toString();
+        std::string getEnvironmentDescription();
 		
 	};	
 

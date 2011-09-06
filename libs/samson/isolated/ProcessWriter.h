@@ -3,7 +3,7 @@
 
 #include "samson/common/coding.h"					// High level definition of KV_*
 #include "samson/module/DataInstance.h"	// samson::DataInstance
-#include "au/Format.h"					// au::Format
+#include "au/string.h"					// au::Format
 #include <iostream>					// std::cout
 #include "samson/module/Operation.h"		// samson::Operation
 #include "engine/MemoryManager.h"

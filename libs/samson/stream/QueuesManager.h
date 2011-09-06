@@ -17,8 +17,7 @@
 #include <string>
 
 #include "au/map.h"     // au::map
-#include "au/Info.h"     // au::Info
-#include "au/Format.h"  // au::Format
+#include "au/string.h"  // au::Format
 
 #include "samson/common/samson.pb.h"        // network::...
 #include "samson/stream/QueueTaskManager.h" // samson::stream::QueueTaskManager

@@ -6,7 +6,7 @@
 #include <string>
 
 #include "au/map.h"                             // au::map
-#include "au/Format.h"                          // au::Format
+#include "au/string.h"                          // au::Format
 #include "au/ErrorManager.h"
 
 #include "engine/Object.h"                      // engine::Object

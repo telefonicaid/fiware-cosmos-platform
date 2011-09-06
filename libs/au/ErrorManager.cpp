@@ -1,9 +1,8 @@
 
 #include "au/ErrorManager.h"      // Own interface
 
-
 namespace au {
-
+    
     ErrorManager::ErrorManager()
     {
         error = false;
@@ -38,7 +37,7 @@ namespace au {
         else
             return "Error:" + message;
     }
-
+    
     void ErrorManager::getInfo( std::ostringstream& output)
     {
         output << "<error>";
@@ -51,7 +50,7 @@ namespace au {
         output << "<message>" << message << "</message>";
         
         output << "</error>";
-
+        
     }
     
 }

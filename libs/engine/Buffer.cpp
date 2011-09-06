@@ -9,8 +9,9 @@
  */
 
 #include <sstream>          // std::stringstream
-#include "au/Format.h"		// au::Format
+#include "au/string.h"		// au::Format
 #include "engine/Buffer.h"	// Own interface
+#include "au/xml.h"         // au::xml...
 
 namespace engine {
 

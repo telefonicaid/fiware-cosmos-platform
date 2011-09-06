@@ -1,36 +1,45 @@
+
+/* ****************************************************************************
+ *
+ * FILE            CommandLine.h
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            Septembre 2011
+ *
+ * DESCRIPTION
+ *
+ * CommandLine
+ * 
+ * Class used to parse a string containing a command with multiple flags and arguments
+ * The advantadge of this class is that is supports running-time definiton of possible flags.
+ *
+ * 
+ * Example: command arg1 -f input.ttx -g 2 arg2
+ * 
+ * Depending on how you define flags "f" and "g" this will behavie differently.
+ *
+ * You can define flags as "bool", "double", "int" "string" "uint64".
+ * The properties of each element are:
+ *   bool:       It is a true/false flag. It does not take any parameter
+ *   int:        Takes an interguer parameter with it.   Example: -n 12
+ *   double:     Takes a double parameter.               Example: -threshold 5.67
+ *   uint64:     Takes an unsigned parameter.            Example: -size 12G , -size 100
+ *   string:     Takes an atring parameter.              Example: -file andreu.txt
+ *
+ * The basic usage has three steps:
+ *   * Use command set_flag_X( ) methods to define flags and types
+ *   * Use one of the parse(.) methods to parse the incoming command line
+ *   * Use get_flag_X methods to access content *
+ * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
+ *
+ * ****************************************************************************/
+
 #ifndef COMMAND_LINE_H
 #define COMMAND_LINE_H
 
-/* ****************************************************************************
-*
-* FILE                 CommandLine.h
-*
-*  Created by ANDREU URRUELA PLANAS on 4/22/10.
-*  Copyright 2010 TID. All rights reserved.
-*
-* CommandLine
-* 
-* Class used to parse a string containing a command with multiple flags and arguments
-* The advantadge of this class is that is supports running-time definiton of possible flags.
-*
-* 
-* Example: command arg1 -f input.ttx -g 2 arg2
-* 
-* Depending on how you define flags "f" and "g" this will behavie differently.
-*
-* You can define flags as "bool", "double", "int" "string" "uint64".
-* The properties of each element are:
-*   bool:       It is a true/false flag. It does not take any parameter
-*   int:        Takes an interguer parameter with it.   Example: -n 12
-*   double:     Takes a double parameter.               Example: -threshold 5.67
-*   uint64:     Takes an unsigned parameter.            Example: -size 12G , -size 100
-*   string:     Takes an atring parameter.              Example: -file andreu.txt
-*
-* The basic usage has three steps:
-*   * Use command set_flag_X( ) methods to define flags and types
-*   * Use one of the parse(.) methods to parse the incoming command line
-*   * Use get_flag_X methods to access content
-*/
 #include <stdio.h>             // fprintf, stderr, ...
 #include <sstream>
 #include <string>
@@ -137,12 +146,6 @@ namespace au {
 		bool getBoolValue( std::string value );
 
 	};
-    
-    
-    std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
-    
-    std::vector<std::string> split(const std::string &s, char delim);  
-    
 
 }
 

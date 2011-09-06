@@ -68,7 +68,7 @@ namespace samson {
             else
             {
                 output << " [ RUNNING  ] ";
-                output << "[ " << au::Format::percentage_string( progress ) << " ] ";
+                output << "[ " << au::percentage_string( progress ) << " ] ";
                 output << "[ " << cronometer.str() << " ] ";
             }
         }

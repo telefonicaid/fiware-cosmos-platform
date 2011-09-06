@@ -22,7 +22,6 @@
 #include <sstream>
 
 #include "au/Cronometer.h"              // au::CronometerSystem
-#include "au/Stopper.h"                // au::Stopper
 #include "au/Environment.h"            // au::Environment
 #include "au/Token.h"                  // au::Token
 

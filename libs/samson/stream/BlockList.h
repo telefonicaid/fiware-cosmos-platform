@@ -16,7 +16,6 @@
 #include <string>               // std::string
 
 #include "au/list.h"            // au::list
-#include "au/Info.h"            // au::Info
 #include "au/map.h"             // au::map
 #include "au/Cronometer.h"      // au::cronometer
 

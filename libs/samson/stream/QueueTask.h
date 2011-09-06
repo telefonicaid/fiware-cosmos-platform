@@ -5,7 +5,7 @@
 #include <set>
 #include <sstream>
 
-#include "au/Format.h"                              // au::Format
+#include "au/string.h"                              // au::Format
 
 #include "engine/ProcessItem.h"                     // engine::ProcessItem
 

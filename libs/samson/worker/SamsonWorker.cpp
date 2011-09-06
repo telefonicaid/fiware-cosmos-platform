@@ -7,7 +7,7 @@
 #include <dirent.h>
 
 #include "au/CommandLine.h"                // CommandLine
-#include "au/Format.h"						// au::Format
+#include "au/string.h"						// au::Format
 
 #include "engine/Notification.h"            // engine::Notification
 

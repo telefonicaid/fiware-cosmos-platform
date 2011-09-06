@@ -6,7 +6,7 @@
 
 #include "logMsg/logMsg.h"				// LM_X
 
-#include "au/Format.h"             // au::Format
+#include "au/string.h"             // au::Format
 #include "au/CommandLine.h"		// au::CommandLine
 #include "au/ErrorManager.h"           // au::ErrorManager
 

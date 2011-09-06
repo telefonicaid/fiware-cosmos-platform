@@ -29,7 +29,7 @@
 #include "Alarm.h"              // ALARM
 #include "samson/common/ports.h"  // Port numbers for samson processes
 
-#include "au/Format.h"             // au::str
+#include "au/string.h"             // au::str
 #include "samson/common/samsonConfig.h"       // SAMSON_MAX_HOSTS
 #include "samson/module/Log.h"			// LogLineData
 #include "samson/common/platformProcesses.h"  // platformProcessesGet

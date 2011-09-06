@@ -9,6 +9,8 @@
 #include <sys/time.h>
 
 #include "au/Descriptors.h"                         // au::Descriptors
+#include "au/TokenTaker.h"                          // au::TokenTake
+#include "au/xml.h"         // au::xml...
 
 #include "engine/Notification.h"                    // engine::Notification
 #include "engine/ProcessManager.h"                  // engine::Process

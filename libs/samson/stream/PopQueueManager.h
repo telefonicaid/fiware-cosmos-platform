@@ -8,7 +8,7 @@
 #include <sstream>
 
 #include "au/map.h"     // au::map
-#include "au/Format.h"  // au::Format
+#include "au/string.h"  // au::Format
 
 #include "engine/Object.h"            // engine::Object
 

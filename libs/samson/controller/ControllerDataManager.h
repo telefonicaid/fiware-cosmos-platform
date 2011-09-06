@@ -2,7 +2,7 @@
 #define _H_CONTROLLER_DATA_MANAGER
 
 #include "au/Lock.h"				// au::Lock
-#include "au/Format.h"				// au::Format
+#include "au/string.h"				// au::Format
 #include "au/map.h"				// au::map
 #include "au/ErrorManager.h"
 

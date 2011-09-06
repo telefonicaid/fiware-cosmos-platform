@@ -1,12 +1,22 @@
+
 /* ****************************************************************************
  *
- * FILE                     Rate.h - Meassure the rate of something ( bytes / second in a minute )
+ * FILE            Rate
  *
- * AUTHOR                   Andreu Urruela
+ * AUTHOR          Andreu Urruela
  *
- * CREATION DATE            April 2011
+ * PROJECT         au library
  *
- */
+ * DATE            Septembre 2011
+ *
+ * DESCRIPTION
+ *
+ *  Class used to measure the bandwith of a particular operation
+ *  It automatically count the rate in the last minute and last hour
+ *
+ * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
+ *
+ * ****************************************************************************/
 
 
 #ifndef _H_AU_RATE

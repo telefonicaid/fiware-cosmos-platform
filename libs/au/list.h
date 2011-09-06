@@ -1,3 +1,24 @@
+
+/* ****************************************************************************
+ *
+ * FILE            list
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            Septembre 2011
+ *
+ * DESCRIPTION
+ *
+ *      Specialized version of the std::list when included objects are pointers.
+ *      In this case, we can return NULL if object is not found in the list
+ *      It greatly simplifies development of objects managers in memory
+ *
+ * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
+ *
+ * ****************************************************************************/
+
 #ifndef _H_AU_LIST
 #define _H_AU_LIST
 

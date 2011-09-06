@@ -1,15 +1,26 @@
+
+/* ****************************************************************************
+ *
+ * FILE            LockDebugger.h
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            Septembre 2011
+ *
+ * DESCRIPTION
+ *
+ *  Class used to debug the Locks and Tokens in au library. 
+ *  It can detecs auto-locks and cross-lock conditions
+ *
+ * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
+ *
+ * ****************************************************************************/
+
 #ifndef SAMSON_LOCK_DEBUGGER_H
 #define SAMSON_LOCK_DEBUGGER_H
 
-/* ****************************************************************************
-*
-* FILE                 LockDebugger.h - 
-*
-* AUTHOR               Ken Zangelin, Andreu Urruela
-*
-* CREATION DATE        Oct 5 2010
-*
-*/
 #include <string>                /* std::string                              */
 #include <map>                   /* map                                      */
 #include <set>                   /* set                                      */

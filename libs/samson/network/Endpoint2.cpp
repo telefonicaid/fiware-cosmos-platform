@@ -27,7 +27,7 @@
 #include "logMsg/traceLevels.h"
 
 #include "au/Token.h"
-#include "au/Stopper.h"
+#include "au/TokenTaker.h"                          // au::TokenTake
 #include "au/list.h"
 
 #include "engine/DiskStatistics.h"          // samson::DiskStatistics

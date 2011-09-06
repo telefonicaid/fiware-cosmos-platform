@@ -12,15 +12,19 @@
 #include <ios>
 #include <string>
 
-#include <samson/module/samsonVersion.h>   /* SAMSON_VERSION                           */
+#include "logMsg/logMsg.h"
+#include "logMsg/traceLevels.h"			// Lmt...
+
+#include "au/TokenTaker.h"                          // au::TokenTake
+
 #include "samson/common/samsonDirectories.h"		/* SAMSON_MODULES_DIRECTORY                 */
+#include "samson/common/MessagesOperations.h"		// evalHelpFilter(.)
+#include "samson/common/SamsonSetup.h"			// samson::SamsonSetup
+
+#include <samson/module/samsonVersion.h>   /* SAMSON_VERSION                           */
 #include <samson/module/Module.h>
 #include "samson/module/ModulesManager.h"			/* Own interface                            */
 #include <samson/module/Data.h>			/* samson::system::UInt ... */
-#include "logMsg/logMsg.h"
-#include "logMsg/traceLevels.h"			// Lmt...
-#include "samson/common/MessagesOperations.h"		// evalHelpFilter(.)
-#include "samson/common/SamsonSetup.h"			// samson::SamsonSetup
 
 #include "select.h"
 

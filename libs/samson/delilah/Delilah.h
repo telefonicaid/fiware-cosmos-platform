@@ -16,7 +16,6 @@
 #include "au/Token.h"				// au::Lock
 #include "au/map.h"				// au::map
 #include "au/Cronometer.h"      // au::Cronometer
-#include "au/Info.h"                // au::Info
 
 #include "pugi/pugi.h"          // pugi::...
 

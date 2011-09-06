@@ -1,0 +1,128 @@
+
+#include "Environment.h"        // OWn interface
+
+namespace au {
+	
+    
+    void Environment::clearEnvironment()
+    {
+        environment.clear();
+    }
+    
+    std::string Environment::get( std::string name , std::string default_value )
+    {
+        std::map<std::string, std::string>::iterator iter = environment.find(name);
+        
+        if( iter == environment.end() )
+            return default_value;
+        else
+            return iter->second;
+    }
+    
+    void Environment::set( std::string name , std::string value )
+    {
+        std::map<std::string, std::string>::iterator iter = environment.find(name);
+        
+        if( iter == environment.end() )
+            environment.insert ( std::pair<std::string, std::string>( name , value ) );
+        else
+            iter->second = value;
+        
+    }
+    
+    void Environment::unset( std::string name )
+    {
+        std::map<std::string, std::string>::iterator iter = environment.find(name);
+        
+        if( iter != environment.end() )
+            environment.erase(iter );
+        
+    }
+    
+    
+    bool Environment::isSet( std::string name )
+    {
+        std::map<std::string, std::string>::iterator iter = environment.find(name);
+        
+        if( iter == environment.end() )
+            return false;
+        else
+            return true;
+        
+    }
+    
+    void Environment::copyFrom( Environment *other )
+    {
+        std::map<std::string, std::string>::iterator iter;
+        for ( iter = other->environment.begin() ; iter != other->environment.end() ; iter++)
+            environment.insert ( std::pair<std::string, std::string>( iter->first , iter->second ) );
+    }
+    
+    
+    std::string Environment::toString()
+    {
+        std::ostringstream o;
+        
+        std::map<std::string, std::string>::iterator iter;
+        for (iter = environment.begin() ; iter != environment.end() ; iter++)
+            o << iter->first << " : " << iter->second << "\n";
+        return o.str();
+    }
+    
+    
+    
+    void Environment::setInt( std::string name  , int value)
+    {
+        std::ostringstream v;
+        v << value;
+        set( name , v.str() ); 
+    }	
+    void Environment::setSizeT( std::string name  , size_t value)
+    {
+        std::ostringstream v;
+        v << value;
+        set( name , v.str() ); 
+    }	
+    
+    void Environment::setDouble( std::string name  , double value)
+    {
+        std::ostringstream v;
+        v << value;
+        set( name , v.str() ); 
+    }	
+    
+    
+    int Environment::getInt( std::string name , int defaultValue)
+    {
+        if( !isSet(name) )
+            return defaultValue;
+        return atoi( get( name , "0" ).c_str() );
+    }
+    
+    size_t Environment::getSizeT( std::string name , size_t defaultValue)
+    {
+        if( !isSet(name) )
+            return defaultValue;
+        return atoll( get( name , "0" ).c_str() );
+    }
+    
+    double Environment::getDouble( std::string name , double defaultValue)
+    {
+        if( !isSet(name) )
+            return defaultValue;
+        return atof( get( name , "0" ).c_str() );
+    }
+    
+    // Description
+    
+    std::string Environment::getEnvironmentDescription()
+    {
+        std::ostringstream output;
+        output << "(";
+        for( std::map<std::string,std::string>::iterator i = environment.begin() ; i != environment.end() ; i++ )	
+            output << i->first << "=" << i->second << ",";
+        output << ")";
+        
+        return output.str();
+    }
+}

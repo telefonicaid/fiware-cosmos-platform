@@ -17,7 +17,7 @@ Module mob
 # (either cell, BTS, LAC or state).
 data PhoneLoc
 {
-   system.UInt64 phone;
+   system.UInt phone;
    system.UInt loc;
 }
 
@@ -37,8 +37,8 @@ data CellCounter
 # calls).
 data LocCounter
 {
-   system.UInt loc;
    system.UInt count;
+   system.UInt loc;
 }
 
 # Generic data type to store
@@ -47,7 +47,7 @@ data LocCounter
 # calls).
 data PhoneCounter
 {
-   system.UInt64 phone;
+   system.UInt phone;
    system.UInt count;
 }
 
@@ -56,7 +56,7 @@ data PhoneCounter
 # and a counter.
 data PhoneLocCounter
 {
-   system.UInt64 phone;
+   system.UInt phone;
    system.UInt loc;
    system.UInt count;
 }
@@ -67,7 +67,7 @@ data PhoneLocCounter
 data MobilityDegree
 {
    system.UInt totalCalls;
-   system.UInt cellId;
+   system.UInt32 cellId;
    system.UInt cellCalls;
    system.UInt btsId;
    system.UInt btsCalls;
@@ -85,10 +85,10 @@ data MobilityDegree
 # associated number of days with calls.
 data Place
 {
-   system.UInt64 phone;
+   system.UInt phone;
 
    system.UInt totalDaysWithCalls;
-   system.UInt cellId;
+   system.UInt32 cellId;
    system.UInt cellDaysWithCalls;
    system.UInt btsId;
    system.UInt btsDaysWithCalls;
@@ -104,7 +104,7 @@ data Results
 {
    system.UInt mobilityDegree;
 
-   system.UInt homeCellId;
+   system.UInt32 homeCellId;
    system.UInt homeCellFreq;
    system.UInt homeBtsId;
    system.UInt homeBtsFreq;
@@ -113,7 +113,7 @@ data Results
    system.UInt homeStateId;
    system.UInt homeStateFreq;
 
-   system.UInt workCellId;
+   system.UInt32 workCellId;
    system.UInt workCellFreq;
    system.UInt workBtsId;
    system.UInt workBtsFreq;
@@ -168,7 +168,7 @@ data Levels
 # the file).
 parserOut parse_out_results
 {
-   in system.UInt64 mob.Results
+   in system.UInt mob.Results
 
    helpLine "Write results file in the appropriate readable format."
 
@@ -234,8 +234,8 @@ map map_get_month
 # data where the key is the cell id.
 map map_place_cell
 {
-   in system.UInt64 mob.Place
-   out system.UInt mob.Place
+   in system.UInt mob.Place
+   out system.UInt32 mob.Place
 
    helpLine "Maps place results into a set of data where the key is the cell id."
 
@@ -257,9 +257,10 @@ map map_place_cell
 
 reduce reduce_cdrs_clients
 {
-   in system.UInt64 system.Void
-   in system.UInt64 cdr.mobCdr
-   out system.UInt cdr.mobCdr
+   in system.UInt system.Void
+   in system.UInt cdr.mobCdr
+   out system.UInt32 cdr.mobCdr
+   out system.UInt mob.MobilityDegree
    out system.Date system.Void
 
    helpLine "Extract only CDRs where the TEF phone is in the client sample."
@@ -274,12 +275,12 @@ reduce reduce_cdrs_clients
 # cell information (rest of the fields/levels).
 reduce reduce_add_cell_info
 {
-   in system.UInt cdr.mobCdr
-   in system.UInt cdr.Cell
-   out system.UInt64 cdr.mobCdr # CDR's
-   out system.UInt64 cdr.Cell # Mobility degree cell info
-   out system.UInt64 mob.CellCounter # Home cell info
-   out system.UInt64 mob.CellCounter # Work cell info
+   in system.UInt32 cdr.mobCdr
+   in system.UInt32 cdr.Cell
+   out system.UInt cdr.mobCdr # CDR's
+   out system.UInt cdr.Cell # Mobility degree cell info
+   out system.UInt mob.CellCounter # Home cell info
+   out system.UInt mob.CellCounter # Work cell info
    
    #out MOB.PhoneLoc system.Void # Mobility degree - cell level
    #out MOB.PhoneLoc system.Void # Mobility degree - bts level
@@ -309,7 +310,7 @@ reduce reduce_add_cell_info
 # these are too manys) 
 map map_distribute_cell_info_location
 {
-	in system.UInt64 cdr.Cell # cell info
+	in system.UInt cdr.Cell # cell info
 	out mob.PhoneLoc system.Void # info cell level
 	out mob.PhoneLoc system.Void # info bts level
 	out mob.PhoneLoc system.Void # info lac level
@@ -323,7 +324,7 @@ map map_distribute_cell_info_location
 # these are too manys) 
 map map_distribute_cellCounter_info_location
 {
-	in system.UInt64 mob.CellCounter # cell info
+	in system.UInt mob.CellCounter # cell info
 	out mob.PhoneLocCounter system.Void # info cell level
 	out mob.PhoneLocCounter system.Void # info bts level
 	out mob.PhoneLocCounter system.Void # info lac level
@@ -337,7 +338,7 @@ map map_distribute_cellCounter_info_location
 reduce reduce_count_calls_per_location
 {
    in mob.PhoneLoc system.Void
-   out system.UInt64 mob.LocCounter
+   out system.UInt mob.LocCounter
 
    helpLine "Count number of calls indide a certain location."
 
@@ -353,8 +354,8 @@ reduce reduce_count_calls_per_location
 
 reduce reduce_compute_reference_location
 {
-   in system.UInt64 mob.LocCounter
-   out system.UInt64 mob.LocCounter
+   in system.UInt mob.LocCounter
+   out system.UInt mob.LocCounter
 
    helpLine "Get the location with the highest number of calls or days with calls."
 
@@ -369,12 +370,13 @@ reduce reduce_compute_reference_location
 
 reduce reduce_compute_mobility_degree
 {
-   in system.UInt64 cdr.mobCdr
-   in system.UInt64 mob.LocCounter
-   in system.UInt64 mob.LocCounter
-   in system.UInt64 mob.LocCounter
-   in system.UInt64 mob.LocCounter
-   out system.UInt64 mob.MobilityDegree
+   in system.UInt cdr.mobCdr
+   in system.UInt mob.MobilityDegree
+   in system.UInt mob.LocCounter
+   in system.UInt mob.LocCounter
+   in system.UInt mob.LocCounter
+   in system.UInt mob.LocCounter
+   out system.UInt mob.MobilityDegree
 
    helpLine "Compute all the values necessary to get the mobility degree."
 
@@ -406,7 +408,7 @@ reduce reduce_remove_duplicate_days
 reduce reduce_count_different_days
 {
    in mob.PhoneLoc system.Void
-   out system.UInt64 mob.LocCounter
+   out system.UInt mob.LocCounter
 
    helpLine "Count different days with calls."
 
@@ -421,12 +423,12 @@ reduce reduce_count_different_days
 
 reduce reduce_bring_place
 {
-   in system.UInt64 system.UInt
-   in system.UInt64 mob.LocCounter
-   in system.UInt64 mob.LocCounter
-   in system.UInt64 mob.LocCounter
-   in system.UInt64 mob.LocCounter
-   out system.UInt64 mob.Place
+   in system.UInt system.UInt
+   in system.UInt mob.LocCounter
+   in system.UInt mob.LocCounter
+   in system.UInt mob.LocCounter
+   in system.UInt mob.LocCounter
+   out system.UInt mob.Place
 
    helpLine "Bring together all the information about the place of home/work."
 
@@ -442,7 +444,7 @@ reduce reduce_bring_place
 reduce reduce_stat_remove_duplicate_days
 {
    in mob.PhoneCounter system.Void
-   out system.UInt64 system.Void
+   out system.UInt system.Void
 
    helpLine "Keep only different days per phone."
 
@@ -457,8 +459,8 @@ reduce reduce_stat_remove_duplicate_days
 
 reduce reduce_stat_count_different_days
 {
-   in system.UInt64 system.Void
-   out system.UInt64 system.UInt
+   in system.UInt system.Void
+   out system.UInt system.UInt
 
    helpLine "Count different days with calls per phone."
 
@@ -473,10 +475,10 @@ reduce reduce_stat_count_different_days
 
 reduce reduce_results
 {
-   in system.UInt64 mob.MobilityDegree
-   in system.UInt64 mob.Place
-   in system.UInt64 mob.Place
-   out system.UInt64 mob.Results
+   in system.UInt mob.MobilityDegree
+   in system.UInt mob.Place
+   in system.UInt mob.Place
+   out system.UInt mob.Results
 
 
    helpLine "Apply thresholds and compute final mobility results."
@@ -492,9 +494,9 @@ reduce reduce_results
 
 reduce reduce_set_consistency
 {
-   in system.UInt mob.Place
-   in system.UInt cdr.Cell
-   out system.UInt64 mob.Place
+   in system.UInt32 mob.Place
+   in system.UInt32 cdr.Cell
+   out system.UInt mob.Place
 
    helpLine "Make location results consistent."
 
@@ -700,7 +702,7 @@ script script_generate_workdata
 	  rm $1.phone_state_day_work -f;
 	  
       # Keep only our clients' CDR's
-      mob.reduce_cdrs_clients $1.clients $1.cdrs $1.reduced_cdrs_clients $1.month -create -clear;
+      mob.reduce_cdrs_clients $1.clients $1.cdrs $1.reduced_cdrs_clients $1.mobility_degree_totalCalls $1.month -create -clear;
 
       # Add cell info
       # All levels
@@ -781,7 +783,7 @@ script script_mobility_degree
 
       # Proper computation of mobility degree, taking all levels
       # into account if necessary
-      mob.reduce_compute_mobility_degree $1.reduced_cdrs_cells $1.reference_cell $1.reference_bts $1.reference_lac $1.reference_state $1.mobility_degree -create -clear;
+      mob.reduce_compute_mobility_degree $1.reduced_cdrs_cells $1.mobility_degree_totalCalls $1.reference_cell $1.reference_bts $1.reference_lac $1.reference_state $1.mobility_degree -create -clear;
 
 
       # Save space
@@ -990,8 +992,8 @@ script script_mobility
 ############################################
 script script_generate_workdata_QA
 {
-   in system.UInt64 system.Void    # clients
-   in system.UInt64 cdr.mobCdr # cdrs
+   in system.UInt system.Void    # clients
+   in system.UInt cdr.mobCdr # cdrs
    in system.UInt cdr.Cell  # cells
    out Date system.Void     # month
    out system.UInt64 cdr.mobCdr # CDR's
@@ -1039,7 +1041,7 @@ script script_generate_workdata_QA
 	  
    
       # Keep only our clients' CDR's
-      mob.reduce_cdrs_clients $1_mob $2_mob reduced_cdrs_clients $4 -create -clear;
+      mob.reduce_cdrs_clients $1_mob $2_mob reduced_cdrs_clients mobility_degree_totalCalls $4 -create -clear;
 
       # Add cell info
       # All levels
@@ -1117,7 +1119,7 @@ script script_mobility_degree_QA
 
       # Proper computation of mobility degree, taking all levels
       # into account if necessary
-      mob.reduce_compute_mobility_degree $1 reference_cell reference_bts reference_lac reference_state $6 -create -clear;
+      mob.reduce_compute_mobility_degree $1 mobility_degree_totalCalls reference_cell reference_bts reference_lac reference_state $6 -create -clear;
 
       # Save space
       rm reduced_cdrs_cells -f;

@@ -7,6 +7,7 @@
 #define _H_SAMSON_cdr_parse_fields
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <math.h>
 
 
@@ -30,7 +31,7 @@
 		///
 		///@param strCellId Pointer to the string cell id.
 		///@param cellId Pointer to the integer cell id.
-		void cdrStrCellToInt( char *strCellId, size_t *cellId );
+		void cdrStrCellToInt( char *strCellId, uint32_t *cellId );
 
 		inline void GST_get_cdrs_number( char *line, size_t *num,  int pos_field )
 		{

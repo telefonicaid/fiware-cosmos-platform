@@ -18,6 +18,15 @@ namespace mob{
 class map_get_month : public samson::Map
 {
 
+	// Input[0k]
+	samson::system::Date date;
+	// // Output [0kv]
+	samson::system::Void void_data;
+
+	// In MACRO, global variable. Used only to compute the coveredDays by the TimeSlot,
+	// but this information is not used (now) in mobility module
+	// Could be put used from the dataset, but we will have some problems with
+	// the ComplexTimeSlot setting (now it is done at init(), so no access to datasets.
 	samson::system::Date mob_month;
 
 public:
@@ -43,9 +52,7 @@ public:
 	// Goyo. Parece que no se usa, lo cual no sorprende
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
-		samson::system::Date date;
 
-		samson::system::Void void_data;
 
 		for (size_t i = 0 ; i < inputs[0].num_kvs ; ++i)
 		{

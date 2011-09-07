@@ -18,15 +18,17 @@ namespace mob{
 	class parse_out_month : public samson::ParserOut
 	{
 
+
+		// Input[0k]
+		samson::system::Date date;
+
 #ifdef MAX_STR_LEN
 #undef MAX_STR_LEN
 #endif
-
 #define MAX_STR_LEN 1024
 			char output[MAX_STR_LEN];
 
 	public:
-
 
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
@@ -44,7 +46,6 @@ extendedHelp: 		Write month into a readable file.
 
 		void run(KVSetStruct* inputs , TXTWriter *writer )
 		{
-			samson::system::Date date;
 
 
 			  for (size_t i  =0 ;  i < inputs[0].num_kvs ; ++i)

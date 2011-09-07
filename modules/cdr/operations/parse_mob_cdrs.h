@@ -7,9 +7,10 @@
 #define _H_SAMSON_cdr_parse_mob_cdrs
 
 
+#include <stdint.h>
 #include <samson/module/samson.h>
 
-#include <samson/modules/system/UInt64.h>
+#include <samson/modules/system/UInt.h>
 #include "cdr_parse_fields.h"
 
 
@@ -26,7 +27,7 @@ public:
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-	output: system.UInt64 cdr.mobCdr
+	output: system.UInt cdr.mobCdr
 
 	helpLine: Parse CDR files to obtain the mobility imformation associated to each phone.
 	extendedHelp: 		Parse CDR files to obtain the mobility imformation associated to each phone.
@@ -37,7 +38,7 @@ public:
 	bool mobGetCdrInfo_MX( char *line, mobCdr *cdr )
 	{
 		size_t _phone = 0L;
-		size_t _cellId = 0;
+		uint32_t _cellId = 0;
 		size_t _mobScope;
 		unsigned int _pos = 0;
 		unsigned int _pos_field = 0;
@@ -69,9 +70,9 @@ public:
 				cdrStrCellToInt( line+_pos_field, &_cellId );
 			}
 			cdr->cellId.value = _cellId;
-			cdr->btsId.value = 0;
-			cdr->lacId.value = 0;
-			cdr->stateId.value = 0;
+			//cdr->btsId.value = 0;
+			//cdr->lacId.value = 0;
+			//cdr->stateId.value = 0;
 
 			// The other phone number
 			cdrGetNextField( line, &_pos, &_pos_field );
@@ -98,7 +99,7 @@ public:
 			cdr->timeUnix.getTimeUTCFromCalendar(&timeExpanded);
 
 			// Absolute day
-			cdr->absDay = 0;
+			//cdr->absDay = 0;
 
 			// Duration
 			cdrGetNextField( line, &_pos, &_pos_field );
@@ -137,7 +138,7 @@ public:
 	void parseLines( char *line, samson::KVWriter *writer )
 	{
 		//Datas to emit
-		samson::system::UInt64 phone;
+		samson::system::UInt phone;
 		mobCdr cdr;
 
 		if((this->*_mobGetCdrInfo)(line , &cdr) == true)

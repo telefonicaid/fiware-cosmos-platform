@@ -25,7 +25,7 @@ namespace cdr{
 // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
 input: system.UInt cdr.User
-output: system.UInt64 system.Void
+output: system.UInt system.Void
 
 helpLine: Convert Clients from Gasset format to Mob format.
 extendedHelp: 		Convert Clients from Gasset format to Mob format.
@@ -47,7 +47,7 @@ extendedHelp: 		Convert Clients from Gasset format to Mob format.
 			  samson::system::UInt user_id;
 			  User  user;
 				//output
-				samson::system::UInt64 client;
+				samson::system::UInt client;
 
 
 

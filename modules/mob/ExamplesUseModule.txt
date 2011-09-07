@@ -20,8 +20,8 @@ mob.script_parse jun
 	cdr.convert_client jun.users jun.clients -create -clear
 
 mob.script_generate_workdata  jun
-	mob.reduce_cdrs_clients jun.clients jun.cdrs jun.reduced_cdrs_clients jun.month -create -clear
-	mob.reduce_add_cell_info jun.reduced_cdrs_clients jun.cells jun.reduced_cdrs_cell jun.cellmd jun.cellChome jun.cellCwork -create -clear
+	mob.reduce_cdrs_clients jun.clients jun.cdrs jun.reduced_cdrs_clients jun.mobility_degree_totalCalls jun.month -create -clear
+	mob.reduce_add_cell_info jun.reduced_cdrs_clients jun.cells jun.reduced_cdrs_cells jun.cellmd jun.cellChome jun.cellCwork -create -clear
 	mob.map_distribute_cell_info_location jun.cellmd jun.phone_cell jun.phone_bts jun.phone_lac jun.phone_state -create -clear
 	mob.map_distribute_cellCounter_info_location jun.cellChome jun.phone_cell_day_home jun.phone_bts_day_home jun.phone_lac_day_home jun.phone_state_day_home -create -clear
 	mob.map_distribute_cellCounter_info_location jun.cellCwork jun.phone_cell_day_work jun.phone_bts_day_work jun.phone_lac_day_work jun.phone_state_day_work -create -clear
@@ -40,9 +40,9 @@ mob.script_mobility_degree jun
 	mob.reduce_count_calls_per_location jun.phone_state jun.calls_per_phone_state -create -clear
 	mob.reduce_compute_reference_location jun.calls_per_phone_state jun.reference_state -create -clear
 
-	mob.reduce_compute_mobility_degree jun.reduced_cdrs_clients jun.reference_cell jun.reference_bts jun.reference_lac jun.reference_state mobility_degree -create -clear
+	mob.reduce_compute_mobility_degree jun.reduced_cdrs_cells jun.mobility_degree_totalCalls jun.reference_cell jun.reference_bts jun.reference_lac jun.reference_state jun.mobility_degree -create -clear
 
-mob.script_location jun home/work
+mob.script_location jun home
 	mob.reduce_remove_duplicate_days jun.phone_cell_day_home jun.phone_cell_singleday_home -create -clear;
 	mob.reduce_count_different_days jun.phone_cell_singleday_home jun.phone_cell_number_days_home -create -clear;
 	mob.reduce_compute_reference_location jun.phone_cell_number_days_home jun.place_home_cell -create -clear;
@@ -67,6 +67,33 @@ mob.script_location jun home/work
 
 	mob.map_place_cell jun.place_home jun.place_home_key_cell -create -clear;
 	mob.reduce_set_consistency jun.place_home_key_cell jun.cells jun.place_home_consistent -create -clear;
+
+
+mob.script_location jun work
+	mob.reduce_remove_duplicate_days jun.phone_cell_day_work jun.phone_cell_singleday_work -create -clear;
+	mob.reduce_count_different_days jun.phone_cell_singleday_work jun.phone_cell_number_days_work -create -clear;
+	mob.reduce_compute_reference_location jun.phone_cell_number_days_work jun.place_work_cell -create -clear;
+
+	mob.reduce_remove_duplicate_days jun.phone_bts_day_work jun.phone_bts_singleday_work -create -clear;
+	mob.reduce_count_different_days jun.phone_bts_singleday_work jun.phone_bts_number_days_work -create -clear;
+	mob.reduce_compute_reference_location jun.phone_bts_number_days_work jun.place_work_bts -create -clear;
+
+	mob.reduce_remove_duplicate_days jun.phone_lac_day_work jun.phone_lac_singleday_work -create -clear;
+	mob.reduce_count_different_days jun.phone_lac_singleday_work jun.phone_lac_number_days_work -create -clear;
+	mob.reduce_compute_reference_location jun.phone_lac_number_days_work jun.place_work_lac -create -clear;
+
+	mob.reduce_remove_duplicate_days jun.phone_state_day_work jun.phone_state_singleday_work -create -clear;
+	mob.reduce_count_different_days jun.phone_state_singleday_work jun.phone_state_number_days_work -create -clear;
+	mob.reduce_compute_reference_location jun.phone_state_number_days_work jun.place_work_state -create -clear;
+
+	mob.map_stat_days jun.phone_state_day_work jun.phone_day_work -create -clear;
+	mob.reduce_stat_remove_duplicate_days jun.phone_day_work jun.phone_singleday_work -create -clear;
+	mob.reduce_stat_count_different_days jun.phone_singleday_work jun.phone_number_days_work -create -clear;
+
+	mob.reduce_bring_place jun.phone_number_days_work jun.place_work_cell jun.place_work_bts jun.place_work_lac jun.place_work_state jun.place_work -create -clear;
+
+	mob.map_place_cell jun.place_work jun.place_work_key_cell -create -clear;
+	mob.reduce_set_consistency jun.place_work_key_cell jun.cells jun.place_work_consistent -create -clear;
 
 mob.script_generate_results jun
 	mob.reduce_results jun.mobility_degree jun.place_home_consistent jun.place_work_consistent jun.results -create -clear;

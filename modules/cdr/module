@@ -49,11 +49,24 @@ data gstCdr
 # information from the cell catalogue.
 data Cell
 {
-     system.UInt cellId;
+     system.UInt32 cellId;
      system.UInt btsId;
      system.UInt lacId;
      system.UInt stateId;
     
+}
+
+# Data type to store cell
+# information from the cell catalogue.
+# including position, for Mobility 2.0
+data CellPos
+{
+     system.UInt32 cellId;
+     system.UInt bts;
+     system.UInt mun; #Same as lacId
+     system.UInt sta;
+     system.Float posx;
+     system.Float posy;
 }
 
 # Data type to store the fields
@@ -61,14 +74,14 @@ data Cell
 # Mobility.
 data mobCdr
 {
-   system.UInt64 phone;
-   system.UInt cellId;
-   system.UInt btsId;
-   system.UInt lacId;
-   system.UInt stateId;
+   system.UInt phone;
+   system.UInt32 cellId;
+#   system.UInt btsId;
+#   system.UInt lacId;
+#   system.UInt stateId;
    system.TimeUnix timeUnix;
-   system.UInt absDay;
-   system.UInt mobScope;
+#   system.UInt absDay;
+   system.UInt8 mobScope;
 }
 
 
@@ -193,7 +206,7 @@ parser parse_gst_cdrs
 # fields necessary fo Mobility.
 parser parse_mob_cdrs
 {
-   out system.UInt64 cdr.mobCdr
+   out system.UInt cdr.mobCdr
 
    #extern mobGetCdrInfo _mobGetCdrInfo;
    #extern MRData_Uint64 phone;
@@ -211,7 +224,7 @@ parser parse_mob_cdrs
 map convert_cdrs_gst2mob
 {
   in  system.UInt cdr.gstCdr
-  out system.UInt64 cdr.mobCdr  
+  out system.UInt cdr.mobCdr  
   
   helpLine "Convert CDRs from Gasset format to Mob format."
 
@@ -266,13 +279,26 @@ parser parse_users_O2UK
 # Parse cell catalogue
 parser parse_cell_catalogue
 {
-   out system.UInt cdr.Cell
+   out system.UInt32 cdr.Cell
 
    helpLine "Parse the cell catalogue."
 
    help
    {
       "Parse the cell catalogue."
+   }
+}
+
+# Parse cell catalogue with postion info for Mobility 2.0
+parser parse_cell_catalogue_position
+{
+   out system.UInt32 cdr.CellPos
+
+   helpLine "Parse the cell catalogue with position info (Mobility 2.0)."
+
+   help
+   {
+      "Parse the cell catalogue with position info (Mobility 2.0)."
    }
 }
 
@@ -305,7 +331,7 @@ parser parse_clients
 map convert_client
 {
   in  system.UInt cdr.User
-  out system.UInt64 system.Void 
+  out system.UInt system.Void 
   
   helpLine "Convert Clients from Gasset format to Mob format."
 

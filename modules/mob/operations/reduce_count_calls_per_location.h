@@ -24,6 +24,12 @@ namespace mob{
 class reduce_count_calls_per_location : public samson::Reduce
 {
 
+	// Input[0k]
+	PhoneLoc phoneLoc;
+	// Output[0k]
+	samson::system::UInt phone;
+	// Output[0v]
+	LocCounter locCounter;
 public:
 
 
@@ -31,7 +37,7 @@ public:
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
 	input: mob.PhoneLoc system.Void
-	output: system.UInt64 mob.LocCounter
+	output: system.UInt mob.LocCounter
 
 	helpLine: Count number of calls indide a certain location.
 	extendedHelp: 		Count number of calls indide a certain location.
@@ -44,12 +50,8 @@ public:
 
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
-		PhoneLoc phoneLoc;
-		LocCounter locCounter;
-		samson::system::UInt64 phone;
-
 		phoneLoc.parse( inputs[0].kvs[0]->key );
-		if( phoneLoc.loc != 0 )
+		if( phoneLoc.loc.value != 0 )
 		{
 			// fill structure
 			phone.value = phoneLoc.phone.value;

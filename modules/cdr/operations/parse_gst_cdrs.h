@@ -7,6 +7,8 @@
 #define _H_SAMSON_cdr_parse_gst_cdrs
 
 
+#include <stdint.h>
+
 #include <samson/module/samson.h>
 #include <samson/modules/system/Time.h>
 #include <samson/modules/system/UInt.h>
@@ -114,7 +116,7 @@ extendedHelp: 		Parse txt-file of CDRS in  different formats.
 
 			  unsigned int _pos=0;
 			  unsigned int _pos_field=0;
-			  size_t _cellId = 0;
+			  uint32_t _cellId = 0;
 			  //unsigned int _mobScope;
 
 			  struct tm timeExpanded;

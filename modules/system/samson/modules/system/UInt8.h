@@ -24,10 +24,13 @@ public:
 		return (value);
 	}
 
+	void operator= (char _value) {
+		value = _value;
+	}
 	void operator= (int _value) {
 		value = _value;
 	}
-	void operator= (char _value) {
+	void operator= (size_t _value) {
 		value = _value;
 	}
 

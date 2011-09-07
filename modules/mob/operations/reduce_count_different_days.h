@@ -17,7 +17,13 @@ namespace mob{
 class reduce_count_different_days : public samson::Reduce
 {
 
-	samson::system::Void void_data;
+	// Input[0k]
+	PhoneLoc phoneLoc;
+	// Output[0k]
+	samson::system::UInt phone;
+	// Output[0v]
+	LocCounter locCounter;
+
 
 public:
 
@@ -26,7 +32,7 @@ public:
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
 	input: mob.PhoneLoc system.Void
-	output: system.UInt64 mob.LocCounter
+	output: system.UInt mob.LocCounter
 
 	helpLine: Count different days with calls.
 	extendedHelp: 		Count different days with calls.
@@ -42,10 +48,6 @@ public:
 	 */
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
-		PhoneLoc phoneLoc;
-		samson::system::UInt64 phone;
-		LocCounter locCounter;
-
 		if (inputs[0].num_kvs == 0)
 		{
 			return;

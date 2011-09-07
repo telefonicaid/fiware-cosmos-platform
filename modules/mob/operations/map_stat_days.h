@@ -18,6 +18,13 @@ namespace mob{
 	class map_stat_days : public samson::Map
 	{
 
+		// Input[0k]
+		PhoneLocCounter phoneLocCounter;
+		// Output[0k]
+		PhoneCounter phoneCounter;
+
+		// Input[0v] & Output[0v]
+		samson::system::Void void_data;
 	public:
 
 
@@ -45,11 +52,6 @@ extendedHelp: 		Removes location information and keeps only day information.
  */
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-			PhoneLocCounter phoneLocCounter;
-			PhoneCounter phoneCounter;
-
-			samson::system::Void void_data;
-
 			for (size_t i = 0 ; i < inputs[0].num_kvs ; ++i)
 			{
 				//Parsing key and value

@@ -19,18 +19,27 @@ namespace mob{
 class reduce_compute_mobility_degree : public samson::Reduce
 {
 
+	// Input[012345k] & Output[0k]
+	samson::system::UInt phone;
+	// Input[0v]
+	samson::cdr::mobCdr cdr;
+	// Input[1v]
+	MobilityDegree md;
+	// Input[2345v]
+	LocCounter locCounter;
 public:
 
 
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-	input: system.UInt64 cdr.mobCdr
-	input: system.UInt64 mob.LocCounter
-	input: system.UInt64 mob.LocCounter
-	input: system.UInt64 mob.LocCounter
-	input: system.UInt64 mob.LocCounter
-	output: system.UInt64 mob.MobilityDegree
+	input: system.UInt cdr.mobCdr
+	input: system.UInt mob.MobilityDegree
+	input: system.UInt mob.LocCounter
+	input: system.UInt mob.LocCounter
+	input: system.UInt mob.LocCounter
+	input: system.UInt mob.LocCounter
+	output: system.UInt mob.MobilityDegree
 
 	helpLine: Compute all the values necessary to get the mobility degree.
 	extendedHelp: 		Compute all the values necessary to get the mobility degree.
@@ -51,10 +60,6 @@ public:
 	 */
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
-		samson::system::UInt64 phone;
-		samson::cdr::mobCdr cdr;
-		MobilityDegree md;
-		LocCounter locCounter;
 
 		if (inputs[0].num_kvs  == 0)
 		{
@@ -64,30 +69,41 @@ public:
 		// parse phone number
 		phone.parse( inputs[0].kvs[0]->key );
 
+		// Mobility degree was initialized at reduce_cdrs_clients with totalCalls
+		// (so we don't have to handle again all the cdrs, but only the ones with cellId == 0
+		// to check the mobScope
+
+		if (inputs[1].num_kvs  == 0)
+		{
+			OLM_E(("Error, we should receive only one mobility_degree per user, not %lu\n", inputs[1].num_kvs));
+			return;
+		}
+		md.parse(inputs[1].kvs[0]->value);
+
 		// total number of calls
-		md.totalCalls = inputs[0].num_kvs;
+		//md.totalCalls = inputs[0].num_kvs;
 
 		md.nationalCalls = 0;
 		md.internationalCalls = 0;
 
 		// cell level
-		if( inputs[1].num_kvs > 0 )
+		if( inputs[2].num_kvs > 0 )
 		{
-			locCounter.parse( inputs[1].kvs[0]->value );
-			md.cellId = locCounter.loc;
+			locCounter.parse( inputs[2].kvs[0]->value );
+			md.cellId.value = locCounter.loc.value;
 			md.cellCalls = locCounter.count;
 		}
 		else
 		{
-			md.cellId = 0;
+			md.cellId.value = 0;
 			md.cellCalls = 0;
 		}
 
 		// bts level
-		if( inputs[2].num_kvs > 0 )
+		if( inputs[3].num_kvs > 0 )
 		{
-			locCounter.parse( inputs[2].kvs[0]->value );
-			md.btsId = locCounter.loc;
+			locCounter.parse( inputs[3].kvs[0]->value );
+			md.btsId.value = locCounter.loc.value;
 			md.btsCalls = locCounter.count;
 		}
 		else
@@ -97,10 +113,10 @@ public:
 		}
 
 		// lac level
-		if( inputs[3].num_kvs > 0 )
+		if( inputs[4].num_kvs > 0 )
 		{
-			locCounter.parse( inputs[3].kvs[0]->value );
-			md.lacId = locCounter.loc;
+			locCounter.parse( inputs[4].kvs[0]->value );
+			md.lacId.value = locCounter.loc.value;
 			md.lacCalls = locCounter.count;
 		}
 		else
@@ -110,10 +126,10 @@ public:
 		}
 
 		// state level
-		if( inputs[4].num_kvs > 0 )
+		if( inputs[5].num_kvs > 0 )
 		{
-			locCounter.parse( inputs[4].kvs[0]->value );
-			md.stateId = locCounter.loc;
+			locCounter.parse( inputs[5].kvs[0]->value );
+			md.stateId.value = locCounter.loc.value;
 			md.stateCalls = locCounter.count;
 		}
 		else
@@ -126,11 +142,12 @@ public:
 		for( size_t i=0; i<inputs[0].num_kvs; i++ )
 		{
 			cdr.parse( inputs[0].kvs[i]->value );
-			if( cdr.cellId == 0 )
+			// Since optimization, reduce_add_cell_info should emit only cdrs with cellId == 0
+			if( cdr.cellId.value == 0 )
 			{
-				if( cdr.mobScope >= LOC_ROAMING_INTRARREGIONAL )
+				if( cdr.mobScope.value >= LOC_ROAMING_INTRARREGIONAL )
 				{
-					if( cdr.mobScope <= LOC_ROAMING_NACIONAL )
+					if( cdr.mobScope.value <= LOC_ROAMING_NACIONAL )
 					{
 						md.nationalCalls.value++;
 					}
@@ -139,6 +156,10 @@ public:
 						md.internationalCalls.value++;
 					}
 				}
+			}
+			else
+			{
+				OLM_E(("We should receive no cdr with cellId != 0, but we do at i:%lu\n", i));
 			}
 		}
 

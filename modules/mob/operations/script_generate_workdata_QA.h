@@ -23,8 +23,8 @@ namespace mob{
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-input: system.UInt64 system.Void  
-input: system.UInt64 cdr.mobCdr  
+input: system.UInt system.Void  
+input: system.UInt cdr.mobCdr  
 input: system.UInt cdr.Cell  
 output: Date system.Void
 output: system.UInt64 cdr.mobCdr
@@ -42,7 +42,7 @@ extendedHelp: 		Script to generate all the intermediate data.
 	};
 
 
-} // end of namespace samson
 } // end of namespace mob
+} // end of namespace samson
 
 #endif

@@ -43,9 +43,19 @@ class reduce_results : public samson::Reduce
 	size_t numDaysMin_sta_work;
 	size_t freqMin_sta_work;
 
+	// Input[012k] & Output[0k]
+	samson::system::UInt phone;
+	// Input[0v]
+	MobilityDegree md;
+	// Input[12v]
+	Place place;
+	// Output[0v]
+	Results results;
 
-	samson::system::ComplexTimeSlot ctsH;
-	samson::system::ComplexTimeSlot ctsW;
+
+	// Not in use right now
+	//samson::system::ComplexTimeSlot ctsH;
+	//samson::system::ComplexTimeSlot ctsW;
 
 public:
 
@@ -89,10 +99,10 @@ public:
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-	input: system.UInt64 mob.MobilityDegree
-	input: system.UInt64 mob.Place
-	input: system.UInt64 mob.Place
-	output: system.UInt64 mob.Results
+	input: system.UInt mob.MobilityDegree
+	input: system.UInt mob.Place
+	input: system.UInt mob.Place
+	output: system.UInt mob.Results
 
 	helpLine: Apply thresholds and compute final mobility results.
 	extendedHelp: 		Apply thresholds and compute final mobility results.
@@ -135,13 +145,15 @@ public:
 		// HOME
 		// Mon-Thu from 21:00:00 to 23:59:59
 		// Sat-Sun from 08:00:00 to 12:59:59
-		std::string conf_timeslot_home = environment->get(MOB_PARAMETER_CONF_TIMESLOT_HOME, MOB_PARAMETER_CONF_TIMESLOT_HOME_DEFAULT);
-		ctsH.set( conf_timeslot_home );
+		// Not in use right now
+		//std::string conf_timeslot_home = environment->get(MOB_PARAMETER_CONF_TIMESLOT_HOME, MOB_PARAMETER_CONF_TIMESLOT_HOME_DEFAULT);
+		//ctsH.set( conf_timeslot_home );
 
 		// WORK
 		// Mon-Fri from 09:00:00 to 14:59:59
-		std::string conf_timeslot_work = environment->get(MOB_PARAMETER_CONF_TIMESLOT_WORK, MOB_PARAMETER_CONF_TIMESLOT_WORK_DEFAULT);
-		ctsW.set( conf_timeslot_work );
+		// Not in use right now
+		//std::string conf_timeslot_work = environment->get(MOB_PARAMETER_CONF_TIMESLOT_WORK, MOB_PARAMETER_CONF_TIMESLOT_WORK_DEFAULT);
+		//ctsW.set( conf_timeslot_work );
 	}
 
 	/**
@@ -149,11 +161,6 @@ public:
 	 */
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
-		samson::system::UInt64 phone;
-		MobilityDegree md;
-		Place place;
-		Results results;
-
 		// get phone number
 		if( inputs[0].num_kvs > 0 )
 		{

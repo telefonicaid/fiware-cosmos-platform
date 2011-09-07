@@ -43,7 +43,7 @@ extendedHelp: 		Convert CDRs from Gasset format to Mob format.
 			samson::system::UInt phone;
 			//output
 			mobCdr  cdr_out;
-			samson::system::UInt64 phone_out;
+			samson::system::UInt phone_out;
 
 			for (size_t i=0  ; i< inputs[0].num_kvs ;i++)
 			{
@@ -53,17 +53,17 @@ extendedHelp: 		Convert CDRs from Gasset format to Mob format.
 				//cdr_out.phone.value  = cdr.phone;
 				phone_out.value = phone.value;
 				cdr_out.phone.value = phone.value;
-				cdr_out.cellId = cdr.cellId;
+				cdr_out.cellId.value = cdr.cellId.value;
 
-				cdr_out.btsId = 0;
-				cdr_out.lacId = 0;
-				cdr_out.stateId = 0;
+				//cdr_out.btsId = 0;
+				//cdr_out.lacId = 0;
+				//cdr_out.stateId = 0;
 
 				cdr_out.timeUnix = cdr.timeUnix;
 
-				cdr_out.absDay = 0;
+				//cdr_out.absDay = 0;
 
-				cdr_out.mobScope = cdr.mobScope;
+				cdr_out.mobScope.value = cdr.mobScope.value;
 
 				writer->emit(0, &phone_out, &cdr_out);
 			}

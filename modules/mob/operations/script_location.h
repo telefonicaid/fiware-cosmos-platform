@@ -25,7 +25,6 @@ namespace mob{
 
 input: txt txt  
 input: txt txt  
-output: system.Void system.Void
 
 extendedHelp: 		Script to compute a certain type of location (home or work) for all the levels of detail (cell, BTS, LAC and state).
 
@@ -36,7 +35,7 @@ extendedHelp: 		Script to compute a certain type of location (home or work) for 
 	};
 
 
-} // end of namespace samson
 } // end of namespace mob
+} // end of namespace samson
 
 #endif

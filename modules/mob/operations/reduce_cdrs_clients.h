@@ -19,7 +19,6 @@ namespace mob{
 class reduce_cdrs_clients : public samson::Reduce
 {
 
-public:
 	/**
 	 * Sequential number to balance files when the
 	 * CDR doesn't bring cell information.
@@ -28,14 +27,22 @@ public:
 	/**
 	 * Month being processed.
 	 */
-	samson::system::Date mob_month;
 	bool hasMonth;
 
-	samson::system::Void void_data;
+	// Input[0k] & Output[1k]
+	samson::system::UInt phone;
 
+	// Input[0v] & Output[0v]
 	samson::cdr::mobCdr cdr;
-	samson::system::UInt cellId;
-	samson::system::UInt64 key;
+
+	// Output[0k]
+	samson::system::UInt32 cellId;
+	// Output[1v]
+	MobilityDegree md;
+	// Output[2k]
+	samson::system::Date mob_month;
+	// Output[2v]
+	samson::system::Void void_data;
 
 	/**
 	 * Function to reset the fake cell id.
@@ -53,7 +60,7 @@ public:
 	 *
 	 * @param cellId Pointer to the fake cell id.
 	 */
-	void GetFakeCellId( samson::system::UInt *cellId )
+	void GetFakeCellId( samson::system::UInt32 *cellId )
 	{
 		seqFakeCellId++;
 #define CONF_mob_CELLID_MIN	 100
@@ -65,13 +72,15 @@ public:
 	}
 
 
+public:
 
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-	input: system.UInt64 system.Void
-	input: system.UInt64 cdr.mobCdr
-	output: system.UInt cdr.mobCdr
+	input: system.UInt system.Void
+	input: system.UInt cdr.mobCdr
+	output: system.UInt32 cdr.mobCdr
+	output: system.UInt mob.MobilityDegree
 	output: system.Date system.Void
 
 	helpLine: Extract only CDRs where the TEF phone is in the client sample.
@@ -102,8 +111,26 @@ public:
 
 		if( inputs[0].num_kvs > 0 )
 		{
-			//key.parse(inputs[0].kvs[0]->key);
+			phone.parse(inputs[0].kvs[0]->key);
 			//OLM_T(LMT_User06, ("Starts run for key:%lu with cdrs: inputs[1].num_kvs:%lu\n", key.value, inputs[1].num_kvs));
+			md.totalCalls = inputs[1].num_kvs;
+			md.nationalCalls = 0;
+			md.internationalCalls = 0;
+			md.cellId.value = 0;
+			md.cellCalls = 0;
+			md.btsId = 0;
+			md.btsCalls = 0;
+			md.lacId = 0;
+			md.lacCalls = 0;
+			md.stateId = 0;
+			md.stateCalls = 0;
+
+			// Apparently, this counters are only incremented when cellId == 0, so we cannot do that now.
+			// Instead, cdrs will still be emitted in next step, reduce_add_cell_info
+			md.nationalCalls.value = 0;
+			md.internationalCalls.value = 0;
+
+			writer->emit(1, &phone, &md );
 
 			for( size_t i=0; i<inputs[1].num_kvs; i++ )
 			{
@@ -139,7 +166,7 @@ public:
 
 					//OLM_T( LMT_User06, ("Month being processed: '%s'\n", mob_month.str().c_str() ));
 					// save month for further occasions
-					writer->emit(1, &mob_month, &void_data );
+					writer->emit(2, &mob_month, &void_data );
 					hasMonth = true;
 				}
 

@@ -35,7 +35,7 @@ extendedHelp: 		Script to clean work space.
 	};
 
 
-} // end of namespace samson
 } // end of namespace mob
+} // end of namespace samson
 
 #endif

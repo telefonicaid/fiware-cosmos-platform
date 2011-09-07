@@ -39,7 +39,7 @@ extendedHelp: 		Script to compute the values for mobility degree.
 	};
 
 
-} // end of namespace samson
 } // end of namespace mob
+} // end of namespace samson
 
 #endif

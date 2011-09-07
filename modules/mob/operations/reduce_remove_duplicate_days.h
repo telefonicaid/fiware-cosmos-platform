@@ -17,6 +17,12 @@ namespace mob{
 class reduce_remove_duplicate_days : public samson::Reduce
 {
 
+	// Input[0k]
+	PhoneLocCounter phoneLocCounter;
+	// Output[0k]
+	PhoneLoc phoneLoc;
+
+	// Input[0v] & Output[0v]
 	samson::system::Void void_data;
 
 public:
@@ -45,9 +51,6 @@ public:
 	 */
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
-		PhoneLocCounter phoneLocCounter;
-		PhoneLoc phoneLoc;
-
 		phoneLocCounter.parse( inputs[0].kvs[0]->key );
 
 		phoneLoc.phone.value = phoneLocCounter.phone.value;

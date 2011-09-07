@@ -17,6 +17,13 @@ namespace mob{
 class map_distribute_cell_info_location : public samson::Map
 {
 
+        // Input[0k]
+        samson::system::UInt phone;
+        // Input[0v]
+	samson::cdr::Cell cell;
+        // Output [0123k]
+	PhoneLoc phoneLoc;
+        // Output [0123v]
 	samson::system::Void void_data;
 
 public:
@@ -25,7 +32,7 @@ public:
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-	input: system.UInt64 cdr.Cell
+	input: system.UInt cdr.Cell
 	output: mob.PhoneLoc system.Void
 	output: mob.PhoneLoc system.Void
 	output: mob.PhoneLoc system.Void
@@ -39,18 +46,10 @@ public:
 
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
-		samson::system::UInt64 phone;
-		PhoneLoc phoneLoc;
-		samson::cdr::Cell cell;
-
-		if (inputs[0].num_kvs == 0)
-		{
-			return;
-		}
-		phone.parse(inputs[0].kvs[0]->key);
 
 		for (size_t i = 0; i < inputs[0].num_kvs; i++ )
 		{
+			phone.parse(inputs[0].kvs[i]->key);
 			cell.parse(inputs[0].kvs[i]->value);
 
 			phoneLoc.phone.value = phone.value;

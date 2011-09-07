@@ -18,14 +18,20 @@ namespace mob{
 class reduce_compute_reference_location : public samson::Reduce
 {
 
+	// Input[0k] & Output[0k]
+	samson::system::UInt phone;
+	// Input[0v]
+	LocCounter locCounter;
+	// Output[0v]
+	LocCounter refLocCounter;
 public:
 
 
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-	input: system.UInt64 mob.LocCounter
-	output: system.UInt64 mob.LocCounter
+	input: system.UInt mob.LocCounter
+	output: system.UInt mob.LocCounter
 
 	helpLine: Get the location with the highest number of calls or days with calls.
 	extendedHelp: 		Get the location with the highest number of calls or days with calls.
@@ -43,22 +49,23 @@ public:
 	 */
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
-		LocCounter refLocCounter;
-		LocCounter locCounter;
-		samson::system::UInt64 phone;
 
-		refLocCounter.loc = 0;
+		refLocCounter.loc.value = 0;
 		refLocCounter.count = 0;
 
-		for( size_t i=0; i<inputs[0].num_kvs; i++ )
-		{
-			locCounter.parse( inputs[0].kvs[i]->value );
-			if( locCounter.count >= refLocCounter.count )
-			{
-				refLocCounter.loc = locCounter.loc;
-				refLocCounter.count = locCounter.count;
-			}
-		}
+		//for( size_t i=0; i<inputs[0].num_kvs; i++ )
+		//{
+		//	locCounter.parse( inputs[0].kvs[i]->value );
+		//	if( locCounter.count >= refLocCounter.count )
+		//	{
+		//		refLocCounter.loc = locCounter.loc;
+		//		refLocCounter.count = locCounter.count;
+		//	}
+		//}
+		//locCounter.parse( inputs[0].kvs[0]->value);
+		//OLM_T(LMT_User06, ("locCounter[0]: loc:%lu, count:%lu\n", locCounter.loc.value, locCounter.count.value));
+		refLocCounter.parse( inputs[0].kvs[inputs[0].num_kvs-1]->value);
+		//OLM_T(LMT_User06, ("locCounter[%lu]: loc:%lu, count:%lu\n", inputs[0].num_kvs-1,locCounter.loc.value, locCounter.count.value));
 
 		// parse phone number
 		phone.parse( inputs[0].kvs[0]->key );

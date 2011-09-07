@@ -17,15 +17,22 @@ namespace mob{
 class reduce_set_consistency : public samson::Reduce
 {
 
+	// Input[01k]
+	samson::system::UInt32 cellId;
+	// Input[0v] & Output[0v]
+	Place place;
+	// Input[1v]
+	samson::cdr::Cell cell;
+
 public:
 
 
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-	input: system.UInt mob.Place
-	input: system.UInt cdr.Cell
-	output: system.UInt64 mob.Place
+	input: system.UInt32 mob.Place
+	input: system.UInt32 cdr.Cell
+	output: system.UInt mob.Place
 
 	helpLine: Make location results consistent.
 	extendedHelp: 		Make location results consistent.
@@ -41,12 +48,6 @@ public:
 	 */
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
-		Place place;
-		samson::cdr::Cell cell;
-		samson::system::UInt cellId;
-
-
-
 		if( inputs[1].num_kvs > 0 )
 		{
 			if (inputs[0].num_kvs > 0)

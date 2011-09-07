@@ -104,12 +104,15 @@ public:
 					// initialize total weekdays mask
 					wdaysMask = WDAY_NONE;
 
+					tsSetLength(nts);
+
 					_pos++;
 					for( unsigned int i=0; i<nts; i++ )
 					{
 						_strTs = str.substr( _pos, 25 );
 
-						_ts = tsAdd();
+						//_ts = tsAdd();
+						_ts = ts+i;
 
 #undef DEBUG_FILES
 #ifdef DEBUG_FILES

@@ -8,7 +8,7 @@
 
 
 #include <samson/module/samson.h>
-#include <samson/modules/system/Date.h>
+#include <samson/modules/system/DateComplete.h>
 #include <samson/modules/system/Time.h>
 #include <samson/modules/system/ComplexTimeSlot.h>
 
@@ -22,15 +22,22 @@ namespace mob{
 class reduce_add_cell_info : public samson::Reduce
 {
 
+	// TimeSlots to characterize Home and Work
 	samson::system::ComplexTimeSlot ctsH;
 	samson::system::ComplexTimeSlot ctsW;
 
-	samson::system::UInt key;
-	samson::system::UInt64 phone;
+	// Input[0k]
+	samson::system::UInt32 key;
+	// Input[0v] & Output[0v]
 	samson::cdr::mobCdr cdr;
+	// Input[1v] & Output[1v]
 	samson::cdr::Cell cell;
+	// Output[012k]
+	samson::system::UInt phone;
+	// Output[2v]
 	CellCounter cellCounter;
 
+	// Local variables to handle TimeSlot
 	samson::system::DateComplete lDate;
 	samson::system::Time lTime;
 
@@ -41,12 +48,12 @@ public:
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-	input: system.UInt cdr.mobCdr
-	input: system.UInt cdr.Cell
-	output: system.UInt64 cdr.mobCdr
-	output: system.UInt64 cdr.Cell
-	output: system.UInt64 CellCounter
-	output: system.UInt64 CellCounter
+	input: system.UInt32 cdr.mobCdr
+	input: system.UInt32 cdr.Cell
+	output: system.UInt cdr.mobCdr
+	output: system.UInt cdr.Cell
+	output: system.UInt CellCounter
+	output: system.UInt CellCounter
 
 	helpLine: Keep only CDRs with known cell id and add cell info from the catalogue.
 	extendedHelp: 		Keep only CDRs with known cell id and add cell info from the catalogue.
@@ -94,10 +101,10 @@ public:
 			{
 				// CDR does not have its corresponding cell in the catalogue
 				// we assign the null cell
-				cell.cellId = 0;
-				cell.btsId = 0;
-				cell.lacId = 0;
-				cell.stateId = 0;
+				cell.cellId.value = 0;
+				cell.btsId.value = 0;
+				cell.lacId.value = 0;
+				cell.stateId.value = 0;
 			}
 
 			key.parse(inputs[0].kvs[0]->key);
@@ -116,23 +123,33 @@ public:
 
 				// fill only cell values
 				cdr.cellId.value = cell.cellId.value;
-				cdr.btsId.value = cell.btsId.value;
-				cdr.lacId.value = cell.lacId.value;
-				cdr.stateId.value = cell.stateId.value;
+				//cdr.btsId.value = cell.btsId.value;
+				//cdr.lacId.value = cell.lacId.value;
+				//cdr.stateId.value = cell.stateId.value;
 
 				// get phone number
 				phone.value = cdr.phone.value;
 
 
 				// emit first output to keep complete cdrs
-				writer->emit(0, &phone, &cdr );
+				// Optimization. Now, we only emit cdrs with cellId == 0
+				// Later, cdrs are only used at reduce_compute_mobility_degree
+				// and then to compute the total number of calls, and the
+				// national and international calls when cellId == 0
+				// Before, at reduce_cdr_clients we have emitted a mobility_degree
+				// with the total number of calls per user, so now we only have to emit
+				// the cdrs with cellId == 0, per user
+				if (cdr.cellId.value == 0)
+				{
+					writer->emit(0, &phone, &cdr );
+				}
 
 
 				writer->emit(1, &phone, &cell);
 
 				// for place of home and work, we can do nothing if
 				// we do not have cell information
-				if( cdr.cellId > 0 )
+				if( cdr.cellId.value > 0 )
 				{
 
 					cellCounter.cell = cell;

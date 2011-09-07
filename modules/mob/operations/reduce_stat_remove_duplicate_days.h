@@ -17,6 +17,11 @@ namespace mob{
 class reduce_stat_remove_duplicate_days : public samson::Reduce
 {
 
+	// Input[0k]
+	PhoneCounter phoneCounter;
+	// Output[0k]
+	samson::system::UInt phone;
+	// Input[0v] & Output[0v]
 	samson::system::Void void_data;
 
 public:
@@ -26,7 +31,7 @@ public:
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
 	input: mob.PhoneCounter system.Void
-	output: system.UInt64 system.Void
+	output: system.UInt system.Void
 
 	helpLine: Keep only different days per phone.
 	extendedHelp: 		Keep only different days per phone.
@@ -45,9 +50,6 @@ public:
 	 */
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
-		samson::system::UInt64 phone;
-		PhoneCounter phoneCounter;
-
 		if( inputs[0].num_kvs > 0 )
 		{
 			phoneCounter.parse( inputs[0].kvs[0]->key );

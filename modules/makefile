@@ -6,6 +6,7 @@ all:
 	make -C tienda
 	make -C cdr
 	make -C mob
+#	make -C mob2
 	make -C graph
 	make -C sna
 #	make -C snalight
@@ -22,10 +23,12 @@ all:
 release:
 	make release -C system
 	make release -C txt
+	make release -C txt_md
 	make release -C example
 	make release -C tienda
 	make release -C cdr
 	make release -C mob
+#	make release -C mob2
 	make release -C graph
 	make release -C sna
 #	make release -C snalight
@@ -42,14 +45,15 @@ release:
 reset:
 	make reset -C system
 	make reset -C txt 
-#	make reset -C txt_md
+	make reset -C txt_md
 	make reset -C example 
 	make reset -C tienda 
 	make reset -C cdr
 	make reset -C mob
+	make reset -C mob2
 	make reset -C graph
 	make reset -C sna
-	make reset -C snalight 
+#	make reset -C snalight 
 	make reset -C osn 
 	make reset -C url 
 	make reset -C urlbenchmark 
@@ -62,11 +66,12 @@ reset:
 
 eclipse:
 	make eclipse -C system
-#	make eclipse -C txt_md
+	make eclipse -C txt_md
 	make eclipse -C example
 	make eclipse -C tienda
 	make eclipse -C cdr
 	make eclipse -C mob
+	make eclipse -C mob2
 	make eclipse -C graph
 	make eclipse -C sna
 	make eclipse -C snalight

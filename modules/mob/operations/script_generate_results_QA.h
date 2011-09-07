@@ -38,7 +38,7 @@ extendedHelp: 		Script to generate final mobility results.
 	};
 
 
-} // end of namespace samson
 } // end of namespace mob
+} // end of namespace samson
 
 #endif

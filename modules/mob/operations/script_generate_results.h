@@ -24,7 +24,6 @@ namespace mob{
 // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
 input: txt txt  
-output: system.Void system.Void
 
 extendedHelp: 		Script to generate final mobility results.
 
@@ -35,7 +34,7 @@ extendedHelp: 		Script to generate final mobility results.
 	};
 
 
-} // end of namespace samson
 } // end of namespace mob
+} // end of namespace samson
 
 #endif

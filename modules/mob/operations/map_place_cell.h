@@ -17,14 +17,18 @@ namespace mob{
 class map_place_cell : public samson::Map
 {
 
-public:
+	// Input[0v] & Output[0v]
+	Place place;
+	// Output [0k]
+	samson::system::UInt32 cellId;
 
+public:
 
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-	input: system.UInt64 mob.Place
-	output: system.UInt mob.Place
+	input: system.UInt mob.Place
+	output: system.UInt32 mob.Place
 
 	helpLine: Maps place results into a set of data where the key is the cell id.
 	extendedHelp: 		Maps place results into a set of data where the key is the cell id.
@@ -41,9 +45,6 @@ public:
 	 */
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
-		Place place;
-		samson::system::UInt cellId;
-
 		for (size_t i = 0 ; i < inputs[0].num_kvs ; ++i)
 		{
 			//Parsing key and value

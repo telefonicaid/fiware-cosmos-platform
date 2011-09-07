@@ -1,6 +1,6 @@
 all:
 	make compile
-	sudo make install
+#	sudo make install
 
 release: 
 	make compile_release

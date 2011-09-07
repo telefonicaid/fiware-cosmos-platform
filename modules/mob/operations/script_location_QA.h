@@ -36,7 +36,7 @@ extendedHelp: 		Script to compute a certain type of location (home or work) for 
 	};
 
 
-} // end of namespace samson
 } // end of namespace mob
+} // end of namespace samson
 
 #endif

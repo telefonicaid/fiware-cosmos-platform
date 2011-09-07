@@ -27,7 +27,7 @@ namespace cdr{
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-output: system.UInt cdr.Cell
+output: system.UInt32 cdr.Cell
 
 helpLine: Parse the cell catalogue.
 extendedHelp: 		Parse the cell catalogue.
@@ -47,7 +47,7 @@ extendedHelp: 		Parse the cell catalogue.
 ///@return TRUE if successful parsing, FALSE in case
 ///   of error.
 bool gstGetCellInfo_MX( char *line, Cell *cell ){
-  size_t _cellId;
+  uint32_t _cellId;
   size_t _btsId;
   size_t _lacId;
   size_t _stateId;
@@ -60,7 +60,7 @@ bool gstGetCellInfo_MX( char *line, Cell *cell ){
     cdrGetNextField( line, &_pos, &_pos_field );
     cdrStrCellToInt( line+_pos_field, &_cellId );
     if( _cellId != 0 ){
-      cell->cellId = _cellId;
+      cell->cellId.value = _cellId;
     }else{
       throw false;
     }
@@ -110,7 +110,7 @@ bool gstGetCellInfo_MX( char *line, Cell *cell ){
 void parseLines( char *line, samson::KVWriter *writer )
 {
 	//Datas to emit
-	samson::system::UInt cellId;
+	samson::system::UInt32 cellId;
 	Cell cell;
 
 
@@ -121,7 +121,7 @@ void parseLines( char *line, samson::KVWriter *writer )
 			//output[strlen(output)-1] = '\0';
 			//OLM_T(LMT_User06, ("cdr: time: '%s', week_day: %d\n", output, int(cdr.week_day.value)));
 
-		    cellId = cell.cellId;
+		    cellId.value = cell.cellId.value;
 			writer->emit(0, &cellId, &cell );
 
 		}

@@ -18,10 +18,13 @@ namespace mob{
 
 	class parse_out_results : public samson::ParserOut
 	{
+		// Input[0k]
+		samson::system::UInt phone;
+		// Input[0v]
+		Results results;
 #ifdef MAX_STR_LEN
 #undef MAX_STR_LEN
 #endif
-
 #define MAX_STR_LEN 1024
 			char output[MAX_STR_LEN];
 
@@ -31,7 +34,7 @@ namespace mob{
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-input: system.UInt64 mob.Results  
+input: system.UInt mob.Results  
 
 helpLine: Write results file in the appropriate readable format.
 extendedHelp: 		Write results file in the appropriate readable format.
@@ -40,12 +43,32 @@ extendedHelp: 		Write results file in the appropriate readable format.
 
 		void init(TXTWriter *writer )
 		{
+			size_t _total = 0;
+
+			   _total += snprintf( output, MAX_STR_LEN, "phone%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN, "mobility_degree%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN, "home_cell%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN, "home_cell_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN, "home_bts%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN, "home_bts_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN, "home_lac%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN, "home_lac_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN, "home_state%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN, "home_state_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN, "work_cell%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN, "work_cell_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN, "work_bts%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN, "work_bts_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN, "work_lac%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN, "work_lac_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN, "work_state%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN, "work_state_freq%c", '\n' );
+
+			 writer->emit(output);
 		}
 
 		void run(KVSetStruct* inputs , TXTWriter *writer )
 		{
-			samson::system::UInt64 phone;
-			Results results;
 
 			  for (size_t i  =0 ;  i < inputs[0].num_kvs ; ++i)
 			  {
@@ -60,7 +83,7 @@ extendedHelp: 		Write results file in the appropriate readable format.
 			      {
 			    		 _total += snprintf( output, MAX_STR_LEN, "%lu%c", phone.value, CONF_SEP );
 			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.mobilityDegree.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.homeCellId.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%u%c", results.homeCellId.value, CONF_SEP );
 			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.homeCellFreq.value, CONF_SEP );
 			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.homeBtsId.value, CONF_SEP );
 			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.homeBtsFreq.value, CONF_SEP );
@@ -68,7 +91,7 @@ extendedHelp: 		Write results file in the appropriate readable format.
 			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.homeLacFreq.value, CONF_SEP );
 			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.homeStateId.value, CONF_SEP );
 			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.homeStateFreq.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.workCellId.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%u%c", results.workCellId.value, CONF_SEP );
 			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.workCellFreq.value, CONF_SEP );
 			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.workBtsId.value, CONF_SEP );
 			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.workBtsFreq.value, CONF_SEP );

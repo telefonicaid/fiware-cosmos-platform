@@ -19,16 +19,24 @@ class reduce_bring_place : public samson::Reduce
 
 public:
 
+	// Input[0k] & Output[0k]
+	samson::system::UInt phone;
+	// Input[0v]
+	samson::system::UInt number_days;
+	// Input[1234v]
+	LocCounter locCounter;
+	// Output[0v]
+	Place place;
 
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-	input: system.UInt64 system.UInt
-	input: system.UInt64 mob.LocCounter
-	input: system.UInt64 mob.LocCounter
-	input: system.UInt64 mob.LocCounter
-	input: system.UInt64 mob.LocCounter
-	output: system.UInt64 mob.Place
+	input: system.UInt system.UInt
+	input: system.UInt mob.LocCounter
+	input: system.UInt mob.LocCounter
+	input: system.UInt mob.LocCounter
+	input: system.UInt mob.LocCounter
+	output: system.UInt mob.Place
 
 	helpLine: Bring together all the information about the place of home/work.
 	extendedHelp: 		Bring together all the information about the place of home/work.
@@ -44,10 +52,6 @@ public:
 	 */
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
-		samson::system::UInt64 phone;
-		samson::system::UInt number_days;
-		Place place;
-		LocCounter locCounter;
 
 		if( inputs[0].num_kvs > 0 )
 		{
@@ -71,13 +75,13 @@ public:
 				if( inputs[1].num_kvs > 0 )
 				{
 					locCounter.parse( inputs[1].kvs[0]->value );
-					place.cellId = locCounter.loc;
+					place.cellId.value = locCounter.loc.value;
 					place.cellDaysWithCalls = locCounter.count;
 					//OLM_T(LMT_User06, ("For phone:%lu, totalDaysWithCalls:%lu, cellDaysWithCalls:%lu", place.phone.value, place.totalDaysWithCalls.value, place.cellDaysWithCalls.value));
 				}
 				else
 				{
-					place.cellId = 0;
+					place.cellId.value = 0;
 					place.cellDaysWithCalls = 0;
 				}
 
@@ -85,7 +89,7 @@ public:
 				if( inputs[2].num_kvs > 0 )
 				{
 					locCounter.parse( inputs[2].kvs[0]->value );
-					place.btsId = locCounter.loc;
+					place.btsId.value = locCounter.loc.value;
 					place.btsDaysWithCalls = locCounter.count;
 				}
 				else
@@ -98,7 +102,7 @@ public:
 				if( inputs[3].num_kvs > 0 )
 				{
 					locCounter.parse( inputs[3].kvs[0]->value );
-					place.lacId = locCounter.loc;
+					place.lacId.value = locCounter.loc.value;
 					place.lacDaysWithCalls = locCounter.count;
 				}
 				else

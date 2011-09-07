@@ -35,7 +35,7 @@ extendedHelp: 		Script to convert common data to mobility data
 	};
 
 
-} // end of namespace samson
 } // end of namespace mob
+} // end of namespace samson
 
 #endif

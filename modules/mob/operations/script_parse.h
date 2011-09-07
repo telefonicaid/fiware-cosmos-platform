@@ -24,8 +24,6 @@ namespace mob{
 // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
 input: txt txt  
-input: txt txt  
-output: system.Void system.Void
 
 extendedHelp: 		Script to parse input files.
 
@@ -36,7 +34,7 @@ extendedHelp: 		Script to parse input files.
 	};
 
 
-} // end of namespace samson
 } // end of namespace mob
+} // end of namespace samson
 
 #endif

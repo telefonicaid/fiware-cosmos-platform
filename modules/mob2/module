@@ -46,14 +46,14 @@ data Node_Bts
 {
 	 system.UInt phone;
 	 system.UInt bts;
-	 system.UInt8 wday;
+	 system.UInt16 wday;
 	 system.UInt range;
 }
 
 data Bts_Counter
 {
 	system.UInt bts;
-	system.UInt8 wday;
+	system.UInt16 wday;
 	system.UInt range;
 	system.UInt count;
 }
@@ -67,7 +67,7 @@ data Node_Bts_Day
 {
 	system.UInt node;
 	system.UInt bts;
-	system.UInt8 workday;
+	system.UInt16 workday;
 	system.UInt count;
 }
 
@@ -81,9 +81,9 @@ data Node_Bts_Day
 
 data DateVector
 {
-	system.UInt8 day;
-	system.UInt8 month;
-	system.UInt8 hour;
+	system.UInt16 day;
+	system.UInt16 month;
+	system.UInt16 hour;
 }
 data DailyVector
 {
@@ -95,8 +95,8 @@ data ClusterVector
 }
 data Cluster
 {
-	system.UInt8 label;
-	system.UInt8 labelgroup;
+	system.UInt16 label;
+	system.UInt16 labelgroup;
 	system.Double mean;
 	system.Double distance;
 	mob2.ClusterVector coords;
@@ -882,12 +882,12 @@ script script_extract_POIs
       cdr.convert_client $1.users $1.clients -create -clear;
 
       # Parse cell catalogue
-      cdr.parse_cell_catalogue $1.cellstxt $1.cells -create -clear;
+      cdr.parse_cell_catalogue_position $1.cellstxt $1.cells -create -clear;
 
       # Filter cdrs of clients with no info about cell
       mob2.filter_cellnoinfo $1.cdrs_mob $1.cdrsinfo $1.cdrsnoinfo -create -clear;
       # Change cells by bts
-      mob2.join_bts_node $1.cdrsinfo $1.cells_mob $1.clients_bts $1.bts_comms $1.cdrsnobts $1.vi_telmonth_bts -create -clear;
+      mob2.join_bts_node $1.cdrsinfo $1.cells $1.clients_bts $1.bts_comms $1.cdrsnobts $1.vi_telmonth_bts -create -clear;
       # Number of comms by client, bts and hour
       mob2.node_bts_counter $1.clients_bts $1.clients_btscounter -create -clear;
       # Array of counters

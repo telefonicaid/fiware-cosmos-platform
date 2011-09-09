@@ -52,7 +52,7 @@ extendedHelp: 		Write month into a readable file.
 			  {
 				date.parse(inputs[0].kvs[i]->key);
 
-			    snprintf(output, MAX_STR_LEN, "%4d%02d\n", date.year.value, date.month.value);
+			    snprintf(output, MAX_STR_LEN, "%04d %02d\n", 2000 + date.year.value, date.month.value);
 
 			    writer->emit(output);
 			  }

@@ -185,6 +185,7 @@ int main(int argC, const char *argV[])
 	// Not necessary anymore. Engine automatically starts with "init" call
 	// engine::Engine::run();
     
+    LM_M(("Running"));
     while( true )
         sleep(10);
 }

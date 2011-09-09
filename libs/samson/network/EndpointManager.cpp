@@ -1255,7 +1255,6 @@ int EndpointManager::procVecSet(ProcessVector* _procVec, bool save)
 	{
 		LM_T(LmtProcessVector, ("************* SAVING Process Vector"));
 		platformProcessesSave(procVec);
-		LM_W(("sleeping for a second after  saving Process Vector to file system"));
 		sleep(1);
 	}
 

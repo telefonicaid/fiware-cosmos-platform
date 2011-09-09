@@ -203,6 +203,7 @@ int main(int argC, const char *argV[])
 	spawnerP = new samson::SamsonSpawner();
 	spawnerP->init();	
 
+	LM_M(("Running"));
 	spawnerP->run();
 
 	return 0;

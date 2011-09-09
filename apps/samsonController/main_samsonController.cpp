@@ -167,6 +167,7 @@ int main(int argC, const char* argV[])
 	networkP->runInBackground();
    	samson::SamsonController controller(networkP);
 
+    LM_M(("Running"));
 	// Run the engine function
     while( true )
         sleep(10);

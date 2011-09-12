@@ -133,7 +133,7 @@ public:
 		char *oldlocaletmp;
 		if ((oldlocaletmp = setlocale(LC_NUMERIC, "es_ES.UTF-8")) == NULL)
 		{
-		   //LM_E(("Error in setlocale"));
+		   OLM_E(("Error in setlocale"));
 			oldlocale = strdup("C");
 		}
 		else

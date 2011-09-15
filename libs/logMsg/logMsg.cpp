@@ -47,6 +47,7 @@
 #include <sys/stat.h>           /* fstat, S_IFDIR                            */
 #include <sys/time.h>           /* gettimeofday                              */
 #include <time.h>               /* time, localtime_r, .                      */
+#include <sys/timeb.h>               /* timeb, ftime, .                      */
 
 #include "logMsg/logMsg.h"             /* Own interface                             */
 
@@ -525,8 +526,11 @@ static void traceFix(char* levelFormat, unsigned int way)
 */
 static char* dateGet(int index, char* line, int lineSize)
 {
+	char line_tmp[80];
 	time_t     secondsNow = time(NULL);
 	struct tm tmP;
+
+	struct timeb timebuffer;
 
 	if (strcmp(fds[index].timeFormat, "UNIX") == 0)
 	{
@@ -559,8 +563,10 @@ static char* dateGet(int index, char* line, int lineSize)
 	}
 	else
 	{
+		ftime(&timebuffer);
 		localtime_r(&secondsNow, &tmP);
-		strftime(line, 80, fds[index].timeFormat, &tmP);
+		strftime(line_tmp, 80, fds[index].timeFormat, &tmP);
+		snprintf(line, lineSize, "%s(%.3d)", line_tmp, timebuffer.millitm);
 	}
 	
 	return line;

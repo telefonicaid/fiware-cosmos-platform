@@ -60,7 +60,7 @@ namespace samson {
         
         if( mkdir( fileName.c_str() , 0755 ) )
         {
-            setComponentFinishedWithError( au::str( "Not possible to create directory %s." , fileName.c_str() ) );
+            setComponentFinishedWithError( au::str( "Not possible to create directory %s (errno:%d)." , fileName.c_str() , errno) );
             return;
         }
         
@@ -87,6 +87,7 @@ namespace samson {
 			if( download_data_init_response.has_error() )
 			{
 				error.set( download_data_init_response.error().message() );
+		LM_M(("download: setComponentFinished() with error message"));
                 setComponentFinished();
 				return;
 			}
@@ -97,6 +98,7 @@ namespace samson {
             if( num_files_to_download == 0)
             {
                 // Nothing to be downloaded
+		LM_M(("download: setComponentFinished() with Nothing to be downloaded"));
                 setComponentFinished();
             }
             
@@ -163,7 +165,10 @@ namespace samson {
         
         if( num_files_to_download == num_files_downloaded )
             if ( num_write_operations == 0 )
+		{
+		LM_M(("download: setComponentFinished() with ( num_write_operations == 0 )"));
                 setComponentFinished();
+		}
     }
     
 	std::string DelilahDownloadComponent::getStatus()

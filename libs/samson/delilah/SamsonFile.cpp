@@ -154,7 +154,11 @@ namespace samson {
             
             while( (limit>0) && ( n > 0) )
             {
-                write(1, buffer, n);
+                int n_written = write(1, buffer, n);
+		if (n_written != n)
+		{
+			LM_E(("Error when writing %d bytes to stdout, only %d written", n, n_written));
+		}
                 n = fread(buffer, 1,1024, file);
                 
                 limit-= n;

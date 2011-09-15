@@ -252,6 +252,7 @@ int main(int argC, const char *argV[])
 			//LM_M(("Processing line: %s", line ));
 			size_t id = delilahConsole->runAsyncCommand( line );
 			
+			LM_M(("Processing command file. id(%lu) for line:'%s'\n", id, line));
 			if( id != 0)
 			{
 				//LM_M(("Waiting until delilah-component %ul finish", id ));
@@ -259,6 +260,7 @@ int main(int argC, const char *argV[])
 				while (delilahConsole->isActive( id ) )
 					sleep(1);
 			}
+			LM_M(("Processing command file. id(%lu) finished\n", id));
 		}
 		
 		fclose(f);

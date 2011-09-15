@@ -426,7 +426,10 @@ namespace samson {
 		DelilahComponent *c = components.findInMap( id );
         
         if( !c )
+	{
+	    LM_M(("No component found for id:%lu", id));
             return false;
+	}
         
 		return( !c->isComponentFinished() );
         

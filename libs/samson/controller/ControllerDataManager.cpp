@@ -308,7 +308,7 @@ namespace samson {
                     if( commandLine.get_num_arguments() < ( 3 + op->getNumOutputs() ) )
                     {
                         std::ostringstream output;
-                        output << "Not enought outputs for operation " + operation + ". It has " << op->getNumOutputs() << " outputs";
+                        output << "Not enough outputs for operation " + operation + ". It has " << op->getNumOutputs() << " outputs";
                         response.output = output.str();
                         response.error = true;
                         return response;
@@ -323,7 +323,7 @@ namespace samson {
                     if( commandLine.get_num_arguments() < ( 3 + op->getNumOutputs() ) )
                     {
                         std::ostringstream output;
-                        output << "Not enought outputs for operation " + operation + ". It has " << op->getNumOutputs() << " outputs";
+                        output << "Not enough outputs for operation " + operation + ". It has " << op->getNumOutputs() << " outputs";
                         response.output = output.str();
                         response.error = true;
                         return response;
@@ -411,7 +411,7 @@ namespace samson {
                 default:
                 {
                     std::ostringstream output;
-                    output << "Operation type is currently not supported... comming soon!";
+                    output << "Operation type is currently not supported... coming soon!";
                     response.output = output.str();
                     response.error = true;
                     return response;

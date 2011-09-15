@@ -16,6 +16,7 @@
 
 #include "samson/common/traces.h"                       // logFd
 #include "samson/common/SamsonSetup.h"                // Goyo: ss:SamsonSetup
+#include "samson/isolated/ProcessIsolated.h"         //Goyo: For defines WORKER_TASK_ITEM_CODE_FLUSH_BUFFER
 #include "samson/common/NotificationMessages.h"     // notification_samson_worker_send_trace
 #include "samson/common/MemoryTags.h"                 // MemoryInput , MemoryOutputNetwork, ...
 
@@ -69,18 +70,21 @@ namespace samson
 		// Create a couple of pipes to communicate both process
 		if ( pipe(pipeFdPair1) != 0 )
 		{
+			LM_E(("System error: not possible to create pipes when running this process"));
 			error.set("System error: not possible to create pipes when running this process");
 			return;
 		}
 		if ( pipe(pipeFdPair2) != 0 )
 		{
+			LM_E(("System error: not possible to create pipes when running this process"));
 			error.set("System error: not possible to create pipes when running this process");
+			LM_T( LmtIsolated, ("Isolated process %s: pipes closed: pipeFdPair1[0]:%d, pipeFdPair1[1]:%d\n", pipeFdPair1[0], pipeFdPair1[1]));
 			close( pipeFdPair1[0] );
 			close( pipeFdPair1[1] );
 			return;
 		}
 		
-		//LM_M( ("Isolated process %s: pipes created. pipeFdPair1[0]:%d, pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, pipeFdPair2[1]:%d\n",getStatus().c_str(), pipeFdPair1[0], pipeFdPair1[1], pipeFdPair2[0], pipeFdPair2[1]));
+		LM_T(LmtIsolated, ("Isolated process %s: pipes created. pipeFdPair1[0]:%d, pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, pipeFdPair2[1]:%d\n",getStatus().c_str(), pipeFdPair1[0], pipeFdPair1[1], pipeFdPair2[0], pipeFdPair2[1]));
 		LM_T( LmtIsolated , ("Isolated process %s: pipes created ",getStatus().c_str()));
 		
 		// Create the other process to run the other side
@@ -365,7 +369,7 @@ namespace samson
             
             if ( c != au::OK )
             {
-                LM_T( LmtIsolated , ("Isolated process %s: Problems reading the 'begin' message [error code '%s'] ",getStatus().c_str() , au::status(c)));
+                LM_E( ("Isolated process %s: Problems reading the 'begin' message [error code '%s'] ",getStatus().c_str() , au::status(c)));
                 error.set( au::str( "Problems starting background process '%s'", au::status(c)) );
                 return;     // Problem with this read
             }
@@ -421,7 +425,7 @@ namespace samson
             if( c != au::OK )
             {
                 // Not possible to read the message for any reason
-				LM_T(LmtIsolated, ("Isolated process %s: Not possible to read a message with error_code' %s'", getStatus().c_str() , au::status(c) ));
+				LM_E(("Isolated process %s: Not possible to read a message from pipeFdPair1[0]:%d with error_code' %s' in time_out:%d", getStatus().c_str() , pipeFdPair1[0], au::status(c), timeout_setup ));
                 
 				error.set( au::str( "Third party operation '%s' has crashed - [ Error code %s ]", processItemIsolated_description.c_str() ,  au::status(c) ) );
                 return;
@@ -472,7 +476,7 @@ namespace samson
         // If problems during read, die
         if( read_ans != au::OK)
         {
-            LM_W(("Background process did not receive an answer from message with code %d to the platform. Error code '%s'", 
+            LM_E(("Background process did not receive an answer from message with code %d to the platform. Error code '%s'", 
                   message->code(), au::status(read_ans) ));
             LM_T(LmtIsolated,("Error sending message from process to platform read-error '%s'", au::status(read_ans) ));
             if( isolated_process_as_tread )
@@ -504,7 +508,7 @@ namespace samson
 	// Function used inside runIsolated to send a code to the main process
 	void ProcessItemIsolated::sendCode( int c )
 	{
-        LM_T(LmtIsolated,("Background process: Sending code %d",c));
+        LM_T(LmtIsolated,("Background process: Sending code %d (WORKER_TASK_ITEM_CODE_FLUSH_BUFFER:%d, WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH:%d)",c, WORKER_TASK_ITEM_CODE_FLUSH_BUFFER, WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH));
          
         samson::network::MessageProcessPlatform *message = new samson::network::MessageProcessPlatform();
         message->set_code( samson::network::MessageProcessPlatform_Code_code_operation );
@@ -601,14 +605,14 @@ namespace samson
             close(pipeFdPair2[1]);
             
             //Trazas Goyo
-            //LM_M(("Child closing pipe descriptors not used. pipeFdPair1[0]:%d, pipeFdPair2[1]:%d\n", pipeFdPair1[0], pipeFdPair2[1]));
+            LM_T(LmtIsolated,("Child closing pipe descriptors not used. pipeFdPair1[0]:%d, pipeFdPair2[1]:%d\n", pipeFdPair1[0], pipeFdPair2[1]));
             
             for ( int i = 3 ;  i < 1024 ; i++ )
                 if( ( i != pipeFdPair1[1] ) && ( i!= pipeFdPair2[0] ) && ( i!= logFd ) ) 
                 {
                     
                     //Trazas Goyo
-                    //LM_M(("Child closing descriptors but pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, logFd:%d. fd:%d\n", pipeFdPair1[1], pipeFdPair2[0], logFd, i));
+                    LM_T(LmtIsolated, ("Child closing descriptors but pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, logFd:%d. fd:%d\n", pipeFdPair1[1], pipeFdPair2[0], logFd, i));
                     
                     close( i );
                 }
@@ -644,7 +648,7 @@ namespace samson
             close(pipeFdPair2[0]);
             
             //Trazas Goyo
-            //LM_M(("Child closing used pipe descriptors because finished. pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n", pipeFdPair1[1], pipeFdPair2[0]));
+            LM_T(LmtIsolated,  ("Child closing used pipe descriptors because finished. pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n", pipeFdPair1[1], pipeFdPair2[0]));
         }
         
         //LM_M(("Finishing runBackgroundProcessRun..."));

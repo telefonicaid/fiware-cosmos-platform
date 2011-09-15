@@ -25,11 +25,11 @@ namespace engine
     class ReadFile
     {
         std::string fileName;   // Filename
-        FILE *file;             // File pointer to access this file
         
         size_t offset;          // Offset positiong while reading the file
         
     public:
+        FILE *file;             // File pointer to access this file
         
         ReadFile( std::string _fileName );
 

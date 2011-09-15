@@ -661,7 +661,7 @@ namespace samson
     
     void WorkerTask::setError(std::string _error_message)
     {
-        //LM_W(("Seting error for task %lu: %s" , task_id , _error_message.c_str() ));
+        LM_W(("Seting error for task %lu: %s" , task_id , _error_message.c_str() ));
         
         // Set the error of the operation
         error.set( _error_message );

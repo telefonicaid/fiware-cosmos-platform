@@ -148,6 +148,7 @@ namespace samson {
             
             if( select_error.isActivated() )
             {
+		LM_W(("setError() from Select"));
                 setError("Select",  select_error.getMessage() );
                 return false;
             }
@@ -200,7 +201,7 @@ namespace samson {
 			{
 				if ( commandLine.get_num_arguments() < 3 )
 				{
-					setError("JobManager","Not enougth parameters for set command. Usaeg set variable value");
+					setError("JobManager","Not enougth parameters for set command. Usage set variable value");
 					return false;
 				}
 				
@@ -414,6 +415,7 @@ namespace samson {
             JobItem& item = items.back();
             output << ">> " << item.getLastCommand() << std::endl;		
             output << "\n>>>> Error: " << txt << std::endl;
+	    LM_W(("Error detected by '%s' at '%s' error:'%s'\n", agent.c_str(), item.getLastCommand().c_str(), txt.c_str()));
 
             // Set the error status 
             error_message = output.str();

@@ -63,11 +63,11 @@ namespace au
         } while ((fds == -1) && (errno == EINTR));
         
         if (fds == -1)
-            LM_RP( Select , ("iomMsgAwait: select"));
+            LM_RP( Select , ("iomMsgAwait: select returns -1 with errno:%d for fd:%d in %d seconds", errno, fd, secs));
         else if (fds == 0)
-            LM_RE( Timeout , ("iomMsgAwait: timeout"));
+            LM_RE( Timeout , ("iomMsgAwait: timeout in select returns 0 for fd:%d in %d seconds", fd, secs));
         else if ((fds > 0) && (!FD_ISSET(fd, &rFds)))
-            LM_X(1, ("iomMsgAwait: some other fd has a read pending - this is impossible !"));
+            LM_X(1, ("iomMsgAwait: some other fd has a read pending - this is impossible ! (select for fd:%d)", fd));
         else if ((fds > 0) && (FD_ISSET(fd, &rFds)))
             return OK;
         
@@ -109,9 +109,17 @@ namespace au
         if (iom != OK)
         {
             if( iom == Timeout)
+	    {
+	        //Trazas Goyo
+	        LM_E(("readGPB(): Error(%d) in iomMsgAwait from fd:%d by Timeout after %d secs\n", iom, fd, time_out));
                 return GPB_Timeout;   // Timeout
+	    }
             else
+	    {
+	        //Trazas Goyo
+	        LM_E(("readGPB(): Error(%d) in iomMsgAwait from fd:%d after %d secs\n", iom, fd, time_out));
                 return iom;
+	    }
         }
         
         GPBHeader header;
@@ -120,19 +128,31 @@ namespace au
         if( nb == 0)
 	{
 	    //Trazas Goyo
-	    LM_E(("readGPB(): Error reading header from fd:%d\n", fd));
-            return GPB_ClosedPipe;
+	    LM_E(("readGPB(): Error reading header from fd:%d, nb(%d) == 0 bytes read\n", fd, nb));
+            return GPB_ReadError;
 	}
         
         if( nb < 0)
+	{
+	    //Trazas Goyo
+	    LM_E(("readGPB(): Error reading header from fd:%d, nb(%d) < 0 bytes read\n", fd, nb));
             return GPB_ReadError;
+	}
 
         if( !header.check() )
+	{
+	    //Trazas Goyo
+	    LM_E(("readGPB(): Error corrupted header from fd:%d, nb(%d) bytes read\n", fd, nb));
             return GPB_CorruptedHeader;
+	}
         
         // If not received the rigth size, return NULL
         if (nb != sizeof(header))
+	{
+	    //Trazas Goyo
+	    LM_E(("readGPB(): Error corrupted header from fd:%d, nb(%d) != sizeof_header(%d) bytes read\n", fd, nb, sizeof(header)));
             return GPB_WrongReadSize;   // Error reading the size
+	}
         
         //LM_M(("Reading a GPB message from fd %d (size %d)", fd , (int) size ));
         

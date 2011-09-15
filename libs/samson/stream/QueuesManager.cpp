@@ -125,6 +125,8 @@ namespace samson {
         void QueuesManager::addPopQueue(const network::PopQueue& pq , size_t delilahId, int fromId )
         {
             // Create a new pop queue
+
+
             PopQueue *popQueue = new PopQueue( pq , delilahId, fromId );
             popQueueManager.add( popQueue );
 

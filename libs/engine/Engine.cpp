@@ -27,7 +27,8 @@
 
 #include "engine/Engine.h"							// Own interface
 
-#define ENGINE_MAX_RUNNING_TIME     60
+// Goyo. From 60 to 600
+#define ENGINE_MAX_RUNNING_TIME     600
 
 namespace engine
 {
@@ -219,8 +220,9 @@ namespace engine
                 
                 // Compute the time spent in this element
                 time_t t = cronometer.diffTimeInSeconds();
-                if( t > 60 )
-                    LM_W(("Task %s spent %d seconds. This should not be more than 60", running_element->getDescription().c_str() , (int)t ));
+		// Goyo
+                if( t > 600 )
+                    LM_W(("Task %s spent %d seconds. This should not be more than 600", running_element->getDescription().c_str() , (int)t ));
                 
                 LM_T( LmtEngine, ("[DONE] Engine executing %s" , running_element->getDescription().c_str()));
                 

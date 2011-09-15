@@ -9,6 +9,10 @@ namespace engine {
     {
         fileName = _fileName;
         file = fopen( fileName.c_str() , "r" );
+	if (file == NULL)
+	{
+		LM_W(("Error opening file:'%s' with errno:%d", _fileName.c_str(), errno));
+	}
         offset = 0;
     }
     

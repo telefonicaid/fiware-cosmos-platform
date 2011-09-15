@@ -383,10 +383,12 @@ namespace samson
 		while( hg < KVFILE_NUM_HASHGROUPS )
 		{
 			size_t current_hg_size = reduceInformation->info_hg[hg].size;
+			LM_T(LmtDisk,("Hashgroup:%d, current_hg_size:%lu", hg, current_hg_size));
 			
 			if( current_hg_size > limit_size_per_group )
 			{
-				task->setError("Max size for a hash-group exedeed. Operation not suported");
+				LM_W(("Max size for a hash-group(%d) exceeded. (current_hg_size(%lu) > limit_size_per_group(%lu = sharedMemory(%lu)/2)", hg, current_hg_size, limit_size_per_group, engine::MemoryManager::shared()->getMemory()));
+				task->setError("Max size for a hash-group exceeded. Operation not supported");
 				return;
 			}
 			

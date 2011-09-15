@@ -68,7 +68,6 @@ namespace samson {
 	
 	void ProcessOperation::generateKeyValues( KVWriter *writer )
 	{
-		
 		// Run the operation
 		if( !operation )
 			LM_X(1,("Internal error"));

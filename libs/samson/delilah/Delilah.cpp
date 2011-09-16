@@ -426,14 +426,41 @@ namespace samson {
 		DelilahComponent *c = components.findInMap( id );
         
         if( !c )
-	{
-	    LM_M(("No component found for id:%lu", id));
+        {
+            LM_M(("No component found for id:%lu", id));
             return false;
-	}
+        }
         
 		return( !c->isComponentFinished() );
         
     }
+    
+    bool Delilah::hasError( size_t id )
+    {
+        au::TokenTaker tk( &token );
+        
+		DelilahComponent *c = components.findInMap( id );
+
+        // No process, no error ;)
+        if( !c )
+            return false;
+        
+		return c->error.isActivated();
+    }
+
+    std::string Delilah::errorMessage( size_t id )
+    {
+        au::TokenTaker tk( &token );
+        
+		DelilahComponent *c = components.findInMap( id );
+        
+        // No process, no error ;)
+        if( !c )
+            return "Non valid delilah process";
+        
+		return c->error.getMessage();
+    }
+    
     
     std::string Delilah::getDescription( size_t id )
     {

@@ -126,6 +126,8 @@ namespace samson {
 		
 		// Check a particular if
 		bool isActive( size_t id );
+        bool hasError( size_t id );
+        std::string errorMessage( size_t id );
         std::string getDescription( size_t id );
         
 	public:

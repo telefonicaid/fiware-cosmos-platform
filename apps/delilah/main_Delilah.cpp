@@ -231,7 +231,7 @@ int main(int argC, const char *argV[])
 	if ( strcmp( commandFileName,"") != 0 )
 	{
         if( !delilahConsole )
-            LM_X(1, ("It is not valid to run monitorization with commands"));
+            LM_X(1, ("It is not valid to run monitorization with a commands file"));
         
 		FILE *f = fopen( commandFileName , "r" );
 		if( !f )
@@ -240,6 +240,7 @@ int main(int argC, const char *argV[])
 			exit(0);
 		}
 		
+        int num_line = 0;
 		char line[1024];
         
 		//LM_M(("Processing commands file %s", commandFileName ));
@@ -250,6 +251,7 @@ int main(int argC, const char *argV[])
 				line[ strlen(line)-1]= '\0';
 			
 			//LM_M(("Processing line: %s", line ));
+            num_line++;
 			size_t id = delilahConsole->runAsyncCommand( line );
 			
 			LM_M(("Processing command file. id(%lu) for line:'%s'\n", id, line));
@@ -259,6 +261,14 @@ int main(int argC, const char *argV[])
 				// Wait until this operation is finished
 				while (delilahConsole->isActive( id ) )
 					sleep(1);
+                
+                if( delilahConsole->hasError( id ) )
+                {
+                    std::cerr << "Error: " << delilahConsole->errorMessage( id ) << "\n";
+                    std::cerr << "Error running '" << line <<  "' at line " << num_line << "\n";
+                    std::cerr << "Exiting...";
+                }
+                
 			}
 			LM_M(("Processing command file. id(%lu) finished\n", id));
 		}

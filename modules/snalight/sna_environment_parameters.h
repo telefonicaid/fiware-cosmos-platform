@@ -8,6 +8,9 @@
 #ifndef SNA_ENVIRONMENT_PARAMETERS_H_
 #define SNA_ENVIRONMENT_PARAMETERS_H_
 
+#define SNA_SEPARATOR											"sna.separator"
+#define SNA_SEPARATOR_DEFAULT											"|"
+
 #define SNA_PARAMETER_CDR_FORMAT									"sna.cdr_format"
 #define SNA_PARAMETER_CDR_FORMAT_DEFAULT							"TME"
 #define SNA_PARAMETER_CDR_FORMAT_TME								"TME"

@@ -536,10 +536,10 @@ script mx_calls_cdrs_to_graph
 	rm $2_wkill -f;
 	rm $2_sinks_txt -f;
 
-	set snalight.cdr_format TEMM_VOZ;
-	set snalight.num_cdrs_for_strong_connection 2;
-	set snalight.max_connections_per_node 8;
-	set snalight.max_strong_connections_per_node 6;
+	set sna.cdr_format TEMM_VOZ;
+	set sna.num_cdrs_for_strong_connection 2;
+	set sna.max_connections_per_node 8;
+	set sna.max_strong_connections_per_node 6;
 
 	snalight.parse_cdrs $1 $1_cdrs_bin_ini -clear -create;
 	snalight.acg_map_dup_cdrs $1_cdrs_bin_ini $1_cdrs_bin_dup -clear -create;
@@ -934,7 +934,7 @@ script extract_dyads
 
 parserOut parse_out_dyads
 {
-	in	system.UInt graph.Link
+	in	system.UInt snalight.Link
 
 	setup
 
@@ -1750,7 +1750,7 @@ data Link
 {
 	 system.UInt id;
 	 system.Float weight;
-	 system.UInt dir;
+	 system.Float dir;
 }
 
 

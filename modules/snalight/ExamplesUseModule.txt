@@ -18,6 +18,10 @@ snalight.mx_calls_cdrs_to_graph TEMM TEMM_graph -clear -create
     snalight.filter_graph_reduce TEMM_graph_wkill TEMM_graph -clear -create
 
 	snalight.social_graph_parse_out_sinks TEMM_graph TEMM_graph_sinks_txt -clear -create
+	download TEMM_graph_sinks_txt TEMM_graph_sinks
+
+	snalight.social_graph_out TEMM_graph TEMM_graph_links_txt -clear -create
+	download TEMM_graph_links_txt TEMM_graph_links
 	
 snalight.compute_cliques TEMM_graph TEMM_cliques -clear -create
 	snalight.spread_nodes_to_strong_connections TEMM_graph TEMM_graph_spread -clear -create

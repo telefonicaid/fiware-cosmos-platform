@@ -11,7 +11,8 @@
 #include <stdlib.h>
 
 //Macros to parte CDRs
-#define GET_CDRS_INIT int pos=0; int pos_field=0; int pos_celd=0; int length_celd=0; int cont=0;
+#define GET_CDRS_INIT int pos=0; int pos_celd=0; int length_celd=0; int pos_field=0; int cont=0; char *endptr=NULL;
+#define GET_CDRS_INIT_NO_MX int pos=0; int pos_field=0;
 #define GET_CDRS_NEXT_FIELD pos_field=pos; while( line[pos] != '|' && line[pos] != '\0' ) pos++; line[pos]='\0';  pos++;
 #define GET_CDRS_LAST_FIELD pos_field=pos; while( line[pos] != '|' ) pos++;
 #define GET_CDRS_GET_NUMBER( num )    num = atoll( &line[pos_field] );
@@ -19,7 +20,7 @@
 #define GET_CDRS_GET_DIR( num )  num = atoll( &line[pos_field] );
 
 #define LENGTH_MAX_CLIENT 10
-#define GET_CDRS_GET_PHONE_MX( num ) num=0; length_celd = pos-pos_field-1; pos_celd=pos_field; if(length_celd>LENGTH_MAX_CLIENT) pos_celd=pos-LENGTH_MAX_CLIENT-1; num = atoll( line+pos_celd ); cont=0;
+#define GET_CDRS_GET_PHONE_MX( num ) (num)=0; length_celd = pos-pos_field-1; pos_celd=pos_field; if(length_celd>LENGTH_MAX_CLIENT) pos_celd=pos-LENGTH_MAX_CLIENT-1; (num) = strtoul( line+pos_celd, &endptr, 10 ); if (*endptr != '\0') (num) = 0; cont=0;
 
 
 #define CHAR_TO_INT(v) (v-48)

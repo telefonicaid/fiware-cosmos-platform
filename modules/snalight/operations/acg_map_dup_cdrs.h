@@ -8,6 +8,7 @@
 
 
 #include <samson/module/samson.h>
+#include <stdint.h>
 
 
 namespace samson{
@@ -28,7 +29,7 @@ namespace snalight{
 			samson::system::UInt phone_rev;
 			samson::snalight::CDR cdr_rev;
 
-			for (int i=0  ; i< inputs[0].num_kvs ;++i)
+			for (uint64_t i=0  ; i< inputs[0].num_kvs ;++i)
 			{
 				phone.parse(inputs[0].kvs[i]->key);
 				cdr.parse(inputs[0].kvs[i]->value);

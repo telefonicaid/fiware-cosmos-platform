@@ -9,6 +9,7 @@
 
 #include <samson/module/samson.h>
 #include "sna_environment_parameters.h"
+#include <stdint.h>
 
 
 namespace samson{
@@ -80,7 +81,7 @@ namespace snalight{
 			//OLM_T ( LMT_User01, ("Leyendo telefono: %ld", node.id.value));
 			//OLM_T ( LMT_User01, ("Leyendo telefono: %ld contacto: %d th: %d", node.id.value, cdr.node, num_cdrs_for_strong));
 
-			for (int i=1 ; i < inputs[0].num_kvs ; ++i) {
+			for (uint64_t i=1 ; i < inputs[0].num_kvs ; ++i) {
 				//destination.parse( inputs[0].kvs[i].value );    //Parse the value for a new cdr
 				cdr.parse( inputs[0].kvs[i]->value); //Parse the value for a new cdr
 				//mobile = cdr.node ;
@@ -98,7 +99,7 @@ namespace snalight{
 					samson::snalight::Link *link = node.linksAdd();
 					link->id.value = mobile.value;
 					// This samson::snalight::Link::double_2_intScaled() function (previuosly snalight_double2int()) hidens a 1000 multiplication
-					link->weight.value = float((double)counter / (double)num_cdrs_for_strong  );
+					link->setWeight( float((double)counter / (double)num_cdrs_for_strong  ));
 					link->dir.value = float((double)counter_dir0 / (double)counter );
 
 					// Keep the new number and put counter back to one again
@@ -119,7 +120,7 @@ namespace snalight{
 			//Add the last one...
 			samson::snalight::Link *link = node.linksAdd();
 			link->id.value = mobile.value;
-			link->weight.value = float( (double)counter / (double)num_cdrs_for_strong  );
+			link->setWeight( float( (double)counter / (double)num_cdrs_for_strong  ));
 			link->dir.value    = float( (double)counter_dir0 / (double)counter );
 
 			//By default all nodes belong to Telefonica

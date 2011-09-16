@@ -94,7 +94,7 @@ public:
 
 
 
-		GET_CDRS_INIT
+		GET_CDRS_INIT_NO_MX
 
 		GET_CDRS_NEXT_FIELD
 		//First field useless
@@ -140,7 +140,7 @@ public:
 
 
 		//OLM_T(LMT_User01, ("Enters:getCDRFromLine_TEMM_VOZ()"));
-
+		//char *dupLine = strdup(line);
 
 		GET_CDRS_INIT
 		//OLM_T(LMT_User01, ("Passed GET_CDRS_INIT"));
@@ -166,6 +166,11 @@ public:
 		//OLM_T(LMT_User01, ("Passed GET_CDRS_NEXT_FIELD for PHONE"));
 		GET_CDRS_GET_PHONE_MX( cdr->node.value )
 		//OLM_T(LMT_User01, ("Passed GET_CDRS_NEXT_FIELD for PHONE"));
+/*		if (cdr->node.value < 10000)
+		{
+			OLM_T(LMT_User06, ("User %lu detected in '%s'(%s) at pos:%d, pos_field:%d, pos_celd:%d, length_celd:%d", cdr->node.value, line+pos_celd, dupLine, pos, pos_field, pos_celd, length_celd));
+		}
+		free(dupLine);*/
 
 		GET_CDRS_NEXT_FIELD
 		//OLM_T(LMT_User01, ("Passed GET_CDRS_NEXT_FIELD for DIR"));
@@ -207,22 +212,22 @@ public:
 		//Global Checking...
 		if(cdr->node.value <= 999999999)
 		{
-			OLM_E(("Error in CDR for cdr->node(%ld) < 999999999", cdr->node.value));
+			//OLM_E(("Error in CDR for cdr->node(%ld) < 999999999", cdr->node.value));
 			return false;
 		}
 		if(node->value <= 999999999)
 		{
-			OLM_E(("Error in CDR for node(%ld) < 999999999", node->value));
+			//OLM_E(("Error in CDR for node(%ld) < 999999999", node->value));
 			return false;
 		}
 		if(node->value == cdr->node.value)
 		{
-			OLM_E(("Error in CDR for (node->value == cdr->node.value)", node->value, cdr->node.value));
+			//OLM_E(("Error in CDR for (node->value == cdr->node.value)", node->value, cdr->node.value));
 			return false;
 		}
 		if((cdr->dir != 1) && (cdr->dir != 0))
 		{
-			OLM_E(("Error in CDR for ((cdr->dir(%ld) != 1) && (cdr->dir != 0))", cdr->dir.value));
+			//OLM_E(("Error in CDR for ((cdr->dir(%ld) != 1) && (cdr->dir != 0))", cdr->dir.value));
 			return false;
 		}
 
@@ -242,6 +247,7 @@ public:
 
 		//OLM_T(LMT_User01, ("Enters:getCDRFromLine_TEMM_VOZ()"));
 
+		//char *dupLine = strdup(line);
 
 		node->value = 0;
 		cdr->node.value = 0;
@@ -272,7 +278,11 @@ public:
 		//OLM_T(LMT_User01, ("Passed GET_CDRS_NEXT_FIELD for PHONE"));
 		GET_CDRS_GET_PHONE_MX( cdr->node.value )
 		//OLM_T(LMT_User01, ("Passed GET_CDRS_GET_PHONE_MX, field:%s, cdr->node:%ld", line+pos_field, cdr->node.value));
-
+		//if (cdr->node.value < 10000)
+		//{
+			//OLM_T(LMT_User06, ("User %lu detected in '%s'(%s) at pos:%d, pos_field:%d, pos_celd:%d, length_celd:%d", cdr->node.value, line+pos_celd, dupLine, pos, pos_field, pos_celd, length_celd));
+		//}
+		//free(dupLine);
 
 		GET_CDRS_NEXT_FIELD
 		//OLM_T(LMT_User01, ("Passed GET_CDRS_NEXT_FIELD for DIR"));
@@ -328,7 +338,7 @@ public:
 		}
 		if((cdr->dir.value != 1) && (cdr->dir.value != 0))
 		{
-			OLM_E(("Error in CDR for ((cdr->dir(%d) != 1) && (cdr->dir != 0))", cdr->dir.value));
+			//OLM_E(("Error in CDR for ((cdr->dir(%d) != 1) && (cdr->dir != 0))", cdr->dir.value));
 			return false;
 		}
 
@@ -476,7 +486,7 @@ public:
 		//LINE   --> "1|689644587|685015313|01/09/08 18:52:44|123|2|2"
 		//Note: multihtread save implementation
 
-		GET_CDRS_INIT
+		GET_CDRS_INIT_NO_MX
 
 		GET_CDRS_NEXT_FIELD     //Unused field
 
@@ -531,7 +541,7 @@ public:
 		//instead of the MemberA userID. thanks to this, the set can be combined with a [UserPhone - User] Data set in a Reduce operation
 		//to replace the MemberB Phone for the MemberB userID, if exists.
 
-		GET_CDRS_INIT
+		GET_CDRS_INIT_NO_MX
 
 		GET_CDRS_NEXT_FIELD
 		//First field useless
@@ -577,7 +587,7 @@ public:
 		//LINE --> "1|689644587|685015313|01/09/08 18:52:44|123|2|2"
 		//Note: multihtread save implementation
 
-		GET_CDRS_INIT
+		GET_CDRS_INIT_NO_MX
 
 		GET_CDRS_NEXT_FIELD
 		GET_CDRS_GET_NUMBER( node->value )
@@ -625,7 +635,7 @@ public:
 	{
 		std::string format = environment->get( SNA_PARAMETER_CDR_FORMAT, SNA_PARAMETER_CDR_FORMAT_DEFAULT);
 
-		OLM_M(("Enters: init()"));
+		//OLM_M(("Enters: init()"));
 
 
 
@@ -658,8 +668,8 @@ public:
 		samson::system::UInt number;
 		CDR cdr;
 
-		ss:system::Date previous_date;    //Date of the last CDR
-		previous_date.day.value = 0;      //Make sure it is not the same as anything
+		//ss:system::Date previous_date;    //Date of the last CDR
+		//previous_date.day.value = 0;      //Make sure it is not the same as anything
 
 		if( (this->*_getCDRFunction)(line , &number ,  &cdr ) )
 		{
@@ -692,37 +702,8 @@ public:
 		samson::system::UInt number;
 		CDR cdr;
 
-		ss:system::Date previous_date;    //Date of the last CDR
-		previous_date.day.value = 0;      //Make sure it is not the same as anything
-
 		size_t offset = 0;
 		size_t line_begin = 0;
-
-		// Already in init()
-		/********************************************************
-		std::string format = environment->get( SNA_PARAMETER_CDR_FORMAT, SNA_PARAMETER_CDR_FORMAT_DEFAULT);
-
-		if( format.compare("TME")==0 )
-			_getCDRFunction = &parse_cdrs::getCDRFromLine_TME;
-		else if( format.compare("JAJAH")==0 )
-			_getCDRFunction = &parse_cdrs::getCDRFromLine_JAJAH;
-		else if( format.compare("MX")==0 )
-			_getCDRFunction = &parse_cdrs::getCDRFromLine_MX;
-		else if( format.compare("TASA")==0 )
-			_getCDRFunction = &parse_cdrs::getCDRFromLine_TASA;
-		else if( format.compare("TEMM_VOZ")==0 )
-			_getCDRFunction = &parse_cdrs::getCDRFromLine_TEMM_VOZ_15fields;
-		else if( format.compare("TEMM_SMS")==0 )
-			_getCDRFunction = &parse_cdrs::getCDRFromLine_TEMM_SMS;
-		else if( format.compare("TEMM_MMS")==0 )
-			_getCDRFunction = &parse_cdrs::getCDRFromLine_TEMM_MMS;
-		else {
-			OLM_E(("Error. Format not supported\n"));
-			exit(1);
-		}
-		/****************************************************/
-
-		bool first = true;
 
 		while( offset < length )
 		{

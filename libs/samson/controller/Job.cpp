@@ -377,15 +377,14 @@ namespace samson {
         
         network::CommandResponse *response = p2->message->mutable_command_response();
         response->mutable_command()->CopyFrom(*command);
-        
+
+        // Mark this response as the end of this job
+        response->set_finish_command( true );
+
+        // If there is an error, just report it
         if( _status == error )
         {
-            response->set_error_message( error_message );
-            response->set_error_job_id( id );
-        }
-        else 
-        {
-            response->set_finish_job_id( id );
+            response->mutable_error()->set_message( error_message );
         }
         
         // Inform about ellapsed time

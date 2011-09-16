@@ -29,25 +29,29 @@ namespace samson {
 	{
 		if( msgCode == Message::CommandResponse )
 		{
-            if( packet->message->command_response().has_finish_command() && packet->message->command_response().finish_command() )
-		{
-		LM_M(("command:'%s' fromId(%d) setComponentFinished() by has_finish_command()", command.c_str(), fromId));
-                setComponentFinished();
-		}
             
-			if( packet->message->command_response().has_finish_job_id() || packet->message->command_response().has_error_job_id() )
+            // Check if this command is finished
+            if( packet->message->command_response().has_finish_command() )
             {
-                if( packet->message->command_response().has_error_job_id() )
-		{
-		LM_M(("command:'%s' fromId(%d) setComponentFinishedWithError() by .has_error_job_id()", command.c_str(), fromId));
-                    setComponentFinishedWithError( packet->message->command_response().error_message() );
-		    }
+                
+                if ( packet->message->command_response().has_error() )
+                {
+                    // Finish with an error
+                    setComponentFinishedWithError( packet->message->command_response().error().message() );
+                }
                 else
-		{
-		LM_M(("command:'%s' fromId(%d) setComponentFinished() by .has_finish_job_id()", command.c_str(), fromId));
+                {
+                    // Just finish without an error
                     setComponentFinished();
-		    }
+                }
             }
+            
+            // Show messages if any
+			if( packet->message->command_response().has_message() )
+            {
+                delilah->showMessage( au::str("Message for process %lu: %s" , id , packet->message->command_response().message().c_str() ) ); 
+            }
+            
 		}
 		
 		// Always forward the message to delilah

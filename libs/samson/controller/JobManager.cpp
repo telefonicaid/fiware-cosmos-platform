@@ -19,7 +19,9 @@ namespace samson {
 			Packet *p2 = new Packet(Message::CommandResponse);
 			network::CommandResponse *response = p2->message->mutable_command_response();
 			response->mutable_command()->CopyFrom( command );
-			response->set_new_job_id( job_id );
+            
+            response->set_message( au::str("New job created at controller with id %lu", job_id ) );
+            
 			p2->message->set_delilah_id( sender_id );
 			controller->network->send( fromId, p2 );
 		}

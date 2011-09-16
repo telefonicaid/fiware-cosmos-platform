@@ -1165,7 +1165,8 @@ namespace samson
                 
 			case Message::CommandResponse:
 			{
-				
+                // No more messages of this type. All managed by DelilahCommandComponent
+/*				
 				if( packet->message->command_response().has_new_job_id() )
 				{
 					std::ostringstream message;
@@ -1199,7 +1200,7 @@ namespace samson
 				
 				if( packet->message->command_response().has_error_message() )
 					writeErrorOnConsole( packet->message->command_response().error_message()  );
-                
+*/                
 			}
 				break;
 				

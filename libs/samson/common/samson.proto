@@ -221,7 +221,7 @@ message WorkerTaskConfirmation
 
 message Command
 {
-	required string  command		= 1;    // String to send a txt command
+	required string  command		        = 1;    // String to send a txt command
 	optional Environment environment    	= 3;	// Initial environment variables for the new job
 }
 
@@ -232,24 +232,21 @@ message Command
 
 message CommandResponse
 {
-	required Command command= 1;		    // Copy of the original command message
+	required Command command= 1;		        // Copy of the original command message
 
-	optional uint64 new_job_id     = 2;         // Id of the new job ( if a new job is created )
-	optional uint64 finish_job_id  = 11;        // Id of the job that has finished 
-	optional uint64 error_job_id   = 12;   	    // If of the job that finished with an error
+	optional bool finish_command = 16;			// Flag to indicate that this command is finished at the controller side
 
-	optional string error_message = 10;   	    // An error message to show on screen
+	optional Error error = 2; 					// Optional field to report an error in this command
+
+
+	// Auxiliar information
 	optional int32 ellapsed_seconds = 15;	    // Ellapsed time of this process
+	optional string message = 20;	  			// Optional message used to show something on delilah
 
-	// Flag to indicate that this command is finished at the controller side ( note simple commands like ls )
-	optional bool finish_command = 16;
 
-	// Information to the user about the status of the controller
-
-	optional OperationList operation_list		         = 101;
-	optional DataList      data_list	  	         = 102;
-
+	// Old method to report the current queues ( still used at workers )
 	optional QueueList     queue_list		         = 103;
+
 }
 
 

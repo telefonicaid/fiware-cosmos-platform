@@ -410,10 +410,10 @@ namespace samson {
                         Packet *p2 = new Packet(Message::CommandResponse);
                         network::CommandResponse *response = p2->message->mutable_command_response();
                         response->mutable_command()->CopyFrom(  packet->message->command() );
-                        response->set_finish_command(true);
                         p2->message->set_delilah_id( packet->message->delilah_id() );
 
-                        response->set_error_message("Error. Command \"hello\" is not valid from a delilah client.");
+                        response->mutable_error()->set_message("Error. Command \"hello\" is not valid from a delilah client.");
+                        response->set_finish_command( true );
                         
                         network->send( fromId,  p2);
                         
@@ -448,36 +448,6 @@ namespace samson {
 					
 					return;
 				}				
-				
-				if( cmdLine.isArgumentValue( 0 , "d" , "datas" ) )
-				{
-					// Send a message with the list of datas
-					
-					Packet *p2 = new Packet(Message::CommandResponse);
-					network::CommandResponse *response = p2->message->mutable_command_response();
-                    response->set_finish_command(true);
-					response->mutable_command()->CopyFrom(packet->message->command());
-					p2->message->set_delilah_id( packet->message->delilah_id() );
-					ModulesManager::shared()->fill( response->mutable_data_list() , command );
-					network->send(fromId, p2);
-					
-					return;
-				}
-
-				if( cmdLine.isArgumentValue( 0 , "o" , "operations" ) )
-				{
-					// Send a message with the list of operations
-					
-					Packet *p2 = new Packet(Message::CommandResponse);
-					network::CommandResponse *response = p2->message->mutable_command_response();
-                    response->set_finish_command(true);
-					response->mutable_command()->CopyFrom(packet->message->command());
-					p2->message->set_delilah_id( packet->message->delilah_id() );
-					ModulesManager::shared()->fill( response->mutable_operation_list() , command );
-					network->send( fromId, p2);
-					
-					return;
-				}
 
 				// Spetial commands
 				if( cmdLine.isArgumentValue( 0 , "kill" , "k" ) )

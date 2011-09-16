@@ -554,7 +554,7 @@ namespace samson {
 	};
 
 	
-	typedef struct BlockInfo
+	struct BlockInfo
     {
         int num_blocks;
         size_t size;

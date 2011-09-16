@@ -21,8 +21,9 @@ namespace samson {
         class QueueItem
         {
             
-            friend class QueuesManager;
+            friend class StreamManager;
             friend class Queue;
+            friend class WorkerCommand;
             
             Queue * myQueue;            // Pointer to the queue this item belong
             
@@ -58,7 +59,7 @@ namespace samson {
             
             bool isWorking();
 
-            FullKVInfo getFullKVInfo();
+            void update( BlockInfo &block_info);
             
         private:
          

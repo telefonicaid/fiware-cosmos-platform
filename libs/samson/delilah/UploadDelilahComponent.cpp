@@ -58,7 +58,7 @@ namespace samson
 		if( totalSize == 0)
 		{
 			status = finish_with_error;
-            setComponentFinishedWithError("Not data to upload");
+            error.set("Not data to upload");
 		}
         
         if( fileNames.size() == 1 )

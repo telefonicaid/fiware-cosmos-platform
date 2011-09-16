@@ -17,11 +17,11 @@ map export_to_mongo
 	helpLine "Export data to a mongoDb server at 'txt_md.mongo' to table 'txt_md.mongo_table'"
 }
 
-map hdfs_dump_to_file
-{
-	in system.String system.UInt
-	helpLine "Dump KV data to a HDFS file in server 'hdfs.ip' and with path 'hdfs.path'"
-}
+#map hdfs_dump_to_file
+#{
+#	in system.String system.UInt
+#	helpLine "Dump KV data to a HDFS file in server 'hdfs.ip' and with path 'hdfs.path'"
+#}
 
 data BulkData
 {

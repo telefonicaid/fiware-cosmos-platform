@@ -67,7 +67,7 @@ namespace engine
         shared_memory_num_buffers = _shared_memory_num_buffers;
         shared_memory_size_per_buffer	= _shared_memory_size_per_buffer;
 		
-        sharedMemoryIdsFileName =   samson::SamsonSetup::shared()->baseDirectory + "/shared_memory_ids.data";
+        sharedMemoryIdsFileName =   samson::SamsonSetup::shared()->logDirectory + "/shared_memory_ids.data";
         
 		if( shared_memory_size_per_buffer == 0)
 			LM_X(1,("Error in setup, invalid value for shared memory size %u", shared_memory_size_per_buffer ));

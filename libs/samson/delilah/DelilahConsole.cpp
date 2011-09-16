@@ -180,7 +180,7 @@ namespace samson
     "\n"
     "For more help type help <command>\n"
     "\n"
-    "General platform commands:             operations, datas, reload_modules, set, unset , ls_local , rm_local\n"
+    "General platform commands:             operations, datas, reload_modules, set, unset , ls_local , rm_local , ls_operation_rates\n"
     "\n"
     "Getting information from platform:     info , ps , ls_modules, engine_show , ps_network\n"
     "\n"
@@ -188,10 +188,10 @@ namespace samson
     "\n"
     "Getting info for batch processing:      ps_jobs , ps_tasks \n"
     "\n"
-    "Stream processing commands:            push , pop , add_stream_operation , rm_stream_operation , set_stream_operation_property\n"
-    "                                       rm_queue , play_queue , pause_queue\n" 
+    "Stream processing commands:            run_stream_operation, push , pop , add_stream_operation , rm_stream_operation , \n"
+    "                                       set_stream_operation_property, rm_queue , cp_queue , play_queue , pause_queue\n" 
     "\n"
-    "Getting info for stream processing:    ls_queues , ps_stream , ls_stream_operation \n"
+    "Getting info for stream processing:    ls_queues , ps_stream , ls_stream_operation , ls_block_manager \n"
     "\n"
     ;
     
@@ -262,7 +262,13 @@ namespace samson
         { "ps_stream"               , "ps_stream        Get a list of current stream tasks"},
         
         { "engine_show"             , "engine_show      Show a status information of the engine platform running on all the elements of SAMSON platform"},
+    
+        { "run_stream_operation"    , "run_stream_operation [op_name] [queues...] [-clear_inputs]         Run a particular operation over stream queues"},
         
+        { "ls_block_manager"        , "ls_block_manager             Get information about the stream-manager for each worker" },
+    
+        { "cp_queue"                , "cp_queue  <from_queue> <to_queue>            Copy contents of one queue to another"},
+        { "ls_operation_rates"      , "ls_operation_rates           get a list of statistics about operations in the platform"},
         { NULL , NULL }   
     };
     
@@ -721,6 +727,12 @@ namespace samson
         // WorkerCommands
         std::string main_command = commandLine.get_argument(0);
         
+
+        // Command to remove queues 
+        if( main_command == "run_stream_operation" )
+        {
+            return sendWorkerCommand( command , NULL );
+        }
         
         // Command to remove queues 
         if( main_command == "rm_queue" )
@@ -733,6 +745,20 @@ namespace samson
             else
                 return sendWorkerCommand( command , NULL );
         }
+
+        // Command to remove queues 
+        if( main_command == "cp_queue" )
+        {
+            if( commandLine.get_num_arguments() < 3 )
+            {
+                writeErrorOnConsole( au::str("Usage: cp_queue form_queue to_queue" ) );
+                return 0;
+            }
+            else
+                return sendWorkerCommand( command , NULL );
+        }
+        
+        
         
         // Command to play / pause statess
         if( main_command == "pause_queue" )
@@ -887,6 +913,57 @@ namespace samson
             return 0;
         }
         
+        if( (main_command == "s") || (main_command == "status") )
+        {
+            // Show status
+            int controller_update_time = getUpdateSeconds();
+            
+            if( controller_update_time > 20 )
+            {
+                std::ostringstream output;
+                output << "Information not updated correctly ( " << au::time_string( controller_update_time ) << " )\n"; 
+                writeErrorOnConsole( output.str() );
+                return 0;
+            }
+            
+            
+            std::ostringstream output;
+            output << "SAMSON CLuster:\n";
+            output << "------------------------------------------------------------\n";
+            output << "Information updated correctly ( " << au::time_string( controller_update_time ) << " )\n"; 
+            output << "------------------------------------------------------------\n";
+
+            std::string txt = getStringInfo( "/update_time" , getUpdateTimeInfo, i_controller | i_no_title ); 
+            output << txt;
+            
+            output << "------------------------------------------------------------\n";
+            
+            std::string txt2 = getStringInfo("/engine_system", getEngineSimplifiedSystemInfo, i_worker ); 
+            output << txt2;
+            
+            writeOnConsole( output.str() );
+            
+            return 0;
+        }
+        
+        if( main_command == "ls_block_manager" )
+        {
+            std::string txt = getStringInfo( "//block_manager" , getBlockManagerInfo, i_worker ); 
+            writeOnConsole( txt );
+            return 0;
+            
+        }
+        
+        
+        if( main_command == "ls_operation_rates" )
+        {
+            
+            std::string txt = getStringInfo( "//process_manager//rates//simple_rate_collection" , getOperationRatesInfo, i_worker ); 
+            writeOnConsole( txt );
+            return 0;
+            
+        }
+
         
         if( main_command == "ls_queues" )
         {
@@ -905,7 +982,7 @@ namespace samson
             return 0;
             
         }
-                
+        
         if( main_command == "ls_modules" )
         {
             

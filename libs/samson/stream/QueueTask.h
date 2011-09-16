@@ -54,6 +54,7 @@ namespace samson {
                 state_lock  = new BlockList( au::str("Task %lu state lock" , id ) , id , true );
                 
                 ready_flag = false;
+                
             }
             
             

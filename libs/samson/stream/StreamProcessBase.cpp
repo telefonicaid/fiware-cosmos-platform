@@ -26,7 +26,7 @@ namespace samson {
 #pragma mark ProcessItemKVGenerator
         
         StreamProcessBase::StreamProcessBase( size_t _task_id , const network::StreamOperation& _streamOperation ) 
-        : ProcessIsolated( _streamOperation.operation() , ProcessIsolated::key_value , _streamOperation.output_queues_size() , _streamOperation.num_workers() )
+        : ProcessIsolated( _streamOperation.operation() , ProcessIsolated::key_value )
         {
             
             // Get the task_id
@@ -42,42 +42,22 @@ namespace samson {
             streamOperation = new network::StreamOperation();
             streamOperation->CopyFrom( _streamOperation );
 
+            // Set number of workers in the stream operation
+            setNumWorkers( _streamOperation.num_workers() );
                 
         }
 
-
-        
-        
         StreamProcessBase::~StreamProcessBase()
         {
             if( streamOperation )
                 delete streamOperation;
         }
         
-        void StreamProcessBase::runIsolated()
-        {
-            switch (type) {
-                case key_value:
-                    // Generate the key-values
-                    generateKeyValues( getWriter() );
-                    getWriter()->flushBuffer(true);
-                    break;
-                case txt:
-                    // Generate TXT content using the entire buffer
-                    generateTXT( getTXTWriter() );
-                    getTXTWriter()->flushBuffer(true);
-                    break;
-            }
-            
-        }
-        
-        
+
         void StreamProcessBase::processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )
         {
             //LM_M(("[%s] Processing buffer %s" , streamOperation->operation().c_str(), au::str(buffer->getSize()).c_str() ));
-            
             sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues(output) );
-            
         }
         
         void StreamProcessBase::sendBufferToQueue( engine::Buffer *buffer , int outputWorker , std::string queue_name  )

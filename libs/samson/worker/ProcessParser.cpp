@@ -14,7 +14,7 @@ namespace samson
 		parserSubTask = _parserSubTask;
 		
 		// Name of the generator
-		operation_name = workerTask->operation();	
+		setProcessItemOperationName( workerTask->operation() );	
 		
 		// Set the buffer size the max size
         if( parserSubTask->buffer )
@@ -23,7 +23,7 @@ namespace samson
             
             // Geting the operation and the data base address
             ModulesManager *modulesManager = ModulesManager::shared();
-            operation = modulesManager->getOperation( operation_name );
+            operation = modulesManager->getOperation( workerTask->operation() );
 
             // Note that the first sizeof(KVheader) bytes are the header
             
@@ -51,7 +51,7 @@ namespace samson
                 return;
             }
             
-            parser->environment = &environment;
+            parser->environment = &operation_environment;
             parser->tracer = this;
             parser->operationController = this;
             

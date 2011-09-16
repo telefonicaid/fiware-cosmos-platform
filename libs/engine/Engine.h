@@ -69,10 +69,13 @@ namespace engine
         au::Cronometer cronometer;                      // Cronometer to count the time spend by the current element ( maximum 60 seconds )
 
         ObjectsManager objectsManager;                  // Management of objects ( notification )
+
         
 		Engine();
 
 	public:
+
+        au::Cronometer uptime;                          // Total up time
 		
 		~Engine();
         

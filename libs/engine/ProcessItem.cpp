@@ -43,9 +43,8 @@ namespace engine
         
         canceled = false;   // By default it is not canceled
         
-        listenerId = 0; // By default, nobody is notified when finished
-        
-        
+        operation_name = "unknown";     // By default no statistcs are done
+        working_size = 0;               // By default no content to be processed
 	}
     
     ProcessItem::~ProcessItem()
@@ -168,10 +167,14 @@ namespace engine
         return canceled;
     }
     
-    void ProcessItem::setListenerId( size_t _listenerId )
+    void ProcessItem::addListenerId( size_t _listenerId )
     {
-        listenerId = _listenerId;
+        listeners.insert( _listenerId );
     }
     
+    void ProcessItem::setProcessItemOperationName( std::string _operation_name )
+    {
+        operation_name = _operation_name;
+    }
 	
 }

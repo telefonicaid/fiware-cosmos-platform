@@ -13,8 +13,7 @@
 
 #define notification_samson_worker_send_packet          "notification_samson_worker_send_packet"
 
-// Notification to review automatic-operation for queues
-#define notification_review_stream_operations           "notification_review_stream_operations"
-
+// Notification to review worker_task ( in Stream manager )
+#define notification_review_stream_manager                "notification_review_stream_manager"
 
 #endif

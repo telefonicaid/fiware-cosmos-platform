@@ -98,7 +98,9 @@ namespace samson {
 		if ( _status == finish )
 		{
 			if ( s != finish)
-				LM_W(("Seting a different state for a finished job"));
+            {
+				//LM_W(("Seting a different state for a finished job"));
+            }
 			return;
 		}
 
@@ -412,10 +414,15 @@ namespace samson {
                 output << ">> " << i->parent_command << std::endl;
             
             // Current line in the current item
-            JobItem& item = items.back();
-            output << ">> " << item.getLastCommand() << std::endl;		
+            if( items.size() > 0 )
+            {
+                JobItem& item = items.back();
+                output << ">> " << item.getLastCommand() << std::endl;		
+            }
+            
             output << "\n>>>> Error: " << txt << std::endl;
-	    LM_W(("Error detected by '%s' at '%s' error:'%s'\n", agent.c_str(), item.getLastCommand().c_str(), txt.c_str()));
+
+            //LM_W(("Error detected by '%s' at '%s' error:'%s'\n", agent.c_str(), item.getLastCommand().c_str(), txt.c_str()));
 
             // Set the error status 
             error_message = output.str();

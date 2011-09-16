@@ -3,28 +3,32 @@
 
 #include "engine/Buffer.h"                          // samson::Buffer
 #include "engine/MemoryManager.h"                   // samson::MemoryManager
+
 #include "samson/network/Packet.h"					// samson::Packet
 #include "samson/network/NetworkInterface.h"		// samson::NetworkInterface
+
 #include "SharedMemoryItem.h"                       // samson::SharedMemoryItem
+
 #include "samson/isolated/SharedMemoryManager.h"    // samson::SharedMemoryManager
 #include "samson/isolated/ProcessIsolated.h"        // samson::ProcessIsolated
+
+#include "samson/module/ModulesManager.h"           // samson::ModulesManager
 
 namespace samson {
 
 	
-	ProcessWriter::ProcessWriter( ProcessIsolated * _workerTaskItem  )
+	ProcessWriter::ProcessWriter( ProcessIsolated * _processIsolated  )
 	{
+        
 		// Pointer to the worker task item
-		workerTaskItem = _workerTaskItem;
+		processIsolated = _processIsolated;
 		
 		// Get the assignated shared memory region
-		item = engine::SharedMemoryManager::shared()->getSharedMemory( workerTaskItem->shm_id );
+		item = engine::SharedMemoryManager::shared()->getSharedMemory( processIsolated->shm_id );
 		
 		// General output buffer
 		buffer = item->data;
 		size = item->size;
-		
-		//std::cout << "Process Writer with " << size << " bytes\n";
 		
 		if( !buffer )
 			LM_X(1,("Internal error: No buffer in a ProcessWriter"));
@@ -32,11 +36,51 @@ namespace samson {
 			LM_X(1,("Wrong size in a ProcessWriter operation"));
 		
 		// Number of outputs
-		num_outputs = workerTaskItem->num_outputs;
+		num_outputs = processIsolated->num_outputs;
 		
 		// Number of servers
-		num_servers = workerTaskItem->num_workers;
+		num_workers = processIsolated->num_workers;
 		
+        // Hash code for the outputs
+        keyValueHash = new KeyValueHash[ num_outputs ];
+
+        outputKeyDataInstance = (DataInstance **) malloc( sizeof(DataInstance *) * num_outputs );
+        outputValueDataInstance = (DataInstance **) malloc( sizeof(DataInstance *) * num_outputs );
+        
+        if( num_outputs != (int)processIsolated->outputFormats.size() )
+        {
+            processIsolated->setUserError("Not possible to get the hash-code of the data instances used at the output since output formats are not defined");
+            return;
+        }
+        else
+        {
+            for ( int i = 0 ; i < (int)num_outputs ; i++ )
+            {
+                std::string key_data = processIsolated->outputFormats[i].keyFormat ;
+                std::string value_data = processIsolated->outputFormats[i].valueFormat;
+                
+                Data* keyData =  ModulesManager::shared()->getData( key_data );
+                Data* valueData =  ModulesManager::shared()->getData( value_data );
+         
+                if( !keyData )
+                {
+                    processIsolated->setUserError( au::str("Data %s not found" , key_data.c_str() ) );
+                    return;
+                }
+                if( !valueData )
+                {
+                    processIsolated->setUserError( au::str("Data %s not found" , value_data.c_str() ) );
+                    return;
+                }
+                
+                outputKeyDataInstance[i] = (DataInstance*)keyData->getInstance();
+                outputValueDataInstance[i] = (DataInstance*)valueData->getInstance();
+                
+                keyValueHash[i].key_hash = outputKeyDataInstance[i]->getHashType();
+                keyValueHash[i].value_hash = outputValueDataInstance[i]->getHashType();
+            }
+        }
+        
 		// Init the minibuffer
 		miniBuffer = (char*) malloc( KVFILE_MAX_KV_SIZE );
 		miniBufferSize = 0;
@@ -44,12 +88,12 @@ namespace samson {
 		// Outputs structures placed at the begining of the buffer
 		channel = (OutputChannel*) buffer;
 		
-		if( size < sizeof(OutputChannel)* num_outputs* num_servers )
+		if( size < sizeof(OutputChannel) * num_outputs * num_workers )
 			LM_X(1,("Wrong size for a ProcessWriter operation"));
 		
 		// Buffer starts next
-		node = (NodeBuffer*) ( buffer + sizeof(OutputChannel) * num_outputs * num_servers );
-		num_nodes = ( size - (sizeof(OutputChannel)* num_outputs* num_servers )) / sizeof( NodeBuffer );
+		node = (NodeBuffer*) ( buffer + sizeof(OutputChannel) * num_outputs * num_workers );
+		num_nodes = ( size - (sizeof(OutputChannel)* num_outputs* num_workers )) / sizeof( NodeBuffer );
 	
 		// Clear this strucutre to receive new key-values
 		clear();
@@ -57,44 +101,93 @@ namespace samson {
 	
 	ProcessWriter::~ProcessWriter()
 	{
-		// Free the map of the shared memory
-		engine::SharedMemoryManager::shared()->freeSharedMemory( item );		
+		// Free the shared memory item element
+		// Note: It is not necessary to delete item itself, since it has been done inside "freeSharedMemory"
+        if( item )
+            engine::SharedMemoryManager::shared()->freeSharedMemory( item );		
 
-		// Note: It is not necessary to delete item since it has been done inside "freeSharedMemory"
+		// Free minibuffer used to serialize key-value here
+        // Note: If there was an error in the constructor, it may be NULL
+        if( miniBuffer )
+            free( miniBuffer );
         
-		// Free minibuffer used to serialize key-value here!!
-		free( miniBuffer );
+        // Delete key-value hash vector
+        // Note: If there was an error in the constructor, it may be NULL
+        if( keyValueHash )
+            delete[] keyValueHash;
+        
+        if( outputKeyDataInstance )
+        {
+            for (int i = 0 ; i < num_outputs ; i ++)
+                delete outputKeyDataInstance[i];
+            free( outputKeyDataInstance );
+        }
+        
+        if( outputValueDataInstance )
+        {
+            for (int i = 0 ; i < num_outputs ; i ++)
+                delete outputValueDataInstance[i];
+            free( outputValueDataInstance );
+        }
+        
 	}
 	
 	void ProcessWriter::emit( int output , DataInstance *key , DataInstance *value )
 	{
+        // Check if DataInstances used for key and value are correct
+        
+        if( key->getHashType() != keyValueHash[output].key_hash )
+        {
+            
+            std::ostringstream error_message;
+            error_message << "Different hash-type for key at output # " << output;
+            error_message << ". Used " << key->getName() << " instead of ";
+            error_message << outputKeyDataInstance[output]->getName() << ".";
+
+            processIsolated->setUserError( error_message.str() );
+            return;
+        }
+
+        if( value->getHashType() != keyValueHash[output].value_hash )
+        {
+            std::string data_name = processIsolated->outputFormats[output].valueFormat;
+            
+            std::ostringstream error_message;
+            error_message << "Different hash-type for value at output # " << output;
+            error_message << ". Used " << value->getName() << " instead of ";
+            error_message << outputValueDataInstance[output]->getName() << ".";
+            
+            processIsolated->setUserError( error_message.str() );
+            return;
+        }
         
         //LM_M(("PW emit: %s %s", key->str().c_str()  , value->str().c_str() ));
         
 		// Serialize to the minibuffer
 		
-		size_t key_size		= key->serialize( miniBuffer );
+		size_t key_size             = key->serialize( miniBuffer );
         size_t key_size_theoretical = key->parse( miniBuffer );
         
         if( key_size != key_size_theoretical  )
             LM_W(("Error serializing data. Different ky size serialzing key %lu sv %lu"  , key_size , key_size_theoretical));
         
-		size_t value_size	= value->serialize( miniBuffer + key_size );
+		size_t value_size               = value->serialize( miniBuffer + key_size );
 		size_t value_size_theoretical	= value->parse( miniBuffer + key_size );
         
         if( value_size != value_size_theoretical )
             LM_W(("Error serializing data. Different ky size serialzing value %lu sv %lu"  , value_size , value_size_theoretical));
         
+        // Total size including key & value
 		miniBufferSize		= key_size + value_size;
 		
 		// Emit the miniBuffer to the rigth place
 		int hg = key->hash(KVFILE_NUM_HASHGROUPS); 
 		
 		// Detect the server to sent
-		int server = key->partition(num_servers);
+		int server = key->partition(num_workers);
 		
 		// Get a pointer to the current node
-		OutputChannel * _channel		= &channel[ output * num_servers + server ];	// Output channel ( output + server )
+		OutputChannel * _channel		= &channel[ output * num_workers + server ];	// Output channel ( output + server )
 		HashGroupOutput * _hgOutput		= &_channel->hg[hg];							// Current hash-group output
 		
 		size_t availableSpace = (num_nodes - new_node)*KV_NODE_SIZE;
@@ -163,9 +256,9 @@ namespace samson {
 	{
 		// Send code to be understoo
         if ( finish ) 
-            workerTaskItem->sendCode( WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH );
+            processIsolated->sendCode( WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH );
         else
-            workerTaskItem->sendCode( WORKER_TASK_ITEM_CODE_FLUSH_BUFFER );
+            processIsolated->sendCode( WORKER_TASK_ITEM_CODE_FLUSH_BUFFER );
 		
 		// Clear the buffer
 		clear();
@@ -175,7 +268,7 @@ namespace samson {
 	void ProcessWriter::clear()
 	{
 		// Init all the outputs
-		for (int c = 0 ; c < (num_outputs*num_servers) ; c++)
+		for (int c = 0 ; c < (num_outputs*num_workers) ; c++)
 			channel[c].init();
 		new_node = 0;
 	}

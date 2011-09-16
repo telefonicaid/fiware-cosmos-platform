@@ -20,14 +20,14 @@ namespace samson {
 		operationSubTask = _operationSubTask;
 		
 		// Name of the generator
-		operation_name = workerTask->operation();	
+		setProcessItemOperationName( workerTask->operation() );	
 				
 		// Set the buffer size the max size
 		operationSubTask->buffer->setSize( operationSubTask->buffer->getMaxSize() );
 		
 		// Geting the operation and the data base address
 		ModulesManager *modulesManager = ModulesManager::shared();
-		operation = modulesManager->getOperation( operation_name );
+		operation = modulesManager->getOperation( workerTask->operation() );
 		data = operationSubTask->buffer->getData();
 		
 
@@ -103,7 +103,7 @@ namespace samson {
             exit(1);
         }
 
-        operationInstance->environment = &environment;
+        operationInstance->environment = &operation_environment;
         operationInstance->tracer = this;
         operationInstance->operationController = this;
 		

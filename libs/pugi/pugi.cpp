@@ -24,8 +24,6 @@
 namespace pugi
 {
     
-    
-    
     std::string str( const xml_document& xml_document , int deep )
     {
         std::ostringstream output;

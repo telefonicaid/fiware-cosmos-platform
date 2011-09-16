@@ -228,6 +228,11 @@ namespace samson
 
 			}
 
+            // get name
+            file << "\tstd::string getName(){\n";
+            file << "\t\treturn \"" << module << "." << name << "\";\n";
+            file << "\t}\n\n";
+            
 			//Parse
 			file << "\tint parse(char *data){\n" ;
 			file << "\t\tint offset=0;\n";

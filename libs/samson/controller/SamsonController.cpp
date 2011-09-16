@@ -66,7 +66,7 @@ namespace samson {
 
         // XML status information commected from workers
         worker_xml_info             = new std::string[num_workers];
-        cronometer_worker_xml_info = new au::Cronometer[ num_workers ];
+        cronometer_worker_xml_info  = new au::Cronometer[ num_workers ];
         
 
 		// Description for the PacketReceiver
@@ -631,14 +631,17 @@ namespace samson {
         network->getInfo( output );
         
         // Compute up time
-        int update_time = 0;
         for (int i = 0 ; i < num_workers ; i++ )
         {
+            au::xml_open(output , "update_time" );
+
             int tmp_time = cronometer_worker_xml_info[i].diffTimeInSeconds();
-            if(  tmp_time > update_time )
-                update_time = tmp_time;
+            
+            au::xml_simple( output , "worker" , i );
+            au::xml_simple( output , "time" , tmp_time );
+            au::xml_close(output , "update_time" );
         }        
-        output << "<update_time>" << update_time << "</update_time>\n";
+        
         
     }
 

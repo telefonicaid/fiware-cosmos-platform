@@ -24,6 +24,27 @@
 
 namespace  samson {
     
+    class SamsonClient;
+    
+    class SamsonPushBuffer
+    {
+        
+        SamsonClient *client;
+        std::string queue;
+        
+        char *buffer;
+        size_t max_buffer_size;
+        
+        size_t size;    // Current size of the buffer
+        
+    public:
+        SamsonPushBuffer( SamsonClient *client , std::string queue );
+        ~SamsonPushBuffer();
+        void push( const char *data , size_t length );
+    
+        void flush();
+    };
+    
     class SamsonClient
     {
             

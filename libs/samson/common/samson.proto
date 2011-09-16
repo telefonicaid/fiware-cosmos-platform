@@ -367,11 +367,11 @@ message DownloadDataInitResponse
 {
 	required DownloadDataInit query=1;		// Original query
 
-	required uint64 load_id=2;			// Id of the operation at the controller
+	optional uint64 load_id=2;				// Id of the operation at the controller ( not required since if there is an error, we do not have load_id )
 
-	optional FullQueue queue=3;			// Information of this queue ( this include all the files ) ( optional because maybe there is an error )
+	optional FullQueue queue=3;				// Information of this queue ( this include all the files ) ( optional because maybe there is an error )
 
-	optional Error error=100;			// Optional error field for problems like queue does not exist
+	optional Error error=100;				// Optional error field for problems like queue does not exist
 }
 
 
@@ -493,14 +493,14 @@ message PopQueueResponse
 
 message WorkerCommand
 {
-	required string command			= 1;	// Command
-	optional Environment environment    	= 3;	
+	required string command			  = 1;	// Command to run
+	optional Environment environment  = 3;	// Enviroment properties ( including system.* for internal use )
 }
 
 message WorkerCommandResponse
 {
-	required WorkerCommand worker_command = 1;	// Copy of the original command 
-	optional Error error   = 2;	      		// Optional error message
+	required WorkerCommand worker_command = 1;	// Copy of the original command ( Including the enviroment properties system.*)
+	optional Error error   = 2;	      			// Optional error message ( if any )
 }
 
 // ////////////////////////////////////////////////////////////////////////////

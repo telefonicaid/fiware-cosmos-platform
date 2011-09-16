@@ -16,6 +16,13 @@ namespace system{
 class UInt64 : public FixedLengthDataInstance<size_t>
 {
 public:
+
+   std::string getName()
+   {
+	  return "system.UInt64";
+   }
+
+
 	int hash(int max_num_partitions){
 		return value%max_num_partitions;
 	}

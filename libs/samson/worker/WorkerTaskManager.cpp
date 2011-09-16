@@ -124,7 +124,8 @@ namespace samson {
 			t->kill( "Kill message received from controller" );
         else
         {
-            LM_W(("Task %lu not killed since it is not present in this worker" , task_id));
+            //LM_W(("Task %lu not killed since it is not present in this worker" , task_id));
+            //Note: A warining is not necessary because when a job is killed, all tasks are killed ( even finished ones )
         }
         
         

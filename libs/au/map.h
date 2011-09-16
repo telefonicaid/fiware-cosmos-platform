@@ -87,6 +87,21 @@ namespace au {
             return tmp;			
 		}
         
+        template <typename T>
+		V* findOrCreate( K& key , T a )
+		{
+            V* tmp = findInMap(key);
+            if( !tmp )
+            {
+                tmp = new V( a );
+                insertInMap(key, tmp);
+            }
+            return tmp;			
+		}
+        
+        
+        
+        
 		/** 
 		 Function to remove a particular entry if exist
 		 Return if it really existed
@@ -106,6 +121,28 @@ namespace au {
 			}
 		}
 		
+        
+        // Remove all elements that satify a bool function
+        // Returns the number of removed elements
+        
+        int removeInMapIfFinished()
+        {
+			typename std::map<K, V*,_Compare >::iterator iter;
+
+            std::set<K> keys_to_remove;    
+            
+			for ( iter = std::map<K, V*,_Compare >::begin() ; iter != std::map<K, V*,_Compare >::end() ; iter++ )
+                if (iter->second->isFinished() )
+                    keys_to_remove.insert( iter->first );
+            
+			typename std::set<K>::iterator k;
+            
+            for ( k = keys_to_remove.begin() ; k != keys_to_remove.end() ; k++ )
+                removeInMap(*k);
+            
+            return keys_to_remove.size();
+        }
+        
 		V* extractFromMap(  K key )
 		{
 			typename std::map<K, V*,_Compare >::iterator iter = std::map<K,V*,_Compare>::find(key);

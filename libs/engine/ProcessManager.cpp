@@ -84,6 +84,19 @@ namespace engine
         // Protect multi-thread access
         au::TokenTaker tt( &token );
         
+        
+        // Statistics
+        if ( ( item->operation_name != "unknown" ) && ( item->working_size > 0 ) )
+        {
+            std::string name = item->operation_name;
+            size_t working_size = item->working_size;
+            int time_in_seconds = item->cronometer.getSeconds();
+            
+            //LM_M(("Reported finish fo task '%s' in %d seconds with size %lu", name.c_str() , time_in_seconds , working_size ));
+            au::SimpleRateCollection * simple_rate = rates.findOrCreate( name , name );
+            simple_rate->push( working_size , time_in_seconds );
+        }
+        
         running_items.erase(item);
 
         // Send to me a notification to review background processes
@@ -91,9 +104,9 @@ namespace engine
         
         // Notify this using the notification Mechanism
         {
-        Notification * notification = new Notification( notification_process_request_response , item , item->listenerId );
-        notification->environment.copyFrom( &item->environment );
-        Engine::shared()->notify( notification );
+            Notification * notification = new Notification( notification_process_request_response , item , item->listeners );
+            notification->environment.copyFrom( &item->environment );
+            Engine::shared()->notify( notification );
         }
         
     }
@@ -116,7 +129,7 @@ namespace engine
     void ProcessManager::add( ProcessItem *item , size_t listenerId  )
     {
         // We mae sure, items always come with a listenerId
-        item->setListenerId( listenerId );
+        item->addListenerId( listenerId );
         
         // Protect multi-thread access
         au::TokenTaker tt( &token );
@@ -153,7 +166,7 @@ namespace engine
             
             // Notify this using the notification Mechanism
             {
-                Notification * notification = new Notification( notification_process_request_response , item , item->listenerId );
+                Notification * notification = new Notification( notification_process_request_response , item , item->listeners );
                 notification->environment.copyFrom( &item->environment );
                 notification->environment.set("error", "Canceled" );
                 Engine::shared()->notify( notification );
@@ -255,13 +268,6 @@ namespace engine
         
     }	
 
-    std::string ProcessManager::str()
-    {
-        if( processManager )
-            return processManager->_str();
-        else
-            return "ProcessManager not initialized";
-    }
     
     int ProcessManager::getNumCores()
     {
@@ -280,45 +286,7 @@ namespace engine
             return 0;
     }
     
-    
-    
-    
-    std::string ProcessManager::_str()
-    {
-        // Protect multi-thread access
-        au::TokenTaker tt( &token );
-        
-        // Process Manager Status
-        // ----------------------------------------------------------------------------
-        std::ostringstream process_manager_status;
-        
-        process_manager_status << "\n\t\tRunning: ";
-        {
-            au::Descriptors descriptors;
-            for ( std::set<ProcessItem*>::iterator i = running_items.begin () ; i != running_items.end() ; i++ )
-                descriptors.add( (*i)->getStatus() );
-            process_manager_status << descriptors.str();
-        }
-        
-        process_manager_status << "\n\t\tHalted: ";
-        {
-            au::Descriptors descriptors;
-            for ( std::set<ProcessItem*>::iterator i = halted_items.begin () ; i != halted_items.end() ; i++ )
-                descriptors.add( (*i)->getStatus() );
-        }
-        
-        process_manager_status << "\n\t\tQueued: ";
-        {
-            au::Descriptors descriptors;
-            for ( std::set<ProcessItem*>::iterator i = items.begin () ; i != items.end() ; i++ )
-                descriptors.add( (*i)->getStatus() );
-            process_manager_status << descriptors.str();
-        }
-        
-        return process_manager_status.str();
-        
-    }	
-    
+
     void ProcessManager::getInfo( std::ostringstream& output)
     {
         au::xml_open(output, "process_manager");
@@ -329,6 +297,10 @@ namespace engine
 
         au::xml_iterate_list(output, "halted", halted_items);
 
+        // List of rates
+        
+        au::xml_iterate_map( output , "rates", rates );
+        
         // General information
         
         au::xml_simple( output , "num_processes" ,  num_processes );

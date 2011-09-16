@@ -27,6 +27,8 @@
 #include <time.h>
 #include <list>
 
+#include "au/xml.h"
+
 namespace au
 {
     
@@ -84,8 +86,54 @@ namespace au
         
         size_t getLastMinuteRate();
         
+    };
+    
+    
+    
+    // Simple Rate collection
+    
+    class SimpleRateCollection
+    {
+        
+        std::string concept;
+        
+        int num_operations;
+        size_t size;
+        size_t time;
+        
+    public:
+        
+        SimpleRateCollection( std::string _concept )
+        {
+            concept = _concept;
+            num_operations = 0 ;
+            size = 0;
+            time = 0;
+        }
+        
+        void push( size_t _size , int _time )
+        {
+            num_operations++;
+            size += _size;
+            time += _time;
+        }
+        
+        void getInfo( std::ostringstream &output )
+        {
+            au::xml_open(output, "simple_rate_collection");
+            
+            au::xml_simple(output , "concept" , concept );
+            
+            au::xml_simple(output , "num_operations" , num_operations );
+
+            au::xml_simple(output , "size" , size );
+            au::xml_simple(output , "time" , time );
+            
+            au::xml_close(output, "simple_rate_collection");
+        }
         
     };
+    
     
 }
 #endif

@@ -63,12 +63,6 @@ namespace samson {
         if( confirmationMessage->has_progressrunning() )
             running_info.append( (size_t)confirmationMessage->progressrunning().size() , (size_t)confirmationMessage->progressrunning().kvs() );
         
-        // Internal check for integrity
-        if( state == running )
-        {
-            if(!job->isCurrentTask(this) )	// we can only receive finish reports from the current task
-                LM_X(1,("Internal error"));
-        }            
         
         // Depending of the type of message
 		switch ( confirmationMessage->type() ) 
@@ -78,6 +72,11 @@ namespace samson {
                 
                 if( state == running )
                 {
+                    
+                    // Internal check for integrity
+                    if(!job->isCurrentTask(this) )	// we can only receive finish reports from the current task
+                        LM_X(1,("Internal error"));
+                    
                     
                     finished_workers++;
                     if( finished_workers == num_workers )
@@ -246,10 +245,15 @@ namespace samson {
                 break;
             case completed:
             {
-                au::xml_simple(output , "state" , "completed" );
 
                 if( error.isActivated() )
+                {
+                    au::xml_simple(output , "state" , "error" );
                     au::xml_simple(output , "error" , error.getMessage() );
+                }
+                else
+                    au::xml_simple(output , "state" , "completed" );
+
             }
                 break;
                 

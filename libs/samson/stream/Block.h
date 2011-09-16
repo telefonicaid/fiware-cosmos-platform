@@ -44,15 +44,15 @@ namespace samson {
             friend class BlockList;
             friend class PopQueueTask;
             
-            size_t id;                  // Identifier of the block ( in this node )
+            size_t id;                      // Identifier of the block ( in this node )
             
-            engine::Buffer *buffer;     // Buffer of data if content of this block is on memory
+            engine::Buffer *buffer;         // Buffer of data if content of this block is on memory
             
-            KVHeader* header;           // Always on memory copy of the header
+            KVHeader* header;               // Always on memory copy of the header
             
-            size_t size;                // Size of the buffer ( Not that buffer is NULL if content is not on memory )
+            size_t size;                    // Size of the buffer ( Not that buffer is NULL if content is not on memory )
 
-            std::set< BlockList* > lists;   // List where this block is contained
+            std::set< BlockList* > lists;   // List where this block is contained ( for debugging )
             
             typedef enum
             {
@@ -71,36 +71,25 @@ namespace samson {
             
             // Constructor only visible in a BlockList
             Block( engine::Buffer *buffer  );
+            Block( size_t _id , size_t _size , KVHeader* _header );
             
         public:
             
             ~Block();
-            
-            // Check if this block is not in any list anymore
-            int getNumberOfLists()
-            {
-                return lists.size();
-            }
 
-            int canBeRemoved()
-            {
-                if( lists.size() != 0)
-                    return false;
-                
-                if( state == reading )
-                    return false;
-                
-                if( state == writing )
-                    return false;
-
-                return true;
-            }
-            
-            
-            // Set and Get priority
+            // Set and Get priority ( manual ordering if blocks are not assigned to tasks )
             void setPriority( int _priority );
             int getPriority();
-                        
+            
+            // Statis function to give names to the files on disk
+            static std::string getFileNameForBlock( size_t id );
+            
+            // Check if this block is not in any list anymore
+            int getNumberOfLists();
+
+            // Function to check if this block can be removed from block manager ( basically it is not contained anywhere )
+            int canBeRemoved();
+                                    
         private:
             
             // Send notifications to write and read 
@@ -115,8 +104,6 @@ namespace samson {
             // Get the operations
             ::engine::DiskOperation* getWriteOperation();
             ::engine::DiskOperation* getReadOperation();
-            
-            std::string getFileName();
             
             // Notifications
             void notify( engine::Notification* notification );
@@ -197,9 +184,8 @@ namespace samson {
                 return header->range.overlap( range );
             }
             
-            // Get information
-            KVInfo getKVInfo();
-            KVInfo getKVInfo( KVRange r);
+            // Get information about this block
+            void update( BlockInfo &block_info);
             
             // Debug string    
             std::string str();

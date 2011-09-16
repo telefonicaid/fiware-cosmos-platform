@@ -15,6 +15,13 @@ namespace system{
 class UInt32 : public FixedLengthDataInstance<unsigned int>
 {
 public:
+
+   std::string getName()
+   {
+	  return "system.UInt32";
+   }
+
+
 	int hash(int max_num_partitions){
 		return abs(value)%max_num_partitions;
 	}

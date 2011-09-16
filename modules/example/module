@@ -18,23 +18,34 @@ generator generator
 	helpLine "Simple generator that generates example.samples pairs of integers"
 }
 
-generator generator_error
+# Generator to test errors handled by the platform
+
+generator generator_error_operation_crashes
 {
 	out system.UInt system.UInt	
 	helpLine "Generator that fails when executing. To simulate the processs 3rd party operation fails and crash"
 }
 
-generator generator_time_error
+generator generator_error_timeout
 {
 	out system.UInt system.UInt	
 	helpLine "Generator that fails when executing for a timeout."
 }
 
-generator generator_user_error
+generator generator_error_user_generated
 {
 	out system.UInt system.UInt
 	helpLine "Generator that fails with a user defined error"
 }
+
+
+generator generator_error_wrong_data_type
+{
+	out system.UInt system.UInt
+	helpLine "Generator that fails because it use a system.Double instead of a system.UInt"
+}
+
+# Correct operations
 
 parserOut select
 {
@@ -108,14 +119,6 @@ script script
 		add pepe system.UInt system.UInt;
 		add andreu system.UInt system.UInt;
 		example.generator andreu;
-	}
-}
-
-script s2
-{
-	code
-	{
-		_example.script A B;
 	}
 }
 

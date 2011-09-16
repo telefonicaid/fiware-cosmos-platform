@@ -5,10 +5,14 @@
 #include <cstring>				// size_t		
 #include <string>				// std::string
 #include <sstream>				// std::ostringstream
+
 #include "samson/common/samson.pb.h"			// samson::network::...
 #include "samson/common/coding.h"				// samson::ProcessAssistantSharedFile
-#include "samson/isolated/ProcessItemIsolated.h"	// ss:ProcessItemIsolated
 #include "samson/common/MemoryTags.h"           
+
+#include "samson/module/Environment.h"              // samson::Enviroment
+
+#include "samson/isolated/ProcessItemIsolated.h"	// samson:ProcessItemIsolated
 
 
 #define WORKER_TASK_ITEM_CODE_FLUSH_BUFFER          1
@@ -19,6 +23,29 @@ namespace samson {
     
     class ProcessWriter;
     class ProcessTXTWriter;
+    class Operation;
+    class KVWriter;
+    class TXTWriter;
+    
+    /*
+     Base class for the elements that decides what to do with the output buffers of a ProcessIsolated
+     */
+    
+    class ProcessIsolatedOutput
+    {
+        
+    public:
+        
+        virtual void processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )=0;
+        virtual void processOutputTXTBuffer( engine::Buffer *buffer , bool finish )=0;
+    };
+    
+    class ProcessIsolatedDataGenerator
+    {
+    public:
+		virtual void generateKeyValues( KVWriter *writer ){};
+		virtual void generateTXT( TXTWriter *writer ){};
+    };
     
     /**
      
@@ -38,7 +65,6 @@ namespace samson {
 			txt             // Emit txt content using the entire buffer
 		} ProcessBaseType;
 		
-		
 		ProcessBaseType type;
 
     public:
@@ -46,36 +72,33 @@ namespace samson {
         int shm_id;                     // Shared memory area used in this operation
         engine::SharedMemoryItem *item; // Share memory item
         
-        
-        ProcessWriter *writer;
-        ProcessTXTWriter *txtWriter;
+        ProcessWriter *writer;          // Object used to emit key-values if type=key_value 
+        ProcessTXTWriter *txtWriter;    // Object used to emit txt content if type=txt
         
     public:
         
-        int num_outputs;// Number of outputs
-        int num_workers;// Number of workers in the cluster
+        int num_outputs;    // Number of outputs
+        int num_workers;    // Number of workers in the cluster
         
         // Auxiliar information to give correct format to output buffers
         std::vector<KVFormat> outputFormats;
         
     public:
         
-        ProcessIsolated( std::string description,  ProcessBaseType _type , int _num_outputs , int _num_workers );
+        Environment operation_environment;                // Environment for this process
+        
+    public:
+        
+        ProcessIsolated( std::string description,  ProcessBaseType _type );
         virtual ~ProcessIsolated();
 
-        // Chage the type of usage
-		void setProcessBaseMode(ProcessBaseType _type)
-		{
-			type = _type;
-		}
-        
-        
         // Function to specify if we are ready to be executed of continued from a halt
         bool isReady();
         
         // Get the writers to emit key-values
         ProcessWriter* getWriter();
-        
+
+        // Get writer to emit txt content
         ProcessTXTWriter* getTXTWriter();      
         
 		// Flush the buffer ( front process ) in key-value and txt mode
@@ -86,20 +109,37 @@ namespace samson {
 		// Function executed at this process side when a code is sent from the background process
 		void runCode( int c );
 
-        // Pure virtual methods to process output buffers of data
+        // Methods overwritted from ProcessItemIsolated ( running on a different process )
+        void runIsolated();
+        
+        // --------------------------------------------------------------------------
+        // Methods implemented by subclases to generate content
+        // Not pure virtual
+        // --------------------------------------------------------------------------
+		virtual void generateKeyValues( KVWriter *writer ){};
+		virtual void generateTXT( TXTWriter *writer ){};
+        
+        // --------------------------------------------------------------------------
+        // Methods implemented by subclases to do something with the output buffers
+        // at front-process
+        // --------------------------------------------------------------------------
+        
         virtual void processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )=0;
         virtual void processOutputTXTBuffer( engine::Buffer *buffer , bool finish )=0;
-      
         
-        void setOutputFormats( std::vector<KVFormat> *_outputFormats )
-        {
-            // copy output formats
-            outputFormats.clear();
-            for ( size_t i = 0 ; i < _outputFormats->size() ; i++ )
-                outputFormats.push_back( (*_outputFormats)[i] );
-        }
+        // ---------------------------------------------------------------
+        // SETUP ProcessIsolated
+        // ---------------------------------------------------------------
+ 
+        // Generic function to add outputs to this ProcesIsolated
+        void addOutput( KVFormat format );
+        void addOutputsForOperation( Operation *op );
 
-        
+        // Function to set the number of workers ( necessary )
+        void setNumWorkers( int _num_workers );
+
+        // Chage the type of usage
+		void setProcessBaseMode(ProcessBaseType _type);
         
     };
     

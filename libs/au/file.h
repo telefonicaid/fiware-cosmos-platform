@@ -37,7 +37,8 @@ namespace au {
 
     bool isDirectory(char path[]);
     bool isRegularFile(char path[]);
- 
+
+    
 }
 
 #endif

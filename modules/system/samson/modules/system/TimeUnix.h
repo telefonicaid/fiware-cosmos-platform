@@ -32,6 +32,13 @@ namespace system{
 
 class TimeUnix : public FixedLengthDataInstance<time_t>{
 
+	  std::string getName()
+	  {
+		 return "system.TimeUnix";
+	  }
+
+
+
 	inline int tmcomp(register const struct tm * const atmp,
 			register const struct tm * const btmp)
 	{

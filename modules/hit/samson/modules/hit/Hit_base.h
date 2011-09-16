@@ -28,6 +28,10 @@ namespace hit{
 	~Hit_base() {
 	}
 
+	std::string getName(){
+		return "hit.Hit";
+	}
+
 	int parse(char *data){
 		int offset=0;
 		{ //Parsing time

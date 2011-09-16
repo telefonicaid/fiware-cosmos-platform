@@ -18,7 +18,7 @@
 
 #include "samson/network/NetworkNode.h"     // samson::NetworkNode
 
-#include "samson/stream/QueuesManager.h"        // samson::stream::QueuesManager
+#include "samson/stream/StreamManager.h"        // samson::stream::StreamManager
 #include "samson/stream/QueueTaskManager.h"     // samson::stream::QueueTaskManager
 
 #include "samson/common/traces.h"				// Trace levels
@@ -42,8 +42,7 @@ namespace samson {
 	class SamsonWorker : 
         public PacketReceiverInterface, 
         public PacketSenderInterface, 
-        public engine::Object , 
-        public samson::SimpleDataManagerInterface
+        public engine::Object
 	{
 		
 		// Initial time stamp 
@@ -53,8 +52,7 @@ namespace samson {
 		
 		SamsonWorker(NetworkInterface* network);
         
-        SimpleDataManager *dataManager;                 // Data manager to keep data after a reboot
-        friend class QueuesManager;                     // Friend to be able to log to dataManager
+        friend class StreamManager;                     // Friend to be able to log to dataManager
         
 	public:
 
@@ -64,7 +62,7 @@ namespace samson {
         
 		LoadDataManager loadDataManager;                // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
 		
-        stream::QueuesManager queuesManager;            // Manager of all the stream-processing queues in the system
+        stream::StreamManager streamManager;            // Manager of all the stream-processing queues in the system
         
 	public:
 
@@ -92,14 +90,7 @@ namespace samson {
 		
 		// Sent an "ls" to get the list of files ( to remove the rest )
 		void sendFilesMessage();
-
-        // Run a particular worker command sent from delilah
-        void runWorkercommand( Packet* p );
         
-        
-    public:
-        // Running recovery commands    
-        void runRecoveryCommand( std::string command );
 
 	};
 	

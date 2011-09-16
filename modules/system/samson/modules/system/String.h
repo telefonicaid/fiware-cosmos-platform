@@ -33,6 +33,11 @@ public:
 
 	}
 
+	std::string getName()
+    {
+       return "system.String";
+    }
+
 	int parse(char *data){
 		int pos = 0;
 		while( data[pos] != '\0' )

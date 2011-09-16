@@ -29,7 +29,7 @@ namespace samson {
 		// Set the status 
 		std::ostringstream statusStream;
 		statusStream << "Prewrite " << au::str( bv->getTotalSize() ,"Bytes" ) ;
-		operation_name = statusStream.str();
+		setProcessItemOperationName( statusStream.str() );
 	}
     
     DataBufferProcessItem::~DataBufferProcessItem()

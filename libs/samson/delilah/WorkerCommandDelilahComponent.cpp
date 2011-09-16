@@ -84,6 +84,13 @@ namespace samson {
 	{
 		if( msgCode == Message::WorkerCommandResponse )
             num_confirmed_workers++;
+
+        // If error is returned, worker_command is automatically canceled
+        if( packet->message->worker_command_response().has_error() )
+        {
+            setComponentFinishedWithError( packet->message->worker_command_response().error().message() );
+            return;
+        }
         
         if( num_confirmed_workers == num_workers )
 	{

@@ -11,14 +11,21 @@ namespace samson {
     namespace stream
     {
         
-        Queue::Queue( std::string _name , QueuesManager* _qm ,  int num_items )
+        Queue::Queue( std::string _name , StreamManager* _streamManager ,  int num_items )
         {
             // Keep the name
             name = _name;
 
-            // Pointer to QueuesManager
-            qm = _qm;
+            // Pointer to StreamManager
+            streamManager = _streamManager;
             
+            
+            // By default it is not paused
+            paused = false;
+            
+            if( num_items <= 0)
+                return;
+
             // Number of hash-groups per group
             int num_hash_groups_per_item = KVFILE_NUM_HASHGROUPS / num_items;
             
@@ -35,8 +42,6 @@ namespace samson {
             QueueItem* item = new QueueItem( this  , range );
             items.push_back( item );
 
-            // By default it is not paused
-            paused = false;
         }
         
         void Queue::distributeItemsAs( Queue* otherQueue )
@@ -114,60 +119,23 @@ namespace samson {
             else
                 au::xml_simple(output, "paused", "NO" );
             
-            int num_blocks = 0;
-            au::list< QueueItem >::iterator item;
-            for (item = items.begin() ; item != items.end() ; item++ )
-            {
-                (*item)->getInfo( output );
-                num_blocks += (*item)->list->blocks.size();
-            }
-            
-            au::xml_simple(output, "num_blocks", num_blocks );
-            
             // Information about content
-            au::xml_open(output , "content");
-            getFullKVInfo().getInfo(output);
-            au::xml_close(output , "content");
-
-            au::xml_open(output , "working_content");
-            getWorkingFullKVInfo().getInfo(output);
-            au::xml_close(output , "working_content");
-            
+            BlockInfo block_info;
+            update( block_info );
+            block_info.getInfo(output);
             
             au::xml_close(output, "queue");
         }
         
-        FullKVInfo Queue::getFullKVInfo()
+        void Queue::update( BlockInfo& block_info )
         {
-            FullKVInfo total;
+            
             au::list< QueueItem >::iterator item;
             for (item = items.begin() ; item != items.end() ; item++ )
             {
-                FullKVInfo tmp_info = (*item)->getFullKVInfo();
-                //LM_M(("Tmp info %s", tmp_info.str().c_str() ));
-                total.append( tmp_info );
+                (*item)->update( block_info );
             }
-            return total;
-            
         }
-
-        FullKVInfo Queue::getWorkingFullKVInfo()
-        {
-            FullKVInfo total;
-            au::list< QueueItem >::iterator item;
-            for (item = items.begin() ; item != items.end() ; item++ )
-            {
-                if( (*item)->isWorking() )
-                {
-                    FullKVInfo tmp_info = (*item)->getFullKVInfo();
-                    //LM_M(("Tmp info %s", tmp_info.str().c_str() ));
-                    total.append( tmp_info );
-                }
-            }
-            return total;
-            
-        }
-        
         
         void Queue::divide( QueueItem *item , QueueItem *item1 , QueueItem *item2 )
         {
@@ -202,6 +170,16 @@ namespace samson {
                     return true;
             return false;
         }
+        
+        void Queue::copyFrom( Queue* _queue)
+        {
+            // Copy all the blocks from one queue to another
+            au::list< QueueItem >::iterator item;
+            for (item = _queue->items.begin() ; item != _queue->items.end() ; item++ )
+                push ( (*item)->list );
+            
+        }
+        
        
     }
 }

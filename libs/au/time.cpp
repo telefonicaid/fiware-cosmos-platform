@@ -16,4 +16,19 @@ namespace au
 		gettimeofday(&finish_time, NULL);
 		return finish_time.tv_sec - init_time->tv_sec;
 	}
+    
+	std::string todayString()
+	{
+		
+		time_t t = time(NULL);
+		struct tm timeinfo;
+		char buffer_time[1024];
+		
+		localtime_r ( &t , &timeinfo );
+		strftime (buffer_time,1024,"%d/%m/%Y (%X)",&timeinfo);
+		
+		return std::string( buffer_time );
+	}
+	
+    
 }

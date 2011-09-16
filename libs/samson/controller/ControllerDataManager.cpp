@@ -911,7 +911,7 @@ namespace samson {
 	
 	std::string ControllerDataManager::getLogFileName(   )
 	{
-		return SamsonSetup::shared()->controllerDirectory + "/log_controller";
+		return SamsonSetup::shared()->logDirectory + "/log_controller";
 	}
 	
 	std::string ControllerDataManager::getStatus()

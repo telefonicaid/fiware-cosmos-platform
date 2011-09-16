@@ -21,6 +21,13 @@ public:
 	~Void() {
 	}
 
+	std::string getName()
+    {
+       return "system.Void";
+    }
+
+
+
 	int parse(char *data){
 		return 0;
 	}

@@ -121,7 +121,10 @@ namespace samson
                 LM_X(1, ("Internal error: Memory request returnes without a buffer"));
 
             if ( !memoryRequest->buffer )
-                LM_X(1, ("Memory request returned without the allocated buffer"));
+            {
+                setComponentFinishedWithError( "Memory request returned without the allocated buffer" );
+                return;
+            }
             
             engine::Buffer *buffer = memoryRequest->buffer;
             delete memoryRequest;

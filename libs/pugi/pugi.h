@@ -6,12 +6,14 @@
  *
  * AUTHOR          Andreu Urruela
  *
- * PROJECT         pugi
+ * PROJECT         pugi library
  *
  * DATE            7/15/11
  *
  * DESCRIPTION
  *
+ *  Usefull functions to simplify development with pugi library
+ *  Everything ready for running xpath queries over xml data
  *
  * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
  *

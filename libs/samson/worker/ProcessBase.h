@@ -6,19 +6,25 @@
 #include <cstring>				// size_t		
 #include <string>				// std::string
 #include <sstream>				// std::ostringstream
+
+#include "au/Lock.h"				// au::Lock
+
+#include "engine/Engine.h"                         // samson::Engine
+#include "engine/ProcessItem.h"		// samson::ProcessItem
+
 #include "samson/common/samson.pb.h"			// samson::network::...
 #include "samson/common/coding.h"				// samson::ProcessAssistantSharedFile
-#include "au/Lock.h"				// au::Lock
-#include "engine/ProcessItem.h"		// samson::ProcessItem
-#include "samson/isolated/ProcessItemIsolated.h"	// ss:ProcessItemIsolated
-#include "samson/network/NetworkInterface.h"		// samson::NetworkInterface
-#include "samson/isolated/ProcessWriter.h"			// samson::ProcessWriter
 #include "samson/common/samson.pb.h"                      // samson::network::...
-#include "samson/module/OperationController.h"     // samson::OperationController
-#include "engine/Engine.h"                         // samson::Engine
-#include "samson/isolated/SharedMemoryManager.h"            // samson::SharedMemoryManager
 #include "samson/common/MemoryTags.h"                       // MemoryOutputNetwork
+
+#include "samson/isolated/ProcessWriter.h"			// samson::ProcessWriter
+#include "samson/isolated/ProcessItemIsolated.h"	// ss:ProcessItemIsolated
+#include "samson/isolated/SharedMemoryManager.h"            // samson::SharedMemoryManager
 #include "samson/isolated/ProcessIsolated.h"                // samson::ProcessIsolated
+
+#include "samson/network/NetworkInterface.h"		// samson::NetworkInterface
+
+#include "samson/module/OperationController.h"     // samson::OperationController
 
 
 namespace samson
@@ -43,16 +49,13 @@ namespace samson
 	public:
 		
 
-		size_t task_id;                         
+		size_t task_id;                         // Worker task_id
 		int hg_set;                             // Inormation about the hash-group of this process
         
 		network::WorkerTask *workerTask;		// Message received from the controller
 		WorkerTaskManager *workerTaskManager;	// Pointer to the task manager
-		NetworkInterface *network;
+		NetworkInterface *network;              // Pointer to the network interface
 		
-		
-		Environment environment;			// Environment of the operation
-
 
     protected:
         
@@ -63,19 +66,6 @@ namespace samson
 		
 		ProcessBase( WorkerTask *task , ProcessBaseType type );
 		~ProcessBase();
-		
-		
-		// Function to be implemented ( running on a different process )
-		void runIsolated();
-		void runIsolatedKV();
-		void runIsolatedTXT();
-		
-		// Function to generate the key-values with the Writer element ( back process )
-		virtual void generateKeyValues( KVWriter *writer ){};
-
-		// Function to generate the txt buffers at the output ( back process )
-		virtual void generateTXT( TXTWriter *writer ){};
-		
 		
 
         // Function to process the output of the operations

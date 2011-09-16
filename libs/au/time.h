@@ -34,6 +34,9 @@ namespace au {
 
 
     int ellapsedSeconds(struct timeval *init_time);    
+
+    // String with today's timestamp
+	std::string todayString();
     
 }
 

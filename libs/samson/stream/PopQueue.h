@@ -44,7 +44,7 @@ namespace samson {
         {
             friend class Queue;
             friend class PopQueueManager;
-            friend class QueuesManager;
+            friend class StreamManager;
             friend class PopQueueTask;
             
             size_t id;              // Id of this pop queue operation ( given by the PopQueueManager )
@@ -63,7 +63,6 @@ namespace samson {
             au::ErrorManager error;
             
             PopQueue( const network::PopQueue& _pq , size_t _delilahId, int _fromId  );
-            
             ~PopQueue();
             
             void addTask( size_t id );
@@ -71,7 +70,6 @@ namespace samson {
             std::string getStatus();
             
             void sendFinalMessage();
-            
 
             void check();
 
@@ -87,7 +85,7 @@ namespace samson {
         class PopQueueTask : public engine::ProcessItem
         {
             friend class QueueTaskManager;
-            friend class QueuesManager;
+            friend class StreamManager;
             
             BlockList *list;
             BlockList *list_lock;

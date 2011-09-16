@@ -25,6 +25,61 @@
 
 namespace samson {
     
+    
+    std::string getOperationRatesInfo( const pugi::xml_node& node )
+    {
+        std::string concept         =  pugi::get( node , "concept" );
+        int num_operations          =  pugi::getInt( node , "num_operations" );
+        size_t size                 =  pugi::getUInt64( node , "size" );
+        size_t time                 =  pugi::getUInt64( node , "time" );
+
+        std::ostringstream output;
+        output << "\t" << std::setw(40) << concept << " ";
+        output << num_operations << " operations processing ";
+        output << au::str( size, "bytes") << " in " << au::time_string( time ) ;
+        if( time > 0 )
+            output << " = " << au::str( (size_t) ( (double)size / (double)time ) , "bytes/s" );
+        return output.str();
+        
+    }
+    
+    
+    std::string getBlockManagerInfo( const pugi::xml_node& node )
+    {
+        pugi::xml_node block_info =  node.first_element_by_path("block_info");
+        
+        
+        size_t size                 =  pugi::getUInt64( block_info , "size" );
+        pugi::xml_node kv_info =  block_info.first_element_by_path("kv_info");
+        size_t kvs_size             =  pugi::getUInt64( kv_info , "size" );
+
+        std::ostringstream output;
+        output << "Block Manager: " << getBlockInfo(block_info) << "[ Platform overhead " << au::percentage_string(size - kvs_size, kvs_size) << " ]";
+        return output.str();
+    }
+    
+    std::string getBlockInfo( const pugi::xml_node& node )
+    {
+        int num_blocks   =  pugi::getInt( node , "num_blocks" );
+        size_t size                 =  pugi::getUInt64( node , "size" );
+        size_t size_on_memory       =  pugi::getUInt64( node , "size_on_memory" );
+        size_t size_on_disk         =  pugi::getUInt64( node , "size_on_disk" );
+        size_t size_locked          =  pugi::getUInt64( node , "size_locked" );
+        
+        // Node with KVInfo
+        pugi::xml_node kv_info =  node.first_element_by_path("kv_info");
+        
+        return au::str( "%s [ %s | %s on memory / %s on disk / %s locked ] %s " 
+                        , au::str( num_blocks , "Blocs").c_str() 
+                        , au::str( size , "bytes").c_str()
+                        , au::percentage_string( size_on_memory , size).c_str()
+                        , au::percentage_string( size_on_disk , size).c_str()
+                        , au::percentage_string( size_locked , size).c_str()
+                        , getKVInfoInfo( kv_info ).c_str()
+                       );
+    }
+    
+    
     std::string getStreamOperationInfo( const pugi::xml_node& node )
     {
         std::string name = pugi::get( node , "name" );
@@ -38,31 +93,8 @@ namespace samson {
     
     std::string getBLockListInfo( pugi::node node )
     {
-        size_t size_total =  pugi::getUInt64( node , "size_total" );
-        size_t size_on_memory =  pugi::getUInt64( node , "size_on_memory" );
-        size_t size_on_disk =  pugi::getUInt64( node , "size_on_disk" );
-        
-        int num_blocks = pugi::getInt( node , "num_blocks" );
-        size_t kvs = pugi::getUInt64( node , "kvs" );
-        size_t size = pugi::getUInt64( node , "size" );
-        
-        if( ( kvs == 0 ) && (size == 0) )
-            return "Empty";
-        
-        std::ostringstream output;
-        output << num_blocks << " blocks with ";
-        output << au::str( kvs , "kvs" ) << " in ";
-        output << au::str( size , "bytes" )  ;
-        output << " ";
-        if( size_total > 0 )
-        {
-            double p_memory = (double) size_on_memory / (double) size_total;
-            double p_disk = (double) size_on_disk / (double) size_total;
-            
-            output << au::percentage_string( p_memory ) << " on memory & " << au::percentage_string( p_disk ) << " on disk";
-        }
-        
-        return output.str();
+        pugi::xml_node block_info =  node.first_element_by_path("block_info");
+        return getBlockInfo(block_info);
     }
     
     
@@ -73,15 +105,17 @@ namespace samson {
         
         std::string name = pugi::get( queue, "name" );
         int num_items =  pugi::getInt( queue , "num_items" );
-        int num_blocks =  pugi::getInt( queue , "num_blocks" );
+        
+        const pugi::node block_info = queue.first_element_by_path("block_info");
         
         output << "  " << std::setw(20) << std::left << name << ": ";
-        const pugi::node kv_info = queue.first_element_by_path("content").first_element_by_path("kv_info");
-        const pugi::node working_kv_info = queue.first_element_by_path("working_content").first_element_by_path("kv_info");
         
-        output << getKVInfoInfo( kv_info ) << "[ Working on " << getKVInfoInfo( working_kv_info ) << " ]";
+        if( num_items == 1 )
+            output << "( 1 item ) ";
+        else
+            output << "( " << num_items << " items ) ";
         
-        output << " ( " << num_blocks << " blocks in " << num_items << " items ) ";
+        output << getBlockInfo( block_info );
         
         if( pugi::get(queue,"paused" ) == "YES" )
             output << " [PAUSED]";
@@ -109,8 +143,7 @@ namespace samson {
         const pugi::node block_list = queue_task.first_element_by_path("block_list");
         
         std::ostringstream output;
-        output << "Task " << id << " : " << description << "\n";
-        output << "            -> Input " << getBLockListInfo( block_list ) << "\n";
+        output << "Task " << id << " : " << description << " -> Input " << getBLockListInfo( block_list ) << "\n";
         return output.str();
         
     }
@@ -178,14 +211,17 @@ namespace samson {
         if( state == "running" )
         {
             size_t total_info = pugi::getUInt64( node , "total_info" );
-            size_t running_info = pugi::getUInt64( node , "running_info" );
+            //size_t running_info = pugi::getUInt64( node , "running_info" );
             size_t processed_info = pugi::getUInt64( node , "processed_info" );
-            
+                        
+            /*
             output << "[ Progress: ";
             output << au::str( running_info , "bytes" ) << " / ";
             output << au::str( processed_info , "bytes" ) << " / ";
             output << au::str( total_info , "bytes" );
             output << "]";
+             */
+            output << au::percentage_string( processed_info , total_info ); 
         }
         
         return output.str();
@@ -261,7 +297,7 @@ namespace samson {
         
         output << "  Module " << std::left << std::setw(25) << name << " " << std::setw(10) << version;
         output << std::setw(15) << au::str("[ #ops: %3d #datas: %3d ]",num_operations, num_datas);
-        output << " ( " << author << ")";
+        output << " ( " << author << " )";
         
         return output.str();
     }
@@ -343,6 +379,59 @@ namespace samson {
         
         return output.str();
     }    
+
+    std::string getEngineSimplifiedSystemInfo( const pugi::xml_node& node )
+    {
+        
+        size_t uptime = pugi::getUInt64( node , "uptime" );
+        
+        pugi::xml_node node_memory_manager = node.first_element_by_path("memory_manager");
+        pugi::xml_node node_disk_manager = node.first_element_by_path("disk_manager");
+        pugi::xml_node node_process_manager = node.first_element_by_path("process_manager");
+        
+        std::ostringstream output;
+
+        // Memory
+        size_t used_memory  = pugi::getUInt64( node_memory_manager , "used_memory" );
+        size_t memory       = pugi::getUInt64( node_memory_manager , "memory" );
+
+        // Disk operations
+        size_t num_pending_operations = pugi::getUInt64( node_disk_manager , "num_pending_operations" );
+        size_t num_running_operations = pugi::getUInt64( node_disk_manager , "num_running_operations" );
+
+        // Process
+        
+        pugi::xml_node running = node_process_manager.first_element_by_path("running");
+        pugi::xml_node queued = node_process_manager.first_element_by_path("queued");
+        pugi::xml_node halted = node_process_manager.first_element_by_path("halted");
+        
+        int num_processes = pugi::getInt( node_process_manager ,"num_processes");
+        int num_running_processes = pugi::getInt( node_process_manager ,"num_running_processes");
+
+        double p_memory = (double) used_memory / (double) memory;
+        double p_disk = (double) (num_running_operations + num_pending_operations) / (double) 100;
+        double p_process = (double) num_running_processes / (double) num_processes;
+        
+        output << "\tUptime  " << au::time_string(uptime) << "\n";
+        output << "\tMemory  " << au::str( used_memory ) <<  au::progress_bar( p_memory , 53) << "\n";
+        output << "\tDisk    " << au::str( num_running_operations + num_pending_operations ) <<  au::progress_bar( p_disk , 53) << "\n";
+        output << "\tProcess " << au::str( num_running_processes ) <<  au::progress_bar( p_process , 53 ) << "\n";
+        
+        return output.str();
+    }        
+    
+    
+    std::string getUpdateTimeInfo( const pugi::xml_node& node )
+    {
+        std::ostringstream output;
+        
+        // Get information for this state    
+        std::string worker = pugi::get( node , "worker" );
+        int time = pugi::getInt( node , "time" );
+        output << "\tWorker " << worker << " updated " << time << " seconds ago";
+        return output.str();
+        
+    }
     
     std::string getSetInfo( const pugi::xml_node& queue )
     {
@@ -360,13 +449,13 @@ namespace samson {
         
         pugi::xml_node format_node = queue.first_element_by_path("format");
         
-        output << std::setw(30) << name;
+        output << std::setw(20) <<  getFormatInfo( format_node );
         output << " ";
         output << au::str( kvs );
         output << " kvs in ";
         output << au::str( size ) << " bytes";
         output << " #File: " << num_files;
-        output << " " << getFormatInfo( format_node );
+        output << " " << name;
         
         return output.str();
     }

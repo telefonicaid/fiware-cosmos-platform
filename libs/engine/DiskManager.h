@@ -89,8 +89,10 @@ namespace engine
         
     private:
         
-		void finishDiskOperation( DiskOperation *diskOperation );	// Notification that a disk operation has finished        
-        
+        // Notification that a disk operation has finished
+		void finishDiskOperation( DiskOperation *diskOperation );	        
+
+        // Auxiliar function usedto insert new disk operations in place
         au::list<DiskOperation>::iterator _find_pos( DiskOperation *diskOperation );
         
         

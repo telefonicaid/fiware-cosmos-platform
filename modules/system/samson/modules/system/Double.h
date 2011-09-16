@@ -16,6 +16,13 @@ namespace system{
 class Double : public FixedLengthDataInstance<double>
 {
 public:
+
+   std::string getName()
+   {
+	  return "system.Double";
+   }
+
+
 	int hash(int max_num_partitions)
 	{
 		return abs((int) 1000*value) % max_num_partitions;

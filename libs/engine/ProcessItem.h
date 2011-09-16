@@ -44,10 +44,6 @@
 	It only requires processing time
  */
 
-namespace au {
-    class Error;
-}
-
 namespace engine {
 
 	
@@ -58,15 +54,21 @@ namespace engine {
 	class ProcessItem  : public Object
 	{
 
-        size_t listenerId;  // Identifier of the listener that should be notified when operation is finished
+        // Identifiers of the listeners that should be notified when operation is finished
+        std::set<size_t> listeners;
         
         friend class ProcessManager;
+
+    protected:
+        
+        // Operation name for statistics
+        std::string operation_name;
+        size_t working_size;
         
 	public:
 		
 		typedef enum 
 		{
-            
 			queued,         // In the queu waiting to be executed
 			running,        // Running in a background process
 			halted,         // temporary halted, when a slot is ready, read() function is evaluated to see if it can countinue
@@ -96,24 +98,21 @@ namespace engine {
 	protected:
 
 		// Information about the status of this process
-        
-		std::string operation_name;			// Name of the operation
-		double progress;					// Progress of the operation ( if internally reported somehow )
+        double progress;					// Progress of the operation ( if internally reported somehow )
 		std::string sub_status;				// Letter describing internal status
 		
 	public:
 		
-		au::ErrorManager error;                    // Error management
+        // Error management
+		au::ErrorManager error;                     
 		
-		int priority;                       // Priority level ( 0 = low priority ,  10 = high priority )
+        // Priority level ( 0 = low priority ,  10 = high priority )
+		int priority;                               
 		
-	public:
-
         // Environment variables
         au::Environment environment;
         
-		// Constructor with or without a delegate
-		
+		// Constructor with priority
 		ProcessItem( int _priority );
 		~ProcessItem();
         
@@ -137,19 +136,24 @@ namespace engine {
 		
 		void unHalt();			// Method to unhalt the process ( executed from the ProcessManager when ready() returns true )
 
-
         void setCanceled();
         bool isProcessItemCanceled();
 		
+    public:
+        
+        void addListenerId( size_t _listenerId );
         
     public:
         
-        void setListenerId( size_t _listenerId );
-        
-    public:
         // Get information for xml monitorization
         void getInfo( std::ostringstream& output);
 
+        
+    protected:
+        
+        // Interface to monitorize operations perforamnce
+        void setProcessItemOperationName( std::string _operation_name );
+        
 	
     };
 	

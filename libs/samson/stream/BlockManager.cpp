@@ -27,6 +27,7 @@ namespace samson {
             memory = 0;
             
             max_memory = SamsonSetup::getUInt64("general.memory")/2;
+
             
         }
         
@@ -195,12 +196,33 @@ namespace samson {
         {
             output << "<block_manager>\n";
 
+            au::xml_simple( output , "num_writing_operations" , num_writing_operations );
+            au::xml_simple( output , "num_reading_operations" , num_reading_operations );
+
+            au::xml_simple( output , "memory" , memory );
+            au::xml_simple( output , "max_memory" , max_memory );
             
-            std::list<Block*>::iterator bi;
-            for (bi = blocks.begin() ; bi != blocks.end() ; bi++)
-                (*bi)->getInfo( output );
+            
+            au::xml_iterate_list(output, "blocks", blocks);
+
+            //Global information
+            BlockInfo block_info;
+            update( block_info );
+            block_info.getInfo( output );
+            
             
             output << "</block_manager>\n";
+        }
+        
+        void BlockManager::setMinimumNextId( size_t min_id)
+        {
+            if ( id <= min_id )
+                id = ( min_id + 1 );
+        }
+        
+        size_t BlockManager::getNextBlockId()
+        {
+            return id++;
         }
         
         

@@ -15,6 +15,13 @@ namespace system{
 class Float : public FixedLengthDataInstance<float>
 {
 public:
+
+   std::string getName()
+   {
+	  return "system.Float";
+   }
+
+
 	int hash(int max_num_partitions)
 	{
 		return abs((int) 1000*value) % max_num_partitions;

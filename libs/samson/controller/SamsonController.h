@@ -66,8 +66,8 @@ namespace samson {
 		Monitor monitor;									
 		
 		// Status information of the workers
-        std::string* worker_xml_info;                       // XML version of the worker related information
-        au::Cronometer *cronometer_worker_xml_info;           // Cronometer to count the last update from workers
+        std::string* worker_xml_info;                       // XML version of the worker status information
+        au::Cronometer *cronometer_worker_xml_info;         // Cronometer to count the last update from workers
 		
         int num_workers;
 

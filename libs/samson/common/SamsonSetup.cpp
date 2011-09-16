@@ -197,7 +197,7 @@ namespace samson
 
 		baseDirectory = workingDirectory;
 
-		controllerDirectory = workingDirectory + "/controller";
+		logDirectory        = workingDirectory + "/log";
 		dataDirectory		= workingDirectory + "/data";
         blocksDirectory     = workingDirectory + "/blocks";
 		modulesDirectory	= workingDirectory + "/modules";
@@ -207,7 +207,7 @@ namespace samson
 				
 		// Create directories if necessary
 		createDirectory( workingDirectory );
-		createDirectory( controllerDirectory );
+		createDirectory( logDirectory );
 		createDirectory( dataDirectory );
 		createDirectory( blocksDirectory );
         createDirectory( modulesDirectory );        

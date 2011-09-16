@@ -11,7 +11,7 @@
 #include "samson/common/NotificationMessages.h"         // notification_process_request
 
 
-#include "QueuesManager.h"   // QueueManager
+#include "StreamManager.h"   // QueueManager
 
 #include "PopQueue.h"           // PopQueueTasks
 
@@ -20,11 +20,12 @@
 namespace samson {
     namespace stream {
         
-        QueueTaskManager::QueueTaskManager( QueuesManager* _qm )
+        QueueTaskManager::QueueTaskManager( StreamManager* _qm )
         {
             id = 1;
             qm = _qm;
           
+            listen(notification_run_stream_tasks_if_necessary);
             
             // Periodic notification to check if tasks are ready
             engine::Notification *notification = new engine::Notification(notification_run_stream_tasks_if_necessary);
@@ -52,30 +53,6 @@ namespace samson {
             
             // Check if it is necessary to run a task
             runPopTasksIfNecessary();
-        }
-
-        
-        
-        std::string QueueTaskManager::getStatus()
-        {
-            std::ostringstream output;
-
-            output << "Pending tasks:\n";
-            au::list< QueueTask >::iterator i;
-            for ( i = queueTasks.begin() ; i!= queueTasks.end() ; i++ )
-                output <<  au::indent( (*i)->getStatus() ) << "\n";
-
-            {
-                output << "Running tasks:\n";
-                au::map< size_t, QueueTask >::iterator i;
-                for ( i = runningTasks.begin() ; i!= runningTasks.end() ; i++ )
-                {
-                    QueueTask*tmp = i->second;
-                    output << au::indent( tmp->getStatus() ) << "\n";
-                }
-            }
-            
-            return output.str();
         }
 
         
@@ -150,7 +127,7 @@ namespace samson {
                 
                 //LM_M(("Notified finish task queue_name=%s // id=%lu" , queue_name.c_str() , _id));
                 
-                // Extract the object to not be automatically removed
+                // Extract the object to not be automatically removed ( this is a queueTask or a popQueue )
                 notification->extractObject();
                 
                 std::string type = notification->environment.get("type", "no-type");
@@ -172,7 +149,7 @@ namespace samson {
                         
                     }
                     else
-                        LM_W(("Notification of a finish item at QueueTaskManager, but task %lu not found in the running task list " , _id));
+                        LM_W(("Notification of a finish pop_queue at QueueTaskManager, but task %lu not found in the running task list " , _id));
                     
                 }
                 else

@@ -1,7 +1,10 @@
 
-#include "QueueTask.h"      // Own interface
+#include "samson/common/coding.h"
+
 #include "BlockManager.h"       // samson::stream::BlockManager
 #include "Block.h"              // samson::Stream::Block
+
+#include "QueueTask.h"      // Own interface
 
 namespace samson {
     namespace stream{
@@ -18,6 +21,18 @@ namespace samson {
                 state_lock->copyFrom( state );
                 list_lock->copyFrom( list );
             }
+
+            if( ready_flag )
+            {
+                // Set the working size for statistics
+                BlockInfo block_info;
+                
+                list_lock->update( block_info );
+                state_lock->update( block_info );
+                
+                working_size = block_info.size;
+ 
+            }
             
             return ready_flag;
         }
@@ -25,9 +40,12 @@ namespace samson {
         
         void QueueTask::getInfo( std::ostringstream& output)
         {
-            output << "<queue_task id=\"" << id << "\">\n";
+            au::xml_open(output , "queue_task" );
             
-            output << "<id>" << id << "</id>\n";
+            au::xml_simple( output , "id", id);
+            
+            au::xml_simple( output , "input_in_memory" , list->isContentOnMemory() );
+            au::xml_simple( output , "state_in_memory" , state->isContentOnMemory() );
             
             list->getInfo( output );
 
@@ -39,7 +57,7 @@ namespace samson {
             // Get all process item related information ( like progress )
             ProcessItem::getInfo( output );
             
-            output << "</queue_task>\n";
+            au::xml_close(output , "queue_task" );
         }
         
         

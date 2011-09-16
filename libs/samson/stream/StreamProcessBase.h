@@ -6,28 +6,31 @@
 #include <cstring>				// size_t		
 #include <string>				// std::string
 #include <sstream>				// std::ostringstream
-#include "samson/common/samson.pb.h"			// samson::network::...
-#include "samson/common/coding.h"				// samson::ProcessAssistantSharedFile
-#include "au/Lock.h"				// au::Lock
-#include "engine/ProcessItem.h"		// samson::ProcessItem
-#include "samson/isolated/ProcessItemIsolated.h"	// ss:ProcessItemIsolated
-#include "samson/network/NetworkInterface.h"		// samson::NetworkInterface
-#include "samson/isolated/ProcessWriter.h"			// samson::ProcessWriter
-#include "samson/common/samson.pb.h"                      // samson::network::...
-#include "samson/module/OperationController.h"     // samson::OperationController
-#include "engine/Engine.h"                         // samson::Engine
-#include "samson/isolated/SharedMemoryManager.h"            // samson::SharedMemoryManager
-#include "samson/common/MemoryTags.h"                       // MemoryOutputNetwork
-#include "samson/isolated/ProcessIsolated.h"                // samson::ProcessIsolated
-#include "samson/stream/Queue.h"    // samson::Stream::Queue
+
+#include "engine/ProcessItem.h"                         // samson::ProcessItem
+#include "engine/Engine.h"                              // samson::Engine
+
+#include "samson/common/samson.pb.h"                    // samson::network::...
+#include "samson/common/coding.h"                       // samson::ProcessAssistantSharedFile
+#include "samson/common/samson.pb.h"                    // samson::network::...
+#include "samson/common/MemoryTags.h"                   // MemoryOutputNetwork
+
+#include "samson/module/OperationController.h"          // samson::OperationController
+
+#include "samson/isolated/ProcessWriter.h"              // samson::ProcessWriter
+#include "samson/isolated/ProcessItemIsolated.h"        // ss:ProcessItemIsolated
+#include "samson/isolated/SharedMemoryManager.h"        // samson::SharedMemoryManager
+#include "samson/isolated/ProcessIsolated.h"            // samson::ProcessIsolated
+
+#include "samson/network/NetworkInterface.h"            // samson::NetworkInterface
+
+#include "samson/stream/Queue.h"                        // samson::Stream::Queue
 
 namespace samson
 {
     
     namespace stream
     {
-        
-        
         
         class WorkerTask;
         class WorkerTaskManager;
@@ -48,9 +51,7 @@ namespace samson
             
             size_t task_id;                         // Id of the operation
             size_t task_order;                      // Order of the task
-            
-            Environment operation_environment;                // Environment of the operation
-            
+                        
             // Information about how to process this queue
             network::StreamOperation *streamOperation;
             
@@ -58,17 +59,6 @@ namespace samson
             
             StreamProcessBase( size_t _task_id , const network::StreamOperation& _streamOperation );
             virtual ~StreamProcessBase();
-            
-            
-            // Function to be implemented ( running on a different process )
-            void runIsolated();
-            
-            // Function to generate the key-values with the Writer element ( back process )
-            virtual void generateKeyValues( KVWriter *writer ){};
-            
-            // Function to generate the txt buffers at the output ( back process )
-            virtual void generateTXT( TXTWriter *writer ){};
-            
             
             // Function to process the output of the operations
             void processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish );

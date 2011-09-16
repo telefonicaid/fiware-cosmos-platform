@@ -281,6 +281,8 @@ namespace engine
 
         au::xml_iterate_list( output , "elements" , elements );
         
+        au::xml_simple( output , "uptime" , uptime.diffTimeInSeconds() );
+        
         au::xml_close(output , "engine");
         
 	}
@@ -366,6 +368,9 @@ namespace engine
         MemoryManager::shared()->getInfo( output );
         DiskManager::shared()->getInfo( output );
         ProcessManager::shared()->getInfo( output );
+        
+        size_t uptime = engine::Engine::shared()->uptime.diffTimeInSeconds();
+        au::xml_simple( output , "uptime" , uptime );
         
         au::xml_close(output, "engine_system");
     }

@@ -13,24 +13,24 @@ namespace samson {
     namespace stream {
         
         class QueueTask;
-        class QueuesManager;
+        class StreamManager;
         class PopQueueTask;
         
         class QueueTaskManager : public ::engine::Object
         {
-            size_t id;                              // Id of the current task
+            size_t id;                                              // Id of the current task
 
-            au::list< QueueTask > queueTasks;           // List of pending task to be executed
-            au::map< size_t , QueueTask > runningTasks; // Map of running tasks
+            au::list< QueueTask > queueTasks;                       // List of pending task to be executed
+            au::map< size_t , QueueTask > runningTasks;             // Map of running tasks
 
             au::list< PopQueueTask > popQueueTasks;                 // List of pending pop queue tasks to be executed
             au::map< size_t , PopQueueTask > runningPopQueueTasks;  // Map of running pop queue tasks
             
-            QueuesManager* qm;
+            StreamManager* qm;
             
         public:
             
-            QueueTaskManager( QueuesManager* qm );
+            QueueTaskManager( StreamManager* qm );
             
             size_t getNewId();
             
@@ -39,8 +39,6 @@ namespace samson {
             
             void runTasksIfNecessary();
             void runPopTasksIfNecessary();
-            
-            std::string getStatus();
             
             // Notifications
             void notify( engine::Notification* notification );

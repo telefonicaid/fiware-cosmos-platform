@@ -61,8 +61,9 @@ namespace engine
 		au::set<ProcessItem> halted_items;		// Set of items currently being executed but halted
         
         ProcessManager( int _num_processes);
-        
-        std::string _str();
+
+        //Statistics
+        au::map<std::string,au::SimpleRateCollection> rates;    // Information about rates
         
     public:
         
@@ -70,7 +71,6 @@ namespace engine
         
         static void init( int _num_processes);
         static ProcessManager* shared();
-        static std::string str();
         
         static int getNumCores();
         static int getNumUsedCores();

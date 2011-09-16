@@ -5,6 +5,8 @@
 #include "BlockList.h"  // samson::stream::BlockList
 #include "QueueTask.h"      // samson::stream::QueueTask
 
+#include "samson/stream/StreamManager.h"
+
 #include "QueueItem.h"  // Own interface
 
 namespace samson {
@@ -22,9 +24,9 @@ namespace stream
             range = _range;
             
             // Cleate the list of blocks properly
-            list = new BlockList( _myQueue->name + "_item" );
+            list = new BlockList(  au::str("%s %d %d",_myQueue->name.c_str() , range.hg_begin , range.hg_end ) );
             future_list = new BlockList( _myQueue->name + "_item_future" );
-
+            
             // By default I am not working
             working = false;
             task = NULL;
@@ -71,7 +73,9 @@ namespace stream
             au::xml_simple( output , "working", working);
 
             // Information about content
-            getFullKVInfo().getInfo(output);
+            BlockInfo block_info;
+            update(block_info);
+            block_info.getInfo(output);
             
             output << "<list>";
             list->getInfo(output);
@@ -141,9 +145,9 @@ namespace stream
             
         }
         
-        FullKVInfo QueueItem::getFullKVInfo()
+        void QueueItem::update( BlockInfo &block_info)
         {
-            return list->getFullKVInfo( range );
+            list->update( block_info );
         }
 
         

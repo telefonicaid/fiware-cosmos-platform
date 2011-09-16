@@ -16,7 +16,7 @@ namespace samson {
         num_operations = _num_operations;
         
 		// Description with the name of the generator
-		operation_name =  std::string("G:") + generator;
+		setProcessItemOperationName( std::string("G:") + generator );
 	}
 	
 	
@@ -33,7 +33,7 @@ namespace samson {
 		// Get a generator instance
 		
 		Generator * generator  = (Generator*) op->getInstance();
-		generator->environment = &environment;			// To be able to access environment
+		generator->environment = &operation_environment;			// To be able to access environment
 		generator->tracer = this;						// To be able to send traces
 		generator->operationController = this;
         

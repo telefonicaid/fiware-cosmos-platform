@@ -118,7 +118,7 @@ namespace samson
         
         switch (type) {
             case general:
-                printLines( getStringInfo("/engine_system", getEngineSystemInfo, i_worker ) );
+                printLines( getStringInfo("/engine_system", getEngineSimplifiedSystemInfo, i_worker ) );
                 break;
                 
             case task:

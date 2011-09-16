@@ -47,7 +47,6 @@ namespace samson {
         
         Block::Block( engine::Buffer *_buffer )
         {
-            
             // Get a new unique id from the block manager
             id = BlockManager::shared()->getNextBlockId();
             
@@ -64,8 +63,28 @@ namespace samson {
             // Get a copy of the header
             header = (KVHeader*) malloc( sizeof( KVHeader ) );
             memcpy(header, buffer->getData(), sizeof(KVHeader));
+        }
+        
+        Block::Block( size_t _id , size_t _size , KVHeader* _header )
+        {
+            // Get a new unique id from the block manager
+            id = _id;
+            
+            // Buffer of data
+            buffer = NULL;  
+            
+            // Get the size of the packet
+            size = _size;
+            
+            // Default state is on_memory because the buffer has been given at memory
+            state = on_disk;
+            
+            // Get a copy of the header
+            header = (KVHeader*) malloc( sizeof( KVHeader ) );
+            memcpy(header, _header , sizeof(KVHeader));
             
         }
+        
 
         Block::~Block()
         {
@@ -114,7 +133,7 @@ namespace samson {
             if( !buffer )
                 LM_X(1,("Not possible to get write operation over a block that it is not in memory"));
             
-            engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer ,  getFileName() , getEngineId()  );
+            engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer ,  getFileNameForBlock(id) , getEngineId()  );
             operation->addListener( BlockManager::shared()->getEngineId() );
             
             // set my id as environment property
@@ -129,16 +148,22 @@ namespace samson {
             if( !buffer )
                 LM_X(1,("Not possible to get a read operation over a block that has not a buffer  in memory"));
             
-            engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( getFileName(), 0, size, buffer->getSimpleBuffer() , getEngineId() );
+            engine::DiskOperation* operation;
+
+            // Create the operation
+            std::string fileName = getFileNameForBlock(id);
+            operation = engine::DiskOperation::newReadOperation( fileName.c_str(), 0, size, buffer->getSimpleBuffer() , getEngineId() );
+            
+            // Also add as listener the block manager to deal with reordering after this read opertion is finished
             operation->addListener( BlockManager::shared()->getEngineId() );
             
-            // set my id as environment property
+            // set my id as environment property ( used in BlockManager to understand what block is about )
             operation->environment.set("block_id" , id );
             
             return operation;
         }
         
-        std::string Block::getFileName()
+        std::string Block::getFileNameForBlock( size_t id )
         {
             return au::str( "%s/block_%lu", SamsonSetup::shared()->blocksDirectory.c_str()  , id );
         }
@@ -180,9 +205,12 @@ namespace samson {
             
             // Allocate a buffer
             buffer = engine::MemoryManager::shared()->newBuffer("block", size, 0 ); 
+            buffer->setSize( size );    // Set the final size ( only used after read opertion has finished )
             
+            // Change the state to reading
             state = reading;
 
+            // Schedule the read operation
             engine::DiskManager::shared()->add( getReadOperation() );
             
         }
@@ -236,23 +264,25 @@ namespace samson {
             
         }
 
-        KVInfo Block::getKVInfo()
+        // Get information about this block
+        void Block::update( BlockInfo &block_info)
         {
-            return header->info;
-        }
-
-        KVInfo Block::getKVInfo( KVRange r )
-        {
-            if( r == KVRange(0,KVFILE_NUM_HASHGROUPS) )
-                return header->info;
+            // Information about number of blocks
+            block_info.num_blocks++;
             
-            if( !infos.isInMap(r) )
-            {
-                LM_W(("Information for this range %s was not previously computed" , r.str().c_str()));
-                return KVInfo( 0 , 0 );
-            }
+            // Information about sizes
+            block_info.size += size;
+            if( isContentOnMemory() )
+                block_info.size_on_memory += size;
+            if( isContentOnDisk() )
+                block_info.size_on_disk += size;
             
-            return infos.findInMap( r );
+            if( isLockedInMemory() )
+                block_info.size_locked += size;
+            
+            // Key-Value information
+            block_info.info.append( header->info );
+            
         }
         
         size_t getSize( std::set<Block*> &blocks )
@@ -296,7 +326,26 @@ namespace samson {
             au::xml_close(output, "block");
         }
         
+        // Check if this block is not in any list anymore
+        int Block::getNumberOfLists()
+        {
+            return lists.size();
+        }
         
+        // Function to check if this block can be removed from block manager ( basically it is not contained anywhere )
+        int Block::canBeRemoved()
+        {
+            if( lists.size() != 0)
+                return false;
+            
+            if( state == reading )
+                return false;
+            
+            if( state == writing )
+                return false;
+            
+            return true;
+        }        
         
 
     }

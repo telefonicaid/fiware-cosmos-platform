@@ -12,10 +12,10 @@
 
 namespace samson
 {
-    ProcessIsolated::ProcessIsolated( std::string description, ProcessBaseType _type , int _num_outputs , int _num_workers ) : ProcessItemIsolated( description )
+    ProcessIsolated::ProcessIsolated( std::string description, ProcessBaseType _type ) : ProcessItemIsolated( description )
     {
-        num_outputs = _num_outputs;
-        num_workers = _num_workers;
+        num_outputs = 0;        // Outputs are defined calling "addOutput" with the rigth output format
+        num_workers = 0;        // setNumWorkers function is used to specify this. If still "0" when running, an error is triggered
         
         type = _type;
         
@@ -142,14 +142,11 @@ namespace samson
 		 After flushing we check that available memory is under 100%.
 		 Otherwise we halt notifying this to the ProcessManager
 		 */
-		
-        
+
         while( !isReady() )
 			halt();
-
 		
 #pragma mark ---		
-		
 		
 		// General output buffer
 		char * buffer = item->data;
@@ -288,5 +285,46 @@ namespace samson
 		}
 		
 	}	    
+    
+    void ProcessIsolated::runIsolated()
+    {
+        switch (type) {
+                
+            case key_value:
+                // Generate the key-values
+                generateKeyValues( getWriter() );
+                getWriter()->flushBuffer(true);
+                break;
+                
+            case txt:
+                // Generate TXT content using the entire buffer
+                generateTXT( getTXTWriter() );
+                getTXTWriter()->flushBuffer(true);
+                break;
+        }
+        
+    }
+    
+    void ProcessIsolated::addOutput( KVFormat format )
+    {
+        num_outputs++;
+        outputFormats.push_back( format );
+    }
+    
+    void ProcessIsolated::addOutputsForOperation( Operation *op )
+    {
+        for (int i = 0 ; i < op->getNumOutputs() ; i++)
+            addOutput( op->getOutputFormat(i) );
+    }
+   
+    void ProcessIsolated::setNumWorkers( int _num_workers )
+    {
+        num_workers = _num_workers;
+    }
+    
+    void ProcessIsolated::setProcessBaseMode(ProcessBaseType _type)
+    {
+        type = _type;
+    }
     
 }

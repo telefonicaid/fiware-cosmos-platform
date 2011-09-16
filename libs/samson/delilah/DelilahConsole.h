@@ -23,13 +23,13 @@
 
 #include "logMsg/logMsg.h"				
 
-#include "au/TokenTaker.h"                          // au::TokenTake
+#include "au/TokenTaker.h"                  // au::TokenTake
 
-#include "au/Console.h"			// au::Console
-#include "DelilahClient.h"      // ss:DelilahClient
+#include "au/Console.h"                     // au::Console
+#include "DelilahClient.h"                  // ss:DelilahClient
 
 #include "samson/delilah/Delilah.h"			// samson::Delilah
-#include "samson/delilah/DelilahUtils.h"        // getXXXInfo()
+#include "samson/delilah/DelilahUtils.h"    // getXXXInfo()
 
 namespace samson {
 	
@@ -94,7 +94,10 @@ namespace samson {
             addOption("ps_network");         
             addOption("engine_show");
             addOption("ls_local");
+            addOption("ls_block_manager");
             addOption("rm_local");
+            addOption("run_stream_operation");
+            addOption("ls_operation_rates");
         }
         
         void addOperations()

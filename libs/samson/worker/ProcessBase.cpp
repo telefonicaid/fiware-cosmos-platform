@@ -1,24 +1,30 @@
 
 
-#include "ProcessBase.h"			// Own interface
+#include "logMsg/logMsg.h"                 // LM_X
+
+#include "samson/common/coding.h"					// All data definitions
+#include "samson/common/EnvironmentOperations.h"	// copyEnviroment
+#include "samson/common/MemoryTags.h"             // MemoryOutputNetwork
+
+#include "samson/network/Packet.h"					// samson::Packet
+
+#include "samson/isolated/SharedMemoryItem.h"       // samson::SharedMemoryItem
+
+#include "samson/module/ModulesManager.h"           // samson::ModulesManager
+
+#include "samson/worker/SamsonWorker.h"			// samson::SamsonWorker
+
 #include "WorkerTask.h"				// samson::WorkerTask
 #include "WorkerTaskManager.h"		// samson::WorkerTaskManager
-#include "samson/common/coding.h"					// All data definitions
-#include "samson/network/Packet.h"					// samson::Packet
-#include "samson/common/EnvironmentOperations.h"	// copyEnviroment
-#include "WorkerTask.h"				// samson::WorkerTask
-#include "samson/worker/SamsonWorker.h"			// samson::SamsonWorker
-#include "samson/isolated/SharedMemoryItem.h"       // samson::SharedMemoryItem
-#include "logMsg/logMsg.h"                 // LM_X
-#include "samson/common/MemoryTags.h"             // MemoryOutputNetwork
+
+#include "ProcessBase.h"			// Own interface
 
 namespace samson {
     
 	
 #pragma mark ProcessItemKVGenerator
 	
-	ProcessBase::ProcessBase( WorkerTask *task , ProcessBaseType _type ) 
-        : ProcessIsolated( task->operation, _type , task->workerTask.output_queue_size() , task->workerTask.servers() )
+	ProcessBase::ProcessBase( WorkerTask *task , ProcessBaseType _type ) : ProcessIsolated( task->operation, _type )
 	{
 		
 		// copy the message received from the controller
@@ -31,14 +37,27 @@ namespace samson {
 		// Get the task_id
 		task_id = task->workerTask.task_id();
 
-									
-		copyEnviroment( task->workerTask.environment() , &environment ); 
+		// Copy environment							
+		copyEnviroment( task->workerTask.environment() , &operation_environment ); 
 		
-		
+		// Some context information
 		workerTaskManager = task->taskManager;
         worker      = task->taskManager->worker->network->getWorkerId();        // Get the worker id information
         num_workers = task->taskManager->worker->network->getNumWorkers();      // Get the total number of workers
         hg_set = 0; // Default hg_set
+        
+        // Get the outputs from the operation
+        std::string operation_name = task->operation;
+        Operation *op = ModulesManager::shared()->getOperation( operation_name );
+
+        if( !op )
+            setUserError( au::str( "Operation %s not found" , operation_name.c_str() ) );
+        
+        // Set the rigth outputs for this operation    
+        addOutputsForOperation(op);
+        
+        //Set number of worker
+        setNumWorkers( task->workerTask.servers() );
         
 	}
 	
@@ -48,35 +67,6 @@ namespace samson {
         delete workerTask;
 	}
 	
-	void ProcessBase::runIsolated()
-	{
-		switch (type) {
-			case key_value:
-				runIsolatedKV();
-				break;
-			case txt:
-				runIsolatedTXT();
-				break;
-		}
-		
-	}
-	
-	void ProcessBase::runIsolatedTXT()
-	{
-        // Generate TXT content using the entire buffer
-		generateTXT( getTXTWriter() );
-		getTXTWriter()->flushBuffer(true);
-	}
-	
-	void ProcessBase::runIsolatedKV()
-	{
-		
-		// Generate the key-values
-		generateKeyValues( getWriter() );
-		getWriter()->flushBuffer(true);
-	}
-
-
 	
     void ProcessBase::processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )
     {

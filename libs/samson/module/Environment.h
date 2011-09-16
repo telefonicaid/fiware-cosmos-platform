@@ -75,7 +75,7 @@ namespace samson {
 			
 			std::map<std::string, std::string>::iterator iter;
 			for (iter = environment.begin() ; iter != environment.end() ; iter++)
-				o << "[" << iter->first << " : " << iter->second << "] ";
+				o  << iter->first << " : " << iter->second << "\n";
 			return o.str();
 		}
 		

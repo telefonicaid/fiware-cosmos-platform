@@ -16,6 +16,13 @@ namespace system{
 class Int16 : public FixedLengthDataInstance<short>
 {
 public:
+
+   std::string getName()
+   {
+	  return "system.Int16";
+   }
+
+
 	int hash(int max_num_partitions){
 		return abs(value)%max_num_partitions;
 	}

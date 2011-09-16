@@ -5,7 +5,7 @@ SET (HEADERS
     BlockList.h
     Queue.h
     QueueItem.h
-    QueuesManager.h
+    StreamManager.h
     QueueTask.h
     QueueTaskManager.h
     StreamProcessBase.h
@@ -14,6 +14,7 @@ SET (HEADERS
     StatesManager.h
     StreamOperation.h
     ParserQueueTask.h
+	WorkerTask.h
 
 )
 
@@ -24,7 +25,7 @@ SET (SOURCES
     Queue.cpp
     QueueItem.cpp
     BlockList.cpp
-    QueuesManager.cpp
+    StreamManager.cpp
     QueueTask.cpp
     QueueTaskManager.cpp    
     StreamProcessBase.cpp
@@ -33,7 +34,7 @@ SET (SOURCES
     StatesManager.cpp
     StreamOperation.cpp
     ParserQueueTask.cpp
-
+	WorkerTask.cpp
 )
 
 

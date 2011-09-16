@@ -438,6 +438,15 @@ namespace samson {
             return (getFormat() == KVFormat("txt","txt") );
         }
         
+        bool check_size( size_t total_size )
+        {
+            if( isTxt() )
+                return (total_size == ( sizeof(KVHeader) + info.size ) );
+            else
+                return (total_size == ( sizeof(KVHeader) + KVFILE_NUM_HASHGROUPS*sizeof(KVInfo) +  info.size ) );
+                
+        }
+        
 		void setHashGroups( uint32 _hg_begin , uint32 _hg_end )
 		{
             range.set( _hg_begin , _hg_end );
@@ -541,11 +550,71 @@ namespace samson {
             
             au::xml_close(output , "kv_header" );
         }
-            
-        
         
 	};
+
 	
+	typedef struct BlockInfo
+    {
+        int num_blocks;
+        size_t size;
+        size_t size_on_memory;
+        size_t size_on_disk;
+        size_t size_locked;
+        
+        FullKVInfo info;
+        
+        BlockInfo()
+        {
+            num_blocks = 0;
+            size = 0;
+            size_on_memory = 0;
+            size_on_disk = 0;
+            size_locked = 0;
+        }
+        
+        void getInfo( std::ostringstream &output )
+        {
+            au::xml_open( output , "block_info" );
+            au::xml_simple( output , "num_blocks" , num_blocks );
+
+            au::xml_simple( output , "size" , size );
+            au::xml_simple( output , "size_on_memory" , size_on_memory );
+            au::xml_simple( output , "size_on_disk" , size_on_disk );
+            au::xml_simple( output , "size_locked" , size_locked );
+            
+            info.getInfo( output );
+            
+            au::xml_close( output , "block_info" );
+        }
+        
+		double onMemoryPercentadge()
+			{
+				if( size == 0)
+					return 0;
+
+				return (double) size_on_memory / (double) size;
+			}
+
+		double onDiskPercentadge()
+			{
+				if( size == 0)
+					return 0;
+
+				return (double) size_on_disk / (double) size;
+			}
+
+		double lockedPercentadge()
+			{
+				if( size == 0)
+					return 0;
+
+				return (double) size_locked / (double) size;
+			}
+        
+    };
+    
+    
 	/**
 	 A SharedFile from the Process side
 	 */
@@ -906,7 +975,21 @@ namespace samson {
 		
 	};
     
+    /**
+     Structure to save the hash-code of the datainstance
+     */
     
+    struct KeyValueHash
+    {
+        size_t key_hash;
+        size_t value_hash;
+        
+        KeyValueHash()
+        {
+            key_hash = 0;
+            value_hash = 0;
+        }
+    };
 	
 }
 

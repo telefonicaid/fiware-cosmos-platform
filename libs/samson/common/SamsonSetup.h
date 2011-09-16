@@ -128,7 +128,7 @@ namespace samson {
         
 		// Directories
 		std::string baseDirectory;
-		std::string controllerDirectory;
+		std::string logDirectory;
 		std::string dataDirectory;
 		std::string blocksDirectory;
 		std::string modulesDirectory;

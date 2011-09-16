@@ -462,10 +462,8 @@ namespace samson {
         au::TokenTaker tt( &token_xml_info );
         
         int time = cronometer_xml_info.diffTimeInSeconds();
-   
-        int worker_update_time = (int) pugi::UInt64( doc , "//controller/update_time" );
-        
-        time += worker_update_time;
+
+        // Sum the worker time
         
         return time;
     }
@@ -504,15 +502,15 @@ namespace samson {
             
             std::ostringstream output;
             
-            output << "\n";
             
             if( options & i_controller )
             {
                 if( !(options & i_no_title ) )
                 {
-                    output << "============================================================\n";
+                    output << "\n";
+                    output << "================================================================================\n";
                     output << "Controller :\n";
-                    output << "============================================================\n";
+                    output << "================================================================================\n";
                     output << "\n";
                 }
                 
@@ -523,7 +521,6 @@ namespace samson {
                     const pugi::xml_node& node = nodes[i].node(); 
                     output << _node_to_string_function( node ) << "\n" ;
                 }      
-                output << "\n";
             }
             
             if( options & i_worker )
@@ -535,9 +532,10 @@ namespace samson {
                     
                     if( !(options & i_no_title ) )
                     {
-                        output << "============================================================\n";
+                        output << "\n";
+                        output << "================================================================================\n";
                         output << "Worker " << workers_ids[w] << ":\n";
-                        output << "============================================================\n";
+                        output << "================================================================================\n";
                         output << "\n";
                     }
                     
@@ -549,8 +547,6 @@ namespace samson {
                         output << _node_to_string_function( node ) << "\n" ;
                     }            
                     
-                    output << "\n";
-                    
                 }
             }
             
@@ -559,9 +555,10 @@ namespace samson {
             {
                 if( !(options & i_no_title ) )
                 {
-                    output << "============================================================\n";
+                    output << "\n";
+                    output << "================================================================================\n";
                     output << "Delilah :\n";
-                    output << "============================================================\n";
+                    output << "================================================================================\n";
                     output << "\n";
                 }
                 
@@ -574,7 +571,6 @@ namespace samson {
                 }            
             }
             
-            output << "\n";
             return output.str();
             
         }

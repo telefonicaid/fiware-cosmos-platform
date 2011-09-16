@@ -17,16 +17,17 @@ namespace samson {
         class QueueItem;
         class BlockList;
         class ReduceQueueTask;
-        class QueuesManager;
+        class StreamManager;
         
         class Queue
         {
             
             friend class QueueItem;
-            friend class QueuesManager;
+            friend class StreamManager;
+            friend class WorkerCommand;
             
-            // Pointer to QueuesManager
-            QueuesManager* qm;
+            // Pointer to StreamManager
+            StreamManager* streamManager;
             
             // Name of this queue
             std::string name;
@@ -39,7 +40,7 @@ namespace samson {
             
         public:
             
-            Queue( std::string _name , QueuesManager* _qm ,  int num_items );
+            Queue( std::string _name , StreamManager* _streamManager ,  int num_items );
             ~Queue();
 
             // Push content form a block list ( do not remove original list )
@@ -55,11 +56,13 @@ namespace samson {
             bool isWorking();
             
             // Get information about the queue
-            FullKVInfo getFullKVInfo();
-            FullKVInfo getWorkingFullKVInfo();
+            void update( BlockInfo& block_info );
                         
             // Getting XML information
             void getInfo( std::ostringstream& output);
+            
+            // Copy content
+            void copyFrom( Queue* _queue);
             
         private:
             

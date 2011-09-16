@@ -51,7 +51,6 @@ namespace samson {
 				
 		// Error management
         au::ErrorManager error;
-
         
         // Information about progress
         FullKVInfo total_info;                  // Total amount of information to be processed

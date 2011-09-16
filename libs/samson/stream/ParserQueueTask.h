@@ -23,7 +23,7 @@ namespace samson
             
             ParserQueueTask( size_t id  , const network::StreamOperation& streamOperation  ) : stream::QueueTask(id , streamOperation )
             {
-                operation_name = "stream:" + streamOperation.operation();
+                setProcessItemOperationName( "stream:" + streamOperation.operation() );
             }
             
             ~ParserQueueTask()
@@ -51,7 +51,7 @@ namespace samson
             ParserOutQueueTask( size_t id  , const network::StreamOperation& streamOperation , KVRange _range  ) : stream::QueueTask(id , streamOperation )
             {
                 // Set operation name for debugging
-                operation_name = "stream:" + streamOperation.operation();
+                setProcessItemOperationName( "stream:" + streamOperation.operation() );
 
                 // Set the limits
                 range = _range;
@@ -60,14 +60,7 @@ namespace samson
                 setProcessBaseMode(ProcessIsolated::txt);
 
             }
-            
-            ~ParserOutQueueTask()
-            {
-            }
-            
-            // Get the required blocks to process
-            void getBlocks( BlockList *matrix );
-            
+                        
             // Function to generate output key-values
             void generateTXT( TXTWriter *writer );
             
@@ -89,7 +82,7 @@ namespace samson
             MapQueueTask( size_t id , const network::StreamOperation& streamOperation , KVRange _range  ) :stream::QueueTask(id , streamOperation )
             {
                 // Set operation name for debugging
-                operation_name = "stream:" + streamOperation.operation();
+                setProcessItemOperationName( "stream:" + streamOperation.operation() );
                 
                 // Set the limits
                 range = _range;
@@ -98,9 +91,6 @@ namespace samson
             ~MapQueueTask()
             {
             }
-            
-            // Get the required blocks to process
-            void getBlocks( BlockList *input );
             
             // Function to generate output key-values
             void generateKeyValues( KVWriter *writer );

@@ -14,7 +14,7 @@ namespace samson{
 namespace txt{
 
 
-	class export_words : public samson::system::SimpleParserOut<samson::system::String,samson::system::UInt>
+	class export_words : public samson::system::SimpleParserOut<samson::system::String,samson::system::Void>
 	{
 
 	};

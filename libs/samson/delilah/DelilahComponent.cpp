@@ -90,37 +90,37 @@ namespace samson {
     {
         return component_finished;
     }
-
+    
     void DelilahComponent::setComponentFinished()
     {
         // Only mark as finished once
         if( component_finished )
             return;
-
+        
         cronometer.stop();
         
-	LM_M(("setComponentFinished for id:%lu", id));
+        //LM_M(("setComponentFinished for id:%lu", id));
         component_finished = true;
         delilah->delilahComponentFinishNotification( this );
     }
-
+    
     void DelilahComponent::setComponentFinishedWithError( std::string error_message )
     {
         // Only mark as finished once
         if( component_finished )
-	{
-	    LM_M(("setComponentFinishedWithError for id:%lu with error message:'%s'; Component already finished", id, error_message.c_str()));
+        {
+            //LM_M(("setComponentFinishedWithError for id:%lu with error message:'%s'; Component already finished", id, error_message.c_str()));
             return;
-	}
-
-	LM_M(("setComponentFinishedWithError for id:%lu with error message:'%s'", id, error_message.c_str()));
+        }
+        
+        //LM_M(("setComponentFinishedWithError for id:%lu with error message:'%s'", id, error_message.c_str()));
         component_finished = true;
         
         error.set( error_message );
         
         delilah->delilahComponentFinishNotification( this );
     }
-
+    
     void DelilahComponent::setConcept( std::string _concept )
     {
         concept = _concept;

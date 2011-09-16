@@ -69,7 +69,7 @@ namespace samson
             erase( memoryRequest );
             
             if( !memoryRequest )
-                LM_X(1, ("Internal error: Memory request returnes without a buffer"));
+                LM_X(1, ("Internal error: Memory request returnes without an object"));
             
             if ( !memoryRequest->buffer )
             {

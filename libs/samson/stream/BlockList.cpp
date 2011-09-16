@@ -1,8 +1,10 @@
 
 #include <sstream>       
 
+#include "au/file.h"                                // au::sizeOfFile
+
 #include "Queue.h"          // samson::stream::Queue
-#include "QueuesManager.h"  // samson::stream::QueuesManager
+#include "StreamManager.h"  // samson::stream::StreamManager
 #include "Block.h"          // samson::stream::Block
 #include "BlockManager.h"   // samson::stream::BlockManager
 
@@ -28,12 +30,10 @@ namespace samson {
 #pragma mark BlockList
         
         
-        
         BlockList::~BlockList()
         {
             clearBlockList();
         }
-        
         
         void BlockList::clearBlockList()
         {
@@ -56,6 +56,51 @@ namespace samson {
             
             // Add automatically to the Block Manager
             BlockManager::shared()->insert( block );   
+         
+            return block;
+        }
+
+        Block* BlockList::createBlockFromDisk( size_t id )
+        {
+            std::string fileName =  Block::getFileNameForBlock( id );
+            
+            FILE *file = fopen( fileName.c_str() , "r" );
+            if(!file)
+                return NULL;
+            
+            KVHeader header;
+            
+            int r = fread( &header , sizeof(KVHeader) , 1 , file );
+            if( r != 1 )
+            {
+                fclose( file );
+                return NULL;
+            }
+
+            size_t fileSize = au::sizeOfFile( fileName );
+            
+            // Check file-size
+            if ( !header.check_size( fileSize ) )
+            {
+                LM_W(("Not correct file while recovering block %lu from file %s" , id , fileName.c_str() ));
+                fclose( file );
+                return NULL;
+            }
+            
+            
+            // Add block as allways
+            Block *block = new Block( id , fileSize , &header );
+
+            // Insert this block in my list
+            blocks.push_back( block );
+            
+            // Insert myself in the the list inside the block
+            block->lists.insert( this );
+            
+            // Add automatically to the Block Manager
+            BlockManager::shared()->insert( block );   
+            
+            fclose( file );
             
             return block;
         }
@@ -65,7 +110,7 @@ namespace samson {
         {
             
             // Accumulated information
-            accumulated_info.append( block->getKVInfo() );
+            block->update( accumulated_block_info );
             
             // Insert this block in my list
             blocks.push_back( block );
@@ -75,6 +120,8 @@ namespace samson {
             
             // Check the block
             BlockManager::shared()->check( block );
+            
+            
         }
         
         void BlockList::remove( Block* block )
@@ -89,7 +136,17 @@ namespace samson {
             BlockManager::shared()->check(block);
             
         }
-                               
+
+        // get a block with this id ( if included in this list )
+        Block* BlockList::getBlock( size_t id )
+        {
+            au::list< Block >::iterator b;
+            for (b=blocks.begin(); b != blocks.end();b++)
+                if( (*b)->id == id)
+                    return *b;
+            return NULL;
+        }
+        
         void BlockList::remove( size_t id )
         {
             au::list< Block >::iterator b;
@@ -174,50 +231,6 @@ namespace samson {
             
         }
 
-        std::string BlockList::str()
-        {
-            size_t size             = 0;
-            size_t size_on_memory   = 0;
-            size_t size_on_disk     = 0;
-            
-            FullKVInfo info;
-            
-            std::ostringstream output;
-            std::list<Block*>::iterator b;
-            
-            for ( b = blocks.begin() ; b != blocks.end() ; b++ )
-            {
-                size            += (*b)->getSize();
-                size_on_memory  += (*b)->getSizeOnMemory();
-                size_on_disk    += (*b)->getSizeOnDisk();
-                info.append( (*b)->getKVInfo() );
-                
-            }
-            
-            /*
-             output << "\tBlocks: ";
-             for ( b = blocks.begin() ; b != blocks.end() ; b++ )
-             output << (*b)->str();
-             output << "\n";
-             */
-            
-            if( blocks.size() == 0 )
-            {
-                output << "\n\tTotal info          " << "[ No content ]";
-                output << "\n\tAccumulated info    " << accumulated_info.str() << " ]";
-            }
-            else
-            {
-                output << "\n\tTotal info          " << info.str();
-                output << "\n\tAccumulated info    " << accumulated_info.str();
-                output << "\n\tBlock information   " << "( " << blocks.size() << " blocks with " << au::str( size, "Bytes" );
-                output << " " << au::percentage_string(size_on_memory, size) << " on memory";
-                output << " & " << au::percentage_string(size_on_disk, size) << " on disk )";
-            }
-            
-            
-            return output.str();
-        }
         
         bool BlockList::isEmpty()
         {
@@ -239,72 +252,29 @@ namespace samson {
 
         
         // Get information
-        FullKVInfo BlockList::getFullKVInfo()
+        void BlockList::update( BlockInfo &block_info)
         {
-            FullKVInfo info;
             std::list<Block*>::iterator b;
             for ( b = blocks.begin() ; b != blocks.end() ; b++ )
-                info.append( ( *b )->getKVInfo() );
-            return info;
+                ( *b )->update( block_info );
         }
 
-        FullKVInfo BlockList::getFullKVInfo( KVRange r )
-        {
-            FullKVInfo info;
-            std::list<Block*>::iterator b;
-            for ( b = blocks.begin() ; b != blocks.end() ; b++ )
-                info.append( ( *b )->getKVInfo( r ) );
-            return info;
-        }
-        
-        
-        
         size_t BlockList::getNumBlocks()
         {
             return blocks.size();
         }
         
-        std::string BlockList::getSummary()
-        {
-            FullKVInfo info =  getFullKVInfo();
-            size_t num_blocks = getNumBlocks();
-            
-            return au::str("BlockList with %s containing %s" , au::str(num_blocks ,"Blocks").c_str() , info.str().c_str() );
-        }
-        
-        
         void BlockList::getInfo( std::ostringstream& output)
         {
-            
-            size_t size_total       = 0;
-            size_t size_on_memory   = 0;
-            size_t size_on_disk     = 0;
-            
-            FullKVInfo info;
-            
-            std::list<Block*>::iterator b;            
-            for ( b = blocks.begin() ; b != blocks.end() ; b++ )
-            {
-                size_total      += (*b)->getSize();
-                size_on_memory  += (*b)->getSizeOnMemory();
-                size_on_disk    += (*b)->getSizeOnDisk();
-                info.append( (*b)->getKVInfo() );
-                
-            }
+            BlockInfo block_info;
+            update( block_info );
             
             output << "<block_list>\n";
-            
-            output << "<size_total>"        << size_total        << "</size_total>\n";
-            output << "<size_on_memory>"    << size_on_memory    << "</size_on_memory>\n";
-            output << "<size_on_disk>"      << size_on_disk      << "</size_on_disk>\n";
-            
-            output << "<size>" << info.size << "</size>\n";
-            output << "<kvs>" << info.kvs << "</kvs>\n";
-
-            output << "<num_blocks>" << blocks.size() << "</num_blocks>\n";
-            
+            block_info.getInfo( output );
             output << "</block_list>\n";
         }
+
+        
         
         
     }       

@@ -35,6 +35,11 @@ public:
 	~UInt() {
 	}
 
+	std::string getName()
+	{
+	   return "system.UInt";
+	}
+	
 	int parse(char *data){
 		return samson::staticVarIntParse( data , &value);
 	}

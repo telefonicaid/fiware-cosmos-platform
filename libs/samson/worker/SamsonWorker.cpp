@@ -36,7 +36,7 @@
 #include "samson/stream/Block.h"            // samson::stream::Block
 #include "samson/stream/BlockList.h"            // samson::stream::BlockList
 #include "samson/stream/BlockManager.h"     // samson::stream::BlockManager
-
+#include "samson/stream/WorkerTask.h"           // samson::stream::WorkerTask
 
 #include "samson/module/ModulesManager.h"   // samson::ModulesManager
 
@@ -51,7 +51,7 @@ namespace samson {
 	 *
 	 * Constructor
 	 */
-	SamsonWorker::SamsonWorker( NetworkInterface* _network ) :  taskManager(this) , loadDataManager(this) , queuesManager(this)
+	SamsonWorker::SamsonWorker( NetworkInterface* _network ) :  taskManager(this) , loadDataManager(this) , streamManager(this)
 	{
         network = _network;
         network->setNodeName("SamsonWorker");
@@ -107,10 +107,6 @@ namespace samson {
             engine::Engine::shared()->notify( notification, check_finish_tasks_period );
             
         }
-        
-        // Init the data manager ( recovery of the state comes here )
-        std::string log_file = SamsonSetup::shared()->controllerDirectory + "/log_worker";
-        dataManager = new SimpleDataManager(log_file,this);
         
         
         // Send a "hello" command message just to notify the controller about me
@@ -204,7 +200,7 @@ namespace samson {
             for ( int i = 0 ; i < packet->message->push_block().queue_size() ; i++)
             {
                 std::string queue = packet->message->push_block().queue(i);
-                queuesManager.addBlocks( queue , &my_list  );
+                streamManager.addBlocks( queue , &my_list  );
             }
             
             // Send a message back if delilah_id is > 0
@@ -301,14 +297,22 @@ namespace samson {
         {
             
             size_t delilah_id = packet->message->delilah_id();
-            queuesManager.addPopQueue( packet->message->pop_queue() , delilah_id , packet->fromId );
+            streamManager.addPopQueue( packet->message->pop_queue() , delilah_id , packet->fromId );
             
             return;
         }
         
         if( msgCode == Message::WorkerCommand )
         {
-            runWorkercommand( packet );
+            if( !packet->message->has_worker_command() )
+            {
+                LM_W(("Trying to run a WorkerCommand from a packet without that message"));
+                return;
+            }
+            
+            stream::WorkerCommand *workerCommand = new stream::WorkerCommand(  packet->fromId , packet->message->delilah_id() , packet->message->worker_command() );
+            
+            streamManager.addWorkerCommand( workerCommand );
             return;
         }
         
@@ -398,7 +402,7 @@ namespace samson {
         
         // update the list of automatic operations
         network::StreamOperationList ol =  ql.stream_operation_list();
-        queuesManager.setOperationList( &ol );
+        streamManager.setOperationList( &ol );
         
 		// Generate list of local files ( to not remove them )
 		std::set<std::string> files;
@@ -520,89 +524,6 @@ namespace samson {
 		
 	}
     
-    void SamsonWorker::runWorkercommand( Packet * packet )
-    {
-        
-        if( !packet->message->has_worker_command() )
-        {
-            LM_W(("Trying to run a WorkerCommand from a packet without that message"));
-            return;
-        }
-        
-        
-        std::string command = packet->message->worker_command().command();
-        
-        au::CommandLine cmd;
-        cmd.parse( command );
-        
-        std::string main_command = cmd.get_argument(0);
-        
-        au::ErrorManager error;
-        
-        if( main_command == "reload_modules" )
-        {
-            // Spetial operation to reload modules
-            ModulesManager::shared()->reloadModules();
-        }
-        else if ( cmd.get_argument(0) == "rm_queue" )
-        {
-            if( cmd.get_num_arguments() < 2 )
-                error.set( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
-            else
-            {
-                std::string queue_name = cmd.get_argument(1);
-                
-                queuesManager.remove_queue(  queue_name );
-            }
-        }
-        else if ( cmd.get_argument(0) == "pause_queue" )
-        {
-            if( cmd.get_num_arguments() < 2 )
-                error.set( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
-            else
-            {
-                std::string queue_name = cmd.get_argument(1);
-                queuesManager.pause_queue( queue_name );
-            }
-        }
-        else if ( cmd.get_argument(0) == "play_queue" )
-        {
-            if( cmd.get_num_arguments() < 2 )
-                error.set( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
-            else
-            {
-                std::string queue_name = cmd.get_argument(1);
-                queuesManager.play_queue( queue_name );
-            }
-        }
-        else
-        {
-            error.set( au::str("Unknown command %s" , main_command.c_str() ) ); 
-        }
-        
-        
-        
-        // Send an answer back to delilah
-        if( packet->message->delilah_id() > 0)
-        {
-            Packet *p = new Packet( Message::WorkerCommandResponse );
-            network::WorkerCommandResponse *worker_command_response = p->message->mutable_worker_command_response();
-
-            // Copy original message
-            worker_command_response->mutable_worker_command()->CopyFrom( packet->message->worker_command() );
-            
-            // Set the error if necessary
-            if ( error.isActivated() )
-                worker_command_response->mutable_error()->set_message( error.getMessage() );
-            
-            // Main delilah identifier
-            p->message->set_delilah_id( packet->message->delilah_id()  );
-            
-            // Send back to delilah
-            network->send( packet->fromId , p );
-            
-        }
-    }
     
     // Get information for monitorization
     void SamsonWorker::getInfo( std::ostringstream& output)
@@ -623,18 +544,11 @@ namespace samson {
         stream::BlockManager::shared()->getInfo( output );
         
         // Queues manager information
-        queuesManager.getInfo(output);
+        streamManager.getInfo(output);
 
         // Network
         network->getInfo( output );
         
     }
-    
-    void SamsonWorker::runRecoveryCommand( std::string command )
-    {
-        // To be implemented
-    }
-    
-
 	
 }

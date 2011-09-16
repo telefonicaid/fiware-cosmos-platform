@@ -2,7 +2,7 @@ Module txt
 {
 	title	"Basic txt manipulation"
 	author	"Andreu Urruela"
-	version "0.1.2"
+	version "0.1.3"
 }
 
 data Collocation
@@ -32,9 +32,17 @@ data Stripe
 
 parser parser_words
 {
-	out system.String system.UInt
+	out system.String system.Void
 
 	helpLine "Parse a txt files emiting words at the output (value is always one)"
+}
+
+map number_letters
+{
+	in system.String system.Void
+	out system.UInt system.Void
+
+	helpLine "Emit the number of letters contained at each word"
 }
 
 #
@@ -153,9 +161,9 @@ reduce word_count_accumulate
 
 parserOut export_words
 {
-	in system.String system.UInt
+	in system.String system.Void
 
-	helpLine "Export words and counter"
+	helpLine "Export words"
 }
 
 parserOut export_collocations

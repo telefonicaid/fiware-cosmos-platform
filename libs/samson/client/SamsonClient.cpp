@@ -37,6 +37,62 @@
 #include "samson/delilah/TXTFileSet.h"                         // samson::DataSource
 
 namespace samson {
+
+    
+    SamsonPushBuffer::SamsonPushBuffer( SamsonClient *_client , std::string _queue  )
+    {
+        client = _client;
+        queue = _queue;
+        max_buffer_size = 64*1024*1024 - sizeof(KVHeader) ; // Perfect size for this ;)
+        buffer = (char*) malloc( max_buffer_size );
+        
+        size = 0;
+    }
+    
+    SamsonPushBuffer::~SamsonPushBuffer()
+    {
+        if( buffer )
+            free(buffer);
+    }
+    
+    void SamsonPushBuffer::push( const char *data , size_t length )
+    {
+        
+        if( (size + length ) > max_buffer_size )
+        {
+            // Process buffer
+            std::cerr << "Pushing " << size << " bytes to queue " << queue <<  "\n";
+            client->push(  queue , buffer, size );
+            
+            // Come back to "0"
+            size = 0;
+        }
+        else
+        {
+            // Acumulate contents
+            memcpy(buffer+size, data, length);
+            size += length;
+
+        }
+    }
+    
+    void SamsonPushBuffer::flush()
+    {
+        if ( size > 0 )
+        {
+            // Process buffer
+            std::cerr << "Pushing " << size << " bytes to queue " << queue <<  " (flush )\n";
+            client->push(  queue , buffer, size );
+            
+            // Come back to "0"
+            size = 0;
+            
+        }
+    }
+
+
+    
+#pragma mark
     
     samson::EndpointManager* epMgr     = NULL;
     samson::Network2*        networkP  = NULL;
@@ -113,7 +169,6 @@ namespace samson {
     
     size_t SamsonClient::push( std::string queue , char *data , size_t length )
     {
-        // Do something
         
         samson::BufferDataSource * ds = new samson::BufferDataSource( data , length );
         

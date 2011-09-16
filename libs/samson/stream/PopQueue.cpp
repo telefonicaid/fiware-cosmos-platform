@@ -44,14 +44,11 @@ namespace samson {
             running_tasks.insert( id );
         }
         
-        
-        
         void PopQueue::check()
         {
             // If the pop queue operation is already finished, do nothing...
             if( finished )
                 return;
-            
             
             // If we have an error here, just answer to delilah
             if( error.isActivated() )
@@ -168,6 +165,7 @@ namespace samson {
         void PopQueueTask::sendMessage( engine::Buffer *buffer )
         {
             
+            LM_M(("PopQueueTask: Sending message with size %lu" , buffer->getSize() ));
             
             // Send the packet using notification mecanism
             samson::Packet *packet = new Packet( Message::PopQueueResponse );
@@ -192,6 +190,8 @@ namespace samson {
         
         void PopQueueTask::run()
         {
+            
+            LM_M(("PopQueueTask: running over %d blocks" , (int) list_lock->blocks.size() ));
             
             au::list<Block>::iterator b;
             for ( b = list_lock->blocks.begin() ; b != list_lock->blocks.end() ; b++)

@@ -23,6 +23,8 @@
 
 #include "samson/common/coding.h"           // FullKVInfo
 
+#include "samson/data/SimpleDataManager.h"  // samson::SimpleDataManager
+
 #include "samson/common/samson.pb.h"        // network::
 #include "engine/Object.h"                  // engine::Object
 
@@ -35,7 +37,6 @@
  
  */
 
-
 namespace samson {
     
     class Info;
@@ -43,7 +44,7 @@ namespace samson {
     namespace stream
     {
         class Block;
-        class QueuesManager;
+        class StreamManager;
         class QueueItem;
         class BlockMatrix;
         
@@ -51,7 +52,7 @@ namespace samson {
         {
             friend class Block;
             
-            friend class QueuesManager;
+            friend class StreamManager;
             friend class Queue;
             friend class QueueItem;
             friend class ParserQueueTask;
@@ -63,7 +64,7 @@ namespace samson {
             
             au::list< Block > blocks;               // List of blocks
             
-            FullKVInfo accumulated_info;            // Accumulated information
+            BlockInfo accumulated_block_info;            // Accumulated information
             
             std::string name;                       // Name of this block list ( for debugging )
             size_t task_id;                         // Order of the task if really a task
@@ -76,20 +77,25 @@ namespace samson {
                 name = _name;
                 task_id             = (size_t) -1;      // By default minimum priority
                 lock_in_memory      = false;            // By default no lock in memory
+                
             }
 
             BlockList( std::string _name , size_t _task_id , bool _lock_in_memory )
             {
                 name = _name;
-                task_id             = _task_id;             // By default minimum priority
+                task_id             = _task_id;             // Task is the order of priority
                 lock_in_memory      = _lock_in_memory;      // By default no lock in memory
+                
             }
             
             ~BlockList();
-
+            
             // Create a block for this BlockList
             Block* createBlock( engine::Buffer *buffer );
 
+            // Create a block for this BlockList
+            Block* createBlockFromDisk( size_t id );
+            
             // Get the next element to be processed
             Block* top( );
 
@@ -100,23 +106,23 @@ namespace samson {
             // remove a particular block with this id
             void remove( size_t id );
             
+            // get a block with this id ( if included in this list )
+            Block* getBlock( size_t id );
+            
             // Remove all the blocks contained in the list
             void clearBlockList();
             
             // Get information
             size_t getSize();
             
-            // String describing the stats of this
-            std::string str();
-            
             bool isEmpty();
             
             bool isContentOnMemory();
             
             size_t getNumBlocks();
-            
-            FullKVInfo getFullKVInfo();
-            FullKVInfo getFullKVInfo( KVRange r);
+
+            // Get information about this block
+            void update( BlockInfo &block_info);
             
             //void copyFrom( BlockMatrix* matrix , int channel );
             void copyFrom( BlockList* list );
@@ -125,11 +131,11 @@ namespace samson {
             // Extract blocks of data
             void extractFrom( BlockList* list , size_t max_size );
             
-            std::string getSummary();
-            
-
             // Get information for monitorization
             void getInfo( std::ostringstream& output);
+
+            // Return is this is a block list of a queue-item
+            bool shouldReport();
             
             
         };

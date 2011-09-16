@@ -1,13 +1,18 @@
 #ifndef _H_PROCESS_WRITER
 #define _H_PROCESS_WRITER
 
-#include "samson/common/coding.h"					// High level definition of KV_*
-#include "samson/module/DataInstance.h"	// samson::DataInstance
-#include "au/string.h"					// au::Format
 #include <iostream>					// std::cout
-#include "samson/module/Operation.h"		// samson::Operation
+
+#include "au/string.h"					// au::Format
+#include "au/ErrorManager.h"            // au::ErrorManager
+
 #include "engine/MemoryManager.h"
+
+#include "samson/common/coding.h"				// High level definition of KV_*
+#include "samson/module/DataInstance.h"         // samson::DataInstance
+#include "samson/module/Operation.h"            // samson::Operation
 #include "samson/module/KVWriter.h"				// samson::KVWriter
+
 #include "SharedMemoryItem.h"
 
 #define KV_NODE_SIZE	255
@@ -24,7 +29,7 @@ namespace samson {
 	
 	class ProcessWriter : public KVWriter
 	{
-		ProcessIsolated * workerTaskItem;	// Pointer to the workTaskItem to emit codes through the pipe
+		ProcessIsolated * processIsolated;          // Pointer to the processIsolated to emit codes through the pipe
 		
 		engine::SharedMemoryItem *item;				// Shared memory item used at this side ( fork in the middle )
 		
@@ -32,12 +37,17 @@ namespace samson {
 		size_t size;		// General output buffer size
 		
 		int num_outputs;	// Number of global outputs ( channels of output )
-		int num_servers;	// Number of servers where information is divided
+		int num_workers;	// Number of servers where information is divided
 		
 		// Minibuffer to serialize
 		char *miniBuffer;
 		size_t miniBufferSize;
-		
+        
+        // Collection of output data instances and hash-values to check we are using the rigth DataInstance
+        DataInstance **outputKeyDataInstance;
+        DataInstance **outputValueDataInstance;
+		KeyValueHash* keyValueHash;
+        
 		// Output
 		OutputChannel * channel;
 		
@@ -50,7 +60,7 @@ namespace samson {
  	private:
         
 		friend class ProcessIsolated;
-		ProcessWriter( ProcessIsolated * _workerTaskItem  );
+		ProcessWriter( ProcessIsolated * _processIsolated  );
     
     public:
         

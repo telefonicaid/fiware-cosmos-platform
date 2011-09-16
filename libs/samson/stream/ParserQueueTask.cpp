@@ -73,7 +73,7 @@ namespace samson {
         {
             std::ostringstream output;
             output << "[" << id << "] ";
-            output << "Parser " << streamOperation->operation() << " processing " << list->str();
+            output << "Parser " << streamOperation->operation();
             return output.str();
         }
         
@@ -84,20 +84,10 @@ namespace samson {
         {
             std::ostringstream output;
             output << "[" << id << "] ";
-            output << "Parserout " << streamOperation->operation() << " processing " << list->str();
+            output << "Parserout " << streamOperation->operation();
             return output.str();
         }
         
-        // Get the required blocks to process
-        void ParserOutQueueTask::getBlocks( BlockList * input )
-        {
-
-            list->extractFrom ( input , 100000000 );
-            
-            LM_M(("Getting blocks for parserOut '%s' " , list->getSummary().c_str() ));
-
-        }
-
         void ParserOutQueueTask::generateTXT( TXTWriter *writer )
         {
             LM_M(("Running a stream ParserOutQueueTask with %d blocks" , list->getNumBlocks()));
@@ -196,14 +186,6 @@ namespace samson {
         }
         
 #pragma mark MapQueueTask
-
-        
-        // Get the required blocks to process
-        void MapQueueTask::getBlocks( BlockList *input )
-        {
-            list->extractFrom ( input , 100000000 );
-            
-        }
         
         void MapQueueTask::generateKeyValues( KVWriter *writer )
         {
@@ -295,7 +277,7 @@ namespace samson {
         {
             std::ostringstream output;
             output << "[" << id << "] ";
-            output << "Map " << streamOperation->operation() << " processing " << list->str();
+            output << "Map " << streamOperation->operation();
             return output.str();
         }
         
@@ -443,7 +425,7 @@ namespace samson {
         ReduceQueueTask::ReduceQueueTask( size_t id , const network::StreamOperation& streamOperation , QueueItem * _queueItem , KVRange _range  ) 
         : stream::QueueTask(id , streamOperation )
         {
-            operation_name = "stream:" + streamOperation.operation();
+            setProcessItemOperationName( "stream:" + streamOperation.operation() );
             
             //Range of activity
             range = _range;
@@ -634,7 +616,7 @@ namespace samson {
         {
             std::ostringstream output;
             output << "[" << id << "] ";
-            output << "Reduce " << streamOperation->operation() << " processing " << list->str() << " with state " << state->str();
+            output << "Reduce " << streamOperation->operation();
             return output.str();
         }
         

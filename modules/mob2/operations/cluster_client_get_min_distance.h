@@ -54,7 +54,7 @@ public:
 	input: mob2.Node_Bts mob2.ClusterVector
 	output: system.UInt mob2.Cluster
 
-	extendedHelp: 		Calculate the euclidean distance between a vector and a cluster
+	extendedHelp: 		Calculate the euclidean distance between a vector and a reference cluster, read from mongoDB
 
 #endif // de INFO_COMMENT
 
@@ -117,13 +117,13 @@ public:
 		{
 			bo       = cursor->next();
 			clusterInfo.label.value = bo.getField("clusterInfo.label").Long();
-			OLM_T(LMT_User06, ("cluster[%d].clusterInfo.label:%lu", clusId, clusterInfo.label.value));
+			//OLM_T(LMT_User06, ("cluster[%d].clusterInfo.label:%lu", clusId, clusterInfo.label.value));
 			clusterInfo.labelgroup.value = bo.getField("clusterInfo.labelgroup").Long();
-			OLM_T(LMT_User06, ("cluster[%d].clusterInfo.labelgroup:%lu", clusId, clusterInfo.labelgroup.value));
+			//OLM_T(LMT_User06, ("cluster[%d].clusterInfo.labelgroup:%lu", clusId, clusterInfo.labelgroup.value));
 			clusterInfo.mean.value = bo.getField("clusterInfo.mean").Double();
-			OLM_T(LMT_User06, ("cluster[%d].clusterInfo.mean:%lf", clusId, clusterInfo.mean.value));
+			//OLM_T(LMT_User06, ("cluster[%d].clusterInfo.mean:%lf", clusId, clusterInfo.mean.value));
 			clusterInfo.distance.value = bo.getField("clusterInfo.distance").Double();
-			OLM_T(LMT_User06, ("cluster[%d].clusterInfo.distance:%lf", clusId, clusterInfo.distance.value));
+			//OLM_T(LMT_User06, ("cluster[%d].clusterInfo.distance:%lf", clusId, clusterInfo.distance.value));
 			for(int j=0; j<96; j++)
 			{
 #define MAXLENKEY 20
@@ -131,7 +131,7 @@ public:
 
 				snprintf(coordKey, MAXLENKEY, "coord_%d", j);
 				coord.value = bo.getField(coordKey).Double();
-				OLM_T(LMT_User06, ("cluster[%d].%s:%lf", clusId, coordKey, coord.value));
+				//OLM_T(LMT_User06, ("cluster[%d].%s:%lf", clusId, coordKey, coord.value));
 				clusterInfo.coords.comsAdd()->copyFrom(&coord);
 			}
 			clientClusters.clusterAdd()->copyFrom(&clusterInfo);
@@ -177,15 +177,18 @@ public:
 			mindist = sqrt(mindist);
 
 			node.value = nodbts.phone.value;
+
+			// FILTER BY DISTANCE
+			cluster.label = clientClusters.cluster[clusId].label;
+			cluster.labelgroup = clientClusters.cluster[clusId].labelgroup;
+
 			if(mindist > clientClusters.cluster[clusId].distance.value) // High to cluster level
 			{
-				cluster.label.value = 0;
-				cluster.labelgroup.value = 0;
+				cluster.confident = 0;
 			}
 			else
 			{
-				cluster.label.value = clientClusters.cluster[clusId].label.value;
-				cluster.labelgroup.value = clientClusters.cluster[clusId].labelgroup.value;
+				cluster.confident = 1;
 			}
 			cluster.distance.value = mindist;
 			cluster.mean.value = 0;

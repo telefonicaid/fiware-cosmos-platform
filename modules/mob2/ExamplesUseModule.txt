@@ -5,6 +5,8 @@ add jun.cdrstxt -txt
 add jun.userstxt -txt
 add jun.cellstxt -txt
 add jun.centroides_client.txt -txt
+add jun.centroidesBts.txt -txt
+add jun.medoides_pearson_nodobts.txt -txt
 
 
 
@@ -13,6 +15,8 @@ upload GASSET_CLIENTE_20100630.dat jun.userstxt -clear
 upload GASSET_CELDAS_RED_OCT2009.dat jun.cellstxt -clear
 
 upload centroides_euclidea.txt jun.centroides_client.txt
+upload centroidesBts.txt jun.centroidesBts.txt
+upload medoides_pearson_nodobts.txt jun.medoides_pearson_nodobts.txt
 
 
 #Script global
@@ -23,7 +27,9 @@ mob.script_extract_POIs jun
 	cdr.convert_client jun.users jun.clients -create -clear
 	cdr.parse_cell_catalogue_position jun.cellstxt jun.cells -create -clear
 
-	mob2.parse_mongodb_client_clusters jun.centroides_client.txt -create -clear mongo.ip=localhost mongo.db=xtestdb mongo.collection=xtestcoll
+	mob2.parse_mongodb_mob_clusters jun.centroides_client.txt -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=clientClusters
+	mob2.parse_mongodb_mob_clusters jun.centroidesBts.txt -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=btsClusters
+	mob2.parse_mongodb_mob_clusters jun.medoides_pearson_nodobts.txt -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=clientbtsClusters
 
 	#Filter cdrs
 	mob2.filter_cellnoinfo jun.cdrs_mob jun.cdrsinfo jun.cdrsnoinfo -create -clear
@@ -45,14 +51,13 @@ mob2.script_label_POIs
 	mob2.vector_create_node_dayhour jun.cliVec_numcoms jun.cliVec_group -create -clear
 	mob2.vector_fuse_node_daygroup jun.cliVec_group jun.vector_client -create -clear
 	mob2.vector_normalized jun.vector_client jun.vector_client_norm -create -clear
-	mob2.cluster_client_get_min_distance jun.vector_client_norm jun.vector_client_cluster  -create -clear mongo.ip=localhost mongo.db=xtestdb mongo.collection=xtestcoll
+	mob2.cluster_client_get_min_distance jun.vector_client_norm jun.vector_client_cluster  -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=clientClusters
 	mob2.vector_filter_bts jun.bts_comms jun.bts_counts -create -clear
 	mob2.vector_sum_coms_bts jun.bts_counts jun.bts_sum_coms -create -clear
 	mob2.vector_create_node_dayhour jun.bts_sum_coms jun.bts_dayhour -create -clear
 	mob2.vector_fuse_node_daygroup jun.bts_dayhour jun.vector_bts -create -clear
 	mob2.vector_normalized jun.vector_bts jun.vector_bts_norm -create -clear
-	mob2.parse_bts_clusters jun.centroides_bts jun.clusters_bts -create -clear
-	mob2.cluster_bts_get_min_distance jun.vector_bts_norm jun.vector_bts_cluster -create -clear
+	mob2.cluster_bts_get_min_distance jun.vector_bts_norm jun.vector_bts_cluster -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=btsClusters
 
 	mob2.vector_spread_nodbts jun.clients_info jun.clientsbts_spread -create -clear
 	mob2.vector_sum_groupcomms jun.clientsbts_spread jun.clientsbts_sum -create -clear
@@ -60,8 +65,7 @@ mob2.script_label_POIs
 	mob2.vector_create_node_dayhour jun.clientsbts_repbts jun.clientsbts_group -create -clear
 	mob2.vector_fuse_node_daygroup jun.clientsbts_group jun.vector_clientbts -create -clear
 	mob2.vector_normalized jun.vector_clientbts jun.vector_clientbts_norm -create -clear
-	mob2.parse_clientbts_clusters jun.medoides_clientbts jun.clusters_clientbts -create -clear
-	mob2.cluster_clientbts_get_min_distance jun.vector_clientbts_norm jun.points_of_interest_temp jun.vector_clientbts_cluster -create -clear
+	mob2.cluster_clientbts_get_min_distance jun.vector_clientbts_norm jun.points_of_interest_temp jun.vector_clientbts_cluster -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=clientbtsClusters
 
 	mob2.cluster_agg_node_cluster jun.points_of_interest_temp jun.vector_client_cluster jun.points_of_interest_temp2 -create -clear
 	mob2.cluster_agg_bts_cluster jun.points_of_interest_temp2 jun.vector_bts_cluster jun.bts_comarea jun.points_of_interest -create -clear

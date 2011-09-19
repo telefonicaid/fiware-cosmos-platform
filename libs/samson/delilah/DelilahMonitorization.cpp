@@ -128,7 +128,7 @@ namespace samson
                 break;
                 
             case queues:
-                printLines(getStringInfo("/stream_manager/queues/queue", getQueueInfo, i_worker | i_no_title ));
+                printLines(getStringInfo("/stream_manager/queues/queue", getQueueInfo, i_worker  ));
                 break;
                 
             case queues_tasks:

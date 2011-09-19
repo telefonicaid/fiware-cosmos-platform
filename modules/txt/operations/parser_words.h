@@ -11,6 +11,7 @@
 #include <samson/module/samson.h>
 #include <samson/modules/system/SimpleParser.h>
 #include <samson/modules/system/String.h>
+#include <samson/modules/system/UInt.h>
 #include <samson/modules/system/Void.h>
 #include <iostream>
 
@@ -21,13 +22,14 @@ namespace txt{
 	class parser_words : public samson::system::SimpleParser
 	{
 		samson::system::String key;
-		samson::system::Void value;
+		samson::system::UInt value;
 
 	public:
-
+		
 		parser_words()
 		{
-
+            // Output value is always 1
+			value.value = 1;			
 		}
 		
 		bool isSeparator( char c )

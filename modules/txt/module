@@ -32,7 +32,7 @@ data Stripe
 
 parser parser_words
 {
-	out system.String system.Void
+	out system.String system.UInt
 
 	helpLine "Parse a txt files emiting words at the output (value is always one)"
 }

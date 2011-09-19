@@ -1,4 +1,5 @@
 
+#include <algorithm>
 
 #include "engine/Notification.h"
 #include "engine/ProcessManager.h"  

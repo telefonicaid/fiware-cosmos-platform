@@ -11,20 +11,21 @@
 #include "samson/common/NotificationMessages.h"         // notification_process_request
 
 
-#include "StreamManager.h"   // QueueManager
-
-#include "PopQueue.h"           // PopQueueTasks
+#include "StreamManager.h"          // StreamManager
+#include "SystemQueueTask.h"        // SystemQueueTask
+#include "PopQueue.h"               // PopQueueTasks
+#include "PopQueueTask.h"           // PopQueueTasks
 
 #define notification_run_stream_tasks_if_necessary "notification_run_stream_tasks_if_necessary"
 
 namespace samson {
     namespace stream {
         
-        QueueTaskManager::QueueTaskManager( StreamManager* _qm )
+        QueueTaskManager::QueueTaskManager( StreamManager* _streamManager )
         {
             id = 1;
-            qm = _qm;
-          
+            streamManager = _streamManager;
+            
             listen(notification_run_stream_tasks_if_necessary);
             
             // Periodic notification to check if tasks are ready
@@ -44,19 +45,19 @@ namespace samson {
             queueTasks.push_back( task );
             
             // Check if it is necessary to run a task
-            runTasksIfNecessary();
+            runQueueTasksIfNecessary();
         }
         
-        void QueueTaskManager::add( PopQueueTask* task )
+        void QueueTaskManager::add( SystemQueueTask* task )
         {
-            popQueueTasks.push_back( task );
+            systemQueueTasks.push_back( task );
             
             // Check if it is necessary to run a task
-            runPopTasksIfNecessary();
+            runSystemQueueTasksIfNecessary();
         }
 
         
-        void QueueTaskManager::runTasksIfNecessary()
+        void QueueTaskManager::runQueueTasksIfNecessary()
         {
             while( true )
             {
@@ -76,7 +77,8 @@ namespace samson {
                         LM_X(1, ("Internal error. Forbident concurrent access to Queue Tasks"));
 
                     // Insert in the running vector
-                    runningTasks.insertInMap( _task->id , _task ); 
+                    size_t task_id = _task->getId();
+                    runningTasks.insertInMap( task_id , _task ); 
 
                     // Add this process item ( note that a notification will be used to notify when finished )
                     engine::ProcessManager::shared()->add( _task , getEngineId() );
@@ -88,27 +90,28 @@ namespace samson {
             
         }
 
-        void QueueTaskManager::runPopTasksIfNecessary()
+        void QueueTaskManager::runSystemQueueTasksIfNecessary()
         {
             while( true )
             {
                 
-                if( popQueueTasks.size() == 0)
+                if( systemQueueTasks.size() == 0)
                     return; // No more pending task to be executed
                 
-                PopQueueTask * task = popQueueTasks.front();  // Take the front task
+                SystemQueueTask * task = systemQueueTasks.front();  // Take the front task
                 
                 if( task->ready() )
                 {
                     // Extract the task from the queue of pending tasks
-                    PopQueueTask * _task = popQueueTasks.extractFront();
+                    SystemQueueTask * _task = systemQueueTasks.extractFront();
                     
                     // Stupid check ;)
                     if( task != _task )
                         LM_X(1, ("Internal error. Forbident concurrent access to Queue Tasks"));
                     
                     // Insert in the running vector
-                    runningPopQueueTasks.insertInMap( _task->id , _task ); 
+                    size_t task_id = _task->getId();
+                    runningSystemQueueTasks.insertInMap( task_id , _task ); 
                     
                     // Add this process item ( note that a notification will be used to notify when finished )
                     engine::ProcessManager::shared()->add( _task , getEngineId() );
@@ -125,27 +128,29 @@ namespace samson {
             if ( notification->isName(notification_process_request_response) )
             {
                 
-                //LM_M(("Notified finish task queue_name=%s // id=%lu" , queue_name.c_str() , _id));
-                
-                // Extract the object to not be automatically removed ( this is a queueTask or a popQueue )
+                // Extract the object to not be automatically removed ( this is a queueTask or a systemQueueTask )
                 notification->extractObject();
+
+                // Get the identifier of this
+                size_t _id       = notification->environment.getSizeT("system.queue_task_id", 0);
                 
-                std::string type = notification->environment.get("type", "no-type");
-                size_t _id       = notification->environment.getSizeT("id", 0);
+                bool is_system_queue_task = (notification->environment.get("system.system_queue_task", "no") == "yes" );
                 
-                if( type == "pop_queue_task" )
+                if( is_system_queue_task )
                 {
-                    PopQueueTask *_task = runningPopQueueTasks.extractFromMap(_id);
+                    // Recover the running SystemQueueTask
+                    SystemQueueTask *_task = runningSystemQueueTasks.extractFromMap( _id );
                     
                     if( _task )
                     {
+                        // Final process for this task
+                        _task->finalize( streamManager );
                         
                         // Notify that this stream task is finished
-                        qm->notifyFinishTask( _task );
+                        streamManager->notifyFinishTask( _task );
                         
                         //LM_M(("Destroying task"));
                         delete _task;
-                        
                         
                     }
                     else
@@ -161,10 +166,10 @@ namespace samson {
                     {
                         
                         // Final process for this task
-                        _task->finalize();
+                        _task->finalize(  );
                         
                         // Notify that this stream task is finished
-                        qm->notifyFinishTask( _task );
+                        streamManager->notifyFinishTask( _task );
                         
                         //LM_M(("Destroying task"));
                         delete _task;
@@ -181,8 +186,8 @@ namespace samson {
             
             if( notification->isName( notification_run_stream_tasks_if_necessary ) )
             {
-                runTasksIfNecessary();
-                runPopTasksIfNecessary();
+                runQueueTasksIfNecessary();
+                runSystemQueueTasksIfNecessary();
             }
                
         }

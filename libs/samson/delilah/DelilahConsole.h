@@ -98,6 +98,7 @@ namespace samson {
             addOption("rm_local");
             addOption("run_stream_operation");
             addOption("ls_operation_rates");
+            addOption("set_queue_property");
         }
         
         void addOperations()

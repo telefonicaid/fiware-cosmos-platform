@@ -153,7 +153,7 @@ namespace engine {
         
         // Interface to monitorize operations perforamnce
         void setProcessItemOperationName( std::string _operation_name );
-        
+        void setProcessItemWorkingSize( size_t size );
 	
     };
 	

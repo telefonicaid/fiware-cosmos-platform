@@ -52,6 +52,18 @@ namespace au
 		
 		flags.insert( std::pair<std::string , CommandLineFlag>( name , flag) );
 	}
+    
+	void CommandLine::set_flag_double( std::string name , double default_value )
+	{
+		CommandLineFlag flag;
+		flag.type = "double";
+		
+		std::ostringstream o;
+		o << default_value;
+		flag.default_value = o.str();
+		
+		flags.insert( std::pair<std::string , CommandLineFlag>( name , flag) );
+	}
 	
 	void CommandLine::set_flag_string( std::string name , std::string default_value )
 	{

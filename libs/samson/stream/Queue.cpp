@@ -3,6 +3,10 @@
 #include "samson/common/coding.h"           // KVFILE_NUM_HASHGROUPS
 #include "samson/common/SamsonSetup.h"      // samson::SamsonSetup
 
+
+#include "StreamManager.h"          // samson::stream::StreamManager
+#include "BlockBreakQueueTask.h"    // samson::stream::BlockBreakQueueTask
+#include "Block.h"                  // samson::stream::Block
 #include "QueueItem.h"              // samson::stream::QueueItem
 #include "BlockList.h"              // samson::stream::BlockList
 #include "Queue.h"                  // OwnInterface
@@ -16,9 +20,14 @@ namespace samson {
             // Keep the name
             name = _name;
 
+            // Still pending of the block
+            format = KVFormat("*","*");
+            
+            // Create a list for blocks pending to be broken...
+            pending = new BlockList( "pending_for_queue_" + name );
+            
             // Pointer to StreamManager
             streamManager = _streamManager;
-            
             
             // By default it is not paused
             paused = false;
@@ -41,71 +50,85 @@ namespace samson {
             KVRange range((num_items-1)*num_hash_groups_per_item , KVFILE_NUM_HASHGROUPS );
             QueueItem* item = new QueueItem( this  , range );
             items.push_back( item );
-
-        }
-        
-        void Queue::distributeItemsAs( Queue* otherQueue )
-        {
-            if( isDistributedAs( otherQueue ) )
-               return;  // already distributed in the same way
-
-
-            au::list< QueueItem > future_items;
-
-            au::list< QueueItem >::iterator qi;
-            for ( qi = otherQueue->items.begin() ; qi != otherQueue->items.end() ; qi++ )
-            {
-                QueueItem *item = new QueueItem( this , (*qi)->range );
-
-                //Push data into this new item
-                au::list< QueueItem >::iterator qi_previous;
-                for ( qi_previous = items.begin() ; qi != items.end() ; qi++ )
-                    if ( (*qi_previous)->range.overlap( item->range ) )
-                        item->push( (*qi_previous)->list );
-                
-                // Save it locally
-                future_items.push_back( item );    
-            }
             
-            // Remove current items
-            items.clearList();
-            
-            // Insert new ones
-            for ( qi = future_items.begin() ; qi != future_items.end() ; qi++ )
-                items.push_back(*qi);
-            
-            
-            if( !isDistributedAs( otherQueue ) )
-                LM_X(1,("Internal error. not possible to distribute queue in the same way"));
             
         }
-
-        bool Queue::isDistributedAs( Queue* otherQueue )
-        {
-            if( items.size() != otherQueue->items.size() )
-                return false;
-
-            au::list< QueueItem >::iterator qi1,qi2;
-            for ( qi1 = items.begin() , qi2 = otherQueue->items.begin() ; qi1 != items.end() ; qi1++ , qi2++ )
-                if( (*qi1)->range != (*qi2)->range )
-                    return false;
-            
-            return true;
-        }
-
         
         Queue::~Queue()
         {
             // Remove all the item in the state
             items.clearList();
+            
+            delete pending;
+            
+        }
+
+        void Queue::clearAndDivide( int num_divisions )
+        {
+            items.clearList();
+            for (int i = 0 ; i < num_divisions ; i++)
+            {
+                QueueItem *item = new QueueItem( this , rangeForDivision(i, num_divisions) );
+                items.push_back(item);
+            }
         }
         
         void Queue::push( BlockList *list )
         {
+            au::list< Block >::iterator b;
+            for (b = list->blocks.begin() ; b != list->blocks.end() ; b++ )
+                push( *b );
+        }
+        
+        void Queue::push( Block *block )
+        {
+            
+            if( format == KVFormat("*","*") )
+                format = block->header->getKVFormat();
+            else
+            {
+                if( format != block->header->getKVFormat() )
+                {
+                    LM_W(("Trying to push a block with format %s to queue %s with format %s. Block rejected", block->header->getKVFormat().str().c_str() , name.c_str() , format.str().c_str() ));
+                    return;
+                }
+            }
+            
+            
+            KVRange block_range = block->getKVRange();
+
+            //LM_M(("Pushing block with range %d %d to queue %s" , block_range.hg_begin , block_range.hg_end , name.c_str() ));
+            
             au::list< QueueItem >::iterator item;
             for (item = items.begin() ; item != items.end() ; item++ )
-                (*item)->push( list );
+            {
+                if( (*item)->getKVRange().includes( block_range ) )
+                {
+                    (*item)->push( block );
+                    return;
+                }
+            }
+
+            
+            // Run a block-break operation for this block
+            
+            pending->add( block );  // Add temporary to this list ( removed when the operation ends )
+            
+            size_t id = streamManager->queueTaskManager.getNewId();
+            
+            BlockBreakQueueTask *tmp = new BlockBreakQueueTask( id , name ); 
+            for (item = items.begin() ; item != items.end() ; item++ )
+                tmp->addKVRange( (*item)->getKVRange() );
+            
+            tmp->getBlockList("input_0")->add( block );
+            
+            streamManager->queueTaskManager.add( tmp );
+
+            
+            
+            
         }
+        
         
         void Queue::getInfo( std::ostringstream& output)
         {
@@ -118,6 +141,11 @@ namespace samson {
                 au::xml_simple(output, "paused", "YES" );
             else
                 au::xml_simple(output, "paused", "NO" );
+
+            format.getInfo(output);
+            
+            // Iterate to all the items
+            au::xml_iterate_list( output , "items" , items );
             
             // Information about content
             BlockInfo block_info;
@@ -132,9 +160,11 @@ namespace samson {
             
             au::list< QueueItem >::iterator item;
             for (item = items.begin() ; item != items.end() ; item++ )
-            {
                 (*item)->update( block_info );
-            }
+
+            
+            pending->update( block_info );
+            
         }
         
         void Queue::divide( QueueItem *item , QueueItem *item1 , QueueItem *item2 )
@@ -180,6 +210,19 @@ namespace samson {
             
         }
         
-       
+        void Queue::setProperty( std::string property , std::string value )
+        {
+            
+            if( property == "system.divisions" )
+            {
+                clearAndDivide( atoi( value.c_str() ) );
+            }
+            else
+                environment.set( property , value );
+            
+        }
+      
+
+        
     }
 }

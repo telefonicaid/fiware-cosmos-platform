@@ -1,9 +1,12 @@
+#include <sys/types.h>
+#include <dirent.h>
 
 #include "engine/DiskManager.h"        // notification_disk_operation_request_response
 #include "engine/Engine.h"             // engine::Engine
 #include "engine/Notification.h"       // engine::Notification
 
-#include "samson/common/SamsonSetup.h"      // samson::SamsonSetup
+#include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
+#include "samson/common/NotificationMessages.h" // notification_block_manager_review
 
 #include "BlockList.h"          // BlockList
 #include "BlockManager.h"       // Own interface
@@ -28,11 +31,17 @@ namespace samson {
             
             max_memory = SamsonSetup::getUInt64("general.memory")/2;
 
-            
         }
         
         BlockManager::~BlockManager()
         {
+        }
+
+        void BlockManager::initOldFilesCheck()
+        {
+            listen( notification_block_manager_review );
+            engine::Notification *notification = new engine::Notification(notification_block_manager_review );
+            engine::Engine::shared()->notify( notification, 60 );   // Review every minute ( include in setup? )
         }
         
         void BlockManager::init()
@@ -64,19 +73,30 @@ namespace samson {
         
         void BlockManager::notify( engine::Notification* notification )
         {
-            std::string type = notification->environment.get("type", "-");
             
-            //LM_M(("Received a notification with type %s" , type.c_str() ));
-            
-            if(  type == "write" )
+            if ( notification->isName( notification_disk_operation_request_response ) )
             {
-                num_writing_operations--;
-                _review();
+                
+                std::string type = notification->environment.get("type", "-");
+                
+                //LM_M(("Received a notification with type %s" , type.c_str() ));
+                
+                if(  type == "write" )
+                {
+                    num_writing_operations--;
+                    _review();
+                }
+                if( type == "read" )
+                {
+                    num_reading_operations--;
+                    _review();
+                }
+                
             }
-            if( type == "read" )
+            else if ( notification->isName( notification_block_manager_review ) )
             {
-                num_reading_operations--;
-                _review();
+                // Review old blocks to be removed...
+                reviewOldFiles();
             }
             
         }
@@ -223,6 +243,78 @@ namespace samson {
         size_t BlockManager::getNextBlockId()
         {
             return id++;
+        }
+        
+        
+        void BlockManager::reviewOldFiles( )
+        {
+            // List of active blocks
+            std::set<size_t> block_ids;
+            
+            std::list<Block*>::iterator it_block;
+            for ( it_block =  blocks.begin() ; it_block != blocks.end() ; it_block++ )
+                block_ids.insert( (*it_block)->getId() );
+
+            
+            // Get the list of files to be removed (  old blocks not used any more )
+            std::set< std::string > remove_files;
+            
+            DIR *dp;
+            struct dirent *dirp;
+            if((dp  = opendir( SamsonSetup::shared()->blocksDirectory.c_str() )) == NULL) {
+                
+                // LOG and error to indicate that data directory cannot be access
+                LM_W(("Not possible to open block directory %s to review old files" , SamsonSetup::shared()->blocksDirectory.c_str() ));
+                return;
+            }
+            
+            while ((dirp = readdir(dp)) != NULL) 
+            {
+                // Full path of the file
+                std::string path = SamsonSetup::shared()->blocksDirectory + "/" + dirp->d_name;
+                
+                struct ::stat info;
+                stat(path.c_str(), &info);
+                
+                if( S_ISREG(info.st_mode) )
+                {
+                    
+                    // Get modification date to see if it was just created
+                    time_t now;
+                    time (&now);
+                    double age = difftime ( now , info.st_mtime );
+                    
+                    if( age > 60*30 ) // Get some time (1 hour) to avoid sync errors
+                    {
+                        
+                        // Get the task from the file name 
+                        std::string file_name = dirp->d_name;
+                        
+                        size_t tmp_block_id = strtoll( file_name.c_str(), (char **)NULL, 10);
+
+                        if( block_ids.find( tmp_block_id ) == block_ids.end() )
+                        {
+                            
+                            // Add to be removed
+                            remove_files.insert( path );
+                        }
+                    }
+                }
+            }
+            closedir(dp);
+            
+            // Remove the selected files
+            for ( std::set< std::string >::iterator f = remove_files.begin() ; f != remove_files.end() ; f++)
+            {
+                
+                std::string fileName = *f;
+                
+                // Add a remove opertion to the engine ( target 0 means no specific listener to be notified )
+                engine::DiskOperation * operation =  engine::DiskOperation::newRemoveOperation(  fileName , 0 );
+                engine::DiskManager::shared()->add( operation );
+            }
+            
+            
         }
         
         

@@ -118,7 +118,7 @@ namespace engine {
     // Run a notification in an object
     void ObjectsManager::send( Notification *notification, size_t target)
     {
-        Object* o;
+        Object* o=NULL;
         {
             //au::TokenTaker tt( &token );
             o = objects.findInMap( target );

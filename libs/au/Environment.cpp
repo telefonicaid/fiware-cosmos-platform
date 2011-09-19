@@ -1,4 +1,6 @@
 
+#include "au/string.h"          // au::split
+
 #include "Environment.h"        // OWn interface
 
 namespace au {
@@ -125,4 +127,39 @@ namespace au {
         
         return output.str();
     }
+    
+    // Save and recover from string
+    std::string Environment::saveToString()
+    {
+        std::ostringstream output;
+
+		std::map<std::string,std::string>::iterator e;
+        for ( e = environment.begin() ; e != environment.end() ;  )
+        {
+            output << e->first << "=" << e->second;
+            e++;
+            if( e != environment.end() )
+                output << ",";
+        }
+        
+        return output.str();
+    }
+    
+    void Environment::recoverFromString(std::string input)
+    {
+        std::vector<std::string> values;
+        split(input, ',', values);
+        
+        for ( size_t v = 0 ; v < values.size() ; v++ )
+        {
+            std::vector<std::string> property_value;
+            split(values[v], '=', property_value);
+            
+            if( property_value.size() == 2 )
+                set( property_value[0] , property_value[1] );
+        }
+        
+    }
+
+    
 }

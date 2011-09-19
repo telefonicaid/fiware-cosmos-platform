@@ -100,6 +100,26 @@ namespace samson
             
         };
 
+        class ReduceQueueTask : public stream::QueueTask 
+        {
+            
+            KVRange range;              // Range of hash-groups
+            
+        public:
+            
+            ReduceQueueTask( size_t id , const network::StreamOperation& streamOperation , KVRange range  );
+            
+            
+            // Function to generate output key-values
+            void generateKeyValues( KVWriter *writer );
+            
+            // Get a string with the status of this task
+            std::string getStatus();
+            
+        };         
+
+        
+        /*
         
         class ReduceQueueTask : public stream::QueueTask 
         {
@@ -132,7 +152,7 @@ namespace samson
             void finalize();
             
         };          
-        
+        */
         
         
     }    

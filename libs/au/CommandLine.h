@@ -101,6 +101,7 @@ namespace au {
 		void set_flag_string( std::string name , std::string default_value );
 		void set_flag_uint64( std::string name , std::string default_value );
 		void set_flag_uint64( std::string name , size_t default_value );
+		void set_flag_double( std::string name , double default_value );
 		
 		/** 
 		 Parse a commnad line. It extracts all "arguments"

@@ -44,6 +44,7 @@ namespace samson {
     namespace stream
     {
         class Block;
+        class Queue;
         class StreamManager;
         class QueueItem;
         class BlockMatrix;
@@ -60,11 +61,12 @@ namespace samson {
             friend class ReduceQueueTask;
             friend class ParserOutQueueTask;
             friend class PopQueueTask;
+            friend class BlockBreakQueueTask;
             friend class SortQueueTask;
             
             au::list< Block > blocks;               // List of blocks
             
-            BlockInfo accumulated_block_info;            // Accumulated information
+            BlockInfo accumulated_block_info;       // Accumulated information
             
             std::string name;                       // Name of this block list ( for debugging )
             size_t task_id;                         // Order of the task if really a task
@@ -76,8 +78,7 @@ namespace samson {
             {
                 name = _name;
                 task_id             = (size_t) -1;      // By default minimum priority
-                lock_in_memory      = false;            // By default no lock in memory
-                
+                lock_in_memory      = false;            // By default no lock in memory                
             }
 
             BlockList( std::string _name , size_t _task_id , bool _lock_in_memory )
@@ -105,6 +106,7 @@ namespace samson {
 
             // remove a particular block with this id
             void remove( size_t id );
+            void remove( BlockList* list );
             
             // get a block with this id ( if included in this list )
             Block* getBlock( size_t id );
@@ -128,6 +130,9 @@ namespace samson {
             void copyFrom( BlockList* list );
             void copyFrom( BlockList* list , KVRange range );
 
+            // Copy all blocks from a queue that intersect with a range
+            void copyAllBlocksFrom( Queue* queue , KVRange range );
+            
             // Extract blocks of data
             void extractFrom( BlockList* list , size_t max_size );
             

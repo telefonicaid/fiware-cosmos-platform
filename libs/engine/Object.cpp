@@ -26,7 +26,7 @@ namespace engine
             LM_X(1,("Wrong notification listener id"));
     }
 
-    Object::Object( const char *_engine_name)
+    Object::Object( const char *_engine_name )
     {
         
         // Set my engine name internally

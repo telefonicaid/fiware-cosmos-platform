@@ -62,7 +62,12 @@ namespace au {
         // Description
 		std::string toString();
         std::string getEnvironmentDescription();
-		
+
+        // Save and restore from string
+        std::string saveToString();
+        void recoverFromString( std::string input );
+        
+        
 	};	
 
 }

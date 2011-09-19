@@ -93,10 +93,10 @@ namespace samson {
         }
         
         if( num_confirmed_workers == num_workers )
-	{
-	LM_M(("setComponentFinished() fromId(%d) num_confirmed_workers(%d)", fromId, num_confirmed_workers));
+        {
+            //LM_M(("setComponentFinished() fromId(%d) num_confirmed_workers(%d)", fromId, num_confirmed_workers));
             setComponentFinished();
-	}
+        }
         
         
         if( packet->message->worker_command_response().has_error() )

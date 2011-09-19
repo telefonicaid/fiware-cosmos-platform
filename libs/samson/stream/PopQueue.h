@@ -77,44 +77,7 @@ namespace samson {
             
         };
         
-        
-        /**
-         Task in a pop queue task
-         */
-        
-        class PopQueueTask : public engine::ProcessItem
-        {
-            friend class QueueTaskManager;
-            friend class StreamManager;
-            
-            BlockList *list;
-            BlockList *list_lock;
-
-            bool             ready_flag;
-            
-            size_t id;              // Id of this task ( in the QueueTaskManager )
-            
-            size_t pop_queue_id;    // Id of the pop queue
-            size_t delilahId;       // Identifier of the operation at delilah side
-            int fromId ;            // Identifier of delilah to send packets back
-
-            // Limits of operation for this pop queue
-            KVRange range;
-            
-        public:
-
-            PopQueueTask( size_t _id , PopQueue *pq , KVRange _range );
-            ~PopQueueTask();
-            
-            void addBlock( Block *b );
-
-            void sendMessage( engine::Buffer *buffer );
-            
-            bool ready();
-            
-            void run();
-            
-        };
+ 
         
     }
 }

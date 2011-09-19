@@ -68,14 +68,16 @@ namespace samson {
         
         // Node with KVInfo
         pugi::xml_node kv_info =  node.first_element_by_path("kv_info");
+        pugi::xml_node format_info =  node.first_element_by_path("format");
         
-        return au::str( "%s [ %s | %s on memory / %s on disk / %s locked ] %s " 
+        return au::str( "%s [ %s | %s on memory / %s on disk / %s locked ] [ %s ] [ %s ]" 
                         , au::str( num_blocks , "Blocs").c_str() 
                         , au::str( size , "bytes").c_str()
                         , au::percentage_string( size_on_memory , size).c_str()
                         , au::percentage_string( size_on_disk , size).c_str()
                         , au::percentage_string( size_locked , size).c_str()
                         , getKVInfoInfo( kv_info ).c_str()
+                        , getFormatInfo( format_info ).c_str()
                        );
     }
     
@@ -107,15 +109,19 @@ namespace samson {
         int num_items =  pugi::getInt( queue , "num_items" );
         
         const pugi::node block_info = queue.first_element_by_path("block_info");
+
+        //const pugi::node format_info = queue.first_element_by_path("format");
         
         output << "  " << std::setw(20) << std::left << name << ": ";
         
         if( num_items == 1 )
-            output << "( 1 item ) ";
+            output << "( " << au::str(        1) << "item  ) ";
         else
-            output << "( " << num_items << " items ) ";
+            output << "( " << au::str(num_items) << "items ) ";
         
         output << getBlockInfo( block_info );
+        
+        //output << " " << getFormatInfo(format_info);
         
         if( pugi::get(queue,"paused" ) == "YES" )
             output << " [PAUSED]";
@@ -140,10 +146,23 @@ namespace samson {
         std::string id              = pugi::get( queue_task , "id" );
         std::string description     = pugi::get( queue_task , "description" );
         
-        const pugi::node block_list = queue_task.first_element_by_path("block_list");
         
         std::ostringstream output;
-        output << "Task " << id << " : " << description << " -> Input " << getBLockListInfo( block_list ) << "\n";
+        output << "Task " << id << " : " << description << "\n";
+
+        const pugi::node inputs = queue_task.first_element_by_path("inputs");
+
+        for( pugi::xml_node_iterator n = inputs.begin() ; n != inputs.end() ; n++)
+        {
+            const pugi::node input = *n;
+            
+            std::string input_name = pugi::get( input , "name" );
+            const pugi::node block_list_info = input.first_element_by_path("block_list");
+            
+            output << "\t " << input_name << " : " << getBLockListInfo( block_list_info ) << "\n";
+        }
+        
+        
         return output.str();
         
     }

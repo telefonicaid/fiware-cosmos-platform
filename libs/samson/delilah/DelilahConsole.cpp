@@ -189,7 +189,7 @@ namespace samson
     "Getting info for batch processing:      ps_jobs , ps_tasks \n"
     "\n"
     "Stream processing commands:            run_stream_operation, push , pop , add_stream_operation , rm_stream_operation , \n"
-    "                                       set_stream_operation_property, rm_queue , cp_queue , play_queue , pause_queue\n" 
+    "                                       set_stream_operation_property, rm_queue , cp_queue , play_queue , pause_queue , set_queue_property\n" 
     "\n"
     "Getting info for stream processing:    ls_queues , ps_stream , ls_stream_operation , ls_block_manager \n"
     "\n"
@@ -269,6 +269,7 @@ namespace samson
     
         { "cp_queue"                , "cp_queue  <from_queue> <to_queue>            Copy contents of one queue to another"},
         { "ls_operation_rates"      , "ls_operation_rates           get a list of statistics about operations in the platform"},
+        { "set_queue_property"      , "set_queue_property queue property value               Specify a property of a particular queue"},
         { NULL , NULL }   
     };
     
@@ -746,6 +747,18 @@ namespace samson
                 return sendWorkerCommand( command , NULL );
         }
 
+        // Command to remove queues 
+        if( main_command == "set_queue_property" )
+        {
+            if( commandLine.get_num_arguments() < 4 )
+            {
+                writeErrorOnConsole( au::str("Usage: set_queue_propert queue property value" ) );
+                return 0;
+            }
+            else
+                return sendWorkerCommand( command , NULL );
+        }
+        
         // Command to remove queues 
         if( main_command == "cp_queue" )
         {

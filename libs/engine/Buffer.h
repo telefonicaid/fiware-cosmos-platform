@@ -30,7 +30,7 @@ namespace engine {
 	 Buffer class to hold data managed by MemoryManager
 	 */
 	
-	class Buffer 
+	class Buffer : public Object
 	{
 
 	public:

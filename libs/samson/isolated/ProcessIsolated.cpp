@@ -227,7 +227,7 @@ namespace samson
 
                     
                     // Set the hash-group limits of the header
-                    header->setHashGroups( info );
+                    header->range.setFrom( info );
 
                     
                     // Process the output buffer

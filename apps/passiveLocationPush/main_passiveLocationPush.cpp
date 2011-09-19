@@ -16,32 +16,44 @@
 #include <string.h>     // memcpy
 #include <iostream>     // std::cout
 
-#include "au/time.h"        // au::todatString()
-#include "au/string.h"        // au::str()
-#include "au/Cronometer.h"  // au::Cronometer
+#include "au/time.h"            // au::todatString()
+#include "au/string.h"          // au::str()
+#include "au/Cronometer.h"      // au::Cronometer
+#include "au/CommandLine.h"     // au::CommandLine
 
 #include "samson/client/SamsonClient.h"         // samson::SamsonClient
 
-int main( int argc , char *argv[] )
+int main( int argc , const char *argv[] )
 {
+    au::CommandLine cmd;
+    cmd.set_flag_int( "timeOut" , 0 );       // 0 value for timeOut means no timeout
+    cmd.set_flag_double( "rate" , 1.0 );       // 0 value for timeOut means no timeout
+    cmd.set_flag_string("controller", "localhost");
+    cmd.parse( argc , argv );
     
-    if( argc < 4 )
+    if ( cmd.get_num_arguments() < 2 )
     {
-        fprintf(stderr,"Usage %s <controller_ip> queue rate_in_Mb/s\n" , argv[0] );
+        fprintf(stderr,"Usage %s queue [ -controller controller_ip]  [ -rate rate_in_megabytes_per_second ]  [ -timeOut timeout_in_seconds ]\n" , argv[0] );
         exit(0);
     }
     
+    std::string queue_name = cmd.get_argument(1);
+    std::string controller = cmd.get_flag_string("controller");
+    
+    int timeOut = cmd.get_flag_int("timeOut");
+    double rate = cmd.get_flag_double("rate");
+
     // Instance of the client to connect to SAMSON system
     samson::SamsonClient client;
     
     // Set 1G RAM for uploading content
     client.setMemory( 1024*1024*1024 );
     
-    std::cerr << "Connecting to " << argv[1] <<  " ..." ;
+    std::cerr << "Connecting to " << controller <<  " ..." ;
     std::cerr.flush();
     
     // Init connection
-    if( !client.init( argv[1] ) )
+    if( !client.init( controller ) )
     {
         fprintf(stderr, "Error connecting with samson cluster: %s\n" , client.getErrorMessage().c_str() );
         exit(0);
@@ -49,11 +61,13 @@ int main( int argc , char *argv[] )
     
     std::cerr << "OK\n";
     
-    samson::SamsonPushBuffer *pushBuffer = new samson::SamsonPushBuffer( &client , argv[2] );
+    samson::SamsonPushBuffer *pushBuffer = new samson::SamsonPushBuffer( &client , queue_name , timeOut );
 
-    double rate = atof( argv[3] );
+    std::cerr << "----------------------------------------\n";
     std::cerr << "Rate " << rate <<  " MBs\n";
-
+    if( timeOut > 0)
+        std::cerr << "TimeOut " << timeOut <<  " seconds\n";
+    std::cerr << "----------------------------------------\n";
     
     // Small mini-buffer to generate 
     char line[2048];

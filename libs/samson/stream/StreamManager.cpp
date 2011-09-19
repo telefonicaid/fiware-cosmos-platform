@@ -26,7 +26,8 @@
 #include "samson/stream/BlockList.h"                // BlockList
 #include "samson/stream/Queue.h"
 #include "samson/stream/WorkerTask.h"
-
+#include "samson/stream/SystemQueueTask.h"
+#include "samson/stream/PopQueueTask.h"
 #include "StreamManager.h"                      // Own interface
 
 
@@ -52,6 +53,9 @@ namespace samson {
             // Recover state from log-file
             recoverStateFromDisk();
             
+            // Init the old file checking at block manager
+            BlockManager::shared()->initOldFilesCheck();
+            
         }
 
         void StreamManager::notify( engine::Notification* notification )
@@ -63,6 +67,7 @@ namespace samson {
                 
                 // Save state to disk just in case it crases
                 saveStateToDisk();
+                
                 return;
             }
             
@@ -159,16 +164,20 @@ namespace samson {
             
         }
         
-        void StreamManager::notifyFinishTask( PopQueueTask *task )
+        void StreamManager::notifyFinishTask( SystemQueueTask *task )
         {
-            // Recover identifiers
-            size_t pop_queue_id = task->pop_queue_id;
-            size_t task_id      = task->id;
+            bool is_pop_queue_task = ( task->environment.get("system.pop_queue_task" ,"no") == "yes" );
             
-            popQueueManager.notifyFinishTask( pop_queue_id , task_id , &task->error );
-            
+            if( is_pop_queue_task )
+            {
+                size_t task_id      = task->getId();
+                size_t pop_queue_id = task->environment.getSizeT( "system.pop_queue_id" , 0 );
+                
+                // Notify to the pop manager to set this "pop_task" as finished
+                popQueueManager.notifyFinishTask( pop_queue_id , task_id , &task->error );
+            }
         }
-
+        
         void StreamManager::addPopQueue(const network::PopQueue& pq , size_t delilahId, int fromId )
         {
             // Create a new pop queue
@@ -192,11 +201,12 @@ namespace samson {
                     {
                         size_t id = queueTaskManager.getNewId();
                         
+                        // Add this task id to wait until all of them are finished
                         popQueue->addTask( id );
                         
                         PopQueueTask *tmp = new PopQueueTask( id , popQueue , (*item)->range ); 
-                        
-                        tmp->addBlock( *b );
+                        BlockList *list = tmp->getBlockList("input_0");
+                        list->add( *b );
                         
                         // Schedule tmp task into QueueTaskManager
                         queueTaskManager.add( tmp );
@@ -290,6 +300,7 @@ namespace samson {
                 case Operation::map:
                 case Operation::parser:
                 case Operation::parserOut:
+                case Operation::reduce:
                 {
                     
                     //LM_W(("Reviwing StreamOperation parser %s " , operation.name().c_str()));
@@ -316,9 +327,13 @@ namespace samson {
                     
                 }
                     break;
+                    /*
                     
                 case Operation::reduce:
                 {
+                    
+                    LM_W(("Not implemented...."));
+                    
 
                     if( operation.input_queues_size() != 2 )
                     {
@@ -368,9 +383,9 @@ namespace samson {
                         }
                         
                     }
-                    
                 }
                     break;
+                     */   
                   
                     
                 default:
@@ -403,19 +418,30 @@ namespace samson {
                 for ( it_item = queue->items.begin() ; it_item != queue->items.end() ; it_item++ )
                 {
                     QueueItem *item = *it_item;
-                    
-                    std::ostringstream line;
-                    line << "queue_item " << queue->name << " " << item->range.hg_begin << " " << item->range.hg_end << " ";
+                    output << "queue_item " << queue->name << " " << item->range.hg_begin << " " << item->range.hg_end << "\n";
+                }
+                
+                // Properties of queue
+                output << "queue_properties " << queue->name << " " << queue->environment.saveToString() << "\n";
+                
+                // Insert all the blocks in the queue
+                for ( it_item = queue->items.begin() ; it_item != queue->items.end() ; it_item++ )
+                {
+                    QueueItem *item = *it_item;
                     
                     // Iterate thorugh all the blocks
                     au::list< Block >::iterator b;
                     for ( b = item->list->blocks.begin() ; b != item->list->blocks.end() ; b++ )
-                        line << (*b)->getId() << " ";
-                    
-                    output << line.str() << "\n";
+                        output << "queue_push " << queue->name << " " << (*b)->getId() << "\n"; 
                     
                 }
                 
+                // Insert also blocks in queue->pending;
+                au::list< Block >::iterator b;
+                for ( b = queue->pending->blocks.begin() ; b != queue->pending->blocks.end() ; b++ )
+                {
+                    output << "queue_push " << queue->name << " " << (*b)->getId() << "\n"; 
+                }
                 
                 
             }
@@ -477,7 +503,7 @@ namespace samson {
                         if ( main_command == "queue_item" )
                         {
                             // Format: queue_item name range_from range_to block-ids
-                            if ( commandLine.get_num_arguments() < 5 )
+                            if ( commandLine.get_num_arguments() < 4 )
                                 continue;
                             
                             std::string queue_name = commandLine.get_argument(1);
@@ -497,28 +523,61 @@ namespace samson {
                             QueueItem* item = new QueueItem( queue  , range );
                             queue->items.push_back( item );
                             
-                            for ( int i = 4 ; i < commandLine.get_num_arguments() ; i++ )
-                            {
-                                std::string block_id_txt = commandLine.get_argument(i);
-                                size_t block_id = strtoll(  block_id_txt.c_str() , (char **)NULL, 10);
-                                
-                                BlockManager::shared()->setMinimumNextId( block_id );
-                                
-                                Block* b = recovery_list.getBlock( block_id );
-                                
-                                if( !b )
-                                {                                    
-                                    // Do something to fill b
-                                    b = recovery_list.createBlockFromDisk( block_id );
-                                }
-                                
-                                if( b )
-                                    item->list->add( b );
-                                else
-                                    LM_W(("Not possible to push block %lu to queue %s [%d %d]." , block_id , queue_name.c_str() , hg_begin , hg_end));
-                                
-                            }
                         }
+                        else if ( main_command == "queue_push" )
+                        {
+                            // Format: queue_item name range_from range_to block-ids
+                            if ( commandLine.get_num_arguments() < 3 )
+                                continue;
+                            
+                            std::string queue_name = commandLine.get_argument(1);
+                            size_t block_id = strtoll(  commandLine.get_argument(2).c_str() , (char **)NULL, 10);
+                            
+                            // Get this queue ( if necessary, create without any queue-item )
+                            Queue *queue = queues.findInMap( queue_name );
+                            if (! queue )
+                            {
+                                queue = new Queue( queue_name , this , 1 ); 
+                                queues.insertInMap( queue_name, queue );
+                            }
+                            
+                            
+                            BlockManager::shared()->setMinimumNextId( block_id );
+                            
+                            Block* b = recovery_list.getBlock( block_id );
+                            
+                            if( !b )
+                            {                                    
+                                // Do something to fill b
+                                b = recovery_list.createBlockFromDisk( block_id );
+                            }
+                            
+                            if( b )
+                                queue->push( b );
+                            else
+                                LM_W(("Not possible to push block %lu to queue %s." , block_id , queue_name.c_str() ));
+                            
+                        }
+                        else if( main_command == "queue_properties" )
+                        {
+                            if ( commandLine.get_num_arguments() < 5 )
+                                continue;
+                            
+                            std::string queue_name = commandLine.get_argument(1);
+                            std::string properties = commandLine.get_argument(2);
+                            
+                            // Get this queue ( if necessary, create without any queue-item )
+                            Queue *queue = queues.findInMap( queue_name );
+                            if (! queue )
+                            {
+                                queue = new Queue( queue_name , this , 1 ); // Note 1 queueu-items
+                                queues.insertInMap( queue_name, queue );
+                            }
+                            
+                            queue->environment.recoverFromString( properties );
+                            
+                        }
+                        
                         else
                         {
                             LM_W(("Ignoring message from stream-manager recovering: '%s'" , line ));

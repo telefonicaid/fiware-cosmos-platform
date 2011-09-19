@@ -39,7 +39,7 @@ namespace samson {
         struct stat filestatus;
         stat( fileName.c_str() , &filestatus );
         
-        if ( header.getFormat() == samson::KVFormat("txt","txt") )
+        if ( header.getKVFormat() == samson::KVFormat("txt","txt") )
         {
             size_t expected_size =   (size_t)( sizeof(samson::KVHeader)  + header.info.size );
             
@@ -85,10 +85,10 @@ namespace samson {
         
         
         // Get format
-        format = header.getFormat(); 
+        format = header.getKVFormat(); 
         
         // Get hash-group information
-        if ( header.getFormat() == samson::KVFormat("txt","txt") )
+        if ( header.getKVFormat() == samson::KVFormat("txt","txt") )
             info = NULL;
         else
         {
@@ -146,7 +146,7 @@ namespace samson {
         if( error.isActivated())
             return;
         
-        if ( header.getFormat() == samson::KVFormat("txt","txt") )
+        if ( header.getKVFormat() == samson::KVFormat("txt","txt") )
         {
             // txt content
             char buffer[1025];

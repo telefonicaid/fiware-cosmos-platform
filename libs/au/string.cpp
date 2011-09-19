@@ -221,28 +221,8 @@ namespace au {
 		return std::string( line );
 	}
 	
-	std::string str( size_t value )
-	{
-		
-		if (value < 1000)
-			return au::str( (double)value , ' ' );
-		else if( value < 1000000)
-			return au::str( (double)value/ 1000.0 , 'K');
-		else if( value < 1000000000)
-			return au::str( (double)value/ 1000000.0 , 'M');
-		else if( value < 1000000000000)
-			return au::str( (double)value/ 1000000000.0 , 'G');
-		else if( value < 1000000000000000)
-			return au::str( (double)value/ 1000000000000.0 , 'T');
-		else 
-			return au::str( (double)value/ 1000000000000000.0 , 'P');
-		
-	}
+
 	
-	std::string str( size_t value , std::string postfix )
-	{
-		return str( value ) + postfix;
-	}
     
     std::string str(const char* format, ...)
     {
@@ -259,6 +239,34 @@ namespace au {
         
         return std::string(vmsg);
     }        
+    
+	std::string str( size_t value )
+	{
+		
+		if (value < 1000)
+        {
+            // Special case
+            return au::str("%4d ", (int)value );
+			//return au::str( (double)value , ' ' );
+        }
+		else if( value < 1000000)
+			return au::str( (double)value/ 1000.0 , 'K');
+		else if( value < 1000000000)
+			return au::str( (double)value/ 1000000.0 , 'M');
+		else if( value < 1000000000000)
+			return au::str( (double)value/ 1000000000.0 , 'G');
+		else if( value < 1000000000000000)
+			return au::str( (double)value/ 1000000000000.0 , 'T');
+		else 
+			return au::str( (double)value/ 1000000000000000.0 , 'P');
+		
+	}    
+    
+	std::string str( size_t value , std::string postfix )
+	{
+		return str( value ) + postfix;
+	}
+    
     
     bool isOneOf( char c , std::string s )
 	{

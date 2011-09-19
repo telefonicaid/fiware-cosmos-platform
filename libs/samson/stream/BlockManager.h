@@ -163,6 +163,13 @@ namespace samson {
                 
             }
             void getInfo( std::ostringstream& output);
+
+
+        public:
+            void initOldFilesCheck();
+            
+        private:
+            void reviewOldFiles();
             
             
         };

@@ -24,6 +24,7 @@ namespace samson {
             friend class StreamManager;
             friend class Queue;
             friend class WorkerCommand;
+            friend class BlockList;
             
             Queue * myQueue;            // Pointer to the queue this item belong
             
@@ -42,7 +43,7 @@ namespace samson {
             ~QueueItem();
             
             // Push data into this item
-            void push( BlockList *list );
+            void push( Block *block );
 
             // Push data into this item ( from the working operation that blocks this item )
             void push( QueueTask *task , engine::Buffer *buffer );
@@ -61,11 +62,7 @@ namespace samson {
 
             void update( BlockInfo &block_info);
             
-        private:
-         
-            void prepareBlockList( BlockList *list );
-            void prepareBlock( Block *block );
-            
+            KVRange getKVRange();
             
         };
         

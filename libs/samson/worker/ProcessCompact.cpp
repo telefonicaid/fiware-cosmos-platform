@@ -86,7 +86,7 @@ namespace samson
       char *outputData = outputBuffer->getData() + sizeof( KVHeader ) + sizeof(KVInfo) * num_hash_groups;
     
     // Contents of the header
-    outputHeader->init( reduce_file[0].header->getFormat() , total_info );
+    outputHeader->init( reduce_file[0].header->getKVFormat() , total_info );
     outputHeader->setHashGroups( 0 , KVFILE_NUM_HASHGROUPS );// Full hash-group
     
     for (uint32 hg = 0 ; hg < num_hash_groups ; hg++)

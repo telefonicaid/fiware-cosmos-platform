@@ -176,5 +176,11 @@ namespace engine
     {
         operation_name = _operation_name;
     }
+    
+    void ProcessItem::setProcessItemWorkingSize( size_t size )
+    {
+        working_size = size;
+    }        
+
 	
 }

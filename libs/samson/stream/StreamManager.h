@@ -56,6 +56,7 @@ namespace samson {
             friend class Queue;
             friend class QueueItem;
             friend class WorkerCommand;
+            friend class BlockBreakQueueTask;
             
             // Map with the current queues
             au::map< std::string , Queue > queues;                
@@ -106,7 +107,7 @@ namespace samson {
             
             // Notify finish task
             void notifyFinishTask( QueueTask *task );
-            void notifyFinishTask( PopQueueTask *task );
+            void notifyFinishTask( SystemQueueTask *task );
             
             // Add a pop queue operation
             void addPopQueue(const network::PopQueue& pq , size_t delilahId, int fromId );

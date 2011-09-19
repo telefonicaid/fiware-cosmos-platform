@@ -9,82 +9,49 @@
 
 #include "engine/ProcessItem.h"                     // engine::ProcessItem
 
+#include "samson/stream/QueueTaskBase.h"            // parent class samson::stream::QueueTaskBase
 #include "samson/stream/BlockList.h"                // stream::BlockList
-#include "samson/stream/StreamProcessBase.h"        // parent class 
+#include "samson/stream/StreamProcessBase.h"        // parent class public StreamProcessBase
 #include "samson/stream/Block.h"                    // samson::Stream::Block
 
 namespace samson {
     namespace stream {
 
         class Block;
+
         
         // Base class for all the stream tasks ( parser , map , reduce , parseOut )
-        
-        class QueueTask : public StreamProcessBase
+        class QueueTask : public StreamProcessBase , public QueueTaskBase
         {
             
             FullKVInfo queue_task_info;         // total information covered by this task
             
         public:
-            
-            size_t id;                          // Id of the operation
-            
-            BlockList *list;                    // List of blocks to be processed
-            BlockList *state;                   // blocks of the state ( in reduce-like operations )
 
-            BlockList *list_lock;               // A list to block the input blocks
-            BlockList *state_lock;              // A list to block the state
+            // Constructor
+            QueueTask( size_t _id , const network::StreamOperation& streamOperation  );
             
-            bool ready_flag;
-            
-            QueueTask( size_t _id , const network::StreamOperation& streamOperation  ) : StreamProcessBase( _id , streamOperation )
-            {
-                // Set the id of this task
-                id = _id;
-                
-                // Set in the environemtn variables
-                environment.setSizeT("id",id);
-                
-                // Create the block list
-                list  = new BlockList( au::str("Task %lu input" , id ) , id , false );
-                state  = new BlockList( au::str("Task %lu state" , id ) , id , false );
-                
-                // Create the lock block list
-                list_lock  = new BlockList( au::str("Task %lu input lock" , id ) , id , true );
-                state_lock  = new BlockList( au::str("Task %lu state lock" , id ) , id , true );
-                
-                ready_flag = false;
-                
-            }
-            
-            
-            virtual ~QueueTask()
-            {
-                delete list;
-                delete state;
-                
-                delete list_lock;
-                delete state_lock;
-            }
-            
-            
-            // Funciton to check if all the blocks are in memory 
-            bool ready();
-            
+            // Overloaded method for ProcessItem
             virtual std::string getStatus()
             {
                 return au::str("No task description for task %lu", id );
             }
             
-            // Function executed just before task is deleted
+            // Function executed just before task is deleted in the main thread
             virtual void finalize(){};
             
             // Get information for monitorization
             void getInfo( std::ostringstream& output);
+
+            //  Set the input size to make sure ProcessItem can monitorize performance of this operation
+            void setWorkingSize()
+            {
+                BlockInfo block_info;
+                update( block_info );
+                setProcessItemWorkingSize( block_info.size );
+            }
             
         };
- 
-        
         
     }
  

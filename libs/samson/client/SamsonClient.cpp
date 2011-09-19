@@ -21,8 +21,10 @@
 #include "engine/MemoryManager.h"               // engine::MemoryManager
 #include "engine/DiskManager.h"                 // engine::DiskManager
 #include "engine/ProcessManager.h"              // engine::ProcessManager
+#include "engine/Notification.h"                // engine::Notification
 
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
+#include "samson/common/NotificationMessages.h" // notification_review_timeOut_SamsonPushBuffer
 
 #include "samson/module/ModulesManager.h"       // samson::ModulesManager
 
@@ -39,14 +41,20 @@
 namespace samson {
 
     
-    SamsonPushBuffer::SamsonPushBuffer( SamsonClient *_client , std::string _queue  )
+    SamsonPushBuffer::SamsonPushBuffer( SamsonClient *_client , std::string _queue , int _timeOut  ) : token("SamsonPushBuffer")
     {
         client = _client;
         queue = _queue;
         max_buffer_size = 64*1024*1024 - sizeof(KVHeader) ; // Perfect size for this ;)
         buffer = (char*) malloc( max_buffer_size );
+
+        timeOut =  _timeOut;
         
         size = 0;
+        
+        // Received notification about this
+        listen( notification_review_timeOut_SamsonPushBuffer );
+        
     }
     
     SamsonPushBuffer::~SamsonPushBuffer()
@@ -54,15 +62,23 @@ namespace samson {
         if( buffer )
             free(buffer);
     }
-    
+
     void SamsonPushBuffer::push( const char *data , size_t length )
     {
+        
+        // If this is the first time we push data, just reset the cronometert to zero
+        if ( size == 0)
+            cronometer.reset();
+        
         
         if( (size + length ) > max_buffer_size )
         {
             // Process buffer
             std::cerr << "Pushing " << size << " bytes to queue " << queue <<  "\n";
             client->push(  queue , buffer, size );
+
+            // Reset cronometer
+            cronometer.reset();
             
             // Come back to "0"
             size = 0;
@@ -75,8 +91,14 @@ namespace samson {
 
         }
     }
-    
+
     void SamsonPushBuffer::flush()
+    {
+        au::TokenTaker tt(&token);
+        _flush();
+    }
+
+    void SamsonPushBuffer::_flush()
     {
         if ( size > 0 )
         {
@@ -90,6 +112,19 @@ namespace samson {
         }
     }
 
+    
+    void SamsonPushBuffer::notify( engine::Notification* notification )
+    {
+        au::TokenTaker tt(&token);
+        
+        // We only expect notification about reviwing timeout
+        
+        if( timeOut > 0)
+            if( ( size > 0 ) && (cronometer.diffTimeInSeconds() > timeOut) )
+                _flush();
+        
+    }
+    
 
     
 #pragma mark
@@ -103,7 +138,7 @@ namespace samson {
         memory = 1024*1024*1024;
         
         load_buffer_size =  64*1024*1024;
-       
+        
     }
  
     void SamsonClient::setMemory ( size_t _memory )
@@ -162,7 +197,11 @@ namespace samson {
         
         // Create a DelilahControler once network is ready
         delilah = new Delilah( networkP, true );
-       
+        
+        // Periodic notification to review timeout
+        engine::Notification *notification = new engine::Notification( notification_review_timeOut_SamsonPushBuffer  );
+        engine::Engine::shared()->notify( notification , 1);
+        
         return true;
         
     }

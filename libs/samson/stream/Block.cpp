@@ -11,7 +11,7 @@
 #include "samson/common/MemoryTags.h"                 // MemoryBlocks
 #include "samson/common/SamsonSetup.h"                // samson::SamsonSetup
 
-
+#include "PopQueueTask.h"               // samson::stream::PopQueueTask
 #include "BlockManager.h"               // BlockManager
 #include "BlockList.h"                  // BlockList
 
@@ -165,7 +165,7 @@ namespace samson {
         
         std::string Block::getFileNameForBlock( size_t id )
         {
-            return au::str( "%s/block_%lu", SamsonSetup::shared()->blocksDirectory.c_str()  , id );
+            return au::str( "%s/%lu", SamsonSetup::shared()->blocksDirectory.c_str()  , id );
         }
 
 
@@ -282,6 +282,8 @@ namespace samson {
             
             // Key-Value information
             block_info.info.append( header->info );
+            
+            block_info.push( getKVFormat() );
             
         }
         

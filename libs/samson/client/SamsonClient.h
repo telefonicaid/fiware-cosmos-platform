@@ -21,12 +21,23 @@
 
 #include <string>       // std::string
 #include <vector>       // std::vector
+#include <pthread.h>        /* pthread*/
+
+#include "au/Cronometer.h"          // au::Cro
+#include "au/Token.h"               // au::Token
+#include "au/TokenTaker.h"          // au::TokenTaker
+
+#include "engine/Object.h"          // engine::Object
 
 namespace  samson {
     
     class SamsonClient;
     
-    class SamsonPushBuffer
+    /*
+     Class used to push data to a txt queue in buffer mode
+     */
+     
+    class SamsonPushBuffer : public engine::Object
     {
         
         SamsonClient *client;
@@ -36,14 +47,33 @@ namespace  samson {
         size_t max_buffer_size;
         
         size_t size;    // Current size of the buffer
+        int timeOut;    // Timeout in seconds to flush content to the queue
+
+        au::Cronometer cronometer; // Time since the last flush
         
-    public:
-        SamsonPushBuffer( SamsonClient *client , std::string queue );
-        ~SamsonPushBuffer();
-        void push( const char *data , size_t length );
+        au::Token token;
+
     
+    public:
+        SamsonPushBuffer( SamsonClient *client , std::string queue , int timeOut );
+        ~SamsonPushBuffer();
+
+        void push( const char *data , size_t length );
         void flush();
+
+        // Recevie notifications
+        void notify( engine::Notification* notification );
+        
+    private:
+        
+        void _flush();      // No token protected flush operation
+
+        
     };
+    
+    /*
+        Main class to connect to a samson cluster
+     */
     
     class SamsonClient
     {

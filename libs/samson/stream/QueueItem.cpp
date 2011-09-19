@@ -39,7 +39,7 @@ namespace stream
             delete future_list;
         }
      
-        void QueueItem::push( BlockList *_list )
+        void QueueItem::push( Block *block )
         {
             if (working )
             {
@@ -47,16 +47,14 @@ namespace stream
                 return;
             }
             
-            prepareBlockList(_list);            
-            list->copyFrom(_list , range );
+            list->add( block );
         }
         
         void QueueItem::push( QueueTask * _task , engine::Buffer *buffer )
         {
             if ( _task == task )
             {
-                Block* b = future_list->createBlock(buffer);
-                prepareBlock(b);
+                future_list->createBlock(buffer);
             }
             else
             {
@@ -125,30 +123,18 @@ namespace stream
             return working;
         }
         
-        void QueueItem::prepareBlockList( BlockList *list )
-        {
-            au::list< Block >::iterator b;
-            for ( b = list->blocks.begin() ; b != list->blocks.end() ; b++ )
-                prepareBlock(*b);
-        }
-        
-        void QueueItem::prepareBlock( Block *block )
-        {
-            block->computeKVInfoForRange( range );
-            block->computeKVInfoForRange( range.firstHalf() );
-            block->computeKVInfoForRange( range.secondHalf() );
-            
-            block->computeKVInfoForRange( range.firstQuarter() );
-            block->computeKVInfoForRange( range.secondQuarter() );
-            block->computeKVInfoForRange( range.thirdQuarter() );
-            block->computeKVInfoForRange( range.fourthQuarter() );
-            
-        }
+
         
         void QueueItem::update( BlockInfo &block_info)
         {
             list->update( block_info );
         }
+        
+        KVRange QueueItem::getKVRange()
+        {
+            return range;
+        }
+
 
         
     }

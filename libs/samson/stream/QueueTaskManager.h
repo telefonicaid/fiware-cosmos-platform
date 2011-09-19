@@ -12,21 +12,23 @@
 namespace samson {
     namespace stream {
         
-        class QueueTask;
+        class SystemQueueTask;
         class StreamManager;
         class PopQueueTask;
+        class QueueTask;
+        class SystemQueueTask;
         
         class QueueTaskManager : public ::engine::Object
         {
-            size_t id;                                              // Id of the current task
+            size_t id;                                                      // Id of the current task
 
-            au::list< QueueTask > queueTasks;                       // List of pending task to be executed
-            au::map< size_t , QueueTask > runningTasks;             // Map of running tasks
+            au::list< QueueTask > queueTasks;                               // List of pending task to be executed
+            au::map< size_t , QueueTask > runningTasks;                     // Map of running tasks
 
-            au::list< PopQueueTask > popQueueTasks;                 // List of pending pop queue tasks to be executed
-            au::map< size_t , PopQueueTask > runningPopQueueTasks;  // Map of running pop queue tasks
+            au::list< SystemQueueTask > systemQueueTasks;                   // List of pending system queue tasks to be executed
+            au::map< size_t , SystemQueueTask > runningSystemQueueTasks;    // Map of running system queue tasks
             
-            StreamManager* qm;
+            StreamManager* streamManager;
             
         public:
             
@@ -35,10 +37,10 @@ namespace samson {
             size_t getNewId();
             
             void add( QueueTask* task );
-            void add( PopQueueTask* task );
+            void add( SystemQueueTask* task );
             
-            void runTasksIfNecessary();
-            void runPopTasksIfNecessary();
+            void runQueueTasksIfNecessary();
+            void runSystemQueueTasksIfNecessary();
             
             // Notifications
             void notify( engine::Notification* notification );

@@ -111,8 +111,11 @@ namespace samson {
                     finishWorkerTaskWithError( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
                 else
                 {
-                    std::string queue_name = cmd.get_argument(1);
-                    streamManager->remove_queue(  queue_name );
+                    for ( int i = 1 ; i < cmd.get_num_arguments() ; i++ )
+                    {
+                        std::string queue_name = cmd.get_argument(i);
+                        streamManager->remove_queue(  queue_name );
+                    }
                     finishWorkerTask();
                 }
                 
@@ -135,6 +138,26 @@ namespace samson {
                 
                 return;
             }
+
+            if ( cmd.get_argument(0) == "set_queue_property" )
+            {
+                if( cmd.get_num_arguments() < 4 )
+                    finishWorkerTaskWithError( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
+                else
+                {
+                    std::string queue_name = cmd.get_argument(1);
+                    std::string property = cmd.get_argument(2);
+                    std::string value = cmd.get_argument(3);
+
+                    Queue *queue = streamManager->getQueue( queue_name );
+                    queue->setProperty( property , value );
+                    
+                    finishWorkerTask();
+                }
+                
+                return;
+            }            
+            
             
             
             if ( cmd.get_argument(0) == "pause_queue" )
@@ -188,6 +211,39 @@ namespace samson {
                     finishWorkerTaskWithError( au::str("Not enougth arguments for operation %s" , operation_name.c_str() ) ); 
                     return;
                 }
+
+                // Check formats
+                int pos_argument = 2; 
+                for (int i = 0 ; i < op->getNumInputs() ; i++ )
+                {
+                    KVFormat operation_format = op->getInputFormat(i);
+                    std::string queue_name = cmd.get_argument(pos_argument++);
+                    KVFormat queue_format = streamManager->getQueue( queue_name )->format;
+                    
+                    if( queue_format != KVFormat("*","*") )
+                        if( queue_format != operation_format )
+                        {
+                            finishWorkerTaskWithError( au::str("Format for input %d ( operation %s ) is %s while queue %s has format %s" 
+                                                               , i , operation_name.c_str() , operation_format.str().c_str() , queue_name.c_str() , queue_format.str().c_str() ) );
+                            return;
+                        }
+                    
+                }
+                for (int i = 0 ; i < op->getNumOutputs() ; i++ )
+                {
+                    KVFormat operation_format = op->getOutputFormat(i);
+                    std::string queue_name = cmd.get_argument(pos_argument++);
+                    KVFormat queue_format = streamManager->getQueue( queue_name )->format;
+                    
+                    if( queue_format != KVFormat("*","*") )
+                        if( queue_format != operation_format )
+                        {
+                            finishWorkerTaskWithError( au::str("Format for output %d ( operation %s ) is %s while queue %s has format %s" 
+                                                               , i , operation_name.c_str() , operation_format.str().c_str() , queue_name.c_str() , queue_format.str().c_str() ) );
+                            return;
+                        }
+                    
+                }
                 
                 
                 // Additional common flags in command
@@ -228,7 +284,8 @@ namespace samson {
                                 tmp->addOutputsForOperation(op);
                                 
                                 // Extract the rigth blocks from queue
-                                tmp->list->extractFrom( &localBlockList , max_size_per_operation );
+                                tmp->getBlockList("input_0")->extractFrom( &localBlockList , max_size_per_operation );
+                                tmp->setWorkingSize();
 
                                 // Add me as listener and increase the number of operations to run
                                 tmp->addListenerId( getEngineId() );
@@ -241,6 +298,9 @@ namespace samson {
                         }
                         
                         delete operation;
+                        if( num_pending_processes == 0 )
+                            finishWorkerTask();
+
                         return;
                     }
                         break;
@@ -275,7 +335,8 @@ namespace samson {
                                 tmp->addOutputsForOperation(op);
                                 
                                 // Extract the rigth blocks from queue
-                                tmp->list->extractFrom( &localBlockList , max_size_per_operation );
+                                tmp->getBlockList("input_0")->extractFrom( &localBlockList , max_size_per_operation );
+                                tmp->setWorkingSize();
                                 
                                 // Schedule tmp task into QueueTaskManager
                                 streamManager->queueTaskManager.add( tmp );
@@ -284,6 +345,9 @@ namespace samson {
                         }
                         
                         delete operation;
+                        if( num_pending_processes == 0 )
+                            finishWorkerTask();
+
                         return;
                     }
                         break;
@@ -317,7 +381,8 @@ namespace samson {
                                 tmp->addOutputsForOperation(op);
                                 
                                 // Extract the rigth blocks from queue
-                                tmp->list->extractFrom( &localBlockList , max_size_per_operation );
+                                tmp->getBlockList("input_0")->extractFrom( &localBlockList , max_size_per_operation );
+                                tmp->setWorkingSize();
                                 
                                 // Add me as listener and increase the number of operations to run
                                 tmp->addListenerId( getEngineId() );
@@ -328,9 +393,112 @@ namespace samson {
                             }
                         }
                         delete operation;
+                        
+                        if( num_pending_processes == 0 )
+                            finishWorkerTask();
+                        
                         return;
                     }
                         break;
+
+                    case Operation::reduce:
+                    {
+                        
+                        network::StreamOperation *operation = getStreamOperation( op );
+                        Operation *_operation = ModulesManager::shared()->getOperation(operation->operation());
+                        
+                        // Get the input queues
+                        std::vector< Queue* > queues;
+                        for (int i = 0 ; i < _operation->getNumInputs() ; i++ )
+                        {
+                            std::string input_queue_name = operation->input_queues(i);
+                            queues.push_back( streamManager->getQueue( input_queue_name ) );
+                        }
+                        
+                        // Decide ranges used in the operations ( mix of ranges )
+                        std::vector<int> limits;
+                        for ( int q = 0 ; q < (int) queues.size() ; q++ )
+                        {
+                            Queue *queue = queues[q];
+                            
+                            // For each QueueItem, we create a set of reduce operations...
+                            au::list< QueueItem >::iterator item;
+                            for ( item = queue->items.begin() ; item != queue->items.end() ; item++)
+                            {
+                                KVRange range = (*item)->getKVRange();
+                                if ( range.hg_begin > 0 )
+                                    limits.push_back( range.hg_begin );
+                                if ( range.hg_end < KVFILE_NUM_HASHGROUPS )
+                                    limits.push_back( range.hg_end );
+                            }
+                        }
+                        
+                        // Unique and sort the limits vector
+                        
+                        std::sort( limits.begin() , limits.end() );
+                        
+                        std::vector<int>::iterator last = std::unique( limits.begin() , limits.end() );
+                        // Remove the rest of elements
+                        limits.erase( last , limits.end() );
+                        
+                        
+                        // Create all necessary hash-groups
+                        std::vector< KVRange > ranges;
+                        int hg_begin = 0;
+                        for ( size_t i = 0 ; i < limits.size() ; i++ )
+                        {
+                            ranges.push_back( KVRange( hg_begin , limits[i] ) );
+                            hg_begin = limits[i];
+                        }
+                        ranges.push_back( KVRange( hg_begin , KVFILE_NUM_HASHGROUPS ) );
+
+                        
+                        // For each range, create a set of reduce operations...
+                        for ( int r = 0 ; r < (int) ranges.size() ; r++ )
+                        {
+                            KVRange  range = ranges[r];
+                            
+                            // Decide the number of operations
+                            int num_operations = SamsonSetup::shared()->getInt("general.num_processess");
+                            
+                            for ( int o = 0 ; o < num_operations ; o++)
+                            {
+                                KVRange sub_range = range.subRange( o ,  num_operations );
+                            
+                                //Create the reduce operation
+                                ReduceQueueTask *tmp = new ReduceQueueTask( streamManager->queueTaskManager.getNewId() , *operation , sub_range ); 
+                                tmp->addOutputsForOperation(op);
+                                
+                                // Take data from each input
+                                for (int q = 0 ; q < (int) queues.size() ; q++ )
+                                {
+                                    BlockList* list = tmp->getBlockList( au::str("input_%d" , q ) ); 
+                                    list->copyAllBlocksFrom( queues[q] , sub_range );
+                                }
+                            
+                                // Set the working size to get statictics at ProcessManager
+                                tmp->setWorkingSize();
+
+                                
+                                // Add me as listener and increase the number of operations to run
+                                tmp->addListenerId( getEngineId() );
+                                num_pending_processes++;
+                                
+                                // Schedule tmp task into QueueTaskManager
+                                streamManager->queueTaskManager.add( tmp );
+                                
+                            }
+
+                        }
+                                             
+                            
+                        delete operation;
+                        if( num_pending_processes == 0 )
+                            finishWorkerTask();
+
+                        return;
+                    }
+                        break;                        
                         
                     default:
                     {

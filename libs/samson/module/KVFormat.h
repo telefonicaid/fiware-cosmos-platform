@@ -123,6 +123,27 @@ namespace samson {
         }
         
         
+        bool isGenericKVFormat()
+        {
+            return isEqual( KVFormat("*","*") );
+        }
+        
+        static KVFormat generic()
+        {
+            return KVFormat("*","*");
+        }
+
+        static KVFormat nonCommon()
+        {
+            return KVFormat("NonCommon","NonCommon");
+        }
+        
+        bool isNonCommonKVFormat()
+        {
+            return isEqual( KVFormat("NonCommon","NonCommon") );
+        }
+        
+        
 	};
 }
 

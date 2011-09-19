@@ -17,6 +17,7 @@
 #include "engine/SimpleBuffer.h"		// engine::SimpleBuffer
 #include "logMsg/logMsg.h"                     // LM_X
 
+#define MAX_UINT_32     4294967291 
 
 #define KVFILE_MAX_KV_SIZE			   64*1024*1024				// Max size for an individual key-value
 #define KVFILE_NUM_HASHGROUPS			64*1024					// Number of hash-groups
@@ -103,7 +104,13 @@ namespace samson {
 			kvs = 0;
 			size = 0;
 		}
-		
+        
+        void set(uint32 _size ,uint32 _kvs )
+        {
+            size = _size;
+            kvs = _kvs;
+        }
+
 		void clear()
 		{
 			kvs = 0;
@@ -121,6 +128,17 @@ namespace samson {
 			size += other.size;
 			kvs += other.kvs;
 		}
+        
+        bool canAppend( KVInfo other )
+        {
+            if( ( (uint64) size + (uint64) other.size ) >= MAX_UINT_32 )
+                return false;
+            if( ( (uint64) kvs + (uint64) other.kvs ) >= MAX_UINT_32 )
+                return false;
+            
+            return true;
+            
+        }
 
 		void remove( uint32 _size , uint32 _kvs )
 		{
@@ -178,6 +196,18 @@ namespace samson {
 			kvs = 0;
 			size = 0;
 		}
+
+        void set(uint32 _size ,uint32 _kvs )
+        {
+            size = _size;
+            kvs = _kvs;
+        }
+
+        void set(uint64 _size ,uint64 _kvs )
+        {
+            size = _size;
+            kvs = _kvs;
+        }
 		
 		void clear()
 		{
@@ -226,6 +256,12 @@ namespace samson {
 			size += other.size;
 			kvs += other.kvs;
 		}
+
+		void set( KVInfo other )
+		{
+			size = other.size;
+			kvs = other.kvs;
+		}
 		
 		void remove( uint32 _size , uint32 _kvs )
 		{
@@ -239,7 +275,19 @@ namespace samson {
 			kvs -= other.kvs;
 		}
 		
-		
+		bool fitsInKVInfo()
+        {
+            if( size >= MAX_UINT_32)
+                return false;
+            if( kvs >= MAX_UINT_32)
+                return false;
+            return true;
+        }
+        
+        KVInfo getKVInfo()
+        {
+            return KVInfo( size , kvs );
+        }
 		
 		std::string str()
 		{
@@ -266,6 +314,7 @@ namespace samson {
     
     bool operator==(const KVFormat & left, const KVFormat & right);
     bool operator!=(const KVFormat & left, const KVFormat & right);
+
     
 	/**
         KVRange keeps information about a particular range of hash-groups
@@ -294,6 +343,35 @@ namespace samson {
             hg_end = _hg_end;
         }
         
+        void setFrom( KVInfo *info )
+        {
+            
+            // Key-value 
+            hg_begin = 0;
+            hg_end = KVFILE_NUM_HASHGROUPS-1;   // Search for the first element without presence
+            
+            while( ( info[hg_begin].kvs == 0 ) && hg_begin<(KVFILE_NUM_HASHGROUPS-1) )
+                hg_begin++;
+            while( ( info[hg_end].kvs == 0 ) && hg_end>0 )
+                hg_end--;
+            
+            // Spetial case where no content is present
+            if( ( hg_begin == KVFILE_NUM_HASHGROUPS ) && (hg_end == 0) )
+            {
+                // No content
+                hg_begin = -1;
+                hg_end = -1;
+            }
+            
+            hg_end++;   // This should indicate the first non-included...
+            
+            if( hg_end < hg_begin )
+            {
+                LM_X(1, ("Internal error seting limits of the hash groups"));
+            }
+            
+        }        
+        
         bool isValid()
         {
             if ( ( hg_begin < 0 ) || (hg_begin > (KVFILE_NUM_HASHGROUPS) ) )
@@ -305,43 +383,6 @@ namespace samson {
                 return false;
             
             return true;
-        }
-        
-        KVRange firstHalf( )
-        {
-            int hg_mid = ( hg_begin + hg_end ) / 2;
-            return KVRange( hg_begin , hg_mid );
-        }
-
-        KVRange secondHalf( )
-        {
-            int hg_mid = ( hg_begin + hg_end ) / 2;
-            return KVRange( hg_mid , hg_end );
-        }
-
-        
-        KVRange firstQuarter( )
-        {
-            int hg_quad = ( hg_begin + hg_end ) / 4;
-            return KVRange( hg_begin , hg_quad );
-        }
-        
-        KVRange secondQuarter( )
-        {
-            int hg_quad = ( hg_begin + hg_end ) / 4;
-            return KVRange( hg_quad , 2*hg_quad );
-        }
-
-        KVRange thirdQuarter( )
-        {
-            int hg_quad = ( hg_begin + hg_end ) / 4;
-            return KVRange( 2*hg_quad , 3*hg_quad );
-        }
-        
-        KVRange fourthQuarter( )
-        {
-            int hg_quad = ( hg_begin + hg_end ) / 4;
-            return KVRange( 3*hg_quad , hg_end );
         }
       
         void getInfo( std::ostringstream& output)
@@ -373,11 +414,51 @@ namespace samson {
             return hg_end - hg_begin;
         }
         
+        bool includes( KVRange range )
+        {
+            if( range.hg_begin < hg_begin )
+                return false;
+            if( range.hg_end > hg_end )
+                return false;
+            
+            return true;
+        }
+        
+        bool contains( int hg )
+        {
+            if( hg < hg_begin )
+                return false;
+            if( hg >= hg_end )
+                return false;
+            
+            return true;
+        }
+        
+        KVRange subRange( int pos , int num_divisions )
+        {
+            int step = ( hg_end - hg_begin ) / num_divisions;
+            
+            if ( pos != (num_divisions -1) )
+                return KVRange( hg_begin  + step*pos , hg_begin  + step*(pos+1 ) );
+            else
+                return KVRange( hg_begin  + step*pos , hg_end );                    
+                            
+        }
+
+        
     };
     
     bool operator<(const KVRange & left, const KVRange & right);
     bool operator==(const KVRange & left, const KVRange & right);
     bool operator!=(const KVRange & left, const KVRange & right);
+
+    KVRange rangeForDivision( int pos , int num_divisions );
+    
+    void clear( KVInfo* info );
+    
+    // Get the agregation of
+    KVInfo selectRange( KVInfo* info , KVRange range );
+    
     
 	/**
 	 Header used in KV-Sets ( Files, Network messages, Operations, etc...)
@@ -435,7 +516,7 @@ namespace samson {
         
         bool isTxt()
         {
-            return (getFormat() == KVFormat("txt","txt") );
+            return (getKVFormat() == KVFormat("txt","txt") );
         }
         
         bool check_size( size_t total_size )
@@ -452,36 +533,6 @@ namespace samson {
             range.set( _hg_begin , _hg_end );
 		}
         
-        void setHashGroups( KVInfo *info )
-        {
-                
-            // Key-value 
-            int hg_begin = 0;
-            int hg_end = KVFILE_NUM_HASHGROUPS-1;   // Search for the first element without presence
-            
-            while( ( info[hg_begin].kvs == 0 ) && hg_begin<(KVFILE_NUM_HASHGROUPS-1) )
-                hg_begin++;
-            while( ( info[hg_end].kvs == 0 ) && hg_end>0 )
-                hg_end--;
-
-            // Spetial case where no content is present
-            if( ( hg_begin == KVFILE_NUM_HASHGROUPS ) && (hg_end == 0) )
-            {
-                // No content
-                hg_begin = -1;
-                hg_end = -1;
-            }
-            
-            hg_end++;   // This should indicate the first non-included...
-            
-            if( hg_end < hg_begin )
-            {
-                LM_X(1, ("Internal error seting limits of the hash groups"));
-            }
-            
-            range.set( hg_begin , hg_end );
-        }
-		
 		void setFormat( KVFormat format )
 		{
 			snprintf(keyFormat, 100, "%s", format.keyFormat.c_str());
@@ -511,7 +562,7 @@ namespace samson {
 		// Format operations
 		// ---------------------------------------------------------------
 		
-		KVFormat getFormat()
+		KVFormat getKVFormat()
 		{
 			return KVFormat( keyFormat , valueFormat );
 		}
@@ -536,7 +587,7 @@ namespace samson {
         std::string str()
         {
             std::ostringstream output;
-            output << "KVHeader: " << info.str() << " (" << getFormat().str() << ")";
+            output << "KVHeader: " << info.str() << " (" << getKVFormat().str() << ")";
             return output.str();
         }
         
@@ -544,7 +595,7 @@ namespace samson {
         {
             au::xml_open(output , "kv_header" );
             
-            getFormat().getInfo( output );
+            getKVFormat().getInfo( output );
             info.getInfo( output );
             range.getInfo(output);
             
@@ -553,6 +604,41 @@ namespace samson {
         
 	};
 
+    /**
+     Structure used to work with contents of KVFiles
+     **/
+    
+    struct KVFile
+    {
+        KVHeader *header;
+        KVInfo *info;
+        char *data;
+        
+        KVFile( char *data)
+        {
+            init(data);
+        }
+        
+        void init( char * _data )
+        {
+            header = (KVHeader*) _data;
+            info   = (KVInfo*)  (_data + sizeof( KVHeader ) );
+            data   = _data + sizeof( KVHeader ) + KVFILE_NUM_HASHGROUPS*sizeof(KVInfo);
+        }
+        
+        size_t offset( int hg )
+        {
+            size_t offset = 0;
+            for ( int i = 0 ; i < hg ; i++ )
+                offset += info[i].size;
+            return offset;
+        }
+        
+    };    
+    
+    /**
+     Structure used to report information about blocks
+     **/
 	
 	struct BlockInfo
     {
@@ -564,6 +650,8 @@ namespace samson {
         
         FullKVInfo info;
         
+        KVFormat format;    // Common format for all the information
+        
         BlockInfo()
         {
             num_blocks = 0;
@@ -571,13 +659,15 @@ namespace samson {
             size_on_memory = 0;
             size_on_disk = 0;
             size_locked = 0;
+            
+            format = KVFormat("*","*");
         }
         
         void getInfo( std::ostringstream &output )
         {
             au::xml_open( output , "block_info" );
             au::xml_simple( output , "num_blocks" , num_blocks );
-
+            
             au::xml_simple( output , "size" , size );
             au::xml_simple( output , "size_on_memory" , size_on_memory );
             au::xml_simple( output , "size_on_disk" , size_on_disk );
@@ -585,32 +675,56 @@ namespace samson {
             
             info.getInfo( output );
             
+            format.getInfo( output );
+            
             au::xml_close( output , "block_info" );
         }
         
 		double onMemoryPercentadge()
-			{
-				if( size == 0)
-					return 0;
-
-				return (double) size_on_memory / (double) size;
-			}
-
+        {
+            if( size == 0)
+                return 0;
+            
+            return (double) size_on_memory / (double) size;
+        }
+        
 		double onDiskPercentadge()
-			{
-				if( size == 0)
-					return 0;
-
-				return (double) size_on_disk / (double) size;
-			}
-
+        {
+            if( size == 0)
+                return 0;
+            
+            return (double) size_on_disk / (double) size;
+        }
+        
 		double lockedPercentadge()
-			{
-				if( size == 0)
-					return 0;
-
-				return (double) size_locked / (double) size;
-			}
+        {
+            if( size == 0)
+                return 0;
+            
+            return (double) size_locked / (double) size;
+        }
+        
+        std::string str()
+        {
+            
+            return au::str( "%s [ %s | %s on memory / %s on disk / %s locked ] %s " 
+                           , au::str( num_blocks , "Blocs").c_str() 
+                           , au::str( size , "bytes").c_str()
+                           , au::percentage_string( size_on_memory , size).c_str()
+                           , au::percentage_string( size_on_disk , size).c_str()
+                           , au::percentage_string( size_locked , size).c_str()
+                           , info.str().c_str()
+                           );
+        }
+        
+        void push( KVFormat _format )
+        {
+            if ( format == KVFormat("*","*") )
+                format = _format;
+            else if ( format != KVFormat("NoCommonFormat" , "NoCommonFormat" ) )
+                if ( format != _format )
+                    format = KVFormat("NoCommonFormat" , "NoCommonFormat" );
+        }
         
     };
     

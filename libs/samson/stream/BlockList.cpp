@@ -3,11 +3,6 @@
 
 #include "au/file.h"                                // au::sizeOfFile
 
-#include "Queue.h"          // samson::stream::Queue
-#include "StreamManager.h"  // samson::stream::StreamManager
-#include "Block.h"          // samson::stream::Block
-#include "BlockManager.h"   // samson::stream::BlockManager
-
 #include "engine/ProcessManager.h"                  // engine::ProcessManager
 
 #include "samson/common/EnvironmentOperations.h"    // getStatus()
@@ -15,11 +10,17 @@
 #include "samson/common/coding.h"                   // KVInfo
 
 #include "samson/module/ModulesManager.h"           
-#include "QueueTask.h"
+
 #include "samson/network/NetworkInterface.h"
 #include "samson/worker/SamsonWorker.h"
 
 #include "samson/stream/ParserQueueTask.h"          // samson::stream::ParserQueueTask
+#include "QueueTask.h"
+#include "Queue.h"          // samson::stream::Queue
+#include "QueueItem.h"      // samson::stream::QueueItem
+#include "StreamManager.h"  // samson::stream::StreamManager
+#include "Block.h"          // samson::stream::Block
+#include "BlockManager.h"   // samson::stream::BlockManager
 
 #include "BlockList.h"                              // Own interface
 
@@ -136,6 +137,13 @@ namespace samson {
             BlockManager::shared()->check(block);
             
         }
+        
+        void BlockList::remove( BlockList* list )
+        {
+            au::list< Block >::iterator b;
+            for (b=list->blocks.begin(); b != list->blocks.end();b++)
+                remove(*b);
+        }
 
         // get a block with this id ( if included in this list )
         Block* BlockList::getBlock( size_t id )
@@ -204,6 +212,25 @@ namespace samson {
                 if( (*b)->isNecessaryForKVRange( range ) )
                     add( *b );
         }
+        
+        // Copy all blocks from a queue that intersect with a range
+        void BlockList::copyAllBlocksFrom( Queue* queue , KVRange range )
+        {
+            au::list< QueueItem >::iterator item_it , item_it1 , item_it2;
+            for (item_it = queue->items.begin() ; item_it != queue->items.end() ; item_it++)
+            {
+                QueueItem *queueItem = *item_it;
+                
+                KVRange queue_item_range = queueItem->getKVRange();
+
+                // copy content to this block list
+                if( queue_item_range.overlap( range ) )
+                    copyFrom( queueItem->list );
+                
+            }
+            
+        }
+        
         
         void BlockList::extractFrom( BlockList* list , size_t max_size )
         {

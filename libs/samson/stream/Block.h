@@ -17,13 +17,13 @@
 
 #include "engine/MemoryManager.h"
 
-#include "samson/common/coding.h"
+#include "samson/common/coding.h"                   
 
-#include "engine/DiskOperation.h"       // engine::DiskOperation
-#include "engine/Object.h"  // engien::EngineListener
-#include "engine/Object.h"              // engine::Object
+#include "engine/DiskOperation.h"                   // engine::DiskOperation
+#include "engine/Object.h"                          // engien::EngineListener
+#include "engine/Object.h"                          // engine::Object
 
-#include "samson/module/KVSetStruct.h"	// samson::KVSetStruct
+#include "samson/module/KVSetStruct.h"              // samson::KVSetStruct
 
 #include <set>
 
@@ -43,6 +43,9 @@ namespace samson {
             friend class BlockManager;  
             friend class BlockList;
             friend class PopQueueTask;
+            friend class BlockBreakQueueTask;
+            friend class BlockReader;
+            friend class Queue;
             
             size_t id;                      // Identifier of the block ( in this node )
             
@@ -184,6 +187,11 @@ namespace samson {
                 return header->range.overlap( range );
             }
             
+            KVRange getKVRange()
+            {
+                return header->range;
+            }
+            
             // Get information about this block
             void update( BlockInfo &block_info);
             
@@ -255,6 +263,19 @@ namespace samson {
                 
                 return infos.findInMap(r);
             }
+            
+            //Handy function to get a pointer to the KVInfo ( if this buffer is in memory and is not a txt-txt buffer )
+            KVInfo* getKVInfo()
+            {
+                KVInfo *info = (KVInfo *) ( buffer->getData() + sizeof( KVHeader ) );
+                return info;
+            }
+            
+            KVFormat getKVFormat()
+            {
+                return header->getKVFormat();
+            }
+            
             
         private:
             

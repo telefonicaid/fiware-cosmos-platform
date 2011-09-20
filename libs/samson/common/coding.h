@@ -343,6 +343,7 @@ namespace samson {
             hg_end = _hg_end;
         }
         
+        /*
         void setFrom( KVInfo *info )
         {
             
@@ -356,21 +357,21 @@ namespace samson {
                 hg_end--;
             
             // Spetial case where no content is present
-            if( ( hg_begin == KVFILE_NUM_HASHGROUPS ) && (hg_end == 0) )
+            if( ( hg_begin == (KVFILE_NUM_HASHGROUPS-1) ) && (hg_end == 0) )
             {
                 // No content
-                hg_begin = -1;
-                hg_end = -1;
+                hg_begin = 0;
+                hg_end = KVRange;
             }
             
             hg_end++;   // This should indicate the first non-included...
             
             if( hg_end < hg_begin )
             {
-                LM_X(1, ("Internal error seting limits of the hash groups"));
+                LM_X(1, ("Internal error seting limits of the hash groups %s" , str().c_str() ));
             }
-            
         }        
+         */
         
         bool isValid()
         {

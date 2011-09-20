@@ -48,7 +48,8 @@ namespace samson {
         class Block;
         class BlockList;
         class WorkerCommand;
-            
+        class BlockBreak;
+
         
         class StreamManager : public ::engine::Object 
         {
@@ -75,12 +76,13 @@ namespace samson {
 
             // Manager of the current "stream-tasks" running on this worker
             au::map< size_t , WorkerCommand > workerCommands; 
+
+            // Map of how a particular block is divided in smaller blocks
+            au::map< size_t , BlockBreak > blockBreaks;
             
             // Internal counter to WorkerTasks
             size_t worker_task_id;
 
-            // Simple data manager to monitorice blocks and queues
-            samson::SimpleDataManager *dataManager; 
             
         public:
             
@@ -121,6 +123,7 @@ namespace samson {
         private:
             
             Queue* getQueue( std::string name );
+            BlockBreak* getBlockBreak( size_t block_id );
             
             void reviewStreamOperations();
             void reviewStreamOperation(const network::StreamOperation& operation);

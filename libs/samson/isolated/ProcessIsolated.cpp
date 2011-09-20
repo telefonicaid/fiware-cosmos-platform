@@ -227,7 +227,8 @@ namespace samson
 
                     
                     // Set the hash-group limits of the header
-                    header->range.setFrom( info );
+                    //header->range.setFrom( info );
+                    header->range = KVRange( 0 , KVFILE_NUM_HASHGROUPS );
 
                     
                     // Process the output buffer

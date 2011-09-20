@@ -6,6 +6,7 @@ SET (HEADERS
     Queue.h
     QueueItem.h
     StreamManager.h
+	BlockBreak.h
 	QueueTaskBase.h
     QueueTask.h
 	SystemQueueTask.h
@@ -30,6 +31,7 @@ SET (SOURCES
     QueueItem.cpp
     BlockList.cpp
     StreamManager.cpp
+	BlockBreak.cpp
 	QueueTaskBase.cpp
     QueueTask.cpp
 	SystemQueueTask.cpp

@@ -55,7 +55,7 @@ namespace samson {
             
             size_t size;                    // Size of the buffer ( Not that buffer is NULL if content is not on memory )
 
-            std::set< BlockList* > lists;   // List where this block is contained ( for debugging )
+            std::set< BlockList* > lists;   // List where this block is contained
             
             typedef enum
             {
@@ -67,8 +67,6 @@ namespace samson {
             } BlockState;
 
             BlockState state;
-
-            au::simple_map< KVRange , KVInfo > infos; // Map containing sevel divisions of information
             
         private:
             
@@ -112,169 +110,45 @@ namespace samson {
             void notify( engine::Notification* notification );
             
         public:
-            
-            bool isOnDisk()
-            {
-                return ( state == on_disk );
-            }
-            
-            bool isWriting()
-            {
-                return ( state == writing );
-            }
-            
-            bool isReading()
-            {
-                return ( state == reading );
-            }
-            
-            bool isOnMemory()
-            {
-                return (state == on_memory);
-            }
-            
-            bool isReady()
-            {
-                return (state == ready);
-            }
-            
-            bool isContentOnMemory()
-            {
-                return (  (state == ready ) || (state == on_memory) || ( state == writing ));
-            }
-            
-            bool isContentOnDisk()
-            {
-                return (  (state == ready ) || (state == on_disk) || ( state == reading ));
-            }
-            
+
+            // Checking each state
+            bool isOnDisk();
+            bool isWriting();
+            bool isReading();
+            bool isOnMemory();
+            bool isReady();
+
+            // Checking if content is on memory and/or on disk
+            bool isContentOnMemory();
+            bool isContentOnDisk();
+
+            // Checking if content is locked ( contained in a lock - block list )
             bool isLockedInMemory();
-            
-            size_t getSize()
-            {
-                return size;
-            }
-            
-            char *getData()
-            {
-                if( ! isContentOnMemory() )
-                    LM_X(1,("Not possible to get data for a block that is not in memory"));
-                return buffer->getData();
-            }
-            
-            
-            size_t getSizeOnMemory()
-            {
-                if( isContentOnMemory() )
-                    return size;
-                else
-                    return 0;
-            }
-            
-            size_t getSizeOnDisk()
-            {
-                if( isContentOnDisk() )
-                    return size;
-                else
-                    return 0;
-            }
-            
-            bool isNecessaryForKVRange( KVRange range )
-            {
-                if( !header )
-                    return true;
-                
-                return header->range.overlap( range );
-            }
-            
-            KVRange getKVRange()
-            {
-                return header->range;
-            }
+
+            // Getting information
+            size_t getSize();
+            size_t getSizeOnMemory();
+            size_t getSizeOnDisk();
+            KVFormat getKVFormat();
+            const char* getState();
+            size_t getId();
+ 
+            // Working with KVRanges
+            KVRange getKVRange();
+            bool isNecessaryForKVRange( KVRange range );
             
             // Get information about this block
-            void update( BlockInfo &block_info);
+            void update( BlockInfo &block_info );
             
             // Debug string    
             std::string str();
 
+            // Xmlk version of the info
             void getInfo( std::ostringstream& output);
             
-            const char* getState();
-            
-            size_t getId()
-            {
-                return id;
-            }
-            
-            
-            
-            // Info for KVRanges
-            
-            void computeKVInfoForRange( KVRange r )
-            {
-                //LM_M(("Computing info for range..%s" , r.str().c_str() ));
-                
-                if( !r.isValid() )
-                {
-                    LM_W(("Not possible to compute info for range %s sice the range is not valid" , r.str().c_str()));
-                    return;
-                }
-                
-                if( header->isTxt() )
-                {
-                    //LM_W(("Not possible to compute info for range sice the block is a txt block"));
-                    // A warning is not necessary since it is part of the protocol for QueueItem
-                    return;
-                }
-                
-                // See if already comptued
-                if( infos.isInMap(r) )
-                    return;
-                
-                if( !isContentOnMemory() )
-                {
-                    LM_W(("Not possible to compute info for range %s sice the block is not in memory" , r.str().c_str()));
-                    return;
-                }
-                
-                KVInfo *info = (KVInfo *) ( buffer->getData() + sizeof( KVHeader ) );
-
-                KVInfo total;
-                for ( int i = r.hg_begin ; i < r.hg_end ; i++ )
-                    total.append( info[i] );
-
-                
-                infos.insertInMap ( r , total );
-                
-                //LM_M(("Finish Computing info for range.."));
-                
-            }
-            
-            bool isKVInfoForRange( KVRange r )
-            {
-                return infos.isInMap(r);
-            }
-            
-            KVInfo getKVInfoForRange( KVRange r )
-            {
-                if( !infos.isInMap(r) )
-                    LM_X(1,("Internal error"));
-                
-                return infos.findInMap(r);
-            }
-            
-            //Handy function to get a pointer to the KVInfo ( if this buffer is in memory and is not a txt-txt buffer )
-            KVInfo* getKVInfo()
-            {
-                KVInfo *info = (KVInfo *) ( buffer->getData() + sizeof( KVHeader ) );
-                return info;
-            }
-            
-            KVFormat getKVFormat()
-            {
-                return header->getKVFormat();
-            }
+            // Accessing information
+            KVInfo* getKVInfo();
+            char *getData();
             
             
         private:

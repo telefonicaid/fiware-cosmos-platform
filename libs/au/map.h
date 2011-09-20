@@ -121,6 +121,13 @@ namespace au {
 			}
 		}
 		
+        void removeInMap( std::set<K> &keys )
+        {
+            typename std::set<K>::iterator iter;
+            for ( iter = keys.begin() ; iter != keys.end() ; iter++ )
+                removeInMap(*iter);
+            
+        }
         
         // Remove all elements that satify a bool function
         // Returns the number of removed elements

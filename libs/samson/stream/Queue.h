@@ -35,11 +35,8 @@ namespace samson {
             // Name of this queue
             std::string name;
 
-            // List of state items in this state
-            au::list< QueueItem > items;
-            
-            // List of blokcs pending to be broken into mini-blocks for this queue
-            BlockList *pending;
+            // List of blokcs contained in this queue
+            BlockList *list;
             
             // Environment properties of this queue
             au::Environment environment;
@@ -53,7 +50,7 @@ namespace samson {
         public:
             
             // Constructor and destructor
-            Queue( std::string _name , StreamManager* _streamManager ,  int num_items );
+            Queue( std::string _name , StreamManager* _streamManager );
             ~Queue();
 
             // Push content form a block list ( do not remove original list )
@@ -71,11 +68,11 @@ namespace samson {
             // Copy content
             void copyFrom( Queue* _queue);
             
-            // Clear and distribute in a number of divisions
-            void clearAndDivide( int num_divisions );
-            
             // Set a property
             void setProperty( std::string property , std::string value );
+            
+            // Copy to a particular block list limiting in range ( broken version is used if ready )
+            void copyTo( BlockList * _list , KVRange range );
             
         private:
             

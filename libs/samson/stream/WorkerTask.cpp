@@ -262,40 +262,34 @@ namespace samson {
                         
                         // Get the input queue
                         std::string input_queue_name = operation->input_queues(0);
-                        Queue *q = streamManager->getQueue( input_queue_name );
+                        Queue *queue = streamManager->getQueue( input_queue_name );
                         
-                        // Iterate thougth all the queue-items
-                        au::list< QueueItem >::iterator item;
-                        for ( item = q->items.begin() ; item != q->items.end() ; item++ )
+                        
+                        // Get a copy of all the blocks included in this queue
+                        BlockList localBlockList("local_block_list_planning_operation");
+                        localBlockList.copyFrom( queue->list );
+                        
+                        if( clear_inputs )
+                            queue->list->clearBlockList();
+                        
+                        while( !localBlockList.isEmpty() )
                         {
-                            QueueItem *queueItem = *item;
+                            // Create the map operation
+                            size_t id = streamManager->queueTaskManager.getNewId();
+                            ParserQueueTask *tmp = new ParserQueueTask( id , *operation ); 
+                            tmp->addOutputsForOperation(op);
                             
-                            // Get a copy of all the blocks included in this queue
-                            BlockList localBlockList("local_block_list_planning_operation");
-                            localBlockList.copyFrom( queueItem->list );
+                            // Extract the rigth blocks from queue
+                            tmp->getBlockList("input_0")->extractFrom( &localBlockList , max_size_per_operation );
+                            tmp->setWorkingSize();
                             
-                            if( clear_inputs )
-                                queueItem->list->clearBlockList();
+                            // Add me as listener and increase the number of operations to run
+                            tmp->addListenerId( getEngineId() );
+                            num_pending_processes++;
                             
-                            while( !localBlockList.isEmpty() )
-                            {
-                                // Create the map operation
-                                size_t id = streamManager->queueTaskManager.getNewId();
-                                ParserQueueTask *tmp = new ParserQueueTask( id , *operation ); 
-                                tmp->addOutputsForOperation(op);
-                                
-                                // Extract the rigth blocks from queue
-                                tmp->getBlockList("input_0")->extractFrom( &localBlockList , max_size_per_operation );
-                                tmp->setWorkingSize();
-
-                                // Add me as listener and increase the number of operations to run
-                                tmp->addListenerId( getEngineId() );
-                                num_pending_processes++;
-                                
-                                // Schedule tmp task into QueueTaskManager
-                                streamManager->queueTaskManager.add( tmp );
-                                
-                            }
+                            // Schedule tmp task into QueueTaskManager
+                            streamManager->queueTaskManager.add( tmp );
+                            
                         }
                         
                         delete operation;
@@ -313,36 +307,31 @@ namespace samson {
                         
                         // Get the input queue
                         std::string input_queue_name = operation->input_queues(0);
-                        Queue *q = streamManager->getQueue( input_queue_name );
+                        Queue *queue = streamManager->getQueue( input_queue_name );
                         
                         // Iterate thougth all the queue-items
-                        au::list< QueueItem >::iterator item;
-                        for ( item = q->items.begin() ; item != q->items.end() ; item++ )
+                        
+                        // Get a copy of all the blocks included in this queue
+                        BlockList localBlockList("local_block_list_planning_operation");
+                        localBlockList.copyFrom( queue->list );
+                        
+                        if( clear_inputs )
+                            queue->list->clearBlockList();
+                        
+                        while( !localBlockList.isEmpty() )
                         {
-                            QueueItem *queueItem = *item;
+                            // Create the map operation
+                            size_t id = streamManager->queueTaskManager.getNewId();
+                            ParserOutQueueTask *tmp = new ParserOutQueueTask( id , *operation , KVRange(0, KVFILE_NUM_HASHGROUPS) ); 
+                            tmp->addOutputsForOperation(op);
                             
-                            // Get a copy of all the blocks included in this queue
-                            BlockList localBlockList("local_block_list_planning_operation");
-                            localBlockList.copyFrom( queueItem->list );
+                            // Extract the rigth blocks from queue
+                            tmp->getBlockList("input_0")->extractFrom( &localBlockList , max_size_per_operation );
+                            tmp->setWorkingSize();
                             
-                            if( clear_inputs )
-                                queueItem->list->clearBlockList();
+                            // Schedule tmp task into QueueTaskManager
+                            streamManager->queueTaskManager.add( tmp );
                             
-                            while( !localBlockList.isEmpty() )
-                            {
-                                // Create the map operation
-                                size_t id = streamManager->queueTaskManager.getNewId();
-                                ParserOutQueueTask *tmp = new ParserOutQueueTask( id , *operation , (*item)->range ); 
-                                tmp->addOutputsForOperation(op);
-                                
-                                // Extract the rigth blocks from queue
-                                tmp->getBlockList("input_0")->extractFrom( &localBlockList , max_size_per_operation );
-                                tmp->setWorkingSize();
-                                
-                                // Schedule tmp task into QueueTaskManager
-                                streamManager->queueTaskManager.add( tmp );
-                                
-                            }
                         }
                         
                         delete operation;
@@ -360,38 +349,32 @@ namespace samson {
                         
                         // Get the input queue
                         std::string input_queue_name = operation->input_queues(0);
-                        Queue *q = streamManager->getQueue( input_queue_name );
+                        Queue *queue = streamManager->getQueue( input_queue_name );
                         
-                        // Iterate thougth all the queue-items
-                        au::list< QueueItem >::iterator item;
-                        for ( item = q->items.begin() ; item != q->items.end() ; item++ )
+                        
+                        // Get a copy of all the blocks included in this queue
+                        BlockList localBlockList("local_block_list_planning_operation");
+                        localBlockList.copyFrom( queue->list );
+                        
+                        if( clear_inputs )
+                            queue->list->clearBlockList();
+                        
+                        while( !localBlockList.isEmpty() )
                         {
-                            QueueItem *queueItem = *item;
+                            // Create the map operation
+                            MapQueueTask *tmp = new MapQueueTask( streamManager->queueTaskManager.getNewId() , *operation , KVRange(0,KVFILE_NUM_HASHGROUPS) ); 
+                            tmp->addOutputsForOperation(op);
                             
-                            // Get a copy of all the blocks included in this queue
-                            BlockList localBlockList("local_block_list_planning_operation");
-                            localBlockList.copyFrom( queueItem->list );
+                            // Extract the rigth blocks from queue
+                            tmp->getBlockList("input_0")->extractFrom( &localBlockList , max_size_per_operation );
+                            tmp->setWorkingSize();
                             
-                            if( clear_inputs )
-                                queueItem->list->clearBlockList();
+                            // Add me as listener and increase the number of operations to run
+                            tmp->addListenerId( getEngineId() );
+                            num_pending_processes++;
                             
-                            while( !localBlockList.isEmpty() )
-                            {
-                                // Create the map operation
-                                MapQueueTask *tmp = new MapQueueTask( streamManager->queueTaskManager.getNewId() , *operation , (*item)->range ); 
-                                tmp->addOutputsForOperation(op);
-                                
-                                // Extract the rigth blocks from queue
-                                tmp->getBlockList("input_0")->extractFrom( &localBlockList , max_size_per_operation );
-                                tmp->setWorkingSize();
-                                
-                                // Add me as listener and increase the number of operations to run
-                                tmp->addListenerId( getEngineId() );
-                                num_pending_processes++;
-                                
-                                // Schedule tmp task into QueueTaskManager
-                                streamManager->queueTaskManager.add( tmp );
-                            }
+                            // Schedule tmp task into QueueTaskManager
+                            streamManager->queueTaskManager.add( tmp );
                         }
                         delete operation;
                         
@@ -410,89 +393,49 @@ namespace samson {
                         
                         // Get the input queues
                         std::vector< Queue* > queues;
+                        BlockInfo block_info;
                         for (int i = 0 ; i < _operation->getNumInputs() ; i++ )
                         {
                             std::string input_queue_name = operation->input_queues(i);
-                            queues.push_back( streamManager->getQueue( input_queue_name ) );
+                            Queue*queue = streamManager->getQueue( input_queue_name );
+                            queue->update( block_info );
+                            queues.push_back( queue  );
                         }
                         
-                        // Decide ranges used in the operations ( mix of ranges )
-                        std::vector<int> limits;
-                        for ( int q = 0 ; q < (int) queues.size() ; q++ )
-                        {
-                            Queue *queue = queues[q];
-                            
-                            // For each QueueItem, we create a set of reduce operations...
-                            au::list< QueueItem >::iterator item;
-                            for ( item = queue->items.begin() ; item != queue->items.end() ; item++)
-                            {
-                                KVRange range = (*item)->getKVRange();
-                                if ( range.hg_begin > 0 )
-                                    limits.push_back( range.hg_begin );
-                                if ( range.hg_end < KVFILE_NUM_HASHGROUPS )
-                                    limits.push_back( range.hg_end );
-                            }
-                        }
-                        
-                        // Unique and sort the limits vector
-                        
-                        std::sort( limits.begin() , limits.end() );
-                        
-                        std::vector<int>::iterator last = std::unique( limits.begin() , limits.end() );
-                        // Remove the rest of elements
-                        limits.erase( last , limits.end() );
-                        
-                        
-                        // Create all necessary hash-groups
-                        std::vector< KVRange > ranges;
-                        int hg_begin = 0;
-                        for ( size_t i = 0 ; i < limits.size() ; i++ )
-                        {
-                            ranges.push_back( KVRange( hg_begin , limits[i] ) );
-                            hg_begin = limits[i];
-                        }
-                        ranges.push_back( KVRange( hg_begin , KVFILE_NUM_HASHGROUPS ) );
-
+                        // Decide ranges used in the operations depending on the total size
+                        LM_TODO(("Compute this as a function of size"));
+                        int num_divisions = std::min( 16 , SamsonSetup::shared()->getInt("general.num_processess") ); 
                         
                         // For each range, create a set of reduce operations...
-                        for ( int r = 0 ; r < (int) ranges.size() ; r++ )
+                        for ( int r = 0 ; r < num_divisions ; r++ )
                         {
-                            KVRange  range = ranges[r];
+                            KVRange  range = rangeForDivision( r , num_divisions );
                             
-                            // Decide the number of operations
-                            int num_operations = SamsonSetup::shared()->getInt("general.num_processess");
+                            //Create the reduce operation
+                            ReduceQueueTask *tmp = new ReduceQueueTask( streamManager->queueTaskManager.getNewId() , *operation , range ); 
+                            tmp->addOutputsForOperation(op);
                             
-                            for ( int o = 0 ; o < num_operations ; o++)
+                            // Take data from each input
+                            for (int q = 0 ; q < (int) queues.size() ; q++ )
                             {
-                                KVRange sub_range = range.subRange( o ,  num_operations );
-                            
-                                //Create the reduce operation
-                                ReduceQueueTask *tmp = new ReduceQueueTask( streamManager->queueTaskManager.getNewId() , *operation , sub_range ); 
-                                tmp->addOutputsForOperation(op);
-                                
-                                // Take data from each input
-                                for (int q = 0 ; q < (int) queues.size() ; q++ )
-                                {
-                                    BlockList* list = tmp->getBlockList( au::str("input_%d" , q ) ); 
-                                    list->copyAllBlocksFrom( queues[q] , sub_range );
-                                }
-                            
-                                // Set the working size to get statictics at ProcessManager
-                                tmp->setWorkingSize();
-
-                                
-                                // Add me as listener and increase the number of operations to run
-                                tmp->addListenerId( getEngineId() );
-                                num_pending_processes++;
-                                
-                                // Schedule tmp task into QueueTaskManager
-                                streamManager->queueTaskManager.add( tmp );
-                                
+                                BlockList* list = tmp->getBlockList( au::str("input_%d" , q ) ); 
+                                queues[q]->copyTo( list , range );
                             }
-
-                        }
-                                             
                             
+                            // Set the working size to get statictics at ProcessManager
+                            tmp->setWorkingSize();
+                            
+                            
+                            // Add me as listener and increase the number of operations to run
+                            tmp->addListenerId( getEngineId() );
+                            num_pending_processes++;
+                            
+                            // Schedule tmp task into QueueTaskManager
+                            streamManager->queueTaskManager.add( tmp );
+                            
+                        }
+                        
+                        
                         delete operation;
                         if( num_pending_processes == 0 )
                             finishWorkerTask();

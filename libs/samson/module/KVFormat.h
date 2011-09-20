@@ -122,6 +122,11 @@ namespace samson {
             output << "</format>\n";
         }
         
+        bool isTxt()
+        {
+            return isEqual( KVFormat("txt","txt") );
+        }
+
         
         bool isGenericKVFormat()
         {

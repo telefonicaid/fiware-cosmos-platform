@@ -471,16 +471,6 @@ namespace samson
 			return id;
 		}
 		
-		if ( mainCommand == "load" )
-		{
-			std::ostringstream output;
-			output << getListOfLoads();
-			writeOnConsole(output.str());
-			
-			return 0;
-			
-		}
-        
 		if ( mainCommand == "ps" )
 		{
             

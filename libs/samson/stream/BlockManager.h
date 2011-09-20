@@ -120,10 +120,10 @@ namespace samson {
         public:
             
             // Get a particular block ( only for debugging )
-            Block* getBlock( size_t id )
+            Block* getBlock( size_t _id )
             {
                 for ( std::list<Block*>::iterator i = blocks.begin() ; i != blocks.end() ; i++ )
-                    if( (*i)->id == id )
+                    if( (*i)->id == _id )
                         return *i;
                 return NULL;
             }

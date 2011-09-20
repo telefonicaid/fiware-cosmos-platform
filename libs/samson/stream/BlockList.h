@@ -129,9 +129,6 @@ namespace samson {
             //void copyFrom( BlockMatrix* matrix , int channel );
             void copyFrom( BlockList* list );
             void copyFrom( BlockList* list , KVRange range );
-
-            // Copy all blocks from a queue that intersect with a range
-            void copyAllBlocksFrom( Queue* queue , KVRange range );
             
             // Extract blocks of data
             void extractFrom( BlockList* list , size_t max_size );

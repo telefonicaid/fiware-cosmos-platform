@@ -10,11 +10,10 @@
 #include "samson/module/ModulesManager.h"           // samson::ModulesManager
 
 
+#include "BlockBreak.h"                             // samson::stream::BlockBreak
 #include "Block.h"                                  // samson::stream::Block
 #include "BlockList.h"                              // samson::stream::BlockList
-
 #include "Queue.h"                                  // samson::stream::Queue
-
 #include "StreamManager.h"                          // samson::stream::StreamManager
 
 #include "BlockBreakQueueTask.h"                    // Own interface
@@ -24,22 +23,20 @@ namespace samson {
         
         
 #pragma mark BlockBreakQueueTask        
+
         
-        BlockBreakQueueTask::BlockBreakQueueTask( size_t _id , std::string _queue ) : SystemQueueTask( _id )
+        BlockBreakQueueTask::BlockBreakQueueTask( size_t _id , Block * block , int _num_divisions  ) : SystemQueueTask( _id )
         {
-            queue = _queue;
+            block_id = block->getId();
+            num_divisions = _num_divisions;
+            getBlockList("input_0")->add( block );
         }
         
-        void BlockBreakQueueTask::addKVRange( KVRange range )
-        {
-            ranges.push_back( range );
-        }
         
         void BlockBreakQueueTask::run()
         {
             BlockList *list = getBlockList("input_0");
             
-            LM_M(("Running block break with %lu blocks and %lu ranges" , list->getNumBlocks() , ranges.size()));
             
             // structure used to point to all the blocks used in this operation
             num_blocks  = list->blocks.size();
@@ -52,10 +49,10 @@ namespace samson {
                 files[pos++].init( (*b)->buffer->getData() );
             
             
-            for (int r = 0 ; r < (int) ranges.size() ; r++ )
+            for (int r = 0 ; r < num_divisions ; r++ )
             {
                 // Range covered in this iteration
-                KVRange range = ranges[r];
+                KVRange range = rangeForDivision( r , num_divisions );
                 
                 KVInfo total_info;
                 total_info.clear();
@@ -97,6 +94,9 @@ namespace samson {
             for (int f = file_begin ; f < file_end ; f++ )
                 info.append( selectRange( files[f].info , range ) );
             
+            if ( info.size == 0 )
+                return;
+            
             // total size of the new block
             size_t size = sizeof( KVHeader ) + sizeof(KVInfo)*KVFILE_NUM_HASHGROUPS + info.size;
             
@@ -126,7 +126,8 @@ namespace samson {
             }
 
             // Recompute range...
-            file.header->range.setFrom( file.info );
+            //file.header->range.setFrom( file.info );
+            file.header->range = range;
             
             
             // Collect the output buffer
@@ -136,22 +137,18 @@ namespace samson {
         
         void BlockBreakQueueTask::finalize( StreamManager* streamManager )
         {
+            
+            
+            // Create the list with the outputs
             BlockList *tmp = new BlockList("tmp_block_break_outputs");
             for (size_t i = 0 ; i < outputBuffers.size() ; i++ )
                 tmp->createBlock( outputBuffers[i] );
             
-            Queue* _queue = streamManager->getQueue( queue );
-
-            // Remove the blocks used as inputs for this operation
-            _queue->pending->remove( getBlockList("input_0") );
-                                    
-            // Puhs new blocks obtained in this operation
-            _queue->push( tmp );
-
+            BlockBreak *blockBreak = streamManager->blockBreaks.findOrCreate( block_id , block_id );
+            blockBreak->update( num_divisions, tmp );
+            
             // Detele the temporal list used here
             delete tmp;
-            
-            LM_M(("Finalize method of the block-break operation %lu output buffers" , outputBuffers.size() ));
         }
         
         

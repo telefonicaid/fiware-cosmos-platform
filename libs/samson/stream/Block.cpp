@@ -349,6 +349,102 @@ namespace samson {
             return true;
         }        
         
+        bool Block::isOnDisk()
+        {
+            return ( state == on_disk );
+        }
+        
+        bool Block::isWriting()
+        {
+            return ( state == writing );
+        }
+        
+        bool Block::isReading()
+        {
+            return ( state == reading );
+        }
+        
+        bool Block::isOnMemory()
+        {
+            return (state == on_memory);
+        }
+        
+        bool Block::isReady()
+        {
+            return (state == ready);
+        }
+        
+        bool Block::isContentOnMemory()
+        {
+            return (  (state == ready ) || (state == on_memory) || ( state == writing ));
+        }
+        
+        bool Block::isContentOnDisk()
+        {
+            return (  (state == ready ) || (state == on_disk) || ( state == reading ));
+        }
+        
+        
+        size_t Block::getSize()
+        {
+            return size;
+        }
+        
+        char *Block::getData()
+        {
+            if( ! isContentOnMemory() )
+                LM_X(1,("Not possible to get data for a block that is not in memory"));
+            return buffer->getData();
+        }
+        
+        
+        size_t Block::getSizeOnMemory()
+        {
+            if( isContentOnMemory() )
+                return size;
+            else
+                return 0;
+        }
+        
+        size_t Block::getSizeOnDisk()
+        {
+            if( isContentOnDisk() )
+                return size;
+            else
+                return 0;
+        }
+        
+        bool Block::isNecessaryForKVRange( KVRange range )
+        {
+            if( !header )
+                return true;
+            
+            return header->range.overlap( range );
+        }
+        
+        KVRange Block::getKVRange()
+        {
+            return header->range;
+        }
+        
+        size_t Block::getId()
+        {
+            return id;
+        }
+        
+        KVInfo* Block::getKVInfo()
+        {
+            KVInfo *info = (KVInfo *) ( buffer->getData() + sizeof( KVHeader ) );
+            return info;
+        }
+        
+        KVFormat Block::getKVFormat()
+        {
+            return header->getKVFormat();
+        }
+
+
+
 
     }
 }

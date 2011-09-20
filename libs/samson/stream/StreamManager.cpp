@@ -17,8 +17,10 @@
 
 #include "samson/worker/SamsonWorker.h"
 
+#include "samson/stream/BlockBreakQueueTask.h"        // samson::stream::BlockBreakQueueTask
+#include "samson/stream/BlockBreak.h"           // samson::stream::BlockBreak
 #include "samson/stream/BlockManager.h"         // samson::BlockManager
-#include "samson/stream/PopQueue.h"                 // stream::PopQueue
+#include "samson/stream/PopQueue.h"             // stream::PopQueue
 #include "samson/stream/QueueTask.h"
 #include "samson/stream/Queue.h"
 #include "samson/stream/QueueItem.h"
@@ -58,6 +60,12 @@ namespace samson {
             
         }
 
+        
+        int get_num_divisions( size_t size )
+        {
+            return 2;   // Just for testing...
+        }
+        
         void StreamManager::notify( engine::Notification* notification )
         {
             if ( notification->isName(notification_review_stream_manager) )
@@ -67,6 +75,64 @@ namespace samson {
                 
                 // Save state to disk just in case it crases
                 saveStateToDisk();
+                
+                // Review old BlockBreaks not used any more
+                au::map< size_t , BlockBreak >::iterator it_block_break; 
+                std::set< size_t > block_id_to_remove;
+                for ( it_block_break = blockBreaks.begin() ; it_block_break != blockBreaks.end() ; it_block_break ++ )
+                    if ( BlockManager::shared()->getBlock( it_block_break->first ) == NULL )
+                        block_id_to_remove.insert( it_block_break->first );
+                blockBreaks.removeInMap( block_id_to_remove );
+                
+                
+                // Review if a particular block needs to be divided
+                au::map< std::string , Queue >::iterator it_queue;
+                for (it_queue = queues.begin() ;  it_queue != queues.end() ; it_queue++ )
+                {
+                    Queue* queue = it_queue->second;
+                    
+                    if( queue->format.isTxt() )
+                        continue;
+                    
+                    BlockInfo block_info;
+                    queue->update( block_info );
+
+                    if( block_info.num_blocks == 0 )
+                        continue;
+                    
+                    int level_division = get_num_divisions( block_info.size );
+                    
+                    if( level_division > 1 )
+                    {
+                        // Run a block_division task if necessary for each block
+                        au::list< Block >::iterator it_block;
+                        for( it_block = queue->list->blocks.begin() ; it_block != queue->list->blocks.end() ;  it_block++)
+                        {
+                            Block* block = *it_block;
+                            size_t block_id = block->getId();
+                            BlockBreak *blockBreak = blockBreaks.findOrCreate( block_id , block_id );
+                            
+                            if( blockBreak->getMaxDivision() < level_division )
+                            {
+                                // Set this level of divisions
+                                blockBreak->addNumDivisions( level_division );
+                                
+                                // Create a task to divide this block
+                                size_t id = queueTaskManager.getNewId();
+                                
+                                BlockBreakQueueTask *tmp = new BlockBreakQueueTask( id , block , level_division ); 
+                                
+                                queueTaskManager.add( tmp );
+                                
+                                
+                            }
+                            
+                        }
+                        
+                        
+                    }
+                    
+                }
                 
                 return;
             }
@@ -151,13 +217,19 @@ namespace samson {
             Queue *queue = queues.findInMap( queue_name );
             if (! queue )
             {
-                queue = new Queue( queue_name , this , 1 );
+                queue = new Queue( queue_name , this );
                 queues.insertInMap( queue_name, queue );
             }
             
             return queue;
             
         }
+        
+        BlockBreak* StreamManager::getBlockBreak( size_t block_id )
+        {
+            return blockBreaks.findOrCreate( block_id , block_id );
+        }
+        
         
         void StreamManager::notifyFinishTask( QueueTask *task )
         {
@@ -188,29 +260,23 @@ namespace samson {
             {
                 
                 std::string queue_name = pq.queue();
-                Queue* q = getQueue( queue_name );
-
-                // Iterate thougth all the queue-items
-                au::list< QueueItem >::iterator item;
-                for ( item = q->items.begin() ; item != q->items.end() ; item++ )
+                Queue* queue = getQueue( queue_name );
+                
+                // Create a pop operation for each element in the blocks
+                au::list< Block >::iterator b;
+                for ( b = queue->list->blocks.begin() ; b != queue->list->blocks.end() ; b++ )
                 {
+                    size_t id = queueTaskManager.getNewId();
                     
-                    // Create a pop operation for each element in the blocks
-                    au::list< Block >::iterator b;
-                    for ( b = (*item)->list->blocks.begin() ; b != (*item)->list->blocks.end() ; b++ )
-                    {
-                        size_t id = queueTaskManager.getNewId();
-                        
-                        // Add this task id to wait until all of them are finished
-                        popQueue->addTask( id );
-                        
-                        PopQueueTask *tmp = new PopQueueTask( id , popQueue , (*item)->range ); 
-                        BlockList *list = tmp->getBlockList("input_0");
-                        list->add( *b );
-                        
-                        // Schedule tmp task into QueueTaskManager
-                        queueTaskManager.add( tmp );
-                    }
+                    // Add this task id to wait until all of them are finished
+                    popQueue->addTask( id );
+                    
+                    PopQueueTask *tmp = new PopQueueTask( id , popQueue , KVRange(0,KVFILE_NUM_HASHGROUPS) ); 
+                    BlockList *list = tmp->getBlockList("input_0");
+                    list->add( *b );
+                    
+                    // Schedule tmp task into QueueTaskManager
+                    queueTaskManager.add( tmp );
                 }
             }
             popQueue->check();
@@ -221,20 +287,18 @@ namespace samson {
         void StreamManager::getInfo( std::ostringstream& output)
         {
             output << "<stream_manager>\n";
-            
-            output << "<queues>\n";
 
-            au::map< std::string , Queue >::iterator q;
-            for ( q = queues.begin() ; q != queues.end() ; q++ )
-                q->second->getInfo(output);
+            // Information about queues
+            au::xml_iterate_map(output, "queues", queues);
 
-            output << "</queues>\n";
-            
             // Tasks
             output << "<queue_tasks>\n";
             queueTaskManager.getInfo( output );
             output << "</queue_tasks>\n";
 
+            // Information about block_breaks
+            au::xml_iterate_map(output, "block_breaks", blockBreaks );
+            
             // WorkerCommands
             au::xml_iterate_map(output, "worker_commands", workerCommands );
             
@@ -411,37 +475,15 @@ namespace samson {
             for ( it_queue = queues.begin() ; it_queue != queues.end() ; it_queue++)
             {
                 Queue *queue = it_queue->second;
-                output << "# Queue " << queue->name << " ( " << queue->items.size() << " items )\n";
-                
-                // Iterate thougth all the queue-items
-                au::list< QueueItem >::iterator it_item;
-                for ( it_item = queue->items.begin() ; it_item != queue->items.end() ; it_item++ )
-                {
-                    QueueItem *item = *it_item;
-                    output << "queue_item " << queue->name << " " << item->range.hg_begin << " " << item->range.hg_end << "\n";
-                }
+                output << "# Queue " << queue->name << "\n";
                 
                 // Properties of queue
                 output << "queue_properties " << queue->name << " " << queue->environment.saveToString() << "\n";
                 
                 // Insert all the blocks in the queue
-                for ( it_item = queue->items.begin() ; it_item != queue->items.end() ; it_item++ )
-                {
-                    QueueItem *item = *it_item;
-                    
-                    // Iterate thorugh all the blocks
-                    au::list< Block >::iterator b;
-                    for ( b = item->list->blocks.begin() ; b != item->list->blocks.end() ; b++ )
-                        output << "queue_push " << queue->name << " " << (*b)->getId() << "\n"; 
-                    
-                }
-                
-                // Insert also blocks in queue->pending;
                 au::list< Block >::iterator b;
-                for ( b = queue->pending->blocks.begin() ; b != queue->pending->blocks.end() ; b++ )
-                {
+                for ( b = queue->list->blocks.begin() ; b != queue->list->blocks.end() ; b++ )
                     output << "queue_push " << queue->name << " " << (*b)->getId() << "\n"; 
-                }
                 
                 
             }
@@ -500,31 +542,8 @@ namespace samson {
                         
                         std::string main_command = commandLine.get_argument(0);
                         
-                        if ( main_command == "queue_item" )
-                        {
-                            // Format: queue_item name range_from range_to block-ids
-                            if ( commandLine.get_num_arguments() < 4 )
-                                continue;
-                            
-                            std::string queue_name = commandLine.get_argument(1);
-                            int hg_begin = atoi( commandLine.get_argument(2).c_str() );
-                            int hg_end = atoi( commandLine.get_argument(3).c_str() );
-                            
-                            // Get this queue ( if necessary, create without any queue-item )
-                            Queue *queue = queues.findInMap( queue_name );
-                            if (! queue )
-                            {
-                                queue = new Queue( queue_name , this , 0 ); // Note 0 queueu-items
-                                queues.insertInMap( queue_name, queue );
-                            }
-                            
-                            // Create queue-item
-                            KVRange range( hg_begin , hg_end );
-                            QueueItem* item = new QueueItem( queue  , range );
-                            queue->items.push_back( item );
-                            
-                        }
-                        else if ( main_command == "queue_push" )
+
+                        if ( main_command == "queue_push" )
                         {
                             // Format: queue_item name range_from range_to block-ids
                             if ( commandLine.get_num_arguments() < 3 )
@@ -534,16 +553,11 @@ namespace samson {
                             size_t block_id = strtoll(  commandLine.get_argument(2).c_str() , (char **)NULL, 10);
                             
                             // Get this queue ( if necessary, create without any queue-item )
-                            Queue *queue = queues.findInMap( queue_name );
-                            if (! queue )
-                            {
-                                queue = new Queue( queue_name , this , 1 ); 
-                                queues.insertInMap( queue_name, queue );
-                            }
+                            Queue *queue = getQueue( queue_name );
                             
-                            
+                            // Set the minim block id to not overwrite previous blocks
                             BlockManager::shared()->setMinimumNextId( block_id );
-                            
+
                             Block* b = recovery_list.getBlock( block_id );
                             
                             if( !b )
@@ -567,13 +581,7 @@ namespace samson {
                             std::string properties = commandLine.get_argument(2);
                             
                             // Get this queue ( if necessary, create without any queue-item )
-                            Queue *queue = queues.findInMap( queue_name );
-                            if (! queue )
-                            {
-                                queue = new Queue( queue_name , this , 1 ); // Note 1 queueu-items
-                                queues.insertInMap( queue_name, queue );
-                            }
-                            
+                            Queue *queue = getQueue( queue_name );
                             queue->environment.recoverFromString( properties );
                             
                         }

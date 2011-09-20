@@ -213,25 +213,6 @@ namespace samson {
                     add( *b );
         }
         
-        // Copy all blocks from a queue that intersect with a range
-        void BlockList::copyAllBlocksFrom( Queue* queue , KVRange range )
-        {
-            au::list< QueueItem >::iterator item_it , item_it1 , item_it2;
-            for (item_it = queue->items.begin() ; item_it != queue->items.end() ; item_it++)
-            {
-                QueueItem *queueItem = *item_it;
-                
-                KVRange queue_item_range = queueItem->getKVRange();
-
-                // copy content to this block list
-                if( queue_item_range.overlap( range ) )
-                    copyFrom( queueItem->list );
-                
-            }
-            
-        }
-        
-        
         void BlockList::extractFrom( BlockList* list , size_t max_size )
         {
             size_t total_size = 0 ;

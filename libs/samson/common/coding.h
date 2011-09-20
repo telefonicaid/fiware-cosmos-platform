@@ -722,9 +722,9 @@ namespace samson {
         {
             if ( format == KVFormat("*","*") )
                 format = _format;
-            else if ( format != KVFormat("NoCommonFormat" , "NoCommonFormat" ) )
+            else if ( format != KVFormat("?" , "?" ) )
                 if ( format != _format )
-                    format = KVFormat("NoCommonFormat" , "NoCommonFormat" );
+                    format = KVFormat("?" , "?" );
         }
         
     };

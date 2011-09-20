@@ -42,15 +42,19 @@ namespace samson {
         class SystemQueueTask : public engine::ProcessItem , public QueueTaskBase
         {
             
-        protected:
+            std::string concept;
             
         public:
             
-            SystemQueueTask(size_t _id);            
+            SystemQueueTask( size_t _id , std::string _concept);            
             ~SystemQueueTask();
 
             // Function executed just before task is deleted in the main thread
             virtual void finalize( StreamManager* streamManager ){};
+
+            // xml version of the information
+            void getInfo( std::ostringstream& output);
+          
             
         };
     }

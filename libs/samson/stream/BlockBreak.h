@@ -18,10 +18,12 @@ namespace samson {
         
         class BlockBreakItem
         {
-            size_t id;                  // Identifier of the original block
-            int num_divisions;          // Number of range divisions    
-            BlockList *list;            // BLock list with the decomposition of this block
+            size_t id;                      // Identifier of the original block
+            int num_divisions;              // Number of range divisions    
+            BlockList *list;                // BLock list with the decomposition of this block
             bool ready;
+            
+            friend class StreamManager;                     // For state-save to disk
             
         public:
             
@@ -44,8 +46,10 @@ namespace samson {
         class BlockBreak
         {
             
-            size_t id;                                  // Id of the block we are decomposing here
-            au::map< int , BlockBreakItem > items;       // Collection of possible divisions for this block
+            size_t id;                                      // Id of the block we are decomposing here
+            au::map< int , BlockBreakItem > items;          // Collection of possible divisions for this block
+
+            friend class StreamManager;                     // For state-save to disk
             
         public:
             
@@ -70,6 +74,8 @@ namespace samson {
             // Get the block list for the maximum division
             BlockList *getMaxDivisionBlockList();
             
+            // Remove inferior divisions
+            void removeSmallerDivisions();
         private:
             
             BlockBreakItem* getItem( int num_division );

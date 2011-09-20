@@ -25,7 +25,8 @@ namespace samson {
 #pragma marg PopQueueTask
         
         
-        PopQueueTask::PopQueueTask( size_t _id , PopQueue *pq , KVRange _range ) : SystemQueueTask( _id )
+        PopQueueTask::PopQueueTask( size_t _id , PopQueue *pq , KVRange _range ) 
+            : SystemQueueTask( _id , au::str("Pop queue ( %s )" , pq->pq->queue().c_str() ) )
         {
             pop_queue_id =  pq->id;
             

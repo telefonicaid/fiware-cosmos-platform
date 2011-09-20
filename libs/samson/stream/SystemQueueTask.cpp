@@ -20,8 +20,10 @@
 namespace samson {
     namespace stream {
         
-        SystemQueueTask::SystemQueueTask(size_t _id) : engine::ProcessItem( PI_PRIORITY_NORMAL_OPERATION ) , QueueTaskBase( _id )
+        SystemQueueTask::SystemQueueTask(size_t _id  , std::string _concept) : engine::ProcessItem( PI_PRIORITY_NORMAL_OPERATION ) , QueueTaskBase( _id )
         {
+            concept = _concept;
+            
             // Set the id
             environment.setSizeT("system.queue_task_id", id);
             
@@ -33,6 +35,22 @@ namespace samson {
         {
         }
         
+        void SystemQueueTask::getInfo( std::ostringstream& output )
+        {
+            au::xml_open(output , "queue_task" );
+            
+            au::xml_simple( output , "id", id);
+            
+            // Common information about inputs used in this task contained in class QueueTask
+            QueueTaskBase::getInfo( output );
+            
+            output << "<description>" << concept << "</description>\n";
+            
+            // Get all process item related information ( like progress )
+            ProcessItem::getInfo( output );
+            
+            au::xml_close(output , "queue_task" );
+        }
         
     }
 }

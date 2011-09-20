@@ -25,7 +25,8 @@ namespace samson {
 #pragma mark BlockBreakQueueTask        
 
         
-        BlockBreakQueueTask::BlockBreakQueueTask( size_t _id , Block * block , int _num_divisions  ) : SystemQueueTask( _id )
+        BlockBreakQueueTask::BlockBreakQueueTask( size_t _id , Block * block , int _num_divisions  ) 
+        : SystemQueueTask( _id , au::str("BlockBreak ( %lu )" , _id ) )
         {
             block_id = block->getId();
             num_divisions = _num_divisions;

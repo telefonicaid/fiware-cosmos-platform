@@ -195,19 +195,12 @@ namespace samson {
         // Get information for monitorization
         void QueueTaskManager::getInfo( std::ostringstream& output)
         {
-            {
-                au::map< size_t , QueueTask >::iterator q;
-                for (q = runningTasks.begin() ; q != runningTasks.end() ; q++)
-                    q->second->getInfo( output );
-            }
+            au::xml_iterate_list(output, "queue_tasks", queueTasks);
+            au::xml_iterate_map(output, "running_queue_tasks", runningTasks);
+
             
-            {
-                au::list< QueueTask >::iterator q;
-                for (q = queueTasks.begin() ; q!= queueTasks.end() ; q++)
-                    (*q)->getInfo(output);
-            }
-            
-            
+            au::xml_iterate_list(output, "system_queue_tasks", systemQueueTasks);
+            au::xml_iterate_map(output, "running_system_queue_tasks", runningSystemQueueTasks);
             
         }
         

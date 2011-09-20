@@ -129,18 +129,31 @@ namespace samson {
         void BlockBreak::update( int num_divisions , BlockList *_list )
         {
             getItem( num_divisions )->update(_list);
-/*            
-            // Remove inferior divisions 
-            int _num_divisions = 2;
-            while( _num_divisions < num_divisions )
-            {
-                items.removeInMap( _num_divisions );
-                _num_divisions *= 2;
-            }
- */
             
         }
 
+        void BlockBreak::removeSmallerDivisions()
+        {
+            if( items.size() < 2 )
+                return;
+            
+            int max_division = getMaxDivisionReady();
+
+            if( max_division == 0)
+                return;
+            
+            while( items.size() > 1 )
+            {
+                int _num_divisions = items.begin()->first;
+                if( _num_divisions < max_division )
+                {
+                    items.removeInMap( _num_divisions );
+                }
+            }
+            
+        }
+        
+        
         BlockBreakItem* BlockBreak::getItem( int num_divisions )
         {
             BlockBreakItem* item = items.findInMap( num_divisions );

@@ -80,8 +80,14 @@ namespace samson {
                 au::map< size_t , BlockBreak >::iterator it_block_break; 
                 std::set< size_t > block_id_to_remove;
                 for ( it_block_break = blockBreaks.begin() ; it_block_break != blockBreaks.end() ; it_block_break ++ )
+                {
                     if ( BlockManager::shared()->getBlock( it_block_break->first ) == NULL )
                         block_id_to_remove.insert( it_block_break->first );
+                    
+                    // Remove smaller divisions if higer divisions are ready
+                    it_block_break->second->removeSmallerDivisions();
+                }
+                
                 blockBreaks.removeInMap( block_id_to_remove );
                 
                 
@@ -488,6 +494,30 @@ namespace samson {
                 
             }
             
+            // All block break
+            au::map< size_t , BlockBreak >::iterator it_blockBreak;
+            for ( it_blockBreak = blockBreaks.begin() ; it_blockBreak != blockBreaks.end() ; it_blockBreak++ )
+            {
+                BlockBreak* blockBreak = it_blockBreak->second;
+                
+                au::map< int , BlockBreakItem >::iterator it_block_break_item;
+                for( it_block_break_item = blockBreak->items.begin() ; it_block_break_item != blockBreak->items.end() ; it_block_break_item++)
+                {
+                    BlockBreakItem *blockBreakItem = it_block_break_item->second;
+                    
+                    if( blockBreakItem->isReady() )
+                        output << "block_break_item " << blockBreak->id << " " << blockBreakItem->num_divisions << " ";
+                    
+                    BlockList *list = blockBreakItem->list;
+                    au::list< Block >::iterator it_block;
+                    for (it_block = list->blocks.begin() ; it_block != list->blocks.end() ; it_block++ )
+                        output << (*it_block)->getId() << " ";
+                    
+                    output << "\n";
+                }
+            }
+
+            
             // Foot just to make sure we finished correctly
             output << "# END -- SamsonStreamManager log " << au::todayString() << "\n";
 
@@ -542,8 +572,45 @@ namespace samson {
                         
                         std::string main_command = commandLine.get_argument(0);
                         
-
-                        if ( main_command == "queue_push" )
+                        if( main_command == "block_break_item" )
+                        {
+                            if ( commandLine.get_num_arguments() < 3 )
+                                continue;
+                            
+                            size_t block_id     = strtoll(  commandLine.get_argument(1).c_str() , (char **)NULL, 10);
+                            int num_divisions   = strtol(  commandLine.get_argument(2).c_str() , (char **)NULL, 10);
+                            
+                            BlockList * tmpBlockList = new BlockList("tmp_recoverying_block_break");
+                            bool failed = false;
+                            for ( int i = 3 ; i < commandLine.get_num_arguments() ; i++ )
+                            {
+                                size_t _block_id     = strtoll(  commandLine.get_argument(i).c_str() , (char **)NULL, 10);
+                                
+                                // Set the minim block id to not overwrite previous blocks
+                                BlockManager::shared()->setMinimumNextId( _block_id );
+                                Block* b = recovery_list.getBlock( _block_id );
+                                if( !b )
+                                    b = recovery_list.createBlockFromDisk( _block_id );
+                             
+                                if( b )
+                                    tmpBlockList->add( b );
+                                else
+                                {
+                                    LM_W(("Not possible to import block break for id %lu. This is not a major issue" , block_id));
+                                    failed = true;
+                                }
+                                    
+                            }
+                            
+                            if (!failed )
+                            {
+                                getBlockBreak(block_id)->addNumDivisions( num_divisions );
+                                getBlockBreak(block_id)->update(num_divisions, tmpBlockList);
+                            }
+                            
+                            delete tmpBlockList;
+                            
+                        } else if ( main_command == "queue_push" )
                         {
                             // Format: queue_item name range_from range_to block-ids
                             if ( commandLine.get_num_arguments() < 3 )
@@ -557,14 +624,9 @@ namespace samson {
                             
                             // Set the minim block id to not overwrite previous blocks
                             BlockManager::shared()->setMinimumNextId( block_id );
-
                             Block* b = recovery_list.getBlock( block_id );
-                            
                             if( !b )
-                            {                                    
-                                // Do something to fill b
                                 b = recovery_list.createBlockFromDisk( block_id );
-                            }
                             
                             if( b )
                                 queue->push( b );

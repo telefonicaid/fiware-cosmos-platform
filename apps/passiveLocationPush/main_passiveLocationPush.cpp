@@ -95,7 +95,7 @@ int main( int argc , const char *argv[] )
 
 
 
-	if (!file.compare("generator"))
+	if (file.compare("generator") != 0)
 	{
 		if ((fp = fopen(file.c_str(), "r")) == NULL)
 		{

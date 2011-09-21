@@ -38,7 +38,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # ------------------------------------------------------------
 
 ADD_EXECUTABLE(passiveLocationPush ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(passiveLocationPush ${STATIC_LIBS})
+TARGET_LINK_LIBRARIES(passiveLocationPush ${STATIC_LIBS} )
 
 INSTALL(TARGETS               passiveLocationPush
         RUNTIME DESTINATION   bin)

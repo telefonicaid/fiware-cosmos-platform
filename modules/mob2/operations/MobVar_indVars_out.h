@@ -55,7 +55,7 @@ extendedHelp: 		Parse out of individual variables of a client
                 phoneId_key.parse(inputs[0].kvs[kv]->key);
                 totalVars.parse( inputs[0].kvs[kv]->value );
 
-                total += snprintf( output+total, MAX_STR_LEN, "%lu" , phoneId_key.value);
+                total += snprintf( output+total, MAX_STR_LEN-total, "%lu" , phoneId_key.value);
 
                 // TODO: Modificar a parámetros de configuración o algo así
                 for(unsigned int nMon=1; nMon<=6; nMon++)
@@ -65,45 +65,45 @@ extendedHelp: 		Parse out of individual variables of a client
                         {
                                 if(totalVars.vars[j].month.value == nMon && totalVars.vars[j].workingday.value == 1)
                                 {
-                                        total += snprintf( output+total, MAX_STR_LEN, "|%lu", totalVars.vars[j].num_pos.value);
-                                        total += snprintf( output+total, MAX_STR_LEN, "|%lu", totalVars.vars[j].dif_btss.value);
-                                        total += snprintf( output+total, MAX_STR_LEN, "|%lu", totalVars.vars[j].dif_muns.value);
-                                        total += snprintf( output+total, MAX_STR_LEN, "|%lu", totalVars.vars[j].dif_states.value);
-                                        total += snprintf( output+total, MAX_STR_LEN, "|%.4f", totalVars.vars[j].masscenter_utmx.value);
-                                        total += snprintf( output+total, MAX_STR_LEN, "|%.4f", totalVars.vars[j].masscenter_utmy.value);
-                                        total += snprintf( output+total, MAX_STR_LEN, "|%.4f", totalVars.vars[j].radius.value);
-                                        total += snprintf( output+total, MAX_STR_LEN, "|%.4f", totalVars.vars[j].diam_areainf.value);
+                                        total += snprintf( output+total, MAX_STR_LEN-total, "|%lu", totalVars.vars[j].num_pos.value);
+                                        total += snprintf( output+total, MAX_STR_LEN-total, "|%lu", totalVars.vars[j].dif_btss.value);
+                                        total += snprintf( output+total, MAX_STR_LEN-total, "|%lu", totalVars.vars[j].dif_muns.value);
+                                        total += snprintf( output+total, MAX_STR_LEN-total, "|%lu", totalVars.vars[j].dif_states.value);
+                                        total += snprintf( output+total, MAX_STR_LEN-total, "|%.4f", totalVars.vars[j].masscenter_utmx.value);
+                                        total += snprintf( output+total, MAX_STR_LEN-total, "|%.4f", totalVars.vars[j].masscenter_utmy.value);
+                                        total += snprintf( output+total, MAX_STR_LEN-total, "|%.4f", totalVars.vars[j].radius.value);
+                                        total += snprintf( output+total, MAX_STR_LEN-total, "|%.4f", totalVars.vars[j].diam_areainf.value);
                                         exists = true;
                                         break;
                                 }
                         }
                         if(!exists)
                         {
-                                total += snprintf( output+total, MAX_STR_LEN,"|-1|-1|-1|-1|-1|-1|-1|-1");
+                                total += snprintf( output+total, MAX_STR_LEN-total,"|-1|-1|-1|-1|-1|-1|-1|-1");
                         }
                         exists = false;
                         for(int j=0; j<totalVars.vars_length; j++)
                         {
                                 if(totalVars.vars[j].month.value == nMon && totalVars.vars[j].workingday.value == 0)
                                 {
-                                        total += snprintf( output+total, MAX_STR_LEN, "|%lu", totalVars.vars[j].num_pos.value);
-                                        total += snprintf( output+total, MAX_STR_LEN, "|%lu", totalVars.vars[j].dif_btss.value);
-                                        total += snprintf( output+total, MAX_STR_LEN, "|%lu", totalVars.vars[j].dif_muns.value);
-                                        total += snprintf( output+total, MAX_STR_LEN, "|%lu", totalVars.vars[j].dif_states.value);
-                                        total += snprintf( output+total, MAX_STR_LEN, "|%.4f", totalVars.vars[j].masscenter_utmx.value);
-                                        total += snprintf( output+total, MAX_STR_LEN, "|%.4f", totalVars.vars[j].masscenter_utmy.value);
-                                        total += snprintf( output+total, MAX_STR_LEN, "|%.4f", totalVars.vars[j].radius.value);
-                                        total += snprintf( output+total, MAX_STR_LEN, "|%.4f", totalVars.vars[j].diam_areainf.value);
+                                        total += snprintf( output+total, MAX_STR_LEN-total, "|%lu", totalVars.vars[j].num_pos.value);
+                                        total += snprintf( output+total, MAX_STR_LEN-total, "|%lu", totalVars.vars[j].dif_btss.value);
+                                        total += snprintf( output+total, MAX_STR_LEN-total, "|%lu", totalVars.vars[j].dif_muns.value);
+                                        total += snprintf( output+total, MAX_STR_LEN-total, "|%lu", totalVars.vars[j].dif_states.value);
+                                        total += snprintf( output+total, MAX_STR_LEN-total, "|%.4f", totalVars.vars[j].masscenter_utmx.value);
+                                        total += snprintf( output+total, MAX_STR_LEN-total, "|%.4f", totalVars.vars[j].masscenter_utmy.value);
+                                        total += snprintf( output+total, MAX_STR_LEN-total, "|%.4f", totalVars.vars[j].radius.value);
+                                        total += snprintf( output+total, MAX_STR_LEN-total, "|%.4f", totalVars.vars[j].diam_areainf.value);
                                         exists = true;
                                         break;
                                 }
                         }
                         if(!exists)
                         {
-                                total += snprintf( output+total, MAX_STR_LEN,"|-1|-1|-1|-1|-1|-1|-1|-1");
+                                total += snprintf( output+total, MAX_STR_LEN-total,"|-1|-1|-1|-1|-1|-1|-1|-1");
                         }
                 }
-                total += snprintf( output+total, MAX_STR_LEN,"\n");
+                total += snprintf( output+total, MAX_STR_LEN-total,"\n");
 		writer->emit(output);
 
         }

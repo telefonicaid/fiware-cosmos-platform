@@ -51,10 +51,10 @@ public:
 		{
 			size_t total = 0;
 			poi.parse(inputs[0].kvs[i]->value);
-			total += snprintf( output+total, MAX_STR_LEN,"%lu|%lu|",poi.node.value,poi.bts.value);
-			total += snprintf( output+total, MAX_STR_LEN,"%lu|%lu|%d|%f|",poi.labelnode.value, poi.labelgroupnode.value, poi.confidentnode.value, poi.distancenode.value);
-			total += snprintf( output+total, MAX_STR_LEN,"%lu|%lu|%d|%f|",poi.labelbts.value, poi.labelgroupbts.value, poi.confidentbts.value, poi.distancebts.value);
-			total += snprintf( output+total, MAX_STR_LEN,"%lu|%lu|%d|%f\n",poi.labelnodebts.value, poi.labelgroupnodebts.value, poi.confidentnodebts.value, poi.distancenodebts.value);
+			total += snprintf( output+total, MAX_STR_LEN-total,"%lu|%lu|",poi.node.value,poi.bts.value);
+			total += snprintf( output+total, MAX_STR_LEN-total,"%lu|%lu|%d|%f|",poi.labelnode.value, poi.labelgroupnode.value, poi.confidentnode.value, poi.distancenode.value);
+			total += snprintf( output+total, MAX_STR_LEN-total,"%lu|%lu|%d|%f|",poi.labelbts.value, poi.labelgroupbts.value, poi.confidentbts.value, poi.distancebts.value);
+			total += snprintf( output+total, MAX_STR_LEN-total,"%lu|%lu|%d|%f\n",poi.labelnodebts.value, poi.labelgroupnodebts.value, poi.confidentnodebts.value, poi.distancenodebts.value);
 			writer->emit(output);
 
 		}

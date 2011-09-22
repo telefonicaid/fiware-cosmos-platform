@@ -56,10 +56,10 @@ extendedHelp: 		Parse out of clients clusterized
                 nodbts.parse(inputs[0].kvs[i]->key);
                 cluster.parse(inputs[0].kvs[i]->value);
                 total += snprintf( output, MAX_STR_LEN,"%lu|",nodbts.phone.value);
-                total += snprintf( output+total, MAX_STR_LEN,"%lu|",nodbts.bts.value);
-                total += snprintf( output+total, MAX_STR_LEN,"%d|",cluster.label.value);
-                total += snprintf( output+total, MAX_STR_LEN,"%d|",cluster.labelgroup.value);
-                total += snprintf( output+total, MAX_STR_LEN,"%f\n",cluster.distance.value);
+                total += snprintf( output+total, MAX_STR_LEN-total,"%lu|",nodbts.bts.value);
+                total += snprintf( output+total, MAX_STR_LEN-total,"%d|",cluster.label.value);
+                total += snprintf( output+total, MAX_STR_LEN-total,"%d|",cluster.labelgroup.value);
+                total += snprintf( output+total, MAX_STR_LEN-total,"%f\n",cluster.distance.value);
 
 		writer->emit(output);
 

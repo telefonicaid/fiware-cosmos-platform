@@ -52,12 +52,12 @@ public:
 			size_t total = 0;
 			id.parse(inputs[0].kvs[i]->key);
 			cluster.parse(inputs[0].kvs[i]->value);
-			total += snprintf( output+total, MAX_STR_LEN,"%lu|%d|%d|%d|%f",id.value,cluster.label.value,cluster.labelgroup.value,cluster.confident.value,cluster.distance.value);
+			total += snprintf( output+total, MAX_STR_LEN-total,"%lu|%d|%d|%d|%f",id.value,cluster.label.value,cluster.labelgroup.value,cluster.confident.value,cluster.distance.value);
 			for(int j=0; j<cluster.coords.coms_length; j++)
 			{
-				total += snprintf( output+total, MAX_STR_LEN,"|%f",cluster.coords.coms[j].value);
+				total += snprintf( output+total, MAX_STR_LEN-total,"|%f",cluster.coords.coms[j].value);
 			}
-			total += snprintf( output+total, MAX_STR_LEN,"\n");
+			total += snprintf( output+total, MAX_STR_LEN-total,"\n");
 			writer->emit(output);
 
 		}

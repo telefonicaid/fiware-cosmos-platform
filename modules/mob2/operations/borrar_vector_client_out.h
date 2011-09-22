@@ -54,12 +54,12 @@ extendedHelp: 		Parse out of client vectors
         size_t total = 0;
                 nodbts.parse(inputs[0].kvs[i]->key);
                 clusvect.parse(inputs[0].kvs[i]->value);
-                total += snprintf( output+total, MAX_STR_LEN,"%lu",nodbts.phone.value);
+                total += snprintf( output+total, MAX_STR_LEN-total,"%lu",nodbts.phone.value);
                 for(int j=0; j<clusvect.coms_length; j++)
                 {
-                        total += snprintf( output+total, MAX_STR_LEN,"|%f",clusvect.coms[j].value);
+                        total += snprintf( output+total, MAX_STR_LEN-total,"|%f",clusvect.coms[j].value);
                 }
-                total += snprintf( output+total, MAX_STR_LEN,"\n");
+                total += snprintf( output+total, MAX_STR_LEN-total,"\n");
 		writer->emit(output);
 
         }

@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <cstdarg>
 
+#include "string.h"     // Own definitions
+
 namespace au {
     
     std::string tabs(int t)
@@ -325,6 +327,11 @@ namespace au {
         std::vector<std::string> elems;
         return split(s, delim, elems);
     }  
+
+    
+
     
     
+    
+
 }

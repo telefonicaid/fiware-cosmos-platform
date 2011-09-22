@@ -16,6 +16,7 @@
 #include "au/Token.h"				// au::Lock
 #include "au/map.h"				// au::map
 #include "au/Cronometer.h"      // au::Cronometer
+#include "au/string.h"          // au::Table
 
 #include "pugi/pugi.h"          // pugi::...
 
@@ -172,6 +173,10 @@ namespace samson {
 
         // Generic function to get lists of informations
         std::string getStringInfo( std::string path , node_to_string_function _node_to_string_function  ,  int options );
+
+        // Generic function to get a tabular information scaning the xml document
+        std::string infoCommand( std::string command );
+        std::string infoCommand( std::string prefix , std::string command );
         
         bool checkXMLInfoUpdate();
         

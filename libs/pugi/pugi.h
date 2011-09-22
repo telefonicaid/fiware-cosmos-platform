@@ -31,6 +31,7 @@
 #include "pugi/pugixml.hpp"     // pugi::...
 
 #include "au/string.h"          // au::F
+#include "au/Table.h"           // au::Table au::DataSet ...
 
 namespace pugi 
 {
@@ -126,6 +127,11 @@ namespace pugi
     
     int getNumChildrens( const xml_node& node , std::string child_name );
     
+
+    // working with data sets
+    au::DataSetRow* rowFromNode( const xml_node& node , int limit );
+    void addToRow( au::DataSetRow* row , const xml_node& node , std::string path , int limit );
+    void dataSetFromNodes( au::DataSet &dataSet , xpath_node_set nodes );
     
 }
 #endif

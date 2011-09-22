@@ -26,11 +26,11 @@
 #include <sstream>              // std::ostringstream
 #include "logMsg/logMsg.h"             // LM_W
 
+#include "au/CommandLine.h"
 #include "au/ErrorManager.h"        // au::ErrorManager
 #include "au/map.h"                 // au::map
 
 namespace au {
-    
     
     
     std::string tabs(int t);
@@ -62,16 +62,13 @@ namespace au {
     std::string str( size_t value );
     std::string str( size_t value , std::string postfix );
     
-    
-    
     // Indent a string text
     std::string indent( std::string txt );
     std::string indent( std::string txt , int num_spaces );
     
-    
     std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
     std::vector<std::string> split(const std::string &s, char delim);  
-    
+        
 }
 
 

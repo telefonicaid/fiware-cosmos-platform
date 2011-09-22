@@ -517,6 +517,141 @@ namespace samson {
         
     }    
     
+    // Generic function to get a tabular information scaning the xml document
+    
+    
+
+    std::string Delilah::infoCommand( std::string command )
+    {
+        au::CommandLine cmdLine;
+        cmdLine.set_flag_boolean("controller");
+        cmdLine.set_flag_boolean("worker");
+        cmdLine.set_flag_boolean("delilah");
+        cmdLine.set_flag_boolean("no_title");
+        cmdLine.parse( command );
+
+        std::ostringstream output;
+        
+        // CONTROLLER
+        if( cmdLine.get_flag_bool("controller") )
+        {
+            if( !cmdLine.get_flag_bool("no_title") )
+            {
+            output << "\n";
+            output << "================================================================================\n";
+            output << "Controller :\n";
+            output << "================================================================================\n";
+            output << "\n";
+            }
+            
+            output << infoCommand("//controller" , command );
+        }
+        
+        
+        // WORKERS
+        if( cmdLine.get_flag_bool("worker") )
+        {
+            pugi::ValuesCollection workers_ids = pugi::values(doc, "//worker/id");
+            
+            for ( size_t w = 0 ; w < workers_ids.size() ; w++ )
+            {
+                
+                if( !cmdLine.get_flag_bool("no_title") )
+                {
+                    output << "\n";
+                    output << "================================================================================\n";
+                    output << "Worker " << workers_ids[w] << ":\n";
+                    output << "================================================================================\n";
+                    output << "\n";
+                }
+
+                output << infoCommand( "//worker[id=" + workers_ids[w] + "]" , command );
+                
+            }
+        }
+        
+        // DELILAH
+        if( cmdLine.get_flag_bool("delilah") )
+        {
+            if( !cmdLine.get_flag_bool("no_title") )
+            {
+                output << "\n";
+                output << "================================================================================\n";
+                output << "Delilah :\n";
+                output << "================================================================================\n";
+                output << "\n";
+            }
+            
+            output << infoCommand("//delilah" , command );
+        }
+    
+        return output.str();
+        
+    }
+    
+    std::string Delilah::infoCommand( std::string prefix ,  std::string command )
+    {
+        
+        au::CommandLine cmdLine;
+        cmdLine.set_flag_boolean("info");
+        
+        cmdLine.parse( command );
+        
+        if( !checkXMLInfoUpdate() )
+            return 0;
+        
+        std::ostringstream output;
+
+        if( cmdLine.get_num_arguments() < 2 )
+            return "Usage: info_command select_queue fields [options] [-info]";
+
+        std::string select = cmdLine.get_argument(1);
+        
+        {
+            au::TokenTaker tt( &token_xml_info );
+            
+            // Select nodes
+            pugi::xpath_node_set nodes  = pugi::select_nodes( doc , prefix + select );
+
+            // Get the data set form nodes
+            au::DataSet dataSet;
+            pugi::dataSetFromNodes( dataSet , nodes );
+
+            // If select is activated. just show the fields
+            if( cmdLine.get_flag_bool("info") )
+            {
+                std::vector<std::string> fields;
+                dataSet.getAllFields(fields);
+                for ( size_t i = 0 ; i < fields.size() ; i ++)
+                    output << "Field: " << fields[i] << "\n";
+                
+                output << "\n";
+                output << "Num records " << dataSet.getNumRecords();
+                
+                return output.str();
+            }
+            
+            // Table shoing contents
+            au::Table table( &dataSet );
+            
+            //table.addAllFields();
+            
+            for ( int i = 2 ; i < cmdLine.get_num_arguments() ; i++)
+            {
+                std::string field_definition = cmdLine.get_argument(i);
+                table.add( new au::TableColumn( field_definition ) );
+            }
+            
+            
+            output << table.str();
+            
+        }
+        
+        return output.str();
+        
+    }
+    
+    
     std::string Delilah::getStringInfo( std::string path , node_to_string_function _node_to_string_function  , int options )
     {
         

@@ -42,6 +42,12 @@
 
 #define DEF1             "TYPE:EXEC/FUNC: TEXT"
 
+#define LS_COMMAND "info_command -controller //queue /name,title=Name,l /num_files,t=#files /kv_info/kvs,t=#kvs,f=uint64 /kv_info/size,t=size,f=uint64 /format/key_format,t=key /format/value_format,t=value,left -no_title"
+
+#define LS_QUEUES_COMMAND "info_command -worker //queue /name,t=name,left  /block_info/kv_info/kvs,t=#kvs,format=uint64 /block_info/kv_info/size,t=size,format=uint64  /block_info/format/key_format,t=key /block_info/format/value_format,t=value,left /block_info/num_blocks,t=#Blocks,format=uint64 /block_info/size,title=size,format=uint64 /block_info/size_on_memory^/block_info/size,format=per,t=on_memory /block_info/size_on_disk^/block_info/size,format=per,t=on_disk /block_info/size_locked^/block_info/size,format=per,t=locked"
+
+#define ENGINE_SHOW_COMMAND "info_command -delilah -worker -controller //engine_system /process_manager/num_running_processes^/process_manager/num_processes,t=process,format=per /memory_manager/used_memory^/memory_manager/memory,t=memory,format=per  /disk_manager/num_pending_operations+/disk_manager/num_running_operations,t=disk,f=uint64"
+
 
 namespace samson
 {	
@@ -180,7 +186,7 @@ namespace samson
     "\n"
     "For more help type help <command>\n"
     "\n"
-    "General platform commands:             operations, datas, reload_modules, set, unset , ls_local , rm_local , ls_operation_rates\n"
+    "General platform commands:             ls_operations, ls_datas, reload_modules, set, unset , ls_local , rm_local , ls_operation_rates\n"
     "\n"
     "Getting information from platform:     info , ps , ls_modules, engine_show , ps_network\n"
     "\n"
@@ -229,8 +235,8 @@ namespace samson
         { "set"                     , "set <var> <value>       Set environment variables ( all operations can use them )" },
         { "unset"                   , "unset <var>             Remove a environment variables " },
         
-        { "operations"              , "operations [-begin X] [-end -X]      Get a list of the available operations ( parser, map, reduce, script, etc)"},
-        { "datas"                   , "datas [-begin X] [-end -X]           Get a list of available data types for keys and values"},
+        { "ls_operations"           , "ls_operations [-begin X] [-end -X]      Get a list of the available operations ( parser, map, reduce, script, etc)"},
+        { "ls_datas"                , "ls_datas [-begin X] [-end -X]           Get a list of available data types for keys and values"},
         
         { "ps_jobs"                 , "ps_jobs           Get a list of running (batch processing) jobs" },
         { "ps_tasks"                , "ps_tasks          Get a list of running batch processing tasks on controller and workers" },
@@ -967,10 +973,18 @@ namespace samson
             
         }
 
+        if( main_command == "info_command" )
+        {
+            std::string txt = infoCommand( command );
+            writeOnConsole( txt );
+            return 0;
+        }
         
         if( main_command == "ls_queues" )
         {
-            
+            writeOnConsole( infoCommand(LS_QUEUES_COMMAND) );
+            return 0;
+/*            
             std::string command;
             if( commandLine.get_num_arguments() > 1 )
             {
@@ -983,6 +997,7 @@ namespace samson
             std::string txt = getStringInfo( command , getQueueInfo, i_worker ); 
             writeOnConsole( txt );
             return 0;
+ */
             
         }
         
@@ -1046,8 +1061,9 @@ namespace samson
         
         if( main_command == "ls" )
         {
-            std::string txt = getStringInfo("//queue", getSetInfo, i_controller  ); 
-            writeOnConsole( txt );
+            //std::string txt = getStringInfo("//queue", getSetInfo, i_controller  ); 
+            //writeOnConsole( txt );
+            writeOnConsole( infoCommand(LS_COMMAND) );
             return 0;
         }
         
@@ -1084,9 +1100,14 @@ namespace samson
         
         if( main_command == "engine_show" )
         {
+            writeOnConsole( infoCommand(ENGINE_SHOW_COMMAND) );
+            return 0;
+            
+            /*
             std::string txt = getStringInfo("/engine_system", getEngineSystemInfo, i_controller | i_worker | i_delilah ); 
             writeOnConsole( txt );
             return 0;
+             */
         }
         
         if( main_command == "ls_local" )

@@ -41,7 +41,7 @@ namespace pugi
         std::string name =  xml_node.name();
         std::string value =  xml_node.value();
         
-        output << au::tabs(level) << name  << " " << value;
+        output << au::tabs(level) << name  << " - " << value;
         
         int num_attributes = 0;
         std::ostringstream attributes_txt;
@@ -190,5 +190,66 @@ namespace pugi
         return num;
     }
 
+    int getNumChildrens( const xml_node& xml_node )
+    {
+        int num = 0;
+        for( pugi::xml_node_iterator n = xml_node.begin() ; n != xml_node.end() ; n++)
+                num++;
+        return num;
+    }
+
+    xml_node getFirstChildren( const xml_node& xml_node )
+    {
+        return *xml_node.begin();
+    }
+    
+    
+    au::DataSetRow* rowFromNode( const xml_node& xml_node , int limit )
+    {
+        au::DataSetRow * row = new au::DataSetRow();
+        
+
+        for( pugi::xml_node_iterator n = xml_node.begin() ; n != xml_node.end() ; n++)
+        {
+            pugi::xml_node new_node = *n;
+            addToRow(row, new_node, "", limit);
+        }
+        
+        return row;
+    }
+    
+    void addToRow( au::DataSetRow* row , const xml_node& xml_node , std::string path , int limit )
+    {
+        if( limit <= 0)
+            return;
+        
+        std::string new_path = path + "/" + xml_node.name();;
+            
+        if( ( getNumChildrens( xml_node ) == 1) &&  ( getNumChildrens( getFirstChildren( xml_node) ) == 0 ) )
+        {
+            // Set a property
+            std::string field = new_path;
+            std::string value = getFirstChildren( xml_node).value();
+
+            row->set(field, value);
+        }
+        
+        for( pugi::xml_node_iterator n = xml_node.begin() ; n != xml_node.end() ; n++)
+        {
+            pugi::xml_node new_node = *n;
+            addToRow(row, new_node, new_path, limit-1);
+        }
+    }
+    
+    void dataSetFromNodes( au::DataSet &dataSet , xpath_node_set nodes )
+    {
+        for ( size_t i = 0 ; i < nodes.size() ; i++ )
+        {
+            const pugi::xml_node& node = nodes[i].node(); 
+            dataSet.add( pugi::rowFromNode( node , 3 ) );
+        }      
+    }    
+    
+    
     
 }

@@ -25,6 +25,7 @@ file.h
 time.h
 string.h
 xml.h
+Table.h
 )
 
 SET (SOURCES
@@ -45,6 +46,7 @@ file.cpp
 time.cpp
 string.cpp
 xml.cpp
+Table.cpp
 )
 
 

@@ -8,6 +8,7 @@
 
 #include <time.h>
 #include <limits.h>
+#include <stdint.h>
 
 #include <samson/modules/system/FixedLengthDataInstance.h>
 #include <samson/modules/system/Date.h>
@@ -55,6 +56,28 @@ class TimeUnix : public FixedLengthDataInstance<time_t>{
 
 public:
 
+	void operator= (int _value) {
+		value = _value;
+	}
+	void operator= (uint64_t _value) {
+		value = _value;
+	}
+	bool operator== (int64_t _value) {
+		if (value == _value) return true;
+		return false;
+	}
+	bool operator!= (int64_t _value) {
+		if (value != _value) return true;
+		return false;
+	}
+	bool operator== (int _value) {
+		if (value == _value) return true;
+		return false;
+	}
+	bool operator!= (int _value) {
+		if (value != _value) return true;
+		return false;
+	}
 
 	int hash(int max_num_partitions){
 		return value%max_num_partitions;

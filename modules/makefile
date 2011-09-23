@@ -9,7 +9,7 @@ all:
 #	make -C mob2
 	make -C graph
 	make -C sna
-#	make -C snalight
+	make -C snalight
 	make -C osn
 	make -C url
 	make -C urlbenchmark
@@ -31,7 +31,7 @@ release:
 #	make release -C mob2
 	make release -C graph
 	make release -C sna
-#	make release -C snalight
+	make release -C snalight
 	make release -C osn
 	make release -C url
 	make release -C urlbenchmark
@@ -53,7 +53,7 @@ reset:
 	make reset -C mob2
 	make reset -C graph
 	make reset -C sna
-#	make reset -C snalight 
+	make reset -C snalight 
 	make reset -C osn 
 	make reset -C url 
 	make reset -C urlbenchmark 

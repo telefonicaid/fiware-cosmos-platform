@@ -23,6 +23,7 @@ class parse_xml_ARCANUM : public samson::Parser
 	samson::cdr::mobCdr  cdr;
 	samson::system::UInt imei;
 	samson::system::UInt32 tac;
+	samson::mob2::UserState infoUser;
 
 public:
 
@@ -40,6 +41,7 @@ public:
 	phone-IMEI kvs
 	IMEI-phone kvs
 	TAC-phone kvs
+	phone-user info (like a cdr, with IMEI info)
 
 #endif // de INFO_COMMENT
 
@@ -82,6 +84,10 @@ public:
 		struct tm timeExpanded;
 
 		//OLM_T(LMT_User06, ("parseXML called"));
+		node.value = 0;
+		imei.value = 0;
+		cdr.cellId.value = 0;
+		cdr.timeUnix = 0;
 
 #define XML_TAG_USERID "<IMSI>"
 		if ((p_tag_begin = strstr(p_xml, XML_TAG_USERID)) == NULL)
@@ -120,7 +126,7 @@ public:
 				OLM_E(("xml with wrong userId:'%s'", p_tag_begin));
 				return;
 			}
-			OLM_T(LMT_User06, ("Emit node:%lu, imei:%lu", node.value, imei.value));
+			//OLM_T(LMT_User06, ("Emit node:%lu, imei:%lu", node.value, imei.value));
 			writer->emit(1, &node, &imei);
 			writer->emit(2, &imei, &node);
 			if (strlen(p_tag_begin) <= 8)
@@ -178,6 +184,15 @@ public:
 		cdr.timeUnix.getTimeUTCFromCalendar(&timeExpanded);
 
 		writer->emit(0, &node, &cdr);
+
+		if ((node.value != 0) && (imei.value != 0) && (cdr.cellId.value != 0) && (cdr.timeUnix != 0))
+		{
+			infoUser.imei.value = imei.value;
+			infoUser.position.cell.value = cdr.cellId.value;
+			infoUser.position.time = cdr.timeUnix;
+
+			writer->emit(4, &node, &infoUser);
+		}
 		return;
 
 	}

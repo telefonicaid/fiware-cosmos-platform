@@ -20,7 +20,7 @@ class reduce_check_imeis_by_user : public samson::Reduce
 {
 	//Inputs
 	samson::system::UInt node;
-	samson::system::UInt imei;
+	samson::mob2::UserState infoUser;
 
 	//State: Input & Output
 	samson::mob2::UserState state;
@@ -31,7 +31,7 @@ public:
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-	input: system.UInt system.UInt
+	input: system.UInt mob2.UserState
 	input: system.UInt mob2.UserState
 	output: system.UInt mob2.UserState
 	output: system.UInt mob2.UserState
@@ -48,6 +48,19 @@ public:
 		if (inputs[0].num_kvs == 0)
 		{
 			// No new information about user
+			// In batch mode, we have to reemit the state
+#ifdef BATCHMODE
+			if (inputs[1].num_kvs > 0)
+			{
+				node.parse(inputs[1].kvs[0]->key);
+				for (uint64_t j = 0; (j < inputs[1].num_kvs); j++)
+				{
+					state.parse(inputs[1].kvs[j]->value);
+					writer->emit(1, &node, &state);
+				}
+			}
+#endif // BATCHMODE
+
 			return;
 		}
 
@@ -56,6 +69,13 @@ public:
 		if (inputs[1].num_kvs > 1)
 		{
 			OLM_E(("Error, more than one state(%lu) per user:%lu", inputs[1].num_kvs, node.value));
+#ifdef BATCHMODE
+			for (uint64_t j = 0; (j < inputs[1].num_kvs); j++)
+			{
+				state.parse(inputs[1].kvs[j]->value);
+				writer->emit(1, &node, &state);
+			}
+#endif // BATCHMODE
 			return;
 		}
 
@@ -63,39 +83,61 @@ public:
 		{
 			// We had not yet information about this user
 
-			imei.parse(inputs[0].kvs[0]->value);
-			OLM_T(LMT_User06, ("New user:%lu detected, with imei:%lu", node.value, imei.value));
-			state.imei.value = imei.value;
-			state.position.cell.value = 0;
-			state.position.time = 0;
+			infoUser.parse(inputs[0].kvs[0]->value);
+
+			if (infoUser.imei.value != 0)
+			{
+				//OLM_T(LMT_User06, ("New user:%lu detected, with infoUser.emei:%lu", node.value, infoUser.imei.value));
+				state.imei.value = infoUser.imei.value;
+				state.position.cell.value = infoUser.position.cell.value;
+				state.position.time = infoUser.position.time;
+			}
+			else
+			{
+				if (inputs[0].num_kvs != 1)
+				{
+					OLM_E(("User:%lu, imei:%lu, cell:%d, time:'%s'. We have an empty imei userInfo as first kv, but it is not the last (%lu of %lu)", node.value, infoUser.imei.value, infoUser.position.cell.value, infoUser.position.time.str().c_str(), 0, inputs[0].num_kvs));
+					for (uint64_t i = 0; (i < inputs[0].num_kvs); i++)
+					{
+						node.parse(inputs[0].kvs[i]->key);
+						infoUser.parse(inputs[0].kvs[i]->value);
+						OLM_E(("Next kvs: user:%lu, imei:%lu, cell:%d, time:'%s'. Empty imei userInfo as first kv, but it is not the last (%lu of %lu)", node.value, infoUser.imei.value, infoUser.position.cell.value, infoUser.position.time.str().c_str(), 0, inputs[0].num_kvs));
+
+
+					}
+				}
+				//OLM_W(("Ignoring infoUser user:%lu detected, with infoUser.emei:%lu", node.value, infoUser.imei.value));
+				return;
+			}
 		}
 		else
 		{
-			OLM_T(LMT_User06, ("Existing user:%lu detected", node.value));
+			//OLM_T(LMT_User06, ("Existing user:%lu detected", node.value));
 			state.parse(inputs[1].kvs[0]->value);
 		}
 
 		for (uint64_t i = 0; (i < inputs[0].num_kvs); i++)
 		{
-			imei.parse(inputs[0].kvs[i]->value);
+			infoUser.parse(inputs[0].kvs[i]->value);
 			node.parse(inputs[0].kvs[i]->key);
 
-			//if (imei.value == 0)
+			if (infoUser.imei.value == 0)
 			{
-				OLM_T(LMT_User06, ("Parsed user:%lu with imei:%lu at i:%lu of %lu", node.value, imei.value, i, inputs[0].num_kvs));
+				//OLM_T(LMT_User06, ("Parsed user:%lu with imei:%lu at i:%lu of %lu", node.value, infoUser.imei.value, i, inputs[0].num_kvs));
+				continue;
 			}
-			if (imei.value != state.imei.value)
+			if (infoUser.imei.value != state.imei.value)
 			{
 
 				if (state.imei.value != 0)
 				{
-					OLM_T(LMT_User06, ("Emit different imei(%lu) from state(%lu) at i:%lu of %lu", imei.value, state.imei.value, i, inputs[0].num_kvs));
-					state.imei.value = imei.value;
-					writer->emit(0, &node, &state);
+					OLM_E(("User:%lu. Detected different imei(%lu) from state.imei(%lu). info.cell(%d), state.cell(%d), info.time(%s), state.time(%s). at i:%lu of %lu", node.value, infoUser.imei.value, state.imei.value, infoUser.position.cell.value, state.position.cell.value, infoUser.position.time.str().c_str(), state.position.time.str().c_str(), i, inputs[0].num_kvs));
+					state.imei.value = infoUser.imei.value;
+					writer->emit(0, &node, &infoUser);
 				}
 				else
 				{
-					state.imei.value = imei.value;
+					state.imei.value = infoUser.imei.value;
 				}
 			}
 		}

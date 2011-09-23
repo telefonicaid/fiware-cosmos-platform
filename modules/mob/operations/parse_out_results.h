@@ -46,23 +46,23 @@ extendedHelp: 		Write results file in the appropriate readable format.
 			size_t _total = 0;
 
 			   _total += snprintf( output, MAX_STR_LEN, "phone%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "mobility_degree%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "home_cell%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "home_cell_freq%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "home_bts%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "home_bts_freq%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "home_lac%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "home_lac_freq%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "home_state%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "home_state_freq%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "work_cell%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "work_cell_freq%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "work_bts%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "work_bts_freq%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "work_lac%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "work_lac_freq%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "work_state%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "work_state_freq%c", '\n' );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "mobility_degree%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "home_cell%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "home_cell_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "home_bts%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "home_bts_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "home_lac%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "home_lac_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "home_state%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "home_state_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "work_cell%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "work_cell_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "work_bts%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "work_bts_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "work_lac%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "work_lac_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "work_state%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "work_state_freq%c", '\n' );
 
 			 writer->emit(output);
 		}
@@ -82,23 +82,23 @@ extendedHelp: 		Write results file in the appropriate readable format.
 				      (results.workCellId.value > 0) || (results.workBtsId.value > 0) || (results.workLacId.value > 0) || (results.workStateId.value > 0))
 			      {
 			    		 _total += snprintf( output, MAX_STR_LEN, "%lu%c", phone.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.mobilityDegree.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%u%c", results.homeCellId.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.homeCellFreq.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.homeBtsId.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.homeBtsFreq.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.homeLacId.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.homeLacFreq.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.homeStateId.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.homeStateFreq.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%u%c", results.workCellId.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.workCellFreq.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.workBtsId.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.workBtsFreq.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.workLacId.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.workLacFreq.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.workStateId.value, CONF_SEP );
-			    		 _total += snprintf( output+_total, MAX_STR_LEN, "%lu%c", results.workStateFreq.value, '\n' );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN-_total, "%lu%c", results.mobilityDegree.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN-_total, "%u%c", results.homeCellId.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN-_total, "%lu%c", results.homeCellFreq.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN-_total, "%lu%c", results.homeBtsId.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN-_total, "%lu%c", results.homeBtsFreq.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN-_total, "%lu%c", results.homeLacId.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN-_total, "%lu%c", results.homeLacFreq.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN-_total, "%lu%c", results.homeStateId.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN-_total, "%lu%c", results.homeStateFreq.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN-_total, "%u%c", results.workCellId.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN-_total, "%lu%c", results.workCellFreq.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN-_total, "%lu%c", results.workBtsId.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN-_total, "%lu%c", results.workBtsFreq.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN-_total, "%lu%c", results.workLacId.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN-_total, "%lu%c", results.workLacFreq.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN-_total, "%lu%c", results.workStateId.value, CONF_SEP );
+			    		 _total += snprintf( output+_total, MAX_STR_LEN-_total, "%lu%c", results.workStateFreq.value, '\n' );
 
 			    		 writer->emit(output);
 			      }
@@ -114,23 +114,23 @@ extendedHelp: 		Write results file in the appropriate readable format.
 			size_t _total = 0;
 
 			   _total += snprintf( output, MAX_STR_LEN, "phone%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "mobility_degree%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "home_cell%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "home_cell_freq%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "home_bts%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "home_bts_freq%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "home_lac%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "home_lac_freq%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "home_state%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "home_state_freq%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "work_cell%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "work_cell_freq%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "work_bts%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "work_bts_freq%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "work_lac%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "work_lac_freq%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "work_state%c", CONF_SEP );
-			   _total += snprintf( output+_total, MAX_STR_LEN, "work_state_freq%c", '\n' );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "mobility_degree%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "home_cell%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "home_cell_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "home_bts%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "home_bts_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "home_lac%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "home_lac_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "home_state%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "home_state_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "work_cell%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "work_cell_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "work_bts%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "work_bts_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "work_lac%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "work_lac_freq%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "work_state%c", CONF_SEP );
+			   _total += snprintf( output+_total, MAX_STR_LEN-_total, "work_state_freq%c", '\n' );
 
 			   writer->emit(output);
 		}

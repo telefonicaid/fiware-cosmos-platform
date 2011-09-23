@@ -95,6 +95,7 @@ public:
 	 */
 	void init(samson::KVWriter *writer )
 	{
+		//OLM_T(LMT_User06, ("reduce_cdr_clients::init() with 0x%0x\n", this));
 		ResetFakeCellId();
 		hasMonth = false;
 	}
@@ -112,7 +113,7 @@ public:
 		if( inputs[0].num_kvs > 0 )
 		{
 			phone.parse(inputs[0].kvs[0]->key);
-			//OLM_T(LMT_User06, ("Starts run for key:%lu with cdrs: inputs[1].num_kvs:%lu\n", key.value, inputs[1].num_kvs));
+			//OLM_T(LMT_User06, ("reduce_cdr_clients::run() at 0x%0x: Starts run for phone:%lu with cdrs: inputs[1].num_kvs:%lu\n", this, phone.value, inputs[1].num_kvs));
 			md.totalCalls = inputs[1].num_kvs;
 			md.nationalCalls = 0;
 			md.internationalCalls = 0;
@@ -179,6 +180,7 @@ public:
 
 	void finish(samson::KVWriter *writer )
 	{
+		//OLM_T(LMT_User06, ("reduce_cdr_clients::finish() with 0x%0x\n", this));
 	}
 
 

@@ -79,7 +79,7 @@ public:
 		std::string conf_timeslot_work = environment->get(MOB_PARAMETER_CONF_TIMESLOT_WORK, MOB_PARAMETER_CONF_TIMESLOT_WORK_DEFAULT);
 		ctsW.set( conf_timeslot_work );
 
-		//OLM_T(LMT_User06, ("init of 0x%0x with '%s' and '%s'\n", this, conf_timeslot_home.c_str(), conf_timeslot_work.c_str()));
+		//OLM_T(LMT_User06, ("reduce_add_cell_info::init() of 0x%0x with '%s' and '%s'\n", this, conf_timeslot_home.c_str(), conf_timeslot_work.c_str()));
 	}
 
 	/**
@@ -109,7 +109,10 @@ public:
 
 			key.parse(inputs[0].kvs[0]->key);
 
-			//OLM_T(LMT_User06, ("Process of 0x%0x key:0x%0x with cell:0x%0x with inputs[0].num_kvs:%lu", this, key.value, cell.cellId.value, inputs[0].num_kvs));
+/*			if (inputs[0].num_kvs > 200000)
+			{
+				OLM_T(LMT_User06, ("reduce_add_cell_info::run() at 0x%0x: key:0x%0x with cell:0x%0x with inputs[0].num_kvs:%lu", this, key.value, cell.cellId.value, inputs[0].num_kvs));
+			}*/
 			for( size_t i=0; i<inputs[0].num_kvs; i++ )
 			{
 				cdr.parse( inputs[0].kvs[i]->value );
@@ -189,6 +192,7 @@ public:
 
 	void finish(samson::KVWriter *writer )
 	{
+		//OLM_T(LMT_User06, ("reduce_add_cell_info::finish() of 0x%0x'\n", this));
 	}
 
 

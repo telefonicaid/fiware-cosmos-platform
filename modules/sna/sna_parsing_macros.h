@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 //Macros to parte CDRs
-#define GET_CDRS_INIT int pos=0; int pos_field=0; int pos_celd=0; int length_celd=0; int cont=0;
+#define GET_CDRS_INIT int pos=0; int pos_celd=0; int length_celd=0; int pos_field=0; int cont=0;
 #define GET_CDRS_NEXT_FIELD pos_field=pos; while( line[pos] != '|' && line[pos] != '\0' ) pos++; line[pos]='\0';  pos++;
 #define GET_CDRS_LAST_FIELD pos_field=pos; while( line[pos] != '|' ) pos++;
 #define GET_CDRS_GET_NUMBER( num )    num = atoll( &line[pos_field] );

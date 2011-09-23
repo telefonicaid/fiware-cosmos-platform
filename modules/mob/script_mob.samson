@@ -1,0 +1,21 @@
+trace on
+
+remove_all
+
+add jun -txt
+add home -txt
+add work -txt
+add jun.cdrstxt -txt
+add jun.userstxt -txt
+add jun.cellstxt -txt
+
+upload callsTxt jun.cdrstxt -clear
+upload GASSET_CLIENTE_20100630.dat jun.userstxt -clear
+upload GASSET_CELDAS_RED_OCT2009.dat jun.cellstxt -clear
+
+mob.script_mobility jun
+
+download jun.month_export jun.month_export.txt
+download jun.results_export jun.results_export.txt
+
+

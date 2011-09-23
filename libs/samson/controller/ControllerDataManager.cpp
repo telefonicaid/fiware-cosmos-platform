@@ -659,7 +659,7 @@ namespace samson {
 			} else if( tmp2 )
 			{
 				std::ostringstream output;
-				output << "Queue " + name + " exist. Please, remove it first with remove_queue command";
+				output << "Queue " + name2 + " exist. Please, remove it first with remove_queue command";
 				response.output = output.str();
 				response.error = true;
 				return response;
@@ -705,7 +705,7 @@ namespace samson {
 			else if( tmp2 )
 			{
 				std::ostringstream output;
-				output << "Queue " + name + " exist. Please, remove it first with remove_queue command";
+				output << "Queue " + name2 + " exist. Please, remove it first with remove_queue command";
 				response.output = output.str();
 				response.error = true;
 				return response;

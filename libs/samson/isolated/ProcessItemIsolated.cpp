@@ -196,7 +196,10 @@ namespace samson
             // Send a kill message and finish
             samson::network::MessagePlatformProcess * response = new samson::network::MessagePlatformProcess();
             response->set_code( samson::network::MessagePlatformProcess_Code_code_kill );
-            au::writeGPB(pipeFdPair2[1], response);
+            if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
+	    {
+		    LM_E(("Error sending cancel response, code(%d),  (pipeFdPair2[1]:%d) ",  response->code(), pipeFdPair2[1]));
+	    }
             delete response;
             
             // Finish since it has been canceled
@@ -220,7 +223,10 @@ namespace samson
                 // Send the continue
                 samson::network::MessagePlatformProcess * response = new samson::network::MessagePlatformProcess();
                 response->set_code( samson::network::MessagePlatformProcess_Code_code_ok );
-                au::writeGPB(pipeFdPair2[1], response);
+                if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
+		{
+		    LM_E(("Error sending message to run operation(%s), code(%d),  (pipeFdPair2[1]:%d) ",  operation, response->code(), pipeFdPair2[1]));
+		}
                 delete response;
                 
                 // Not finish the process
@@ -275,7 +281,10 @@ namespace samson
                 // Send the continue
                 samson::network::MessagePlatformProcess * response = new samson::network::MessagePlatformProcess();
                 response->set_code( samson::network::MessagePlatformProcess_Code_code_ok );
-                au::writeGPB(pipeFdPair2[1], response);
+                if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
+		{
+		    LM_E(("Error sending trace notification, code(%d),  (pipeFdPair2[1]:%d) ",  response->code(), pipeFdPair2[1]));
+		}
                 delete response;
                 
                 // Not finish the process
@@ -295,7 +304,10 @@ namespace samson
                 // Send the continue
                 samson::network::MessagePlatformProcess * response = new samson::network::MessagePlatformProcess();
                 response->set_code( samson::network::MessagePlatformProcess_Code_code_ok );
-                au::writeGPB(pipeFdPair2[1], response);
+                if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
+		{
+		    LM_E(("Error sending progress report, code(%d),  (pipeFdPair2[1]:%d) ",  response->code(), pipeFdPair2[1]));
+		}
                 delete response;                    
                 
                 // Not finish the process
@@ -318,7 +330,10 @@ namespace samson
                 // Send an ok back, and return
                 samson::network::MessagePlatformProcess * response = new samson::network::MessagePlatformProcess();
                 response->set_code( samson::network::MessagePlatformProcess_Code_code_ok );
-                au::writeGPB(pipeFdPair2[1], response);
+                if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
+		{
+		    LM_E(("Error sending user error, code(%d),  (pipeFdPair2[1]:%d), error message:%s ",  response->code(), pipeFdPair2[1], error.getMessage().c_str()));
+		}
                 delete response;
 
                 // It has to finish since the background process has notifyied the error
@@ -342,7 +357,10 @@ namespace samson
                 
                 samson::network::MessagePlatformProcess * response = new samson::network::MessagePlatformProcess();
                 response->set_code( samson::network::MessagePlatformProcess_Code_code_ok );
-                au::writeGPB(pipeFdPair2[1], response);
+                if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
+		{
+		    LM_E(("Error sending finixh process, code(%d),  (pipeFdPair2[1]:%d) ",  response->code(), pipeFdPair2[1]));
+		}
                 delete response;
                 
                 // It has to finish since it has received the last message from the background process
@@ -398,7 +416,10 @@ namespace samson
             {
                 samson::network::MessagePlatformProcess * response = new samson::network::MessagePlatformProcess();
                 response->set_code( samson::network::MessagePlatformProcess_Code_code_ok );
-                au::writeGPB(pipeFdPair2[1], response);
+                if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
+		{
+		    LM_E(("Error sending exchange message, code(%d),  (pipeFdPair2[1]:%d) ",  response->code(), pipeFdPair2[1]));
+		}
                 delete response;
             }
                 
@@ -460,6 +481,8 @@ namespace samson
         // If problems during write, abort
         if( write_ans!= au::OK )
         {                
+	    LM_E(("Error sending message from process to platform (pipeFdPair1[1]:%d) write-error %s",  pipeFdPair1[1], au::status( write_ans) ));
+
             LM_T(LmtIsolated,("Error sending message from process to platform write-error %s",  au::status( write_ans) ));
             if( isolated_process_as_tread )
                 return;
@@ -476,8 +499,7 @@ namespace samson
         // If problems during read, die
         if( read_ans != au::OK)
         {
-            LM_E(("Background process did not receive an answer from message with code %d to the platform. Error code '%s'", 
-                  message->code(), au::status(read_ans) ));
+            LM_E(("Background process did not receive an answer from message with code %d (written on pipeFdPair1[1](%d) to the platform, reading from pipeFdPair2[0](%d). Error code '%s'", message->code(), pipeFdPair1[1], pipeFdPair2[0], au::status(read_ans) ));
             LM_T(LmtIsolated,("Error sending message from process to platform read-error '%s'", au::status(read_ans) ));
             if( isolated_process_as_tread )
                 return;

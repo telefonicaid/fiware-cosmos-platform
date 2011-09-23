@@ -214,6 +214,7 @@ namespace au
         if( !serialize )
         {
             free( data );
+	    LM_E(("Error serializing data, header.size:%d, preparing for fd:%d\n", header.size, fd));
             return GPB_WriteErrorSerializing;
         }
         
@@ -222,6 +223,7 @@ namespace au
         if (nw != sizeof(header))
         {
             free( data );
+	    LM_E(("Error writing header: nw(%d) != sizeof(header)(%d) on fd:%d\n", nw, sizeof(header), fd));
             return GPB_WriteError;
         }
         
@@ -230,6 +232,7 @@ namespace au
         if (nw != header.size)
         {
             free( data );
+	    LM_E(("Error writing data: nw(%d) != header.size(%d) on fd:%d\n", nw, header.size, fd));
             return GPB_WriteError;
         }
 

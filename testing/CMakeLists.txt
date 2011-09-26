@@ -1,3 +1,5 @@
+ADD_SUBDIRECTORY(test_mongo)
+
 #ADD_SUBDIRECTORY(test_qsi)      # Qsi (QT Scene Items) interactive test program
 #ADD_SUBDIRECTORY(test_hostMgr)  # test_hostMgr
 #ADD_SUBDIRECTORY(test_memory)   # test_memory

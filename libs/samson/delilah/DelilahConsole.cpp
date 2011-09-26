@@ -203,8 +203,10 @@ namespace samson
     
     const char* help_commands[][2] =                                            
     {                                                                           
-        { "info"                    , "info select/xml/value [-limit n]     Tool used to query the general xml based monitorization.\n" 
+        { "info"                    , "info select/xml/value [select_query [-limit n]]     Tool used to query the general xml based monitorization.\n" 
         
+                                      "For the select option:"
+                                      "                                     [select_query] Query in xpath notation"
                                       "                                     [-limit n] Limit the deepth of the information tree"
         },
         { "ls"                      , "ls          Show a list of all the key-value sets" } ,                
@@ -217,14 +219,14 @@ namespace samson
         { "ls_processes"            , "ls_processes     Shows a list with all the processes ( batch and stream ) running on all the workers"},
 
         { "ls_operations"           , "ls_operations [op_name]      Show a list of operations.\n" 
-                                      "                             If [op_name] is specified, only operation starting with op_name are shown"},
+                                      "                             If [op_name] is specified, only operations starting with op_name are shown"},
         { "ls_datas"                , "ls_datas [data_name]      Show a list of data-types.\n" 
                                       "                          If [data_name] is specified, only data-types starting with data_name are shown"},
-        { "ps"                      , "ps [-clear] [id]     Show all current process running on delilah client\n" 
-            "                     [-clear] removes finished or error processes\n"
+        { "ps"                      , "ps [-clear] [id]     Show all current processes running on delilah client\n" 
+            "                     [-clear] removes finished or error marked processes\n"
             "                     [id] get more help about a particular process" } ,                
         
-        { "ps_network"              , "ps_network           Get information about network connections in a SAMSON cluster"},
+        { "ps_network"              , "ps_network           Get information about network connections in the SAMSON cluster"},
         { "reload_modules"          , "reload_modules        reload_modules used by the platform"},
         
         
@@ -233,45 +235,46 @@ namespace samson
             "Add a key-value set with a particular format. ( -txt create text sets )" },              
         
         { "set"                     , "set <var> <value>       Set environment variables ( all operations can use them )" },
-        { "unset"                   , "unset <var>             Remove a environment variables " },
+        { "unset"                   , "unset <var>             Remove an environment variable " },
         
         { "ls_operations"           , "ls_operations [-begin X] [-end -X]      Get a list of the available operations ( parser, map, reduce, script, etc)"},
         { "ls_datas"                , "ls_datas [-begin X] [-end -X]           Get a list of available data types for keys and values"},
         
         { "ps_jobs"                 , "ps_jobs           Get a list of running (batch processing) jobs" },
         { "ps_tasks"                , "ps_tasks          Get a list of running batch processing tasks on controller and workers" },
-        { "clear_jobs"              , "clear_jobs (cj)   Clear finish or error jobs" },
+        { "clear_jobs"              , "clear_jobs (cj)   Clear finished or error marked jobs" },
         { "kill"                    , "kill (k)          Kill a particular job and all its sub-tasks" },
         
-        { "upload"                  , "upload  <local_file_name> <set>       Load txt files to the platform" },
-        { "download"                , "download  <set> <local_file_name> [-force]     Download txt sets from the platform to local file\n" 
+        { "upload"                  , "upload  <local_file_name> <set>       Load txt files to the platform, available for batch processing" },
+        { "download"                , "download  <set> <local_file_name> [-force]     Download the dataset from the platform to local directory\n" 
             "                                               [-force] Remove local directory first"  },
         
         { "push"                    , "push <local_file_or_dir> <queue>        Push content of a local file/directory to a queue"},
-        { "pop"                     , "pop <queue> <local_dir>                 Pop content of a queue to a local dir. Use samsonCat to check content in binary data"},
+        { "pop"                     , "pop <queue> <local_dir>                 Pop content of a queue to a local directory. Also working for binary queues. Use samsonCat to check content"},
         
-        { "add_stream_operation"    , "add_stream_operation <name> <operation> <input .. output queues>\n"
-            "\n"
-            "Add an operation to automatically process data from queues to queues"},
+        { "add_stream_operation"    , "add_stream_operation <name> <operation> <input .. output queues>     Add an operation to automatically process data from input queues to output queues"},
         
         { "rm_stream_operation"     , "rm_stream_operation <name>    Remove a previously introducted operation with add_stream_operation"},
+
+        { "set_stream_operation_property"     , "operation not yet available"},
         
         { "ls_stream_operations"    , "ls_stream_operation           Show a list of active stream operations"},
                 
         { "rm_queue"                , "rm_queue <queue>         Remove a queue" },
         
-        { "pause_queue"             , "pause_queue <queue>        Pause an queue, so no new stream operation are scheduled over this queue " },
+        { "pause_queue"             , "pause_queue <queue>        Pause a queue, so no new stream operations are scheduled over this queue " },
         { "play_queue"              , "play_queue <queue>         Cancel pause_queue command over a queue " },
         
         { "ls_queues"               , "ls_queues        Show a list of current queues in all the workers" },
         
         { "ps_stream"               , "ps_stream        Get a list of current stream tasks"},
         
-        { "engine_show"             , "engine_show      Show a status information of the engine platform running on all the elements of SAMSON platform"},
+        { "engine_show"             , "engine_show      Show a status information of the engine resources running on all the elements of SAMSON platform"},
     
         { "run_stream_operation"    , "run_stream_operation [op_name] [queues...] [-clear_inputs]         Run a particular operation over stream queues"},
+        { "ls_stream_operation"    , "ls_stream_operation  List all stream operations scheduled with add_stream_operation"},
         
-        { "ls_block_manager"        , "ls_block_manager             Get information about the stream-manager for each worker" },
+        { "ls_block_manager"        , "ls_block_manager             Get information about the block-manager for each worker" },
     
         { "cp_queue"                , "cp_queue  <from_queue> <to_queue>            Copy contents of one queue to another"},
         { "ls_operation_rates"      , "ls_operation_rates           get a list of statistics about operations in the platform"},

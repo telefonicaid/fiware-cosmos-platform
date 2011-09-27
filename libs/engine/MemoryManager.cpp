@@ -167,26 +167,66 @@ namespace engine
         
 		while( true )
 		{
-            double memory_input_usage = _getMemoryUsageByTag( 0 );
+            
+            MemoryRequest *r = memoryRequests.findFront();
+            
+            if( !r )
+                return;
 
-			MemoryRequest *r = NULL;
-				
-			if (  memory_input_usage < 0.5 )  // Maximum usage for input ( tag == 0) 50% of memory
-				r = memoryRequests.extractFront();
+            LM_M(("Cheking memory request with size %lu"  , r->size ));
+            
+            if( r->mem_percentadge == 1.0 )
+            {
+                
+                // Extract the request properly
+                r = memoryRequests.extractFront();
+                if (!r )
+                    LM_X(1,("Internal error"));
 
-			if( !r )
-			{
-				// Nothing to notify
-				break;
-			}
-			else
-			{
-                // Get the buffer
-				r->buffer = _newBuffer("Buffer from request", r->size , 0 );   // By default ( tag == 0 )
+                
+                // Full memory request, it is granted if memory is bellow 100%
+                double memory_usage = _getMemoryUsage();
 
-                // Send the answer with a notification
-                Engine::shared()->notify( new Notification( notification_memory_request_response , r , r->listner_id ) );
-			}
+                LM_M(("memory usage %f"  , memory_usage ));
+                
+                if( memory_usage < 1.0 )
+                {
+                    // Get the buffer
+                    r->buffer = _newBuffer("Buffer from general request", r->size , 0 );   // By default ( tag == 0 )
+                    
+                    // Send the answer with a notification
+                    Engine::shared()->notify( new Notification( notification_memory_request_response , r , r->listner_id ) );
+                    
+                }
+                else
+                    return;
+                
+                //LM_M(("Finish Cheking memory request 100%"));
+
+            }
+            else
+            {
+                
+                // Normal memory requests ( for classical batch processing )
+                double memory_input_usage = _getMemoryUsageByTag( 0 );
+                
+                if (  memory_input_usage < 0.5 )  // Maximum usage for input ( tag == 0) 50% of memory
+                    r = memoryRequests.extractFront();
+                
+                if( !r )
+                {
+                    //LM_X((1,"Internal error"));
+                    return;
+                }
+                else
+                {
+                    // Get the buffer
+                    r->buffer = _newBuffer("Buffer from request", r->size , 0 );   // By default ( tag == 0 )
+                    
+                    // Send the answer with a notification
+                    Engine::shared()->notify( new Notification( notification_memory_request_response , r , r->listner_id ) );
+                }
+            }
 			
 		}
 		
@@ -211,14 +251,18 @@ namespace engine
     size_t MemoryManager::getUsedMemory()
     {
         au::TokenTaker tk( &token );
+        return _getUsedMemory();
         
+    }
+    
+    size_t MemoryManager::_getUsedMemory()
+    {
         size_t total = 0;
 
         std::set<Buffer*>::iterator i;
         for ( i = buffers.begin() ; i != buffers.end() ; i++)
                 total+= (*i)->getMaxSize();
 
-        
         return total;
         
         
@@ -227,6 +271,11 @@ namespace engine
     double MemoryManager::getMemoryUsage()
     {
         return (double) getUsedMemory() / (double) memory;
+    }
+    
+    double MemoryManager::_getMemoryUsage()
+    {
+        return (double) _getUsedMemory() / (double) memory;
     }
 
     

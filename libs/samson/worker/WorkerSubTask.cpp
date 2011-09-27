@@ -241,7 +241,7 @@ namespace samson
     void WorkerSubTask::addMemoryRequest( size_t size )
     {
         
-        engine::MemoryRequest *memoryRequest = new engine::MemoryRequest( size , getEngineId() );
+        engine::MemoryRequest *memoryRequest = new engine::MemoryRequest( size , 0.5 , getEngineId() );
         
         // add to the engine::OperationsContainer
         add( memoryRequest );

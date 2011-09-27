@@ -36,6 +36,9 @@ namespace engine {
         // Size of the memory requets ( extracted from environment )
         size_t size;
         
+        // Percentadge of the memory to give this memory block
+        double mem_percentadge;
+        
         // Listner to notify
         size_t listner_id;
 
@@ -43,7 +46,7 @@ namespace engine {
         Buffer *buffer;
 
         // Basic constructor
-        MemoryRequest( size_t _size , size_t _listener_id );
+        MemoryRequest( size_t _size , double _mem_percentadge , size_t _listener_id );
 
         // Get information in xml mode
         void getInfo( std::ostringstream& output);

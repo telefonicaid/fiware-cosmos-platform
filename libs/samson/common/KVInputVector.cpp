@@ -6,7 +6,34 @@
 
 namespace samson
 {
-
+#pragma mark KVInputVectorBase
+	
+	void KVInputVectorBase::prepareInput( size_t _max_num_kvs )
+	{
+		if( _max_num_kvs > max_num_kvs )
+		{
+			if( _kv )
+				free( _kv );
+			if( kv ) 
+				free ( kv );
+			
+			// Set a new maximum number of kvs
+			max_num_kvs = _max_num_kvs;
+			
+			_kv = (KV**) malloc( sizeof(KV*) * _max_num_kvs );
+			kv  = (KV*) malloc( sizeof(KV) * max_num_kvs );
+			
+		}
+		
+		// Set the pointers to internal structure ( to sort again )
+		for (size_t i = 0 ; i < _max_num_kvs ; i++)
+			_kv[i] = &kv[i];
+		
+		num_kvs = 0;
+	}
+    
+    
+#pragma mark KVInputVector
     
     KVInputVector::KVInputVector( Operation* operation )
     {
@@ -45,6 +72,8 @@ namespace samson
         compareKey = operation->getInputCompareByKeyFunction();
 
         
+        inputStructs = (KVSetStruct*) malloc( sizeof(KVSetStruct) * num_inputs );
+        
     }
 
     
@@ -59,6 +88,8 @@ namespace samson
 		num_kvs = 0;// Current numner of key-values pairs
 		
 		valueSize = (DataSizeFunction *) malloc( sizeof( DataSizeFunction) * num_inputs );
+        
+        inputStructs = NULL;
 	}
 	
 	KVInputVector::~KVInputVector()
@@ -68,34 +99,13 @@ namespace samson
 		if( kv ) 
 			free ( kv );
         
+        if( inputStructs )
+            free( inputStructs );
+        
         free( valueSize );
 	}
 	
-	// For each hash group, prepare the vector
-	
-	void KVInputVector::prepareInput( size_t _max_num_kvs )
-	{
-		if( _max_num_kvs > max_num_kvs )
-		{
-			if( _kv )
-				free( _kv );
-			if( kv ) 
-				free ( kv );
-			
-			// Set a new maximum number of kvs
-			max_num_kvs = _max_num_kvs;
-			
-			_kv = (KV**) malloc( sizeof(KV*) * _max_num_kvs );
-			kv  = (KV*) malloc( sizeof(KV) * max_num_kvs );
-			
-		}
-		
-		// Set the pointers to internal structure ( to sort again )
-		for (size_t i = 0 ; i < _max_num_kvs ; i++)
-			_kv[i] = &kv[i];
-		
-		num_kvs = 0;
-	}
+
 	
 	void KVInputVector::addKVs( ProcessSharedFile& file )
 	{
@@ -177,6 +187,49 @@ namespace samson
 		if( num_kvs > 0 )
 			std::sort( _kv , _kv + num_kvs , compare );
 	}
+    
+    void KVInputVector::init()
+    {
+        // Process all the key-values in order
+        pos_begin = 0;	// Position where the next group of key-values begin
+        pos_end	 = 1;	// Position where the next group of key-values finish
+    }
+    
+    
+    KVSetStruct* KVInputVector::getNext()
+    {
+        if( pos_begin >= num_kvs )
+            return NULL;
+        
+        // Identify the number of key-values with the same key
+        while( ( pos_end < num_kvs ) && ( compareKey( _kv[pos_begin] , _kv[pos_end] ) == 0) )
+            pos_end++;
+        
+        // Create the necessary elements for the output KVSetStruct structure
+        size_t pos_pointer = pos_begin;
+        for (int i = 0 ; i < num_inputs ;i++)
+        {
+            if( (pos_pointer == pos_end) || ( _kv[pos_pointer]->input != i) )
+                inputStructs[i].num_kvs = 0;
+            else
+            {
+                inputStructs[i].kvs = &_kv[pos_pointer];
+                inputStructs[i].num_kvs = 0;
+                while( ( pos_pointer < pos_end ) && ( _kv[pos_pointer]->input == i) )
+                {
+                    inputStructs[i].num_kvs++;
+                    pos_pointer++;
+                }
+            }
+        }
+        
+        // Go to the next position
+        pos_begin = pos_end;
+        pos_end = pos_begin + 1;
+        
+        return inputStructs;
+        
+    }
 	
 
 }

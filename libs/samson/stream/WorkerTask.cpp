@@ -399,7 +399,7 @@ namespace samson {
                             std::string input_queue_name = operation->input_queues(i);
                             Queue*queue = streamManager->getQueue( input_queue_name );
                             queue->update( block_info );
-                            queues.push_back( queue  );
+                            queues.push_back( queue );
                         }
                         
                         // Decide ranges used in the operations depending on the total size
@@ -419,8 +419,9 @@ namespace samson {
                             for (int q = 0 ; q < (int) queues.size() ; q++ )
                             {
                                 BlockList* list = tmp->getBlockList( au::str("input_%d" , q ) ); 
-                                queues[q]->copyTo( list , range );
+                                list->copyFrom( queues[q]->list , range );
                             }
+                            
                             
                             // Set the working size to get statictics at ProcessManager
                             tmp->setWorkingSize();

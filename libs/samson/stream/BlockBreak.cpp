@@ -6,7 +6,7 @@
 
 #include "BlockBreak.h"         // Own interface
 
-
+/*
 namespace samson {
     namespace stream
     {
@@ -174,3 +174,4 @@ namespace samson {
     }
 }
 
+*/

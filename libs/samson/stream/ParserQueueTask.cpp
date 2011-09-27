@@ -327,7 +327,7 @@ namespace samson {
         };
         
         
-        class BlockListCollection
+        class BlockReaderCollection
         {
 
         public:
@@ -335,12 +335,18 @@ namespace samson {
             std::vector<BlockReader> blockReaders;
             KVInputVector kvVector;
             
-            BlockListCollection( Operation *operation ) : kvVector( operation )
+            Operation *operation;
+            
+            BlockReaderCollection( Operation *_operation ) : kvVector( _operation )
             {
+                operation = _operation;
             }
             
             void insert( Block *block , int channel )
             {
+                if ( ( channel < 0 ) || ( channel > ( operation->getNumInputs() - 1 ) ) )
+                    LM_X(1,("Internal error"));
+                
                 blockReaders.push_back( BlockReader( block, channel ) );
             }
             
@@ -369,15 +375,15 @@ namespace samson {
             }                
             
             
-            void sort()
+            void sortAndInit()
             {
                 kvVector.sort();
+                kvVector.init();
             }
             
         };
         
-        // For input - state reduce operations
-        
+/*        
         class BlockReaderSystem
         {
             
@@ -423,6 +429,7 @@ namespace samson {
             }
             
         };
+ */
 
 #pragma mark
 
@@ -473,7 +480,7 @@ namespace samson {
             reduce->init( writer );
             
             // Get the block reader list to prepare inputs for operation
-            BlockReaderSystem blockReaderSystem( operation );
+            BlockReaderCollection blockreaderCollection( operation );
 
             // Insert all the blocks involved in this operation
             for ( int i = 0 ; i < operation->getNumInputs() ; i++ )
@@ -481,128 +488,52 @@ namespace samson {
                 BlockList* list = getBlockList( au::str("input_%d", i) );
                 std::list< Block* >::iterator b;
                 for ( b = list->blocks.begin() ; b != list->blocks.end() ; b++)
-                    blockReaderSystem.insertInput( *b , i );
+                    blockreaderCollection.insert( *b , i );
             }
             
-            // Structure used to input reduce operations    
-            int num_inputs = operation->getNumInputs();
-            KVSetStruct* inputStructs = (KVSetStruct*) malloc( sizeof(KVSetStruct) * num_inputs );
-            
-            // Function used to compare keys
-            OperationInputCompareFunction compareKey = operation->getInputCompareByKeyFunction();
-                        
             for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)
             {
                 // Check if this is inside the range we are interested in processing
                 if( ( hg >= range.hg_begin ) && (hg < range.hg_end) )
                 {
-                    // Prepare all the inputs for this hash.group
-                    size_t num_kvs = blockReaderSystem.prepare( hg );
+                    // Prepare the blockReaderCollection for thi hash-group
+                    size_t num_kvs = blockreaderCollection.prepare( hg );
+                    
+                    // sort input key-values and init the kvVector structure
+                    blockreaderCollection.sortAndInit();
                     
                     if( num_kvs > 0 )
                     {
                         
-                        size_t num_kvs_input = blockReaderSystem.input.kvVector.num_kvs;
-                        size_t num_kvs_state = blockReaderSystem.state.kvVector.num_kvs;
+                        // Get data for the next reduce operation
+                        KVSetStruct* inputStructs = blockreaderCollection.kvVector.getNext();
                         
-                        //LM_M(("Processing hash-group %d :  %lu key-values ( %lu / %lu ) " , hg , num_kvs , num_kvs_input  , num_kvs_state ));
-                        
-                        KVInputVector &inputVector = blockReaderSystem.input.kvVector;
-                        KVInputVector &stateVector = blockReaderSystem.state.kvVector;
-                        
-                        
-                        size_t pos_input = 0;
-                        size_t pos_state = 0;
-                        
-                        
-                        while ( ( pos_input < num_kvs_input ) || ( pos_state < num_kvs_state) )
+                        while( inputStructs )
                         {
-                            // Let's decide where we will take key-values from ( input / state / both )
-                            // ---------------------------------------------------------------------------------------
-                            kvs_source source = undefined;
-                            
-                            if( pos_input >= num_kvs_input )
-                                source = state_only;
-                            else if( pos_state >= num_kvs_state )
-                                source = input_only;
-                            else
-                            {
-                                // We compare both first keys to decide source
-                                int res = compareKey( inputVector._kv[pos_input] , stateVector._kv[pos_state] );
-                                
-                                if ( res == 0)
-                                    source = input_and_state;
-                                else if (res < 0)
-                                    source = input_only;
-                                else
-                                    source = state_only;
-                            }
-                            
-                            // Based on the current sources , let's prepare the vector
-                            // ---------------------------------------------------------------------------------------
-                            
-                            if( source == undefined )
-                                LM_X(1,("Internal error"));
-                            
-                            if( ( source == input_only ) || ( source == input_and_state) )
-                            {
-                                inputStructs[0].kvs     = &inputVector._kv[pos_input];
-                                inputStructs[0].num_kvs = inputVector.getNumKeyValueWithSameKey(pos_input);
-                            }
-                            else
-                            {
-                                inputStructs[0].kvs = NULL;
-                                inputStructs[0].num_kvs = 0;
-                            }
-                            
-                            if( ( source == state_only ) || ( source == input_and_state) )
-                            {
-                                inputStructs[1].kvs     = &stateVector._kv[pos_state];
-                                inputStructs[1].num_kvs = stateVector.getNumKeyValueWithSameKey(pos_state);
-                            }
-                            else
-                            {
-                                inputStructs[1].kvs = NULL;
-                                inputStructs[1].num_kvs = 0;
-                            }
-                            
                             // Call the reduce operation
-                            // ---------------------------------------------------------------------------------------
-                            
                             reduce->run( inputStructs, writer );
                             
-                            // Update the position of both pointers
-                            // ---------------------------------------------------------------------------------------
-                            
-                            pos_input += inputStructs[0].num_kvs;
-                            pos_state += inputStructs[1].num_kvs;
-                            
-                            
+                            // Get the next one
+                            inputStructs = blockreaderCollection.kvVector.getNext();
                         }
                         
                     }
                     
                 }
             }
-            
-            
             reduce->finish( writer  );
             
             // Detele the created instance
             delete reduce;            
             
-            // Freeing structure used as input
-            free( inputStructs ) ;
-            
             LM_M(("Finish ReduceQueueTask for range %s  [%s]" , range.str().c_str() , block_info.str().c_str() ));
-            
             
         }          
         
         std::string ReduceQueueTask:: getStatus()
         {
             std::ostringstream output;
-            output << "[" << id << "] ";
+                output << "[" << id << "] ";
             output << "Reduce " << streamOperation->operation();
             return output.str();
         }

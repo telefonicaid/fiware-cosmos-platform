@@ -45,6 +45,14 @@ public:
 
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
+		if( inputs[0].num_kvs > 0 )
+			node.parse(inputs[0].kvs[0]->key);
+		else
+			node.parse(inputs[1].kvs[0]->key);			
+
+		printf("Key %lu -> kvs:%lu kvs:%lu\n", node.value , inputs[0].num_kvs , inputs[1].num_kvs );
+
+
 		if (inputs[0].num_kvs == 0)
 		{
 			// No new information about user

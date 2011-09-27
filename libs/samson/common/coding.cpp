@@ -58,6 +58,19 @@ namespace samson
         return true;
         
     }
+    
+    bool KVRange::isOkForNumDivisions( int num_divisions )
+    {
+        for (int i = 0 ; i < num_divisions ; i++)
+        {
+            KVRange r = rangeForDivision( i , num_divisions);
+            if( r.includes( *this ) )
+                return true;
+        }
+        return false;
+    }
+    
+    
  
     KVRange rangeForDivision( int pos , int num_divisions )
     {

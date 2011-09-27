@@ -76,70 +76,11 @@ namespace samson {
                 // Save state to disk just in case it crases
                 saveStateToDisk();
                 
-                // Review old BlockBreaks not used any more
-                au::map< size_t , BlockBreak >::iterator it_block_break; 
-                std::set< size_t > block_id_to_remove;
-                for ( it_block_break = blockBreaks.begin() ; it_block_break != blockBreaks.end() ; it_block_break ++ )
-                {
-                    if ( BlockManager::shared()->getBlock( it_block_break->first ) == NULL )
-                        block_id_to_remove.insert( it_block_break->first );
-                    
-                    // Remove smaller divisions if higer divisions are ready
-                    it_block_break->second->removeSmallerDivisions();
-                }
-                
-                blockBreaks.removeInMap( block_id_to_remove );
-                
-                
-                // Review if a particular block needs to be divided
-                au::map< std::string , Queue >::iterator it_queue;
-                for (it_queue = queues.begin() ;  it_queue != queues.end() ; it_queue++ )
-                {
-                    Queue* queue = it_queue->second;
-                    
-                    if( queue->format.isTxt() )
-                        continue;
-                    
-                    BlockInfo block_info;
-                    queue->update( block_info );
+                // Review all the queues
+                au::map< std::string , Queue >::iterator queue_it;
+                for ( queue_it = queues.begin() ; queue_it != queues.end() ; queue_it++ )
+                    queue_it->second->review();
 
-                    if( block_info.num_blocks == 0 )
-                        continue;
-                    
-                    int level_division = get_num_divisions( block_info.size );
-                    
-                    if( level_division > 1 )
-                    {
-                        // Run a block_division task if necessary for each block
-                        au::list< Block >::iterator it_block;
-                        for( it_block = queue->list->blocks.begin() ; it_block != queue->list->blocks.end() ;  it_block++)
-                        {
-                            Block* block = *it_block;
-                            size_t block_id = block->getId();
-                            BlockBreak *blockBreak = blockBreaks.findOrCreate( block_id , block_id );
-                            
-                            if( blockBreak->getMaxDivision() < level_division )
-                            {
-                                // Set this level of divisions
-                                blockBreak->addNumDivisions( level_division );
-                                
-                                // Create a task to divide this block
-                                size_t id = queueTaskManager.getNewId();
-                                
-                                BlockBreakQueueTask *tmp = new BlockBreakQueueTask( id , block , level_division ); 
-                                
-                                queueTaskManager.add( tmp );
-                                
-                                
-                            }
-                            
-                        }
-                        
-                        
-                    }
-                    
-                }
-                
                 return;
             }
             
@@ -214,7 +155,7 @@ namespace samson {
             Queue *fromQueue = getQueue( from_queue_name );
             Queue *toQueue = getQueue( to_queue_name );
             
-            toQueue->copyFrom( fromQueue );
+            toQueue->list->copyFrom( fromQueue->list );
             
         }
         
@@ -230,12 +171,6 @@ namespace samson {
             return queue;
             
         }
-        
-        BlockBreak* StreamManager::getBlockBreak( size_t block_id )
-        {
-            return blockBreaks.findOrCreate( block_id , block_id );
-        }
-        
         
         void StreamManager::notifyFinishTask( QueueTask *task )
         {
@@ -302,9 +237,6 @@ namespace samson {
             queueTaskManager.getInfo( output );
             output << "</queue_tasks>\n";
 
-            // Information about block_breaks
-            au::xml_iterate_map(output, "block_breaks", blockBreaks );
-            
             // WorkerCommands
             au::xml_iterate_map(output, "worker_commands", workerCommands );
             
@@ -494,29 +426,6 @@ namespace samson {
                 
             }
             
-            // All block break
-            au::map< size_t , BlockBreak >::iterator it_blockBreak;
-            for ( it_blockBreak = blockBreaks.begin() ; it_blockBreak != blockBreaks.end() ; it_blockBreak++ )
-            {
-                BlockBreak* blockBreak = it_blockBreak->second;
-                
-                au::map< int , BlockBreakItem >::iterator it_block_break_item;
-                for( it_block_break_item = blockBreak->items.begin() ; it_block_break_item != blockBreak->items.end() ; it_block_break_item++)
-                {
-                    BlockBreakItem *blockBreakItem = it_block_break_item->second;
-                    
-                    if( blockBreakItem->isReady() )
-                        output << "block_break_item " << blockBreak->id << " " << blockBreakItem->num_divisions << " ";
-                    
-                    BlockList *list = blockBreakItem->list;
-                    au::list< Block >::iterator it_block;
-                    for (it_block = list->blocks.begin() ; it_block != list->blocks.end() ; it_block++ )
-                        output << (*it_block)->getId() << " ";
-                    
-                    output << "\n";
-                }
-            }
-
             
             // Foot just to make sure we finished correctly
             output << "# END -- SamsonStreamManager log " << au::todayString() << "\n";
@@ -572,45 +481,7 @@ namespace samson {
                         
                         std::string main_command = commandLine.get_argument(0);
                         
-                        if( main_command == "block_break_item" )
-                        {
-                            if ( commandLine.get_num_arguments() < 3 )
-                                continue;
-                            
-                            size_t block_id     = strtoll(  commandLine.get_argument(1).c_str() , (char **)NULL, 10);
-                            int num_divisions   = strtol(  commandLine.get_argument(2).c_str() , (char **)NULL, 10);
-                            
-                            BlockList * tmpBlockList = new BlockList("tmp_recoverying_block_break");
-                            bool failed = false;
-                            for ( int i = 3 ; i < commandLine.get_num_arguments() ; i++ )
-                            {
-                                size_t _block_id     = strtoll(  commandLine.get_argument(i).c_str() , (char **)NULL, 10);
-                                
-                                // Set the minim block id to not overwrite previous blocks
-                                BlockManager::shared()->setMinimumNextId( _block_id );
-                                Block* b = recovery_list.getBlock( _block_id );
-                                if( !b )
-                                    b = recovery_list.createBlockFromDisk( _block_id );
-                             
-                                if( b )
-                                    tmpBlockList->add( b );
-                                else
-                                {
-                                    LM_W(("Not possible to import block break for id %lu. This is not a major issue" , block_id));
-                                    failed = true;
-                                }
-                                    
-                            }
-                            
-                            if (!failed )
-                            {
-                                getBlockBreak(block_id)->addNumDivisions( num_divisions );
-                                getBlockBreak(block_id)->update(num_divisions, tmpBlockList);
-                            }
-                            
-                            delete tmpBlockList;
-                            
-                        } else if ( main_command == "queue_push" )
+                        if ( main_command == "queue_push" )
                         {
                             // Format: queue_item name range_from range_to block-ids
                             if ( commandLine.get_num_arguments() < 3 )

@@ -29,7 +29,7 @@ namespace samson {
         
             memory = 0;
             
-            max_memory = SamsonSetup::getUInt64("general.memory")/2;
+            max_memory = (double)SamsonSetup::getUInt64("general.memory")*0.8;  // 80% of memory for block manager
 
         }
         
@@ -69,6 +69,47 @@ namespace samson {
             
         }
         
+        void BlockManager::insert( Block* b )
+        {
+            // Insert the new block in the rigth posistion
+            blocks.insert( _find_pos(b),b );
+            
+            // Increase the amount of memory used by all blocks
+            if( b->isContentOnMemory() )
+                memory += b->size;
+            
+            // Review if new free,  write or reads are necessary
+            _review();
+        }
+        
+        void BlockManager::check( Block* b )
+        {
+            blocks.remove( b );
+            
+            // Check if the block should be removed, otherwise insert back in the list....
+            
+            // If it can be removed, just remove...
+            if( b->canBeRemoved() )
+            {
+                if( b->isContentOnMemory() )
+                    memory -= b->size;
+                
+                if( b->isWriting() || b->isReading() )
+                    LM_X(1,("Not allowed to remove an object that is reading or writting..."));
+                
+                delete b;
+                
+            }
+            else
+            {
+                // Insert back in the global list of blocks
+                blocks.insert( _find_pos( b ) , b );
+            }
+            
+            // Review if new free, write or reads are necessary
+            _review();
+            
+        }
         // Notifications
         
         void BlockManager::notify( engine::Notification* notification )
@@ -317,6 +358,32 @@ namespace samson {
             
         }
         
+        // Function used in the order of blocks
+        std::list<Block*>::iterator BlockManager::_find_pos( Block *b )
+        {
+            for (std::list<Block*>::iterator i = blocks.begin() ; i != blocks.end() ; i++)
+            {
+                if( b->compare(*i) )
+                    return i;
+            }
+            return blocks.end();
+        }
+        
+        Block* BlockManager::getBlock( size_t _id )
+        {
+            for ( std::list<Block*>::iterator i = blocks.begin() ; i != blocks.end() ; i++ )
+                if( (*i)->id == _id )
+                    return *i;
+            return NULL;
+        }
+        
+        void BlockManager::update( BlockInfo &block_info )
+        {
+            for (std::list<Block*>::iterator i = blocks.begin() ; i != blocks.end() ; i++ )
+                (*i)->update( block_info );
+            
+        }
+
         
     }
 }

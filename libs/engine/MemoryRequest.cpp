@@ -12,10 +12,14 @@ namespace engine
 {
 
 	
-    MemoryRequest::MemoryRequest( size_t _size , size_t _listener_id )
+    MemoryRequest::MemoryRequest( size_t _size , double _mem_percentadge , size_t _listener_id )
     {
         size = _size;
         listner_id = _listener_id;
+        mem_percentadge = _mem_percentadge;
+        
+        if ( size == 0)
+            LM_W(("Memory request with size 0"));
         
         buffer = NULL;
     }

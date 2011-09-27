@@ -144,16 +144,6 @@ namespace samson {
             for (b=list->blocks.begin(); b != list->blocks.end();b++)
                 remove(*b);
         }
-
-        // get a block with this id ( if included in this list )
-        Block* BlockList::getBlock( size_t id )
-        {
-            au::list< Block >::iterator b;
-            for (b=blocks.begin(); b != blocks.end();b++)
-                if( (*b)->id == id)
-                    return *b;
-            return NULL;
-        }
         
         void BlockList::remove( size_t id )
         {
@@ -184,18 +174,39 @@ namespace samson {
             return total;
         }
         
-        /*
-        void BlockList::copyFrom( BlockMatrix* matrix , int channel )
+        void BlockList::replace( BlockList *from , BlockList *to)
         {
-            BlockList *bl = matrix->channels.findInMap( channel );
-            if( !bl )
-                return; // Nothing to copy because there is not such a channel
+            // Check all the blocks in from are included in this block list
+            au::list< Block >::iterator b;
+            for (b = from->blocks.begin() ;  b != from->blocks.end() ; b++)
+            {
+                size_t block_id = (*b)->getId();
+                if( getBlock( block_id ) == NULL )
+                    return; // not all the blocs are contained in this queue
+            }
             
-            // Copy all the blocks from another
-            copyFrom( bl );
+            // Remove all the blocks
+            for (b = from->blocks.begin() ;  b != from->blocks.end() ; b++)
+            {
+                size_t block_id = (*b)->getId();
+                remove( block_id );
+            }
+            
+            // Insert all the blocks from the "to" list 
+            copyFrom( to );
+            
         }
-         */
         
+        // Get a particular block ( only for debugging )
+        Block* BlockList::getBlock( size_t _id )
+        {
+            for ( std::list<Block*>::iterator i = blocks.begin() ; i != blocks.end() ; i++ )
+                if( (*i)->id == _id )
+                    return *i;
+            return NULL;
+        }
+
+
         
         void BlockList::copyFrom( BlockList* list )
         {
@@ -282,8 +293,25 @@ namespace samson {
             output << "</block_list>\n";
         }
 
+        BlockInfo BlockList::getBlockInfo()
+        {
+            BlockInfo block_info;
+            update( block_info);
+            return  block_info;
+        }
         
-        
+        std::string BlockList::strBlockIds()
+        {
+            std::ostringstream output;
+            output << "[ ";
+            std::list<Block*>::iterator b;
+            for ( b = blocks.begin() ; b != blocks.end() ; b++ )
+                output << ( *b )->getId() << " ";
+            output << "]";
+            
+            return output.str();
+            
+        }
         
     }       
 }

@@ -343,36 +343,6 @@ namespace samson {
             hg_end = _hg_end;
         }
         
-        /*
-        void setFrom( KVInfo *info )
-        {
-            
-            // Key-value 
-            hg_begin = 0;
-            hg_end = KVFILE_NUM_HASHGROUPS-1;   // Search for the first element without presence
-            
-            while( ( info[hg_begin].kvs == 0 ) && hg_begin<(KVFILE_NUM_HASHGROUPS-1) )
-                hg_begin++;
-            while( ( info[hg_end].kvs == 0 ) && hg_end>0 )
-                hg_end--;
-            
-            // Spetial case where no content is present
-            if( ( hg_begin == (KVFILE_NUM_HASHGROUPS-1) ) && (hg_end == 0) )
-            {
-                // No content
-                hg_begin = 0;
-                hg_end = KVRange;
-            }
-            
-            hg_end++;   // This should indicate the first non-included...
-            
-            if( hg_end < hg_begin )
-            {
-                LM_X(1, ("Internal error seting limits of the hash groups %s" , str().c_str() ));
-            }
-        }        
-         */
-        
         bool isValid()
         {
             if ( ( hg_begin < 0 ) || (hg_begin > (KVFILE_NUM_HASHGROUPS) ) )
@@ -434,7 +404,7 @@ namespace samson {
             
             return true;
         }
-        
+/*        
         KVRange subRange( int pos , int num_divisions )
         {
             int step = ( hg_end - hg_begin ) / num_divisions;
@@ -445,8 +415,8 @@ namespace samson {
                 return KVRange( hg_begin  + step*pos , hg_end );                    
                             
         }
-
-        
+*/
+        bool isOkForNumDivisions( int num_divisions );
     };
     
     bool operator<(const KVRange & left, const KVRange & right);
@@ -726,6 +696,27 @@ namespace samson {
                 if ( format != _format )
                     format = KVFormat("?" , "?" );
         }
+        
+        
+        double getOverhead()
+        {
+            if( size == 0 )
+                return 0;
+            
+            return (double) ( size - info.size  ) / (double) size;
+        }
+        
+        
+        bool isContentOnMemory()
+        {
+            return ( size == size_on_memory );
+        }
+        
+        bool isContentOnDisk()
+        {
+            return ( size == size_on_disk );
+        }
+        
         
     };
     

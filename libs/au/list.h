@@ -39,6 +39,30 @@ namespace au {
 	class list: public std::list<V*>
 	{
 	public:
+        
+		V* findFront()
+		{
+			if( std::list<V*>::size() == 0)
+				return NULL;
+			else
+			{
+				V* tmp = std::list<V*>::front();
+				return tmp;
+			}
+		}
+
+		V* findBack()
+		{
+			if( std::list<V*>::size() == 0)
+				return NULL;
+			else
+			{
+				V* tmp = std::list<V*>::back();
+				return tmp;
+			}
+		}
+        
+        
 		V* extractFront()
 		{
 			if( std::list<V*>::size() == 0)

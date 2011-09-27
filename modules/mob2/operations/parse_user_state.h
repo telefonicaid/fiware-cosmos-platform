@@ -7,6 +7,8 @@
 #define _H_SAMSON_mob2_parse_user_state
 
 
+#include <stdint.h>
+
 #include <samson/module/samson.h>
 #include <samson/modules/mob2/UserState.h>
 #include <samson/modules/system/UInt.h>
@@ -44,7 +46,7 @@ void parseLines( char *line, samson::KVWriter *writer )
 	uint32_t cellVal = 0;
 	uint64_t timeVal = 0;
 
-	sscanf(line, "%lu|%lu|%d|%lu", &nodeVal, &imeiVal, &cellVal, &timeVal);
+	sscanf(line, "%llu|%llu|%d|%llu", &nodeVal, &imeiVal, &cellVal, &timeVal);
 
 	node.value = nodeVal;
 	state.imei.value = imeiVal;

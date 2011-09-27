@@ -114,6 +114,9 @@ namespace samson {
             // Remove all the blocks contained in the list
             void clearBlockList();
             
+            // Replace block scontained in from for blocks contained in to ( only if this block list contains all blocks contained in "from" )
+            void replace( BlockList *from , BlockList *to);
+            
             // Get information
             size_t getSize();
             
@@ -121,10 +124,11 @@ namespace samson {
             
             bool isContentOnMemory();
             
-            size_t getNumBlocks();
-
             // Get information about this block
             void update( BlockInfo &block_info);
+            BlockInfo getBlockInfo();
+
+            size_t getNumBlocks();
             
             //void copyFrom( BlockMatrix* matrix , int channel );
             void copyFrom( BlockList* list );
@@ -135,10 +139,9 @@ namespace samson {
             
             // Get information for monitorization
             void getInfo( std::ostringstream& output);
-
-            // Return is this is a block list of a queue-item
-            bool shouldReport();
             
+            // string containing all block_ids ( only debuggin )
+            std::string strBlockIds();
             
         };
         

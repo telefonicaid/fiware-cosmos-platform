@@ -47,6 +47,12 @@ namespace samson {
             // Format of this queue
             KVFormat format;
             
+            // Number of divisions for this queue ( all blocks should satify this at long term using block-break operations )
+            int num_divisions;
+            
+            // List of ids for the blocks currently involved in a break operation
+            std::set<size_t> block_ids_in_break_operations;
+            
         public:
             
             // Constructor and destructor
@@ -65,14 +71,15 @@ namespace samson {
             // Getting XML information
             void getInfo( std::ostringstream& output);
             
-            // Copy content
-            void copyFrom( Queue* _queue);
-            
             // Set a property
             void setProperty( std::string property , std::string value );
             
-            // Copy to a particular block list limiting in range ( broken version is used if ready )
-            void copyTo( BlockList * _list , KVRange range );
+            // Review if it is necessary to break or joint some blocks
+            void review();
+            
+            // Notify that a block-break operation has finished
+            void notifyFinishBlockBreakQueueTask( BlockList *from , BlockList *to );
+
             
         private:
             

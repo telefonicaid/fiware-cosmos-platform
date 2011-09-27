@@ -10,61 +10,56 @@ namespace samson
      Class to process alll input key-values for a map, reduce or parseOut operation
 	 Vector key-values to sort and process all input channels 
 	 */
-	
-	class KVInputVector
-	{
+    
+    class KVInputVectorBase
+    {
+        
+    public:
 		
-	public:
-		
-		KV *kv;         // Dynamic Vector of KV elements
-		KV ** _kv;      // Dynamic Vector with pointers to kv
+		KV *kv;             // Dynamic Vector of KV elements
+		KV ** _kv;          // Dynamic Vector with pointers to kv
 		
 		size_t max_num_kvs; // Allocation size
 		size_t num_kvs;     // Real number of kvs in the vectors
+
+
+        // Define the maximum number of key-values we will add
+        void prepareInput( size_t _max_num_kvs );
+
+    };
+	
+	class KVInputVector : public KVInputVectorBase
+	{
 		
-		DataSizeFunction keySize;       // Function to get the size of a particular value of the key ( common to all inputs )
-		DataSizeFunction *valueSize;    // Function to get the size of a partiuclar value of the value ( different for each input )
+    public:
 		
-		OperationInputCompareFunction compare; // Unique funciton to compare two key-values ( for any input )
-		
-		OperationInputCompareFunction compareKey;
+		DataSizeFunction keySize;                   // Function to get the size of a particular value of the key ( common to all inputs )
+		DataSizeFunction *valueSize;                // Function to get the size of a partiuclar value of the value ( different for each input )
+		OperationInputCompareFunction compare;      // Unique funciton to compare key-values ( for any input in this operation )
+		OperationInputCompareFunction compareKey;   // Function used to compare keys ( across multiple inputs )
+        
+		int num_inputs;                             // Number of input channels ( 1 in maps and parseOut , N in reduce operations )
+        
+        KVSetStruct* inputStructs;                  // Structure used to process key-values contained in this input vector in reduce operations
+        size_t pos_begin,pos_end;                   // State variables used across calls to init and getNext
         
         
-		int num_inputs;// Number of input channels ( 1 in maps and parseOut , N in reduce operations )
-		
+        // Constructors & destructors
 		KVInputVector( Operation* operation );
-		KVInputVector( int _num_inputs );
+		KVInputVector( int _num_inputs );           // Old constructor ( only used in batch tech, to be removed in samson 0.7 )
 		~KVInputVector();
 		
-		void prepareInput( size_t _max_num_kvs );
-		
+		// Function to add key-values to the input vector
 		void addKVs( ProcessSharedFile& file );
-		
 		void addKVs(int input , KVInfo info , char *data );
         
 		// global sort function key - input - value used in reduce operations
 		void sort();
-    
+
+        // Init and getNext functions allows to retrieve key-values in groups with the same key
+        void init();
+        KVSetStruct* getNext();
         
-        
-        size_t getNumKeyValueWithSameKey( size_t pos_begin )
-        {
-            size_t pos_end = pos_begin + 1;
-            while( ( pos_end < num_kvs ) && ( compareKey( _kv[pos_begin] , _kv[pos_end] ) == 0) )
-                pos_end++;
-                
-            return (pos_end - pos_begin);
-        }
-        
-        
-        // Debug string
-        std::string str()
-        {
-            std::ostringstream output;
-            output << "KVInputVector with " << num_kvs << " kvs";
-            return output.str();
-        }
-		
 	};
 	
 }

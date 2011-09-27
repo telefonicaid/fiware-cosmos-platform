@@ -5,6 +5,8 @@
 #include <string>
 #include <sstream>
 
+/*
+ 
 namespace samson {
     
     class SamsonWorker;
@@ -82,6 +84,6 @@ namespace samson {
         };
 	}
 }
-
+*/
 #endif
 

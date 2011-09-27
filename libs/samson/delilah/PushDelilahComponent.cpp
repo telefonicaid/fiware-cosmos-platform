@@ -78,7 +78,7 @@ namespace samson
     void PushDelilahComponent::requestMemoryBuffer()
     {
         // Add a memory request to be responded to me
-        engine::MemoryManager::shared()->add( new engine::MemoryRequest( 64*1024*1024 , getEngineId() ) );
+        engine::MemoryManager::shared()->add( new engine::MemoryRequest( 64*1024*1024 , 1.0 , getEngineId() ) );
     }
 
     // Receive packets

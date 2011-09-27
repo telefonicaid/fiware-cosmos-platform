@@ -58,7 +58,7 @@ namespace engine {
 		size_t memory;								// Total available memory
 				
 		// List of memory requests
-		au::list <MemoryRequest> memoryRequests;	// Only used for inputs ( tag == 0)
+		au::list <MemoryRequest> memoryRequests;        // Only used for inputs ( tag == 0)
 		
         // List of active buffers for better monitorization
         std::set<Buffer*> buffers;
@@ -141,6 +141,10 @@ namespace engine {
 
     private:
 		
+        double _getMemoryUsage();
+        size_t _getUsedMemory();
+
+        
 		int _getNumBuffersByTag( int tag );
         size_t _getUsedMemoryByTag( int tag );
         double _getMemoryUsageByTag( int tag );

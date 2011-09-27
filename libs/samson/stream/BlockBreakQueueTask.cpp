@@ -25,12 +25,11 @@ namespace samson {
 #pragma mark BlockBreakQueueTask        
 
         
-        BlockBreakQueueTask::BlockBreakQueueTask( size_t _id , Block * block , int _num_divisions  ) 
+        BlockBreakQueueTask::BlockBreakQueueTask( size_t _id , std::string _queue_name , int _num_divisions  )
         : SystemQueueTask( _id , au::str("BlockBreak ( %lu )" , _id ) )
         {
-            block_id = block->getId();
+            queue_name = _queue_name;
             num_divisions = _num_divisions;
-            getBlockList("input_0")->add( block );
         }
         
         
@@ -139,14 +138,18 @@ namespace samson {
         void BlockBreakQueueTask::finalize( StreamManager* streamManager )
         {
             
-            
             // Create the list with the outputs
             BlockList *tmp = new BlockList("tmp_block_break_outputs");
             for (size_t i = 0 ; i < outputBuffers.size() ; i++ )
                 tmp->createBlock( outputBuffers[i] );
             
-            BlockBreak *blockBreak = streamManager->blockBreaks.findOrCreate( block_id , block_id );
-            blockBreak->update( num_divisions, tmp );
+            BlockList *originalBlockList = getBlockList("input_0");
+            
+            // Get the queue we are working on
+            Queue*queue = streamManager->getQueue( queue_name );
+            
+            if ( queue )
+                queue->notifyFinishBlockBreakQueueTask( originalBlockList , tmp );
             
             // Detele the temporal list used here
             delete tmp;

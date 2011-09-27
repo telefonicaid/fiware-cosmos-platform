@@ -16,7 +16,7 @@ FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("/usr/local/include/")
 include_directories("/opt/local/include/")
-include_directories("/opt/mongodb/mongo-cxx-driver-v1.8")
+include_directories("/opt/mongodb/mongo-cxx-driver-v2.0")
 include_directories("/opt/hadoop/hadoop-0.21.0/hdfs/src/c++/libhdfs")
 include_directories("/usr/lib/jvm/java-6-sun-1.6.0.26/include")
 include_directories("/usr/lib/jvm/java-6-sun-1.6.0.26/include/linux")
@@ -30,7 +30,7 @@ link_directories("/usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/amd64/server")
 link_directories("/usr/lib/jvm/java-1.6.0-sun-1.6.0.22.x86_64/jre/lib/amd64/server")
 
 
-link_directories("/opt/mongodb/mongo-cxx-driver-v1.8")
+link_directories("/opt/mongodb/mongo-cxx-driver-v2.0")
 link_directories("/opt/local/lib")
 
 MESSAGE( "----------------------------------------------------------------------------")

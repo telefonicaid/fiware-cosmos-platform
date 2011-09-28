@@ -34,6 +34,8 @@
 #include <sys/types.h>          /* types needed for other includes           */
 #include <stdio.h>              /*                                           */
 #include <unistd.h>             /* getpid, write, ...                        */
+#include <sys/types.h>          /* gettid()                                  */
+#include <sys/syscall.h>        /* gettid() not working, trying with syscall */
 #include <string.h>             /* strncat, strdup, memset                   */
 #include <stdarg.h>             /* va_start, va_arg, va_end                  */
 #include <stdlib.h>             /* atoi                                      */
@@ -711,6 +713,9 @@ static char* lmLineFix
 	fLen = strlen(format);
 	while (fi < fLen)
 	{
+		pid_t tid;
+
+		tid = syscall(SYS_gettid);
 		if (strncmp(&format[fi], "TYPE", 4) == 0)
 			CHAR_ADD((type == 'P')? 'E' : type, 4);
 		else if (strncmp(&format[fi], "PID", 3) == 0)
@@ -719,8 +724,8 @@ static char* lmLineFix
 			STRING_ADD(dateGet(index, xin, sizeof(xin)), 4);
 		else if (strncmp(&format[fi], "TIME", 4) == 0)
 			STRING_ADD(timeGet(index, xin, sizeof(xin)), 4);
-//		else if (strncmp(&format[fi], "TID", 3) == 0)
-//			INT_ADD((int) gettid(), 3);
+		else if (strncmp(&format[fi], "TID", 3) == 0)
+			INT_ADD((int) tid, 3);
 		else if (strncmp(&format[fi], "EXEC", 4) == 0)
 			STRING_ADD(progName, 4);
 		else if (strncmp(&format[fi], "AUX", 3) == 0)

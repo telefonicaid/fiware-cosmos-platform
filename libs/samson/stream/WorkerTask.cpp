@@ -260,95 +260,101 @@ namespace samson {
                 
                 // Check what operations can be done....
                 state->setMinimumNumDivisions();
-                int num_divisions = state->num_divisions;
+                int num_divisions = state->num_divisions;      // Divisions used in update-state mode
                 
                 // Make sure, input is divided at least as state
                 if( input->num_divisions < state->num_divisions)
-                    input->num_divisions = state->num_divisions;
+                    input->setNumDivisions( state->num_divisions );
+                
+                
+                if( !state->isQueueReadyForStateUpdate() )
+                {
+                    LM_M(("State is not ready for update-state operations"));
+                    
+                    if( num_pending_processes == 0 )
+                        finishWorkerTask();
+                    return;
+                }
                 
                 for ( int i = 0 ; i < num_divisions ; i++)
                 {
+
+                    // If not possible 
+                    if( !state->lockDivision( i ) )
+                    {
+                        LM_M(("Not possible to lock division %d for queue %s" ,  i , state_name.c_str()  )); 
+                        continue;
+                    }
+                    
                     KVRange range = rangeForDivision( i , num_divisions );
                     
-                    BlockList *stateBlockList = state->getStateBlockListForRange( range );
-                    BlockList *inputBlockList = NULL;
+                    BlockList *stateBlockList = state->getStateBlockListForDivision( i );
+                    BlockInfo state_block_info = stateBlockList->getBlockInfo();
+
+                    BlockList *inputBlockList  = input->getInputBlockListForRange( range , operation_size );
+                    BlockInfo input_block_info = inputBlockList->getBlockInfo();
+
+                    // Check latency of the input block
+                    size_t latency = input_block_info.min_time_diff();
+
+                    // See if it is necessary to cancel ( not running the job ) for small size
                     
-                    if ( stateBlockList )
+                    bool cancel_operation = false;
+                    
+                    if( input_block_info.size < operation_size )
                     {
-                        
-                        BlockInfo state_block_info = stateBlockList->getBlockInfo();
-                        
-                        
-                        inputBlockList = input->getInputBlockListForRange( range , operation_size );
-                        BlockInfo input_block_info = inputBlockList->getBlockInfo();
-                        size_t latency = input_block_info.min_time_diff();
-
-                        //LM_M(("Considering a reduce-state operation size %lu ( min %lu ) latency %lu ( max %lu )" , input_block_info.size , min_size , latency , max_latency ));
-
-                        // Let see if operation is canceled for small size
-                        
-                        bool cancel_operation = false;
-                        
-                        if( input_block_info.size < operation_size )
+                        //LM_M(("Caneled operation for size"));
+                        cancel_operation = true;
+                    }
+                    
+                    if( cancel_operation )
+                    {
+                        if ( (max_latency > 0) && ( latency > max_latency) )
                         {
-                            //LM_M(("Caneled operation for size"));
-                            cancel_operation = true;
+                            //LM_M(("Reduce state operation reopened for latency %lu max %lu" , latency , max_latency));
+                            cancel_operation = false;
                         }
+                    }
+                    
+                    // with no data, remove always
+                    if( input_block_info.size  == 0 )
+                        cancel_operation = true;
+                    
+                    // TODO: If size is not enougth, we can cancel operation here...
+                    if( !cancel_operation )
+                    {
+                        network::StreamOperation *operation = getStreamOperation( op );
                         
-                        if( cancel_operation )
-                        {
-                            if ( (max_latency > 0) && ( latency > max_latency) )
-                            {
-                                //LM_M(("Reduce state operation reopened for latency %lu max %lu" , latency , max_latency));
-                                cancel_operation = false;
-                            }
-                            
-                        }
+                        ReduceQueueTask * task = new ReduceQueueTask( streamManager->queueTaskManager.getNewId() , *operation , range );
+                        task->addOutputsForOperation(op);
                         
-                        // with no data, remove always
-                        if( input_block_info.size  == 0 )
-                            cancel_operation = true;
-                         
-                        // TODO: If size is not enougth, we can cancel operation here...
-                        if( !cancel_operation )
-                        {
-                            network::StreamOperation *operation = getStreamOperation( op );
-                            
-                            ReduceQueueTask * task = new ReduceQueueTask( streamManager->queueTaskManager.getNewId() , *operation , range );
-                            task->addOutputsForOperation(op);
-                            
-                            // Spetial flag to indicate update_state mode ( process different output buffers )
-                            task->update_state_mode = true;
-                            
-                            task->getBlockList("input_0")->copyFrom( inputBlockList );
-                            task->getBlockList("input_1")->copyFrom( stateBlockList );
-                            
-                            // remove input from the original queue
-                            input->list->remove( inputBlockList );
-                            
-                            // Set the working size to get statictics at ProcessManager
-                            task->setWorkingSize();
-                            
-                            // Add me as listener and increase the number of operations to run
-                            task->addListenerId( getEngineId() );
-                            num_pending_processes++;
-                            
-                            // Schedule tmp task into QueueTaskManager
-                            streamManager->queueTaskManager.add( task );
-                            
-                            delete operation;
-                        }
-                        else
-                        {
-                            // Unlock state since it has not been used un any operation
-                            state->unlockStateBlockList( stateBlockList );
-                        }
+                        // Spetial flag to indicate update_state mode ( process different output buffers )
+                        task->setUpdateStateDivision( i );
                         
+                        task->getBlockList("input_0")->copyFrom( inputBlockList );
+                        task->getBlockList("input_1")->copyFrom( stateBlockList );
+                        
+                        // remove input from the original queue
+                        input->list->remove( inputBlockList );
+                        
+                        // Set the working size to get statictics at ProcessManager
+                        task->setWorkingSize();
+                        
+                        // Add me as listener and increase the number of operations to run
+                        task->addListenerId( getEngineId() );
+                        num_pending_processes++;
+                        
+                        // Schedule tmp task into QueueTaskManager
+                        streamManager->queueTaskManager.add( task );
+                        
+                        delete operation;
                     }
                     else
                     {
-                        //LM_M(("State not ready in range %s" , range.str().c_str() ));
+                        // Unlock state since it has not been used un any operation
+                        state->unlockDivision( i );
                     }
+                        
                     
                     // Remove list used here
                     if( inputBlockList)

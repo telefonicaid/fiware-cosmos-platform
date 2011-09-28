@@ -99,6 +99,7 @@ namespace samson {
             addOption("run_stream_operation");
             addOption("ls_operation_rates");
             addOption("set_queue_property");
+            addOption("ls_queues_info");
         }
         
         void addOperations()

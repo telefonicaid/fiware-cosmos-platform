@@ -72,6 +72,7 @@ namespace samson {
             
         }
         
+        
         std::string ParserQueueTask::getStatus()
         {
             std::ostringstream output;
@@ -449,6 +450,13 @@ namespace samson {
             
         }
         
+        void ReduceQueueTask::setUpdateStateDivision( int _division )
+        {
+            update_state_mode = true;
+            division = _division;
+        }
+        
+        
         // Structure to decide where to take key-values
         enum kvs_source
         {
@@ -567,7 +575,12 @@ namespace samson {
             Queue*queue = streamManager->getQueue( queue_name );
             
             if ( queue )
-                queue->replaceAndUnlock( originalBlockList , tmp );
+            {
+                queue->replace( originalBlockList , tmp );
+                
+                // Release division we were processing with this operation
+                queue->unlockDivision( division );
+            }
             
             // Detele the temporal list used here
             delete tmp;

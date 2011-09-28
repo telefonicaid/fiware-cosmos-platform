@@ -41,7 +41,7 @@ namespace samson {
             // Environment properties of this queue
             au::Environment environment;
             
-            // Flag to avoid creating loking for operations
+            // Flag to avoid creating update_state operations
             bool paused;
 
             // Format of this queue
@@ -50,9 +50,13 @@ namespace samson {
             // Number of divisions for this queue ( all blocks should satify this at long term using block-break operations )
             int num_divisions;
             
-            // List of ids for the blocks currently involved in a break operation / replace-reduce operation
+            // List of ids for the blocks currently involved in a break operation
             std::set<size_t> block_ids_locked;
 
+            // Divisions currently being updated ( only in reduce_state operations )
+            // Note: it updating_divisions.size() > 0 --> Not possible to change num_divisions
+            std::set<int> updating_divisions;
+            
         public:
             
             // Constructor and destructor
@@ -79,16 +83,18 @@ namespace samson {
             
             // Notify that a block-break operation has finished
             void replaceAndUnlock( BlockList *from , BlockList *to );
-
-            // Get blocks contained in a particular range for state and input ( update status operation )
-            BlockList *getStateBlockListForRange( KVRange range );
-            BlockList *getInputBlockListForRange( KVRange range , size_t max_size );
+            void replace( BlockList *from , BlockList *to );
             
-            void unlockStateBlockList( BlockList *_list );
-            
+            // Lock and unlock divisions for updateState
+            // Check if the queue is perfectly divided in divisions ( no break operation running )
+            bool isQueueReadyForStateUpdate();                                              
+            bool lockDivision( int division );                                              // Lock a particular division ( if possible )
+            void unlockDivision( int division );                                            // Unlock a particular vision
+            BlockList *getStateBlockListForDivision( int division );                        // Get the state for a state-update division
+            BlockList *getInputBlockListForRange( KVRange range , size_t max_size );        // Get all the blocks for a particular range ( input of the reduce operation )
             
             void setMinimumNumDivisions();
-
+            
         private:
             
             void divide( QueueItem *item , QueueItem *item1 , QueueItem *item2 );
@@ -113,6 +119,11 @@ namespace samson {
                 block_ids_locked.erase( block_id );
             }
             
+            // Set a new number of visisions
+            void setNumDivisions( int new_num_divisions );
+
+            // Function to return the number of divisions based on the current size
+            int getMinNumDivisions();
             
         };
         

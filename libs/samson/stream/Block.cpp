@@ -287,6 +287,9 @@ namespace samson {
             
             block_info.pushTime( header->time );
             
+            // Accumulate the number of divisions
+            block_info.accumulate_divisions += getKVRange().getMaxNumDivisions();
+            
         }
         
         size_t getSize( std::set<Block*> &blocks )

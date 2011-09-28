@@ -30,6 +30,8 @@ namespace samson {
         {
             queue_name = _queue_name;
             num_divisions = _num_divisions;
+            
+            setProcessItemOperationName( "system.BlockBreak" );
         }
         
         

@@ -57,6 +57,7 @@ namespace samson {
             
             // Number of divisions for this queue
             num_divisions = 1;
+            
         }
         
         Queue::~Queue()
@@ -76,7 +77,7 @@ namespace samson {
         {
             
             if( format == KVFormat("*","*") )
-                format = block->header->getKVFormat();
+                format = block->header->getKVFormat();  // Get the format of the first one...
             else
             {
                 if( format != block->header->getKVFormat() )
@@ -87,7 +88,10 @@ namespace samson {
             }
             
             // Add to the list for this queue
-            list->add( block );            
+            list->add( block );
+            
+            // Review this queue
+            review();
         }        
         
         void Queue::getInfo( std::ostringstream& output)
@@ -109,6 +113,29 @@ namespace samson {
             // Block list information
             list->getInfo( output );
             
+
+            // Informat description of queue status
+            std::string status;
+            
+            if( updating_divisions.size() > 0)
+            {
+                status = au::str("Updating %d / %d." , updating_divisions.size() , num_divisions );
+                
+                if( getMinNumDivisions() > num_divisions )
+                {
+                    status += au::str(" [ Moving from %d to %d divisions ]" , num_divisions , getMinNumDivisions() );
+                }
+                
+                if( block_ids_locked.size() > 0)
+                    status += "Error since there are blocking tasks while updating state";
+            }
+            else if( block_ids_locked.size() > 0)
+                status += au::str("Breaking %d/%d blocks." , block_ids_locked.size() , list->getNumBlocks()); 
+            else
+                status = "ready";
+                                 
+            au::xml_simple( output , "status" , status );
+
             // Information about content
             BlockInfo block_info;
             update( block_info );
@@ -128,31 +155,45 @@ namespace samson {
             environment.set( property , value );
         }
         
-        
-        void Queue::setMinimumNumDivisions()
+        void Queue::setNumDivisions( int new_num_divisions )
         {
+            // It is possible to change the number of divisions only when there are not update-state operations
+            if( new_num_divisions > num_divisions )
+                if( updating_divisions.size() == 0)
+                    num_divisions = new_num_divisions;
+        }
+        
+        int Queue::getMinNumDivisions()
+        {            
             BlockInfo block_info;
             update( block_info );
 
-            // Compute division necesary for this block    
             double _min_num_divisions = (double)block_info.size / (double) SamsonSetup::shared()->getUInt64("stream.max_state_division_size");
             int min_num_divisions = next_pow_2( (size_t) _min_num_divisions ); 
-            
-            // Set the new value for num_divisions if necessary
-            if( num_divisions < min_num_divisions )
-                num_divisions = min_num_divisions;
-            
+            return min_num_divisions;
+        }
+        
+        void Queue::setMinimumNumDivisions()
+        {
+            // Set this number if possible
+            setNumDivisions( getMinNumDivisions() );
         }
         
         void Queue::review()
         {
-            // Set the minimum number of divisions
-            setMinimumNumDivisions();
-            
             // Schedule new Block Break operations if necessary
             if( format.isTxt() )
                 return;  // No necessry operations for txt elements
-
+            
+            // Set the minimum number of divisions ( when possible )
+            setMinimumNumDivisions();
+            
+            // No block-break operations if there are current update-state operations
+            if( updating_divisions.size() > 0)
+            {
+                LM_M(("Queue %s: Non cheking since there are %d updating divisions" , name.c_str() , (int) updating_divisions.size() ));
+                return;
+            }
             
             if( num_divisions > 1 )
             {
@@ -170,7 +211,7 @@ namespace samson {
                     
                     LM_M(("Considered block %lu ( %s ) for breaking..." , block_id, block->getKVRange().str().c_str() ));
                     
-                    if( !range.isOkForNumDivisions( num_divisions ) )
+                    if( !range.isValidForNumDivisions( num_divisions ) )
                     {
                         size_t block_id = block->getId();
                         
@@ -180,7 +221,7 @@ namespace samson {
                             tmp->add( block );
                         }
                         else
-                            LM_M(("Block %lu is okblocked" , block_id , num_divisions ));
+                            LM_M(("Block %lu is blocked" , block_id , num_divisions ));
                     }
                     else
                     {
@@ -199,6 +240,8 @@ namespace samson {
                     BlockBreakQueueTask *task = new BlockBreakQueueTask( id , name , num_divisions ); 
                     BlockList *input = task->getBlockList("input_0");
                     input->extractFrom( tmp , max_size ); 
+                    
+                    task->setWorkingSize();
                     
                     // add to "block_ids_in_break_operations"
                     // Remove ids from block_ids_in_break_operations
@@ -259,11 +302,7 @@ namespace samson {
         void Queue::replaceAndUnlock( BlockList *from , BlockList *to )
         {
             //LM_M(("Finish a block-break operation for queue %s" , name.c_str() )); 
-            //LM_M(("FROM: %s" , from->strBlockIds().c_str() ));
-            //LM_M(("TO: %s" , to->strBlockIds().c_str() ));
-            
-            // replace the original blocks for the new ones
-            list->replace( from , to );
+            replace( from , to );
             
             // Remove ids from block_ids_in_break_operations
             au::list< Block >::iterator block_it;
@@ -275,64 +314,76 @@ namespace samson {
             
         }
         
-        BlockList *Queue::getStateBlockListForRange( KVRange range )
+        void Queue::replace( BlockList *from , BlockList *to )
         {
-            BlockList *tmp = new BlockList( "getStateBlockListForRange" );
+            //LM_M(("FROM: %s" , from->strBlockIds().c_str() ));
+            //LM_M(("TO: %s" , to->strBlockIds().c_str() ));
+            
+            // replace the original blocks for the new ones
+            list->replace( from , to );
+
+        }
+        
+        
+        bool Queue::isQueueReadyForStateUpdate()
+        {
+            // If a queue is paused, it is not ready to run any update-state operation
+            if( paused )
+                return false;
+            
+            // If we need more divisions for this queue, no more update operations here
+            if( getMinNumDivisions() > num_divisions )
+                return false;
+
+            // Check all the blocks are perfectly divided acording to the num_divisions
             au::list< Block >::iterator block_it;
             for ( block_it = list->blocks.begin() ; block_it != list->blocks.end() ; block_it++ )
             {
                 Block *block = *block_it;
-                size_t block_id = block->getId();
+                KVRange block_range = block->getKVRange();
+                if( !block_range.isValidForNumDivisions( num_divisions ) )
+                    return false;
+            }
+            
+            return true;
+        }
+        
+        
+#pragma mark UPDATE STATE ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+        
+        bool Queue::lockDivision( int division )
+        {
+            if( updating_divisions.find( division ) == updating_divisions.end() )
+            {
+                updating_divisions.insert( division );
+                return true;
+            }
+            else
+                return false;   // Already blocked
+        }
+        
+        void Queue::unlockDivision( int division )
+        {
+            updating_divisions.erase( division );
+        }
+        
+        BlockList *Queue::getStateBlockListForDivision( int division )
+        {
+            KVRange range = rangeForDivision( division , num_divisions );
+            
+            BlockList *tmp = new BlockList( "getStateBlockListForRange" );
+            
+            au::list< Block >::iterator block_it;
+            for ( block_it = list->blocks.begin() ; block_it != list->blocks.end() ; block_it++ )
+            {
+                Block *block = *block_it;
                 KVRange block_range = block->getKVRange();
                 
                 if( block_range.overlap( range ) )
-                {
-                    if( isBlockIdLocked( block_id ) )
-                    {
-                        LM_M(("Block %lu is locked" , block_id ));
-                        // A particular block is locked
-                        delete tmp;
-                        return NULL;
-                    }
-                    
-                    if( !range.contains( block_range ) )
-                    {
-                        LM_M(("Block %lu is not completelly divided for range %s" , block_id , range.str().c_str() ));
-                        
-                        // Not perfectlly divided
-                        delete tmp;
-                        return NULL;
-                    }
-                    
                     tmp->add( block );
-                }
-                
             }
-            
-            //Lock all these blocks
-            
-            for ( block_it = tmp->blocks.begin() ; block_it != tmp->blocks.end() ; block_it++ )
-            {
-                Block *block = *block_it;
-                size_t block_id = block->getId();
-                lockBlockId(block_id);
-            }
-            
             return tmp;
-            
         }
-        
-        void Queue::unlockStateBlockList( BlockList *_list )
-        {
-            au::list< Block >::iterator block_it;
-            for ( block_it = _list->blocks.begin() ; block_it != _list->blocks.end() ; block_it++ )
-            {
-                Block *block = *block_it;
-                size_t block_id = block->getId();
-                unLockBlockId(block_id);
-            }
-        }
-
         
         BlockList *Queue::getInputBlockListForRange( KVRange range , size_t max_size )
         {

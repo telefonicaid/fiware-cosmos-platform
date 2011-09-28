@@ -47,6 +47,14 @@ namespace samson {
             // Function executed just before task is deleted in the main thread
             void finalize( StreamManager* streamManager );
             
+            void setWorkingSize()
+            {
+                BlockInfo block_info;
+                update( block_info );
+                setProcessItemWorkingSize( block_info.size );
+            }
+            
+            
         private:
             
             int num_blocks;     // Number of blocks ( used only in "run" )

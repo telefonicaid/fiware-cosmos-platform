@@ -429,13 +429,18 @@ namespace samson {
                             
         }
 */
-        bool isOkForNumDivisions( int num_divisions );
+        
+        // Get the maximum division pattern for this range
+        bool isValidForNumDivisions( int num_divisions );
+        int getMaxNumDivisions();
+        
     };
     
     bool operator<(const KVRange & left, const KVRange & right);
     bool operator==(const KVRange & left, const KVRange & right);
     bool operator!=(const KVRange & left, const KVRange & right);
 
+    int divisionForHG( int hg , int num_divisions );
     KVRange rangeForDivision( int pos , int num_divisions );
     
     void clear( KVInfo* info );
@@ -648,6 +653,8 @@ namespace samson {
         time_t min_time;
         time_t max_time;
         
+        int accumulate_divisions;    // Accumulation of the divisions 1 - 64
+        
         BlockInfo()
         {
             num_blocks = 0;
@@ -661,6 +668,8 @@ namespace samson {
             // Initial values for time
             min_time = 0;
             max_time = 0;
+            
+            accumulate_divisions = 0;
             
         }
         
@@ -677,6 +686,8 @@ namespace samson {
             
             au::xml_simple( output , "min_time_diff" , (size_t)min_time_diff() );
             au::xml_simple( output , "max_time_diff" , (size_t)max_time_diff() );
+
+            au::xml_simple( output , "num_divisions" , getAverageNumDivisions() );
             
             info.getInfo( output );
             
@@ -720,6 +731,14 @@ namespace samson {
                            , au::percentage_string( size_locked , size).c_str()
                            , info.str().c_str()
                            );
+        }
+        
+        double getAverageNumDivisions()
+        {
+            if( num_blocks == 0)
+                return 1;
+            
+            return (double) accumulate_divisions / (double) num_blocks;
         }
         
         void push( KVFormat _format )

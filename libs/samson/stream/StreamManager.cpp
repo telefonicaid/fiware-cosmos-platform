@@ -478,7 +478,10 @@ namespace samson {
                         {
                             // Format: queue_item name range_from range_to block-ids
                             if ( commandLine.get_num_arguments() < 3 )
+                            {
+                                LM_W(("Not valid queue_push command: %s" , line ));
                                 continue;
+                            }
                             
                             std::string queue_name = commandLine.get_argument(1);
                             size_t block_id = strtoll(  commandLine.get_argument(2).c_str() , (char **)NULL, 10);

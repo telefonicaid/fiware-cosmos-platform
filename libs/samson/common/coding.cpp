@@ -59,18 +59,41 @@ namespace samson
         
     }
     
-    bool KVRange::isOkForNumDivisions( int num_divisions )
+    bool KVRange::isValidForNumDivisions( int num_divisions )
     {
-        for (int i = 0 ; i < num_divisions ; i++)
-        {
-            KVRange r = rangeForDivision( i , num_divisions );
-            if( r.includes( *this ) )
-                return true;
-        }
-        return false;
+        int size_per_division = KVFILE_NUM_HASHGROUPS / num_divisions;
+
+        if( ( hg_end - hg_begin ) > size_per_division )
+            return false;
+        
+        int max_hg_end = ( hg_begin / size_per_division ) * size_per_division + size_per_division;
+
+        if ( hg_end > max_hg_end )
+            return false;
+        
+        return true;
+        
     }
     
+    int KVRange::getMaxNumDivisions()
+    {
+        int num_divisions = 1;
+        
+        while( true )
+        {
+            if( isValidForNumDivisions( num_divisions*2 ) )
+                num_divisions*=2;
+            else
+                return num_divisions;
+        }
+    }
     
+    // Get the division for a particular hg
+    int divisionForHG( int hg , int num_divisions )
+    {
+        int size_per_division = KVFILE_NUM_HASHGROUPS / num_divisions;
+        return hg / size_per_division;
+    }
  
     KVRange rangeForDivision( int pos , int num_divisions )
     {

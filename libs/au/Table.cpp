@@ -216,6 +216,11 @@ namespace au {
             size_t _value = strtoll( value.c_str() , (char **)NULL, 10);
             return au::time_string( _value );
         }
+        else if ( format == "double2" )
+        {
+            double _value = strtof( value.c_str() , (char **)NULL );
+            return au::str( "%0.2f", _value );
+        }
         else if ( ( format == "percentadge" ) || ( format == "per" ) )
         {
             double p = atof( value.c_str() );

@@ -86,6 +86,9 @@ namespace samson {
             
             void unlockStateBlockList( BlockList *_list );
             
+            
+            void setMinimumNumDivisions();
+
         private:
             
             void divide( QueueItem *item , QueueItem *item1 , QueueItem *item2 );

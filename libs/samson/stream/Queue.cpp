@@ -128,21 +128,26 @@ namespace samson {
             environment.set( property , value );
         }
         
-        void Queue::review()
+        
+        void Queue::setMinimumNumDivisions()
         {
-            // Get the info for this block
             BlockInfo block_info;
             update( block_info );
-         
-            
+
             // Compute division necesary for this block    
             double _min_num_divisions = (double)block_info.size / (double) SamsonSetup::shared()->getUInt64("stream.max_state_division_size");
             int min_num_divisions = next_pow_2( (size_t) _min_num_divisions ); 
-
+            
             // Set the new value for num_divisions if necessary
             if( num_divisions < min_num_divisions )
                 num_divisions = min_num_divisions;
-
+            
+        }
+        
+        void Queue::review()
+        {
+            // Set the minimum number of divisions
+            setMinimumNumDivisions();
             
             // Schedule new Block Break operations if necessary
             if( format.isTxt() )

@@ -259,12 +259,12 @@ namespace samson {
                 
                 
                 // Check what operations can be done....
+                state->setMinimumNumDivisions();
                 int num_divisions = state->num_divisions;
                 
                 // Make sure, input is divided at least as state
                 if( input->num_divisions < state->num_divisions)
                     input->num_divisions = state->num_divisions;
-                
                 
                 for ( int i = 0 ; i < num_divisions ; i++)
                 {

@@ -207,7 +207,7 @@ namespace samson
         
                                       "For the select option:"
                                       "                                     [select_query] Query in xpath notation"
-                                      "                                     [-limit n] Limit the deepth of the information tree"
+                                      "                                     [-limit n] Limit the depth of the information tree"
         },
         { "ls"                      , "ls          Show a list of all the key-value sets" } ,                
         { "ls_local"                , "ls_local      Show a list of current directory with relevant information about local data-sets" } ,                
@@ -232,7 +232,9 @@ namespace samson
         
         { "add"                     , "add <set> <key-format> <value-format>\n"
             "add <set> -txt\n"
-            "Add a key-value set with a particular format. ( -txt create text sets )" },              
+            "Add a key-value set with a particular format. ( -txt create text sets )"
+        	"add <set> -f\n"
+        		        "Suppress error if <set> already exists (with the same key-value types). If different key-value types, still error"},
         
         { "set"                     , "set <var> <value>       Set environment variables ( all operations can use them )" },
         { "unset"                   , "unset <var>             Remove an environment variable " },
@@ -254,7 +256,7 @@ namespace samson
         
         { "add_stream_operation"    , "add_stream_operation <name> <operation> <input .. output queues>     Add an operation to automatically process data from input queues to output queues"},
         
-        { "rm_stream_operation"     , "rm_stream_operation <name>    Remove a previously introducted operation with add_stream_operation"},
+        { "rm_stream_operation"     , "rm_stream_operation <name>    Remove a previously introduced operation with add_stream_operation"},
 
         { "set_stream_operation_property"     , "operation not yet available"},
         

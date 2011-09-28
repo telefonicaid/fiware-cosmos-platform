@@ -46,7 +46,11 @@ void parseLines( char *line, samson::KVWriter *writer )
 	uint32_t cellVal = 0;
 	uint64_t timeVal = 0;
 
+#if defined(__APPLE__)
 	sscanf(line, "%llu|%llu|%d|%llu", &nodeVal, &imeiVal, &cellVal, &timeVal);
+#else
+	sscanf(line, "%lu|%lu|%d|%lu", &nodeVal, &imeiVal, &cellVal, &timeVal);
+#endif // __APPLE__
 
 	node.value = nodeVal;
 	state.imei.value = imeiVal;

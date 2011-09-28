@@ -45,19 +45,10 @@ public:
 
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
-		if( inputs[0].num_kvs > 0 )
-			node.parse(inputs[0].kvs[0]->key);
-		else
-			node.parse(inputs[1].kvs[0]->key);			
-
-		printf("Key %lu -> kvs:%lu kvs:%lu\n", node.value , inputs[0].num_kvs , inputs[1].num_kvs );
-
-
 		if (inputs[0].num_kvs == 0)
 		{
 			// No new information about user
-			// In batch mode, we have to reemit the state
-#ifdef BATCHMODE
+			// We have to reemit the state
 			if (inputs[1].num_kvs > 0)
 			{
 				node.parse(inputs[1].kvs[0]->key);
@@ -67,8 +58,6 @@ public:
 					writer->emit(1, &node, &state);
 				}
 			}
-#endif // BATCHMODE
-
 			return;
 		}
 
@@ -77,13 +66,12 @@ public:
 		if (inputs[1].num_kvs > 1)
 		{
 			OLM_E(("Error, more than one state(%lu) per user:%lu", inputs[1].num_kvs, node.value));
-#ifdef BATCHMODE
+			// We have to reemit the state
 			for (uint64_t j = 0; (j < inputs[1].num_kvs); j++)
 			{
 				state.parse(inputs[1].kvs[j]->value);
 				writer->emit(1, &node, &state);
 			}
-#endif // BATCHMODE
 			return;
 		}
 
@@ -95,14 +83,14 @@ public:
 
 			if (infoUser.imei.value != 0)
 			{
-				//OLM_T(LMT_User06, ("New user:%lu detected, with infoUser.emei:%lu", node.value, infoUser.imei.value));
+				OLM_T(LMT_User06, ("New user:%lu detected, with infoUser.emei:%lu", node.value, infoUser.imei.value));
 				state.imei.value = infoUser.imei.value;
 				state.position.cell.value = infoUser.position.cell.value;
 				state.position.time = infoUser.position.time;
 			}
 			else
 			{
-				if (inputs[0].num_kvs != 1)
+				//if (inputs[0].num_kvs != 1)
 				{
 					OLM_E(("User:%lu, imei:%lu, cell:%d, time:'%s'. We have an empty imei userInfo as first kv, but it is not the last (%lu of %lu)", node.value, infoUser.imei.value, infoUser.position.cell.value, infoUser.position.time.str().c_str(), 0, inputs[0].num_kvs));
 					for (uint64_t i = 0; (i < inputs[0].num_kvs); i++)
@@ -110,8 +98,6 @@ public:
 						node.parse(inputs[0].kvs[i]->key);
 						infoUser.parse(inputs[0].kvs[i]->value);
 						OLM_E(("Next kvs: user:%lu, imei:%lu, cell:%d, time:'%s'. Empty imei userInfo as first kv, but it is not the last (%lu of %lu)", node.value, infoUser.imei.value, infoUser.position.cell.value, infoUser.position.time.str().c_str(), 0, inputs[0].num_kvs));
-
-
 					}
 				}
 				//OLM_W(("Ignoring infoUser user:%lu detected, with infoUser.emei:%lu", node.value, infoUser.imei.value));
@@ -131,7 +117,7 @@ public:
 
 			if (infoUser.imei.value == 0)
 			{
-				//OLM_T(LMT_User06, ("Parsed user:%lu with imei:%lu at i:%lu of %lu", node.value, infoUser.imei.value, i, inputs[0].num_kvs));
+				OLM_T(LMT_User06, ("Parsed user:%lu with imei:%lu at i:%lu of %lu", node.value, infoUser.imei.value, i, inputs[0].num_kvs));
 				continue;
 			}
 			if (infoUser.imei.value != state.imei.value)

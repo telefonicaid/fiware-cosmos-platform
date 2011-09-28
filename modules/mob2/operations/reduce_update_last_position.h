@@ -49,8 +49,7 @@ helpLine: Updates last position information for every user
 			if (inputs[0].num_kvs == 0)
 			{
 				// No new information about user
-				// In batch mode, we have to reemit the state
-#ifdef BATCHMODE
+				// We have to reemit the state
 				if (inputs[1].num_kvs > 0)
 				{
 					node.parse(inputs[1].kvs[0]->key);
@@ -60,22 +59,22 @@ helpLine: Updates last position information for every user
 						writer->emit(0, &node, &state);
 					}
 				}
-#endif // BATCHMODE
 				return;
 			}
 
 			node.parse(inputs[0].kvs[0]->key);
 
+
 			if (inputs[1].num_kvs > 1)
 			{
 				OLM_E(("Error, more than one state(%lu) per user:%lu", inputs[1].num_kvs, node.value));
-#ifdef BATCHMODE
+
+				// We have to reemit the state
 				for (uint64_t j = 0; (j < inputs[1].num_kvs); j++)
 				{
 					state.parse(inputs[1].kvs[j]->value);
 					writer->emit(0, &node, &state);
 				}
-#endif // BATCHMODE
 				return;
 			}
 

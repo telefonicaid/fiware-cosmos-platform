@@ -11,12 +11,12 @@ add jun.medoides_pearson_nodobts.txt -txt
 
 
 upload callsTxt jun.cdrstxt -clear
-upload GASSET_CLIENTE_20100630.dat jun.userstxt -clear
+upload GASSET_clientes_awk.txt jun.userstxt -clear
 upload GASSET_CELDAS_RED_OCT2009.dat jun.cellstxt -clear
 
-upload centroides_euclidea.txt jun.centroides_client.txt
-upload centroidesBts.txt jun.centroidesBts.txt
-upload medoides_pearson_nodobts.txt jun.medoides_pearson_nodobts.txt
+upload cen20_kmeans_nod_euclidea.txt jun.centroides_client.txt
+upload cen5_kmeans_bts_euclidea.txt jun.centroidesBts.txt
+upload med20_pam_nodbts_pearson.txt jun.medoides_pearson_nodobts.txt
 
 
 #Script global

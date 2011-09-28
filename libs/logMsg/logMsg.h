@@ -536,7 +536,7 @@ do {                                                                       \
    if ((text = lmTextGet s) != NULL)                                       \
    {                                                                       \
       lmOut(text, 'X', __FILE__, __LINE__, (char*) __FUNCTION__, c, NULL); \
-      free(text);                                                          \
+      ::free(text);                                                          \
    }                                                                       \
 } while (0)
 #endif

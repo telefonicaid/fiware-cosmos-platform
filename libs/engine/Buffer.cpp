@@ -13,6 +13,10 @@
 #include "engine/Buffer.h"	// Own interface
 #include "au/xml.h"         // au::xml...
 
+#include "logMsg/logMsg.h"                     // lmInit, LM_*
+#include "logMsg/traceLevels.h"                // Trace Levels
+
+
 namespace engine {
 
 	Buffer::Buffer( std::string name ,   size_t max_size , int _tag )
@@ -21,7 +25,7 @@ namespace engine {
 		_offset = 0;
 		
 		tag = _tag;
-		
+
 		_name = name;
 		
 		if( max_size > 0)
@@ -30,11 +34,10 @@ namespace engine {
 			if( !_data )
 			{
 #ifdef __LP64__
-			   fprintf(stderr,"Error allocating memory for %lu bytes", max_size);
+			   LM_X(1,("Error (errno:%d) allocating memory for %lu bytes for tag:%d and name:'%s'", errno, max_size, tag, name.c_str()));
 #else
-			   fprintf(stderr,"Error allocating memory for %d bytes", max_size);
+			   LM_X(1,("Error (errno:%d) allocating memory for %d bytes for tag:%d and name:'%s'", errno, max_size, tag, name.c_str()));
 #endif
-                exit(1);
 			}
 		}
 		else

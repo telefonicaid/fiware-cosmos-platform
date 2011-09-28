@@ -28,29 +28,42 @@ namespace txt{
 
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
+//		   printf("Running word_count2 with %lu and %lu\n" , inputs[0].num_kvs , inputs[1].num_kvs );
 			
 			if( inputs[0].num_kvs > 0 )
 			  word.parse( inputs[0].kvs[0]->key );
 			else
 			  word.parse( inputs[1].kvs[0]->key );
 			
+//			printf("Word %s\n", word.value.c_str());
+
 			total.value = 0;
 
 			for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
 			{
 				count.parse( inputs[0].kvs[i]->value );
 				total.value += count.value;
+
+//				printf("Count %lu -> %lu\n" , count.value , total.value );
 			}
 
 			for (size_t i = 0 ; i < inputs[1].num_kvs ; i++)
 			{
+
+
 				count.parse( inputs[1].kvs[i]->value );
 				total.value += count.value;
+
+//				printf("Count %lu -> %lu\n" , count.value , total.value );
 			}
 
+
+
 			// Emit the result			
+//			printf("Emit %s %lu\n" , word.value.c_str() , total.value);
 			writer->emit( 0, &word , &total );
 
+//			printf("Finish Running word_count2 with %lu and %lu\n" , inputs[0].num_kvs , inputs[1].num_kvs );
 		}
 
 	};

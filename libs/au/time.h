@@ -37,7 +37,9 @@ namespace au {
 
     // String with today's timestamp
 	std::string todayString();
-    
+ 
+    // Get a string version of the time stamp
+    std::string str_time( time_t time );
 }
 
 #endif

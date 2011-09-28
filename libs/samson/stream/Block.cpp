@@ -285,6 +285,8 @@ namespace samson {
             
             block_info.push( getKVFormat() );
             
+            block_info.pushTime( header->time );
+            
         }
         
         size_t getSize( std::set<Block*> &blocks )

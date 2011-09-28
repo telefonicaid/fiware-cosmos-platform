@@ -149,7 +149,7 @@ namespace samson {
             Queue*queue = streamManager->getQueue( queue_name );
             
             if ( queue )
-                queue->notifyFinishBlockBreakQueueTask( originalBlockList , tmp );
+                queue->replaceAndUnlock( originalBlockList , tmp );
             
             // Detele the temporal list used here
             delete tmp;

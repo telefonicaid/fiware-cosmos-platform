@@ -151,11 +151,9 @@ namespace engine
             // Send the answer with a notification
             Engine::shared()->notify( new Notification( notification_memory_request_response , request , request->listner_id ) );
             
-        }
+        }        
         
-        
-    }
-    
+    }    
 	 
 	// Function to check memory requests and notify using Engine if necessary
 	void MemoryManager::checkMemoryRequests()
@@ -173,7 +171,7 @@ namespace engine
             if( !r )
                 return;
 
-            LM_M(("Cheking memory request with size %lu"  , r->size ));
+            //LM_M(("Cheking memory request with size %lu type percentadge %f "  , r->size , r->mem_percentadge ));
             
             if( r->mem_percentadge == 1.0 )
             {
@@ -187,7 +185,7 @@ namespace engine
                 // Full memory request, it is granted if memory is bellow 100%
                 double memory_usage = _getMemoryUsage();
 
-                LM_M(("memory usage %f"  , memory_usage ));
+                //LM_M(("memory usage %f"  , memory_usage ));
                 
                 if( memory_usage < 1.0 )
                 {

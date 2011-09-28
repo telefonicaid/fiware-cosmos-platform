@@ -167,7 +167,7 @@ namespace samson {
                     {
                         size_t block_id = block->getId();
                         
-                        if( block_ids_in_break_operations.find( block_id ) == block_ids_in_break_operations.end() )
+                        if( ! isBlockIdLocked( block_id) )
                         {
                             LM_M(("Considered block %lu ( %s ) for breaking..." , block->getId() , block->getKVRange().str().c_str() ));
                             tmp->add( block );
@@ -193,7 +193,7 @@ namespace samson {
                     for ( block_it = input->blocks.begin() ; block_it != input->blocks.end() ; block_it++)
                     {
                         size_t block_id = (*block_it)->getId();
-                        block_ids_in_break_operations.insert( block_id );
+                        lockBlockId( block_id );
                     }
 
                     streamManager->queueTaskManager.add( task );
@@ -210,7 +210,8 @@ namespace samson {
             }
             
             
-            // Compact if the over-heade is too high for a particular division
+            // Compact if the over-headed is too high for a particular division
+            //LM_TODO(("To be completed..."));
             if ( num_divisions > 1 )
             {
                 for ( int n = 0 ; n < num_divisions ; n++)
@@ -231,7 +232,7 @@ namespace samson {
                     // If overhead is too large, compactation is required
                     BlockInfo block_info = tmp->getBlockInfo();
                         
-                    LM_M(("Queue %s: division %d/%d %d blocks with %f overhead", name.c_str() , n , num_divisions , block_info.num_blocks , block_info.getOverhead() ));
+                    //LM_M(("Queue %s: division %d/%d %d blocks with %f overhead", name.c_str() , n , num_divisions , block_info.num_blocks , block_info.getOverhead() ));
 
                     if ( block_info.getOverhead() > 0.2 )
                     {
@@ -247,11 +248,11 @@ namespace samson {
             
             
         }
-        void Queue::notifyFinishBlockBreakQueueTask( BlockList *from , BlockList *to )
+        void Queue::replaceAndUnlock( BlockList *from , BlockList *to )
         {
-            LM_M(("Finish a block-break operation for queue %s" , name.c_str() )); 
-            LM_M(("FROM: %s" , from->strBlockIds().c_str() ));
-            LM_M(("TO: %s" , to->strBlockIds().c_str() ));
+            //LM_M(("Finish a block-break operation for queue %s" , name.c_str() )); 
+            //LM_M(("FROM: %s" , from->strBlockIds().c_str() ));
+            //LM_M(("TO: %s" , to->strBlockIds().c_str() ));
             
             // replace the original blocks for the new ones
             list->replace( from , to );
@@ -261,13 +262,100 @@ namespace samson {
             for ( block_it = from->blocks.begin() ; block_it != from->blocks.end() ; block_it++)
             {
                 size_t block_id = (*block_it)->getId();
-                block_ids_in_break_operations.erase( block_id );
+                block_ids_locked.erase( block_id );
             }
             
+        }
+        
+        BlockList *Queue::getStateBlockListForRange( KVRange range )
+        {
+            BlockList *tmp = new BlockList( "getStateBlockListForRange" );
+            au::list< Block >::iterator block_it;
+            for ( block_it = list->blocks.begin() ; block_it != list->blocks.end() ; block_it++ )
+            {
+                Block *block = *block_it;
+                size_t block_id = block->getId();
+                KVRange block_range = block->getKVRange();
+                
+                if( block_range.overlap( range ) )
+                {
+                    if( isBlockIdLocked( block_id ) )
+                    {
+                        LM_M(("Block %lu is locked" , block_id ));
+                        // A particular block is locked
+                        delete tmp;
+                        return NULL;
+                    }
+                    
+                    if( !range.contains( block_range ) )
+                    {
+                        LM_M(("Block %lu is not completelly divided for range %s" , block_id , range.str().c_str() ));
+                        
+                        // Not perfectlly divided
+                        delete tmp;
+                        return NULL;
+                    }
+                    
+                    tmp->add( block );
+                }
+                
+            }
             
+            //Lock all these blocks
+            
+            for ( block_it = tmp->blocks.begin() ; block_it != tmp->blocks.end() ; block_it++ )
+            {
+                Block *block = *block_it;
+                size_t block_id = block->getId();
+                lockBlockId(block_id);
+            }
+            
+            return tmp;
             
         }
+        
+        void Queue::unlockStateBlockList( BlockList *_list )
+        {
+            au::list< Block >::iterator block_it;
+            for ( block_it = _list->blocks.begin() ; block_it != _list->blocks.end() ; block_it++ )
+            {
+                Block *block = *block_it;
+                size_t block_id = block->getId();
+                unLockBlockId(block_id);
+            }
+        }
 
+        
+        BlockList *Queue::getInputBlockListForRange( KVRange range , size_t max_size )
+        {
+            int num_blocks = 0;
+            size_t total_size = 0;
+            
+            BlockList *tmp = new BlockList( "getInputBlockListForRange" );
+            
+            au::list< Block >::iterator block_it;
+            for ( block_it = list->blocks.begin() ; block_it != list->blocks.end() ; block_it++ )
+            {
+                Block *block = *block_it;
+                KVRange block_range = block->getKVRange();
+                
+                if( block_range.overlap( range ) )
+                {
+                    if( range.contains( block_range ) )
+                    {
+                        total_size+=block->size;
+                        
+                        if( num_blocks > 0 )
+                            if( ( max_size > 0 ) && ( total_size > max_size) )
+                                return tmp;
+                        
+                        tmp->add( block );
+                    }
+                }
+            }
+            
+            return tmp;
+        }
         
     }
 }

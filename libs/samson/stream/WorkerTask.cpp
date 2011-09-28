@@ -6,6 +6,7 @@
 
 
 #include "samson/common/EnvironmentOperations.h"        // copyEnvironment
+#include "samson/common/SamsonSetup.h"                  // SamsonSetup
 
 #include "samson/network/Packet.h"                      // samson::Packet
 
@@ -44,6 +45,9 @@ namespace samson {
             
             // Parse command
             cmd.set_flag_boolean("clear_inputs");
+            cmd.set_flag_uint64("min_size", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
+            cmd.set_flag_uint64("max_latency", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
+            
             cmd.parse( command );
             
             // Original value for the falg
@@ -66,6 +70,8 @@ namespace samson {
             
             // Parse command
             cmd.set_flag_boolean("clear_inputs");
+            cmd.set_flag_uint64("min_size", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
+            cmd.set_flag_uint64("max_latency", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
             cmd.parse( command );
             
             // Original value for the falg
@@ -187,10 +193,190 @@ namespace samson {
                 
                 return;
             }
-            
+
+            if( cmd.get_argument(0) == "run_stream_update_state" )
+            {
+                // Parameters used to thrigger or not the automatic-update
+                size_t min_size = cmd.get_flag_uint64("min_size");          // Minimum size to run an operation
+                size_t max_latency = cmd.get_flag_uint64("max_latency");    // Max acceptable time to run an operation
+                
+                // Operation size    
+                size_t default_size = SamsonSetup::shared()->getUInt64("general.memory") / SamsonSetup::shared()->getUInt64("general.num_processess");
+                size_t operation_size = (min_size!=0)?min_size:default_size;
+                
+                // Spetial command to update a state with a blocking reduce operation
+                // Usage: run_stream_update_state operation input state
+                
+                if( cmd.get_num_arguments() < 4 )
+                {
+                    finishWorkerTaskWithError( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
+                    return;
+                }
+                
+                std::string operation_name = cmd.get_argument(1);
+                std::string input_name = cmd.get_argument(2);
+                std::string state_name = cmd.get_argument(3);
+                
+                Operation *op = ModulesManager::shared()->getOperation(  operation_name );
+                if( !op )
+                {
+                    finishWorkerTaskWithError( au::str("Unknown operation %s" , operation_name.c_str() ) ); 
+                    return;
+                }
+                if( ( op->getType() != Operation::reduce ) || (op->getNumInputs() != 2 ) )
+                {
+                    finishWorkerTaskWithError( au::str("Only reduce operations with 2 inputs for run_stream_update_state operations" ) ); 
+                    return;
+                }
+                if( op->getInputFormat( op->getNumInputs()-1 )  != op->getOutputFormat( op->getNumOutputs()-1 ) )
+                {
+                    finishWorkerTaskWithError( au::str("%s is not a valid reduce operation since last input and output formats are not the same" ) ); 
+                    return;
+                }
+                
+                Queue *state = streamManager->getQueue( state_name );
+                Queue *input = streamManager->getQueue( input_name );
+                
+                
+                // Checking formats for the inputs and state
+                KVFormat input_queue_format = input->format;
+                KVFormat operation_input_format = op->getInputFormat(0);
+                if( input_queue_format != KVFormat("*","*") )
+                    if( input_queue_format != operation_input_format )
+                    {
+                        finishWorkerTaskWithError( au::str("Not valid input format %s != %s" , input_queue_format.str().c_str() , operation_input_format.str().c_str()  ) );
+                        return;
+                    }
+
+                KVFormat state_queue_format = state->format;
+                KVFormat operation_state_format = op->getInputFormat(1);
+                if( state_queue_format != KVFormat("*","*") )
+                    if( state_queue_format != operation_state_format )
+                    {
+                        finishWorkerTaskWithError( au::str("Not valid state format %s != %s" , state_queue_format.str().c_str() , operation_state_format.str().c_str()  ) );
+                        return;
+                    }
+                
+                
+                // Check what operations can be done....
+                int num_divisions = state->num_divisions;
+                
+                // Make sure, input is divided at least as state
+                if( input->num_divisions < state->num_divisions)
+                    input->num_divisions = state->num_divisions;
+                
+                
+                for ( int i = 0 ; i < num_divisions ; i++)
+                {
+                    KVRange range = rangeForDivision( i , num_divisions );
+                    
+                    BlockList *stateBlockList = state->getStateBlockListForRange( range );
+                    BlockList *inputBlockList = NULL;
+                    
+                    if ( stateBlockList )
+                    {
+                        
+                        BlockInfo state_block_info = stateBlockList->getBlockInfo();
+                        
+                        
+                        inputBlockList = input->getInputBlockListForRange( range , operation_size );
+                        BlockInfo input_block_info = inputBlockList->getBlockInfo();
+                        size_t latency = input_block_info.min_time_diff();
+
+                        //LM_M(("Considering a reduce-state operation size %lu ( min %lu ) latency %lu ( max %lu )" , input_block_info.size , min_size , latency , max_latency ));
+
+                        // Let see if operation is canceled for small size
+                        
+                        bool cancel_operation = false;
+                        
+                        if( input_block_info.size < operation_size )
+                        {
+                            //LM_M(("Caneled operation for size"));
+                            cancel_operation = true;
+                        }
+                        
+                        if( cancel_operation )
+                        {
+                            if ( (max_latency > 0) && ( latency > max_latency) )
+                            {
+                                //LM_M(("Reduce state operation reopened for latency %lu max %lu" , latency , max_latency));
+                                cancel_operation = false;
+                            }
+                            
+                        }
+                        
+                        // with no data, remove always
+                        if( input_block_info.size  == 0 )
+                            cancel_operation = true;
+                         
+                        // TODO: If size is not enougth, we can cancel operation here...
+                        if( !cancel_operation )
+                        {
+                            network::StreamOperation *operation = getStreamOperation( op );
+                            
+                            ReduceQueueTask * task = new ReduceQueueTask( streamManager->queueTaskManager.getNewId() , *operation , range );
+                            task->addOutputsForOperation(op);
+                            
+                            // Spetial flag to indicate update_state mode ( process different output buffers )
+                            task->update_state_mode = true;
+                            
+                            task->getBlockList("input_0")->copyFrom( inputBlockList );
+                            task->getBlockList("input_1")->copyFrom( stateBlockList );
+                            
+                            // remove input from the original queue
+                            input->list->remove( inputBlockList );
+                            
+                            // Set the working size to get statictics at ProcessManager
+                            task->setWorkingSize();
+                            
+                            // Add me as listener and increase the number of operations to run
+                            task->addListenerId( getEngineId() );
+                            num_pending_processes++;
+                            
+                            // Schedule tmp task into QueueTaskManager
+                            streamManager->queueTaskManager.add( task );
+                            
+                            delete operation;
+                        }
+                        else
+                        {
+                            // Unlock state since it has not been used un any operation
+                            state->unlockStateBlockList( stateBlockList );
+                        }
+                        
+                    }
+                    else
+                    {
+                        LM_M(("State not ready in range %s" , range.str().c_str() ));
+                    }
+                    
+                    // Remove list used here
+                    if( inputBlockList)
+                        delete inputBlockList;
+                    if( stateBlockList )
+                        delete stateBlockList;
+                    
+                }
+                
+                if( num_pending_processes == 0 )
+                    finishWorkerTask();
+                
+                return;
+            }
             
             if( cmd.get_argument(0) == "run_stream_operation" )
             {
+                bool clear_inputs =  cmd.get_flag_bool("clear_inputs");
+                
+                size_t min_size = cmd.get_flag_uint64("min_size");          // Minimum size to run an operation
+                size_t max_latency = cmd.get_flag_uint64("max_latency");    // Max acceptable time to run an operation
+                
+                // Operation size    
+                size_t default_size = SamsonSetup::shared()->getUInt64("general.memory") / SamsonSetup::shared()->getUInt64("general.num_processess");
+                size_t operation_size = (min_size!=0)?min_size:default_size;
+                
+                //LM_M(("Worker command %s --> min size %lu" , command.c_str() , min_size));
+                
                 if( cmd.get_num_arguments() < 2 )
                 {
                     finishWorkerTaskWithError( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
@@ -243,173 +429,36 @@ namespace samson {
                                                                , i , operation_name.c_str() , operation_format.str().c_str() , queue_name.c_str() , queue_format.str().c_str() ) );
                             return;
                         }
-                    
                 }
-                
-                
-                // Additional common flags in command
-                bool clear_inputs =  cmd.get_flag_bool("clear_inputs");
-                
-                //size_t max_size_per_operation = 1000000000;
-                size_t max_size_per_operation =  100000000; // 100Mb for testing
                 
                 switch (op->getType()) {
                         
-                    case Operation::parser:
-                    {
-                        
-                        network::StreamOperation *operation = getStreamOperation( op );
-                        
-                        // Get the input queue
-                        std::string input_queue_name = operation->input_queues(0);
-                        Queue *queue = streamManager->getQueue( input_queue_name );
-                        
-                        
-                        // Get a copy of all the blocks included in this queue
-                        BlockList localBlockList("local_block_list_planning_operation");
-                        localBlockList.copyFrom( queue->list );
-                        
-                        if( clear_inputs )
-                            queue->list->clearBlockList();
-                        
-                        while( !localBlockList.isEmpty() )
-                        {
-                            // Create the map operation
-                            size_t id = streamManager->queueTaskManager.getNewId();
-                            ParserQueueTask *tmp = new ParserQueueTask( id , *operation ); 
-                            tmp->addOutputsForOperation(op);
-                            
-                            // Extract the rigth blocks from queue
-                            tmp->getBlockList("input_0")->extractFrom( &localBlockList , max_size_per_operation );
-                            tmp->setWorkingSize();
-                            
-                            // Add me as listener and increase the number of operations to run
-                            tmp->addListenerId( getEngineId() );
-                            num_pending_processes++;
-                            
-                            // Schedule tmp task into QueueTaskManager
-                            streamManager->queueTaskManager.add( tmp );
-                            
-                        }
-                        
-                        delete operation;
-                        if( num_pending_processes == 0 )
-                            finishWorkerTask();
-
-                        return;
-                    }
-                        break;
-                        
-                    case Operation::parserOut:
-                    {
-                        
-                        network::StreamOperation *operation = getStreamOperation( op );
-                        
-                        // Get the input queue
-                        std::string input_queue_name = operation->input_queues(0);
-                        Queue *queue = streamManager->getQueue( input_queue_name );
-                        
-                        // Iterate thougth all the queue-items
-                        
-                        // Get a copy of all the blocks included in this queue
-                        BlockList localBlockList("local_block_list_planning_operation");
-                        localBlockList.copyFrom( queue->list );
-                        
-                        if( clear_inputs )
-                            queue->list->clearBlockList();
-                        
-                        while( !localBlockList.isEmpty() )
-                        {
-                            // Create the map operation
-                            size_t id = streamManager->queueTaskManager.getNewId();
-                            ParserOutQueueTask *tmp = new ParserOutQueueTask( id , *operation , KVRange(0, KVFILE_NUM_HASHGROUPS) ); 
-                            tmp->addOutputsForOperation(op);
-                            
-                            // Extract the rigth blocks from queue
-                            tmp->getBlockList("input_0")->extractFrom( &localBlockList , max_size_per_operation );
-                            tmp->setWorkingSize();
-                            
-                            // Schedule tmp task into QueueTaskManager
-                            streamManager->queueTaskManager.add( tmp );
-                            
-                        }
-                        
-                        delete operation;
-                        if( num_pending_processes == 0 )
-                            finishWorkerTask();
-
-                        return;
-                    }
-                        break;
-                        
-                    case Operation::map:
-                    {
-                        
-                        network::StreamOperation *operation = getStreamOperation( op );
-                        
-                        // Get the input queue
-                        std::string input_queue_name = operation->input_queues(0);
-                        Queue *queue = streamManager->getQueue( input_queue_name );
-                        
-                        
-                        // Get a copy of all the blocks included in this queue
-                        BlockList localBlockList("local_block_list_planning_operation");
-                        localBlockList.copyFrom( queue->list );
-                        
-                        if( clear_inputs )
-                            queue->list->clearBlockList();
-                        
-                        while( !localBlockList.isEmpty() )
-                        {
-                            // Create the map operation
-                            MapQueueTask *tmp = new MapQueueTask( streamManager->queueTaskManager.getNewId() , *operation , KVRange(0,KVFILE_NUM_HASHGROUPS) ); 
-                            tmp->addOutputsForOperation(op);
-                            
-                            // Extract the rigth blocks from queue
-                            tmp->getBlockList("input_0")->extractFrom( &localBlockList , max_size_per_operation );
-                            tmp->setWorkingSize();
-                            
-                            // Add me as listener and increase the number of operations to run
-                            tmp->addListenerId( getEngineId() );
-                            num_pending_processes++;
-                            
-                            // Schedule tmp task into QueueTaskManager
-                            streamManager->queueTaskManager.add( tmp );
-                        }
-                        delete operation;
-                        
-                        if( num_pending_processes == 0 )
-                            finishWorkerTask();
-                        
-                        return;
-                    }
-                        break;
-
                     case Operation::reduce:
                     {
-                        
                         network::StreamOperation *operation = getStreamOperation( op );
-                        Operation *_operation = ModulesManager::shared()->getOperation(operation->operation());
                         
                         // Get the input queues
                         std::vector< Queue* > queues;
                         BlockInfo block_info;
-                        for (int i = 0 ; i < _operation->getNumInputs() ; i++ )
+                        int num_divisions = 1;
+                        
+                        
+                        for (int i = 0 ; i < op->getNumInputs() ; i++ )
                         {
                             std::string input_queue_name = operation->input_queues(i);
                             Queue*queue = streamManager->getQueue( input_queue_name );
                             queue->update( block_info );
                             queues.push_back( queue );
+                            
+                            if( queue->num_divisions > num_divisions )
+                                num_divisions = queue->num_divisions;
                         }
-                        
-                        // Decide ranges used in the operations depending on the total size
-                        LM_TODO(("Compute this as a function of size"));
-                        int num_divisions = std::min( 16 , SamsonSetup::shared()->getInt("general.num_processess") ); 
                         
                         // For each range, create a set of reduce operations...
                         for ( int r = 0 ; r < num_divisions ; r++ )
                         {
                             KVRange  range = rangeForDivision( r , num_divisions );
+                            
                             
                             //Create the reduce operation
                             ReduceQueueTask *tmp = new ReduceQueueTask( streamManager->queueTaskManager.getNewId() , *operation , range ); 
@@ -422,10 +471,8 @@ namespace samson {
                                 list->copyFrom( queues[q]->list , range );
                             }
                             
-                            
                             // Set the working size to get statictics at ProcessManager
                             tmp->setWorkingSize();
-                            
                             
                             // Add me as listener and increase the number of operations to run
                             tmp->addListenerId( getEngineId() );
@@ -440,10 +487,112 @@ namespace samson {
                         delete operation;
                         if( num_pending_processes == 0 )
                             finishWorkerTask();
-
+                        
                         return;
                     }
-                        break;                        
+                        break;             
+                        
+                    case Operation::parser:
+                    case Operation::parserOut:
+                    case Operation::map:
+                    {
+                        
+                        network::StreamOperation *operation = getStreamOperation( op );
+                        
+                        // Get the input queue
+                        std::string input_queue_name = operation->input_queues(0);
+                        Queue *queue = streamManager->getQueue( input_queue_name );
+                        
+                        
+                        bool cancel_operation = false;
+                        while( !cancel_operation && !queue->list->isEmpty() )
+                        {
+                            // Create the map operation
+                            size_t id = streamManager->queueTaskManager.getNewId();
+                            
+
+                            QueueTask *tmp = NULL;
+
+                            switch ( op->getType() ) {
+                                case Operation::parser:
+                                {
+                                    tmp = new ParserQueueTask( id , *operation ); 
+                                }
+                                    break;
+
+                                case Operation::map:
+                                {
+                                    tmp = new MapQueueTask( id , *operation , KVRange(0,KVFILE_NUM_HASHGROUPS) ); 
+                                }
+                                    break;
+
+                                case Operation::parserOut:
+                                {
+                                    tmp = new ParserOutQueueTask( id , *operation , KVRange(0,KVFILE_NUM_HASHGROUPS) ); 
+                                }
+                                    break;
+                                    
+                                default:
+                                    LM_X(1,("Internal error"));
+                                    break;
+                            }
+                            
+                            
+                            tmp->addOutputsForOperation(op);
+                            
+                            // Extract the rigth blocks from queue
+                            tmp->getBlockList("input_0")->copyFrom( queue->list , operation_size );
+                            tmp->setWorkingSize();
+
+                            BlockInfo operation_block_info = tmp->getBlockList("input_0")->getBlockInfo();
+                            //LM_M(("Operation size %lu Min size %lu Latency %lu ( max %lu )" , operation_block_info.size , min_size , operation_block_info.min_time_diff() , max_latency ));
+                            
+                            // If there is not enougth size, do not run the operation
+                            if( (min_size>0) && ( operation_block_info.size < min_size ) )
+                            {
+                                //LM_M(("Parse operation canceled for small size %s ( min size %s )", au::str( operation_block_info.size ).c_str() , au::str(min_size).c_str()));
+                                cancel_operation = true;
+                            }
+                            
+                            if( cancel_operation )
+                            {
+                                // Check if latency is too high....
+                                if( ( max_latency > 0 ) && ( (size_t)operation_block_info.min_time_diff() > max_latency ) )
+                                {
+                                    //LM_M(("Parse operation reopen for high latency %lu ( max %lu )", (size_t) operation_block_info.min_time_diff() , max_latency ));
+                                    cancel_operation = false;       // No cancel since there is too much latency
+                                }
+                            }
+                            
+                            if( cancel_operation )
+                            {
+                                // Delete the operation since it has been canceled
+                                delete tmp;
+                            }
+                            else
+                            {
+                                // Remove from the original queue
+                                if( clear_inputs )
+                                    queue->list->remove( tmp->getBlockList("input_0") );
+                                
+                                // Add me as listener and increase the number of operations to run
+                                tmp->addListenerId( getEngineId() );
+                                num_pending_processes++;
+                                
+                                // Schedule tmp task into QueueTaskManager
+                                streamManager->queueTaskManager.add( tmp );
+                            }                     
+                            
+                        }
+                        
+                        delete operation;
+                        if( num_pending_processes == 0 )
+                            finishWorkerTask();
+                        
+                        return;
+                    }
+                        break;
+                        
                         
                     default:
                     {
@@ -498,7 +647,7 @@ namespace samson {
         network::StreamOperation *WorkerCommand::getStreamOperation( Operation *op )
         {
             
-            int pos_argument = 1;   // We skipt the "run_stream_operation" parameter
+            int pos_argument = 1;   // We skipt the "run_stream_operation" or "run_stream_update_state" parameter
             
             // Create the StreamOperation elements
             network::StreamOperation *operation  = new network::StreamOperation();

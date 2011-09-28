@@ -44,17 +44,27 @@ namespace au {
 		return std::string(line);
 	}
 	
-	std::string time_string( int seconds )
+	std::string time_string( size_t seconds )
 	{
+        
+        int days = 0;
+        while( seconds > (3600*24) )
+        {
+            days++;
+            seconds-= (3600*24);
+        }
+        
 		int minutes = seconds/60;
 		seconds -= minutes*60;
 		
 		int hours = minutes/60;
 		minutes -= hours*60;
 		
-		char line[1000];
-		sprintf(line, "%02d:%02d:%02d" , hours , minutes , seconds	);
-		return std::string(line);
+        if( days > 0 )
+            return au::str( "%02dd %02d:%02d" , days , hours , minutes );
+        
+        return au::str( " %02d:%02d:%02d" , hours , minutes , (int)seconds);
+        
 		
 	}
     

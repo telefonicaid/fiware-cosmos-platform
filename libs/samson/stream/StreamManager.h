@@ -57,6 +57,7 @@ namespace samson {
             friend class QueueItem;
             friend class WorkerCommand;
             friend class BlockBreakQueueTask;
+            friend class ReduceQueueTask;
             
             // Map with the current queues
             au::map< std::string , Queue > queues;                

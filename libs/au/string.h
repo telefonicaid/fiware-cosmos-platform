@@ -38,7 +38,7 @@ namespace au {
     std::string percentage_string( double value , double total );
     std::string percentage_string( double p );
     std::string int_string(int value, int digits);
-    std::string time_string( int seconds );
+    std::string time_string( size_t seconds );
     
     
     std::string time_string_ellapsed( struct timeval *init_time );	

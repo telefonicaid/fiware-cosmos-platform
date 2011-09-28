@@ -19,8 +19,12 @@ namespace au
     
 	std::string todayString()
 	{
+		return str_time( time(NULL) );
+	}
+
+	std::string str_time( time_t t )
+	{
 		
-		time_t t = time(NULL);
 		struct tm timeinfo;
 		char buffer_time[1024];
 		

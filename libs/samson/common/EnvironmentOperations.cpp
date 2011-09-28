@@ -46,7 +46,7 @@ namespace samson {
     {
         std::ostringstream txt;
         
-        txt << std::setw(15) << streamOperation.operation() << " : ";        
+        txt << streamOperation.operation() << " : ";        
         
         for (int i = 0 ;  i < streamOperation.input_queues_size() ; i++)
             txt << streamOperation.input_queues(i) << " ";
@@ -56,6 +56,18 @@ namespace samson {
         for (int i = 0 ;  i < streamOperation.output_queues_size() ; i++)
             txt << streamOperation.output_queues(i) << " ";
         
+        
+        if( streamOperation.environment().variable_size() > 0 )
+        {
+            txt << " [ ";
+            for (int i = 0 ; i < streamOperation.environment().variable_size() ; i++ )
+            {
+                txt << streamOperation.environment().variable(i).name() << "=" << streamOperation.environment().variable(i).value();
+                if( i != (streamOperation.environment().variable_size()-1))
+                    txt << ",";
+            }
+            txt << " ]";
+        }
         return txt.str();
     }
     

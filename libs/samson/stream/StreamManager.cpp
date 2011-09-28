@@ -12,6 +12,7 @@
 #include "engine/Notification.h"
 
 #include "samson/common/Info.h"     // samson::Info
+#include "samson/common/EnvironmentOperations.h"    // copyEnviroment
 
 #include "samson/module/ModulesManager.h"   // ModulesManager
 
@@ -261,6 +262,11 @@ namespace samson {
         // Auxiliar function
         std::string getCommandWorker( const network::StreamOperation& operation )
         {
+            
+            
+            Environment enviroment;
+            copyEnviroment( operation.environment() , &enviroment );
+            
             std::ostringstream output;
             output << "run_stream_operation " << operation.operation() << " ";
             
@@ -270,9 +276,18 @@ namespace samson {
             for (int i = 0 ; i < operation.output_queues_size() ; i++ )
                 output << operation.output_queues(i) << " ";
             
-            output << "-clear_inputs";  // Necessary in all automatic stream task
+            output << " -clear_inputs ";  // Necessary in all automatic stream task
+
+            size_t min_size = ( SamsonSetup::shared()->getUInt64("general.memory") / ( 2 *  SamsonSetup::shared()->getInt("general.num_processess") ) );
+            output << " -min_size " << min_size;
+            
+            size_t max_latency = enviroment.getSizeT("max_latency", 0);
+            output << " -max_latency " << max_latency;
+            
             return output.str();
         }
+
+        
         
         
         void StreamManager::reviewStreamOperation(const network::StreamOperation& operation)
@@ -302,7 +317,6 @@ namespace samson {
                 case Operation::map:
                 case Operation::parser:
                 case Operation::parserOut:
-                case Operation::reduce:
                 {
                     
                     //LM_W(("Reviwing StreamOperation parser %s " , operation.name().c_str()));
@@ -323,72 +337,51 @@ namespace samson {
                     // If necessary, run a worker command
                     if( block_info.num_blocks > 0 )
                     {
-                        WorkerCommand* wc = new WorkerCommand( getCommandWorker( operation ) );
+                        std::string worker_command = getCommandWorker( operation );
+                        //LM_M(("Worker command %s" , worker_command.c_str() ));
+                        WorkerCommand* wc = new WorkerCommand( worker_command );
                         addWorkerCommand( wc );
                     }
                     
                 }
                     break;
-                    /*
                     
                 case Operation::reduce:
                 {
                     
-                    LM_W(("Not implemented...."));
-                    
-
                     if( operation.input_queues_size() != 2 )
                     {
-                        LM_W(("StreamOperation %s failed since reduce has not 2 inputs", operation.name().c_str()));
+                        //LM_W(("StreamOperation %s failed since has no input queue", operation.name().c_str()));
                         return;
                     }
                     
+                    std::ostringstream worker_command;
+                    worker_command << "run_stream_update_state " << operation.operation() << " ";
                     
-                    // Get "pre input queue" and input queue
-                    Queue *inputQueue = getQueue( operation.input_queues(0) );
+                    for (int i = 0 ; i < operation.input_queues_size() ; i++ )
+                        worker_command << operation.input_queues(i) << " ";
                     
-                    // Get state state associated with the second input
-                    Queue *stateQueue = getQueue( operation.input_queues(1) );
-  
-                    if( stateQueue->paused )
-                    {
-                        // no new tasks since state queue is paused
-                        return;
-                    }
-
-                    // distribute the input queue in the same way state queue ( same items )
-                    inputQueue->distributeItemsAs( stateQueue );
-
-                    au::list< QueueItem >::iterator input_item = inputQueue->items.begin();
-                    au::list< QueueItem >::iterator state_item = stateQueue->items.begin();
+                    for (int i = 0 ; i < operation.output_queues_size() ; i++ )
+                        worker_command << operation.output_queues(i) << " ";
                     
-                    for (  ; state_item != stateQueue->items.end() ; input_item++ , state_item++  )
-                    {
-                        QueueItem * stateItem = *state_item;
-                        QueueItem * inputItem = *input_item;
-                        
-                        if( ( !stateItem->isWorking() )  && ( !inputItem->list->isEmpty() ) )
-                        {
-                            // Create a reduce task with all possible input
-                            ReduceQueueTask *tmp = new ReduceQueueTask( queueTaskManager.getNewId() , operation , stateItem , stateItem->range ); 
-                            tmp->addOutputsForOperation(op);
-                            
-                            // Setup content of this task
-                            tmp->getBlocks( inputItem->list , stateItem->list );
-                            
-                            // Set this item to "running mode"
-                            stateItem->setRunning( tmp );
-                            
-                            // Schedule tmp task into QueueTaskManager
-                            queueTaskManager.add( tmp );
-                            
-                        }
-                        
-                    }
+                    size_t min_size = ( SamsonSetup::shared()->getUInt64("general.memory") / ( 2 *  SamsonSetup::shared()->getInt("general.num_processess") ) );
+                    worker_command << " -min_size " << min_size;
+                    
+                    
+                    Environment enviroment;
+                    copyEnviroment( operation.environment() , &enviroment );
+                    
+                    size_t max_latency = enviroment.getSizeT("max_latency", 0);
+                    worker_command << " -max_latency " << max_latency;
+                    
+                    
+                    WorkerCommand* wc = new WorkerCommand( worker_command.str() );
+                    addWorkerCommand( wc );
+                    
                 }
                     break;
-                     */   
-                  
+
+                    
                     
                 default:
                     // Not supported operation at the moment

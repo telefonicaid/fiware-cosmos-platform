@@ -38,7 +38,7 @@ namespace samson {
             }
             
             // Function executed just before task is deleted in the main thread
-            virtual void finalize(){};
+            virtual void finalize(StreamManager* streamManager){};
             
             // Get information for monitorization
             void getInfo( std::ostringstream& output);

@@ -166,7 +166,7 @@ namespace samson {
                     {
                         
                         // Final process for this task
-                        _task->finalize(  );
+                        _task->finalize( streamManager );
                         
                         // Notify that this stream task is finished
                         streamManager->notifyFinishTask( _task );

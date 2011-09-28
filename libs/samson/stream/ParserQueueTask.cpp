@@ -14,6 +14,8 @@
 
 #include "QueueItem.h"                              // QueueItem
 
+#include "StreamManager.h"                          // StreamManager
+
 #include "ParserQueueTask.h"                        // Own interface
 
 
@@ -442,6 +444,9 @@ namespace samson {
             //Range of activity
             range = _range;
             
+            // By default it is not in update_state mode
+            update_state_mode = false;
+            
         }
         
         // Structure to decide where to take key-values
@@ -458,12 +463,6 @@ namespace samson {
         {
             BlockInfo block_info;
             update( block_info );
-            
-            LM_M(("ReduceQueueTask for range %s  [%s]" , range.str().c_str() , block_info.str().c_str() ));
-            
-            //LM_M(("Reducing ( HG %d - %d )" , stateItem->hg_begin , stateItem->hg_end ));
-            //LM_M(("Reducing input %s", list->getFullKVInfo().str().c_str() ));
-            //LM_M(("Reducing state %s", state->getFullKVInfo().str().c_str() ));
             
             // Get the operation
             Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation() );
@@ -526,17 +525,54 @@ namespace samson {
             // Detele the created instance
             delete reduce;            
             
-            LM_M(("Finish ReduceQueueTask for range %s  [%s]" , range.str().c_str() , block_info.str().c_str() ));
+            //LM_M(("Finish ReduceQueueTask for range %s  [%s]" , range.str().c_str() , block_info.str().c_str() ));
             
         }          
         
-        std::string ReduceQueueTask:: getStatus()
+        std::string ReduceQueueTask::getStatus()
         {
             std::ostringstream output;
                 output << "[" << id << "] ";
             output << "Reduce " << streamOperation->operation();
             return output.str();
         }
+
+        void ReduceQueueTask::processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )
+        {
+            int output_channel = streamOperation->output_queues_size() - 1 ;
+            
+            //LM_M(("processOutputBuffer %d ( %d )" , output , output_channel ));
+            
+            if( update_state_mode && ( output == output_channel ) )
+            {
+                outputBuffers.push_back( buffer );
+            }
+            else
+                sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues(output) );
+        }
+        
+        void ReduceQueueTask::finalize( StreamManager* streamManager )
+        {
+            
+            // Create the list with the outputs
+            BlockList *tmp = new BlockList("ReduceQueueTask_outputs");
+            for (size_t i = 0 ; i < outputBuffers.size() ; i++ )
+                tmp->createBlock( outputBuffers[i] );
+            
+            // Original list of blocks
+            BlockList *originalBlockList = getBlockList("input_1");
+            
+            // Get the queue we are working on
+            std::string queue_name = streamOperation->output_queues( streamOperation->output_queues_size() - 1 );
+            Queue*queue = streamManager->getQueue( queue_name );
+            
+            if ( queue )
+                queue->replaceAndUnlock( originalBlockList , tmp );
+            
+            // Detele the temporal list used here
+            delete tmp;
+        }           
+        
 
         
 #pragma mark ReduceQueueTask

@@ -50,9 +50,9 @@ namespace samson {
             // Number of divisions for this queue ( all blocks should satify this at long term using block-break operations )
             int num_divisions;
             
-            // List of ids for the blocks currently involved in a break operation
-            std::set<size_t> block_ids_in_break_operations;
-            
+            // List of ids for the blocks currently involved in a break operation / replace-reduce operation
+            std::set<size_t> block_ids_locked;
+
         public:
             
             // Constructor and destructor
@@ -78,14 +78,37 @@ namespace samson {
             void review();
             
             // Notify that a block-break operation has finished
-            void notifyFinishBlockBreakQueueTask( BlockList *from , BlockList *to );
+            void replaceAndUnlock( BlockList *from , BlockList *to );
 
+            // Get blocks contained in a particular range for state and input ( update status operation )
+            BlockList *getStateBlockListForRange( KVRange range );
+            BlockList *getInputBlockListForRange( KVRange range , size_t max_size );
+            
+            void unlockStateBlockList( BlockList *_list );
             
         private:
             
             void divide( QueueItem *item , QueueItem *item1 , QueueItem *item2 );
 
             void push( Block *block );
+            
+            
+            bool isBlockIdLocked( size_t block_id )
+            {
+                return ( block_ids_locked.find( block_id) != block_ids_locked.end() );
+            }
+            
+            void lockBlockId( size_t block_id )
+            {
+                if( isBlockIdLocked( block_id) )
+                    LM_W(("Reblocked block_id"));
+                
+                block_ids_locked.insert( block_id ); 
+            }
+            void unLockBlockId( size_t block_id )
+            {
+                block_ids_locked.erase( block_id );
+            }
             
             
         };

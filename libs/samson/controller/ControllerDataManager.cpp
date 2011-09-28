@@ -490,11 +490,18 @@ namespace samson {
                 response.error = true;
                 return response;
 			}			
+            
+            Environment tmp_enviroment;
+            copyEnviroment( stream_operation->environment() , &tmp_enviroment );
 
-            // Add a propery here
-            network::EnvironmentVariable* ev = stream_operation->mutable_environment()->add_variable();
-            ev->set_name( property );
-            ev->set_value( value );
+            // Set the new variable
+            tmp_enviroment.set( property , value );
+            
+            // Clear previous variables
+            network::Environment *enviroment = stream_operation->mutable_environment();
+            enviroment->clear_variable();
+
+            copyEnviroment(&tmp_enviroment, enviroment );
             
 			response.output = "OK";
 			return response;

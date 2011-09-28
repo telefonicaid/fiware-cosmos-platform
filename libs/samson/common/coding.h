@@ -6,14 +6,17 @@
 * FILE                 coding.h - 
 *
 */
-#include <samson/module/Data.h>
+#include <sys/time.h>                   // struct timeval
+#include <string.h>                     // std::string
 
 #include "au/string.h"                  // au::Format
 #include "au/xml.h"                     // au::xml...
 
-#include "samson/module/KVFormat.h"	        // samson::KVFormat
 #include "samson/common/samson.pb.h"                  // network:...
-#include <string.h>                     // std::string
+
+#include <samson/module/Data.h>
+#include "samson/module/KVFormat.h"	        // samson::KVFormat
+
 #include "engine/SimpleBuffer.h"		// engine::SimpleBuffer
 #include "logMsg/logMsg.h"                     // LM_X
 
@@ -404,6 +407,16 @@ namespace samson {
             
             return true;
         }
+        
+        bool contains(  KVRange range )
+        {
+            if ( range.hg_begin < hg_begin )
+                return false;
+            if( range.hg_end > hg_end )
+                return false;
+
+            return true;
+        }
 /*        
         KVRange subRange( int pos , int num_divisions )
         {
@@ -448,6 +461,8 @@ namespace samson {
 		KVInfo info;				// Total information in this package ( in all hash-groups )
         KVRange range;              // Range of has-groups used in this file
 		
+        time_t time;                // Time stamp for this block
+
 		// Specific fields only used in particular operations
 		// ---------------------------------------------------------------
 		
@@ -470,19 +485,26 @@ namespace samson {
 			// Default init for the input/num_inputs field ( only used in particular operations )
 			input = 0 ;
 			num_inputs = 0;
+            
+            // Current time-stamp
+            time = ::time(NULL);
 		}
-
+        
         void initForTxt( size_t size )
         {
-	    magic_number =  4652783;
-	    setFormat( KVFormat("txt","txt") );
+            magic_number =  4652783;
+            setFormat( KVFormat("txt","txt") );
             range.set( 0 , KVFILE_NUM_HASHGROUPS );
-
-	    info.kvs = 0;// In txt data-sets there are not "key-values"
-	    info.size = size;
+            
+            info.kvs = 0;// In txt data-sets there are not "key-values"
+            info.size = size;
             
             input = 0;
             num_inputs=0;
+            
+            // Current time-stamp
+            time = ::time(NULL);
+            
         }
         
         bool isTxt()
@@ -623,6 +645,9 @@ namespace samson {
         
         KVFormat format;    // Common format for all the information
         
+        time_t min_time;
+        time_t max_time;
+        
         BlockInfo()
         {
             num_blocks = 0;
@@ -632,6 +657,11 @@ namespace samson {
             size_locked = 0;
             
             format = KVFormat("*","*");
+            
+            // Initial values for time
+            min_time = 0;
+            max_time = 0;
+            
         }
         
         void getInfo( std::ostringstream &output )
@@ -643,6 +673,10 @@ namespace samson {
             au::xml_simple( output , "size_on_memory" , size_on_memory );
             au::xml_simple( output , "size_on_disk" , size_on_disk );
             au::xml_simple( output , "size_locked" , size_locked );
+
+            
+            au::xml_simple( output , "min_time_diff" , (size_t)min_time_diff() );
+            au::xml_simple( output , "max_time_diff" , (size_t)max_time_diff() );
             
             info.getInfo( output );
             
@@ -697,6 +731,38 @@ namespace samson {
                     format = KVFormat("?" , "?" );
         }
         
+        void pushTime( time_t time )
+        {
+            if( min_time == 0)
+            {
+                min_time = time;
+                max_time = time;
+                return;
+            }
+            
+            if( time < min_time )
+                min_time = time;
+
+            if( time > max_time )
+                max_time = time;
+            
+        }
+    
+        time_t min_time_diff()
+        {
+            if ( min_time == 0)
+                return 0;
+            
+            return time(NULL) - min_time;
+        }
+        
+        time_t max_time_diff()
+        {
+            if ( max_time == 0)
+                return 0;
+            
+            return time(NULL) - max_time;
+        }
         
         double getOverhead()
         {

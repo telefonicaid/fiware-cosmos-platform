@@ -224,6 +224,38 @@ namespace samson {
                     add( *b );
         }
         
+        void BlockList::copyFrom( BlockList* list , size_t max_size )
+        {
+            copyFrom( list , KVRange( 0 , KVFILE_NUM_HASHGROUPS ) , false , max_size );
+        }
+        
+        void BlockList::copyFrom( BlockList* list , KVRange range , bool exclusive , size_t max_size )
+        {
+            size_t total_size = 0 ;
+            int num_blocks = 0;
+            
+            au::list< Block >::iterator b;
+            for (b = list->blocks.begin() ;  b != list->blocks.end() ; b++)
+            {
+                Block *block = *b;
+                KVRange block_range = block->getKVRange();
+                
+                if( range.overlap( block_range) )
+                {
+                    if( !exclusive || range.contains( block_range ) )
+                    {
+                        total_size += block->getSize();
+                        if( num_blocks  > 0 )
+                            if (( max_size > 0) && ( total_size > max_size ))
+                                return;
+                        
+                        add( *b );
+                    }
+                }
+            }
+        }
+        
+        
         void BlockList::extractFrom( BlockList* list , size_t max_size )
         {
             size_t total_size = 0 ;
@@ -312,6 +344,51 @@ namespace samson {
             return output.str();
             
         }
+        
+        bool BlockList::isContained( KVRange range )
+        {
+            std::list<Block*>::iterator b;
+            for ( b = blocks.begin() ; b != blocks.end() ; b++ )
+                if( !range.contains( (*b)->getKVRange() ) )
+                    return false;
+            return true;
+        }
+        
+        bool BlockList::isAnyBlockIncludedIn( std::set<size_t> &block_ids)
+        {
+            // Check that no block is included in "block_ids_in_reduce_operations" 
+            au::list< Block >::iterator block_it;
+            for ( block_it = blocks.begin() ; block_it != blocks.end() ; block_it++)
+            {
+                size_t block_id = (*block_it)->getId();
+                
+                if( block_ids.find( block_id ) != block_ids.end() )
+                    return true;    // At least one is included
+            }
+            return false;
+        }
+        
+        void BlockList::removeBlockIdsAt( std::set<size_t> &block_ids )
+        {
+            au::list< Block >::iterator block_it;
+            for ( block_it = blocks.begin() ; block_it != blocks.end() ; block_it++)
+            {
+                size_t block_id = (*block_it)->getId();
+                block_ids.erase( block_id );
+            }
+        }
+        
+        void BlockList::addBlockIdsTo( std::set<size_t> &block_ids )
+        {
+            au::list< Block >::iterator block_it;
+            for ( block_it = blocks.begin() ; block_it != blocks.end() ; block_it++)
+            {
+                size_t block_id = (*block_it)->getId();
+                block_ids.insert( block_id );
+            }
+        }
+
+        
         
     }       
 }

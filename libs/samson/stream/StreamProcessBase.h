@@ -61,8 +61,8 @@ namespace samson
             virtual ~StreamProcessBase();
             
             // Function to process the output of the operations
-            void processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish );
-            void processOutputTXTBuffer( engine::Buffer *buffer , bool finish );
+            virtual void processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish );
+            virtual void processOutputTXTBuffer( engine::Buffer *buffer , bool finish );
             
         protected:
             

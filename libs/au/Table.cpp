@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <cstdarg>
 
+#include "au/time.h"            // au::str_time
+
 #include "Table.h"     // Own definitions
 
 namespace au {
@@ -208,6 +210,11 @@ namespace au {
         {
             size_t _value = strtoll( value.c_str() , (char **)NULL, 10);
             return au::str( _value );
+        }
+        else if ( format == "time" )
+        {
+            size_t _value = strtoll( value.c_str() , (char **)NULL, 10);
+            return au::time_string( _value );
         }
         else if ( ( format == "percentadge" ) || ( format == "per" ) )
         {

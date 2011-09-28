@@ -63,6 +63,7 @@ namespace samson {
             friend class PopQueueTask;
             friend class BlockBreakQueueTask;
             friend class SortQueueTask;
+            friend class UpdateStatusQueueTask;
             
             au::list< Block > blocks;               // List of blocks
             
@@ -132,16 +133,27 @@ namespace samson {
             
             //void copyFrom( BlockMatrix* matrix , int channel );
             void copyFrom( BlockList* list );
+            void copyFrom( BlockList* list , size_t max_size );
             void copyFrom( BlockList* list , KVRange range );
+            void copyFrom( BlockList* list , KVRange range , bool exclusive , size_t max_size );
             
             // Extract blocks of data
             void extractFrom( BlockList* list , size_t max_size );
+
             
             // Get information for monitorization
             void getInfo( std::ostringstream& output);
             
             // string containing all block_ids ( only debuggin )
             std::string strBlockIds();
+            
+            // Check if all the blocks are contained in this range
+            bool isContained( KVRange range );
+            
+            // Operations with block ids
+            void addBlockIdsTo( std::set<size_t> &block_ids );
+            void removeBlockIdsAt( std::set<size_t> &block_ids );
+            bool isAnyBlockIncludedIn( std::set<size_t> &block_ids);
             
         };
         

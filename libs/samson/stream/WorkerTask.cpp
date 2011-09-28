@@ -347,7 +347,7 @@ namespace samson {
                     }
                     else
                     {
-                        LM_M(("State not ready in range %s" , range.str().c_str() ));
+                        //LM_M(("State not ready in range %s" , range.str().c_str() ));
                     }
                     
                     // Remove list used here

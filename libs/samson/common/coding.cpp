@@ -63,7 +63,7 @@ namespace samson
     {
         for (int i = 0 ; i < num_divisions ; i++)
         {
-            KVRange r = rangeForDivision( i , num_divisions);
+            KVRange r = rangeForDivision( i , num_divisions );
             if( r.includes( *this ) )
                 return true;
         }

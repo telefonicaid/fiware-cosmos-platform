@@ -157,7 +157,7 @@ namespace samson {
             if( num_divisions > 1 )
             {
                 
-                LM_M(("Queue %s: Num divisions %d" , name.c_str() , num_divisions));
+                LM_M(("Queue %s: Num divisions %d.... let's see if we need to break anything...." , name.c_str() , num_divisions));
                 
                 BlockList *tmp = new BlockList("candidates_block_division");
                 
@@ -165,8 +165,10 @@ namespace samson {
                 for ( block_it = list->blocks.begin() ; block_it != list->blocks.end() ; block_it++)
                 {
                     Block* block = *block_it;
+                    size_t block_id = block->getId() ;
                     KVRange range = block->getKVRange();
                     
+                    LM_M(("Considered block %lu ( %s ) for breaking..." , block_id, block->getKVRange().str().c_str() ));
                     
                     if( !range.isOkForNumDivisions( num_divisions ) )
                     {
@@ -177,6 +179,12 @@ namespace samson {
                             LM_M(("Considered block %lu ( %s ) for breaking..." , block->getId() , block->getKVRange().str().c_str() ));
                             tmp->add( block );
                         }
+                        else
+                            LM_M(("Block %lu is okblocked" , block_id , num_divisions ));
+                    }
+                    else
+                    {
+                        LM_M(("Block %lu is ok for %d divisions" , block_id , num_divisions ));
                     }
                 }
                 

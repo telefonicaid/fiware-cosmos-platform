@@ -9,7 +9,7 @@
 #include "engine/ProcessManager.h"      // engine::ProcessManager
 
 #include "samson/common/NotificationMessages.h"         // notification_process_request
-
+#include "samson/common/SamsonSetup.h"                      // SamsonSetup
 
 #include "StreamManager.h"          // StreamManager
 #include "SystemQueueTask.h"        // SystemQueueTask
@@ -45,7 +45,7 @@ namespace samson {
             queueTasks.push_back( task );
             
             // Check if it is necessary to run a task
-            runQueueTasksIfNecessary();
+            reviewPendingQueueTasks();
         }
         
         void QueueTaskManager::add( SystemQueueTask* task )
@@ -53,76 +53,9 @@ namespace samson {
             systemQueueTasks.push_back( task );
             
             // Check if it is necessary to run a task
-            runSystemQueueTasksIfNecessary();
+            reviewPendingQueueTasks();
         }
 
-        
-        void QueueTaskManager::runQueueTasksIfNecessary()
-        {
-            while( true )
-            {
-                
-                if( queueTasks.size() == 0)
-                    return; // No more pending task to be executed
-                
-                QueueTask * task = queueTasks.front();  // Take the front task
-                
-                if( task->ready() )
-                {
-                    // Extract the task from the queue of pending tasks
-                    QueueTask * _task = queueTasks.extractFront();
-
-                    // Stupid check ;)
-                    if( task != _task )
-                        LM_X(1, ("Internal error. Forbident concurrent access to Queue Tasks"));
-
-                    // Insert in the running vector
-                    size_t task_id = _task->getId();
-                    runningTasks.insertInMap( task_id , _task ); 
-
-                    // Add this process item ( note that a notification will be used to notify when finished )
-                    engine::ProcessManager::shared()->add( _task , getEngineId() );
-                }
-                else
-                    return; // The next task is not ready
-
-            }
-            
-        }
-
-        void QueueTaskManager::runSystemQueueTasksIfNecessary()
-        {
-            while( true )
-            {
-                
-                if( systemQueueTasks.size() == 0)
-                    return; // No more pending task to be executed
-                
-                SystemQueueTask * task = systemQueueTasks.front();  // Take the front task
-                
-                if( task->ready() )
-                {
-                    // Extract the task from the queue of pending tasks
-                    SystemQueueTask * _task = systemQueueTasks.extractFront();
-                    
-                    // Stupid check ;)
-                    if( task != _task )
-                        LM_X(1, ("Internal error. Forbident concurrent access to Queue Tasks"));
-                    
-                    // Insert in the running vector
-                    size_t task_id = _task->getId();
-                    runningSystemQueueTasks.insertInMap( task_id , _task ); 
-                    
-                    // Add this process item ( note that a notification will be used to notify when finished )
-                    engine::ProcessManager::shared()->add( _task , getEngineId() );
-                }
-                else
-                    return; // The next task is not ready
-                
-            }
-            
-        }
-        
         void QueueTaskManager::notify( engine::Notification* notification )
         {
             if ( notification->isName(notification_process_request_response) )
@@ -186,11 +119,90 @@ namespace samson {
             
             if( notification->isName( notification_run_stream_tasks_if_necessary ) )
             {
-                runQueueTasksIfNecessary();
-                runSystemQueueTasksIfNecessary();
+                reviewPendingQueueTasks();
             }
-               
+            
         }
+        
+        void QueueTaskManager::reviewPendingQueueTasks()
+        {
+            int num_processors = SamsonSetup::shared()->getInt("general.num_processess"); 
+            int num_running_tasks = (int)( runningTasks.size() + runningTasks.size() );
+            
+            while( num_running_tasks < (int)(1.5*(double)num_processors) )
+            {
+                
+                bool runReturn = runNextQueueTasksIfNecessary();
+                bool runReturn2 = runNextSystemQueueTasksIfNecessary();
+                
+                if( !runReturn && !runReturn2 )
+                    return; // Nothing more to schedule
+            }
+            
+        }
+        
+        bool QueueTaskManager::runNextQueueTasksIfNecessary()
+        {
+            
+            if( queueTasks.size() == 0)
+                return false; // No more pending task to be executed
+            
+            QueueTask * task = queueTasks.front();  // Take the front task
+            
+            if( task->ready() )
+            {
+                // Extract the task from the queue of pending tasks
+                QueueTask * _task = queueTasks.extractFront();
+                
+                // Stupid check ;)
+                if( task != _task )
+                    LM_X(1, ("Internal error. Forbident concurrent access to Queue Tasks"));
+                
+                // Insert in the running vector
+                size_t task_id = _task->getId();
+                runningTasks.insertInMap( task_id , _task ); 
+                
+                // Add this process item ( note that a notification will be used to notify when finished )
+                engine::ProcessManager::shared()->add( _task , getEngineId() );
+                
+                return true;
+            }
+            else
+                return false; // The next task is not ready
+            
+            
+        }
+        
+        bool QueueTaskManager::runNextSystemQueueTasksIfNecessary()
+        {
+            
+            if( systemQueueTasks.size() == 0)
+                return false; // No more pending task to be executed
+            
+            SystemQueueTask * task = systemQueueTasks.front();  // Take the front task
+            
+            if( task->ready() )
+            {
+                // Extract the task from the queue of pending tasks
+                SystemQueueTask * _task = systemQueueTasks.extractFront();
+                
+                // Stupid check ;)
+                if( task != _task )
+                    LM_X(1, ("Internal error. Forbident concurrent access to Queue Tasks"));
+                
+                // Insert in the running vector
+                size_t task_id = _task->getId();
+                runningSystemQueueTasks.insertInMap( task_id , _task ); 
+                
+                // Add this process item ( note that a notification will be used to notify when finished )
+                engine::ProcessManager::shared()->add( _task , getEngineId() );
+                return true;
+            }
+            else
+                return false; // The next task is not ready
+            
+        }
+        
         
         // Get information for monitorization
         void QueueTaskManager::getInfo( std::ostringstream& output)

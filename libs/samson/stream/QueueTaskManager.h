@@ -39,8 +39,9 @@ namespace samson {
             void add( QueueTask* task );
             void add( SystemQueueTask* task );
             
-            void runQueueTasksIfNecessary();
-            void runSystemQueueTasksIfNecessary();
+            void reviewPendingQueueTasks();
+            bool runNextQueueTasksIfNecessary();
+            bool runNextSystemQueueTasksIfNecessary();
             
             // Notifications
             void notify( engine::Notification* notification );

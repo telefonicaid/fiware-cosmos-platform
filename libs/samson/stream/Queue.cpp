@@ -178,7 +178,7 @@ namespace samson {
                 size_t max_size = SamsonSetup::shared()->getUInt64("stream.max_operation_input_size");
                 
                 // Run break operations as necessary
-                while( true )
+                while( tmp->getNumBlocks() > 0 )    // While there is something to break...
                 {
                     // Schedule a block break operation
                     size_t id = streamManager->queueTaskManager.getNewId();

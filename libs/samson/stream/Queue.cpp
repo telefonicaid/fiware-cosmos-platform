@@ -136,7 +136,7 @@ namespace samson {
          
             
             // Compute division necesary for this block    
-            double _min_num_divisions = 4.0 * (double)block_info.size / (double) SamsonSetup::shared()->getUInt64("general.memory");
+            double _min_num_divisions = (double)block_info.size / (double) SamsonSetup::shared()->getUInt64("stream.max_state_division_size");
             int min_num_divisions = next_pow_2( (size_t) _min_num_divisions ); 
 
             // Set the new value for num_divisions if necessary
@@ -175,17 +175,17 @@ namespace samson {
                     }
                 }
                 
-                size_t min_size_block_break_task = (double)  (double) SamsonSetup::shared()->getUInt64("general.memory") /  (double) SamsonSetup::shared()->getUInt64("general.num_processess");
+                size_t max_size = SamsonSetup::shared()->getUInt64("stream.max_operation_input_size");
                 
                 // Run break operations as necessary
-                while( tmp->getBlockInfo().size > min_size_block_break_task )
+                while( true )
                 {
                     // Schedule a block break operation
                     size_t id = streamManager->queueTaskManager.getNewId();
                     
                     BlockBreakQueueTask *task = new BlockBreakQueueTask( id , name , num_divisions ); 
                     BlockList *input = task->getBlockList("input_0");
-                    input->extractFrom( tmp , min_size_block_break_task ); 
+                    input->extractFrom( tmp , max_size ); 
                     
                     // add to "block_ids_in_break_operations"
                     // Remove ids from block_ids_in_break_operations
@@ -199,11 +199,6 @@ namespace samson {
                     streamManager->queueTaskManager.add( task );
                     LM_M(("Running a block-break operation for queue %s %s" , name.c_str() , input->strBlockIds().c_str() ));                     
                 }
-                
-                
-                size_t tmp_size = tmp->getBlockInfo().size;
-                if( tmp_size >0 )
-                    LM_M(("Not running any operation since pending size if %lu ( min %lu ) " , tmp_size , min_size_block_break_task ));
                 
                 
                 delete tmp;

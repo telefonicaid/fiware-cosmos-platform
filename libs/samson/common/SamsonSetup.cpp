@@ -256,8 +256,9 @@ namespace samson
         add("controller.max_worker_disconnected_time", "120" , "Maximum acceptable time for a worker to be disconnected." );
         
         // Stream processing
-        add("stream.max_input_size_for_stream_task" , "1000000000" , "Maximum input data ( in bytes ) processed by a single stream task");
-        add("stream.max_state_item_size", "1000000000" , "Maximum size for a stream-state item. If higher, it is divided in two");
+        add("stream.min_operation_input_size" , "100000000" , "Minimum input data ( in bytes ) to run an automatic stream processing task");
+        add("stream.max_operation_input_size" , "400000000" , "Maximum input data ( in bytes ) to run an automatic stream processing task");
+        add("stream.max_state_division_size"  , "100000000" , "Maximum size for a division for a particular queue. If higher, queues automatically breaks apart");
         
 	}
 

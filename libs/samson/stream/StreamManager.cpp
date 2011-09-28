@@ -278,7 +278,7 @@ namespace samson {
             
             output << " -clear_inputs ";  // Necessary in all automatic stream task
 
-            size_t min_size = ( SamsonSetup::shared()->getUInt64("general.memory") / ( 2 *  SamsonSetup::shared()->getInt("general.num_processess") ) );
+            size_t min_size = SamsonSetup::shared()->getUInt64("stream.min_operation_input_size");
             output << " -min_size " << min_size;
             
             size_t max_latency = enviroment.getSizeT("max_latency", 0);
@@ -364,7 +364,7 @@ namespace samson {
                     for (int i = 0 ; i < operation.output_queues_size() ; i++ )
                         worker_command << operation.output_queues(i) << " ";
                     
-                    size_t min_size = ( SamsonSetup::shared()->getUInt64("general.memory") / ( 2 *  SamsonSetup::shared()->getInt("general.num_processess") ) );
+                    size_t min_size = SamsonSetup::shared()->getUInt64("stream.min_operation_input_size");
                     worker_command << " -min_size " << min_size;
                     
                     

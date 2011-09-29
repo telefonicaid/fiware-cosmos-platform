@@ -20,6 +20,9 @@ std::string                 dbAndColl;
 *
 * Option variables
 */
+bool  location;
+bool  mobility;
+bool  upload;
 char  server[256];
 char  db[256];
 char  collection[256];
@@ -30,8 +33,6 @@ int   bulksize;
 bool  indexed;
 bool  ipt;
 bool  burst;
-bool  location;
-bool  mobility;
 int   qps;
 int   maxUserId;
 int   minUserId;
@@ -47,6 +48,9 @@ int   days;
 */
 PaArgument paArgs[] =
 {
+	{ "-location", &location,   "LOCATION",    PaBool,    PaOpt,  false,                    false, true,  "user location query"        },
+	{ "-mobility", &mobility,   "MOBILITY",    PaBool,    PaOpt,  false,                    false, true,  "user mobility query"        },
+	{ "-upload",   &upload,     "UPLOAD",      PaBool,    PaOpt,  false,                    false, true,  "upload data to mongodb"     },
 	{ "-server",   server,      "SERVER",      PaString,  PaOpt,  (long) "localhost:27017", PaNL,  PaNL,  "data base server:port"      },
 	{ "-db",       db,          "DB_PATH",     PaString,  PaReq,  PaND,                     PaNL,  PaNL,  "name of data base"          },
 	{ "-coll",     collection,  "COLLECTION",  PaString,  PaReq,  PaND,                     PaNL,  PaNL,  "name of collection"         },
@@ -57,8 +61,6 @@ PaArgument paArgs[] =
 	{ "-indexed",  &indexed,    "INDEXED",     PaBool,    PaOpt,  false,                    false, true,  "create index"               },
 	{ "-ipt",      &ipt,        "UK_DATA",     PaBool,    PaOpt,  false,                    false, true,  "UK Pilot-like data"         },
 	{ "-burst",    &burst,      "BURST",       PaBool,    PaOpt,  false,                    false, true,  "burst data send"            },
-	{ "-location", &location,   "LOCATION",    PaBool,    PaOpt,  false,                    false, true,  "user location query"        },
-	{ "-mobility", &mobility,   "MOBILITY",    PaBool,    PaOpt,  false,                    false, true,  "user mobility query"        },
 	{ "-qps",      &qps,        "QPS",         PaInt,     PaOpt,  10000,                    1,     M512,  "no of queries per second"   },
 	{ "-maxuid",   &maxUserId,  "MAXUSERID",   PaInt,     PaOpt,  0,                        0,     M512,  "max user id"                },
 	{ "-minuid",   &minUserId,  "MINUSERID",   PaInt,     PaOpt,  0,                        0,     M512,  "min user id"                },
@@ -90,9 +92,9 @@ void timediff(struct timeval* start, struct timeval* stop, struct timeval* diff)
 
 /* ****************************************************************************
 *
-* upload - 
+* uploadData - 
 */
-void upload(void)
+void uploadData(void)
 {
 	if (bulk)
 		LM_M(("Bulk-mode-inserting %d kvs/second to server %s during %d seconds in DB %s, collection %s", kvs, server, secs, db, collection));
@@ -350,6 +352,12 @@ int main(int argC, char* argV[])
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
+	if (!location && !mobility && !upload)
+	{
+		printf("Please pick one if the operating modes: '-location', '-mobility', or '-upload'\n");
+		exit(1);
+	}
+
 	mdbConnection = new mongo::DBClientConnection();
 	LM_M(("Connecting to mongo at '%s'", server));
 	mdbConnection->connect(server);
@@ -361,8 +369,8 @@ int main(int argC, char* argV[])
 		locationQuery();
 	else if (mobility)
 		mobilityQuery();
-	else
-		upload();
+	else if (upload)
+		uploadData();
 
 	return 0;
 }

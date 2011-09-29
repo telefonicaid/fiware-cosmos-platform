@@ -6,7 +6,7 @@ all:
 	make -C tienda
 	make -C cdr
 	make -C mob
-	make -C mob2
+#	make -C mob2
 	make -C graph
 	make -C sna
 	make -C snalight

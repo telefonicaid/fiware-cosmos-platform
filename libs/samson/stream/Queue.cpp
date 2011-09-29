@@ -181,9 +181,14 @@ namespace samson {
         
         void Queue::review()
         {
+		   LM_M(("Intern review queue %s" , name.c_str() ));
+		   
             // Schedule new Block Break operations if necessary
-            if( format.isTxt() )
+ 		   if( format == KVFormat("txt","txt") )
+			{
+			   LM_M(("Queue %s nor revied since format %s= txt" , name.c_str() , format.str().c_str() ));
                 return;  // No necessry operations for txt elements
+			}
             
             // Set the minimum number of divisions ( when possible )
             setMinimumNumDivisions();
@@ -195,10 +200,12 @@ namespace samson {
                 return;
             }
             
-            if( num_divisions > 1 )
+            if( num_divisions == 1 )
+			   LM_M(("Queue %s nor revied since num_division = 1" , name.c_str() ));
+			else
             {
                 
-                LM_M(("Queue %s: Num divisions %d.... let's see if we need to break anything...." , name.c_str() , num_divisions));
+			   LM_M(("Queue %s: Num divisions %d.... %lu blocks" , name.c_str() , num_divisions , list->blocks.size() ));
                 
                 BlockList *tmp = new BlockList("candidates_block_division");
                 

@@ -92,7 +92,7 @@ if (error EQUAL 0)
 
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
-ADD_SUBDIRECTORY(testing)	# Test module and ctest stuff
+#ADD_SUBDIRECTORY(testing)	# Test module and ctest stuff
 
 endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 

@@ -2,14 +2,16 @@
 # -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs/parseArgs")
 include_directories("${PROJECT_SOURCE_DIR}/libs/logMsg")
-include_directories("/opt/mongodb/mongo-cxx-driver-v2.0")
+#include_directories("/opt/mongodb/mongo-cxx-driver-v2.0")
+include_directories("/opt/mongodb/mongo-cxx-driver-v1.8")
 include_directories("/usr/local/include/")
 include_directories("/opt/local/include/")
 
 #
 # Link directories
 #-----------------------------------------------------------------
-link_directories("/opt/mongodb/mongo-cxx-driver-v2.0")
+#link_directories("/opt/mongodb/mongo-cxx-driver-v2.0")
+link_directories("/opt/mongodb/mongo-cxx-driver-v1.8")
 link_directories("/opt/local/lib")
 
 

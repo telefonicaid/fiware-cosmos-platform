@@ -328,107 +328,27 @@ namespace samson {
         int hg_begin;
         int hg_end;
         
-        KVRange()
-        {
-            hg_begin = 0;
-            hg_end = KVFILE_NUM_HASHGROUPS;
-        }
-        
-        KVRange( int _hg_begin , int _hg_end )
-        {
-            hg_begin = _hg_begin;
-            hg_end = _hg_end;
-        }
+        KVRange();
+        KVRange( int _hg_begin , int _hg_end );
 
-        void set( int _hg_begin , int _hg_end )
-        {
-            hg_begin = _hg_begin;
-            hg_end = _hg_end;
-        }
+        void set( int _hg_begin , int _hg_end );
         
-        bool isValid()
-        {
-            if ( ( hg_begin < 0 ) || (hg_begin > (KVFILE_NUM_HASHGROUPS) ) )
-                return false;
-            if ( ( hg_end < 0 ) || (hg_end > KVFILE_NUM_HASHGROUPS ) )
-                return false;
-            
-            if( hg_begin >= hg_end )
-                return false;
-            
-            return true;
-        }
+        void setFrom( KVInfo *info );        
+        bool isValid();
       
-        void getInfo( std::ostringstream& output)
-        {
-            au::xml_open(output, "kv_range");
-            au::xml_simple( output , "hg_begin" , hg_begin );
-            au::xml_simple( output , "hg_end" , hg_end );
-            au::xml_close(output, "kv_range");
-        }
+        void getInfo( std::ostringstream& output);
         
-        std::string str()
-        {
-            return au::str("[%d %d]", hg_begin , hg_end);
-        }
+        std::string str();
         
-        bool overlap( KVRange range )
-        {
-            if( range.hg_end <= hg_begin )
-                return false;
-            
-            if( range.hg_begin >= hg_end )
-                return false;
-            
-            return true;
-        }
+        bool overlap( KVRange range );
         
-        int getNumHashGroups()
-        {
-            return hg_end - hg_begin;
-        }
+        int getNumHashGroups();
         
-        bool includes( KVRange range )
-        {
-            if( range.hg_begin < hg_begin )
-                return false;
-            if( range.hg_end > hg_end )
-                return false;
-            
-            return true;
-        }
+        bool includes( KVRange range );
         
-        bool contains( int hg )
-        {
-            if( hg < hg_begin )
-                return false;
-            if( hg >= hg_end )
-                return false;
-            
-            return true;
-        }
-        
-        bool contains(  KVRange range )
-        {
-            if ( range.hg_begin < hg_begin )
-                return false;
-            if( range.hg_end > hg_end )
-                return false;
-
-            return true;
-        }
-/*        
-        KVRange subRange( int pos , int num_divisions )
-        {
-            int step = ( hg_end - hg_begin ) / num_divisions;
-            
-            if ( pos != (num_divisions -1) )
-                return KVRange( hg_begin  + step*pos , hg_begin  + step*(pos+1 ) );
-            else
-                return KVRange( hg_begin  + step*pos , hg_end );                    
-                            
-        }
-*/
+        bool contains( int hg );
+       
+        bool contains(  KVRange range );
         
         // Get the maximum division pattern for this range
         bool isValidForNumDivisions( int num_divisions );

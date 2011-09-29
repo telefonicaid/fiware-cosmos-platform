@@ -381,7 +381,7 @@ namespace samson {
                 size_t default_size = SamsonSetup::shared()->getUInt64("general.memory") / SamsonSetup::shared()->getUInt64("general.num_processess");
                 size_t operation_size = (min_size!=0)?min_size:default_size;
                 
-                //LM_M(("Worker command %s --> min size %lu" , command.c_str() , min_size));
+                //LM_M(("Worker command %s --> operation_size %lu" , command.c_str() , operation_size ));
                 
                 if( cmd.get_num_arguments() < 2 )
                 {
@@ -502,7 +502,8 @@ namespace samson {
                     case Operation::parserOut:
                     case Operation::map:
                     {
-                        
+                        //LM_M(("Worker command %s min size %lu" , command.c_str() , min_size ));
+
                         network::StreamOperation *operation = getStreamOperation( op );
                         
                         // Get the input queue
@@ -510,9 +511,13 @@ namespace samson {
                         Queue *queue = streamManager->getQueue( input_queue_name );
                         
                         
+                        BlockList copy_queue_list("copy_queue_list");
+                        copy_queue_list.copyFrom( queue->list );
+                        
                         bool cancel_operation = false;
-                        while( !cancel_operation && !queue->list->isEmpty() )
+                        while( !cancel_operation && !copy_queue_list.isEmpty() )
                         {
+                            
                             // Create the map operation
                             size_t id = streamManager->queueTaskManager.getNewId();
                             
@@ -543,14 +548,18 @@ namespace samson {
                                     break;
                             }
                             
-                            
+                            // Set the outputs    
                             tmp->addOutputsForOperation(op);
                             
                             // Extract the rigth blocks from queue
-                            tmp->getBlockList("input_0")->copyFrom( queue->list , operation_size );
+                            BlockList *inputBlockList = tmp->getBlockList("input_0");
+                            inputBlockList->copyFrom( &copy_queue_list , operation_size );
+                            copy_queue_list.remove( inputBlockList );       // Remove from the original list to not take again
+                            
                             tmp->setWorkingSize();
 
                             BlockInfo operation_block_info = tmp->getBlockList("input_0")->getBlockInfo();
+                            
                             //LM_M(("Operation size %lu Min size %lu Latency %lu ( max %lu )" , operation_block_info.size , min_size , operation_block_info.min_time_diff() , max_latency ));
                             
                             // If there is not enougth size, do not run the operation
@@ -577,9 +586,10 @@ namespace samson {
                             }
                             else
                             {
+                                
                                 // Remove from the original queue
                                 if( clear_inputs )
-                                    queue->list->remove( tmp->getBlockList("input_0") );
+                                    queue->list->remove( inputBlockList );
                                 
                                 // Add me as listener and increase the number of operations to run
                                 tmp->addListenerId( getEngineId() );

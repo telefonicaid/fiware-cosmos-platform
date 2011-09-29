@@ -59,6 +59,127 @@ namespace samson
         
     }
     
+#pragma mark KVRange
+    
+    KVRange::KVRange()
+    {
+        hg_begin = 0;
+        hg_end = KVFILE_NUM_HASHGROUPS;
+    }
+    
+    KVRange::KVRange( int _hg_begin , int _hg_end )
+    {
+        hg_begin = _hg_begin;
+        hg_end = _hg_end;
+    }
+    
+    void KVRange::set( int _hg_begin , int _hg_end )
+    {
+        hg_begin = _hg_begin;
+        hg_end = _hg_end;
+    }
+    
+    void KVRange::setFrom( KVInfo *info )
+    {
+        set(0,KVFILE_NUM_HASHGROUPS);
+        return;
+        
+        LM_M(("Seting KVRange from KVInfo"));
+        
+        int i = 0 ;
+        while( (info[i].size == 0) || ( i < KVFILE_NUM_HASHGROUPS ) )
+            i++;
+        
+        if( i == KVFILE_NUM_HASHGROUPS)
+        {
+            set(0,1);   // Smaller set
+            return;
+        }
+        
+        hg_begin = i;
+        i++;
+        while( (info[i].size == 0) || ( i < KVFILE_NUM_HASHGROUPS ) )
+            i++;
+        hg_end = i;
+        
+        LM_M(("Finish Seting KVRange from KVInfo"));
+    }
+    
+    bool KVRange::isValid()
+    {
+        if ( ( hg_begin < 0 ) || (hg_begin > (KVFILE_NUM_HASHGROUPS) ) )
+            return false;
+        if ( ( hg_end < 0 ) || (hg_end > KVFILE_NUM_HASHGROUPS ) )
+            return false;
+        
+        if( hg_begin >= hg_end )
+            return false;
+        
+        return true;
+    }
+    
+    void KVRange::getInfo( std::ostringstream& output)
+    {
+        au::xml_open(output, "kv_range");
+        au::xml_simple( output , "hg_begin" , hg_begin );
+        au::xml_simple( output , "hg_end" , hg_end );
+        au::xml_close(output, "kv_range");
+    }
+    
+    std::string KVRange::str()
+    {
+        return au::str("[%d %d]", hg_begin , hg_end);
+    }
+    
+    bool KVRange::overlap( KVRange range )
+    {
+        if( range.hg_end <= hg_begin )
+            return false;
+        
+        if( range.hg_begin >= hg_end )
+            return false;
+        
+        return true;
+    }
+    
+    int KVRange::getNumHashGroups()
+    {
+        return hg_end - hg_begin;
+    }
+    
+    bool KVRange::includes( KVRange range )
+    {
+        if( range.hg_begin < hg_begin )
+            return false;
+        if( range.hg_end > hg_end )
+            return false;
+        
+        return true;
+    }
+    
+    bool KVRange::contains( int hg )
+    {
+        if( hg < hg_begin )
+            return false;
+        if( hg >= hg_end )
+            return false;
+        
+        return true;
+    }
+    
+    bool KVRange::contains(  KVRange range )
+    {
+        if ( range.hg_begin < hg_begin )
+            return false;
+        if( range.hg_end > hg_end )
+            return false;
+        
+        return true;
+    }
+  
+    
+    // Get the maximum division pattern for this range
+    
     bool KVRange::isValidForNumDivisions( int num_divisions )
     {
         int size_per_division = KVFILE_NUM_HASHGROUPS / num_divisions;

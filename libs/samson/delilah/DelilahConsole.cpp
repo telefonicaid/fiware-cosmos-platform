@@ -982,7 +982,7 @@ namespace samson
         }
 
         
-        if( ( main_command.substr(0,3) == "ls_" ) || ( main_command == "engine_show" ) )
+        if( (main_command=="ls") || ( main_command.substr(0,3) == "ls_" ) || ( main_command == "engine_show" ) )
         {
             writeOnConsole( info( main_command ) );
             return 0;

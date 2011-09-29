@@ -82,7 +82,7 @@ namespace samson
     void KVRange::setFrom( KVInfo *info )
     {
         int i = 0 ;
-        while( (info[i].size == 0) || ( i < KVFILE_NUM_HASHGROUPS ) )
+        while( (info[i].size == 0) && ( i < KVFILE_NUM_HASHGROUPS ) )
             i++;
         
         if( i == KVFILE_NUM_HASHGROUPS)
@@ -93,12 +93,15 @@ namespace samson
         }
         
         hg_begin = i;
-        i++;
-        while( (info[i].size == 0) || ( i < KVFILE_NUM_HASHGROUPS ) )
-            i++;
-        hg_end = i;
+
+        int j = KVFILE_NUM_HASHGROUPS;
+        while( (info[j-1].size == 0) && ( j > (i+1) ) )
+            j++;
+
+        hg_end = j;
 
 
+		LM_M(("KVRange for output block %s" , str().c_str()));
     }
     
     bool KVRange::isValid()

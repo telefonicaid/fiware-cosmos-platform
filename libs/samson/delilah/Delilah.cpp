@@ -526,6 +526,9 @@ namespace samson {
 
         if( main_command == "ls_queues_info" )
             return infoCommand(LS_QUEUES_INFO_COMMAND);
+
+        if( main_command == "ls_stream_operation" )
+            return infoCommand(LS_STREAM_OPERATIONS);
         
         if( main_command == "engine_show" )
             return infoCommand(ENGINE_SHOW_COMMAND);

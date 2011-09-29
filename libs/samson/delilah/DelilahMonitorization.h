@@ -30,16 +30,6 @@
 
 
 namespace samson {
-	
-    typedef enum 
-    {
-        
-        general,
-        task,
-        queues,
-        queues_tasks,
-        
-    } DelilahMonitorizationType;
        
 	/**
 	 Main class for the DelilahConsole program
@@ -48,26 +38,24 @@ namespace samson {
 	class DelilahMonitorization : public Delilah , public au::CursesConsole
 	{
 		   
-        DelilahMonitorizationType  type;
-        size_t reference;
-
-        std::vector<std::string>  main_commands;
+        // Internal list of commands available
+        std::vector<std::string>  main_commands;    
         
 	public:
         
 		DelilahMonitorization( NetworkInterface *network ) : Delilah( network , true )
 		{
 			trace_on = true;
-            type =  general;
-            
-            reference = 1024*1024*1024;
-            
+            command = "overview";    // Default method
             
             // Main commands
+            main_commands.push_back("overview");
+            
             main_commands.push_back("engine_show");
-            main_commands.push_back("ps_tasks");
+            main_commands.push_back("ls");
             main_commands.push_back("ls_queues");
-            main_commands.push_back("ps_stream");
+            main_commands.push_back("ls_queues_info");
+            
 		}
 		
 		~DelilahMonitorization()

@@ -31,22 +31,15 @@
 #include "WorkerCommandDelilahComponent.h"      // samson::WorkerCommandDelilahComponent
 
 
+#include "samson/delilah/DelilahUtils.h"        // node_to_string_function
 #include "samson/delilah/Delilah.h"             // Own interfce
 
 #define notification_delilah_automatic_update "notification_delilah_automatic_update"
 
 
+samson::Delilah* global_delilah = NULL;
+
 namespace samson {
-
-    // Private token to protect the local list of components
-    au::Token token_xml_info("token_xml_info");
-    // Global xml-based information from the system
-    std::string xml_info;
-    // General document with the content of xml_info
-    pugi::xml_document doc;
-    // Cronometer for xml_info update
-    au::Cronometer cronometer_xml_info;
-
     
     
     /* ****************************************************************************
@@ -77,6 +70,8 @@ namespace samson {
         int delilah_automatic_update_period = samson::SamsonSetup::getInt( "delilah.automatic_update_period" );
         engine::Engine::shared()->notify( new engine::Notification( notification_delilah_automatic_update ) , delilah_automatic_update_period );
 
+        // Global pointer to access delilah
+        global_delilah = this;
         
     }
     
@@ -148,7 +143,6 @@ namespace samson {
         
         if( msgCode == Message::StatusResponse )
         {
-            au::TokenTaker tt( &token_xml_info );
             
             std::ostringstream output;
             
@@ -164,19 +158,7 @@ namespace samson {
             output << "</samson>\n";
 
             // Get the resulting string
-            xml_info = output.str();
-            
-            std::istringstream is_xml_document( xml_info );
-            
-            cronometer_xml_info.reset();
-            
-            doc.reset();
-            pugi::xml_parse_result result = doc.load( is_xml_document );
-            
-            if( !result )
-            {
-                // Do something with this error
-            }
+            updateXMLString( output.str() );
             
             return;
         }
@@ -484,16 +466,6 @@ namespace samson {
         return 0;
     }    
 	
-    int Delilah::getUpdateSeconds()
-    {
-        au::TokenTaker tt( &token_xml_info );
-        
-        int time = cronometer_xml_info.diffTimeInSeconds();
-
-        // Sum the worker time
-        
-        return time;
-    }
     
     // Get information for monitorization
     void Delilah::getInfo( std::ostringstream& output)
@@ -519,246 +491,50 @@ namespace samson {
     
     // Generic function to get a tabular information scaning the xml document
     
+ 
+#pragma mark info interface ------------------------------------------------------------------------------------------------------------
     
-
-    std::string Delilah::infoCommand( std::string command )
+    
+#define LS_COMMAND "info_command -controller //queue /name,title=Name,l /num_files,t=#files /kv_info/kvs,t=#kvs,f=uint64 /kv_info/size,t=size,f=uint64 /format/key_format,t=key /format/value_format,t=value,left -no_title"
+    
+#define LS_QUEUES_COMMAND "info_command -worker //queue /name,t=name,left  /block_info/kv_info/kvs,t=#kvs,format=uint64 /block_info/kv_info/size,t=size,format=uint64  /block_info/format/key_format,t=key /block_info/format/value_format,t=value,left /status,t=status,left"
+    
+#define LS_QUEUES_INFO_COMMAND "info_command -worker //queue /name,t=name,left /block_info/num_blocks,t=#Blocks,format=uint64 /block_info/size,title=size,format=uint64 /block_info/size_on_memory^/block_info/size,format=per,t=on_memory /block_info/size_on_disk^/block_info/size,format=per,t=on_disk /block_info/size_locked^/block_info/size,format=per,t=locked  /block_info/min_time_diff,f=time,t=oldest /block_info/max_time_diff,f=time,t=earliest /num_divisions,t=#div,uint64 /block_info/num_divisions,t=#div"
+    
+    
+#define ENGINE_SHOW_COMMAND "info_command -delilah -worker -controller //engine_system /process_manager/num_running_processes^/process_manager/num_processes,t=process,format=per /memory_manager/used_memory^/memory_manager/memory,t=memory,format=per  /disk_manager/num_pending_operations+/disk_manager/num_running_operations,t=disk,f=uint64"
+    
+#define LS_STREAM_OPERATIONS "info_command //stream_operation -controller /name,t=name /description,t=description,left"
+    
+    
+    
+    std::string Delilah::info( std::string command )
     {
-        au::CommandLine cmdLine;
-        cmdLine.set_flag_boolean("controller");
-        cmdLine.set_flag_boolean("worker");
-        cmdLine.set_flag_boolean("delilah");
-        cmdLine.set_flag_boolean("no_title");
-        cmdLine.parse( command );
+        au::CommandLine cmd;
+        cmd.parse( command );
+        
+        if( cmd.get_num_arguments() == 0)
+            return "No command to display information about SAMSON platform.";
+        
+        std::string main_command = cmd.get_argument(0);
 
-        std::ostringstream output;
+        if( main_command == "ls" )
+            return infoCommand(LS_COMMAND);
         
-        // CONTROLLER
-        if( cmdLine.get_flag_bool("controller") )
-        {
-            if( !cmdLine.get_flag_bool("no_title") )
-            {
-            output << "\n";
-            output << "================================================================================\n";
-            output << "Controller :\n";
-            output << "================================================================================\n";
-            output << "\n";
-            }
-            
-            output << infoCommand("//controller" , command );
-        }
-        
-        
-        // WORKERS
-        if( cmdLine.get_flag_bool("worker") )
-        {
-            pugi::ValuesCollection workers_ids = pugi::values(doc, "//worker/id");
-            
-            for ( size_t w = 0 ; w < workers_ids.size() ; w++ )
-            {
-                
-                if( !cmdLine.get_flag_bool("no_title") )
-                {
-                    output << "\n";
-                    output << "================================================================================\n";
-                    output << "Worker " << workers_ids[w] << ":\n";
-                    output << "================================================================================\n";
-                    output << "\n";
-                }
+        if( main_command == "ls_queues" )
+            return infoCommand(LS_QUEUES_COMMAND);
 
-                output << infoCommand( "//worker[id=" + workers_ids[w] + "]" , command );
-                
-            }
-        }
+        if( main_command == "ls_queues_info" )
+            return infoCommand(LS_QUEUES_INFO_COMMAND);
         
-        // DELILAH
-        if( cmdLine.get_flag_bool("delilah") )
-        {
-            if( !cmdLine.get_flag_bool("no_title") )
-            {
-                output << "\n";
-                output << "================================================================================\n";
-                output << "Delilah :\n";
-                output << "================================================================================\n";
-                output << "\n";
-            }
-            
-            output << infoCommand("//delilah" , command );
-        }
-    
-        return output.str();
+        if( main_command == "engine_show" )
+            return infoCommand(ENGINE_SHOW_COMMAND);
+        
+        return au::str("Command %s unkown" , main_command.c_str() );
         
     }
-    
-    std::string Delilah::infoCommand( std::string prefix ,  std::string command )
-    {
-        
-        au::CommandLine cmdLine;
-        cmdLine.set_flag_boolean("info");
-        
-        cmdLine.parse( command );
-        
-        if( !checkXMLInfoUpdate() )
-            return 0;
-        
-        std::ostringstream output;
 
-        if( cmdLine.get_num_arguments() < 2 )
-            return "Usage: info_command select_queue fields [options] [-info]";
 
-        std::string select = cmdLine.get_argument(1);
-        
-        {
-            au::TokenTaker tt( &token_xml_info );
-            
-            // Select nodes
-            pugi::xpath_node_set nodes  = pugi::select_nodes( doc , prefix + select );
-
-            // Get the data set form nodes
-            au::DataSet dataSet;
-            pugi::dataSetFromNodes( dataSet , nodes );
-
-            // If select is activated. just show the fields
-            if( cmdLine.get_flag_bool("info") )
-            {
-                std::vector<std::string> fields;
-                dataSet.getAllFields(fields);
-                for ( size_t i = 0 ; i < fields.size() ; i ++)
-                    output << "Field: " << fields[i] << "\n";
-                
-                output << "\n";
-                output << "Num records " << dataSet.getNumRecords();
-                
-                return output.str();
-            }
-            
-            // Table shoing contents
-            au::Table table( &dataSet );
-            
-            //table.addAllFields();
-            
-            for ( int i = 2 ; i < cmdLine.get_num_arguments() ; i++)
-            {
-                std::string field_definition = cmdLine.get_argument(i);
-                table.add( new au::TableColumn( field_definition ) );
-            }
-            
-            
-            output << table.str();
-            
-        }
-        
-        return output.str();
-        
-    }
-    
-    
-    std::string Delilah::getStringInfo( std::string path , node_to_string_function _node_to_string_function  , int options )
-    {
-        
-        if( !checkXMLInfoUpdate() )
-            return 0;
-        
-        {
-            au::TokenTaker tt( &token_xml_info );
-            
-            
-            std::ostringstream output;
-            
-            
-            if( options & i_controller )
-            {
-                if( !(options & i_no_title ) )
-                {
-                    output << "\n";
-                    output << "================================================================================\n";
-                    output << "Controller :\n";
-                    output << "================================================================================\n";
-                    output << "\n";
-                }
-                
-                pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//controller" + path );
-                
-                for ( size_t i = 0 ; i < nodes.size() ; i++ )
-                {
-                    const pugi::xml_node& node = nodes[i].node(); 
-                    output << _node_to_string_function( node ) << "\n" ;
-                }      
-            }
-            
-            if( options & i_worker )
-            {
-                pugi::ValuesCollection workers_ids = pugi::values(doc, "//worker/id");
-                
-                for ( size_t w = 0 ; w < workers_ids.size() ; w++ )
-                {
-                    
-                    if( !(options & i_no_title ) )
-                    {
-                        output << "\n";
-                        output << "================================================================================\n";
-                        output << "Worker " << workers_ids[w] << ":\n";
-                        output << "================================================================================\n";
-                        output << "\n";
-                    }
-                    
-                    pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//worker[id=" + workers_ids[w] + "]" + path );
-                    
-                    for ( size_t i = 0 ; i < nodes.size() ; i++ )
-                    {
-                        const pugi::xml_node& node = nodes[i].node(); 
-                        output << _node_to_string_function( node ) << "\n" ;
-                    }            
-                    
-                }
-            }
-            
-            
-            if( options & i_delilah )
-            {
-                if( !(options & i_no_title ) )
-                {
-                    output << "\n";
-                    output << "================================================================================\n";
-                    output << "Delilah :\n";
-                    output << "================================================================================\n";
-                    output << "\n";
-                }
-                
-                pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//delilah" + path );
-                
-                for ( size_t i = 0 ; i < nodes.size() ; i++ )
-                {
-                    const pugi::xml_node& node = nodes[i].node(); 
-                    output << _node_to_string_function( node ) << "\n" ;
-                }            
-            }
-            
-            return output.str();
-            
-        }
-        
-        
-    }    
-    
-    bool Delilah::checkXMLInfoUpdate()
-    {
-        int soft_limit = 10;
-        int hard_limit  = 60;
-        
-        int time = getUpdateSeconds();
-        
-        if( time < soft_limit )
-            return true;
-        
-        if( time < hard_limit )
-        {
-            showWarningMessage( au::str( "Monitorization information is %d seconds old" , time ) );
-            return true;
-        }
-        
-        showErrorMessage( au::str( "Monitorization information is %d seconds old" , time ) );
-        return false;
-    }
     
 }
 

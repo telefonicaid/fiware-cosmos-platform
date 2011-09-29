@@ -42,17 +42,6 @@
 
 #define DEF1             "TYPE:EXEC/FUNC: TEXT"
 
-#define LS_COMMAND "info_command -controller //queue /name,title=Name,l /num_files,t=#files /kv_info/kvs,t=#kvs,f=uint64 /kv_info/size,t=size,f=uint64 /format/key_format,t=key /format/value_format,t=value,left -no_title"
-
-#define LS_QUEUES_COMMAND "info_command -worker //queue /name,t=name,left  /block_info/kv_info/kvs,t=#kvs,format=uint64 /block_info/kv_info/size,t=size,format=uint64  /block_info/format/key_format,t=key /block_info/format/value_format,t=value,left /status,t=status,left"
-
-#define LS_QUEUES_INFO_COMMAND "info_command -worker //queue /name,t=name,left /block_info/num_blocks,t=#Blocks,format=uint64 /block_info/size,title=size,format=uint64 /block_info/size_on_memory^/block_info/size,format=per,t=on_memory /block_info/size_on_disk^/block_info/size,format=per,t=on_disk /block_info/size_locked^/block_info/size,format=per,t=locked  /block_info/min_time_diff,f=time,t=oldest /block_info/max_time_diff,f=time,t=earliest /num_divisions,t=#div,uint64 /block_info/num_divisions,t=#div"
-
-
-#define ENGINE_SHOW_COMMAND "info_command -delilah -worker -controller //engine_system /process_manager/num_running_processes^/process_manager/num_processes,t=process,format=per /memory_manager/used_memory^/memory_manager/memory,t=memory,format=per  /disk_manager/num_pending_operations+/disk_manager/num_running_operations,t=disk,f=uint64"
-
-#define LS_STREAM_OPERATIONS "info_command //stream_operation -controller /name,t=name /description,t=description,left"
-
 namespace samson
 {	
 	static void consoleFix(void)
@@ -309,12 +298,12 @@ namespace samson
 		
 		au::CommandLine commandLine;
 		commandLine.set_flag_string("name", "null");
-		commandLine.set_flag_string("begin", "null");
-		commandLine.set_flag_boolean("plain");
-		commandLine.set_flag_boolean("gz");			// Flag to indicate compression
-		commandLine.set_flag_int("threads",4);
-        commandLine.set_flag_boolean("force");      // Force to remove directory if exist before in pop operations
-        commandLine.set_flag_boolean("clear");      // Used in the ps command
+		commandLine.set_flag_string("begin", "null");           
+		commandLine.set_flag_boolean("plain");              // Flag to indicate plain ( not used ) 
+		commandLine.set_flag_boolean("gz");                 // Flag to indicate compression ( not used )
+		commandLine.set_flag_int("threads",4);              // Specify number of threads ( not used )
+        commandLine.set_flag_boolean("force");              // Force to remove directory if exist before in pop operations
+        commandLine.set_flag_boolean("clear");              // Used in the ps command
         commandLine.set_flag_int("limit", 1000);
 		commandLine.parse( command );
         
@@ -810,130 +799,20 @@ namespace samson
         if ( ( mainCommand == "info" ) || ( mainCommand == "i" ) )
         {
             
-            if( commandLine.get_num_arguments() == 1 )
+            if( commandLine.get_num_arguments() < 2 )
             {
-                writeErrorOnConsole("Usage: info txt/xml/select/values/num/str/double [options]");
+                writeErrorOnConsole("Usage info_query select-query");
                 return 0;
             }
             
-            // Main xml command
-            std::string command = commandLine.get_argument(1);
-            
-            if( command == "xml" )
-            {
-                writeOnConsole( pugi::str( doc  , commandLine.get_flag_int("limit") ) );
-                return 0;
-            }
-            
-            if ( command == "txt" )
-            {
-                writeOnConsole( xml_info );
-                return 0;
-            }
-            
-            if( command == "values" )
-            {
-                if( commandLine.get_num_arguments() < 3 )
-                {
-                    writeErrorOnConsole("Usage info_query select select-query");
-                    return 0;
-                }
-                
-                std::string query = commandLine.get_argument(2);
-                writeWarningOnConsole(au::str("Running select %s" , query.c_str()));
-                
-                pugi::ValuesCollection vc = pugi::values(doc, query);
-                
-                writeWarningOnConsole( "Values: " + vc.str() );
-                
-                return 0;
-                
-            }
-            
-            if ( command == "num" )
-            {
-                if( commandLine.get_num_arguments() < 3 )
-                {
-                    writeErrorOnConsole("Usage info_query num query");
-                    return 0;
-                }
-                
-                std::string query_str = commandLine.get_argument(2);
-                
-                size_t result = pugi::UInt64( doc , query_str );
-                
-                writeWarningOnConsole(au::str("Running query %s wiht result %lu" , query_str.c_str() , result ) );
-                
-                return 0;
-            }            
-            
-            if ( command == "double" )
-            {
-                if( commandLine.get_num_arguments() < 3 )
-                {
-                    writeErrorOnConsole("Usage info double query");
-                    return 0;
-                }
-                
-                std::string query_str = commandLine.get_argument(2);
-                
-                double result = pugi::Double( doc , query_str );
-                
-                writeWarningOnConsole(au::str("Running query %s wiht result %f" , query_str.c_str() , result ) );
-                
-                return 0;
-            }            
-            
-            if ( command == "str" )
-            {
-                if( commandLine.get_num_arguments() < 3 )
-                {
-                    writeErrorOnConsole("Usage info_query num query");
-                    return 0;
-                }
-                
-                std::string query_str = commandLine.get_argument(2);
-                
-                std::string result = pugi::String( doc , query_str );
-                
-                writeWarningOnConsole(au::str("Running query %s wiht result %s" , query_str.c_str() , result.c_str() ) );
-                
-                return 0;
-            }            
-            
-            if ( ( command == "select" ) || ( command == "s" ) )
-            {
-                if( commandLine.get_num_arguments() < 3 )
-                {
-                    writeErrorOnConsole("Usage info_query select select-query");
-                    return 0;
-                }
-                
-                std::string query = commandLine.get_argument(2);
-                writeWarningOnConsole(au::str("Running select %s" , query.c_str()));
-                
-                pugi::xpath_node_set result;
-                try {
-                    result = doc.select_nodes( query.c_str() );
-                } catch (pugi::xpath_exception& ex) 
-                {
-                    writeErrorOnConsole( au::str( "Error in xpath query: %s" , ex.what() ) );
-                    return 0;
-                }
-                
-                // Transform the results into a string
-                std::ostringstream result_txt;
-                pugi::str( result , result_txt , commandLine.get_flag_int("limit") +2 ); // Orignal command is passed for addicional flag promcessing (-full -filter
-                
-                writeOnConsole(result_txt.str());
-                
-                return 0;
-                
-            }
-            
-            writeWarningOnConsole("Non implemented option");
+            std::string query = commandLine.get_argument(1);
+            writeWarningOnConsole(au::str("Running select %s" , query.c_str()));
+            std::string result = getQuery( query , commandLine.get_flag_int("limit") );
+            writeOnConsole(result );
             
             return 0;
+            
+            
         }
         
         if( (main_command == "s") || (main_command == "status") )
@@ -994,48 +873,6 @@ namespace samson
             return 0;
         }
         
-        if( main_command == "ls_queues" )
-        {
-            writeOnConsole( infoCommand(LS_QUEUES_COMMAND) );
-            return 0;
-/*            
-            std::string command;
-            if( commandLine.get_num_arguments() > 1 )
-            {
-                std::string argument =  commandLine.get_argument(1);
-                command = au::str("/stream_manager/queues/queue[starts-with(name,'%s')]" , argument.c_str() );
-            }
-            else
-                command = "/stream_manager/queues/queue";
-            
-            std::string txt = getStringInfo( command , getQueueInfo, i_worker ); 
-            writeOnConsole( txt );
-            return 0;
- */
-            
-        }
-        
-        if( main_command == "ls_queues_info" )
-        {
-            writeOnConsole( infoCommand(LS_QUEUES_INFO_COMMAND) );
-            return 0;
-            /*            
-             std::string command;
-             if( commandLine.get_num_arguments() > 1 )
-             {
-             std::string argument =  commandLine.get_argument(1);
-             command = au::str("/stream_manager/queues/queue[starts-with(name,'%s')]" , argument.c_str() );
-             }
-             else
-             command = "/stream_manager/queues/queue";
-             
-             std::string txt = getStringInfo( command , getQueueInfo, i_worker ); 
-             writeOnConsole( txt );
-             return 0;
-             */
-            
-        }        
-        
         if( main_command == "ls_modules" )
         {
             
@@ -1087,20 +924,6 @@ namespace samson
             return 0;
         }
         
-        if( main_command == "ls_stream_operation" )
-        {
-            
-            writeOnConsole( infoCommand(LS_STREAM_OPERATIONS) );
-            return 0;
-        }
-        
-        if( main_command == "ls" )
-        {
-            //std::string txt = getStringInfo("//queue", getSetInfo, i_controller  ); 
-            //writeOnConsole( txt );
-            writeOnConsole( infoCommand(LS_COMMAND) );
-            return 0;
-        }
         
 
         if( main_command == "ps_network" )
@@ -1133,18 +956,6 @@ namespace samson
             return 0;
         }
         
-        if( main_command == "engine_show" )
-        {
-            writeOnConsole( infoCommand(ENGINE_SHOW_COMMAND) );
-            return 0;
-            
-            /*
-            std::string txt = getStringInfo("/engine_system", getEngineSystemInfo, i_controller | i_worker | i_delilah ); 
-            writeOnConsole( txt );
-            return 0;
-             */
-        }
-        
         if( main_command == "ls_local" )
         {
             std::string txt = getLsLocal( ); 
@@ -1171,7 +982,11 @@ namespace samson
         }
 
         
-        
+        if( ( main_command.substr(0,3) == "ls_" ) || ( main_command == "engine_show" ) )
+        {
+            writeOnConsole( info( main_command ) );
+            return 0;
+        }
         
 		// By default, we consider a normal command sent to controller
 		return sendCommand( command , NULL );

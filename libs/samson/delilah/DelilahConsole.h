@@ -61,7 +61,6 @@ namespace samson {
         
         void addMainCommands()
         {
-            addOption("ls");
             addOption("mv");
             addOption("add");
             addOption("operations");
@@ -89,6 +88,7 @@ namespace samson {
             addOption("ls_queues");                      // Get a list of all current tasks in the system
             addOption("ps_stream");                     // Get a list of stream task
             addOption("ls_modules");                     // Get a list of stream task
+            addOption("ls");
             addOption("ls_operations");         
             addOption("ls_datas");         
             addOption("ps_network");         
@@ -104,26 +104,30 @@ namespace samson {
         
         void addOperations()
         {
-            au::TokenTaker tt( &token_xml_info );
-            std::vector<std::string> operation_names = pugi::values( doc , "//controller//operation/name" );
-
-            for ( size_t i = 0 ;  i < operation_names.size() ; i++)
-                addOption( operation_names[i] );
+            if( global_delilah )
+            {
+                std::vector<std::string> operation_names = global_delilah->getOperationNames();
+                
+                for ( size_t i = 0 ;  i < operation_names.size() ; i++)
+                    addOption( operation_names[i] );
+            }
         }
-
+        
         void addQueues( )
         {
-            au::TokenTaker tt( &token_xml_info );
-            std::vector<std::string> queue_names = pugi::values( doc , "//controller//queue" );
-            
-            for ( size_t i = 0 ;  i < queue_names.size() ; i++)
-                addOption( queue_names[i] );
-            
+            if( global_delilah) 
+            {
+                std::vector<std::string> queue_names = global_delilah->getQueueNames();
+                
+                for ( size_t i = 0 ;  i < queue_names.size() ; i++)
+                    addOption( queue_names[i] );
+            }
         }        
         
         void addQueueOptions( std::string key_format , std::string value_format )
         {
-            au::TokenTaker tt( &token_xml_info );
+            /*
+             au::TokenTaker tt( &token_xml_info );
             std::string c = au::str( "//controller//queue[format/key_format=\"%s\"][format/value_format=\"%s\"]" 
                                     , key_format.c_str() , value_format.c_str() ); 
             
@@ -131,12 +135,13 @@ namespace samson {
             
             for ( size_t i = 0 ;  i < queue_names.size() ; i++)
                 addOption( queue_names[i] );
-           
+           */
         }        
         
         
         void addQueueForOperation( std::string mainCommand , int argument_pos )
         {
+            /*
             pugi::xpath_node_set node_set;
             
             {
@@ -152,6 +157,7 @@ namespace samson {
                 
                 addQueueOptions(key_format, value_format);
             } 
+             */
         }
         
         

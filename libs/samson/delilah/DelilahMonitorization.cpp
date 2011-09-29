@@ -45,26 +45,7 @@ namespace samson
     
     std::string DelilahMonitorization::getHeaderLeft()
     {
-        switch (type) {
-            case general:
-                return "General information";
-                break;
-                
-            case task:
-                return "Tasks";
-                break;
-                
-            case queues:
-                return "Stream queues information";
-                break;
-                
-            case queues_tasks:
-                return "Stream queue tasks";
-                break;
-        }
-        
-        return "Unknown information";
-        
+        return command;
     }
     
     std::string DelilahMonitorization::getHeaderRight()
@@ -77,36 +58,7 @@ namespace samson
     
     void DelilahMonitorization::evalComamnd( )
     {
-        if( command == "ps_tasks" )
-        {
-            type = task;
-            return;
-        }
-        
-        if( command == "engine_show" )
-        {
-            type = general;
-            return;
-        }
-        
-        if( command == "ls_queues" )
-        {
-            type = queues;
-            return;
-        }
-        
-        if( command == "ps_stream" )
-        {
-            type = queues_tasks;
-            return;
-        }
-
-        if( command == "quit" )
-        {
-            quitConsole = true;
-            return;
-        }
-        
+        // NOthing spetial to fo
         
     }
     
@@ -116,9 +68,19 @@ namespace samson
 
         print("");
         
+        // Spetial command for monitorization
+        if( command == "overview" )
+        {
+           printLines( getStringInfo("/engine_system", getEngineSimplifiedSystemInfo, i_worker ) );
+            return;
+        }
+
+        // General command...samsonL
+        printLines( info( command ) );
+                
+/*        
         switch (type) {
             case general:
-                printLines( getStringInfo("/engine_system", getEngineSimplifiedSystemInfo, i_worker ) );
                 break;
                 
             case task:
@@ -136,7 +98,7 @@ namespace samson
                 break;
                 
         }
-
+*/
     }
     
        

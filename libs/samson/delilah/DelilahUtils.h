@@ -24,6 +24,8 @@
 
 namespace samson {
     
+	typedef std::string(* node_to_string_function)(const pugi::xml_node&);		
+
     std::string getBLockListInfo( pugi::node node );
     std::string getStreamOperationInfo( const pugi::xml_node& node );
     std::string getBlockInfo( const pugi::xml_node& queue );

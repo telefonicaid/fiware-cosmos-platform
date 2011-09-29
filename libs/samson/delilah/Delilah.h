@@ -13,8 +13,10 @@
 
 #include "logMsg/logMsg.h"             // lmInit, LM_*
 
-#include "au/Token.h"				// au::Lock
+#include "au/Token.h"				// au::Token
+#include "au/TokenTaker.h"			// au::TokenTaker
 #include "au/map.h"				// au::map
+#include "au/CommandLine.h"				// au::CommandLine
 #include "au/Cronometer.h"      // au::Cronometer
 #include "au/string.h"          // au::Table
 
@@ -33,20 +35,20 @@
 #include "samson/network/Message.h"            // Message::MessageCode
 #include "samson/network/Endpoint.h"			// Endpoint
 
-
+#include "DelilahBase.h"                    // Monitorization information for delilah
 
 namespace  engine {
     class Buffer;
 }
 
-namespace samson {
+namespace samson
+{
+    class Delilah;
+}
 
-    const int i_controller  = 1;    
-    const int i_worker      = 1<<1;    
-    const int i_delilah     = 1<<2;    
-    const int i_no_title    = 1<<3;    
-    
-	typedef std::string(* node_to_string_function)(const pugi::xml_node&);		
+extern samson::Delilah* global_delilah;
+
+namespace samson {
     
 	class DelilahClient;
 	class DelilahComponent;
@@ -56,22 +58,12 @@ namespace samson {
     class PopDelilahComponent;
     class DataSource;
     
-
-    // Private token to protect the local list of components
-    extern au::Token token_xml_info;
-    // Global xml-based information from the system
-    extern std::string xml_info;
-    // General document with the content of xml_info
-    extern pugi::xml_document doc;
-    // Cronometer for xml_info update
-    extern au::Cronometer cronometer_xml_info;
-   
-    
 	/**
 	   Main class for the samson client element
 	 */
 
-	class Delilah : public PacketReceiverInterface, public PacketSenderInterface , public engine::Object
+    
+	class Delilah : public PacketReceiverInterface, public PacketSenderInterface , public engine::Object, public DelilahBase
 	{
 		// Id counter of the command - messages sent to controller ( commands / upload/ download )
 		size_t id;												
@@ -165,18 +157,13 @@ namespace samson {
 		
 		void clearComponents();
         void clearAllComponents();  // Force all of them to be removed
-		
         
-        int getUpdateSeconds();     // Get the update time
         
-        void getInfo( std::ostringstream& output);
+        // Generate XML monitorization data
+        void getInfo( std::ostringstream& output ); 
 
-        // Generic function to get lists of informations
-        std::string getStringInfo( std::string path , node_to_string_function _node_to_string_function  ,  int options );
-
-        // Generic function to get a tabular information scaning the xml document
-        std::string infoCommand( std::string command );
-        std::string infoCommand( std::string prefix , std::string command );
+        // General information string for delilah products
+        std::string info( std::string );
         
         bool checkXMLInfoUpdate();
         

@@ -203,7 +203,7 @@ namespace samson {
 			{
 				if ( commandLine.get_num_arguments() < 3 )
 				{
-					setError("JobManager","Not enougth parameters for set command. Usage set variable value");
+					setError("JobManager","Not enough parameters for set command. Usage set variable value");
 					return false;
 				}
 				
@@ -218,7 +218,7 @@ namespace samson {
 			{
 				if ( commandLine.get_num_arguments() < 2 )
 				{
-					setError("JobManager","Not enougth parameters for unset command. Usage unset variable");
+					setError("JobManager","Not enough parameters for unset command. Usage unset variable");
 					return false;
 				}
 				
@@ -408,20 +408,25 @@ namespace samson {
             std::ostringstream output;
 
             output << "Error detected by " << agent << " at..." << std::endl;
+            LM_W(("Error detected by %s at...", agent.c_str()));
             std::list<JobItem>::iterator i;
             for (i = items.begin() ; i != items.end() ; i++)
+	    {
                 output << ">> " << i->parent_command << std::endl;
+                LM_W((">>  %s", i->parent_command.c_str()));
+	    }
             
             // Current line in the current item
             if( items.size() > 0 )
             {
                 JobItem& item = items.back();
                 output << ">> " << item.getLastCommand() << std::endl;		
+                LM_W((">>  %s", item.getLastCommand().c_str()));
             }
             
             output << "\n>>>> Error: " << txt << std::endl;
 
-            //LM_W(("Error detected by '%s' at '%s' error:'%s'\n", agent.c_str(), item.getLastCommand().c_str(), txt.c_str()));
+            LM_W((">>>> Error: '%s'\n", txt.c_str()));
 
             // Set the error status 
             error_message = output.str();

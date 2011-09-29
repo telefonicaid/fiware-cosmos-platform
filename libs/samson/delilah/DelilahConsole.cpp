@@ -226,7 +226,7 @@ namespace samson
                                       "                             If [op_name] is specified, only operations starting with op_name are shown"},
         { "ls_datas"                , "ls_datas [data_name]      Show a list of data-types.\n" 
                                       "                          If [data_name] is specified, only data-types starting with data_name are shown"},
-        { "ps"                      , "ps [-clear] [id]     Show all current processes running on delilah client\n" 
+        { "ps"                      , "ps [-clear] [id]     Show all current processes running (or finished) on delilah client\n"
             "                     [-clear] removes finished or error marked processes\n"
             "                     [id] get more help about a particular process" } ,                
         
@@ -246,9 +246,9 @@ namespace samson
         { "ls_operations"           , "ls_operations [-begin X] [-end -X]      Get a list of the available operations ( parser, map, reduce, script, etc)"},
         { "ls_datas"                , "ls_datas [-begin X] [-end -X]           Get a list of available data types for keys and values"},
         
-        { "ps_jobs"                 , "ps_jobs           Get a list of running (batch processing) jobs" },
+        { "ps_jobs"                 , "ps_jobs           Get a list of running or finished (batch processing) jobs in the platform" },
         { "ps_tasks"                , "ps_tasks          Get a list of running batch processing tasks on controller and workers" },
-        { "clear_jobs"              , "clear_jobs (cj)   Clear finished or error marked jobs" },
+        { "clear_jobs"              , "clear_jobs (cj)   Clear finished or error marked jobs in the platform" },
         { "kill"                    , "kill (k)          Kill a particular job and all its sub-tasks" },
         
         { "upload"                  , "upload  <local_file_name> <set>       Load txt files to the platform, available for batch processing" },

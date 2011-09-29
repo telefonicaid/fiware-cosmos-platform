@@ -193,13 +193,13 @@ namespace samson {
 					// Check the same format
 					if( ( _queue->_format.keyFormat == keyFormat ) && ( _queue->_format.valueFormat == valueFormat ) )
 					{
-						response.output = "OK, queue already existed, but ok";
+						response.output = "OK, dataset already existed, but ok";
 						return response;
 					}
 					else
 					{
 						std::ostringstream output;
-						output << "Queue " + name + " already exist with another formats: (" << _queue->_format.str() << ").( Option -f is not enougth ).";
+						output << "Dataset " + name + " already exist with another formats: (" << _queue->_format.str() << ").( Option -f is not enougth ).";
 						response.output = output.str();
 						response.error = true;
 						return response;
@@ -209,7 +209,7 @@ namespace samson {
 				else
 				{
 					std::ostringstream output;
-					output << "Queue " + name + " already exist";
+					output << "Dataset " + name + " already exist";
 					response.output = output.str();
 					response.error = true;
 					return response;
@@ -548,7 +548,7 @@ namespace samson {
 					if( !forceFlag )
 					{
 						std::ostringstream output;
-						output << "Queue " + name + " does not exist";
+						output << "Dataset " + name + " does not exist";
 						response.output = output.str();
 						response.error = true;
 						return response;
@@ -588,7 +588,7 @@ namespace samson {
 					if( !forceFlag )
 					{
 						std::ostringstream output;
-						output << "Queue " + name + " does not exist";
+						output << "Dataset " + name + " does not exist";
 						response.output = output.str();
 						response.error = true;
 						return response;
@@ -620,7 +620,7 @@ namespace samson {
 				if( !tmp )
 				{
 					std::ostringstream output;
-					output << "Queue " + name + " does not exist";
+					output << "Dataset " + name + " does not exist";
 					response.output = output.str();
 					response.error = true;
 					return response;
@@ -659,14 +659,14 @@ namespace samson {
 			if( !tmp )
 			{
 				std::ostringstream output;
-				output << "Queue " + name + " does not exist";
+				output << "Dataset " + name + " does not exist";
 				response.output = output.str();
 				response.error = true;
 				return response;
 			} else if( tmp2 )
 			{
 				std::ostringstream output;
-				output << "Queue " + name2 + " exist. Please, remove it first with remove_queue command";
+				output << "Dataset " + name2 + " exists. Please, remove it first with rm command";
 				response.output = output.str();
 				response.error = true;
 				return response;
@@ -704,7 +704,7 @@ namespace samson {
 			if( !tmp )
 			{
 				std::ostringstream output;
-				output << "Queue " + name + " does not exist";
+				output << "Dataset " + name + " does not exist";
 				response.output = output.str();
 				response.error = true;
 				return response;
@@ -712,7 +712,7 @@ namespace samson {
 			else if( tmp2 )
 			{
 				std::ostringstream output;
-				output << "Queue " + name2 + " exist. Please, remove it first with remove_queue command";
+				output << "Dataset " + name2 + " exists. Please, remove it first with rm command";
 				response.output = output.str();
 				response.error = true;
 				return response;
@@ -737,7 +737,7 @@ namespace samson {
 			// Add queue command
 			if( commandLine.get_num_arguments() < 3 )
 			{
-				response.output = "Usage: cp queue_from name_to";
+				response.output = "Usage: cp set_name_from name_to";
 				response.error = true;
 				return response;
 			}
@@ -752,7 +752,7 @@ namespace samson {
 			if( !tmp )
 			{
 				std::ostringstream output;
-				output << "Queue " << name << " does not exist";
+				output << "Dataset " << name << " does not exist";
 				response.output = output.str();
 				response.error = true;
 				return response;
@@ -761,7 +761,7 @@ namespace samson {
 			if( !tmp2 )
 			{
 				std::ostringstream output;
-				output << "Queue " << name << " does not exist";
+				output << "Dataset " << name << " does not exist";
 				response.output = output.str();
 				response.error = true;
 				return response;
@@ -775,7 +775,7 @@ namespace samson {
 			if( ! f1.isEqual( f2 ) )
 			{
 				std::ostringstream output;
-				output << "Queues " << name << " and " << name2 << " does not have the same format (key-values).";
+				output << "Datasets " << name << " and " << name2 << " does not have the same format (key-values).";
 				response.output = output.str();
 				response.error = true;
 				return response;
@@ -816,7 +816,7 @@ namespace samson {
 			if( !q )
 			{
 				std::ostringstream output;
-				output << "Data Queue " << queue << " does not exist";
+				output << "Dataset " << queue << " does not exist";
 				response.output = output.str();
 				response.error = true;
 				return response;
@@ -852,7 +852,7 @@ namespace samson {
 			if( !q )
 			{
 				std::ostringstream output;
-				output << "Queue " << queue << " does not exist";
+				output << "Dataset " << queue << " does not exist";
 				response.output = output.str();
 				response.error = true;
 				return response;
@@ -888,7 +888,7 @@ namespace samson {
 			if( !q )
 			{
 				std::ostringstream output;
-				output << "Queue " << queue << " does not exist";
+				output << "Dataset " << queue << " does not exist";
 				response.output = output.str();
 				response.error = true;
 				return response;

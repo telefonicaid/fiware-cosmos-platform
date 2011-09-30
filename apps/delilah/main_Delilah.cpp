@@ -45,7 +45,7 @@ int				 memory_gb;
 int				 load_buffer_size_mb;
 char			 commandFileName[1024];
 bool             monitorization;
-
+char             command[1024]; 
 
 #define LOC "localhost"
 /* ****************************************************************************
@@ -58,7 +58,8 @@ PaArgument paArgs[] =
 	{ "-memory",           &memory_gb,           "MEMORY",           PaInt,    PaOpt,      1,    1,  100, "memory in GBytes"           },
 	{ "-load_buffer_size", &load_buffer_size_mb, "LOAD_BUFFER_SIZE", PaInt,    PaOpt,     64,   64, 2048, "load buffer size in Mbytes" },
 	{ "-f",                 commandFileName,     "FILE_NAME",        PaString, PaOpt,  _i "", PaNL, PaNL, "File with commands to run"  },
-	{ "-monitorization",    &monitorization,        "MONITORIZAITON",      PaBool,    PaOpt,  false, false,  true,  "Run monitorization tool"   },
+	{ "-monitorization",    &monitorization,     "MONITORIZAITON",      PaBool,    PaOpt,  false, false,  true,  "Run monitorization tool"   },
+	{ "-command",           command,             "MONITORIZATION_COMMAND", PaString, PaOpt,  _i "overview", PaNL, PaNL, "Monitorization command"  },
 
 	PA_END_OF_ARGS
 };
@@ -220,7 +221,7 @@ int main(int argC, const char *argV[])
     if( !monitorization )
         delilahConsole = new samson::DelilahConsole(networkP);
     else
-        delilahMonitorization = new samson::DelilahMonitorization(networkP);
+        delilahMonitorization = new samson::DelilahMonitorization(networkP , command );
 	
     // Not necessary anymore. Engine automatically starts with "init" call
 	//engine::Engine::runInBackground();

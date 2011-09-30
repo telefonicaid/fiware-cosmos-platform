@@ -87,7 +87,7 @@ namespace samson
 		job_id = task.job_id();		// Save the job id
 		
 		// Messages prepared to be send to the controller
-        LM_M(("Worker task : Operation %s" , operation.c_str()));
+        //LM_M(("Worker task : Operation %s" , operation.c_str()));
 		
 		complete_message = new network::WorkerTaskConfirmation();
 		complete_message->set_task_id( task_id );

@@ -6,11 +6,9 @@
 #ifndef _H_SAMSON_page_rank_Node
 #define _H_SAMSON_page_rank_Node
 
-
-#define D_FACTOR 0.1
+#define D_FACTOR 0.85
 
 #include <samson/modules/page_rank/Node_base.h>
-
 
 namespace samson{
 	namespace page_rank{

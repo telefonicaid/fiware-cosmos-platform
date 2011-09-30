@@ -183,8 +183,8 @@ int main(int argC, const char *argV[])
 
 	networkP->runInBackground();
 
-	std::cout << "\nConnecting to SAMSOM controller " << controller << " ...";
-    std::cout.flush();
+	std::cerr << "\nConnecting to SAMSOM controller " << controller << " ...";
+    std::cerr.flush();
     
 	//
 	// What until the network is ready
@@ -193,8 +193,8 @@ int main(int argC, const char *argV[])
 		usleep(1000);
 	std::cout << " OK\n";
 
-	std::cout << "Connecting to all workers ...";
-    std::cout.flush();
+	std::cerr << "Connecting to all workers ...";
+    std::cerr.flush();
     
 	//
 	// Ask the Controller for the platform process list
@@ -253,25 +253,29 @@ int main(int argC, const char *argV[])
 			
 			//LM_M(("Processing line: %s", line ));
             num_line++;
-			size_t id = delilahConsole->runAsyncCommand( line );
-			
-			LM_M(("Processing command file. id(%lu) for line:'%s'\n", id, line));
-			if( id != 0)
-			{
-				//LM_M(("Waiting until delilah-component %ul finish", id ));
-				// Wait until this operation is finished
-				while (delilahConsole->isActive( id ) )
-					sleep(1);
+            
+            if( line[0] != '#' )
+            {
                 
-                if( delilahConsole->hasError( id ) )
+                size_t id = delilahConsole->runAsyncCommand( line );
+                std::cerr << au::str("Processing: '%s' [ id generated %lu ]\n", line , id);
+                
+                if( id != 0)
                 {
-                    std::cerr << "Error: " << delilahConsole->errorMessage( id ) << "\n";
-                    std::cerr << "Error running '" << line <<  "' at line " << num_line << "\n";
-                    std::cerr << "Exiting...";
+                    //LM_M(("Waiting until delilah-component %ul finish", id ));
+                    // Wait until this operation is finished
+                    while (delilahConsole->isActive( id ) )
+                        sleep(1);
+                    
+                    if( delilahConsole->hasError( id ) )
+                    {
+                        std::cerr << "Error: " << delilahConsole->errorMessage( id ) << "\n";
+                        std::cerr << "Error running '" << line <<  "' at line " << num_line << "\n";
+                        std::cerr << "Exiting...";
+                    }
+                    
                 }
-                
-			}
-			LM_M(("Processing command file. id(%lu) finished\n", id));
+            }
 		}
 		
 		fclose(f);

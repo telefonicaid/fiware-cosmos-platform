@@ -19,6 +19,7 @@ all:
 	make -C testcomparefunctions
 	make -C hit
 	make -C gg
+	make -C page_rank
 
 release:
 	make release -C system
@@ -41,6 +42,7 @@ release:
 	make release -C testcomparefunctions
 	make release -C hit
 	make release -C gg
+	make release -C page_rank
 
 reset:
 	make reset -C system
@@ -63,6 +65,7 @@ reset:
 	make reset -C testcomparefunctions
 	make reset -C hit
 	make reset -C gg
+	make reset-C page_rank
 
 eclipse:
 	make eclipse -C system

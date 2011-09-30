@@ -60,7 +60,7 @@ namespace samson {
         
         if( mkdir( fileName.c_str() , 0755 ) )
         {
-            setComponentFinishedWithError( au::str( "Not possible to create directory %s (errno:%d)." , fileName.c_str() , errno) );
+            setComponentFinishedWithError( au::str( "Not possible to create directory %s (%s)." , fileName.c_str() , strerror(errno)) );
             return;
         }
         

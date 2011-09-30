@@ -51,7 +51,10 @@ namespace au
         
         // Navigate in the directory
         if( !isDirectory( fileName ) )
+        {
+            error.set( au::str("%s is not a directory or a file", fileName.c_str() ) );
             return;
+        }
         
         // first off, we need to create a pointer to a directory
         DIR *pdir = opendir (fileName.c_str()); // "." will refer to the current directory

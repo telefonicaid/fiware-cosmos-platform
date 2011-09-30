@@ -119,7 +119,7 @@ namespace samson
 				
 				for (size_t i = 0 ; i < (size_t) workerTask.input_queue(0).file_size() ; i++)
                 {
-                    LM_M(("Added subtask %s" , workerTask.input_queue(0).file(i).name().c_str()));
+                    //LM_M(("Added subtask %s" , workerTask.input_queue(0).file(i).name().c_str()));
 					addSubTask( new ParserSubTask( this, workerTask.input_queue(0).file(i).name() ) );
                 }
 			}

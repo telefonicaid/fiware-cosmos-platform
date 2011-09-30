@@ -113,7 +113,7 @@ namespace samson
             int worker_id = delilah->network->getWorkerFromIdentifier( fromId );
             int num_output = counter_per_worker.getCounterFor( worker_id );
             
-            std::string _fileName = au::str("%s/worker_%d_file_%d" , fileName.c_str() , worker_id, num_output );
+            std::string _fileName = au::str("%s/worker_%06d_file_%06d" , fileName.c_str() , worker_id, num_output );
 
             
             

@@ -35,7 +35,7 @@ namespace sort{
 		    if( data[i] == '\n' )
 		    {
 		      // Emit cumulated key
-		      data[length] = '\0';
+		      data[i] = '\0';
 		      value.value = strtoull( &data[pos_begin] , NULL , 10 );
 		      pos_begin = i+1; // Begin of the next number
 		      

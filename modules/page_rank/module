@@ -1,0 +1,81 @@
+Module page_rank
+{
+	title	"Page Rank algorithm (stream mode)"
+	author	"Andreu Urruela & SAMSON team. Help from DIONYSIOS LOGOTHETIS"
+	version "0.1"
+}
+
+
+data LinkVector
+{
+	vector system.String link;
+}
+
+data Message
+{
+	system.String node;
+	system.Double contribution;
+}
+
+data Node
+{
+	# Collection of links I point to
+	vector system.String links;
+
+	# Messages received from other nodes ( replaced when a message is received from the same node )
+	vector page_rank.Message messages;
+
+	# My rank computed from received messages
+	system.Double rank;	
+
+	# Number of outputs updated last time
+	system.UInt updated_outputs;
+
+	# Number of times this particular node has been updated
+	system.UInt update_count;
+}
+
+
+parser parse_graph
+{
+	out system.String page_rank.LinkVector
+	helpLine "Parse a txt file where every line is node link1 link2 ...."
+}
+
+reduce updateLinks
+{
+	in system.String page_rank.LinkVector
+	in system.String page_rank.Node
+	out system.String page_rank.Message
+	out system.String page_rank.Node
+
+	helpLine "Update intenal information about links of nodes. Comming from crawling..."
+
+}
+
+reduce updateMessages
+{
+	in system.String page_rank.Message
+	in system.String page_rank.Node
+	out system.String page_rank.Message
+	out system.String page_rank.Node
+
+	helpLine "Update intenal information about rank of pages pointing to me"
+}
+
+
+script test
+{
+	code
+	{
+	  # First empty state
+      add node system.String page_rank.Node;
+
+      # first iteration with outputside info   
+      page_rank.updateLinks graph node messages2 nodes2;
+
+      # Next iterations
+      page_rank.updateMessages messages2 nodes2 messages3 nodes3 -c;
+
+	}
+}

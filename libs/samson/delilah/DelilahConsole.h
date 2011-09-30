@@ -298,11 +298,6 @@ namespace samson {
 				writeWarningOnConsole( message );
 		}
 
-        
-    private:
-        
-        std::string getLsLocal();
-        
 	};
 
 }

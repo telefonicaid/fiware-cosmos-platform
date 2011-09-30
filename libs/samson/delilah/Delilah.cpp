@@ -1,4 +1,7 @@
 #include <iostream>				// std::cout ...
+#include <iomanip>
+#include <sys/stat.h>					// stat(.)
+#include <dirent.h>						// DIR directory header	
 
 #include "logMsg/logMsg.h"             // lmInit, LM_*
 
@@ -32,6 +35,7 @@
 
 
 #include "samson/delilah/DelilahUtils.h"        // node_to_string_function
+#include "samson/delilah/SamsonDataSet.h"       // samson::SamsonDataSet
 #include "samson/delilah/Delilah.h"             // Own interfce
 
 #define notification_delilah_automatic_update "notification_delilah_automatic_update"
@@ -533,11 +537,135 @@ namespace samson {
         if( main_command == "engine_show" )
             return infoCommand(ENGINE_SHOW_COMMAND);
         
+        
+        if( main_command == "ls_block_manager" )
+            return getStringInfo( "//block_manager" , getBlockManagerInfo, i_worker ); 
+        
+        
+        if( main_command == "ls_operation_rates" )
+            return getStringInfo( "//process_manager//rates//simple_rate_collection" , getOperationRatesInfo, i_worker ); 
+        
+        if( main_command == "ls_modules" )
+        {
+            
+            std::string command;
+            if( cmd.get_num_arguments() > 1 )
+            {
+                std::string argument =  cmd.get_argument(1);
+                command = au::str("//modules_manager//module[starts-with(name,'%s')]" , argument.c_str() );
+            }
+            else
+                command = "//modules_manager//module";
+            
+            std::string txt = getStringInfo( command , getModuleInfo, i_controller | i_worker | i_delilah ); 
+            return txt;
+            
+        }
+        
+        
+        if( main_command == "ls_operations" )
+        {
+            std::string command;
+            if( cmd.get_num_arguments() > 1 )
+            {
+                std::string argument =  cmd.get_argument(1);
+                command = au::str("/modules_manager//operation[starts-with(name,'%s')]" , argument.c_str() );
+            }
+            else
+                command = "/modules_manager//operation";
+            
+            return getStringInfo( command , getOperationInfo, i_controller ); 
+        }
+        
+        if( main_command == "ls_datas" )
+        {
+            std::string command;
+            if( cmd.get_num_arguments() > 1 )
+            {
+                std::string argument =  cmd.get_argument(1);
+                command = au::str("/modules_manager//data[starts-with(name,'%s')]" , argument.c_str() );
+            }
+            else
+                command = "/modules_manager//data";
+            
+            return getStringInfo( command , getDataInfo, i_controller ); 
+        }
+        
+        if( main_command == "ps_network" )
+            return getStringInfo("/network", getNetworkInfo, i_controller | i_worker | i_delilah ); 
+        
+        if( main_command == "ps_jobs" )
+            return getStringInfo("/job_manager//job", getJobInfo,i_controller  ); 
+        
+        if( main_command == "ps_tasks" )
+        {
+            
+            std::string txt = getStringInfo("/controller_task_manager//controller_task", getTaskInfo, i_controller  ); 
+            std::string txt2 = getStringInfo("/worker_task_manager//worker_task", getWorkerTaskInfo, i_worker  ); 
+            return  txt + txt2;
+        }
+        
+        if( main_command == "ps_stream" )
+            return getStringInfo("/stream_manager//queue_task", getQueueTaskInfo, i_worker ); 
+        
+        if( main_command == "ls_local" )
+        {
+            return getLsLocal( ); 
+        }
+        
+        
         return au::str("Command %s unkown" , main_command.c_str() );
         
     }
 
-
+    std::string Delilah::getLsLocal()
+    {
+        std::ostringstream output;
+        
+        // first off, we need to create a pointer to a directory
+        DIR *pdir = opendir ("."); // "." will refer to the current directory
+        struct dirent *pent = NULL;
+        if (pdir != NULL) // if pdir wasn't initialised correctly
+        {
+            while ((pent = readdir (pdir))) // while there is still something in the directory to list
+                if (pent != NULL)
+                {
+                    
+                    std::string fileName = pent->d_name;
+                    
+                    if( ( fileName != ".") && ( fileName != "..") )
+                    {
+                        
+                        struct stat buf2;
+                        stat( pent->d_name , &buf2 );
+                        
+                        if( S_ISREG(buf2.st_mode) )
+                        {
+                            size_t size = buf2.st_size;
+                            output << "\t FILE      " << std::setw(20) << std::left <<  pent->d_name << " " << au::str(size,"bytes") << "\n";
+                        }
+                        if( S_ISDIR(buf2.st_mode) )
+                        {
+                            
+                            SamsonDataSet dataSet( pent->d_name );
+                            
+                            if( dataSet.error.isActivated() )
+                                output << "\t DIR       " << std::setw(20) << std::left << pent->d_name << "\n";
+                            else
+                                output << "\t DATA-SET  " << std::setw(20) << std::left << pent->d_name << " " << dataSet.str() << "\n";
+                            
+                        }
+                        
+                    }
+                    
+                }
+            // finally, let's close the directory
+            closedir (pdir);						
+        }
+        
+        
+        return output.str();
+    }
     
 }
 

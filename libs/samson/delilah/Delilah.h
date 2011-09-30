@@ -158,6 +158,8 @@ namespace samson {
 		void clearComponents();
         void clearAllComponents();  // Force all of them to be removed
         
+        // Get a list of local directory
+        std::string getLsLocal();
         
         // Generate XML monitorization data
         void getInfo( std::ostringstream& output ); 

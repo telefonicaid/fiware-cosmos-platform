@@ -848,23 +848,6 @@ namespace samson
             return 0;
         }
         
-        if( main_command == "ls_block_manager" )
-        {
-            std::string txt = getStringInfo( "//block_manager" , getBlockManagerInfo, i_worker ); 
-            writeOnConsole( txt );
-            return 0;
-            
-        }
-        
-        
-        if( main_command == "ls_operation_rates" )
-        {
-            
-            std::string txt = getStringInfo( "//process_manager//rates//simple_rate_collection" , getOperationRatesInfo, i_worker ); 
-            writeOnConsole( txt );
-            return 0;
-            
-        }
 
         if( main_command == "info_command" )
         {
@@ -873,95 +856,6 @@ namespace samson
             return 0;
         }
         
-        if( main_command == "ls_modules" )
-        {
-            
-            std::string command;
-            if( commandLine.get_num_arguments() > 1 )
-            {
-                std::string argument =  commandLine.get_argument(1);
-                command = au::str("//modules_manager//module[starts-with(name,'%s')]" , argument.c_str() );
-            }
-            else
-                command = "//modules_manager//module";
-            
-            std::string txt = getStringInfo( command , getModuleInfo, i_controller | i_worker | i_delilah ); 
-            writeOnConsole( txt );
-            return 0;
-            
-        }
-
-        
-        if( main_command == "ls_operations" )
-        {
-            std::string command;
-            if( commandLine.get_num_arguments() > 1 )
-            {
-                std::string argument =  commandLine.get_argument(1);
-                command = au::str("/modules_manager//operation[starts-with(name,'%s')]" , argument.c_str() );
-            }
-            else
-                command = "/modules_manager//operation";
-                
-            std::string txt = getStringInfo( command , getOperationInfo, i_controller ); 
-            writeOnConsole( txt );
-            return 0;
-        }
-
-        if( main_command == "ls_datas" )
-        {
-            std::string command;
-            if( commandLine.get_num_arguments() > 1 )
-            {
-                std::string argument =  commandLine.get_argument(1);
-                command = au::str("/modules_manager//data[starts-with(name,'%s')]" , argument.c_str() );
-            }
-            else
-                command = "/modules_manager//data";
-            
-            std::string txt = getStringInfo( command , getDataInfo, i_controller ); 
-            writeOnConsole( txt );
-            return 0;
-        }
-        
-        
-
-        if( main_command == "ps_network" )
-        {
-            std::string txt = getStringInfo("/network", getNetworkInfo, i_controller | i_worker | i_delilah ); 
-            writeOnConsole( txt );
-            return 0;
-        }
-        
-        if( main_command == "ps_jobs" )
-        {
-            std::string txt = getStringInfo("/job_manager//job", getJobInfo,i_controller  ); 
-            writeOnConsole( txt );
-            return 0;
-        }
-
-        if( main_command == "ps_tasks" )
-        {
-            
-            std::string txt = getStringInfo("/controller_task_manager//controller_task", getTaskInfo, i_controller  ); 
-            std::string txt2 = getStringInfo("/worker_task_manager//worker_task", getWorkerTaskInfo, i_worker  ); 
-            writeOnConsole( txt + txt2 );
-            return 0;
-        }
-        
-        if( main_command == "ps_stream" )
-        {
-            std::string txt = getStringInfo("/stream_manager//queue_task", getQueueTaskInfo, i_worker ); 
-            writeOnConsole( txt );
-            return 0;
-        }
-        
-        if( main_command == "ls_local" )
-        {
-            std::string txt = getLsLocal( ); 
-            writeOnConsole( txt );
-            return 0;
-        }
 
         if( main_command == "rm_local" )
         {
@@ -982,7 +876,7 @@ namespace samson
         }
 
         
-        if( (main_command=="ls") || ( main_command.substr(0,3) == "ls_" ) || ( main_command == "engine_show" ) )
+        if( (main_command=="ls") || ( main_command.substr(0,3) == "ls_" ) || ( main_command.substr(0,3) == "ps_" ) || ( main_command == "engine_show" ) )
         {
             writeOnConsole( info( main_command ) );
             return 0;
@@ -1115,54 +1009,7 @@ namespace samson
             writeWarningOnConsole(o.str());        
     }
     
-    std::string DelilahConsole::getLsLocal()
-    {
-        std::ostringstream output;
-        
-        // first off, we need to create a pointer to a directory
-        DIR *pdir = opendir ("."); // "." will refer to the current directory
-        struct dirent *pent = NULL;
-        if (pdir != NULL) // if pdir wasn't initialised correctly
-        {
-            while ((pent = readdir (pdir))) // while there is still something in the directory to list
-                if (pent != NULL)
-                {
-                    
-                    std::string fileName = pent->d_name;
-                    
-                    if( ( fileName != ".") && ( fileName != "..") )
-                    {
-                        
-                        struct stat buf2;
-                        stat( pent->d_name , &buf2 );
-                        
-                        if( S_ISREG(buf2.st_mode) )
-                        {
-                            size_t size = buf2.st_size;
-                            output << "\t FILE      " << std::setw(20) << std::left <<  pent->d_name << " " << au::str(size,"bytes") << "\n";
-                        }
-                        if( S_ISDIR(buf2.st_mode) )
-                        {
-                            
-                            SamsonDataSet dataSet( pent->d_name );
 
-                            if( dataSet.error.isActivated() )
-                                output << "\t DIR       " << std::setw(20) << std::left << pent->d_name << "\n";
-                            else
-                                output << "\t DATA-SET  " << std::setw(20) << std::left << pent->d_name << " " << dataSet.str() << "\n";
-                                
-                        }
-                        
-                    }
-                    
-                }
-            // finally, let's close the directory
-            closedir (pdir);						
-        }
-        
-        
-        return output.str();
-    }
 
     
 }

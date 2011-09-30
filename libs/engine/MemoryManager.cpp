@@ -159,9 +159,7 @@ namespace engine
 	void MemoryManager::checkMemoryRequests()
 	{
         // Only used privatelly... no need to protect
-        
 		LM_T( LmtMemory , ("Checking memory requests Pending requests %u" , memoryRequests.size() ));
-		
         
 		while( true )
 		{
@@ -175,7 +173,6 @@ namespace engine
             
             if( r->mem_percentadge == 1.0 )
             {
-                
                 // Extract the request properly
                 r = memoryRequests.extractFront();
                 if (!r )
@@ -208,6 +205,8 @@ namespace engine
                 // Normal memory requests ( for classical batch processing )
                 double memory_input_usage = _getMemoryUsageByTag( 0 );
                 
+                
+                r = NULL;
                 if (  memory_input_usage < 0.5 )  // Maximum usage for input ( tag == 0) 50% of memory
                     r = memoryRequests.extractFront();
                 

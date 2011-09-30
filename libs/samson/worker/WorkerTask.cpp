@@ -87,6 +87,7 @@ namespace samson
 		job_id = task.job_id();		// Save the job id
 		
 		// Messages prepared to be send to the controller
+        LM_M(("Worker task : Operation %s" , operation.c_str()));
 		
 		complete_message = new network::WorkerTaskConfirmation();
 		complete_message->set_task_id( task_id );
@@ -117,7 +118,10 @@ namespace samson
 					LM_X(1,("Internal error: Trying to parse multiple inputs in one operation"));
 				
 				for (size_t i = 0 ; i < (size_t) workerTask.input_queue(0).file_size() ; i++)
+                {
+                    LM_M(("Added subtask %s" , workerTask.input_queue(0).file(i).name().c_str()));
 					addSubTask( new ParserSubTask( this, workerTask.input_queue(0).file(i).name() ) );
+                }
 			}
 				break;
 				

@@ -81,10 +81,10 @@ namespace samson {
                 au::map< std::string , Queue >::iterator queue_it;
                 for ( queue_it = queues.begin() ; queue_it != queues.end() ; queue_it++ )
 				{
-				   LM_M(("Reviwing queue %s" , queue_it->first.c_str() ));
+                    //LM_M(("Reviwing queue %s" , queue_it->first.c_str() ));
                     queue_it->second->review();
 				}
-
+                
                 return;
             }
             

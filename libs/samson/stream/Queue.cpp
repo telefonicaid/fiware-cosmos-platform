@@ -181,12 +181,12 @@ namespace samson {
         
         void Queue::review()
         {
-		   LM_M(("Intern review queue %s" , name.c_str() ));
-		   
+            //LM_M(("Intern review queue %s" , name.c_str() ));
+            
             // Schedule new Block Break operations if necessary
- 		   if( format == KVFormat("txt","txt") )
+            if( format == KVFormat("txt","txt") )
 			{
-			   LM_M(("Queue %s nor revied since format %s= txt" , name.c_str() , format.str().c_str() ));
+                //LM_M(("Queue %s nor revied since format %s= txt" , name.c_str() , format.str().c_str() ));
                 return;  // No necessry operations for txt elements
 			}
             
@@ -196,16 +196,18 @@ namespace samson {
             // No block-break operations if there are current update-state operations
             if( updating_divisions.size() > 0)
             {
-                LM_M(("Queue %s: Non cheking since there are %d updating divisions" , name.c_str() , (int) updating_divisions.size() ));
+                //LM_M(("Queue %s: Non cheking since there are %d updating divisions" , name.c_str() , (int) updating_divisions.size() ));
                 return;
             }
             
             if( num_divisions == 1 )
-			   LM_M(("Queue %s nor revied since num_division = 1" , name.c_str() ));
+            {
+			   //LM_M(("Queue %s nor revied since num_division = 1" , name.c_str() ));
+            }
 			else
             {
                 
-			   LM_M(("Queue %s: Num divisions %d.... %lu blocks" , name.c_str() , num_divisions , list->blocks.size() ));
+                //LM_M(("Queue %s: Num divisions %d.... %lu blocks" , name.c_str() , num_divisions , list->blocks.size() ));
                 
                 BlockList *tmp = new BlockList("candidates_block_division");
                 
@@ -224,15 +226,17 @@ namespace samson {
                         
                         if( ! isBlockIdLocked( block_id) )
                         {
-                            LM_M(("Considered block %lu ( %s ) for breaking..." , block->getId() , block->getKVRange().str().c_str() ));
+                            //LM_M(("Considered block %lu ( %s ) for breaking..." , block->getId() , block->getKVRange().str().c_str() ));
                             tmp->add( block );
                         }
                         else
-                            LM_M(("Block %lu is blocked" , block_id , num_divisions ));
+                        {
+                            //LM_M(("Block %lu is blocked" , block_id , num_divisions ));
+                        }
                     }
                     else
                     {
-                        LM_M(("Block %lu is ok for %d divisions" , block_id , num_divisions ));
+                        //LM_M(("Block %lu is ok for %d divisions" , block_id , num_divisions ));
                     }
                 }
                 
@@ -260,7 +264,7 @@ namespace samson {
                     }
 
                     streamManager->queueTaskManager.add( task );
-                    LM_M(("Running a block-break operation for queue %s %s" , name.c_str() , input->strBlockIds().c_str() ));                     
+                    //LM_M(("Running a block-break operation for queue %s %s" , name.c_str() , input->strBlockIds().c_str() ));                     
                 }
                 
                 

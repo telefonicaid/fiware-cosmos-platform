@@ -65,18 +65,21 @@ namespace samson
     
     void DelilahMonitorization::printContent()
     {
+        
+        if( command.length() > 0 )
+            running_command = command;
 
         print("");
         
         // Spetial command for monitorization
-        if( command == "overview" )
+        if( running_command == "overview" )
         {
            printLines( getStringInfo("/engine_system", getEngineSimplifiedSystemInfo, i_worker ) );
             return;
         }
 
         // General command...samsonL
-        printLines( info( command ) );
+        printLines( info( running_command ) );
                 
 /*        
         switch (type) {

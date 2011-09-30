@@ -155,6 +155,9 @@ namespace samson {
             void removeBlockIdsAt( std::set<size_t> &block_ids );
             bool isAnyBlockIncludedIn( std::set<size_t> &block_ids);
             
+            //Debuggin str
+            std::string strRanges();
+            
         };
         
         

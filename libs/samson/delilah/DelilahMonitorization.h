@@ -37,6 +37,7 @@ namespace samson {
 	
 	class DelilahMonitorization : public Delilah , public au::CursesConsole
 	{
+        std::string running_command;
 		   
         // Internal list of commands available
         std::vector<std::string>  main_commands;    
@@ -47,6 +48,7 @@ namespace samson {
 		{
 			trace_on = true;
             command = _command;    // Default command when starting
+            running_command = _command;
             
             // Main commands
             main_commands.push_back("overview");

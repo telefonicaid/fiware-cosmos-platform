@@ -47,7 +47,7 @@ namespace samson {
         void PopQueueTask::sendMessage( engine::Buffer *buffer )
         {
             
-            LM_M(("PopQueueTask: Sending message with size %lu" , buffer->getSize() ));
+            //LM_M(("PopQueueTask: Sending message with size %lu" , buffer->getSize() ));
             
             // Send the packet using notification mecanism
             samson::Packet *packet = new Packet( Message::PopQueueResponse );

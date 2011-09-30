@@ -237,7 +237,6 @@ namespace samson {
                 Queue *state = streamManager->getQueue( state_name );
                 Queue *input = streamManager->getQueue( input_name );
                 
-                
                 // Checking formats for the inputs and state
                 KVFormat input_queue_format = input->format;
                 KVFormat operation_input_format = op->getInputFormat(0);
@@ -269,7 +268,7 @@ namespace samson {
                 
                 if( !state->isQueueReadyForStateUpdate() )
                 {
-                    LM_M(("State is not ready for update-state operations"));
+                    //LM_M(("State is not ready for update-state operations"));
                     
                     if( num_pending_processes == 0 )
                         finishWorkerTask();
@@ -282,7 +281,7 @@ namespace samson {
                     // If not possible 
                     if( !state->lockDivision( i ) )
                     {
-                        LM_M(("Not possible to lock division %d for queue %s" ,  i , state_name.c_str()  )); 
+                        //LM_M(("Not possible to lock division %d for queue %s" ,  i , state_name.c_str()  )); 
                         continue;
                     }
                     
@@ -323,6 +322,10 @@ namespace samson {
                     // TODO: If size is not enougth, we can cancel operation here...
                     if( !cancel_operation )
                     {
+                        //LM_M(("Planing an update operation for division %d" , i ));
+                        //LM_M(("State blocks : %s" , stateBlockList->strRanges().c_str() ));
+                        //LM_M(("Input blocks : %s" , inputBlockList->strRanges().c_str() ));
+                        
                         network::StreamOperation *operation = getStreamOperation( op );
                         
                         ReduceQueueTask * task = new ReduceQueueTask( streamManager->queueTaskManager.getNewId() , *operation , range );

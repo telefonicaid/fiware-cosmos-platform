@@ -387,7 +387,21 @@ namespace samson {
                 block_ids.insert( block_id );
             }
         }
-
+        
+        std::string BlockList::strRanges()
+        {
+            std::ostringstream output;
+            
+            au::list< Block >::iterator block_it;
+            for ( block_it = blocks.begin() ; block_it != blocks.end() ; block_it++)
+            {
+                Block*block = (*block_it);
+                output << au::str("<%lu %s>" , block->getId() , block->getKVRange().str().c_str() ) << "]";
+            }
+            
+            
+            return output.str();
+        }
         
         
     }       

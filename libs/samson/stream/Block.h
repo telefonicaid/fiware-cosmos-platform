@@ -150,7 +150,6 @@ namespace samson {
             KVInfo* getKVInfo();
             char *getData();
             
-            
         private:
             
             // Get the minimum task id to get the order of the blocks

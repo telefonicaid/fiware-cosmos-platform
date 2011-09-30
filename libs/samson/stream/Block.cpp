@@ -63,6 +63,12 @@ namespace samson {
             // Get a copy of the header
             header = (KVHeader*) malloc( sizeof( KVHeader ) );
             memcpy(header, buffer->getData(), sizeof(KVHeader));
+
+            // Check range is coherent with the info vector
+            if( !header->range.check( getKVInfo() ) )
+                LM_X(1,("Internal error: incoherence between range in header"));
+
+            
         }
         
         Block::Block( size_t _id , size_t _size , KVHeader* _header )

@@ -230,6 +230,8 @@ namespace samson
                     header->range.setFrom( info );
                     //header->range = KVRange( 0 , KVFILE_NUM_HASHGROUPS );
 
+                    //LM_M(("Output buffer for operation %s with range %s", operation_name.c_str() , header->range.str().c_str() ));
+                    
                     
                     // Process the output buffer
                     processOutputBuffer(buffer, o, s, finish);

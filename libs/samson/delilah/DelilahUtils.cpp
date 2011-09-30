@@ -70,7 +70,7 @@ namespace samson {
         pugi::xml_node kv_info =  node.first_element_by_path("kv_info");
         pugi::xml_node format_info =  node.first_element_by_path("format");
         
-        return au::str( "%s [ %s | %s on memory / %s on disk / %s locked ] [ %s ] [ %s ]" 
+        return au::str( "%s [ %s | M:%s D:%s L:%s ] [ %s ] [ %s ]" 
                         , au::str( num_blocks , "Blocs").c_str() 
                         , au::str( size , "bytes").c_str()
                         , au::percentage_string( size_on_memory , size).c_str()

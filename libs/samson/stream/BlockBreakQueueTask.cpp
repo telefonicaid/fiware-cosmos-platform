@@ -1,4 +1,6 @@
 
+#include "logMsg/logMsg.h"                          // LM_M , LM_X
+
 #include "engine/Engine.h"
 #include "engine/Notification.h"
 
@@ -126,7 +128,7 @@ namespace samson {
                     file.info[hg].append( files[f].info[hg] );
                 }
             }
-
+            
             // Recompute range...
             //file.header->range.setFrom( file.info );
             file.header->range = range;
@@ -144,6 +146,7 @@ namespace samson {
             BlockList *tmp = new BlockList("tmp_block_break_outputs");
             for (size_t i = 0 ; i < outputBuffers.size() ; i++ )
                 tmp->createBlock( outputBuffers[i] );
+
             
             BlockList *originalBlockList = getBlockList("input_0");
             

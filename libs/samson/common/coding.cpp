@@ -96,7 +96,7 @@ namespace samson
         
         int j = KVFILE_NUM_HASHGROUPS;
         while( (info[j-1].size == 0) && ( j > (i+1) ) )
-            j++;
+            j--;
         
         hg_end = j;
         
@@ -207,6 +207,17 @@ namespace samson
                 return num_divisions;
         }
     }
+    
+    bool KVRange::check( KVInfo* info )
+    {
+        for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ; i++)
+            if( !contains(i) )
+                if( info[i].size != 0 )
+                    return false;
+        return true;
+    }
+    
+    
     
     // Get the division for a particular hg
     int divisionForHG( int hg , int num_divisions )

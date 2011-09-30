@@ -354,6 +354,9 @@ namespace samson {
         bool isValidForNumDivisions( int num_divisions );
         int getMaxNumDivisions();
         
+        // Check if this range is valid for this KVInfo*
+        bool check( KVInfo* info );
+        
     };
     
     bool operator<(const KVRange & left, const KVRange & right);

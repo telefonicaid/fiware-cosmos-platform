@@ -215,10 +215,10 @@ namespace samson {
                 for ( block_it = list->blocks.begin() ; block_it != list->blocks.end() ; block_it++)
                 {
                     Block* block = *block_it;
-                    size_t block_id = block->getId() ;
+                    //size_t block_id = block->getId() ;
                     KVRange range = block->getKVRange();
                     
-                    LM_M(("Considered block %lu ( %s ) for breaking..." , block_id, block->getKVRange().str().c_str() ));
+                    //LM_M(("Considered block %lu ( %s ) for breaking..." , block_id, block->getKVRange().str().c_str() ));
                     
                     if( !range.isValidForNumDivisions( num_divisions ) )
                     {

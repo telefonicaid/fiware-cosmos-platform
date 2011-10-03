@@ -76,7 +76,9 @@ namespace samson {
 
         // Global pointer to access delilah
         global_delilah = this;
-        
+     
+        // No next worker decided
+        next_worker = -1;
     }
     
     
@@ -85,6 +87,20 @@ namespace samson {
         clearAllComponents();
     }
 
+    
+    int Delilah::getNextWorker()
+    {
+        int num_workers = network->getNumWorkers();
+        
+        if( next_worker == -1 )
+            next_worker = rand()%num_workers;
+        
+        next_worker++;
+        if( next_worker == num_workers )
+            next_worker = 0;
+        
+        return next_worker;
+    }
     
     void Delilah::notify( engine::Notification* notification )
     {

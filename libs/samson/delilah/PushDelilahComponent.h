@@ -36,10 +36,6 @@ namespace samson {
 	class PushDelilahComponent : public DelilahComponent , engine::Object
 	{
 		
-		int num_workers;				// Total number of workers
-
-		// Data information
-
         std::set<std::string> queues;				// Name of the stream-queue we are uploading
         
 		// Sumary information
@@ -51,9 +47,6 @@ namespace samson {
         bool finish_process;            // Flag to indicate that we have process all input data
         
         au::Cronometer cronometer;
-        
-		// Worker to send the next packet
-		int worker;
 		
         DataSource *dataSource;
         

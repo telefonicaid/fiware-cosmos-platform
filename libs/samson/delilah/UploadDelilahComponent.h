@@ -72,8 +72,6 @@ namespace samson {
 		size_t uploadedSize;			// Total size of uploaded files
 		size_t uploadedCompressedSize;	// Total size uploaded to workers ( compressed )
 
-		// Worker to send the next packet
-		int worker;
         
 	public:
 

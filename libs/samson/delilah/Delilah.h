@@ -86,8 +86,9 @@ namespace samson {
 		NetworkInterface* network;								// Network interface
 		bool              finish;								// Global flag used by all threads to detect to stop
 
-		
-		// Full information everything in samson controller ( updated with updateInfo() )
+
+        // Identifier of the next worker to send data
+		int next_worker;
 		
 	public:
 		
@@ -152,6 +153,8 @@ namespace samson {
 		// Get info about the list of loads
 		std::string getListOfLoads();
         std::string getListOfComponents();
+        
+        int getNextWorker();
         
 	protected:
 		

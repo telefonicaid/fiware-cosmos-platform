@@ -109,8 +109,6 @@ namespace samson
 		// Set the number of workers
 		num_workers = delilah->network->getNumWorkers();
 		
-		// Select a random worker to send the first packet
-		worker = rand()%num_workers;
 	}
 	
 	
@@ -190,7 +188,7 @@ namespace samson
 			data->p = p;
 			data->loadDataFile = loadDataFile;
 			data->delilah = delilah;
-			data->worker = worker;
+			data->worker = delilah->getNextWorker();
 			data->uploadDataProcess = this;
 			
 			pthread_t t;
@@ -199,10 +197,6 @@ namespace samson
 			
 			lock.unlock();
 
-			// Randomize worker to send the file
-            worker++;
-			if( worker == num_workers )
-				worker = 0;
 			
 			
 		}

@@ -49,10 +49,6 @@ namespace samson
     
     void PushDelilahComponent::run()
     {
-        
-        // Get the number of workers of the system
-        num_workers = delilah->network->getNumWorkers();
-        worker = rand()%num_workers;
        
 		if( totalSize == 0)
 		{
@@ -156,11 +152,8 @@ namespace samson
             
             pb->set_size( buffer->getSize() - sizeof(KVHeader) );
             
+            int worker = delilah->getNextWorker();
             delilah->network->sendToWorker( worker, packet);
-            worker++;
-            if( worker == num_workers )
-                worker = 0;
-            
             
             if( !dataSource->isFinish() )
                 requestMemoryBuffer();  // Request the next element

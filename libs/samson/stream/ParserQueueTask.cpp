@@ -72,6 +72,21 @@ namespace samson {
             
         }
         
+        void ParserQueueTask::finalize( StreamManager* streamManager )
+        {
+            // Original list of blocks
+            BlockList *input = getBlockList("input_0");
+            
+            // Get the queue we are working on
+            std::string queue_name = streamOperation->input_queues( 0 );
+            Queue*queue = streamManager->getQueue( queue_name );
+
+            LM_M(("Finishing parser operation"));
+            
+            if ( queue )
+                queue->removeAndUnlock( input );
+        }    
+
         
         std::string ParserQueueTask::getStatus()
         {
@@ -91,6 +106,22 @@ namespace samson {
             output << "Parserout " << streamOperation->operation();
             return output.str();
         }
+        
+        
+        void ParserOutQueueTask::finalize( StreamManager* streamManager )
+        {
+            
+            // Original list of blocks
+            BlockList *input = getBlockList("input_0");
+            
+            // Get the queue we are working on
+            std::string queue_name = streamOperation->input_queues( 0 );
+            Queue*queue = streamManager->getQueue( queue_name );
+            
+            if ( queue )
+                queue->removeAndUnlock( input );
+            
+        }    
         
         void ParserOutQueueTask::generateTXT( TXTWriter *writer )
         {
@@ -278,6 +309,21 @@ namespace samson {
             
         }        
 
+        void MapQueueTask::finalize( StreamManager* streamManager )
+        {
+            
+            // Original list of blocks
+            BlockList *input = getBlockList("input_0");
+            
+            // Get the queue we are working on
+            std::string queue_name = streamOperation->input_queues( 0 );
+            Queue*queue = streamManager->getQueue( queue_name );
+            
+            if ( queue )
+                queue->removeAndUnlock( input );
+            
+        }    
+        
         std::string MapQueueTask::getStatus()
         {
             std::ostringstream output;
@@ -386,53 +432,6 @@ namespace samson {
             
         };
         
-/*        
-        class BlockReaderSystem
-        {
-            
-        public:
-            
-            BlockListCollection input;
-            BlockListCollection state;
-            
-            Operation *operation;
-            
-            
-            BlockReaderSystem( Operation* _operation ) : input( _operation ) , state( _operation )
-            {
-                operation = _operation;
-
-            }
-            
-            void insertInput( Block *block , int channel )
-            {
-                if ( ( channel < 0 ) || ( channel > ( operation->getNumInputs() - 1 ) ) )
-                    LM_X(1,("Internal error"));
-                
-                input.insert( block, channel );
-            }
-
-            void insertState( Block *block  )
-            {
-                // The last input is the state
-                state.insert( block, operation->getNumInputs() - 1 );
-            }
-            
-            
-            size_t prepare( int hg )
-            {
-
-                size_t num_kvs_input = input.prepare( hg );
-                size_t num_kvs_state = state.prepare( hg );
-
-                // Sorting only the input
-                input.sort();
-                
-                return num_kvs_input + num_kvs_state;
-            }
-            
-        };
- */
 
 #pragma mark
 

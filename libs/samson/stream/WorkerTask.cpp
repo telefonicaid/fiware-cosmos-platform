@@ -375,7 +375,8 @@ namespace samson {
             
             if( cmd.get_argument(0) == "run_stream_operation" )
             {
-                bool clear_inputs =  cmd.get_flag_bool("clear_inputs");
+                // Flag used in automatic update operation to lock input blocks and remove after operation
+                bool clear_inputs =  cmd.get_flag_bool("clear_inputs"); 
                 
                 size_t min_size = cmd.get_flag_uint64("min_size");          // Minimum size to run an operation
                 size_t max_latency = cmd.get_flag_uint64("max_latency");    // Max acceptable time to run an operation
@@ -383,6 +384,8 @@ namespace samson {
                 // Operation size    
                 size_t default_size = SamsonSetup::shared()->getUInt64("general.memory") / SamsonSetup::shared()->getUInt64("general.num_processess");
                 size_t operation_size = (min_size!=0)?min_size:default_size;
+                
+                BlockIdList block_ids;      // Collection of block ids for the already processed blocks ( only used in clear_inputs is not activated )
                 
                 //LM_M(("Worker command %s --> operation_size %lu" , command.c_str() , operation_size ));
                 
@@ -513,86 +516,82 @@ namespace samson {
                         std::string input_queue_name = operation->input_queues(0);
                         Queue *queue = streamManager->getQueue( input_queue_name );
                         
-                        
-                        BlockList copy_queue_list("copy_queue_list");
-                        copy_queue_list.copyFrom( queue->list );
-                        
                         bool cancel_operation = false;
-                        while( !cancel_operation && !copy_queue_list.isEmpty() )
+                        bool no_more_content = false;
+                        
+                        while( !cancel_operation && !no_more_content )
                         {
                             
-                            // Create the map operation
-                            size_t id = streamManager->queueTaskManager.getNewId();
-                            
-
-                            QueueTask *tmp = NULL;
-
-                            switch ( op->getType() ) {
-                                case Operation::parser:
-                                {
-                                    tmp = new ParserQueueTask( id , *operation ); 
-                                }
-                                    break;
-
-                                case Operation::map:
-                                {
-                                    tmp = new MapQueueTask( id , *operation , KVRange(0,KVFILE_NUM_HASHGROUPS) ); 
-                                }
-                                    break;
-
-                                case Operation::parserOut:
-                                {
-                                    tmp = new ParserOutQueueTask( id , *operation , KVRange(0,KVFILE_NUM_HASHGROUPS) ); 
-                                }
-                                    break;
-                                    
-                                default:
-                                    LM_X(1,("Internal error"));
-                                    break;
-                            }
-                            
-                            // Set the outputs    
-                            tmp->addOutputsForOperation(op);
-                            
-                            // Extract the rigth blocks from queue
-                            BlockList *inputBlockList = tmp->getBlockList("input_0");
-                            inputBlockList->copyFrom( &copy_queue_list , operation_size );
-                            copy_queue_list.remove( inputBlockList );       // Remove from the original list to not take again
-                            
-                            tmp->setWorkingSize();
-
-                            BlockInfo operation_block_info = tmp->getBlockList("input_0")->getBlockInfo();
-                            
-                            //LM_M(("Operation size %lu Min size %lu Latency %lu ( max %lu )" , operation_block_info.size , min_size , operation_block_info.min_time_diff() , max_latency ));
-                            
-                            // If there is not enougth size, do not run the operation
-                            if( (min_size>0) && ( operation_block_info.size < min_size ) )
-                            {
-                                //LM_M(("Parse operation canceled for small size %s ( min size %s )", au::str( operation_block_info.size ).c_str() , au::str(min_size).c_str()));
-                                cancel_operation = true;
-                            }
-                            
-                            if( cancel_operation )
-                            {
-                                // Check if latency is too high....
-                                if( ( max_latency > 0 ) && ( (size_t)operation_block_info.min_time_diff() > max_latency ) )
-                                {
-                                    //LM_M(("Parse operation reopen for high latency %lu ( max %lu )", (size_t) operation_block_info.min_time_diff() , max_latency ));
-                                    cancel_operation = false;       // No cancel since there is too much latency
-                                }
-                            }
-                            
-                            if( cancel_operation )
-                            {
-                                // Delete the operation since it has been canceled
-                                delete tmp;
-                            }
+                            // Get a BlockList with cotent to be processed
+                            BlockList *inputData;
+                            if( clear_inputs )
+                                inputData = queue->getInputBlockListForProcessing( operation_size );
                             else
+                                inputData = queue->getInputBlockListForProcessing( operation_size , &block_ids );
+                            
+                            if ( inputData->isEmpty() )
+                                no_more_content = true; // No more data to be processed
+                            
+                            // Decide if operation has to be canceled
+                            if( !no_more_content )
                             {
+                                BlockInfo operation_block_info = inputData->getBlockInfo();
                                 
-                                // Remove from the original queue
-                                if( clear_inputs )
-                                    queue->list->remove( inputBlockList );
+                                // If there is not enougth size, do not run the operation
+                                if( (min_size>0) && ( operation_block_info.size < min_size ) )
+                                {
+                                    cancel_operation = true;
+                                }
+                                
+                                if( cancel_operation )
+                                {
+                                    // Check if latency is too high....
+                                    if( ( max_latency > 0 ) && ( (size_t)operation_block_info.min_time_diff() > max_latency ) )
+                                    {
+                                        cancel_operation = false;       // No cancel since there is too much latency
+                                    }
+                                }
+                            }
+                            
+                            if( !no_more_content && !cancel_operation )                            
+                            {
+                                // Get a new id for the next opertion
+                                size_t id = streamManager->queueTaskManager.getNewId();
+                                
+                                QueueTask *tmp = NULL;
+                                switch ( op->getType() ) {
+                                    case Operation::parser:
+                                    {
+                                        tmp = new ParserQueueTask( id , *operation ); 
+                                    }
+                                        break;
+                                        
+                                    case Operation::map:
+                                    {
+                                        tmp = new MapQueueTask( id , *operation , KVRange(0,KVFILE_NUM_HASHGROUPS) ); 
+                                    }
+                                        break;
+                                        
+                                    case Operation::parserOut:
+                                    {
+                                        tmp = new ParserOutQueueTask( id , *operation , KVRange(0,KVFILE_NUM_HASHGROUPS) ); 
+                                    }
+                                        break;
+                                        
+                                    default:
+                                        LM_X(1,("Internal error"));
+                                        break;
+                                }
+                                
+                                // Set the outputs    
+                                tmp->addOutputsForOperation(op);
+                                
+                                // Copy input data
+                                tmp->getBlockList("input_0")->copyFrom( inputData );
+                                
+                                // Set working size for correct monitorization of data
+                                tmp->setWorkingSize();
+                                
                                 
                                 // Add me as listener and increase the number of operations to run
                                 tmp->addListenerId( getEngineId() );
@@ -600,7 +599,11 @@ namespace samson {
                                 
                                 // Schedule tmp task into QueueTaskManager
                                 streamManager->queueTaskManager.add( tmp );
-                            }                     
+                            }
+                            else
+                                queue->unlock( inputData );
+                            
+                            delete inputData;
                             
                         }
                         

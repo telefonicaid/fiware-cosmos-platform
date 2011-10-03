@@ -64,6 +64,7 @@ namespace samson {
             friend class BlockBreakQueueTask;
             friend class SortQueueTask;
             friend class UpdateStatusQueueTask;
+            friend class BlockIdList;
             
             au::list< Block > blocks;               // List of blocks
             

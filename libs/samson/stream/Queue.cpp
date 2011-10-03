@@ -38,6 +38,52 @@ namespace samson {
     namespace stream
     {
         
+        
+        
+        void BlockIdList::addIds( BlockList *list )
+        {
+            au::list< Block >::iterator block_it;
+            for ( block_it = list->blocks.begin() ; block_it != list->blocks.end() ; block_it++)
+            {
+                Block* block = *block_it;
+                size_t block_id = block->getId();
+                addId( block_id );
+            }
+            
+        }
+        void BlockIdList::removeIds( BlockList *list )
+        {
+            au::list< Block >::iterator block_it;
+            for ( block_it = list->blocks.begin() ; block_it != list->blocks.end() ; block_it++)
+            {
+                Block* block = *block_it;
+                size_t block_id = block->getId();
+                removeId( block_id );
+            }
+        }
+        
+        void BlockIdList::addId( size_t id )
+        {
+            block_ids.insert( id );
+        }
+        void BlockIdList::removeId( size_t id )
+        {
+            block_ids.erase( id );
+        }
+        
+        size_t BlockIdList::num_ids()
+        {
+            return block_ids.size();
+        }
+        
+        bool BlockIdList::containsBlockId( size_t id )
+        {
+            return ( block_ids.find( id ) != block_ids.end() );
+        }
+        
+        
+#pragma mark Queue
+        
         Queue::Queue( std::string _name , StreamManager* _streamManager  )
         {
             // Keep the name
@@ -113,28 +159,33 @@ namespace samson {
             // Block list information
             list->getInfo( output );
             
-
             // Informat description of queue status
-            std::string status;
+            std::ostringstream status;
             
             if( updating_divisions.size() > 0)
             {
-                status = au::str("Updating %d / %d." , updating_divisions.size() , num_divisions );
+                status << au::str("[ Updating state %d / %d ] " , updating_divisions.size() , num_divisions );
                 
                 if( getMinNumDivisions() > num_divisions )
                 {
-                    status += au::str(" [ Moving from %d to %d divisions ]" , num_divisions , getMinNumDivisions() );
+                    status << au::str("[ Moving from %d to %d divisions ] " , num_divisions , getMinNumDivisions() );
                 }
                 
-                if( block_ids_locked.size() > 0)
-                    status += "Error since there are blocking tasks while updating state";
+                if( breaking_block_ids.num_ids() > 0)
+                    status << "[ Error: breaking tasks while updating state ] ";
             }
-            else if( block_ids_locked.size() > 0)
-                status += au::str("Breaking %d/%d blocks." , block_ids_locked.size() , list->getNumBlocks()); 
-            else
-                status = "ready";
+            
+            
+            if( breaking_block_ids.num_ids() > 0)
+                status << au::str("[ Breaking %d/%d blocks ] " , breaking_block_ids.num_ids() , list->getNumBlocks()); 
+
+            if( processing_block_ids.num_ids() > 0)
+                status << au::str("[ Processing %d/%d blocks ] " , processing_block_ids.num_ids() , list->getNumBlocks()); 
+            
+            if( status.str() == "" )
+                status << "ready";
                                  
-            au::xml_simple( output , "status" , status );
+            au::xml_simple( output , "status" , status.str() );
 
             // Information about content
             BlockInfo block_info;
@@ -170,6 +221,11 @@ namespace samson {
 
             double _min_num_divisions = (double)block_info.size / (double) SamsonSetup::shared()->getUInt64("stream.max_state_division_size");
             int min_num_divisions = next_pow_2( (size_t) _min_num_divisions ); 
+            
+            int num_cores = SamsonSetup::shared()->getInt("general.num_processess");
+            if( min_num_divisions < num_cores )
+                min_num_divisions = num_cores;
+            
             return min_num_divisions;
         }
         
@@ -191,7 +247,8 @@ namespace samson {
 			}
             
             // Set the minimum number of divisions ( when possible )
-            setMinimumNumDivisions();
+            // Only in state queues when trying to run update-state operations
+            // setMinimumNumDivisions();
             
             // No block-break operations if there are current update-state operations
             if( updating_divisions.size() > 0)
@@ -224,7 +281,7 @@ namespace samson {
                     {
                         size_t block_id = block->getId();
                         
-                        if( ! isBlockIdLocked( block_id) )
+                        if( ! isBlockIdLocked( block_id ) ) // Only consider blocks that are not locked for any operation
                         {
                             //LM_M(("Considered block %lu ( %s ) for breaking..." , block->getId() , block->getKVRange().str().c_str() ));
                             tmp->add( block );
@@ -260,7 +317,7 @@ namespace samson {
                     for ( block_it = input->blocks.begin() ; block_it != input->blocks.end() ; block_it++)
                     {
                         size_t block_id = (*block_it)->getId();
-                        lockBlockId( block_id );
+                        breaking_block_ids.addId(block_id);
                     }
 
                     streamManager->queueTaskManager.add( task );
@@ -308,32 +365,33 @@ namespace samson {
                 
             }
             
-            
         }
+        
         void Queue::replaceAndUnlock( BlockList *from , BlockList *to )
         {
-            //LM_M(("Finish a block-break operation for queue %s" , name.c_str() )); 
             replace( from , to );
-            
-            // Remove ids from block_ids_in_break_operations
-            au::list< Block >::iterator block_it;
-            for ( block_it = from->blocks.begin() ; block_it != from->blocks.end() ; block_it++)
-            {
-                size_t block_id = (*block_it)->getId();
-                block_ids_locked.erase( block_id );
-            }
-            
+            unlock(from);
         }
         
         void Queue::replace( BlockList *from , BlockList *to )
         {
-            //LM_M(("FROM: %s" , from->strBlockIds().c_str() ));
-            //LM_M(("TO: %s" , to->strBlockIds().c_str() ));
-            
-            // replace the original blocks for the new ones
+            // Replace a list of blocks by another list
             list->replace( from , to );
-
         }
+
+        void Queue::removeAndUnlock( BlockList *_list )
+        {
+            list->remove( _list );
+            unlock( _list );
+        }
+        
+        void Queue::unlock ( BlockList *list )
+        {
+            // Remove this ids from any possible concept
+            breaking_block_ids.removeIds( list );
+            processing_block_ids.removeIds( list );
+        }
+
         
         
         bool Queue::isQueueReadyForStateUpdate()
@@ -426,6 +484,79 @@ namespace samson {
             
             return tmp;
         }
+        
+        BlockList *Queue::getInputBlockListForProcessing( size_t max_size )
+        {
+            int num_blocks = 0;
+            size_t total_size = 0;
+            
+            BlockList *tmp = new BlockList( "getInputBlockListForProcessing" );
+            
+            au::list< Block >::iterator block_it;
+            for ( block_it = list->blocks.begin() ; block_it != list->blocks.end() ; block_it++ )
+            {
+                Block *block = *block_it;
+                size_t block_id = block->getId();
+                
+                if( !isBlockIdLocked(block_id) )
+                {
+                    
+                    total_size+=block->size;
+                    
+                    if( num_blocks > 0 )
+                        if( ( max_size > 0 ) && ( total_size > max_size) )
+                            return tmp;
+                    
+                    tmp->add( block );
+                }
+            }
+            
+            // Add to the list of currently blocked ids for processing
+            processing_block_ids.addIds( tmp );
+            
+            return tmp;
+        }        
+
+        BlockList *Queue::getInputBlockListForProcessing( size_t max_size , BlockIdList* used_blocks )
+        {
+            int num_blocks = 0;
+            size_t total_size = 0;
+            
+            BlockList *tmp = new BlockList( "getInputBlockListForProcessing" );
+            
+            au::list< Block >::iterator block_it;
+            for ( block_it = list->blocks.begin() ; block_it != list->blocks.end() ; block_it++ )
+            {
+                Block *block = *block_it;
+                size_t block_id = block->getId();
+                
+                if( !isBlockIdLocked(block_id) && !used_blocks->containsBlockId( block_id ) )
+                {
+                    
+                    total_size+=block->size;
+                    
+                    if( num_blocks > 0 )
+                        if( ( max_size > 0 ) && ( total_size > max_size) )
+                            return tmp;
+                    
+                    tmp->add( block );
+                }
+            }
+            
+            used_blocks->addIds(tmp);   // Add to this list to not use again in the next call to this function
+            return tmp;
+        }        
+        
+        bool Queue::isBlockIdLocked( size_t id )
+        {
+            if( breaking_block_ids.containsBlockId(id) )
+                return true;
+            if( processing_block_ids.containsBlockId(id) )
+                return true;
+            
+            return false;
+        }
+        
         
     }
 }

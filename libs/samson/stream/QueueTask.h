@@ -46,8 +46,11 @@ namespace samson {
             //  Set the input size to make sure ProcessItem can monitorize performance of this operation
             void setWorkingSize()
             {
+                // Note: We are consudering input form "input_0" since in update-state operations
+                // we are only interested in input data ( nor state data )
+                
                 BlockInfo block_info;
-                update( block_info );
+                getBlockList("input_0")->update( block_info );
                 setProcessItemWorkingSize( block_info.size );
             }
             

@@ -34,6 +34,8 @@ namespace samson
             // Function to generate output key-values
             void generateKeyValues( KVWriter *writer );
 
+            void finalize( StreamManager* streamManager );         
+            
             // Get a string with the status of this task
             virtual std::string getStatus();
             
@@ -63,6 +65,8 @@ namespace samson
                         
             // Function to generate output key-values
             void generateTXT( TXTWriter *writer );
+            
+            void finalize( StreamManager* streamManager );         
             
             // Get a string with the status of this task
             virtual std::string getStatus();
@@ -94,6 +98,8 @@ namespace samson
             
             // Function to generate output key-values
             void generateKeyValues( KVWriter *writer );
+
+            void finalize( StreamManager* streamManager );         
             
             // Get a string with the status of this task
             virtual std::string getStatus();

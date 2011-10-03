@@ -116,10 +116,10 @@ namespace samson {
             
             // Engine notification function
             void notify( engine::Notification* notification );
+
+            Queue* getQueue( std::string name );
             
         private:
-            
-            Queue* getQueue( std::string name );
             
             void reviewStreamOperations();
             void reviewStreamOperation(const network::StreamOperation& operation);

@@ -454,6 +454,12 @@ namespace samson {
                 tmp->add_output_queues( queue_name );
             }
             
+            // Default latency
+            ::samson::network::Environment * env = tmp->mutable_environment();
+            ::samson::network::EnvironmentVariable *v = env->add_variable();
+            v->set_name("max_latency");
+            v->set_value("60");
+            
             // Insert the queue in the global list of stream-queues
 			streamOperations.insertInMap( name , tmp );
             

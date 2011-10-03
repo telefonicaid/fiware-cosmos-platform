@@ -19,6 +19,23 @@ namespace samson {
         class ReduceQueueTask;
         class StreamManager;
         class Block;
+
+        
+        class BlockIdList
+        {
+            std::set<size_t> block_ids;
+
+        public:
+            
+            void addIds( BlockList *list );
+            void removeIds( BlockList *list );
+            
+            void addId( size_t id );
+            void removeId( size_t id );
+            
+            size_t num_ids();            
+            bool containsBlockId( size_t id );            
+        };
         
         class Queue
         {
@@ -50,8 +67,9 @@ namespace samson {
             // Number of divisions for this queue ( all blocks should satify this at long term using block-break operations )
             int num_divisions;
             
-            // List of ids for the blocks currently involved in a break operation
-            std::set<size_t> block_ids_locked;
+            // Collections of ids for different block concepts
+            BlockIdList breaking_block_ids;
+            BlockIdList processing_block_ids;  // processing = parser / map / parseOut ( even reduce in non-update mode )
 
             // Divisions currently being updated ( only in reduce_state operations )
             // Note: it updating_divisions.size() > 0 --> Not possible to change num_divisions
@@ -83,41 +101,35 @@ namespace samson {
             
             // Notify that a block-break operation has finished
             void replaceAndUnlock( BlockList *from , BlockList *to );
+            void removeAndUnlock( BlockList *list );
             void replace( BlockList *from , BlockList *to );
+            void unlock ( BlockList *list );
+
+            // General function to know if a block is involved in any operation ( break or process )
+            bool isBlockIdLocked( size_t id );
+
+            // NORMAL PROCESSING
+            // ------------------------------------------------------------------------------------
+            BlockList* getInputBlockListForProcessing( size_t max_size );                             // Get input for an automatic processing
+            BlockList* getInputBlockListForProcessing( size_t max_size , BlockIdList* used_blocks );  // Get input for an automatic processing
             
-            // Lock and unlock divisions for updateState
-            // Check if the queue is perfectly divided in divisions ( no break operation running )
+            // ------------------------------------------------------------------------------------
+            
+            // UPDATE STATE
+            // ------------------------------------------------------------------------------------
             bool isQueueReadyForStateUpdate();                                              
             bool lockDivision( int division );                                              // Lock a particular division ( if possible )
             void unlockDivision( int division );                                            // Unlock a particular vision
             BlockList *getStateBlockListForDivision( int division );                        // Get the state for a state-update division
-            BlockList *getInputBlockListForRange( KVRange range , size_t max_size );        // Get all the blocks for a particular range ( input of the reduce operation )
+            BlockList *getInputBlockListForRange( KVRange range , size_t max_size );        // Get blocks for a range ( input of the reduce operation )
+            // ------------------------------------------------------------------------------------
             
             void setMinimumNumDivisions();
             
         private:
-            
-            void divide( QueueItem *item , QueueItem *item1 , QueueItem *item2 );
 
+            // Internal function to add a block to this queue
             void push( Block *block );
-            
-            
-            bool isBlockIdLocked( size_t block_id )
-            {
-                return ( block_ids_locked.find( block_id) != block_ids_locked.end() );
-            }
-            
-            void lockBlockId( size_t block_id )
-            {
-                if( isBlockIdLocked( block_id) )
-                    LM_W(("Reblocked block_id"));
-                
-                block_ids_locked.insert( block_id ); 
-            }
-            void unLockBlockId( size_t block_id )
-            {
-                block_ids_locked.erase( block_id );
-            }
             
             // Set a new number of visisions
             void setNumDivisions( int new_num_divisions );

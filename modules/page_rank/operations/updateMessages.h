@@ -10,6 +10,8 @@
 #include <map>
 #include <string>
 
+#include "strCompare.h"
+
 #include <samson/module/samson.h>
 #include <samson/modules/page_rank/Message.h>
 #include <samson/modules/page_rank/Node.h>
@@ -19,14 +21,13 @@
 namespace samson{
 namespace page_rank{
 
-
 	class updateMessages : public samson::Reduce
 	{
 
 	public:
 
 
-	   std::map< std::string , double > messages;
+	   std::map< const char* , double , strCompare > messages;
 
 	   samson::system::String key;// key
 	   samson::page_rank::Node node;// Node
@@ -98,7 +99,7 @@ helpLine: Update intenal information about rank of pages pointing to me
 		   // ------------------------------------------------------------------------------------------------------
 		   messages.clear();
 		   for (int i = 0 ; i < node.messages_length ; i++ )
-			  messages.insert( std::pair< std::string , double >( node.messages[i].node.value , node.messages[i].contribution.value ) );
+			  messages.insert( std::pair< const char* , double  >( node.messages[i].node.value.c_str() , node.messages[i].contribution.value ) );
 
 		   // Add of modify incomming messages
 		   for ( size_t i = 0 ; i < inputs[0].num_kvs ; i++)
@@ -109,16 +110,16 @@ helpLine: Update intenal information about rank of pages pointing to me
 			  if( message.contribution.value == -1 )
 			  {
 				 // Remove this node
-				 messages.erase( message.node.value );
+				 messages.erase( message.node.value.c_str() );
 			  }
 			  else
 			  {
 
-				 std::map<std::string , double>::iterator message_it;
-				 message_it = messages.find( message.node.value );
+				 std::map<const char* , double , strCompare>::iterator message_it;
+				 message_it = messages.find( message.node.value.c_str() );
 				 
 				 if( message_it == messages.end() )
-					messages.insert( std::pair< std::string , double >( message.node.value , message.contribution.value ) );
+					messages.insert( std::pair< const char* , double  >( message.node.value.c_str() , message.contribution.value ) );
 				 else
 					message_it->second = message.contribution.value;
 			  }
@@ -128,7 +129,7 @@ helpLine: Update intenal information about rank of pages pointing to me
 		   // ------------------------------------------------------------------------------------------------------
 
 		   node.messagesSetLength(0);
-		   for( std::map<std::string , double>::iterator message_it = messages.begin() ; message_it != messages.end() ; message_it++ )
+		   for( std::map<const char* , double , strCompare>::iterator message_it = messages.begin() ; message_it != messages.end() ; message_it++ )
 		   {
 			  samson::page_rank::Message *m = node.messagesAdd();
 			  m->node.value = message_it->first;
@@ -147,7 +148,7 @@ helpLine: Update intenal information about rank of pages pointing to me
 
 		   node.updated_outputs.value = 0;
 		   
-		   if( fabs( previous_rank - node.rank.value ) > 0.001 )
+		   if( fabs( previous_rank - node.rank.value ) > 0.01 )
 		   {
 			  //printf("Node %s not emiting rank  to %d connections\n" , key.value.c_str() , node.links_length );
 

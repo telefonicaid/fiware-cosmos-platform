@@ -8,6 +8,8 @@
 
 #include <set>
 
+#include "strCompare.h"
+
 #include <samson/module/samson.h>
 #include <samson/modules/page_rank/LinkVector.h>
 #include <samson/modules/page_rank/Message.h>
@@ -17,7 +19,6 @@
 
 namespace samson{
 namespace page_rank{
-
 
 	class updateLinks : public samson::Reduce
 	{
@@ -31,8 +32,8 @@ namespace page_rank{
 	   samson::page_rank::Message output_message_value;
 
 
-	   std::set<std::string> previous_links;
-	   std::set<std::string> new_links;
+	   std::set<const char*,strCompare> previous_links;
+	   std::set<const char*,strCompare> new_links;
 
 	   
 	public:
@@ -105,16 +106,16 @@ helpLine: Update intenal information about links of nodes. Comming from crawling
 
 		   // Add the previos nodes to the list
 		   for (int i = 0 ; i < node.links_length ; i++)
-			  previous_links.insert( node.links[i].value );
+			  previous_links.insert( node.links[i].value.c_str() );
 
 		   // Add the new nodes to the list
 		   for (int i = 0 ; i < input_value.link_length ; i++)
-			  new_links.insert( input_value.link[i].value );
+			  new_links.insert( input_value.link[i].value.c_str() );
 
 		   // Put the new links into the node structure
 		   // --------------------------------------------------------------------------------------------
 		   node.linksSetLength(0);		   
-		   for( std::set<std::string>::iterator it = new_links.begin() ; it != new_links.end() ; it++)
+		   for( std::set<const char* , strCompare>::iterator it = new_links.begin() ; it != new_links.end() ; it++)
 			  node.linksAdd()->value = *it; // Add the new links to the state
 		   // --------------------------------------------------------------------------------------------
 
@@ -125,7 +126,7 @@ helpLine: Update intenal information about links of nodes. Comming from crawling
 		   node.updated_outputs.value = 0;
 
 		   // Nodes removed
-		   for( std::set<std::string>::iterator it = previous_links.begin() ; it != previous_links.end() ; it++)
+		   for( std::set<const char*,strCompare>::iterator it = previous_links.begin() ; it != previous_links.end() ; it++)
 		   {
 			  if( new_links.find( *it ) == new_links.end() )
 			  {
@@ -150,7 +151,7 @@ helpLine: Update intenal information about links of nodes. Comming from crawling
 
 		   // Send contributions to new nodes ( or to all of them if the number of outputs changed )
 		   // --------------------------------------------------------------------------------------------
-		   for( std::set<std::string>::iterator it = new_links.begin() ; it != new_links.end() ; it++)
+		   for( std::set<const char*,strCompare>::iterator it = new_links.begin() ; it != new_links.end() ; it++)
 		   {
 			  if( ( changed_num_links ) || ( previous_links.find(*it) == previous_links.end() ) )
 			  {

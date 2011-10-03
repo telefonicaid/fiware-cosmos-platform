@@ -8,6 +8,7 @@
 
 #include "au/CommandLine.h"                // CommandLine
 #include "au/string.h"						// au::Format
+#include "au/time.h"                        // au::todayString
 
 #include "engine/Notification.h"            // engine::Notification
 
@@ -47,6 +48,25 @@
 
 namespace samson {
 	
+    
+    WorkerLog::WorkerLog( std::string _txt )
+    {
+        txt = _txt;
+        time = au::todayString();
+    }
+        
+    void WorkerLog::getInfo( std::ostringstream & output )
+    {
+        au::xml_open(output , "log" );
+        au::xml_simple( output , "txt" , txt );
+        au::xml_simple( output , "time" , time );
+        au::xml_close(output , "log" );
+        
+    }
+    
+    
+#pragma mark
+    
 	/* ****************************************************************************
 	 *
 	 * Constructor
@@ -524,6 +544,14 @@ namespace samson {
 		
 	}
     
+    void SamsonWorker::logActivity( std::string log)
+    {
+        activityLog.push_front( WorkerLog(log) );
+        
+        while( activityLog.size() > 100 )
+            activityLog.pop_back();
+        
+    }
     
     // Get information for monitorization
     void SamsonWorker::getInfo( std::ostringstream& output)
@@ -549,6 +577,15 @@ namespace samson {
         // Network
         network->getInfo( output );
         
+        
+        // Activity log
+        au::xml_open(output, "activity");
+
+        std::list < WorkerLog >::iterator it_activityLog;
+        for ( it_activityLog = activityLog.begin() ; it_activityLog != activityLog.end() ; it_activityLog++)
+            it_activityLog->getInfo( output );
+
+        au::xml_close(output, "activity");
     }
 	
 }

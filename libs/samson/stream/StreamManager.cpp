@@ -290,8 +290,8 @@ namespace samson {
             size_t min_size = SamsonSetup::shared()->getUInt64("stream.min_operation_input_size");
             output << " -min_size " << min_size;
             
-            size_t max_latency = enviroment.getSizeT("max_latency", 0);
-            output << " -max_latency " << max_latency;
+            output << " -max_latency " << enviroment.getSizeT("max_latency", 0);
+            output << " -delayed_processing " << enviroment.get("delayed_processing", "yes");
             
             return output.str();
         }
@@ -380,8 +380,8 @@ namespace samson {
                     Environment enviroment;
                     copyEnviroment( operation.environment() , &enviroment );
                     
-                    size_t max_latency = enviroment.getSizeT("max_latency", 0);
-                    worker_command << " -max_latency " << max_latency;
+                    worker_command << " -max_latency " << enviroment.getSizeT("max_latency", 0);
+                    worker_command << " -latency " << enviroment.get("latency", "yes");
                     
                     
                     WorkerCommand* wc = new WorkerCommand( worker_command.str() );

@@ -275,6 +275,7 @@ namespace samson
         { "cp_queue"                , "cp_queue  <from_queue> <to_queue>            Copy contents of one queue to another"},
         { "ls_operation_rates"      , "ls_operation_rates           get a list of statistics about operations in the platform"},
         { "set_queue_property"      , "set_queue_property queue property value               Specify a property of a particular queue"},
+        { "ls_stream_activity"      , "ls_stream_activity       show a list of the last activity logs about automatic stream processing"},
         { NULL , NULL }   
     };
     

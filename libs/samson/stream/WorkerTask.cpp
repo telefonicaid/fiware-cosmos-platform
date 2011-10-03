@@ -47,6 +47,7 @@ namespace samson {
             cmd.set_flag_boolean("clear_inputs");
             cmd.set_flag_uint64("min_size", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
             cmd.set_flag_uint64("max_latency", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
+            cmd.set_flag_string("delayed_processing", "yes");         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
             
             cmd.parse( command );
             
@@ -73,6 +74,7 @@ namespace samson {
             cmd.set_flag_boolean("clear_inputs");
             cmd.set_flag_uint64("min_size", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
             cmd.set_flag_uint64("max_latency", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
+            cmd.set_flag_string("delayed_processing", "yes");         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
             cmd.parse( command );
             
             // Original value for the falg
@@ -219,6 +221,7 @@ namespace samson {
                 // Parameters used to thrigger or not the automatic-update
                 size_t min_size = cmd.get_flag_uint64("min_size");          // Minimum size to run an operation
                 size_t max_latency = cmd.get_flag_uint64("max_latency");    // Max acceptable time to run an operation
+                std::string delayed_processing = cmd.get_flag_string("delayed_processing");    // Max acceptable time to run an operation
                 
                 // Operation size    
                 size_t default_size = SamsonSetup::shared()->getUInt64("general.memory") / SamsonSetup::shared()->getUInt64("general.num_processess");
@@ -328,6 +331,9 @@ namespace samson {
                     
                     if( cancel_operation )
                     {
+                        if( delayed_processing == "no" )   // No latency option
+                            cancel_operation= false;
+                        
                         if ( (max_latency > 0) && ( latency > max_latency) )
                         {
                             //LM_M(("Reduce state operation reopened for latency %lu max %lu" , latency , max_latency));
@@ -345,6 +351,9 @@ namespace samson {
                         //LM_M(("Planing an update operation for division %d" , i ));
                         //LM_M(("State blocks : %s" , stateBlockList->strRanges().c_str() ));
                         //LM_M(("Input blocks : %s" , inputBlockList->strRanges().c_str() ));
+                        
+                        // Log activity in the worker
+                        streamManager->worker->logActivity( au::str("Updating state %s ( division %d/%d ) with operation %s" , state_name.c_str() , i , num_divisions , operation_name.c_str()  ) );
                         
                         network::StreamOperation *operation = getStreamOperation( op );
                         
@@ -400,6 +409,7 @@ namespace samson {
                 
                 size_t min_size = cmd.get_flag_uint64("min_size");          // Minimum size to run an operation
                 size_t max_latency = cmd.get_flag_uint64("max_latency");    // Max acceptable time to run an operation
+                std::string delayed_processing = cmd.get_flag_string("delayed_processing");
                 
                 // Operation size    
                 size_t default_size = SamsonSetup::shared()->getUInt64("general.memory") / SamsonSetup::shared()->getUInt64("general.num_processess");
@@ -565,6 +575,9 @@ namespace samson {
                                 
                                 if( cancel_operation )
                                 {
+                                    if( delayed_processing == "no" )
+                                        cancel_operation = false;
+                                    
                                     // Check if latency is too high....
                                     if( ( max_latency > 0 ) && ( (size_t)operation_block_info.min_time_diff() > max_latency ) )
                                     {

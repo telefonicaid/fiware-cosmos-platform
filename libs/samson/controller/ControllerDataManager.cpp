@@ -455,10 +455,19 @@ namespace samson {
             }
             
             // Default latency
-            ::samson::network::Environment * env = tmp->mutable_environment();
-            ::samson::network::EnvironmentVariable *v = env->add_variable();
-            v->set_name("max_latency");
-            v->set_value("60");
+            {
+                ::samson::network::Environment * env = tmp->mutable_environment();
+                ::samson::network::EnvironmentVariable *v = env->add_variable();
+                v->set_name("max_latency");
+                v->set_value("60");
+            }
+
+            {
+                ::samson::network::Environment * env = tmp->mutable_environment();
+                ::samson::network::EnvironmentVariable *v = env->add_variable();
+                v->set_name("delayed_processing");
+                v->set_value("yes");
+            }
             
             // Insert the queue in the global list of stream-queues
 			streamOperations.insertInMap( name , tmp );

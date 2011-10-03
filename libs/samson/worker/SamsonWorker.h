@@ -39,6 +39,20 @@ namespace samson {
     class NetworkInterface;
     class Info;
     
+    class WorkerLog
+    {
+        
+    public:
+        
+        WorkerLog( std::string _txt );
+        
+        std::string time; 
+        std::string txt;
+        
+        void getInfo( std::ostringstream & output );
+        
+    };
+    
 	class SamsonWorker : 
         public PacketReceiverInterface, 
         public PacketSenderInterface, 
@@ -64,6 +78,8 @@ namespace samson {
 		
         stream::StreamManager streamManager;            // Manager of all the stream-processing queues in the system
         
+        std::list < WorkerLog > activityLog;          // Activity log for this worker
+        
 	public:
 
 		// PacketReceiverInterface
@@ -83,6 +99,10 @@ namespace samson {
 
         // Get information for monitorization
         void getInfo( std::ostringstream& output);
+        
+        
+        // Log activity
+        void logActivity( std::string log);
         
 	private:
 		

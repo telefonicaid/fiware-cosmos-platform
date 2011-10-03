@@ -586,6 +586,12 @@ namespace samson {
         if( main_command == "ls_queues_info" )
             return infoCommand(LS_QUEUES_INFO_COMMAND);
 
+        if( main_command == "ls_stream_activity" )
+        {
+            return infoCommand( "info_command //activity/log -worker /time,t=time /txt,t=log,left" );
+        }
+        
+        
         if( main_command == "ls_stream_operation" )
             return infoCommand(LS_STREAM_OPERATIONS);
         

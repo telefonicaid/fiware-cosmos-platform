@@ -254,7 +254,7 @@ int main(int argC, const char *argV[])
 			//LM_M(("Processing line: %s", line ));
             num_line++;
             
-            if( line[0] != '#' )
+            if( ( line[0] != '#' ) && ( strlen(line) > 0) )
             {
                 
                 size_t id = delilahConsole->runAsyncCommand( line );

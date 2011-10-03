@@ -308,7 +308,6 @@ namespace samson {
                 table.add( new au::TableColumn( field_definition ) );
             }
             
-            
             output << table.str();
             
         }

@@ -515,9 +515,7 @@ namespace samson {
 #pragma mark info interface ------------------------------------------------------------------------------------------------------------
     
     
-#define LS_COMMAND "info_command -controller //queue /name,title=Name,l /num_files,t=#files /kv_info/kvs,t=#kvs,f=uint64 /kv_info/size,t=size,f=uint64 /format/key_format,t=key /format/value_format,t=value,left -no_title"
     
-#define LS_QUEUES_COMMAND "info_command -worker //queue /name,t=name,left  /block_info/kv_info/kvs,t=#kvs,format=uint64 /block_info/kv_info/size,t=size,format=uint64  /block_info/format/key_format,t=key /block_info/format/value_format,t=value,left /status,t=status,left"
     
 #define LS_QUEUES_INFO_COMMAND "info_command -worker //queue /name,t=name,left /block_info/num_blocks,t=#Blocks,format=uint64 /block_info/size,title=size,format=uint64 /block_info/size_on_memory^/block_info/size,format=per,t=on_memory /block_info/size_on_disk^/block_info/size,format=per,t=on_disk /block_info/size_locked^/block_info/size,format=per,t=locked  /block_info/min_time_diff,f=time,t=oldest /block_info/max_time_diff,f=time,t=earliest /num_divisions,t=#div,uint64 /block_info/num_divisions,t=#div"
     
@@ -537,12 +535,53 @@ namespace samson {
             return "No command to display information about SAMSON platform.";
         
         std::string main_command = cmd.get_argument(0);
-
+        
         if( main_command == "ls" )
-            return infoCommand(LS_COMMAND);
+        {
+            std::string filter = "";
+            
+            if( cmd.get_num_arguments() > 1 )
+            {
+                std::string filter_parameter = cmd.get_argument(1);
+                
+                if( filter_parameter.substr( filter_parameter.length()-1 , 1) == "*" )
+                    filter_parameter = filter_parameter.substr( 0 , filter_parameter.length() - 1);
+                
+                filter = au::str("[starts-with(name,'%s')]" , filter_parameter.c_str() );
+            }
+            
+            LM_M(("Running %s --> filter %s" , command.c_str() , filter.c_str() ));
+            
+            std::ostringstream command;
+            
+            command << "info_command -controller //queue" << filter;
+            command << " /name,title=Name,l /num_files,t=#files /kv_info/kvs,t=#kvs,f=uint64 /kv_info/size,t=size,f=uint64 /format/key_format,t=key /format/value_format,t=value,left -no_title";
+            
+            return infoCommand(command.str());
+        }
         
         if( main_command == "ls_queues" )
-            return infoCommand(LS_QUEUES_COMMAND);
+        {
+            std::string filter = "";
+            
+            if( cmd.get_num_arguments() > 1 )
+            {
+                std::string filter_parameter = cmd.get_argument(1);
+                
+                if( filter_parameter.substr( filter_parameter.length()-1 , 1) == "*" )
+                    filter_parameter = filter_parameter.substr( 0 , filter_parameter.length() - 1);
+                
+                filter = au::str("[starts-with(name,'%s')]" , filter_parameter.c_str() );
+            }
+            
+            std::ostringstream command;
+
+            command << "info_command -worker //queue" << filter;
+            command << " /name,t=name,left  /block_info/kv_info/kvs,t=#kvs,format=uint64 /block_info/kv_info/size,t=size,format=uint64  /block_info/format/key_format,t=key /block_info/format/value_format,t=value,left /status,t=status,left";
+            
+            return infoCommand(command.str());
+
+        }
 
         if( main_command == "ls_queues_info" )
             return infoCommand(LS_QUEUES_INFO_COMMAND);

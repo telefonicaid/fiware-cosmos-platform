@@ -209,15 +209,28 @@ namespace samson {
         {
             au::xml_iterate_list(output, "queue_tasks", queueTasks);
             au::xml_iterate_map(output, "running_queue_tasks", runningTasks);
-
+            
             
             au::xml_iterate_list(output, "system_queue_tasks", systemQueueTasks);
             au::xml_iterate_map(output, "running_system_queue_tasks", runningSystemQueueTasks);
             
         }
         
-        
+        bool QueueTaskManager::isActive()
+        {
+            
+            if( queueTasks.size() > 0 )
+                return true;
+            if( runningTasks.size() > 0 )
+                return true;
+            if( systemQueueTasks.size() > 0 )
+                return true;
+            if( runningSystemQueueTasks.size() > 0 )
+                return true;
+            
+            return false;
+            
+        }
         
     }
-    
 }

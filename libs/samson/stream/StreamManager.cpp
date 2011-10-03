@@ -77,13 +77,16 @@ namespace samson {
                 // Save state to disk just in case it crases
                 saveStateToDisk();
                 
-                // Review all the queues
+                // Review all the queues to be divided if necessary
                 au::map< std::string , Queue >::iterator queue_it;
                 for ( queue_it = queues.begin() ; queue_it != queues.end() ; queue_it++ )
-				{
-                    //LM_M(("Reviwing queue %s" , queue_it->first.c_str() ));
                     queue_it->second->review();
-				}
+                
+                // Review all WorkerCommand is necessary
+                au::map< size_t , WorkerCommand >::iterator it_workerCommands; 
+                for( it_workerCommands = workerCommands.begin() ; it_workerCommands != workerCommands.end() ; it_workerCommands++ )
+                    it_workerCommands->second->run();   // Excute if necessary
+
                 
                 return;
             }
@@ -119,10 +122,13 @@ namespace samson {
         
         void StreamManager::addWorkerCommand( WorkerCommand *workerCommand )
         {
+            // Set the internal pointer to stream manager
             workerCommand->setStreamManager( this );
             
             size_t id = worker_task_id++;
             workerCommands.insertInMap( id , workerCommand );
+            
+            // First run of this worker command
             workerCommand->run();
         }
         

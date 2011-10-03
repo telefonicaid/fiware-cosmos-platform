@@ -81,8 +81,6 @@ namespace samson {
             std::string queue_name = streamOperation->input_queues( 0 );
             Queue*queue = streamManager->getQueue( queue_name );
 
-            LM_M(("Finishing parser operation"));
-            
             if ( queue )
                 queue->removeAndUnlock( input );
         }    

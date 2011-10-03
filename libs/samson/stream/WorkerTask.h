@@ -69,6 +69,9 @@ namespace samson {
             // Environment properties
             Environment enviroment;
             
+            // Flag to indicate that this command is still pending to be executed
+            bool pending_to_be_executed;
+            
             // Flag to indicate that this worker-task has been completed and a message has been sent back to who sent the request
             bool finished;
             

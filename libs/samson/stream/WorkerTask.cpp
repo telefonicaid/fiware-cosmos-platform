@@ -50,7 +50,8 @@ namespace samson {
             
             cmd.parse( command );
             
-            // Original value for the falg
+            // Original value for the flags
+            pending_to_be_executed =  true;
             finished = false;
             
             // No pending process at the moment
@@ -101,8 +102,27 @@ namespace samson {
         void WorkerCommand::run()
         {
             
+            if( !pending_to_be_executed )
+                return;
+            
+            // Not pending any more, exept of something happen...
+            pending_to_be_executed = false;
+            
             // Main command
             std::string main_command = cmd.get_argument(0);
+
+            
+            if( main_command == "wait" )
+            {
+                // Spetial operation to wait until no activity is present in stream manager
+                
+                if( streamManager->queueTaskManager.isActive() )
+                    pending_to_be_executed = true;
+                else
+                    finishWorkerTask();
+                
+                return;
+            }
             
             if( main_command == "reload_modules" )
             {

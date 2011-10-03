@@ -49,6 +49,8 @@ namespace samson {
             // Get information for monitorization
             void getInfo( std::ostringstream& output);
             
+            // Return is there is activity
+            bool isActive();
             
         };
         

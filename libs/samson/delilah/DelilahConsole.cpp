@@ -729,6 +729,11 @@ namespace samson
             return sendWorkerCommand( command , NULL );
         }
 
+        if( main_command == "wait" )
+        {
+            return sendWorkerCommand( command , NULL );
+        }
+        
         if( main_command == "run_stream_update_state" )
         {
             return sendWorkerCommand( command , NULL );

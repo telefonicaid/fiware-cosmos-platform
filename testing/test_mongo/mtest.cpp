@@ -1,3 +1,13 @@
+/* ****************************************************************************
+*
+*
+*
+* Operation Modes
+* - Empty
+* - Fill
+* - Upload
+* - Query
+*/
 #include <sys/types.h>
 #include <signal.h>
 
@@ -51,12 +61,15 @@ int                         recordsInserted = 0;
 *
 * Option variables
 */
-bool  location;
-bool  mobility;
-bool  upload;
 char  server[256];
 char  db[256];
 char  collection[256];
+
+bool  empty;
+bool  dbfill;
+bool  upload;
+bool  query;
+
 int   kvs;
 int   times;
 bool  bulk;
@@ -68,11 +81,8 @@ int   maxUserId;
 int   minUserId;
 int   userId;
 int   days;
-int   threads;
 int   test;
 int   queries;
-int   initrecs;
-
 
 #define M512 (512 * 1024 * 1024)
 #define M40   (40 * 1000 * 1000)
@@ -83,13 +93,16 @@ int   initrecs;
 */
 PaArgument paArgs[] =
 {
-	{ "-location", &location,   "LOCATION",    PaBool,    PaOpt,  false,                    false, true,  "user location query"        },
-	{ "-mobility", &mobility,   "MOBILITY",    PaBool,    PaOpt,  false,                    false, true,  "user mobility query"        },
-	{ "-upload",   &upload,     "UPLOAD",      PaBool,    PaOpt,  false,                    false, true,  "upload data to mongodb"     },
 	{ "-server",   server,      "SERVER",      PaString,  PaOpt,  (long) "localhost:27017", PaNL,  PaNL,  "data base server:port"      },
 	{ "-db",       db,          "DB_PATH",     PaString,  PaReq,  PaND,                     PaNL,  PaNL,  "name of data base"          },
 	{ "-coll",     collection,  "COLLECTION",  PaString,  PaReq,  PaND,                     PaNL,  PaNL,  "name of collection"         },
-	{ "-kvs",      &kvs,        "KEYVALUES",   PaInt,     PaOpt,  40000,                    1,     M512,  "no of keyvalues per second" },
+
+	{ "-empty",    &empty,      "EMPTY",       PaBool,    PaOpt,  false,                    false, true,  "empty data base collection" },
+	{ "-fill",     &dbfill,     "FILL",        PaBool,    PaOpt,  false,                    false, true,  "initial filling of db"      },
+	{ "-upload",   &upload,     "UPLOAD",      PaBool,    PaOpt,  false,                    false, true,  "upload data to mongodb"     },
+	{ "-query",    &query,      "QUERY",       PaBool,    PaOpt,  false,                    false, true,  "db query"                   },
+
+	{ "-kvs",      &kvs,        "KEYVALUES",   PaInt,     PaOpt,  40000,                    1,     M512,  "keyvalues"                  },
 	{ "-times",    &times,      "TIMES",       PaInt,     PaOpt,  0,                        0,     PaNL,  "times"                      },
 	{ "-bulk",     &bulk,       "BULK",        PaBool,    PaOpt,  false,                    false, true,  "bulk load"                  },
 	{ "-bulksize", &bulksize,   "BULKSIZE",    PaInt,     PaOpt,  60000,                    PaNL,  PaNL,  "bulk size"                  },
@@ -101,9 +114,7 @@ PaArgument paArgs[] =
 	{ "-minuid",   &minUserId,  "MINUSERID",   PaInt,     PaOpt,  1,                        0,     M512,  "min user id"                },
 	{ "-uid",      &userId,     "USERID",      PaInt,     PaOpt,  -1,                      -1,     M512,  "user id"                    },
 	{ "-days",     &days,       "DAYS",        PaInt,     PaOpt,  0,                        0,     M512,  "days"                       },
-	{ "-threads",  &threads,    "THREADS",     PaInt,     PaOpt,  1,                        1,       20,  "number of threads"          },
 	{ "-test",     &test,       "TEST",        PaInt,     PaOpt,  0,                        0,      100,  "test case"                  },
-	{ "-initrecs", &initrecs,   "INITRECS",    PaInt,     PaOpt,  0,                        0,     M512,  "records initially"          },
 
 	PA_END_OF_ARGS
 };
@@ -172,21 +183,6 @@ void stopTimeMeasuring(void)
 
 /* ****************************************************************************
 *
-* sigHandler - 
-*/
-void sigHandler(int sigNo)
-{
-	stopTimeMeasuring();
-	if (pid != 0)
-		kill(pid, SIGTERM);
-	pid = 0;
-	exit(0);
-}
-
-
-
-/* ****************************************************************************
-*
 * dbConnect  - 
 */
 void dbConnect(void)
@@ -212,6 +208,8 @@ void dbEmpty(void)
 {
 	long long items;
 
+	dbConnect();
+
 	items = mdbConnection->count(dbAndColl);
 
 	LM_M(("Emptying collection %s in database %s (%d items)", collection, db, items));
@@ -221,22 +219,21 @@ void dbEmpty(void)
 
 
 
+Results  results;
 /* ****************************************************************************
 *
-* locationQuery - 
+* dbQuery - 
 */ 
-void* locationQuery(void* x)
+void dbQuery(void)
 {
 	long long int       userId;
 	struct timeval      start;
 	struct timeval      stop;
 	struct timeval      diff;
 	struct timeval      lastTrace;
-	Results*            results = (Results*) x;
-	int                 notfound = 0;
 
-	if (!connected)
-		dbConnect();
+
+	dbConnect();
 
 	gettimeofday(&startTime, NULL);
 	gettimeofday(&start, NULL);
@@ -244,20 +241,10 @@ void* locationQuery(void* x)
 
 	for (int ix = 0; ix < queries; ix++)
 	{
-		std::auto_ptr<mongo::DBClientCursor> cursor = mdbConnection->query(dbAndColl, QUERY("I" << userId));
-
 		userId = rand() % MAXUSER;
 
-		if (cursor->more() == false)
-		{
-			notfound++;
-#if 0
-			if (notfound % 1000 == 0)
-				LM_W(("%d users not found!", notfound));
-#endif
-		}
-
-		int hits = 0;
+		std::auto_ptr<mongo::DBClientCursor> cursor = mdbConnection->query(dbAndColl, QUERY("I" << userId));
+		int                                  hits   = 0;
 
 		while (cursor->more() != false)
 		{
@@ -283,19 +270,111 @@ void* locationQuery(void* x)
 
 	LM_M(("%d queries in %d.%06d seconds - %f queries per second", queries, diff.tv_sec, diff.tv_usec, (double) queries / ddiff));
 
-	if (results != NULL)
-	{
-		results->queries      = queries;
-		results->seconds      = diff.tv_sec;
-		results->microseconds = diff.tv_usec;
-		results->qps          = (double) queries / ddiff;
-	}
-
-	return NULL;
+	results.queries      = queries;
+	results.seconds      = diff.tv_sec;
+	results.microseconds = diff.tv_usec;
+	results.qps          = (double) queries / ddiff;
 }
 
 
 
+/* ****************************************************************************
+*
+* dbUpload - 
+*/
+void dbUpload(int kvs, bool oneshot)
+{
+	int             operation = 0;
+	struct timeval  diff;
+
+	dbConnect();
+
+	gettimeofday(&startTime, NULL);
+
+	if (bulk)
+		LM_M(("Bulk-mode-inserting %d kvs/second to server '%s', DB '%s', collection '%s'", kvs, server, db, collection));
+	else
+		LM_M(("Slow-inserting %d kvs/second to server '%s', DB '%s', collection '%s'", kvs, server, db, collection));
+
+	while (1)
+	{
+		struct timeval      start;
+		struct timeval      stop;
+		long long int       user;
+		long long int       position    = 1234560;
+		long long int       timestamp   = (long long int) time(NULL);
+		
+		gettimeofday(&start, NULL);
+
+		std::vector<mongo::BSONObj>  bulk_data;
+		int                          inserts = 0;
+			
+		if (oneshot == true)
+			LM_M(("Filling collection '%s' of data base '%s' with %d keyvalues", collection, db, kvs));
+		else
+			LM_M(("Uploading %d kvs per second to collection '%s' of data base '%s'", kvs, collection, db));
+
+		for (int ix = 0; ix < kvs; ix++)
+		{
+			mongo::BSONObj  record;
+
+			user = rand() % MAXUSER;
+
+			LM_D(("I:%d, P:%d, T:%d", user, position, timestamp));
+			record =  BSON("I" << user << "P" << position << "T" << timestamp);
+			++position;
+			++timestamp;
+			++recordsInserted;
+
+			bulk_data.push_back(record);
+
+			++inserts;
+			if ((inserts % bulksize) == 0)
+			{
+				mdbConnection->insert(dbAndColl, bulk_data);
+				bulk_data.clear();
+				inserts = 0;
+			}
+		}				
+
+		if (inserts != 0)
+		{
+			mdbConnection->insert(dbAndColl, bulk_data);
+			bulk_data.clear();
+		}
+
+		if (indexed)
+			mdbConnection->ensureIndex(dbAndColl, mongo::fromjson("{I:1}"));
+
+		if (oneshot == true)
+			return;
+
+		++operation;
+
+		gettimeofday(&stop, NULL);
+
+		timediff(&start, &stop, &diff);
+
+		if (diff.tv_sec != 0)
+			LM_W(("operation %d took longer than ONE second - %d.%06d secs!", operation, diff.tv_sec, diff.tv_usec));
+		else if (sleepsec == true)
+		{
+			LM_D(("sleeping 0.%06d seconds", 1000000 - diff.tv_usec));
+			usleep(1000000 - diff.tv_usec);
+
+			sleepTime.tv_usec += (1000000 - diff.tv_usec);
+			if (sleepTime.tv_usec >= 1000000)
+			{
+				++sleepTime.tv_sec;
+				sleepTime.tv_usec -= 1000000;
+			}
+		}
+	}
+}
+
+
+
+#if 0
 /* ****************************************************************************
 *
 * mobilityQuery - 
@@ -366,207 +445,21 @@ void* mobilityQuery(void* x)
 
 	return NULL;
 }
+#endif
 
 
 
 /* ****************************************************************************
 *
-* uploadData - 
+* sigHandler - 
 */
-void* uploadData(void* x)
+void sigHandler(int sigNo)
 {
-	int             operation = 0;
-	int             kvs2;
-	struct timeval  diff;
-	bool            oneshot = false;
-
-	dbConnect();
-
-	gettimeofday(&startTime, NULL);
-
-	if (x != NULL)
-	{
-		kvs2 = *((int*) x);
-		oneshot = true;
-	}
-	else
-		kvs2 = kvs;
-
-	if (bulk)
-		LM_M(("Bulk-mode-inserting %d kvs/second to server '%s', DB '%s', collection '%s'", kvs2, server, db, collection));
-	else
-		LM_M(("Slow-inserting %d kvs/second to server '%s', DB '%s', collection '%s'", kvs2, server, db, collection));
-
-	while (1)
-	{
-		struct timeval      start;
-		struct timeval      stop;
-		long long int       user;
-		long long int       position    = 1234560;
-		long long int       timestamp   = (long long int) time(NULL);
-		
-		gettimeofday(&start, NULL);
-
-		std::vector<mongo::BSONObj>  bulk_data;
-		int                          inserts = 0;
-			
-		if (oneshot == true)
-			LM_M(("Uploading initial data of %d kvs (once only)", kvs2));
-		else
-			LM_M(("Uploading %d kvs per second", kvs2));
-
-		for (int ix = 0; ix < kvs2; ix++)
-		{
-			mongo::BSONObj  record;
-
-			user = rand() % MAXUSER;
-
-			LM_D(("I:%d, P:%d, T:%d", user, position, timestamp));
-			record =  BSON("I" << user << "P" << position << "T" << timestamp);
-			++position;
-			++timestamp;
-			++recordsInserted;
-
-			bulk_data.push_back(record);
-
-			++inserts;
-			if ((inserts % bulksize) == 0)
-			{
-				mdbConnection->insert(dbAndColl, bulk_data);
-				bulk_data.clear();
-				inserts = 0;
-			}
-		}				
-
-		if (inserts != 0)
-		{
-			mdbConnection->insert(dbAndColl, bulk_data);
-			bulk_data.clear();
-		}
-
-		if (indexed)
-			mdbConnection->ensureIndex(dbAndColl, mongo::fromjson("{I:1}"));
-
-		if (oneshot == true)
-			return NULL;
-
-		++operation;
-
-		gettimeofday(&stop, NULL);
-
-		timediff(&start, &stop, &diff);
-
-		if (diff.tv_sec != 0)
-			LM_W(("operation %d took longer than ONE second - %d.%06d secs!", operation, diff.tv_sec, diff.tv_usec));
-		else if (sleepsec == true)
-		{
-			LM_D(("sleeping 0.%06d seconds", 1000000 - diff.tv_usec));
-			usleep(1000000 - diff.tv_usec);
-
-			sleepTime.tv_usec += (1000000 - diff.tv_usec);
-			if (sleepTime.tv_usec >= 1000000)
-			{
-				++sleepTime.tv_sec;
-				sleepTime.tv_usec -= 1000000;
-			}
-		}
-	}
-
-	return NULL;
-}
-
-
-
-/* ****************************************************************************
-*
-* upLoad - 
-*/
-void upLoad(int kvsPerSecond)
-{
-	char  kvsV[16];
-	char  timesV[16];
-
-	pid = fork();
-	if (pid == 0)
-	{
-		sprintf(kvsV, "%d", kvsPerSecond);
-
-		const char* const args[] = 
-		{
-			"uploader",
-			"-bulk",
-			"-kvs",
-			(const char*) kvsV,
-			"-indexed",
-			"-upload",
-			"-coll",
-			collection,
-			"-db",
-			db,
-			"-sleep",
-			NULL
-		};
-
-		LM_M(("Executing '%s' -upload -kvs %s -times %s ...", progName, kvsV, timesV));
-		execvp(progName, (char* const*) args);
-		LM_X(1, ("Back from EXEC ..."));
-	}
-
-	// srand(time(NULL) + 1);
-}
-
-
-
-/* ****************************************************************************
-*
-* test1 - 
-*/
-void test1(int speed, int noOfQueries)
-{
-	Results results;
-
-	if (initrecs != 0)
-	{
-		bulk    = true;
-		indexed = true;
-
-		dbEmpty();
-		uploadData(&initrecs);
-	}
-	upLoad(speed);
-
-	sleep(1);
-	LM_M(("Starting queries ..."));
-	queries = noOfQueries;
-	locationQuery(&results);
-
-	LM_M(("Test 1\n-------\no collection initially empty\no %d kvs/second uploading\no %d queries\n==========================\n",
-		  speed, queries));
-	LM_M(("\nResult:\n  %f queries per second\n", results.qps));
-}
-
-
-
-/* ****************************************************************************
-*
-* testSwitch - 
-*/
-void* testSwitch(void* x)
-{
-	dbConnect();
-
-	switch (test)
-	{
-	case 1:
-		test1(kvs, queries);
-		break;
-
-	default:
-		LM_X(1, ("Test case %d not implemented", test));
-		break;
-	}
-
-	return NULL;
+	stopTimeMeasuring();
+	if (pid != 0)
+		kill(pid, SIGTERM);
+	pid = 0;
+	exit(0);
 }
 
 
@@ -586,9 +479,9 @@ int main(int argC, char* argV[])
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
-	if (!location && !mobility && !upload && test == 0)
+	if (!empty && !dbfill && !query && !upload == 0)
 	{
-		printf("Please pick one if the operating modes: '-location', '-mobility', '-upload' or '-test'\n");
+		printf("Please pick one if the operating modes: '-empty', '-fill', '-query' or '-upload'\n");
 		exit(1);
 	}
 
@@ -597,16 +490,17 @@ int main(int argC, char* argV[])
 
 	srand(time(NULL));
 
-	if (location)
-		locationQuery(NULL);
-	else if (mobility)
-		mobilityQuery(NULL);
+	if (empty)
+		dbEmpty();
+	else if (dbfill)
+		dbUpload(kvs, true);
 	else if (upload)
-		uploadData(NULL);
-	else if (test != 0)
-		testSwitch(NULL);
+		dbUpload(kvs, false);
+	else if (query != 0)
+		dbQuery();
 
 	stopTimeMeasuring();
+
 	if (pid != 0)
 		kill(pid, SIGTERM);
 

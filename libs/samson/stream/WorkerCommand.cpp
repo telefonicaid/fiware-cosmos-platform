@@ -81,6 +81,7 @@ namespace samson {
             cmd.parse( command );
             
             // Original value for the falg
+            pending_to_be_executed =  true;
             finished = false;
             
             // No pending process at the moment

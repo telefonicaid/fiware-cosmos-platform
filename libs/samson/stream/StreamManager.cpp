@@ -49,6 +49,10 @@ namespace samson {
                 engine::Notification *notification = new engine::Notification(notification_review_stream_manager);
                 engine::Engine::shared()->notify( notification, 10 );
             }
+            {
+                engine::Notification *notification = new engine::Notification(notification_review_stream_manager_fast);
+                engine::Engine::shared()->notify( notification, 1 );
+            }
 
             // Recover state from log-file
             recoverStateFromDisk();
@@ -58,6 +62,7 @@ namespace samson {
 
             // Engine listening commands
             listen( notification_review_stream_manager );
+            listen( notification_review_stream_manager_fast );
             listen(notification_samson_worker_check_finish_tasks);
             
             
@@ -74,6 +79,16 @@ namespace samson {
         
         void StreamManager::notify( engine::Notification* notification )
         {
+            
+            if ( notification->isName(notification_review_stream_manager_fast) )
+            {
+                // Review stream operations to be executed
+                reviewStreamOperations();
+                
+                return;
+            }
+                
+            
             if ( notification->isName(notification_review_stream_manager) )
             {
                 // Remove finished worker tasks elements

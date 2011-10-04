@@ -12,11 +12,10 @@
 
 #include "PopQueue.h"                               // engine::PopQueue
 
-#include "QueueItem.h"                              // QueueItem
 
 #include "StreamManager.h"                          // StreamManager
 
-#include "ParserQueueTask.h"                        // Own interface
+#include "QueueTasks.h"                        // Own interface
 
 
 namespace samson {
@@ -82,7 +81,15 @@ namespace samson {
             Queue*queue = streamManager->getQueue( queue_name );
 
             if ( queue )
-                queue->removeAndUnlock( input );
+            {
+                queue->unlock( input );
+                
+                // If specified, remove input blocks
+                if( environment.get("system.clear_imputs" , "no") == "yes" )
+                    queue->remove( input );
+
+                
+            }
         }    
 
         
@@ -117,7 +124,15 @@ namespace samson {
             Queue*queue = streamManager->getQueue( queue_name );
             
             if ( queue )
-                queue->removeAndUnlock( input );
+            {
+                queue->unlock( input );
+                
+                // If specified, remove input blocks
+                if( environment.get("system.clear_imputs" , "no") == "yes" )
+                    queue->remove( input );
+                
+                
+            }
             
         }    
         
@@ -318,7 +333,15 @@ namespace samson {
             Queue*queue = streamManager->getQueue( queue_name );
             
             if ( queue )
-                queue->removeAndUnlock( input );
+            {
+                queue->unlock( input );
+                
+                // If specified, remove input blocks
+                if( environment.get("system.clear_imputs" , "no") == "yes" )
+                    queue->remove( input );
+                
+                
+            }
             
         }    
         

@@ -104,6 +104,7 @@ namespace samson {
             void removeAndUnlock( BlockList *list );
             void replace( BlockList *from , BlockList *to );
             void unlock ( BlockList *list );
+            void remove ( BlockList *list );
 
             // General function to know if a block is involved in any operation ( break or process )
             bool isBlockIdLocked( size_t id );

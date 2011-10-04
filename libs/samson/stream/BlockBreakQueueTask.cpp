@@ -12,7 +12,6 @@
 #include "samson/module/ModulesManager.h"           // samson::ModulesManager
 
 
-#include "BlockBreak.h"                             // samson::stream::BlockBreak
 #include "Block.h"                                  // samson::stream::Block
 #include "BlockList.h"                              // samson::stream::BlockList
 #include "Queue.h"                                  // samson::stream::Queue

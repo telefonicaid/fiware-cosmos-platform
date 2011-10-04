@@ -33,8 +33,6 @@ namespace engine
     
     MemoryManager* memoryManager = NULL;
     
-    
-    
     void MemoryManager::init( size_t _memory )
     {
         if ( memoryManager )
@@ -70,11 +68,11 @@ namespace engine
 	{
 		// Total available memory
         memory = _memory;
-	
     }
 	
 	MemoryManager::~MemoryManager()
 	{
+        memoryRequests.clearList(); // Remove pending requests
 	}
 	
 	Buffer *MemoryManager::newBuffer( std::string name , size_t size , int tag )
@@ -90,6 +88,8 @@ namespace engine
 		
 		Buffer *b = new Buffer( name, size, tag );
         
+        //LM_M(("Alloc buffer '%s' " , b->str().c_str() ));
+        
         // Insert in the temporal set of active buffers
         buffers.insert( b );
         
@@ -100,6 +100,9 @@ namespace engine
 	{
         au::TokenTaker tk( &token );
         
+        
+        //LM_M(("Dealloc buffer '%s' " , b->str().c_str() ));
+
         if (b == NULL)
             return;
         
@@ -107,14 +110,14 @@ namespace engine
         // Remove from the temporal list of buffer
         buffers.erase( b );
         
-        LM_T(LmtMemory, ("Destroying buffer with max size %sbytes", au::str( b->getMaxSize() ).c_str() ) );
+        LM_T(LmtMemory, ("Dealloc buffer with max size %sbytes", au::str( b->getMaxSize() ).c_str() ) );
         
         
         b->free();
         delete b;
 		
 		// Check requests to schedule new notifications
-		checkMemoryRequests();
+		_checkMemoryRequests();
 		
 		// Check process halted in the Engine
         Engine::shared()->notify( new Notification( notification_process_manager_check_background_process ) );
@@ -134,7 +137,7 @@ namespace engine
         
         LM_T( LmtMemory , ("[DONE] Adding memory request for %s" , au::str( request->size , "B" ).c_str() ));
         
-        checkMemoryRequests();
+        _checkMemoryRequests();
         
     }
     
@@ -156,7 +159,7 @@ namespace engine
     }    
 	 
 	// Function to check memory requests and notify using Engine if necessary
-	void MemoryManager::checkMemoryRequests()
+	void MemoryManager::_checkMemoryRequests()
 	{
         // Only used privatelly... no need to protect
 		LM_T( LmtMemory , ("Checking memory requests Pending requests %u" , memoryRequests.size() ));

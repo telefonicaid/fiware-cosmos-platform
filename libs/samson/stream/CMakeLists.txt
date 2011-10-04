@@ -1,50 +1,39 @@
 
 SET (HEADERS
-    Block.h
     BlockManager.h
     BlockList.h
-    Queue.h
-    QueueItem.h
+    Block.h
     StreamManager.h
-	BlockBreak.h
+    QueueTaskManager.h
+    Queue.h
 	QueueTaskBase.h
     QueueTask.h
 	SystemQueueTask.h
+    StreamProcessBase.h
 	PopQueueTask.h
 	BlockBreakQueueTask.h
-    QueueTaskManager.h
-    StreamProcessBase.h
     PopQueue.h
-    PopQueueManager.h
-    StatesManager.h
-    StreamOperation.h
-    ParserQueueTask.h
-	WorkerTask.h
-
+    QueueTasks.h
+	WorkerCommand.h
 )
 
 
 SET (SOURCES
-    Block.cpp
     BlockManager.cpp
-    Queue.cpp
-    QueueItem.cpp
     BlockList.cpp
+    Block.cpp
     StreamManager.cpp
-	BlockBreak.cpp
+    QueueTaskManager.cpp
+    Queue.cpp
 	QueueTaskBase.cpp
     QueueTask.cpp
 	SystemQueueTask.cpp
+    StreamProcessBase.cpp
 	PopQueueTask.cpp
 	BlockBreakQueueTask.cpp
-    QueueTaskManager.cpp    
-    StreamProcessBase.cpp
-    PopQueueManager.cpp
     PopQueue.cpp
-    StatesManager.cpp
-    StreamOperation.cpp
-    ParserQueueTask.cpp
-	WorkerTask.cpp
+    QueueTasks.cpp
+	WorkerCommand.cpp
 )
 
 

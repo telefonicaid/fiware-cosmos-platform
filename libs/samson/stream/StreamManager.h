@@ -33,8 +33,6 @@
 
 #include "samson/data/SimpleDataManager.h"          // samson::SimpleDataManager
 
-#include "samson/stream/StreamOperation.h"  // Operation
-#include "samson/stream/PopQueueManager.h"  // PopQueueManager
 
 namespace samson {
     
@@ -48,6 +46,7 @@ namespace samson {
         class Block;
         class BlockList;
         class WorkerCommand;
+        class PopQueue;
 
         
         class StreamManager : public ::engine::Object 
@@ -68,8 +67,9 @@ namespace samson {
             // Manager of the tasks associated with the queues
             QueueTaskManager queueTaskManager;      
             
-            // Manager for the pop queue operations
-            PopQueueManager popQueueManager;        
+            // Pop queue operations
+            size_t id_pop_queue;                        // Identifier to the new pop queue operations
+            au::map< size_t , PopQueue > popQueues;     // Map of current pop-queue operations
             
             // Pointer to the controller to send messages
             ::samson::SamsonWorker* worker;         
@@ -118,6 +118,9 @@ namespace samson {
             void notify( engine::Notification* notification );
 
             Queue* getQueue( std::string name );
+
+            // Reset all the content of this stream manager
+            void reset();
             
         private:
             

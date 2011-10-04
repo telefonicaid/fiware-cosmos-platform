@@ -52,6 +52,10 @@ namespace samson {
             // Return is there is activity
             bool isActive();
             
+            // Reset all the content of this manager
+            void reset();
+            
+            
         };
         
     }

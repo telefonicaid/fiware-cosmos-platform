@@ -3,7 +3,7 @@
 
 /* ****************************************************************************
  *
- * FILE                      WorkerTask.h
+ * FILE                      WorkerCommand.h
  *
  * AUTHOR                    Andreu Urruela Planas
  *
@@ -27,9 +27,6 @@
 
 #include "engine/Object.h"                  // engine::Object
 #include "engine/Buffer.h"                  // engine::Buffer
-
-#include "samson/stream/StreamOperation.h"  // Operation
-#include "samson/stream/PopQueueManager.h"  // PopQueueManager
 
 namespace samson {
     

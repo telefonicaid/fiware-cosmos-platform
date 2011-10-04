@@ -14,12 +14,11 @@
 
 #include "samson/stream/StreamManager.h"                // samson::stream::StreamManager
 #include "samson/stream/Queue.h"
-#include "samson/stream/QueueItem.h"
 #include "samson/stream/BlockList.h"
 
-#include "samson/stream/ParserQueueTask.h"
+#include "samson/stream/QueueTasks.h"
 
-#include "WorkerTask.h"     // Own interface
+#include "WorkerCommand.h"     // Own interface
 
 namespace samson {
     namespace stream
@@ -45,6 +44,7 @@ namespace samson {
             
             // Parse command
             cmd.set_flag_boolean("clear_inputs");
+            cmd.set_flag_string("stream_operation" , "no_stream_operation");
             cmd.set_flag_uint64("min_size", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
             cmd.set_flag_uint64("max_latency", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
             cmd.set_flag_string("delayed_processing", "yes");         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
@@ -72,6 +72,7 @@ namespace samson {
             
             // Parse command
             cmd.set_flag_boolean("clear_inputs");
+            cmd.set_flag_string("stream_operation" , "no_stream_operation");
             cmd.set_flag_uint64("min_size", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
             cmd.set_flag_uint64("max_latency", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
             cmd.set_flag_string("delayed_processing", "yes");         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
@@ -123,6 +124,13 @@ namespace samson {
                 else
                     finishWorkerTask();
                 
+                return;
+            }
+            
+            if( main_command == "remove_all_stream" )
+            {
+                streamManager->reset();
+                finishWorkerTask();
                 return;
             }
             
@@ -353,7 +361,19 @@ namespace samson {
                         //LM_M(("Input blocks : %s" , inputBlockList->strRanges().c_str() ));
                         
                         // Log activity in the worker
-                        streamManager->worker->logActivity( au::str("Updating state %s ( division %d/%d ) with operation %s" , state_name.c_str() , i , num_divisions , operation_name.c_str()  ) );
+                        if( cmd.get_flag_string("stream_operation") != "no_stream_operation" )
+                            streamManager->worker->logActivity( au::str("[%s] Updating division %d/%d state %s %s with input %s %s using operation %s" , 
+                                                                    cmd.get_flag_string("stream_operation").c_str() , 
+                                                                    i , 
+                                                                    num_divisions ,
+                                                                    state_name.c_str(),
+                                                                    stateBlockList->strShortDescription().c_str(),
+                                                                    input_name.c_str(),    
+                                                                    inputBlockList->strShortDescription().c_str(),
+                                                                    operation_name.c_str()  ) );
+                        
+
+                        
                         
                         network::StreamOperation *operation = getStreamOperation( op );
                         
@@ -458,6 +478,9 @@ namespace samson {
                         }
                     
                 }
+                
+                /*
+                 // NOTE: Outputs formats are not cheked any more since they can contain multiple outputs...
                 for (int i = 0 ; i < op->getNumOutputs() ; i++ )
                 {
                     KVFormat operation_format = op->getOutputFormat(i);
@@ -472,6 +495,7 @@ namespace samson {
                             return;
                         }
                 }
+                 */
                 
                 switch (op->getType()) {
                         
@@ -625,6 +649,9 @@ namespace samson {
                                 // Set working size for correct monitorization of data
                                 tmp->setWorkingSize();
                                 
+                                if( clear_inputs )
+                                    tmp->environment.set("system.clear_imputs","yes");
+                                
                                 
                                 // Add me as listener and increase the number of operations to run
                                 tmp->addListenerId( getEngineId() );
@@ -632,6 +659,17 @@ namespace samson {
                                 
                                 // Schedule tmp task into QueueTaskManager
                                 streamManager->queueTaskManager.add( tmp );
+                                
+                                
+                                if( cmd.get_flag_string("stream_operation") != "no_stream_operation" )
+                                    streamManager->worker->logActivity( au::str("[ %s ] Processing %s from queue %s using operation %s [ streamt task id %lu ]" , 
+                                                                                cmd.get_flag_string("stream_operation").c_str() , 
+                                                                                inputData->strShortDescription().c_str(),
+                                                                                input_queue_name.c_str() , 
+                                                                                operation_name.c_str()  ,
+                                                                                id
+                                                                       ));
+
                             }
                             else
                                 queue->unlock( inputData );

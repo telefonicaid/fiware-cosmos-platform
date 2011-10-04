@@ -1279,8 +1279,14 @@ namespace samson {
             output << "<stream_operation>\n";
             
             output << "<name>" << so->second->name() << "</name>";
+            
             const network::StreamOperation& stream_operation = *so->second; 
-            output << "<description>" << samson::getInfo( stream_operation ) << "</description>";
+            
+            au::xml_simple(output, "operation", stream_operation.operation() );
+            
+            au::xml_simple( output , "inputs" , samson::getInputsDescription( stream_operation ) );
+            au::xml_simple( output , "outputs" , samson::getOutputsDescription( stream_operation ) );
+            au::xml_simple( output , "properties" , samson::getPropertiesDescription( stream_operation ) );
             
             output << "</stream_operation>\n";
         }

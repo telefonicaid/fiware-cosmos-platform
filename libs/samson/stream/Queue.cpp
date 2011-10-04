@@ -7,9 +7,7 @@
 #include "StreamManager.h"          // samson::stream::StreamManager
 #include "BlockBreakQueueTask.h"    // samson::stream::BlockBreakQueueTask
 #include "Block.h"                  // samson::stream::Block
-#include "QueueItem.h"              // samson::stream::QueueItem
 #include "BlockList.h"              // samson::stream::BlockList
-#include "BlockBreak.h"             // samson::stream::BlockBreak
 #include "Queue.h"                  // OwnInterface
 
 
@@ -383,6 +381,11 @@ namespace samson {
         {
             list->remove( _list );
             unlock( _list );
+        }
+        
+        void Queue::remove ( BlockList *_list )
+        {
+            list->remove( _list );
         }
         
         void Queue::unlock ( BlockList *list )

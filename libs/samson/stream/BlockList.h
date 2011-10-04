@@ -158,6 +158,9 @@ namespace samson {
             
             //Debuggin str
             std::string strRanges();
+
+            
+            std::string strShortDescription();
             
         };
         

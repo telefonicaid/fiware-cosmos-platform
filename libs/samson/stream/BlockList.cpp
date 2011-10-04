@@ -14,10 +14,9 @@
 #include "samson/network/NetworkInterface.h"
 #include "samson/worker/SamsonWorker.h"
 
-#include "samson/stream/ParserQueueTask.h"          // samson::stream::ParserQueueTask
+#include "samson/stream/QueueTasks.h"          // samson::stream::ParserQueueTask
 #include "QueueTask.h"
 #include "Queue.h"          // samson::stream::Queue
-#include "QueueItem.h"      // samson::stream::QueueItem
 #include "StreamManager.h"  // samson::stream::StreamManager
 #include "Block.h"          // samson::stream::Block
 #include "BlockManager.h"   // samson::stream::BlockManager
@@ -401,6 +400,13 @@ namespace samson {
             
             
             return output.str();
+        }
+        
+        std::string BlockList::strShortDescription()
+        {
+            BlockInfo block_info = getBlockInfo();
+            return au::str("[ %d blocks with %s / %s ]" , block_info.num_blocks , au::str(block_info.size,"B").c_str() , au::str(block_info.info.kvs,"kvs").c_str() );
+            
         }
         
         

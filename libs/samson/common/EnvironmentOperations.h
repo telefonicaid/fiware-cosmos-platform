@@ -21,7 +21,10 @@ namespace samson {
     std::string getStatus( network::StreamOperation *streamOperation );
 
     // Get a description of this stream operation
-    std::string getInfo( const network::StreamOperation& streamOperation );
+    std::string getOutputsDescription( const network::StreamOperation& streamOperation );
+    std::string getInputsDescription( const network::StreamOperation& streamOperation );
+    std::string getPropertiesDescription( const network::StreamOperation& streamOperation );
+
     
     // Get a debug string for generic messages
     std::string strMessage( network::Message *message );

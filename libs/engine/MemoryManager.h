@@ -52,13 +52,13 @@ namespace engine {
 	class MemoryManager 
 	{
 		
-		au::Token token;							// Token to protect this instance and memoryRequests
-													// It is necessary to protect since network thread can access directly here
+		au::Token token;                                // Token to protect this instance and memoryRequests
+                                                        // It is necessary to protect since network thread can access directly here
 
-		size_t memory;								// Total available memory
+		size_t memory;                                  // Total available memory
 				
 		// List of memory requests
-		au::list <MemoryRequest> memoryRequests;        // Only used for inputs ( tag == 0)
+		au::list <MemoryRequest> memoryRequests;        // Only used for inputs ( tag == 0 )
 		
         // List of active buffers for better monitorization
         std::set<Buffer*> buffers;
@@ -104,7 +104,7 @@ namespace engine {
         
     private:
         
-        void checkMemoryRequests();         // Check the pending memory requests
+        void _checkMemoryRequests();         // Check the pending memory requests
 
         
         /*

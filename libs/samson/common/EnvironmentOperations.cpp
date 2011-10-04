@@ -42,31 +42,38 @@ namespace samson {
         to->set_size(from->size);
     }
 
-    std::string getInfo( const network::StreamOperation& streamOperation )
+    std::string getOutputsDescription( const network::StreamOperation& streamOperation )
     {
         std::ostringstream txt;
-        
-        txt << streamOperation.operation() << " : ";        
-        
-        for (int i = 0 ;  i < streamOperation.input_queues_size() ; i++)
-            txt << streamOperation.input_queues(i) << " ";
-        
-        txt << " --> ";        
         
         for (int i = 0 ;  i < streamOperation.output_queues_size() ; i++)
             txt << streamOperation.output_queues(i) << " ";
         
+        return txt.str();
+    }
+    
+    std::string getInputsDescription( const network::StreamOperation& streamOperation )
+    {
+        std::ostringstream txt;
+        
+        for (int i = 0 ;  i < streamOperation.input_queues_size() ; i++)
+            txt << streamOperation.input_queues(i) << " ";
+        
+        return txt.str();
+    }
+    
+    std::string getPropertiesDescription( const network::StreamOperation& streamOperation )
+    {
+        std::ostringstream txt;
         
         if( streamOperation.environment().variable_size() > 0 )
         {
-            txt << " [ ";
             for (int i = 0 ; i < streamOperation.environment().variable_size() ; i++ )
             {
                 txt << streamOperation.environment().variable(i).name() << "=" << streamOperation.environment().variable(i).value();
                 if( i != (streamOperation.environment().variable_size()-1))
                     txt << ",";
             }
-            txt << " ]";
         }
         return txt.str();
     }

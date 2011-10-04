@@ -37,7 +37,7 @@
 #include "samson/stream/Block.h"            // samson::stream::Block
 #include "samson/stream/BlockList.h"            // samson::stream::BlockList
 #include "samson/stream/BlockManager.h"     // samson::stream::BlockManager
-#include "samson/stream/WorkerTask.h"           // samson::stream::WorkerTask
+#include "samson/stream/WorkerCommand.h"           // samson::stream::WorkerCommand
 
 #include "samson/module/ModulesManager.h"   // samson::ModulesManager
 

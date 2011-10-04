@@ -19,16 +19,14 @@
 #include "samson/worker/SamsonWorker.h"
 
 #include "samson/stream/BlockBreakQueueTask.h"        // samson::stream::BlockBreakQueueTask
-#include "samson/stream/BlockBreak.h"           // samson::stream::BlockBreak
 #include "samson/stream/BlockManager.h"         // samson::BlockManager
 #include "samson/stream/PopQueue.h"             // stream::PopQueue
 #include "samson/stream/QueueTask.h"
 #include "samson/stream/Queue.h"
-#include "samson/stream/QueueItem.h"
-#include "samson/stream/ParserQueueTask.h"            // samson::stream::ParserQueueTask
+#include "samson/stream/QueueTasks.h"            // samson::stream::ParserQueueTask
 #include "samson/stream/BlockList.h"                // BlockList
 #include "samson/stream/Queue.h"
-#include "samson/stream/WorkerTask.h"
+#include "samson/stream/WorkerCommand.h"
 #include "samson/stream/SystemQueueTask.h"
 #include "samson/stream/PopQueueTask.h"
 #include "StreamManager.h"                      // Own interface
@@ -45,7 +43,6 @@ namespace samson {
             // Init counter for worker task
             worker_task_id = 1;
             
-            listen( notification_review_stream_manager );
             
             // Schedule a periodic notification ( every 10 seconds )
             {
@@ -55,6 +52,14 @@ namespace samson {
 
             // Recover state from log-file
             recoverStateFromDisk();
+            
+            id_pop_queue = 1;    // Init the id counter for pop queue operations
+
+
+            // Engine listening commands
+            listen( notification_review_stream_manager );
+            listen(notification_samson_worker_check_finish_tasks);
+            
             
             // Init the old file checking at block manager
             BlockManager::shared()->initOldFilesCheck();
@@ -90,6 +95,29 @@ namespace samson {
                 
                 return;
             }
+            
+            
+            if( notification->isName( notification_samson_worker_check_finish_tasks ) )
+            {
+                std::vector<size_t> ids;
+                
+                au::map< size_t , PopQueue >::iterator q;
+                for ( q = popQueues.begin() ; q != popQueues.end() ; )
+                {
+                    if ( q->second->finished )
+                    {
+                        // Remove the object contained here
+                        delete q->second;
+                        
+                        // Remove the element in the map
+                        popQueues.erase(q++);
+                    }
+                    else
+                        ++q;
+                }
+                return;
+            }
+            
             
             LM_W(("Unknown notification at StreamManager"));
         }
@@ -195,9 +223,14 @@ namespace samson {
             {
                 size_t task_id      = task->getId();
                 size_t pop_queue_id = task->environment.getSizeT( "system.pop_queue_id" , 0 );
+
+                PopQueue*pq = popQueues.findInMap( pop_queue_id );
                 
-                // Notify to the pop manager to set this "pop_task" as finished
-                popQueueManager.notifyFinishTask( pop_queue_id , task_id , &task->error );
+                if( pq )
+                    pq->notifyFinishTask( task_id , &task->error );
+                else
+                    LM_W(("Received a finish task message for pop queue %lu for an unknown taskl %lu", pop_queue_id,  task_id ));
+                
             }
         }
         
@@ -205,8 +238,13 @@ namespace samson {
         {
             // Create a new pop queue
             PopQueue *popQueue = new PopQueue( pq , delilahId, fromId );
-            popQueueManager.add( popQueue );
 
+            // Get a new id
+            popQueue->id = id_pop_queue++;
+            
+            // Insert in the list
+            popQueues.insertInMap( popQueue->id , popQueue );
+            
             if( pq.has_queue() )
             {
                 
@@ -287,6 +325,8 @@ namespace samson {
             
             output << " -clear_inputs ";  // Necessary in all automatic stream task
 
+            output << " -stream_operation " << operation.name() << " "; // Name of the operation for activity log
+            
             size_t min_size = SamsonSetup::shared()->getUInt64("stream.min_operation_input_size");
             output << " -min_size " << min_size;
             
@@ -383,6 +423,7 @@ namespace samson {
                     worker_command << " -max_latency " << enviroment.getSizeT("max_latency", 0);
                     worker_command << " -latency " << enviroment.get("latency", "yes");
                     
+                    worker_command << " -stream_operation " << operation.name() << " "; // Name of the operation for activity log
                     
                     WorkerCommand* wc = new WorkerCommand( worker_command.str() );
                     addWorkerCommand( wc );
@@ -536,6 +577,18 @@ namespace samson {
             fclose( file );
             
         }
+     
+        void StreamManager::reset()
+        {
+            queues.clearMap();
+            popQueues.clearMap();
+            queueTaskManager.reset();
+
+            // Pending study about how to do this..
+            //workerCommands.clearMap();
+
+        }
+        
         
     }
 }

@@ -101,6 +101,7 @@ namespace samson {
             addOption("set_queue_property");
             addOption("ls_queues_info");
             addOption("ls_stream_activity");
+
         }
         
         void addOperations()

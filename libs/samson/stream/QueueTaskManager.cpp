@@ -232,5 +232,12 @@ namespace samson {
             
         }
         
+        void QueueTaskManager::reset()
+        {
+            queueTasks.clearList();
+            systemQueueTasks.clearList();   
+        }
+
+        
     }
 }

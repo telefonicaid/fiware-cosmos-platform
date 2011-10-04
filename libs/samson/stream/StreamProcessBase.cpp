@@ -68,10 +68,13 @@ namespace samson {
             
             network::PushBlock* pb =  packet->message->mutable_push_block();
             pb->set_size( buffer->getSize() );
+
             
             std::vector<std::string> queue_names = au::split( queue_name , ',' );
             for ( size_t i = 0 ; i < queue_names.size() ; i++)
+            {
                 pb->add_queue( queue_names[i] );
+            }
             
             
             // Send the packet using the "notification_send_to_worker"

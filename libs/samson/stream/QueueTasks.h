@@ -18,6 +18,7 @@ namespace samson
         
         class ParserQueueTask : public stream::QueueTask 
         {
+            bool clear_inputs;
             
         public:
             
@@ -90,6 +91,7 @@ namespace samson
                 
                 // Set the limits
                 range = _range;
+                
             }
             
             ~MapQueueTask()

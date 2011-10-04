@@ -730,6 +730,11 @@ namespace samson
             return sendWorkerCommand( command , NULL );
         }
 
+        if( main_command == "remove_all_stream" )
+        {
+            return sendWorkerCommand( command , NULL );
+        }
+        
         if( main_command == "wait" )
         {
             return sendWorkerCommand( command , NULL );

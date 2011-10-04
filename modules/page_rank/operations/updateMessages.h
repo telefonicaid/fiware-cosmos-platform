@@ -15,6 +15,7 @@
 #include <samson/module/samson.h>
 #include <samson/modules/page_rank/Message.h>
 #include <samson/modules/page_rank/Node.h>
+#include <samson/modules/page_rank/MessageCollection.h>
 #include <samson/modules/system/String.h>
 
 
@@ -32,7 +33,7 @@ namespace page_rank{
 	   samson::system::String key;// key
 	   samson::page_rank::Node node;// Node
 
-	   samson::page_rank::Message message;
+	   samson::page_rank::MessageCollection messageCollection;
 
 	   samson::system::String output_message_key;
 	   samson::page_rank::Message output_message_value;
@@ -102,26 +103,30 @@ helpLine: Update intenal information about rank of pages pointing to me
 			  messages.insert( std::pair< const char* , double  >( node.messages[i].node.value.c_str() , node.messages[i].contribution.value ) );
 
 		   // Add of modify incomming messages
+		   messageCollection.messageSetLength(0); // Cler the list of incomming messages
 		   for ( size_t i = 0 ; i < inputs[0].num_kvs ; i++)
 		   {
-			  // Parse the incomming message
-			  message.parse( inputs[0].kvs[i]->value );
+			  samson::page_rank::Message *message = messageCollection.messageAdd();
 
-			  if( message.contribution.value == -1 )
+			  // Parse the incomming message
+			  // Note that it is necessary to keep them in memory to make sure values containe in the map are accessible
+			  message->parse( inputs[0].kvs[i]->value );
+
+			  if( message->contribution.value == -1 )
 			  {
 				 // Remove this node
-				 messages.erase( message.node.value.c_str() );
+				 messages.erase( message->node.value.c_str() );
 			  }
 			  else
 			  {
 
 				 std::map<const char* , double , strCompare>::iterator message_it;
-				 message_it = messages.find( message.node.value.c_str() );
+				 message_it = messages.find( message->node.value.c_str() );
 				 
 				 if( message_it == messages.end() )
-					messages.insert( std::pair< const char* , double  >( message.node.value.c_str() , message.contribution.value ) );
+					messages.insert( std::pair< const char* , double  >( message->node.value.c_str() , message->contribution.value ) );
 				 else
-					message_it->second = message.contribution.value;
+					message_it->second = message->contribution.value;
 			  }
 		   }
 

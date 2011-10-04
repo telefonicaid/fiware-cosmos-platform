@@ -17,6 +17,11 @@ data Message
 	system.Double contribution;
 }
 
+data MessageCollection
+{
+	vector page_rank.Message message;
+}
+
 data Node
 {
 	# Collection of links I point to

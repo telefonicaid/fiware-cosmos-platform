@@ -45,6 +45,7 @@ namespace samson {
             // Parse command
             cmd.set_flag_boolean("clear_inputs");
             cmd.set_flag_string("stream_operation" , "no_stream_operation");
+            cmd.set_flag_string("block_break_mode", "no");
             cmd.set_flag_uint64("min_size", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
             cmd.set_flag_uint64("max_latency", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
             cmd.set_flag_string("delayed_processing", "yes");         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
@@ -73,6 +74,7 @@ namespace samson {
             // Parse command
             cmd.set_flag_boolean("clear_inputs");
             cmd.set_flag_string("stream_operation" , "no_stream_operation");
+            cmd.set_flag_string("block_break_mode", "no");
             cmd.set_flag_uint64("min_size", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
             cmd.set_flag_uint64("max_latency", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
             cmd.set_flag_string("delayed_processing", "yes");         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
@@ -226,10 +228,14 @@ namespace samson {
 
             if( cmd.get_argument(0) == "run_stream_update_state" )
             {
+                //LM_M(("Running '%s'", command.c_str() ));
+
                 // Parameters used to thrigger or not the automatic-update
-                size_t min_size = cmd.get_flag_uint64("min_size");          // Minimum size to run an operation
-                size_t max_latency = cmd.get_flag_uint64("max_latency");    // Max acceptable time to run an operation
-                std::string delayed_processing = cmd.get_flag_string("delayed_processing");    // Max acceptable time to run an operation
+                size_t min_size                 = cmd.get_flag_uint64("min_size");              // Minimum size to run an operation ( if delayed_processing is activated )
+                size_t max_latency              = cmd.get_flag_uint64("max_latency");           // Max acceptable time to run an operation
+                std::string delayed_processing  = cmd.get_flag_string("delayed_processing");    // Delayed operation "yes" or "no"
+                
+                bool block_break_mode = (cmd.get_flag_string("block_break_mode") == "yes" );
                 
                 // Operation size    
                 size_t default_size = SamsonSetup::shared()->getUInt64("general.memory") / SamsonSetup::shared()->getUInt64("general.num_processess");
@@ -292,50 +298,39 @@ namespace samson {
                 state->setMinimumNumDivisions();
                 int num_divisions = state->num_divisions;      // Divisions used in update-state mode
                 
-                // Make sure, input is divided at least as state
-                if( input->num_divisions < state->num_divisions)
-                    input->setNumDivisions( state->num_divisions );
+                if( block_break_mode )
+                {
+                    
+                    // Make sure, input is divided at least as state
+                    if( input->num_divisions < state->num_divisions)
+                        input->setNumDivisions( state->num_divisions );
+                    
+                }
                 
                 
                 if( !state->isQueueReadyForStateUpdate() )
                 {
+                    // State is not ready for update operations ( this usually means that state is not divided correctly in independent divisions )
                     //LM_M(("State is not ready for update-state operations"));
-                    
                     if( num_pending_processes == 0 )
                         finishWorkerTask();
                     return;
                 }
                 
-                for ( int i = 0 ; i < num_divisions ; i++)
+                
+                if( !block_break_mode )
                 {
-
-                    // If not possible 
-                    if( !state->lockDivision( i ) )
-                    {
-                        //LM_M(("Not possible to lock division %d for queue %s" ,  i , state_name.c_str()  )); 
-                        continue;
-                    }
+                    // NON - BLOCK BREAK MODE -
                     
-                    KVRange range = rangeForDivision( i , num_divisions );
+                    // In this case, reduce-update state operations are schedules only if all divisions are ready
+                    // First we select all blocks to be processed ( max memory_size/2 )
                     
-                    BlockList *stateBlockList = state->getStateBlockListForDivision( i );
-                    BlockInfo state_block_info = stateBlockList->getBlockInfo();
-
-                    BlockList *inputBlockList  = input->getInputBlockListForRange( range , operation_size );
-                    BlockInfo input_block_info = inputBlockList->getBlockInfo();
-
-                    // Check latency of the input block
+                    BlockInfo input_block_info = input->list->getBlockInfo();
                     size_t latency = input_block_info.min_time_diff();
-
-                    // See if it is necessary to cancel ( not running the job ) for small size
                     
                     bool cancel_operation = false;
-                    
-                    if( input_block_info.size < operation_size )
-                    {
-                        //LM_M(("Caneled operation for size"));
+                    if( input_block_info.size < ( operation_size * SamsonSetup::shared()->getInt("general.num_processess") ) )
                         cancel_operation = true;
-                    }
                     
                     if( cancel_operation )
                     {
@@ -343,77 +338,227 @@ namespace samson {
                             cancel_operation= false;
                         
                         if ( (max_latency > 0) && ( latency > max_latency) )
-                        {
-                            //LM_M(("Reduce state operation reopened for latency %lu max %lu" , latency , max_latency));
                             cancel_operation = false;
-                        }
                     }
                     
-                    // with no data, remove always
-                    if( input_block_info.size  == 0 )
+                    if( input_block_info.num_blocks == 0)
                         cancel_operation = true;
                     
-                    // TODO: If size is not enougth, we can cancel operation here...
                     if( !cancel_operation )
                     {
-                        //LM_M(("Planing an update operation for division %d" , i ));
-                        //LM_M(("State blocks : %s" , stateBlockList->strRanges().c_str() ));
-                        //LM_M(("Input blocks : %s" , inputBlockList->strRanges().c_str() ));
                         
-                        // Log activity in the worker
-                        if( cmd.get_flag_string("stream_operation") != "no_stream_operation" )
-                            streamManager->worker->logActivity( au::str("[%s] Updating division %d/%d state %s %s with input %s %s using operation %s" , 
-                                                                    cmd.get_flag_string("stream_operation").c_str() , 
-                                                                    i , 
-                                                                    num_divisions ,
-                                                                    state_name.c_str(),
-                                                                    stateBlockList->strShortDescription().c_str(),
-                                                                    input_name.c_str(),    
-                                                                    inputBlockList->strShortDescription().c_str(),
-                                                                    operation_name.c_str()  ) );
+                        if( !state->lockAllDivisions() )
+                        {
+                            // Not ready for this approach...
+                            finishWorkerTask();
+                            return;
+                        }
                         
-
-                        
-                        
-                        network::StreamOperation *operation = getStreamOperation( op );
-                        
-                        ReduceQueueTask * task = new ReduceQueueTask( streamManager->queueTaskManager.getNewId() , *operation , range );
-                        task->addOutputsForOperation(op);
-                        
-                        // Spetial flag to indicate update_state mode ( process different output buffers )
-                        task->setUpdateStateDivision( i );
-                        
-                        task->getBlockList("input_0")->copyFrom( inputBlockList );
-                        task->getBlockList("input_1")->copyFrom( stateBlockList );
+                        // Select all possible blocks
+                        size_t max_common_size = 0.75*(double)SamsonSetup::shared()->getUInt64("general.memory");
+                        BlockList global_inputBlockList;
+                        global_inputBlockList.extractFrom(input->list, max_common_size );
                         
                         // remove input from the original queue
-                        input->list->remove( inputBlockList );
+                        input->list->remove( &global_inputBlockList );       // Remove input all blocks
+
+                        // Log activity in the worker
+                        if( cmd.get_flag_string("stream_operation") != "no_stream_operation" )
+                            streamManager->worker->logActivity( au::str("[ %s ] Global update %s %s (%d divs) with %s %s operation %s" , 
+                                                                        cmd.get_flag_string("stream_operation").c_str() , 
+                                                                        state_name.c_str(),
+                                                                        state->list->strShortDescription().c_str(),
+                                                                        num_divisions,
+                                                                        input_name.c_str(),    
+                                                                        global_inputBlockList.strShortDescription().c_str(),
+                                                                        operation_name.c_str()  ) );
                         
-                        // Set the working size to get statictics at ProcessManager
-                        task->setWorkingSize();
                         
-                        // Add me as listener and increase the number of operations to run
-                        task->addListenerId( getEngineId() );
-                        num_pending_processes++;
+                        // Schedule operations for all divisions if necessary
+                        for (int i = 0 ; i < num_divisions ; i++)
+                        {
+                            KVRange range = rangeForDivision( i , num_divisions );
+                            
+                            BlockList inputBlockList;
+                            inputBlockList.copyFrom(&global_inputBlockList, range, false, 0); // No limit , no exclusive
+                            
+                            if( inputBlockList.getNumBlocks() > 0 )        // There is something to process in this division
+                            {
+                                
+                                BlockList stateBlockList("stateBlockList");
+                                state->getStateBlocksForDivision( i , & stateBlockList );
+                                
+                                size_t id = streamManager->queueTaskManager.getNewId();
+                                
+                                // Log activity in the worker
+                                if( cmd.get_flag_string("stream_operation") != "no_stream_operation" )
+                                    streamManager->worker->logActivity( au::str("[ %s:%lu ] Update div %d/%d of %s %s with %s %s operation %s" , 
+                                                                                cmd.get_flag_string("stream_operation").c_str() , 
+                                                                                id,
+                                                                                i , 
+                                                                                num_divisions ,
+                                                                                state_name.c_str(),
+                                                                                stateBlockList.strShortDescription().c_str(),
+                                                                                input_name.c_str(),    
+                                                                                inputBlockList.strShortDescription().c_str(),
+                                                                                operation_name.c_str()  ) );
+                                
+                                
+                                
+                                
+                                network::StreamOperation *operation = getStreamOperation( op );
+                                
+                                ReduceQueueTask * task = new ReduceQueueTask( id , *operation , range );
+                                task->addOutputsForOperation(op);
+                                
+                                // Spetial flag to indicate update_state mode ( process different output buffers )
+                                task->setUpdateStateDivision( i );
+                                
+                                task->getBlockList("input_0")->copyFrom( &inputBlockList );
+                                task->getBlockList("input_1")->copyFrom( &stateBlockList );
+                                
+                                // Set the working size to get statictics at ProcessManager
+                                task->setWorkingSize();
+                                
+                                // Add me as listener and increase the number of operations to run
+                                task->addListenerId( getEngineId() );
+                                num_pending_processes++;
+                                
+                                // Schedule tmp task into QueueTaskManager
+                                streamManager->queueTaskManager.add( task );
+                                
+                                delete operation;                                
+                                
+                                
+                            }
+                            else
+                            {
+                                // There are no operations for this divisions
+                                state->unlockDivision( i );
+                            }
+                            
+                        }
                         
-                        // Schedule tmp task into QueueTaskManager
-                        streamManager->queueTaskManager.add( task );
                         
-                        delete operation;
+                        
                     }
-                    else
+                    
+                }
+                else
+                {
+                    // BLOCK BREAK MODE
+                    
+                    for ( int i = 0 ; i < num_divisions ; i++)
                     {
-                        // Unlock state since it has not been used un any operation
-                        state->unlockDivision( i );
-                    }
                         
-                    
-                    // Remove list used here
-                    if( inputBlockList)
-                        delete inputBlockList;
-                    if( stateBlockList )
-                        delete stateBlockList;
-                    
+                        // If not possible 
+                        if( !state->lockDivision( i ) )
+                        {
+                            //LM_M(("Not possible to lock division %d for queue %s" ,  i , state_name.c_str()  )); 
+                            continue;
+                        }
+                        
+                        KVRange range = rangeForDivision( i , num_divisions );
+                        
+                        BlockList stateBlockList("stateBlockList");
+                        state->getStateBlocksForDivision( i , & stateBlockList );
+                        BlockInfo state_block_info = stateBlockList.getBlockInfo();
+                        
+                        BlockList *inputBlockList  = input->getInputBlockListForRange( range , operation_size );
+                        BlockInfo input_block_info = inputBlockList->getBlockInfo();
+                        
+                        // Check latency of the input block
+                        size_t latency = input_block_info.min_time_diff();
+                        
+                        // See if it is necessary to cancel ( not running the job ) for small size
+                        
+                        bool cancel_operation = false;
+                        
+                        if( input_block_info.size < operation_size )
+                        {
+                            //LM_M(("Caneled operation for size"));
+                            cancel_operation = true;
+                        }
+                        
+                        if( cancel_operation )
+                        {
+                            if( delayed_processing == "no" )   // No latency option
+                                cancel_operation= false;
+                            
+                            if ( (max_latency > 0) && ( latency > max_latency) )
+                            {
+                                //LM_M(("Reduce state operation reopened for latency %lu max %lu" , latency , max_latency));
+                                cancel_operation = false;
+                            }
+                        }
+                        
+                        // with no data, remove always
+                        if( input_block_info.size  == 0 )
+                            cancel_operation = true;
+                        
+                        // TODO: If size is not enougth, we can cancel operation here...
+                        if( !cancel_operation )
+                        {
+                            //LM_M(("Planing an update operation for division %d" , i ));
+                            //LM_M(("State blocks : %s" , stateBlockList->strRanges().c_str() ));
+                            //LM_M(("Input blocks : %s" , inputBlockList->strRanges().c_str() ));
+                            
+                            size_t id = streamManager->queueTaskManager.getNewId();
+                            
+                            // Log activity in the worker
+                            if( cmd.get_flag_string("stream_operation") != "no_stream_operation" )
+                                streamManager->worker->logActivity( au::str("[ %s:%lu ] BB Update div %d/%d of %s %s with %s %s operation %s" , 
+                                                                            cmd.get_flag_string("stream_operation").c_str() , 
+                                                                            id,
+                                                                            i , 
+                                                                            num_divisions ,
+                                                                            state_name.c_str(),
+                                                                            stateBlockList.strShortDescription().c_str(),
+                                                                            input_name.c_str(),    
+                                                                            inputBlockList->strShortDescription().c_str(),
+                                                                            operation_name.c_str()  ) );
+                            
+                            
+                            
+                            
+                            network::StreamOperation *operation = getStreamOperation( op );
+                            
+                            ReduceQueueTask * task = new ReduceQueueTask( id , *operation , range );
+                            task->addOutputsForOperation(op);
+                            
+                            // Spetial flag to indicate update_state mode ( process different output buffers )
+                            task->setUpdateStateDivision( i );
+                            
+                            task->getBlockList("input_0")->copyFrom( inputBlockList );
+                            task->getBlockList("input_1")->copyFrom( &stateBlockList );
+                            
+                            // remove input from the original queue
+                            input->list->remove( inputBlockList );
+                            
+                            // Set the working size to get statictics at ProcessManager
+                            task->setWorkingSize();
+                            
+                            // Add me as listener and increase the number of operations to run
+                            task->addListenerId( getEngineId() );
+                            num_pending_processes++;
+                            
+                            // Schedule tmp task into QueueTaskManager
+                            streamManager->queueTaskManager.add( task );
+                            
+                            delete operation;
+                        }
+                        else
+                        {
+                            // Unlock state since it has not been used un any operation
+                            state->unlockDivision( i );
+                        }
+                        
+                        
+                        // Remove list used here
+                        if( inputBlockList)
+                            delete inputBlockList;
+                        
+                    }
                 }
                 
                 if( num_pending_processes == 0 )
@@ -424,6 +569,7 @@ namespace samson {
             
             if( cmd.get_argument(0) == "run_stream_operation" )
             {
+                
                 // Flag used in automatic update operation to lock input blocks and remove after operation
                 bool clear_inputs =  cmd.get_flag_bool("clear_inputs"); 
                 
@@ -662,12 +808,12 @@ namespace samson {
                                 
                                 
                                 if( cmd.get_flag_string("stream_operation") != "no_stream_operation" )
-                                    streamManager->worker->logActivity( au::str("[ %s ] Processing %s from queue %s using operation %s [ streamt task id %lu ]" , 
+                                    streamManager->worker->logActivity( au::str("[ %s:%lu ] Processing %s from queue %s using operation %s" , 
                                                                                 cmd.get_flag_string("stream_operation").c_str() , 
+                                                                                id,
                                                                                 inputData->strShortDescription().c_str(),
                                                                                 input_queue_name.c_str() , 
-                                                                                operation_name.c_str()  ,
-                                                                                id
+                                                                                operation_name.c_str()  
                                                                        ));
 
                             }

@@ -219,12 +219,14 @@ namespace samson {
 
             double _min_num_divisions = (double)block_info.size / (double) SamsonSetup::shared()->getUInt64("stream.max_state_division_size");
             int min_num_divisions = next_pow_2( (size_t) _min_num_divisions ); 
+
+            int num_divisions_base = SamsonSetup::shared()->getInt("general.num_processess");
             
-            int num_cores = SamsonSetup::shared()->getInt("general.num_processess");
-            if( min_num_divisions < num_cores )
-                min_num_divisions = num_cores;
-            
-            return min_num_divisions;
+            // Minimum the number of cores and then 4*num_cores...
+            while( num_divisions_base < min_num_divisions )
+                num_divisions_base *= 4;
+                
+            return num_divisions_base;
         }
         
         void Queue::setMinimumNumDivisions()
@@ -434,16 +436,27 @@ namespace samson {
                 return false;   // Already blocked
         }
         
+        bool Queue::lockAllDivisions()
+        {
+            if( updating_divisions.size() != 0)
+                return false;
+
+            // Lock all divisions
+            for (int i = 0 ; i < num_divisions ; i++ )
+                updating_divisions.insert( i );
+            return true;
+            
+        }
+        
         void Queue::unlockDivision( int division )
         {
             updating_divisions.erase( division );
         }
         
-        BlockList *Queue::getStateBlockListForDivision( int division )
+        void Queue::getStateBlocksForDivision( int division , BlockList *outputBlockList )
         {
             KVRange range = rangeForDivision( division , num_divisions );
             
-            BlockList *tmp = new BlockList( "getStateBlockListForRange" );
             
             au::list< Block >::iterator block_it;
             for ( block_it = list->blocks.begin() ; block_it != list->blocks.end() ; block_it++ )
@@ -452,9 +465,8 @@ namespace samson {
                 KVRange block_range = block->getKVRange();
                 
                 if( block_range.overlap( range ) )
-                    tmp->add( block );
+                    outputBlockList->add( block );
             }
-            return tmp;
         }
         
         BlockList *Queue::getInputBlockListForRange( KVRange range , size_t max_size )

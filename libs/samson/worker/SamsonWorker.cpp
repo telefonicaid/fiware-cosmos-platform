@@ -546,10 +546,10 @@ namespace samson {
     
     void SamsonWorker::logActivity( std::string log)
     {
-        activityLog.push_front( WorkerLog(log) );
+        activityLog.push_back( WorkerLog(log) );
         
         while( activityLog.size() > 100 )
-            activityLog.pop_back();
+            activityLog.pop_front();
         
     }
     

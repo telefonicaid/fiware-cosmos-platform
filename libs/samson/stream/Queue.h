@@ -121,7 +121,8 @@ namespace samson {
             bool isQueueReadyForStateUpdate();                                              
             bool lockDivision( int division );                                              // Lock a particular division ( if possible )
             void unlockDivision( int division );                                            // Unlock a particular vision
-            BlockList *getStateBlockListForDivision( int division );                        // Get the state for a state-update division
+            bool lockAllDivisions();
+            void getStateBlocksForDivision( int division , BlockList *outputBlockList );    // Get the state for a state-update division
             BlockList *getInputBlockListForRange( KVRange range , size_t max_size );        // Get blocks for a range ( input of the reduce operation )
             // ------------------------------------------------------------------------------------
             

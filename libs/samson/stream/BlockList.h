@@ -75,7 +75,14 @@ namespace samson {
             bool lock_in_memory;                    // Lock in memory
             
         public:
-                        
+
+            BlockList(  )
+            {
+                name = "no_name";
+                task_id             = (size_t) -1;      // By default minimum priority
+                lock_in_memory      = false;            // By default no lock in memory                
+            }
+            
             BlockList( std::string _name )
             {
                 name = _name;

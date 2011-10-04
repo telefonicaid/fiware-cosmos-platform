@@ -468,6 +468,13 @@ namespace samson {
                 v->set_name("delayed_processing");
                 v->set_value("yes");
             }
+
+            {
+                ::samson::network::Environment * env = tmp->mutable_environment();
+                ::samson::network::EnvironmentVariable *v = env->add_variable();
+                v->set_name("block_break_mode");
+                v->set_value("no");
+            }
             
             // Insert the queue in the global list of stream-queues
 			streamOperations.insertInMap( name , tmp );

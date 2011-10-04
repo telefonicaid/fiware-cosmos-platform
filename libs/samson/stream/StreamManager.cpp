@@ -421,7 +421,7 @@ namespace samson {
                     copyEnviroment( operation.environment() , &enviroment );
                     
                     worker_command << " -max_latency " << enviroment.getSizeT("max_latency", 0);
-                    worker_command << " -latency " << enviroment.get("latency", "yes");
+                    worker_command << " -delayed_processing " << enviroment.get("delayed_processing", "yes");
                     
                     worker_command << " -stream_operation " << operation.name() << " "; // Name of the operation for activity log
                     

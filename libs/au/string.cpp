@@ -342,12 +342,60 @@ namespace au {
         return split(s, delim, elems);
     }  
 
+    int get_term_size (int fd, int *x, int *y)
+    {
+#ifdef TIOCGSIZE
+	struct ttysize win;
+	
+#elif defined(TIOCGWINSZ)
+	struct winsize win;
+	
+#endif
+	
+#ifdef TIOCGSIZE
+	if (ioctl (fd, TIOCGSIZE, &win))
+	    return 0;
+	if (y)
+	    *y=win.ts_lines;
+    if (x)
+        *x=win.ts_cols;
+#elif defined TIOCGWINSZ
+    if (ioctl (fd, TIOCGWINSZ, &win))
+        return 0;
+    if (y)
+        *y=win.ws_row;
+    if (x)
+        *x=win.ws_col;
+#else
+    {
+        const char *s;
+        s=getenv("LINES");
+        if (s)
+            *y=strtol(s,NULL,10);
+        else
+            *y=25;
+        s=getenv("COLUMNS");
+        if (s)
+            *x=strtol(s,NULL,10);
+        else
+            *x=80;
+    }
+#endif
+
+    return 1;
+    
+    }
+    
+    
     
     int getTerminalWidth()
     {
-        struct ttysize ts;
-        ioctl(0, TIOCGSIZE, &ts);
-        return ts.ts_cols;
+	int x,y;
+	if( get_term_size (int fd, &x, &y) )
+	    return y;
+	else
+	  return 0;
+
     }
     
     std::string strWithMaxLineLength( std::string& txt , int max_line_length )

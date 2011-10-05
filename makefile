@@ -142,7 +142,7 @@ coverage: debug
 	cd BUILD_DEBUG ; ../scripts/samsonCoverage
 
 clear_ipcs:
-	for i in `sudo ipcs -m | | grep -v key  | grep -v Memory  |  awk '{print $2}'`; do sudo ipcrm -m $i; done
+	for i in `sudo ipcs -m | grep -v key  | grep -v Memory  |  awk '{print $2}'`; do sudo ipcrm -m $i; done
 
 set_ssm_linux:
 	sudo sysctl -w kernel.shmmax=64000000

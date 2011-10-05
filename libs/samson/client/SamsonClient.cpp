@@ -74,7 +74,7 @@ namespace samson {
         if( (size + length ) > max_buffer_size )
         {
             // Process buffer
-            std::cerr << "Pushing " << size << " bytes to queue " << queue <<  "\n";
+            std::cerr << "SamsonCLient: Pushing " << size << " bytes to queue " << queue <<  "\n";
             client->push(  queue , buffer, size );
 
             // Reset cronometer

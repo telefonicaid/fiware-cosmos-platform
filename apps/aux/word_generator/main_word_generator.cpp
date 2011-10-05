@@ -10,8 +10,8 @@
 #include "au/Cronometer.h"  // au::Cronometer
 #include "au/CommandLine.h" // au::CommandLine
 
-#define WORD_LENGTH    10
-#define ALFABET_LENGTH 50
+#define WORD_LENGTH     9
+#define ALFABET_LENGTH 10
 
 int main( int args , char*argv[] )
 {
@@ -68,8 +68,9 @@ int main( int args , char*argv[] )
 	 {
 		sleep( repeate_time );
 		size_t total_seconds = cronometer.diffTimeInSeconds();
-		fprintf(stderr,"%s: Generated %s lines ( %s bytes ). Rate: %s / %s. Now sleeping %d seconds\n" 
-				, argv[0] , au::str(total_num).c_str() , au::str(total_size).c_str(), au::str( (double)total_num/(double)total_seconds ,"Lines/s" ).c_str() , au::str( (double)total_size/(double)total_seconds,"Bps").c_str() , (int)repeate_time  );
+		fprintf(stderr,"%s: Generated %s lines ( %s bytes ) in %s. Rate: %s / %s. Now sleeping %d seconds\n" 
+				, argv[0] , au::str(total_num).c_str() , au::str(total_size).c_str(), au::time_string( total_seconds ).c_str() ,
+ au::str( (double)total_num/(double)total_seconds ,"Lines/s" ).c_str() , au::str( (double)total_size/(double)total_seconds,"Bps").c_str() , (int)repeate_time  );
 	 }
 
   }

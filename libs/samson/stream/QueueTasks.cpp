@@ -441,6 +441,9 @@ namespace samson {
                 for ( size_t i = 0 ; i < inputBlockReaders.size() ; i++)
                     inputBlockReaders[i].prepare(hg);
 
+                for ( size_t i = 0 ; i < stateBlockReaders.size() ; i++)
+                    stateBlockReaders[i].prepare(hg);
+
                 // Getting the number of key-values for input 
                 input_num_kvs = 0 ;
                 for ( size_t i = 0 ; i < inputBlockReaders.size() ; i++)

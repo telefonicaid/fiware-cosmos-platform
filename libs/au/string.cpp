@@ -391,7 +391,7 @@ namespace au {
     int getTerminalWidth()
     {
 	int x,y;
-	if( get_term_size (int fd, &x, &y) )
+	if( get_term_size (0, &x, &y) )
 	    return y;
 	else
 	  return 0;

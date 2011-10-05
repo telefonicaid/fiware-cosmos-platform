@@ -97,7 +97,7 @@ PaArgument paArgs[] =
 	{ "-db",       db,          "DB_PATH",     PaString,  PaReq,  PaND,                     PaNL,  PaNL,  "name of data base"          },
 	{ "-coll",     collection,  "COLLECTION",  PaString,  PaReq,  PaND,                     PaNL,  PaNL,  "name of collection"         },
 
-	{ "-empty",    &empty,      "EMPTY",       PaBool,    PaOpt,  false,                    false, true,  "empty data base collection" },
+	{ "-clear",    &empty,      "EMPTY",       PaBool,    PaOpt,  false,                    false, true,  "clear data base collection" },
 	{ "-fill",     &dbfill,     "FILL",        PaBool,    PaOpt,  false,                    false, true,  "initial filling of db"      },
 	{ "-upload",   &upload,     "UPLOAD",      PaBool,    PaOpt,  false,                    false, true,  "upload data to mongodb"     },
 	{ "-query",    &query,      "QUERY",       PaBool,    PaOpt,  false,                    false, true,  "db query"                   },
@@ -141,9 +141,9 @@ void timediff(struct timeval* start, struct timeval* stop, struct timeval* diff)
 
 /* ****************************************************************************
 *
-* stopTimeMeasuring - 
+* report - 
 */
-void stopTimeMeasuring(void)
+void report(void)
 {
 	struct timeval  diff;
 	double          rate;
@@ -160,6 +160,7 @@ void stopTimeMeasuring(void)
 	dsleep = (double) sleepTime.tv_sec + (double) sleepTime.tv_usec / 1000000;
 	ddiff  = dend - dstart;
 
+	LM_M(("-----------------------------------------------------------------"));
 	LM_M(("Total execution time: %.2f seconds", ddiff));
 	LM_M(("Total sleep time:     %.2f seconds", dsleep));
 
@@ -168,9 +169,14 @@ void stopTimeMeasuring(void)
 	if (upload == true)
 	{
 		rate = (double) recordsInserted / ddiff;
-		LM_M(("KVs per second: %.2f", rate));
+		LM_M(("Inserted %d kvs (in %.2f seconds). Rate: %.2f kvs/second", recordsInserted, ddiff, rate));
 	}
-	else
+	else if (dbfill == true)
+	{
+		rate = (double) queries / ddiff;
+		LM_M(("Filled db collection with %d kvs (in %.2f seconds). Rate: %.2f kvs/second", kvs, ddiff, rate));
+	}
+	else if (query == true)
 	{
 		rate = (double) queries / ddiff;
 		LM_M(("Queries per second: %.2f", rate));
@@ -179,6 +185,7 @@ void stopTimeMeasuring(void)
 	if (pid != 0)
 		kill(pid, SIGTERM);
 }
+
 
 
 /* ****************************************************************************
@@ -196,15 +203,17 @@ void dbConnect(void)
 
 	dbAndColl = (std::string) db + "." + (std::string) collection;
 	connected = true;
+
+	gettimeofday(&startTime, NULL);
 }
 
 
 
 /* ****************************************************************************
 *
-* dbEmpty - 
+* dbClear - 
 */ 
-void dbEmpty(void)
+void dbClear(void)
 {
 	long long items;
 
@@ -212,7 +221,7 @@ void dbEmpty(void)
 
 	items = mdbConnection->count(dbAndColl);
 
-	LM_M(("Emptying collection %s in database %s (%d items)", collection, db, items));
+	LM_M(("Clearing collection %s in database %s (%d items)", collection, db, items));
 	mdbConnection->dropCollection(dbAndColl);
 	mdbConnection->createCollection(dbAndColl);
 }
@@ -235,7 +244,6 @@ void dbQuery(void)
 
 	dbConnect();
 
-	gettimeofday(&startTime, NULL);
 	gettimeofday(&start, NULL);
 	gettimeofday(&lastTrace, NULL);
 
@@ -244,8 +252,9 @@ void dbQuery(void)
 		userId = rand() % MAXUSER;
 
 		std::auto_ptr<mongo::DBClientCursor> cursor = mdbConnection->query(dbAndColl, QUERY("I" << userId));
-		int                                  hits   = 0;
+		int                                  hits;
 
+		hits = 0;
 		while (cursor->more() != false)
 		{
 			cursor->next();
@@ -256,7 +265,7 @@ void dbQuery(void)
 		timediff(&lastTrace, &stop, &diff);
 		if (diff.tv_sec > 1)
 		{
-			LM_M(("Made %d queries (of %d)", ix, queries));
+			LM_M(("Made %d queries (out of %d). Last query: userId %d, %d hits", ix, queries, userId, hits));
 			lastTrace.tv_sec = stop.tv_sec;
 			lastTrace.tv_usec = stop.tv_usec;
 		}
@@ -288,8 +297,6 @@ void dbUpload(int kvs, bool oneshot)
 	struct timeval  diff;
 
 	dbConnect();
-
-	gettimeofday(&startTime, NULL);
 
 	if (bulk)
 		LM_M(("Bulk-mode-inserting %d kvs/second to server '%s', DB '%s', collection '%s'", kvs, server, db, collection));
@@ -455,7 +462,7 @@ void* mobilityQuery(void* x)
 */
 void sigHandler(int sigNo)
 {
-	stopTimeMeasuring();
+	report();
 	if (pid != 0)
 		kill(pid, SIGTERM);
 	pid = 0;
@@ -479,9 +486,9 @@ int main(int argC, char* argV[])
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
-	if (!empty && !dbfill && !query && !upload == 0)
+	if (!empty && !dbfill && !query && !upload)
 	{
-		printf("Please pick one if the operating modes: '-empty', '-fill', '-query' or '-upload'\n");
+		printf("Please pick one if the operating modes: '-clear', '-fill', '-query' or '-upload'\n");
 		exit(1);
 	}
 
@@ -491,7 +498,7 @@ int main(int argC, char* argV[])
 	srand(time(NULL));
 
 	if (empty)
-		dbEmpty();
+		dbClear();
 	else if (dbfill)
 		dbUpload(kvs, true);
 	else if (upload)
@@ -499,7 +506,7 @@ int main(int argC, char* argV[])
 	else if (query != 0)
 		dbQuery();
 
-	stopTimeMeasuring();
+	report();
 
 	if (pid != 0)
 		kill(pid, SIGTERM);

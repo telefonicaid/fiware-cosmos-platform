@@ -53,8 +53,8 @@ pid_t                       pid       = 0;
 struct timeval              sleepTime = { 0, 0 };
 struct timeval              startTime;
 struct timeval              stopTime;
-int                         recordsInserted = 0;
-
+int                         recordsInserted  = 0;
+int                         queriesPerformed = 0;
 
 
 /* ****************************************************************************
@@ -173,12 +173,12 @@ void report(void)
 	}
 	else if (dbfill == true)
 	{
-		rate = (double) queries / ddiff;
+		rate = (double) recordsInserted / ddiff;
 		LM_M(("Filled db collection with %d kvs (in %.2f seconds). Rate: %.2f kvs/second", kvs, ddiff, rate));
 	}
 	else if (query == true)
 	{
-		rate = (double) queries / ddiff;
+		rate = (double) queriesPerformed / ddiff;
 		LM_M(("Queries per second: %.2f", rate));
 	}
 
@@ -240,7 +240,7 @@ void dbQuery(void)
 	struct timeval      stop;
 	struct timeval      diff;
 	struct timeval      lastTrace;
-
+	int                 lastQueriesPerformed = 0;
 
 	dbConnect();
 
@@ -261,13 +261,26 @@ void dbQuery(void)
 			++hits;
 		}
 
+		++queriesPerformed;
+
 		gettimeofday(&stop, NULL);
 		timediff(&lastTrace, &stop, &diff);
 		if (diff.tv_sec > 1)
 		{
-			LM_M(("Made %d queries (out of %d). Last query: userId %d, %d hits", ix, queries, userId, hits));
+			double timespan    = (double) diff.tv_sec + (double) diff.tv_usec / 1000000;
+			double partialRate = ((double) (queriesPerformed - lastQueriesPerformed)) / timespan;
+			double accRate;
+
+			timediff(&start, &stop, &diff);
+			timespan     = (double) diff.tv_sec + (double) diff.tv_usec / 1000000;
+			accRate      = ((double) queriesPerformed) / timespan;
+
+			LM_M(("Made %d queries (out of %d). Last query: userId %d, %d hits (part rate: %.2f qps, acc rate: %.2f)", 
+				  ix, queries, userId, hits, partialRate, accRate));
 			lastTrace.tv_sec = stop.tv_sec;
 			lastTrace.tv_usec = stop.tv_usec;
+
+			lastQueriesPerformed = queriesPerformed;
 		}
 	}
 
@@ -376,6 +389,9 @@ void dbUpload(int kvs, bool oneshot)
 				sleepTime.tv_usec -= 1000000;
 			}
 		}
+
+		if ((times != 0) && (operation == times))
+			break;
 	}
 }
 

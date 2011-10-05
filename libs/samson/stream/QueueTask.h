@@ -26,6 +26,7 @@ namespace samson {
             
             FullKVInfo queue_task_info;         // total information covered by this task
             
+            
         public:
 
             // Constructor
@@ -53,6 +54,8 @@ namespace samson {
                 getBlockList("input_0")->update( block_info );
                 setProcessItemWorkingSize( block_info.size );
             }
+            
+            
             
         };
         

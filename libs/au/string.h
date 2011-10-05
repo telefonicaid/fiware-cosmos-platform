@@ -69,6 +69,14 @@ namespace au {
     std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
     std::vector<std::string> split(const std::string &s, char delim);  
         
+    // Get the width of the terminal
+    int getTerminalWidth();
+    
+    // Get a string where every line has a maximum length ( "..." is added if more length
+    std::string strWithMaxLineLength( std::string& txt , int max_line_length );
+    // Get a string with lines that fit into console...
+    std::string strToConsole( std::string& txt );
+    
 }
 
 

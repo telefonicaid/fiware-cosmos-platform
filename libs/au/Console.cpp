@@ -4,6 +4,8 @@
 #include "logMsg/logMsg.h"          // LM_M
 
 #include "au/TokenTaker.h"
+#include "au/string.h"
+
 #include "au/Console.h"	            // Own interface
 
 namespace au
@@ -99,7 +101,7 @@ namespace au
             return;
         }
         
-        printf("%s\n", message.c_str() );
+        printf("%s\n", strToConsole(message).c_str() );
         fflush( stdout );
 	}
 

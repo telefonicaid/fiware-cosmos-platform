@@ -667,7 +667,12 @@ namespace samson {
         }
         
         if( main_command == "ps_stream" )
-            return getStringInfo("/stream_manager//queue_task", getQueueTaskInfo, i_worker ); 
+        {
+            std::string info_command ="info_command //queue_task  -worker /id,t=id /state,t=state /operation,t=operation,left /input_0,t=input_1 /input_1,t=input_1";
+            return infoCommand( info_command );
+            
+            //return getStringInfo("/stream_manager//queue_task", getQueueTaskInfo, i_worker ); 
+        }
         
         if( main_command == "ls_local" )
         {

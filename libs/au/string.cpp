@@ -5,6 +5,10 @@
 #include <stdio.h>
 #include <cstdarg>
 
+#include <sys/ioctl.h>
+#include <stdio.h>
+
+
 #include "string.h"     // Own definitions
 
 namespace au {
@@ -339,8 +343,49 @@ namespace au {
     }  
 
     
-
+    int getTerminalWidth()
+    {
+        struct ttysize ts;
+        ioctl(0, TIOCGSIZE, &ts);
+        return ts.ts_cols;
+    }
     
+    std::string strWithMaxLineLength( std::string& txt , int max_line_length )
+    {
+        std::istringstream input_stream( txt );
+        
+        std::ostringstream output;
+        
+        char line[1024];
+        
+        while( input_stream.getline( line, 1023 ) )
+        {
+            
+            int line_length = (int)strlen(line);
+            
+            if( line_length > max_line_length )
+            {
+                line[max_line_length-1] = '\0';
+                line[max_line_length-2] = '.';
+                line[max_line_length-3] = '.';
+                line[max_line_length-4] = '.';
+                
+                LM_M(("Exesive line %d / %d ", line_length , max_line_length )); 
+            }
+            else
+            {
+                LM_M(("Normal line %d / %d", line_length , max_line_length )); 
+            }
+            
+            output << line << "\n";
+        }
+        return output.str();
+    }
+    
+    std::string strToConsole( std::string& txt )
+    {
+        return strWithMaxLineLength( txt , getTerminalWidth() );
+    }
     
     
 

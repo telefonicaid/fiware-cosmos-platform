@@ -27,6 +27,14 @@ namespace samson {
             // Common information about inputs used in this task contained in class QueueTask
             QueueTaskBase::getInfo( output );
             
+            
+            au::xml_simple(output, "state", queue_task_state );
+            
+            au::xml_simple(output, "input_0",  getBlockList("input_0")->strShortDescription() );
+            au::xml_simple(output, "input_1",  getBlockList("input_0")->strShortDescription() );
+            
+            au::xml_simple(output, "operation", streamOperation->operation() );
+            
             if( streamOperation )
             {
                 output << "<description>" << streamOperation->operation() << "</description>\n";

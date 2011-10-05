@@ -42,6 +42,8 @@ namespace samson {
         
         void QueueTaskManager::add( QueueTask* task )
         {
+            task->setQueueTaskState("Queued");
+            
             queueTasks.push_back( task );
             
             // Check if it is necessary to run a task
@@ -50,6 +52,8 @@ namespace samson {
         
         void QueueTaskManager::add( SystemQueueTask* task )
         {
+            task->setQueueTaskState("Queued");
+            
             systemQueueTasks.push_back( task );
             
             // Check if it is necessary to run a task
@@ -162,6 +166,8 @@ namespace samson {
                 size_t task_id = _task->getId();
                 runningTasks.insertInMap( task_id , _task ); 
                 
+                _task->setQueueTaskState("Running");
+                
                 // Add this process item ( note that a notification will be used to notify when finished )
                 engine::ProcessManager::shared()->add( _task , getEngineId() );
                 
@@ -194,6 +200,8 @@ namespace samson {
                 size_t task_id = _task->getId();
                 runningSystemQueueTasks.insertInMap( task_id , _task ); 
                 
+                _task->setQueueTaskState("Running");
+
                 // Add this process item ( note that a notification will be used to notify when finished )
                 engine::ProcessManager::shared()->add( _task , getEngineId() );
                 return true;

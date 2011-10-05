@@ -38,6 +38,16 @@ namespace samson {
             
         public:
             
+            std::string queue_task_state;                  // A bit more information about state of this queue task
+            void setQueueTaskState( std::string _queue_task_state )
+            {
+                queue_task_state = _queue_task_state;
+            }
+
+            
+            
+        public:
+            
             // Constructor and destructor
             QueueTaskBase( size_t id );
             virtual ~QueueTaskBase();

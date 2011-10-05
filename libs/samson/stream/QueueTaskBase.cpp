@@ -19,6 +19,9 @@ namespace samson {
             lockBlockList  = new BlockList( au::str("Task %lu input lock" , id ) , id , true );
             
             ready_flag = false;
+            
+            
+            queue_task_state = "Init";
         }
         
         QueueTaskBase::~QueueTaskBase()

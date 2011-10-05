@@ -359,7 +359,7 @@ namespace au {
         output << line();
 
         
-        return output.str();        
+        return output.str();
     }
     
     

@@ -418,11 +418,11 @@ namespace au {
                 line[max_line_length-3] = '.';
                 line[max_line_length-4] = '.';
                 
-                LM_M(("Exesive line %d / %d ", line_length , max_line_length )); 
+                //LM_M(("Exesive line %d / %d ", line_length , max_line_length )); 
             }
             else
             {
-                LM_M(("Normal line %d / %d", line_length , max_line_length )); 
+			   //LM_M(("Normal line %d / %d", line_length , max_line_length )); 
             }
             
             output << line << "\n";

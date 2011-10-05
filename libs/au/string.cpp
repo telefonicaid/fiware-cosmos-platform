@@ -392,7 +392,7 @@ namespace au {
     {
 	int x,y;
 	if( get_term_size (0, &x, &y) )
-	    return y;
+	    return x;
 	else
 	  return 0;
 

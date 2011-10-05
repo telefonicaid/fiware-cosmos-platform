@@ -153,10 +153,10 @@ namespace au
         
         int current_row;
         int rows,cols;
+
+        std::string command;                    // Command typed into console
         
     protected:
-        
-        std::string command;                    // Command typed into console
         
         CommandOptions options;                 // Informationa bout auto-completion options
             
@@ -214,7 +214,17 @@ namespace au
         void printLine( int r );
         void print( int r , std::string left_line ,std::string rigth_line );
 
+    public:
         
+        std::string getCommand( )
+        {
+            return command;
+        }
+        
+        void setCommand( std::string _command)
+        {
+            command = _command;
+        }
         
     };
     

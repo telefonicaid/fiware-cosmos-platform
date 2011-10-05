@@ -45,7 +45,7 @@ namespace samson
     
     std::string DelilahMonitorization::getHeaderLeft()
     {
-        return command;
+        return getCommand();
     }
     
     std::string DelilahMonitorization::getHeaderRight()
@@ -65,9 +65,9 @@ namespace samson
     
     void DelilahMonitorization::printContent()
     {
-        
-        if( command.length() > 0 )
-            running_command = command;
+        std::string _command = getCommand();
+        if( _command.length() > 0 )
+            running_command = _command;
 
         print("");
         

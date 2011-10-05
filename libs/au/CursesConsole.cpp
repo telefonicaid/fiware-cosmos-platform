@@ -83,8 +83,13 @@ namespace au
                         break;
                         
                     default:
-                        // append the letter to the command
-                        command += (char)ch;
+                        if( (ch > 31 ) && ( ch < 127 ) )
+                        {
+                            // append the letter to the command
+                            //command += au::str( "CHAR[%d]", ch );
+                            command += (char) ch;
+                        }
+                        
                         break;
                 }
                 
@@ -210,13 +215,16 @@ namespace au
             printw("-");
     }
     
-    void CursesConsole::print( int r , std::string left_line ,std::string rigth_line )
+    void CursesConsole::print( int r , std::string _left_line ,std::string rigth_line )
     {
         if( r >= rows )
             return;
         
+        
+        std::string left_line = strToConsole(_left_line );
+        
         move( r , 0 );
-        printw("%s",left_line.c_str());
+        printw("%s", left_line.c_str());
         
         move( r , cols-1 - strlen( rigth_line.c_str() ) );
         printw("%s",rigth_line.c_str());

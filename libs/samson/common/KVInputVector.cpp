@@ -188,6 +188,20 @@ namespace samson
 			std::sort( _kv , _kv + num_kvs , compare );
 	}
     
+    void KVInputVector::sortAndMerge( size_t middle_pos )
+    {
+        if( middle_pos > num_kvs )
+            LM_X(1,("Internal error"));
+
+        // Sort the first part of the vector
+        std::sort( _kv , _kv + middle_pos , compare );
+        
+        // Merge with the second part of the vector( suppoused to be sorted )
+        std::inplace_merge(_kv, _kv+middle_pos, _kv+num_kvs , compare);
+        
+    }
+
+    
     void KVInputVector::init()
     {
         // Process all the key-values in order

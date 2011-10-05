@@ -56,6 +56,10 @@ namespace samson
 		// global sort function key - input - value used in reduce operations
 		void sort();
 
+        // Spetial sort where first part of the added key-value is not sorted and the other half is already sorted
+		void sortAndMerge( size_t middle_pos );
+        
+        
         // Init and getNext functions allows to retrieve key-values in groups with the same key
         void init();
         KVSetStruct* getNext();

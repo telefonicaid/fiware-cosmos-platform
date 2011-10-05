@@ -389,7 +389,7 @@ namespace samson {
                 while( current_hg < hg )
                 {
                     //LM_M(("Skiping %lu bytes hg:%d->%d", info[current_hg].size , current_hg , hg));
-                    data += file.info[current_hg].size;
+                    data += file.info[current_hg].size; // Skip data of this hash-group
                     current_hg++;
                 }
             }            
@@ -402,8 +402,14 @@ namespace samson {
 
         public:
             
-            std::vector<BlockReader> blockReaders;
+            std::vector<BlockReader> inputBlockReaders;     // Collection of BlockReaders ( each for every block used as input for this operation )
+            std::vector<BlockReader> stateBlockReaders;     // Only one state at the moment
+            
+            // Common structure to give data to 3rd party software
             KVInputVector kvVector;
+
+            size_t input_num_kvs;
+            size_t state_num_kvs;
             
             Operation *operation;
             
@@ -412,42 +418,74 @@ namespace samson {
                 operation = _operation;
             }
             
-            void insert( Block *block , int channel )
+            void insertInputBlocks( Block *block , int channel )
             {
                 if ( ( channel < 0 ) || ( channel > ( operation->getNumInputs() - 1 ) ) )
                     LM_X(1,("Internal error"));
                 
-                blockReaders.push_back( BlockReader( block, channel ) );
+                inputBlockReaders.push_back( BlockReader( block, channel ) );
             }
+
+            void insertStateBlocks( Block *block , int channel )
+            {
+                if ( ( channel < 0 ) || ( channel > ( operation->getNumInputs() - 1 ) ) )
+                    LM_X(1,("Internal error"));
+                
+                stateBlockReaders.push_back( BlockReader( block, channel ) );
+            }
+            
             
             size_t prepare( int hg )
             {
                 // Putting data in place
-                for ( size_t i = 0 ; i < blockReaders.size() ; i++)
-                    blockReaders[i].prepare(hg);
+                for ( size_t i = 0 ; i < inputBlockReaders.size() ; i++)
+                    inputBlockReaders[i].prepare(hg);
 
-                // Getting the number of key-values
-                size_t num_kvs = 0 ;
-                for ( size_t i = 0 ; i < blockReaders.size() ; i++)
-                    num_kvs += blockReaders[i].file.info[hg].kvs;
+                // Getting the number of key-values for input 
+                input_num_kvs = 0 ;
+                for ( size_t i = 0 ; i < inputBlockReaders.size() ; i++)
+                    input_num_kvs += inputBlockReaders[i].file.info[hg].kvs;
 
-                // Prepare KV Vector with the total number of kvs
-                kvVector.prepareInput( num_kvs );
+                // Getting the number of key-values for input 
+                state_num_kvs = 0 ;
+                for ( size_t i = 0 ; i < stateBlockReaders.size() ; i++)
+                    state_num_kvs += stateBlockReaders[i].file.info[hg].kvs;
                 
-                if ( num_kvs > 0 )
+                // Prepare KV Vector with the total number of kvs
+                kvVector.prepareInput( input_num_kvs + state_num_kvs );
+
+                // Add key values for all the inputs
+                if ( input_num_kvs > 0 )
                 {
-                    // Get data
-                    for ( size_t i = 0 ; i < blockReaders.size() ; i++)
-                        kvVector.addKVs( blockReaders[i].channel, blockReaders[i].file.info[hg],  blockReaders[i].data );
+                    for ( size_t i = 0 ; i < inputBlockReaders.size() ; i++)
+                        kvVector.addKVs( inputBlockReaders[i].channel, inputBlockReaders[i].file.info[hg],  inputBlockReaders[i].data );
+                }
+
+                // Add key values for the state
+                if ( state_num_kvs > 0 )
+                {
+                    for ( size_t i = 0 ; i < stateBlockReaders.size() ; i++)
+                        kvVector.addKVs( stateBlockReaders[i].channel, stateBlockReaders[i].file.info[hg],  stateBlockReaders[i].data );
                 }
                 
-                return num_kvs;
+                
+                return input_num_kvs + state_num_kvs;
             }                
             
             
             void sortAndInit()
             {
-                kvVector.sort();
+                if( state_num_kvs == 0 )    // No state
+                {
+                    //LM_M(("Sorting %lu key-values" , input_num_kvs));
+                    kvVector.sort();
+                }
+                else if( input_num_kvs > 0 )
+                {
+                    //LM_M(("Merge-Sorting %lu / %lu key-values" , input_num_kvs , state_num_kvs));
+                    kvVector.sortAndMerge(input_num_kvs);
+                }
+                
                 kvVector.init();
             }
             
@@ -514,9 +552,17 @@ namespace samson {
             {
                 BlockList* list = getBlockList( au::str("input_%d", i) );
                 std::list< Block* >::iterator b;
+                
                 for ( b = list->blocks.begin() ; b != list->blocks.end() ; b++)
-                    blockreaderCollection.insert( *b , i );
+                    if( update_state_mode && i == (operation->getNumInputs()-1) )
+                        blockreaderCollection.insertStateBlocks( *b , i );
+                    else
+                        blockreaderCollection.insertInputBlocks( *b , i );
+                
             }
+            
+            
+            
             
             for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)
             {

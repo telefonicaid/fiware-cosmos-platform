@@ -35,13 +35,10 @@ rdir=samson-$module-$version
 echo "%_topdir $HOME/rpm" > ~/.rpmmacros
 echo "%_unpackaged_files_terminate_build      0" >> ~/.rpmmacros
 
-rm -rf $HOME/rpm
-mkdir $HOME/rpm
-cd $HOME/rpm
-mkdir SOURCES SPECS BUILD SRPMS BUILDROOT
-cd -
-
-
+if [ ! -d $HOME/rpm ];
+then
+    mkdir -p $HOME/rpm/{SOURCES,SPECS,BUILD,SRPMS,BUILDROOT}
+fi
 
 #
 # Creating link for 'compiled stuff' ...
@@ -87,8 +84,10 @@ echo                                                         >> $HOME/rpm/SPECS/
 rm -rf ~/$rdir
 mkdir -p ~/$rdir/usr/local/include/samson/modules/$module
 mkdir -p ~/$rdir/opt/samson/modules
-cp /usr/local/include/samson/modules/$module/*.h   ~/$rdir/usr/local/include/samson/modules/$module/
-cp /opt/samson/modules/lib$module.so               ~/$rdir/opt/samson/modules/
+#cp /usr/local/include/samson/modules/$module/*.h   ~/$rdir/usr/local/include/samson/modules/$module/
+#cp /opt/samson/modules/lib$module.so               ~/$rdir/opt/samson/modules/
+cp samson/modules/$module/*.h   ~/$rdir/usr/local/include/samson/modules/$module/
+cp build/lib$module.so               ~/$rdir/opt/samson/modules/
 
 
 #

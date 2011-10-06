@@ -157,11 +157,11 @@ rpm:
 		 cd modules/sort;                  ../../scripts/samsonModuleRpm sort 0.6 1
 		 cd modules/system;                ../../scripts/samsonModuleRpm system 0.6 1
 		 cd modules/terasort;              ../../scripts/samsonModuleRpm terasort 0.6 1
-		 cd modules/test_compareFunctions; ../../scripts/samsonModuleRpm test_compareFunctions 0.6 1
+		 cd modules/testcomparefunctions; ../../scripts/samsonModuleRpm testcomparefunctions 0.6 1
 		 cd modules/tienda;                ../../scripts/samsonModuleRpm tienda 0.6 1
 		 cd modules/txt;                   ../../scripts/samsonModuleRpm txt 0.6 1
 		 cd modules/url;                   ../../scripts/samsonModuleRpm url 0.6 1
-		 cd modules/url_benchmark;         ../../scripts/samsonModuleRpm url_benchmark 0.6 1
+		 cd modules/urlbenchmark;         ../../scripts/samsonModuleRpm urlbenchmark 0.6 1
 		 # cd modules/sna_light;             ../../scripts/samsonModuleRpm sna_light 0.6 1
 
 deb:
@@ -174,11 +174,11 @@ deb:
 		 cd modules/sort;                  ../../scripts/samsonModuleDeb sort 0.6 1
 		 cd modules/system;                ../../scripts/samsonModuleDeb system 0.6 1
 		 cd modules/terasort;              ../../scripts/samsonModuleDeb terasort 0.6 1
-		 cd modules/test_compareFunctions; ../../scripts/samsonModuleDeb test_compareFunctions 0.6 1
+		 cd modules/testcomparefunctions; ../../scripts/samsonModuleDeb testcomparefunctions 0.6 1
 		 cd modules/tienda;                ../../scripts/samsonModuleDeb tienda 0.6 1
 		 cd modules/txt;                   ../../scripts/samsonModuleDeb txt 0.6 1
 		 cd modules/url;                   ../../scripts/samsonModuleDeb url 0.6 1
-		 cd modules/url_benchmark;         ../../scripts/samsonModuleDeb url_benchmark 0.6 1
+		 cd modules/urlbenchmark;         ../../scripts/samsonModuleDeb urlbenchmark 0.6 1
 
 man:
 	 mkdir -p /usr/local/man/man1

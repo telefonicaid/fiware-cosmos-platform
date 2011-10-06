@@ -34,11 +34,11 @@ rdir=samson-$version
 echo "%_topdir $HOME/rpm" > ~/.rpmmacros
 echo "%_unpackaged_files_terminate_build      0" >> ~/.rpmmacros
 
-rm -rf $HOME/rpm
-mkdir $HOME/rpm
-cd $HOME/rpm
-mkdir SOURCES SPECS BUILD SRPMS BUILDROOT
-cd -
+if [ ! -d $HOME/rpm ];
+then
+    mkdir -p $HOME/rpm/{SOURCES,SPECS,BUILD,SRPMS,BUILDROOT}
+fi
+
 
 
 
@@ -75,8 +75,8 @@ echo                                                         >> $HOME/rpm/SPECS/
 echo "%files"                                                >> $HOME/rpm/SPECS/$specfile
 echo '/usr/local/bin/samson*'                                >> $HOME/rpm/SPECS/$specfile
 echo '/usr/local/bin/delilah'                                >> $HOME/rpm/SPECS/$specfile
-echo '/usr/local/man/man1/*'                                 >> $HOME/rpm/SPECS/$specfile
-echo '/usr/local/man/man3/*'                                 >> $HOME/rpm/SPECS/$specfile
+#echo '/usr/local/man/man1/*'                                 >> $HOME/rpm/SPECS/$specfile
+#echo '/usr/local/man/man3/*'                                 >> $HOME/rpm/SPECS/$specfile
 echo '/opt/samson/etc/setup.txt'                             >> $HOME/rpm/SPECS/$specfile
 echo "%changelog"                                            >> $HOME/rpm/SPECS/$specfile
 echo                                                         >> $HOME/rpm/SPECS/$specfile
@@ -93,17 +93,17 @@ mkdir -p ~/$rdir/opt/samson/etc
 mkdir ~/$rdir/usr/local/man
 mkdir ~/$rdir/usr/local/man/man1
 mkdir ~/$rdir/usr/local/man/man3
-cp /usr/local/bin/samsonCat              ~/$rdir/usr/local/bin
-cp /usr/local/bin/samsonController       ~/$rdir/usr/local/bin
-cp /usr/local/bin/samsonData             ~/$rdir/usr/local/bin
-cp /usr/local/bin/samsonLocal            ~/$rdir/usr/local/bin
-cp /usr/local/bin/samsonModuleParser     ~/$rdir/usr/local/bin
-cp /usr/local/bin/samsonSetup            ~/$rdir/usr/local/bin
-cp /usr/local/bin/samsonSpawner          ~/$rdir/usr/local/bin
-cp /usr/local/bin/samsonWorker           ~/$rdir/usr/local/bin
-cp /usr/local/bin/delilah                ~/$rdir/usr/local/bin
-cp /opt/samson/etc/setup.txt             ~/$rdir/opt/samson/etc/
-cp -R /usr/local/man/                    ~/$rdir/usr/local/
+cp BUILD_RELEASE/apps/samsonCat/samsonCat              ~/$rdir/usr/local/bin
+cp BUILD_RELEASE/apps/samsonController/samsonController       ~/$rdir/usr/local/bin
+cp BUILD_RELEASE/apps/samsonData/samsonData             ~/$rdir/usr/local/bin
+cp BUILD_RELEASE/apps/samsonLocal/samsonLocal            ~/$rdir/usr/local/bin
+cp BUILD_RELEASE/apps/samsonModuleParser/samsonModuleParser     ~/$rdir/usr/local/bin
+cp BUILD_RELEASE/apps/samsonSetup/samsonSetup            ~/$rdir/usr/local/bin
+cp BUILD_RELEASE/apps/samsonSpawner/samsonSpawner          ~/$rdir/usr/local/bin
+cp BUILD_RELEASE/apps/samsonWorker/samsonWorker           ~/$rdir/usr/local/bin
+cp BUILD_RELEASE/apps/delilah/delilah                ~/$rdir/usr/local/bin
+cp etc/setup.txt             ~/$rdir/opt/samson/etc/
+#cp -R /usr/local/man/                    ~/$rdir/usr/local/
 
 
 
@@ -121,7 +121,7 @@ cd -
 # And finally, create the RPM
 #
 cd ~/rpm/SPECS
-rpmbuild -ba $specfile
+rpmbuild -bb $specfile
 cd -
 mkdir -p package/rpm
 mv ~/rpm/RPMS/$arch/samson-$version-$release.$arch.rpm package/rpm/

@@ -405,7 +405,13 @@ namespace samson {
         std::string BlockList::strShortDescription()
         {
             BlockInfo block_info = getBlockInfo();
-            return au::str("[ %d blocks with %s / %s ]" , block_info.num_blocks , au::str(block_info.info.kvs,"kvs").c_str() , au::str(block_info.info.size,"B").c_str() );
+            return au::str("[ %d blocks | %s / %s | Mem %s Disk %s ]" , 
+                           block_info.num_blocks , 
+                           au::str(block_info.info.kvs,"kvs").c_str() , 
+                           au::str(block_info.info.size,"B").c_str() , 
+                           au::percentage_string( block_info.onMemoryPercentadge() ).c_str(),
+                           au::percentage_string( block_info.onDiskPercentadge() ).c_str()
+                           );
             
         }
         

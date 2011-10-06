@@ -405,7 +405,7 @@ namespace samson {
         std::string BlockList::strShortDescription()
         {
             BlockInfo block_info = getBlockInfo();
-            return au::str("[ %d blocks with %s / %s ]" , block_info.num_blocks , au::str(block_info.size,"B").c_str() , au::str(block_info.info.kvs,"kvs").c_str() );
+            return au::str("[ %d blocks with %s / %s ]" , block_info.num_blocks , au::str(block_info.info.kvs,"kvs").c_str() , au::str(block_info.info.size,"B").c_str() );
             
         }
         

@@ -114,7 +114,7 @@ public:
 			{
 				if (p_intern < p_end)
 				{
-					OLM_W(("Link format with internal links:'%s'", p_tag_begin));
+				  //OLM_W(("Link format with internal links:'%s'", p_tag_begin));
 				}
 			}
 			if ((p_sep_link = strnstr(p_tag_begin, LINK_SEP, p_end - p_tag_begin)) != NULL)

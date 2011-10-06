@@ -1,2 +1,2 @@
 ADD_SUBDIRECTORY(word_generator)
-ADD_SUBDIRECTORY(wiki_extractor)
+

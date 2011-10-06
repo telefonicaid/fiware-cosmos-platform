@@ -290,7 +290,7 @@ public:
 	};
 
 	std::string str(){
-		return value;
+		return ("\""+value+"\"");
 	}
 
 	void operator= (std::string &_value) {

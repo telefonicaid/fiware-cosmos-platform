@@ -575,7 +575,7 @@ namespace samson {
                 bool clear_inputs =  cmd.get_flag_bool("clear_inputs"); 
                 
                 size_t min_size = cmd.get_flag_uint64("min_size");          // Minimum size to run an operation
-                size_t max_size = SamsonSetup::shared()->getUInt64("stream.max_state_division_size");          // Minimum size to run an operation
+                size_t max_size = SamsonSetup::shared()->getUInt64("stream.max_operation_input_size");          // Minimum size to run an operation
                 size_t max_latency = cmd.get_flag_uint64("max_latency");    // Max acceptable time to run an operation
                 std::string delayed_processing = cmd.get_flag_string("delayed_processing");
                 

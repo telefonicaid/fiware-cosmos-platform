@@ -20,6 +20,7 @@ all:
 	make -C hit
 	make -C gg
 	make -C page_rank
+	make -C wiki
 
 release:
 	make release -C system
@@ -43,6 +44,7 @@ release:
 	make release -C hit
 	make release -C gg
 	make release -C page_rank
+	make release -C wiki
 
 reset:
 	make reset -C system
@@ -66,6 +68,7 @@ reset:
 	make reset -C hit
 	make reset -C gg
 	make reset -C page_rank
+	make reset -C wiki
 
 eclipse:
 	make eclipse -C system

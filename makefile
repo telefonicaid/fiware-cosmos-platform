@@ -92,7 +92,7 @@ d:	distribute
 dd:	debugdistribute
 
 debugdistribute: debuginstall
-	./scripts/samsonDist samson06 samson07
+	./scripts/samsonDist samson01 samson03 samson04
 
 testdistribute: install
 	./scripts/samsonTestDistributer

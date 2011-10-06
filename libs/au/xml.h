@@ -64,6 +64,22 @@ namespace au {
         au::xml_close(output, name);
         
     }
+
+    template< typename T>
+    void xml_reverse_iterate_list( std::ostringstream& output , std::string name , T& vector )
+    {
+        au::xml_open(output, name);
+        
+        //typename std::map<K, V* >::iterator iter;
+        typename T::r_iterator iter;
+        
+        for (iter = vector.r_begin() ; iter != vector.r_end() ; iter++)
+            (*iter)->getInfo( output );
+        
+        au::xml_close(output, name);
+        
+    }
+    
     
     template< typename T>
     void xml_iterate_list_object( std::ostringstream& output , std::string name , T& vector )

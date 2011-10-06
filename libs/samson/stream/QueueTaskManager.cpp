@@ -43,7 +43,6 @@ namespace samson {
         void QueueTaskManager::add( QueueTask* task )
         {
             task->setQueueTaskState("Queued");
-            
             queueTasks.push_back( task );
             
             // Check if it is necessary to run a task
@@ -53,7 +52,6 @@ namespace samson {
         void QueueTaskManager::add( SystemQueueTask* task )
         {
             task->setQueueTaskState("Queued");
-            
             systemQueueTasks.push_back( task );
             
             // Check if it is necessary to run a task
@@ -130,8 +128,8 @@ namespace samson {
         
         void QueueTaskManager::reviewPendingQueueTasks()
         {
-            int num_processors = SamsonSetup::shared()->getInt("general.num_processess"); 
-            int num_running_tasks = (int)( runningTasks.size() + runningTasks.size() );
+            int num_processors      = SamsonSetup::shared()->getInt("general.num_processess"); 
+            int num_running_tasks   = (int)( runningTasks.size() + runningTasks.size() );
             
             while( num_running_tasks < (int)(1.5*(double)num_processors) )
             {
@@ -215,12 +213,11 @@ namespace samson {
         // Get information for monitorization
         void QueueTaskManager::getInfo( std::ostringstream& output)
         {
-            au::xml_iterate_list(output, "queue_tasks", queueTasks);
             au::xml_iterate_map(output, "running_queue_tasks", runningTasks);
-            
-            
-            au::xml_iterate_list(output, "system_queue_tasks", systemQueueTasks);
             au::xml_iterate_map(output, "running_system_queue_tasks", runningSystemQueueTasks);
+            
+            au::xml_iterate_list(output, "queue_tasks", queueTasks);
+            au::xml_iterate_list(output, "system_queue_tasks", systemQueueTasks);
             
         }
         

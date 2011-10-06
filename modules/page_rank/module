@@ -5,12 +5,6 @@ Module page_rank
 	version "0.1"
 }
 
-
-data LinkVector
-{
-	vector system.String link;
-}
-
 data Message
 {
 	system.String node;
@@ -43,13 +37,13 @@ data Node
 
 parser parse_graph
 {
-	out system.String page_rank.LinkVector
+	out system.String system.StringVector
 	helpLine "Parse a txt file where every line is node link1 link2 ...."
 }
 
 reduce updateLinks
 {
-	in system.String page_rank.LinkVector
+	in system.String system.StringVector
 	in system.String page_rank.Node
 	out system.String page_rank.Message
 	out system.String page_rank.Node

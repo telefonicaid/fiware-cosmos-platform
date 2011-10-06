@@ -11,10 +11,10 @@
 #include "strCompare.h"
 
 #include <samson/module/samson.h>
-#include <samson/modules/page_rank/LinkVector.h>
 #include <samson/modules/page_rank/Message.h>
 #include <samson/modules/page_rank/Node.h>
 #include <samson/modules/system/String.h>
+#include <samson/modules/system/StringVector.h>
 
 
 namespace samson{
@@ -24,7 +24,7 @@ namespace page_rank{
 	{
 
 	   samson::system::String input_key;
-	   samson::page_rank::LinkVector input_value;
+	   samson::system::StringVector input_value;
 
 	   samson::page_rank::Node node; // Output node
 
@@ -98,7 +98,7 @@ helpLine: Update intenal information about links of nodes. Comming from crawling
 		   // Send my contribution to new nodes
 
 
-		   bool changed_num_links = ( input_value.link_length != node.links_length );
+		   bool changed_num_links = ( input_value.values_length != node.links_length );
 
 		   previous_links.clear();
 		   new_links.clear();
@@ -109,8 +109,8 @@ helpLine: Update intenal information about links of nodes. Comming from crawling
 			  previous_links.insert( node.links[i].value.c_str() );
 
 		   // Add the new nodes to the list
-		   for (int i = 0 ; i < input_value.link_length ; i++)
-			  new_links.insert( input_value.link[i].value.c_str() );
+		   for (int i = 0 ; i < input_value.values_length ; i++)
+			  new_links.insert( input_value.values[i].value.c_str() );
 
 		   // Put the new links into the node structure
 		   // --------------------------------------------------------------------------------------------

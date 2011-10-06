@@ -8,8 +8,8 @@
 
 
 #include <samson/module/samson.h>
-#include <samson/modules/page_rank/LinkVector.h>
 #include <samson/modules/system/String.h>
+#include <samson/modules/system/StringVector.h>
 #include <samson/modules/system/SimpleParser.h>
 
 namespace samson{
@@ -20,7 +20,7 @@ namespace page_rank{
 	{
 
 		   samson::system::String key;
-		   samson::page_rank::LinkVector value;
+		   samson::system::StringVector value;
 		
 	public:
 		
@@ -46,11 +46,11 @@ helpLine: Parse a txt file where wvery line is node link1 link2 ....
 			  return; // Key not present
 		   
 
-		   value.linkSetLength(0); // Clear vector
+		   value.valuesSetLength(0); // Clear vector
 			   
 		   std::string item;
 		   while(std::getline(ss, item, ' ')) 
-			   value.linkAdd()->value = item;
+			   value.valuesAdd()->value = item;
 
 		   writer->emit( 0 , &key , &value );
 

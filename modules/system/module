@@ -79,6 +79,11 @@ data UInt2
 	system.UInt value_2;
 }
 
+data StringVector
+{
+    vector system.String values;
+}
+
 
 parser parse_id_id
 {

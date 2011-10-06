@@ -1,0 +1,13 @@
+Module wiki
+{
+    title   "Wikipedia operations"
+    author  "Andreu Urruela & Gregorio Escalada"
+    version "0.1"
+}
+
+parser page_pages_to_links
+{
+    out system.String system.StringVector
+
+    helpLine "Parse a txt files emiting words at the output (value is always one)"
+}

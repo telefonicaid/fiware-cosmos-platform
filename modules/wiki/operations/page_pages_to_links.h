@@ -78,10 +78,10 @@ public:
 			OLM_E(("page without title end:'%s'", PAGE_TAG_TITLE_END));
 			return;
 		}
-		char *copia;
-		copia = strndup(p_tag_begin, p_end - p_tag_begin);
-		OLM_T(LMT_User06, ("key:%s", copia));
-		free(copia);
+		//char *copia;
+		//copia = strndup(p_tag_begin, p_end - p_tag_begin);
+		//OLM_T(LMT_User06, ("key:%s", copia));
+		//free(copia);
 		key.value = std::string(p_tag_begin, p_end - p_tag_begin);
 		p_tag_begin = p_end + strlen(PAGE_TAG_TITLE_END);
 
@@ -119,7 +119,7 @@ public:
 			}
 			if ((p_sep_link = strnstr(p_tag_begin, LINK_SEP, p_end - p_tag_begin)) != NULL)
 			{
-				p_tag_begin = p_sep_link + strlen(LINK_SEP);
+				p_end = p_sep_link;
 			}
 			//copia = strndup(p_tag_begin, p_end - p_tag_begin);
 			//OLM_T(LMT_User06, ("value:%s", copia));

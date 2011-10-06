@@ -129,10 +129,13 @@ namespace samson {
         void QueueTaskManager::reviewPendingQueueTasks()
         {
             int num_processors      = SamsonSetup::shared()->getInt("general.num_processess"); 
-            int num_running_tasks   = (int)( runningTasks.size() + runningTasks.size() );
-            
-            while( num_running_tasks < (int)(1.5*(double)num_processors) )
+            int num_running_tasks   = (int)( runningTasks.size() + runningSystemQueueTasks.size() );
+
+	    int max_running_operations =  (int)(1.5*(double)num_processors);
+
+            while( num_running_tasks < max_running_operations )
             {
+	      //LM_M(("Scheduling since running rask %d < %d", (int) num_running_tasks , (int) max_running_operations));
                 
                 bool runReturn = runNextQueueTasksIfNecessary();
                 bool runReturn2 = runNextSystemQueueTasksIfNecessary();

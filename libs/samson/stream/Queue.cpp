@@ -521,7 +521,8 @@ namespace samson {
                     if( num_blocks > 0 )
                         if( ( max_size > 0 ) && ( total_size > max_size) )
                             return tmp;
-                    
+
+                    num_blocks++;                    
                     tmp->add( block );
                 }
             }
@@ -549,11 +550,12 @@ namespace samson {
                 {
                     
                     total_size+=block->size;
-                    
+
                     if( num_blocks > 0 )
                         if( ( max_size > 0 ) && ( total_size > max_size) )
                             return tmp;
-                    
+
+                    num_blocks++;
                     tmp->add( block );
                 }
             }

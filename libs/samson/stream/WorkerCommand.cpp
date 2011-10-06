@@ -579,7 +579,7 @@ namespace samson {
                 std::string delayed_processing = cmd.get_flag_string("delayed_processing");
                 
                 // Operation size    
-                size_t default_size = SamsonSetup::shared()->getUInt64("general.memory") / SamsonSetup::shared()->getUInt64("general.num_processess");
+                size_t default_size =  SamsonSetup::shared()->getUInt64("general.memory") / SamsonSetup::shared()->getUInt64("general.num_processess");
                 size_t operation_size = (min_size!=0)?min_size:default_size;
                 
                 BlockIdList block_ids;      // Collection of block ids for the already processed blocks ( only used in clear_inputs is not activated )

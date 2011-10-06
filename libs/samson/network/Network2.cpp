@@ -130,7 +130,7 @@ bool Network2::ready(bool connectedToAllWorkers)
 {
 	if (ready() == false)
 	{
-		LM_M(("Normal ready failed - not even the Controller is ready ..."));
+		LM_T(LmtIdIx,("Normal ready failed - not even the Controller is ready ..."));
 		return false;
 	}
 
@@ -141,7 +141,7 @@ bool Network2::ready(bool connectedToAllWorkers)
 		procVec = epMgr->procVecGet();
 		if (procVec == NULL)
 		{
-			LM_M(("NULL process vector ..."));
+			LM_T(LmtIdIx,("NULL process vector ..."));
 			return false;
 		}
 
@@ -151,22 +151,22 @@ bool Network2::ready(bool connectedToAllWorkers)
 		{
 			Endpoint2* ep;
 			
-			LM_M(("Looking up worker %d in host '%s'", pIx - 1, procVec->processV[pIx].host));
+			LM_T(LmtIdIx,("Looking up worker %d in host '%s'", pIx - 1, procVec->processV[pIx].host));
 			ep = epMgr->lookup(Endpoint2::Worker, procVec->processV[pIx].host);
 			if (ep == NULL)
 			{
-				LM_M(("Error looking up worker %d", pIx - 1));
+				LM_T(LmtIdIx,("Error looking up worker %d", pIx - 1));
 				return false;
 			}
 
 			if (ep->state != Endpoint2::Ready)
 			{
-				LM_M(("Worker %d is not ready", pIx - 1));
+				LM_T(LmtIdIx,("Worker %d is not ready", pIx - 1));
 				return false;
 			}
 		}
 
-		LM_M(("Ready!"));
+		LM_T(LmtIdIx,("Ready!"));
 		return true;
 	}
 

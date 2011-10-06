@@ -69,7 +69,8 @@ namespace engine
         
         ~ProcessManager();
         
-        static void init( int _num_processes);
+        static void init( int _num_processes );
+        static void destroy();
         static ProcessManager* shared();
         
         static int getNumCores();

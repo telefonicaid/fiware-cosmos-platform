@@ -16,6 +16,7 @@
  * ****************************************************************************/
 
 #include "au/string.h"                          // au::Format
+#include "logMsg/logMsg.h"
 
 #include "engine/Engine.h"                      // engine::Engine
 #include "engine/MemoryManager.h"               // engine::MemoryManager
@@ -74,7 +75,7 @@ namespace samson {
         if( (size + length ) > max_buffer_size )
         {
             // Process buffer
-            std::cerr << "SamsonCLient: Pushing " << size << " bytes to queue " << queue <<  "\n";
+            LM_M(("Pushing %s to queue %s\n" , au::str(size,"B").c_str() , queue.c_str()));
             client->push(  queue , buffer, size );
 
             // Reset cronometer
@@ -103,12 +104,12 @@ namespace samson {
         if ( size > 0 )
         {
             // Process buffer
-            std::cerr << "SamsonClient: Pushing " << size << " bytes to queue " << queue <<  " (flush )\n";
+            LM_M(("Pushing %s to queue %s\n" , au::str(size,"B").c_str() , queue.c_str()));
             client->push(  queue , buffer, size );
             
             // Come back to "0"
             size = 0;
-            
+           
         }
     }
 

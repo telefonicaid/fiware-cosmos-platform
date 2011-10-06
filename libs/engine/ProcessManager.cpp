@@ -27,7 +27,7 @@ namespace engine
     
     void destroy_process_manager()
     {
-        LM_M(("ProcessManager terminating"));
+        //LM_M(("ProcessManager terminating"));
         
         if( processManager )
         {
@@ -41,10 +41,16 @@ namespace engine
         if( processManager )
             LM_X(1,("Please, init processManager only once"));
         processManager = new ProcessManager( _num_processes );
-
-        atexit(destroy_process_manager);
-        
     }
+
+    void ProcessManager::destroy( )
+    {
+        if( !processManager )
+            LM_X(1,("Please, init processManager before destroying"));
+        delete processManager;
+    }
+    
+    
     ProcessManager* ProcessManager::shared()
     {
         if( !processManager )

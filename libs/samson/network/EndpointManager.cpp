@@ -1003,8 +1003,10 @@ void EndpointManager::run(bool oneShot)
 
 			if (max == 0)
 			{
+                /*
 				if (firstTimeForNoFdsToListenTo == true)
 					LM_W(("No fds to listen to ..."));
+                 */
 				firstTimeForNoFdsToListenTo = false;
 				sleep(2);
 				fds = 0;

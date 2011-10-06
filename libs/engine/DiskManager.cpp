@@ -26,17 +26,6 @@ namespace engine
     
     static DiskManager *diskManager = NULL;
     
-    void destroy_diskManager()
-    {
-        LM_M(("DiskManager terminating"));
-
-        if( diskManager )
-        {
-            delete diskManager;
-            diskManager = NULL;
-        }
-    }
-    
     void DiskManager::init( int _num_disk_operations )
     {
         // Now it is only possible to run with 1
@@ -45,11 +34,18 @@ namespace engine
         if( diskManager )
             LM_X(1,("Please, init diskManager only once"));
         
-        atexit(destroy_diskManager);
-        
         diskManager = new DiskManager (_num_disk_operations );
     }
-    
+ 
+    void DiskManager::destroy( )
+    {
+        
+        if( !diskManager )
+            LM_X(1,("Please, init diskManager before destroying it"));
+        
+        delete diskManager;
+        diskManager = NULL;
+    }
     
     DiskManager* DiskManager::shared()
     {

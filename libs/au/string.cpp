@@ -434,7 +434,33 @@ namespace au {
     {
         return strWithMaxLineLength( txt , getTerminalWidth() );
     }
+        
+    // Backward look up for a sequence
+    const char *laststrstr(const char *source ,const  char *target )
+    {
+        return laststrstr( source , strlen(source) , target );
+    }
     
+    const char *laststrstr(const char *source , size_t source_length , const char *target )
+    {
+        const char *sp;
+        
+        /* Step backward through the source string - one character at a time */
+        for( sp = source + source_length - strlen(target) ; sp >= source ; sp --)
+        {
+            const char *tp, *spt ;
+            /* go forward through the search string and source checking characters
+             Stop the loop if the character are unequal or you reach the end of the target (or string) */
+            for( tp = target, spt = sp ;  (*tp == *spt)  && (*spt != '\0') && (*tp != '\0') ; spt++, tp++ ) ;
+            
+            /* if the loop above gets to the end of the target string then it must have matched all the characters */
+            if (*tp == '\0')
+                break ;
+        }
+        /* If the outer loop finished before getting to the start of the source string then
+         it must have found a matching sub string */
+        return (sp < source) ? NULL : sp ;
+    }
     
 
 }

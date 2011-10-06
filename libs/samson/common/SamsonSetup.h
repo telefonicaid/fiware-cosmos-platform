@@ -121,6 +121,7 @@ namespace samson {
 	public:
 
 		static void init( );
+		static void destroy( );
 		static SamsonSetup *shared();
 
         // Set the main working directory ( for worker, controller )

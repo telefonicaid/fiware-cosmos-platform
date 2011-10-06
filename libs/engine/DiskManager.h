@@ -63,6 +63,7 @@ namespace engine
     public:
 
         static void init( int _num_disk_operations );
+        static void destroy( );
         static DiskManager* shared();
         
         ~DiskManager();

@@ -80,6 +80,7 @@ namespace engine
 		~Engine();
         
         static void init();
+        static void destroy();
         static Engine* shared();
         
     public:

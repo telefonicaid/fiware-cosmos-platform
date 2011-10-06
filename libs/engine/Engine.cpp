@@ -56,12 +56,6 @@ namespace engine
 		return NULL;
 	}
 
-    void removeEngine()
-    {
-        if ( engine )
-            delete engine;
-        engine = NULL;
-    }
     
 	Engine::Engine()
 	{
@@ -94,10 +88,7 @@ namespace engine
 
         // Create the unique engine entity
         engine = new Engine();
-        
-        // Remove when exit
-        atexit(removeEngine);
-        
+                
         // Add a simple periodic element to not die inmediatelly
         EngineElement *element = new NotificationElement( new Notification("alive") , 10 );
         engine->elements.push_back( element );
@@ -110,6 +101,14 @@ namespace engine
         
 	}
     
+    void Engine::destroy()
+    {
+        if ( !engine )
+            LM_M(("Please, init engine before destroying"));
+            
+        delete engine;
+        engine = NULL;
+    }
     
     // ------------------------------------------------------------------------------------------------------------------------------
     

@@ -169,15 +169,6 @@ namespace samson
 		return samsonSetup;
 	}
 	
-    void destroy_samson_setup()
-    {
-        if( samsonSetup )
-        {
-            delete samsonSetup;
-            samsonSetup = NULL;
-        }
-        
-    }
     
 	void SamsonSetup::init()
 	{
@@ -188,10 +179,20 @@ namespace samson
         }
         
 		samsonSetup = new SamsonSetup( );
-        atexit(destroy_samson_setup);
         
 	}
-	
+
+    void SamsonSetup::destroy()
+	{
+        if( !samsonSetup )
+            LM_X(1,("Init SamsonSetup before destroying it"));
+        delete samsonSetup;
+        samsonSetup = NULL;
+        
+        
+	}
+
+    
     void SamsonSetup::setWorkingDirectory( std::string workingDirectory )
 	{
 

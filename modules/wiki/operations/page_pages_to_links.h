@@ -69,13 +69,13 @@ public:
 
 		if ((p_tag_begin = strnstr(p_tag_begin, PAGE_TAG_TITLE_BEGIN, text_end - p_tag_begin)) == NULL)
 		{
-			OLM_E(("page without title begin:'%s'", PAGE_TAG_TITLE_BEGIN));
+		  //OLM_E(("page without title begin:'%s'", PAGE_TAG_TITLE_BEGIN));
 			return;
 		}
 		p_tag_begin += strlen(PAGE_TAG_TITLE_BEGIN);
 		if ((p_end = strnstr(p_tag_begin, PAGE_TAG_TITLE_END, text_end - p_tag_begin)) == NULL)
 		{
-			OLM_E(("page without title end:'%s'", PAGE_TAG_TITLE_END));
+		  //OLM_E(("page without title end:'%s'", PAGE_TAG_TITLE_END));
 			return;
 		}
 		//char *copia;
@@ -106,7 +106,7 @@ public:
 			p_tag_begin += strlen(LINK_BEGIN);
 			if ((p_end = strnstr(p_tag_begin, LINK_END, text_end - p_tag_begin)) == NULL)
 			{
-				OLM_E(("page without link begin at:'%s', but not end", p_tag_begin));
+			  //OLM_E(("page without link begin at:'%s', but not end", p_tag_begin));
 				return;
 			}
 			char *p_intern;
@@ -147,12 +147,12 @@ public:
 		{
 			if ((p_page_begin = strstr(p_page_begin, PAGE_BEGIN)) == NULL)
 			{
-				OLM_E(("Error, bad formed page (begin) starting at pos offset:%lu, (%s)", offset, p_page_begin));
+			  //OLM_E(("Error, bad formed page (begin) starting at pos offset:%lu, (%s)", offset, p_page_begin));
 				return;
 			}
 			if ((p_page_end = strstr(p_page_begin, PAGE_END)) == NULL)
 			{
-				OLM_E(("Error, bad formed page (end) starting at pos offset:%d, (%s)", offset, p_page_begin));
+			  //OLM_E(("Error, bad formed page (end) starting at pos offset:%d, (%s)", offset, p_page_begin));
 				return;
 			}
 

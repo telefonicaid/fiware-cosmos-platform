@@ -65,7 +65,7 @@ reset:
 	make reset -C testcomparefunctions
 	make reset -C hit
 	make reset -C gg
-	make reset-C page_rank
+	make reset -C page_rank
 
 eclipse:
 	make eclipse -C system

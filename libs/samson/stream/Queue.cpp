@@ -557,10 +557,10 @@ namespace samson {
 
                     num_blocks++;
                     tmp->add( block );
+                    used_blocks->addId( block->getId() );   // Add to this list to not use again in the next call to this function
                 }
             }
             
-            used_blocks->addIds(tmp);   // Add to this list to not use again in the next call to this function
             return tmp;
         }        
         

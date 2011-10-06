@@ -575,12 +575,9 @@ namespace samson {
                 bool clear_inputs =  cmd.get_flag_bool("clear_inputs"); 
                 
                 size_t min_size = cmd.get_flag_uint64("min_size");          // Minimum size to run an operation
+                size_t max_size = SamsonSetup::shared()->getUInt64("stream.max_state_division_size");          // Minimum size to run an operation
                 size_t max_latency = cmd.get_flag_uint64("max_latency");    // Max acceptable time to run an operation
                 std::string delayed_processing = cmd.get_flag_string("delayed_processing");
-                
-                // Operation size    
-                size_t default_size =  SamsonSetup::shared()->getUInt64("general.memory") / SamsonSetup::shared()->getUInt64("general.num_processess");
-                size_t operation_size = (min_size!=0)?min_size:default_size;
                 
                 BlockIdList block_ids;      // Collection of block ids for the already processed blocks ( only used in clear_inputs is not activated )
                 
@@ -726,9 +723,9 @@ namespace samson {
                             // Get a BlockList with cotent to be processed
                             BlockList *inputData;
                             if( clear_inputs )
-                                inputData = queue->getInputBlockListForProcessing( operation_size );
+                                inputData = queue->getInputBlockListForProcessing( max_size );
                             else
-                                inputData = queue->getInputBlockListForProcessing( operation_size , &block_ids );
+                                inputData = queue->getInputBlockListForProcessing( max_size , &block_ids );
                             
                             if ( inputData->isEmpty() )
                                 no_more_content = true; // No more data to be processed

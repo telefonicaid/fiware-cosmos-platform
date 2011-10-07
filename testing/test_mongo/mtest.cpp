@@ -72,7 +72,6 @@ bool  query;
 
 int   kvs;
 int   times;
-bool  bulk;
 int   bulksize;
 bool  indexed;
 bool  burst;
@@ -104,7 +103,6 @@ PaArgument paArgs[] =
 
 	{ "-kvs",      &kvs,        "KEYVALUES",   PaInt,     PaOpt,  40000,                    1,     M512,  "keyvalues"                  },
 	{ "-times",    &times,      "TIMES",       PaInt,     PaOpt,  0,                        0,     PaNL,  "times"                      },
-	{ "-bulk",     &bulk,       "BULK",        PaBool,    PaOpt,  false,                    false, true,  "bulk load"                  },
 	{ "-bulksize", &bulksize,   "BULKSIZE",    PaInt,     PaOpt,  60000,                    PaNL,  PaNL,  "bulk size"                  },
 	{ "-indexed",  &indexed,    "INDEXED",     PaBool,    PaOpt,  false,                    false, true,  "create index"               },
 	{ "-burst",    &burst,      "BURST",       PaBool,    PaOpt,  false,                    false, true,  "burst data send"            },
@@ -311,10 +309,7 @@ void dbUpload(int kvs, bool oneshot)
 
 	dbConnect();
 
-	if (bulk)
-		LM_M(("Bulk-mode-inserting %d kvs/second to server '%s', DB '%s', collection '%s'", kvs, server, db, collection));
-	else
-		LM_M(("Slow-inserting %d kvs/second to server '%s', DB '%s', collection '%s'", kvs, server, db, collection));
+	LM_M(("Bulk-inserting %d kvs/second to server '%s', DB '%s', collection '%s'", kvs, server, db, collection));
 
 	while (1)
 	{

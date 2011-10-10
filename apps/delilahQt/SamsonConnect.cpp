@@ -25,8 +25,6 @@ SamsonConnect::SamsonConnect( QWidget *parent ) : QWidget(parent)
   // No content for the error message
   setError("");
 
-  host->setPlaceholderText("Enter url of SAMSON controller...");
-
   // Connect connect Button
   connect(connectButton, SIGNAL(clicked()), this, SLOT(samson_connect()));
 

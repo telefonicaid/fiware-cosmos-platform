@@ -20,175 +20,193 @@
 
 
 namespace samson{
-namespace page_rank{
+    namespace page_rank{
 
+      struct NodeContribution
+      {
+	std::string node;
+	double contribution;
+
+	NodeContribution( const char* _node , double _contribution )
+	{
+	  node = node;
+	  contribution = _contribution;
+	}
+
+      };
+	
 	class updateMessages : public samson::Reduce
 	{
-
+	    
 	public:
+	    
+	    
+	    std::map< const char* , double , strCompare > messages;
+	    std::vector<NodeContribution> final_messages;
 
+	    
+	    samson::system::String key;     // global key
+	    samson::page_rank::Node node;   // Node
+	    
+	    // Collection of messages at the input of this update ( necessary to keep all c_str() into a memory vector >
+	    samson::page_rank::MessageCollection messageCollection;
 
-	   std::map< const char* , double , strCompare > messages;
-
-	   samson::system::String key;// key
-	   samson::page_rank::Node node;// Node
-
-	   samson::page_rank::MessageCollection messageCollection;
-
-	   samson::system::String output_message_key;
-	   samson::page_rank::Message output_message_value;
-
-
+	    // Output messages required for emitting messages at output "0"	    
+	    samson::system::String output_message_key;
+	    samson::page_rank::Message output_message_value;
+	    
+	    
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
-// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
+// If interface changes and you do not recreate this file, consider updating this information (and of course, the module 
 
-input: system.String page_rank.Message  
+input: system.String page_rank.
 input: system.String page_rank.Node  
-output: system.String page_rank.Message
-output: system.String page_rank.Node
-
-helpLine: Update intenal information about rank of pages pointing to me
+		output: system.String page_rank.Message
+		output: system.String page_rank.Node
+		
+		helpLine: Update intenal information about rank of pages pointing to me
 #endif // de INFO_COMMENT
-
-		void init(samson::KVWriter *writer )
+		
+	    void init(samson::KVWriter *writer )
+	    {
+	    }
+	    
+	    void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
+	    {
+		
+		// Parse key & node ( or to init a new node if there was not a previous one )
+		// ------------------------------------------------------------------------------------------------------
+		if( inputs[1].num_kvs > 0 )
 		{
+		    //if( inputs[1].num_kvs > 1 )
+		    //	tracer->setUserError("Error since we receive two version of the internal state");
+		    
+		    // Previous state
+		    key.parse( inputs[1].kvs[0]->key );
+		    node.parse( inputs[1].kvs[0]->value );
+		    
+		    if( inputs[0].num_kvs == 0)
+		    {
+			// No update, so just emit at the output
+			node.updated_outputs.value = 0;
+			writer->emit(1, &key , &node );
+			return;
+		    }		    		    
 		}
-
-		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
+		else
 		{
-
-		   // Parse key & node ( or to init a new node if there was not a previous one )
-		   // ------------------------------------------------------------------------------------------------------
-           if( inputs[1].num_kvs > 0 )
-           {
-              if( inputs[1].num_kvs > 1 )
-                 tracer->setUserError("Error since we receive two version of the internal state");
-
-              // There is state
-              key.parse( inputs[1].kvs[0]->key );
-              node.parse( inputs[1].kvs[0]->value );
-
-			  if( inputs[0].num_kvs == 0)
-			  {
-				 // No update...
-				 node.updated_outputs.value = 0;
-				 writer->emit(1, &key , &node );
-				 return;
-			  }
-
-
-           }
-           else
-           {
-              // No previous state
-              key.parse( inputs[0].kvs[0]->key );
-
-              // Init the node
-              node.linksSetLength(0);
-              node.messagesSetLength(0);
-              node.rank.value = 1;			  
-
-              node.updated_outputs.value = 0;
-              node.update_count.value = 0;
-
-		   }
-		   
-		   // update the cicle counter
-		   node.update_count.value++;
-
-		   // Put the messages to the previus messages to the auxiliar map
-		   // ------------------------------------------------------------------------------------------------------
-		   messages.clear();
-		   for (int i = 0 ; i < node.messages_length ; i++ )
-			  messages.insert( std::pair< const char* , double  >( node.messages[i].node.value.c_str() , node.messages[i].contribution.value ) );
-
-		   // Add of modify incomming messages
-		   messageCollection.messageSetLength(0); // Cler the list of incomming messages
-		   for ( size_t i = 0 ; i < inputs[0].num_kvs ; i++)
-		   {
-			  samson::page_rank::Message *message = messageCollection.messageAdd();
-
-			  // Parse the incomming message
-			  // Note that it is necessary to keep them in memory to make sure values containe in the map are accessible
-			  message->parse( inputs[0].kvs[i]->value );
-
-			  if( message->contribution.value == -1 )
-			  {
-				 // Remove this node
-				 messages.erase( message->node.value.c_str() );
-			  }
-			  else
-			  {
-
-				 std::map<const char* , double , strCompare>::iterator message_it;
-				 message_it = messages.find( message->node.value.c_str() );
-				 
-				 if( message_it == messages.end() )
-					messages.insert( std::pair< const char* , double  >( message->node.value.c_str() , message->contribution.value ) );
-				 else
-					message_it->second = message->contribution.value;
-			  }
-		   }
-
-		   // Put the resulting messages back to node
-		   // ------------------------------------------------------------------------------------------------------
-
-		   node.messagesSetLength(0);
-		   for( std::map<const char* , double , strCompare>::iterator message_it = messages.begin() ; message_it != messages.end() ; message_it++ )
-		   {
-			  samson::page_rank::Message *m = node.messagesAdd();
-			  m->node.value = message_it->first;
-			  m->contribution.value = message_it->second;
-		   }
-
-
-		   double previous_rank = node.rank.value;
-		   node.recompute_rank();
-
-		   // Re-emit my contribution to all the nodes if necessary
-		   // ------------------------------------------------------------------------------------------------------
-
-		   // Prepare output messages ( always with my name as node )
-           output_message_value.node.value = key.value;
-
-		   node.updated_outputs.value = 0;
-		   
-		   if( fabs( previous_rank - node.rank.value ) > 0.01 )
-		   {
-			  //printf("Node %s not emiting rank  to %d connections\n" , key.value.c_str() , node.links_length );
-
-			  for (int i = 0 ; i < node.links_length ; i++)
-			  {
-					output_message_key.value = node.links[i].value;
-					output_message_value.contribution.value = node.contribution(); // contribution
-					writer->emit( 0 , &output_message_key , &output_message_value );
-
-					node.updated_outputs.value++;
-			  }
-		   }
-		   else
-		   {
-			  //printf("Node %s not emiting rank  old:%f new:%f\n" , key.value.c_str() , previous_rank , node.rank.value);
-		   }
-
-		   // ------------------------------------------------------------------------------------------------------
-
-
-		   // Emit the node at the output...
-		   writer->emit( 1 , &key , &node );
-
+		    // No previous state
+		    key.parse( inputs[0].kvs[0]->key );
+		    
+		    // Init the node
+		    node.init();
 		}
-
-		void finish(samson::KVWriter *writer )
+		
+		// update the cicle counter
+		node.update_count.value++;
+		
+		// Put the messages inluded in node structurethe auxiliar messages map
+		// ------------------------------------------------------------------------------------------------------
+		messages.clear();
+		for (int i = 0 ; i < node.messages_length ; i++ )
+		    messages.insert( std::pair< const char* , double  >( node.messages[i].node.value.c_str() , node.messages[i].contribution.value ) );
+		
+		// Add or modify incomming messages
+		messageCollection.messageSetLength(0); // Cler the list of incomming messages
+		for ( size_t i = 0 ; i < inputs[0].num_kvs ; i++)
 		{
+		    samson::page_rank::Message *message = messageCollection.messageAdd();
+		    
+		    // Parse the incomming message
+		    // Note that it is necessary to keep them in memory to make sure values containe in the map are accessible
+		    message->parse( inputs[0].kvs[i]->value );
+		    
+		    if( message->contribution.value == -1 )
+		    {
+			// Remove this node
+			messages.erase( message->node.value.c_str() );
+		    }
+		    else
+		    {
+			
+			std::map<const char* , double , strCompare>::iterator message_it;
+			message_it = messages.find( message->node.value.c_str() );
+			
+			if( message_it == messages.end() )
+			    messages.insert( std::pair< const char* , double  >( message->node.value.c_str() , message->contribution.value ) );
+			else
+			    message_it->second = message->contribution.value;
+		    }
 		}
+		
+		// Put the resulting messages back to node
+		// ------------------------------------------------------------------------------------------------------
+
+		// Note: We need to extract first to auxiliar vector ( with real copies of everything )
+		final_messages.clear();
+
+		for( std::map<const char* , double , strCompare>::iterator message_it = messages.begin() ; message_it != messages.end() ; message_it++ )		
+		  {
+		    final_messages.push_back( NodeContribution( message_it->first , message_it->second ) );
+		  }
 
 
-
+		node.messagesSetLength(0);
+		for( size_t i = 0 ; i < final_messages.size() ; i++)
+		{
+		    samson::page_rank::Message *m = node.messagesAdd();
+		    m->node.value = final_messages[i].node;
+		    m->contribution.value = final_messages[i].contribution;
+		}
+		
+		// recompute rank and see if it has changed significantly
+		double previous_rank = node.rank.value;
+		node.recompute_rank();
+		
+		// Re-emit my contribution to all the nodes if necessary
+		// ------------------------------------------------------------------------------------------------------
+		
+		// Prepare output messages ( always with my name as node )
+		output_message_value.node.value = key.value;
+		
+		node.updated_outputs.value = 0;
+		
+		if( fabs( previous_rank - node.rank.value ) > 0.01 )
+		{
+		    //printf("Node %s not emiting rank  to %d connections\n" , key.value.c_str() , node.links_length );
+		    
+		    for (int i = 0 ; i < node.links_length ; i++)
+		    {
+			output_message_key.value = node.links[i].value;
+			output_message_value.contribution.value = node.contribution(); // contribution
+			writer->emit( 0 , &output_message_key , &output_message_value );
+			
+			node.updated_outputs.value++;
+		    }
+		}
+		else
+		{
+		    //printf("Node %s not emiting rank  old:%f new:%f\n" , key.value.c_str() , previous_rank , node.rank.value);
+		}
+		
+		// ------------------------------------------------------------------------------------------------------
+		
+		
+		// Emit the node at the output...
+		writer->emit( 1 , &key , &node );
+		
+	    }
+	    
+	    void finish(samson::KVWriter *writer )
+	    {
+	    }
+	    
+	    
+	    
 	};
-
-
-} // end of namespace page_rank
+	
+	
+    } // end of namespace page_rank
 } // end of namespace samson
 
 #endif

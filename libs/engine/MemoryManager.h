@@ -56,6 +56,7 @@ namespace engine {
                                                         // It is necessary to protect since network thread can access directly here
 
 		size_t memory;                                  // Total available memory
+		size_t acum_memory;				// Simple counter to keep track total amount of memory _newed and not destroyed
 				
 		// List of memory requests
 		au::list <MemoryRequest> memoryRequests;        // Only used for inputs ( tag == 0 )

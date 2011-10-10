@@ -68,6 +68,7 @@ namespace engine
 	{
 		// Total available memory
         memory = _memory;
+	acum_memory = 0;
     }
 	
 	MemoryManager::~MemoryManager()
@@ -77,6 +78,7 @@ namespace engine
 	
 	Buffer *MemoryManager::newBuffer( std::string name , size_t size , int tag )
 	{
+	//LM_M(("Before new mutex  buffer:%s, size:%lu, tag:%d\n", name.c_str(), size, tag));
         au::TokenTaker tk( &token );
 
 		Buffer *b = _newBuffer( name , size , tag );
@@ -87,17 +89,24 @@ namespace engine
 	{
 		
 		Buffer *b = new Buffer( name, size, tag );
+
         
         //LM_M(("Alloc buffer '%s' " , b->str().c_str() ));
         
         // Insert in the temporal set of active buffers
         buffers.insert( b );
+
+		//LM_M(("New memory buffer:%s, size:%lu, tag:%d, memory:%lu\n", b->str().c_str(), size, tag, _getUsedMemory()));
+		acum_memory += size;
+
+		LM_M(("New memory buffer:%s, size:%lu, tag:%d, acum_memory:%lu\n", b->str().c_str(), size, tag, acum_memory));
         
 		return b;
 	}	
 	
 	void MemoryManager::destroyBuffer(Buffer* b)
 	{
+	//LM_M(("Before delete mutex  buffer:%s\n", b->str().c_str()));
         au::TokenTaker tk( &token );
         
         
@@ -111,6 +120,14 @@ namespace engine
         buffers.erase( b );
         
         LM_T(LmtMemory, ("Dealloc buffer with max size %sbytes", au::str( b->getMaxSize() ).c_str() ) );
+		//LM_M(("destroying memory buffer:%s, memory:%lu\n", b->str().c_str(), _getUsedMemory()));
+		acum_memory -= b->getMaxSize();
+		LM_M(("destroying memory buffer:%s, acum_memory:%lu\n", b->str().c_str(), acum_memory));
+		if (acum_memory < 0)
+		{
+			LM_W(("WARNING: memory track under 0 after destroying buffer:%s\n", b->str().c_str()));
+			acum_memory = 0;
+		}
         
         
         b->free();

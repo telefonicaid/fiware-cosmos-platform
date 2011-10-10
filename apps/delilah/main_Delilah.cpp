@@ -137,7 +137,7 @@ int main(int argC, const char *argV[])
 	paConfig("prefix",                        (void*) "SSW_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) false);
-	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT");
+	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
 	paConfig("log to file",                   (void*) true);
 
     paConfig("man synopsis",                  (void*) manSynopsis);
@@ -192,6 +192,7 @@ int main(int argC, const char *argV[])
 	while (!networkP->ready())
 		usleep(1000);
 	std::cout << " OK\n";
+	LM_M(("\nConnecting to SAMSOM controller %s ... OK", controller));
 
 	std::cerr << "Connecting to all workers ...";
     std::cerr.flush();
@@ -212,6 +213,7 @@ int main(int argC, const char *argV[])
 	while (!networkP->ready(true))
 		sleep(1);
 	std::cout << " OK\n";
+	LM_M(("\nConnecting to all workers ... OK"));
 
 
 	// Create a DelilahControler once network is ready
@@ -259,6 +261,7 @@ int main(int argC, const char *argV[])
                 
                 size_t id = delilahConsole->runAsyncCommand( line );
                 std::cerr << au::str("Processing: '%s' [ id generated %lu ]\n", line , id);
+		LM_M(("Processing: '%s' [ id generated %lu ]\n", line , id));
                 
                 if( id != 0)
                 {
@@ -272,6 +275,10 @@ int main(int argC, const char *argV[])
                         std::cerr << "Error: " << delilahConsole->errorMessage( id ) << "\n";
                         std::cerr << "Error running '" << line <<  "' at line " << num_line << "\n";
                         std::cerr << "Exiting...";
+
+			LM_E(("Error: %s",  delilahConsole->errorMessage( id ).c_str()));
+			LM_E(("Error running '%s' at line %d\n", line, num_line));
+			LM_E(("Exiting..."));
                     }
                     
                 }

@@ -135,7 +135,7 @@ namespace engine {
 		// ------------------------------------------
 		
 		// Remove the last characters of an unfinished line and put them in buffer.
-		size_t removeLastUnfinishedLine( char * buffer );
+        int removeLastUnfinishedLine( char ** buffer , size_t* buffer_size);
 
 		
     public:

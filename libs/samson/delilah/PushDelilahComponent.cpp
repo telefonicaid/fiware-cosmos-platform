@@ -116,6 +116,7 @@ namespace samson
             if( !memoryRequest )
                 LM_X(1, ("Internal error: Memory request returnes without a buffer"));
 
+            
             if ( !memoryRequest->buffer )
             {
                 setComponentFinishedWithError( "Memory request returned without the allocated buffer" );
@@ -129,7 +130,11 @@ namespace samson
             buffer->skipWrite( sizeof(KVHeader) );
             
             // Full the buffer with the content from the files
-            dataSource->fill( buffer );
+            if( dataSource->fill( buffer ) != 0)
+            {
+                setComponentFinishedWithError("Error filling buffer");
+                return;
+            }
 
             // Set the header    
             KVHeader *header = (KVHeader*) buffer->getData();

@@ -1589,11 +1589,11 @@ LmStatus lmPathRegister(const char* path, const char* format, const char* timeFo
 	
 	if (isdir((char*) path) == true)
 	{
-		if (!strcmp(progName, "delilah"))
-		{
-			snprintf(fileName, sizeof(fileName), "%s/%sLog.%d", path, &progName[0], getpid());
-		}
-		else
+		//if (!strcmp(progName, "delilah"))
+		//{
+		//	snprintf(fileName, sizeof(fileName), "%s/%sLog.%d", path, &progName[0], getpid());
+		//}
+		//else
 		{
 			snprintf(fileName, sizeof(fileName), "%s/%sLog", path, &progName[0]);
 		}

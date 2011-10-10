@@ -200,7 +200,7 @@ do {                                                                       \
    if ((text = lmTextGet s) != NULL)                                       \
    {                                                                       \
       lmOut(text, 'M', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
-      free(text);                                                          \
+      ::free(text);                                                          \
    }                                                                       \
 } while (0)
 #endif
@@ -220,7 +220,7 @@ do {                                                                       \
    if ((text = lmTextGet s) != NULL)                                       \
    {                                                                       \
       lmOut(text, 'H', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
-      free(text);                                                          \
+      ::free(text);                                                          \
    }                                                                       \
 } while (0)
 #endif
@@ -367,7 +367,7 @@ do {                                                                            
    if ((text = lmTextGet s) != NULL)                                             \
    {                                                                             \
       lmAddMsgBuf(text, 'M', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
-      free(text);                                                                \
+      ::free(text);                                                                \
    }                                                                             \
 } while (0)
 #endif
@@ -387,7 +387,7 @@ do {                                                                    \
    if ((text = lmTextGet s) != NULL)                                    \
    {                                                                    \
       lmAddMsgBuf(text, 'F', __FILE__, __LINE__, "FFF", 0, NULL);       \
-      free(text);                                                       \
+      ::free(text);                                                       \
    }                                                                    \
 } while (0)
 #endif
@@ -407,7 +407,7 @@ do {                                                                            
    if ((text = lmTextGet s) != NULL)                                             \
    {                                                                             \
       lmAddMsgBuf(text, 'W', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
-      free(text);                                                                \
+      ::free(text);                                                                \
    }                                                                             \
 } while (0)
 #endif
@@ -428,7 +428,7 @@ do {                                                                            
    if ((text = lmTextGet s) != NULL)                                             \
    {                                                                             \
       lmAddMsgBuf(text, 'E', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
-      free(text);                                                                \
+      ::free(text);                                                                \
    }                                                                             \
 } while (0)
 #endif
@@ -468,7 +468,7 @@ do {                                                                            
       if ((text = lmTextGet s) != NULL)                                                \
       {                                                                                \
          lmAddMsgBuf(text, 'T', __FILE__, __LINE__, (char*) __FUNCTION__, tLev, NULL); \
-         free(text);                                                                   \
+         ::free(text);                                                                   \
       }                                                                                \
    }                                                                                   \
 } while (0)
@@ -558,7 +558,7 @@ do {                                                                       \
    if ((text = lmTextGet s) != NULL)                                       \
    {                                                                       \
       lmOut(text, 'x', __FILE__, __LINE__, __FUNCTION__, c, stre);	       \
-      free(text);                                                          \
+      ::free(text);                                                          \
    }                                                                       \
 } while (0)
 #endif
@@ -598,7 +598,7 @@ do {                                                                          \
       if ((text = lmTextGet s) != NULL)                                       \
       {                                                                       \
          lmOut(text, 't', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
-         free(text);                                                          \
+         ::free(text);                                                          \
       }                                                                       \
    }                                                                          \
 } while (0)
@@ -616,7 +616,7 @@ do {                                                                       \
    if ((text = lmTextGet s) != NULL)                                       \
    {                                                                       \
       lmOut(text, 'd', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
-      free(text);                                                          \
+      ::free(text);                                                          \
    }                                                                       \
 } while (0)
 
@@ -633,7 +633,7 @@ do {                                                                       \
    if ((text = lmTextGet s) != NULL)                                       \
    {                                                                       \
       lmOut(text, 'F', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
-      free(text);                                                          \
+      ::free(text);                                                          \
    }                                                                       \
 } while (0)
 
@@ -650,7 +650,7 @@ do {                                                                       \
    if ((text = lmTextGet s) != NULL)                                       \
    {                                                                       \
       lmOut(text, 'B', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
-      free(text);                                                          \
+      ::free(text);                                                          \
    }                                                                       \
 } while (0)
 
@@ -669,7 +669,7 @@ do {                                                                            
       if ((text = lmTextGet s) != NULL)                                          \
       {                                                                          \
          lmOut(text, 'T', __FILE__, __LINE__, (char*) __FUNCTION__, tLev, NULL); \
-         free(text);                                                             \
+         ::free(text);                                                             \
       }                                                                          \
    }                                                                             \
 } while (0)
@@ -689,7 +689,7 @@ do {                                                                          \
       if ((text = lmTextGet s) != NULL)                                       \
       {                                                                       \
          lmOut(text, 'D', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
-         free(text);                                                          \
+         ::free(text);                                                          \
       }                                                                       \
    }                                                                          \
 } while (0)
@@ -707,7 +707,7 @@ do {                                                                    \
    if ((text = lmTextGet s) != NULL)                                    \
    {                                                                    \
       lmOut(text, 'R', __FILE__, __LINE__, NULL, 0, NULL);              \
-      free(text);                                                       \
+      ::free(text);                                                       \
    }                                                                    \
 } while (0)
 
@@ -808,7 +808,7 @@ do {                                                                       \
    {                                                                       \
       lmOut(text, 'E', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
       if (lmxFp != NULL) lmxFp(xCode, text);                               \
-      free(text);                                                          \
+      ::free(text);                                                          \
    }                                                                       \
 } while (0)
 
@@ -826,7 +826,7 @@ do {                                                                       \
    {                                                                       \
       lmOut(text, 'E', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
       if (lmxFp != NULL) lmxFp(xCode, text);                               \
-      free(text);                                                          \
+      ::free(text);                                                          \
    }                                                                       \
    if (1 == 1) return rCode;                                               \
 } while (0)
@@ -845,7 +845,7 @@ do {                                                                           \
    {                                                                           \
       lmOut(text, 'X', __FILE__, __LINE__, (char*) __FUNCTION__, eCode, NULL); \
       if (lmxFp != NULL) lmxFp(xCode, text);                                   \
-      free(text);                                                              \
+      ::free(text);                                                              \
    }                                                                           \
 } while (0)
 
@@ -863,7 +863,7 @@ do {                                                                       \
    {                                                                       \
       lmOut(text, 'W', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
       if (lmxFp != NULL) lmxFp(xCode, text);                               \
-      free(text);                                                          \
+      ::free(text);                                                          \
    }                                                                       \
 } while (0)
 
@@ -881,7 +881,7 @@ do {                                                                       \
    {                                                                       \
       lmOut(text, 'M', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
       if (lmxFp != NULL) lmxFp(xCode, text);                               \
-      free(text);                                                          \
+      ::free(text);                                                          \
    }                                                                       \
 } while (0)
 
@@ -902,7 +902,7 @@ do {                                                                          \
       {                                                                       \
          lmOut(text, 'V', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
          if (lmxFp != NULL) lmxFp(xCode, text);                               \
-         free(text);                                                          \
+         ::free(text);                                                          \
       }                                                                       \
    }                                                                          \
 } while (0)
@@ -923,7 +923,7 @@ do {                                                                          \
       {                                                                       \
          lmOut(text, 'D', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
          if (lmxFp != NULL) lmxFp(xCode, text);                               \
-         free(text);                                                          \
+         ::free(text);                                                          \
       }                                                                       \
    }                                                                          \
 } while (0)
@@ -944,7 +944,7 @@ do {                                                                            
       {                                                                          \
          lmOut(text, 'T', __FILE__, __LINE__, (char*) __FUNCTION__, tLev, NULL); \
          if (lmxFp != NULL) lmxFp(xCode, text);                                  \
-         free(text);                                                             \
+         ::free(text);                                                             \
       }                                                                          \
    }                                                                             \
 } while (0)

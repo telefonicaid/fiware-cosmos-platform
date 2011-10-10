@@ -155,7 +155,10 @@ namespace samson {
             //LM_M(("Received with sender_id %lu (component %p)", sender_id , component));
             
             if ( component )
+            {
                 component->receive( fromId, msgCode, packet );
+                return; // If process by component, not process anywhere else
+            }
             
         }
         

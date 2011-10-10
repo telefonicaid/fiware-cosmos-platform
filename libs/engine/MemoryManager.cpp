@@ -99,7 +99,7 @@ namespace engine
 		//LM_M(("New memory buffer:%s, size:%lu, tag:%d, memory:%lu\n", b->str().c_str(), size, tag, _getUsedMemory()));
 		acum_memory += size;
 
-		LM_M(("New memory buffer:%s, size:%lu, tag:%d, acum_memory:%lu\n", b->str().c_str(), size, tag, acum_memory));
+		//LM_M(("New memory buffer:%s, size:%lu, tag:%d, acum_memory:%lu\n", b->str().c_str(), size, tag, acum_memory));
         
 		return b;
 	}	
@@ -122,7 +122,7 @@ namespace engine
         LM_T(LmtMemory, ("Dealloc buffer with max size %sbytes", au::str( b->getMaxSize() ).c_str() ) );
 		//LM_M(("destroying memory buffer:%s, memory:%lu\n", b->str().c_str(), _getUsedMemory()));
 		acum_memory -= b->getMaxSize();
-		LM_M(("destroying memory buffer:%s, acum_memory:%lu\n", b->str().c_str(), acum_memory));
+		//LM_M(("destroying memory buffer:%s, acum_memory:%lu\n", b->str().c_str(), acum_memory));
 		if (acum_memory < 0)
 		{
 			LM_W(("WARNING: memory track under 0 after destroying buffer:%s\n", b->str().c_str()));

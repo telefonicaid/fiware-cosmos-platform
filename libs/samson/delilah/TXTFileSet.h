@@ -15,7 +15,7 @@ namespace samson {
     public:
         
 		virtual bool isFinish()=0;
-		virtual void fill( engine::Buffer *b )=0;
+		virtual int fill( engine::Buffer *b )=0;
         virtual size_t getTotalSize()=0;
         
     };
@@ -47,7 +47,7 @@ namespace samson {
             return (pos>=size);
         }
 		
-        void fill( engine::Buffer *b )
+        int fill( engine::Buffer *b )
         {
             size_t available_size = b->getAvailableWrite();
             
@@ -55,7 +55,7 @@ namespace samson {
             {
                 b->write( &data[pos] , size-pos );
                 pos = size;
-                return;
+                return 0;
             }
             else
             {
@@ -69,6 +69,8 @@ namespace samson {
                 b->write( &data[pos] , pos2 - pos );
                 pos = pos2;
             }
+            
+            return 0;
             
         }
         
@@ -90,11 +92,11 @@ namespace samson {
 		int file;
 		bool finish;
 		
-		char previousBuffer[ 10000 ];			// Part of the previous buffer waiting for the next read
+		char *previousBuffer;               // Part of the previous buffer waiting for the next read
 		size_t previousBufferSize;
 		
 		std::vector<std::string> failedFiles;		// List of files that could not be uploaded		
-		
+        
 	public:
 		
 		TXTFileSet( std::vector<std::string> &_fileNames )
@@ -102,10 +104,12 @@ namespace samson {
 			fileNames = _fileNames;
 			
 			previousBufferSize = 0;
+			previousBuffer = NULL;
 			
 			finish = false;
 			file = 0;	
-			
+
+            
 			openNextFile();
 		}
 		
@@ -135,7 +139,7 @@ namespace samson {
 		}
 		
 		// Read as much as possible breaking in lines
-		void fill( engine::Buffer *b );
+		int fill( engine::Buffer *b );
 		
 		std::vector<std::string> getFailedFiles()
 		{

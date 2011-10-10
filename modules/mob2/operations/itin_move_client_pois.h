@@ -63,7 +63,7 @@ public:
 			next_loc.parse(inputs[0].kvs[elem+1]->value);
 
 			if(cur_loc.bts.value != next_loc.bts.value) // Movement between POIs
-					{
+			{
 				//Calculate diference of time between locs
 				difmonth = next_loc.date.month.value - cur_loc.date.month.value;
 				if(difmonth > 1)
@@ -89,12 +89,12 @@ public:
 				distance = (nMinsMonth * difmonth) + (1440 * difday) + (60 * difhour) + difmin;
 
 				if(distance <= mob_conf_max_minutes_in_moves)  // Filter movements by diff of time
-						{
+				{
 					move.source.copyFrom(&cur_loc);
 					move.target.copyFrom(&next_loc);
 					writer->emit(0, &node,&move);
-						}
-					}
+				}
+			}
 		}
 
 	}

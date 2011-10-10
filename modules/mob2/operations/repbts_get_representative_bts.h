@@ -11,6 +11,7 @@
 #include <samson/modules/mob2/Bts_Counter.h>
 #include <samson/modules/mob2/TwoInt.h>
 #include <samson/modules/system/UInt.h>
+#include "mob2_environment_parameters.h"
 
 
 
@@ -28,8 +29,8 @@ class repbts_get_representative_bts : public samson::Reduce
 	Bts_Counter output;
 
 	//Configurable thresholds
-	uint64_t mob_conf_min_number_calls_bts;
-	uint64_t mob_conf_min_perc_rep_bts;
+	unsigned int conf_min_number_calls_bts;
+	unsigned int conf_min_perc_rep_bts;
 
 public:
 
@@ -46,8 +47,8 @@ public:
 
 	void init(samson::KVWriter *writer )
 	{
-		mob_conf_min_number_calls_bts = 12;
-		mob_conf_min_perc_rep_bts = 5;
+		conf_min_number_calls_bts = environment->getInt(MOB2_PARAMETER_MIN_NUMBER_CALLS_BTS, MOB2_PARAMETER_MIN_NUMBER_CALLS_BTS_DEFAULT);
+		conf_min_perc_rep_bts = environment->getInt(MOB2_PARAMETER_MIN_PERC_REP_BTS, MOB2_PARAMETER_MIN_PERC_REP_BTS_DEFAULT);
 	}
 
 	////////
@@ -66,8 +67,8 @@ public:
 			counter.parse(inputs[0].kvs[i]->value);
 			// counter.count --> percentage of comm of rep bts
 			// counter.range --> number of comm of rep bts
-			if( counter.count.value >= mob_conf_min_perc_rep_bts  &&
-					counter.range.value >= mob_conf_min_number_calls_bts)
+			if( counter.count.value >= conf_min_perc_rep_bts  &&
+					counter.range.value >= conf_min_number_calls_bts)
 			{
 				nodebts.num1.value = node.value;
 				nodebts.num2.value = counter.bts.value;

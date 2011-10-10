@@ -14,6 +14,7 @@
 #include <samson/modules/system/UInt.h>
 #include "mongo/client/dbclient.h"
 #include "mongo/client/dbclientcursor.h"
+#include "mob2_environment_parameters.h"
 
 
 namespace samson{
@@ -40,6 +41,9 @@ class cluster_bts_get_min_distance : public samson::Reduce
 	std::string          mongo_db_path;
 	DBClientConnection*  mdbConnection;
 
+	// Environment variable
+	int coordsLength;
+
 	// Temporal variables
 	samson::system::Double coord;
 	Cluster clusterInfo;
@@ -59,6 +63,8 @@ public:
 
 	void init(samson::KVWriter *writer )
 	{
+		coordsLength = environment->getInt(MOB2_PARAMETER_COORDS_LENGTH, MOB2_PARAMETER_COORDS_LENGTH_DEFAULT);
+
 		btsClusters.clusterSetLength(0);
 		mongo_ip           = environment->get("mongo.ip",    "no-mongo-ip");
 		mongo_db           = environment->get("mongo.db",    "no-mongo-db");
@@ -121,7 +127,7 @@ public:
 			//OLM_T(LMT_User06, ("cluster[%d].clusterInfo.mean:%lf", clusId, clusterInfo.mean.value));
 			clusterInfo.distance.value = bo.getField("clusterInfo.distance").Double();
 			//OLM_T(LMT_User06, ("cluster[%d].clusterInfo.distance:%lf", clusId, clusterInfo.distance.value));
-			for(int j=0; j<96; j++)
+			for(int j=0; j<coordsLength; j++)
 			{
 #define MAXLENKEY 20
 				char coordKey[MAXLENKEY];

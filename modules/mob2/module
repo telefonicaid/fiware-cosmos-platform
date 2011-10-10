@@ -4,6 +4,15 @@ Module mob2
 	title	"mob-2.0  module"
 	author 	"Alberto Martín, ported to SAMSON by Gregorio Escalada"
 	version "0.1"
+	help
+	{
+		"module for Mobility 2.0 analysis"
+		"The results of the analysis:"
+		" -communication vectors: compute the communication vectors for users, bts and points of interest (POIs)"
+		" -communication vectors labelling (users, bts and POIs)"
+		" -compute influence area and turning radius for users"
+		" -compute users' itineraries between POIs"	
+	}
 	
 }
 
@@ -1536,6 +1545,16 @@ reduce reduce_update_last_position
 	out system.UInt mob2.UserState
 	
 	helpLine "Updates last position information for every user"
+}
+
+reduce reduce_user_info
+{
+	in system.UInt mob2.UserState
+	in system.UInt mob2.UserState
+	out system.UInt mob2.UserState
+	out system.UInt mob2.UserState
+	
+	helpLine "Updates last position and imei information for every user, and detects changes in imei"
 }
 
 reduce reduce_check_imeis_by_user

@@ -102,20 +102,24 @@ public:
 				{
 					cdr.parse(inputs[0].kvs[i]->value);
 					///////////// POINTS OF INTEREST /////////////
-					node_bts.phone = cdr.phone;
+					node_bts.phone.value = cdr.phone.value;
 					bts.value = node_bts.bts.value = cell.bts.value;
 					cdr.timeUnix.getDateTimeFromTimeUTC(&lDate, &lTime);
 
 					node_bts.wday.value = lDate.week_day.value;
-					if(node_bts.wday.value == 0)          // Group 3: Sunday
+#define SUNDAY_INDEX 0
+#define SATURDAY_INDEX 6
+#define FRIDAY_INDEX 5
+
+					if(node_bts.wday.value == SUNDAY_INDEX)          // Group 3: Sunday
 					{
 						dayrange.num1.value = 3;
 					}
-					else if(node_bts.wday.value == 5)     // Group 1: Friday
+					else if(node_bts.wday.value == FRIDAY_INDEX)     // Group 1: Friday
 					{
 						dayrange.num1.value = 1;
 					}
-					else if(node_bts.wday.value == 6)     // Group 2: Saturday
+					else if(node_bts.wday.value == SATURDAY_INDEX)     // Group 2: Saturday
 					{
 						dayrange.num1.value = 2;
 					}
@@ -131,7 +135,7 @@ public:
 					telmonth.phone.value = cdr.phone.value;
 					telmonth.month.value = lDate.month.value;
 					int hour = lTime.hour.value;
-					if( (node_bts.wday.value == 0 || node_bts.wday.value == 6)||(node_bts.wday.value == 5 && hour >= 18)) // Weekend
+					if( (node_bts.wday.value == SUNDAY_INDEX || node_bts.wday.value == SATURDAY_INDEX)||(node_bts.wday.value == FRIDAY_INDEX && hour >= 18)) // Weekend
 					{
 						telmonth.workingday.value = 0;
 					}

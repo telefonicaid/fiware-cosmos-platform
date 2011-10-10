@@ -11,6 +11,7 @@
 #include <samson/modules/cdr/mobCdr.h>
 #include <samson/modules/mob2/Node_Bts_Day.h>
 #include <samson/modules/system/UInt.h>
+#include "mob2_environment_parameters.h"
 
 
 
@@ -27,8 +28,8 @@ class repbts_filter_num_comms : public samson::Reduce
 	samson::system::UInt ncomms;
 
 	// Configuration thresholds
-	uint64_t mob_conf_min_number_total_calls;
-	uint64_t mob_conf_max_number_total_calls;
+	unsigned int conf_min_number_total_calls;
+	unsigned int conf_max_number_total_calls;
 
 public:
 
@@ -48,8 +49,8 @@ public:
 
 	void init(samson::KVWriter *writer )
 	{
-		mob_conf_min_number_total_calls = 200;
-		mob_conf_max_number_total_calls = 5000;
+		conf_min_number_total_calls = environment->getInt(MOB2_PARAMETER_MIN_NUMBER_TOTAL_CALLS, MOB2_PARAMETER_MIN_NUMBER_TOTAL_CALLS_DEFAULT);
+		conf_max_number_total_calls = environment->getInt(MOB2_PARAMETER_MAX_NUMBER_TOTAL_CALLS, MOB2_PARAMETER_MAX_NUMBER_TOTAL_CALLS_DEFAULT);
 	}
 
 	////////
@@ -82,12 +83,12 @@ public:
 		num_comms_nobts = inputs[2].num_kvs;
 
 		// Filter by total num of communications
-		if((num_comms_info + num_comms_noinfo + num_comms_nobts) < mob_conf_min_number_total_calls)
+		if((num_comms_info + num_comms_noinfo + num_comms_nobts) < conf_min_number_total_calls)
 		{
 			ncomms.value = num_comms_info + num_comms_noinfo + num_comms_nobts;
 			//      writer->emit(1, &node,&ncomms);
 		}
-		else if((num_comms_info + num_comms_noinfo + num_comms_nobts) > mob_conf_max_number_total_calls)
+		else if((num_comms_info + num_comms_noinfo + num_comms_nobts) > conf_max_number_total_calls)
 		{
 			ncomms.value = num_comms_info + num_comms_noinfo + num_comms_nobts;
 			//      writer->emit(2, &node,&ncomms);

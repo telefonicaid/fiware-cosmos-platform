@@ -19,6 +19,15 @@ namespace mob2{
 	class itin_get_peaks : public samson::Reduce
 	{
 
+		//Inputs
+		samson::mob2::ItinRange moveRange;
+		samson::mob2::ClusterVector dist_moves;
+		//Outputs
+		samson::mob2::ClusterVector peaks_moves;
+
+		// Temporal variable
+		samson::mob2::ClusterVector temp_moves;
+
 	public:
 
 
@@ -38,6 +47,66 @@ extendedHelp: 		Get peaks of moves vector
 
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
+			double abs_max = 0;
+
+			for(uint64_t i=0; i<inputs[0].num_kvs; i++)
+			{
+				moveRange.parse(inputs[0].kvs[i]->key);
+				dist_moves.parse(inputs[0].kvs[i]->value);
+				// VECTOR NORMALIZATION
+				for(int j=0; j<dist_moves.coms_length; j++)
+				{
+					if(j<72 && j>95)	// 26 Mondays, Tuesdays, Wednesdays, Fridays, Saturdays and Sundays
+					{
+						dist_moves.coms[j].value/=26;
+					}
+					else	// 25 Tuesdays in the period
+					{
+						dist_moves.coms[j].value/=25;
+					}
+				}
+				//PEAKS EXTRACTION
+				//Step 1: Ascendent detection
+					// Last element (prediction)
+				samson::system::Double elem;
+				elem.value = 0.0;
+				dist_moves.comsAdd()->copyFrom(&elem);
+					// First element (prediction)
+				temp_moves.comsSetLength(0);
+				temp_moves.comsAdd()->copyFrom(&elem);
+				for(int j=0; j<dist_moves.coms_length-1; j++)
+				{
+					double cur, pos;
+					cur = dist_moves.coms[j].value;
+					pos = dist_moves.coms[j+1].value;
+					elem.value = cur>=pos ? cur : 0;
+					temp_moves.comsAdd()->copyFrom(&elem);
+				}
+				//Step 2: Descendent detection
+				peaks_moves.comsSetLength(0);
+				for(int j=1; j<temp_moves.coms_length; j++)
+				{
+					double cur, ant;
+					ant = temp_moves.coms[j-1].value;
+					cur = temp_moves.coms[j].value;
+					elem.value = cur>=ant ? cur : 0;
+					peaks_moves.comsAdd()->copyFrom(&elem);
+					if(elem.value > abs_max)
+					{
+						abs_max = elem.value;
+					}
+				}
+				// FILTER BY 70% OF ABSOLUTE MAXIMUM
+				abs_max *= 0.7;
+				for(int j=0; j<peaks_moves.coms_length; j++)
+				{
+					if(peaks_moves.coms[j].value < abs_max)
+					{
+						peaks_moves.coms[j].value = 0;
+					}
+				}
+			}
+			writer->emit(0, &moveRange,&peaks_moves);
 		}
 
 		void finish(samson::KVWriter *writer )

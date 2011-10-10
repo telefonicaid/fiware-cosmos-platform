@@ -12,6 +12,7 @@
 #include "macros_parse_fields_mob2.h"
 #include "mongo/client/dbclient.h"
 #include <stdint.h>
+#include "mob2_environment_parameters.h"
 
 using namespace mongo;
 
@@ -28,6 +29,9 @@ class parse_mongodb_mob_clusters : public samson::Parser
 	std::string          mongo_collection;
 	std::string          mongo_db_path;
 	DBClientConnection*  mdbConnection;
+
+	// Environment variable
+	int coordsLength;
 
 	// Temporal variables
 	samson::system::Double coord;
@@ -47,7 +51,9 @@ public:
 
 	void init( samson::KVWriter *writer )
 {
-	OLM_T(LMT_User06, ("Starting init()"));
+	//OLM_T(LMT_User06, ("Starting init()"));
+
+	coordsLength = environment->getInt(MOB2_PARAMETER_COORDS_LENGTH, MOB2_PARAMETER_COORDS_LENGTH_DEFAULT);
 
 	mdbConnection        = NULL;
 	mongo_ip           = environment->get("mongo.ip",    "no-mongo-ip");
@@ -110,27 +116,27 @@ void parseLines( char *line , samson::KVWriter *writer)
 	double clusterDistance;
 	double coord;
 
-	OLM_T(LMT_User06, ("Starting parseLines() with line:%s", line));
+	//OLM_T(LMT_User06, ("Starting parseLines() with line:%s", line));
 
 	MR_PARSER_INIT(line);
 	GET_CLUST_INIT_MX
 	GET_CLUST_NEXT_FIELD
 	GET_CLUST_GET_INT(clusterLabel)
-	OLM_T(LMT_User06, ("clusterId:%lu", clusterLabel));
+	//OLM_T(LMT_User06, ("clusterId:%lu", clusterLabel));
 	bb.append("clusterInfo.label", (long long)clusterLabel); // clusterId
 	GET_CLUST_NEXT_FIELD
 	GET_CLUST_GET_INT(clusterLabelgroup)
-	OLM_T(LMT_User06, ("clusterInfo.labelgroup:%lu", clusterLabelgroup));
+	//OLM_T(LMT_User06, ("clusterInfo.labelgroup:%lu", clusterLabelgroup));
 	bb.append("clusterInfo.labelgroup", (long long) clusterLabelgroup);
 	GET_CLUST_NEXT_FIELD
 	GET_CLUST_GET_DOUBLE(clusterMean)
-	OLM_T(LMT_User06, ("clusterInfo.mean:%lf", clusterMean));
+	//OLM_T(LMT_User06, ("clusterInfo.mean:%lf", clusterMean));
 	bb.append("clusterInfo.mean", clusterMean);
 	GET_CLUST_NEXT_FIELD
 	GET_CLUST_GET_DOUBLE(clusterDistance)
-	OLM_T(LMT_User06, ("clusterInfo.distance:%lf", clusterDistance));
+	//OLM_T(LMT_User06, ("clusterInfo.distance:%lf", clusterDistance));
 	bb.append("clusterInfo.distance", clusterDistance);
-	for(int j=0; j<96; j++)
+	for(int j=0; j<coordsLength; j++)
 	{
 #define MAXLENKEY 20
 		char coordKey[MAXLENKEY];
@@ -138,7 +144,7 @@ void parseLines( char *line , samson::KVWriter *writer)
 		GET_CLUST_NEXT_FIELD
 		GET_CLUST_GET_DOUBLE(coord)
 		snprintf(coordKey, MAXLENKEY, "coord_%d", j);
-		OLM_T(LMT_User06, ("%s:%lf", coordKey, coord));
+		//OLM_T(LMT_User06, ("%s:%lf", coordKey, coord));
 		bb.append(coordKey, coord);
 	}
 
@@ -173,7 +179,7 @@ void run( char *data , size_t length , samson::KVWriter *writer )
 
 void finish( samson::KVWriter *writer )
 {
-	OLM_T(LMT_User06, ("Starting finish()"));
+	//OLM_T(LMT_User06, ("Starting finish()"));
 	if (mdbConnection != NULL)
 	{
 		mdbConnection->ensureIndex(mongo_db_path, fromjson("{clusterId:1}"));

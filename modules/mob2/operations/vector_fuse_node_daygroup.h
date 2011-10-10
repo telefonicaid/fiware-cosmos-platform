@@ -56,7 +56,9 @@ public:
 		clusvector.comsSetLength(0);
 		nodebts.parse(inputs[0].kvs[0]->key);
 
-		for(unsigned int group=0; group<4; group++)
+#define NUM_GROUPS_WEEKDAYS 4
+
+		for(unsigned int group=0; group < NUM_GROUPS_WEEKDAYS; group++)
 		{
 			bool added = false;
 			for(uint64_t j=0; j<inputs[0].num_kvs; j++)

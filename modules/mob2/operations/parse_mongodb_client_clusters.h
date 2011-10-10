@@ -11,6 +11,7 @@
 #include <samson/modules/mob2/Cluster.h>
 #include "macros_parse_fields_mob2.h"
 #include "mongo/client/dbclient.h"
+#include "mob2_environment_parameters.h"
 
 using namespace mongo;
 

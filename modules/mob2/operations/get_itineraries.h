@@ -69,9 +69,9 @@ public:
 		}
 
 		if(itinerary.num_moves.value > 1) //Filter itineraries over by number of movements
-				{
+		{
 			writer->emit(0, &node,&itinerary);
-				}
+		}
 
 
 	}

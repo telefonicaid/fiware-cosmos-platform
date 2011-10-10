@@ -19,6 +19,11 @@ namespace mob2{
 
 	class itin_get_vector : public samson::Reduce
 	{
+		//Inputs
+		samson::mob2::ItinRange moveRange;
+		samson::mob2::ItinPercMove perc_moves;
+		//Outputs
+		samson::mob2::ClusterVector dist_moves;
 
 	public:
 
@@ -39,6 +44,28 @@ extendedHelp: 		Get vector of moves between POIs
 
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
+			// Initialization of vector
+#define NUM_DAYS_WEEK 7
+#define INDEX_SUNDAY 6
+#define NUM_HOURS_DAY 24
+#define NUM_SLOTS NUM_DAYS_WEEK * NUM_HOURS_DAY
+			dist_moves.comsSetLength(NUM_SLOTS);
+			for(int i=0; i<NUM_SLOTS; i++)
+			{
+				dist_moves.coms[i].value = 0;
+			}
+
+			moveRange.parse(inputs[0].kvs[0]->key);
+			for(uint64_t i=0;i<inputs[0].num_kvs; i++)
+			{
+				perc_moves.parse(inputs[0].kvs[i]->value);
+				int j = perc_moves.group.value - 1; // Vector starts on Monday
+				j = j>=0 ? j : INDEX_SUNDAY;	// Sunday at the end
+				j *= NUM_HOURS_DAY;
+				j += perc_moves.range.value;
+				dist_moves.coms[j].value = perc_moves.perc_moves.value;
+			}
+			writer->emit(0, &moveRange,&dist_moves);
 		}
 
 		void finish(samson::KVWriter *writer )

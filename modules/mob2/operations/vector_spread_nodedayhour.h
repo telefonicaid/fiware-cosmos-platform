@@ -63,10 +63,17 @@ public:
 			cdr.timeUnix.getDateTimeFromTimeUTC(&lDate, &lTime);
 			int date = lDate.week_day.value;
 			// Group 0: MON-TUE, Group 1: FRI, Group 2: SAT, Group 3: SUN
-			if(date == 0) 	   { noddayhour.wday.value = 3;}
-			else if(date == 5) { noddayhour.wday.value = 1;}
-			else if(date == 6) { noddayhour.wday.value = 2;}
-			else    	   { noddayhour.wday.value = 0;}
+#define SUNDAY_INDEX 0
+#define SUNDAY_GROUP 3
+#define SATURDAY_INDEX 6
+#define SATURDAY_GROUP 2
+#define FRIDAY_INDEX 5
+#define FRIDAY_GROUP 1
+#define WEEKDAY_GROUP 0
+			if(date == SUNDAY_INDEX) 	   { noddayhour.wday.value = SUNDAY_GROUP;}
+			else if(date == FRIDAY_INDEX) { noddayhour.wday.value = FRIDAY_GROUP;}
+			else if(date == SATURDAY_INDEX) { noddayhour.wday.value = SATURDAY_GROUP;}
+			else    	   { noddayhour.wday.value = WEEKDAY_GROUP;}
 			noddayhour.range.value = lTime.hour.value;
 			writer->emit(0, &noddayhour,&mrvoid);
 		}

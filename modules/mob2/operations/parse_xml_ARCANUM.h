@@ -185,7 +185,7 @@ public:
 
 		writer->emit(0, &node, &cdr);
 
-		if ((node.value != 0) && (imei.value != 0) && (cdr.cellId.value != 0) && (cdr.timeUnix != 0))
+		if ((node.value != 0) && (cdr.timeUnix != 0))
 		{
 			infoUser.imei.value = imei.value;
 			infoUser.position.cell.value = cdr.cellId.value;

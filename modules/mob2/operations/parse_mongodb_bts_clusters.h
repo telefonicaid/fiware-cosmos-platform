@@ -131,7 +131,7 @@ extendedHelp: 		Parse a txt file to extract bts clusters and store them in Mongo
 		bb.append("clusterInfo.distance", clusterInfo.distance.value);
 		for(int j=0; j<96; j++)
 		{
-	#define MAXLENKEY 20
+#define MAXLENKEY 20
 			char coordKey[MAXLENKEY];
 
 			GET_CLUST_NEXT_FIELD

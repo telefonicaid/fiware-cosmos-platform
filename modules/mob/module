@@ -4,6 +4,22 @@ Module mob
 	title	"mob  module"
 	author 	"Manuel Martin, ported to SAMSON by Gregorio Escalada"
 	version "1.2"
+	help
+	{
+		"module to solve Mobility 1.0"
+		"Compute the mobility pattern of custeomers:"
+		" - Mobility degree"
+		" - Place of home"
+		" - Place of work"
+		" Parsing and basic data types are based in cdr module"		
+		" Complete process is made with script_mobility"    
+        "      mob.script_parse $1 -create -clear;"
+        "      mob.script_generate_workdata $1 -create -clear;"
+        "      mob.script_mobility_degree $1 -create -clear;"
+        "      mob.script_location $1 home -create -clear;"
+        "      mob.script_location $1 work -create -clear;"
+        "      mob.script_generate_results $1 -create -clear;"
+	}
 	
 }
 
@@ -273,6 +289,7 @@ reduce reduce_cdrs_clients
 
 # Reduce CDRs with the cell catalogue and add
 # cell information (rest of the fields/levels).
+# Original implementation had 12 outputs, so it has been splitted in two levels
 reduce reduce_add_cell_info
 {
    in system.UInt32 cdr.mobCdr

@@ -116,7 +116,7 @@ namespace samson {
         ActiveTask *active_task = tasks.findInMap( task_id );
 
         if(!active_task)
-            LM_X(1,("Internal error. Non active task %lu" , task_id ));
+            LM_X(1,("Internal error. Non active task %lu, running command:'%s'" , task_id , command.c_str()));
         
         
 		DataManagerCommandResponse response;

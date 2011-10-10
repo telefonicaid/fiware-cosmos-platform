@@ -238,10 +238,10 @@ namespace samson
         { "ps_jobs"                 , "ps_jobs           Get a list of running or finished (batch processing) jobs in the platform" },
         { "ps_tasks"                , "ps_tasks          Get a list of running batch processing tasks on controller and workers" },
         { "clear_jobs"              , "clear_jobs (cj)   Clear finished or error marked jobs in the platform" },
-        { "kill"                    , "kill (k)          Kill a particular job and all its sub-tasks" },
+        { "kill"                    , "kill (k)  job_id  Kill the job with job_id and all its sub-tasks" },
         
         { "upload"                  , "upload  <local_file_name> <set>       Load txt files to the platform, available for batch processing" },
-        { "download"                , "download  <set> <local_file_name> [-force]     Download the dataset from the platform to local directory\n" 
+        { "download"                , "download  <set> <local_directory_name> [-force]     Download the dataset from the platform to local directory\n" 
             "                                               [-force] Remove local directory first"  },
         
         { "push"                    , "push <local_file_or_dir> <queue>        Push content of a local file/directory to a queue"},

@@ -56,7 +56,7 @@
           <string/>
          </property>
          <property name="placeholderText">
-          <string>Enter url of SAMSON controller...</string>
+          <string/>
          </property>
         </widget>
        </item>

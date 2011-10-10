@@ -145,10 +145,11 @@ Status UnhelloedEndpoint::msgTreat2(Packet* packetP)
 			if (((epMgr->me->type == Worker) || (epMgr->me->type == Delilah)) && ((ep->type == Worker) || (ep->type == Delilah) || (ep->type == Controller)))
 			{
 				int  ps;
-				char semName[128];
+				//char semName[128];
 
-				snprintf(semName, sizeof(semName), "jobQueue-%s", ep->name());
-				ep->jobQueueSem      = new au::Token(semName);
+                // Andreu: Not a pointer anymore
+				//snprintf(semName, sizeof(semName), "jobQueue-%s", ep->name());
+				//ep->jobQueueSem      = new au::Token(semName);
 				ep->threaded         = true;
 
 				LM_T(LmtThreads, ("Creating writer and reader threads for endpoint %s (plus jobQueueSem and jobQueueStopper)", name()));

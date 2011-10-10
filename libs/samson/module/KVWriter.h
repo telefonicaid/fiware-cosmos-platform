@@ -1,12 +1,15 @@
 #ifndef KV_WRITER_H
 #define KV_WRITER_H
 
-#include <samson/module/DataInstance.h>        /* DataInstance                             */
+#include "samson/module/DataInstance.h"        /* DataInstance                             */
 
 namespace samson {
+    
 
 	class KVWriter
 	{
+        
+        
 	public:
 
 		// Emit key values to a particular output

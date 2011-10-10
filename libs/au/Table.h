@@ -34,7 +34,6 @@
 namespace au {
     
     
-    
     // Conversion function
     double toDouble( std::string value );
     std::string toString( double value );
@@ -43,14 +42,15 @@ namespace au {
     {
         au::map< std::string , std::string > fields;
         
+        friend class DataSetFilter;
+        
     public:
         
         ~DataSetRow();
         
         void set( std::string field , std::string value );
-        int length( std::string field );
+        int getLength( std::string field );
         void getAllFields( std::set<std::string> &fields );
-
         std::string get( std::string field );
         
     };
@@ -58,67 +58,80 @@ namespace au {
     class DataSet
     {
         std::vector< DataSetRow* > rows;
+     
+        friend class DataSetFilter;
         
     public:
         
         ~DataSet();
         
         void add( DataSetRow* row);
-        
         void getAllFields( std::vector<std::string> &fields );
         
         size_t getNumRecords();
         std::string getValue( int record , std::string field);
-    
+        size_t getMaxLength( std::string field , bool title_considered );
+        std::string str();
+
+        // Set to all the records
+        void set( std::string field , std::string value );
+       
+        void add( DataSet* set )
+        {
+            rows.insert( rows.end() , set->rows.begin(), set->rows.end() );
+        }
+        
+    private:
+        
+        std::string line( int *length , int num_cols );
+        std::string str( std::string value , int length );
+        
+        
     };
     
-    class TableColumn
+    class DataSetFilterColumn
     {
         std::string title;      // title for this column
         std::string field;      // Field
-        size_t length;          // Max length in this columnd
+
         
         bool left;              // Left aligned?
         std::string format;     // Particular format
         
-        friend class Table;
+        friend class DataSetFilter;
         
     public:
         
-        TableColumn( std::string field_definition );
+        DataSetFilterColumn( std::string field_definition );
 
-        std::string getValue( std::string value );
-        std::string getTitle(  );
+        std::string getValue( std::string value , size_t length );
+        std::string getTitle( size_t length );
 
-        void setLength( DataSet *dataSet );
         
     private:
         
         void processModifier( std::string modifier );
 
         std::string getFormatedValue( std::string value );
-        std::string getAlignedValue( std::string value );
+        std::string getAlignedValue( std::string value,size_t length );
     };
     
-    class Table
+    class DataSetFilter
     {
-        DataSet * dataSet;
         
-        std::vector<TableColumn*> columns;
+        std::vector<DataSetFilterColumn*> columns;
         
     public:
         
-        Table( DataSet * _dataSet );
-        ~Table();
+        DataSetFilter();
+        DataSetFilter( std::string definition);
+        ~DataSetFilter();
         
-        void addAllFields();
-        void add( TableColumn * column);
+        void addAllFields( DataSet * dataSet );
+        void add( DataSetFilterColumn* column );
+
+        DataSet* transform( DataSet* input );
         
-        std::string str();
-              
-    private:
-        
-        std::string line();
         
     };
     

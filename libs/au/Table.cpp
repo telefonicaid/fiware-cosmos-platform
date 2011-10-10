@@ -38,60 +38,10 @@ namespace au {
         fields.insertInMap( concept , new std::string(value) );
     }
     
-    std::string DataSetRow::get( std::string field )
-    {
-        
-        // ^operation for dividing values
-        //------------------------------------------------------------------------
-        {
-        std::vector<std::string> field_components;
-        split( field , '^' , field_components );
-        
-        if( field_components.size() == 2 )
-        {
-            double num = toDouble( get(field_components[0] ) );
-            double den = toDouble( get(field_components[1] ) );
-            if( den > 0 )
-                return toString( num / den );
-            else
-                return "0";
-        }
-        
-        if( field_components.size() > 1 )
-            return "Error with ^ operation";
-        }
-        //------------------------------------------------------------------------
-
-        // +operation for dividing values
-        //------------------------------------------------------------------------
-        {
-            std::vector<std::string> field_components;
-            split( field , '+' , field_components );
-
-            if( field_components.size() > 1 )
-            {
-                double total = 0;
-                
-                for ( size_t i = 0 ; i < field_components.size() ; i++)
-                    total+= toDouble( get(field_components[i] ) );
-
-                return toString( total );
-            }
-            
-        }
-        
-        //------------------------------------------------------------------------        
-        
-        std::string *value = fields.findInMap( field );
-        if( !value )
-            return "";
-        else
-            return *value;
-    }
-    
-    int DataSetRow::length( std::string field )
+    int DataSetRow::getLength( std::string field )
     {
         std::string value = get( field );
+        LM_M(("Getting length of %s = %s --> %lu" , field.c_str() , value.c_str() , value.length() ));
         return value.length();
     }        
     
@@ -103,6 +53,59 @@ namespace au {
         for( it_field = fields.begin() ; it_field != fields.end() ; it_field++ )
             res_fields.insert( it_field->first );
     }
+    
+    std::string DataSetRow::get( std::string field )
+    {
+        /*
+        // ^operation for dividing values
+        //------------------------------------------------------------------------
+        {
+            std::vector<std::string> field_components;
+            split( field , '^' , field_components );
+            
+            if( field_components.size() == 2 )
+            {
+                double num = toDouble( get(field_components[0] ) );
+                double den = toDouble( get(field_components[1] ) );
+                if( den > 0 )
+                    return toString( num / den );
+                else
+                    return "0";
+            }
+            
+            if( field_components.size() > 1 )
+                return "Error with ^ operation";
+        }
+        //------------------------------------------------------------------------
+        
+        // +operation for dividing values
+        //------------------------------------------------------------------------
+        {
+            std::vector<std::string> field_components;
+            split( field , '+' , field_components );
+            
+            if( field_components.size() > 1 )
+            {
+                double total = 0;
+                
+                for ( size_t i = 0 ; i < field_components.size() ; i++)
+                    total+= toDouble( get(field_components[i] ) );
+                
+                return toString( total );
+            }
+            
+        }
+        
+        //------------------------------------------------------------------------        
+        */
+        
+        std::string *value = fields.findInMap( field );
+        if( !value )
+            return "";
+        else
+            return *value;
+    }
+    
     
 #pragma mark
     
@@ -145,10 +148,110 @@ namespace au {
         return rows[record]->get(field);
     }
     
+    size_t DataSet::getMaxLength( std::string field , bool title_considered )
+    {
+        size_t max_length = 0;
+        
+        if( title_considered) 
+            max_length = field.length(); // We start with the length of the title
+        
+        for ( size_t i = 0 ; i < rows.size() ; i++ )
+        {
+            size_t length = rows[i]->getLength( field );
+            if( length > max_length )
+                max_length = length;
+        }
+        
+        LM_M(("Getting length of field %s" , field.c_str() , max_length ));
+        
+        return max_length;
+    }
+    
+    std::string DataSet::str( std::string value , int length )
+    {
+        return au::str( au::str( "%%%ds" , length ).c_str() , value.c_str() );
+    }
+    
+    std::string DataSet::line( int *length , int num_cols )
+    {
+        std::ostringstream output;
+        
+        output << "+-";
+        // Separation line
+        for ( int c = 0 ; c < num_cols ; c++)
+        {
+            for( int i = 0 ; i < length[c] ; i++ )
+                output << "-";
+            
+            // Get the formatted output
+            if( c != ( num_cols-1) )
+                output << "-+-";
+        }
+        output << "-+";
+        output << "\n";
+        
+        return output.str();
+    }
+    
+    void DataSet::set( std::string field , std::string value )
+    {
+        for ( size_t r = 0 ; r < rows.size() ; r++ )
+            rows[r]->set( field , value );
+    }
+    
+    std::string DataSet::str()
+    {
+        // Get all fields
+        std::vector<std::string> fields;
+        getAllFields( fields );
+
+        // Length of each field
+        int *length = new int[ fields.size() ];
+        for( size_t i = 0 ; i < fields.size() ; i++)
+            length[i] = getMaxLength( fields[i] , true );
+        int num_cols = (int) fields.size();
+        
+        
+        std::ostringstream output;
+        
+        // Separation line
+        output << line( length , num_cols );
+        
+        // TITLES
+        output << "| ";
+        for ( size_t c = 0 ; c < fields.size() ; c++)
+            // Get the formatted output
+            output << str( fields[c] , length[c] ) << " | ";
+        output << "\n";
+        
+        // Separation line
+        output << line( length , num_cols );
+        
+        for ( size_t r = 0 ; r < rows.size() ; r++ )
+        {
+            output << "| ";
+            for ( size_t c = 0 ; c < fields.size() ; c++)
+            {
+                // Get the value containied in the data set
+                std::string value = getValue( r, fields[c] );
+                
+                // Get the formatted output
+                output << str( value , length[c] ) << " | ";
+            }
+            output << "\n";
+        }
+        
+        output << line( length , num_cols );
+        
+        delete[] length;
+        
+        return output.str();
+    }
+    
     
 #pragma mark
     
-    TableColumn::TableColumn( std::string field_definition )
+    DataSetFilterColumn::DataSetFilterColumn( std::string field_definition )
     {
         left = false;           // By default no left aligment
         format = "string";      // By default string format
@@ -170,7 +273,7 @@ namespace au {
         
     }
 
-    void TableColumn::processModifier( std::string modifier )
+    void DataSetFilterColumn::processModifier( std::string modifier )
     {
         
         // Single commands
@@ -201,7 +304,7 @@ namespace au {
         
     }
     
-    std::string TableColumn::getFormatedValue( std::string value )
+    std::string DataSetFilterColumn::getFormatedValue( std::string value )
     {
         
         if (format == "string" )
@@ -230,7 +333,7 @@ namespace au {
         return "Unknown format: " + format;
     }
 
-    std::string TableColumn::getAlignedValue( std::string value )
+    std::string DataSetFilterColumn::getAlignedValue( std::string value , size_t length )
     {
         if( left )
         {
@@ -241,125 +344,96 @@ namespace au {
     }
     
     
-    std::string TableColumn::getValue( std::string value )
+    std::string DataSetFilterColumn::getValue( std::string value , size_t length )
     {
-        return getAlignedValue( getFormatedValue( value ) );
+        return getAlignedValue( getFormatedValue( value ) , length );
     }
     
-    std::string TableColumn::getTitle(  )
+    std::string DataSetFilterColumn::getTitle( size_t length  )
     {
-        return getAlignedValue( title ); 
+        return getAlignedValue( title , length ); 
     }
     
-    void TableColumn::setLength( DataSet *dataSet )
-    {
-        length = 0;
-        
-        std::string title = getTitle();
-        if ( title.length() > length )
-            length = title.length();
-        
-        for ( size_t r = 0 ; r < dataSet->getNumRecords() ; r++ )
-        {
-            std::string formated_value = getFormatedValue( dataSet->getValue( r , field ) );
-            if( formated_value.length() > length )
-                length = formated_value.length();
-        }
-    }
-   
     
 #pragma mark
     
-    Table::Table( DataSet * _dataSet )
+    DataSetFilter::DataSetFilter(  )
     {
-        dataSet = _dataSet;
     }
     
-    Table::~Table()
+    DataSetFilter::DataSetFilter( std::string definition)
+    {
+        au::CommandLine cmdLine;
+        cmdLine.parse( definition );
+        
+        for ( int i = 0 ; i < cmdLine.get_num_arguments() ; i++)
+        {
+            std::string field_definition = cmdLine.get_argument(i);
+            add( new au::DataSetFilterColumn( field_definition ) );
+        }
+        
+    }
+    
+    DataSetFilter::~DataSetFilter()
     {
         for ( size_t c = 0 ;  c < columns.size() ; c++ )
             delete columns[c];
         columns.clear();
     }
     
-    void Table::addAllFields()
+    void DataSetFilter::addAllFields( DataSet * dataSet )
     {
         std::vector<std::string> fields;
         dataSet->getAllFields( fields );
         
         // Insert a colum per field
         for( size_t i = 0 ; i < fields.size() ; i++ )
-            columns.push_back (new TableColumn( fields[i] ) );
+            columns.push_back ( new DataSetFilterColumn( fields[i] ) );
         
     }
     
-    void Table::add( TableColumn * column)
+    void DataSetFilter::add( DataSetFilterColumn * column)
     {
         columns.push_back(column);
     }
     
-    std::string Table::line()
-    {
-        std::ostringstream output;
-        
-        output << "+-";
-        // Separation line
-        for ( size_t c = 0 ; c < columns.size() ; c++)
-        {
-            for( size_t i = 0 ; i < columns[c]->length ; i++ )
-                output << "-";
-            
-            // Get the formatted output
-            if( c != ( columns.size()-1) )
-                output << "-+-";
-        }
-        output << "-+";
-        output << "\n";
-        
-        return output.str();
-    }
     
-    std::string Table::str()
+    DataSet* DataSetFilter::transform( DataSet* input )
     {
-        // Compute the length for every field
-        for ( size_t i = 0 ; i < columns.size() ; i++ )
-            columns[i]->setLength( dataSet );
-        
-        std::ostringstream output;
+        // Output data set
+        DataSet* output = new DataSet();
 
-        // Separation line
-        output << line();
-
-        // TITLES
-        output << "| ";
-        for ( size_t c = 0 ; c < columns.size() ; c++)
-            // Get the formatted output
-            output << columns[c]->getTitle( ) << " | ";
-        output << "\n";
+        // Length of each field
+        int *length = new int[ columns.size() ];
+        for( size_t i = 0 ; i < columns.size() ; i++)
+            length[i] = input->getMaxLength( columns[i]->field , false );
         
-        // Separation line
-        output << line();
         
-        for ( size_t r = 0 ; r < dataSet->getNumRecords() ; r++ )
+        // For each record at the input, create an output 
+        for( size_t r = 0 ; r < input->rows.size() ; r++)
         {
-            output << "| ";
-            for ( size_t c = 0 ; c < columns.size() ; c++)
+            DataSetRow* inputRow = input->rows[r];
+            DataSetRow* outputRow = new DataSetRow();
+            
+            for( size_t c = 0 ; c < columns.size() ; c++ )
             {
-                TableColumn *column = columns[c];
-
+                
                 // Get the value containied in the data set
-                std::string value = dataSet->getValue(r, columns[c]->field);
-
+                std::string value = inputRow->get( columns[c]->field );
+                
                 // Get the formatted output
-                output << column->getValue( value ) << " | ";
+                outputRow->set( columns[c]->title , columns[c]->getValue( value , length[c] ) );
+  
             }
-            output << "\n";
+            
+            output->add( outputRow );
         }
         
-        output << line();
-
         
-        return output.str();
+        delete[] length;
+        return output;
+        
+
     }
     
     

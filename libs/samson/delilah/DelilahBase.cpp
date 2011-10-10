@@ -14,33 +14,33 @@
 namespace samson {
     
     
-    DelilahBase::DelilahBase() : token("DelilahMonitorizationData")
+    DelilahBase::DelilahBase() : delilah_base_token("DelilahMonitorizationData")
     {
     }
     
     std::string DelilahBase::xmlString( int limit )
     {
         // thread protection
-        au::TokenTaker tt( &token  );
+        au::TokenTaker tt( &delilah_base_token  );
         return pugi::str( doc  , limit );
     }
     
     std::string  DelilahBase::xmlString( )
     {
-        au::TokenTaker tt( &token  );
+        au::TokenTaker tt( &delilah_base_token  );
         return xml_info;
     }
     
     std::vector<std::string> DelilahBase::getOperationNames(  )
     {
         // thread protection
-        au::TokenTaker tt( &token  );
+        au::TokenTaker tt( &delilah_base_token  );
         return pugi::values( doc , "//controller//operation/name" );
     }
     
     std::vector<std::string> DelilahBase::getQueueNames()
     {
-        au::TokenTaker tt( &token  );
+        au::TokenTaker tt( &delilah_base_token  );
         return pugi::values( doc , "//controller//queue/name" );
     }
     
@@ -49,7 +49,7 @@ namespace samson {
     void DelilahBase::updateXMLString( std::string txt )
     {
         // thread protection
-        au::TokenTaker tt( &token  );
+        au::TokenTaker tt( &delilah_base_token  );
         
         // Set the txt for debuggin
         xml_info = txt;
@@ -66,7 +66,7 @@ namespace samson {
     int DelilahBase::getUpdateSeconds()
     {
         // thread protection
-        au::TokenTaker tt( &token  );
+        au::TokenTaker tt( &delilah_base_token  );
         
         return _getUpdateSeconds();
     }
@@ -74,7 +74,7 @@ namespace samson {
     std::string DelilahBase::getQuery( std::string query , int limit )
     {
         // thread protection
-        au::TokenTaker tt( &token  );
+        au::TokenTaker tt( &delilah_base_token  );
         
         pugi::xpath_node_set result;
         try {
@@ -96,7 +96,7 @@ namespace samson {
     std::string DelilahBase::getStringInfo( std::string path , node_to_string_function _node_to_string_function  , int options )
     {
         // thread protection
-        au::TokenTaker tt( &token  );
+        au::TokenTaker tt( &delilah_base_token  );
 
         std::ostringstream output;
         
@@ -179,7 +179,7 @@ namespace samson {
     std::string DelilahBase::infoCommand( std::string command )
     {
         // thread protection
-        au::TokenTaker tt( &token  );
+        au::TokenTaker tt( &delilah_base_token  );
 
         
         au::CommandLine cmdLine;
@@ -253,6 +253,56 @@ namespace samson {
         
     }
     
+    au::DataSet* DelilahBase::getDataSet( std::string command )
+    {
+        // thread protection
+        au::TokenTaker tt( &delilah_base_token  );
+        
+        return _getDataSet(command);
+    }
+    
+    au::DataSet* DelilahBase::_getDataSet( std::string command )
+    {
+        
+        au::DataSet *dataSet = new au::DataSet();
+        
+        
+        // Controller
+        {
+            au::DataSet *_dataSet = new au::DataSet();
+            pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//controller" + command );
+            pugi::dataSetFromNodes( *_dataSet , nodes );
+            _dataSet->set("node","controller");
+            dataSet->add( _dataSet );
+        }
+        
+        
+        pugi::ValuesCollection workers_ids = pugi::values(doc, "//worker/id");
+        for ( size_t w = 0 ; w < workers_ids.size() ; w++ )
+        {
+            au::DataSet *_dataSet = new au::DataSet();
+            pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//worker[id=" + workers_ids[w] + "]" + command );
+            pugi::dataSetFromNodes( *_dataSet , nodes );
+            _dataSet->set("node","worker");
+            _dataSet->set("node_id" , au::str("%d" , (int) w) );
+            dataSet->add( _dataSet );
+        }
+        
+        
+        // Delilah
+        {
+            au::DataSet *_dataSet = new au::DataSet();
+            pugi::xpath_node_set nodes  = pugi::select_nodes( doc , "//delilah" + command );
+            pugi::dataSetFromNodes( *_dataSet , nodes );
+            _dataSet->set("node","delilah");
+            dataSet->add( _dataSet );
+        }
+        
+        
+        
+        
+        return dataSet;
+    }
     
     std::string DelilahBase::_infoCommand( std::string prefix ,  std::string command )
     {
@@ -298,17 +348,21 @@ namespace samson {
             }
             
             // Table shoing contents
-            au::Table table( &dataSet );
+            au::DataSetFilter filter;
             
             //table.addAllFields();
             
             for ( int i = 2 ; i < cmdLine.get_num_arguments() ; i++)
             {
                 std::string field_definition = cmdLine.get_argument(i);
-                table.add( new au::TableColumn( field_definition ) );
+                filter.add( new au::DataSetFilterColumn( field_definition ) );
             }
             
-            output << table.str();
+            au::DataSet* outputDataSet = filter.transform( &dataSet);
+            
+            output << outputDataSet->str();
+            
+            delete outputDataSet;
             
         }
         

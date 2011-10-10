@@ -4,8 +4,8 @@
 #include <string>
 #include <map>
 
-#include <samson/module/Operation.h>           /* Operation                                */
 #include <samson/module/Data.h>                /* Data                                     */
+#include <samson/module/Operation.h>           /* Operation                                */
 
 
 

@@ -37,7 +37,7 @@ namespace samson {
         // Data collected with monitorization
         // Thread safe access 
         
-        au::Token token;
+        au::Token delilah_base_token;
         
         // Global xml-based information from the system
         std::string xml_info;
@@ -70,12 +70,16 @@ namespace samson {
         std::string infoCommand( std::string command );        
         std::string getStringInfo( std::string path , node_to_string_function _node_to_string_function  , int options );
         std::string getQuery( std::string query , int limit );
+
+        au::DataSet* getDataSet( std::string command );
         
     private:
         
         std::string _infoCommand( std::string prefix ,  std::string command );
         bool _checkUpdateTime( std::ostringstream &output );
         int _getUpdateSeconds();
+        au::DataSet* _getDataSet( std::string command );
+
         
     };
 }

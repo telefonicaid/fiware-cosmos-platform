@@ -84,7 +84,7 @@ void* writerThread(void* vP)
 
         {
             // Protect the access with a TokenTaker
-            au::TokenTaker tk( ep->jobQueueSem );
+            au::TokenTaker tk( &ep->jobQueueSem );
             
             packetP = ep->jobQueue.extractFront();
         }
@@ -107,7 +107,7 @@ void* writerThread(void* vP)
 		}
 		else
         {
-            au::TokenTaker tk( ep->jobQueueSem );
+            au::TokenTaker tk( &ep->jobQueueSem );
             tk.stop(-1);// wait forever
         }
 	}
@@ -130,7 +130,7 @@ Endpoint2::Endpoint2
 	unsigned short    _port,
 	int               _rFd,
 	int               _wFd
-)
+ ) : jobQueueSem("Endpoint2")
 {
 	epMgr               = _epMgr;
 	type                = _type;
@@ -145,7 +145,7 @@ Endpoint2::Endpoint2
 	idInEndpointVector  = -8;    // -8 meaning 'undefined' ...
 	readerId            = 0;
 	writerId            = 0;
-	jobQueueSem         = NULL;
+	//jobQueueSem         = NULL; // Andreu: Not a pointer anymore
 
 	nameSet(type, id, host);
 	memset(&sockin, 0, sizeof(sockin));
@@ -171,8 +171,11 @@ Endpoint2::~Endpoint2()
 	if (nameidhost != NULL)
 		free(nameidhost);
 
+    // Andreu: Not a pointer anymore
+    /*
 	if (jobQueueSem != NULL)
 		delete jobQueueSem;
+     */
 
 	nameidhost = NULL;
 }
@@ -555,7 +558,7 @@ void Endpoint2::send(Packet* packetP)
 			}
 			else
 			{
-                au::TokenTaker tk( jobQueueSem );
+                au::TokenTaker tk( &jobQueueSem );
 				jobQueue.push_back(packetP);
                 
                 tk.wakeUp();
@@ -1075,7 +1078,8 @@ Status Endpoint2::msgTreat(void)
 			threaded    = true;
 			snprintf(semName, sizeof(semName), "jobQueue-%s", name());
 
-			jobQueueSem     = new au::Token(semName);
+			//jobQueueSem     = new au::Token(semName);
+            // Andreu: Not a pointer anymore
 
 			LM_T(LmtThreads, ("Creating writer and reader threads for endpoint %s (plus jobQueueSem and jobQueueStopper)", name()));
 

@@ -114,7 +114,7 @@ public:
 	void                 nameSet(Type _type, int id, Host* host);
 	const char*          stateName(void);
 
-	au::Token*           jobQueueSem;
+	au::Token            jobQueueSem;
 	au::list<Packet>     jobQueue;
 
 private:

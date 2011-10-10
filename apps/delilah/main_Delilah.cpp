@@ -65,7 +65,7 @@ PaArgument paArgs[] =
 };
 
 
-
+/*
 class Delilah : public samson::PacketReceiverInterface, public samson::PacketSenderInterface
 {
 private:
@@ -97,7 +97,7 @@ void Delilah::notificationSent(size_t id, bool success)
 {
 	LM_M(("Got a notification that a packet has been sent to endpoint %d", id));
 }
-
+*/
 
 
 /* ****************************************************************************

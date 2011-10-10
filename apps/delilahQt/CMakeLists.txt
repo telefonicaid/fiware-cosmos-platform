@@ -1,39 +1,77 @@
 SET (SOURCES
-    main_DelilahQT.cpp
+main_DelilahQT.cpp
+MainWindow.cpp
+SamsonConnect.cpp
+SamsonQueryWidget.cpp
+#moc_MainWindow.cpp
+#moc_SamsonConnect.cpp
+#moc_SamsonQueryWidget.cpp
 )
 
-SET (HEADERS
+SET( HEADERS
+main_DelilahQT.h
 )
+
+SET (HEADERS_FOR_MOC
+MainWindow.h
+SamsonConnect.h
+SamsonQueryWidget.h
+#ui_MainWindow.h
+#ui_SamsonConnect.h
+#ui_SamsonQueryWidget.h
+)
+
+SET(FORMS 
+MainWindow.ui
+SamsonConnect.ui
+SamsonQueryWidget.ui
+)
+
+SET(RESOURCES
+#images.qrc
+)
+
+FIND_PACKAGE(Qt4 REQUIRED)
 
 SET (STATIC_LIBS
-     samsonNetworkStatic
-     samsonCoreStatic
-     samsonCommonStatic
-     delilahStatic
+     delilahLib
      pa
      lm
      protobuf
      pthread
      dl
+     curses
+     readline
+     samsonNetwork
+     samsonStream
+     samsonModule
+     engine
+     au
+     pugi
+     samsonCommon
      ${COMMON_SAMSON_LIBS}
 )
 
 
 include_directories("${PROJECT_SOURCE_DIR}/libs")
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})		# Required for QT intermediate files to compile
 
-SET (RESOURCES
-    ${PROJECT_SOURCE_DIR}/libs/delilah/resources/objects.qrc
-    ${PROJECT_SOURCE_DIR}/libs/delilah/resources/icons.qrc)
+# QT Operations
+# ------------------------------------------------------------
+QT4_WRAP_CPP( HEADERS_MOC ${HEADERS_FOR_MOC} )
+QT4_WRAP_UI(FORMS_HEADERS ${FORMS})
+QT4_ADD_RESOURCES(RESOURCES_RCC ${RESOURCES})
+# ------------------------------------------------------------
 
-QT4_ADD_RESOURCES(RESOURCES_QRC ${RESOURCES})
-
-link_directories("${PROJECT_BINARY_DIR}/libs/parseArgs")
-link_directories("${PROJECT_BINARY_DIR}/libs/logMsg")
+INCLUDE(${QT_USE_FILE})
+ADD_DEFINITIONS(${QT_DEFINITIONS})
 
 # SAMSON Executable
-ADD_EXECUTABLE(delilahQT ${SOURCES} ${HEADERS} ${RESOURCES_QRC} )
+ADD_EXECUTABLE( delilahQT ${SOURCES} ${HEADERS} ${HEADERS_FOR_MOC} ${HEADERS_MOC} ${FORMS_HEADERS} ${RESOURCES_RCC} )
 TARGET_LINK_LIBRARIES(delilahQT ${STATIC_LIBS} )
+TARGET_LINK_LIBRARIES( delilahQT ${QT_LIBRARIES} )
 
-INSTALL(TARGETS               delilahQT
-        RUNTIME DESTINATION   bin)
+INSTALL(TARGETS delilahQT  RUNTIME DESTINATION   bin)
+
+
 

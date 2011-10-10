@@ -1410,7 +1410,8 @@ char* lmTextGet(const char* format, ...)
 	va_list        args;
 	char           vmsg[2048];
 	char*          allocedString;
-	char*          nl;
+	// Goyo. Removing '\n' end of log line
+	//char*          nl;
 
 	/* "Parse" the varible arguments */
 	va_start(args, format);
@@ -1420,8 +1421,9 @@ char* lmTextGet(const char* format, ...)
 	vmsg[2047] = 0;
 	va_end(args);
 
-	if ((nl = strchr(vmsg, '\n')) != NULL)
-		*nl = 0;
+	// Goyo. Removing '\n' end of log line
+	//if ((nl = strchr(vmsg, '\n')) != NULL)
+		//*nl = 0;
 
 	allocedString = (char*) strdup(vmsg);
 
@@ -1586,7 +1588,16 @@ LmStatus lmPathRegister(const char* path, const char* format, const char* timeFo
 	STRING_CHECK(format, F_LEN);
 	
 	if (isdir((char*) path) == true)
-		snprintf(fileName, sizeof(fileName), "%s/%sLog", path, &progName[0]);
+	{
+		if (!strcmp(progName, "delilah"))
+		{
+			snprintf(fileName, sizeof(fileName), "%s/%sLog.%d", path, &progName[0], getpid());
+		}
+		else
+		{
+			snprintf(fileName, sizeof(fileName), "%s/%sLog", path, &progName[0]);
+		}
+	}
 	else
 		strncpy(fileName, path, sizeof(fileName));
 

@@ -298,11 +298,12 @@ namespace samson {
 
             
             // Get the list of files to be removed (  old blocks not used any more )
-            std::set< std::string > remove_files;
+            //std::set< std::string > remove_files;
             
             DIR *dp;
             struct dirent *dirp;
-            if((dp  = opendir( SamsonSetup::shared()->blocksDirectory.c_str() )) == NULL) {
+            std::string dir_path = SamsonSetup::shared()->blocksDirectory;
+            if((dp  = opendir( dir_path.c_str() )) == NULL) {
                 
                 // LOG and error to indicate that data directory cannot be access
                 LM_W(("Not possible to open block directory %s to review old files" , SamsonSetup::shared()->blocksDirectory.c_str() ));
@@ -335,9 +336,19 @@ namespace samson {
 
                         if( block_ids.find( tmp_block_id ) == block_ids.end() )
                         {
+                        	std::string file_name_abs = dir_path + "/" + file_name;
                             
                             // Add to be removed
-                            remove_files.insert( path );
+                            //remove_files.insert( path );
+							int c = ::unlink( file_name_abs.c_str() );
+							if( c != 0 )
+							{
+								LM_E(("Error removing file '%s', errno:%d\n", file_name_abs.c_str(), errno));
+							}
+							else
+							{
+								LM_T( LmtDisk , ("DiskManager: Removed file %s (%s)", file_name.c_str(), file_name_abs.c_str() ));
+							}
                         }
                     }
                 }
@@ -345,15 +356,15 @@ namespace samson {
             closedir(dp);
             
             // Remove the selected files
-            for ( std::set< std::string >::iterator f = remove_files.begin() ; f != remove_files.end() ; f++)
-            {
-                
-                std::string fileName = *f;
-                
-                // Add a remove opertion to the engine ( target 0 means no specific listener to be notified )
-                engine::DiskOperation * operation =  engine::DiskOperation::newRemoveOperation(  fileName , 0 );
-                engine::DiskManager::shared()->add( operation );
-            }
+            //for ( std::set< std::string >::iterator f = remove_files.begin() ; f != remove_files.end() ; f++)
+            //{
+            //
+            //    std::string fileName = *f;
+            //
+            //    // Add a remove opertion to the engine ( target 0 means no specific listener to be notified )
+            //    engine::DiskOperation * operation =  engine::DiskOperation::newRemoveOperation(  fileName , 0 );
+            //    engine::DiskManager::shared()->add( operation );
+            //}
             
             
         }

@@ -18,8 +18,8 @@ SET (STATIC_LIBS
      samsonStream
      samsonModule
      engine
-     au
      pugi
+     au
      samsonCommon	
      ${COMMON_SAMSON_LIBS}
 )

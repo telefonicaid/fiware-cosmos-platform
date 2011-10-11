@@ -1,30 +1,29 @@
 SET (SOURCES
-main_DelilahQT.cpp
-MainWindow.cpp
-SamsonConnect.cpp
-SamsonQueryWidget.cpp
-#moc_MainWindow.cpp
-#moc_SamsonConnect.cpp
-#moc_SamsonQueryWidget.cpp
+  main_DelilahQT.cpp
+  MainWindow.cpp
+  SamsonConnect.cpp
+  SamsonQueryWidget.cpp
+  SamsonNodeWidget.cpp
+  DelilahConnection.cpp
 )
 
 SET( HEADERS
-main_DelilahQT.h
+  main_DelilahQT.h
+  DelilahConnection.h
 )
 
 SET (HEADERS_FOR_MOC
-MainWindow.h
-SamsonConnect.h
-SamsonQueryWidget.h
-#ui_MainWindow.h
-#ui_SamsonConnect.h
-#ui_SamsonQueryWidget.h
+  MainWindow.h
+  SamsonConnect.h
+  SamsonQueryWidget.h
+  SamsonNodeWidget.h
 )
 
 SET(FORMS 
-MainWindow.ui
-SamsonConnect.ui
-SamsonQueryWidget.ui
+   MainWindow.ui
+   SamsonConnect.ui
+   SamsonQueryWidget.ui
+   SamsonNodeWidget.ui
 )
 
 SET(RESOURCES

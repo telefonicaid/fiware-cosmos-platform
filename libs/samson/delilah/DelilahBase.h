@@ -73,6 +73,9 @@ namespace samson {
 
         au::DataSet* getDataSet( std::string command );
         
+        au::TreeItem* getTreeItem( );
+
+        
     private:
         
         std::string _infoCommand( std::string prefix ,  std::string command );

@@ -9,6 +9,8 @@
 */
 #include <sys/select.h>
 
+#include "engine/DiskStatistics.h"
+
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 
@@ -358,6 +360,9 @@ void Network2::getInfo( std::ostringstream& output )
 	}
 
     au::xml_close(output,"description");
+    
+    au::xml_single_element(output, "statistics", statistics );
+    
     au::xml_close(output,"network");
     
 }

@@ -34,10 +34,11 @@
 namespace au {
     
     
+    
     // Conversion function
     double toDouble( std::string value );
     std::string toString( double value );
-    
+
     class DataSetRow
     {
         au::map< std::string , std::string > fields;
@@ -81,10 +82,6 @@ namespace au {
             rows.insert( rows.end() , set->rows.begin(), set->rows.end() );
         }
         
-    private:
-        
-        std::string line( int *length , int num_cols );
-        std::string str( std::string value , int length );
         
         
     };
@@ -131,6 +128,8 @@ namespace au {
         void add( DataSetFilterColumn* column );
 
         DataSet* transform( DataSet* input );
+        
+        std::string str( DataSet* input );
         
         
     };

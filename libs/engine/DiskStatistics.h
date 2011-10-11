@@ -50,6 +50,7 @@ namespace engine {
         void getInfo( std::ostringstream& output)
         {
             output << "<description>" << rate.str() << "</description>\n";
+            au::xml_simple( output , "rate" , rate.getLastMinuteRate() );
         }
         
 		

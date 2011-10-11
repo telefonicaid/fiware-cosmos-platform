@@ -20,11 +20,6 @@
 #include "samson/common/samsonVersion.h"
 #include "samson/common/SamsonSetup.h"
 
-#include "samson/network/Network2.h"
-#include "samson/network/EndpointManager.h"
-#include "samson/network/Packet.h"
-
-#include "samson/delilah/Delilah.h"     // samson::Delilah
 
 #include <QtGui>
 
@@ -32,6 +27,8 @@
 #include "MainWindow.h"
 #include "SamsonConnect.h"
 #include "SamsonQueryWidget.h"
+
+#include "DelilahConnection.h"     // DelilahConnection
 
 int logFd;
 
@@ -65,8 +62,12 @@ SamsonConnect *samsonConnect;         // Connection dialog...
 SamsonQueryWidget* samsonQueryWidget; // Query widget used in the background
 
 // Top Network & Delilah object used
-samson::Network2* networkP;
-samson::Delilah *delilah;
+
+
+
+// Global element about this connection
+
+DelilahConnection* delilahConnection;
 
 
 void init( int argC, char *argV[] )
@@ -120,69 +121,13 @@ void init( int argC, char *argV[] )
 }
 
 
-bool connect( std::string controller )
-{
-    if( networkP )
-        return false; // Still connecting with a previous controller....
-    
-	// Initialize the network element for delilah
-	networkP  = new samson::Network2( samson::Endpoint2::Delilah, controller.c_str() );
-	networkP->runInBackground();
-    
-	std::cerr << "\nConnecting to SAMSOM controller " << controller << " ...";
-    std::cerr.flush();
-    
-	//
-	// What until the network is ready
-	//
-	while (!networkP->ready())
-		usleep(1000);
-	std::cout << " OK\n";
-	LM_M(("\nConnecting to SAMSOM controller %s ... OK", controller.c_str()));
-    
-	std::cerr << "Connecting to all workers ...";
-    std::cerr.flush();
-    
-	//
-	// Ask the Controller for the platform process list
-	//
-	// First, give controller some time for the interchange of Hello messages
-	//
-	samson::Packet*  packetP  = new samson::Packet(samson::Message::Msg, samson::Message::ProcessVector);
-    
-	LM_TODO(("I should probably go through NetworkInterface here ..."));
-	networkP->epMgr->controller->send( packetP );
-    
-	//
-	// What until the network is ready II
-	//
-	while (!networkP->ready(true))
-		sleep(1);
-	std::cout << " OK\n";
-	LM_M(("\nConnecting to all workers ... OK"));
-    
-    // Creating delilah object
-    delilah = new samson::Delilah( networkP , true );
-    
-    
-    // Hide the connection pannel
-    samsonConnect->hide();
-    
-    //Show main window
-    mainWindow->show();
-    
-    
-    return true;
-}
-
-
 
 int main(int argc, char *argv[])
 {
     init( argc , argv );
     
-    // Init delilah object
-    delilah = NULL;
+    // Init delilah_connection object
+    delilahConnection = new DelilahConnection();
     
     // Create the app
     app =  new QApplication(argc, argv);

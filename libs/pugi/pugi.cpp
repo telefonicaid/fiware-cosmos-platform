@@ -18,6 +18,7 @@
  * ****************************************************************************/
 
 #include "au/string.h"      // au::tabs
+#include "au/Tree.h"        // au::TreeItem
 
 #include "pugi.h"			// Own interface
 
@@ -249,6 +250,43 @@ namespace pugi
             dataSet.add( pugi::rowFromNode( node , 3 ) );
         }      
     }    
+    
+    au::TreeItem* treeItemFromDocument(  const xml_document& xml_doc )
+    {
+        return treeItemFromNode( xml_doc.document_element() );
+    }    
+    au::TreeItem* treeItemFromNode(  const xml_node& xml_node )
+    {
+        std::string name = xml_node.name();
+        if( name.length() == 0)
+            name = xml_node.value();
+        
+        au::TreeItem* treeItem = new au::TreeItem( name );
+        
+        for( pugi::xml_node_iterator n = xml_node.begin() ; n != xml_node.end() ; n++)
+        {
+            pugi::xml_node node = *n;
+            treeItem->add( treeItemFromNode(node) );
+        }      
+        
+        return treeItem;
+    }
+    
+/*   
+    au::TreeItem* treeItemFromNodes( xpath_node_set nodes )
+    {
+        au::TreeItem* treeItem = new au::TreeItem("root");
+        
+        for ( size_t i = 0 ; i < nodes.size() ; i++ )
+        {
+            const pugi::xml_node& node = nodes[i].node(); 
+            treeItem->add( treeItemFromNode(node) );
+        }      
+        
+        return treeItem;
+        
+    }
+ */
     
     
 }

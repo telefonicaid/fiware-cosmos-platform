@@ -33,6 +33,11 @@
 #include "au/string.h"          // au::F
 #include "au/Table.h"           // au::Table au::DataSet ...
 
+namespace au
+{
+    class TreeItem;
+}
+
 namespace pugi 
 {
     
@@ -132,6 +137,10 @@ namespace pugi
     au::DataSetRow* rowFromNode( const xml_node& node , int limit );
     void addToRow( au::DataSetRow* row , const xml_node& node , std::string path , int limit );
     void dataSetFromNodes( au::DataSet &dataSet , xpath_node_set nodes );
+    
+    // Working with TreeItems
+    au::TreeItem* treeItemFromDocument(  const xml_document& xml_doc );
+    au::TreeItem* treeItemFromNode(  const xml_node& xml_node );
     
 }
 #endif

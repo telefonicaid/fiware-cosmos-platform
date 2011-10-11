@@ -6,6 +6,7 @@
 
 #include "ui_SamsonQueryWidget.h"
 
+
 class SamsonQueryWidget : public QWidget , public Ui_SamsonQueryWidget
 {
     

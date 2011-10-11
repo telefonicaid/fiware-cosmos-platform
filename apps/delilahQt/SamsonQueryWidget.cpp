@@ -7,10 +7,11 @@
 
 
 #include "samson/delilah/Delilah.h"
+#include "DelilahConnection.h"     // DelilahConnection
 
 #include "SamsonQueryWidget.h"  // Own interface
 
-extern samson::Delilah* delilah;
+extern DelilahConnection* delilahConnection;
 
 SamsonQueryWidget::SamsonQueryWidget( QWidget *parent ) : QWidget(parent)
 {
@@ -37,7 +38,7 @@ void SamsonQueryWidget::update()
     LM_M(("Fields: '%s'", fields.c_str() ));    
     
     // Get data set form delilah
-    au::DataSet* dataSet = delilah->getDataSet( query );
+    au::DataSet* dataSet = delilahConnection->delilah->getDataSet( query );
 
     
     if ( fields.length() > 0)

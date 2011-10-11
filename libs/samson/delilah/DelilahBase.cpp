@@ -61,6 +61,7 @@ namespace samson {
         doc.reset();
         std::istringstream is_xml_document( xml_info );
         pugi::xml_parse_result result = doc.load( is_xml_document );
+                
     }
     
     int DelilahBase::getUpdateSeconds()
@@ -253,6 +254,13 @@ namespace samson {
         
     }
     
+    au::TreeItem* DelilahBase::getTreeItem( )
+    {
+        au::TokenTaker tt( &delilah_base_token  );
+        return pugi::treeItemFromDocument(doc);
+    }
+    
+    
     au::DataSet* DelilahBase::getDataSet( std::string command )
     {
         // thread protection
@@ -357,12 +365,13 @@ namespace samson {
                 std::string field_definition = cmdLine.get_argument(i);
                 filter.add( new au::DataSetFilterColumn( field_definition ) );
             }
-            
+
+            output << filter.str( &dataSet );
+/*            
             au::DataSet* outputDataSet = filter.transform( &dataSet);
-            
             output << outputDataSet->str();
-            
             delete outputDataSet;
+   */         
             
         }
         

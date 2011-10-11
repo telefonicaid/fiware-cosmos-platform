@@ -41,7 +41,10 @@ namespace engine {
 			}
 		}
 		else
+		{
+			LM_W(("Buffer request of max_size(%lu) <= 0, for tag:%d and name:'%s'", max_size, tag, name.c_str()));
 			_data = NULL;
+		}
 		
 		_size = 0;
 	}

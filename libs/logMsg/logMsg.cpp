@@ -516,7 +516,7 @@ static void traceFix(char* levelFormat, unsigned int way)
 		currP = nextP;
 	}
 
-	free(levelFormatP);	
+	::free(levelFormatP);	
 	return;
 }
 
@@ -2240,7 +2240,7 @@ LmStatus lmClear(int index, int keepLines, int lastLines)
 		perror("open");
 		fclose(fP);
 		lseek(fds[index].fd, fdPos, SEEK_SET);
-		free((char*) lrV);
+		::free((char*) lrV);
 		return LmsOpen;
 	}
 
@@ -2252,7 +2252,7 @@ LmStatus lmClear(int index, int keepLines, int lastLines)
 	fclose(fP);                            \
 	lseek(fds[index].fd, fdPos, SEEK_SET); \
 	if (lrV != NULL)                       \
-	    free((void*) lrV);                 \
+	    ::free((void*) lrV);                 \
 	lrV = NULL;                            \
 	unlink(tmpName);                       \
 	return s;                              \
@@ -2297,7 +2297,7 @@ LmStatus lmClear(int index, int keepLines, int lastLines)
 	if (lrV != NULL)
 	{
 	    if ((int) lrV == initialLrv)
-		free((void*) lrV);
+		::free((void*) lrV);
 	    else
 		LOG_OUT(("ERROR: lrV has changed ... (from 0x%x to 0x%x)", (int) initialLrv, (int) lrV));
 	}
@@ -2522,7 +2522,7 @@ void lmPrintMsgBuf()
 		logP = logMsgs;
 		lmOut(logP->msg, logP->type, logP->file, logP->line, (char*) logP->func, logP->tLev, logP->stre);
 		logMsgs = logP->next;
-		free(logP);
+		::free(logP);
 	}
 }
 

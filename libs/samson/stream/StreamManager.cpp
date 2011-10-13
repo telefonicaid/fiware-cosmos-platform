@@ -29,38 +29,13 @@
 #include "samson/stream/WorkerCommand.h"
 #include "samson/stream/SystemQueueTask.h"
 #include "samson/stream/PopQueueTask.h"
+#include "samson/stream/StreamOperation.h"
 #include "StreamManager.h"                      // Own interface
 
 
 namespace samson {
     namespace stream{
     
-        
-        
-        void StreamOperation::add( QueueTask* task )
-        {
-            BlockList *blockList = task->getBlockList("input_0");
-            BlockInfo _info = blockList->getBlockInfo();
-            
-            num_operations++;
-            num_blocks += _info.num_blocks;
-            size += _info.size;
-            info.append( _info.info );
-            
-            // Add the task to the list of running task
-            running_tasks.insert( task );
-            
-        }
-        
-        void StreamOperation::remove( QueueTask* task )
-        {
-            // Remove this task from the list of running tasks
-            running_tasks.erase( task );
-            
-        }
-        
-        
-#pragma mark---
         
         
         StreamManager::StreamManager(::samson::SamsonWorker* _worker) : queueTaskManager( this )

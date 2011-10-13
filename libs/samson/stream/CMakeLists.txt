@@ -4,6 +4,7 @@ SET (HEADERS
     BlockList.h
     Block.h
     StreamManager.h
+    StreamOperation.h
     QueueTaskManager.h
     Queue.h
 	QueueTaskBase.h
@@ -23,6 +24,7 @@ SET (SOURCES
     BlockList.cpp
     Block.cpp
     StreamManager.cpp
+    StreamOperation.cpp
     QueueTaskManager.cpp
     Queue.cpp
 	QueueTaskBase.cpp

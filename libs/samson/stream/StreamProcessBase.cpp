@@ -15,7 +15,7 @@
 #include "samson/common/MemoryTags.h"             // MemoryOutputNetwork
 
 #include "PopQueue.h"                   // samson::stream::PopQueue
-
+#include "StreamOperation.h"            // samson::stream::StreamOperation
 #include "StreamProcessBase.h"			// Own interface
 
 

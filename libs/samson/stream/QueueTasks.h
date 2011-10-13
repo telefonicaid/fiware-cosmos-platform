@@ -4,6 +4,7 @@
 #define _H_PARSER_QUEUE_TASK
 
 #include "samson/stream/StreamProcessBase.h"        // parent class 
+#include "samson/stream/StreamOperation.h" 
 #include "samson/stream/QueueTask.h"                // parent class 
 
 

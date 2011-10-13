@@ -1,0 +1,103 @@
+
+#ifndef _H_STREAM_OPERATION
+#define _H_STREAM_OPERATION
+
+/* ****************************************************************************
+ *
+ * FILE                      StreamOperation.h
+ *
+ * AUTHOR                    Andreu Urruela Planas
+ *
+ * Definition of the stream operation for automatic queue processing
+ *
+ */
+
+#include <sstream>
+#include <string>
+
+#include "au/map.h"                         // au::map
+#include "au/string.h"                      // au::Format
+#include "au/CommandLine.h"                 // au::CommandLine
+
+#include "engine/Object.h"                  // engine::Object
+#include "engine/Object.h"                  // engine::Object
+#include "engine/Buffer.h"                  // engine::Buffer
+
+#include "samson/common/samson.pb.h"        // network::...
+#include "samson/common/NotificationMessages.h"
+#include "samson/module/Environment.h"      // samson::Environment
+#include "samson/common/EnvironmentOperations.h"
+
+#include "samson/stream/QueueTaskManager.h" // samson::stream::QueueTaskManager
+
+
+#include "samson/data/SimpleDataManager.h"          // samson::SimpleDataManager
+
+
+namespace samson {
+    
+    class SamsonWorker;
+    class Info;
+    
+    namespace stream
+    {
+        
+        class Queue;
+        class QueueTask;
+        class Block;
+        class BlockList;
+        class WorkerCommand;
+        class PopQueue;
+        
+        class StreamOperation
+        {
+            
+        public:
+            
+            std::string name;
+            std::string operation;
+            
+            
+            std::vector<std::string> input_queues;
+            std::vector<std::string> output_queues;
+            
+            int num_workers;
+            
+            Environment environment;
+            
+            bool active;    // Flag to indicate if this operation is still active
+            
+            // Information about activity
+            int num_operations;
+            int num_blocks;
+            size_t size;
+            FullKVInfo info;
+            int update_state_counter;
+            
+            // List of current tasks running here
+            std::set< QueueTask* > running_tasks;
+            
+        public:
+            
+            StreamOperation();
+            StreamOperation( StreamOperation* streamOperation );
+            StreamOperation( const network::StreamOperation& streamOperation );
+            
+            
+            void update( const network::StreamOperation& streamOperation );            
+            void setActive( bool _active );            
+            // Instruction to add or remove a particular task for this automatic rule
+            void add( QueueTask* task );
+            void remove( QueueTask* task );
+            
+            void add_update_state();
+            
+            void getInfo( std::ostringstream &output );            
+            std::string getStatus();
+            
+            
+        };
+    }
+}
+
+#endif

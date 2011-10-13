@@ -4,9 +4,9 @@
 #include "BlockManager.h"       // samson::stream::BlockManager
 #include "Block.h"              // samson::Stream::Block
 
-#include "QueueTask.h"      // Own interface
+#include "StreamOperation.h"          // StreamOperation
 
-#include "StreamManager.h"          // StreamOperation
+#include "QueueTask.h"      // Own interface
 
 namespace samson {
     namespace stream{

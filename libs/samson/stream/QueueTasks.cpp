@@ -91,9 +91,15 @@ namespace samson {
                 // If specified, remove input blocks
                 if( environment.get("system.clear_imputs" , "no") == "yes" )
                     queue->remove( input );
-
-                
             }
+            
+            
+            // Notify to the stream operation
+            std::string stream_operation_name = environment.get("system.stream_operation","");
+            StreamOperation* stream_operation = streamManager->getStreamOperation( stream_operation_name );
+            if( stream_operation )
+                stream_operation->remove( this );
+            
         }    
 
         
@@ -135,9 +141,15 @@ namespace samson {
                 // If specified, remove input blocks
                 if( environment.get("system.clear_imputs" , "no") == "yes" )
                     queue->remove( input );
-                
-                
             }
+            
+            
+            // Notify to the stream operation
+            std::string stream_operation_name = environment.get("system.stream_operation","");
+            StreamOperation* stream_operation = streamManager->getStreamOperation( stream_operation_name );
+            if( stream_operation )
+                stream_operation->remove( this );
+            
             
         }    
         
@@ -349,9 +361,14 @@ namespace samson {
                 // If specified, remove input blocks
                 if( environment.get("system.clear_imputs" , "no") == "yes" )
                     queue->remove( input );
-                
-                
             }
+            
+            // Notify to the stream operation
+            std::string stream_operation_name = environment.get("system.stream_operation","");
+            StreamOperation* stream_operation = streamManager->getStreamOperation( stream_operation_name );
+            if( stream_operation )
+                stream_operation->remove( this );
+            
             
         }    
         
@@ -662,6 +679,14 @@ namespace samson {
                 // Release division we were processing with this operation
                 queue->unlockDivision( division );
             }
+            
+            
+            // Notify to the stream operation
+            std::string stream_operation_name = environment.get("system.stream_operation","");
+            StreamOperation* stream_operation = streamManager->getStreamOperation( stream_operation_name );
+            if( stream_operation )
+                stream_operation->remove( this );
+            
             
             // Detele the temporal list used here
             delete tmp;

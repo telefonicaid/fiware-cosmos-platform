@@ -762,7 +762,8 @@ namespace samson {
                     tmp->setWorkingSize();
                     
                     // Update information about this operation
-                    stream_operation->update( tmp );
+                    stream_operation->add( tmp );
+                    tmp->environment.set("system.stream_operation" , stream_operation->name );
                     
                     // Set this property to cleat inputs at the end of the operation
                     tmp->environment.set("system.clear_imputs","yes");
@@ -993,7 +994,7 @@ namespace samson {
                             
                             
                             // Update information about this operation
-                            stream_operation->update( task );
+                            stream_operation->add( task );
                             
                             // Add me as listener and increase the number of operations to run
                             task->addListenerId( getEngineId() );

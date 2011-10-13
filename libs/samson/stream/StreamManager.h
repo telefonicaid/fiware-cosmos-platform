@@ -73,9 +73,10 @@ namespace samson {
             int num_blocks;
             size_t size;
             FullKVInfo info;
-
             int update_state_counter;
-            
+
+            // List of current tasks running here
+            std::set< QueueTask* > running_tasks;
             
         public:
             
@@ -144,7 +145,9 @@ namespace samson {
                 active = _active;
             }
             
-            void update( QueueTask* task );
+            // Instruction to add or remove a particular task for this automatic rule
+            void add( QueueTask* task );
+            void remove( QueueTask* task );
             
             void add_update_state()
             {
@@ -172,8 +175,7 @@ namespace samson {
                 
                 au::xml_simple(output, "properties", environment.getEnvironmentDescription() );
                 
-                std::string status_txt = getStatus();
-                au::xml_simple(output,"status" , "???" );
+                au::xml_simple(output,"status" , getStatus() );
                 
                 au::xml_close(output, "stream_operation");
             }
@@ -181,15 +183,15 @@ namespace samson {
             std::string getStatus()
             {
                 std::ostringstream output;
-                if( num_operations > 0)
-                {
-                    if( update_state_counter > 0 )
-                        output << "[ Updates states " << update_state_counter << " ] ";
-                    
-                    output << "[ " << num_operations << " ops " << au::str( size , "B" ) << " ( " << au::str( info.kvs , "kvs" ) << " )";
-                }
+
+                if( running_tasks.size() > 0 )
+                    output << "[ Running " << running_tasks.size() << " operations ] ";
                 
-                output << "No activity";
+                if( update_state_counter > 0 )
+                    output << "[ Updates states " << update_state_counter << " ] ";
+                
+                if( num_operations > 0)
+                    output << "[ " << num_operations << " ops " << au::str( size , "B" ) << " ( " << au::str( info.kvs , "kvs" ) << " )";
                 
                 return output.str();
             }
@@ -267,6 +269,8 @@ namespace samson {
 
             Queue* getQueue( std::string name );
 
+            StreamOperation* getStreamOperation( std::string name );
+            
             // Reset all the content of this stream manager
             void reset();
             

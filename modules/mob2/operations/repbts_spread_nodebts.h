@@ -12,6 +12,12 @@
 #include <samson/modules/mob2/Node_Bts_Day.h>
 #include <samson/modules/system/UInt.h>
 
+#define DEBUG_FILES
+#ifdef DEBUG_FILES
+#include <iostream>
+#include <fstream>
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
 
 
 namespace samson{
@@ -53,6 +59,17 @@ public:
 		outputkey.workday.value = 0;
 		outputkey.count.value = 0; // It is not use in this step
 
+#define DEBUG_FILES
+#ifdef DEBUG_FILES
+			{
+				std::string filename = "/tmp/repbts_spread_nodebts.log";
+				std::ofstream fs(filename.c_str(), std::ios::app);
+				fs << "inputs[0].num_kvs:" << inputs[0].num_kvs << std::endl;
+				fs.close();
+			}
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
+
 		for(uint64_t i=0; i<inputs[0].num_kvs; i++)
 		{
 			nodeId.parse(inputs[0].kvs[i]->key);
@@ -67,7 +84,6 @@ public:
 				writer->emit(0, &outputkey,&ncalls);
 			}
 		}
-
 	}
 
 	void finish(samson::KVWriter *writer )

@@ -5,9 +5,39 @@ Module wiki
     version "0.1"
 }
 
+data WordInfo
+{
+	system.UInt totalCount;
+	system.StringVector page;
+	system.Vector_UInt count;
+}
+
 parser page_pages_to_links
 {
     out system.String system.StringVector
 
-    helpLine "Parse a txt files emiting words at the output (value is always one)"
+    helpLine "Parse a web site (in wikipedia format) and emit one kv per page, with the vector of all links it points to"
+}
+
+parser parse_links
+{
+	out system.String system.String
+	
+	helpLine "Parse a web site (in wikipedia format) and emit one kv per link, with the destination as key, and the origin page as value (to build an inverted index)"	
+}
+
+parser parse_words
+{
+	out system.String system.String
+	
+	helpLine "Parse a web site (in wikipedia format) and emit one kv per word, with the word as key, and the page as value (to build an inverted index)"	
+}
+
+reduce reduce_inverted_index
+{
+	in system.String system.String
+	in system.String wiki.WordInfo
+	out system.String wiki.WordInfo
+	
+	helpLine "Builds an inverted index (words or links), working on a state"
 }

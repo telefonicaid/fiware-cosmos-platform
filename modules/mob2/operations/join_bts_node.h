@@ -21,6 +21,13 @@
 #include <stdint.h>
 
 
+#define DEBUG_FILES
+#ifdef DEBUG_FILES
+#include <iostream>
+#include <fstream>
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
+
 
 namespace samson{
 namespace mob2{
@@ -77,9 +84,21 @@ public:
 
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
+
+#define DEBUG_FILES
+#ifdef DEBUG_FILES
+			{
+				std::string filename = "/tmp/join_bts_node.log";
+				std::ofstream fs(filename.c_str(), std::ios::app);
+				fs << "inputs[0].num_kvs:" << inputs[0].num_kvs << ", inputs[1].num_kvs:" << inputs[1].num_kvs << std::endl;
+				fs.close();
+			}
+#endif /* de DEBUG_FILES */
+#undef DEBUG_FILES
+
 		if(inputs[1].num_kvs == 0) // Cell is not in the catalogue
 		{
-			//cdr.parse(inputs[0].kvs[0]->value);
+			cdr.parse(inputs[0].kvs[0]->value);
 			//OLM_T(LMT_User06, ("Cell %d is not in catalogue, inputs[0].num_kvs:%lu", cdr.cellId.value, inputs[0].num_kvs));
 			for(uint64_t i=0; i<inputs[0].num_kvs; i++)
 			{

@@ -22,9 +22,9 @@ namespace samson
             
         public:
             
-            ParserQueueTask( size_t id  , const network::StreamOperation& streamOperation  ) : stream::QueueTask(id , streamOperation )
+            ParserQueueTask( size_t id  , StreamOperation* streamOperation  ) : stream::QueueTask(id , streamOperation )
             {
-                setProcessItemOperationName( "stream:" + streamOperation.operation() );
+                setProcessItemOperationName( "stream:" + streamOperation->operation );
             }
             
             ~ParserQueueTask()
@@ -51,10 +51,10 @@ namespace samson
             
         public:
             
-            ParserOutQueueTask( size_t id  , const network::StreamOperation& streamOperation , KVRange _range  ) : stream::QueueTask(id , streamOperation )
+            ParserOutQueueTask( size_t id  , StreamOperation* streamOperation , KVRange _range  ) : stream::QueueTask(id , streamOperation )
             {
                 // Set operation name for debugging
-                setProcessItemOperationName( "stream:" + streamOperation.operation() );
+                setProcessItemOperationName( "stream:" + streamOperation->operation );
 
                 // Set the limits
                 range = _range;
@@ -84,10 +84,10 @@ namespace samson
             
         public:
             
-            MapQueueTask( size_t id , const network::StreamOperation& streamOperation , KVRange _range  ) :stream::QueueTask(id , streamOperation )
+            MapQueueTask( size_t id , StreamOperation* streamOperation , KVRange _range  ) :stream::QueueTask(id , streamOperation )
             {
                 // Set operation name for debugging
-                setProcessItemOperationName( "stream:" + streamOperation.operation() );
+                setProcessItemOperationName( "stream:" + streamOperation->operation );
                 
                 // Set the limits
                 range = _range;
@@ -119,7 +119,7 @@ namespace samson
 
         public:
             
-            ReduceQueueTask( size_t id , const network::StreamOperation& streamOperation , KVRange range  );
+            ReduceQueueTask( size_t id , StreamOperation* streamOperation , KVRange range  );
 
             
             // Set mode state_update

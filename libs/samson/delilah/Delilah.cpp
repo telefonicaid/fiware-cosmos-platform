@@ -527,7 +527,7 @@ namespace samson {
     
 #define ENGINE_SHOW_COMMAND "info_command -delilah -worker -controller //engine_system /process_manager/num_running_processes^/process_manager/num_processes,t=process,format=per /memory_manager/used_memory^/memory_manager/memory,t=memory,format=per  /disk_manager/num_pending_operations+/disk_manager/num_running_operations,t=disk,f=uint64"
     
-#define LS_STREAM_OPERATIONS "info_command //stream_operation -controller /name,t=name /operation,t=operation /inputs,t=inputs,left /outputs,t=outputs,left /properties,t=properties,left"
+#define LS_STREAM_OPERATIONS "info_command -worker //stream_operation /name,t=name /operation,t=operation,left /inputs,t=inputs /outputs,t=outputs /status,t=status /properties,t=properties,left"
     
     
     

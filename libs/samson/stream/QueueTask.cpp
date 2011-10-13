@@ -6,10 +6,12 @@
 
 #include "QueueTask.h"      // Own interface
 
+#include "StreamManager.h"          // StreamOperation
+
 namespace samson {
     namespace stream{
         
-        QueueTask::QueueTask( size_t _id , const network::StreamOperation& streamOperation  ) 
+        QueueTask::QueueTask( size_t _id , StreamOperation* streamOperation  ) 
                 : StreamProcessBase( _id , streamOperation ) , QueueTaskBase(_id)
         {
             // Set in the environemtn variables
@@ -33,11 +35,11 @@ namespace samson {
             au::xml_simple(output, "input_0",  getBlockList("input_0")->strShortDescription() );
             au::xml_simple(output, "input_1",  getBlockList("input_1")->strShortDescription() );
             
-            au::xml_simple(output, "operation", streamOperation->operation() );
+            au::xml_simple(output, "operation", streamOperation->operation );
             
             if( streamOperation )
             {
-                output << "<description>" << streamOperation->operation() << "</description>\n";
+                output << "<description>" << streamOperation->operation << "</description>\n";
             }
                         
             // Get all process item related information ( like progress )

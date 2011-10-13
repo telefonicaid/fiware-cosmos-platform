@@ -35,10 +35,24 @@
 namespace samson {
     namespace stream{
     
+        
+        void StreamOperation::update( QueueTask* task )
+        {
+            BlockList *blockList = task->getBlockList("input_0");
+            BlockInfo _info = blockList->getBlockInfo();
+            
+            num_operations++;
+            num_blocks += _info.num_blocks;
+            size += _info.size;
+            info.append( _info.info );
+        }
+        
+#pragma mark---
+        
+        
         StreamManager::StreamManager(::samson::SamsonWorker* _worker) : queueTaskManager( this )
         {
             worker = _worker;
-            operation_list = NULL;
             
             // Init counter for worker task
             worker_task_id = 1;
@@ -152,12 +166,28 @@ namespace samson {
      
         void StreamManager::setOperationList( network::StreamOperationList *list )
         {
-            if( operation_list) 
-                delete operation_list;
             
-            operation_list = new network::StreamOperationList();
-            operation_list->CopyFrom( *list );
+            // Set temporary all of them to non-active
+            au::map <std::string , StreamOperation>::iterator it_stream_operations;
+            for ( it_stream_operations = stream_operations.begin() ; it_stream_operations != stream_operations.end() ; it_stream_operations++ )
+                it_stream_operations->second->setActive(false);
             
+            // Update the list of stream operations
+            for (int i = 0 ; i < list->operation_size() ; i++)
+            {
+                const network::StreamOperation& streamOperation = list->operation(i);
+                
+                std::string name = streamOperation.name();
+                
+                StreamOperation *_streamOperation = stream_operations.findInMap( name );
+                if( !_streamOperation )
+                {
+                    _streamOperation = new StreamOperation( streamOperation );
+                    stream_operations.insertInMap(name, _streamOperation );
+                }
+                else
+                    _streamOperation->update(streamOperation);
+            }
             
             // review all the operations...
             reviewStreamOperations();
@@ -303,157 +333,26 @@ namespace samson {
             // WorkerCommands
             au::xml_iterate_map(output, "worker_commands", workerCommands );
             
+            
+            //Stream operation
+            au::xml_iterate_map( output , "stream_operations" , stream_operations );
+            
             output << "</stream_manager>\n";
             
         }
         
         void StreamManager::reviewStreamOperations()
         {
-            // Review all the stream operations to see if a new squedule is necessary
-            if( operation_list )
+            au::map <std::string , StreamOperation>::iterator it_stream_operations;
+            for( it_stream_operations = stream_operations.begin() ; it_stream_operations != stream_operations.end() ; it_stream_operations++ )
             {
-                for ( int i = 0 ; i < operation_list->operation_size() ; i++)
-                {
-                    const network::StreamOperation& operation = operation_list->operation(i);
-                    reviewStreamOperation( operation );
-                }
+                std::string worker_command = "review_stream_operation " + it_stream_operations->first;
+                WorkerCommand* wc = new WorkerCommand( worker_command );
+                addWorkerCommand( wc );
+
             }
         }
         
-        
-        // Auxiliar function
-        std::string getCommandWorker( const network::StreamOperation& operation )
-        {
-            
-            
-            Environment enviroment;
-            copyEnviroment( operation.environment() , &enviroment );
-            
-            std::ostringstream output;
-            output << "run_stream_operation " << operation.operation() << " ";
-            
-            for (int i = 0 ; i < operation.input_queues_size() ; i++ )
-                output << operation.input_queues(i) << " ";
-
-            for (int i = 0 ; i < operation.output_queues_size() ; i++ )
-                output << operation.output_queues(i) << " ";
-            
-            output << " -clear_inputs ";  // Necessary in all automatic stream task
-
-            output << " -stream_operation " << operation.name() << " "; // Name of the operation for activity log
-            
-            size_t min_size = SamsonSetup::shared()->getUInt64("stream.min_operation_input_size");
-            output << " -min_size " << min_size;
-            
-            output << " -max_latency " << enviroment.getSizeT("max_latency", 0);
-            output << " -delayed_processing " << enviroment.get("delayed_processing", "yes");
-            
-            return output.str();
-        }
-
-        
-        
-        
-        void StreamManager::reviewStreamOperation(const network::StreamOperation& operation)
-        {
-            // Get the operation
-            Operation* op = samson::ModulesManager::shared()->getOperation( operation.operation() );
-            
-            // No valid operation
-            if( !op )
-            {
-                LM_W(("StreamOperation %s failed since operation %s is not valid",operation.name().c_str(), operation.operation().c_str()));
-                return;
-            }
-
-            /*
-            // Get the limit information for this operation    
-            samson::Environment environment;
-            copyEnviroment(operation.environment(), &environment);
-            
-            // Get limits to consider
-            size_t max_time             = environment.getSizeT("max_time", 0);
-            size_t max_size             = environment.getSizeT("max_size", 0);
-            */
-            
-            switch (op->getType()) {
-                    
-                case Operation::map:
-                case Operation::parser:
-                case Operation::parserOut:
-                {
-                    
-                    //LM_W(("Reviwing StreamOperation parser %s " , operation.name().c_str()));
-                    
-                    if( operation.input_queues_size() != 1 )
-                    {
-                        //LM_W(("StreamOperation %s failed since has no input queue", operation.name().c_str()));
-                        return;
-                    }
-                    
-                    // Get the input queue
-                    Queue *q = getQueue( operation.input_queues(0) );
-                    
-                    // Get information about this queue
-                    BlockInfo block_info;
-                    q->update( block_info );
-                                        
-                    // If necessary, run a worker command
-                    if( block_info.num_blocks > 0 )
-                    {
-                        std::string worker_command = getCommandWorker( operation );
-                        //LM_M(("Worker command %s" , worker_command.c_str() ));
-                        WorkerCommand* wc = new WorkerCommand( worker_command );
-                        addWorkerCommand( wc );
-                    }
-                    
-                }
-                    break;
-                    
-                case Operation::reduce:
-                {
-                    
-                    if( operation.input_queues_size() != 2 )
-                    {
-                        //LM_W(("StreamOperation %s failed since has no input queue", operation.name().c_str()));
-                        return;
-                    }
-                    
-                    std::ostringstream worker_command;
-                    worker_command << "run_stream_update_state " << operation.operation() << " ";
-                    
-                    for (int i = 0 ; i < operation.input_queues_size() ; i++ )
-                        worker_command << operation.input_queues(i) << " ";
-                    
-                    for (int i = 0 ; i < operation.output_queues_size() ; i++ )
-                        worker_command << operation.output_queues(i) << " ";
-                    
-                    size_t min_size = SamsonSetup::shared()->getUInt64("stream.min_operation_input_size");
-                    worker_command << " -min_size " << min_size;
-                    
-                    
-                    Environment enviroment;
-                    copyEnviroment( operation.environment() , &enviroment );
-                    
-                    worker_command << " -max_latency " << enviroment.getSizeT("max_latency", 0);
-                    worker_command << " -delayed_processing " << enviroment.get("delayed_processing", "yes");
-                    
-                    worker_command << " -stream_operation " << operation.name() << " "; // Name of the operation for activity log
-                    
-                    WorkerCommand* wc = new WorkerCommand( worker_command.str() );
-                    addWorkerCommand( wc );
-                    
-                }
-                    break;
-
-                    
-                    
-                default:
-                    // Not supported operation at the moment
-                    break;
-            }
-            
-        }
         
         void StreamManager::saveStateToDisk()
         {

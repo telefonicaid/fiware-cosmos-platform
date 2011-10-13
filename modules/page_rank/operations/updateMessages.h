@@ -6,6 +6,8 @@
 #ifndef _H_SAMSON_page_rank_updateMessages
 #define _H_SAMSON_page_rank_updateMessages
 
+#define TOLERANCE 0.1
+
 
 #include <map>
 #include <string>
@@ -171,7 +173,7 @@ input: system.String page_rank.Node
 		
 		node.updated_outputs.value = 0;
 		
-		if( fabs( previous_rank - node.rank.value ) > 0.01 )
+		if( fabs( previous_rank - node.rank.value ) > TOLERANCE )
 		{
 		    //printf("Node %s not emiting rank  to %d connections\n" , key.value.c_str() , node.links_length );
 		    

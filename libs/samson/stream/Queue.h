@@ -58,6 +58,9 @@ namespace samson {
             // Environment properties of this queue
             au::Environment environment;
             
+            // Number of updates when this is a state queue
+            int updates;
+            
             // Flag to avoid creating update_state operations
             bool paused;
 

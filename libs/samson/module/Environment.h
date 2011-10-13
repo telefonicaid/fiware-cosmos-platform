@@ -132,6 +132,13 @@ namespace samson {
 			return atof( get( name , "0" ).c_str() );
 		}
         
+        // Clear enviroment
+        void clearEnvironment()
+        {
+            environment.clear();
+        }
+        
+        
         // Description
         
         std::string getEnvironmentDescription()

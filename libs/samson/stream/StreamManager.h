@@ -27,6 +27,7 @@
 #include "samson/common/samson.pb.h"        // network::...
 #include "samson/common/NotificationMessages.h"
 #include "samson/module/Environment.h"      // samson::Environment
+#include "samson/common/EnvironmentOperations.h"
 
 #include "samson/stream/QueueTaskManager.h" // samson::stream::QueueTaskManager
 
@@ -43,11 +44,158 @@ namespace samson {
     {
         
         class Queue;
+        class QueueTask;
         class Block;
         class BlockList;
         class WorkerCommand;
         class PopQueue;
 
+        class StreamOperation
+        {
+            
+        public:
+            
+            std::string name;
+            std::string operation;
+
+            
+            std::vector<std::string> input_queues;
+            std::vector<std::string> output_queues;
+            
+            int num_workers;
+            
+            Environment environment;
+            
+            bool active;    // Flag to indicate if this operation is still active
+            
+            // Information about activity
+            int num_operations;
+            int num_blocks;
+            size_t size;
+            FullKVInfo info;
+
+            int update_state_counter;
+            
+            
+        public:
+            
+            StreamOperation()
+            {
+                
+            }
+            
+            StreamOperation( StreamOperation* streamOperation )
+            {
+                name = streamOperation->name;
+                operation = streamOperation->operation;
+                num_workers = streamOperation->num_workers;
+                
+                environment.environment.clear();
+                environment.copyFrom( &streamOperation->environment );
+                
+                input_queues.insert( input_queues.begin(), streamOperation->input_queues.begin() , streamOperation->input_queues.end() );
+                output_queues.insert( output_queues.begin(), streamOperation->output_queues.begin() , streamOperation->output_queues.end() );
+            }
+
+            
+            StreamOperation( const network::StreamOperation& streamOperation)
+            {
+                update( streamOperation );
+                
+                // Additional information
+                num_operations = 0;
+                num_blocks = 0;
+                size = 0;
+                info.clear();
+                
+                update_state_counter = 0;
+
+            }
+            
+            
+            void update( const network::StreamOperation& streamOperation )
+            {
+                // UPdate form controller
+                name = streamOperation.name();
+                operation = streamOperation.operation();
+
+                input_queues.clear();
+                for (int i = 0 ; i < streamOperation.input_queues_size() ; i++ )
+                    input_queues.push_back( streamOperation.input_queues(i) );
+
+                output_queues.clear();
+                for (int i = 0 ; i < streamOperation.output_queues_size() ; i++ )
+                    output_queues.push_back( streamOperation.output_queues(i) );
+
+                
+                // Something to remove
+                num_workers = streamOperation.num_workers();
+                
+                // Copy environment
+                environment.environment.clear();
+                const network::Environment & _environment = streamOperation.environment();
+                copyEnviroment( _environment , &environment );
+                
+                active = true;
+            }
+            
+            void setActive( bool _active )
+            {
+                active = _active;
+            }
+            
+            void update( QueueTask* task );
+            
+            void add_update_state()
+            {
+                update_state_counter++;
+            }
+            
+            void getInfo( std::ostringstream &output )
+            {
+                if( !active )
+                    return;
+                
+                au::xml_open(output, "stream_operation");
+                au::xml_simple(output, "name", name);
+                au::xml_simple(output, "operation", operation);
+                
+                au::xml_open(output, "inputs");
+                for ( size_t i = 0 ; i < input_queues.size() ; i++)
+                    output << input_queues[i] << " ";
+                au::xml_close(output, "inputs");
+
+                au::xml_open(output, "outputs");
+                for ( size_t i = 0 ; i < output_queues.size() ; i++)
+                    output << output_queues[i] << " ";
+                au::xml_close(output, "outputs");
+                
+                au::xml_simple(output, "properties", environment.getEnvironmentDescription() );
+                
+                std::string status_txt = getStatus();
+                au::xml_simple(output,"status" , "???" );
+                
+                au::xml_close(output, "stream_operation");
+            }
+            
+            std::string getStatus()
+            {
+                std::ostringstream output;
+                if( num_operations > 0)
+                {
+                    if( update_state_counter > 0 )
+                        output << "[ Updates states " << update_state_counter << " ] ";
+                    
+                    output << "[ " << num_operations << " ops " << au::str( size , "B" ) << " ( " << au::str( info.kvs , "kvs" ) << " )";
+                }
+                
+                output << "No activity";
+                
+                return output.str();
+            }
+            
+            
+        };
         
         class StreamManager : public ::engine::Object 
         {
@@ -61,8 +209,8 @@ namespace samson {
             // Map with the current queues
             au::map< std::string , Queue > queues;                
 
-            // list of automatic operation ( updated from controller )
-            network::StreamOperationList *operation_list;    
+            // Map of stream operaitons
+            au::map <std::string , StreamOperation> stream_operations;
 
             // Manager of the tasks associated with the queues
             QueueTaskManager queueTaskManager;      
@@ -125,7 +273,6 @@ namespace samson {
         private:
             
             void reviewStreamOperations();
-            void reviewStreamOperation(const network::StreamOperation& operation);
             
             void saveStateToDisk();
             void recoverStateFromDisk();

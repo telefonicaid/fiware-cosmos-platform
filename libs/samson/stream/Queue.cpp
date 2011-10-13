@@ -102,6 +102,8 @@ namespace samson {
             // Number of divisions for this queue
             num_divisions = 1;
             
+            // Number of updates ( 0 at start )
+            updates = 0;
         }
         
         Queue::~Queue()

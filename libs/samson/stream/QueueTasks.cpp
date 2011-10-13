@@ -26,14 +26,20 @@ namespace samson {
         
         void ParserQueueTask::generateKeyValues( KVWriter *writer )
         {
-            // Get the operation
-            Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation() );
             
-            //LM_M(("Stream Parsing begin" ));
+            // Get the operation
+            Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation );
+
+            if( !operation )
+            {
+                setUserError("Unknown operation");
+                return;
+            }
+            
             
             // Run the generator over the ProcessWriter to emit all key-values
             Parser *parser = (Parser*) operation->getInstance();
-            
+
             if( !parser )
             {
                 setUserError("Error getting an instance of this operation");
@@ -67,8 +73,6 @@ namespace samson {
             // Detele the created instance
             delete parser;
 
-            //LM_M(("Stream Parsing finish" ));
-            
         }
         
         void ParserQueueTask::finalize( StreamManager* streamManager )
@@ -77,7 +81,7 @@ namespace samson {
             BlockList *input = getBlockList("input_0");
             
             // Get the queue we are working on
-            std::string queue_name = streamOperation->input_queues( 0 );
+            std::string queue_name = streamOperation->input_queues[ 0 ];
             Queue*queue = streamManager->getQueue( queue_name );
 
             if ( queue )
@@ -97,7 +101,7 @@ namespace samson {
         {
             std::ostringstream output;
             output << "[" << id << "] ";
-            output << "Parser " << streamOperation->operation();
+            output << "Parser " << streamOperation->operation;
             return output.str();
         }
         
@@ -108,7 +112,7 @@ namespace samson {
         {
             std::ostringstream output;
             output << "[" << id << "] ";
-            output << "Parserout " << streamOperation->operation();
+            output << "Parserout " << streamOperation->operation;
             return output.str();
         }
         
@@ -120,8 +124,9 @@ namespace samson {
             BlockList *input = getBlockList("input_0");
             
             // Get the queue we are working on
-            std::string queue_name = streamOperation->input_queues( 0 );
+            std::string queue_name = streamOperation->input_queues[ 0 ];
             Queue*queue = streamManager->getQueue( queue_name );
+
             
             if ( queue )
             {
@@ -140,7 +145,7 @@ namespace samson {
         {
 
             // Get the operation
-            Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation() );
+            Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation );
             
             // Type of inputs ( for slecting key-values )
             std::vector<KVFormat> inputFormats =  operation->getInputFormats();
@@ -237,8 +242,9 @@ namespace samson {
         
         void MapQueueTask::generateKeyValues( KVWriter *writer )
         {
+            
             // Get the operation
-            Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation() );
+            Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation );
 
             // Type of inputs ( for slecting key-values )
             std::vector<KVFormat> inputFormats =  operation->getInputFormats();
@@ -320,6 +326,10 @@ namespace samson {
             // Detele the created instance
             delete map;
             
+            
+            LM_M(("MAP Generate key-values DONE"));
+
+            
         }        
 
         void MapQueueTask::finalize( StreamManager* streamManager )
@@ -329,7 +339,7 @@ namespace samson {
             BlockList *input = getBlockList("input_0");
             
             // Get the queue we are working on
-            std::string queue_name = streamOperation->input_queues( 0 );
+            std::string queue_name = streamOperation->input_queues[ 0 ];
             Queue*queue = streamManager->getQueue( queue_name );
             
             if ( queue )
@@ -349,7 +359,7 @@ namespace samson {
         {
             std::ostringstream output;
             output << "[" << id << "] ";
-            output << "Map " << streamOperation->operation();
+            output << "Map " << streamOperation->operation;
             return output.str();
         }
         
@@ -498,10 +508,10 @@ namespace samson {
 #pragma mark
 
         
-        ReduceQueueTask::ReduceQueueTask( size_t id , const network::StreamOperation& streamOperation , KVRange _range  ) 
+        ReduceQueueTask::ReduceQueueTask( size_t id , StreamOperation* streamOperation , KVRange _range  ) 
         : stream::QueueTask(id , streamOperation )
         {
-            setProcessItemOperationName( "stream:" + streamOperation.operation() );
+            setProcessItemOperationName( "stream:" + streamOperation->operation );
             
             //Range of activity
             range = _range;
@@ -534,7 +544,7 @@ namespace samson {
             update( block_info );
             
             // Get the operation
-            Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation() );
+            Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation );
             
             // Get the operation instance 
             Reduce *reduce = (Reduce*) operation->getInstance();
@@ -610,13 +620,13 @@ namespace samson {
         {
             std::ostringstream output;
                 output << "[" << id << "] ";
-            output << "Reduce " << streamOperation->operation();
+            output << "Reduce " << streamOperation->operation;
             return output.str();
         }
 
         void ReduceQueueTask::processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )
         {
-            int output_channel = streamOperation->output_queues_size() - 1 ;
+            int output_channel = (int)streamOperation->output_queues.size() - 1 ;
             
             //LM_M(("processOutputBuffer %d ( %d )" , output , output_channel ));
             
@@ -625,7 +635,7 @@ namespace samson {
                 outputBuffers.push_back( buffer );
             }
             else
-                sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues(output) );
+                sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues[output] );
         }
         
         void ReduceQueueTask::finalize( StreamManager* streamManager )
@@ -640,8 +650,10 @@ namespace samson {
             BlockList *originalBlockList = getBlockList("input_1");
             
             // Get the queue we are working on
-            std::string queue_name = streamOperation->output_queues( streamOperation->output_queues_size() - 1 );
+            std::string queue_name = streamOperation->output_queues[ (int)streamOperation->output_queues.size() - 1 ];
             Queue*queue = streamManager->getQueue( queue_name );
+            
+            //LM_M(("Running finalize of a reduce for queue %s" , queue_name.c_str() ));
             
             if ( queue )
             {

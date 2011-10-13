@@ -96,10 +96,16 @@ namespace samson {
             void finishWorkerTask();
 
             // Auxiliar operation    
-            network::StreamOperation *getStreamOperation( Operation *op );
+            StreamOperation *getStreamOperation( Operation *op );
             
             // Function to check everything is finished
             void checkFinish();
+          
+            // Spetial review operations
+            void run_review_stream_operation_forward();
+            void run_review_stream_operation_reduce();
+
+            
             
         };
     }

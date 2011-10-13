@@ -25,8 +25,8 @@ namespace samson {
         
 #pragma mark ProcessItemKVGenerator
         
-        StreamProcessBase::StreamProcessBase( size_t _task_id , const network::StreamOperation& _streamOperation ) 
-        : ProcessIsolated( _streamOperation.operation() , ProcessIsolated::key_value )
+        StreamProcessBase::StreamProcessBase( size_t _task_id , StreamOperation* _streamOperation ) 
+        : ProcessIsolated( _streamOperation->operation , ProcessIsolated::key_value )
         {
             
             // Get the task_id
@@ -35,15 +35,17 @@ namespace samson {
             // Set the order of the task
             task_order = 0;
             
-            // Copy environemnt
-            //copyEnviroment( task->workerTask.environment() , &environment ); 
             
             // Copy queue information for this task
-            streamOperation = new network::StreamOperation();
-            streamOperation->CopyFrom( _streamOperation );
+            streamOperation = new StreamOperation( _streamOperation );
 
+            /*
+            LM_M(("StreamOperation %s %s --> %d %d ( workers %d ) " , streamOperation->name.c_str() , streamOperation->operation.c_str() ,
+                  (int) streamOperation->input_queues.size() , (int) streamOperation->output_queues.size() , streamOperation->num_workers ));
+            */
+            
             // Set number of workers in the stream operation
-            setNumWorkers( _streamOperation.num_workers() );
+            setNumWorkers( _streamOperation->num_workers );
                 
         }
 
@@ -56,8 +58,8 @@ namespace samson {
 
         void StreamProcessBase::processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )
         {
-            //LM_M(("[%s] Processing buffer %s" , streamOperation->operation().c_str(), au::str(buffer->getSize()).c_str() ));
-            sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues(output) );
+            //LM_M(("[%s] Processing buffer %s" , streamOperation->operation.c_str(), au::str(buffer->getSize()).c_str() ));
+            sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues[output] );
         }
         
         void StreamProcessBase::sendBufferToQueue( engine::Buffer *buffer , int outputWorker , std::string queue_name  )
@@ -89,12 +91,12 @@ namespace samson {
         
         void StreamProcessBase::processOutputTXTBuffer( engine::Buffer *buffer , bool finish )
         {
-            LM_M(("[%s] Processing buffer %s" , streamOperation->operation().c_str(), au::str(buffer->getSize()).c_str() ));
+            //LM_M(("[%s] Processing buffer %s" , streamOperation->operation.c_str(), au::str(buffer->getSize()).c_str() ));
 
             int output = 0;
             int outputWorker = -1;  // Send always to myself ( txt is not distributed )
             
-            sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues(output) );
+            sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues[output] );
             
         }
         

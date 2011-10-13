@@ -291,10 +291,10 @@ namespace samson
     
     void ProcessIsolated::runIsolated()
     {
+        
         switch (type) {
                 
             case key_value:
-                // Generate the key-values
                 generateKeyValues( getWriter() );
                 getWriter()->flushBuffer(true);
                 break;

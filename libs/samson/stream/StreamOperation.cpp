@@ -1,6 +1,10 @@
 
+
+#include "samson/module/ModulesManager.h"   samson::ModulesManager
+
 #include "StreamManager.h"                 
 #include "QueueTask.h"
+
 #include "samson/stream/StreamOperation.h"      // Own interface
 
 namespace samson {
@@ -9,26 +13,34 @@ namespace samson {
         
         StreamOperation::StreamOperation()
         {
-            
+            init();
         }
         
         StreamOperation::StreamOperation( StreamOperation* streamOperation )
         {
             name = streamOperation->name;
             operation = streamOperation->operation;
-            num_workers = streamOperation->num_workers;
             
             environment.environment.clear();
             environment.copyFrom( &streamOperation->environment );
             
             input_queues.insert( input_queues.begin(), streamOperation->input_queues.begin() , streamOperation->input_queues.end() );
             output_queues.insert( output_queues.begin(), streamOperation->output_queues.begin() , streamOperation->output_queues.end() );
+            
+            init();
         }
         
         
-        StreamOperation::StreamOperation( const network::StreamOperation& streamOperation)
+        void StreamOperation::init()
         {
-            update( streamOperation );
+            
+            // Default latency
+            environment.set("max_latency" , "60" );
+            environment.set("delayed_processing" , "yes" );
+            environment.set("block_break_mode" , "no" );
+
+            // By default it is active
+            setActive(true);
             
             // Additional information
             num_operations = 0;
@@ -37,39 +49,46 @@ namespace samson {
             info.clear();
             
             update_state_counter = 0;
-            
         }
         
-        
-        void StreamOperation::update( const network::StreamOperation& streamOperation )
+        bool StreamOperation::isValid()
         {
-            // UPdate form controller
-            name = streamOperation.name();
-            operation = streamOperation.operation();
+            Operation* op = samson::ModulesManager::shared()->getOperation( operation );
             
-            input_queues.clear();
-            for (int i = 0 ; i < streamOperation.input_queues_size() ; i++ )
-                input_queues.push_back( streamOperation.input_queues(i) );
+            if( !op )
+                return false;
             
-            output_queues.clear();
-            for (int i = 0 ; i < streamOperation.output_queues_size() ; i++ )
-                output_queues.push_back( streamOperation.output_queues(i) );
+            if( op->getNumInputs() != (int)input_queues.size() )
+                return false;
+            if( op->getNumOutputs() != (int)output_queues.size() )
+                return false;
             
+            return true;
             
-            // Something to remove
-            num_workers = streamOperation.num_workers();
-            
-            // Copy environment
-            environment.environment.clear();
-            const network::Environment & _environment = streamOperation.environment();
-            copyEnviroment( _environment , &environment );
-            
-            active = true;
         }
+        
         
         void StreamOperation::setActive( bool _active )
         {
-            active = _active;
+            if( _active )
+                environment.set("active", "yes" );
+            else
+                environment.set("active", "yes" );
+        }
+        
+        bool StreamOperation::isActive()
+        {
+            return  (environment.get("active","no") == "yes" );
+        }
+        
+        void StreamOperation::setNumWorkers( int num_workers )
+        {
+            environment.setInt( "num_workers" , num_workers );
+        }
+        
+        int StreamOperation::getNumWorkers()
+        {
+            return environment.getInt( "num_workers" , -1 );
         }
         
         
@@ -80,7 +99,7 @@ namespace samson {
         
         void StreamOperation::getInfo( std::ostringstream &output )
         {
-            if( !active )
+            if( !isActive() )
                 return;
             
             au::xml_open(output, "stream_operation");
@@ -116,7 +135,7 @@ namespace samson {
                 output << "[ Updates states " << update_state_counter << " ] ";
             
             if( num_operations > 0)
-                output << "[ " << num_operations << " ops " << au::str( size , "B" ) << " ( " << au::str( info.kvs , "kvs" ) << " )";
+                output << "[ " << num_operations << " ops / " << au::str( size , "B" ) << " / " << au::str( info.kvs , "kvs" ) << " ]";
             
             return output.str();
         }

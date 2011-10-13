@@ -93,7 +93,7 @@ namespace samson {
             void addBlocks( std::string queue_name ,  BlockList *bl );
             
             // set list of automatic operations( from controller )
-            void setOperationList( network::StreamOperationList *list );
+            void add( StreamOperation* operation );
             
             // Add a worker command to this stream manager
             void addWorkerCommand( WorkerCommand *workerCommand );

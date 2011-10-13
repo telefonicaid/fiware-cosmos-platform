@@ -227,7 +227,186 @@ namespace samson {
                 return;
             }
             
+
+            if( main_command == "add_stream_operation" )
+            {
+                if( cmd.get_num_arguments() < 3 )
+                {
+                    finishWorkerTaskWithError( "Usage: add_stream_operation name operation input1 input2 ... outputs1 outputs2 output3");
+                    return;
+                }
+                
+                std::string name            = cmd.get_argument( 1 );
+                std::string operation       = cmd.get_argument( 2 );
+                
+
+                // If the operation exist, it will be replaced by this one, so no check if the stream operation is here
+
+                // Check operation
+                Operation* op = ModulesManager::shared()->getOperation(operation);
+                if( !op )
+                {
+                    finishWorkerTaskWithError( "Unsupported operation " + operation );
+                    return;
+                }
+                
+                // Check the number of input / outputs
+                if( cmd.get_num_arguments() < ( 3 + op->getNumInputs() +  op->getNumOutputs() ) )
+                {
+                    finishWorkerTaskWithError( au::str("Not enougth parameters for operation %s. It has %d inputs and %d outputs" , operation.c_str() , (int) op->getNumInputs() ,  (int) op->getNumOutputs() ) );
+                    return;
+                    
+                }
+                
+                
+                switch ( op->getType() ) {
+                        
+                    case Operation::parser:
+                    case Operation::map:
+                    case Operation::parserOut:
+                        
+                        // No additional checks
+                        break;
+                        
+                        
+                    case Operation::reduce:
+                    {
+                        if( op->getNumInputs() != 2 )
+                        {
+                            finishWorkerTaskWithError( au::str("Only reduce operations with 2 inputs are supported at the moment. ( In the furure, reducers with 3 or more inputs will be supported.") );
+                            return;
+                        }
+                        
+                        
+                        // Check state format is coherent
+                        KVFormat a = op->getInputFormats()[op->getNumInputs() - 1];
+                        KVFormat b = op->getOutputFormats()[ op->getNumOutputs() - 1 ];
+                        
+                        if( !a.isEqual(b)  )
+                        {
+                            finishWorkerTaskWithError("Last input and output should be the same data type to qualify as stream-reduce");
+                            return;                        
+                        }
+                        
+                        // Check that the last input and the last output are indeed the same queue
+                        std::string last_input = cmd.get_argument( 3 + op->getNumInputs() - 1 );
+                        std::string last_output = cmd.get_argument( 3 + op->getNumInputs() + op->getNumOutputs() -1 );
+                        if(  last_input !=  last_output )
+                        {
+                            finishWorkerTaskWithError( au::str("Last input and last output should be the same state. ( %s != %s)" , last_input.c_str() , last_output.c_str() ) ); 
+                            return;
+                            
+                        }
+                        
+                    }
+                        break;
+                        
+                    case Operation::script:
+                    {
+                        finishWorkerTaskWithError( "Script operations cannot be used to process stream queues. Only parsers, maps and spetial reducers" );
+                        return;
+                    }
+                        
+                        break;
+                        
+                    default:
+                    {
+                        finishWorkerTaskWithError( "Operation type is currently not supported... coming soon!" );
+                        return;
+                        
+                    }
+                        break;
+                }
+                
+                
+                // Create the new StreamOperation
+                
+                StreamOperation *stream_operation = new StreamOperation();
+                stream_operation->name = name;
+                stream_operation->operation = operation;
+                                              
+                stream_operation->setNumWorkers( streamManager->worker->network->getNumWorkers() );
+                
+                int num_inputs  = op->getNumInputs();
+                int num_outputs = op->getNumOutputs();
+                
+                for (int i = 0 ; i < num_inputs ; i++ )
+                {
+                    std::string queue_name = cmd.get_argument( 3 + i );
+                    stream_operation->input_queues.push_back( queue_name );
+                }
+                
+                for (int i = 0 ; i < num_outputs ; i++ )
+                {
+                    std::string queue_name = cmd.get_argument( 3 + num_inputs + i );
+                    stream_operation->output_queues.push_back( queue_name );
+                }
+ 
+                // Add this new stream operation
+                streamManager->add( stream_operation );
+
+                finishWorkerTask();
+                return;
+            }
             
+            if( main_command == "rm_stream_operation" )
+            {
+                // Remove a particular stream operation
+                
+                if( cmd.get_num_arguments() < 2 )
+                {
+                    finishWorkerTaskWithError( "Usage: rm_stream_operation name " );
+                    return;
+                }
+                
+                std::string name            = cmd.get_argument( 1 );
+                
+                // Check it the queue already exists
+                StreamOperation * operation = streamManager->stream_operations.findInMap( name );
+                
+                // Check if queue exist
+                if( !operation  )
+                {
+                    finishWorkerTaskWithError( au::str("StreamOperation %s does not exist" , name.c_str()  ) );
+                    return;
+                }
+                
+                operation->setActive( false );
+                finishWorkerTask();
+                return;
+                
+            }
+            
+            if( main_command == "set_stream_operation_property" )
+            {
+                if( cmd.get_num_arguments() < 4 )
+                {
+                    finishWorkerTaskWithError( "Usage: set_stream_operation_property name property value " );
+                    return;
+                }
+                
+                std::string name            = cmd.get_argument( 1 );
+                std::string property        = cmd.get_argument( 2 );
+                std::string value           = cmd.get_argument( 3 );
+                
+                // Check it the queue already exists
+                StreamOperation * operation = streamManager->stream_operations.findInMap( name );
+                
+                // Check if queue exist
+                if( !operation  )
+                {
+                    finishWorkerTaskWithError( au::str("StreamOperation %s does not exist" , name.c_str()  ) );
+                    return;
+                }
+                
+                // Set the environemnt variable
+                operation->environment.set( property , value );
+                
+                finishWorkerTask();
+                return;
+                
+
+            }            
             
             if( cmd.get_argument(0) == "review_stream_operation" )
             {
@@ -264,6 +443,8 @@ namespace samson {
                     {
                         // Run forward kind of stream operations
                         run_review_stream_operation_forward();
+                        if( finished )
+                            return;
                         
                         if( num_pending_processes == 0 )
                             finishWorkerTask();
@@ -274,6 +455,8 @@ namespace samson {
                     {
                         // Run forward kind of stream operations
                         run_review_stream_operation_reduce();
+                        if( finished )
+                            return;
                         
                         if( num_pending_processes == 0 )
                             finishWorkerTask();
@@ -618,7 +801,7 @@ namespace samson {
             for (int i = 0 ; i < op->getNumOutputs() ; i++)
                 operation->output_queues.push_back( cmd.get_argument( pos_argument++ ) );
             
-            operation->num_workers =  streamManager->worker->network->getNumWorkers() ; 
+            operation->setNumWorkers(  streamManager->worker->network->getNumWorkers() ); 
             
             return operation;
         }
@@ -666,6 +849,11 @@ namespace samson {
             if( !stream_operation )
             {
                 finishWorkerTaskWithError(au::str("Stream operation '%s' not found." , stream_operation_name.c_str() ));
+                return;
+            }
+            if( !stream_operation->isValid() )
+            {
+                finishWorkerTaskWithError(au::str("Stream operation '%s' not valid." , stream_operation_name.c_str() ));
                 return;
             }
             
@@ -718,9 +906,6 @@ namespace samson {
                             cancel_operation = false;       // No cancel since there is too much latency
                     }
                 }
-                
-                if( cancel_operation )
-                    LM_M(("Operation canceled"));
                 
                 if( !no_more_content && !cancel_operation )                            
                 {
@@ -804,6 +989,12 @@ namespace samson {
             if( !stream_operation )
             {
                 finishWorkerTaskWithError(au::str("Stream operation '%s' not found." , stream_operation_name.c_str() ));
+                return;
+            }
+            
+            if( !stream_operation->isValid() )
+            {
+                finishWorkerTaskWithError(au::str("Stream operation '%s' not valid." , stream_operation_name.c_str() ));
                 return;
             }
             

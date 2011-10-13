@@ -45,7 +45,7 @@ namespace samson {
             */
             
             // Set number of workers in the stream operation
-            setNumWorkers( _streamOperation->num_workers );
+            setNumWorkers( _streamOperation->getNumWorkers() );
                 
         }
 

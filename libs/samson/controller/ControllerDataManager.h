@@ -46,9 +46,6 @@ namespace samson {
 		
 		au::map< std::string , Queue> queues;		// List of ALL KeyValue queues
 		au::map< size_t , ActiveTask > tasks;		// List of active tasks ( information about the files that should not be deleted )
-		
-        // List of stream operations to be distributed to all the nodes
-        au::map< std::string , network::StreamOperation > streamOperations;    
 
         SamsonController *controller;
 		

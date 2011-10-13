@@ -730,6 +730,17 @@ namespace samson
             return sendWorkerCommand( command , NULL );
         }
 
+        if( main_command == "add_stream_operation" )
+        {
+            return sendWorkerCommand( command , NULL );
+        }
+        
+        if( main_command == "set_stream_operation_property" )
+        {
+            return sendWorkerCommand( command , NULL );
+        }
+        
+        
         if( main_command == "remove_all_stream" )
         {
             return sendWorkerCommand( command , NULL );

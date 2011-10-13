@@ -152,30 +152,14 @@ namespace samson {
             reviewStreamOperations();            
         }
      
-        void StreamManager::setOperationList( network::StreamOperationList *list )
+        void StreamManager::add( StreamOperation* operation )
         {
             
-            // Set temporary all of them to non-active
-            au::map <std::string , StreamOperation>::iterator it_stream_operations;
-            for ( it_stream_operations = stream_operations.begin() ; it_stream_operations != stream_operations.end() ; it_stream_operations++ )
-                it_stream_operations->second->setActive(false);
-            
-            // Update the list of stream operations
-            for (int i = 0 ; i < list->operation_size() ; i++)
-            {
-                const network::StreamOperation& streamOperation = list->operation(i);
-                
-                std::string name = streamOperation.name();
-                
-                StreamOperation *_streamOperation = stream_operations.findInMap( name );
-                if( !_streamOperation )
-                {
-                    _streamOperation = new StreamOperation( streamOperation );
-                    stream_operations.insertInMap(name, _streamOperation );
-                }
-                else
-                    _streamOperation->update(streamOperation);
-            }
+            StreamOperation* previous = stream_operations.extractFromMap( operation->name );
+            if( previous )
+                delete previous;
+
+            stream_operations.insertInMap( operation->name , operation );
             
             // review all the operations...
             reviewStreamOperations();
@@ -376,6 +360,26 @@ namespace samson {
                 
                 
             }
+
+            au::map< std::string , StreamOperation >::iterator it_stream_operations;
+            for ( it_stream_operations = stream_operations.begin() ; it_stream_operations != stream_operations.end() ; it_stream_operations++)
+            {
+                StreamOperation *stream_operation = it_stream_operations->second;
+                output << "# Stream Operation " << stream_operation->name << "\n";
+                
+                // Properties of queue
+                output << "stream_operation " << stream_operation->name << " " << stream_operation->operation << "\n";  
+                
+                for (size_t i = 0 ; i < stream_operation->input_queues.size() ; i++)
+                    output << "stream_operation_input " << stream_operation->name << " " << stream_operation->input_queues[i] << "\n";
+                for (size_t i = 0 ; i < stream_operation->output_queues.size() ; i++)
+                    output << "stream_operation_output " << stream_operation->name << " " << stream_operation->output_queues[i] << "\n";
+                
+                
+                output << "stream_operation_properties " << stream_operation->name << " " << stream_operation->environment.saveToString() << "\n";
+                
+            }
+            
             
             
             // Foot just to make sure we finished correctly
@@ -461,7 +465,7 @@ namespace samson {
                         }
                         else if( main_command == "queue_properties" )
                         {
-                            if ( commandLine.get_num_arguments() < 5 )
+                            if ( commandLine.get_num_arguments() < 3 )
                                 continue;
                             
                             std::string queue_name = commandLine.get_argument(1);
@@ -472,7 +476,67 @@ namespace samson {
                             queue->environment.recoverFromString( properties );
                             
                         }
-                        
+                        else if ( main_command == "stream_operation" )
+                        {
+                            if ( commandLine.get_num_arguments() < 3 )
+                                continue;
+                            
+                            std::string stream_operation_name = commandLine.get_argument(1);
+                            std::string operation = commandLine.get_argument(2);
+                            
+                            StreamOperation* stream_operation = new StreamOperation();
+                            stream_operation->name = stream_operation_name;
+                            stream_operation->operation = operation;
+                            
+                            add( stream_operation );
+                        }
+                        else if ( main_command == "stream_operation_input" )
+                        {
+                            if ( commandLine.get_num_arguments() < 3 )
+                                continue;
+                            
+                            std::string stream_operation_name = commandLine.get_argument(1);
+                            std::string queue_name = commandLine.get_argument(2);
+                            
+                            StreamOperation *stream_operation = getStreamOperation( stream_operation_name );
+                            if( stream_operation )
+                                stream_operation->input_queues.push_back( queue_name );
+                            else
+                                LM_W(("Not possible to recover state of stream operation %s since it does not exist. Skipping..." , stream_operation_name.c_str() ));
+                            
+                        }
+                        else if ( main_command == "stream_operation_output" )
+                        {
+                            if ( commandLine.get_num_arguments() < 3 )
+                                continue;
+                            
+                            std::string stream_operation_name = commandLine.get_argument(1);
+                            std::string queue_name = commandLine.get_argument(2);
+                            
+                            StreamOperation *stream_operation = getStreamOperation( stream_operation_name );
+                            if( stream_operation )
+                                stream_operation->output_queues.push_back( queue_name );
+                            else
+                                LM_W(("Not possible to recover state of stream operation %s since it does not exist. Skipping..." , stream_operation_name.c_str() ));
+                            
+                        }
+                        else if ( main_command == "stream_operation_properties" )
+                        {
+                            if ( commandLine.get_num_arguments() < 3 )
+                                continue;
+                            
+                            std::string stream_operation_name = commandLine.get_argument(1);
+                            std::string properties = commandLine.get_argument(2);
+                            
+                            // Get this queue ( if necessary, create without any queue-item )
+                            StreamOperation *stream_operation = getStreamOperation( stream_operation_name );
+                            
+                            if( stream_operation )
+                                stream_operation->environment.recoverFromString( properties );
+                            else
+                                LM_W(("Not possible to recover state of stream operation %s since it does not exist. Skipping..." , stream_operation_name.c_str() ));
+                            
+                        }                        
                         else
                         {
                             LM_W(("Ignoring message from stream-manager recovering: '%s'" , line ));

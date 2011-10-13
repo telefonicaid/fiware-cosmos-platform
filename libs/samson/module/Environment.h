@@ -5,6 +5,7 @@
 #include <sstream>                 // std::ostringstream
 #include <map>						// std::map
 #include <stdlib.h>
+#include <vector>
 
 namespace samson {
 	
@@ -151,7 +152,8 @@ namespace samson {
 
             return output.str();
         }
-		
+
+
 	};	
 
 }

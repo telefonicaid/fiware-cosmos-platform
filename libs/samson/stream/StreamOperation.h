@@ -18,6 +18,7 @@
 #include "au/map.h"                         // au::map
 #include "au/string.h"                      // au::Format
 #include "au/CommandLine.h"                 // au::CommandLine
+#include "au/Environment.h"                 // au::Environment
 
 #include "engine/Object.h"                  // engine::Object
 #include "engine/Object.h"                  // engine::Object
@@ -61,12 +62,8 @@ namespace samson {
             std::vector<std::string> input_queues;
             std::vector<std::string> output_queues;
             
-            int num_workers;
-            
-            Environment environment;
-            
-            bool active;    // Flag to indicate if this operation is still active
-            
+            au::Environment environment;
+
             // Information about activity
             int num_operations;
             int num_blocks;
@@ -81,11 +78,7 @@ namespace samson {
             
             StreamOperation();
             StreamOperation( StreamOperation* streamOperation );
-            StreamOperation( const network::StreamOperation& streamOperation );
             
-            
-            void update( const network::StreamOperation& streamOperation );            
-            void setActive( bool _active );            
             // Instruction to add or remove a particular task for this automatic rule
             void add( QueueTask* task );
             void remove( QueueTask* task );
@@ -95,6 +88,19 @@ namespace samson {
             void getInfo( std::ostringstream &output );            
             std::string getStatus();
             
+            
+            void setActive( bool _active );
+            
+            bool isActive();
+
+            void setNumWorkers( int num_workers );
+            int getNumWorkers();
+            
+            bool isValid();
+            
+        private:
+            
+            void init();
             
         };
     }

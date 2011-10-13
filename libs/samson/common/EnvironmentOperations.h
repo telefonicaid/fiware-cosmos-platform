@@ -17,14 +17,6 @@ namespace samson {
     
     void copy( FullKVInfo * from , network::KVInfo* to);
  
- 
-    std::string getStatus( network::StreamOperation *streamOperation );
-
-    // Get a description of this stream operation
-    std::string getOutputsDescription( const network::StreamOperation& streamOperation );
-    std::string getInputsDescription( const network::StreamOperation& streamOperation );
-    std::string getPropertiesDescription( const network::StreamOperation& streamOperation );
-
     
     // Get a debug string for generic messages
     std::string strMessage( network::Message *message );

@@ -42,26 +42,6 @@ message StringVector
 	repeated string value = 1;
 }
 
-// Stream operation: Automatic operation to be performed between stream-queues
-
-message StreamOperationList
-{
-	repeated StreamOperation operation =1;	// List of operationso
-}
-
-message StreamOperation
-{
-	required string name		= 1;	// Name of this stream operation ( easy way to remove them )
-	required string operation	= 2;	// Name of the operation to process this queue ( parser , map , reduce with 2 inputs , ... )
-
-	repeated string input_queues	= 3;	// Name of the input stream queue
-	repeated string output_queues	= 4;	// Name of the output stream queue ( we can export to multiple stream queues )
-
-	required uint32 num_workers	= 5;	// Number of workers involved in this operation
-
-	optional Environment environment = 6;	// Environment properties for this particular operation
-
-}
 
 message FullQueue
 {
@@ -130,8 +110,6 @@ message QueueList
 	repeated FullQueue queue = 1;     // List of queues with its files
 	repeated ActiveTask tasks = 2;    // List of active tasks ( files associated with this tasks can not be removed at workers )
 	repeated uint64 load_id = 3;	  // Ids of active load operations ( not remove incomming files )
-
-	optional StreamOperationList stream_operation_list = 4; // List of stream operations to be reported to all the workers
 
 }
 

@@ -421,10 +421,6 @@ void SamsonWorker::processListOfFiles( const ::samson::network::QueueList& ql)
 {
 	LM_T(LmtDisk, ("Starts processListOfFiles()"));
 
-	// update the list of automatic operations
-	network::StreamOperationList ol =  ql.stream_operation_list();
-	streamManager.setOperationList( &ol );
-
 	// Generate list of local files ( to not remove them )
 	std::set<std::string> files;
 

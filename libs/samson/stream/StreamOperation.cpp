@@ -268,6 +268,7 @@ namespace samson {
             {
                 last_review = au::str("Only %s at queue %s. Required %s to fire, or latency > %s ( current input time %s )" , 
                                         au::str( operation_block_info.size ,"B" ).c_str() , 
+                                        input_queues[0].c_str(),
                                         au::str( min_size , "B" ).c_str(),
                                         au::time_string( max_latency ).c_str(),
                                         au::time_string( operation_block_info.min_time_diff() ).c_str()

@@ -487,6 +487,12 @@ namespace samson {
                             StreamOperation* stream_operation = new StreamOperation();
                             stream_operation->name = stream_operation_name;
                             stream_operation->operation = operation;
+
+                            StreamOperation* previous = stream_operations.extractFromMap( stream_operation->name );
+                            if( previous )
+                                delete previous;
+                            
+                            stream_operations.insertInMap( stream_operation->name , stream_operation );
                             
                             add( stream_operation );
                         }

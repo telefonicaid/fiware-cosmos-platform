@@ -44,11 +44,6 @@ namespace samson {
             
             // Parse command
             cmd.set_flag_boolean("clear_inputs");
-            cmd.set_flag_string("stream_operation" , "no_stream_operation");
-            cmd.set_flag_string("block_break_mode", "no");
-            cmd.set_flag_uint64("min_size", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
-            cmd.set_flag_uint64("max_latency", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
-            cmd.set_flag_string("delayed_processing", "yes");         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
             
             cmd.parse( command );
             
@@ -73,11 +68,6 @@ namespace samson {
             
             // Parse command
             cmd.set_flag_boolean("clear_inputs");
-            cmd.set_flag_string("stream_operation" , "no_stream_operation");
-            cmd.set_flag_string("block_break_mode", "no");
-            cmd.set_flag_uint64("min_size", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
-            cmd.set_flag_uint64("max_latency", 0);         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
-            cmd.set_flag_string("delayed_processing", "yes");         // Set a minimum size to run ( necessary for automatoc maps / parser / reduce / ....
             cmd.parse( command );
             
             // Original value for the falg
@@ -477,10 +467,8 @@ namespace samson {
                 // Flag used in automatic update operation to lock input blocks and remove after operation
                 bool clear_inputs =  cmd.get_flag_bool("clear_inputs"); 
                 
-                size_t min_size = cmd.get_flag_uint64("min_size");          // Minimum size to run an operation
+                size_t min_size = SamsonSetup::shared()->getUInt64("stream.min_operation_input_size");          // Minimum size to run an operation
                 size_t max_size = SamsonSetup::shared()->getUInt64("stream.max_operation_input_size");          // Minimum size to run an operation
-                size_t max_latency = cmd.get_flag_uint64("max_latency");    // Max acceptable time to run an operation
-                std::string delayed_processing = cmd.get_flag_string("delayed_processing");
                 
                 BlockIdList block_ids;      // Collection of block ids for the already processed blocks ( only used in clear_inputs is not activated )
                 
@@ -643,18 +631,6 @@ namespace samson {
                                 {
                                     cancel_operation = true;
                                 }
-                                
-                                if( cancel_operation )
-                                {
-                                    if( delayed_processing == "no" )
-                                        cancel_operation = false;
-                                    
-                                    // Check if latency is too high....
-                                    if( ( max_latency > 0 ) && ( (size_t)operation_block_info.min_time_diff() > max_latency ) )
-                                    {
-                                        cancel_operation = false;       // No cancel since there is too much latency
-                                    }
-                                }
                             }
                             
                             if( !no_more_content && !cancel_operation )                            
@@ -706,16 +682,6 @@ namespace samson {
                                 
                                 // Schedule tmp task into QueueTaskManager
                                 streamManager->queueTaskManager.add( tmp );
-                                
-                                
-                                if( cmd.get_flag_string("stream_operation") != "no_stream_operation" )
-                                    streamManager->worker->logActivity( au::str("[ %s:%lu ] Processing %s from queue %s using operation %s" , 
-                                                                                cmd.get_flag_string("stream_operation").c_str() , 
-                                                                                id,
-                                                                                inputData->strShortDescription().c_str(),
-                                                                                input_queue_name.c_str() , 
-                                                                                operation_name.c_str()  
-                                                                                ));
                                 
                             }
                             else
@@ -961,7 +927,7 @@ namespace samson {
                     
                     // Log activity    
                     streamManager->worker->logActivity( au::str("[ %s:%lu ] Processing %s from queue %s using operation %s" , 
-                                                                cmd.get_flag_string("stream_operation").c_str() , 
+                                                                stream_operation_name.c_str() , 
                                                                 id,
                                                                 inputData->strShortDescription().c_str(),
                                                                 input_queue_name.c_str() , 
@@ -1129,7 +1095,7 @@ namespace samson {
                     
                     // Log activity in the worker
                     streamManager->worker->logActivity( au::str("[ %s ] Global update %s %s (%d divs) with %s %s operation %s" , 
-                                                                cmd.get_flag_string("stream_operation").c_str() , 
+                                                                stream_operation_name.c_str() , 
                                                                 state_name.c_str(),
                                                                 state->list->strShortDescription().c_str(),
                                                                 num_divisions,
@@ -1156,7 +1122,7 @@ namespace samson {
                             
                             // Log activity in the worker
                             streamManager->worker->logActivity( au::str("[ %s:%lu ] Update div %d/%d of %s %s with %s %s operation %s" , 
-                                                                        cmd.get_flag_string("stream_operation").c_str() , 
+                                                                        stream_operation_name.c_str() , 
                                                                         id,
                                                                         i , 
                                                                         num_divisions ,
@@ -1271,7 +1237,7 @@ namespace samson {
                         
                         // Log activity in the worker
                         streamManager->worker->logActivity( au::str("[ %s:%lu ] BB Update div %d/%d of %s %s with %s %s operation %s" , 
-                                                                    cmd.get_flag_string("stream_operation").c_str() , 
+                                                                    stream_operation_name.c_str() , 
                                                                     id,
                                                                     i , 
                                                                     num_divisions ,

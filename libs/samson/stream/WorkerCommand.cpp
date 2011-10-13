@@ -429,8 +429,6 @@ namespace samson {
                             
                     }
 
-                    LM_M(("Lopp review_stream_operations --> %s" , stream_operation->name.c_str()));
-                    
                     if( stream_operation )
                         review_stream_operation( stream_operation );
                     else

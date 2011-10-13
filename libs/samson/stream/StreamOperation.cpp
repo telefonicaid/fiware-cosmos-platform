@@ -245,7 +245,7 @@ namespace samson {
             
             if( operation_block_info.size == 0 )
             {
-                last_review = au::str("No input at queue %s" , input_queues[0].c_str() );
+                last_review = au::str("No data in queue %s" , input_queues[0].c_str() );
                 return false;       // No data to be processed
             }
             
@@ -266,12 +266,12 @@ namespace samson {
             // If there is not enougth size, do not run the operation
             if( (min_size>0) && ( operation_block_info.size < min_size ) )
             {
-                last_review = au::str("Only %s at queue %s. Required %s to fire, or latency > %s ( current input time %s )" , 
-                                        au::str( operation_block_info.size ,"B" ).c_str() , 
+                last_review = au::str("Queue %s has %s ( time %s ). Required %s to fire, or time > %s" , 
                                         input_queues[0].c_str(),
+                                        au::str( operation_block_info.size ,"B" ).c_str() , 
+                                        au::time_string( operation_block_info.min_time_diff() ).c_str(),
                                         au::str( min_size , "B" ).c_str(),
-                                        au::time_string( max_latency ).c_str(),
-                                        au::time_string( operation_block_info.min_time_diff() ).c_str()
+                                        au::time_string( max_latency ).c_str()
                                       );
                 return false;
             }

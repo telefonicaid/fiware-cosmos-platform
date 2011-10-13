@@ -400,15 +400,18 @@ namespace samson {
             
             if( cmd.get_argument(0) == "review_stream_operations" )
             {
-                
                 while( true ) 
                 {
 
-
                     // Only run stream operations if there is space in the processing engine...
                     if( !engine::ProcessManager::shared()->hasFreeCores() )
-                        return;
-
+                    {
+                        if( finished )
+                            return;
+                        if( num_pending_processes == 0 )
+                            finishWorkerTask();
+                        return; // Nothing more to review
+                    }
                     
                     // Decide the next StreamOperation 
                     StreamOperation* stream_operation = NULL;
@@ -431,7 +434,13 @@ namespace samson {
                     if( stream_operation )
                         review_stream_operation( stream_operation );
                     else
+                    {
+                        if( finished )
+                            return;
+                        if( num_pending_processes == 0 )
+                            finishWorkerTask();
                         return; // Nothing more to review
+                    }
                     
                     
                 }
@@ -816,11 +825,6 @@ namespace samson {
                 {
                     // Run forward kind of stream operations
                     review_stream_operation_forward( stream_operation);
-                    if( finished )
-                        return;
-                    
-                    if( num_pending_processes == 0 )
-                        finishWorkerTask();
                     return;
                 }
                     
@@ -828,16 +832,12 @@ namespace samson {
                 {
                     // Run forward kind of stream operations
                     review_stream_operation_reduce( stream_operation);
-                    if( finished )
-                        return;
-                    
-                    if( num_pending_processes == 0 )
-                        finishWorkerTask();
                     return;
                 }
                     
                     
                 default:
+                    LM_X(1,("Internal error"));
                     break;
             }            
         }
@@ -845,7 +845,6 @@ namespace samson {
         
         void WorkerCommand::review_stream_operation_forward(  StreamOperation* stream_operation )
         {
-            
             
             // Get the operation itself
             Operation *op = ModulesManager::shared()->getOperation(  stream_operation->operation );
@@ -859,6 +858,7 @@ namespace samson {
             
             // Get a BlockList with cotent to be processed
             BlockList *inputData = queue->getInputBlockListForProcessing( max_size );
+            
             
             // Get a new id for the next opertion
             size_t id = streamManager->queueTaskManager.getNewId();

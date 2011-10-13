@@ -543,11 +543,9 @@ namespace samson {
 
                     num_blocks++;                    
                     tmp->add( block );
+                    processing_block_ids.addId( block_id );
                 }
             }
-            
-            // Add to the list of currently blocked ids for processing
-            processing_block_ids.addIds( tmp );
             
             return tmp;
         }        

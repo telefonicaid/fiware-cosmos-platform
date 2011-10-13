@@ -137,6 +137,10 @@ namespace samson {
             if( num_operations > 0)
                 output << "[ " << num_operations << " ops / " << au::str( size , "B" ) << " / " << au::str( info.kvs , "kvs" ) << " ]";
             
+            int core_seconds = environment.getInt("system.core_seconds" , 0 );
+            if( core_seconds > 0 )
+                output << "[ CoreSeconds " << core_seconds << " ] ";
+            
             return output.str();
         }
         
@@ -164,6 +168,8 @@ namespace samson {
             // Remove this task from the list of running tasks
             running_tasks.erase( task );
             
+            int core_seconds = std::max( 1 , task->cronometer.getSeconds() );
+            environment.appendInt("system.core_seconds" , core_seconds );
         }
     }
 }

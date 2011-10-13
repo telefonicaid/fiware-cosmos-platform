@@ -55,9 +55,13 @@ namespace au {
 		void setInt( std::string name  , int value);
 		void setSizeT( std::string name  , size_t value);
 		void setDouble( std::string name  , double value);
+
 		int getInt( std::string name , int defaultValue);
 		size_t getSizeT( std::string name , size_t defaultValue);
 		double getDouble( std::string name , double defaultValue);
+
+        void appendInt( std::string name , int value );
+        void appendSizeT( std::string name , int value );
         
         // Description
 		std::string toString();

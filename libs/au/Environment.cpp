@@ -72,6 +72,21 @@ namespace au {
     }
     
     
+    void Environment::appendInt( std::string name , int value )
+    {
+        int current_value = getInt( name , 0 );
+        current_value += value;
+        setInt( name , current_value ); 
+        
+    }
+    
+    void Environment::appendSizeT( std::string name , int value )
+    {
+        size_t current_value = getSizeT( name , 0 );
+        current_value += value;
+        setSizeT( name , current_value ); 
+        
+    }
     
     void Environment::setInt( std::string name  , int value)
     {

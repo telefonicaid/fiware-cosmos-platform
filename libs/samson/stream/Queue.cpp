@@ -166,15 +166,14 @@ namespace samson {
             {
                 status << au::str("[ Updating state %d / %d ] " , updating_divisions.size() , num_divisions );
                 
-                if( getMinNumDivisions() > num_divisions )
-                {
-                    status << au::str("[ Moving from %d to %d divisions ] " , num_divisions , getMinNumDivisions() );
-                }
-                
                 if( breaking_block_ids.num_ids() > 0)
                     status << "[ Error: breaking tasks while updating state ] ";
             }
             
+            if( getMinNumDivisions() > num_divisions )
+            {
+                status << au::str("[ Moving from %d to %d divisions ] " , num_divisions , getMinNumDivisions() );
+            }
             
             if( breaking_block_ids.num_ids() > 0)
                 status << au::str("[ Breaking %d/%d blocks ] " , breaking_block_ids.num_ids() , list->getNumBlocks()); 

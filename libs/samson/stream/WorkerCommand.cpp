@@ -938,7 +938,6 @@ namespace samson {
             Queue *input = streamManager->getQueue( input_name );
             
             // Check what operations can be done....
-            state->setMinimumNumDivisions();
             int num_divisions = state->num_divisions;      // Divisions used in update-state mode
             
             

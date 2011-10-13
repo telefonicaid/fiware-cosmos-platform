@@ -207,7 +207,8 @@ namespace samson {
             if( op->getType() == Operation::reduce )
             {
                 Queue *state = streamManager->getQueue( input_queues[1] );
-
+                state->setMinimumNumDivisions();
+                
                 // Change the minimum to fire process
                 min_size = 0.25 * ((double) SamsonSetup::shared()->getUInt64("general.memory"));
                 
@@ -231,7 +232,7 @@ namespace samson {
                 
                 if( !state->isQueueReadyForStateUpdate() )
                 {
-                    last_review = au::str("State is not ready for update" );
+                    last_review = au::str("State %s is not ready for update" , input_queues[1].c_str() );
                     return false;
                 }
             }

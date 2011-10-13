@@ -198,7 +198,7 @@ int main(int argc, const char *argv[])
         std::cout << "\n";
         std::cout << "\t -check : Verify current setup\n";
         std::cout << "\n";
-        std::cout << "\t samsonSetup is an iterative tool to specify all the setup values in a Samson deployment\n";
+        std::cout << "\t samsonSetup is an interactive tool to specify all the setup values in a Samson deployment\n";
         std::cout << "\t Just type help inside samsonSetup to get a list of valid commands\n";
         std::cout << "\n";
         return 0;

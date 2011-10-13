@@ -398,11 +398,13 @@ namespace samson {
 
             }            
             
-            if( cmd.get_argument(0) == "review_stream_operation" )
+            if( cmd.get_argument(0) == "review_stream_operations" )
             {
                 
                 while( true ) 
                 {
+
+
                     // Only run stream operations if there is space in the processing engine...
                     if( !engine::ProcessManager::shared()->hasFreeCores() )
                         return;
@@ -423,6 +425,8 @@ namespace samson {
                         }
                             
                     }
+
+		    LM_M(("Lopp review_stream_operations --> %s" , stream_operation->name.c_str()));
                     
                     if( stream_operation )
                         review_stream_operation( stream_operation );

@@ -6,7 +6,7 @@
 #ifndef _H_SAMSON_wiki_parse_words
 #define _H_SAMSON_wiki_parse_words
 
-#include </home/jges/SAMSON/trunk/libs/logMsg/logMsg.h>
+#include "logMsg/logMsg.h"
 #include <samson/module/samson.h>
 #include <samson/modules/system/String.h>
 

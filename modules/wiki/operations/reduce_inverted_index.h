@@ -6,7 +6,7 @@
 #ifndef _H_SAMSON_wiki_reduce_inverted_index
 #define _H_SAMSON_wiki_reduce_inverted_index
 
-#include </home/jges/SAMSON/trunk/libs/logMsg/logMsg.h>
+#include "logMsg/logMsg.h"
 #include <samson/module/samson.h>
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/StringVector.h>

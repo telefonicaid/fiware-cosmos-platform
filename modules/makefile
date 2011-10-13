@@ -1,12 +1,12 @@
 all:
 	make -C system
 	make -C txt
-	make -C txt_md
+#	make -C txt_md
 	make -C example
 	make -C tienda
 	make -C cdr
 	make -C mob
-	make -C mob2
+#	make -C mob2
 	make -C graph
 	make -C sna
 	make -C snalight
@@ -25,12 +25,12 @@ all:
 release:
 	make release -C system
 	make release -C txt
-	make release -C txt_md
+#	make release -C txt_md
 	make release -C example
 	make release -C tienda
 	make release -C cdr
 	make release -C mob
-	make release -C mob2
+#	make release -C mob2
 	make release -C graph
 	make release -C sna
 	make release -C snalight

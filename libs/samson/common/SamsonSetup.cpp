@@ -126,7 +126,7 @@ namespace samson
         output << "\n";
         output << std::setw(40) << "Parameter" << " ";
         output << std::setw(20) << "Default value" << " ";
-        output << std::setw(20) << "Value at setup.txt" << " ";
+        output << std::setw(20) << "Value in setup.txt" << " ";
         output << std::setw(20) << "Help" << " ";
         output << "\n";
         

@@ -1,7 +1,7 @@
 
 
 #include "samson/module/ModulesManager.h"   
-
+#include "samson/common/SamsonSetup.h"
 #include "StreamManager.h"                 
 #include "QueueTask.h"
 
@@ -11,8 +11,9 @@ namespace samson {
     namespace stream{
         
         
-        StreamOperation::StreamOperation()
+        StreamOperation::StreamOperation( StreamManager *_streamManager )
         {
+            streamManager = _streamManager;
             init();
         }
         
@@ -26,6 +27,8 @@ namespace samson {
             
             input_queues.insert( input_queues.begin(), streamOperation->input_queues.begin() , streamOperation->input_queues.end() );
             output_queues.insert( output_queues.begin(), streamOperation->output_queues.begin() , streamOperation->output_queues.end() );
+            
+            streamManager = streamOperation->streamManager;
             
             init();
         }
@@ -120,6 +123,8 @@ namespace samson {
             au::xml_simple(output, "properties", environment.getEnvironmentDescription() );
             
             au::xml_simple(output,"status" , getStatus() );
+
+            au::xml_simple(output,"last_review" , last_review );
             
             au::xml_close(output, "stream_operation");
         }
@@ -171,5 +176,120 @@ namespace samson {
             int core_seconds = std::max( 1 , task->cronometer.getSeconds() );
             environment.appendInt("system.core_seconds" , core_seconds );
         }
+        
+        bool StreamOperation::ready( )
+        {
+            
+            last_review = "";
+            
+            Operation* op = ModulesManager::shared()->getOperation( operation );
+            
+            if( !op )
+            {
+                last_review = au::str("Operation %s not found" , operation.c_str() );
+                return false;
+            }
+            
+            if( !isValid() )
+            {
+                last_review = au::str("Stream operation not valid" );
+                return false;
+            }
+            
+            // Properties for this stream operation
+            size_t min_size         = SamsonSetup::shared()->getUInt64("stream.min_operation_input_size");      // Minimum size to run an operation
+            
+            // Get the input queue
+            Queue *input = streamManager->getQueue( input_queues[0] );
+            
+            
+            // In reduce-update-state operations, the minimum should be different
+            if( op->getType() == Operation::reduce )
+            {
+                Queue *state = streamManager->getQueue( input_queues[1] );
+
+                // Change the minimum to fire process
+                min_size = 0.25 * ((double) SamsonSetup::shared()->getUInt64("general.memory"));
+                
+                // Properties for this stream operation
+                bool block_break_mode = ( environment.get("block_break_mode", "yes") == "yes" );
+                
+                if( block_break_mode )
+                {
+                    // Make sure, input is divided at least as state
+                    if( input->num_divisions < state->num_divisions )
+                        input->setNumDivisions( state->num_divisions );
+                }
+                else
+                {
+                    if( state->getNumUpdatingDivisions() != 0)
+                    {
+                        last_review = au::str("State is still updating some divisions" );
+                        return false;
+                    }
+                }
+                
+                if( !state->isQueueReadyForStateUpdate() )
+                {
+                    last_review = au::str("State is not ready for update" );
+                    return false;
+                }
+            }
+            
+            size_t max_latency      = environment.getSizeT("max_latency", 0);                                   // Max acceptable time to run an operation
+            bool delayed_processing = ( environment.get("delayed_processing", "yes") == "yes" );
+            
+            
+            if( input->list->isEmpty() )
+            {
+                last_review = au::str("No input at queue %s" , input_queues[0].c_str() );
+                return false;       // No data to be processed
+            }
+            
+            if( !delayed_processing )
+            {
+                last_review = "ready";
+                return true;        // No delayed processing
+            }
+            
+            // Get information about content of this queue
+            BlockInfo operation_block_info = input->list->getBlockInfo();
+            
+            // Check if latency is too high....
+            if( ( max_latency > 0 ) && ( (size_t)operation_block_info.min_time_diff() > max_latency ) )
+            {
+                last_review = "ready";
+                return true;    // Max latency acceptable
+            }
+            
+            // If there is not enougth size, do not run the operation
+            if( (min_size>0) && ( operation_block_info.size < min_size ) )
+            {
+                last_review = au::str("Only %s are present at input queue. Required %s to fire" , au::str( operation_block_info.size ,"B" ).c_str() , au::str( min_size , "B" ).c_str() );
+                return false;
+            }
+            
+            return true;
+            
+        }
+        
+
+        
+        
+        bool StreamOperation::compare( StreamOperation *other_stream_operation )
+        {
+            if( !other_stream_operation )
+                return true;
+            
+            int core_seconds = environment.getInt("system.core_seconds",0);
+            int _core_seconds = other_stream_operation->environment.getInt("system.core_seconds",0);
+
+
+            // Rigth now, let run the less demanding operation
+            return (core_seconds < _core_seconds);
+            
+        }
+        
+        
     }
 }

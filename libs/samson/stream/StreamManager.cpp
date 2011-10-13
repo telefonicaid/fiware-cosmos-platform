@@ -321,14 +321,8 @@ namespace samson {
         
         void StreamManager::reviewStreamOperations()
         {
-            au::map <std::string , StreamOperation>::iterator it_stream_operations;
-            for( it_stream_operations = stream_operations.begin() ; it_stream_operations != stream_operations.end() ; it_stream_operations++ )
-            {
-                std::string worker_command = "review_stream_operation " + it_stream_operations->first;
-                WorkerCommand* wc = new WorkerCommand( worker_command );
-                addWorkerCommand( wc );
-
-            }
+            WorkerCommand* wc = new WorkerCommand( "review_stream_operations" );
+            addWorkerCommand( wc );
         }
         
         
@@ -484,7 +478,7 @@ namespace samson {
                             std::string stream_operation_name = commandLine.get_argument(1);
                             std::string operation = commandLine.get_argument(2);
                             
-                            StreamOperation* stream_operation = new StreamOperation();
+                            StreamOperation* stream_operation = new StreamOperation(this);
                             stream_operation->name = stream_operation_name;
                             stream_operation->operation = operation;
 

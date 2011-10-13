@@ -53,6 +53,10 @@ namespace samson {
         class StreamOperation
         {
             
+            StreamManager *streamManager;   // Pointer to the stream manager to check ready
+            
+            std::string last_review;        // Comment from the last review
+            
         public:
             
             std::string name;
@@ -76,7 +80,7 @@ namespace samson {
             
         public:
             
-            StreamOperation();
+            StreamOperation( StreamManager *streamManager );
             StreamOperation( StreamOperation* streamOperation );
             
             // Instruction to add or remove a particular task for this automatic rule
@@ -97,6 +101,9 @@ namespace samson {
             int getNumWorkers();
             
             bool isValid();
+            
+            bool ready( );
+            bool compare( StreamOperation *other_stream_operation );
             
         private:
             

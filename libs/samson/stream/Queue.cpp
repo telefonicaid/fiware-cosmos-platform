@@ -576,6 +576,10 @@ namespace samson {
             return false;
         }
         
+        int Queue::getNumUpdatingDivisions()
+        {
+            return updating_divisions.size();
+        }
         
     }
 }

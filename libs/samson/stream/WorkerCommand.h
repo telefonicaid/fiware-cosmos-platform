@@ -102,8 +102,9 @@ namespace samson {
             void checkFinish();
           
             // Spetial review operations
-            void run_review_stream_operation_forward();
-            void run_review_stream_operation_reduce();
+            void review_stream_operation( StreamOperation *stream_operation );
+            void review_stream_operation_forward(  StreamOperation* stream_operation );
+            void review_stream_operation_reduce(  StreamOperation* stream_operation );
 
             
             

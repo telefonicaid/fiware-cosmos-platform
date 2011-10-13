@@ -316,7 +316,12 @@ namespace engine
         
     }
     
-    
+    bool ProcessManager::hasFreeCores()
+    {
+        au::TokenTaker tt( &token );
+
+        return( running_items.size() < (size_t) num_processes );
+    }
     
     void ProcessManager::quit()
     {

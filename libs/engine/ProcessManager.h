@@ -89,6 +89,8 @@ namespace engine
 		void add( ProcessItem *item , size_t listenerId );                      // Function to add a Process. It will be notifier by delegate mechanism
 		void cancel( ProcessItem *item );                   // Function to cancel a Process. 
         
+        bool hasFreeCores();    // Check if there are less processes than cores
+        
     public:
         
         // Get information for monitorization

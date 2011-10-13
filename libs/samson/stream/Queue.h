@@ -45,6 +45,7 @@ namespace samson {
             friend class WorkerCommand;
             friend class BlockBreakQueueTask;
             friend class BlockList;
+            friend class StreamOperation;
             
             // Pointer to StreamManager
             StreamManager* streamManager;
@@ -129,6 +130,8 @@ namespace samson {
             BlockList *getInputBlockListForRange( KVRange range , size_t max_size );        // Get blocks for a range ( input of the reduce operation )
             // ------------------------------------------------------------------------------------
             
+            int getNumUpdatingDivisions();
+                        
             void setMinimumNumDivisions();
             
         private:

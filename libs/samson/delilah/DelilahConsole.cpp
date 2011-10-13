@@ -893,6 +893,34 @@ namespace samson
             return 0;
         }
         
+        
+        if( main_command == "save_xml" )
+        {
+            if( commandLine.get_num_arguments() < 2 )
+            {
+                writeErrorOnConsole("Usage: save_xml file");
+                return 0;
+            }
+            
+            std::string fileName = commandLine.get_argument(1);
+            
+            FILE *file = fopen( fileName.c_str() , "w" );
+            if( !file )
+            {
+                writeErrorOnConsole("Not possible to open file " + fileName );
+                return 0;
+            }
+            
+            std::string txt = xmlString();
+            
+            fwrite( txt.c_str() , txt.length() , 1 , file );
+            
+            fclose( file );
+            return 0;
+            
+            
+        }
+        
 		// By default, we consider a normal command sent to controller
 		return sendCommand( command , NULL );
         

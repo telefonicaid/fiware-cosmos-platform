@@ -84,6 +84,7 @@ namespace samson {
                 return;
             
             au::xml_open(output, "stream_operation");
+            
             au::xml_simple(output, "name", name);
             au::xml_simple(output, "operation", operation);
             

@@ -1,6 +1,6 @@
 
 
-#include "samson/module/ModulesManager.h"   samson::ModulesManager
+#include "samson/module/ModulesManager.h"   
 
 #include "StreamManager.h"                 
 #include "QueueTask.h"

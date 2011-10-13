@@ -502,6 +502,23 @@ namespace samson {
             return tmp;
         }
         
+        BlockInfo Queue::getBlockInfoForProcessing()
+        {
+            BlockInfo info;
+            
+            au::list< Block >::iterator block_it;
+            for ( block_it = list->blocks.begin() ; block_it != list->blocks.end() ; block_it++ )
+            {
+                Block *block = *block_it;
+                size_t block_id = block->getId();
+                
+                if( !isBlockIdLocked(block_id) )
+                    block->update( info );
+            }
+            
+            return info;
+        }
+        
         BlockList *Queue::getInputBlockListForProcessing( size_t max_size )
         {
             int num_blocks = 0;

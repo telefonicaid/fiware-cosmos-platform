@@ -131,7 +131,10 @@ namespace samson {
             // ------------------------------------------------------------------------------------
             
             int getNumUpdatingDivisions();
-                        
+            
+            
+            BlockInfo getBlockInfoForProcessing();
+            
             void setMinimumNumDivisions();
             
         private:

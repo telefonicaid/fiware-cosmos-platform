@@ -239,8 +239,10 @@ namespace samson {
             size_t max_latency      = environment.getSizeT("max_latency", 0);                                   // Max acceptable time to run an operation
             bool delayed_processing = ( environment.get("delayed_processing", "yes") == "yes" );
             
+            // Get information about content of this queue
+            BlockInfo operation_block_info = input->getBlockInfoForProcessing();
             
-            if( input->list->isEmpty() )
+            if( operation_block_info.size == 0 )
             {
                 last_review = au::str("No input at queue %s" , input_queues[0].c_str() );
                 return false;       // No data to be processed
@@ -252,8 +254,6 @@ namespace samson {
                 return true;        // No delayed processing
             }
             
-            // Get information about content of this queue
-            BlockInfo operation_block_info = input->list->getBlockInfo();
             
             // Check if latency is too high....
             if( ( max_latency > 0 ) && ( (size_t)operation_block_info.min_time_diff() > max_latency ) )

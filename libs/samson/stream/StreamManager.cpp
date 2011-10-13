@@ -493,8 +493,6 @@ namespace samson {
                                 delete previous;
                             
                             stream_operations.insertInMap( stream_operation->name , stream_operation );
-                            
-                            add( stream_operation );
                         }
                         else if ( main_command == "stream_operation_input" )
                         {

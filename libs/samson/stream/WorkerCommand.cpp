@@ -948,7 +948,6 @@ namespace samson {
                     
                     // Update information about this operation
                     stream_operation->add( tmp );
-                    tmp->environment.set("system.stream_operation" , stream_operation->name );
                     
                     // Set this property to cleat inputs at the end of the operation
                     tmp->environment.set("system.clear_imputs","yes");

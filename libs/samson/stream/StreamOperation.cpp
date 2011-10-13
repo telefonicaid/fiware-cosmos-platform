@@ -142,6 +142,10 @@ namespace samson {
         
         void StreamOperation::add( QueueTask* task )
         {
+            // Set the environment property to make sure, it is removed when finished
+            task->environment.set("system.stream_operation" , name );
+           
+            
             BlockList *blockList = task->getBlockList("input_0");
             BlockInfo _info = blockList->getBlockInfo();
             

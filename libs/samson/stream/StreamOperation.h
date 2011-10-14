@@ -68,12 +68,13 @@ namespace samson {
             
             au::Environment environment;
 
-            // Information about activity
+            // Information about activity ( temporal counters )
             int num_operations;
             int num_blocks;
-            size_t size;
+            size_t temporal_size;
             FullKVInfo info;
             int update_state_counter;
+            int temporal_core_seconds;
             
             // List of current tasks running here
             std::set< QueueTask* > running_tasks;

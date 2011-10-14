@@ -49,8 +49,9 @@ namespace samson {
             // Additional information
             num_operations = 0;
             num_blocks = 0;
-            size = 0;
+            temporal_size = 0;
             info.clear();
+            temporal_core_seconds = 0;
             
             update_state_counter = 0;
         }
@@ -135,7 +136,10 @@ namespace samson {
             au::xml_simple(output, "core_seconds", environment.getInt("system.core_seconds" , 0 ) );
 
             au::xml_simple(output, "running_tasks", running_tasks.size() );
-            
+
+            // Cost in core*seconds / Mb
+            int cost = (double) temporal_core_seconds / ( (double) temporal_size / 1000000.0 );
+            au::xml_simple(output, "cost", cost );
             
             au::xml_close(output, "stream_operation");
         }
@@ -151,7 +155,7 @@ namespace samson {
                 output << "[ Updates states " << update_state_counter << " ] ";
             
             if( num_operations > 0)
-                output << "[ " << num_operations << " ops / " << au::str( size , "B" ) << " / " << au::str( info.kvs , "kvs" ) << " ]";
+                output << "[ " << num_operations << " ops / " << au::str( temporal_size , "B" ) << " / " << au::str( info.kvs , "kvs" ) << " ]";
             
             int core_seconds = environment.getInt("system.core_seconds" , 0 );
             if( core_seconds > 0 )
@@ -165,15 +169,6 @@ namespace samson {
             // Set the environment property to make sure, it is removed when finished
             task->environment.set("system.stream_operation" , name );
            
-            
-            BlockList *blockList = task->getBlockList("input_0");
-            BlockInfo _info = blockList->getBlockInfo();
-            
-            num_operations++;
-            num_blocks += _info.num_blocks;
-            size += _info.size;
-            info.append( _info.info );
-            
             // Add the task to the list of running task
             running_tasks.insert( task );
             
@@ -186,6 +181,18 @@ namespace samson {
             
             int core_seconds = std::max( 1 , task->cronometer.getSeconds() );
             environment.appendInt("system.core_seconds" , core_seconds );
+            
+            // Increate the temporal 
+            temporal_core_seconds += core_seconds;
+            
+            // Temporal updates
+            BlockList *blockList = task->getBlockList("input_0");
+            BlockInfo _info = blockList->getBlockInfo();
+            
+            num_operations++;
+            num_blocks += _info.num_blocks;
+            temporal_size += _info.size;
+            info.append( _info.info );
         }
         
         bool StreamOperation::ready( )

@@ -102,38 +102,34 @@ public:
 			{
 				p_tag_begin += strlen(FILE_LINK);
 				continue;
-			}
-			p_tag_begin += strlen(LINK_BEGIN);*/
+			}*/
+			p_tag_begin += strlen(LINK_BEGIN);
 			if ((p_end = strnstr(p_tag_begin, LINK_END, text_end - p_tag_begin)) == NULL)
 			{
-				//OLM_E(("page without link begin at:'%s', but not end", p_tag_begin));
+				OLM_E(("page without link begin at:'%s', but not end", p_tag_begin));
 				return;
 			}
 			char *p_intern;
-			if ((p_intern = strnstr(p_tag_begin, LINK_BEGIN, text_end - p_tag_begin)) != NULL)
+			if ((p_intern = strnstr(p_tag_begin, LINK_BEGIN, p_end - p_tag_begin)) != NULL)
 			{
-				if (p_intern < p_end)
-				{
-					//OLM_W(("Link format with internal links:'%s'", p_tag_begin));
+					OLM_W(("Link format with internal links:'%s'", p_tag_begin));
 					p_end = p_intern;
-				}
 			}
 #define END_LINE "\n"
-			if ((p_intern = strnstr(p_tag_begin, END_LINE, text_end - p_tag_begin)) != NULL)
+			if ((p_intern = strnstr(p_tag_begin, END_LINE, p_end - p_tag_begin)) != NULL)
 			{
-				if (p_intern < p_end)
-				{
-					//OLM_W(("Link with newline character:'%s'", p_tag_begin));
-					p_end = p_intern;
-				}
+				p_end = p_intern;
 			}
 			if ((p_sep_link = strnstr(p_tag_begin, LINK_SEP, p_end - p_tag_begin)) != NULL)
 			{
 				p_end = p_sep_link;
 			}
-			//copia = strndup(p_tag_begin, p_end - p_tag_begin);
-			//OLM_T(LMT_User06, ("value:%s", copia));
-			//free(copia);
+			{
+				char *copia;
+			copia = strndup(p_tag_begin, p_end - p_tag_begin);
+			OLM_T(LMT_User06, ("value:%s", copia));
+			free(copia);
+		}
 			value.valuesAdd()->value = std::string(p_tag_begin, p_end - p_tag_begin);
 			p_tag_begin = p_end + strlen(LINK_END);
 		}

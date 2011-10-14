@@ -84,18 +84,22 @@ public:
 				}
 				else
 				{
-					if ((index = wordInfo.page.findIndex(prevPage)) == -1)
+					if ((index = wordInfo.page.findIndexSortedFromEnd(prevPage)) == -1)
 					{
 						//OLM_T(LMT_User06, ("word:'%s', add page:'%s', count:%lu\n", word.value.c_str(), prevPage.value.c_str(), prevCount.value));
-						//LM_M(("word:'%s', add page:'%s', count:%lu\n", word.value.c_str(), prevPage.value.c_str(), prevCount.value));
+						LM_M(("word:'%s', add page:'%s', count:%lu\n", word.value.c_str(), prevPage.value.c_str(), prevCount.value));
 
-						wordInfo.page.valuesAdd()->copyFrom(&prevPage);
-						wordInfo.count.valuesAdd()->copyFrom(&prevCount);
+						//wordInfo.page.valuesAdd()->copyFrom(&prevPage);
+						//wordInfo.count.valuesAdd()->copyFrom(&prevCount);
+						int indexInsert = wordInfo.page.valuesAddSortedFromEnd(prevPage);
+						LM_M(("word:'%s', added page:'%s' at indexInsert:%d\n", word.value.c_str(), prevPage.value.c_str(), indexInsert));
+
+						wordInfo.count.valuesAddAtIndex(prevCount, indexInsert);
 					}
 					else
 					{
 						//OLM_T(LMT_User06, ("word:'%s', found page:'%s' at index:%d, count:%lu\n", word.value.c_str(), prevPage.value.c_str(), index, prevCount.value));
-						//LM_M(("word:'%s', found page:'%s' at index:%d, count:%lu\n", word.value.c_str(), prevPage.value.c_str(), index, prevCount.value));
+						LM_M(("word:'%s', found page:'%s' at index:%d, count:%lu\n", word.value.c_str(), prevPage.value.c_str(), index, prevCount.value, index));
 
 						wordInfo.totalCount.value -= wordInfo.count.values[index].value;
 						wordInfo.count.values[index].value = prevCount.value;
@@ -105,18 +109,22 @@ public:
 					prevCount.value = 1;
 				}
 			}
-			if ((index = wordInfo.page.findIndex(prevPage)) == -1)
+			if ((index = wordInfo.page.findIndexSortedFromEnd(prevPage)) == -1)
 			{
 				//OLM_T(LMT_User06, ("word:'%s', add page:'%s', count:%lu\n", word.value.c_str(), prevPage.value.c_str(), prevCount.value));
-				//LM_M(("word:'%s', add page:'%s', count:%lu\n", word.value.c_str(), prevPage.value.c_str(), prevCount.value));
+				LM_M(("word:'%s', add page:'%s', count:%lu\n", word.value.c_str(), prevPage.value.c_str(), prevCount.value, index));
 
-				wordInfo.page.valuesAdd()->copyFrom(&prevPage);
-				wordInfo.count.valuesAdd()->copyFrom(&prevCount);
+				//wordInfo.page.valuesAdd()->copyFrom(&prevPage);
+				//wordInfo.count.valuesAdd()->copyFrom(&prevCount);
+				int indexInsert = wordInfo.page.valuesAddSortedFromEnd(prevPage);
+				LM_M(("word:'%s', added page:'%s' at indexInsert:%d\n", word.value.c_str(), prevPage.value.c_str(), indexInsert));
+
+				wordInfo.count.valuesAddAtIndex(prevCount, indexInsert);
 			}
 			else
 			{
 				//OLM_T(LMT_User06, ("word:'%s', found page:'%s' at index:%d, count:%lu\n", word.value.c_str(), prevPage.value.c_str(), index, prevCount.value));
-				//LM_M(("word:'%s', found page:'%s' at index:%d, count:%lu\n", word.value.c_str(), prevPage.value.c_str(), index, prevCount.value));
+				LM_M(("word:'%s', found page:'%s' at index:%d, count:%lu\n", word.value.c_str(), prevPage.value.c_str(), index, prevCount.value));
 
 				wordInfo.totalCount.value -= wordInfo.count.values[index].value;
 				wordInfo.count.values[index].value = prevCount.value;

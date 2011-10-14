@@ -112,7 +112,7 @@ public:
 			char *p_intern;
 			if ((p_intern = strnstr(p_tag_begin, LINK_BEGIN, p_end - p_tag_begin)) != NULL)
 			{
-					OLM_W(("Link format with internal links:'%s'", p_tag_begin));
+					//OLM_W(("Link format with internal links:'%s'", p_tag_begin));
 					p_end = p_intern;
 			}
 #define END_LINE "\n"
@@ -124,12 +124,12 @@ public:
 			{
 				p_end = p_sep_link;
 			}
-			{
-				char *copia;
-			copia = strndup(p_tag_begin, p_end - p_tag_begin);
-			OLM_T(LMT_User06, ("value:%s", copia));
-			free(copia);
-		}
+//			{
+//				char *copia;
+//			copia = strndup(p_tag_begin, p_end - p_tag_begin);
+//			OLM_T(LMT_User06, ("value:%s", copia));
+//			free(copia);
+//		}
 			value.valuesAdd()->value = std::string(p_tag_begin, p_end - p_tag_begin);
 			p_tag_begin = p_end + strlen(LINK_END);
 		}

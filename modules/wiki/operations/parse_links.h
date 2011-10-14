@@ -94,6 +94,7 @@ public:
 
 		while ((p_tag_begin = strnstr(p_tag_begin, LINK_BEGIN, text_end - p_tag_begin)) != NULL)
 		{
+			p_tag_begin += strlen(LINK_BEGIN);
 			if ((p_end = strnstr(p_tag_begin, LINK_END, text_end - p_tag_begin)) == NULL)
 			{
 				//OLM_E(("page without link begin at:'%s', but not end", p_tag_begin));

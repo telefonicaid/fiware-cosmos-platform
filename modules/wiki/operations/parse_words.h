@@ -33,7 +33,7 @@ public:
 
 	void init( samson::KVWriter *writer )
 	{
-		OLM_T(LMT_User06, ("parse_words: init"));
+		//OLM_T(LMT_User06, ("parse_words: init"));
 	}
 
 	char *strnstr(char *text, const char *pattern, size_t max_length)
@@ -277,7 +277,7 @@ public:
 
 	void finish( samson::KVWriter *writer )
 	{
-		OLM_T(LMT_User06, ("parse_words: finish"));
+		//OLM_T(LMT_User06, ("parse_words: finish"));
 	}
 
 

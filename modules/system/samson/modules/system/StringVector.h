@@ -82,7 +82,7 @@ public:
 		{
 			if (strElement.value.compare(values[i].value) <= 0)
 			{
-				LM_M(("string:'%s', detected at indexInsert:%d with values_length:%d\n", strElement.value.c_str(), i, values_length));
+				//LM_M(("string:'%s', detected at indexInsert:%d with values_length:%d\n", strElement.value.c_str(), i, values_length));
 
 				for (int j = (values_length-1); (j > i); j--)
 				{
@@ -99,9 +99,9 @@ public:
 	int valuesAddSortedFromEnd(String &strElement){
 		int length_orig = values_length;
 		valuesSetLength( values_length + 1 );
-		if (strElement.value.compare(values[length_orig-1].value) >= 0)
+		if ((length_orig == 0) || (strElement.value.compare(values[length_orig-1].value) >= 0))
 		{
-			LM_M(("string:'%s', detected at indexInsert:%d with values_length:%d (compared to '%s')\n", strElement.value.c_str(), length_orig, values_length, values[length_orig-1].value.c_str()));
+//			LM_M(("string:'%s', detected at indexInsert:%d with values_length:%d (compared to '%s')\n", strElement.value.c_str(), length_orig, values_length, values[length_orig-1].value.c_str()));
 
 			values[length_orig] = strElement;
 			return (length_orig);
@@ -111,7 +111,7 @@ public:
 			int ret;
 			if ((ret = strElement.value.compare(values[i].value)) >= 0)
 			{
-				LM_M(("string:'%s', detected at indexInsert:%d with values_length:%d with ret:%d (compared to '%s')\n", strElement.value.c_str(), i, values_length, ret, values[i].value.c_str()));
+				//LM_M(("string:'%s', detected at indexInsert:%d with values_length:%d with ret:%d (compared to '%s')\n", strElement.value.c_str(), i, values_length, ret, values[i].value.c_str()));
 
 				for (int j = (length_orig); (j > i); j--)
 				{
@@ -122,13 +122,16 @@ public:
 			}
 			else
 			{
-				LM_M(("string:'%s', compared with values[%d]:'%s' with ret:%d\n", strElement.value.c_str(), i, values[i].value.c_str(), ret));
+				//LM_M(("string:'%s', compared with values[%d]:'%s' with ret:%d\n", strElement.value.c_str(), i, values[i].value.c_str(), ret));
 			}
 		}
-		LM_M(("string:'%s', detected at indexInsert:%d with values_length:%d\n", strElement.value.c_str(), length_orig, values_length));
-
-		values[length_orig] = strElement;
-		return (length_orig);
+		//LM_M(("string:'%s', detected at indexInsert:%d with values_length:%d\n", strElement.value.c_str(), 0, values_length));
+		for (int j = (length_orig); (j > 0); j--)
+		{
+			values[j] = values[j-1];
+		}
+		values[0] = strElement;
+		return (0);
 	}
 
 	int valuesAddAtIndex(String &strElement, int index){

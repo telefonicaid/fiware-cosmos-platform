@@ -138,7 +138,7 @@ namespace samson {
             au::xml_simple(output, "running_tasks", running_tasks.size() );
 
             // Cost in core*seconds / Mb
-            int cost = (double) temporal_core_seconds / ( (double) (temporal_size+1) / 1000000.0 );
+            int cost = (double) temporal_core_seconds / ( (double) (temporal_size+1) / 1000000000.0 );
             au::xml_simple(output, "cost", cost );
             
             au::xml_close(output, "stream_operation");

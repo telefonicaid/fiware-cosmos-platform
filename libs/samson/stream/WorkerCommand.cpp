@@ -433,7 +433,7 @@ namespace samson {
                     
                     if( stream_operation )
                     {
-                        LM_M(("Stream operaiton selected %s", stream_operation->name.c_str() ));
+                        //LM_M(("Stream operaiton selected %s", stream_operation->name.c_str() ));
                         review_stream_operation( stream_operation );
                     }
                     else

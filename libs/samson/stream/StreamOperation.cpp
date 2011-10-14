@@ -85,6 +85,11 @@ namespace samson {
             return  (environment.get("active","no") == "yes" );
         }
         
+        bool StreamOperation::isPaused()
+        {
+            return  (environment.get("paused","no") == "yes" );
+        }
+        
         void StreamOperation::setNumWorkers( int num_workers )
         {
             environment.setInt( "num_workers" , num_workers );
@@ -190,6 +195,12 @@ namespace samson {
             
             if( !isActive() )
                 return false;
+            
+            if( isPaused() )
+            {
+                last_review = "Operation paused";
+                return false;
+            }
             
             Operation* op = ModulesManager::shared()->getOperation( operation );
             

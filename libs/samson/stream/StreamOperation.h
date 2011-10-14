@@ -97,6 +97,8 @@ namespace samson {
             
             bool isActive();
 
+            bool isPaused();
+            
             void setNumWorkers( int num_workers );
             int getNumWorkers();
             

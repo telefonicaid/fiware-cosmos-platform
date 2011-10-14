@@ -41,6 +41,7 @@ namespace samson {
             environment.set("max_latency" , "60" );
             environment.set("delayed_processing" , "yes" );
             environment.set("block_break_mode" , "no" );
+            environment.set("priority","0" );
 
             // By default it is active
             setActive(true);
@@ -76,7 +77,7 @@ namespace samson {
             if( _active )
                 environment.set("active", "yes" );
             else
-                environment.set("active", "yes" );
+                environment.set("active", "no" );
         }
         
         bool StreamOperation::isActive()
@@ -125,6 +126,11 @@ namespace samson {
             au::xml_simple(output,"status" , getStatus() );
 
             au::xml_simple(output,"last_review" , last_review );
+            
+            au::xml_simple(output, "core_seconds", environment.getInt("system.core_seconds" , 0 ) );
+
+            au::xml_simple(output, "running_tasks", running_tasks.size() );
+            
             
             au::xml_close(output, "stream_operation");
         }
@@ -181,6 +187,9 @@ namespace samson {
         {
             
             last_review = "";
+            
+            if( !isActive() )
+                return false;
             
             Operation* op = ModulesManager::shared()->getOperation( operation );
             
@@ -280,17 +289,22 @@ namespace samson {
             
         }
         
-
-        
-        
         bool StreamOperation::compare( StreamOperation *other_stream_operation )
         {
             if( !other_stream_operation )
                 return true;
+
+            
+            int priority = environment.getInt("environment",0);
+            int _priority = other_stream_operation->environment.getInt("environment",0);
+            
+            if( priority > _priority )
+                return true;
+            else if( priority < _priority )
+                return false;
             
             int core_seconds = environment.getInt("system.core_seconds",0);
             int _core_seconds = other_stream_operation->environment.getInt("system.core_seconds",0);
-
 
             // Rigth now, let run the less demanding operation
             return (core_seconds < _core_seconds);

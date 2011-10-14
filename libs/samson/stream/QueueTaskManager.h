@@ -55,6 +55,7 @@ namespace samson {
             // Reset all the content of this manager
             void reset();
             
+            bool hasEnougthTasks(); 
             
         };
         

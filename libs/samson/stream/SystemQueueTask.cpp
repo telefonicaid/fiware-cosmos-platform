@@ -37,6 +37,7 @@ namespace samson {
         
         void SystemQueueTask::getInfo( std::ostringstream& output )
         {
+
             au::xml_open(output , "queue_task" );
             
             au::xml_simple( output , "id", id);
@@ -44,7 +45,17 @@ namespace samson {
             // Common information about inputs used in this task contained in class QueueTask
             QueueTaskBase::getInfo( output );
             
-            output << "<description>" << concept << "</description>\n";
+            if( ProcessItem::isRunning() )
+                au::xml_simple(output, "state", "running" );
+            else
+                au::xml_simple(output, "state", queue_task_state );
+            
+            au::xml_simple(output, "input_0",  getBlockList("input_0")->strShortDescription() );
+            au::xml_simple(output, "input_1",  getBlockList("input_1")->strShortDescription() );
+            
+            au::xml_simple(output, "operation", "system.BlockBreak" );
+            
+            output << "<description>system.BlockBreak</description>\n";
             
             // Get all process item related information ( like progress )
             ProcessItem::getInfo( output );

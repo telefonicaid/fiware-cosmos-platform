@@ -126,16 +126,26 @@ namespace samson {
             
         }
         
+        bool QueueTaskManager::hasEnougthTasks()
+        {
+            int num_processors      = SamsonSetup::shared()->getInt("general.num_processess"); 
+            int num_running_tasks   = (int)( runningTasks.size() + runningSystemQueueTasks.size() + systemQueueTasks.size() + queueTasks.size() );
+            
+            LM_M(("hasEnougthTasks %d / %d" , num_running_tasks , num_processors ));
+            
+            return ( num_running_tasks >= num_processors );
+        }
+        
         void QueueTaskManager::reviewPendingQueueTasks()
         {
             int num_processors      = SamsonSetup::shared()->getInt("general.num_processess"); 
             int num_running_tasks   = (int)( runningTasks.size() + runningSystemQueueTasks.size() );
-
-	    int max_running_operations =  (int)(1.5*(double)num_processors);
-
+            
+            int max_running_operations =  (int)( num_processors );
+            
             while( num_running_tasks < max_running_operations )
             {
-	      //LM_M(("Scheduling since running rask %d < %d", (int) num_running_tasks , (int) max_running_operations));
+                //LM_M(("Scheduling since running rask %d < %d", (int) num_running_tasks , (int) max_running_operations));
                 
                 bool runReturn = runNextQueueTasksIfNecessary();
                 bool runReturn2 = runNextSystemQueueTasksIfNecessary();
@@ -167,7 +177,7 @@ namespace samson {
                 size_t task_id = _task->getId();
                 runningTasks.insertInMap( task_id , _task ); 
                 
-                _task->setQueueTaskState("Running");
+                _task->setQueueTaskState("Scheduled");
                 
                 // Add this process item ( note that a notification will be used to notify when finished )
                 engine::ProcessManager::shared()->add( _task , getEngineId() );
@@ -201,7 +211,7 @@ namespace samson {
                 size_t task_id = _task->getId();
                 runningSystemQueueTasks.insertInMap( task_id , _task ); 
                 
-                _task->setQueueTaskState("Running");
+                _task->setQueueTaskState("Scheduled");
 
                 // Add this process item ( note that a notification will be used to notify when finished )
                 engine::ProcessManager::shared()->add( _task , getEngineId() );

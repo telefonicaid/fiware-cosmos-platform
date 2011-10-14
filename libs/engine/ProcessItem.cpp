@@ -182,5 +182,10 @@ namespace engine
         working_size = size;
     }        
 
+    bool ProcessItem::isRunning()
+    {
+        return (state == running);
+    }
+
 	
 }

@@ -734,6 +734,11 @@ namespace samson
         {
             return sendWorkerCommand( command , NULL );
         }
+
+        if( main_command == "rm_stream_operation" )
+        {
+            return sendWorkerCommand( command , NULL );
+        }
         
         if( main_command == "set_stream_operation_property" )
         {

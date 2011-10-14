@@ -14,3 +14,7 @@ set_stream_operation_property parser_graph max_latency 1
 set_stream_operation_property update_links max_latency 1
 set_stream_operation_property update_messages max_latency 1
 
+set_stream_operation_property parser_graph priority 3
+set_stream_operation_property update_links priority 2
+set_stream_operation_property update_messages priority 1
+

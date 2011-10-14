@@ -61,5 +61,4 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # Library declaration
 # -----------------------------------------------------------------
 ADD_LIBRARY(au STATIC ${SOURCES} ${HEADERS})
-
-
+INSTALL(TARGETS au ARCHIVE DESTINATION lib)

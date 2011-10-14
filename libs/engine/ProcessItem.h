@@ -138,7 +138,9 @@ namespace engine {
 
         void setCanceled();
         bool isProcessItemCanceled();
-		
+
+		bool isRunning();
+        
     public:
         
         void addListenerId( size_t _listenerId );
@@ -147,7 +149,6 @@ namespace engine {
         
         // Get information for xml monitorization
         void getInfo( std::ostringstream& output);
-
         
     protected:
         

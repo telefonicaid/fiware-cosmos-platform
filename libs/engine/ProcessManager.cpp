@@ -320,7 +320,9 @@ namespace engine
     {
         au::TokenTaker tt( &token );
 
-        return( running_items.size() < (size_t) num_processes );
+        size_t total_process = running_items.size() + items.size() + halted_items.size();
+        
+        return( total_process < (size_t) num_processes );
     }
     
     void ProcessManager::quit()

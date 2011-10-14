@@ -30,7 +30,10 @@ namespace samson {
             QueueTaskBase::getInfo( output );
             
             
-            au::xml_simple(output, "state", queue_task_state );
+            if( ProcessItem::isRunning() )
+                au::xml_simple(output, "state", "running" );
+            else
+                au::xml_simple(output, "state", queue_task_state );
             
             au::xml_simple(output, "input_0",  getBlockList("input_0")->strShortDescription() );
             au::xml_simple(output, "input_1",  getBlockList("input_1")->strShortDescription() );

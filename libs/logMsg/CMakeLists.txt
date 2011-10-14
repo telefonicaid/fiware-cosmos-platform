@@ -15,4 +15,4 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # -----------------------------------------------------------------
 
 ADD_LIBRARY(lm STATIC ${SOURCES} ${HEADERS} )
-
+INSTALL(TARGETS lm ARCHIVE DESTINATION lib)

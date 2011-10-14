@@ -529,6 +529,7 @@ namespace samson {
     
 #define LS_STREAM_OPERATIONS "info_command -worker //stream_operation /name,t=name /operation,t=operation,left /inputs,t=inputs /outputs,t=outputs /status,t=status /last_review,t=last_review /properties,t=properties,left"
     
+#define LS_STREAM_OPERATIONS_INFO "info_command -worker //stream_operation /name,t=name /core_seconds,t=core_seconds /running_tasks,t=running_tasks /status,t=status /last_review,t=last_review /properties,t=properties,left"
     
     
     std::string Delilah::info( std::string command )
@@ -599,6 +600,9 @@ namespace samson {
         
         if( main_command == "ls_stream_operation" )
             return infoCommand(LS_STREAM_OPERATIONS);
+
+        if( main_command == "ls_stream_operation_info" )
+            return infoCommand(LS_STREAM_OPERATIONS_INFO);
         
         if( main_command == "engine_show" )
             return infoCommand(ENGINE_SHOW_COMMAND);

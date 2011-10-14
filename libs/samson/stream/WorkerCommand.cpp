@@ -403,16 +403,6 @@ namespace samson {
                 while( true ) 
                 {
 
-                    // Only run stream operations if there is space in the processing engine...
-                    if( !engine::ProcessManager::shared()->hasFreeCores() )
-                    {
-                        if( finished )
-                            return;
-                        if( num_pending_processes == 0 )
-                            finishWorkerTask();
-                        return; // Nothing more to review
-                    }
-                    
                     // Decide the next StreamOperation 
                     StreamOperation* stream_operation = NULL;
                     au::map <std::string , StreamOperation>::iterator it_stream_operations;
@@ -429,8 +419,23 @@ namespace samson {
                             
                     }
 
+                    // Only run stream operations if there is space in the processing engine...
+                    //if( !engine::ProcessManager::shared()->hasFreeCores() )
+                    if( streamManager->queueTaskManager.hasEnougthTasks() )
+                    {
+                        if( finished )
+                            return;
+                        if( num_pending_processes == 0 )
+                            finishWorkerTask();
+                        return; // Nothing more to review
+                    }
+                    
+                    
                     if( stream_operation )
+                    {
+                        LM_M(("Stream operaiton selected %s", stream_operation->name.c_str() ));
                         review_stream_operation( stream_operation );
+                    }
                     else
                     {
                         if( finished )

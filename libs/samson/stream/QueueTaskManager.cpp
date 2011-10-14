@@ -131,7 +131,7 @@ namespace samson {
             int num_processors      = SamsonSetup::shared()->getInt("general.num_processess"); 
             int num_running_tasks   = (int)( runningTasks.size() + runningSystemQueueTasks.size() + systemQueueTasks.size() + queueTasks.size() );
             
-            LM_M(("hasEnougthTasks %d / %d" , num_running_tasks , num_processors ));
+            //LM_M(("hasEnougthTasks %d / %d" , num_running_tasks , num_processors ));
             
             return ( num_running_tasks >= num_processors );
         }

@@ -59,6 +59,36 @@ public:
 		return (text);
 	}
 
+	char *strnmultchr(char *text, const char *stoppers, size_t max_length)
+	{
+		char *text_end = text + max_length;
+		char *p_char = text;
+
+		while (p_char < text_end)
+		{
+			if (strchr(stoppers, *p_char) != NULL)
+			{
+				return (p_char);
+			}
+			p_char++;
+		}
+		return (NULL);
+	}
+	char *strnmultchr(char *text, const char *stoppers, char *text_end)
+	{
+		char *p_char = text;
+
+		while (p_char < text_end)
+		{
+			if (strchr(stoppers, *p_char) != NULL)
+			{
+				return (p_char);
+			}
+			p_char++;
+		}
+		return (NULL);
+	}
+
 	void parseWikiPages(char *text, char *text_end, samson::KVWriter *writer)
 	{
 		char *p_tag_begin = text;
@@ -101,36 +131,30 @@ public:
 				continue;
 			}
 
-			while (p_tag_begin < p_text_end)
+#define BLANK_CHARACTERS " \t\n\r[]"
+			while ((p_tag_begin < p_text_end) && ((p_end = strnmultchr(p_tag_begin, BLANK_CHARACTERS, p_text_end)) != NULL))
 			{
-				char *p_end_nl = strchr(p_tag_begin, '\n');
-				char *p_end_sp = strchr(p_tag_begin, ' ');
 
-				if (p_end_nl != NULL)
+#define LINK_BEGIN "[["
+#define LINK_END "]]"
+#define LINK_SEP "|"
+
+				char *p_link_end;
+				char *p_link_sep;
+				if (strncmp(p_tag_begin, LINK_BEGIN, strlen(LINK_BEGIN)) == 0)
 				{
-					if (p_end_sp != NULL)
+					p_tag_begin += strlen(LINK_BEGIN);
+					if ((p_link_end = strnstr(p_tag_begin, LINK_END, p_text_end-p_tag_begin)) != NULL)
 					{
-						if (p_end_nl < p_end_sp)
+						if ((p_link_sep = strnstr(p_tag_begin, LINK_SEP, p_link_end-p_tag_begin)) != NULL)
 						{
-							p_end = p_end_nl;
-						}
-						else
-						{
-							p_end = p_end_sp;
+							p_tag_begin = p_link_sep+1;
+							if ((p_end = strnmultchr(p_tag_begin, BLANK_CHARACTERS, p_text_end)) == NULL)
+							{
+								p_end = p_link_end;
+							}
 						}
 					}
-					else
-					{
-						p_end = p_end_nl;
-					}
-				}
-				else if (p_end_sp != NULL)
-				{
-					p_end = p_end_sp;
-				}
-				else
-				{
-					break;
 				}
 
 				if (((p_end - p_tag_begin) > 100) || (p_end < p_tag_begin))
@@ -157,18 +181,16 @@ public:
 					p_end = p_char+1;
 					if (p_end > p_tag_begin)
 					{
-						p_char = p_tag_begin;
-						while ((p_char < p_end) && (isascii(*p_char) && (*p_char != '&') && (*p_char != '|') && (*p_char != ';') && (*p_char != ':') && (*p_char != '/') && (*p_char != '=')))
+#define FUNCT_CHARACTERS "&|;:/=#[]{}()"
+						if ((p_char = strnmultchr(p_tag_begin, FUNCT_CHARACTERS, p_end)) != NULL)
 						{
-							p_char++;
+							p_tag_begin++;
+							continue;
 						}
-						if (p_char == p_end)
-						{
 						word.value = std::string(p_tag_begin, p_end - p_tag_begin);
 						//OLM_T(LMT_User06, ("word:%s\n", word.value.c_str()));
 						//LM_M(("word:%s\n", word.value.c_str()));
 						writer->emit(0, &word, &page);
-						}
 					}
 				}
 				p_tag_begin = p_end + 1;
@@ -200,18 +222,15 @@ public:
 					p_end = p_char+1;
 					if (p_end > p_tag_begin)
 					{
-						p_char = p_tag_begin;
-						while ((p_char < p_end) && (isascii(*p_char) && (*p_char != '&') && (*p_char != '|') && (*p_char != ';') && (*p_char != ':') && (*p_char != '/') && (*p_char != '=')))
+						if ((p_char = strnmultchr(p_tag_begin, FUNCT_CHARACTERS, p_end-p_tag_begin)) != NULL)
 						{
-							p_char++;
+							p_tag_begin++;
+							continue;
 						}
-						if (p_char == p_end)
-						{
 						word.value = std::string(p_tag_begin, p_text_end - p_tag_begin);
 						//OLM_T(LMT_User06, ("word:%s\n", word.value.c_str()));
 						//LM_M(("word:%s\n", word.value.c_str()));
 						writer->emit(0, &word, &page);
-						}
 					}
 				}
 			}

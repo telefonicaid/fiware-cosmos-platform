@@ -36,6 +36,8 @@ include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("/usr/local/include/")
 include_directories("/opt/mongodb/mongo-cxx-driver-v2.0")
 include_directories("/opt/local/include/")
+include_directories("${PROJECT_SOURCE_DIR}/../../libs")
+
 
 link_directories("/opt/local/lib")
 link_directories("/opt/mongodb/mongo-cxx-driver-v2.0/")

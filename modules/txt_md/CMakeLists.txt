@@ -22,6 +22,8 @@ include_directories("/usr/lib/jvm/java-6-sun-1.6.0.26/include")
 include_directories("/usr/lib/jvm/java-6-sun-1.6.0.26/include/linux")
 include_directories("/usr/lib/jvm/java-1.6.0-sun-1.6.0.22.x86_64/include")
 include_directories("/usr/lib/jvm/java-1.6.0-sun-1.6.0.22.x86_64/include/linux")
+include_directories("${PROJECT_SOURCE_DIR}/../../libs")
+
 
 link_directories("/opt/hadoop/hadoop-0.21.0/c++/Linux-i386-32/lib")
 link_directories("/opt/hadoop/hadoop-0.21.0/c++/Linux-amd64-64/lib")

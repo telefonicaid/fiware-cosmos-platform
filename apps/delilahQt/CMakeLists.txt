@@ -1,6 +1,7 @@
 SET (SOURCES
   main_DelilahQT.cpp
   MainWindow.cpp
+  PlotWidget.cpp
   SamsonConnect.cpp
   SamsonQueryWidget.cpp
   SamsonNodeWidget.cpp
@@ -14,6 +15,7 @@ SET( HEADERS
 
 SET (HEADERS_FOR_MOC
   MainWindow.h
+  PlotWidget.h
   SamsonConnect.h
   SamsonQueryWidget.h
   SamsonNodeWidget.h
@@ -48,6 +50,7 @@ SET (STATIC_LIBS
      au
      pugi
      samsonCommon
+     kdchart
      ${COMMON_SAMSON_LIBS}
 )
 

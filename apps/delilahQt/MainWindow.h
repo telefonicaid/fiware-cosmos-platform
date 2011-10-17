@@ -45,6 +45,7 @@ private slots:
     void open_samson_query();
     void updateTimer();
     void updateTree();    
+    void show_queues();
     
 private:
     

@@ -115,8 +115,8 @@ namespace samson {
 
             // NORMAL PROCESSING
             // ------------------------------------------------------------------------------------
-            BlockList* getInputBlockListForProcessing( size_t max_size );                             // Get input for an automatic processing
-            BlockList* getInputBlockListForProcessing( size_t max_size , BlockIdList* used_blocks );  // Get input for an automatic processing
+            void getInputBlockListForProcessing( size_t max_size , BlockList*tmp );                             // Get input for an automatic processing
+            void getInputBlockListForProcessing( size_t max_size , BlockIdList* used_blocks , BlockList*tmp );  // Get input for an automatic processing
             
             // ------------------------------------------------------------------------------------
             

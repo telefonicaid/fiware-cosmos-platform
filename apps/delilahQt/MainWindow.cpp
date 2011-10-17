@@ -13,6 +13,7 @@
 #include "SamsonConnect.h"
 #include "SamsonQueryWidget.h"
 #include "SamsonNodeWidget.h"
+#include "PlotWidget.h"
 
 #include "DelilahConnection.h"     // DelilahConnection
 
@@ -34,6 +35,7 @@ MainWindow::MainWindow( QWidget *parent ) : QMainWindow(parent)
     // Connections
     connect(samsonQueryPushButton, SIGNAL(clicked()), this, SLOT(open_samson_query()));
     connect( treeUpdateButton , SIGNAL(clicked()) , this , SLOT( updateTree() ) );
+    connect( queuesButton , SIGNAL(clicked()) , this , SLOT( show_queues() ) );
 
     // Init my model
     myModel = NULL;
@@ -161,6 +163,10 @@ void MainWindow::open_samson_query()
 }
 
 
-
+void MainWindow::show_queues()
+{
+  PlotWidget *plotWidget = new PlotWidget();
+  plotWidget->show();
+}
 
 

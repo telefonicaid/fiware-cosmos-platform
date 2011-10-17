@@ -7,6 +7,8 @@
 #include <algorithm>
 
 #include "au/Tree.h"
+#include "au/time.h"
+#include "au/string.h"
 
 #include "samson/delilah/Delilah.h"
 
@@ -16,6 +18,9 @@ extern samson::Delilah* delilah;
 
 SamsonNodeWidget::SamsonNodeWidget( QWidget *parent ) : QWidget(parent)
 {
+    title = "";
+    uptime = 0;
+    
   //Setup the 
   setupUi(this);
 
@@ -23,7 +28,14 @@ SamsonNodeWidget::SamsonNodeWidget( QWidget *parent ) : QWidget(parent)
 
 void SamsonNodeWidget::setTitle( std::string _title )
 {
-    groupBox->setTitle( tr( _title.c_str() ) );
+    title = _title;
+    updateTitle();
+}
+
+void SamsonNodeWidget::updateTitle()
+{
+    std::string full_title = title + " " + au::time_string( uptime );
+    groupBox->setTitle( tr( full_title.c_str() ) );
 }
 
 void SamsonNodeWidget::update( au::TreeItem *treeItem )
@@ -33,6 +45,9 @@ void SamsonNodeWidget::update( au::TreeItem *treeItem )
     
     size_t used_memory  = treeItem->getUInt64( "engine_system/memory_manager/used_memory" );
     size_t memory       = treeItem->getUInt64( "engine_system/memory_manager/memory" ); 
+    uptime              = treeItem->getUInt64("engine_system/uptime" );
+    
+    updateTitle();
     
     memory_progressBar->setRange( 0 , memory);
     memory_progressBar->setValue( used_memory );

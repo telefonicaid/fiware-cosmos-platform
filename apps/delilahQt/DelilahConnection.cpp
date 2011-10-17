@@ -24,9 +24,7 @@ void DelilahConnection::connect( std::string controller )
     // Initialize the network element for delilah
     networkP  = new samson::Network2( samson::Endpoint2::Delilah, controller.c_str() );
     networkP->runInBackground();
-    
-    std::cerr << "\nConnecting to SAMSOM controller " << controller << " ...";
-    std::cerr.flush();
+
 }
 
 bool DelilahConnection::isReady()
@@ -40,9 +38,6 @@ bool DelilahConnection::isReady()
     if( !networkP->ready() )
         return false;
     
-    std::cout << " OK\n";
-    std::cerr << "Connecting to all workers ...";
-    std::cerr.flush();
     
     if( !sent_process_vector_packet )
     {

@@ -520,12 +520,10 @@ namespace samson {
             return info;
         }
         
-        BlockList *Queue::getInputBlockListForProcessing( size_t max_size )
+        void Queue::getInputBlockListForProcessing( size_t max_size , BlockList* tmp )
         {
             int num_blocks = 0;
             size_t total_size = 0;
-            
-            BlockList *tmp = new BlockList( "getInputBlockListForProcessing" );
             
             au::list< Block >::iterator block_it;
             for ( block_it = list->blocks.begin() ; block_it != list->blocks.end() ; block_it++ )
@@ -540,23 +538,19 @@ namespace samson {
                     
                     if( num_blocks > 0 )
                         if( ( max_size > 0 ) && ( total_size > max_size) )
-                            return tmp;
+                            return;
 
                     num_blocks++;                    
                     tmp->add( block );
                     processing_block_ids.addId( block_id );
                 }
             }
-            
-            return tmp;
         }        
 
-        BlockList *Queue::getInputBlockListForProcessing( size_t max_size , BlockIdList* used_blocks )
+        void Queue::getInputBlockListForProcessing( size_t max_size , BlockIdList* used_blocks  ,BlockList* tmp )
         {
             int num_blocks = 0;
             size_t total_size = 0;
-            
-            BlockList *tmp = new BlockList( "getInputBlockListForProcessing" );
             
             au::list< Block >::iterator block_it;
             for ( block_it = list->blocks.begin() ; block_it != list->blocks.end() ; block_it++ )
@@ -571,15 +565,13 @@ namespace samson {
 
                     if( num_blocks > 0 )
                         if( ( max_size > 0 ) && ( total_size > max_size) )
-                            return tmp;
+                            return;
 
                     num_blocks++;
                     tmp->add( block );
                     used_blocks->addId( block->getId() );   // Add to this list to not use again in the next call to this function
                 }
             }
-            
-            return tmp;
         }        
         
         bool Queue::isBlockIdLocked( size_t id )

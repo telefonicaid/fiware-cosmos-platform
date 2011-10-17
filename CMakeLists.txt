@@ -50,9 +50,10 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 include_directories("/usr/include")
 include_directories("/usr/local/include")
 include_directories("/opt/local/include")
+include_directories("/usr/local/KDAB/KDChart-2.4.2/include")
 
 link_directories("/opt/local/lib")
-
+link_directories("/usr/local/KDAB/KDChart-2.4.2/lib")
 
 # Package
 # ----------------------------------------------------------------------

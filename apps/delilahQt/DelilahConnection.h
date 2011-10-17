@@ -1,5 +1,11 @@
 
 
+/**
+ 
+ Main dialog to stablish a connection with SAMSON Platform
+ 
+ */
+
 #ifndef _H_DELILAHCONNECTION_QT
 #define _H_DELILAHCONNECTION_QT
 

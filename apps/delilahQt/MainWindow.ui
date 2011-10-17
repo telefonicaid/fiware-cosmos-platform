@@ -27,7 +27,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="samsonQueryPushButton_2">
+         <widget class="QPushButton" name="queuesButton">
           <property name="text">
            <string>queues</string>
           </property>

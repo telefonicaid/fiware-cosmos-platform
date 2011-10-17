@@ -612,19 +612,20 @@ namespace samson {
                         {
                             
                             // Get a BlockList with cotent to be processed
-                            BlockList *inputData;
+ 					 	   BlockList inputData("input data");
+
                             if( clear_inputs )
-                                inputData = queue->getInputBlockListForProcessing( max_size );
+							   queue->getInputBlockListForProcessing( max_size , &inputData );
                             else
-                                inputData = queue->getInputBlockListForProcessing( max_size , &block_ids );
+							   queue->getInputBlockListForProcessing( max_size , &block_ids , &inputData );
                             
-                            if ( inputData->isEmpty() )
+                            if ( inputData.isEmpty() )
                                 no_more_content = true; // No more data to be processed
                             
                             // Decide if operation has to be canceled
                             if( !no_more_content )
                             {
-                                BlockInfo operation_block_info = inputData->getBlockInfo();
+                                BlockInfo operation_block_info = inputData.getBlockInfo();
                                 
                                 // If there is not enougth size, do not run the operation
                                 if( (min_size>0) && ( operation_block_info.size < min_size ) )
@@ -667,7 +668,7 @@ namespace samson {
                                 tmp->addOutputsForOperation(op);
                                 
                                 // Copy input data
-                                tmp->getBlockList("input_0")->copyFrom( inputData );
+                                tmp->getBlockList("input_0")->copyFrom( &inputData );
                                 
                                 // Set working size for correct monitorization of data
                                 tmp->setWorkingSize();
@@ -685,9 +686,7 @@ namespace samson {
                                 
                             }
                             else
-                                queue->unlock( inputData );
-                            
-                            delete inputData;
+                                queue->unlock( &inputData );
                             
                         }
                         
@@ -860,7 +859,8 @@ namespace samson {
             Queue *queue = streamManager->getQueue( input_queue_name );
             
             // Get a BlockList with cotent to be processed
-            BlockList *inputData = queue->getInputBlockListForProcessing( max_size );
+            BlockList inputData;
+            queue->getInputBlockListForProcessing( max_size , &inputData );
             
             
             // Get a new id for the next opertion
@@ -895,7 +895,7 @@ namespace samson {
             tmp->addOutputsForOperation(op);
             
             // Copy input data
-            tmp->getBlockList("input_0")->copyFrom( inputData );
+            tmp->getBlockList("input_0")->copyFrom( &inputData );
             
             // Set working size for correct monitorization of data
             tmp->setWorkingSize();
@@ -917,7 +917,7 @@ namespace samson {
             streamManager->worker->logActivity( au::str("[ %s:%lu ] Processing %s from queue %s using operation %s" , 
                                                         stream_operation->name.c_str() , 
                                                         id,
-                                                        inputData->strShortDescription().c_str(),
+                                                        inputData.strShortDescription().c_str(),
                                                         input_queue_name.c_str() , 
                                                         stream_operation->name.c_str()  
                                                         ));

@@ -103,6 +103,9 @@ void SamsonSpawner::localProcVecGenerate(void)
 {
 	samson::ProcessVector* pVec;
 	samson::Process*       p;
+	Host*                  hostP;
+
+	hostP = networkP->epMgr->hostMgr->lookup("localhost");
 
 	pVec = (samson::ProcessVector*) malloc(sizeof(samson::ProcessVector) + 2 * sizeof(samson::Process));
 	if (pVec == NULL)
@@ -117,7 +120,7 @@ void SamsonSpawner::localProcVecGenerate(void)
 	p->id   = 1;
 	strcpy(p->name, "samsonController");
 	strcpy(p->alias, "NO ALIAS");
-	strcpy(p->host, "localhost");
+	strcpy(p->host, hostP->name);
 	p->port = CONTROLLER_PORT;
 
 	// Worker
@@ -126,7 +129,7 @@ void SamsonSpawner::localProcVecGenerate(void)
 	p->id   = 0;
 	strcpy(p->name, "samsonWorker");
 	strcpy(p->alias, "NO ALIAS");
-	strcpy(p->host, "localhost");
+	strcpy(p->host, hostP->name);
 	p->port = WORKER_PORT;
 
 	networkP->epMgr->procVecSet(pVec);

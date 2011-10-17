@@ -7,6 +7,7 @@ all:
 	make -C cdr
 	make -C mob
 #	make -C mob2
+	make -C passive_location
 	make -C graph
 	make -C sna
 	make -C snalight
@@ -31,6 +32,7 @@ release:
 	make release -C cdr
 	make release -C mob
 #	make release -C mob2
+	make release -C passive_location
 	make release -C graph
 	make release -C sna
 	make release -C snalight
@@ -55,6 +57,7 @@ reset:
 	make reset -C cdr
 	make reset -C mob
 	make reset -C mob2
+	make reset -C passive_location
 	make reset -C graph
 	make reset -C sna
 	make reset -C snalight 
@@ -73,6 +76,7 @@ reset:
 eclipse:
 	make eclipse -C system
 	make eclipse -C txt_md
+	make eclipse -C passive_location
 	make eclipse -C example
 	make eclipse -C tienda
 	make eclipse -C cdr

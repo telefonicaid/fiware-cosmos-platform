@@ -139,7 +139,7 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 	}
 
 	if ((mongo_ensure_index == "yes") || (mongo_ensure_index == "Yes") || (mongo_ensure_index == "YES"))
-		mdbConnection->ensureIndex(mongo_db_path, fromjson("{key:1}"));
+		mdbConnection->ensureIndex(mongo_db_path, fromjson("{I:1}"));
 }
 
 

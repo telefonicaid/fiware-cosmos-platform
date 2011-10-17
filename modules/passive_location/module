@@ -1,0 +1,43 @@
+Module passive_location
+{
+	title	"mongo module for passive location"
+	author	"Andreu & Ken"
+	version "0.1"
+}
+
+data CellRecord
+{
+	system.UInt      userId;
+	system.TimeUnix  timestamp;
+	system.UInt32    cellId;
+}
+
+data Record
+{
+	system.UInt      userId;
+	system.TimeUnix  timestamp;
+	system.UInt32    cellId;
+	system.Float     latitude;
+	system.Float     longitude;
+}
+
+
+generator mongo_location_import
+{
+	out system.UInt passive_location.Record
+	helpLine "Import passive location data from a mongoDb server at 'mongo.ip' from table 'mongo.table'"
+}
+
+map mongo_location_export
+{
+	in system.UInt cdr.mobCdr
+	helpLine "Export passive location data to a mongoDb server at 'mongo' to table 'mongo_table'"
+}
+
+
+
+generator mongo_latlong_import
+{
+	out system.UInt passive_location.Record
+	helpLine "Import passive location 'latlong' data from a mongoDb server at 'mongo.ip' from table 'mongo.table'"
+}

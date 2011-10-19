@@ -23,7 +23,7 @@ namespace samson
             
         public:
             
-            ParserQueueTask( size_t id  , StreamOperation* streamOperation  ) : stream::QueueTask(id , streamOperation )
+            ParserQueueTask( size_t id  , StreamOperationBase* streamOperation  ) : stream::QueueTask(id , streamOperation )
             {
                 setProcessItemOperationName( "stream:" + streamOperation->operation );
             }
@@ -52,7 +52,7 @@ namespace samson
             
         public:
             
-            ParserOutQueueTask( size_t id  , StreamOperation* streamOperation , KVRange _range  ) : stream::QueueTask(id , streamOperation )
+            ParserOutQueueTask( size_t id  , StreamOperationBase* streamOperation , KVRange _range  ) : stream::QueueTask(id , streamOperation )
             {
                 // Set operation name for debugging
                 setProcessItemOperationName( "stream:" + streamOperation->operation );
@@ -85,7 +85,7 @@ namespace samson
             
         public:
             
-            MapQueueTask( size_t id , StreamOperation* streamOperation , KVRange _range  ) :stream::QueueTask(id , streamOperation )
+            MapQueueTask( size_t id , StreamOperationBase* streamOperation , KVRange _range  ) :stream::QueueTask(id , streamOperation )
             {
                 // Set operation name for debugging
                 setProcessItemOperationName( "stream:" + streamOperation->operation );
@@ -119,10 +119,10 @@ namespace samson
             int division;               // Division, this operation is processing
 
         public:
-            
-            ReduceQueueTask( size_t id , StreamOperation* streamOperation , KVRange range  );
 
-            
+            // Constructor
+            ReduceQueueTask( size_t id , StreamOperationBase* streamOperation , KVRange range  );
+           
             // Set mode state_update
             void setUpdateStateDivision( int _division );
             

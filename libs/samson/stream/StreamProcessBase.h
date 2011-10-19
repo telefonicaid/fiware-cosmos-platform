@@ -38,6 +38,7 @@ namespace samson
         class ProcessWriter;
         class ProcessTXTWriter;
         class StreamOperation;
+        class StreamOperationBase;
         
         /**
          A particular process that runs in as isolated mode generating key-values
@@ -54,11 +55,11 @@ namespace samson
             size_t task_order;                      // Order of the task
                         
             // Information about how to process this queue
-            StreamOperation *streamOperation;
+            StreamOperationBase *streamOperation;
             
         public:
             
-            StreamProcessBase( size_t _task_id , StreamOperation* _streamOperation );
+            StreamProcessBase( size_t _task_id , StreamOperationBase* _streamOperation );
             virtual ~StreamProcessBase();
             
             // Function to process the output of the operations

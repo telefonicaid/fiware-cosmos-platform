@@ -30,7 +30,7 @@ namespace samson {
         public:
 
             // Constructor
-            QueueTask( size_t _id , StreamOperation* streamOperation  );
+            QueueTask( size_t _id , StreamOperationBase* streamOperation  );
             
             // Overloaded method for ProcessItem
             virtual std::string getStatus()

@@ -77,22 +77,6 @@ namespace samson {
         
         void ParserQueueTask::finalize( StreamManager* streamManager )
         {
-            // Original list of blocks
-            BlockList *input = getBlockList("input_0");
-            
-            // Get the queue we are working on
-            std::string queue_name = streamOperation->input_queues[ 0 ];
-            Queue*queue = streamManager->getQueue( queue_name );
-
-            if ( queue )
-            {
-                queue->unlock( input );
-                
-                // If specified, remove input blocks
-                if( environment.get("system.clear_imputs" , "no") == "yes" )
-                    queue->remove( input );
-            }
-            
             
             // Notify to the stream operation
             std::string stream_operation_name = environment.get("system.stream_operation","");
@@ -125,23 +109,6 @@ namespace samson {
         
         void ParserOutQueueTask::finalize( StreamManager* streamManager )
         {
-            
-            // Original list of blocks
-            BlockList *input = getBlockList("input_0");
-            
-            // Get the queue we are working on
-            std::string queue_name = streamOperation->input_queues[ 0 ];
-            Queue*queue = streamManager->getQueue( queue_name );
-
-            
-            if ( queue )
-            {
-                queue->unlock( input );
-                
-                // If specified, remove input blocks
-                if( environment.get("system.clear_imputs" , "no") == "yes" )
-                    queue->remove( input );
-            }
             
             
             // Notify to the stream operation
@@ -347,22 +314,6 @@ namespace samson {
         void MapQueueTask::finalize( StreamManager* streamManager )
         {
             
-            // Original list of blocks
-            BlockList *input = getBlockList("input_0");
-            
-            // Get the queue we are working on
-            std::string queue_name = streamOperation->input_queues[ 0 ];
-            Queue*queue = streamManager->getQueue( queue_name );
-            
-            if ( queue )
-            {
-                queue->unlock( input );
-                
-                // If specified, remove input blocks
-                if( environment.get("system.clear_imputs" , "no") == "yes" )
-                    queue->remove( input );
-            }
-            
             // Notify to the stream operation
             std::string stream_operation_name = environment.get("system.stream_operation","");
             StreamOperation* stream_operation = streamManager->getStreamOperation( stream_operation_name );
@@ -525,8 +476,7 @@ namespace samson {
 #pragma mark
 
         
-        ReduceQueueTask::ReduceQueueTask( size_t id , StreamOperation* streamOperation , KVRange _range  ) 
-        : stream::QueueTask(id , streamOperation )
+        ReduceQueueTask::ReduceQueueTask( size_t id , StreamOperationBase* streamOperation , KVRange _range  ) : stream::QueueTask(id , streamOperation )
         {
             setProcessItemOperationName( "stream:" + streamOperation->operation );
             
@@ -645,14 +595,16 @@ namespace samson {
         {
             int output_channel = (int)streamOperation->output_queues.size() - 1 ;
             
-            //LM_M(("processOutputBuffer %d ( %d )" , output , output_channel ));
             
             if( update_state_mode && ( output == output_channel ) )
             {
                 outputBuffers.push_back( buffer );
             }
             else
+            {
+                LM_M(("Sending buffer %s to queue %s" , au::str( buffer->getSize() ).c_str() , streamOperation->output_queues[output].c_str() ));
                 sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues[output] );
+            }
         }
         
         void ReduceQueueTask::finalize( StreamManager* streamManager )
@@ -673,19 +625,20 @@ namespace samson {
             //LM_M(("Running finalize of a reduce for queue %s" , queue_name.c_str() ));
             
             if ( queue )
-            {
-                queue->replace( originalBlockList , tmp );
-                
-                // Release division we were processing with this operation
-                queue->unlockDivision( division );
-            }
-            
+                queue->replaceAndUnlock( originalBlockList , tmp );
             
             // Notify to the stream operation
             std::string stream_operation_name = environment.get("system.stream_operation","");
             StreamOperation* stream_operation = streamManager->getStreamOperation( stream_operation_name );
+
             if( stream_operation )
+            {
                 stream_operation->remove( this );
+                
+                StreamOperationUpdateState * stream_operation_update_state =  (StreamOperationUpdateState*) stream_operation;
+                stream_operation_update_state->finish_update_division( division );
+
+            }
             
             
             // Detele the temporal list used here

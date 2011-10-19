@@ -11,7 +11,7 @@
 namespace samson {
     namespace stream{
         
-        QueueTask::QueueTask( size_t _id , StreamOperation* streamOperation  ) 
+        QueueTask::QueueTask( size_t _id , StreamOperationBase* streamOperation  ) 
                 : StreamProcessBase( _id , streamOperation ) , QueueTaskBase(_id)
         {
             // Set in the environemtn variables

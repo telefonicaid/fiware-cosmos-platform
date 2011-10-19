@@ -40,7 +40,6 @@ namespace samson {
         class Queue
         {
             
-            friend class QueueItem;
             friend class StreamManager;
             friend class WorkerCommand;
             friend class BlockBreakQueueTask;
@@ -52,45 +51,31 @@ namespace samson {
             
             // Name of this queue
             std::string name;
-
-            // List of blokcs contained in this queue
-            BlockList *list;
             
             // Environment properties of this queue
             au::Environment environment;
-            
-            // Number of updates when this is a state queue
-            int updates;
-            
-            // Flag to avoid creating update_state operations
-            bool paused;
 
-            // Format of this queue
+            // Format of this queue ( to filter input blocks )
             KVFormat format;
+                        
+            // Collections of ids for different block concepts
+            BlockIdList lock_block_ids;
             
-            // Number of divisions for this queue ( all blocks should satify this at long term using block-break operations )
+            // Number of divisions to meet ( block - break operations are scheduled if necessary ) 
             int num_divisions;
             
-            // Collections of ids for different block concepts
-            BlockIdList breaking_block_ids;
-            BlockIdList processing_block_ids;  // processing = parser / map / parseOut ( even reduce in non-update mode )
-
-            // Divisions currently being updated ( only in reduce_state operations )
-            // Note: it updating_divisions.size() > 0 --> Not possible to change num_divisions
-            std::set<int> updating_divisions;
-            
         public:
+            
+            // List of blokcs contained in this queue
+            BlockList *list;
             
             // Constructor and destructor
             Queue( std::string _name , StreamManager* _streamManager );
             ~Queue();
 
             // Push content form a block list ( do not remove original list )
-            void push( BlockList *list );
-            
-            // Function to check if any of the items is working ( if so, it can not be removed , clered or whatever )
-            bool isWorking();
-            
+            void push( BlockList *list ); 
+                        
             // Get information about the queue
             void update( BlockInfo& block_info );
                         
@@ -100,52 +85,41 @@ namespace samson {
             // Set a property
             void setProperty( std::string property , std::string value );
             
-            // Review if it is necessary to break or joint some blocks
-            void review();
-            
-            // Notify that a block-break operation has finished
+            // Operations with block list
             void replaceAndUnlock( BlockList *from , BlockList *to );
             void removeAndUnlock( BlockList *list );
-            void replace( BlockList *from , BlockList *to );
-            void unlock ( BlockList *list );
             void remove ( BlockList *list );
+            
+            void replace( BlockList *from , BlockList *to );
+            bool lock ( BlockList *list );
+            bool canBelock ( BlockList *list );
+            void unlock ( BlockList *list );
 
-            // General function to know if a block is involved in any operation ( break or process )
-            bool isBlockIdLocked( size_t id );
+            
+            // Spetial function to get all the blocks for a particular range loking them
+            bool getAndLockBlocksForKVRange( KVRange range , BlockList *outputBlockList ); 
+            bool canLockBlocksForKVRange( KVRange range );
+            
+            // Check if this queue is fully divided in such a way that all blocks are divided perfectly
+            bool isReadyForDivisions( ); 
 
-            // NORMAL PROCESSING
-            // ------------------------------------------------------------------------------------
-            void getInputBlockListForProcessing( size_t max_size , BlockList*tmp );                             // Get input for an automatic processing
-            void getInputBlockListForProcessing( size_t max_size , BlockIdList* used_blocks , BlockList*tmp );  // Get input for an automatic processing
+            // Review if if is necesary to run block-break operations for this queue
+            void review();
             
-            // ------------------------------------------------------------------------------------
-            
-            // UPDATE STATE
-            // ------------------------------------------------------------------------------------
-            bool isQueueReadyForStateUpdate();                                              
-            bool lockDivision( int division );                                              // Lock a particular division ( if possible )
-            void unlockDivision( int division );                                            // Unlock a particular vision
-            bool lockAllDivisions();
-            void getStateBlocksForDivision( int division , BlockList *outputBlockList );    // Get the state for a state-update division
-            BlockList *getInputBlockListForRange( KVRange range , size_t max_size );        // Get blocks for a range ( input of the reduce operation )
-            // ------------------------------------------------------------------------------------
-            
-            int getNumUpdatingDivisions();
-            
-            BlockInfo getBlockInfoForProcessing();
-            
-            void setMinimumNumDivisions();
+            void setMinNumDivisions( int _num_divisions )
+            {
+                if( num_divisions < _num_divisions )
+                    num_divisions = _num_divisions;
+            }
             
         private:
 
             // Internal function to add a block to this queue
             void push( Block *block );
             
-            // Set a new number of visisions
-            void setNumDivisions( int new_num_divisions );
+            // Get necesssary blocks to break
+            void getBlocksToBreak( BlockList *outputBlockList  , size_t max_size );
 
-            // Function to return the number of divisions based on the current size
-            int getMinNumDivisions();
             
         };
         

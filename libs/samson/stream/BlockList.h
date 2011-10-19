@@ -51,30 +51,16 @@ namespace samson {
         
         class BlockList
         {
-            friend class Block;
-            
-            friend class StreamManager;
-            friend class Queue;
-            friend class QueueItem;
-            friend class ParserQueueTask;
-            friend class MapQueueTask;
-            friend class ReduceQueueTask;
-            friend class ParserOutQueueTask;
-            friend class PopQueueTask;
-            friend class BlockBreakQueueTask;
-            friend class SortQueueTask;
-            friend class UpdateStatusQueueTask;
-            friend class BlockIdList;
-            
-            au::list< Block > blocks;               // List of blocks
-            
+
             BlockInfo accumulated_block_info;       // Accumulated information
+            
+        public:
             
             std::string name;                       // Name of this block list ( for debugging )
             size_t task_id;                         // Order of the task if really a task
             bool lock_in_memory;                    // Lock in memory
             
-        public:
+            au::list< Block > blocks;               // List of blocks
 
             BlockList(  )
             {

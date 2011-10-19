@@ -76,9 +76,9 @@ namespace samson {
         
 		LoadDataManager loadDataManager;                // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
 		
-        stream::StreamManager streamManager;            // Manager of all the stream-processing queues in the system
+        stream::StreamManager* streamManager;           // Manager of all the stream-processing queues in the system
         
-        std::list < WorkerLog > activityLog;          // Activity log for this worker
+        std::list < WorkerLog > activityLog;            // Activity log for this worker
         
 	public:
 

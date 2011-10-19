@@ -87,6 +87,13 @@ namespace samson {
                 // Review stream operations to be executed
                 reviewStreamOperations();
                 
+                // Review queues
+                au::map< std::string , Queue >::iterator it_queues;                
+                
+                for ( it_queues = queues.begin() ; it_queues != queues.end() ; it_queues++ )
+                    it_queues->second->review();
+
+                
                 return;
             }
                 
@@ -98,11 +105,6 @@ namespace samson {
                 
                 // Save state to disk just in case it crases
                 saveStateToDisk();
-                
-                // Review all the queues to be divided if necessary
-                au::map< std::string , Queue >::iterator queue_it;
-                for ( queue_it = queues.begin() ; queue_it != queues.end() ; queue_it++ )
-                    queue_it->second->review();
                 
                 // Review all WorkerCommand is necessary
                 au::map< size_t , WorkerCommand >::iterator it_workerCommands; 
@@ -142,6 +144,7 @@ namespace samson {
         
         void StreamManager::addBlocks( std::string queue_name ,  BlockList *bl )
         {
+            
             // Get or create the queue
             Queue *queue = getQueue( queue_name );
             
@@ -188,22 +191,6 @@ namespace samson {
 
         }
         
-        void StreamManager::pause_queue( std::string queue_name )
-        {
-            Queue *queue = queues.extractFromMap(queue_name);
-            
-            if( queue )
-                queue->paused = true;
-            
-        }
-        
-        void StreamManager::play_queue( std::string queue_name )
-        {
-            Queue *queue = queues.extractFromMap(queue_name);
-            
-            if( queue )
-                queue->paused = false;
-        }
         
         void StreamManager::cp_queue( std::string from_queue_name , std::string to_queue_name )
         {
@@ -319,10 +306,43 @@ namespace samson {
             
         }
         
+        bool compareStreamOperation( StreamOperation *first , StreamOperation *second )
+        {
+            return ( first->getPriority() > second->getPriority() );
+        }
+        
         void StreamManager::reviewStreamOperations()
         {
-            WorkerCommand* wc = new WorkerCommand( "review_stream_operations" );
-            addWorkerCommand( wc );
+            // List of operations to run in order...
+            std::vector<StreamOperation*> ordered_stream_operations;
+            
+            // First review all stream operations
+            au::map <std::string , StreamOperation>::iterator it_stream_operations;
+            for (it_stream_operations = stream_operations.begin() ; it_stream_operations != stream_operations.end() ; it_stream_operations++ )
+            {
+                it_stream_operations->second->review();
+                
+                ordered_stream_operations.push_back( it_stream_operations->second );
+            }
+
+            // Sort ordered_stream_operations
+            std::sort( ordered_stream_operations.begin() , ordered_stream_operations.end() , compareStreamOperation );
+            
+
+            for ( size_t i = 0 ; i < ordered_stream_operations.size() ; i++)
+            {
+                while( true )
+                {
+                    
+                    // If it has enougth tasks, we do not schedule anything else
+                    if( queueTaskManager.hasEnougthTasks() )
+                        break;
+                    
+                    if( !ordered_stream_operations[i]->scheduleNextQueueTasks( ) )
+                        break;
+                }
+                
+            }
         }
         
         
@@ -361,15 +381,10 @@ namespace samson {
                 StreamOperation *stream_operation = it_stream_operations->second;
                 output << "# Stream Operation " << stream_operation->name << "\n";
                 
-                // Properties of queue
-                output << "stream_operation " << stream_operation->name << " " << stream_operation->operation << "\n";  
+                // Creation command
+                output << stream_operation->command << "\n";
                 
-                for (size_t i = 0 ; i < stream_operation->input_queues.size() ; i++)
-                    output << "stream_operation_input " << stream_operation->name << " " << stream_operation->input_queues[i] << "\n";
-                for (size_t i = 0 ; i < stream_operation->output_queues.size() ; i++)
-                    output << "stream_operation_output " << stream_operation->name << " " << stream_operation->output_queues[i] << "\n";
-                
-                
+                // Properties of this stream operation
                 output << "stream_operation_properties " << stream_operation->name << " " << stream_operation->environment.saveToString() << "\n";
                 
             }
@@ -470,23 +485,22 @@ namespace samson {
                             queue->environment.recoverFromString( properties );
                             
                         }
-                        else if ( main_command == "stream_operation" )
+                        else if ( main_command == "add_stream_operation" )
                         {
-                            if ( commandLine.get_num_arguments() < 3 )
-                                continue;
+                            au::ErrorManager error;
+                            StreamOperation *stream_operation = StreamOperation::newStreamOperation( this , std::string(line) , error );
                             
-                            std::string stream_operation_name = commandLine.get_argument(1);
-                            std::string operation = commandLine.get_argument(2);
+                            if( !stream_operation )
+                                LM_W(("Error recovering stream operation '%s'.Error: %s" , line , error.getMessage().c_str() ));
+                            else
+                            {
+                                
+                                StreamOperation* previous = stream_operations.extractFromMap( stream_operation->name );
+                                if( previous )
+                                    delete previous;
+                                stream_operations.insertInMap( stream_operation->name , stream_operation );
+                           }
                             
-                            StreamOperation* stream_operation = new StreamOperation(this);
-                            stream_operation->name = stream_operation_name;
-                            stream_operation->operation = operation;
-
-                            StreamOperation* previous = stream_operations.extractFromMap( stream_operation->name );
-                            if( previous )
-                                delete previous;
-                            
-                            stream_operations.insertInMap( stream_operation->name , stream_operation );
                         }
                         else if ( main_command == "stream_operation_input" )
                         {

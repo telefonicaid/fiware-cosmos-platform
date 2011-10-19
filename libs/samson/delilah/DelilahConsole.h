@@ -83,8 +83,6 @@ namespace samson {
             addOption("ls_stream_operation");
             addOption("set_stream_operation_property");
             addOption("rm_queue");                          // Remove a queue
-            addOption("pause_queue");                       // Pause and Play a state ( to remove it )
-            addOption("play_queue");                          
             addOption("ls_queues");                      // Get a list of all current tasks in the system
             addOption("ps_stream");                     // Get a list of stream task
             addOption("ls_modules");                     // Get a list of stream task

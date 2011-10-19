@@ -71,11 +71,14 @@ void WorkerLog::getInfo( std::ostringstream & output )
  *
  * Constructor
  */
-SamsonWorker::SamsonWorker( NetworkInterface* _network ) :  taskManager(this) , loadDataManager(this) , streamManager(this)
+SamsonWorker::SamsonWorker( NetworkInterface* _network ) :  taskManager(this) , loadDataManager(this)
 {
 	network = _network;
 	network->setNodeName("SamsonWorker");
 
+    // Init the stream manager
+    streamManager = new stream::StreamManager(this);
+        
 	// Get initial time
 	gettimeofday(&init_time, NULL);
 
@@ -220,7 +223,7 @@ void SamsonWorker::receive( Packet* packet )
 		for ( int i = 0 ; i < packet->message->push_block().queue_size() ; i++)
 		{
 			std::string queue = packet->message->push_block().queue(i);
-			streamManager.addBlocks( queue , &my_list  );
+			streamManager->addBlocks( queue , &my_list  );
 		}
 
 		// Send a message back if delilah_id is > 0
@@ -317,7 +320,7 @@ void SamsonWorker::receive( Packet* packet )
 	{
 
 		size_t delilah_id = packet->message->delilah_id();
-		streamManager.addPopQueue( packet->message->pop_queue() , delilah_id , packet->fromId );
+		streamManager->addPopQueue( packet->message->pop_queue() , delilah_id , packet->fromId );
 
 		return;
 	}
@@ -332,7 +335,7 @@ void SamsonWorker::receive( Packet* packet )
 
 		stream::WorkerCommand *workerCommand = new stream::WorkerCommand(  packet->fromId , packet->message->delilah_id() , packet->message->worker_command() );
 
-		streamManager.addWorkerCommand( workerCommand );
+		streamManager->addWorkerCommand( workerCommand );
 		return;
 	}
 
@@ -592,7 +595,7 @@ void SamsonWorker::getInfo( std::ostringstream& output)
 	stream::BlockManager::shared()->getInfo( output );
 
 	// Queues manager information
-	streamManager.getInfo(output);
+	streamManager->getInfo(output);
 
 	// Network
 	network->getInfo( output );

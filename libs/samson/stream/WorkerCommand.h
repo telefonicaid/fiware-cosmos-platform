@@ -39,6 +39,7 @@ namespace samson {
         class Queue;
         class Block;
         class BlockList;
+        class StreamOperationBase;
         
         
         // Worker Tasks is an action working on this worker
@@ -96,16 +97,11 @@ namespace samson {
             void finishWorkerTask();
 
             // Auxiliar operation    
-            StreamOperation *getStreamOperation( Operation *op );
+            StreamOperationBase *getStreamOperation( Operation *op );
             
             // Function to check everything is finished
             void checkFinish();
           
-            // Spetial review operations
-            void review_stream_operation( StreamOperation *stream_operation );
-            void review_stream_operation_forward(  StreamOperation* stream_operation );
-            void review_stream_operation_reduce(  StreamOperation* stream_operation );
-
             
             
         };

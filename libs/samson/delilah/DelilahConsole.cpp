@@ -192,7 +192,7 @@ namespace samson
     "Stream processing commands:            run_stream_operation, push , pop \n"
     "                                       add_stream_operation , rm_stream_operation , set_stream_operation_property \n"
     "                                       rm_queue , cp_queue \n"
-    "                                       play_queue , pause_queue , set_queue_property\n" 
+    "                                       set_queue_property\n" 
     "\n"
     "Getting info for stream processing:    ls_queues, ls_queues_info,  ps_stream \n"
     "                                       ls_stream_operation , ls_block_manager \n"
@@ -261,10 +261,7 @@ namespace samson
         { "ls_stream_operations"    , "ls_stream_operation           Show a list of active stream operations"},
                 
         { "rm_queue"                , "rm_queue <queue>         Remove a queue" },
-        
-        { "pause_queue"             , "pause_queue <queue>        Pause a queue, so no new stream operations are scheduled over this queue " },
-        { "play_queue"              , "play_queue <queue>         Cancel pause_queue command over a queue " },
-        
+                
         { "ls_queues"               , "ls_queues        Show a list of current queues in all the workers" },
         { "ls_queues_info"               , "ls_queues_info        Show a list of current queues in all the workers with more information about blocks" },
         

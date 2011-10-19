@@ -45,7 +45,7 @@ namespace au
             refresh();
             
             // Sleep a bit
-            usleep( 10000 );
+            usleep( 500000 );
             
             // Eval commands in real time
             evalRealTimeComamnd( );

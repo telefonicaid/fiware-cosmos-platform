@@ -25,8 +25,7 @@ namespace samson {
         
 #pragma mark ProcessItemKVGenerator
         
-        StreamProcessBase::StreamProcessBase( size_t _task_id , StreamOperation* _streamOperation ) 
-        : ProcessIsolated( _streamOperation->operation , ProcessIsolated::key_value )
+        StreamProcessBase::StreamProcessBase( size_t _task_id , StreamOperationBase* _streamOperation ) : ProcessIsolated( _streamOperation->operation , ProcessIsolated::key_value )
         {
             
             // Get the task_id
@@ -37,7 +36,7 @@ namespace samson {
             
             
             // Copy queue information for this task
-            streamOperation = new StreamOperation( _streamOperation );
+            streamOperation = new StreamOperationBase( _streamOperation );
 
             /*
             LM_M(("StreamOperation %s %s --> %d %d ( workers %d ) " , streamOperation->name.c_str() , streamOperation->operation.c_str() ,
@@ -45,7 +44,7 @@ namespace samson {
             */
             
             // Set number of workers in the stream operation
-            setNumWorkers( _streamOperation->getNumWorkers() );
+            setNumWorkers( _streamOperation->num_workers );
                 
         }
 

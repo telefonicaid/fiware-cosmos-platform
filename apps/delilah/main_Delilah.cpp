@@ -191,7 +191,7 @@ int main(int argC, const char *argV[])
 	//
 	while (!networkP->ready())
 		usleep(1000);
-	std::cout << " OK\n";
+	std::cerr << " OK\n";
 	LM_M(("\nConnecting to SAMSOM controller %s ... OK", controller));
 
 	std::cerr << "Connecting to all workers ...";

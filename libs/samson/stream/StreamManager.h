@@ -61,6 +61,9 @@ namespace samson {
             friend class WorkerCommand;
             friend class BlockBreakQueueTask;
             friend class ReduceQueueTask;
+            friend class StreamOperation;
+            friend class StreamOperationForward;
+            friend class StreamOperationUpdateState;
             
             // Map with the current queues
             au::map< std::string , Queue > queues;                
@@ -100,10 +103,6 @@ namespace samson {
             
             // Remove a particular queue or state
             void remove_queue( std::string queue_name );
-            
-            // Pause and Play a particular state
-            void pause_queue( std::string queue_name );
-            void play_queue( std::string queue_name );
 
             // Copy contents of a queue to another queue
             void cp_queue( std::string from_queue_name , std::string to_queue_name );
@@ -127,6 +126,13 @@ namespace samson {
             
             // Reset all the content of this stream manager
             void reset();
+            
+            // Get a new id for the next queue task operation
+            size_t getNewId()
+            {
+                return queueTaskManager.getNewId();
+            }
+
             
         private:
             

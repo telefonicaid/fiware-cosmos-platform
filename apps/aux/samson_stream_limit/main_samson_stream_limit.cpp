@@ -57,6 +57,7 @@ int main( int args , char*argv[] )
   char *buffer = (char*) malloc( BUFFER_SIZE );
 
   size_t total = 0;
+  ssize_t tmp_size = 0;
 
   while( true )
   {
@@ -84,7 +85,7 @@ int main( int args , char*argv[] )
 
     // Write at the output
     total += r;
-    write( 1 , buffer , r );
+    tmp_size = write( 1 , buffer , r );
 
   }
 }

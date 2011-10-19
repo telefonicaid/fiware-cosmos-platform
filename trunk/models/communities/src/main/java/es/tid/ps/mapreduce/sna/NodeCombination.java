@@ -14,7 +14,7 @@ import org.apache.hadoop.io.WritableComparable;
  * This class is used to storage the values generate in the map process for
  * generating the SNA. It implements writable because these data will be storage
  * into hadoop file system and comparable because we need compared this type of
- * class for unit testing
+ * class for unit testing.
  * 
  * @author rgc
  * 

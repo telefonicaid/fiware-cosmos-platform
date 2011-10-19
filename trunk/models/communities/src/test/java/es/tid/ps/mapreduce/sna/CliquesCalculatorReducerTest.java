@@ -47,11 +47,9 @@ public class CliquesCalculatorReducerTest extends TestCase {
 
         List<Pair<Text, Text>> expected = new ArrayList<Pair<Text, Text>>();
 
-        expected.add(new Pair<Text, Text>(new Text("_"), new Text("5,7,6,8")));
-        expected.add(new Pair<Text, Text>(new Text("_"), new Text("5,7,4")));
+        expected.add(new Pair<Text, Text>(new Text("5,7,6,8"), new Text("")));
+        expected.add(new Pair<Text, Text>(new Text("5,7,4"), new Text("")));
 
         assertListEquals(expected, out);
-        assertEquals(true, false);
-
     }
 }

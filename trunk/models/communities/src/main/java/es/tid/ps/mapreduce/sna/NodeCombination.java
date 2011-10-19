@@ -28,7 +28,8 @@ public class NodeCombination implements WritableComparable<NodeCombination> {
     /**
      * Constructor
      */
-    public NodeCombination() {}
+    public NodeCombination() {
+    }
 
     /**
      * Constructor

@@ -14,6 +14,7 @@ FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
 
 # Include directory pointing to current dir and /usr/local/include
 include_directories("${PROJECT_SOURCE_DIR}")
+include_directories("${PROJECT_SOURCE_DIR}/../../libs")
 include_directories("/usr/local/include/")
 include_directories("/opt/local/include/")
 include_directories("/opt/mongodb/mongo-cxx-driver-v2.0")

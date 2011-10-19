@@ -1,6 +1,7 @@
 
 
 #include <string>           // std::string
+#include <algorithm>        // std::ort
 #include <sstream>          // std::stringstream
 #include "Queue.h"          // samson::stream::Queue
 #include "Block.h"          // samson::stream::Block

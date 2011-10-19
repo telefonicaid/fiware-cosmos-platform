@@ -7,7 +7,7 @@ all:
 	make -C cdr
 	make -C mob
 #	make -C mob2
-	make -C passive_location
+#	make -C passive_location
 	make -C graph
 	make -C sna
 	make -C snalight

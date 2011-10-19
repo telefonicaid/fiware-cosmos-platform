@@ -50,7 +50,6 @@ public class CliquesCalculatorReducerTest extends TestCase {
         expected.add(new Pair<Text, Text>(new Text("_"), new Text("5,7,6,8")));
         expected.add(new Pair<Text, Text>(new Text("_"), new Text("5,7,4")));
 
-        //TODO (rgc): review for check the assert
-        //assertListEquals(expected, out);
+        assertListEquals(expected, out);
     }
 }

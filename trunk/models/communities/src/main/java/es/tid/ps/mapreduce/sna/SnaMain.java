@@ -43,24 +43,24 @@ public class SnaMain extends Configured implements Tool {
         Configuration conf = getConf();
         conf.set("mapred.reduce.tasks", "1");
 
-        Job SocialGraphJob = new Job(conf, "Social graph ...");
-        SocialGraphJob.setJarByClass(SnaMain.class);
-        SocialGraphJob.setMapperClass(SocialGraphMapper.class);
-        SocialGraphJob.setReducerClass(SocialGraphReducer.class);
-        SocialGraphJob.setInputFormatClass(TextInputFormat.class);
-        SocialGraphJob.setOutputKeyClass(Text.class);
-        SocialGraphJob.setMapOutputValueClass(Text.class);
-        SocialGraphJob.setOutputValueClass(ArrayListWritable.class);
-        SocialGraphJob.setOutputFormatClass(SequenceFileOutputFormat.class);
+        Job socialGraphJob = new Job(conf, "Social graph ...");
+        socialGraphJob.setJarByClass(SnaMain.class);
+        socialGraphJob.setMapperClass(SocialGraphMapper.class);
+        socialGraphJob.setReducerClass(SocialGraphReducer.class);
+        socialGraphJob.setInputFormatClass(TextInputFormat.class);
+        socialGraphJob.setOutputKeyClass(Text.class);
+        socialGraphJob.setMapOutputValueClass(Text.class);
+        socialGraphJob.setOutputValueClass(ArrayListWritable.class);
+        socialGraphJob.setOutputFormatClass(SequenceFileOutputFormat.class);
 
-        FileInputFormat.addInputPath(SocialGraphJob, inputPath);
-        FileOutputFormat.setOutputPath(SocialGraphJob, tmpPath);
+        FileInputFormat.addInputPath(socialGraphJob, inputPath);
+        FileOutputFormat.setOutputPath(socialGraphJob, tmpPath);
 
         // TODO(rgc): check if this funtionality is correct
         FileSystem hdfs = FileSystem.get(conf);
         hdfs.deleteOnExit(tmpPath);
 
-        if (!SocialGraphJob.waitForCompletion(true)) {
+        if (!socialGraphJob.waitForCompletion(true)) {
             return 1;
         }
 

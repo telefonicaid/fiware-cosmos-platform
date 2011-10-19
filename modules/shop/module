@@ -37,6 +37,13 @@ generator test_generator_fixed
         helpLine "Simple generator that generates fixed shop.Operation operations (not random)"
 }
 
+parser parse_data_generated
+{
+		out system.UInt shop.Operation
+		
+		helpLine "Parser to read generated operations data"
+}
+
 map map_by_user
 {
         in system.UInt shop.Operation

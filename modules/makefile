@@ -72,6 +72,10 @@ reset:
 	make reset -C gg
 	make reset -C page_rank
 	make reset -C wiki
+test:
+	make test -C txt
+	make test -C sort
+	make test -C urlbenchmark
 
 eclipse:
 	make eclipse -C system

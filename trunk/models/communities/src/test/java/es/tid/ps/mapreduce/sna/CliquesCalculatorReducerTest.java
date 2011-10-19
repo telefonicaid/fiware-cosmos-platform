@@ -51,5 +51,7 @@ public class CliquesCalculatorReducerTest extends TestCase {
         expected.add(new Pair<Text, Text>(new Text("_"), new Text("5,7,4")));
 
         assertListEquals(expected, out);
+        assertEquals(true, false);
+
     }
 }

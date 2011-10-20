@@ -40,6 +40,7 @@ mkdir -p debian/opt/samson/data
 mkdir -p debian/opt/samson/blocks
 mkdir -p debian/opt/samson/logs
 mkdir -p debian/opt/samson/config
+mkdir -p debian/opt/samson/share
 
 echo "Package: samson"                                   > debian/DEBIAN/control
 echo "Version: $version"                                >> debian/DEBIAN/control
@@ -60,6 +61,7 @@ cp BUILD_RELEASE/apps/samsonSpawner/samsonSpawner          debian/opt/samson/bin
 cp BUILD_RELEASE/apps/samsonWorker/samsonWorker           debian/opt/samson/bin
 cp BUILD_RELEASE/apps/delilah/delilah                debian/opt/samson/bin
 cp etc/setup.txt             debian/opt/samson/etc
+cp README debian/opt/samson/share
 #cp -R /usr/local/man/                    debian/usr/local/
 
 

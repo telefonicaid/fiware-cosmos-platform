@@ -172,8 +172,12 @@ rpm:
 		 cd modules/urlbenchmark;         ../../scripts/samsonModuleRpm urlbenchmark 0.6 1
 		 # cd modules/sna_light;             ../../scripts/samsonModuleRpm sna_light 0.6 1
 
-deb:
+# currently the deb scripts require Samson be installed before 
+# the package can be generated. Using SAMSON_HOME we can override
+# the default install location so as to not trash a live installation
+deb: install
 		 scripts/samsonDeb 0.6 1
+		 scripts/samsonDebDev 0.6 1
 		 cd modules/cdr;                   ../../scripts/samsonModuleDeb cdr 0.6 1
 		 cd modules/example;               ../../scripts/samsonModuleDeb example 0.6 1
 		 cd modules/graph;                 ../../scripts/samsonModuleDeb graph 0.6 1

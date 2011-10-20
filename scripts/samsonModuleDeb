@@ -1,3 +1,4 @@
+#!/bin/sh
 #
 # Checking command line options
 #
@@ -26,32 +27,35 @@ release=$3
 arch=$(dpkg --print-architecture)
 
 
-
 #
-# Populating $HOME/debian
+# Populating debian
 #
-rm -rf $HOME/debian
+if [ -d debian ]; then
+    rm -rf debian
+fi
 
-mkdir -p $HOME/debian/DEBIAN
-mkdir -p $HOME/debian/usr/local/include/samson/modules/$lowercase_module
-mkdir -p $HOME/debian/opt/samson/modules
+mkdir -p debian/DEBIAN
+mkdir -p debian/opt/samson/{include,modules}
 
-echo "Package: samson-$lowercase_module"                 > $HOME/debian/DEBIAN/control
-echo "Version: $version"                                >> $HOME/debian/DEBIAN/control
-echo "Architecture: $arch"                              >> $HOME/debian/DEBIAN/control
-echo "Maintainer: Andreu Urruela <andreu@tid.es>"       >> $HOME/debian/DEBIAN/control
-echo "Description: The Samson Map Reduce Platform ..."  >> $HOME/debian/DEBIAN/control
 
-cp /usr/local/include/samson/modules/$module/*.h   $HOME/debian/usr/local/include/samson/modules/$lowercase_module/
-cp /opt/samson/modules/lib$module.so               $HOME/debian/opt/samson/modules/
+echo "Package: samson-${lowercase_module}"                 > debian/DEBIAN/control
+echo "Version: $version"                                >> debian/DEBIAN/control
+echo "Architecture: $arch"                              >> debian/DEBIAN/control
+echo "Section: tid"                                >> debian/DEBIAN/control
+echo "Priority: optional"                                >> debian/DEBIAN/control
+echo "Maintainer: Andreu Urruela <andreu@tid.es>"       >> debian/DEBIAN/control
+echo "Depends: samson (=${version})"       >> debian/DEBIAN/control
+echo "Description: Module ${lowercase_module} for use with the Samson Map Reduce Platform."  >> debian/DEBIAN/control
+
+mkdir -p debian/opt/samson/include/samson/modules/$module
+cp /opt/samson/include/samson/modules/$module/*.h   debian/opt/samson/include/samson/modules/${lowercase_module}
+cp /opt/samson/modules/lib$module.so               debian/opt/samson/modules
 
 
 
 #
 # Create package
 #
-cd
-dpkg-deb --build debian
-cd -
+dpkg-deb --build debian samson-${lowercase_module}_$version-${release}_$arch.deb
 mkdir -p ../../package/deb
-mv ~/debian.deb ../../package/deb/samson-${lowercase_module}_$version-${release}_$arch.deb
+mv samson-${lowercase_module}_$version-${release}_$arch.deb ../../package/deb/samson-${lowercase_module}_$version-${release}_$arch.deb

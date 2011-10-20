@@ -26,41 +26,47 @@ arch=$(dpkg --print-architecture)
 
 
 #
-# Populating $HOME/debian
+# Populating debian
 #
-rm -rf $HOME/debian
+if [ -d debian ]; then
+    rm -rf debian
+fi
 
-mkdir -p $HOME/debian/DEBIAN
-mkdir -p $HOME/debian/usr/local/bin
-mkdir -p $HOME/debian/usr/local/include
-mkdir -p $HOME/debian/
-mkdir -p $HOME/debian/opt/samson/etc
+mkdir -p debian/DEBIAN
+# Create the base structure needed
+mkdir -p debian/opt/samson/bin
+mkdir -p debian/opt/samson/etc
+mkdir -p debian/opt/samson/data
+mkdir -p debian/opt/samson/blocks
+mkdir -p debian/opt/samson/logs
+mkdir -p debian/opt/samson/config
 
-echo "Package: samson"                                   > $HOME/debian/DEBIAN/control
-echo "Version: $version"                                >> $HOME/debian/DEBIAN/control
-echo "Architecture: $arch"                              >> $HOME/debian/DEBIAN/control
-echo "Maintainer: Andreu Urruela <andreu@tid.es>"       >> $HOME/debian/DEBIAN/control
-echo "Description: The Samson Map Reduce Platform ..."  >> $HOME/debian/DEBIAN/control
+echo "Package: samson"                                   > debian/DEBIAN/control
+echo "Version: $version"                                >> debian/DEBIAN/control
+echo "Section: tid"                                >> debian/DEBIAN/control
+echo "Priority: optional"                                >> debian/DEBIAN/control
+echo "Architecture: $arch"                              >> debian/DEBIAN/control
+echo "Depends: libprotobuf6"                              >> debian/DEBIAN/control
+echo "Maintainer: Andreu Urruela <andreu@tid.es>"       >> debian/DEBIAN/control
+echo "Description: SAMSON is a high-performance MapReduce platform that is designed for scaling tasks on a cluster of commodity hardware. This platform removes the need to develop a system for parallelizing and synchronizing work between servers, allowing a person to develop the analytical models needed to solve both current and future problems.  SAMSON extends the traditional MapReduce paradigm by allowing an external data source to stream data into and out of the cluster. This allows the system to handle any volume of data thus providing the ability to continuously process new inputs and output states without restriction."  >> debian/DEBIAN/control 
 
-cp /usr/local/bin/samsonCat              $HOME/debian/usr/local/bin
-cp /usr/local/bin/samsonController       $HOME/debian/usr/local/bin
-cp /usr/local/bin/samsonData             $HOME/debian/usr/local/bin
-cp /usr/local/bin/samsonLocal            $HOME/debian/usr/local/bin
-cp /usr/local/bin/samsonModuleParser     $HOME/debian/usr/local/bin
-cp /usr/local/bin/samsonSetup            $HOME/debian/usr/local/bin
-cp /usr/local/bin/samsonSpawner          $HOME/debian/usr/local/bin
-cp /usr/local/bin/samsonWorker           $HOME/debian/usr/local/bin
-cp /usr/local/bin/delilah                $HOME/debian/usr/local/bin
-cp /opt/samson/etc/setup.txt             $HOME/debian/opt/samson/etc/
-cp -R /usr/local/man/                    $HOME/debian/usr/local/
+cp BUILD_RELEASE/apps/samsonCat/samsonCat              debian/opt/samson/bin
+cp BUILD_RELEASE/apps/samsonController/samsonController       debian/opt/samson/bin
+cp BUILD_RELEASE/apps/samsonData/samsonData             debian/opt/samson/bin
+cp BUILD_RELEASE/apps/samsonLocal/samsonLocal            debian/opt/samson/bin
+cp BUILD_RELEASE/apps/samsonModuleParser/samsonModuleParser     debian/opt/samson/bin
+cp BUILD_RELEASE/apps/samsonSetup/samsonSetup            debian/opt/samson/bin
+cp BUILD_RELEASE/apps/samsonSpawner/samsonSpawner          debian/opt/samson/bin
+cp BUILD_RELEASE/apps/samsonWorker/samsonWorker           debian/opt/samson/bin
+cp BUILD_RELEASE/apps/delilah/delilah                debian/opt/samson/bin
+cp etc/setup.txt             debian/opt/samson/etc
+#cp -R /usr/local/man/                    debian/usr/local/
 
 
 
 #
 # Create package
 #
-cd
-dpkg-deb --build debian
-cd -
-mkdir -p package/deb
-mv ~/debian.deb package/deb/samson_$version-${release}_$arch.deb
+dpkg-deb --build debian samson_$version-${release}_$arch.deb
+mkdir -p package/deb	
+mv samson_$version-${release}_$arch.deb package/deb/samson_$version-${release}_$arch.deb

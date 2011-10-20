@@ -1,0 +1,64 @@
+#!/bin/sh -x
+#
+# Checking command line options
+#
+if [ "$#" != 2 ];
+then
+	echo 'samsonDebDev: Bad parameters'
+	echo 'Usage: samsonDebDev <Version (e.g. 0.5)> <Release (e.g. 3)>'
+	exit 1
+fi
+
+if [ -z "${SAMSON_HOME}" ]; then
+	SAMSON_HOME=/opt/samson
+fi
+
+#
+# Using command line options
+#
+version=$1
+release=$2
+
+
+
+#
+# Help variables
+#
+arch=$(dpkg --print-architecture)
+package_name=samson-dev
+
+#
+# Populating debian
+#
+if [ -d debian ]; then
+    rm -rf debian
+fi
+
+mkdir -p debian/DEBIAN
+# Create the base structure needed
+mkdir -p debian/opt/samson/include/samson/module
+mkdir -p debian/opt/samson/include/samson/modules/system
+mkdir -p debian/opt/samson/lib
+
+echo "Package: $package_name"                                   > debian/DEBIAN/control
+echo "Version: $version"                                >> debian/DEBIAN/control
+echo "Section: tid"                                >> debian/DEBIAN/control
+echo "Priority: optional"                                >> debian/DEBIAN/control
+echo "Architecture: $arch"                              >> debian/DEBIAN/control
+echo "Depends: boost-dev ncurses-dev make gcc cmake libreadline-dev libprotobuf-dev protobuf-compiler libboost-filesystem-dev libboost-thread-dev qt-make libqt4-dev" >> debian/DEBIAN/control
+echo "Maintainer: Andreu Urruela <andreu@tid.es>"       >> debian/DEBIAN/control
+echo "Description: SAMSON is a high-performance MapReduce platform that is designed for scaling tasks on a cluster of commodity hardware. This platform removes the need to develop a system for parallelizing and synchronizing work between servers, allowing a person to develop the analytical models needed to solve both current and future problems.  SAMSON extends the traditional MapReduce paradigm by allowing an external data source to stream data into and out of the cluster. This allows the system to handle any volume of data thus providing the ability to continuously process new inputs and output states without restriction."  >> debian/DEBIAN/control 
+
+cp $SAMSON_HOME/lib/libau.a       debian/opt/samson/lib
+cp $SAMSON_HOME/lib/liblm.a       debian/opt/samson/lib
+cp $SAMSON_HOME/include/samson/module/*              debian/opt/samson/include/samson/module
+cp $SAMSON_HOME/include/samson/modules/system/*              debian/opt/samson/include/samson/modules/system
+# TODO: Add template example module
+
+#
+# Create the package
+#
+dpkg-deb --build debian ${package_name}_${version}-${release}_$arch.deb
+dpkg-deb -c  ${package_name}_${version}-${release}_$arch.deb
+mkdir -p package/deb	
+mv ${package_name}_${version}-${release}_$arch.deb package/deb

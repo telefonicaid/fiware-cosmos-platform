@@ -1,0 +1,438 @@
+INSTALLATION:
+-------------------------------------------------------------------------------
+  o Download the two tar files 'mongodb-linux-x86_64-2.0.0.tgz' and 'mongodb-linux-x86_64-latest.tgz'
+    Found in 'http://www.mongodb.org/downloads'
+
+  o Uncompress both in /opt/mongo
+    % sudo mkdir /opt/mongodb
+    % sudo chown samson:samson /opt/mongodb
+    % mv ~/Downloads/mongodb-linux-x86_64-2.0.0.tgz /opt/mongodb
+    % mv ~/Downloads/mongodb-linux-x86_64-latest.tgz /opt/mongodb
+    % cd /opt/mongodb
+    % tar xvf mongodb-linux-x86_64-2.0.0.tgz
+    % tar xvf mongodb-linux-x86_64-latest.tgz
+    % mv mongodb-linux-x86_64-latest mongo-cxx-driver-v2.0
+
+  o Install 'boost':
+    RED HAT
+      % sudo yum install boost-devel.x86_64
+
+    UBUNTU
+      % sudo aptitude install libboost-dev
+      % sudo aptitude install libboost-date-time1.40-dev
+      % sudo aptitude install libboost-filesystem-dev
+      % sudo aptitude install libboost-system-dev
+      % sudo aptitude install libboost-thread-dev
+      % sudo aptitude install libboost-program-options1.40.0 
+      % sudo aptitude install libboost-regex1.40.0
+
+  o Recompile 'libmongoclient.a' with '-fPIC'
+    o Downloading scons from 'http://sourceforge.net/projects/scons/files/scons/2.0.1/'
+    o Installing scons with:
+      % rpm -i scons-2.0.1-1.noarch.rpm
+    o Edit SConstruct, adding '-fPIC' to CPPFLAGS:
+      - env.Append( CPPFLAGS=" -O3" )
+      + env.Append( CPPFLAGS=" -O3 -fPIC" )
+    o Install 'pcre':
+      % sudo yum install pcre-devel.x86_64
+    o Now compile:
+      % scons libmongoclient.a
+
+  o Compile the tutorial:
+    % edit client/examples/tutorial.cpp
+      CHANGE ../../client/dbclient.h   FOR ../../mongo/client/dbclient.h
+    % Compile 'tutorial':
+      g++ tutorial.cpp -L /opt/mongodb/mongo-cxx-driver-v2.0/ -lmongoclient -lboost_thread -lboost_filesystem -o tutorial
+    
+
+  o Now samson modules compile just fine - had more problems in 32bit mode ...
+    There I had to resompile 4-5 files by hand, having a look in '/opt/mongodb/mongo-cxx-driver-v2.0/config.log'
+===============================================================================
+
+
+STARTING A CLUSTER (master in samson03, slave in samson04)
+-------------------------------------------------------------------------------
+samson03> sudo mkdir /data
+samson03> sudo mkdir /data/masterdb
+samson03> sudo chown samson:samson /data/masterdb
+
+samson03> cd /opt/mongodb/mongodb-linux-x86_64-2.0.0/
+samson03> bin/mongod --master --dbpath /data/masterdb/
+
+samson04> sudo mkdir /data
+samson04> sudo mkdir /data/slavedb
+samson04> sudo chown samson:samson /data/slavedb
+
+samson04> cd /opt/mongodb/mongodb-linux-x86_64-2.0.0/
+samson04> bin/mongod --slave --source samson03 --dbpath /data/slavedb/
+===============================================================================
+
+STARTING THE MONGO SHELL
+-------------------------------------------------------------------------------
+% cd /opt/mongodb/mongodb-linux-x86_64-2.0.0/
+% bin/mongo                         # connects to a 'test' database, that doesn't exist ...
+% bin/mongo DBNAME                  # connects to the 'DBNAME' database
+% bin/mongo tora/kz                 # connects to the 'kz' database on host 'tora'
+% bin/mongo tora:9999/kz            # same thing but on port 9999
+===============================================================================
+
+
+Source: http://www.mongodb.org/display/DOCS/Manual
+
+GETTING HELP (I)
+-------------------------------------------------------------------------------
+% mongo --help
+MongoDB shell version: 2.0.0
+usage: /opt/mongodb/mongodb-linux-x86_64-2.0.0/bin/mongo [options] [db address] [file names (ending in .js)]
+
+db address can be:
+  foo                   foo database on local machine
+  192.169.0.5/foo       foo database on 192.168.0.5 machine
+  192.169.0.5:9999/foo  foo database on 192.168.0.5 machine on port 9999
+
+options:
+  --shell               run the shell after executing files
+  --nodb                don't connect to mongod on startup - no 'db address' 
+                        arg expected
+  --quiet               be less chatty
+  --port arg            port to connect to
+  --host arg            server to connect to
+  --eval arg            evaluate javascript
+  -u [ --username ] arg username for authentication
+  -p [ --password ] arg password for authentication
+  -h [ --help ]         show this usage information
+  --version             show version information
+  --verbose             increase verbosity
+  --ipv6                enable IPv6 support (disabled by default)
+
+file names: a list of files to run. files have to end in .js and will exit after unless --shell is specified
+===============================================================================
+
+GETTING HELP (II)
+-------------------------------------------------------------------------------
+% mongo
+> help
+        db.help()                    help on db methods
+        db.mycoll.help()             help on collection methods
+        rs.help()                    help on replica set methods
+        help connect                 connecting to a db help
+        help admin                   administrative help
+        help misc                    misc things to know
+        help mr                      mapreduce help
+
+        show dbs                     show database names
+        show collections             show collections in current database
+        show users                   show users in current database
+        show profile                 show most recent system.profile entries with time >= 1ms
+        use <db_name>                set current database
+        db.foo.find()                list objects in collection foo
+        db.foo.find( { a : 1 } )     list objects in foo where a == 1
+        it                           result of the last line evaluated; use to further iterate
+        DBQuery.shellBatchSize = x   set default number of items to display on shell
+        exit                         quit the mongo shell
+===============================================================================
+
+MONGO COMMAND LINE - INTRO
+-------------------------------------------------------------------------------
+Many emacs commands work:
+  Start/End of line:   Ctrl-A / Ctrl-E
+  History:             Arrows / Ctrl-P / Ctrl-N
+  Search:              Ctrl-R
+  Deletion/Yanking:    ESC-D, ESC-Del, Ctrl-W (delete word) Ctrl-K / Ctrl-Y, ESC-Y
+  Params:              ESC-.
+
+The mongo shell is a JavaScript interpreter
+
+Try:
+  > 5 + 5
+  10
+
+  > function fact(x) {
+  ...  if (x == 1) return 1;
+  ...  return x * fact(x - 1);
+  ...  }
+  > fact(5)
+  720
+
+  > fact
+  function fact(x) {
+      if (x == 1) {
+          return 1;
+      }
+      return x * fact(x - 1);
+  }
+
+===============================================================================
+
+MONGO COMMAND LINE - DATABASES
+-------------------------------------------------------------------------------
+
+Basics:
+> show dbs
+> use DB
+> show collections
+
+
+Create a database:
+Just 'use' one and when something inserted, it is created:
+> use kzdb
+
+
+Create a collection (this one is capped ...):
+> db.createCollection("people", {capped:true, size:100000})
+
+> show collections
+
+Insert data to the collection (difference between 'save' and 'insert' ... save does upsert (update/insert?))
+ db.people.insert({ firstname: "Ken",    age: 45, lastname: "Zangelin" })
+ db.people.insert({ firstname: "Malika", age: 28, lastname: "Fazulova" })
+ db.people.insert({ firstname: "Rosana", age: 43, lastname: "Calvo" })
+ db.people.insert({ firstname: "Alex",   age: 12, lastname: "Zangelin" })
+ db.people.insert({ firstname: "Maria",  age:  7, lastname: "Zangelin" }) 
+
+
+Query Lookup:
+> DBQuery.shellBatchSize = 3
+> db.people.find()
+> it
+> db.people.find().limit(2)
+
+> db.people.find( { name : "Ken" } )
+> db.people.findOne({"firstname" : "Maria"}) 
+> db.people.count()
+> db.people.find( { firstname : "Ken" } ).count()
+> db.people.find( { $or : [ { name : "Ken" } , { age : 28 } ] } )
+
+
+Lookup using 'Greater Than', etc:
+> db.people.find( { "age" : { $gt:   7 } } )
+> db.people.find( { "age" : { $gte:  7 } } )
+> db.people.find( { "age" : { $lt:  12 } } )
+> db.people.find( { "age" : { $lte: 12 } } )
+> db.people.find( { "age" : { $ne:  45 } } )
+> db.people.find( { "age" : { $in: [7,12] } } )
+> db.people.find( { "age" : { $in: [7,12] } } ).count()
+
+Selecting items 'SELECT * WHERE ...':
+> db.people.find( { "age" : { $gt: 14, $lt: 45 } } );
+> db.people.find( { "age" : { $gt: 14, $lt: 47 }, "firstname" : "Ken" } );
+
+Only show specified FIELDS:
+> db.people.find( { "age" : { $gt: 14, $lt: 47 }, "firstname" : "Ken" }, {firstname:1} );
+
+Create an Index
+> db.people.ensureIndex({age:1})  # age:-1 would create the index in the 'other direction' ...
+> db.people.getIndexes()
+> db.system.indexes.find()
+> db.people.dropIndexes() / db.people.dropIndex({age:1})
+> db.people.reIndex()   # rebuild all indexes for a collection
+
+Index entries have a limitation on their maximum size (the sum of the values), currently approximately 800 bytes.
+This limitation will eventually be removed ...
+  
+Shell execution
+> runProgram("uname", "-a");
+> runProgram("ls", "-l");
+===============================================================================
+
+
+The samson module that uses all this ...
+
+--------- modules/txt_md/export_to_mongo.h ----------------------------------------
+#include "mongo/client/dbclient.h"
+
+DBClientConnection*  mdbConnection;
+
+void init(samson::KVWriter* writer)
+{
+    mongo_ip           = environment->get("mongo.ip",    "no-mongo-ip");
+    mongo_db           = environment->get("mongo.db",    "no-mongo-db");
+    mongo_collection   = environment->get("mongo.collection", "no-mongo-collection");
+
+    mongo_db_path = mongo_db + "." + mongo_collection;
+
+    mdbConnection = new DBClientConnection();
+    mdbConnection->connect(mongo_ip);
+}
+
+void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
+{
+    // Check mongo_ip, mongo_db and mongo_collection ...
+
+    for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
+    {
+        samson::system::String  key;
+        samson::system::UInt    value;
+
+        key.parse(inputs[0].kvs[i]->key);
+        value.parse(inputs[0].kvs[i]->value);
+
+        bo = BSON("K" << key.value << "V" << (long long) value.value);
+
+        mdbConnection->insert(mongo_db_path, bo);
+    }
+
+    mdbConnection->ensureIndex(mongo_collection, fromjson("{key:0}"));
+}
+
+-------------------------------------------------------------------------------
+
+--------- modules/txt_md/import_from_mongo.h ----------------------------------
+
+void run(samson::KVWriter* writer)
+{
+    // Check mongo_ip, mongo_db and mongo_collection ...
+
+    BSONObj                 bo;
+    samson::system::String  K;
+    samson::system::UInt    V;
+
+    auto_ptr<DBClientCursor> cursor = mdbConnection->query(mongo_db_path);
+
+    while (cursor->more())
+    {
+        bo       = cursor->next();
+        K.value  = bo.getStringField("K");
+        V.value  = bo.getIntField("V");
+
+        writer->emit(0, &K, &V);
+    }
+}
+
+--------- modules/txt_md/mongo_bulk_load.h ----------------------------------
+
+void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
+{
+    // Check mongo_ip, mongo_db and mongo_collection ...
+
+    std::vector<mongo::BSONObj> bulk_data;
+    for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
+    {
+        samson::system::UInt      key;
+        samson::txt_md::BulkData  value;
+
+        key.parse(inputs[0].kvs[i]->key);
+        value.parse(inputs[0].kvs[i]->value);
+
+        mongo::BSONObj record = BSON(  "I" << (long long int) key.value 
+                                    << "P" << (long long int) value.position.value
+                                    << "T" << (long long int) value.timestamp.value);
+        bulk_data.push_back(record);
+
+		// Check size of record to see if it's time to call 'insert'
+    }
+
+    mdbConnection->insert(mongo_db_path, bulk_data);
+    bulk_data.clear();
+}
+
+===============================================================================
+
+Start a Mongodb (in torkel, for example):
+kzangeli@torkel:~> /opt/mongodb/mongodb-linux-x86_64-2.0.0/bin/mongod
+
+Start samson (in torkel):
+kzangeli@torkel:~> samsonSpawner -local -fg
+
+Start delilah (in torkel):
+kzangeli@torkel:~> delilah
+Delilah> remove_all
+Delilah> txt.generate_words words -create
+Delilah> txt.export_words words words.txt -create
+Delilah> download words.txt words.txt 
+Delilah> txt_md.export_to_mongo words -mongo.ip localhost -mongo.db xtestdb -mongo.collection xtestcoll
+
+Now enter a Mongo shell (in torkel):
+kzangeli@torkel:~> mongo
+> use xtestdb
+> show collections
+> db.xtestcoll.find()
+
+Back to Delilah:
+Delilah> remove_all
+Delilah> txt_md.import_from_mongo words -create -mongo.ip localhost -mongo.db xtestdb -mongo.collection xtestcoll
+Delilah> txt.export_words words words.txt -create
+Delilah> download words.txt words2.txt 
+
+
+===============================================================================
+Now, compare a search with and without indexes ...
+
+> db.xtestcoll.find({K:"cgbigg"})
+  => Pretty slow !
+
+> db.xtestcoll.ensureIndex({K:1})
+> db.xtestcoll.find({K:"cgbigg"})
+  => Takes a lot less time ...
+
+
+===============================================================================
+
+REMOVING STUFF IN Mongo ...
+> db.people.remove()                  # remove all objects from the PEOPLE collection
+> db.people.drop()                    # drop the entire PEOPLE collection
+> db.people.remove({name : "sara"})   # drop the objects matching the query
+> db.dropDatabase()                   # drop the current database
+
+
+===============================================================================
+
+SHARDS
+o Start the individual shards (mongod), config servers (mongod --configsvr), and routers (mongos) processes
+  mongos: Specify the --configdb parameter to indicate location of the config database
+  start the mongo shell, connecting it to the mongos process (giving its port)
+  In samson06 (8 cores) we will start 8 shards, one config server and one mongoS
+
+    % sudo mkdir /data/configdb
+    % sudo chown samson:samson /data/configdb
+    % sudo mkdir /data/db /data/db2 /data/db3 /data/db4 /data/db5 /data/db6 /data/db7 /data/db8
+    % sudo chown samson:samson /data/db2 /data/db3 /data/db4 /data/db5 /data/db6 /data/db7 /data/db8
+
+    % numactl --interleave=all mongod --nojournal --shardsvr --port 2001 --dbpath /data/db
+    % numactl --interleave=all mongod --nojournal --shardsvr --port 2002 --dbpath /data/db2
+    % numactl --interleave=all mongod --nojournal --shardsvr --port 2003 --dbpath /data/db3
+    % numactl --interleave=all mongod --nojournal --shardsvr --port 2004 --dbpath /data/db4
+    % numactl --interleave=all mongod --nojournal --shardsvr --port 2005 --dbpath /data/db5
+    % numactl --interleave=all mongod --nojournal --shardsvr --port 2006 --dbpath /data/db6
+    % numactl --interleave=all mongod --nojournal --shardsvr --port 2007 --dbpath /data/db7
+    % numactl --interleave=all mongod --nojournal --shardsvr --port 2008 --dbpath /data/db8
+    
+    % numactl --interleave=all mongod --configsvr --port 2101 
+
+    % mongos --configdb localhost:2101 # Let mongos use the default port 27017 ...
+
+    % ./mongo
+    mongo> use admin
+
+o Add shards in 'mongo' (in 'admin' db):
+  mongo> use admin
+  mongo> db.runCommand( { addshard : "localhost:2001" } );
+  mongo> db.runCommand( { addshard : "localhost:2002" } );
+  mongo> db.runCommand( { addshard : "localhost:2003" } );
+  mongo> db.runCommand( { addshard : "localhost:2004" } );
+  mongo> db.runCommand( { addshard : "localhost:2005" } );
+  mongo> db.runCommand( { addshard : "localhost:2006" } );
+  mongo> db.runCommand( { addshard : "localhost:2007" } );
+  mongo> db.runCommand( { addshard : "localhost:2008" } );
+
+  {"ok" : 1 , "added" : ...}
+
+o Define shard key
+  mongo> use admin
+  mongo> db.runCommand( { enablesharding : "test" } );
+  mongo> use test
+  mongo> db.test.ensureIndex({"I": 1, "T": 1});
+  mongo> use admin
+  mongo> db.runCommand( { shardcollection : "test.lloc01", key : { "I": 1, "T" : 1 } } )
+
+o Start samson and delilah in Torkel
+  torkel> samsonSpawner -local -fg
+
+o Run a test just to create the database and a collection:
+  % cd ~/passiveLocationTest/
+  delilah> remove_all
+  delilah> add cdrIn -txt
+  delilah> upload XMLs cdrIn
+  delilah> mob2.parse_xml_ARCANUM cdrIn cdrOut null1 null2 null3 null4 -c
+  delilah> passive_location.mongo_location_export cdrOut mongo.ip=localhost mongo.db=test mongo.lastloc_db=test mongo.collection=lloc01 mongo.lastloc_collection=ploc01
+

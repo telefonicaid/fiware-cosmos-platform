@@ -5,7 +5,7 @@ add_custom_target( test_prepare ALL )
 add_custom_command ( TARGET test_prepare PRE_BUILD  COMMAND cp -f ${PROJECT_SOURCE_DIR}/testing/test_complete_commands.txt ${PROJECT_BINARY_DIR}/testing )
 add_custom_command ( TARGET test_prepare PRE_BUILD  COMMAND cp -f ${PROJECT_SOURCE_DIR}/testing/gensort ${PROJECT_BINARY_DIR}/testing )
 add_custom_command ( TARGET test_prepare PRE_BUILD  COMMAND cp -f ${PROJECT_SOURCE_DIR}/testing/valsort ${PROJECT_BINARY_DIR}/testing )
-add_custom_command ( TARGET test_prepare PRE_BUILD  COMMAND cp -rf /opt/samson/etc ${PROJECT_BINARY_DIR}/testing )
+add_custom_command ( TARGET test_prepare PRE_BUILD  COMMAND cp -rf ../../../../etc ${PROJECT_BINARY_DIR}/testing )
 add_custom_command ( TARGET test_prepare PRE_BUILD  COMMAND mkdir -p ${PROJECT_BINARY_DIR}/testing/modules )
 add_custom_command ( TARGET test_prepare PRE_BUILD  COMMAND cp -rf ${PROJECT_BINARY_DIR}/libterasort.so ${PROJECT_BINARY_DIR}/../../system/build/libsystem.so ${PROJECT_BINARY_DIR}/testing/modules )
 

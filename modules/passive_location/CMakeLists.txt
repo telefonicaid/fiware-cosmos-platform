@@ -16,6 +16,7 @@ FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/../../libs")
 include_directories("/usr/local/include/")
+include_directories("${CMAKE_INSTALL_PREFIX}/include")
 include_directories("/opt/local/include/")
 include_directories("/opt/mongodb/mongo-cxx-driver-v2.0")
 
@@ -31,7 +32,7 @@ find_package(Boost COMPONENTS system filesystem REQUIRED)
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
 target_link_libraries(${MODULE_NAME}  -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt -lmongoclient)
 
-INSTALL(TARGETS ${MODULE_NAME} DESTINATION /opt/samson/modules)
+INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 
 #ENABLE_TESTING()

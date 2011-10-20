@@ -34,6 +34,7 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 # Include directory pointing to current dir and /usr/local/include
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("/usr/local/include/")
+include_directories("${CMAKE_INSTALL_PREFIX}/include")
 include_directories("${PROJECT_SOURCE_DIR}/../../libs")
 
 
@@ -43,7 +44,7 @@ MESSAGE( "----------------------------------------------------------------------
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
 
-INSTALL(TARGETS ${MODULE_NAME} DESTINATION /opt/samson/modules)
+INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 
 ENABLE_TESTING()

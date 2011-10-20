@@ -1,3 +1,6 @@
+ifndef SAMSON_HOME
+SAMSON_HOME=/opt/samson
+endif
 
 default:
 	svn up
@@ -13,11 +16,12 @@ default:
 
 prepare_release:
 	mkdir BUILD_RELEASE || true
-	cd BUILD_RELEASE; cmake .. -DCMAKE_BUILD_TYPE=RELEASE
+	cd BUILD_RELEASE; cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
 
 prepare_debug:
 	mkdir BUILD_DEBUG || true
-	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG
+	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
+
 
 prepare: prepare_release prepare_debug
 
@@ -123,7 +127,11 @@ reset:
 	sudo rm -f testing/module_test/Module.*
 	make reset -C modules
 
-modules:
+
+modules: release
+	make release -C modules
+
+modules_debug: debug
 	make -C modules
 
 
@@ -194,3 +202,5 @@ packages: install man rpm deb
 
 .PHONY : modules
 .PHONY : man
+
+# vim: noexpandtab

@@ -11,6 +11,11 @@
         <name>Telefónica Investigación y Desarrollo</name>
         <url>http://www.tid.es</url>
     </organization>
+    <scm>
+        <connection>scm:svn:https://barricada.hi.inet/repositorio/ps2/trunk/models</connection>
+        <developerConnection>scm:svn:https://barricada.hi.inet/repositorio/ps2/trunk/models</developerConnection>
+        <url>https://barricada.hi.inet/repositorio/ps2/trunk/models</url>
+    </scm>
     <build>
         <!-- Resources being filtered -->
         <resources>

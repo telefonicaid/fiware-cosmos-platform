@@ -1,6 +1,7 @@
 package es.tid.ps.mapreduce.sna;
 
 import java.io.IOException;
+
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -32,7 +33,7 @@ import org.apache.hadoop.mapreduce.Mapper;
  */
 public class SocialGraphMapper extends Mapper<LongWritable, Text, Text, Text> {
 
-    private static String DELIMITER = "\\|";
+    final private static String DELIMITER = "\\|";
 
     /**
      * @param key

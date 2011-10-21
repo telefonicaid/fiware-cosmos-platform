@@ -64,6 +64,17 @@ public class ArrayListWritable implements WritableComparable<ArrayListWritable> 
         }
         return this.values.equals(((ArrayListWritable) o).getList());
     }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((values == null) ? 0 : values.hashCode());
+        return result;
+    }
 
     /*
      * (non-Javadoc)

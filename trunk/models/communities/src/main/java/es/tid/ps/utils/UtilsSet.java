@@ -8,12 +8,12 @@ import java.util.TreeSet;
  * 
  * @author rgc
  */
-public class UtilsSet {
-
+public final class UtilsSet {
     /**
-     * Constructor
+     * Constructor: Utility classes should not have a public or default
+     * constructor
      */
-    public UtilsSet() {
+    private UtilsSet() {
         super();
     }
 
@@ -66,7 +66,6 @@ public class UtilsSet {
      */
     public static <T> Set<T> generateDifference(Set<T> setA, Set<T> setB) {
         Set<T> tmp = new TreeSet<T>(setA);
-        ;
         tmp.removeAll(setB);
         return tmp;
     }

@@ -113,6 +113,7 @@ public class CliquesCalculatorReducer extends
         Set<Integer> vertexSet = VertexNeigbors.getVertexSet(vertexNeigborsSet);
 
         for (Integer candidateVertex : vertexSet) {
+            Set<Integer> tmpSet;
             Set<Integer> candidateVertexSet = new TreeSet<Integer>();
             candidateVertexSet.add(candidateVertex);
             Set<Integer> aNeigbors = getNeighbors(candidateVertex);
@@ -121,9 +122,10 @@ public class CliquesCalculatorReducer extends
                     UtilsSet.generateIntersection(vertexSet, aNeigbors),
                     UtilsSet.generateIntersection(processSet, aNeigbors),
                     context);
-            vertexSet = UtilsSet.generateDifference(vertexSet,
-                    candidateVertexSet);
-            processSet = UtilsSet.generateUnion(processSet, candidateVertexSet);
+            tmpSet = UtilsSet.generateDifference(vertexSet, candidateVertexSet);
+            vertexSet = tmpSet;
+            tmpSet = UtilsSet.generateUnion(processSet, candidateVertexSet);
+            processSet = tmpSet;
         }
     }
 
@@ -163,6 +165,7 @@ public class CliquesCalculatorReducer extends
         Set<Integer> diffTmp = UtilsSet.generateDifference(vertexSet,
                 vertexNeigbors);
         for (int candidateVertex : diffTmp) {
+            Set<Integer> tmpSet;
             Set<Integer> candidateVertexSet = new TreeSet<Integer>();
             candidateVertexSet.add(candidateVertex);
 
@@ -172,9 +175,11 @@ public class CliquesCalculatorReducer extends
                     UtilsSet.generateIntersection(vertexSet, aNeigbors),
                     UtilsSet.generateIntersection(processSet, aNeigbors),
                     context);
-            vertexSet = UtilsSet.generateDifference(vertexSet,
-                    candidateVertexSet);
-            processSet = UtilsSet.generateUnion(processSet, candidateVertexSet);
+            tmpSet = UtilsSet.generateDifference(vertexSet, candidateVertexSet);
+            vertexSet = tmpSet;
+            tmpSet = UtilsSet.generateUnion(processSet, candidateVertexSet);
+            processSet = tmpSet;
+
         }
     }
 

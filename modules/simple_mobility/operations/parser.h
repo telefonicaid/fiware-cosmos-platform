@@ -6,7 +6,6 @@
 #ifndef _H_SAMSON_simple_mobility_parser
 #define _H_SAMSON_simple_mobility_parser
 
-#include "au/CommandLine.h"
 
 #include <samson/module/samson.h>
 #include <samson/modules/system/SimpleParser.h>    // SimpleParser 
@@ -41,19 +40,46 @@ helpLine: Parse input txt to generate commands per user
 
 	   void parseLine( char * line , samson::KVWriter *writer )
 	   {
-		  au::CommandLine cmdLine;
-		  std::string parse_line = line;
-		  cmdLine.parse( line );
-		 		  
-		  if( cmdLine.get_num_arguments() < 2 )
-			 return;
 		  
-		  key.value =  cmdLine.get_argument( 0 );
+		  // Simple parser
+		  size_t pos = 0;
+		  size_t previous = 0;
+
+		  bool key_asigned = false;
+		  bool finish = false;
+
 		  value.valuesSetLength(0);
-		  for (int i = 1 ; i < cmdLine.get_num_arguments() ; i++) 
-			 value.valuesAdd()->value = cmdLine.get_argument( i );
-		  
-		  writer->emit( 0 , &key , &value );		  
+
+
+		  while( !finish )
+		  {
+
+			 if( ( line[pos] == ' ' ) || ( line[pos] == '\0' ) )
+			 {
+				if( line[pos] == '\0' )
+				   finish = true;
+
+				line[pos] = '\0'; // Artifical termination of string
+
+				if( key_asigned )
+				   value.valuesAdd()->value = &line[previous];
+				else
+				{
+				   key.value = &line[previous];
+				   key_asigned = true;
+				}
+
+				previous = pos+1;
+
+			 }
+
+			 pos++;
+		  }
+
+		  if( key_asigned )
+		  {
+			 writer->emit( 0 , &key , &value );		  
+		  }
 
 	   }
 

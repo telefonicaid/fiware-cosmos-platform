@@ -20,7 +20,7 @@ namespace simple_mobility{
    class parser : public samson::system::SimpleParser
 	{
 
-		  samson::system::String key;
+		  samson::system::UInt key;
 		  samson::system::StringVector value;
 
 	public:
@@ -45,6 +45,8 @@ helpLine: Parse input txt to generate commands per user
 		  size_t pos = 0;
 		  size_t previous = 0;
 
+		  std::string key_string;
+		  
 		  bool key_asigned = false;
 		  bool finish = false;
 
@@ -65,7 +67,7 @@ helpLine: Parse input txt to generate commands per user
 				   value.valuesAdd()->value = &line[previous];
 				else
 				{
-				   key.value = &line[previous];
+				  key_string = &line[previous];
 				   key_asigned = true;
 				}
 
@@ -78,9 +80,29 @@ helpLine: Parse input txt to generate commands per user
 
 		  if( key_asigned )
 		  {
-			 writer->emit( 0 , &key , &value );		  
-		  }
+		      size_t div_pos = key_string.find("-");
 
+		      if( div_pos == std::string::npos )
+		      {			  		      
+			  key.value = atoll( key_string.c_str() );
+			  writer->emit( 0 , &key , &value );		  
+		      }
+		      else
+		      {
+			  
+			size_t from  = atoll( key_string.substr( 0 , div_pos ).c_str() );
+			size_t to  = atoll( key_string.substr( div_pos+1 , key_string.length() - (std::string::npos+1)  ).c_str() );
+
+			
+			  if( from <= to )
+			      for( size_t k = from ; k <= to ; k++ )
+			      {
+				  key.value = k;
+				  writer->emit( 0 , &key , &value );
+			      }
+		      }
+		  }
+		  
 	   }
 
 

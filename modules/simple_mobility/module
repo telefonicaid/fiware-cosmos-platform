@@ -26,7 +26,7 @@ data User
 
 parser parser
 {
-	out system.String system.StringVector
+	out system.UInt system.StringVector
 
 	helpLine "Parse input txt to generate commands per user"
 }
@@ -34,10 +34,10 @@ parser parser
 
 reduce reduce
 {
-	in system.String system.StringVector
-	in system.String simple_mobility.User
-	out system.String system.String
-	out system.String simple_mobility.User
+	in system.UInt system.StringVector
+	in system.UInt simple_mobility.User
+	out system.UInt system.String
+	out system.UInt simple_mobility.User
 
 	helpLine "Update internal state"
 }

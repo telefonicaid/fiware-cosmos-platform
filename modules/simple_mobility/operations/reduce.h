@@ -21,7 +21,7 @@ namespace simple_mobility{
 	class reduce : public samson::Reduce
 	{
 
-	   samson::system::String key;            // User identifier
+	   samson::system::UInt key;            // User identifier
 	   samson::simple_mobility::User user;    // State information
 
 	   samson::system::StringVector command;         // Input command to update this state

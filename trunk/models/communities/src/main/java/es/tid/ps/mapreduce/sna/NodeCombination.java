@@ -23,7 +23,7 @@ public class NodeCombination implements WritableComparable<NodeCombination> {
     // Storage the central user for calculate the sna Algorithm
     private String principal;
     // Storage the rest of the users with the principal has had a call
-    private List<String> values; 
+    private List<String> values;
 
     /**
      * Constructor
@@ -80,13 +80,13 @@ public class NodeCombination implements WritableComparable<NodeCombination> {
     public void readFields(DataInput in) throws IOException {
         this.principal = in.readUTF();
         this.values = new ArrayList<String>();
-        try {
-            while (this.values.add(in.readUTF())) {
+        boolean hasMore = true;
+        while (hasMore) {
+            try {
+                this.values.add(in.readUTF());
+            } catch (EOFException e) {
+                hasMore = false;
             }
-        } catch (EOFException e) {
-            // When catch this exception it is because all parameter are reading
-            // and it arrives at the end of the structure, so it is no necesary
-            // to do anything because catching this exception is the normal way
         }
     }
 
@@ -111,6 +111,21 @@ public class NodeCombination implements WritableComparable<NodeCombination> {
             return false;
         }
         return this.principal.equals(((NodeCombination) o).principal);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((principal == null) ? 0 : principal.hashCode());
+        result = prime * result + ((values == null) ? 0 : values.hashCode());
+        return result;
     }
 
     /*

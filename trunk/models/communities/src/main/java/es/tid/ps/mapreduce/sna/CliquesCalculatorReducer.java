@@ -38,7 +38,7 @@ public class CliquesCalculatorReducer extends
         Reducer<Text, NodeCombination, Text, Text> {
     // List with the name of the vertix. The indentification is their position
     // in this list
-    private LinkedList<String> names;
+    private List<String> names;
     // The key that are checking their cliques
     private String pKey;
     // The matrix with the social grafh

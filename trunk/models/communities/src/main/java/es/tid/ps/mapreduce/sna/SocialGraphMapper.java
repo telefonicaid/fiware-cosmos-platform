@@ -32,7 +32,7 @@ import org.apache.hadoop.mapreduce.Mapper;
  */
 public class SocialGraphMapper extends Mapper<LongWritable, Text, Text, Text> {
 
-    public static String DELIMITER = "\\|";
+    private static String DELIMITER = "\\|";
 
     /**
      * @param key

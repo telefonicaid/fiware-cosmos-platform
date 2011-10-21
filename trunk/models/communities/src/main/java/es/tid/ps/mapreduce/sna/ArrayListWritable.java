@@ -85,13 +85,13 @@ public class ArrayListWritable implements WritableComparable<ArrayListWritable> 
     @Override
     public void readFields(DataInput in) throws IOException {
         values = new ArrayList<String>();
-        try {
-            while (values.add(in.readUTF())) {
+        boolean hasMore = true;
+        while (hasMore) {
+            try {
+                this.values.add(in.readUTF());
+            } catch (EOFException e) {
+                hasMore = false;
             }
-        } catch (EOFException e) {
-            // When catch this exception it is because all parameter are reading
-            // and it arrives at the end of the structure, so it is no necesary
-            // to do anything because catching this exception is the normal way
         }
     }
 

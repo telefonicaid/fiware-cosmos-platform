@@ -11,6 +11,13 @@ import java.util.TreeSet;
 public class UtilsSet {
 
     /**
+     * Constructor
+     */
+    public UtilsSet() {
+        super();
+    }
+
+    /**
      * Method that make the intersection of two sets A and B is the set that
      * contains all elements of A that also belong to B (or equivalently, all
      * elements of B that also belong to A), but no other elements.
@@ -23,9 +30,11 @@ public class UtilsSet {
      */
     public static <T> Set<T> generateIntersection(Set<T> setA, Set<T> setB) {
         Set<T> tmp = new TreeSet<T>();
-        for (T x : setA)
-            if (setB.contains(x))
+        for (T x : setA) {
+            if (setB.contains(x)) {
                 tmp.add(x);
+            }
+        }
         return tmp;
     }
 
@@ -56,11 +65,12 @@ public class UtilsSet {
      * @return a set with the difference
      */
     public static <T> Set<T> generateDifference(Set<T> setA, Set<T> setB) {
-        Set<T> tmp = new TreeSet<T>(setA);;
+        Set<T> tmp = new TreeSet<T>(setA);
+        ;
         tmp.removeAll(setB);
         return tmp;
     }
-    
+
     /**
      * Method that make the make of two sets A and B, The difference of two sets
      * A and B is the collection of points which are in A and not in B or are in
@@ -72,7 +82,8 @@ public class UtilsSet {
      *            second set of elements
      * @return a set with the difference
      */
-    public static <T> Set<T> generateSymmetricDifference(Set<T> setA, Set<T> setB) {
+    public static <T> Set<T> generateSymmetricDifference(Set<T> setA,
+            Set<T> setB) {
         Set<T> tmpA = generateDifference(setA, setB);
         Set<T> tmpB = generateDifference(setB, setA);
         tmpA.addAll(tmpB);

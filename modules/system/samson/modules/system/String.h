@@ -109,10 +109,10 @@ public:
 		}
 #endif /* de DEBUG_FILES */
 #undef DEBUG_FILES
-		//if( pos1 < pos2 )
-		//return -1;
-		//else if( pos1 > pos2 )
-		//return 1;
+		if( pos1 < pos2 )
+		   return -1;
+		else if( pos1 > pos2 )
+		   return 1;
 
 		// Same length
 

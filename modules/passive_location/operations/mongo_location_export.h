@@ -100,7 +100,20 @@ void init(samson::KVWriter* writer)
 	}
 
 	mdbConnection = new DBClientConnection();
-	mdbConnection->connect(mongo_ip);
+	OLM_M(("Connecting to mongo at '%s'", mongo_ip.c_str()));
+
+	try
+	{
+		mdbConnection->connect(mongo_ip);
+	}
+	catch(mongo::ConnectException &e)
+	{
+		OLM_E(("Error connecting to mongo at '%s'", mongo_ip.c_str()));
+		delete mdbConnection;
+		mdbConnection = NULL;
+		tracer->setUserError("error connecting to MongDB at" + mongo_ip);
+		return;
+	}
 
 	mongo_db_path          = mongo_db         + "." + mongo_collection;
 	mongo_lastloc_db_path  = mongo_lastloc_db + "." + mongo_lastloc_collection;
@@ -127,7 +140,7 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 	
 	if (mdbConnection == NULL)
 	{
-		tracer->setUserError("Not connected to MongoDB - please check parameters");
+		tracer->setUserError("Not connected to MongoDB - please check the parameters to this operation");
 		return;
 	}
 

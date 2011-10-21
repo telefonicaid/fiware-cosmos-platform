@@ -7,9 +7,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+
+import es.tid.ps.utils.UtilsSet;
 
 /**
  * This class generate the cliques from each of the key with all of its values.
@@ -21,215 +26,210 @@ import org.apache.hadoop.mapreduce.Reducer;
  * Process: <br>
  * input: {@code key:5 , values[ p: 4, v:[7]},{p: 6, v:[7,8]},{p: 7,
  * v:[4,6,8]},{p: 8, v:[6,7]}] } <br>
- * generate de matrix Generate de cliques
- * <br>
- * Interate another time the values and compliated the matix
- * <br>
+ * generate de matrix Generate de cliques <br>
+ * Interate another time the values and compliated the matix <br>
  * Generate de cliques {7,6,8} {4,7} <br>
  * Emit the key/values { {5,7,6,8}, ""} {{5,4,7},}
  * 
  * @author rgc
- * 
  */
 
-public class CliquesCalculatorReducer extends Reducer<Text, NodeCombination, Text, Text> {
-
+public class CliquesCalculatorReducer extends
+        Reducer<Text, NodeCombination, Text, Text> {
+    // List with the name of the vertix. The indentification is their position
+    // in this list
     private LinkedList<String> names;
+    // The key that are checking their cliques
     private String pKey;
+    // The matrix with the social grafh
+    private Map<Integer, Set<Integer>> matrix;
 
-    protected void reduce(Text key, Iterable<NodeCombination> values, Context context) throws IOException,
-            InterruptedException {
+    /**
+     * @param key
+     *            is the key of the mapper
+     * @param values
+     *            are all the values aggregated during the mapping phase
+     * @param context
+     *            contains the context of the job run
+     */
+    protected void reduce(Text key, Iterable<NodeCombination> values,
+            Context context) throws IOException, InterruptedException {
         names = new LinkedList<String>();
         pKey = key.toString();
 
         Map<Integer, List<String>> processValues = new HashMap<Integer, List<String>>();
+        matrix = new HashMap<Integer, Set<Integer>>();
+        SortedSet<VertexNeigbors> vertexNeigborsSet = new TreeSet<VertexNeigbors>();
 
-        int cont = 0;
-        for (Iterator<NodeCombination> iterator = values.iterator(); iterator.hasNext();) {
+        // count for indentifier each vertex with a Integer
+        Integer nodeIdentifier = 0;
+        for (Iterator<NodeCombination> iterator = values.iterator(); iterator
+                .hasNext();) {
             NodeCombination value = iterator.next();
             names.add(value.getPrincipal());
-            processValues.put(cont, value.getValues());
-            ++cont;
+            processValues.put(nodeIdentifier, value.getValues());
+            ++nodeIdentifier;
         }
 
-        boolean[][] connected = new boolean[cont][cont];
-        for (Iterator<Entry<Integer, List<String>>> iterator = processValues.entrySet().iterator(); iterator.hasNext();) {
+        for (Iterator<Entry<Integer, List<String>>> iterator = processValues
+                .entrySet().iterator(); iterator.hasNext();) {
             Entry<Integer, List<String>> entry = iterator.next();
-            int keyPosition = entry.getKey();
-            List<String> list = entry.getValue();
-            connected[keyPosition][keyPosition] = true;
-            for (String string : list) {
-                int position = names.indexOf(string);
-                if (position != -1) {
-                    connected[position][keyPosition] = true;
-                    connected[keyPosition][position] = true;
+            Set<Integer> phoneNumberList = new TreeSet<Integer>();
+            Integer neighbors = 0;
+            Integer position = entry.getKey();
+            for (String phoneNumber : entry.getValue()) {
+                int neighborsPosition = names.indexOf(phoneNumber);
+                if (neighborsPosition != -1) {
+                    phoneNumberList.add(neighborsPosition);
+                    ++neighbors;
                 }
             }
+            matrix.put(entry.getKey(), phoneNumberList);
+            vertexNeigborsSet.add(new VertexNeigbors(position, neighbors));
         }
-
-        int[] all = new int[connected.length];
-        for (int c = 0; c < connected.length; c++) {
-            all[c] = c;
-        }
-
-        version2(connected, all, 0, connected.length, new Set(connected.length), new Set(connected.length), context);
+        bronKerbosch3(vertexNeigborsSet, context);
     }
 
     /**
-     * TODO Copy from "url" it is necessary to review all of them
+     * method for improving the basic form of the Bron–Kerbosch algorithm
+     * involves forgoing pivoting at the outermost level of recursion, and
+     * instead choosing the ordering of the recursive calls carefully in order
+     * to minimize the sizes of the sets of candidate vertices within each
+     * recursive call.
+     * http://en.wikipedia.org/wiki/Bron%E2%80%93Kerbosch_algorithm
+     * #With_vertex_ordering
      * 
-     * @param adjMatrix
-     * @param oldMD
-     * @param oldTestedSize
-     * @param oldCandidateSize
-     * @param actualMD
-     * @param best
+     * @param vertexNeigborsSet
+     *            Set of vertex order by the number of neigbors that they have
      * @param context
+     *            contains the context of the job run
      * @throws IOException
      * @throws InterruptedException
      */
-    private void version2(boolean[][] adjMatrix, int[] oldMD, int oldTestedSize, int oldCandidateSize, Set actualMD,
-            Set best, Context context) throws IOException, InterruptedException {
-        int[] actualCandidates = new int[oldCandidateSize];
-        int nod;
-        int fixp = 0;
-        int actualCandidateSize;
-        int actualTestedSize;
-        int i;
-        int j;
-        int count;
-        int pos = 0;
-        int p;
-        int s = 0;
-        int sel;
-        int index2Tested;
-        boolean fini = false;
+    private void bronKerbosch3(Set<VertexNeigbors> vertexNeigborsSet,
+            Context context) throws IOException, InterruptedException {
+        Set<Integer> candidateSet = new TreeSet<Integer>();
+        Set<Integer> processSet = new TreeSet<Integer>();
+        Set<Integer> vertexSet = VertexNeigbors.getVertexSet(vertexNeigborsSet);
 
-        index2Tested = oldCandidateSize;
-        nod = 0;
-
-        // Determine each counter value and look for minimum
-        // Branch and bound step
-        // Is there a node in ND (represented by MD and index2Tested)
-        // which is connected to all nodes in the candidate list CD
-        // we are finished and backtracking will not be enabled
-        for (i = 0; (i < oldCandidateSize) && (index2Tested != 0); ++i) {
-            p = oldMD[i];
-            count = 0;
-
-            // Count disconnections
-            for (j = oldTestedSize; (j < oldCandidateSize) && (count < index2Tested); ++j) {
-                if (adjMatrix[p][oldMD[j]] == false) {
-                    count++;
-
-                    // Save position of potential candidate
-                    pos = j;
-                }
-            }
-
-            // Test new minimum
-            if (count < index2Tested) {
-                fixp = p;
-                index2Tested = count;
-
-                if (i < oldTestedSize) {
-                    s = pos;
-                } else {
-                    s = i;
-
-                    // preincr
-                    nod = 1;
-                }
-            }
+        for (Integer candidateVertex : vertexSet) {
+            Set<Integer> candidateVertexSet = new TreeSet<Integer>();
+            candidateVertexSet.add(candidateVertex);
+            Set<Integer> aNeigbors = getNeighbors(candidateVertex);
+            bronKerbosch2(
+                    UtilsSet.generateUnion(candidateSet, candidateVertexSet),
+                    UtilsSet.generateIntersection(vertexSet, aNeigbors),
+                    UtilsSet.generateIntersection(processSet, aNeigbors),
+                    context);
+            vertexSet = UtilsSet.generateDifference(vertexSet,
+                    candidateVertexSet);
+            processSet = UtilsSet.generateUnion(processSet, candidateVertexSet);
         }
-
-        // If fixed point initially chosen from candidates then
-        // number of diconnections will be preincreased by one
-        // Backtracking step for all nodes in the candidate list CD
-        for (nod = index2Tested + nod; nod >= 1; --nod) {
-            // Interchange
-            p = oldMD[s];
-            oldMD[s] = oldMD[oldTestedSize];
-            sel = oldMD[oldTestedSize] = p;
-
-            // Fill new set "not"
-            actualCandidateSize = 0;
-
-            for (i = 0; i < oldTestedSize; ++i) {
-                if (adjMatrix[sel][oldMD[i]] != false) {
-                    actualCandidates[actualCandidateSize++] = oldMD[i];
-                }
-            }
-
-            // Fill new set "candidates"
-            actualTestedSize = actualCandidateSize;
-
-            for (i = oldTestedSize + 1; i < oldCandidateSize; ++i) {
-                if (adjMatrix[sel][oldMD[i]] != false) {
-                    actualCandidates[actualTestedSize++] = oldMD[i];
-                }
-            }
-
-            // Add to "actual relevant nodes"
-            actualMD.vertex[actualMD.size++] = sel;
-
-            // so CD+1 and ND+1 are empty
-            if (actualTestedSize == 0) {
-                if (best.size < actualMD.size) {
-                    // found a max clique
-                    Set.clone(actualMD, best);
-                }
-
-                int[] tmpResult = new int[actualMD.size];
-                System.arraycopy(actualMD.vertex, 0, tmpResult, 0, actualMD.size);
-                addClique(tmpResult, context);
-            } else {
-                if (actualCandidateSize < actualTestedSize) {
-                    version2(adjMatrix, actualCandidates, actualCandidateSize, actualTestedSize, actualMD, best,
-                            context);
-                }
-            }
-
-            if (fini) {
-                break;
-            }
-
-            // move node from MD to ND
-            // Remove from compsub
-            actualMD.size--;
-
-            // Add to "nod"
-            oldTestedSize++;
-
-            if (nod > 1) {
-                // Select a candidate disconnected to the fixed point
-                for (s = oldTestedSize; adjMatrix[fixp][oldMD[s]] != false; ++s) {
-                }
-            }
-            // end selection
-        }
-
-        // Backtrackcycle
-        actualCandidates = null;
     }
 
     /**
-     * Method that emit the clique, it convert the positions into the array to
+     * This method implements the Bron–Kerbosch with pivoting, in the algorithm
+     * firts choose the "pivot vertex" $vertex, chosen from $vertexSet ⋃
+     * $processSet). The we need the neighbors of the $vertex. Therefore, only
+     * $vertex and its non-neighbors need to be tested as the choices for the
+     * vertex that is added to $candidateSet in each recursive call to the
+     * algorithm. <br>
+     * http://en.wikipedia.org/wiki/Bron%E2%80%93Kerbosch_algorithm#
+     * With_pivoting
+     * 
+     * @param candidateSet
+     *            set with the nodes catidates to be in the clique
+     * @param vertexSet
+     *            set with the nodes that are not ckeck too.
+     * @param processSet
+     *            set of nodes where has been checking
+     * @param context
+     *            contains the context of the job run
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    private void bronKerbosch2(Set<Integer> candidateSet,
+            Set<Integer> vertexSet, Set<Integer> processSet, Context context)
+            throws IOException, InterruptedException {
+        // if there are no value into vertexSet and processSet, then we have the
+        // clique in candidateSet because there are no more vertex to check
+        if (vertexSet.isEmpty() && processSet.isEmpty()) {
+            addClique(candidateSet, context);
+            return;
+        }
+        Integer vertex = chooseVertex(vertexSet, processSet);
+        Set<Integer> vertexNeigbors = getNeighbors(vertex);
+
+        Set<Integer> diffTmp = UtilsSet.generateDifference(vertexSet,
+                vertexNeigbors);
+        for (int candidateVertex : diffTmp) {
+            Set<Integer> candidateVertexSet = new TreeSet<Integer>();
+            candidateVertexSet.add(candidateVertex);
+
+            Set<Integer> aNeigbors = getNeighbors(candidateVertex);
+            bronKerbosch2(
+                    UtilsSet.generateUnion(candidateSet, candidateVertexSet),
+                    UtilsSet.generateIntersection(vertexSet, aNeigbors),
+                    UtilsSet.generateIntersection(processSet, aNeigbors),
+                    context);
+            vertexSet = UtilsSet.generateDifference(vertexSet,
+                    candidateVertexSet);
+            processSet = UtilsSet.generateUnion(processSet, candidateVertexSet);
+        }
+    }
+
+    /**
+     * Method that choose the best node for start the interation
+     * 
+     * @param p
+     *            set with the nodes that are not ckeck too
+     * @param x
+     *            set of nodes where has been checking
+     * @return the node that has being choosen
+     */
+    private Integer chooseVertex(Set<Integer> vertexSet, Set<Integer> processSet) {
+        // TODO rgc: it is necesary a better algorithm to select the vertex but
+        // for this selection need work with VertexNeigbors instead of Integer
+        // and choose the vertex with maximum number of neigbors. Ours solution
+        // choose first the maxium of the vertex and them the maximum of the
+        // process so for me is not too bad an approximation
+        if (!vertexSet.isEmpty()) {
+            return ((TreeSet<Integer>) vertexSet).last();
+        } else {
+            return ((TreeSet<Integer>) processSet).last();
+        }
+    }
+
+    /**
+     * Method that return the neighbors of one vertex in the dataset
+     * 
+     * @param i
+     *            the identifier of the vertex
+     * @return set with the vertex neighbors
+     */
+    private Set<Integer> getNeighbors(Integer i) {
+        return matrix.get(i);
+    }
+
+    /**
+     * Method that emit the clique, it convert identifier fo the vertex to
      * telephone number, concatenate these data with "," and emit a key/value
-     * with all the data in the key
+     * with all the data in the key (note: the first value is the key because
+     * this always is part of the clique)
      * 
-     * @param array
-     *            vector with the positions into the matrix that are in a clique
+     * @param cliqueSet
+     *            set with the identifier of the vertex in the clique
      * @param context
+     *            contains the context of the job run
      * @throws IOException
      * @throws InterruptedException
      */
-    protected void addClique(int[] array, Context context) throws IOException, InterruptedException {
-        // count and store only defined cliques
+    private void addClique(Set<Integer> cliqueSet, Context context)
+            throws IOException, InterruptedException {
         StringBuilder sb = new StringBuilder(pKey);
-        for (int i = 0; i < array.length; i++) {
+        for (Integer nodeIdentifier : cliqueSet) {
             sb.append(",");
-            sb.append(names.get(array[i]));
+            sb.append(names.get(nodeIdentifier));
         }
         context.write(new Text(sb.toString()), new Text(""));
     }

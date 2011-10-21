@@ -23,7 +23,7 @@ public class NodeCombination implements WritableComparable<NodeCombination> {
     // Storage the central user for calculate the sna Algorithm
     private String principal;
     // Storage the rest of the users with the principal has had a call
-    private List<String> values;
+    private List<String> values; 
 
     /**
      * Constructor
@@ -120,7 +120,8 @@ public class NodeCombination implements WritableComparable<NodeCombination> {
      */
     @Override
     public String toString() {
-        return ("Numbers [principal=" + this.principal + ", values=" + this.values + "]");
+        return ("Numbers [principal=" + this.principal + ", values="
+                + this.values + "]");
     }
 
     /**

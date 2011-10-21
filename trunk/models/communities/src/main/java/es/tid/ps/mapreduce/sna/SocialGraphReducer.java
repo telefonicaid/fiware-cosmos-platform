@@ -14,6 +14,7 @@ import org.apache.hadoop.mapreduce.Reducer;
  * <li>Input: 619555666 {619777888, 619777888, 619777888 }</li>
  * <li>output: { 619555666, 619777888, 619777888}</li>
  * </ol>
+ * 
  * @author rgc@tid.es
  */
 public class SocialGraphReducer extends

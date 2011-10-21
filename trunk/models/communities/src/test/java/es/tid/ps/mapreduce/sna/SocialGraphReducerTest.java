@@ -57,7 +57,6 @@ public class SocialGraphReducerTest extends TestCase {
         expected.add(new Pair<Text, ArrayListWritable>(new Text("5"),
                 new ArrayListWritable(vv)));
 
-        //TODO Iḿ not sure that this test response ok
         assertListEquals(expected, out);
     }
 }

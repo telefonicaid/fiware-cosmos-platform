@@ -23,7 +23,6 @@ import org.apache.hadoop.mapreduce.Mapper;
  * </ol>
  * 
  * @author rgc@tid.es
- * 
  */
 public class CliquesCalculatorMapper extends
         Mapper<Text, ArrayListWritable, Text, NodeCombination> {

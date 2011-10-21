@@ -27,6 +27,7 @@ import org.apache.hadoop.mapreduce.Mapper;
  * <li>output(1): { 619555666, 619777888}</li>
  * <li>output(2): { 619777888, 619555666}.</li>
  * </ol>
+ * 
  * @author rgc@tid.es
  */
 public class SocialGraphMapper extends Mapper<LongWritable, Text, Text, Text> {

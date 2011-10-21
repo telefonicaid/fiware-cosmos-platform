@@ -115,18 +115,6 @@
                     </excludes>
                 </configuration>
             </plugin>
-            <!-- Project site in Spanish -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <configuration>
-                    <locales>es</locales>
-                    <outputEncoding>${project.reporting.outputEncoding}
-                    </outputEncoding>
-                    <inputEncoding>${project.build.sourceEncoding}
-                    </inputEncoding>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
     <repositories>

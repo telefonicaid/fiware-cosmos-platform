@@ -35,15 +35,6 @@ public class ArrayListWritable implements WritableComparable<ArrayListWritable> 
     }
 
     /**
-     * Constructor makes a copy of the data from a list
-     * 
-     * @param values
-     */
-    public ArrayListWritable(List<String> values) {
-        this.values = new ArrayList<String>(values);
-    }
-
-    /**
      * Constructor makes a copy of the data from a array
      * 
      * @param array

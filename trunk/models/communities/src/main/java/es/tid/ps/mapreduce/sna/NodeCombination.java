@@ -155,14 +155,6 @@ public class NodeCombination implements WritableComparable<NodeCombination> {
     }
 
     /**
-     * @param values
-     *            the values to set
-     */
-    public void setValues(List<String> values) {
-        this.values = values;
-    }
-
-    /**
      * @return the values
      */
     public List<String> getValues() {

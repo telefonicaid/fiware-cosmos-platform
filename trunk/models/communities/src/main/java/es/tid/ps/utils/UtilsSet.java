@@ -14,7 +14,6 @@ public final class UtilsSet {
      * constructor
      */
     private UtilsSet() {
-        super();
     }
 
     /**

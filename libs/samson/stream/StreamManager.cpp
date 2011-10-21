@@ -88,7 +88,7 @@ namespace samson {
             if( notification->isName( notification_network_diconnected ) )
             {
                 int id = notification->environment.getInt("id",-1);
-                LM_M(("Removing stream out queue for id %d", id ));
+                //LM_M(("Removing stream out queue for id %d", id ));
                 stream_out_connections.removeInMap( id );
                 return;
             }

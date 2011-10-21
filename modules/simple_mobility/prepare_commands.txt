@@ -1,0 +1,6 @@
+
+add_stream_operation simple_mobility_parser simple_mobility.parser txt commands
+set_stream_operation_property simple_mobility_parser delayed_processing no
+
+add_stream_operation simple_mobility_reducer simple_mobility.reduce commands users messages users
+set_stream_operation_property simple_mobility_reducer delayed_processing no

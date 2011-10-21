@@ -602,7 +602,6 @@ namespace samson {
             }
             else
             {
-                LM_M(("Sending buffer %s to queue %s" , au::str( buffer->getSize() ).c_str() , streamOperation->output_queues[output].c_str() ));
                 sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues[output] );
             }
         }

@@ -564,18 +564,6 @@ namespace samson {
 	{
 		// Do something
 	}
-		
-
-
-	/* ****************************************************************************
-	*
-	* notifyWorkerDied - 
-	*/
-	void SamsonController::notifyWorkerDied( int worker )
-	{
-		// What to do when a worker died
-	}
-
 	
     void SamsonController::getInfo( std::ostringstream& output )
     {

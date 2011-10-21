@@ -254,6 +254,19 @@ namespace samson {
             }
         }
         
+        bool BlockList::extractBlockFrom( BlockList *list )
+        {
+            if( list->blocks.size() == 0)
+            {
+                return false;
+            }
+            
+            Block* nextBlock = list->blocks.front();
+            add( nextBlock );             // Add the block in this list
+            list->remove( nextBlock );    // Remove from this list
+            
+            return true;
+        }
         
         void BlockList::extractFrom( BlockList* list , size_t max_size )
         {

@@ -46,6 +46,7 @@ namespace samson {
             friend class BlockBreakQueueTask;
             friend class BlockReader;
             friend class Queue;
+            friend class StreamOutQueueTask;
             
             size_t id;                      // Identifier of the block ( in this node )
             

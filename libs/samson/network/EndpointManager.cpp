@@ -13,7 +13,12 @@
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 
-#include "au/TokenTaker.h"                          // au::TokenTake
+#include "au/TokenTaker.h"                          // au::TokenTaker
+
+#include "engine/Notification.h"
+#include "engine/Engine.h"
+
+#include "samson/common/NotificationMessages.h"
 
 #include "samson/common/status.h"
 #include "samson/common/ports.h"
@@ -905,15 +910,25 @@ void EndpointManager::periodic(void)
 		// endpoint[ix]->threaded = false;
 
 		if (endpoint[ix]->type == Endpoint2::Worker)
+        {
 			endpoint[ix]->state = Endpoint2::Disconnected;
+        }
 		else if (endpoint[ix]->type == Endpoint2::Controller)
+        {
 			endpoint[ix]->state = Endpoint2::Disconnected;
+        }
 		else
 		{
 			delete endpoint[ix];
 			endpoint[ix] = NULL;
 		}
 
+        // Notification about this disconnection
+        engine::Notification *notification = new engine::Notification( notification_network_diconnected );
+        notification->environment.setInt("id", ix);
+        engine::Engine::shared()->notify( notification );
+        
+        
 		show("Removed a removal-scheduled endpoint", true);
 	}
 

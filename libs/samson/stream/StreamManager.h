@@ -50,8 +50,7 @@ namespace samson {
         class WorkerCommand;
         class PopQueue;
         class StreamOperation;
-
-        
+        class StreamOutConnection;
         
         class StreamManager : public ::engine::Object 
         {
@@ -64,6 +63,7 @@ namespace samson {
             friend class StreamOperation;
             friend class StreamOperationForward;
             friend class StreamOperationUpdateState;
+            friend class StreamOutConnection;
             
             // Map with the current queues
             au::map< std::string , Queue > queues;                
@@ -83,6 +83,9 @@ namespace samson {
 
             // Manager of the current "stream-tasks" running on this worker
             au::map< size_t , WorkerCommand > workerCommands; 
+            
+            // StreamOutConnection ( connection to receive data from queues in stream mode )
+            au::map< int , StreamOutConnection > stream_out_connections;
             
             // Internal counter to WorkerTasks
             size_t worker_task_id;
@@ -124,6 +127,10 @@ namespace samson {
 
             StreamOperation* getStreamOperation( std::string name );
             
+            // Connect and disconnect to a queue
+            void connect_to_queue( int fromId , std::string queue );
+            void disconnect_from_queue( int fromId , std::string queue );
+
             // Reset all the content of this stream manager
             void reset();
             

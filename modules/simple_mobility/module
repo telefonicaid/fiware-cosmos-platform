@@ -1,0 +1,44 @@
+Module simple_mobility
+{
+    title   "Simple mobility example"
+    author  "Andreu Urruela"
+    version "0.1.1"
+}
+
+data UserArea
+{
+	system.UInt x;
+	system.UInt y;
+	system.UInt radius;
+}
+
+data User
+{
+	system.UInt x;
+	system.UInt y;
+
+	system.Int8 track;	
+	
+	vector simple_mobility.UserArea areas;
+
+
+}
+
+parser parser
+{
+	out system.String system.StringVector
+
+	helpLine "Parse input txt to generate commands per user"
+}
+
+
+reduce reduce
+{
+	in system.String system.StringVector
+	in system.String simple_mobility.User
+	out system.String system.String
+	out system.String simple_mobility.User
+
+	helpLine "Update internal state"
+}
+	

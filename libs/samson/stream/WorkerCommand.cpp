@@ -270,6 +270,39 @@ namespace samson {
 
             }            
             
+            if( main_command == "connect_to_queue" )
+            {
+                if( cmd.get_num_arguments() < 2 )
+                {
+                    finishWorkerTaskWithError( "Usage: connect_to_queue queue" );
+                    return;
+                }
+                std::string queue = cmd.get_argument(1);
+                
+                streamManager->connect_to_queue( fromId , queue );
+                
+                finishWorkerTask();
+                return;
+                
+            }
+
+            if( main_command == "disconnect_from_queue" )
+            {
+                if( cmd.get_num_arguments() < 2 )
+                {
+                    finishWorkerTaskWithError( "Usage: connect_to_queue queue" );
+                    return;
+                }
+                std::string queue = cmd.get_argument(1);
+                
+                streamManager->disconnect_from_queue( fromId , queue );
+                
+                finishWorkerTask();
+                return;
+                
+            }
+            
+            
             // Manually driven stream operations..... ( batch operations over stream queues )
             
             if( cmd.get_argument(0) == "run_stream_operation" )

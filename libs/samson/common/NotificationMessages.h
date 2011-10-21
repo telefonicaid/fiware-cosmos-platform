@@ -25,4 +25,7 @@
 // Notification to review old block files
 #define notification_block_manager_review                   "notification_block_manager_review"
 
+// Notification that a network element has been disconnected
+#define notification_network_diconnected                    "notification_network_diconnected"
+
 #endif

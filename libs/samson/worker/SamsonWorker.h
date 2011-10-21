@@ -100,7 +100,6 @@ namespace samson {
         // Get information for monitorization
         void getInfo( std::ostringstream& output);
         
-        
         // Log activity
         void logActivity( std::string log);
         

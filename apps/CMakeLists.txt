@@ -13,6 +13,7 @@ ADD_SUBDIRECTORY(samsonData)
 ADD_SUBDIRECTORY(samsonKiller)
 
 ADD_SUBDIRECTORY(samsonPush)
+ADD_SUBDIRECTORY(samsonPop)
 ADD_SUBDIRECTORY(passiveLocationPush)
 
 ADD_SUBDIRECTORY(aux)

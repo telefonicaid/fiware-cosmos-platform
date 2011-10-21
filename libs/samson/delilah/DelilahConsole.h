@@ -26,6 +26,7 @@
 #include "au/TokenTaker.h"                  // au::TokenTake
 
 #include "au/Console.h"                     // au::Console
+
 #include "DelilahClient.h"                  // ss:DelilahClient
 
 #include "samson/delilah/Delilah.h"			// samson::Delilah
@@ -99,6 +100,9 @@ namespace samson {
             addOption("set_queue_property");
             addOption("ls_queues_info");
             addOption("ls_stream_activity");
+
+            addOption("connect_to_queue");
+            addOption("disconnect_from_queue");
 
         }
         
@@ -215,6 +219,7 @@ namespace samson {
 	{
 		
         std::string commandFileName;
+        
         
 	public:
 		

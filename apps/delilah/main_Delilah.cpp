@@ -211,7 +211,7 @@ int main(int argC, const char *argV[])
 	// What until the network is ready II
 	//
 	while (!networkP->ready(true))
-		sleep(1);
+		usleep(1000);
 	std::cout << " OK\n";
 	LM_M(("\nConnecting to all workers ... OK"));
 

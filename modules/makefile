@@ -25,6 +25,7 @@ all:
 	SAMSON_HOME=$(SAMSON_HOME) make -C gg
 	SAMSON_HOME=$(SAMSON_HOME) make -C page_rank
 	SAMSON_HOME=$(SAMSON_HOME) make -C wiki
+	make -C simple_mobility
 
 release:
 	SAMSON_HOME=$(SAMSON_HOME) make release -C system
@@ -50,6 +51,7 @@ release:
 	SAMSON_HOME=$(SAMSON_HOME) make release -C gg
 	SAMSON_HOME=$(SAMSON_HOME) make release -C page_rank
 	SAMSON_HOME=$(SAMSON_HOME) make release -C wiki
+	make release -C simple_mobility
 
 reset:
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C system
@@ -102,6 +104,7 @@ install:
 	SAMSON_HOME=$(SAMSON_HOME) make install -C wiki
 
 
+	make reset -C simple_mobility
 test:
 	SAMSON_HOME=$(SAMSON_HOME) make test -C txt
 	SAMSON_HOME=$(SAMSON_HOME) make test -C sort

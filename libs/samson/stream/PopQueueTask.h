@@ -50,6 +50,25 @@ namespace samson {
             void run();
             
         };
+        
+        
+        class StreamOutQueueTask : public SystemQueueTask
+        {
+            friend class QueueTaskManager;
+            friend class StreamManager;
+            
+            int fromId ;            // Identifier of delilah to send packets back
+            std::string queue;      // Name of the queue we are streaming out
+            
+        public:
+            
+            StreamOutQueueTask( size_t _id , int _fromId, std::string _queue );
+            void sendMessage( engine::Buffer *buffer );
+            void run();
+            
+        };
+        
+        
     }
 }
 

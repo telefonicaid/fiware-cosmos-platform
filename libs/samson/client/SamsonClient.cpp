@@ -15,8 +15,10 @@
  *
  * ****************************************************************************/
 
-#include "au/string.h"                          // au::Format
 #include "logMsg/logMsg.h"
+#include "parseArgs/paConfig.h"
+
+#include "au/string.h"                          // au::Format
 
 #include "engine/Engine.h"                      // engine::Engine
 #include "engine/MemoryManager.h"               // engine::MemoryManager
@@ -75,7 +77,9 @@ namespace samson {
         if( (size + length ) > max_buffer_size )
         {
             // Process buffer
-            LM_M(("Pushing %s to queue %s\n" , au::str(size,"B").c_str() , queue.c_str()));
+            if( paVerbose )
+                LM_M(("Pushing %s to queue %s\n" , au::str(size,"B").c_str() , queue.c_str()));
+            
             client->push(  queue , buffer, size );
 
             // Reset cronometer
@@ -104,7 +108,8 @@ namespace samson {
         if ( size > 0 )
         {
             // Process buffer
-            LM_M(("Pushing %s to queue %s\n" , au::str(size,"B").c_str() , queue.c_str()));
+            if( paVerbose )
+                LM_M(("Pushing %s to queue %s\n" , au::str(size,"B").c_str() , queue.c_str()));
             client->push(  queue , buffer, size );
             
             // Come back to "0"
@@ -134,6 +139,14 @@ namespace samson {
     samson::Network2*        networkP  = NULL;
     samson::Delilah* delilah = NULL;    
     
+    BufferContainer buffer_container;   // Container for live data
+    
+    void delialh_client_delilah_process_stream_out_queue(std::string queue , engine::Buffer* buffer)
+    {
+        // Put inside the buffer to storage
+        buffer_container.push( queue , buffer );
+    }
+    
     SamsonClient::SamsonClient()
     {
         memory = 1024*1024*1024;
@@ -161,6 +174,9 @@ namespace samson {
         engine::DiskManager::init(1);
         engine::ProcessManager::init(samson::SamsonSetup::getInt("general.num_processess"));
         engine::MemoryManager::init(samson::SamsonSetup::getUInt64("general.memory"));
+        
+        // Modify modules directory to use modules ( samsonPop )
+        SamsonSetup::shared()->modulesDirectory = "/opt/samson/modules";
         
         samson::ModulesManager::init();         // Init the modules manager
         
@@ -198,6 +214,9 @@ namespace samson {
         
         // Create a DelilahControler once network is ready
         delilah = new Delilah( networkP, true );
+        
+        // Set the funciton to process live stream data
+        delilah->op_delilah_process_stream_out_queue = delialh_client_delilah_process_stream_out_queue;
         
         // Periodic notification to review timeout
         engine::Notification *notification = new engine::Notification( notification_review_timeOut_SamsonPushBuffer  );
@@ -253,6 +272,24 @@ namespace samson {
     }
 
 
+    void SamsonClient::connect_to_queue( std::string queue )
+    {
+        std::string command = au::str("connect_to_queue %s" , queue.c_str() ); 
+        LM_M(("Command to connect to queue '%s'", command.c_str() ));
+        delilah->sendWorkerCommand( command , NULL );
+    }
+    
+    SamsonClientBlockInterface* SamsonClient::getNextBlock( std::string queue )
+    {
+        engine::Buffer *buffer = buffer_container.pop( queue );
+        
+        if( buffer )
+            return new SamsonClientBlock( buffer );
+        else
+            return NULL;
+    }
+    
+    
     
     
 }

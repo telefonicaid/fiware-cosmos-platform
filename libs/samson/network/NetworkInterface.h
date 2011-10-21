@@ -106,12 +106,6 @@ public:
 	// Convenient way to run the receive methods using Engine
 	void _receive(Packet* packet);
 	
-	// Notify that a worker has died 
-	virtual void notifyWorkerDied(int worker)
-	{
-		// This call has to be overwritten by SamsonController
-	}
-
 	// Method to recover the status of this element in JSON format
 	// In the controllor case, this is exposed to a simple port similar to a telnet service
 	virtual std::string getJSONStatus(std::string in)

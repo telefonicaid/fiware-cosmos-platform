@@ -87,7 +87,6 @@ namespace samson {
 				
 		// PacketReceiverInterface
 		void receive( Packet* packet );
-		void notifyWorkerDied( int worker );
 		
 		// PacketSenderInterface
 		virtual void notificationSent( size_t id , bool success );

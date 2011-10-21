@@ -32,8 +32,8 @@ namespace samson {
             
             range = _range;
             
-            delilahId = pq->delilahId;
-            fromId = pq->fromId;
+            delilahId   = pq->delilahId;
+            fromId      = pq->fromId;
             
             environment.set("system.pop_queue_task","yes");
             
@@ -97,6 +97,70 @@ namespace samson {
             }
             
         }
+        
+#pragma marg StreamOutQueueTask
+            
+        StreamOutQueueTask::StreamOutQueueTask( size_t _id , int _fromId, std::string _queue )
+            : SystemQueueTask( _id , au::str("StreamOut queue ( %s )" , _queue.c_str() ) )
+        {
+            fromId  = _fromId;
+            queue   = _queue;
+        }
+        
+        
+        
+        void StreamOutQueueTask::sendMessage( engine::Buffer *buffer )
+        {
+            
+            // Send the packet using notification mecanism
+            samson::Packet *packet = new Packet( Message::StreamOutQueue );
+            
+            // Set the buffer to be sent to this delilah
+            packet->buffer = buffer;
+            
+            // Set no delialh id ( this is always a top level message )
+            packet->message->set_delilah_id( 0 );
+            
+            // Set the finish flag to true
+            network::StreamOutQueue* network_stream_output_queue =  packet->message->mutable_stream_output_queue();
+            network_stream_output_queue->set_queue( queue );
+            
+            engine::Notification *notification = new engine::Notification( notification_samson_worker_send_packet , packet );
+            notification->environment.set("toId", fromId );
+            
+            // Send a notification
+            engine::Engine::shared()->notify( notification );            
+        }
+        
+        void StreamOutQueueTask::run()
+        {
+            
+            
+            BlockList *list = getBlockList("input_0");
+            au::list<Block>::iterator b;
+            for ( b = list->blocks.begin() ; b != list->blocks.end() ; b++)
+            {
+                Block *block = *b;
+                
+                if( block->isContentOnMemory() )
+                {
+                    
+                    size_t  size = block->buffer->getSize();
+                    
+                    engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer("PopQueueTask_run", size, 0 );
+                    
+                    memcpy( buffer->getData(), block->buffer->getData(), size );
+                    buffer->setSize(size);
+                    
+                    sendMessage( buffer );
+                }
+                else
+                    LM_W(("PopQueueTask: Found a block that is not in memory. This shoudl be an error...skipping"));
+                
+            }
+            
+        }
+        
         
     }
 }

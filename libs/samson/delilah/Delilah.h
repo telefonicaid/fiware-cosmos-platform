@@ -19,6 +19,7 @@
 #include "au/CommandLine.h"				// au::CommandLine
 #include "au/Cronometer.h"      // au::Cronometer
 #include "au/string.h"          // au::Table
+#include "au/CounterCollection.h"           // au::CounterCollection
 
 #include "pugi/pugi.h"          // pugi::...
 
@@ -50,6 +51,11 @@ extern samson::Delilah* global_delilah;
 
 namespace samson {
     
+    
+    // Function to process live streaming data
+    typedef void (*delilah_process_stream_out_queue)(std::string queue , engine::Buffer* buffer);
+
+    
 	class DelilahClient;
 	class DelilahComponent;
 	class DelilahUploadComponent;
@@ -76,9 +82,13 @@ namespace samson {
 		// Map of components that intercept messages
 		au::map<size_t , DelilahComponent> components;			
         
+        // Flag to indicate if we are shoing traces
         bool trace_on;
 
-        
+        // Counter for the live messages
+        au::CounterCollection<std::string> stream_out_queue_counters;
+    public:
+        delilah_process_stream_out_queue op_delilah_process_stream_out_queue;
 	public:
 		
 		Environment environment;								// Environment properties to be sent in the next job

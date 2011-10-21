@@ -1959,9 +1959,10 @@ void Network::msgPreTreat(Endpoint* ep, int endpointId)
 		if (ep->type == Endpoint::Worker)
 		{
 			LM_W(("Worker %d just died (endpoint at %p)", ep->workerId, ep));
+/*
 			if (packetReceiver)
 				packetReceiver->notifyWorkerDied(ep->workerId);
-			
+*/			
 			if (endpoint[ME]->type == Endpoint::Delilah)
 			{
 				LM_T(LmtTimeout, ("Lower select timeout to ONE second to poll restarting worker"));
@@ -2606,8 +2607,8 @@ int Network::msgTreatConnectionClosed(Endpoint* ep, int s)
 {
 	if (ep->type == Endpoint::Worker)
 	{
-		LM_W(("Worker %d just died !", ep->workerId));
-		packetReceiver->notifyWorkerDied(ep->workerId);
+		//LM_W(("Worker %d just died !", ep->workerId));
+		//packetReceiver->notifyWorkerDied(ep->workerId);
 
 		if (endpoint[ME]->type == Endpoint::Delilah)
 		{

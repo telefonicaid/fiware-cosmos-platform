@@ -79,6 +79,9 @@ namespace samson {
      
         // No next worker decided
         next_worker = -1;
+        
+        // No operation to deal with live data from queues by default ( used in samsonClient library )
+        op_delilah_process_stream_out_queue = NULL;
     }
     
     
@@ -104,19 +107,27 @@ namespace samson {
     
     void Delilah::notify( engine::Notification* notification )
     {
-        if( !notification->isName(notification_delilah_automatic_update) )
-            LM_X(1,("Delilah received an unexpected notification"));
-        
+        if( notification->isName(notification_disk_operation_request_response) )
+        {
+            // Nothing to do..
+            return;
+        }        
         
         // Send a message to the controller to receive an update of the information
-        if( network->isConnected( network->controllerGetIdentifier()  ) )
+        if( notification->isName(notification_delilah_automatic_update) )
         {
-            // Message to update the worker status list
-            Packet*           p = new Packet(Message::StatusRequest);
-            p->message->set_delilah_id( 1 );    // Spetial id for global update
-            network->sendToController( p );
+            if( network->isConnected( network->controllerGetIdentifier()  ) )
+            {
+                // Message to update the worker status list
+                Packet*           p = new Packet(Message::StatusRequest);
+                p->message->set_delilah_id( 1 );    // Spetial id for global update
+                network->sendToController( p );
+            }
+            
+            return;
         }
         
+        LM_X(1,("Delilah received an unexpected notification"));
         
     }
     
@@ -187,12 +198,45 @@ namespace samson {
         }
         
         
-        if( !component )
+        if( msgCode == Message::StreamOutQueue )
         {
+            std::string queue = packet->message->stream_output_queue().queue();
             
-            // Forward the reception of this message to the client
-            _receive( fromId , msgCode , packet );
+            if( !packet->buffer )
+            {
+                LM_W(("StreamOutQueue message whitout a buffer"));
+                return;
+            }
+            
+            if( op_delilah_process_stream_out_queue )
+                op_delilah_process_stream_out_queue( queue , packet->buffer );
+            else
+            {
+                
+                size_t counter = stream_out_queue_counters.getCounterFor( queue );
+                
+                mkdir( "stream_out_queues" , 0755 );    // Setup this directory ?
+                
+                std::string fileName = au::str( "stream_out_queues/queue_%s_%l05u" , queue.c_str() , counter );
+                size_t size = packet->buffer->getSize();
+                
+                showMessage( au::str("Received stream data for queue %s (%s). Stored at file %s" , queue.c_str() , au::str( size ).c_str() , fileName.c_str() ));
+                
+                // Disk operation....
+                engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( packet->buffer ,  fileName , getEngineId()  );
+                engine::DiskManager::shared()->add( operation );
+                
+            }
+            
+            return;
+            
         }
+        
+        
+        
+        
+        // Forward the reception of this message to the client
+        _receive( fromId , msgCode , packet );
         
     }
 	
@@ -483,6 +527,7 @@ namespace samson {
     
     int Delilah::_receive(int fromId, Message::MessageCode msgCode, Packet* packet)
     {
+        
         if( packet->buffer )
             engine::MemoryManager::shared()->destroyBuffer( packet->buffer );
 

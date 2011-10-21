@@ -460,6 +460,12 @@ message PopQueueResponse
 }
 
 
+message StreamOutQueue
+{
+	optional string queue  = 1;  // Name of the queue we are getting data 	
+
+}
+
 // ////////////////////////////////////////////////////////////////////////////
 //
 // Message to send a command to a particular worker
@@ -529,6 +535,8 @@ message Message
 
 	optional PopQueue			pop_queue			= 125;	// Pop content of a queue
 	optional PopQueueResponse		pop_queue_response		= 126;	// Response message from the worker
+
+	optional StreamOutQueue			stream_output_queue 	= 310;	// Streaming content of queue out of SAMSON platform
 
 	optional WorkerCommand			worker_command			= 200;
 	optional WorkerCommandResponse		worker_command_response		= 201;

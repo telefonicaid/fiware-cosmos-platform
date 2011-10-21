@@ -133,7 +133,7 @@ namespace samson {
             
             // Extract blocks of data
             void extractFrom( BlockList* list , size_t max_size );
-
+            bool extractBlockFrom( BlockList *list );
             
             // Get information for monitorization
             void getInfo( std::ostringstream& output);

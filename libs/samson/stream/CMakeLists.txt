@@ -17,6 +17,7 @@ SET (HEADERS
     PopQueue.h
     QueueTasks.h
 	WorkerCommand.h
+	StreamOutput.h
 )
 
 
@@ -38,6 +39,7 @@ SET (SOURCES
     PopQueue.cpp
     QueueTasks.cpp
 	WorkerCommand.cpp
+	StreamOutput.cpp
 )
 
 

@@ -278,6 +278,10 @@ namespace samson
         { "ls_operation_rates"      , "ls_operation_rates           get a list of statistics about operations in the platform"},
         { "set_queue_property"      , "set_queue_property queue property value               Specify a property of a particular queue"},
         { "ls_stream_activity"      , "ls_stream_activity       show a list of the last activity logs about automatic stream processing"},
+        
+        { "connect_to_queue"        , "connect_to_queue queue           Connect to a particular queue to receive live data from SAMSON"},
+        { "disconnect_from_queue"   , "disconnect_from_queue            Disconnects from a particular queue to not receive live data anymore"},
+        
         { NULL , NULL }   
     };
     
@@ -747,8 +751,17 @@ namespace samson
             return sendWorkerCommand( command , NULL );
         }
         
-        
         if( main_command == "remove_all_stream" )
+        {
+            return sendWorkerCommand( command , NULL );
+        }
+
+        if( main_command == "connect_to_queue" )
+        {
+            return sendWorkerCommand( command , NULL );
+        }
+        
+        if( main_command == "disconnect_form_queue" )
         {
             return sendWorkerCommand( command , NULL );
         }
@@ -1029,6 +1042,8 @@ namespace samson
 			}
 				break;
 				
+                
+    
 			default:
 				txt << "Unknwn packet received\n";
                 

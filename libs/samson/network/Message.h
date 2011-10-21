@@ -79,6 +79,7 @@ typedef enum MessageCode
 	ProcessList                     = CODE('P', 'r', 'L', ' '),
     PopQueue                        = CODE('P', 'Q', 'r', ' '),
     PopQueueResponse                = CODE('P', 'Q', 'R', ' '),
+    StreamOutQueue                  = CODE('S', 'O', 'Q', ' '),
     PushBlock                       = CODE('P', 'B', 'l', ' '),
     PushBlockResponse               = CODE('P', 'B', 'r', ' '),
     WorkerCommand                   = CODE('W', 'C', '-', ' '),

@@ -17,6 +17,8 @@
 #include <iostream>     // std::cout
 
 #include "parseArgs/parseArgs.h"
+#include "parseArgs/paConfig.h"
+
 #include "logMsg/logMsg.h"
 
 #include "au/string.h"              // au::str()
@@ -29,6 +31,7 @@ size_t timeOut;
 char breaker_sequence[1024];
 char controller[1024];
 char queue_name[1024];
+bool lines;                         // Flag to indicate that input is readed line by line
 
 
 PaArgument paArgs[] =
@@ -37,7 +40,8 @@ PaArgument paArgs[] =
     { "-timeout",               &timeOut,             "TIMEOUT",               PaInt,    PaOpt,      0   ,    0,  10000,              "Timeout to deliver a block to the platform"           },
     { "-buffer_size",           &buffer_size,         "BUFFER_SIZE",           PaInt,    PaOpt,      10000000   ,    1,  64000000,  "Buffer size in bytes"           },
 	{ "-breaker_sequence",      breaker_sequence,     "BREAKER_SEQUENCE",      PaString, PaOpt, _i "\n"         , PaNL, PaNL,       "Breaker sequence ( by default \\n )"       },
-	{ " ",                      queue_name,           "QUEUE",                 PaString,  PaOpt,  (long) "no_queue",   PaNL,   PaNL,  "name of the queue to push data"         },
+	{ "-lines",                 &lines,               "LINES",                 PaBool,    PaOpt,  false, false,  true,  "Read std-in line by line"   },
+    { " ",                      queue_name,           "QUEUE",                 PaString,  PaOpt,  (long) "no_queue",   PaNL,   PaNL,  "name of the queue to push data"         },
     PA_END_OF_ARGS
 };
 
@@ -97,7 +101,8 @@ int main( int argC , const char *argV[] )
     // Set 1G RAM for uploading content
     client.setMemory( 1024*1024*1024 );
     
-    LM_M(("Connecting to %s ..." , controller));
+    if( paVerbose )
+        LM_M(("Connecting to %s ..." , controller));
     
     // Init connection
     if( !client.init( controller ) )
@@ -108,8 +113,9 @@ int main( int argC , const char *argV[] )
 
     // Create the push buffer to send data to a queue in buffer-mode
     samson::SamsonPushBuffer *pushBuffer = new samson::SamsonPushBuffer( &client , queue_name , timeOut );
-    
-    LM_M(("Conection to %s OK" , controller));
+
+    if( paVerbose )
+        LM_M(("Conection to %s OK" , controller));
 
     
     // Read data in blocks, lock the separator backward
@@ -130,13 +136,30 @@ int main( int argC , const char *argV[] )
     std::string tmp_separator = breaker_sequence;
     literal_string( tmp_separator );
 
-    LM_M(("Setup buffer_size %s / timeout %s / break_sequence '%s' " , au::str(buffer_size).c_str() , au::time_string( timeOut ).c_str() , tmp_separator.c_str() ));
+    if( paVerbose )
+        LM_M(("Setup buffer_size %s / timeout %s / break_sequence '%s' " , au::str(buffer_size).c_str() , au::time_string( timeOut ).c_str() , tmp_separator.c_str() ));
 
     
     while( true )
     {
         
-        size_t read_bytes = full_read( 0 , data + size , buffer_size - size );
+        size_t read_bytes = 0;
+        if( lines ) 
+        {
+            char * string = fgets(data , buffer_size, stdin );
+
+            if( string ) 
+                read_bytes = strlen( string );
+            else
+                read_bytes = 0;
+            
+        }
+        else
+        {
+            read_bytes = full_read( 0 , data + size , buffer_size - size );
+        }
+
+        
         //LM_M(("Read command for %lu bytes. Read %lu" , buffer_size - size , read_bytes ));
         
         if( read_bytes == 0 )
@@ -183,7 +206,8 @@ int main( int argC , const char *argV[] )
     // Last push
     pushBuffer->flush();
 
-    LM_M(("Total process %s" , au::str(total_process,"B").c_str() ));
+    if( paVerbose ) 
+        LM_M(("Total process %s" , au::str(total_process,"B").c_str() ));
     
     
     // --------------------------------------------------------------------------------
@@ -204,11 +228,10 @@ int main( int argC , const char *argV[] )
     
     
     // Wait until all operations are complete
-    LM_M(("Waiting for all the push operations to complete..."));
+    if( paVerbose ) 
+        LM_M(("Waiting for all the push operations to complete..."));
     
     client.waitUntilFinish();
-    
-    LM_M(("Finish correctly\n"));
     
 	
 }

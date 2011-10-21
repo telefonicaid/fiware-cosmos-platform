@@ -31,6 +31,8 @@
 #include "samson/stream/SystemQueueTask.h"
 #include "samson/stream/PopQueueTask.h"
 #include "samson/stream/StreamOperation.h"
+#include "samson/stream/StreamOutput.h"
+
 #include "StreamManager.h"                      // Own interface
 
 
@@ -66,8 +68,8 @@ namespace samson {
             // Engine listening commands
             listen( notification_review_stream_manager );
             listen( notification_review_stream_manager_fast );
-            listen(notification_samson_worker_check_finish_tasks);
-            
+            listen( notification_samson_worker_check_finish_tasks );
+            listen( notification_network_diconnected );
             
             // Init the old file checking at block manager
             BlockManager::shared()->initOldFilesCheck();
@@ -83,6 +85,14 @@ namespace samson {
         void StreamManager::notify( engine::Notification* notification )
         {
             
+            if( notification->isName( notification_network_diconnected ) )
+            {
+                int id = notification->environment.getInt("id",-1);
+                LM_M(("Removing stream out queue for id %d", id ));
+                stream_out_connections.removeInMap( id );
+                return;
+            }
+            
             if ( notification->isName(notification_review_stream_manager_fast) )
             {
                 // Review stream operations to be executed
@@ -90,10 +100,13 @@ namespace samson {
                 
                 // Review queues
                 au::map< std::string , Queue >::iterator it_queues;                
-                
                 for ( it_queues = queues.begin() ; it_queues != queues.end() ; it_queues++ )
                     it_queues->second->review();
 
+                // Review StreamOutConnections
+                au::map< int , StreamOutConnection >::iterator it;
+                for( it =  stream_out_connections.begin() ; it != stream_out_connections.end() ; it++ )
+                    it->second->scheduleNextTasks();    // It returns NULL when no more operations are scheduled
                 
                 return;
             }
@@ -143,15 +156,20 @@ namespace samson {
         }
         
         
-        void StreamManager::addBlocks( std::string queue_name ,  BlockList *bl )
+        void StreamManager::addBlocks( std::string queue_name ,  BlockList *list )
         {
             
             // Get or create the queue
             Queue *queue = getQueue( queue_name );
             
             // Add the blocks to the queue ( no information about any particular task at the moment )
-            queue->push( bl );
+            queue->push( list );
 
+            // Review stream_out_queues...
+            au::map< int , StreamOutConnection >::iterator it_connections;
+            for( it_connections = stream_out_connections.begin() ; it_connections != stream_out_connections.end() ; it_connections++)
+                it_connections->second->push( queue_name , list );
+            
             // review all the automatic operations ( maybe we can only review affected operations in the future... )
             reviewStreamOperations();            
         }
@@ -291,6 +309,9 @@ namespace samson {
             // Information about queues
             au::xml_iterate_map(output, "queues", queues);
 
+            // StreamOutQueues
+            au::xml_iterate_map( output , "stream_out_connections" , stream_out_connections );
+            
             // Tasks
             output << "<queue_tasks>\n";
             queueTaskManager.getInfo( output );
@@ -562,7 +583,36 @@ namespace samson {
             fclose( file );
             
         }
-     
+
+        void StreamManager::connect_to_queue( int fromId , std::string queue )
+        {
+            StreamOutConnection* stream_out_connection = stream_out_connections.findInMap( fromId );
+            if( !stream_out_connection)
+            {
+                stream_out_connection = new StreamOutConnection( this , fromId );
+                stream_out_connections.insertInMap(fromId, stream_out_connection );
+            }
+            
+            StreamOutQueue * stream_out_queue = stream_out_connection->add_queue( queue );
+            
+            // Push the current content of the queue ( this should be optional in the future )
+            stream_out_queue->push( getQueue(queue)->list );
+            
+        }
+        
+        void StreamManager::disconnect_from_queue( int fromId , std::string queue )
+        {
+            StreamOutConnection* stream_out_connection = stream_out_connections.findInMap( fromId );
+            if( !stream_out_connection)
+            {
+                stream_out_connection = new StreamOutConnection( this , fromId );
+                stream_out_connections.insertInMap(fromId, stream_out_connection );
+            }
+            
+            stream_out_connection->remove_queue( queue );
+        }
+        
+        
         void StreamManager::reset()
         {
             queues.clearMap();
@@ -573,7 +623,9 @@ namespace samson {
             //workerCommands.clearMap();
 
         }
+
         
+
         
     }
 }

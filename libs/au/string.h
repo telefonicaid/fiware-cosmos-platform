@@ -77,6 +77,9 @@ namespace au {
     // Get a string with lines that fit into console...
     std::string strToConsole( std::string& txt );
     
+    // Get a line with the size of console
+    std::string lineInConsole( char c );
+    
     
     // Backward search of sequences
     const char *laststrstr(const char *source , const char *target );

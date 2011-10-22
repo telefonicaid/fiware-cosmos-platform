@@ -172,7 +172,23 @@ namespace samson
             runConsole();
     }
     
+    const char* general_commands[] =  
+        { "ls_operations", "ls_datas", "reload", "set", "unset", "ls_local" , "rm_local" , 
+            "ls_operation_rates", "info" , "ps" , "ls_modules", "engine_show" , "ps_network", NULL };                                           
     
+    const char* batch_commands[] = { "ls" , "add" , "rm" , "mv" , "clear" , "clear_jobs" , "kill",
+                                    "upload" , "download", "ps_jobs" , "ps_tasks", NULL };
+    
+    const char* stream_commands[] = { "run_stream_operation", "push" , "pop", "add_stream_operation" , "rm_stream_operation" ,"set_stream_operation_property" , "rm_queue" , "cp_queue", "set_queue_property", "ls_queues", "ls_queues_info",  "ps_stream", 
+        "ls_stream_operation" , "ls_block_manager" , NULL};
+        
+    const char* general_description = "Samson is a distributed platform to process big-data sources. It has two modes of working: batch & stream.";
+
+    const char* topics[] = { "queues" , "stream_processing", "batch_processing", "upload_data" , "sets" , NULL };
+    
+    const char* auths = "Andreu Urruela , Gregorio Sardina & Ken Zangelin";
+    
+/*    
     const char* help_message =
     "Samson is a distributed platform to process big-data sources. It has been specially\n"
     "designed to process the output of log-systems like CDRs or DPI's output\n"
@@ -198,90 +214,206 @@ namespace samson
     "                                       ls_stream_operation , ls_block_manager \n"
     "\n"
     ;
-    
+*/    
     const char* help_commands[][2] =                                            
     {                                                                           
-        { "info"                    , "info select/xml/value [select_query [-limit n]]     Tool used to query the general xml based monitorization.\n" 
-        
-                                      "For the select option:"
-                                      "                                     [select_query] Query in xpath notation"
-                                      "                                     [-limit n] Limit the depth of the information tree"
+        { "info"                    ,   "Usage: info <xpath> [-limit tdeepth]\n\n"
+                                        "Tool used to query the general xml based monitorization. Used mainly for SAMSON debugging\n"
+                                        "Example info //worker -limit 4\n" 
+                                        "Inputs:\n"
+                                        "\t<xpath> Path in the xml document ( example //workerFor )\n"
+                                        "\tdeepth] Max depth int he xml tree\n"
         },
-        { "ls"                      , "ls          Show a list of all the key-value sets" } ,                
-        { "ls_local"                , "ls_local      Show a list of current directory with relevant information about local data-sets" } ,                
-        { "rm_local"                , "rm_local dir_name      Remove a local directory and all its contents" } ,                
-        { "ls_modules"              , "ls_modules          Show a list of modules installed at controller, workers and delilah" } ,                
-        { "rm"                      , "rm <set>    Remove a key-value set. Usage rm <set>" },              
-        { "mv"                      , "mv <set> <new_set>     Change the name of a particular key-value set"},
-        { "clear"                   , "clear <set>    Clear the content of a particular key-value set"},
-        { "ls_processes"            , "ls_processes     Shows a list with all the processes ( batch and stream ) running on all the workers"},
+        { "ls"                      ,   "Show a list of all the key-value sets (batch processing)" } ,                
+        { "ls_local"                ,   "Show a list of current directory with relevant information about local data-sets" } ,                
+        { "rm_local"                ,   "Usage: rm_local dir_name\n\n"
+                                        "Remove a local directory and all its contents" 
+        } ,                
+        { "ls_modules"              ,   "Usage: ls_modules [name]\n\n"
+                                        "Show a list of modules installed at controller, workers and delilah\n" 
+                                        "Inputs:\n"
+                                        "\t[name] Optional name ( or first part of the name ) of a module to filter output\n"
+        } ,                
+        { "rm"                      ,   "Usage: rm <set>\n\n"
+                                        "Remove a key-value set (batch processing)" 
+        },              
+        { "mv"                      ,   "Usage mv <set> <new_set>\n\n"
+                                        "Change the name of a particular key-value set (batch processing)"
+        },
+        { "clear"                   ,   "Usage: clear <set>\n\n"
+                                        "Clear the content of a particular key-value set\n"
+        },
+        { "ls_processes"            ,   "Shows a list with all the processes ( batch and stream ) running at workers"},
 
-        { "ls_operations"           , "ls_operations [op_name]      Show a list of operations.\n" 
-                                      "                             If [op_name] is specified, only operations starting with op_name are shown"},
-        { "ls_datas"                , "ls_datas [data_name]      Show a list of data-types.\n" 
-                                      "                          If [data_name] is specified, only data-types starting with data_name are shown"},
-        { "ps"                      , "ps [-clear] [id]     Show all current processes running (or finished) on delilah client\n"
-            "                     [-clear] removes finished or error marked processes\n"
-            "                     [id] get more help about a particular process" } ,                
+        { "ls_operations"           ,   "Usage: ls_operations [op_name]\n\n"
+                                        "Shows a list of available operations.\n"
+                                        "Inputs:\n"
+                                        "\t[op_name] : Name or first letters of an operation\n"
+        },
+        { "ls_datas"                ,   "Usage: ls_datas [data_name]\n\n"
+                                        "Shows a list of available data-types.\n"
+                                        "Inputs:\n"
+                                        "\t[data_name] : Name or first letters of a data-type\n"
+        },
+        { "ps"                      ,   "Usage: ps [-clear] [id]\n\n"
+                                        "Show information about delilah processes.\n"
+                                        "Inputs:\n"
+                                        "\t[-clear] removes finished or error processes\n"
+                                        "\t[id] Identifier of a process. It gets more help about this particular process" 
+        } ,                
         
-        { "ps_network"              , "ps_network           Get information about network connections in the SAMSON cluster"},
-        { "reload_modules"          , "reload_modules        reload_modules used by the platform"},
+        { "ps_network"              ,   "Get information about network connections in the SAMSON cluster"},
+        { "reload_modules"          ,   "Reload modules at controller and workers"},
         
         
-        { "add"                     , "add <set> <key-format> <value-format>\n"
-            "add <set> -txt\n"
-            "Add a key-value set with a particular format. ( -txt create text sets )"
-        	"add <set> -f\n"
-        		        "Suppress error if <set> already exists (with the same key-value types). If different key-value types, still error"},
+        { "add"                     ,   "Usage:add <set> <key-format> <value-format> [-txt] [-f]\n\n"
+                                        "Add a key-value or txt data set (batch processing)"
+                                        "Inputs:\n"
+                                        "\t<set>\tName of the new set\n"
+                                        "\t<key-format>    DataType used for key\n"
+                                        "\t<value-format>  DataType used for value\n"
+                                        "\t[-txt]          It creates a txt data-set\n"
+                                        "\t[-f]            Flag to suppress the error if <set> already exists (with the same key-value types). If different key-value types, still error"
+        },
         
-        { "set"                     , "set <var> <value>       Set environment variables ( all operations can use them )" },
-        { "unset"                   , "unset <var>             Remove an environment variable " },
+        { "sets"                    ,   "Enviroment variables are used to set some local properties at delilah that will be sent along with "
+                                        "all the command we sent to SAMSON platform. Use set and unset to define and remove these environment "
+                                        "variable. Note that thrird party software executed at SAMSON can use these values"
+        },
+        { "set"                     ,   "Usage: set <var> <value>\n\n"
+                                        "Set environment variable <set> to value <value>\n" 
+                                        "Type 'help sets' for more information about environment variables\n"
+        },
+        { "unset"                   ,   "Usage: unset <var>\n\n"
+                                        "Remove an environment variable\n"
+                                        "Inputs:\n"
+                                        "\t<var> Name of the enviroment variable we want to remove.\n"
+                                        "Type 'help sets' for more information about environment variables\n"
+        },
         
-        { "ls_operations"           , "ls_operations [-begin X] [-end -X]      Get a list of the available operations ( parser, map, reduce, script, etc)"},
-        { "ls_datas"                , "ls_datas [-begin X] [-end -X]           Get a list of available data types for keys and values"},
         
-        { "ps_jobs"                 , "ps_jobs           Get a list of running or finished (batch processing) jobs in the platform" },
-        { "ps_tasks"                , "ps_tasks          Get a list of running batch processing tasks on controller and workers" },
-        { "clear_jobs"              , "clear_jobs (cj)   Clear finished or error marked jobs in the platform" },
-        { "kill"                    , "kill (k)  job_id  Kill the job with job_id and all its sub-tasks" },
+        { "ps_jobs"                 ,   "Get a list of running or finished (batch processing) jobs in the platform" },
+        { "ps_tasks"                ,   "Get a list of running batch processing tasks on controller and workers" },
+        { "clear_jobs"              ,   "Clear finished or error marked jobs in the platform" },
+        { "kill"                    ,   "Usage: kill <job>\n\n"
+                                        "Kill job <job> and all its sub-tasks" 
+        },
         
-        { "upload"                  , "upload  <local_file_name> <set>       Load txt files to the platform, available for batch processing" },
-        { "download"                , "download  <set> <local_directory_name> [-force]     Download the dataset from the platform to local directory\n" 
-            "                                               [-force] Remove local directory first"  },
+        { "upload_data"             ,   "To upload a txt file to samson platform, follow these steps:\n"
+                                        " * Create a txt data set with add command : add my_set -txt\n"
+                                        " * Upload the content with upload command : upload my_local_file my_set\n\n"
+                                        "Once data is uploaded to the platform, several operations can be aplied for processing\n"
+                                        "Try 'txt.parser_words my_set my_words -c' to transform this txt set into a binary one containing words\n\n"
+                                        "Any generated data-set ( txt or binary ) can be downloaded to a local directory with download command\n"
+                                        "Try download my_words local_my_words\n\n"
+                                        "Finally, use samsonCat utility to visualize the content of these downloaded files.\n\n"
+                                        "Type 'help add' , 'help upload' and 'help download' for help on individual commands\n"
+        },
+        { "upload"                  ,   "Usage: upload  <local_file_ir_directory> <set>\n\n"
+                                        "Upload txt files to the platform (batch processing)" 
+                                        "Inputs:\n"
+                                        "\t<local_file_ir_directory>    Local txt file or directory containing txt files\n"
+                                        "\t<set>                        Name of the data set in SAMSON platform( create it with add -txt <set> )"    
+                                        "Type 'help upload_data for more information about upload and download process\n"
+        },
+        { "download"                ,   "Usage: download  <set> <local_directory_name> [-force]\n\n"
+                                        "Download the dataset from the platform to local directory\n" 
+                                        "Inputs:\n"
+                                        "\t<local_directory_name>    Local name of the directory where files will be donwloadd\n"
+                                        "\t<set>                     Name of the data set in SAMSON platform( create it with add -txt <set> )\n"    
+                                        "\t[-force]                  Remove local directory if it exists\n"
+                                        "Note: It is not necessary to create the directory. Delilah will do it for you\n",
+        },
         
-        { "push"                    , "push <local_file_or_dir> <queue>        Push content of a local file/directory to a queue"},
-        { "pop"                     , "pop <queue> <local_dir>                 Pop content of a queue to a local directory. Also working for binary queues. Use samsonCat to check content"},
+        { "push"                    ,   "Usage: push <local_file_or_dir> <queue>\n\n"
+                                        "Push content of a local file/directory to a queue"},
+        { "pop"                     ,   "Usage: pop <queue> <local_dir>\n\n"
+                                        "Pop content of a queue to a local directory. Also working for binary queues. Use samsonCat to check content"},
         
-        { "add_stream_operation"    , "add_stream_operation <name> <operation> <input .. output queues>     Add an operation to automatically process data from input queues to output queues"},
+        { "add_stream_operation"    ,   "Usage: add_stream_operation <name> <operation> <input .. output queues>\n\n"
+                                        "Add an operation to automatically process data from input queues to output queues\n"},
         
-        { "rm_stream_operation"     , "rm_stream_operation <name>    Remove a previously introduced operation with add_stream_operation"},
+        { "rm_stream_operation"     ,   "Usage: rm_stream_operation <name>\n\n"
+                                        "Remove a previously introduced operation with add_stream_operation\n"},
 
-        { "set_stream_operation_property"     , "operation not yet available"},
+        { "set_stream_operation_property"     , "Usage: set_stream_operation_property <name> <variable> <value>\n\n"},
         
-        { "ls_stream_operations"    , "ls_stream_operation           Show a list of active stream operations"},
+        { "ls_stream_operations"            , "Show a list of stream operations\n"},
+        { "ls_stream_operations_info"       , "Show a more detailed list of stream operations\n"},
                 
-        { "rm_queue"                , "rm_queue <queue>         Remove a queue" },
-                
-        { "ls_queues"               , "ls_queues        Show a list of current queues in all the workers" },
-        { "ls_queues_info"               , "ls_queues_info        Show a list of current queues in all the workers with more information about blocks" },
+        { "rm_queue"                ,   "Usage: rm_queue <queue>\n\n"
+                                        "Remove queue <queue>\n" 
+                                        "Type 'help queues' for more information\n"
+        },
+
         
-        { "ps_stream"               , "ps_stream        Get a list of current stream tasks"},
+        { "queues"              ,   "SAMSON platform is organized in queues for stream processing.\n" 
+                                    "A queue is basically a box where blocks of data are accumulated\n\n"
+                                    "The simplest way to create a queue is pushing some local txt files to it. Try this...\n"
+                                    " * push <local_file> <queue_name>\n"
+                                    " * ls_queues \n"
+                                    "\n"
+                                    "Once data is accumulated in a particular queue, we can process using run_stream_operation or add_stream_operation. Try this...\n"
+                                    " * run_stream_operation txt.parser_words <input_queue> <output_queue> -clear_inputs\n"
+                                    "A new queue is generated with the contents of the operation's output\n"
+                                    "Finally we can download contents of a queue to a local directory with...\n"
+                                    " * pop <queue> <local_directory>\n"
+                                    "Use samsonCat to visualize contents of downloaded files\n"
+            
+        },
+        { "stream_processing"   , "Information about stream_processing comming soon..." 
+        },
+        { "batch_processing"    , "Information about batch_processing comming soon..." 
+        },
         
-        { "engine_show"             , "engine_show      Show a status information of the engine resources running on all the elements of SAMSON platform"},
+        { "ls_queues"               ,   "Usage: ls_queues [queue]\n\n"
+                                        "Show a list of current queues in all the workers\n" 
+                                        "Inputs:\n"
+                                        "\t[queue] : Name or first letters of queue to filter the output of this command\n"
+                                        "Type 'help queues' for more information\n"
+            
+        },
+        { "ls_queues_info"          ,   "Show a more detailed list of current queues.\n" 
+                                        "Type 'help queues' for more information\n"
+        },
+        
+        { "ps_stream"               , "Get a list of current stream tasks. Type 'help stream_processing' for more help."
+        },
+        
+        { "engine_show"             , "Show a status information of the engine (lower level system in SAMSON) in all workers and controller"},
     
-        { "run_stream_operation"    , "run_stream_operation [op_name] [queues...] [-clear_inputs]         Run a particular operation over stream queues"},
-        { "ls_stream_operation"    , "ls_stream_operation  List all stream operations scheduled with add_stream_operation"},
+        { "run_stream_operation"    ,   "Usage: run_stream_operation <op_name> [queues...] [-clear_inputs]\n\n"
+                                        "Run a particular operation over queues.\n"
+                                        "Inputs:\n"
+                                        "\t<op_name>        : Name of the operation. See 'help ls_operations' for more info\n"
+                                        "\t[queues]         : Name of the queues involved in this operation (inputs and outputs)\n"
+                                        "\t[-clear_inputs]  : Flag used to remove content from input queues when running this operation\n"
+                                        "Type 'help stream_processing' for more information\n"
+        },
         
-        { "ls_block_manager"        , "ls_block_manager             Get information about the block-manager for each worker" },
+        { "ls_stream_operation"    ,    "Show a list all stream operations in all workers\n"},
+        
+        { "ls_block_manager"        ,   "Get information about the block-manager for each worker\n" 
+                                        "Type 'help stream_processing' for more information\n"
+        },
     
-        { "cp_queue"                , "cp_queue  <from_queue> <to_queue>            Copy contents of one queue to another"},
-        { "ls_operation_rates"      , "ls_operation_rates           get a list of statistics about operations in the platform"},
-        { "set_queue_property"      , "set_queue_property queue property value               Specify a property of a particular queue"},
-        { "ls_stream_activity"      , "ls_stream_activity       show a list of the last activity logs about automatic stream processing"},
+        { "cp_queue"                ,   "Usage: cp_queue  <from_queue> <to_queue>\n\n"
+                                        "Copy contents of queue <from_queue> to queue <to_queue>\n"
+                                        "Type 'help queues' for more information\n"
+        },
+         
+        { "ls_operation_rates"      ,   "Get a list of statistics about operations in the platform\n"},
+        { "set_queue_property"      ,   "Usage: set_queue_property <queue> <property> <value>\n\n"
+                                        "Specify the value of property <property> for queue <queue>\n"
+                                        "Type 'help queues' for more information\n"
+        },
+         
+        { "ls_stream_activity"      ,   "Show a list of the last activity logs about automatic stream processing\n\n"
+                                        "Type 'help stream_processing' for more information\n"
+        },
         
-        { "connect_to_queue"        , "connect_to_queue queue           Connect to a particular queue to receive live data from SAMSON"},
-        { "disconnect_from_queue"   , "disconnect_from_queue            Disconnects from a particular queue to not receive live data anymore"},
-        
+        { "connect_to_queue"        , "Connect to a particular queue to receive live data from SAMSON"},
+        { "disconnect_from_queue"   , "Disconnects from a particular queue to not receive live data from SAMSON"},
         { NULL , NULL }   
     };
     
@@ -295,9 +427,47 @@ namespace samson
         pugi::str( node , 0 ,  output , 1000 );
         return output.str();
     }
-      
-    
 
+    std::string string_for_list( const char* list[] )
+    {
+            std::ostringstream output; 
+            int i = 0;
+            while( list[i] != NULL )
+            {
+                output << list[i];;
+                if( list[i+1] != NULL )
+                    output << ", ";
+                i++;
+            }
+            output << "\n";
+        
+        return output.str();
+    }
+    
+    void add( const char* list[] , std::vector<std::string> &commands )
+    {
+        int i = 0;
+        while( list[i] != NULL )
+        {
+            commands.push_back( list[i] );
+            i++;
+        }
+        
+    }
+    
+    const char* getHelpForCommand( const char *name )
+    {
+        int  i = 0 ;
+        while( help_commands[i][0] != NULL )
+        {
+            if( strcmp( name  , help_commands[i][0] ) == 0 )
+                return help_commands[i][1];
+            i++;
+        }
+        
+        return "No help";
+    }
+    
     
     
     size_t DelilahConsole::runAsyncCommand( std::string command )
@@ -332,36 +502,92 @@ namespace samson
                 
                 std::ostringstream output;
                 output << "\n";
-                output << "SAMSON v " << SAMSON_VERSION << "\n";
-                output << "==============================================================\n";
+                output << au::lineInConsole('=') << "\n";
+                output << " SAMSON v " << SAMSON_VERSION << "\n";
+                output << au::lineInConsole('=') << "\n";
                 output << "\n";
-                output << help_message;
+                output << au::indent( general_description ) << "\n";
+                output << "\n";
+                output << au::indent( au::str("Auths: %s", auths ) ) << "\n";
+                output << "\n";
+                output << au::indent( au::str("Telefonica I+D 2010" ) ) << "\n";
+                output << "\n";
+                output << au::lineInConsole('-') << "\n";
+
+                output << "\n";
+                output << "General commands: \n";
+                output << "\n";
+                output << au::indent( string_for_list( general_commands ) );
+                output << "\n";
+
+                output << "\n";
+                output << "Batch processing commands:\n";
+                output << "\n";
+                output << au::indent( string_for_list( batch_commands ) );
+                output << "\n";
+
+                output << "\n";
+                output << "Stream processing commands:\n";
+                output << "\n";
+                output << au::indent( string_for_list( stream_commands ) );
+                output << "\n";
+
+                output << "\n";
+                output << "Interesting topics:\n";
+                output << "\n";
+                output << au::indent( string_for_list( topics ) );
                 output << "\n";
                 
-                writeOnConsole( au::indent( output.str() ) );
+                
+                output << au::lineInConsole('-') << "\n";
+                output << "\n\n\t Type help all or help <command> for more information...\n";
+                
+                output << "\n";
+                
+                
+                std::string text = output.str();
+                
+                //writeOnConsole( au::strToConsole( text  ) );
+                writeOnConsole( text );
                 return 0;
             }
             else
             {
                 std::string command = commandLine.get_argument(1);
+                std::vector<std::string> commands;
                 
-                // Search into defined commands for help
-                int  i = 0 ;
-                while( help_commands[i][0] != NULL )
+                if ( command == "all" )
                 {
-                    if( strcmp( command.c_str()  , help_commands[i][0] ) == 0 )
-                    {
-                        std::ostringstream output;
-                        output << "\n";
-                        output << help_commands[i][1];
-                        output << "\n";
-                        writeOnConsole( au::indent( output.str() ) );
-                        return 0;
-                    }
-                    i++;
+                    // Print all help on screen
+                    add( general_commands , commands );
+                    add( batch_commands , commands );
+                    add( stream_commands , commands );
+
+                }
+                else if( command  == "general" )
+                    add( general_commands , commands );
+                else if( command  == "batch" )
+                    add( batch_commands , commands );
+                else if( command  == "stream" )
+                    add( stream_commands , commands );
+                else
+                {
+                    commands.push_back( command );
+                    
                 }
                 
-                writeWarningOnConsole(au::str("\nNot help for %s\n\n" , command.c_str()));
+                std::ostringstream output;
+                for ( size_t i = 0 ; i < commands.size() ; i++ )
+                {
+                    output << commands[i] << " :\n";
+                    output << "\n";
+                    output << au::indent( getHelpForCommand( commands[i].c_str() ) , 10 );
+                    output << "\n";
+                    output << "\n";
+                    
+                }
+
+                writeOnConsole( output.str() );
                 return 0;
             }
             

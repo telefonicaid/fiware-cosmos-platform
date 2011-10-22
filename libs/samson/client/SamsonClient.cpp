@@ -275,7 +275,7 @@ namespace samson {
     void SamsonClient::connect_to_queue( std::string queue )
     {
         std::string command = au::str("connect_to_queue %s" , queue.c_str() ); 
-        LM_M(("Command to connect to queue '%s'", command.c_str() ));
+        //LM_M(("Command to connect to queue '%s'", command.c_str() ));
         delilah->sendWorkerCommand( command , NULL );
     }
     

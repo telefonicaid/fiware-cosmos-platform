@@ -50,7 +50,7 @@ namespace au
 		// LOCK the mutex
 		int ans = pthread_mutex_unlock(&_lock);
 		if( ans )
-			LM_X(1,("token %s: pthread_mutex_lock return an error",name));
+			LM_X(1,("Token %s: pthread_mutex_lock returned error %d (%p)", name, ans, this));
 	}
     
     

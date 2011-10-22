@@ -398,6 +398,14 @@ namespace au {
 
     }
     
+    std::string lineInConsole( char c )
+    {
+        std::ostringstream output;
+        for (int i = 0 ; i < getTerminalWidth() ; i++ )
+            output << c;
+        return output.str();
+    }
+    
     std::string strWithMaxLineLength( std::string& txt , int max_line_length )
     {
         std::istringstream input_stream( txt );

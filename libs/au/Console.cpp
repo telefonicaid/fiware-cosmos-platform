@@ -101,7 +101,7 @@ namespace au
             return;
         }
         
-        printf("%s\n", strToConsole(message).c_str() );
+        printf("%s\n", message.c_str() );
         fflush( stdout );
 	}
 

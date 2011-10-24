@@ -234,9 +234,9 @@ namespace  samson {
             
             if ( format.isTxt() )
             {
-                // Write the content to the output
-                write(1,data,header->info.size );
-                return;
+				// Write the content to the output
+				(void) write(1, data, header->info.size);
+				return;
             }
             
             // Key value format

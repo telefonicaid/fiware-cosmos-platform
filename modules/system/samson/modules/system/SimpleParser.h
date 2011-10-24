@@ -43,6 +43,44 @@ namespace system{
 			}
 			
 		}
+
+		static void split_in_words( char *line , std::vector<char*>& words )
+		{
+		   size_t pos = 0;
+		   size_t previous = 0;
+
+		   bool finish = false;
+
+
+		   // Clear words vector
+		   words.clear();
+
+		   while( !finish )
+		   {
+
+			  if( ( line[pos] == ' ' ) || ( line[pos] == '\0' ) )
+			  {
+				 if( line[pos] == '\0' )
+					finish = true;
+
+				 // Artifical termination of string
+				 line[pos] = '\0';
+
+				 // Add the found word
+				 words.push_back(  &line[previous] );
+
+				 // Point to the next words
+				 previous = pos+1;
+
+			  }
+
+			  pos++;
+		   }
+
+		}
+
+
+
 	};
 
 } // end of namespace system

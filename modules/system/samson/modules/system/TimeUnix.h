@@ -56,6 +56,12 @@ class TimeUnix : public FixedLengthDataInstance<time_t>{
 
 public:
 
+	  void setCurrentTime()
+	  {
+		 value =  time(NULL);
+	  }
+
+
 	void operator= (int _value) {
 		value = _value;
 	}

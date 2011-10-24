@@ -7,7 +7,7 @@ all:
 	make compile
 	sudo make install
 
-release:
+release: 
 	make compile_release
 	sudo make install
 
@@ -21,12 +21,12 @@ compile_release: prepare_release
 	make -C build
 
 prepare:
-	mkdir build;cd build;../../../BUILD_RELEASE/apps/samsonModuleParser/samsonModuleParser ../module ../ Module
-	mkdir build;cd build;cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME);cd ..
+	mkdir build;cd build;../../../BUILD_DEBUG/apps/samsonModuleParser/samsonModuleParser ../module ../ Module
+	mkdir build;cd build;cmake ..  -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME);cd ..
 
 prepare_release:
 	mkdir build;cd build;../../../BUILD_RELEASE/apps/samsonModuleParser/samsonModuleParser ../module ../ Module
-	mkdir build;cd build;cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME);cd ..
+	mkdir build;cd build;cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME) ;cd ..
 
 xcode:
 	mkdir xcodeProj;cd xcodeProj;cmake .. -G Xcode;make;cd ..

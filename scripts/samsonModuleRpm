@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # Checking command line options
 #
@@ -26,85 +27,102 @@ vr=$version.$release
 tarfile=samson-$module-$version.tar.gz
 specfile=samson-$module-$vr.spec
 rdir=samson-$module-$version
+BUILD_ROOT=$(pwd)
+PACKAGE_DIR=${BUILD_ROOT}/rpm/scratch/$rdir
 
+# Help functions
+
+# Generate a list of module dependencies needed to install this module
+dependencylist()
+{
+    echo -n "Requires: samson = $version, samson-devel = $version" >> rpm_module_list.$$
+    if [ -f depends.txt ]; then
+        for needed_module in `cat depends.txt`
+        do
+            echo -n ", $needed_module = $version" >> rpm_module_list.$$
+        done
+    fi
+    cat rpm_module_list.$$
+    rm rpm_module_list.$$
+}
 
 
 #
 # Preparing HOME directory for RPM
 #
-echo "%_topdir $HOME/rpm" > ~/.rpmmacros
+echo "%_topdir $BUILD_ROOT/rpm" > ~/.rpmmacros
 echo "%_unpackaged_files_terminate_build      0" >> ~/.rpmmacros
 
-if [ ! -d $HOME/rpm ];
+if [ ! -d $BUILD_ROOT/rpm ];
 then
-    mkdir -p $HOME/rpm/{SOURCES,SPECS,BUILD,SRPMS,BUILDROOT}
+    mkdir -p $BUILD_ROOT/rpm/{SOURCES,SPECS,BUILD,SRPMS,BUILDROOT}
 fi
 
 #
 # Creating link for 'compiled stuff' ...
 #
 arch=$(uname -p)
-ln -s $HOME/rpm/BUILD/samson-$module-$version $HOME/rpm/BUILDROOT/samson-$module-$version-$release.$arch
+ln -s $BUILD_ROOT/rpm/BUILD/samson-$module-$version $BUILD_ROOT/rpm/BUILDROOT/samson-$module-$version-$release.$arch
 
 
 
 #
 # Creating the SPEC file
 #
-echo "Summary:   Samson $module module"                       > $HOME/rpm/SPECS/$specfile
-echo "Name:      samson-$module"                             >> $HOME/rpm/SPECS/$specfile
-echo "Version:   " $version                                  >> $HOME/rpm/SPECS/$specfile
-echo "Release:   " $release                                  >> $HOME/rpm/SPECS/$specfile
-echo "License:   commercial"                                 >> $HOME/rpm/SPECS/$specfile
-echo "Group:     Applications/Engineering"                   >> $HOME/rpm/SPECS/$specfile
-echo "Source:    http://www.tid.es/samson-$module-$version.tar.gz"   >> $HOME/rpm/SPECS/$specfile
-echo "BuildRoot: /var/tmp/%{name}-buildroot"                 >> $HOME/rpm/SPECS/$specfile
-echo                                                         >> $HOME/rpm/SPECS/$specfile
-echo "%description"                                          >> $HOME/rpm/SPECS/$specfile
-echo "The Samson Map Reduce Platform ..."                    >> $HOME/rpm/SPECS/$specfile
-echo                                                         >> $HOME/rpm/SPECS/$specfile
-echo "%prep"                                                 >> $HOME/rpm/SPECS/$specfile
-echo "%setup"                                                >> $HOME/rpm/SPECS/$specfile
-echo                                                         >> $HOME/rpm/SPECS/$specfile
-#echo "%install"                                              >> $HOME/rpm/SPECS/$specfile
-echo                                                         >> $HOME/rpm/SPECS/$specfile
-echo "%clean"                                                >> $HOME/rpm/SPECS/$specfile
-echo                                                         >> $HOME/rpm/SPECS/$specfile
-echo "%files"                                                >> $HOME/rpm/SPECS/$specfile
-echo "/opt/samson/modules/lib$module.so"                     >> $HOME/rpm/SPECS/$specfile
-echo "/usr/local/include/samson/modules/$module/"'*.h'         >> $HOME/rpm/SPECS/$specfile
-echo "%changelog"                                            >> $HOME/rpm/SPECS/$specfile
-echo                                                         >> $HOME/rpm/SPECS/$specfile
+echo "Summary:   Samson $module module"                       > $BUILD_ROOT/rpm/SPECS/$specfile
+echo "Name:      samson-$module"                             >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "Version:   " $version                                  >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "Release:   " $release                                  >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "License:   commercial"                                 >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "Group:     Applications/Engineering"                   >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "Source:    http://www.tid.es/samson-$module-$version.tar.gz"   >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "BuildRoot: /var/tmp/%{name}-buildroot"                 >> $BUILD_ROOT/rpm/SPECS/$specfile
+dependencylist                                               >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "Requires: samson = 0.6"                                >> $BUILD_ROOT/rpm/SPECS/$specfile 
+echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "%description"                                          >> $BUILD_ROOT/rpm/SPECS/$specfile
+# TODO - pull description in from a flat file
+echo "Samson module $module"                                 >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "%prep"                                                 >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "%setup"                                                >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
+#echo "%install"                                              >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "%clean"                                                >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "%files"                                                >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "/opt/samson/modules/lib$module.so"                     >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "/opt/samson/include/samson/modules/$module/"'*.h'      >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "%changelog"                                            >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
 
 
 
 #
 # Preparing the directory with the RPM contents
 #
-rm -rf ~/$rdir
-mkdir -p ~/$rdir/usr/local/include/samson/modules/$module
-mkdir -p ~/$rdir/opt/samson/modules
-#cp /usr/local/include/samson/modules/$module/*.h   ~/$rdir/usr/local/include/samson/modules/$module/
-#cp /opt/samson/modules/lib$module.so               ~/$rdir/opt/samson/modules/
-cp samson/modules/$module/*.h   ~/$rdir/usr/local/include/samson/modules/$module/
-cp build/lib$module.so               ~/$rdir/opt/samson/modules/
+rm -rf $PACKAGE_DIR
+mkdir -p $PACKAGE_DIR/opt/samson/include/samson/modules/$module
+mkdir -p $PACKAGE_DIR/opt/samson/modules
+cp /opt/samson/include/samson/modules/$module/*.h   $PACKAGE_DIR/opt/samson/include/samson/modules/$module/
+cp /opt/samson/modules/lib$module.so               $PACKAGE_DIR/opt/samson/modules/
 
 
 #
 # Create the tar file
-#
-cd
-tar cvfz $tarfile $rdir
-mv $tarfile ~/rpm/SOURCES
-cd -
-
+cd $PACKAGE_DIR/..
+tar cvfz $tarfile $rdir 
+mv $tarfile $BUILD_ROOT/rpm/SOURCES
 
 
 #
 # And finally, create the RPM
 #
-cd ~/rpm/SPECS
-rpmbuild -ba $specfile
-cd -
-mkdir -p ../../package/rpm
-mv ~/rpm/RPMS/$arch/samson-$module-$version-$release.$arch.rpm ../../package/rpm/
+cd $BUILD_ROOT/rpm/SPECS
+rpmbuild -bb $specfile
+if [ ! -d $BUILD_ROOT/package/rpm/ ];
+then
+    mkdir -p $BUILD_ROOT/package/rpm
+fi
+mv $BUILD_ROOT/rpm/RPMS/$arch/samson-$module-$version-$release.$arch.rpm $BUILD_ROOT/../../package/rpm/

@@ -1,6 +1,12 @@
 ifndef SAMSON_HOME
 SAMSON_HOME=/opt/samson
 endif
+ifndef SAMSON_VERSION
+SAMSON_VERSION=0.6
+endif
+ifndef SAMSON_RELEASE
+SAMSON_RELEASE=1
+endif
 
 default:
 	svn up
@@ -155,42 +161,44 @@ clear_ipcs:
 set_ssm_linux:
 	sudo sysctl -w kernel.shmmax=64000000
 
-rpm:
-		 scripts/samsonRpm 0.6 1
-		 cd modules/cdr;                   ../../scripts/samsonModuleRpm cdr 0.6 1
-		 cd modules/example;               ../../scripts/samsonModuleRpm example 0.6 1
-		 cd modules/graph;                 ../../scripts/samsonModuleRpm graph 0.6 1
-		 cd modules/osn;                   ../../scripts/samsonModuleRpm osn 0.6 1
-		 cd modules/sna;                   ../../scripts/samsonModuleRpm sna 0.6 1
-		 cd modules/sort;                  ../../scripts/samsonModuleRpm sort 0.6 1
-		 cd modules/system;                ../../scripts/samsonModuleRpm system 0.6 1
-		 cd modules/terasort;              ../../scripts/samsonModuleRpm terasort 0.6 1
-		 cd modules/testcomparefunctions; ../../scripts/samsonModuleRpm testcomparefunctions 0.6 1
-		 cd modules/tienda;                ../../scripts/samsonModuleRpm tienda 0.6 1
-		 cd modules/txt;                   ../../scripts/samsonModuleRpm txt 0.6 1
-		 cd modules/url;                   ../../scripts/samsonModuleRpm url 0.6 1
-		 cd modules/urlbenchmark;         ../../scripts/samsonModuleRpm urlbenchmark 0.6 1
-		 # cd modules/sna_light;             ../../scripts/samsonModuleRpm sna_light 0.6 1
+rpm: install
+	scripts/samsonRpm $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	scripts/samsonModuleDependencies
+	cd modules/cdr;                   ../../scripts/samsonModuleRpm cdr $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/example;               ../../scripts/samsonModuleRpm example $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/graph;                 ../../scripts/samsonModuleRpm graph $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/osn;                   ../../scripts/samsonModuleRpm osn $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/sna;                   ../../scripts/samsonModuleRpm sna $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/sort;                  ../../scripts/samsonModuleRpm sort $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/system;                ../../scripts/samsonModuleRpm system $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/terasort;              ../../scripts/samsonModuleRpm terasort $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/testcomparefunctions; ../../scripts/samsonModuleRpm testcomparefunctions $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/tienda;                ../../scripts/samsonModuleRpm tienda $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/txt;                   ../../scripts/samsonModuleRpm txt $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/url;                   ../../scripts/samsonModuleRpm url $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/urlbenchmark;         ../../scripts/samsonModuleRpm urlbenchmark $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	# cd modules/sna_light;             ../../scripts/samsonModuleRpm sna_light $(SAMSON_VERSION) $(SAMSON_RELEASE)
 
 # currently the deb scripts require Samson be installed before 
 # the package can be generated. Using SAMSON_HOME we can override
 # the default install location so as to not trash a live installation
 deb: install
-		 scripts/samsonDeb 0.6 1
-		 scripts/samsonDebDev 0.6 1
-		 cd modules/cdr;                   ../../scripts/samsonModuleDeb cdr 0.6 1
-		 cd modules/example;               ../../scripts/samsonModuleDeb example 0.6 1
-		 cd modules/graph;                 ../../scripts/samsonModuleDeb graph 0.6 1
-		 cd modules/osn;                   ../../scripts/samsonModuleDeb osn 0.6 1
-		 cd modules/sna;                   ../../scripts/samsonModuleDeb sna 0.6 1
-		 cd modules/sort;                  ../../scripts/samsonModuleDeb sort 0.6 1
-		 cd modules/system;                ../../scripts/samsonModuleDeb system 0.6 1
-		 cd modules/terasort;              ../../scripts/samsonModuleDeb terasort 0.6 1
-		 cd modules/testcomparefunctions; ../../scripts/samsonModuleDeb testcomparefunctions 0.6 1
-		 cd modules/tienda;                ../../scripts/samsonModuleDeb tienda 0.6 1
-		 cd modules/txt;                   ../../scripts/samsonModuleDeb txt 0.6 1
-		 cd modules/url;                   ../../scripts/samsonModuleDeb url 0.6 1
-		 cd modules/urlbenchmark;         ../../scripts/samsonModuleDeb urlbenchmark 0.6 1
+	scripts/samsonDeb $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	scripts/samsonModuleDependencies
+	scripts/samsonDebDev $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/cdr;                   ../../scripts/samsonModuleDeb cdr $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/example;               ../../scripts/samsonModuleDeb example $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/graph;                 ../../scripts/samsonModuleDeb graph $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/osn;                   ../../scripts/samsonModuleDeb osn $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/sna;                   ../../scripts/samsonModuleDeb sna $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/sort;                  ../../scripts/samsonModuleDeb sort $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/system;                ../../scripts/samsonModuleDeb system $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/terasort;              ../../scripts/samsonModuleDeb terasort $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/testcomparefunctions; ../../scripts/samsonModuleDeb testcomparefunctions $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/tienda;                ../../scripts/samsonModuleDeb tienda $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/txt;                   ../../scripts/samsonModuleDeb txt $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/url;                   ../../scripts/samsonModuleDeb url $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/urlbenchmark;         ../../scripts/samsonModuleDeb urlbenchmark $(SAMSON_VERSION) $(SAMSON_RELEASE)
 
 man:
 	 mkdir -p /usr/local/man/man1

@@ -46,8 +46,6 @@ namespace samson {
             environment.set("delayed_processing" , "no" );
             environment.set("priority","0" );
             
-            // By default it is active
-            setActive(true);
             
             // Additional information
             num_operations = 0;
@@ -168,22 +166,6 @@ namespace samson {
             return NULL;
         }
 
-        
-        
-        
-        void StreamOperation::setActive( bool _active )
-        {
-            if( _active )
-                environment.set("active", "yes" );
-            else
-                environment.set("active", "no" );
-        }
-        
-        bool StreamOperation::isActive()
-        {
-            return  (environment.get("active","no") == "yes" );
-        }
-
         void StreamOperation::setPaused( bool _paused )
         {
             if( _paused )
@@ -206,8 +188,6 @@ namespace samson {
         
         void StreamOperation::getInfo( std::ostringstream &output )
         {
-            if( !isActive() )
-                return;
             
             au::xml_open(output, "stream_operation");
             
@@ -316,8 +296,6 @@ namespace samson {
         void StreamOperationForward::review()
         {
             last_review = "not considered";
-            if( !isActive() )
-                return;
             
             // Extract data from input queue to the "input" blocklist ( no size limit... all blocks )
             Queue *input = streamManager->getQueue( input_queues[0] );
@@ -343,11 +321,6 @@ namespace samson {
             
             last_review = "";
             
-            if( !isActive() )
-            {
-                last_review = "Not active operation";
-                return false;
-            }
             
             if( isPaused() )
             {
@@ -601,12 +574,6 @@ namespace samson {
             bool delayed_processing = ( environment.get("delayed_processing", "yes") == "yes" );
             
             last_review = "";
-            
-            if( !isActive() )
-            {
-                last_review = "Not active operation";
-                return false;
-            }
             
             if( isPaused() )
             {

@@ -9,7 +9,7 @@ SAMSON_RELEASE=1
 endif
 
 default:
-	svn up
+#	svn up
 	make dd
 
 

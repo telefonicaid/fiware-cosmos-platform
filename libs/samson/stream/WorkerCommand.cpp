@@ -224,7 +224,7 @@ namespace samson {
                 std::string name            = cmd.get_argument( 1 );
                 
                 // Check it the queue already exists
-                StreamOperation * operation = streamManager->stream_operations.findInMap( name );
+                StreamOperation * operation = streamManager->stream_operations.extractFromMap( name );
                 
                 // Check if queue exist
                 if( !operation  )
@@ -232,10 +232,12 @@ namespace samson {
                     finishWorkerTaskWithError( au::str("StreamOperation %s does not exist" , name.c_str()  ) );
                     return;
                 }
-                
-                operation->setActive( false );
-                finishWorkerTask();
-                return;
+                else
+                {
+                    delete operation;
+                    finishWorkerTask();
+                    return;
+                }
                 
             }
             

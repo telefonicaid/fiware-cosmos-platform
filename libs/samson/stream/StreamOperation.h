@@ -136,9 +136,6 @@ namespace samson {
             
             void getInfo( std::ostringstream &output );            
             
-            void setActive( bool _active );
-            bool isActive();
-
             void setPaused( bool _active );
             bool isPaused();
             

@@ -235,7 +235,9 @@ namespace samson {
         
         StreamOperation* StreamManager::getStreamOperation( std::string name )
         {
-            return stream_operations.findInMap(name);
+            StreamOperation* so = stream_operations.findInMap(name);
+
+            return so;
         }
 
         
@@ -343,10 +345,9 @@ namespace samson {
             for (it_stream_operations = stream_operations.begin() ; it_stream_operations != stream_operations.end() ; it_stream_operations++ )
             {
                 it_stream_operations->second->review();
-                
                 ordered_stream_operations.push_back( it_stream_operations->second );
             }
-
+            
             // Sort ordered_stream_operations
             std::sort( ordered_stream_operations.begin() , ordered_stream_operations.end() , compareStreamOperation );
             
@@ -619,6 +620,9 @@ namespace samson {
             popQueues.clearMap();
             queueTaskManager.reset();
 
+            // Remove automatic stream operations...
+            stream_operations.clearMap();
+            
             // Pending study about how to do this..
             //workerCommands.clearMap();
 

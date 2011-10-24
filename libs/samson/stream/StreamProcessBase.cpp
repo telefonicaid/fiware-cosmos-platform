@@ -38,6 +38,11 @@ namespace samson {
             // Copy queue information for this task
             streamOperation = new StreamOperationBase( _streamOperation );
 
+            // Copy the entire environment to the operation..
+            std::map<std::string,std::string>::iterator it;
+            for (it = streamOperation->environment.environment.begin() ; it != streamOperation->environment.environment.end() ; it++)
+                operation_environment.set( it->first , it->second );
+            
             /*
             LM_M(("StreamOperation %s %s --> %d %d ( workers %d ) " , streamOperation->name.c_str() , streamOperation->operation.c_str() ,
                   (int) streamOperation->input_queues.size() , (int) streamOperation->output_queues.size() , streamOperation->num_workers ));

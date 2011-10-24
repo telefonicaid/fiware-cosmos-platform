@@ -69,6 +69,8 @@ namespace samson {
 
             int num_workers;                            // number of workers
             
+            au::Environment environment;                // Environment properties ( used to save and restore everything )
+            
             StreamOperationBase()
             {
                 
@@ -92,6 +94,10 @@ namespace samson {
                 output_queues.insert( output_queues.begin() , other->output_queues.begin() , other->output_queues.end() );
                 
                 num_workers = other->num_workers;
+                
+                // Copy environment properties
+                environment.copyFrom( &other->environment );
+                
             }
             
         };
@@ -108,7 +114,6 @@ namespace samson {
             
         public:
             
-            au::Environment environment;                // Environment properties ( used to save and restore everything )
 
             // Information about activity ( temporal counters )
             

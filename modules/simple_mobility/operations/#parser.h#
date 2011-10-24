@@ -8,7 +8,7 @@
 
 
 #include <samson/module/samson.h>
-#include <samson/modules/system/SimpleParser.h>    // SimpleParser 
+œôø±#include <samson/modules/system/SimpleParser.h>    // SimpleParser 
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/StringVector.h>
 

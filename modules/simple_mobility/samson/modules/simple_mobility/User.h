@@ -21,19 +21,16 @@ namespace simple_mobility{
 
 	   void init()
 	   {
-		  x.value = 0;
-		  y.value = 0;
+		  // Init the position elememnt
+		  position.set( 0 , 0);
+
+		  // Set length of the areas
 		  areasSetLength(0);
 
-		  track.value = 0;
+		  // Set tracking to false
+		  setTraking( false );
 	   }
 
-	   void setXY( int _x , int _y )
-	   {
-		  x = _x;
-		  y = _y;
-	   }
-	   
 	   bool isTracking()
 	   {
 		  return (track.value != 0);

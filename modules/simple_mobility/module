@@ -12,27 +12,45 @@ data UserArea
 	system.UInt radius;
 }
 
-data User
+data Position
 {
 	system.UInt x;
 	system.UInt y;
 
-	system.Int8 track;	
-	
-	vector simple_mobility.UserArea areas;
-
-
+	system.TimeUnix	time;
 }
 
-parser parser
+data User
+{
+	simple_mobility.Position position;
+	system.Int8 track;	
+	vector simple_mobility.UserArea areas;
+}
+
+parser parser_cdrs
+{
+	out system.UInt simple_mobility.Position
+
+	helpLine "Parse input CDRs to get user - position -timestamp elements"
+}
+
+parser parser_commands
 {
 	out system.UInt system.StringVector
-
-	helpLine "Parse input txt to generate commands per user"
+	helpLine "Parse input txt commands to update internal state of users"
 }
 
+reduce reduce_cdrs
+{
+	in system.UInt simple_mobility.Position
+	in system.UInt simple_mobility.User
+	out system.UInt system.String
+	out system.UInt simple_mobility.User
 
-reduce reduce
+	helpLine "Update internal state"
+}
+
+reduce reduce_commands
 {
 	in system.UInt system.StringVector
 	in system.UInt simple_mobility.User

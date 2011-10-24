@@ -1,6 +1,27 @@
 
-add_stream_operation simple_mobility_parser simple_mobility.parser txt commands
-set_stream_operation_property simple_mobility_parser delayed_processing no
+#Remove all stream operations ( this is only for demo ... )
+remove_all_stream
 
-add_stream_operation simple_mobility_reducer simple_mobility.reduce commands users messages users
-set_stream_operation_property simple_mobility_reducer delayed_processing no
+# Parser commands
+add_stream_operation simple_mobility_parser_commands simple_mobility.parser_commands txt_commands commands
+set_stream_operation_property simple_mobility_parser_commands delayed_processing no
+
+# Parser cdrs
+add_stream_operation simple_mobility_parser_cdrs     simple_mobility.parser_cdrs txt_cdrs cdrs
+set_stream_operation_property simple_mobility_parser_cdrs delayed_processing no
+
+# Reduce commands into users
+add_stream_operation simple_mobility_reduce_commands simple_mobility.reduce_commands commands users messages users
+set_stream_operation_property simple_mobility_reduce_commands delayed_processing no
+
+# Reduce cdrs into users
+add_stream_operation simple_mobility_reduce_cdrs simple_mobility.reduce_cdrs cdrs users messages users
+set_stream_operation_property simple_mobility_reduce_cdrs delayed_processing no
+
+
+#Priorities
+
+set_stream_operation_property simple_mobility_parser_commands   priority 9
+set_stream_operation_property simple_mobility_reduce_commands   priority 8
+set_stream_operation_property simple_mobility_parser_cdrs       priority 7
+set_stream_operation_property simple_mobility_reduce_cdrs       priority 6

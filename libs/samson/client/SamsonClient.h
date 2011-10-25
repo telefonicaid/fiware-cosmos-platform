@@ -268,8 +268,15 @@ namespace  samson {
             {
                 offset += key->parse(data+offset);
                 offset += value->parse(data+offset);
-                
-                std::cout << key->str() << " " << value->str() << std::endl;
+  
+
+		time_t _time = time(NULL);
+
+		char time_string[1024];
+		ctime_r(&_time, time_string );
+		time_string[strlen(time_string) - 1] = '\0';
+
+                std::cout << "[" << time_string << "] " << key->str() << " " << value->str() << std::endl;
             }        
         }
         

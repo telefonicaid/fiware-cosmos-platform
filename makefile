@@ -41,6 +41,9 @@ install: release
 	sudo make -C BUILD_RELEASE install
 	make release -C modules
 
+install_man: man
+	cp -r BUILD_RELEASE/man $(SAMSON_HOME)/
+ 
 clean:
 	make -C BUILD_DEBUG clean
 	make -C BUILD_RELEASE clean	
@@ -200,18 +203,19 @@ deb: install
 	cd modules/url;                   ../../scripts/samsonModuleDeb url $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	cd modules/urlbenchmark;         ../../scripts/samsonModuleDeb urlbenchmark $(SAMSON_VERSION) $(SAMSON_RELEASE)
 
-man:
-	 mkdir -p $(SAMSON_HOME)/man/man1
-	 mkdir -p $(SAMSON_HOME)/man/man7
-	 help2man --name="samson controller"                 --no-info --section=1 --manual=Samson samsonController       > $(SAMSON_HOME)/man/man1/samsonController.1
-	 help2man --name="samson worker"                     --no-info --section=1 --manual=Samson samsonWorker           > $(SAMSON_HOME)/man/man1/samsonWorker.1
-	 help2man --name="samson setup"                      --no-info --section=1 --manual=Samson samsonSetup            > $(SAMSON_HOME)/man/man1/samsonSetup.1
-	 help2man --name="samson spawner"                    --no-info --section=1 --manual=Samson samsonSpawner          > $(SAMSON_HOME)/man/man1/samsonSpawner.1
-	 help2man --name="samson platform interaction shell" --no-info --section=1 --manual=Samson delilah                > $(SAMSON_HOME)/man/man1/delilah.1
-	 cp man/samson-*.7 /usr/local/man/man7
+man: release
+	 mkdir -p BUILD_RELEASE/man/man1
+	 mkdir -p BUILD_RELEASE/man/man7
+	 help2man --name="samson controller"     --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonController/samsonController       > ./BUILD_RELEASE/man/man1/samsonController.1
+	 help2man --name="samson worker"         --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonWorker/samsonWorker     > ./BUILD_RELEASE/man/man1/samsonWorker.1
+	 help2man --name="samson setup"          --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonSetup/samsonSetup       > ./BUILD_RELEASE/man/man1/samsonSetup.1
+	 help2man --name="samson spawner"        --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonSpawner/samsonSpawner   > ./BUILD_RELEASE/man/man1/samsonSpawner.1
+	 help2man --name="samson platform interaction shell" --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/delilah/delilah                > ./BUILD_RELEASE/man/man1/delilah.1
+	 cp man/samson-*.7 ./BUILD_RELEASE/man/man7
 
 packages: install man rpm deb
 
 .PHONY : modules
 .PHONY : man
+
 # vim: noexpandtab

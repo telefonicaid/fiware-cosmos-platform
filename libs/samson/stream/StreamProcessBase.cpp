@@ -68,6 +68,9 @@ namespace samson {
         
         void StreamProcessBase::sendBufferToQueue( engine::Buffer *buffer , int outputWorker , std::string queue_name  )
         {
+	  if( queue_name == "null")
+	    return;
+
             Packet* packet = new Packet( Message::PushBlock );
             packet->buffer = buffer;    // Set the buffer of data
             packet->message->set_delilah_id( 0 );

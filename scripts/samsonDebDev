@@ -49,10 +49,10 @@ echo "Depends: samson (=$version), boost-dev, ncurses-dev, make, gcc, cmake, lib
 echo "Maintainer: Andreu Urruela <andreu@tid.es>"       >> debian/DEBIAN/control
 echo "Description: SAMSON is a high-performance MapReduce platform that is designed for scaling tasks on a cluster of commodity hardware. This platform removes the need to develop a system for parallelizing and synchronizing work between servers, allowing a person to develop the analytical models needed to solve both current and future problems.  SAMSON extends the traditional MapReduce paradigm by allowing an external data source to stream data into and out of the cluster. This allows the system to handle any volume of data thus providing the ability to continuously process new inputs and output states without restriction."  >> debian/DEBIAN/control 
 
-cp $SAMSON_HOME/lib/libau.a       debian/opt/samson/lib
-cp $SAMSON_HOME/lib/liblm.a       debian/opt/samson/lib
-cp $SAMSON_HOME/include/samson/module/*              debian/opt/samson/include/samson/module
-cp $SAMSON_HOME/include/samson/modules/system/*              debian/opt/samson/include/samson/modules/system
+cp $BUILD_ROOT/BUILD_RELEASE/libs/au/libau.a                            debian/opt/samson/lib
+cp $BUILD_ROOT/BUILD_RELEASE/libs/logMsg/liblm.a                        debian/opt/samson/lib
+cp $BUILD_ROOT/libs/samson/module/*.h                                   debian/opt/samson/include/samson/module
+cp $BUILD_ROOT/modules/system/samson/modules/system/*                   debian/opt/samson/include/samson/modules/system
 # TODO: Add template example module
 
 #

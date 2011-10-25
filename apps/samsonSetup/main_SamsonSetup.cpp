@@ -12,6 +12,7 @@
 
 #include "samson/module/KVFormat.h"             // samson::KVFormat
 #include "samson/module/ModulesManager.h"		// samson::ModulesManager
+#include "samson/common/samsonVersion.h"
 
 int logFd = -1;
 
@@ -169,6 +170,8 @@ int main(int argc, const char *argv[])
     cmdLine.set_flag_boolean("check");
     cmdLine.set_flag_boolean("help");
     cmdLine.set_flag_boolean("-help");
+    cmdLine.set_flag_boolean("version");
+    cmdLine.set_flag_boolean("-version");
 	cmdLine.parse(argc , argv);
 
 	samson::SamsonSetup::init(  );
@@ -201,6 +204,16 @@ int main(int argc, const char *argv[])
         std::cout << "\t samsonSetup is an interactive tool to specify all the setup values in a Samson deployment\n";
         std::cout << "\t Just type help inside samsonSetup to get a list of valid commands\n";
         std::cout << "\n";
+        return 0;
+    }
+
+    if( cmdLine.get_flag_bool("version") || cmdLine.get_flag_bool("-version") )
+    {
+	std::cout << SAMSON_VERSION;
+        std::cout << "\n";
+	std::cout << "Copyright (C) 2011 Telefonica Investigacion y Desarrollo\n";
+        std::cout << "\n";
+	std::cout << "Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.\n";
         return 0;
     }
     

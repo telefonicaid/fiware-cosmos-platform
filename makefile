@@ -201,18 +201,17 @@ deb: install
 	cd modules/urlbenchmark;         ../../scripts/samsonModuleDeb urlbenchmark $(SAMSON_VERSION) $(SAMSON_RELEASE)
 
 man:
-	 mkdir -p /usr/local/man/man1
-	 mkdir -p /usr/local/man/man7
-	 help2man --name="samson controller"                 --no-info --section=1 --manual=Samson samsonController       > /usr/local/man/man1/samsonController.1
-	 help2man --name="samson worker"                     --no-info --section=1 --manual=Samson samsonWorker           > /usr/local/man/man1/samsonWorker.1
-	 help2man --name="samson setup"                      --no-info --section=1 --manual=Samson samsonSetup            > /usr/local/man/man1/samsonSetup.1
-	 help2man --name="samson spawner"                    --no-info --section=1 --manual=Samson samsonSpawner          > /usr/local/man/man1/samsonSpawner.1
-	 help2man --name="samson platform interaction shell" --no-info --section=1 --manual=Samson delilah                > /usr/local/man/man1/delilah.1
+	 mkdir -p $(SAMSON_HOME)/man/man1
+	 mkdir -p $(SAMSON_HOME)/man/man7
+	 help2man --name="samson controller"                 --no-info --section=1 --manual=Samson samsonController       > $(SAMSON_HOME)/man/man1/samsonController.1
+	 help2man --name="samson worker"                     --no-info --section=1 --manual=Samson samsonWorker           > $(SAMSON_HOME)/man/man1/samsonWorker.1
+	 help2man --name="samson setup"                      --no-info --section=1 --manual=Samson samsonSetup            > $(SAMSON_HOME)/man/man1/samsonSetup.1
+	 help2man --name="samson spawner"                    --no-info --section=1 --manual=Samson samsonSpawner          > $(SAMSON_HOME)/man/man1/samsonSpawner.1
+	 help2man --name="samson platform interaction shell" --no-info --section=1 --manual=Samson delilah                > $(SAMSON_HOME)/man/man1/delilah.1
 	 cp man/samson-*.7 /usr/local/man/man7
 
 packages: install man rpm deb
 
 .PHONY : modules
 .PHONY : man
-
 # vim: noexpandtab

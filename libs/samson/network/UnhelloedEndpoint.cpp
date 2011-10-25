@@ -154,15 +154,19 @@ Status UnhelloedEndpoint::msgTreat2(Packet* packetP)
 
 				LM_T(LmtThreads, ("Creating writer and reader threads for endpoint %s (plus jobQueueSem and jobQueueStopper)", name()));
 
+                ep->thread_writer_running = true;
 				if ((ps = pthread_create(&ep->writerId, NULL, writerThread, ep)) != 0)
 				{
+                    thread_writer_running = false;    
 					LM_E(("Creating writer thread: pthread_create returned %d for %s", ps, name()));
 					delete packetP;
 					return PThreadError;
 				}
 
+                ep->thread_reader_running = true;
 				if ((ps = pthread_create(&ep->readerId, NULL, readerThread, ep)) != 0)
 				{
+                    thread_reader_running = false;
 					LM_E(("Creating reader thread: pthread_create returned %d for %s", ps, name()));
 					delete packetP;
 					return PThreadError;

@@ -117,6 +117,9 @@ public:
 	au::Token            jobQueueSem;
 	au::list<Packet>     jobQueue;
 
+    bool thread_writer_running;    
+    bool thread_reader_running;    
+    
 private:
 	EndpointManager*     epMgr;
 	char*                nameidhost;
@@ -198,6 +201,8 @@ public:
 
 	Status               realsend(Message::MessageType typ, Message::MessageCode code, void* data = NULL, int dataLen = 0, Packet* packetP = NULL);
 
+    int                  getIdInEndpointVector();   
+    
 private:
 	Status               partRead(void* vbuf, long bufLen, long* bufLenP, const char* what);
 	Status               partWrite(void* dataP, int dataLen, const char* what);

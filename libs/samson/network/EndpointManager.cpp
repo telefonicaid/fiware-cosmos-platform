@@ -884,6 +884,23 @@ void EndpointManager::periodic(void)
 		if (endpoint[ix]->state != Endpoint2::ScheduledForRemoval)
 			continue;
 
+        // Wake up writing thread if still pending...
+        {
+            //LM_M(("Endpoint %d will be removed %c %c" , ix , endpoint[ix]->thread_writer_running?'T':'F' ,  endpoint[ix]->thread_reader_running?'T':'F'   ));
+            au::TokenTaker tt( &endpoint[ix]->jobQueueSem );
+            tt.wakeUpAll();
+        }
+        
+        // Andreu: Not possible to remove endpoint until all threads have finished
+		if (endpoint[ix]->thread_writer_running)
+			continue;
+        
+ 		if (endpoint[ix]->thread_reader_running)
+			continue;
+
+        
+        //LM_M(("Endpoint %d removed!!" , ix ));
+        
 		LM_T(LmtThreads, ("readerId: 0x%x", endpoint[ix]->readerId));
 		LM_T(LmtThreads, ("writerId: 0x%x", endpoint[ix]->writerId));
 		LM_T(LmtThreads, ("threaded: %s",   (endpoint[ix]->threaded == true)? "TRUE" : "FALSE"));

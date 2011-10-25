@@ -63,58 +63,73 @@ void* readerThread(void* vP)
 	ep->stateSet(Endpoint2::ScheduledForRemoval);
 	LM_T(LmtThreads, ("Endpoint %s is back from Endpoint2::run. Leaving reader thread 0x%x", ep->name(), pthread_self()));
 	ep->readerId = 0;
+
+    // Set the flag to "non running reader"
+    ep->thread_reader_running = false;
 	return NULL;
 }
 
 
 
 /* ****************************************************************************
-*
-* writerThread - 
-*/
-void* writerThread(void* vP)
-{
-	Endpoint2* ep = (Endpoint2*) vP;
-
-	LM_T(LmtThreads, ("Writer thread(%s) 0x%x is running (REAL wFd: %d))    Endpoint at %p", ep->name(), pthread_self(), ep->wFdGet(), ep));
-
-	while (1)
-	{
-		Packet* packetP;
-
-        {
-            // Protect the access with a TokenTaker
-            au::TokenTaker tk( &ep->jobQueueSem );
-            
-            packetP = ep->jobQueue.extractFront();
-        }
+ *
+ * writerThread - 
+ */
+    void* writerThread(void* vP)
+    {
+        Endpoint2* ep = (Endpoint2*) vP;
         
-		LM_T(LmtThreads, ("Writer thread(%s) packetP: %p, jobs remaining: %d, my thread id: 0x%x", ep->name(), packetP, ep->jobQueue.size(), pthread_self()));
-		if (packetP != NULL)
-		{
-			Status s;
-
-			LM_T(LmtThreads, ("Writer thread(%s) Got a job from job queue - forwarding", ep->name()));
-			s = ep->realsend(packetP->msgType, packetP->msgCode, packetP->dataP, packetP->dataLen, packetP);
-			if (s != OK)
-			{
-				LM_E(("realsend(%s): %s", ep->name(), status(s)));
-				LM_T(LmtThreads, ("Leaving writer thread(%s) 0x%x because of send error", ep->name(), ep->writerId));
-				ep->stateSet(Endpoint2::ScheduledForRemoval);
-				ep->writerId = 0;
-				return NULL;
-			}
-		}
-		else
+        
+        LM_T(LmtThreads, ("Writer thread(%s) 0x%x is running (REAL wFd: %d))    Endpoint at %p", ep->name(), pthread_self(), ep->wFdGet(), ep));
+        int ix = ep->getIdInEndpointVector();
+        
+        
+        while (1)
         {
-            au::TokenTaker tk( &ep->jobQueueSem );
-            tk.stop(-1);// wait forever
+            Packet* packetP;
+            
+            {
+                // Protect the access with a TokenTaker
+                au::TokenTaker tk( &ep->jobQueueSem );
+                packetP = ep->jobQueue.extractFront();
+            }
+            
+            LM_T(LmtThreads, ("Writer thread(%s) packetP: %p, jobs remaining: %d, my thread id: 0x%x", ep->name(), packetP, ep->jobQueue.size(), pthread_self()));
+            if (packetP != NULL)
+            {
+                Status s;
+                
+                LM_T(LmtThreads, ("Writer thread(%s) Got a job from job queue - forwarding", ep->name()));
+                s = ep->realsend(packetP->msgType, packetP->msgCode, packetP->dataP, packetP->dataLen, packetP);
+                if (s != OK)
+                {
+                    LM_E(("realsend(%s): %s", ep->name(), status(s)));
+                    LM_T(LmtThreads, ("Leaving writer thread(%s) 0x%x because of send error", ep->name(), ep->writerId));
+                    ep->stateSet(Endpoint2::ScheduledForRemoval);
+                    ep->thread_writer_running = false;
+                    ep->writerId = 0;
+                    LM_M(("quitting... writerThread %d" , ix));
+                    return NULL;
+                }
+            }
+            else
+            {
+                au::TokenTaker tk( &ep->jobQueueSem );
+                tk.stop(-1);// wait forever
+            }
+            
+            if (ep->stateGet() == Endpoint2::ScheduledForRemoval)
+            {
+                ep->thread_writer_running = false;
+                return  NULL;
+            }
         }
-	}
 
-	return NULL;
-}
-
+        LM_X(1,("Internal error")); // No possible to get this line
+        ep->thread_writer_running = false;
+        return NULL;
+    }
+    
 
 
 /* ****************************************************************************
@@ -156,6 +171,10 @@ Endpoint2::Endpoint2
 	bytesOut      = 0;
 	msgsInErrors  = 0;
 	msgsOutErrors = 0;
+    
+    thread_writer_running = false;
+    thread_reader_running = false;
+    
 }
 
 
@@ -1086,16 +1105,20 @@ Status Endpoint2::msgTreat(void)
 
 			LM_T(LmtThreads, ("Creating writer and reader threads for endpoint %s (plus jobQueueSem and jobQueueStopper)", name()));
 
+            thread_writer_running = true;
 			if ((ps = pthread_create(&writerId, NULL, writerThread, this)) != 0)
 			{
+                thread_writer_running = false;
 				LM_E(("Creating writer thread: pthread_create returned %d for %s", ps, name()));
 				delete packetP;
 				return PThreadError;
 			}
 			LM_T(LmtThreads, ("Created Writer Thread with id 0x%x", writerId));
 
+            thread_reader_running = true;
 			if ((ps = pthread_create(&readerId, NULL, readerThread, this)) != 0)
 			{
+                thread_reader_running = false;
 				LM_E(("Creating reader thread: pthread_create returned %d for %s", ps, name()));
 				delete packetP;
 				return PThreadError;
@@ -1323,5 +1346,11 @@ const char* Endpoint2::statusString(char* buf, int bufLen, int ix)
 
 	return buf;
 }
+    
+int Endpoint2::getIdInEndpointVector()
+{
+    return idInEndpointVector;
+}
+    
 
 }

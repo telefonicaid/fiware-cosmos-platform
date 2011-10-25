@@ -1,0 +1,30 @@
+// Describes a Call-Detail Record, which is a communication via
+// phone call, text message, etc.
+//
+// Author: dmicol
+
+package es.tid.ps.protobuff;
+
+// Defines a Call-Detail Record.
+message CdrProto {
+  // Types of communication.
+  enum Type {
+    // Voice call.
+    VOICE = 1;
+    // Text message.
+    SMS = 2;
+    // Multimedia message.
+    MMS = 3;
+    // Data transfer.
+    DATA = 4;
+  }
+
+  // Phone number of the caller.
+  required string origin_num = 1;
+  // Phone number of the callee.
+  required string destination_num = 2;
+  // Time when the communication occurred.
+  required string date_time = 3;
+  // Communication type.
+  required Type comm_type = 4 [default = VOICE];
+}

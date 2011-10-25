@@ -1,0 +1,59 @@
+#!/bin/sh -x
+#
+# Checking command line options
+#
+if [ "$#" != 2 ];
+then
+    echo 'samsonDebDocs: Bad parameters'
+    echo 'Usage: samsonDebDocs <Version (e.g. 0.5)> <Release (e.g. 3)>'
+    exit 1
+fi
+
+if [ -z "${SAMSON_HOME}" ]; then
+    SAMSON_HOME=/opt/samson
+fi
+
+#
+# Using command line options
+#
+version=$1
+release=$2
+
+
+
+#
+# Help variables
+#
+package_name=samson-docs
+
+#
+# Populating debian
+#
+if [ -d debian ]; then
+    rm -rf debian
+fi
+
+mkdir -p debian/DEBIAN
+# Create the base structure needed
+mkdir -p debian/opt/samson/man
+mkdir -p debian/opt/samson/share
+
+echo "Package: $package_name"                                           >  debian/DEBIAN/control
+echo "Version: $version"                                                >> debian/DEBIAN/control
+echo "Section: tid"                                                     >> debian/DEBIAN/control
+echo "Priority: optional"                                               >> debian/DEBIAN/control
+echo "Architecture: $arch"                                              >> debian/DEBIAN/control
+echo "Maintainer: Andreu Urruela <andreu@tid.es>"                       >> debian/DEBIAN/control
+echo "Depends: samson (=$version)"                                      >> debian/DEBIAN/control
+echo "Description: Documentation for the SAMSON MapReduce Platform."    >> debian/DEBIAN/control 
+
+cp -r ./BUILD_RELEASE/man         debian/opt/samson
+cp -r README                      debian/opt/samson/share/README.txt
+
+#
+# Create the package
+#
+dpkg-deb --build debian ${package_name}_${version}-${release}.deb
+dpkg-deb -c  ${package_name}_${version}-${release}.deb
+mkdir -p package/deb    
+mv ${package_name}_${version}-${release}.deb package/deb

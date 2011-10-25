@@ -164,7 +164,7 @@ clear_ipcs:
 set_ssm_linux:
 	sudo sysctl -w kernel.shmmax=64000000
 
-rpm: install
+rpm: release modules man
 	scripts/samsonRpm $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	scripts/samsonModuleDependencies
 	cd modules/cdr;                   ../../scripts/samsonModuleRpm cdr $(SAMSON_VERSION) $(SAMSON_RELEASE)
@@ -185,9 +185,10 @@ rpm: install
 # currently the deb scripts require Samson be installed before 
 # the package can be generated. Using SAMSON_HOME we can override
 # the default install location so as to not trash a live installation
-deb: install
+deb: release modules man
 	scripts/samsonDeb $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	scripts/samsonDebDev $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	scripts/samsonDebDocs $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	scripts/samsonModuleDependencies
 	cd modules/cdr;                   ../../scripts/samsonModuleDeb cdr $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	cd modules/example;               ../../scripts/samsonModuleDeb example $(SAMSON_VERSION) $(SAMSON_RELEASE)

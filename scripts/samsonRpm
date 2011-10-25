@@ -28,8 +28,10 @@ samson_devel_tarfile=samson-devel-$version.tar.gz
 specfile=samson-$vr.spec
 rdir=samson-$version
 rdir_devel=samson-devel-$version
+rdir_docs=samson-docs-$version
 BUILD_ROOT=$(pwd)
 PACKAGE_DIR=${BUILD_ROOT}/rpm/scratch/$rdir
+PACKAGE_DEV_DIR=${BUILD_ROOT}/rpm/scratch/$rdir_devel
 PACKAGE_DEV_DIR=${BUILD_ROOT}/rpm/scratch/$rdir_devel
 
 
@@ -91,7 +93,7 @@ echo                                                         >> $BUILD_ROOT/rpm/
 echo "%package devel"                           >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "Summary: Headers and libraries for Samson development."  >> $BUILD_ROOT/rpm/SPECS/$specfile 
 echo "Group: Applications/Engineering"            >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo "Requires: protobuf-devel, gcc, gcc-c++, make, ncurses-devel, boost-devel"  >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "Requires: samson = $version, protobuf-devel, gcc, gcc-c++, make, ncurses-devel, boost-devel"  >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo                                     >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%description devel"                               >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "SAMSON is a high-performance MapReduce platform that is designed for scaling tasks on a cluster of commodity hardware. This platform removes the need to develop a system for parallelizing and synchronizing work between servers, allowing a person to develop the analytical models needed to solve both current and future problems.  SAMSON extends the traditional MapReduce paradigm by allowing an external data source to stream data into and out of the cluster. This allows the system to handle any volume of data thus providing the ability to continuously process new inputs and output states without restriction."                    >> $BUILD_ROOT/rpm/SPECS/$specfile
@@ -100,16 +102,29 @@ echo "/opt/samson/lib/libau.a"                >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "/opt/samson/lib/liblm.a"                >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "/opt/samson/include/samson/module/*"        >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "/opt/samson/include/samson/modules/system/*"    >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
+#Definition for the docs package
+echo "%package docs"                           >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "Summary: Documentation for the SAMSON Platform."  >> $BUILD_ROOT/rpm/SPECS/$specfile 
+echo "Group: Applications/Engineering"            >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "Requires: samson = $version"  >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo                                     >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "%description docs"                               >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "SAMSON is a high-performance MapReduce platform that is designed for scaling tasks on a cluster of commodity hardware. This platform removes the need to develop a system for parallelizing and synchronizing work between servers, allowing a person to develop the analytical models needed to solve both current and future problems.  SAMSON extends the traditional MapReduce paradigm by allowing an external data source to stream data into and out of the cluster. This allows the system to handle any volume of data thus providing the ability to continuously process new inputs and output states without restriction."                    >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "%files docs"                    >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "/opt/samson/man/*"                >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "/opt/samson/share/*"                >> $BUILD_ROOT/rpm/SPECS/$specfile
 
 #
 # Prepare the files needed for the "samson" package
 #
 rm -rf $PACKAGE_DIR
 mkdir -p $PACKAGE_DIR/opt/samson/{bin,etc,man}
-mkdir -p $PACKAGE_DIR/opt/samson/man/{man1,man3}
 mkdir -p $PACKAGE_DIR/opt/samson/{include,lib}
 mkdir -p $PACKAGE_DIR/opt/samson/include/samson/module
 mkdir -p $PACKAGE_DIR/opt/samson/include/samson/modules/system
+mkdir -p $PACKAGE_DIR/opt/samson/man/{man1,man7}
+mkdir -p $PACKAGE_DIR/opt/samson/share
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonCat/samsonCat                   $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonController/samsonController     $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonData/samsonData                 $PACKAGE_DIR/opt/samson/bin
@@ -119,12 +134,13 @@ cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonSetup/samsonSetup               $PACKAGE
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonSpawner/samsonSpawner           $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonWorker/samsonWorker             $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/BUILD_RELEASE/apps/delilah/delilah                       $PACKAGE_DIR/opt/samson/bin
-cp $BUILD_ROOT/etc/setup.txt                                            $PACKAGE_DIR/opt/samson/etc/
-cp $SAMSON_HOME/lib/libau.a                                             $PACKAGE_DIR/opt/samson/lib
-cp $SAMSON_HOME/lib/liblm.a                                             $PACKAGE_DIR/opt/samson/lib
-cp $SAMSON_HOME/include/samson/module/*                                 $PACKAGE_DIR/opt/samson/include/samson/module
-cp $SAMSON_HOME/include/samson/modules/system/*                         $PACKAGE_DIR/opt/samson/include/samson/modules/system
-#cp -R /opt/samson/man/                    ~/$rdir/opt/samson/
+cp $BUILD_ROOT/etc/setup.txt                                            $PACKAGE_DIR/opt/samson/etc
+cp $BUILD_ROOT/BUILD_RELEASE/libs/au/libau.a                            $PACKAGE_DIR/opt/samson/lib
+cp $BUILD_ROOT/BUILD_RELEASE/libs/logMsg/liblm.a                        $PACKAGE_DIR/opt/samson/lib
+cp $BUILD_ROOT/libs/samson/module/*.h                                   $PACKAGE_DIR/opt/samson/include/samson/module
+cp $BUILD_ROOT/modules/system/samson/modules/system/*                   $PACKAGE_DIR/opt/samson/include/samson/modules/system
+cp -r $BUILD_ROOT/BUILD_RELEASE/man					$PACKAGE_DIR/opt/samson
+cp -r $BUILD_ROOT/README						$PACKAGE_DIR/opt/samson/share/README.txt
 
 #
 # Create the tar file for samson
@@ -144,3 +160,4 @@ then
 fi
 mv $BUILD_ROOT/rpm/RPMS/$arch/samson-$version-$release.$arch.rpm $BUILD_ROOT/package/rpm/
 mv $BUILD_ROOT/rpm/RPMS/$arch/samson-devel-$version-$release.$arch.rpm $BUILD_ROOT/package/rpm/
+mv $BUILD_ROOT/rpm/RPMS/$arch/samson-docs-$version-$release.$arch.rpm $BUILD_ROOT/package/rpm/

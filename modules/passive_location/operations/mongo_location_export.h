@@ -37,12 +37,15 @@ class mongo_location_export : public samson::Map
 	std::string          mongo_lastloc_db_path;
 	DBClientConnection*  mdbConnection;
 
-	int lefts;
-	int ordinaries;
-	int runs;
-	int records;
+	std::vector<mongo::BSONObj>  dataVec;
+	int                          inserts;
+
+	int                          insertsAcc;
+	int                          records;
+	int                          runs;
 
 public:
+
 
 
 /* ****************************************************************************
@@ -118,9 +121,10 @@ void init(samson::KVWriter* writer)
 	mongo_db_path          = mongo_db         + "." + mongo_collection;
 	mongo_lastloc_db_path  = mongo_lastloc_db + "." + mongo_lastloc_collection;
 
+	inserts    = 0;
+
+	insertsAcc = 0;
 	records    = 0;
-	lefts      = 0;
-	ordinaries = 0;
 	runs       = 0;
 }
 
@@ -143,9 +147,6 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 		tracer->setUserError("Not connected to MongoDB - please check the parameters to this operation");
 		return;
 	}
-
-	std::vector<mongo::BSONObj>  dataVec;
-	int                          inserts  = 0;
 
 	++runs;
 
@@ -185,6 +186,7 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 		dataVec.push_back(record);
 
 		++inserts;
+		++insertsAcc;
 
 		if ((inserts % mongo_bulksize) == 0)
 		{
@@ -192,16 +194,14 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 			mdbConnection->insert(mongo_db_path, dataVec);
 			dataVec.clear();
 			inserts = 0;
-			++ordinaries;
 		}
 	}
 
-	if (inserts != 0)
+	if ((inserts % mongo_bulksize) == 0)
 	{
-		// OLM_M(("Inserting bulk of the left %d records (bulk size: %d)", inserts, mongo_bulksize));
 		mdbConnection->insert(mongo_db_path, dataVec);
 		dataVec.clear();
-		++lefts;
+		inserts = 0;
 	}
 
 	mdbConnection->ensureIndex(mongo_db_path, fromjson("{I:1}"));
@@ -215,7 +215,13 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 */
 void finish(samson::KVWriter* writer)
 {
-	OLM_M(("%d ordinary inserts, %d 'leftover' inserts (%d calls to run). %d records inserted", ordinaries, lefts, runs, records));
+	if (inserts != 0)
+	{
+		mdbConnection->insert(mongo_db_path, dataVec);
+		dataVec.clear();
+	}
+
+	OLM_M(("%d inserts, %d records inserted, %d calls to run", insertsAcc, records, runs));
 	delete mdbConnection;
 }
 

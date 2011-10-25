@@ -71,7 +71,7 @@ helpLine: Update internal state
 			  // Emit whatever is necessary
 			  if( user.isTracking() )
 			  {
-                 message.value = au::str("Update osition of user %lu to [%d,%d] %s", key.value , position.x.value , position.y.value , position.time.str().c_str() );
+                                 message.value = au::str("Update position of user %lu to [%d,%d] %s", key.value , position.x.value , position.y.value , position.time.str().c_str() );
 				 writer->emit( 0 , &key,  &message );				 
 			  }
 

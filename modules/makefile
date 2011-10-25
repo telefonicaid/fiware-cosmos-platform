@@ -9,8 +9,8 @@ all:
 	SAMSON_HOME=$(SAMSON_HOME) make -C tienda
 	SAMSON_HOME=$(SAMSON_HOME) make -C cdr
 	SAMSON_HOME=$(SAMSON_HOME) make -C mob
-#	SAMSON_HOME=$(SAMSON_HOME) make -C mob2
-#	SAMSON_HOME=$(SAMSON_HOME) make -C passive_location
+	SAMSON_HOME=$(SAMSON_HOME) make -C mob2
+	SAMSON_HOME=$(SAMSON_HOME) make -C passive_location
 	SAMSON_HOME=$(SAMSON_HOME) make -C graph
 	SAMSON_HOME=$(SAMSON_HOME) make -C sna
 	SAMSON_HOME=$(SAMSON_HOME) make -C snalight
@@ -35,8 +35,8 @@ release:
 	SAMSON_HOME=$(SAMSON_HOME) make release -C tienda
 	SAMSON_HOME=$(SAMSON_HOME) make release -C cdr
 	SAMSON_HOME=$(SAMSON_HOME) make release -C mob
-#	SAMSON_HOME=$(SAMSON_HOME) make release -C mob2
-#	SAMSON_HOME=$(SAMSON_HOME) make release -C passive_location
+	SAMSON_HOME=$(SAMSON_HOME) make release -C mob2
+	SAMSON_HOME=$(SAMSON_HOME) make release -C passive_location
 	SAMSON_HOME=$(SAMSON_HOME) make release -C graph
 	SAMSON_HOME=$(SAMSON_HOME) make release -C sna
 	SAMSON_HOME=$(SAMSON_HOME) make release -C snalight

@@ -22,5 +22,5 @@ do
 	echo Installing samson in $mach
 	rsync -r /opt/samson/etc             samson@$mach:/opt/samson
 	rsync -r /opt/samson/modules         samson@$mach:/opt/samson
-	rsync -r /usr/local/bin  		      samson@$mach:/usr/local/
+	rsync -r /opt/samson/bin	     samson@$mach:/opt/samson
 done

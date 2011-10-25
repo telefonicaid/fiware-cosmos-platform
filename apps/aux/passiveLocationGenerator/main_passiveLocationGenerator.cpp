@@ -36,7 +36,7 @@ int main( int argc , const char *argv[] )
 	size_t rate = atoll( argv[1] );
 
 	// Small mini-buffer to generate
-	char line[2048];
+	char *line = (char*) malloc( 20000 );
 
 	// Control of time and size
 	au::Cronometer cronometer;
@@ -52,11 +52,10 @@ int main( int argc , const char *argv[] )
 	   fprintf(stderr,"Generatoing %d messages\n",  (int)(5 * rate) );
 	   for( int i = 0 ; i < (int)(5 * rate); i++)
 	   {
-			size_t used_id = rand()%40000000;
+			size_t user_id = rand()%10000;
 			int cell = rand()%20000;
 
-			snprintf( line , sizeof( line ), "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns0:AMRReport xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'  xmlns:ns0='http://O2.arcanum.vitria.com'  xsi:schemaLocation='http://O2.arcanum.vitria.com AMR.xsd'>  <SubscriberReport>    <User>      <IMSI>%lu</IMSI>      <IMEI>3563190407579307</IMEI>    </User>    <Authentication>      <Location>        <LocationArea>12115</LocationArea>        <CellID>%d</CellID>        <RoutingArea>134</RoutingArea>      </Location>    </Authentication>  </SubscriberReport>  <Timestamp>%s</Timestamp></ns0:AMRReport>\n"  , used_id , cell , au::todayString().c_str()  );
-
+			snprintf( line, 20000 ,  "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns0:AMRReport xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'  xmlns:ns0='http://O2.arcanum.vitria.com'  xsi:schemaLocation='http://O2.arcanum.vitria.com AMR.xsd'>  <SubscriberReport>    <User>      <IMSI>%lu</IMSI>      <PTMSI>FB869371</PTMSI>  <CellID>%d</CellID>   <Paging>      <Location>        <LocationArea>12124</LocationArea>        <RoutingArea>134</RoutingArea>      </Location>    </Paging>  </SubscriberReport>  <Timestamp>2011-07-21T16:07:47</Timestamp></ns0:AMRReport>" , user_id , cell );
 
 		total_size += strlen(line);
 		num_messages++;
@@ -67,11 +66,9 @@ int main( int argc , const char *argv[] )
 
 	   }
 
-
 		// Detect if we need to sleep....
 		theoretical_seconds += 5;
 
-	   
 		size_t ellapsed_seconds = cronometer.diffTimeInSeconds();
 
 		// Sleep some time to simulate a particular rate

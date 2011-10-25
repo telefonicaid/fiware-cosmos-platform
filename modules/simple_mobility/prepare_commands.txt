@@ -2,6 +2,11 @@
 #Remove all stream operations ( this is only for demo ... )
 remove_all_stream
 
+# Properties for queues
+# Maximum 100Mb in messages ( stored the last messages )
+set_queue_property messages max_size 100000000
+
+
 # Parser commands
 add_stream_operation simple_mobility_parser_commands simple_mobility.parser_commands txt_commands commands
 set_stream_operation_property simple_mobility_parser_commands delayed_processing no

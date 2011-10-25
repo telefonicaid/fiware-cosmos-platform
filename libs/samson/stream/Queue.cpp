@@ -162,6 +162,9 @@ namespace samson {
             BlockInfo block_info;
             update( block_info );
             block_info.getInfo(output);
+
+            
+            au::xml_simple( output , "enviromemnt" , environment.getEnvironmentDescription() );
             
             au::xml_close(output, "queue");
         }
@@ -270,6 +273,19 @@ namespace samson {
 
         void Queue::review()
         {
+            
+            // Review the size contained in this queue if there is a limit defined....
+            
+            size_t max_size = environment.getSizeT( "max_size" , 0 );
+            
+            if( max_size > 0 )
+            {
+
+                BlockList tmp_block_list;   // Temporal list to put extracted blocks...
+                while( list->getBlockInfo().size > max_size )
+                    tmp_block_list.extractBlockFrom( list );
+            }
+            
             //LM_M(("Intern review queue %s" , name.c_str() ));
             
             // Schedule new Block Break operations if necessary

@@ -149,7 +149,7 @@ namespace  samson {
         
         virtual size_t getBufferSize()=0;
         virtual void print_header()=0;
-        virtual void print_content()=0;
+        virtual void print_content(int max_kvs)=0;
         
     };
 
@@ -224,7 +224,7 @@ namespace  samson {
             std::cout << header->str() << "\n";
         }
         
-        void print_content()
+        void print_content(int max_kvs)
         {
             if( error.isActivated())
             {
@@ -264,19 +264,30 @@ namespace  samson {
             samson::DataInstance *value = (samson::DataInstance *)valueData->getInstance();
             
             size_t offset = 0 ;
+            size_t num_kvs = 0;
             for (size_t i = 0 ; i < header->info.kvs ; i++)
             {
                 offset += key->parse(data+offset);
                 offset += value->parse(data+offset);
-  
-
-		time_t _time = time(NULL);
-
-		char time_string[1024];
-		ctime_r(&_time, time_string );
-		time_string[strlen(time_string) - 1] = '\0';
-
+                
+                
+                time_t _time = time(NULL);
+                
+                char time_string[1024];
+                ctime_r(&_time, time_string );
+                time_string[strlen(time_string) - 1] = '\0';
+                
                 std::cout << "[" << time_string << "] " << key->str() << " " << value->str() << std::endl;
+                
+                num_kvs++;
+                if( max_kvs > 0 )   
+                    if( num_kvs >= (size_t) max_kvs )
+                    {
+                        size_t rest_kvs = header->info.kvs - max_kvs;
+                        if( rest_kvs > 0 )
+                            std::cout << au::str( "Received %s more key-values\n", au::str( rest_kvs ).c_str() , rest_kvs );
+                    }
+                
             }        
         }
         

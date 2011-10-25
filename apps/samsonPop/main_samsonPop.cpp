@@ -32,10 +32,13 @@ char queue_name[1024];
 
 bool show_header;
 
+int limit;
+
 PaArgument paArgs[] =
 {
 	{ "-controller",            controller,           "CONTROLLER",            PaString, PaOpt, _i "localhost"  , PaNL, PaNL,       "controller IP:port"         },
-	{ "-header",                &show_header,         "SHOW_HEADER",      PaBool,    PaOpt,  false, false,  true,  "Show only header of blocks"   },
+	{ "-header",                &show_header,         "SHOW_HEADER",           PaBool,    PaOpt,  false, false,  true,  "Show only header of blocks"   },
+	{ "-limit",                 &limit,               "MAX_KVS",               PaInt,     PaOpt,     0,      0,    10000,  "number of kvs to be shown for each block"   },
 	{ " ",                      queue_name,           "QUEUE",                 PaString,  PaOpt,  (long) "no_queue",   PaNL,   PaNL,  "name of the queue to push data"         },
     PA_END_OF_ARGS
 };
@@ -121,7 +124,7 @@ int main( int argC , const char *argV[] )
             if( show_header )
                 block->print_header();
             else
-                block->print_content();
+                block->print_content( limit );
             
             delete block;
         }

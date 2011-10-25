@@ -234,8 +234,10 @@ namespace  samson {
             
             if ( format.isTxt() )
             {
+				volatile int nb;
+
 				// Write the content to the output
-				(void) write(1, data, header->info.size);
+				nb = write(1, data, header->info.size);
 				return;
             }
             

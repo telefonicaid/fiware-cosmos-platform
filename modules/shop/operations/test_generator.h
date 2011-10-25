@@ -30,8 +30,8 @@ namespace shop{
                         for (size_t i = 0; (i < num_samples); i++)
                         {
                                 id = i;
-                                operation.user = rand()%100;
-                                operation.product = rand()%10000;
+                                operation.user = rand()%10000;
+                                operation.product = rand()%100;
                                 operation.operation = rand()%2;
 
                                 writer->emit(0, &id, &operation);

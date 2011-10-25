@@ -66,6 +66,17 @@ reduce reduce_by_user
         helpLine "Reduce example; from key-values groups the list of products by user"
 }
 
+reduce reduce_by_user_state
+{
+        in system.UInt system.UInt
+        in system.UInt shop.VectorProducts
+        out system.UInt shop.VectorProducts
+
+        top
+
+        helpLine "Reduce example; from key-values groups the list of products by user, working in streaming with a user state"
+}
+
 parserOut export_to_txt
 {
         in system.UInt shop.VectorProducts

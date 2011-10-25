@@ -109,14 +109,15 @@ public:
 		}
 #endif /* de DEBUG_FILES */
 #undef DEBUG_FILES
-		if( pos1 < pos2 )
-		   return -1;
-		else if( pos1 > pos2 )
-		   return 1;
+		//if( pos1 < pos2 )
+		//   return -1;
+		//else if( pos1 > pos2 )
+		//   return 1;
 
 		// Same length
 
-		for (int i = 0 ; i < pos1 ; i++)
+		// By extending comparison to the last character ('\0'), we don't have to check lengths
+		for (int i = 0 ; i <= pos1 ; i++)
 		{
 			if ( data1_orig[i] < data2_orig[i] )
 				return -1;

@@ -286,6 +286,8 @@ namespace  samson {
                         size_t rest_kvs = header->info.kvs - max_kvs;
                         if( rest_kvs > 0 )
                             std::cout << au::str( "Received %s more key-values\n", au::str( rest_kvs ).c_str() , rest_kvs );
+                        
+                        return;
                     }
                 
             }        

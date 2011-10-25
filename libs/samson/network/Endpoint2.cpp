@@ -768,7 +768,10 @@ Status Endpoint2::partRead(void* vbuf, long bufLen, long* bufLenP, const char* w
 			if ((type == Controller) && (epMgr->me->type == Delilah))
 				LM_X(1, ("Controller Dies - I cannot continue. Sorry ..."));
 
-			LM_RE(ConnectionClosed, ("Connection closed, expecting '%s' from %s. Read 0 bytes from rFd:%d", what, name(), rFd));
+			if (type == Delilah)
+				return ConnectionClosed;
+			else
+				LM_RE(ConnectionClosed, ("Connection closed, expecting '%s' from %s. Read 0 bytes from rFd:%d", what, name(), rFd));
 		}
 
 		tot += nb;
@@ -1150,7 +1153,7 @@ void Endpoint2::run(void)
 		s = msgTreat();
 		if (s == ConnectionClosed)
 		{
-			LM_W(("Endpoint %s closed connection", name()));
+			// LM_W(("Endpoint %s closed connection", name()));
 			return;
 		}
 	}

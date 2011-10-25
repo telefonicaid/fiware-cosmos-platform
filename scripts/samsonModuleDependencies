@@ -5,8 +5,8 @@
 # Remove existing dependency catalogs
 for module in `egrep -r "\#include.*modules" modules | grep -v system | grep -v txt | grep -v rpm | sed -e 's?^modules/\([a-z0-9_]\+\)/.*include ["<]samson/modules/\([a-z0-9_]\+\).*?\1 \2?' -e 's?^modules/\([a-z0-9_]\+\)/.*include["<]samson/modules/\([a-z0-9_]\+\).*?\1 \2?' | awk '{ if ($1 != $2) print $1 endif }' | sort | uniq`
 do
-  if [ -f $module/depends.txt ]; then
-    rm $module/depends.txt
+  if [ -f modules/$module/depends.txt ]; then
+    rm modules/$module/depends.txt
   fi
 done
 # Generate the module dependency pairs, i.e. module x uses module y

@@ -26,6 +26,21 @@ release=$3
 #
 arch=$(dpkg --print-architecture)
 
+# Help functions
+
+# Generate a list of module dependencies needed to install this module
+dependencylist()
+{
+    echo -n "Depends: samson (=$version), samson-devel (=$version)" >> deb_module_list.$$
+    if [ -f depends.txt ]; then
+        for needed_module in `cat depends.txt`
+        do
+            echo -n ", $needed_module (=$version)" >> deb_module_list.$$
+        done
+    fi
+    cat deb_module_list.$$
+    rm deb_module_list.$$
+}
 
 #
 # Populating debian
@@ -44,7 +59,8 @@ echo "Architecture: $arch"                              >> debian/DEBIAN/control
 echo "Section: tid"                                >> debian/DEBIAN/control
 echo "Priority: optional"                                >> debian/DEBIAN/control
 echo "Maintainer: Andreu Urruela <andreu@tid.es>"       >> debian/DEBIAN/control
-echo "Depends: samson (=${version})"       >> debian/DEBIAN/control
+dependencylist                                          >> debian/DEBIAN/control
+echo " " >> debian/DEBIAN/control
 echo "Description: Module ${lowercase_module} for use with the Samson Map Reduce Platform."  >> debian/DEBIAN/control
 
 mkdir -p debian/opt/samson/include/samson/modules/$module

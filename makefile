@@ -184,8 +184,8 @@ rpm: install
 # the default install location so as to not trash a live installation
 deb: install
 	scripts/samsonDeb $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	scripts/samsonModuleDependencies
 	scripts/samsonDebDev $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	scripts/samsonModuleDependencies
 	cd modules/cdr;                   ../../scripts/samsonModuleDeb cdr $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	cd modules/example;               ../../scripts/samsonModuleDeb example $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	cd modules/graph;                 ../../scripts/samsonModuleDeb graph $(SAMSON_VERSION) $(SAMSON_RELEASE)

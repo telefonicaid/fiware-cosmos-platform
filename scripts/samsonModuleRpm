@@ -78,7 +78,6 @@ echo "Group:     Applications/Engineering"                   >> $BUILD_ROOT/rpm/
 echo "Source:    http://www.tid.es/samson-$module-$version.tar.gz"   >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "BuildRoot: /var/tmp/%{name}-buildroot"                 >> $BUILD_ROOT/rpm/SPECS/$specfile
 dependencylist                                               >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo "Requires: samson = 0.6"                                >> $BUILD_ROOT/rpm/SPECS/$specfile 
 echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%description"                                          >> $BUILD_ROOT/rpm/SPECS/$specfile
 # TODO - pull description in from a flat file

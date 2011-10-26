@@ -57,13 +57,6 @@ namespace samson {
             if( error.isActivated() )
                 delilah->showWarningMessage( error.getMessage() );
         }
-        
-        if( mkdir( fileName.c_str() , 0755 ) )
-        {
-            setComponentFinishedWithError( au::str( "Not possible to create directory %s (%s)." , fileName.c_str() , strerror(errno)) );
-            return;
-        }
-        
 		
 		// Send the message to the controller
 		Packet *p = new Packet(Message::DownloadDataInit);
@@ -87,19 +80,25 @@ namespace samson {
 			if( download_data_init_response.has_error() )
 			{
 				error.set( download_data_init_response.error().message() );
-		//LM_M(("download: setComponentFinished() with error message"));
+                //LM_M(("download: setComponentFinished() with error message"));
                 setComponentFinished();
 				return;
 			}
 			
 			// Set the number of files to download
 			num_files_to_download = download_data_init_response.queue().file_size();
-
+            
             if( num_files_to_download == 0)
             {
                 // Nothing to be downloaded
-		//LM_M(("download: setComponentFinished() with Nothing to be downloaded"));
+                //LM_M(("download: setComponentFinished() with Nothing to be downloaded"));
                 setComponentFinished();
+            }
+            else
+            {
+                if( mkdir( fileName.c_str() , 0755 ) )
+                    setComponentFinishedWithError( au::str( "Not possible to create directory %s (%s)." , fileName.c_str() , strerror(errno)) );
+                
             }
             
             // Send packet to each worker asking for the associated files
@@ -107,9 +106,9 @@ namespace samson {
 			{
 				Packet *p = new Packet( Message::DownloadDataFile);
 				p->message->set_delilah_id( id );
-
+                
 				samson::network::DownloadDataFile *download_data_file = p->message->mutable_download_data_file();
-
+                
                 // Set the load id ( at controller )
                 download_data_file->set_load_id( download_data_init_response.load_id() );
                 

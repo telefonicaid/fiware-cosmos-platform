@@ -624,7 +624,6 @@ namespace samson {
                 filter = au::str("[starts-with(name,'%s')]" , filter_parameter.c_str() );
             }
             
-            LM_M(("Running %s --> filter %s" , command.c_str() , filter.c_str() ));
             
             std::ostringstream command;
             

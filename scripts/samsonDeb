@@ -44,10 +44,10 @@ mkdir -p debian/opt/samson/share
 
 echo "Package: samson"                                   > debian/DEBIAN/control
 echo "Version: $version"                                >> debian/DEBIAN/control
-echo "Section: tid"                                >> debian/DEBIAN/control
-echo "Priority: optional"                                >> debian/DEBIAN/control
+echo "Section: tid"                                     >> debian/DEBIAN/control
+echo "Priority: optional"                               >> debian/DEBIAN/control
 echo "Architecture: $arch"                              >> debian/DEBIAN/control
-echo "Depends: libprotobuf6"                              >> debian/DEBIAN/control
+echo "Depends: libprotobuf6, ntp"                       >> debian/DEBIAN/control
 echo "Maintainer: Andreu Urruela <andreu@tid.es>"       >> debian/DEBIAN/control
 echo "Description: SAMSON is a high-performance MapReduce platform that is designed for scaling tasks on a cluster of commodity hardware. This platform removes the need to develop a system for parallelizing and synchronizing work between servers, allowing a person to develop the analytical models needed to solve both current and future problems.  SAMSON extends the traditional MapReduce paradigm by allowing an external data source to stream data into and out of the cluster. This allows the system to handle any volume of data thus providing the ability to continuously process new inputs and output states without restriction."  >> debian/DEBIAN/control 
 

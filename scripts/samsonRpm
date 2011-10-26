@@ -69,7 +69,7 @@ echo "License:   commercial"                                 >> $BUILD_ROOT/rpm/
 echo "Group:     Applications/Engineering"                   >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "Source:    http://www.tid.es/samson-$version.tar.gz"   >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "BuildRoot: /var/tmp/%{name}-buildroot"                 >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo "Requires: protobuf"                                    >> $BUILD_ROOT/rpm/SPECS/$specfile 
+echo "Requires: protobuf, ntp"                               >> $BUILD_ROOT/rpm/SPECS/$specfile 
 echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%description"                                          >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "SAMSON is a high-performance MapReduce platform that is designed for scaling tasks on a cluster of commodity hardware. This platform removes the need to develop a system for parallelizing and synchronizing work between servers, allowing a person to develop the analytical models needed to solve both current and future problems.  SAMSON extends the traditional MapReduce paradigm by allowing an external data source to stream data into and out of the cluster. This allows the system to handle any volume of data thus providing the ability to continuously process new inputs and output states without restriction."                    >> $BUILD_ROOT/rpm/SPECS/$specfile

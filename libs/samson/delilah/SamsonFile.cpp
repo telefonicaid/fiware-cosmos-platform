@@ -136,7 +136,7 @@ namespace samson {
         
         std::ostringstream output;
         for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ; i++)
-            output << info[i].size << " ";
+            output << i << " " << info[i].size << "\n";
         
         return output.str();
     }

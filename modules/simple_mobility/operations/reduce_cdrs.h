@@ -71,8 +71,52 @@ helpLine: Update internal state
 			  // Emit whatever is necessary
 			  if( user.isTracking() )
 			  {
-                                 message.value = au::str("Update position of user %lu to [%d,%d] %s", key.value , position.x.value , position.y.value , position.time.str().c_str() );
+/*
+                 // All notification
+				 message.value = au::str("Update position of user %lu to [%d,%d] %s", key.value , position.x.value , position.y.value , position.time.str().c_str() );
 				 writer->emit( 0 , &key,  &message );				 
+*/
+				 for (int i = 0 ; i < user.areas_length ; i++)
+				 {
+					bool in_previous = user.areas[i].isInside( &user.position );
+					bool in_now = user.areas[i].isInside( &position );
+
+					if( !in_previous && in_now )
+					{
+					   message.value = au::str("User enters area '%s' [%d,%d/%d] when moving from [%d,%d] to [%d,%d]" 
+											   , user.areas[i].name.value.c_str()
+											   , user.areas[i].x.value
+											   , user.areas[i].y.value
+											   , user.areas[i].radius.value
+											   , user.position.x.value
+											   , user.position.y.value
+											   , position.x.value
+											   , position.y.value
+						  );
+
+
+					   writer->emit( 0 , &key,  &message );
+					}
+
+					if( in_previous && !in_now )
+					{
+					   message.value = au::str("User leaves area '%s' [%d,%d/%d] when moving from [%d,%d] to [%d,%d]" 
+											   , user.areas[i].name.value.c_str()
+											   , user.areas[i].x.value
+											   , user.areas[i].y.value
+											   , user.areas[i].radius.value
+											   , user.position.x.value
+											   , user.position.y.value
+											   , position.x.value
+											   , position.y.value
+						  );
+
+					   writer->emit( 0 , &key,  &message );
+					}
+
+				 }
+
+
 			  }
 
 			  // update state

@@ -81,6 +81,39 @@ helpLine: Update internal state
 
 				 user.setTraking( false );
               }
+			  else if ( command.values[0].value == "AREA_CREATE" )
+			  {
+				 // AREA_CREATE name x y radius
+
+				 if ( command.values_length < 5 )
+				 {
+					message.value = au::str( "Error creating area. #arguments %d < 5" , (int) command.values_length );
+					writer->emit( 0 , &key,  &message );
+				 }
+				 else
+				 {
+					
+					samson::simple_mobility::UserArea *area = user.areasAdd();
+					
+					area->name.value = command.values[1].value;
+					area->x.value    = atoi( command.values[2].value.c_str() );
+					area->y.value    = atoi( command.values[3].value.c_str() );
+					area->radius.value   = atoi( command.values[4].value.c_str() );
+					
+					message.value = au::str( "Area '%s' created at point [%d,%d] with radiud %d " , area->name.value.c_str() , area->x.value , area->y.value , area->radius.value );
+					writer->emit( 0 , &key,  &message );
+				 }
+
+			  }
+			  else if ( command.values[0].value == "CLEAR_AREAS" )
+			  {
+				 // remove areas for this user
+				 user.areasSetLength(0);
+
+				 message.value = "Areas removed";
+                 writer->emit( 0 , &key,  &message );
+			  }
+
 
            }
 

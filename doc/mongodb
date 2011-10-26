@@ -484,6 +484,27 @@ Examining status of sharding from 'mongo':
 Samson and MongoDB integration document - for Passive Location
 ================================================================================================================================
 
+TOC
+1.  Introduction
+2.  Mongodb
+2.1 Introduction
+2.2 Executables
+2.3 Simple Mongo Setup
+2.4 Redundancy
+2.5 Sharding
+3.  Samson
+3.1 Implementation Detail (samson modules)
+4.  Passive Location Pilot
+4.1 Introduction
+4.2 Input Records
+4.3 Expectations
+5.  Pilot Implementation Details
+5.1 XML parser for input
+5.2 Collection Splitting
+5.3 Details on mongo module? parameters, usage ... ?
+6.  Test Results
+7.  Conclusions/Remarks
+
 INTRODUCTION
 ------------------------------------------------------------------------------------------------------------------------------
 Samson is a batch and streaming platform for BigData, not an external storage solution, like Cassandra or any other NoSQL database.

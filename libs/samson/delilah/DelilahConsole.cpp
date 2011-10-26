@@ -642,6 +642,13 @@ namespace samson
 			
 			// Set a particular value
 			std::string name = commandLine.get_argument(1);
+            
+            if ( !environment.isSet(name ) )
+            {
+                writeWarningOnConsole( au::str("Variable %s is not set", name.c_str() ) );
+                return 0;
+            }
+            
 			environment.unset( name );
 			
 			std::ostringstream o;

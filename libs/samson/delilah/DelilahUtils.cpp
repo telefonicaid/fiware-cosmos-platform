@@ -182,9 +182,10 @@ namespace samson {
         std::ostringstream output;
         
         std::string name = pugi::get( node , "name" );
-        std::string help = pugi::get( node , "help" );
+        //std::string help = pugi::get( node , "help" );
         
-        output << "** " << std::left << std::setw(40) << name << " - " << help;
+        //output << "** " << std::left << std::setw(40) << name << " - " << help;
+        output << std::left << std::setw(40) << name ;
         
         return output.str();
     }

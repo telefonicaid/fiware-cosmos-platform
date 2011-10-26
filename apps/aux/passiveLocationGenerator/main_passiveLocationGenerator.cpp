@@ -34,6 +34,9 @@ int main( int argc , const char *argv[] )
 	}
 
 	size_t rate = atoll( argv[1] );
+	size_t max_kvs = 0;
+	if( argc > 2 )
+	  max_kvs = atoll( argv[2] );
 
 	// Small mini-buffer to generate
 	char *line = (char*) malloc( 20000 );
@@ -65,6 +68,14 @@ int main( int argc , const char *argv[] )
 		std::cout << line << "\n";
 
 	   }
+
+	   if( max_kvs > 0 )
+	     if( num_messages > max_kvs )
+	       {
+		 fprintf(stderr,"Finish since a limit of %lu kvs was specified. Generated %lu key-vaue\n", max_kvs ,num_messages);
+
+		 return 0;
+	       }
 
 		// Detect if we need to sleep....
 		theoretical_seconds += 5;

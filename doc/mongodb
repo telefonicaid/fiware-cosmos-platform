@@ -481,10 +481,11 @@ Examining status of sharding from 'mongo':
 
 *******************************************************************************
 
-Samson and MongoDB integration
-------------------------------
+Samson and MongoDB integration document - for Passive Location
+================================================================================================================================
 
 INTRODUCTION
+------------------------------------------------------------------------------------------------------------------------------
 Samson is a batch and streaming platform for BigData, not an external storage solution, like Cassandra or any other NoSQL database.
 Though, in the intent to make Samson a stand-alone procuct, there is a need for a means to store data, both
 for incoming data and the results obtained, and also a mechanism to query this data.
@@ -498,24 +499,187 @@ The fact that recent clients push for MongoDB has influenced in this decision.
 
 
 
+INPUT RECORDS
+------------------------------------------------------------------------------------------------------------------------------
+The data that is injected in samson from ARCANUM is in XML form and needs to be parsed in order to extact the
+relevant data, which for one single record consists of the following fields:
+- EMEI
+- Cell tower ID
+- Timestamp
+- etc.
+
+
+
+EXPECTATIONS
+------------------------------------------------------------------------------------------------------------------------------
+The maximum desired accessability for the passive location pilot with O2 UK is for the samson platform to be able to store
+40k location input events per second in MongoDB and at the same time being able to serve 100 queries per second.
+Two separate data base tables (in MongoDB the corresponding concept is 'collections') will be used for this purpose.
+
+The first of these MongoDB collections (from here on referred to as the 'Input Collection') will hold the raw input
+(but stripped down to only contain the relevant data, of course), while the second will hold only one record (the corresponding
+MongoDB concept is 'document') per user/cell phone number, describing the last known location of this subscriber.
+
+
+
 IMPLEMENTATION DETAIL - AN OVERVIEW
+------------------------------------------------------------------------------------------------------------------------------
 Samson is a modular platform able to execute third-party modules as a part of the platform.
-These modules are compiled as shared libraries and Samson links to them in run-time.
+These modules are compiled as separate shared libraries and Samson links to them in run-time.
 This mechanism has been used to implement Samson modules that connect Samson with MongoDB in 
 a seemless manner.
 
 The idea with these samson-mongodb modules is to not include any MongoDB administration into Samson,
 but merely use the databases and collections that a Samson-user inputs as parameters to the platform.
+All mongodb administration and decision, such as use shards, will be done outside of Samson, using the
+standard MongoDB tools.
+
+A special Samson module to parse the input XML data from Arcanum is developed ...
+
+
+
+MONGODB - THE EXECUTABLES
+------------------------------------------------------------------------------------------------------------------------------
+The MongoDB comes with lots of components and utilities:
+
+  o mongod     The database process.
+  o mongos     Sharding controller.
+  o mongo      The database shell (uses interactive javascript).
+
+  Using these three components, any MongoDB configuration can be setup and tested. 
+
 
 
 MONGODB SETUP - A SIMPLE EXAMPLE
-...
+------------------------------------------------------------------------------------------------------------------------------
+The first tests made used one single Mongo server. This is a very simple setup and all that is needed is to execute a
+'mongod' process in the machine supposed to serve the data base. 
+
+  To run a single server database:
+
+    $ mkdir /data/db  # create the directory where the data is to be stored - configurable, of course ...
+    $ ./mongod
+    $
+    $ # The mongo javascript shell connects to localhost and test database by default:
+    $ ./mongo 
+    > help
 
 
-MONGODB SETUP - AN EXAMPLE USING SHARDS
-...
+
+MONGODB REDUNDANCY AND FAILOVER
+------------------------------------------------------------------------------------------------------------------------------
+In order to protect the MongoDB data against node failure, any number of secondary 'mongod' processes can be used,
+standing by to take over the execution in case the primary 'mongod' process fails.
+In MongoDB this concept is referred to as 'Replica Sets'.
+
+Each of these secondary processes should of course be running in separate computers, and this naturally adds to the
+total cost of the platform.
+Depending on how important the data is, it is normally enough to have a single backup node, accompanied by an arbiter,
+which doesn't need a separate machine. Varios arbiters can run on a single server.
+
+Arbiters are nodes in a replica set that only participate in elections: they don't have a copy of the data and will never
+become the primary node (or even a readable secondary). They are mainly useful for breaking ties during elections
+(e.g. if a set only has two members).
+
+
+
+MONGODB SHARDS
+------------------------------------------------------------------------------------------------------------------------------
+To increase MongoDB performance, a collection can be distributed among varios nodes (computers).
+This concept has received the name 'sharding' and has the advantage that inserts and queries are
+distributed over a number of nodes and are thus faster.
+
+
+
+COLLECTION SPLITTING
+------------------------------------------------------------------------------------------------------------------------------
+Inserting documents in a MongoDB collection takes longer the bigger the collection is, so the idea is to split the
+Input Collection in time frames. Later on, the decision on the size of these time frames will be taken.
+What seems to be true is that if a collection grows to double its size, the insertion speed goes down with 50%.
+So, comparing to saving all data in one single collection, the inserts will be six times faster if we split the
+input data in one separate collection per month (or 365/2 times faster if the split is done per day ...).
+This 'collection splitting' makes querying a bit more difficult as a user will have to work against a number
+of collections instead of just against a single collection, but 
+
+
+
+QUESTION: Will any queries be done on 'Input Collection'?
+          If not, why index it?  Isn't it true that an indexed collection get worse insertion time?
+
 
 
 TEST RESULTS - 
-...
+------------------------------------------------------------------------------------------------------------------------------
+The throughput tests were performed using the simple setpup, with a single 'mongod' process.
+We're assuming that each shard will add more or less this same throughput.
 
+The table below describes the number of queries per second at different insertion rates and
+starting with different sizes of the collection that is at the same time both inserted into and queried.
+
+For the first row of the table, the collection was first injected with 207 million key-value pairs and
+without any simultaneous inserts, a throughput of 56 queries per second was achieved.
+When injecting 40 new key-values per second, the responsiveness went down to 58 queries per second.
+
+     KVs    |  0    40    80    200   400   800  4000   8000  16000
+------------------------------------------------------------------
+ 207000000  | 56  | 58  | 64  |  -  |  -  |  -  |  -  |  X  |  X  |
+------------------------------------------------------------------
+ 103500000  |2790 |2760 |2750 |  -  |  -  |  -  |  -  |  X  |  X  |
+------------------------------------------------------------------
+  69000000  |2900 |2900 |3000 |2800 |1900 |1450 |1050 |  X  |  X  |
+------------------------------------------------------------------
+  51750000  |3200 |3000 |2900 |2900 |2700 |2700 |1500 |  X  |  X  |
+------------------------------------------------------------------
+  41400000  |3000 |3000 |2900 |3000 |3150 |3150 |2950 | 2700| 1700|
+------------------------------------------------------------------
+  20700000  |3000 |3050 |3150 |3150 |2950 |3000 |2800 |2500 |2250 |
+------------------------------------------------------------------
+  10350000  |3000 |3050 |3050 |3050 |3100 |3150 |3000 |2850 |2100 |
+------------------------------------------------------------------
+   2070000  |3150 |3150 |3180 |3100 |3050 |3125 |2900 |2750 |2400 |
+------------------------------------------------------------------
+
+The initial value of 207 million key values is taken from the total number of
+key-values that the database would contain after storing 40 events per second,
+eight hours a day, during six months:
+
+40 eps * 3600 secs * 8 hours * 30 days * 6 months  == 207 million key-value pairs
+
+We have found a maximum of a little more than 3000 queries per second, and this depends on the
+round-trip time of a TCP/IP message. In order to do a query, a message is sent to the 'mongod' process 
+and the response is waited for. 3000 queries per second implies that one query takes around 0.3 millisceonds
+and that's about as good as it gets, with Gigabit Ethernet, which is what was used during these tests.
+
+KZ NOTE:
+Really, this test was done querying the 'big collection' when in reality the queries will go to the
+'last location' collection, so perhaps the test isn't that interesting ...
+
+
+
+CONCLUSIONS DURING TESTS (extracts of these point may be used within the document ...)
+------------------------------------------------------------------------------------------------------------------------------
+o Journaling will not be used
+   Journaling cannot be used (around ten times slower!).
+   If we need redundancy, another node should be used: REPLICA SETS (primary/secondary)
+   For this, an extra machine is needed per shard ...
+   But also, this gives complete redundancy and availability.
+   Tests should be performed putting the journal on a separate hard drive.
+   According to the nice people at 10gen, this slowdown we've seen is far from normal ...
+
+o Sharding will be used
+   We will not have enough with just ONE machine for Mongo.
+   Sharding is supposedly buggy (at least in mongo release 1.8) but ...
+   I have the list from Theo about what kind of bugs he encountered with sharding (with Mongo 1.8)
+
+o Collections will be split month by month or in even smaller chunks.
+   The smaller the collections are, the faster searches we will have ...
+
+o Found a roof of around 3000 queries per second.
+  After consulting with Mattias of 10gen, I'm sure this is simply the network latency.
+  Tests should be done querying from localhost to make sure ...
+
+o Avoid having collections bigger than 50M records (7.5 Gigabytes on disk)
+
+o Indexing makes the insert time almost 100% slower.
+   But, searches are impossible without indexes, so indexing must be used
+   If the index is kept on a separate (and faster) disk, there is lots of throughput to gain

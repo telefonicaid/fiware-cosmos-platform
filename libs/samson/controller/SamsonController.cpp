@@ -470,6 +470,16 @@ namespace samson {
 						 
 
 					}
+                    else
+                    {
+						Packet *p2 = new Packet(Message::CommandResponse);
+						network::CommandResponse *response = p2->message->mutable_command_response();;
+                        response->mutable_command()->CopyFrom(packet->message->command());
+                        response->set_finish_command(true);
+                        response->mutable_error()->set_message("No id specified in kill command");
+						p2->message->set_delilah_id( packet->message->delilah_id() );
+						network->send( fromId, p2);
+                    }
 					
 					return;
 				}				

@@ -179,10 +179,10 @@ namespace samson
     const char* batch_commands[] = { "ls" , "add" , "rm" , "mv" , "clear" , "clear_jobs" , "kill",
                                     "upload" , "download", "ps_jobs" , "ps_tasks", NULL };
     
-    const char* stream_commands[] = { "run_stream_operation", "push" , "pop", "add_stream_operation" , "rm_stream_operation" ,"set_stream_operation_property" , "rm_queue" , "cp_queue", "set_queue_property", "ls_queues", "ls_queues_info",  "ps_stream", 
-        "ls_stream_operation" , "ls_block_manager" , NULL};
+    const char* stream_commands[] = { "run_stream_operation", "push" , "pop", "add_stream_operation" , "rm_stream_operation" ,"set_stream_operation_property" , "rm_queue" , "cp_queue", "set_queue_property", "ls_queues",  "ps_stream", 
+        "ls_stream_operations" , "ls_block_manager" , NULL};
         
-    const char* general_description = "Samson is a distributed platform to process big-data sources. It has two modes of working: batch & stream.";
+    const char* general_description = "Samson is a distributed platform to process big-data unbounded streams of data.\nIt has two working modes: batch & stream.";
 
     const char* topics[] = { "queues" , "stream_processing", "batch_processing", "upload_data" , "sets" , NULL };
     
@@ -338,8 +338,8 @@ namespace samson
 
         { "set_stream_operation_property"     , "Usage: set_stream_operation_property <name> <variable> <value>\n\n"},
         
-        { "ls_stream_operations"            , "Show a list of stream operations\n"},
-        { "ls_stream_operations_info"       , "Show a more detailed list of stream operations\n"},
+        { "ls_stream_operations"            , "Usage: ls_stream_operations [-v]\n"
+                                               "Show a list of stream operations. User '-v' option for a more verbose output\n"},
                 
         { "rm_queue"                ,   "Usage: rm_queue <queue>\n\n"
                                         "Remove queue <queue>\n" 
@@ -366,10 +366,12 @@ namespace samson
         { "batch_processing"    , "Information about batch_processing comming soon..." 
         },
         
-        { "ls_queues"               ,   "Usage: ls_queues [queue]\n\n"
+        { "ls_queues"               ,   "Usage: ls_queues [queue] [-v]\n\n"
                                         "Show a list of current queues in all the workers\n" 
                                         "Inputs:\n"
                                         "\t[queue] : Name or first letters of queue to filter the output of this command\n"
+                                        "\t[-v]    : Verbose mode\n"
+                                        "\n"
                                         "Type 'help queues' for more information\n"
             
         },
@@ -391,7 +393,6 @@ namespace samson
                                         "Type 'help stream_processing' for more information\n"
         },
         
-        { "ls_stream_operation"    ,    "Show a list all stream operations in all workers\n"},
         
         { "ls_block_manager"        ,   "Get information about the block-manager for each worker\n" 
                                         "Type 'help stream_processing' for more information\n"
@@ -436,7 +437,12 @@ namespace samson
             {
                 output << list[i];;
                 if( list[i+1] != NULL )
-                    output << ", ";
+                {
+                    if( ((i+1)%4) == 0 )
+                       output << "\n";
+                    else
+                        output << ", ";
+                }
                 i++;
             }
             output << "\n";
@@ -1153,7 +1159,9 @@ namespace samson
         
         if( (main_command=="ls") || ( main_command.substr(0,3) == "ls_" ) || ( main_command.substr(0,3) == "ps_" ) || ( main_command == "engine_show" ) )
         {
-            writeOnConsole( info( command ) );
+            std::string text = info( command );
+            
+            writeOnConsole( au::strToConsole( text ) );
             return 0;
         }
         

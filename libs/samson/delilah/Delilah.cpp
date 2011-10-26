@@ -586,21 +586,23 @@ namespace samson {
     
     
     
-#define LS_QUEUES_INFO_COMMAND "info_command -worker //queue /name,t=name,left /block_info/num_blocks,t=#Blocks,format=uint64 /block_info/size,title=size,format=uint64 /block_info/size_on_memory^/block_info/size,format=per,t=on_memory /block_info/size_on_disk^/block_info/size,format=per,t=on_disk /block_info/size_locked^/block_info/size,format=per,t=locked  /block_info/min_time_diff,f=time,t=oldest /block_info/max_time_diff,f=time,t=earliest /num_divisions,t=#div,uint64 /block_info/num_divisions,t=#div"
+#define LS_QUEUES_FIELDS_VERBOSE "/name,t=name,left /block_info/num_blocks,t=#Blocks,format=uint64 /block_info/size,title=size,format=uint64 /block_info/size_on_memory^/block_info/size,format=per,t=on_memory /block_info/size_on_disk^/block_info/size,format=per,t=on_disk /block_info/size_locked^/block_info/size,format=per,t=locked  /block_info/min_time_diff,f=time,t=oldest /block_info/max_time_diff,f=time,t=earliest /num_divisions,t=#div,uint64 /block_info/num_divisions,t=#div"
     
 #define LS_QUEUES_FIELDS "/name,t=name,left  /block_info/kv_info/kvs,t=#kvs,format=uint64 /block_info/kv_info/size,t=size,format=uint64  /block_info/format/key_format,t=key /block_info/format/value_format,t=value,left /status,t=status,left"
     
     
 #define ENGINE_SHOW_COMMAND "info_command -delilah -worker -controller //engine_system /process_manager/num_running_processes^/process_manager/num_processes,t=process,format=per /memory_manager/used_memory^/memory_manager/memory,t=memory,format=per  /disk_manager/num_pending_operations+/disk_manager/num_running_operations,t=disk,f=uint64"
     
-#define LS_STREAM_OPERATIONS "info_command -worker //stream_operation /name,t=name /operation,t=operation,left /inputs,t=inputs /outputs,left,t=outputs /status,t=status /last_review,t=last_review"
+#define LS_STREAM_OPERATIONS "info_command -worker //stream_operation /name,t=name /operation,t=operation,left  /status,t=status "
     
-#define LS_STREAM_OPERATIONS_INFO "info_command -worker //stream_operation /name,t=name /cost,t=cost /core_seconds,t=core_seconds /running_tasks,t=running_tasks /status,t=status /last_review,t=last_review /properties,t=properties,left"
+#define LS_STREAM_OPERATIONS_VERBOSE "info_command -worker //stream_operation /name,t=name /running_tasks,t=running_tasks /last_review,t=last_review /status,t=status"
     
     
     std::string Delilah::info( std::string command )
     {
         au::CommandLine cmd;
+        cmd.set_flag_boolean("v");
+        
         cmd.parse( command );
         
         if( cmd.get_num_arguments() == 0)
@@ -649,26 +651,31 @@ namespace samson {
             std::ostringstream command;
 
             command << "info_command -worker //queue" << filter << " ";
-            command << LS_QUEUES_FIELDS;
+            
+            if( cmd.get_flag_bool("v") )
+                command << LS_QUEUES_FIELDS_VERBOSE;
+            else
+                command << LS_QUEUES_FIELDS;
+            
             
             return infoCommand(command.str());
-
+            
         }
-
-        if( main_command == "ls_queues_info" )
-            return infoCommand(LS_QUEUES_INFO_COMMAND);
-
+        
         if( main_command == "ls_stream_activity" )
         {
             return infoCommand( "info_command //activity/log -worker /time,t=time /txt,t=log,left" );
         }
         
         
-        if( main_command == "ls_stream_operation" )
-            return infoCommand(LS_STREAM_OPERATIONS);
+        if( main_command == "ls_stream_operations" )
+        {
+            if( cmd.get_flag_bool("v")  )
+                return infoCommand(LS_STREAM_OPERATIONS_VERBOSE);
+            else
+                return infoCommand(LS_STREAM_OPERATIONS);
 
-        if( main_command == "ls_stream_operation_info" )
-            return infoCommand(LS_STREAM_OPERATIONS_INFO);
+        }
         
         if( main_command == "engine_show" )
             return infoCommand(ENGINE_SHOW_COMMAND);

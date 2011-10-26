@@ -81,7 +81,7 @@ namespace samson {
             addOption("info");
             addOption("add_stream_operation");
             addOption("rm_stream_operation");
-            addOption("ls_stream_operation");
+            addOption("ls_stream_operations");
             addOption("set_stream_operation_property");
             addOption("rm_queue");                          // Remove a queue
             addOption("ls_queues");                      // Get a list of all current tasks in the system

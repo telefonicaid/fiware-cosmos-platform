@@ -127,7 +127,7 @@ static const char* manDescription      =
 
 static const char* manExitStatus       = "0      if OK\n 1-255  error\n";
 static const char* manAuthor           = "Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.";
-static const char* manReportingBugs    = "bugs to samson-bug-report@tid.es\nSamson home page: <http://www.tid.es/products/samson>";
+static const char* manReportingBugs    = "bugs to samson-dev@tid.es\n";
 static const char* manCopyright        = "Copyright (C) 2011 Telefonica Investigacion y Desarrollo";
 static const char* manVersion          = SAMSON_VERSION;
 

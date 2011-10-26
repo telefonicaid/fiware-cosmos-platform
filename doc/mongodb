@@ -401,7 +401,7 @@ o Start the individual shards (mongod), config servers (mongod --configsvr), and
 
     % mongos --configdb localhost:2101 # Let mongos use the default port 27017 ...
 
-    % ./mongo
+    % ./mongo --port 27017             # with the '--port' option you choose the port of mongod/mongos
     mongo> use admin
 
 o Add shards in 'mongo' (in 'admin' db):
@@ -414,12 +414,26 @@ o Add shards in 'mongo' (in 'admin' db):
   mongo> db.runCommand( { addshard : "localhost:2006" } );
   mongo> db.runCommand( { addshard : "localhost:2007" } );
   mongo> db.runCommand( { addshard : "localhost:2008" } );
-
   {"ok" : 1 , "added" : ...}
+
+
+===============================================================================
+db.runCommand( { addshard : "samson05:2001" } )
+db.runCommand( { addshard : "samson06:2001" } )
+db.runCommand( { addshard : "samson07:2001" } )
+db.runCommand( { addshard : "samson08:2001" } )
+use admin
+db.runCommand( { enablesharding : "test" } )
+use test
+db.test.ensureIndex({"I": 1, "T": 1})
+use admin
+db.runCommand( { shardcollection : "test.lloc01", key : { "I": 1, "T" : 1 } } )
+db.runCommand( { shardcollection : "test.ploc01", key : { "I": 1, "T" : 1 } } )
+===============================================================================
 
 o Define shard key
   mongo> use admin
-  mongo> db.runCommand( { enablesharding : "test" } );
+  mongo> db.runCommand( { enablesharding : "test" } );   # if not existing, 'use' it first - then go back to 'admin' db
   mongo> use test
   mongo> db.test.ensureIndex({"I": 1, "T": 1});
   mongo> use admin
@@ -428,11 +442,80 @@ o Define shard key
 o Start samson and delilah in Torkel
   torkel> samsonSpawner -local -fg
 
-o Run a test just to create the database and a collection:
+ Run a test just to create the database and a collection:
   % cd ~/passiveLocationTest/
   delilah> remove_all
   delilah> add cdrIn -txt
   delilah> upload XMLs cdrIn
   delilah> mob2.parse_xml_ARCANUM cdrIn cdrOut null1 null2 null3 null4 -c
-  delilah> passive_location.mongo_location_export cdrOut mongo.ip=localhost mongo.db=test mongo.lastloc_db=test mongo.collection=lloc01 mongo.lastloc_collection=ploc01
+  delilah> passive_location.mongo_location_export cdrOut mongo.ip=samson06:27017 mongo.db=test mongo.lastloc_db=test mongo.collection=lloc01 mongo.lastloc_collection=ploc01
+
+========================================================================================================================
+
+Examining status of sharding from 'mongo':
+
+  o Identifying a Shard Cluster
+    Are we connected to mongos or mongod?
+
+    mongo> db.runCommand({ isdbgrid : 1});
+
+    If mongod, this command returns a "no such cmd" message.
+    If mongos: { "ismaster": true, "msg": "isdbgrid", "maxBsonObjectSize": XXX, "ok": 1 }
+           or: { "isdbgrid" : 1, "hostname" : "samson07", "ok" : 1 }
+
+  o List Existing Shards
+    mongo> use admin
+    mongo> db.runCommand({ listShards : 1});
+
+  o List Which Databases are Sharded - you need to have one first ...
+    mongo> config = db.getSisterDB("config")
+    mongo> config.system.namespaces.find()
+
+  o View Sharding Details
+    mongo> use admin
+    mongo> db.printShardingStatus();
+
+  o Removing a shard
+    mongo> db.runCommand( { removeshard : "shard0001" } );
+
+
+*******************************************************************************
+
+Samson and MongoDB integration
+------------------------------
+
+INTRODUCTION
+Samson is a batch and streaming platform for BigData, not an external storage solution, like Cassandra or any other NoSQL database.
+Though, in the intent to make Samson a stand-alone procuct, there is a need for a means to store data, both
+for incoming data and the results obtained, and also a mechanism to query this data.
+ 
+The Samson team has researched a number of different external data storage solutions and also the idea to
+implement the external storage from scratch, perfectly fitting Samson needs.
+This latter plan was soon rejected because of the huge effort it would take to implement such a project.
+
+Finally the decision has fallen on using MongoDB, as it is a distributed and fail-safe solution.
+The fact that recent clients push for MongoDB has influenced in this decision.
+
+
+
+IMPLEMENTATION DETAIL - AN OVERVIEW
+Samson is a modular platform able to execute third-party modules as a part of the platform.
+These modules are compiled as shared libraries and Samson links to them in run-time.
+This mechanism has been used to implement Samson modules that connect Samson with MongoDB in 
+a seemless manner.
+
+The idea with these samson-mongodb modules is to not include any MongoDB administration into Samson,
+but merely use the databases and collections that a Samson-user inputs as parameters to the platform.
+
+
+MONGODB SETUP - A SIMPLE EXAMPLE
+...
+
+
+MONGODB SETUP - AN EXAMPLE USING SHARDS
+...
+
+
+TEST RESULTS - 
+...
 

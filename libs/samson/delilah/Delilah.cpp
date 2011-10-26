@@ -291,6 +291,27 @@ namespace samson {
 	size_t Delilah::addPushData( std::vector<std::string> fileNames , std::vector<std::string> queues )
 	{
         TXTFileSet *txtFileSet = new TXTFileSet( fileNames );
+
+        //LM_M(("Push data from files with size %lu" , txtFileSet->getTotalSize() ));
+        
+        if( txtFileSet->getTotalSize() == 0 )
+        {
+            std::ostringstream message;
+            
+            if( fileNames.size() == 0 )
+                message << "No valid files provided";
+            else
+            {
+                message << "No content at ";
+                for (size_t i = 0 ; i < fileNames.size() ; i++)
+                    message << fileNames[i] << " ";
+            }
+            
+            showErrorMessage( message.str() );  
+            
+            return 0;
+        }
+        
         return addPushData( txtFileSet , queues );
 	}
     

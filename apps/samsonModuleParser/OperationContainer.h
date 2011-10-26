@@ -313,9 +313,9 @@ namespace samson
 				
 				if( (type == "map") || (type == "reduce") )
 				{
-					file << "\t\tvoid init(samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
-					file << "\t\tvoid run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
-					file << "\t\tvoid finish(samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
+					file << "\t\tvoid init( samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
+					file << "\t\tvoid run( samson::KVSetStruct* inputs , samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
+					file << "\t\tvoid finish( samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
 				}
 				if( type == "generator" )
 				{
@@ -333,9 +333,9 @@ namespace samson
 				}
 				if( ( type == "parserOut" ) || ( type == "parserOutReduce" ) )
 				{
-					file << "\t\tvoid init(TXTWriter *writer )\n\t\t{\n\t\t}\n\n";
-					file << "\t\tvoid run(KVSetStruct* inputs , TXTWriter *writer )\n\t\t{\n\t\t}\n\n";
-					file << "\t\tvoid finish(TXTWriter *writer )\n\t\t{\n\t\t}\n\n";
+					file << "\t\tvoid init( TXTWriter *writer )\n\t\t{\n\t\t}\n\n";
+					file << "\t\tvoid run( KVSetStruct* inputs , TXTWriter *writer )\n\t\t{\n\t\t}\n\n";
+					file << "\t\tvoid finish( TXTWriter *writer )\n\t\t{\n\t\t}\n\n";
 				}
 
 			}

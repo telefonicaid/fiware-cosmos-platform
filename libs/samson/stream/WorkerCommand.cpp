@@ -196,7 +196,7 @@ namespace samson {
             {
 
                 au::ErrorManager tmp_error;
-                StreamOperation* stream_operation = StreamOperation::newStreamOperation(streamManager,  command , error );
+                StreamOperation* stream_operation = StreamOperation::newStreamOperation(streamManager,  command , tmp_error );
 
                 if( !stream_operation )
                 {
@@ -539,6 +539,7 @@ namespace samson {
         
         void WorkerCommand::finishWorkerTaskWithError( std::string error_message )
         {
+            //LM_M(("Setting error message %s" , error_message.c_str() ));
             error.set( error_message );
             finishWorkerTask();
         }
@@ -560,7 +561,10 @@ namespace samson {
                 
                 // Put the error if any
                 if( error.isActivated() )
+                {
+                    //LM_M(("Sending error message %s" , error.getMessage().c_str() ));
                     c->mutable_error()->set_message( error.getMessage() );
+                }
                 
                 // Set delilah id
                 p->message->set_delilah_id( delilah_id );

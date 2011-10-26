@@ -26,6 +26,7 @@ release=$2
 #
 arch=$(dpkg --print-architecture)
 package_name=samson-dev
+BUILD_ROOT=$(pwd)
 
 #
 # Populating debian
@@ -39,6 +40,8 @@ mkdir -p debian/DEBIAN
 mkdir -p debian/opt/samson/include/samson/module
 mkdir -p debian/opt/samson/include/samson/modules/system
 mkdir -p debian/opt/samson/lib
+mkdir -p debian/opt/samson/share/modules
+mkdir -p debian/opt/samson/bin
 
 echo "Package: $package_name"                                   > debian/DEBIAN/control
 echo "Version: $version"                                >> debian/DEBIAN/control
@@ -53,7 +56,8 @@ cp $BUILD_ROOT/BUILD_RELEASE/libs/au/libau.a                            debian/o
 cp $BUILD_ROOT/BUILD_RELEASE/libs/logMsg/liblm.a                        debian/opt/samson/lib
 cp $BUILD_ROOT/libs/samson/module/*.h                                   debian/opt/samson/include/samson/module
 cp $BUILD_ROOT/modules/system/samson/modules/system/*                   debian/opt/samson/include/samson/modules/system
-# TODO: Add template example module
+cp -r $BUILD_ROOT/modules/moduletemplate                   		debian/opt/samson/share/modules
+cp -r $BUILD_ROOT/scripts/samsonModuleGenerator                  	debian/opt/samson/bin
 
 #
 # Create the package

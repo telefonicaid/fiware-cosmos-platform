@@ -1,0 +1,39 @@
+#!/bin/bash
+#
+# A script to boot-strap the development of a new module
+# for the SAMSON MapReduce platform
+
+usage()
+{
+  echo "Missing an argument"
+  echo "Usage: $0 <modulename>"
+  exit 1
+}
+
+notfound()
+{
+  echo "Unable to locate the module skeleton directory"
+  echo "Set \$SAMSON_HOME to the root directory of your SAMSON installation"
+  exit 2
+}
+
+
+if [ -z "$1" ]; then
+  usage
+fi
+
+if [ ! -z "${SAMSON_HOME}" ]; then
+  if [ -d ${SAMSON_HOME}/share/modules/moduletemplate ]; then
+    cp -r  ${SAMSON_HOME}/share/modules/moduletemplate $1
+  fi
+fi
+
+if [ -d /opt/samson ]; then
+  if [ -d /opt/samson/share/modules/moduletemplate ]; then
+    cp /opt/samson/share/modules/moduletemplate $1
+  else
+    notfound
+  fi 
+else
+  notfound
+fi

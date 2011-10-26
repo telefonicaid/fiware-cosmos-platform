@@ -306,7 +306,7 @@ namespace samson {
             delete map;
             
             
-            LM_M(("MAP Generate key-values DONE"));
+            //LM_M(("MAP Generate key-values DONE"));
 
             
         }        

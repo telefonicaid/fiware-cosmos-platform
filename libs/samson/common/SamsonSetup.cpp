@@ -386,13 +386,13 @@ namespace samson
         
     }
     
-    void SamsonSetup::save()
+    int SamsonSetup::save()
     {
         FILE *file = fopen( setupFile.c_str() , "w" );
         if( !file )
         {
             LM_W(("Impossible to open setup file %s" , setupFile.c_str() ));
-            return;
+            return 1;
         }
 
         fprintf(file, "# ----------------------------------------------------------------------------------------\n");
@@ -423,6 +423,10 @@ namespace samson
             
             fprintf(file, "%-40s\t%-20s # %s\n" , i->first.c_str() , i->second->getValue().c_str() , i->second->getDescription().c_str()  );
         }
+        
+        fclose( file );
+        
+        return 0;
     }
     
     

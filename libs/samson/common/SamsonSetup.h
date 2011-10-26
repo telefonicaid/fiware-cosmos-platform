@@ -153,7 +153,7 @@ namespace samson {
 
 		
         void edit();
-        void save();
+        int save();
         
 	};
 

@@ -92,11 +92,20 @@ public:
         
         if( main_command == "save" )
         {
-            samson::SamsonSetup::shared()->save();  // Save a new file with the current setup
-            std::string fileName = samson::SamsonSetup::shared()->setupFile;
-            writeWarningOnConsole(  au::str("Saved file at %s", fileName.c_str() ) );
+            int res = samson::SamsonSetup::shared()->save();  // Save a new file with the current setup
+
+            if( !res )
+            {
+                std::string fileName = samson::SamsonSetup::shared()->setupFile;
+                writeWarningOnConsole(  au::str("Saved file at %s", fileName.c_str() ) );
+                modified = false;
+            }
+            else
+            {
+                std::string fileName = samson::SamsonSetup::shared()->setupFile;
+                writeErrorOnConsole(  au::str("Error saving file at %s", fileName.c_str() ) );
+            }
             
-            modified = false;
             
             return;
         }

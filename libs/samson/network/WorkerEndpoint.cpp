@@ -64,15 +64,15 @@ Status WorkerEndpoint::msgTreat2(Packet* packetP)
 {
 	switch (packetP->msgCode)
 	{
-	default:
-		if (epMgr->packetReceiver == NULL)
-			LM_X(1, ("No packetReceiver (SW bug) - got a '%s' %s from %s", messageCode(packetP->msgCode), messageType(packetP->msgType), name()));
-
-		epMgr->packetReceiver->_receive(packetP);
-		break;
+        default:
+            if (epMgr->packetReceiver == NULL)
+                LM_W(("No packetReceiver - got a '%s' %s from %s.Ignoring...", messageCode(packetP->msgCode), messageType(packetP->msgType), name()));
+            else
+                epMgr->packetReceiver->_receive(packetP);
+            break;
 	}
-
+    
 	return OK;
 }
-
+    
 }

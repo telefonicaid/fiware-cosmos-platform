@@ -17,6 +17,7 @@
 #include "samson/common/Macros.h"             // EXIT, ...
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
 #include "samson/common/EnvironmentOperations.h"
+#include "samson/common/NotificationMessages.h" // notification_network_diconnected
 
 #include "samson/network/Message.h"            // Message::MessageCode, ...
 #include "samson/network/Packet.h"				// samson::Packet
@@ -70,6 +71,9 @@ namespace samson {
         // Default component to update local list of queues and operations
         listen( notification_delilah_automatic_update );
         
+        // Listen notification about netowrk disconnection
+        listen( notification_network_diconnected );
+        
         // Emit a periodic notification
         int delilah_automatic_update_period = samson::SamsonSetup::getInt( "delilah.automatic_update_period" );
         engine::Engine::shared()->notify( new engine::Notification( notification_delilah_automatic_update ) , delilah_automatic_update_period );
@@ -107,6 +111,22 @@ namespace samson {
     
     void Delilah::notify( engine::Notification* notification )
     {
+        
+        if( notification->isName( notification_network_diconnected ) )
+        {
+            int id = notification->environment.getInt("id",-1);
+            
+            if( network->controllerGetIdentifier() == id )
+                showWarningMessage(au::str("Controller  got disconnected"));
+            else if( network->getWorkerFromIdentifier(id) != -1 )
+                showWarningMessage(au::str("Worker %d got disconnected" , network->getWorkerFromIdentifier(id) ));
+            else
+                showWarningMessage(au::str("Some unkown network element got disconnected" , network->getWorkerFromIdentifier(id) ));
+            
+            return;
+        }
+        
+        
         if( notification->isName(notification_disk_operation_request_response) )
         {
             // Nothing to do..

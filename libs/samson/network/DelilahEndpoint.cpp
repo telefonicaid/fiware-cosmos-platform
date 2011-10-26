@@ -67,15 +67,15 @@ Status DelilahEndpoint::msgTreat2(Packet* packetP)
 	case Message::ProcessVector:
 		ack(packetP->msgCode, epMgr->procVecGet(), epMgr->procVecGet()->processVecSize);
 		break;
-
-	default:
-		if (epMgr->packetReceiver == NULL)
-			LM_X(1, ("No packetReceiver (SW bug) - got a '%s' %s from %s", messageCode(packetP->msgCode), messageType(packetP->msgType), name()));
-
-		epMgr->packetReceiver->_receive(packetP);
-		return OK;
+            
+        default:
+            if (epMgr->packetReceiver == NULL)
+                LM_W(("No packetReceiver (SW bug) - got a '%s' %s from %s", messageCode(packetP->msgCode), messageType(packetP->msgType), name()));
+            else
+                epMgr->packetReceiver->_receive(packetP);
+            return OK;
 	}
-
+    
 	return OK;
 }
 

@@ -83,16 +83,17 @@ Status ControllerEndpoint::msgTreat2(Packet* packetP)
 		}
 		else
 			LM_X(1, ("Got an ID from Controller - SW bug!"));
-		break;
-
-	default:
-		if (epMgr->packetReceiver == NULL)
-			LM_X(1, ("No packetReceiver (SW bug) - got a '%s' %s from %s", messageCode(packetP->msgCode), messageType(packetP->msgType), name()));
-
-		epMgr->packetReceiver->_receive(packetP);
-		break;
+            break;
+            
+        default:
+            if (epMgr->packetReceiver == NULL)
+                LM_W(("No packetReceiver (SW bug) - got a '%s' %s from %s", messageCode(packetP->msgCode), messageType(packetP->msgType), name()));
+            else
+                epMgr->packetReceiver->_receive(packetP);
+            
+            break;
 	}
-
+    
 	return OK;
 }
 

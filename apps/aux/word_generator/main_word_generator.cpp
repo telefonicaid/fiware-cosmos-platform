@@ -10,38 +10,49 @@
 #include "au/Cronometer.h"  // au::Cronometer
 #include "au/CommandLine.h" // au::CommandLine
 
+#include "au/CommandLine.h"     // au::CommandLine
+
+
 #define WORD_LENGTH     9
 #define ALFABET_LENGTH 10
 
-int main( int args , char*argv[] )
+int main( int args , const char*argv[] )
 {
+  au::CommandLine cmd;
+  cmd.set_flag_boolean( "r");       // by default, fixed sequence of words
+  cmd.set_flag_int( "t" , 0 );       // by default, 0 seconds to repeat
+  cmd.parse (args, argv);
 
 
-  srand( time(NULL));
-  if ( args < 2 )
+  if ( cmd.get_num_arguments() < 2 )
   {
-    fprintf(stderr, "Usage: %s num_words [time_to_repeat]\n" , argv[0] );
+    fprintf(stderr, "Usage: %s [-r] [-t secs] num_words\n" , argv[0] );
+    fprintf(stderr, "       [-r] flag to generate randomized sequence of words\n" );
+    fprintf(stderr, "       [-t secs] time_to_repeat in seconds with a new wave of words\n" );
     exit(1);
   }
 
+  bool rand_flag = cmd.get_flag_bool("r");
+  size_t repeate_time = cmd.get_flag_int("t");
+
+  size_t num_lines = atoll( argv[args-1] );
   au::Cronometer cronometer;
-
-  size_t num_lines = atoll( argv[1] );
-  size_t repeate_time;
   
-  if( args > 2 )
-	 repeate_time = atoll( argv[2] );
-  else
-	 repeate_time = 0;
-
-
-
   char word[100];
   word[WORD_LENGTH] = '\0';
 
 
   size_t total_num = 0;
   size_t total_size = 0;
+
+  if (rand_flag)
+  {
+    srand( time(NULL));
+  }
+  else
+  {
+    srand(0);
+  }
 
 
   while( true )

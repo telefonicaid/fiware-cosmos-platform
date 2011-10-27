@@ -77,7 +77,7 @@ int main( int argc , char *argv[] )
 	
 	if( argc < 2 )
 	{
-		if( processFile("/opt/samson/controller/log_controller") )
+		if( processFile("/opt/samson/log/log_controller") )
 			return 0;	// Return without error
 		
 		std::cerr << "Usage: " << argv[0] << " path_to_log_file" << std::endl;

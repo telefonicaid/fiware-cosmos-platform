@@ -31,17 +31,24 @@
 
 namespace au
 {
-    
+
+    /**
+     RateValue is a single sample when monitoring a particular rate in bytes/sec
+     */
     typedef struct
     {
         time_t time;
         size_t value;
     } RateValue;
 
+    /**
+     RateItem: Collection of RateValue's to compute a particular rate
+     */
+    
     class RateItem
     {
         std::list<RateValue> values;        // List of values for the last minute
-        int max_time;
+        int max_time;                       // Maximum time to accumulate samples
 
         size_t total_size;                  // total size inside the "buffer"
         
@@ -55,14 +62,18 @@ namespace au
         // Review old samples
         void review();
 
-        // Get information
+        // Get information about the rate
         int getNumOperation();
         size_t getRate( );
         size_t getTotalSize( );
         
-        
     };
 
+    /*
+     Complete class to keep control of all the rate in a particular system
+     It keeps all the samples of the last minute and the last hour
+     */
+    
     class Rate
     {
         
@@ -80,14 +91,37 @@ namespace au
         
         // Get a string describing the rate
         std::string str();
-    
-        // Set the maximum time
-        void setMaxTime( int _max_time );
-        
+
+        // Get the last_minute rate
         size_t getLastMinuteRate();
         
     };
     
+    
+    /**
+     Simplifier version of the Rate for only the last minute
+     */
+    
+    class SimpleRate
+    {
+        RateItem last_minute;
+        size_t total_size;
+        
+    public:
+        
+        // Constructor
+        SimpleRate();
+        
+        // Puch a new value into the rate-system
+        void push( size_t value );
+        
+        // Get the last_minute rate
+        size_t getLastMinuteRate();
+        
+        // Get some information in xml format
+        void getInfo( std::ostringstream &output );
+        
+    };
     
     
     // Simple Rate collection

@@ -188,33 +188,7 @@ namespace samson
     
     const char* auths = "Andreu Urruela , Gregorio Sardina & Ken Zangelin";
     
-/*    
-    const char* help_message =
-    "Samson is a distributed platform to process big-data sources. It has been specially\n"
-    "designed to process the output of log-systems like CDRs or DPI's output\n"
-    "\n"
-    "For more help type help <command>\n"
-    "\n"
-    "General platform commands:             ls_operations, ls_datas, reload_modules, set, unset \n"
-    "                                       ls_local , rm_local , ls_operation_rates\n"
-    "\n"
-    "Getting information from platform:     info , ps , ls_modules, engine_show , ps_network\n"
-    "\n"
-    "Batch processing commands:              ls , add , rm , mv , clear , clear_jobs , kill \n"
-    "                                        upload , download \n"
-    "\n"
-    "Getting info for batch processing:      ps_jobs , ps_tasks \n"
-    "\n"
-    "Stream processing commands:            run_stream_operation, push , pop \n"
-    "                                       add_stream_operation , rm_stream_operation , set_stream_operation_property \n"
-    "                                       rm_queue , cp_queue \n"
-    "                                       set_queue_property\n" 
-    "\n"
-    "Getting info for stream processing:    ls_queues, ls_queues_info,  ps_stream \n"
-    "                                       ls_stream_operation , ls_block_manager \n"
-    "\n"
-    ;
-*/    
+
     const char* help_commands[][2] =                                            
     {                                                                           
         { "info"                    ,   "Usage: info <xpath> [-limit tdeepth]\n\n"
@@ -374,9 +348,6 @@ namespace samson
                                         "\n"
                                         "Type 'help queues' for more information\n"
             
-        },
-        { "ls_queues_info"          ,   "Show a more detailed list of current queues.\n" 
-                                        "Type 'help queues' for more information\n"
         },
         
         { "ps_stream"               , "Get a list of current stream tasks. Type 'help stream_processing' for more help."

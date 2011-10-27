@@ -47,6 +47,17 @@ namespace au {
     
     size_t RateItem::getRate( )
     {
+        if( values.size() == 0)
+            return 0;
+
+        // Compute the time since the last sample....
+        time_t t =  time(NULL);
+        size_t _max_time = t - values.back().time;
+        
+        // Not consider times bellow 10% of the max time
+        if( _max_time < (size_t) (max_time/10) )
+            _max_time = (max_time/10);
+        
         return total_size / max_time;
     }
     
@@ -55,7 +66,7 @@ namespace au {
         return total_size;
     }
     
-#pragma Rate
+#pragma mark Rate
     
     // Puch a new value into the rate-system
     void Rate::push( size_t value )
@@ -81,5 +92,40 @@ namespace au {
         last_minute.review();
         return last_minute.getRate();
     }
+    
+#pragma mark SimpleRate         
+    
+    SimpleRate::SimpleRate() : last_minute(60)
+    {
+        total_size = 0;
+    }
+    
+    // Puch a new value into the rate-system
+    void SimpleRate::push( size_t value )
+    {
+        last_minute.push( value );
+        total_size += value;
+    }
+    
+    // Get the last_minute rate
+    size_t SimpleRate::getLastMinuteRate()
+    {
+        last_minute.review();
+        return last_minute.getRate();
+    }
+    
+    void SimpleRate::getInfo( std::ostringstream &output )
+    {
+        last_minute.review();
+        
+        au::xml_open(output, "simple_rate");
+        
+        au::xml_simple(output , "size" , total_size );
+        au::xml_simple(output , "rate" , last_minute.getRate() );
+        
+        au::xml_close(output, "simple_rate");
+    }        
+
+    
     
 }

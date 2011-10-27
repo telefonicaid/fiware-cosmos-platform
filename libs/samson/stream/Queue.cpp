@@ -109,6 +109,9 @@ namespace samson {
         
         void Queue::push( BlockList *list )
         {
+            
+            simpleRate.push( list->getBlockInfo().size );
+            
             au::list< Block >::iterator b;
             for (b = list->blocks.begin() ; b != list->blocks.end() ; b++ )
                 push( *b );
@@ -165,6 +168,9 @@ namespace samson {
 
             
             au::xml_simple( output , "enviromemnt" , environment.getEnvironmentDescription() );
+
+            // Information about simple rate
+            simpleRate.getInfo( output );
             
             au::xml_close(output, "queue");
         }

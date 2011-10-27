@@ -56,7 +56,6 @@ namespace samson {
             main_commands.push_back("engine_show");
             main_commands.push_back("ls");
             main_commands.push_back("ls_queues");
-            main_commands.push_back("ls_queues_info");
             
 		}
 		

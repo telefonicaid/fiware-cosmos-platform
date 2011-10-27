@@ -6,6 +6,7 @@
 
 #include "au/list.h"                    // au::list
 #include "au/Environment.h"             // au::Environment
+#include "au/Rate.h"                    // au::SimpleRate
 
 #include "samson/common/coding.h"       // KVFullInfo
 #include "samson/common/samson.pb.h"    // samson::network::...
@@ -63,6 +64,9 @@ namespace samson {
             
             // Number of divisions to meet ( block - break operations are scheduled if necessary ) 
             int num_divisions;
+            
+            // Monitorization of the input rate
+            au::SimpleRate simpleRate;
             
         public:
             

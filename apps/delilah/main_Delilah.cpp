@@ -113,11 +113,12 @@ int logFd = -1;
 * man texts -
 */
 static const char* manSynopsis         = " [OPTION]";
-static const char* manShortDescription = "delilah is the user scripting environment of the samson platform, ...\n\n"
-   "Complete list of options:\n";
+static const char* manShortDescription =  "delilah is the command-line client for SAMSON system\n";
 static const char* manDescription      =
-   "delilah is used to interact with the samson platform.\n"
-   "An impressive number of commands are available in delilah ...\n";
+    "\n"
+    "delilah is the command-line client to upload & download data, run processing commands and monitorice a SAMSON system.\n"
+    "See pdf document about samson system to get more information about how to use delilah client"
+    "\n";
 
 static const char* manExitStatus    = "0      if OK\n 1-255  error\n";
 static const char* manAuthor        = "Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.";

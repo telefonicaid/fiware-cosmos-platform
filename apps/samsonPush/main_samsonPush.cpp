@@ -33,6 +33,8 @@ char controller[1024];
 char queue_name[1024];
 bool lines;                         // Flag to indicate that input is readed line by line
 
+static const char* manShortDescription = 
+"samsonPush is a easy-to-use client to send data to a particular queue in a SAMSON system. Just push data into the standart input\n";
 
 PaArgument paArgs[] =
 {
@@ -90,6 +92,7 @@ int main( int argC , const char *argV[] )
     paConfig("log to screen",                 (void*) true);
     paConfig("log to file",                   (void*) false);
     paConfig("screen line format",            (void*) "TYPE:EXEC: TEXT");
+    paConfig("man shortdescription",          (void*) manShortDescription);
     
     // Parse input arguments    
     paParse(paArgs, argC, (char**) argV, 1, false);

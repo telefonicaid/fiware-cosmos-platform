@@ -43,6 +43,10 @@ PaArgument paArgs[] =
     PA_END_OF_ARGS
 };
 
+static const char* manShortDescription = 
+"samsonPop is an easy-to-use client to receive data from a particular queue in a SAMSON system.\n";
+
+
 int logFd = -1;
 
 void find_and_replace( std::string &source, const std::string find, std::string replace ) {
@@ -88,6 +92,7 @@ int main( int argC , const char *argV[] )
     paConfig("log to screen",                 (void*) true);
     paConfig("log to file",                   (void*) false);
     paConfig("screen line format",            (void*) "TYPE:EXEC: TEXT");
+    paConfig("man shortdescription",          (void*) manShortDescription);
     
     // Parse input arguments    
     paParse(paArgs, argC, (char**) argV, 1, false);

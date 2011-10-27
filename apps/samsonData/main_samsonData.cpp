@@ -3,6 +3,11 @@
 #include <fstream>			// std::ifstream
 #include <cstring>			// size_t
 
+#include "parseArgs/parseArgs.h"
+#include "parseArgs/paConfig.h"
+
+#include "logMsg/logMsg.h"
+
 #include "samson/data/data.pb.h"		// data::Command
 #include "samson/data/DataManager.h"	// samson::LogFile
 
@@ -71,24 +76,35 @@ bool processFile( std::string fileName )
 	return true;
 }
 
-int main( int argc , char *argv[] )
-{
-	std::string fileName;
-	
-	if( argc < 2 )
-	{
-		if( processFile("/opt/samson/log/log_controller") )
-			return 0;	// Return without error
-		
-		std::cerr << "Usage: " << argv[0] << " path_to_log_file" << std::endl;
-		return 0;
-	}
-	
-	fileName = argv[1];
 
-	if( !processFile( fileName ) )
+char file_name[1024];
+
+
+PaArgument paArgs[] =
+{
+   { " ",   file_name,  "DATA_FILE_NAME",   PaString,  PaOpt,  (long) "/opt/samson/log/log_controller",   PaNL,   PaNL,  "file to read"  },
+    PA_END_OF_ARGS
+};
+
+const char* manShortDescription = "samsonData is a debug tool used to scan the log file of controller in a SAMSON system";
+
+int logFd = -1;
+
+int main( int argC , char *argV[] )
+{
+    paConfig("usage and exit on any warning", (void*) true);
+    
+    paConfig("log to screen",                 (void*) false);
+    paConfig("log to file",                   (void*) false);
+    paConfig("man shortdescription",          (void*) manShortDescription);
+    
+    // Parse input arguments    
+    paParse(paArgs, argC, (char**) argV, 1, false);
+    logFd = lmFirstDiskFileDescriptor();
+    
+	if( !processFile( file_name ) )
 	{
-		LM_X(1,("Error opening data file %s ",fileName.c_str() ));
+		LM_X(1,("Error opening data file %s ", file_name ));
 	}
 
 	

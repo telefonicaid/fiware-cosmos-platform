@@ -94,11 +94,12 @@ void exitFunction(void)
 * manDescription - 
 */
 static const char* manSynopsis         = " [OPTION]";
-static const char* manShortDescription = "samsonController is the central process in the samson platform, ...\n\n"
-                                         "Complete list of options:\n";
+static const char* manShortDescription = "\nsamsonController is a key component in a SAMSON system\n";
 static const char* manDescription      = 
-   "samsonController is the main process in the samson cluster,\n"
-   "which consists of one or more workers and ONE controller ...\n";
+    "\n"
+    "samsonController is a key component in a SAMSON system. It a single point of synch and control\n"
+    "Multiple samsonWorker's and delilah's can connect to this element to form a SAMSON cluster\n"
+    "\n";
 
 static const char* manExitStatus    = "0      if OK\n 1-255  error\n";
 static const char* manAuthor        = "Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.";

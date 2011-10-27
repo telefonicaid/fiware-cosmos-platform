@@ -15,6 +15,7 @@ SET( STATIC_LIBS
      pthread
      dl
      lm
+	 pa
      ${COMMON_SAMSON_LIBS}
 )
 

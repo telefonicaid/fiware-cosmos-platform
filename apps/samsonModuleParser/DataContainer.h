@@ -109,7 +109,7 @@ namespace samson
 				{
 					acumItems += "opt";
 				}
-				if ((*field).vector)
+				if ((*field).isVector())
 				{
 					acumItems += "vect";
 				}
@@ -134,25 +134,25 @@ namespace samson
 
 				if (nOptFields <= 8)
 				{
-					DataType optFilledField(UINT8, NAME_FILLEDOPTIONALFIELDS, false, false, valMask, 0);
+					DataType optFilledField(UINT8, NAME_FILLEDOPTIONALFIELDS, DataType::container_none, false, valMask, 0);
 					items.insert(items.begin(), optFilledField);
 					includes.insert( optFilledField.getInclude() );
 				}
 				else if (nOptFields <= 16)
 				{
-					DataType optFilledField(UINT16, NAME_FILLEDOPTIONALFIELDS, false, false, valMask, 0);
+					DataType optFilledField(UINT16, NAME_FILLEDOPTIONALFIELDS, DataType::container_none, false, valMask, 0);
 					items.insert(items.begin(), optFilledField);
 					includes.insert( optFilledField.getInclude() );
 				}
 				else if (nOptFields <= 32)
 				{
-					DataType optFilledField(UINT32, NAME_FILLEDOPTIONALFIELDS, false, false, valMask, 0);
+					DataType optFilledField(UINT32, NAME_FILLEDOPTIONALFIELDS, DataType::container_none, false, valMask, 0);
 					items.insert(items.begin(), optFilledField);
 					includes.insert( optFilledField.getInclude() );
 				}
 				else if (nOptFields <= 64)
 				{
-					DataType optFilledField(UINT64, NAME_FILLEDOPTIONALFIELDS, false, false, valMask, 0);
+					DataType optFilledField(UINT64, NAME_FILLEDOPTIONALFIELDS, DataType::container_none, false, valMask, 0);
 					items.insert(items.begin(), optFilledField);
 					includes.insert( optFilledField.getInclude() );
 				}
@@ -181,6 +181,9 @@ namespace samson
 			file << "\n";
 			file << "\n";
 			
+            
+            // Basic include files
+            file << "#include <samson/module/List.h>   // Used in list elements\n"; 
 				
 			std::set<std::string>::iterator include;
 			for ( include = includes.begin() ; include != includes.end() ; include++)
@@ -327,7 +330,7 @@ namespace samson
 			//Vector functions
 			for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
 			{
-				if( (*field).vector )
+				if( (*field).isVector() )
 				{
 					file << (*field).getSetLengthFunction("\t");
 					file << (*field).getAddFunction("\t");

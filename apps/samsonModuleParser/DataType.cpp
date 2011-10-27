@@ -14,9 +14,9 @@
 namespace samson
 {
 	
-	DataType::DataType( std::string _full_type , std::string _name , bool _vector, bool _optional, size_t _valMask,  int nline )
+	DataType::DataType( std::string _full_type , std::string _name , DataTypeContainer _container, bool _optional, size_t _valMask,  int nline )
 	{
-		vector = _vector;
+        container = _container;
 		optional = _optional;
 		valMask = _valMask;
 		fullType = _full_type;
@@ -66,8 +66,8 @@ namespace samson
 	string DataType::getDeclaration(string pre_line)
 	{
 		ostringstream o;
-		
-		if( vector )
+        
+		if( container == container_vector )
 		{	
 			// Basically a pointer to hold the elements
 			o << pre_line << classNameForType(  ) << " *" << name << ";\n";
@@ -77,7 +77,15 @@ namespace samson
 			
 			return o.str();
 		}
+
+		if( container == container_list )
+		{	
+			// Use template to generate list kind elements
+			o << pre_line << "::samson::List< " << classNameForType(  ) << " > " << name << ";\n";
+			return o.str();
+		}
 		
+        
 		//Simple types;
 		o << pre_line << classNameForType(  ) << " " << name << ";\n";
 		
@@ -88,7 +96,7 @@ namespace samson
 	
 	string	DataType::getSetLengthFunction( string pre_line )
 	{
-		if(!vector)
+		if(!isVector())
 		{
 			fprintf(stderr, "samsonModuleParser: Error generating the get length function over a non-vector data type");
 			exit (1);
@@ -171,7 +179,7 @@ namespace samson
 	
 	string	DataType::getAddFunction( string pre_line )
 	{
-		if(!vector)
+		if(!isVector())
 		{
 			fprintf(stderr, "samsonModuleParser: Error generating the add function over a non-vector data type");
 			exit (1);
@@ -214,8 +222,8 @@ namespace samson
 			return o.str();
 		}
 
-		//Only requited in vectors
-		if( vector )
+		//Only requited in vectors and lists
+		if( isVector() )
 		{	
 			o << pre_line << name << "_length=0;\n";			//Current lenght of the element
 			o << pre_line << name << "_max_length=0;\n";		//Max lengh of this vector
@@ -223,6 +231,12 @@ namespace samson
 			return o.str();
 		}
 		
+		if( isList() )
+        {
+            o << pre_line << name << ".clear();\n";
+            return o.str();
+        }
+        
 		return o.str();
 	}	
 	
@@ -231,12 +245,17 @@ namespace samson
 		ostringstream o;
 		
 		//Only requited in vectors
-		if( vector )
+		if( isVector() )
 		{	
 			//The same with a vector of classes
 			o << pre_line << "if( " << name << " )\n";
 			o << pre_line << "\tdelete[] " << name << " ;\n";
 		}
+        else if( isList() )
+		{	
+            // No destructor since everything is included in samson::list
+		}
+
 		
 		return o.str();
 	}	
@@ -286,7 +305,7 @@ namespace samson
 		o << pre_line << "}\n";
 		return o.str();
 	}
-
+    
 	string DataType::getParseCommand(string pre_line)
 	{
 		ostringstream o;
@@ -302,10 +321,8 @@ namespace samson
 					o << pre_line << "if (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
 		}
 
-		if (vector)
-		{
+		if ( isVector() )
 			o << getParseCommandVector(pre_line, name) << "\n";
-		}
 		else
 		{
 			o << getParseCommandIndividual(pre_line, name) << "\n";
@@ -355,14 +372,10 @@ namespace samson
 					o << pre_line << "if (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
 		}
 		
-		if( vector )
-		{
+		if( isVector() )
 			o << getSerializationCommandVector(pre_line, name) << "\n";
-		}
 		else
-		{
 			o << getSerializationCommandIndividual(pre_line, name) << "\n";
-		}
 		
 		return o.str();
 		
@@ -376,6 +389,16 @@ namespace samson
 		o << pre_line << "}\n";
 		return o.str();
 	}
+
+	string DataType::getSizeCommandList( string pre_line, string _name)
+	{
+		ostringstream o;
+		o << pre_line << "{ //Sizing "<<name<<"\n";
+		o << pre_line << "\toffset += ::samson::List< " << classNameForType() << " >::size(data+offset);\n";
+		o << pre_line << "}\n";
+		return o.str();
+	}
+    
 	
 	string DataType::getSizeCommandVector( string pre_line, string _name)
 	{
@@ -407,12 +430,16 @@ namespace samson
 
 		if (optional)
 		{
-					o << pre_line << "if (local" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
+            o << pre_line << "if (local" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
 		}
 		
-		if( vector )
+		if( isVector() )
 		{
 			o << getSizeCommandVector(pre_line, name) << "\n";
+		}
+		if( isList() )
+		{
+			o << getSizeCommandList(pre_line, name) << "\n";
 		}
 		else
 		{
@@ -456,7 +483,7 @@ namespace samson
 			return o.str();
 		}
 		
-		if( vector )
+		if( isVector() )
 		{
 			o << getPartitionCommandVector(pre_line, name) << "\n";
 		}
@@ -566,7 +593,7 @@ namespace samson
 		ostringstream o;
 
 
-		if( vector )
+		if( isVector() )
 		{
 			o << getCompareCommandVector(pre_line, name);
 		}
@@ -617,7 +644,7 @@ namespace samson
 		}
 
 
-		if( vector )
+		if( isVector() )
 		{ 
 			o << getToStringCommandVector(pre_line, name) << "\n";
 		}
@@ -691,7 +718,7 @@ namespace samson
 		if (optional)
 		{
 					o << pre_line << "\tif (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
-					if( vector )
+					if( isVector() )
 					{
 						o << pre_line << "\t\treturn((*" << name << ").getDataInstanceFromPath(dataPathIntP+1));\n";
 					}
@@ -704,7 +731,7 @@ namespace samson
 		}
 		else
 		{
-			if( vector )
+			if( isVector() )
 			{
 				o << pre_line << "\treturn((*" << name << ").getDataInstanceFromPath(dataPathIntP+1));\n";
 			}
@@ -754,7 +781,7 @@ namespace samson
 					o << pre_line << "if (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
 		}
 		
-		if( vector )
+		if( isVector() )
 		{
 			o << getCopyFromCommandVector(pre_line, name) << "\n";
 		}

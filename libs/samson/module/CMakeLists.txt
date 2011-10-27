@@ -18,6 +18,7 @@ SET (HEADERS_INSTALL
 	var_int.h
 	samsonVersion.h 
 	Log.h
+	List.h
 )
 
 SET (HEADERS

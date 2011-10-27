@@ -7,8 +7,12 @@ Module example
 
 data MyData
 {
-	system.UInt a;
-	system.UInt b;
+	vector system.UInt v;
+}
+
+data ExampleData
+{
+	list system.UInt list;
 }
 
 
@@ -129,3 +133,20 @@ map error
 
 	helpLine	"Map to produce an error while running to test fault-issolation" 
 }
+
+generator generator_list
+{
+	out system.UInt example.ExampleData
+	helpLine "Example of how to use list types"
+}
+
+map map_list
+{
+	in  system.UInt example.ExampleData
+	out system.UInt example.ExampleData
+
+	helpLine "Example of how to use list types"
+}
+
+
+

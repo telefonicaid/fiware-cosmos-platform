@@ -121,7 +121,7 @@ namespace samson {
             else if( network->getWorkerFromIdentifier(id) != -1 )
                 showWarningMessage(au::str("Worker %d got disconnected" , network->getWorkerFromIdentifier(id) ));
             else
-                showWarningMessage(au::str("Some unkown network element got disconnected" , network->getWorkerFromIdentifier(id) ));
+                showWarningMessage(au::str("Some unknown network element got disconnected" , network->getWorkerFromIdentifier(id) ));
             
             return;
         }

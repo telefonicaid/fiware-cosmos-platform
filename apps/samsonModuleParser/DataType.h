@@ -35,15 +35,24 @@ namespace samson {
 	{
 	public:
 		
+        
+        typedef enum
+        {
+            container_none,
+            container_vector,
+            container_list
+        } DataTypeContainer;
+
+        DataTypeContainer container;
+        
 		string fullType;
 		string module;
 		string type;
 		string name;
-		bool vector;
 		bool optional;
 		size_t valMask;
 		
-		DataType( std::string _full_type , std::string _name , bool _vector, bool _optional, size_t _valMask, int nline);
+		DataType( std::string _full_type , std::string _name , DataTypeContainer container , bool _optional, size_t _valMask, int nline);
 		
 		/* Get the include file that is necessary to use this data type */
 		std::string getInclude();
@@ -88,6 +97,7 @@ namespace samson {
 
 		string getSizeCommandIndividual( string pre_line, string _name);
 		string getSizeCommandVector( string pre_line, string _name);
+		string getSizeCommandList( string pre_line, string _name);
 		
 		string getSizeCommand(string pre_line);
 
@@ -116,6 +126,16 @@ namespace samson {
 		
 		string getCopyFromCommand(string pre_line);
 
+        
+        bool isVector()
+        {
+            return (container == container_vector);
+        }
+        bool isList()
+        {
+            return (container == container_list);
+        }
+        
 	};
 }
 

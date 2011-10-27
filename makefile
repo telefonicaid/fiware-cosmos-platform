@@ -8,11 +8,7 @@ ifndef SAMSON_RELEASE
 SAMSON_RELEASE=1
 endif
 
-default:
-#	svn up
-	make dd
-
-
+default: release modules man
 
 
 # ------------------------------------------------

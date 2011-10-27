@@ -33,9 +33,14 @@ prepare: prepare_release prepare_debug
 
 i: install
 
-install: release 
+install: release install_man
 	sudo make -C BUILD_RELEASE install
 	make release -C modules
+	mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
+	cp README $(SAMSON_HOME)/share/README.txt
+	cp modules/moduletemplate/CMakeLists.txt $(SAMSON_HOME)/share/modules/moduletemplate
+	cp modules/moduletemplate/makefile $(SAMSON_HOME)/share/modules/moduletemplate
+	cp modules/moduletemplate/module $(SAMSON_HOME)/share/modules/moduletemplate
 
 install_man: man
 	cp -r BUILD_RELEASE/man $(SAMSON_HOME)/

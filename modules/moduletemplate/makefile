@@ -13,9 +13,6 @@ release:
 	make compile_release
 	sudo make install
 
-test:
-	make test -C build
-
 compile: prepare
 	make -C build
 

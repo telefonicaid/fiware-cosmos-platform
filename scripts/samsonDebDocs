@@ -24,6 +24,7 @@ release=$2
 #
 # Help variables
 #
+arch=$(dpkg --print-architecture)
 package_name=samson-docs
 
 #

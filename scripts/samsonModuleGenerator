@@ -43,6 +43,41 @@ if [ -d $module_name ]; then
   exit 3
 fi
 
+# Check to see if there is already a module named $module_name
+if [ ! -z "${SAMSON_HOME}" ]; then
+  if [ -e ${SAMSON_HOME}/modules/lib$module_name.so ]; then 
+    echo "Warning: ${SAMSON_HOME}/modules/lib$module_name.so already exists"
+    while true; do
+      read -p "Are you sure you want to create a new module named: '$module_name'? " ans
+      case $ans in
+        [Yy]* ) break;;
+        [Nn]* ) exit 4;;
+      esac
+      echo "Please, answer 'Yes' or 'No'"
+    done
+  fi
+elif [ -e modules/lib$module_name.so ]; then 
+  echo "Warning: modules/lib$module_name.so already exists"
+  while true; do
+    read -p "Are you sure you want to create a new module named: '$module_name'? " ans
+    case $ans in
+      [Yy]* ) break;;
+      [Nn]* ) exit 4;;
+    esac
+    echo "Please, answer 'Yes' or 'No'"
+  done
+elif [ -e /opt/samson/modules/lib$module_name.so ]; then 
+  echo "Warning: /opt/samson/modules/lib$module_name.so already exists"
+  while true; do
+    read -p "Are you sure you want to create a new module named: '$module_name'? " ans
+    case $ans in
+      [Yy]* ) break;;
+      [Nn]* ) exit 4;;
+    esac
+    echo "Please, answer 'Yes' or 'No'"
+  done
+fi
+
 if [ ! -z "${SAMSON_HOME}" ]; then
   if [ -d ${SAMSON_HOME}/share/modules/moduletemplate ]; then
     cp -r  ${SAMSON_HOME}/share/modules/moduletemplate $module_name

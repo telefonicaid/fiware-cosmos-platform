@@ -10,30 +10,56 @@ usage()
   exit 1
 }
 
-notfound()
+not_found()
 {
-  echo "Unable to locate the module skeleton directory"
+  if [ ! -z "${SAMSON_HOME}" ]; then
+    echo "Unable to locate the module skeleton directory, $SAMSON_HOME/share/modules/moduletemplate"
+  elif  [ -d /opt/samson/share/modules/moduletemplate ]; then
+    echo "Unable to locate the module skeleton directory,  /opt/samson/share/modules/moduletemplate"
+  fi
   echo "Set \$SAMSON_HOME to the root directory of your SAMSON installation"
   exit 2
 }
 
+# Replace all occurances of moduletemplate with the new module name
+process_module()
+{
+  for file in `grep -rl moduletemplate $module_name`
+  do
+    sed -i "s/moduletemplate/$module_name/g" $file
+  done
+}
 
 if [ -z "$1" ]; then
   usage
+else
+  #Sanitize the name being passed
+  module_name=`basename $1`
+fi
+
+# Check to see if there is a directory before over-writting it
+if [ -d $module_name ]; then
+  echo "The directory $module_name already exists, please delete it before continuing"
+  exit 3
 fi
 
 if [ ! -z "${SAMSON_HOME}" ]; then
   if [ -d ${SAMSON_HOME}/share/modules/moduletemplate ]; then
-    cp -r  ${SAMSON_HOME}/share/modules/moduletemplate $1
-  fi
-fi
-
-if [ -d /opt/samson ]; then
-  if [ -d /opt/samson/share/modules/moduletemplate ]; then
-    cp /opt/samson/share/modules/moduletemplate $1
+    cp -r  ${SAMSON_HOME}/share/modules/moduletemplate $module_name
+    process_module
   else
-    notfound
-  fi 
+    not_found
+  fi
+elif [ -d modules/moduletemplate ]; then 
+    cp -r modules/moduletemplate $module_name
+    process_module
+elif [ -d /opt/samson ]; then
+  if [ -d /opt/samson/share/modules/moduletemplate ]; then
+    cp -r /opt/samson/share/modules/moduletemplate $module_name
+    process_module
+  else
+    not_found
+  fi
 else
-  notfound
+  not_found
 fi

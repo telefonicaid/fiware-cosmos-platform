@@ -436,8 +436,7 @@ namespace samson
 		if( isVector() )
 		{
 			o << getSizeCommandVector(pre_line, name) << "\n";
-		}
-		if( isList() )
+		} else if( isList() )
 		{
 			o << getSizeCommandList(pre_line, name) << "\n";
 		}

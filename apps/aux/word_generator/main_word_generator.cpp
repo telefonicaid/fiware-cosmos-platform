@@ -35,7 +35,7 @@ int main( int args , const char*argv[] )
   bool rand_flag = cmd.get_flag_bool("r");
   size_t repeate_time = cmd.get_flag_int("t");
 
-  size_t num_lines = atoll( argv[args-1] );
+  size_t num_lines = atoll( cmd.get_argument(1).c_str() );
   au::Cronometer cronometer;
   
   char word[100];

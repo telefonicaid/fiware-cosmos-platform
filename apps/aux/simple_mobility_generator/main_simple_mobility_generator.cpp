@@ -32,8 +32,8 @@ typedef struct
 
 	void step()
 	{
-	   x+= rand()%3 - 1;
-	   y+= rand()%3 - 1;
+	   x+= rand()%21 - 10;
+	   y+= rand()%21 - 10;
 
 	   limits(&x);
 	   limits(&y);

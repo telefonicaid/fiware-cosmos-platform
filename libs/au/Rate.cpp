@@ -118,12 +118,8 @@ namespace au {
     {
         last_minute.review();
         
-        au::xml_open(output, "simple_rate");
-        
         au::xml_simple(output , "size" , total_size );
         au::xml_simple(output , "rate" , last_minute.getRate() );
-        
-        au::xml_close(output, "simple_rate");
     }        
 
     

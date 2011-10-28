@@ -66,7 +66,8 @@ namespace samson {
             int num_divisions;
             
             // Monitorization of the input rate
-            au::SimpleRate simpleRate;
+            au::SimpleRate simpleRate_kvs;
+            au::SimpleRate simpleRate_size;
             
         public:
             

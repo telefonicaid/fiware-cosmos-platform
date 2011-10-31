@@ -151,11 +151,7 @@ public class Configuration {
         String[] textValues = text.split(FIELD_ASSIGNMENTS_DELIMITER);
         int[] numericalValues = new int[textValues.length];
         for (int i = 0; i < textValues.length; ++i) {
-            try {
-                numericalValues[i] = Integer.parseInt(textValues[i]);
-            } catch (NumberFormatException e) {
-                System.err.println(e.getMessage());
-            }
+            numericalValues[i] = Integer.parseInt(textValues[i]);
         }
         return numericalValues;
     }

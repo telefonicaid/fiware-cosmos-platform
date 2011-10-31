@@ -20,11 +20,11 @@ message CdrProto {
   }
 
   // Phone number of the caller.
-  required string origin_num = 1;
+  optional string origin_num = 1;
   // Phone number of the callee.
-  required string destination_num = 2;
+  optional string destination_num = 2;
   // Time when the communication occurred.
-  required string date_time = 3;
+  optional string date_time = 3;
   // Communication type.
-  required Type comm_type = 4 [default = VOICE];
+  optional Type comm_type = 4 [default = VOICE];
 }

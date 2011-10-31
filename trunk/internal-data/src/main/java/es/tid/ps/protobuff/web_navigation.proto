@@ -7,15 +7,15 @@ package es.tid.ps.protobuff;
 // Defines a web navigation log.
 message WebNavigationProto {
   // Anonymized user id that created the request.
-  required string user_id = 1;
+  optional string user_id = 1;
   // URL of the request.
-  required string url = 2;
+  optional string url = 2;
   // Time stamp when the request happened.
-  required string request_time = 3;
+  optional string request_time = 3;
   // User agent (browser, OS, etc).
-  required string user_agent = 4;
+  optional string user_agent = 4;
   // Web protocol of this request.
-  required string protocol = 5;
+  optional string protocol = 5;
   // Communication method (e.g. GET, POST, etc).
-  required string method = 6;
+  optional string method = 6;
 }

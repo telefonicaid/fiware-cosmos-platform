@@ -85,6 +85,7 @@ namespace samson {
         void StreamManager::notify( engine::Notification* notification )
         {
             
+            
             if( notification->isName( notification_network_diconnected ) )
             {
                 int id = notification->environment.getInt("id",-1);

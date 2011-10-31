@@ -27,6 +27,7 @@ string.h
 xml.h
 Table.h
 Tree.h
+RRT.h
 )
 
 SET (SOURCES
@@ -49,6 +50,7 @@ string.cpp
 xml.cpp
 Table.cpp
 Tree.cpp
+RRT.cpp
 )
 
 

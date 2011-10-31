@@ -49,6 +49,7 @@ void SamsonConnect::SetConnectionMessage( std::string message )
     
     // Dissable connection button
     connectButton->setEnabled ( false );
+    localhostButton->setEnabled ( false );
     
 }
 

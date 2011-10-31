@@ -4,13 +4,16 @@ SET (SOURCES
   PlotWidget.cpp
   SamsonConnect.cpp
   SamsonQueryWidget.cpp
+  QueueWidget.cpp
   SamsonNodeWidget.cpp
   DelilahConnection.cpp
+  Plot.cpp
 )
 
 SET( HEADERS
-  main_DelilahQT.h
-  DelilahConnection.h
+	 Plot.h
+     main_DelilahQT.h
+     DelilahConnection.h
 )
 
 SET (HEADERS_FOR_MOC
@@ -18,6 +21,7 @@ SET (HEADERS_FOR_MOC
   PlotWidget.h
   SamsonConnect.h
   SamsonQueryWidget.h
+  QueueWidget.h
   SamsonNodeWidget.h
 )
 
@@ -25,6 +29,7 @@ SET(FORMS
    MainWindow.ui
    SamsonConnect.ui
    SamsonQueryWidget.ui
+   QueueWidget.ui
    SamsonNodeWidget.ui
 )
 

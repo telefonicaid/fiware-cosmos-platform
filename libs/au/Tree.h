@@ -57,24 +57,28 @@ namespace au {
         bool isValue( std::string _value );
         
         TreeItem* getItem( std::string name , int position );
+        TreeItem* getFilteredItem( std::string name , std::string filter_name , std::string filter_value );
         
         std::string getProperty( std::string name );
         
         void add( TreeItem* item);
         
         size_t getNumItems();
+
+        // Get the number of items with a particular name ( example, get num of workers )
+        size_t getNumItems( std::string name );
         
         TreeItem* getItem( size_t pos );
         
-        void str( std::ostringstream& output , int level );
+        void str( std::ostringstream& output , int level , int max_level );
         
-        std::string str();
+        std::string str( int max_level = 0 );
       
         TreeItem* getItemFromPath( std::string path );
         TreeItem* getItemFromFieldDescription( std::string field_description );
         
-        
         size_t getUInt64( std::string path );
+        int getInt( std::string path );
         std::string get( std::string path );
         
     };

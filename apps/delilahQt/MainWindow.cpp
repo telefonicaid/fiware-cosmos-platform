@@ -14,6 +14,7 @@
 #include "SamsonQueryWidget.h"
 #include "SamsonNodeWidget.h"
 #include "PlotWidget.h"
+#include "QueueWidget.h"
 
 #include "DelilahConnection.h"     // DelilahConnection
 
@@ -165,8 +166,13 @@ void MainWindow::open_samson_query()
 
 void MainWindow::show_queues()
 {
-  PlotWidget *plotWidget = new PlotWidget();
-  plotWidget->show();
+   //PlotWidget *plotWidget = new PlotWidget();
+   //plotWidget->show();
+
+   // New Queue Widget
+   QueueWidget * widget = new QueueWidget();
+   widget->show();
+
 }
 
 

@@ -132,6 +132,7 @@ namespace samson {
         }
         
         
+        
         // Send a "hello" command message just to notify the controller about me
         Packet *p = new Packet( Message::Command );
         network::Command *command = p->message->mutable_command();

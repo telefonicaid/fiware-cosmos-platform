@@ -61,12 +61,8 @@ MainWindow *mainWindow;               // Main window....
 SamsonConnect *samsonConnect;         // Connection dialog...
 SamsonQueryWidget* samsonQueryWidget; // Query widget used in the background
 
-// Top Network & Delilah object used
-
-
 
 // Global element about this connection
-
 DelilahConnection* delilahConnection;
 
 

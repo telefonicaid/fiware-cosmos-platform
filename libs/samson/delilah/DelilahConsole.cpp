@@ -15,6 +15,7 @@
 #include "au/CommandLine.h"				// au::CommandLine
 #include "au/string.h"					// au::Format
 #include "au/Descriptors.h"             // au::Descriptors
+#include "au/Tree.h"                    // au::TreeItem
 
 #include "engine/MemoryManager.h"                   // samson::MemoryManager
 
@@ -1066,6 +1067,30 @@ namespace samson
             
             
         }
+        
+        if( mainCommand == "tree" )
+        {
+            au::TreeItem* item =  getTreeItem( );
+
+            if( commandLine.get_num_arguments() > 1 )
+            {
+                au::TreeItem *_item = item->getItemFromPath( commandLine.get_argument(1) );
+                if( _item )
+                    writeOnConsole( _item->str( commandLine.get_flag_int("limit") ) );
+                else
+                    writeWarningOnConsole( au::str( "No item at %s" , commandLine.get_argument(1).c_str() ) );
+            }
+            else
+            {
+                writeOnConsole( item->str( commandLine.get_flag_int("limit") ) );
+            }
+            
+            delete item;
+            
+            
+            return 0;
+        }
+        
         
         if( (main_command == "s") || (main_command == "status") )
         {

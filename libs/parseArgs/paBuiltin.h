@@ -47,6 +47,7 @@ extern char        paVisual[128];
 * paBuiltin - vector of builtin
 */
 extern PaArgument paBuiltin[];
+extern int        paBuiltins;
 
 
 

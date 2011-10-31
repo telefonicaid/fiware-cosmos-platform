@@ -1,14 +1,14 @@
 #include <stdio.h>              /* sprintf                                  */
+#include <cstdlib>				/* C++ free(.)								 */
 
 #include "baStd.h"              /* BA standard header file                  */
 
-#include "parseArgs/paConfig.h"           /* config variables                          */
-#include "parseArgs/parseArgs.h"          /* PaArgument                                */
+#include "paConfig.h"           /* config variables                          */
+#include "parseArgs.h"          /* PaArgument                                */
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */
 #include "paIterate.h"          /* paIterateInit, paIterateNext              */
 #include "paEnvVals.h"          /* paEnvName                                 */
 #include "paBuiltin.h"          /* Own interface                             */
-#include <cstdlib>				/* C++ free(.)								 */
 
 
 
@@ -109,7 +109,7 @@ PaArgument paBuiltin[] =
 
 /* ****************************************************************************
 *
-* BuiltinNoOf - 
+* paBuiltinNoOf - 
 */
 int paBuiltinNoOf(void)
 {

@@ -320,9 +320,9 @@ int paOptionsParse(PaArgument* paList, char* argV[], int argC)
 
 		if (aP->varP == (void*) &paUsageVar)
 		{
+			memset(paResultString, 0, sizeof(paResultString));
 			if (extendedUsage == false)
 			{
-				memset(paResultString, 0, sizeof(paResultString));
 				paUsage(paList);
 				return -2;
 			}
@@ -461,7 +461,10 @@ int paOptionsParse(PaArgument* paList, char* argV[], int argC)
 	}		
 
 	if (extendedUsage == true)
+	{
 		paExtendedUsage(paList);
+		return -2;
+	}
 
 	LM_EXIT();
 	return 0;

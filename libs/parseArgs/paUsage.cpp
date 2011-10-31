@@ -14,6 +14,7 @@
 #include "paIterate.h"          /* paIterateInit, paIterateNext              */
 #include "paEnvVals.h"          /* paEnvName                                 */
 #include "paParse.h"            /* progNameV                                 */
+#include "paBuiltin.h"          /* paBuiltinNoOf                             */
 #include "paUsage.h"            /* Own interface                             */
 
 
@@ -138,54 +139,56 @@ static void getApVals
 */
 void paUsage(PaArgument* paList)
 {
-    char*        spacePad;
-    char         string[512];
-    char         s[1024];
-    PaArgument*  aP;
+	char*        spacePad;
+	char         string[512];
+	char         s[1024];
+	PaArgument*  aP;
+	int          ix       = -1;
+	int          builtins = paBuiltinNoOf();
 
-    LM_T(LmtPaUsage, ("presenting usage"));
+	LM_T(LmtPaUsage, ("presenting usage"));
 
-    spacePad = (char*) strdup(progName);
-    memset(spacePad, 0x20202020, strlen(spacePad));  /* replace progName */
+	spacePad = (char*) strdup(progName);
+	memset(spacePad, 0x20202020, strlen(spacePad));  /* replace progName */
 
-    sprintf(s, "Usage: %s ", progName);
-    strncat(paResultString, s, sizeof(paResultString) - 1);
-
-    paIterateInit();
-    LM_T(LmtPaUsage, ("presenting usage"));
-    while ((aP = paIterateNext(paList)) != NULL)
-    {
-	char  xName[512];
-
-	if (aP->sort == PaHid)
-	    continue;
-
-	if (PA_IS_OPTION(aP) && (aP->sort == PaOpt))
-	    sprintf(xName, "[%s]", paFullName(string, aP));
-	else if (PA_IS_OPTION(aP) && (aP->sort == PaReq))
-	    sprintf(xName, "%s", paFullName(string, aP));
-	else if (PA_IS_PARAMETER(aP) && (aP->sort == PaOpt))
-	    sprintf(xName, "(%s)", aP->description);
-	else if (PA_IS_PARAMETER(aP) && (aP->sort == PaReq))
-	    sprintf(xName, "[%s]", aP->description);
-	else
-	    strcpy(xName, "                    ");
-
-	sprintf(s, " %s\n", xName);
+	sprintf(s, "Usage: %s ", progName);
 	strncat(paResultString, s, sizeof(paResultString) - 1);
-	sprintf(s, "%s        ", spacePad); /* 8 spaces for "Usage:  " */
-	strncat(paResultString, s, sizeof(paResultString) - 1);
+
+	paIterateInit();
+	LM_T(LmtPaUsage, ("presenting usage"));
+	while ((aP = paIterateNext(paList)) != NULL)
+	{
+		char  xName[512];
+
+		++ix;
+		if (ix < builtins)
+			continue;
+
+		if (aP->sort == PaHid)
+			continue;
+
+		if (PA_IS_OPTION(aP) && (aP->sort == PaOpt))
+			sprintf(xName, "[%s]", paFullName(string, aP));
+		else if (PA_IS_OPTION(aP) && (aP->sort == PaReq))
+			sprintf(xName, "%s", paFullName(string, aP));
+		else if (PA_IS_PARAMETER(aP) && (aP->sort == PaOpt))
+			sprintf(xName, "(%s)", aP->description);
+		else if (PA_IS_PARAMETER(aP) && (aP->sort == PaReq))
+			sprintf(xName, "[%s]", aP->description);
+		else
+			strcpy(xName, "                    ");
+
+		sprintf(s, " %s\n", xName);
+		strncat(paResultString, s, sizeof(paResultString) - 1);
+		sprintf(s, "%s        ", spacePad); /* 8 spaces for "Usage:  " */
+		strncat(paResultString, s, sizeof(paResultString) - 1);
     }
 
     LM_T(LmtPaUsage, ("presenting usage"));
     strncat(paResultString, "\r", sizeof(paResultString) - 1);
-    if (paExitOnUsage == true)
-    {
+
 	printf("%s\n", paResultString);
 	exit(1);
-    }
-
-    free(spacePad);
 }
 
 
@@ -344,6 +347,9 @@ void paExtendedUsage(PaArgument* paList)
 	strncat(paResultString, "\r", sizeof(paResultString) - 1);
     
 	free(spacePad);
+
+	printf("%s\n", paResultString);
+	exit(1);
 }
 
 

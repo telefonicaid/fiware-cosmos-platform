@@ -112,8 +112,8 @@ echo OK, rsynching /opt/samson to ${cluster[$clusterIx]}
 for node in ${cluster[$clusterIx]}
 do
 	echo Installing samson in $node
-	rsync -r /opt/samson/etc             samson@$mach:/opt/samson
-	rsync -r /opt/samson/modules         samson@$mach:/opt/samson
-	rsync -r /opt/samson/bin	         samson@$mach:/opt/samson
+	rsync -r /opt/samson/etc             samson@$node:/opt/samson
+	rsync -r /opt/samson/modules         samson@$node:/opt/samson
+	rsync -r /opt/samson/bin	         samson@$node:/opt/samson
 done
 

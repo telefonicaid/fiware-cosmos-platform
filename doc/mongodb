@@ -336,6 +336,7 @@ kzangeli@torkel:~> samsonSpawner -local -fg
 
 Start delilah (in torkel):
 kzangeli@torkel:~> delilah
+Delilah> add mongoQueryOutputQueue system.UInt cdr.mobCdr
 Delilah> remove_all
 Delilah> txt.generate_words words -create
 Delilah> txt.export_words words words.txt -create
@@ -425,10 +426,16 @@ db.runCommand( { addshard : "samson08:2001" } )
 use admin
 db.runCommand( { enablesharding : "test" } )
 use test
-db.test.ensureIndex({"I": 1, "T": 1})
+db.lloc01.ensureIndex({"I": 1, "T": 1})
+db.ploc01.ensureIndex({"I": 1, "T": 1})
 use admin
 db.runCommand( { shardcollection : "test.lloc01", key : { "I": 1, "T" : 1 } } )
 db.runCommand( { shardcollection : "test.ploc01", key : { "I": 1, "T" : 1 } } )
+use test
+show collections
+db.lloc01.find().count()
+db.ploc01.find().count()
+
 ===============================================================================
 
 o Define shard key
@@ -484,33 +491,7 @@ Examining status of sharding from 'mongo':
 Samson and MongoDB integration document - for Passive Location
 ================================================================================================================================
 
-TOC
-1.  Introduction
-2.  Mongodb
-2.1 Introduction
-2.2 Executables
-2.3 Simple Mongo Setup
-2.4 Redundancy
-2.5 Sharding
-3.  Samson
-3.1 Implementation Detail (samson modules)
-
-4.  Passive Location Pilot
-4.1 Introduction
-4.2 Input Records
-4.3 Expectations
-
-5.  Pilot Implementation Details
-5.1 SAMSON implementation details
-5.1.1 XML parser for input
-5.1.2 Details on mongo module? parameters, usage ... ?
-5.2 MongoDB setup details
-5.2.1 Sharding Key selection
-5.2.2 Collection Splitting
-6.  Test Results
-7.  Conclusions/Remarks
-
-INTRODUCTION
+1. Introduction - why external storage
 ------------------------------------------------------------------------------------------------------------------------------
 Samson is a batch and streaming platform for BigData, not an external storage solution, like Cassandra or any other NoSQL database.
 Though, in the intent to make Samson a stand-alone procuct, there is a need for a means to store data, both
@@ -524,49 +505,16 @@ Finally the decision has fallen on using MongoDB, as it is a distributed and fai
 The fact that recent clients push for MongoDB has influenced in this decision.
 
 
-
-INPUT RECORDS
+2. MongoDB
 ------------------------------------------------------------------------------------------------------------------------------
-The data that is injected in samson from ARCANUM is in XML form and needs to be parsed in order to extact the
-relevant data, which for one single record consists of the following fields:
-- EMEI
-- Cell tower ID
-- Timestamp
-- etc.
+
+      Introduction to mongo ...
 
 
 
-EXPECTATIONS
+2.1 Executables
 ------------------------------------------------------------------------------------------------------------------------------
-The maximum desired accessability for the passive location pilot with O2 UK is for the samson platform to be able to store
-40k location input events per second in MongoDB and at the same time being able to serve 100 queries per second.
-Two separate data base tables (in MongoDB the corresponding concept is 'collections') will be used for this purpose.
-
-The first of these MongoDB collections (from here on referred to as the 'Input Collection') will hold the raw input
-(but stripped down to only contain the relevant data, of course), while the second will hold only one record (the corresponding
-MongoDB concept is 'document') per user/cell phone number, describing the last known location of this subscriber.
-
-
-
-IMPLEMENTATION DETAIL - AN OVERVIEW
-------------------------------------------------------------------------------------------------------------------------------
-Samson is a modular platform able to execute third-party modules as a part of the platform.
-These modules are compiled as separate shared libraries and Samson links to them in run-time.
-This mechanism has been used to implement Samson modules that connect Samson with MongoDB in 
-a seemless manner.
-
-The idea with these samson-mongodb modules is to not include any MongoDB administration into Samson,
-but merely use the databases and collections that a Samson-user inputs as parameters to the platform.
-All mongodb administration and decision, such as use shards, will be done outside of Samson, using the
-standard MongoDB tools.
-
-A special Samson module to parse the input XML data from Arcanum is developed ...
-
-
-
-MONGODB - THE EXECUTABLES
-------------------------------------------------------------------------------------------------------------------------------
-The MongoDB comes with lots of components and utilities:
+MongoDB comes with lots of components and utilities:
 
   o mongod     The database process.
   o mongos     Sharding controller.
@@ -576,7 +524,7 @@ The MongoDB comes with lots of components and utilities:
 
 
 
-MONGODB SETUP - A SIMPLE EXAMPLE
+2.2   Simple Mongo Setup
 ------------------------------------------------------------------------------------------------------------------------------
 The first tests made used one single Mongo server. This is a very simple setup and all that is needed is to execute a
 'mongod' process in the machine supposed to serve the data base. 
@@ -592,7 +540,7 @@ The first tests made used one single Mongo server. This is a very simple setup a
 
 
 
-MONGODB REDUNDANCY AND FAILOVER
+2.3   Redundancy and Failover
 ------------------------------------------------------------------------------------------------------------------------------
 In order to protect the MongoDB data against node failure, any number of secondary 'mongod' processes can be used,
 standing by to take over the execution in case the primary 'mongod' process fails.
@@ -609,7 +557,13 @@ become the primary node (or even a readable secondary). They are mainly useful f
 
 
 
-MONGODB SHARDS
+2.4 Indexes
+------------------------------------------------------------------------------------------------------------------------------
+Short explanation on MongoDB indexes
+
+
+
+2.5 Sharding
 ------------------------------------------------------------------------------------------------------------------------------
 To increase MongoDB performance, a collection can be distributed among varios nodes (computers).
 This concept has received the name 'sharding' and has the advantage that inserts and queries are
@@ -617,7 +571,100 @@ distributed over a number of nodes and are thus faster.
 
 
 
-COLLECTION SPLITTING
+2.6   Sharded Mongo Setup Example
+------------------------------------------------------------------------------------------------------------------------------
+
+
+
+3.    Samson
+------------------------------------------------------------------------------------------------------------------------------
+      Introduction to Samson
+
+
+
+3.1   Samson modules to extend functionality
+------------------------------------------------------------------------------------------------------------------------------
+
+4.    Passive Location Pilot
+------------------------------------------------------------------------------------------------------------------------------
+      Introduction ...
+
+
+
+4.1   Mongo setup - what to store in the collections
+------------------------------------------------------------------------------------------------------------------------------
+
+
+
+4.2   Samson setup
+------------------------------------------------------------------------------------------------------------------------------
+
+
+
+4.3   Arcanum Input for Samson
+------------------------------------------------------------------------------------------------------------------------------
+The data that is injected in samson from ARCANUM is in XML form and needs to be parsed in order to extact the
+relevant data, which for one single record consists of the following fields:
+- EMEI
+- Cell tower ID
+- Timestamp
+- etc.
+
+
+
+
+4.4   Expectations
+------------------------------------------------------------------------------------------------------------------------------
+The maximum desired accessability for the passive location pilot with O2 UK is for the samson platform to be able to store
+40k location input events per second in MongoDB and at the same time being able to serve 100 queries per second.
+Two separate data base tables (in MongoDB the corresponding concept is 'collections') will be used for this purpose.
+
+The first of these MongoDB collections (from here on referred to as the 'Input Collection') will hold the raw input
+(but stripped down to only contain the relevant data, of course), while the second will hold only one record (the corresponding
+MongoDB concept is 'document') per user/cell phone number, describing the last known location of this subscriber.
+
+
+
+5.    Pilot Implementation Details
+------------------------------------------------------------------------------------------------------------------------------
+
+
+
+5.1   SAMSON implementation details
+------------------------------------------------------------------------------------------------------------------------------
+Samson is a modular platform able to execute third-party modules as a part of the platform.
+These modules are compiled as separate shared libraries and Samson links to them in run-time.
+This mechanism has been used to implement Samson modules that connect Samson with MongoDB in a seemless manner.
+
+The idea with these samson-mongodb modules is to not include any MongoDB administration into Samson,
+but merely use the databases and collections that a Samson-user inputs as parameters to the platform.
+All mongodb administration and decision, such as use shards, will be done outside of Samson, using standard MongoDB tools.
+
+A special Samson module to parse the input XML data from Arcanum is developed ...
+
+
+
+5.1.1 Module 1: XML parser for input
+------------------------------------------------------------------------------------------------------------------------------
+
+
+
+5.1.2 Module 2: Details on mongo module? parameters, usage ... ?
+------------------------------------------------------------------------------------------------------------------------------
+
+
+
+5.2   MongoDB setup details
+------------------------------------------------------------------------------------------------------------------------------
+
+
+
+5.2.1 Sharding Key selection
+------------------------------------------------------------------------------------------------------------------------------
+
+
+
+5.2.2 Collection Splitting
 ------------------------------------------------------------------------------------------------------------------------------
 Inserting documents in a MongoDB collection takes longer the bigger the collection is, so the idea is to split the
 Input Collection in time frames. Later on, the decision on the size of these time frames will be taken.
@@ -627,14 +674,31 @@ input data in one separate collection per month (or 365/2 times faster if the sp
 This 'collection splitting' makes querying a bit more difficult as a user will have to work against a number
 of collections instead of just against a single collection, but 
 
-
-
 QUESTION: Will any queries be done on 'Input Collection'?
           If not, why index it?  Isn't it true that an indexed collection get worse insertion time?
 
 
 
-TEST RESULTS - 
+6.    Test Results
+------------------------------------------------------------------------------------------------------------------------------
+Two different setups has been used to extract sufficient test results for this 'proof-of-concept':
+
+1. One simple setup with only one MongoDB node, used with an external tool to upload data to mongodb
+   and to at the same time querying that same collection. The idea behind this simple test is to verify how
+   much load a single (non-sharded) mongodb node is able to cope with, at the same time as querying is performed 
+   against that collection. This may not be 100% relevant as main part of the queries will be against the
+   database/collection that contains only the 'last known location' of each of the users in the pilot.
+   However, the test gives us an initial idea on how many shards we will need to cope with 40000 KVs/s and
+   100 qps.
+
+2. The second setup is as close to the real pilot setup as possible - four samson nodes and four MongoDB nodes and
+   all data uploads are executed using the samson mongo module implemented for the passive location pilot.
+   The MongoDB secondary nodes aren't even started, and we must bear in mind that the replication of the data
+   will slow down the entire system.
+
+
+
+6.1. A first insert and lookup stress-test in a single mongo node
 ------------------------------------------------------------------------------------------------------------------------------
 The throughput tests were performed using the simple setpup, with a single 'mongod' process.
 We're assuming that each shard will add more or less this same throughput.
@@ -644,7 +708,9 @@ starting with different sizes of the collection that is at the same time both in
 
 For the first row of the table, the collection was first injected with 207 million key-value pairs and
 without any simultaneous inserts, a throughput of 56 queries per second was achieved.
-When injecting 40 new key-values per second, the responsiveness went down to 58 queries per second.
+When injecting 40 new key-values per second, the responsiveness surprisingly went up to 58 queries per second.
+However, 40 queries per second is not very much and this strange result is probably just fluctuations ...
+
 
      KVs    |  0    40    80    200   400   800  4000   8000  16000
 ------------------------------------------------------------------
@@ -682,11 +748,41 @@ Really, this test was done querying the 'big collection' when in reality the que
 
 
 
-CONCLUSIONS DURING TESTS (extracts of these point may be used within the document ...)
+6.2. Test results samson/mongo integration
+------------------------------------------------------------------------------------------------------------------------------
+This test setup includes four nodes running a samson cluster, and another four nodes running a mongodb cluster.
+Using the samson utility 'passiveLocationPush', pushing 10000 key-values to the samson platform, working in streaming mode,
+the (fake) records are inserted and the samson platform is without any load worth mentioning.
+
+Testing with a 'whopping' 80000 key-values per second for inserts, the samson load goes up to 16 used cores (ALL cores) but
+still, all data is perfectly inserted and no records are lost.
+
+Now, executing an external tool to query the database, we get results of X queries per second.
+
+    40 KVs => X qps
+  1000 KVs => X qps
+  4000 KVs => X qps
+ 10000 KVs => X qps
+ 20000 KVs => X qps
+ 40000 KVs => X qps
+ 80000 KVs => X qps
+160000 KVs => X qps
+
+
+
+7. Conclusions
+------------------------------------------------------------------------------------------------------------------------------
+A setup consisting of four samson nodes and eight mongo nodes (half of the mongo nodes running as secondary mongo servers for redundancy)
+the entire platform is easily able to store 40000 KVs/s and simultaneously respond to 100 queries per second (on the last know location 
+database). When querying the history database collection, we reach XXX qps.
+
+
+
+8. Remarks
 ------------------------------------------------------------------------------------------------------------------------------
 o Journaling will not be used
    Journaling cannot be used (around ten times slower!).
-   If we need redundancy, another node should be used: REPLICA SETS (primary/secondary)
+   If redundancy is needed, another node should be used: REPLICA SETS (primary/secondary)
    For this, an extra machine is needed per shard ...
    But also, this gives complete redundancy and availability.
    Tests should be performed putting the journal on a separate hard drive.
@@ -709,3 +805,6 @@ o Avoid having collections bigger than 50M records (7.5 Gigabytes on disk)
 o Indexing makes the insert time almost 100% slower.
    But, searches are impossible without indexes, so indexing must be used
    If the index is kept on a separate (and faster) disk, there is lots of throughput to gain
+
+========================================================================================================================
+

@@ -494,14 +494,19 @@ TOC
 2.5 Sharding
 3.  Samson
 3.1 Implementation Detail (samson modules)
+
 4.  Passive Location Pilot
 4.1 Introduction
 4.2 Input Records
 4.3 Expectations
+
 5.  Pilot Implementation Details
-5.1 XML parser for input
-5.2 Collection Splitting
-5.3 Details on mongo module? parameters, usage ... ?
+5.1 SAMSON implementation details
+5.1.1 XML parser for input
+5.1.2 Details on mongo module? parameters, usage ... ?
+5.2 MongoDB setup details
+5.2.1 Sharding Key selection
+5.2.2 Collection Splitting
 6.  Test Results
 7.  Conclusions/Remarks
 

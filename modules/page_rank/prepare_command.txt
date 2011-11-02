@@ -1,7 +1,7 @@
 
 
 # Add the parser for the input graph updates in txt mode
-add_stream_operation parser_links wiki.page_pages_to_links graph.txt graph
+add_stream_operation parser_links wiki.parse_pages_to_links graph.txt graph
 
 # Automatic update of the state if data is available at graph
 add_stream_operation update_links page_rank.updateLinks graph nodes messages nodes

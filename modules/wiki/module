@@ -12,7 +12,7 @@ data WordInfo
 	system.Vector_UInt count;
 }
 
-parser page_pages_to_links
+parser parse_pages_to_links
 {
     out system.String system.StringVector
 

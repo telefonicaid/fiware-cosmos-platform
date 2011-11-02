@@ -6,7 +6,7 @@
 #ifndef _H_SAMSON_page_rank_updateMessages
 #define _H_SAMSON_page_rank_updateMessages
 
-#define TOLERANCE 0.01
+#define TOLERANCE 0.2
 
 
 #include <map>
@@ -87,6 +87,11 @@ public:
 			// Previous state
 			key.parse( inputs[1].kvs[0]->key );
 			node.parse( inputs[1].kvs[0]->value );
+			if( inputs[1].num_kvs > 1 )
+			{
+				tracer->setUserError("Error since we receive two version of the internal state");
+				OLM_E(("Error since we receive two version of the internal state for key:'%s'", key.value.c_str()));
+			}
 
 			if( inputs[0].num_kvs == 0)
 			{
@@ -123,10 +128,10 @@ public:
 			// Parse the incomming message
 			// Note that it is necessary to keep them in memory to make sure values containe in the map are accessible
 			message->parse( inputs[0].kvs[i]->value );
-			if (key.value.compare("Mexico") == 0)
-			{
-				LM_T(LMT_User06, ("Message received: key:'%s', value.node:'%s', value.contrib:%lf", key.value.c_str(), message->node.value.c_str(), message->contribution.value));
-			}
+			//if (key.value.compare("Mexico") == 0)
+			//{
+			//	LM_M(("Message received: key:'%s', value.node:'%s', value.contrib:%lf", key.value.c_str(), message->node.value.c_str(), message->contribution.value));
+			//}
 
 			if( message->contribution.value == -1 )
 			{
@@ -188,10 +193,10 @@ public:
 				// Goyo. Should we add the node in the output message?
 				output_message_value.node.value = key.value;
 				output_message_value.contribution.value = node.contribution(); // contribution
-				if (output_message_key.value.compare("Mexico") == 0)
-				{
-					LM_T(LMT_User06, ("Message removed: key:'%s', value.node:'%s', value.contrib:%lf", output_message_key.value.c_str(), output_message_value.node.value.c_str(), output_message_value.contribution.value));
-				}
+				//if (output_message_key.value.compare("Mexico") == 0)
+				//{
+				//	LM_M(("Message updated: key:'%s', value.node:'%s', value.contrib:%lf", output_message_key.value.c_str(), output_message_value.node.value.c_str(), output_message_value.contribution.value));
+				//}
 				writer->emit( 0 , &output_message_key , &output_message_value );
 
 				node.updated_outputs.value++;

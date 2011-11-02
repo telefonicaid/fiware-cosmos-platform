@@ -66,6 +66,11 @@ public:
 			// There is a previous state state
 			input_key.parse( inputs[1].kvs[0]->key );
 			node.parse( inputs[1].kvs[0]->value );
+			if( inputs[1].num_kvs > 1 )
+			{
+				tracer->setUserError("Error since we receive two version of the internal state");
+				OLM_E(("Error since we receive two version of the internal state for key:'%s'", input_key.value.c_str()));
+			}
 		}
 		else
 		{
@@ -129,10 +134,10 @@ public:
 				// Goyo. Should we add the node in the output message?
 				output_message_value.node.value = input_key.value;
 				output_message_value.contribution.value = -1;
-				if (output_message_key.value.compare("Mexico") == 0)
-				{
-					LM_T(LMT_User06, ("Message removed: key:'%s', value.node:'%s', value.contrib:%lf", output_message_key.value.c_str(), output_message_value.node.value.c_str(), output_message_value.contribution.value));
-				}
+				//if (output_message_key.value.compare("Mexico") == 0)
+				//{
+				//	LM_M(("Message removed: key:'%s', value.node:'%s', value.contrib:%lf", output_message_key.value.c_str(), output_message_value.node.value.c_str(), output_message_value.contribution.value));
+				//}
 				writer->emit( 0 , &output_message_key , &output_message_value );
 
 				node.updated_outputs.value++;
@@ -161,10 +166,10 @@ public:
 				// Goyo. Should we add the node in the output message?
 				output_message_value.node.value = input_key.value;
 				output_message_value.contribution.value = node.contribution(); // contribution
-				if (output_message_key.value.compare("Mexico") == 0)
-				{
-					LM_T(LMT_User06, ("Message emitted: key:'%s', value.node:'%s', value.contrib:%lf", output_message_key.value.c_str(), output_message_value.node.value.c_str(), output_message_value.contribution.value));
-				}
+				//if (output_message_key.value.compare("Mexico") == 0)
+				//{
+				//	LM_M(("Message emitted: key:'%s', value.node:'%s', value.contrib:%lf", output_message_key.value.c_str(), output_message_value.node.value.c_str(), output_message_value.contribution.value));
+				//}
 				writer->emit( 0 , &output_message_key , &output_message_value );
 
 				node.updated_outputs.value++;

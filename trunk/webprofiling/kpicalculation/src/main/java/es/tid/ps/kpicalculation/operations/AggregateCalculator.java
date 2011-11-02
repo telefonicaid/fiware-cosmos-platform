@@ -26,12 +26,12 @@ public class AggregateCalculator {
         result = stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_VIS);
         System.out.println("Aggregate processed...");
 
-        System.out.println("Calculating aggregate of page views by device...");
-        result = stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_DEVICE);
+        System.out.println("Calculating aggregate of page views by protocol and device...");
+        result = stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_DEV);
         System.out.println("Aggregate processed...");
 
         System.out.println("Calculating aggregate of page views by protocol and method...");
-        result = stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_METHOD);
+        result = stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_METHOD);
         System.out.println("Aggregate processed...");
 
         System.out.println("Calculating aggregate of page views by protocol ...");

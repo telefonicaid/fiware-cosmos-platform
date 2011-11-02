@@ -20,7 +20,7 @@ public class AggregateCalculatorQueries {
                 "GROUP BY " +
                     "a.visitor_id, a.protocol, a.date_view";
     
-    final static public String PAGES_VIEWS_BY_DEVICE = 
+    final static public String PAGES_VIEWS_BY_PROT_DEV = 
             "INSERT OVERWRITE TABLE AG_PAGE_VIEWS_DEVICE " +
                 "SELECT " +
                     "a.device, a.protocol, a.date_view, sum(a.views_num) " +
@@ -29,7 +29,7 @@ public class AggregateCalculatorQueries {
                     "GROUP BY " +
                     "a.device, a.protocol, a.date_view";
     
-    final static public String PAGES_VIEWS_BY_METHOD = 
+    final static public String PAGES_VIEWS_BY_PROT_METHOD = 
             "INSERT OVERWRITE TABLE AG_PAGE_VIEWS_METHOD " +
                 "SELECT " +
                     "a.method, a.protocol, a.date_view, count(*) " +

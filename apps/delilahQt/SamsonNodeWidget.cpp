@@ -49,8 +49,8 @@ void SamsonNodeWidget::update( au::TreeItem *treeItem )
     
     updateTitle();
     
-    memory_progressBar->setRange( 0 , memory);
-    memory_progressBar->setValue( used_memory );
+    memory_progressBar->setRange( 0 , 100);
+    memory_progressBar->setValue( 100.0 * (double) used_memory / (double) memory );
     memory_progressBar->setTextVisible(true);
     memory_description->setText( QString( au::str("%s / %s" , au::str( used_memory ).c_str() , au::str( memory ).c_str() ).c_str() ) );
     

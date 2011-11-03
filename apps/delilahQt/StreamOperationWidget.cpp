@@ -73,7 +73,7 @@ void StreamOperationWidget::update( au::TreeItem * treeItem , bool complete_upda
 {    
     
     // Set title
-    label_title->setText( au::str( "Queue %s" , queue_name.c_str() ).c_str() );
+    label_title->setText( au::str( "Operation %s" , queue_name.c_str() ).c_str() );
     
     // Update worker data model
     worker_data_controller.update( treeItem );

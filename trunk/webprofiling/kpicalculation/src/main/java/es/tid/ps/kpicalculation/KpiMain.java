@@ -35,7 +35,7 @@ import es.tid.ps.kpicalculation.operations.IAggregateCalculator;
  * project
  */
 public class KpiMain extends Configured implements Tool {
-    private static String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
+    
 
     public static void main(String[] args) throws Exception {
         int res = ToolRunner.run(new Configuration(), new KpiMain(), args);
@@ -68,14 +68,7 @@ public class KpiMain extends Configured implements Tool {
             return 1;
         }
 
-        try {
-            Class.forName(driverName);
-        } catch (ClassNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            System.exit(1);
-        }
-
+       
        // Load data into table LOG_ROWS
        // TODO(javierb): At this moment only one file is loaded. It will be
        // necessary to

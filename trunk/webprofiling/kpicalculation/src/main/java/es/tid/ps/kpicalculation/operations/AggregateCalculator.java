@@ -25,14 +25,19 @@ public class AggregateCalculator implements IAggregateCalculator {
 
     private Statement stmt;
 
-    static private Logger logger;
+    private static String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
+    private static Logger logger;
 
     public AggregateCalculator() {
         logger = Logger.getLogger(AggregateCalculator.class.getName());
         try {
+            Class.forName(driverName);
             Connection con = DriverManager.getConnection("jdbc:hive://pshdp02:10000", "", "");
             stmt = con.createStatement();
         } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            logger.severe(e.toString());
+        }catch (ClassNotFoundException e) {
             // TODO Auto-generated catch block
             logger.severe(e.toString());
         }

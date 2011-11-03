@@ -17,5 +17,5 @@ public abstract class KpiCalculationFilter {
         return this;
     }
 
-    public abstract boolean filter(String s);
+    public abstract boolean filter(String url);
 }

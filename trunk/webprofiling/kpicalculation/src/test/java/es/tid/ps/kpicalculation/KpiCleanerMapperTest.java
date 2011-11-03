@@ -37,7 +37,8 @@ public class KpiCleanerMapperTest extends TestCase {
     @Test
     public void testAllowedExtension() {
         List<Pair<LongWritable, Text>> out = null;
-        String line = "http://www.example.com/%7Eusername?www=3";
+        String line = "16737b1873ef03ad http://www.tid.es/index.html 1Dec2010000001 304 application/pkix-crl -Microsoft-CryptoAPI/6.1 GET";
+        //String line = "http://www.example.com/%7Eusername?www=3";
 
         try {
             out = driver.withInput(new LongWritable(0), new Text(line)).run();

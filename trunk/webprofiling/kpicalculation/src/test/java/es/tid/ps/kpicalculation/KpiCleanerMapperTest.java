@@ -37,7 +37,7 @@ public class KpiCleanerMapperTest extends TestCase {
     @Test
     public void testAllowedExtension() {
         List<Pair<LongWritable, Text>> out = null;
-        String line = "16737b1873ef03ad http://www.tid.es/index.html 1Dec2010000001 304 application/pkix-crl -Microsoft-CryptoAPI/6.1 GET";
+        String line = "16737b1873ef03ad	http://www.tid.es/index.html	1Dec2010000001	304	application/pkix-crl	-Microsoft-CryptoAPI/6.1	GET";
         //String line = "http://www.example.com/%7Eusername?www=3";
 
         try {
@@ -55,8 +55,7 @@ public class KpiCleanerMapperTest extends TestCase {
     @Test
     public void testForbiddenExtension() {
         List<Pair<LongWritable, Text>> out = null;
-        String line = "http://www.tid.co.uk/foto.jpg";
-
+ 	String line = "16737b1873ef03ad	http://www.tid.co.uk/foto.jpg	1Dec2010000001	304	application/pkix-crl	-Microsoft-CryptoAPI/6.1	GET";
         try {
             out = driver.withInput(new LongWritable(0), new Text(line)).run();
         } catch (IOException ioe) {
@@ -71,9 +70,9 @@ public class KpiCleanerMapperTest extends TestCase {
     @Test
     public void testThirdPartyDomain() {
         List<Pair<LongWritable, Text>> out = null;
-        String line = "http://sexsearch.com/asfad";
+        String line = "16737b1873ef03ad	http://sexsearch.com/asfad	1Dec2010000001	304	application/pkix-crl	-Microsoft-CryptoAPI/6.1	GET";
 
-        try {
+	try {
             out = driver.withInput(new LongWritable(0), new Text(line)).run();
         } catch (IOException ioe) {
             fail();
@@ -87,7 +86,7 @@ public class KpiCleanerMapperTest extends TestCase {
     @Test
     public void testPersonalInfoDomain() {
         List<Pair<LongWritable, Text>> out = null;
-        String line = "http://pornhub.com/asfad";
+ 	String line = "16737b1873ef03ad	http://pornhub.com/t1/video	1Dec2010000001	304	application/pkix-crl	-Microsoft-CryptoAPI/6.1	GET";
 
         try {
             out = driver.withInput(new LongWritable(0), new Text(line)).run();

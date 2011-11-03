@@ -103,7 +103,7 @@ echo "/opt/samson/lib/liblm.a"                			>> $BUILD_ROOT/rpm/SPECS/$specf
 echo "/opt/samson/include/samson/module/*"        		>> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "/opt/samson/include/samson/modules/system/*"    		>> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "/opt/samson/share/modules/*"    				>> $BUILD_ROOT/rpm/SPECS/$specfile
-echo "/opt/samson/bin/samsonModuleGenerator"			>> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "/opt/samson/bin/samsonModuleBootstrap"			>> $BUILD_ROOT/rpm/SPECS/$specfile
 echo                                                         	>> $BUILD_ROOT/rpm/SPECS/$specfile
 #Definition for the docs package
 echo "%package docs"                           >> $BUILD_ROOT/rpm/SPECS/$specfile
@@ -144,7 +144,7 @@ cp $BUILD_ROOT/modules/system/samson/modules/system/*                   $PACKAGE
 cp -r $BUILD_ROOT/BUILD_RELEASE/man					$PACKAGE_DIR/opt/samson
 cp -r $BUILD_ROOT/README						$PACKAGE_DIR/opt/samson/share/README.txt
 cp -r $BUILD_ROOT/modules/moduletemplate				$PACKAGE_DIR/opt/samson/share/modules
-cp $BUILD_ROOT/scripts/samsonModuleGenerator                  		$PACKAGE_DIR/opt/samson/bin
+cp $BUILD_ROOT/scripts/samsonModuleBootstrap                  		$PACKAGE_DIR/opt/samson/bin
 
 #
 # Create the tar file for samson

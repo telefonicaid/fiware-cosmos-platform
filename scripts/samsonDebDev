@@ -59,7 +59,7 @@ cp $BUILD_ROOT/modules/system/samson/modules/system/*                   debian/o
 cp $BUILD_ROOT/modules/moduletemplate/CMakeLists.txt 			debian/opt/samson/share/modules/moduletemplate
 cp $BUILD_ROOT/modules/moduletemplate/makefile                          debian/opt/samson/share/modules/moduletemplate
 cp $BUILD_ROOT/modules/moduletemplate/module                 		debian/opt/samson/share/modules/moduletemplate
-cp -r $BUILD_ROOT/scripts/samsonModuleGenerator                  	debian/opt/samson/bin
+cp -r $BUILD_ROOT/scripts/samsonModuleBootstrap                  	debian/opt/samson/bin
 
 #
 # Create the package

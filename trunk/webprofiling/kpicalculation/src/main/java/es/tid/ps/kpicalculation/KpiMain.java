@@ -21,6 +21,7 @@ import org.apache.hadoop.util.ToolRunner;
 
 import es.tid.ps.kpicalculation.operations.AggregateCalculator;
 import es.tid.ps.kpicalculation.operations.CdrFilter;
+import es.tid.ps.kpicalculation.operations.IAggregateCalculator;
 
 /**
  * This class performs the webprofiling processing of the data received from
@@ -63,10 +64,6 @@ public class KpiMain extends Configured implements Tool {
         FileInputFormat.addInputPath(wpCleanerJob, inputPath);
         FileOutputFormat.setOutputPath(wpCleanerJob, tmpPath);
 
-        // TODO(rgc): check if this funtionality is correct
-        // FileSystem hdfs = FileSystem.get(conf);
-        // hdfs.deleteOnExit(tmpPath);
-
         if (!wpCleanerJob.waitForCompletion(true)) {
             return 1;
         }
@@ -79,26 +76,16 @@ public class KpiMain extends Configured implements Tool {
             System.exit(1);
         }
 
-        // Establish connection with hive database.
-        // TODO(javierb): Try to implement direct connection without using
-        // hiveserver
-        Connection con = DriverManager.getConnection("jdbc:hive://pshdp02:10000", "", "");
-
-        // Load data into table LOG_ROWS
-        // TODO(javierb): At this moment only one file is loaded. It will be
-        // necessary to
-        // change it to take a folder as input
-        Statement stmt = con.createStatement();
-        String sql = "LOAD DATA INPATH '" + tmpPath.toString() + "/part-r-00000' OVERWRITE INTO TABLE LOG_ROWS";
+       // Load data into table LOG_ROWS
+       // TODO(javierb): At this moment only one file is loaded. It will be
+       // necessary to
+       // change it to take a folder as input
+       
+       /* String sql = "LOAD DATA INPATH '" + tmpPath.toString() + "/part-r-00000' OVERWRITE INTO TABLE LOG_ROWS";
         ResultSet result = stmt.executeQuery(sql);
-        // sql =
-        // "INSERT OVERWRITE TABLE CLEAN_LOG_ROWS_EXT SELECT a.* from log_rows a";
-        // result = stmt.executeQuery(sql);
+        */
         
-        CdrFilter cdrFilter = new  CdrFilter(stmt);
-        cdrFilter.process();
-
-        AggregateCalculator agg = new AggregateCalculator(stmt);
+        IAggregateCalculator agg = new AggregateCalculator();
         agg.process();
         
 

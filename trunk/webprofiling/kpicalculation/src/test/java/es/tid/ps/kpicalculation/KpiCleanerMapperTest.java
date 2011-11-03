@@ -37,7 +37,7 @@ public class KpiCleanerMapperTest extends TestCase {
     @Test
     public void testAllowedExtension() {
         List<Pair<LongWritable, Text>> out = null;
-        String line = "http://www.tid.es";
+        String line = "http://www.example.com/%7Eusername?www=3";
 
         try {
             out = driver.withInput(new LongWritable(0), new Text(line)).run();
@@ -54,7 +54,7 @@ public class KpiCleanerMapperTest extends TestCase {
     @Test
     public void testForbiddenExtension() {
         List<Pair<LongWritable, Text>> out = null;
-        String line = "http://www.tid.es/foto.jpg";
+        String line = "http://www.tid.co.uk/foto.jpg";
 
         try {
             out = driver.withInput(new LongWritable(0), new Text(line)).run();

@@ -1,3 +1,7 @@
+
+#ifndef _H_DELILAH_QT_PLOT
+#define _H_DELILAH_QT_PLOT
+
 #include <QtGui>
 #include <sstream>
 
@@ -24,18 +28,19 @@ class Plot
    au::RRT<size_t ,24> samples_last_day;
     
    size_t samples;
+
+   QGroupBox *box;
     
 public:
     
     Plot( QGroupBox *box );
     
-    void push( size_t value );
+    void push( size_t value , bool complete_update );
 
 private:
     
     void set( int r , int c , size_t v );
 
-
-
 };
 
+#endif

@@ -57,6 +57,10 @@ void SamsonConnect::samson_connect_localhost()
 {
     // Trying to connect with something..
     std::string controller = "localhost";
+
+	// Show localhost on the connection box
+	host->setText( "localhost" );
+
     SetConnectionMessage( au::str("Connecting to... %s " , controller.c_str() ) );
     delilahConnection->connect( controller );
 }

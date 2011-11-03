@@ -15,9 +15,11 @@
 #include "SamsonNodeWidget.h"
 #include "PlotWidget.h"
 #include "QueueWidget.h"
+#include "StreamOperationWidget.h"
 
 #include "DelilahConnection.h"     // DelilahConnection
 
+#include "UpdateElements.h"
 
 #include "MainWindow.h" // Own interface
 
@@ -35,8 +37,9 @@ MainWindow::MainWindow( QWidget *parent ) : QMainWindow(parent)
     
     // Connections
     connect(samsonQueryPushButton, SIGNAL(clicked()), this, SLOT(open_samson_query()));
-    connect( treeUpdateButton , SIGNAL(clicked()) , this , SLOT( updateTree() ) );
+    //connect( treeUpdateButton , SIGNAL(clicked()) , this , SLOT( updateTree() ) );
     connect( queuesButton , SIGNAL(clicked()) , this , SLOT( show_queues() ) );
+	connect( streamOperationsButton , SIGNAL( clicked()), this , SLOT( show_stream_operations() ));
 
     // Init my model
     myModel = NULL;
@@ -48,7 +51,7 @@ MainWindow::MainWindow( QWidget *parent ) : QMainWindow(parent)
     // General update model
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateTimer()));
-    timer->start(1000);
+    timer->start(2000);
     
 }
 
@@ -61,18 +64,15 @@ void MainWindow::updateTimer()
         {
             init(); // Init this widget ( only once )
             show(); // Show this widget
-            
-            
+                        
             samsonConnect->hide();
             flag_init = true;
-        }
-        
-        // Get a copy of all tree item
-        au::TreeItem* treeItem =  delilahConnection->delilah->getTreeItem( );
-        update( treeItem ); // Update contents of this widget
-        delete treeItem;
+        }				
     }
-    
+	
+	// Update all elements accumulated in updateElements
+	updateDelilagQTElements( );
+
 }
 
 void MainWindow::updateTree()
@@ -86,8 +86,10 @@ void MainWindow::updateTree()
     }
 }
 
-void MainWindow::update( au::TreeItem *treeItem )
+
+void MainWindow::update( au::TreeItem *treeItem , bool complete_update )
 {
+
     delilahSamsonNodeWidget->update( treeItem->getItemFromPath("delilah") );
     controllerSamsonNodeWidget->update( treeItem->getItemFromPath("controller") );
     
@@ -99,7 +101,7 @@ void MainWindow::update( au::TreeItem *treeItem )
 void MainWindow::setModel( QStandardItemModel *_myModel )
 {
     // Model of the tree
-    treeView->setModel( _myModel );
+    //treeView->setModel( _myModel );
     
     // Remove the previous one...
     if( myModel )
@@ -166,13 +168,16 @@ void MainWindow::open_samson_query()
 
 void MainWindow::show_queues()
 {
-   //PlotWidget *plotWidget = new PlotWidget();
-   //plotWidget->show();
-
    // New Queue Widget
    QueueWidget * widget = new QueueWidget();
    widget->show();
+}
 
+void MainWindow::show_stream_operations()
+{
+   // New Queue Widget
+   StreamOperationWidget * widget = new StreamOperationWidget();
+   widget->show();
 }
 
 

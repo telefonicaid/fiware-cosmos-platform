@@ -212,8 +212,19 @@ namespace samson {
             
             au::xml_simple(output, "core_seconds", environment.getInt("system.core_seconds" , 0 ) );
 
+            
+            // Information about input
+            BlockInfo block_info_input = getBlockList("input")->getBlockInfo();
+            au::xml_single_element(output, "input", &block_info_input);
+
+            // Current running operations
             au::xml_simple(output, "running_tasks", running_tasks.size() );
 
+            // Information about history
+            au::xml_simple(output, "history_running_tasks", num_operations);
+            au::xml_single_element(output, "history" , &info );
+
+            
             // Cost in core*seconds / Mb
             int cost = (double) temporal_core_seconds / ( (double) (temporal_size+1) / 1000000000.0 );
             au::xml_simple(output, "cost", cost );

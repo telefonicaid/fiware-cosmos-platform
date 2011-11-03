@@ -10,6 +10,7 @@
 
 #include "ui_MainWindow.h"              // Parent class
 
+#include "UpdateElements.h"
 
 namespace au {
     class TreeItem;
@@ -17,7 +18,7 @@ namespace au {
 
 class SamsonNodeWidget;
 
-class MainWindow : public QMainWindow , public Ui_MainWindow
+class MainWindow : public QMainWindow , public Ui_MainWindow , public DelilahQTElement
 {
     
     bool flag_init;  // Flag to indicate if the window has been inittiazted
@@ -46,6 +47,7 @@ private slots:
     void updateTimer();
     void updateTree();    
     void show_queues();
+    void show_stream_operations();
     
 private:
     
@@ -55,7 +57,8 @@ private:
 public:
     
     void init();
-    void update( au::TreeItem *treeItem );
+    void update( au::TreeItem *treeItem , bool complete_update  );
+
     
 };
 

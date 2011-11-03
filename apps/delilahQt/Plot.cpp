@@ -3,8 +3,10 @@
 
 #include "Plot.h" // Own interface
 
-Plot::Plot( QGroupBox *box )
+Plot::Plot( QGroupBox *_box )
 {
+   box = _box;
+
     KDChart::LineDiagram* diagram = new KDChart::LineDiagram;
     diagram->setModel(&m_model);
     
@@ -55,7 +57,7 @@ void Plot::set( int r , int c , size_t v )
 }
 
 
-void Plot::push( size_t value )
+void Plot::push( size_t value , bool complete_update )
 {
     // Samples for size plot
     samples_last_minute.push( value );
@@ -69,7 +71,13 @@ void Plot::push( size_t value )
 			samples_last_day.push( samples_last_hour.get(0) );
     
     samples++;
+
+	if( !box->isVisible() )
+	   return;
     
+	if( !complete_update )
+	   return;
+
     // Update model
     // Update evolution plot
     m_model.clear();

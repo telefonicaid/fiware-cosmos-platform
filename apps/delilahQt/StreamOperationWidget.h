@@ -14,10 +14,10 @@
 
 #include "WorkerDataController.h"
 
-#include "ui_QueueWidget.h"
+#include "ui_StreamOperationWidget.h"
 
 
-class QueueWidget : public QWidget , public Ui_QueueWidget , DelilahQTElement
+class StreamOperationWidget : public QWidget , public Ui_StreamOperationWidget , DelilahQTElement
 {
     
     std::string queue_name;                         // Name of the queue we are monitoring
@@ -29,15 +29,13 @@ class QueueWidget : public QWidget , public Ui_QueueWidget , DelilahQTElement
     
     Plot *plot_size;
     Plot *plot_kvs;
-    Plot *plot_num_blocks;
-    Plot *plot_rate_size;
-    Plot *plot_rate_kvs;
+    Plot *plot_num_operations;
     
     Q_OBJECT
     
 public:
     
-    QueueWidget(QWidget *parent = 0);
+    StreamOperationWidget(QWidget *parent = 0);
 
 	// Update with the top level element in XML monitorization
 	void update( au::TreeItem *item , bool complete_update );

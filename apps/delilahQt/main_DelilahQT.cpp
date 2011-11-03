@@ -4,6 +4,7 @@
 // Include header files for application components.
 // ...
 
+#include <set> // std::set
 
 #include "parseArgs/parseArgs.h"
 
@@ -20,6 +21,9 @@
 #include "samson/common/samsonVersion.h"
 #include "samson/common/SamsonSetup.h"
 
+#include "samson/delilah/Delilah.h"
+
+#include "main_DelilahQT.h"
 
 #include <QtGui>
 
@@ -60,7 +64,6 @@ QApplication *app;                    // Global QT application object
 MainWindow *mainWindow;               // Main window....
 SamsonConnect *samsonConnect;         // Connection dialog...
 SamsonQueryWidget* samsonQueryWidget; // Query widget used in the background
-
 
 // Global element about this connection
 DelilahConnection* delilahConnection;
@@ -118,12 +121,32 @@ void init( int argC, char *argV[] )
 
 
 
+void* run_thread_update(void*)
+{
+   while( true )
+   {
+	  // Update main tree with information every second in background	  
+	  if( delilahConnection->isReady() )
+		 replaceMainTreeItem( delilahConnection->delilah->getTreeItem( ) );
+
+	  sleep(1);
+   }
+
+   return NULL;
+
+}
+
 int main(int argc, char *argv[])
 {
+
     init( argc , argv );
     
     // Init delilah_connection object
     delilahConnection = new DelilahConnection();
+
+	pthread_t t;
+	pthread_create(&t, 0, run_thread_update, NULL);	
+
     
     // Create the app
     app =  new QApplication(argc, argv);

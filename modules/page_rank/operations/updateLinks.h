@@ -90,13 +90,13 @@ public:
 			return;
 		}
 
-		// Increase the counter of cicles
+		// Increase the counter of cycles
 		node.update_count.value++;
 
-		// Take the last input ( there is no sence to update twice the vector of links )
+		// Take the last input ( there is no sense to update twice the vector of links )
 		input_value.parse( inputs[0].kvs[ inputs[0].num_kvs -1 ]->value );
 
-		// Send -1 to links that have disapeared
+		// Send -1 to links that have disappeared
 		// Send my contribution to all if # number of output links changed
 		// Send my contribution to new nodes
 
@@ -131,13 +131,9 @@ public:
 			{
 				// Emit the node as "disconnected"
 				output_message_key.value = *it;
-				// Goyo. Should we add the node in the output message?
 				output_message_value.node.value = input_key.value;
 				output_message_value.contribution.value = -1;
-				//if (output_message_key.value.compare("Mexico") == 0)
-				//{
-				//	LM_M(("Message removed: key:'%s', value.node:'%s', value.contrib:%lf", output_message_key.value.c_str(), output_message_value.node.value.c_str(), output_message_value.contribution.value));
-				//}
+
 				writer->emit( 0 , &output_message_key , &output_message_value );
 
 				node.updated_outputs.value++;
@@ -163,13 +159,10 @@ public:
 			for( int i = 0 ; i < node.links_length ; i++ )
 			{
 				output_message_key.value = node.links[i].value;
-				// Goyo. Should we add the node in the output message?
+
 				output_message_value.node.value = input_key.value;
 				output_message_value.contribution.value = node.contribution(); // contribution
-				//if (output_message_key.value.compare("Mexico") == 0)
-				//{
-				//	LM_M(("Message emitted: key:'%s', value.node:'%s', value.contrib:%lf", output_message_key.value.c_str(), output_message_value.node.value.c_str(), output_message_value.contribution.value));
-				//}
+
 				writer->emit( 0 , &output_message_key , &output_message_value );
 
 				node.updated_outputs.value++;
@@ -177,7 +170,10 @@ public:
 		}
 
 
-
+//		if ((input_key.value.compare("Mexico") == 0) || (input_key.value.compare("ABBA") == 0))
+//		{
+//			LM_M(("Reemit state: key:'%s' with %d incoming messages and %d outgoing links", input_key.value.c_str(), node.messages_length, node.links_length));
+//		}
 
 		// Emit the node at the end
 		writer->emit( 1 , &input_key , &node );

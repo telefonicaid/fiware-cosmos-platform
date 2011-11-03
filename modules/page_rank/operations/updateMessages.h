@@ -32,7 +32,7 @@ struct NodeContribution
 
 	NodeContribution( const char* _node , double _contribution )
 	{
-		node = node;
+		node = _node;
 		contribution = _contribution;
 	}
 
@@ -90,7 +90,7 @@ public:
 			if( inputs[1].num_kvs > 1 )
 			{
 				tracer->setUserError("Error since we receive two version of the internal state");
-				OLM_E(("Error since we receive two version of the internal state for key:'%s'", key.value.c_str()));
+				OLM_E(("Error since we receive two versions of the internal state for key:'%s'", key.value.c_str()));
 			}
 
 			if( inputs[0].num_kvs == 0)
@@ -110,17 +110,22 @@ public:
 			node.init();
 		}
 
-		// update the cicle counter
+//		if ((key.value.compare("Mexico") == 0) || (key.value.compare("ABBA") == 0))
+//		{
+//			LM_M(("Message received: key:'%s' with %d incoming messages and %d outgoing links", key.value.c_str(), node.messages_length, node.links_length));
+//		}
+
+		// update the cycle counter
 		node.update_count.value++;
 
-		// Put the messages inluded in node structurethe auxiliar messages map
+		// Put the messages included in node structure the auxiliar messages map
 		// ------------------------------------------------------------------------------------------------------
 		messages.clear();
 		for (int i = 0 ; i < node.messages_length ; i++ )
 			messages.insert( std::pair< const char* , double  >( node.messages[i].node.value.c_str() , node.messages[i].contribution.value ) );
 
-		// Add or modify incomming messages
-		messageCollection.messageSetLength(0); // Cler the list of incomming messages
+		// Add or modify incoming messages
+		messageCollection.messageSetLength(0); // Clear the list of incoming messages
 		for ( size_t i = 0 ; i < inputs[0].num_kvs ; i++)
 		{
 			samson::page_rank::Message *message = messageCollection.messageAdd();
@@ -128,10 +133,6 @@ public:
 			// Parse the incomming message
 			// Note that it is necessary to keep them in memory to make sure values containe in the map are accessible
 			message->parse( inputs[0].kvs[i]->value );
-			//if (key.value.compare("Mexico") == 0)
-			//{
-			//	LM_M(("Message received: key:'%s', value.node:'%s', value.contrib:%lf", key.value.c_str(), message->node.value.c_str(), message->contribution.value));
-			//}
 
 			if( message->contribution.value == -1 )
 			{
@@ -145,9 +146,13 @@ public:
 				message_it = messages.find( message->node.value.c_str() );
 
 				if( message_it == messages.end() )
+				{
 					messages.insert( std::pair< const char* , double  >( message->node.value.c_str() , message->contribution.value ) );
+				}
 				else
+				{
 					message_it->second = message->contribution.value;
+				}
 			}
 		}
 
@@ -156,6 +161,11 @@ public:
 
 		// Note: We need to extract first to auxiliar vector ( with real copies of everything )
 		final_messages.clear();
+
+//		if ((key.value.compare("Mexico") == 0) || (key.value.compare("ABBA") == 0))
+//		{
+//			LM_M(("Copying to final_messages: key:'%s', num_messages:%d", key.value.c_str(), messages.size() ));
+//		}
 
 		for( std::map<const char* , double , strCompare>::iterator message_it = messages.begin() ; message_it != messages.end() ; message_it++ )		
 		{
@@ -175,6 +185,11 @@ public:
 		double previous_rank = node.rank.value;
 		node.recompute_rank();
 
+//		if ((key.value.compare("Mexico") == 0) || (key.value.compare("ABBA") == 0))
+//		{
+//			LM_M(("Recomputing rank: key:'%s', rank:%lf with %d incoming messages and %d outgoing links", key.value.c_str(), node.rank.value, node.messages_length, node.links_length));
+//		}
+
 		// Re-emit my contribution to all the nodes if necessary
 		// ------------------------------------------------------------------------------------------------------
 
@@ -190,13 +205,8 @@ public:
 			for (int i = 0 ; i < node.links_length ; i++)
 			{
 				output_message_key.value = node.links[i].value;
-				// Goyo. Should we add the node in the output message?
 				output_message_value.node.value = key.value;
 				output_message_value.contribution.value = node.contribution(); // contribution
-				//if (output_message_key.value.compare("Mexico") == 0)
-				//{
-				//	LM_M(("Message updated: key:'%s', value.node:'%s', value.contrib:%lf", output_message_key.value.c_str(), output_message_value.node.value.c_str(), output_message_value.contribution.value));
-				//}
 				writer->emit( 0 , &output_message_key , &output_message_value );
 
 				node.updated_outputs.value++;
@@ -204,11 +214,18 @@ public:
 		}
 		else
 		{
-			//printf("Node %s not emiting rank  old:%f new:%f\n" , key.value.c_str() , previous_rank , node.rank.value);
+//			if ((key.value.compare("Mexico") == 0) || (key.value.compare("ABBA") == 0))
+//			{
+//				LM_M(("Stopped: key:'%s', no change in rank, previous:%lf, updated:%lf", key.value.c_str(), previous_rank, node.rank.value));
+//			}
 		}
 
 		// ------------------------------------------------------------------------------------------------------
 
+//		if ((key.value.compare("Mexico") == 0) || (key.value.compare("ABBA") == 0))
+//		{
+//			LM_M(("Reemit state: key:'%s' with %d incoming messages and %d outgoing links", key.value.c_str(), node.messages_length, node.links_length));
+//		}
 
 		// Emit the node at the output...
 		writer->emit( 1 , &key , &node );

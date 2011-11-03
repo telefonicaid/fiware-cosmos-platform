@@ -533,7 +533,7 @@ The first tests made used one single Mongo server. This is a very simple setup a
 
     $ mkdir /data/db  # create the directory where the data is to be stored - configurable, of course ...
     $ ./mongod
-    $
+
     $ # The mongo javascript shell connects to localhost and test database by default:
     $ ./mongo 
     > help

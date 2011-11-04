@@ -1,0 +1,62 @@
+Module mobility
+{
+
+	title	"mobility  module"
+	author 	"Andreu Urruela (andreu@tid.es)"
+	version "0.1"
+	
+}
+
+# ---------------------------------------------------------------------------
+# datas
+# ---------------------------------------------------------------------------
+
+data CellRecord
+{
+	system.UInt      userId;
+	system.TimeUnix  timestamp;
+	system.UInt32    cellId;
+}
+
+data Record
+{
+	system.UInt      userId;
+	system.TimeUnix  timestamp;
+	system.UInt32    cellId;
+	system.Float     latitude;
+	system.Float     longitude;
+}
+
+data Cell
+{
+	system.UInt32	 cellid;
+        system.Float     latitude;
+        system.Float     longitude;	
+}
+
+
+# -------------------------------------------------
+# Fake Record generator
+# -------------------------------------------------
+
+generator fake_records
+{
+	out  system.UInt mobility.Record
+
+	helpLine "Fake generator to have some mobility.Record's for testing"
+}
+
+# -------------------------------------------------
+# Operations with data
+# -------------------------------------------------
+
+reduce reduce_cell_latitude_longitude
+{
+	in 	system.UInt32 mobility.CellRecord	# CellRecords ( key = cellID )
+	in 	system.UInt32 mobility.Cell		# Cell information
+
+	out	system.UInt mobility.Record		# Records ( key = userId )
+
+	helpLine "Add lat-lon information to Records. Note that key at the input is cellid,key at the output user-id"
+}
+

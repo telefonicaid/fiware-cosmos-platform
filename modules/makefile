@@ -8,6 +8,7 @@ all:
 	SAMSON_HOME=$(SAMSON_HOME) make -C example
 	SAMSON_HOME=$(SAMSON_HOME) make -C tienda
 	SAMSON_HOME=$(SAMSON_HOME) make -C cdr
+	SAMSON_HOME=$(SAMSON_HOME) make -C mobility
 	SAMSON_HOME=$(SAMSON_HOME) make -C mob
 	SAMSON_HOME=$(SAMSON_HOME) make -C mob2
 	SAMSON_HOME=$(SAMSON_HOME) make -C passive_location
@@ -25,6 +26,8 @@ all:
 	SAMSON_HOME=$(SAMSON_HOME) make -C gg
 	SAMSON_HOME=$(SAMSON_HOME) make -C page_rank
 	SAMSON_HOME=$(SAMSON_HOME) make -C wiki
+
+
 	make -C simple_mobility
 
 release:
@@ -34,6 +37,7 @@ release:
 	SAMSON_HOME=$(SAMSON_HOME) make release -C example
 	SAMSON_HOME=$(SAMSON_HOME) make release -C tienda
 	SAMSON_HOME=$(SAMSON_HOME) make release -C cdr
+	SAMSON_HOME=$(SAMSON_HOME) make release -C mobility
 	SAMSON_HOME=$(SAMSON_HOME) make release -C mob
 	SAMSON_HOME=$(SAMSON_HOME) make release -C mob2
 	SAMSON_HOME=$(SAMSON_HOME) make release -C passive_location
@@ -53,6 +57,8 @@ release:
 	SAMSON_HOME=$(SAMSON_HOME) make release -C wiki
 	make release -C simple_mobility
 
+
+
 reset:
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C system
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C txt 
@@ -60,6 +66,7 @@ reset:
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C example 
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C tienda 
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C cdr
+	SAMSON_HOME=$(SAMSON_HOME) make reset -C mobility
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C mob
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C mob2
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C passive_location
@@ -77,6 +84,7 @@ reset:
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C gg
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C page_rank
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C wiki
+
 
 install:
 	SAMSON_HOME=$(SAMSON_HOME) make install -C system

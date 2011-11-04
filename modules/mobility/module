@@ -43,7 +43,7 @@ generator fake_records
 {
 	out  system.UInt mobility.Record
 
-	helpLine "Fake generator to have some mobility.Record's for testing"
+	helpLine "Fake generator to have some mobility.Record items  for testing"
 }
 
 # -------------------------------------------------

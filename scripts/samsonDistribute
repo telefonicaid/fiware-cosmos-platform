@@ -19,7 +19,7 @@ fi
 #for mach in samson01 samson02 samson03 samson04 samson05 samson06 samson07 samson08
 #for mach in samson01 samson02 samson03 samson04 samson05
 #for mach in samson01 samson02 samson03
-for mach in samson01 samson03 samson04
+for mach in samson02 samson03 
 
 do
 	echo Installing samson in $mach

@@ -1,6 +1,7 @@
 SET (FILES
     samsonProcessesSupervise
     samsonValgrindSupervise
+    samsonModuleBootstrap
     samsonRun
 )
 

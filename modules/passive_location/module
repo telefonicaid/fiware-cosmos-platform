@@ -1,43 +1,47 @@
 Module passive_location
 {
-	title	"mongo module for passive location"
+	title	"Passive Location pilot ( mongoDB connection )"
 	author	"Andreu & Ken"
 	version "0.1"
 }
 
-data CellRecord
+# ------------------------------------------------------------
+# Parse input data to generate mobility.CellRecords
+# ------------------------------------------------------------
+
+parser parse_xml_cdrs
 {
-	system.UInt      userId;
-	system.TimeUnix  timestamp;
-	system.UInt32    cellId;
+	out system.UInt32 mobility.CellRecord    #Cell records to be used in mobility.reduce_cell_latitude_longitude
+
+	helpLine "Parse input cdrs from Arkanum platform. Note that output key is cellid at the output"
 }
 
-data Record
-{
-	system.UInt      userId;
-	system.TimeUnix  timestamp;
-	system.UInt32    cellId;
-	system.Float     latitude;
-	system.Float     longitude;
-}
-
+# ------------------------------------------------------------
+# Import data from MongoDB
+# ------------------------------------------------------------
 
 generator mongo_location_import
 {
-	out system.UInt passive_location.Record
+	out system.UInt mobility.Record
 	helpLine "Import passive location data from a mongoDb server at 'mongo.ip' from table 'mongo.table'"
 }
 
+generator mongo_latlong_import
+{
+	out system.UInt mobility.Record
+	helpLine "Import passive location 'latlong' data from a mongoDb server at 'mongo.ip' from table 'mongo.table'"
+}
+
+# ------------------------------------------------------------
+# Export data from MongoDB
+# ------------------------------------------------------------
+
 map mongo_location_export
 {
-	in system.UInt cdr.mobCdr
+	in system.UInt mobility.Record
 	helpLine "Export passive location data to a mongoDb server at 'mongo' to table 'mongo_table'"
 }
 
 
 
-generator mongo_latlong_import
-{
-	out system.UInt passive_location.Record
-	helpLine "Import passive location 'latlong' data from a mongoDb server at 'mongo.ip' from table 'mongo.table'"
-}
+

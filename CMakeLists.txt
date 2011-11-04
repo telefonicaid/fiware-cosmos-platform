@@ -51,9 +51,12 @@ include_directories("/usr/include")
 include_directories("/usr/local/include")
 include_directories("/opt/local/include")
 include_directories("/usr/local/KDAB/KDChart-2.4.2/include")
+include_directories(" /usr/include/kdchart")
+
 
 link_directories("/opt/local/lib")
 link_directories("/usr/local/KDAB/KDChart-2.4.2/lib")
+link_directories("/usr/lib64")
 
 # Package
 # ----------------------------------------------------------------------

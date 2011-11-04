@@ -4,10 +4,10 @@
 #include "au/RRT.h"
 #include "au/string.h"
 
-#include <KDChartChart>
-#include <KDChartBarDiagram>
-#include <KDChartLineDiagram>
-#include <KDChartPieDiagram>
+#include <KDChartChart.h>
+#include <KDChartBarDiagram.h>
+#include <KDChartLineDiagram.h>
+#include <KDChartPieDiagram.h>
 
 #include "Plot.h"
 #include "UpdateElements.h"  // delilaQTElement

@@ -1,7 +1,7 @@
 #include <QtGui>
 #include <iostream>
-#include <KDChartChart>
-#include <KDChartBarDiagram>
+#include <KDChartChart.h>
+#include <KDChartBarDiagram.h>
 
 // Include header files for application components.
 // ...

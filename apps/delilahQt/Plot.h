@@ -8,11 +8,11 @@
 #include "au/RRT.h"
 #include "au/string.h"
 
-#include <KDChartChart>
-#include <KDChartBarDiagram>
-#include <KDChartLineDiagram>
-#include <KDChartPieDiagram>
-#include <KDChartCartesianAxis>
+#include <KDChartChart.h>
+#include <KDChartBarDiagram.h>
+#include <KDChartLineDiagram.h>
+#include <KDChartPieDiagram.h>
+#include <KDChartCartesianAxis.h>
 
 #include "ui_QueueWidget.h"
 

@@ -185,8 +185,6 @@ namespace samson {
             
         public:
             
-        public:
-            
             bool isValid();
             void review();
             virtual bool scheduleNextQueueTasks( );
@@ -265,6 +263,20 @@ namespace samson {
             void getAllInputBlocks( BlockList *blockList );
             
         };
+
+        class StreamOperationForwardReduce : public StreamOperation
+        {
+            
+        public:
+            
+            bool isValid();
+            void review();
+            bool scheduleNextQueueTasks( );
+            
+            std::string getStatus();
+            
+            
+        };        
         
         
     }

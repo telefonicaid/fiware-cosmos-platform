@@ -608,6 +608,8 @@ namespace samson {
         
         void ReduceQueueTask::finalize( StreamManager* streamManager )
         {
+            if( !update_state_mode )
+                return;
             
             // Create the list with the outputs
             BlockList *tmp = new BlockList("ReduceQueueTask_outputs");
@@ -635,7 +637,10 @@ namespace samson {
                 stream_operation->remove( this );
                 
                 StreamOperationUpdateState * stream_operation_update_state =  (StreamOperationUpdateState*) stream_operation;
-                stream_operation_update_state->finish_update_division( division );
+                if( !stream_operation_update_state )
+                    LM_W(("Error reporting that division %d finished" , division ));
+                else
+                    stream_operation_update_state->finish_update_division( division );
 
             }
             

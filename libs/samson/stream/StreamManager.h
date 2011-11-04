@@ -63,6 +63,7 @@ namespace samson {
             friend class StreamOperation;
             friend class StreamOperationForward;
             friend class StreamOperationUpdateState;
+            friend class StreamOperationForwardReduce;
             friend class StreamOutConnection;
             
             // Map with the current queues

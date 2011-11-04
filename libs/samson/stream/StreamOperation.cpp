@@ -62,6 +62,7 @@ namespace samson {
             // Expected format add_stream_operation name operation input_queues... output_queues ... parameters
             
             au::CommandLine cmd;
+            cmd.set_flag_boolean("forward");    // Forward flag to indicate that this is a reduce forward operation ( no update if state )
             cmd.parse( command );
             
             if( cmd.get_num_arguments() < 3 )
@@ -105,7 +106,6 @@ namespace samson {
                     
                 case Operation::reduce:
                 {
-                    LM_TODO(("In the future, forward reduce operations will be supported"));
                     
                     if( op->getNumInputs() != 2 )
                     {
@@ -113,7 +113,10 @@ namespace samson {
                         return NULL;
                     }
                     
-                    stream_operation = new StreamOperationUpdateState();
+                    if( cmd.get_flag_bool("forward") )
+                        stream_operation = new StreamOperationForwardReduce();
+                    else
+                        stream_operation = new StreamOperationUpdateState();
                     
                 }
                     break;
@@ -800,6 +803,176 @@ namespace samson {
                 blockList->add( *it );
             
         }
+        
+        
+#pragma mark StreamOperationForwardReduce
+        
+        
+        bool StreamOperationForwardReduce::isValid()
+        {
+            Operation* op = getOperation();
+            
+            switch (op->getType()) 
+            {
+                case Operation::reduce:
+                    break;
+                    
+                default:
+                    // Not valid cases
+                    return false;
+                    break;
+            }
+            
+            if( !op )
+                return false;
+            
+            if( op->getNumInputs() != (int)input_queues.size() )
+                return false;
+            if( op->getNumOutputs() != (int)output_queues.size() )
+                return false;
+
+            // Only two inputs allowed ( main input / aux queue )
+            if( op->getNumInputs() != 2 )
+                return false;
+                
+            return true;
+        }
+        
+        void StreamOperationForwardReduce::review()
+        {
+            last_review = "not considered";
+            
+            // Extract data from input queue to the "input" blocklist ( no size limit... all blocks )
+            Queue *input = streamManager->getQueue( input_queues[0] );
+            getBlockList("input")->extractFrom( input->list , 0 );
+            
+            
+        }
+        
+        bool StreamOperationForwardReduce::scheduleNextQueueTasks( )
+        {
+            if( !isValid() )
+            {
+                last_review = "Not valid operation";
+                return false;
+            }
+            
+            // Get the operation itself
+            Operation *op = getOperation( );
+            
+            // Properties for this stream operation
+            size_t max_size         = SamsonSetup::shared()->getUInt64("stream.max_operation_input_size");
+            size_t min_size         = SamsonSetup::shared()->getUInt64("stream.min_operation_input_size");
+            size_t max_latency      = environment.getSizeT("max_latency", 0);                                   // Max acceptable time to run an operation
+            bool delayed_processing = ( environment.get("delayed_processing", "yes") == "yes" );
+            
+            last_review = "";
+            
+            if( isPaused() )
+            {
+                last_review = "Operation paused";
+                return false;
+            }
+            
+            if( !isValid() )
+            {
+                last_review = au::str("Stream operation not valid" );
+                return false;
+            }
+            
+            // Get the input BLockList
+            BlockList *input = getBlockList("input");
+            
+            if( input->isEmpty() )
+            {
+                last_review = au::str("No data in queue %s" , input_queues[0].c_str() );
+                return false;
+            }
+            
+            // Get detailed informtion about data to be processed
+            BlockInfo operation_block_info = input->getBlockInfo();
+            
+            bool cancel_operation = false;
+            
+            if( delayed_processing )
+                if( operation_block_info.size < min_size )
+                    cancel_operation = true;
+            
+            
+            // Check if latency is too high....
+            if( cancel_operation )
+                if( ( max_latency > 0 ) && ( (size_t)operation_block_info.min_time_diff() > max_latency ) )
+                    cancel_operation = false;
+            
+            
+            if( cancel_operation )
+            {
+                last_review = au::str("Queue %s has %s ( time %s ). Required %s to fire, or time > %s" , 
+                                      input_queues[0].c_str(),
+                                      au::str( operation_block_info.size ,"B" ).c_str() , 
+                                      au::time_string( operation_block_info.min_time_diff() ).c_str(),
+                                      au::str( min_size , "B" ).c_str(),
+                                      au::time_string( max_latency ).c_str()
+                                      );
+                return false;
+            }
+            
+            
+            // Get a new id for the next opertion
+            size_t id = streamManager->getNewId();
+
+            // Crete a new task
+            QueueTask *tmp = new ReduceQueueTask( id , this , KVRange(0,KVFILE_NUM_HASHGROUPS) );
+            
+            // Set the outputs    
+            tmp->addOutputsForOperation(op);
+            
+            // Copy input data
+            tmp->getBlockList("input_0")->extractFrom( input , max_size );
+
+            Queue *aux = streamManager->getQueue( input_queues[1] );
+            tmp->getBlockList("input_1")->copyFrom( aux->list );
+            
+            // Set working size for correct monitorization of data
+            tmp->setWorkingSize();
+            
+            // Update information about this operation
+            add( tmp );
+            
+            // Schedule tmp task into QueueTaskManager
+            streamManager->queueTaskManager.add( tmp );
+            
+            // Log activity    
+            streamManager->worker->logActivity( au::str("[ %s:%lu ] Processing %s from queue %s" , 
+                                                        name.c_str() , 
+                                                        id,
+                                                        tmp->getBlockList("input_0")->strShortDescription().c_str(),
+                                                        input_queues[0].c_str() 
+                                                        ));
+            
+            return true;
+        }
+        
+        std::string StreamOperationForwardReduce::getStatus()
+        {
+            std::ostringstream output;
+            
+            // Input data
+            size_t size = getBlockList("input")->getBlockInfo().size;
+            if ( size > 0 )
+                output << "[ Input data " << au::str( size ) << " ]";
+            
+            if( running_tasks.size() > 0 )
+                output << "[ Running " << running_tasks.size() << " operations ] ";
+            
+            output << "[ History " << au::str( num_operations , "ops" ) << "/";
+            output << au::str( temporal_size , "B" ) << "/";
+            output << au::str( info.kvs , "kvs" ) << "/";
+            output << au::str(getCoreSeconds(),"cs") << " ]";
+            
+            return output.str();
+        }
+        
         
     }
 }

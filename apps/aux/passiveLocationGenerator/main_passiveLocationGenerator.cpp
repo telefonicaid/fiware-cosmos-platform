@@ -55,8 +55,8 @@ int main( int argc , const char *argv[] )
 	   fprintf(stderr,"Generatoing %d messages\n",  (int)(5 * rate) );
 	   for( int i = 0 ; i < (int)(5 * rate); i++)
 	   {
-			size_t user_id = rand()%10000;
-			int cell = rand()%20000;
+			size_t user_id = rand()%40000000;
+			int cell = rand()%65536;
 
 			snprintf( line, 20000 ,  "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns0:AMRReport xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'  xmlns:ns0='http://O2.arcanum.vitria.com'  xsi:schemaLocation='http://O2.arcanum.vitria.com AMR.xsd'>  <SubscriberReport>    <User>      <IMSI>%lu</IMSI>      <PTMSI>FB869371</PTMSI>  <CellID>%d</CellID>   <Paging>      <Location>        <LocationArea>12124</LocationArea>        <RoutingArea>134</RoutingArea>      </Location>    </Paging>  </SubscriberReport>  <Timestamp>2011-07-21T16:07:47</Timestamp></ns0:AMRReport>" , user_id , cell );
 

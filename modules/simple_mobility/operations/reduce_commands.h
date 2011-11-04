@@ -96,11 +96,15 @@ helpLine: Update internal state
 					samson::simple_mobility::UserArea *area = user.areasAdd();
 					
 					area->name.value = command.values[1].value;
-					area->x.value    = atoi( command.values[2].value.c_str() );
-					area->y.value    = atoi( command.values[3].value.c_str() );
+					area->center.latitude.value = atoi( command.values[2].value.c_str() );
+					area->center.longitude.value = atoi( command.values[3].value.c_str() );
 					area->radius.value   = atoi( command.values[4].value.c_str() );
 					
-					message.value = au::str( "Area '%s' created at point [%d,%d] with radiud %d " , area->name.value.c_str() , area->x.value , area->y.value , area->radius.value );
+					message.value = au::str( "Area '%s' created at point [%d,%d] with radiud %d " , 
+											 area->name.value.c_str() , 
+											 area->center.latitude.value , 
+											 area->center.longitude.value , 
+											 area->radius.value );
 					writer->emit( 0 , &key,  &message );
 				 }
 

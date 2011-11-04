@@ -19,35 +19,81 @@ namespace mobility{
 	class fake_records : public samson::Generator
 	{
 
+	   bool valid;
+	   samson::system::UInt user_id;      // Used as a key at the output
+	   samson::mobility::Record record;   // Record used to emit data
+	   
+			 
 	public:
 
-
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
-// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
-
-output: system.UInt mobility.Record
-
-helpLine: Fake generator to have some mobility.Record items  for testing
+// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)	   
+// output: system.UInt mobility.Record	   
+// helpLine: Fake generator to have some mobility.Record items for testing
 #endif // de INFO_COMMENT
+	   
+	   
+	   
+	   void init( samson::KVWriter *writer )
+	   {
+	   }
+	   
+	   void setup( int worker , int num_workers, int process , int num_processes )
+	   {
+		  if( ( worker == 0 ) && (process==0) )
+			 valid =  true;
+		  else
+			 valid = false;		  
+		  
+	   }
+	   
+	   size_t randUInt64( size_t limit )
+	   {
+		  return ::rand()%limit;		  
+	   }
 
-		void init( samson::KVWriter *writer )
-		{
-		}
+	   double randDouble()
+	   {
+		  return ( (double) (rand()%10000 - 5000) ) / ( (double) 5000.0 );
+	   }
 
-		void setup( int worker , int num_workers, int process , int num_processes )
-		{
-		}
+	   void run( samson::KVWriter *writer )
+	   {
+		  if( !valid )
+			 return;
 
-		void run( samson::KVWriter *writer )
-		{
-		}
-
-		void finish( samson::KVWriter *writer )
-		{
-		}
+		  size_t num_users = 40000000;
+		  size_t num_samples = 1000000;
+		  int num_cells = 10000;
 
 
+		  double latitude_reference = 10.0;
+ 		  double longitude_reference = 10.0;
+		  double latitude_deviation = 1;
+		  double longitude_deviation = 1;
 
+		  for ( size_t i = 0 ;  i < num_samples ; i++ )
+		  {
+			 record.userId.value = randUInt64( num_users );
+			 record.timestamp.setCurrentTime();
+			 record.cellId.value = rand()%num_cells;
+
+			 record.position.latitude.value = latitude_reference + randDouble() * latitude_deviation ;
+			 record.position.longitude.value = longitude_reference + randDouble() * longitude_deviation ;
+
+			 // Set the user id also in key
+			 user_id.value = record.userId.value;
+
+			 writer->emit( 0 , &user_id , &record );
+
+		  }
+
+	   }
+	   
+	   void finish( samson::KVWriter *writer )
+	   {
+	   }
+	  	   
 	};
 
 

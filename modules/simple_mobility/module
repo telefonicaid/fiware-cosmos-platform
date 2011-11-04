@@ -7,31 +7,23 @@ Module simple_mobility
 
 data UserArea
 {
-	system.String name;
-	system.UInt x;
-	system.UInt y;
-	system.UInt radius;
+	system.String     name;
+	mobility.Position center;   # Center of the area 
+	system.Float 	  radius;   # Max distance considered in this area
 }
 
-data Position
-{
-	system.UInt x;
-	system.UInt y;
-
-	system.TimeUnix	time;
-}
+# Record stored for each user
 
 data User
 {
-	simple_mobility.Position position;
-	system.Int8 track;	
-	vector simple_mobility.UserArea areas;
+	mobility.Position position;               # Last known position
+	system.Int8 track;						  # Flag to indicate if we want to track this user		 
+	vector simple_mobility.UserArea areas;	  # Areas defined for this user
 }
 
 parser parser_cdrs
 {
-	out system.UInt simple_mobility.Position
-
+	out system.UInt mobility.Record
 	helpLine "Parse input CDRs to get user - position -timestamp elements"
 }
 
@@ -43,7 +35,7 @@ parser parser_commands
 
 reduce reduce_cdrs
 {
-	in system.UInt simple_mobility.Position
+	in system.UInt mobility.Record
 	in system.UInt simple_mobility.User
 	out system.UInt system.String
 	out system.UInt simple_mobility.User

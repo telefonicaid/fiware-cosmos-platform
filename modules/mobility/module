@@ -18,20 +18,24 @@ data CellRecord
 	system.UInt32    cellId;
 }
 
-data Record
+data Position
 {
-	system.UInt      userId;
-	system.TimeUnix  timestamp;
-	system.UInt32    cellId;
 	system.Float     latitude;
 	system.Float     longitude;
 }
 
+data Record
+{
+	system.UInt       userId;
+	system.TimeUnix   timestamp;
+	system.UInt32     cellId;
+	mobility.Position position;
+}
+
 data Cell
 {
-	system.UInt32	 cellid;
-        system.Float     latitude;
-        system.Float     longitude;	
+	system.UInt32	   cellId;
+	mobility.Position  position;
 }
 
 
@@ -56,6 +60,7 @@ reduce reduce_cell_latitude_longitude
 	in 	system.UInt32 mobility.Cell		# Cell information
 
 	out	system.UInt mobility.Record		# Records ( key = userId )
+	out system.UInt32 mobility.CellRecord   # Records with a non-existing cell-id
 
 	helpLine "Add lat-lon information to Records. Note that key at the input is cellid,key at the output user-id"
 }

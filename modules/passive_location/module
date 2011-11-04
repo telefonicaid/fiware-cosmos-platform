@@ -5,15 +5,44 @@ Module passive_location
 	version "0.1"
 }
 
+data Record
+{
+	system.UInt imsi;
+	system.UInt imei;
+	system.TimeUnix timestamp;
+	system.UInt32 cell_id;
+	
+}
+
+
 # ------------------------------------------------------------
 # Parse input data to generate mobility.CellRecords
 # ------------------------------------------------------------
 
 parser parse_xml_cdrs
 {
-	out system.UInt32 mobility.CellRecord    #Cell records to be used in mobility.reduce_cell_latitude_longitude
+	out system.UInt passive_location.Record   
 
 	helpLine "Parse input cdrs from Arkanum platform. Note that output key is cellid at the output"
+}
+
+map get_mobility_cell_records
+{
+	in system.UInt passive_location.Record
+	out system.UInt32 mobility.CellRecord
+
+	helpLine "Transform passive_location.Record into a mobility.CellRecord"
+}
+
+# ------------------------------------------------------------
+# Parse cell's table
+# ------------------------------------------------------------
+
+parser parse_cell_info
+{
+	out system.UInt32 mobility.Cell
+
+	helpLine "Parse input txt file containing cell information( latitude & longitude )"
 }
 
 # ------------------------------------------------------------

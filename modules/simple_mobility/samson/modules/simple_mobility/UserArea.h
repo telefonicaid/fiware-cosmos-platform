@@ -19,13 +19,13 @@ namespace simple_mobility{
 	{
 	public:
 
-	   bool isInside( samson::simple_mobility::Position *position)
+	   bool isInside( samson::mobility::Position *position )
 	   {
 		  // Check if a particular position is inside or not
-		  double x_dif = position->x.value - x.value;
-		  double y_dif = position->y.value - y.value;
+		  double x_dif = position->latitude.value - center.latitude.value;
+		  double y_dif = position->longitude.value - center.longitude.value;
 
-		  double distance = sqrt(x_dif*x_dif + y_dif*y_dif );
+		  double distance = 63780001 * sqrt(x_dif*x_dif + y_dif*y_dif );
 
 		  if( distance < radius.value )
 			 return true;

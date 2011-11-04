@@ -46,6 +46,11 @@ namespace system{
 
 		static void split_in_words( char *line , std::vector<char*>& words )
 		{
+		   split_in_words( line, words, ' ');
+		}
+
+		static void split_in_words( char *line , std::vector<char*>& words , char separator )
+		{
 		   size_t pos = 0;
 		   size_t previous = 0;
 
@@ -58,7 +63,7 @@ namespace system{
 		   while( !finish )
 		   {
 
-			  if( ( line[pos] == ' ' ) || ( line[pos] == '\0' ) )
+			  if( ( line[pos] == separator ) || ( line[pos] == '\0' ) )
 			  {
 				 if( line[pos] == '\0' )
 					finish = true;

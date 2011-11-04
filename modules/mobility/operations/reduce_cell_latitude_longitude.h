@@ -22,6 +22,10 @@ namespace mobility{
 	class reduce_cell_latitude_longitude : public samson::Reduce
 	{
 
+	   samson::mobility::CellRecord cell_record;  // Input record
+	   samson::mobility::Record record;           // Output record
+	   samson::mobility::Cell cell;               // Information about cell
+
 	public:
 
 
@@ -41,6 +45,36 @@ helpLine: Add lat-lon information to Records. Note that key at the input is cell
 
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
+		   if( inputs[1].num_kvs == 0)
+		   {
+			  // Non existing cell... forward input to output 1
+			  for ( size_t i = 0 ; i< inputs[0].num_kvs ; i++)
+			  {
+				 cell_record.parse( inputs[0].kvs[i]->value );
+				 writer->emit( 1 , &cell_record.cellId , &cell_record );
+			  }
+			  return;
+		   }
+
+
+		   cell.parse( inputs[1].kvs[0]->value ); // Only consider the first one...
+
+		   for ( size_t i = 0 ; i< inputs[0].num_kvs; i++)
+		   {
+			  cell_record.parse( inputs[0].kvs[i]->value );
+
+			  // Complete the complete record
+			  record.userId.value = cell_record.userId.value;
+			  record.timestamp.value = cell_record.timestamp.value;
+			  record.cellId.value = cell_record.cellId.value;
+
+			  record.position.copyFrom( &cell.position );
+
+			  writer->emit( 0 , &record.userId , &record );
+		   } 
+		   return;
+
+
 		}
 
 		void finish( samson::KVWriter *writer )

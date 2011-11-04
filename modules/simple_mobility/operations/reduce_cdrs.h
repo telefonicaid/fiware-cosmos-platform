@@ -9,7 +9,9 @@
 #include "au/string.h"
 
 #include <samson/module/samson.h>
-#include <samson/modules/simple_mobility/Position.h>
+#include <samson/modules/mobility/Position.h>
+#include <samson/modules/mobility/Record.h>
+
 #include <samson/modules/simple_mobility/User.h>
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/UInt.h>
@@ -22,12 +24,12 @@ namespace simple_mobility{
 	class reduce_cdrs : public samson::Reduce
 	{
 
-	   samson::system::UInt key;            // User identifier
+	   samson::system::UInt key;              // User identifier
 	   samson::simple_mobility::User user;    // State information
 
-	   samson::simple_mobility::Position position;  // Updated position
+	   samson::mobility::Record  record;      // Input record
 
-	   samson::system::String message;            // Message emited at the output
+	   samson::system::String message;        // Message emited at the output
 
 	public:
 
@@ -66,7 +68,7 @@ helpLine: Update internal state
 		   {
 
 			  // Update in the position
-			  position.parse( inputs[0].kvs[ inputs[0].num_kvs - 1 ]->value );
+			  record.parse( inputs[0].kvs[ inputs[0].num_kvs - 1 ]->value );
 
 			  // Emit whatever is necessary
 			  if( user.isTracking() )
@@ -79,19 +81,19 @@ helpLine: Update internal state
 				 for (int i = 0 ; i < user.areas_length ; i++)
 				 {
 					bool in_previous = user.areas[i].isInside( &user.position );
-					bool in_now = user.areas[i].isInside( &position );
+					bool in_now = user.areas[i].isInside( &record.position );
 
 					if( !in_previous && in_now )
 					{
 					   message.value = au::str("User enters area '%s' [%d,%d/%d] when moving from [%d,%d] to [%d,%d]" 
 											   , user.areas[i].name.value.c_str()
-											   , user.areas[i].x.value
-											   , user.areas[i].y.value
+											   , user.areas[i].center.latitude.value
+											   , user.areas[i].center.longitude.value
 											   , user.areas[i].radius.value
-											   , user.position.x.value
-											   , user.position.y.value
-											   , position.x.value
-											   , position.y.value
+											   , user.position.latitude.value
+											   , user.position.longitude.value
+											   , record.position.latitude.value
+											   , record.position.longitude.value
 						  );
 
 
@@ -102,13 +104,13 @@ helpLine: Update internal state
 					{
 					   message.value = au::str("User leaves area '%s' [%d,%d/%d] when moving from [%d,%d] to [%d,%d]" 
 											   , user.areas[i].name.value.c_str()
-											   , user.areas[i].x.value
-											   , user.areas[i].y.value
+											   , user.areas[i].center.latitude.value
+											   , user.areas[i].center.longitude.value
 											   , user.areas[i].radius.value
-											   , user.position.x.value
-											   , user.position.y.value
-											   , position.x.value
-											   , position.y.value
+											   , user.position.latitude.value
+											   , user.position.longitude.value
+											   , record.position.latitude.value
+											   , record.position.longitude.value
 						  );
 
 					   writer->emit( 0 , &key,  &message );
@@ -120,7 +122,7 @@ helpLine: Update internal state
 			  }
 
 			  // update state
-			  user.position.copyFrom( &position );
+			  user.position.copyFrom( &record.position );
 
 		   }
 

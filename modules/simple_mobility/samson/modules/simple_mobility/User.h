@@ -22,7 +22,7 @@ namespace simple_mobility{
 	   void init()
 	   {
 		  // Init the position elememnt
-		  position.set( 0 , 0);
+		  position.set( 0 , 0 );
 
 		  // Set length of the areas
 		  areasSetLength(0);

@@ -7,7 +7,7 @@ package es.tid.ps.mapreduce.mobility.data;
  * @author rgc
  */
 public enum FileType {
-    FILE_CDRS(0), FILE_USERS(1);
+    FILE_USERS(0), FILE_CDRS(1);
     private Integer value;
 
     /**

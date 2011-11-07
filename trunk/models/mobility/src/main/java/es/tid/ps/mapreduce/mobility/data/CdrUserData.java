@@ -141,9 +141,9 @@ public class CdrUserData {
             cdrUserData.roamingType = stt.nextToken();
             return cdrUserData;
         } catch (NoSuchElementException nsee) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(nsee);
         } catch (ParseException e) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(e);
         }
     }
 }

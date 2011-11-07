@@ -15,18 +15,16 @@ import org.apache.hadoop.io.WritableComparable;
  * @author rgc
  */
 public class CompositeKey implements WritableComparable<CompositeKey> {
+    private static final int HASH_CONST = 163;
     private String userIdKey;
     private Integer fileIdKey;
 
     public CompositeKey() {
-        init(new String(), -1);
+        this.userIdKey = "";
+        this.fileIdKey = -1;
     }
 
     public CompositeKey(String userIdKey, Integer fileIdKey) {
-        init(userIdKey, fileIdKey);
-    }
-
-    public void init(String userIdKey, Integer fileIdKey) {
         this.userIdKey = userIdKey;
         this.fileIdKey = fileIdKey;
     }
@@ -78,7 +76,7 @@ public class CompositeKey implements WritableComparable<CompositeKey> {
      */
     @Override
     public int hashCode() {
-        return this.userIdKey.hashCode() * 163 + this.fileIdKey;
+        return this.userIdKey.hashCode() * HASH_CONST + this.fileIdKey;
     }
 
     /*

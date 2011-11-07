@@ -33,8 +33,8 @@ public class CliquesCalculatorMapper extends
      * @param value
      *            are a array with the telephone number of all the people that
      *            the user has had a conference.
-     * @param output
-     *            has the method "collect()" to output the key,value pair
+     * @param context
+     *            contains the context of the job run
      */
     @Override
     public void map(Text key, ArrayListWritable value, Context context)

@@ -2,8 +2,6 @@ package es.tid.ps.mapreduce.mobility;
 
 import java.io.IOException;
 
-import javax.management.RuntimeErrorException;
-
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.RawComparator;
 
@@ -40,7 +38,7 @@ public class NaturalKeySortComparator implements RawComparator<CompositeKey> {
             o2.readFields(buffer);
             return compare(o1, o2);
         } catch (IOException e) {
-            throw new RuntimeErrorException(null, e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 

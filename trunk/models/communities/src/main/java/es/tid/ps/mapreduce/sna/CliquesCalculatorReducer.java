@@ -175,11 +175,18 @@ public class CliquesCalculatorReducer extends
                     UtilsSet.generateIntersection(vertexSet, aNeigbors),
                     UtilsSet.generateIntersection(processSet, aNeigbors),
                     context);
+            
+            // Normaly 'Assignment of parameter is not allowed' but we need to
+            // change the value of the param (this is the razon why is not
+            // final)
             tmpSet = UtilsSet.generateDifference(vertexSet, candidateVertexSet);
             vertexSet = tmpSet;
+            
+            // Normaly 'Assignment of parameter is not allowed' but we need to
+            // change the value of the param (this is the razon why is not
+            // final)
             tmpSet = UtilsSet.generateUnion(processSet, candidateVertexSet);
             processSet = tmpSet;
-
         }
     }
 

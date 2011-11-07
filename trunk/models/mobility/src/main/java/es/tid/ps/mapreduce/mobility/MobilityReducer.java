@@ -50,7 +50,8 @@ import es.tid.ps.mapreduce.mobility.data.MobilityCounter;
 public class MobilityReducer extends
 
 Reducer<CompositeKey, Text, Text, LongWritable> {
-    String actualUser = "";
+    // Is protected because we need to access into the test
+    protected String actualUser = "";
     private Map<String, Long> workCalls;
     private Map<String, Long> homeCalls;
     private CronExpression homeDateValidator;
@@ -75,8 +76,8 @@ Reducer<CompositeKey, Text, Text, LongWritable> {
             return;
         }
         if (!actualUser.equals(key.getUserIdKey())) {
-            context.getCounter(MobilityCounter.USER_NOT_IN_PLATFORM)
-                    .increment(1L);
+            context.getCounter(MobilityCounter.USER_NOT_IN_PLATFORM).increment(
+                    1L);
             return;
         }
         for (Text line : values) {
@@ -133,7 +134,7 @@ Reducer<CompositeKey, Text, Text, LongWritable> {
                 }
             }
         } catch (ParseException e) {
-            // TODO rgc write log for error 
+            // TODO rgc write log for error
             throw new RuntimeException(e);
         }
     }

@@ -29,6 +29,12 @@ public class JoinUserMapper extends
         Mapper<LongWritable, Text, CompositeKey, Text> {
     final private static String DELIMITER = "\\|";
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.hadoop.mapreduce.Mapper#map(KEYIN, VALUEIN,
+     * org.apache.hadoop.mapreduce.Mapper.Context)
+     */
     @Override
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {

@@ -1,0 +1,59 @@
+#
+# Stream operations necessary to take input xml data form arkanum and get "mobility.mobility_record" elements
+#
+# ------------------------------------------------------------------------------------------------------------------------
+# [1] in_xml_cdrs           --> [ passive_location.parse_xml_cdrs  ]           --> cdrs                  
+# [2] cdrs      	  		--> [ passive_location.get_mobility_cell_records ] --> mobility_cell_records
+# [3] mobility_cell_records --> [ mobility.reduce_cell_latitude_longitude ]    --> mobility_records
+# 
+# Notes
+#
+# [1] Parser input xml docs into passive_location.Records
+# [2] Transform passive_location.Records into mobility.CellRecord
+# [3] Join mobilty.CellRecord s with cell queue to get mobility.Record entries
+#
+#
+# -- Preparation of cell queue ( used in [3] ) from local files GSM_LATLONG.txt & UMTS_LATLONG.txt 
+#
+#
+
+
+# ------------------------------------------------------------
+# Parser to get XML focuments
+# ------------------------------------------------------------
+
+add_stream_operation parser_xml passive_location.parse_xml_cdrs in_xml_cdrs cdrs
+
+# Properties for operations
+set_stream_operation_property parser_xml max_latency 1 
+
+# ------------------------------------------------------------
+# Get mobility.CellRecord s
+# ------------------------------------------------------------
+
+add_stream_operation mobility_cell_records  passive_location.get_mobility_cell_records cdrs mobility_cell_records
+set_stream_operation_property mobility_cell_records max_latency 1
+
+
+# ------------------------------------------------------------
+# Get mobility.Record s ( combination with cell info )
+# ------------------------------------------------------------
+
+add_stream_operation mobility_records  mobility.reduce_cell_latitude_longitude mobility_cell_records cells mobility_records mobility_cell_records_error -forward
+set_stream_operation_property mobility_records max_latency 1
+
+
+# ------------------------------------------------------------
+# Upload cell information
+# ------------------------------------------------------------
+
+push GSM_LATLONG.txt cells.txt
+push UMTS_LATLONG.txt cells.txt
+
+wait
+
+run_stream_operation passive_location.parse_cell_info cells.txt cells
+
+wait
+
+rm_queue cells.txt

@@ -52,7 +52,10 @@
         </plugins>
         <resources>
             <resource>
-                <directory>src/resources/conf</directory>
+                <directory>src/main/resources/conf</directory>
+            </resource>
+            <resource>
+                <directory>src/test/resources/conf</directory>
             </resource>
         </resources>
     </build>

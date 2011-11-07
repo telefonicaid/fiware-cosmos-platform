@@ -1,38 +1,35 @@
 package es.tid.ps.kpicalculation;
 
 import java.io.IOException;
-import java.net.URLDecoder;
 
-import org.apache.hadoop.conf.Configuration;
+import javax.annotation.Resource;
+
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.nutch.net.URLNormalizers;
-import org.apache.nutch.net.urlnormalizer.basic.BasicURLNormalizer;
-import org.apache.nutch.net.urlnormalizer.regex.RegexURLNormalizer;
-import org.apache.nutch.util.NutchConfiguration;
 
-import es.tid.ps.kpicalculation.cleaning.ThirdPartyFilter;
-import es.tid.ps.kpicalculation.cleaning.ExtensionFilter;
-import es.tid.ps.kpicalculation.cleaning.KpiCalculationFilter;
-import es.tid.ps.kpicalculation.cleaning.PersonalInfoFilter;
+import es.tid.ps.kpicalculation.cleaning.KpiCalculationFilterChain;
+import es.tid.ps.kpicalculation.data.PageView;
 
 /**
  * This class receives lines of information of CDR´s files that will be used in
- * the Web Profiling module. The URL field of any of those lines will be
- * replaced following the requirements specified in PS20.TECH.FUN.WPF.005 by its
- * normalized version. After the normalization of the URL, a set of filters will
- * be applied, and only in case the URL passes all the filters the map function
- * will emit the input line with the replaced field. If the URL does not pass
- * any of the filters nothing will be emited. Examples:
+ * the Web Profiling module. The lines are parsed to a PageView object, whose
+ * fullUrl field will be verified to asses that it passes all the filters
+ * defined for the web profiling module in the KpiCalculationFilterChain
+ * resource. If the url passes every filter then the PageView string value,
+ * which fits the format of PAGE_VIEWS hive's table, will be emited. If the url
+ * does not pass any of the filters nothing will be emited. Examples:
  * <ol>
  * <li>Input : {key: 1, values: 16737b1873ef03ad http://www.tid.es/index.html
  * 1Dec2010000001 304 application/pkix-crl -Microsoft-CryptoAPI/6.1 GET}</li>
- * <li>Output: {key: 1, values: http://example.com}</li>
+ * <li>Output: {key: 1, values: 16737b1873ef03ad http http://tid.es/ tid.es /
+ * null 1Dec2010000001 1Dec2010000001 -Microsoft-CryptoAPI/6.1
+ * -Microsoft-CryptoAPI/6.1 -Microsoft-CryptoAPI/6.1 -Microsoft-CryptoAPI/6.1
+ * GET 304"}</li>
  * </ol>
  * 
  * <ol>
- * <li>Input : {key: 1, values: 16737b1873ef03ad http://www.tid.es/foto.jpg
+ * <li>Input : {key: 1, values: 16737b1873ef03ad http http://www.tid.es/foto.jpg
  * 1Dec2010000001 304 application/pkix-crl -Microsoft-CryptoAPI/6.1 GET}</li>
  * <li>Output: void</li>
  * </ol>
@@ -42,40 +39,37 @@ import es.tid.ps.kpicalculation.cleaning.PersonalInfoFilter;
  */
 public class KpiCleanerMapper extends Mapper<LongWritable, Text, LongWritable, Text> {
 
-    final private static String DELIMITER = "\t";
-    final private static int URL_INDEX = 1;
+    @Resource
+    private KpiCalculationFilterChain filter;
 
-    public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-
-        KpiCalculationFilter filter = new ExtensionFilter().setNext(new ThirdPartyFilter()
-                .setNext(new PersonalInfoFilter()));
-
-        String[] listLine = value.toString().trim().split(DELIMITER, -1);
-
-        // Basic Nutch URL normalization
-        BasicURLNormalizer normalizer = new BasicURLNormalizer();
-        Configuration conf = NutchConfiguration.create();
-        normalizer.setConf(conf);
-        System.out.println(value);
-        listLine[URL_INDEX] = normalizer.normalize(listLine[URL_INDEX], URLNormalizers.SCOPE_DEFAULT);
-
-        // Advanced Nutch URL normalization based on regular expressions
-        RegexURLNormalizer norm = new RegexURLNormalizer(conf);
-        listLine[URL_INDEX] = norm.normalize(listLine[URL_INDEX], URLNormalizers.SCOPE_DEFAULT);
-
-        boolean emit = filter.filter(listLine[URL_INDEX]);
-
-        if (emit) {
-            StringBuilder sBuilder = new StringBuilder();
-            for (int i = 0; i < listLine.length; i++) {
-                sBuilder.append(listLine[i]).append(DELIMITER);
-
-            }
-
-            String output = sBuilder.toString();
-            System.out.println(output);
-            context.write(key, value);
-        }
-
+    /**
+     * Method that prepares the filters to be applied
+     * 
+     * @param context
+     *            contains the context of the job run
+     */
+    @Override
+    protected void setup(Context context) throws IOException, InterruptedException {
+        filter = new KpiCalculationFilterChain();
     }
+
+    /**
+     * @param key
+     *            is the byte offset of the current line in the file;
+     * @param value
+     *            is the line from the file
+     * @param context
+     *            has the method "write()" to output the key,value pair
+     */
+    @Override
+    public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+        PageView view = new PageView(value.toString());
+        try {
+            filter.filter(view.getFullUrl());
+            context.write(key, new Text(view.toString()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

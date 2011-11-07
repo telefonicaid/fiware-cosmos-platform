@@ -1,9 +1,5 @@
 package es.tid.ps.kpicalculation;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.Date;
 
 import org.apache.hadoop.conf.Configuration;
@@ -20,8 +16,9 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import es.tid.ps.kpicalculation.operations.AggregateCalculator;
-import es.tid.ps.kpicalculation.operations.CdrFilter;
+import es.tid.ps.kpicalculation.operations.HiveCdrLoader;
 import es.tid.ps.kpicalculation.operations.IAggregateCalculator;
+import es.tid.ps.kpicalculation.operations.ICdrLoader;
 
 /**
  * This class performs the webprofiling processing of the data received from
@@ -36,7 +33,8 @@ import es.tid.ps.kpicalculation.operations.IAggregateCalculator;
  */
 public class KpiMain extends Configured implements Tool {
     
-
+    private static String TEMP_PATH = "/user/javierb/temp";
+    
     public static void main(String[] args) throws Exception {
         int res = ToolRunner.run(new Configuration(), new KpiMain(), args);
         System.exit(res);
@@ -44,12 +42,13 @@ public class KpiMain extends Configured implements Tool {
 
     public int run(String[] args) throws Exception {
         Path inputPath = new Path(args[0]);
+        Path tmpPath = new Path(TEMP_PATH + "/tmp." + Long.toString(new Date().getTime()));
 
-        Path tmpPath = new Path("/user/javierb/tmp." + Long.toString(new Date().getTime()));
-
+        // Normalization and filtering
         Configuration conf = getConf();
         conf.set("mapred.reduce.tasks", "1");
-
+        conf.set("kpicalculation.temp.path", tmpPath.toString());
+        
         Job wpCleanerJob = new Job(conf, "Web Profiling ...");
         wpCleanerJob.setJarByClass(KpiMain.class);
         wpCleanerJob.setMapperClass(KpiCleanerMapper.class);
@@ -63,25 +62,19 @@ public class KpiMain extends Configured implements Tool {
 
         FileInputFormat.addInputPath(wpCleanerJob, inputPath);
         FileOutputFormat.setOutputPath(wpCleanerJob, tmpPath);
-
+        
         if (!wpCleanerJob.waitForCompletion(true)) {
             return 1;
         }
-
        
-       // Load data into table LOG_ROWS
-       // TODO(javierb): At this moment only one file is loaded. It will be
-       // necessary to
-       // change it to take a folder as input
-       
-       /* String sql = "LOAD DATA INPATH '" + tmpPath.toString() + "/part-r-00000' OVERWRITE INTO TABLE LOG_ROWS";
-        ResultSet result = stmt.executeQuery(sql);
-        */
+        // Data load into hive
+        ICdrLoader loader = new HiveCdrLoader(conf);
+        loader.load(TEMP_PATH);
         
+        // Calculation of aggregate data
         IAggregateCalculator agg = new AggregateCalculator();
         agg.process();
         
-
         return 0;
     }
 }

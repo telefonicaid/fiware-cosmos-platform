@@ -37,17 +37,17 @@ public class KpiCleanerMapperTest extends TestCase {
     @Test
     public void testAllowedExtension() {
         List<Pair<LongWritable, Text>> out = null;
-        String line = "16737b1873ef03ad	http://www.tid.es/index.html	1Dec2010000001	304	application/pkix-crl	-Microsoft-CryptoAPI/6.1	GET";
-        //String line = "http://www.example.com/%7Eusername?www=3";
+        String input = "16737b1873ef03ad	http://www.tid.es/index.html	1Dec2010000001	304	application/pkix-crl	-Microsoft-CryptoAPI/6.1	GET";
+		String output = "16737b1873ef03ad	http	http://tid.es/	tid.es	/	null	1Dec2010000001	1Dec2010000001	-Microsoft-CryptoAPI/6.1	-Microsoft-CryptoAPI/6.1	-Microsoft-CryptoAPI/6.1	-Microsoft-CryptoAPI/6.1	GET	304";
 
         try {
-            out = driver.withInput(new LongWritable(0), new Text(line)).run();
+            out = driver.withInput(new LongWritable(0), new Text(input)).run();
         } catch (IOException ioe) {
             fail();
         }
 
         List<Pair<LongWritable, Text>> expected = new ArrayList<Pair<LongWritable, Text>>();
-        expected.add(new Pair<LongWritable, Text>(new LongWritable(0), new Text(line)));
+        expected.add(new Pair<LongWritable, Text>(new LongWritable(0), new Text(output)));
 
         assertListEquals(expected, out);
     }

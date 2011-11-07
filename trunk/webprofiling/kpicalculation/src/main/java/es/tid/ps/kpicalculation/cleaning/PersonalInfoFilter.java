@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  * @author javierb
  * 
  */
-public class PersonalInfoFilter extends KpiCalculationFilter {
+public class PersonalInfoFilter implements IKpiCalculationFilter {
 
     private Pattern pattern;
     private Matcher matcher;
@@ -28,14 +28,17 @@ public class PersonalInfoFilter extends KpiCalculationFilter {
 
     }
 
+    /** 
+     * (non-Javadoc) 
+     *  
+     * @see es.tid.ps.kpicalculation.cleaning.IKpiCalculationFilter#filter(String) 
+     */ 
     @Override
-    public boolean filter(String s) {
-       
+    public void filter(String s) throws Exception {
         matcher = pattern.matcher(s);
-        if (!matcher.matches() && next != null)
-            return next.filter(s);
-        else
-            return !matcher.matches();
+        
+        if ( matcher.matches())
+            throw new IllegalStateException("The URL provided belongs to a personal info domain");
 
     }
 

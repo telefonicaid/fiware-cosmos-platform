@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!-- Put site-specific property overrides in this file. -->
+<configuration>
+        <property>
+                <name>kpifilters</name>
+                <value>
+                    es.tid.ps.kpicalculation.cleaning.ExtensionFilter,
+                    es.tid.ps.kpicalculation.cleaning.ThirdPartyFilter,
+                    es.tid.ps.kpicalculation.cleaning.PersonalInfoFilter
+                </value>
+                <description>default_description</description>
+        </property>
+       
+
+</configuration>

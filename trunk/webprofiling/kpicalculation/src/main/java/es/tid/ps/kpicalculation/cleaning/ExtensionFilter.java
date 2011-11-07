@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  * @author javierb
  * 
  */
-public class ExtensionFilter extends KpiCalculationFilter {
+public class ExtensionFilter implements IKpiCalculationFilter {
 
     private Pattern pattern;
     private Matcher matcher;
@@ -22,14 +22,18 @@ public class ExtensionFilter extends KpiCalculationFilter {
     private static final String FORBIDDEN_PATTERN = "([^\\s]+(\\.(?i)(js|jpg|jpeg|css|gif|png|bmp|ico|tif|tiff))$)";
 
     public ExtensionFilter() {
-
-        super();
+       
         pattern = Pattern.compile(FORBIDDEN_PATTERN, Pattern.CASE_INSENSITIVE);
 
     }
 
+    /** 
+    * (non-Javadoc) 
+    *  
+    * @see es.tid.ps.kpicalculation.cleaning.IKpiCalculationFilter#filter(String) 
+    */ 
     @Override
-    public boolean filter(String s) {
+    public void filter(String s) throws Exception {
         
         URI uri;
         try {
@@ -40,11 +44,10 @@ public class ExtensionFilter extends KpiCalculationFilter {
             e.printStackTrace();
         } 
        
-        if (!matcher.matches() && next != null)
-            return next.filter(s);
-        else
-            return !matcher.matches();
-
+        if ( matcher.matches())
+            throw new IllegalStateException("The URL provided has a forbidden extension");
+        
     }
+
 
 }

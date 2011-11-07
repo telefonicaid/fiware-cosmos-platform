@@ -155,14 +155,26 @@
                     </execution>
                 </executions>
             </plugin>
-
-
         </plugins>
     </build>
     <repositories>
         <repository>
             <id>cdh-repository</id>
             <url> https://repository.cloudera.com/content/repositories/releases/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>cdh-ps2</id>
+            <url>http://ps2-ci/nexus/content/groups/public/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>central-repository</id>
+            <url>http://search.maven.org/</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -227,7 +239,13 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-mrunit</artifactId>
-            <version>${org.apache.hadoop}-cdh3u0</version>
+            <version>${org.apache.hadoop}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit}</version>
         </dependency>
     </dependencies>
 
@@ -253,19 +271,6 @@
             <url>${repoSiteUrl}/${project.groupId}/models </url>
         </site>
     </distributionManagement>
-
-    <modules>
-        <module>communities</module>
-    </modules>
-
-    <properties>
-        <copyright.year>2011</copyright.year>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <org.apache.hadoop>0.20.2</org.apache.hadoop>
-        <jvm.version>1.6</jvm.version>
-    </properties>
-
     <profiles>
         <profile>
             <id>maven-2</id>
@@ -301,9 +306,6 @@
                         <artifactId>maven-report</artifactId>
                         <version>0.1</version>
                     </plugin>
-
-
-
                     <!-- Plugin para generar los referencias cruzadas del 
                         cÃ³digo -->
                     <plugin>
@@ -437,7 +439,6 @@
                 </plugins>
             </reporting>
         </profile>
-
         <profile>
             <id>maven-3</id>
             <activation>
@@ -590,9 +591,20 @@
                             </reportPlugins>
                         </configuration>
                     </plugin>
-
                 </plugins>
             </build>
         </profile>
     </profiles>
+    <modules>
+        <module>communities</module>
+        <module>mobility</module>
+    </modules>
+    <properties>
+        <copyright.year>2011</copyright.year>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <org.apache.hadoop>0.20.2-cdh3u2</org.apache.hadoop>
+        <junit>4.5</junit>
+        <jvm.version>1.6</jvm.version>
+    </properties>
 </project>

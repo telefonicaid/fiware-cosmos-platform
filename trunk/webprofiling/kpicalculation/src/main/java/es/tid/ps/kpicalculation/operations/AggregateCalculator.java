@@ -21,7 +21,6 @@ import es.tid.ps.kpicalculation.sql.AggregateCalculatorQueries;
  * 
  */
 public class AggregateCalculator implements IAggregateCalculator {
-
     private Statement stmt;
 
     private static String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
@@ -36,7 +35,8 @@ public class AggregateCalculator implements IAggregateCalculator {
         logger = Logger.getLogger(AggregateCalculator.class.getName());
         try {
             Class.forName(driverName);
-            Connection con = DriverManager.getConnection("jdbc:hive://pshdp02:10000", "", "");
+            Connection con = DriverManager.getConnection(
+                    "jdbc:hive://pshdp02:10000", "", "");
             stmt = con.createStatement();
         } catch (SQLException e) {
             // TODO Auto-generated catch block
@@ -45,18 +45,16 @@ public class AggregateCalculator implements IAggregateCalculator {
             // TODO Auto-generated catch block
             logger.severe(e.toString());
         }
-
     }
 
     /**
-     * Performs all the queries to calculate the aggregates of web profiling module.
+     * Performs all the queries to calculate the aggregates of web profiling
+     * module.
      * 
      */
     public int process() {
-
         // Common aggregate KPI's
         try {
-
             logger.info("Calculating aggregate of page views by protocol, visitor and device...");
             stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_VIS_DEV);
             logger.info("Aggregate processed...");
@@ -82,7 +80,6 @@ public class AggregateCalculator implements IAggregateCalculator {
             logger.info("Aggregate processed...");
 
             // Browing aggregate KPI's
-
             logger.info("Calculating aggregate of page views by protocol, url and visitor ...");
             stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_URL_VIS);
             logger.info("Aggregate processed...");
@@ -122,7 +119,6 @@ public class AggregateCalculator implements IAggregateCalculator {
             logger.info("Aggregate processed...");
 
             // Queries aggregate KPI's
-
             logger.info("Calculating aggregate of searches by protocol, query key, visitor and searcher...");
             stmt.executeQuery(AggregateCalculatorQueries.SEARCHES_BY_PROT_QKEY_VIS_SEARCHER);
             logger.info("Aggregate processed...");
@@ -132,7 +128,6 @@ public class AggregateCalculator implements IAggregateCalculator {
         } catch (SQLException ex) {
             logger.severe(ex.toString());
         }
-
         return 0;
     }
 

@@ -48,6 +48,7 @@ public class KpiMain extends Configured implements Tool {
         Configuration conf = getConf();
         conf.set("mapred.reduce.tasks", "1");
         conf.set("kpicalculation.temp.path", tmpPath.toString());
+        conf.addResource("kpi-filtering.xml");
         
         Job wpCleanerJob = new Job(conf, "Web Profiling ...");
         wpCleanerJob.setJarByClass(KpiMain.class);

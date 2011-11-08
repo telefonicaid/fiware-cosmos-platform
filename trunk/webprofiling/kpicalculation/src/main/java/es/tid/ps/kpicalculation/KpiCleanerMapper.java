@@ -37,8 +37,8 @@ import es.tid.ps.kpicalculation.data.PageView;
  * 
  * @author javierb@tid.es
  */
-public class KpiCleanerMapper extends Mapper<LongWritable, Text, LongWritable, Text> {
-
+public class KpiCleanerMapper extends
+        Mapper<LongWritable, Text, LongWritable, Text> {
     @Resource
     private KpiCalculationFilterChain filter;
 
@@ -49,8 +49,9 @@ public class KpiCleanerMapper extends Mapper<LongWritable, Text, LongWritable, T
      *            contains the context of the job run
      */
     @Override
-    protected void setup(Context context) throws IOException, InterruptedException {
-        filter = new KpiCalculationFilterChain();
+    protected void setup(Context context) throws IOException,
+            InterruptedException {
+        filter = new KpiCalculationFilterChain(context.getConfiguration());
     }
 
     /**
@@ -62,7 +63,8 @@ public class KpiCleanerMapper extends Mapper<LongWritable, Text, LongWritable, T
      *            has the method "write()" to output the key,value pair
      */
     @Override
-    public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+    public void map(LongWritable key, Text value, Context context)
+            throws IOException, InterruptedException {
         PageView view = new PageView(value.toString());
         try {
             filter.filter(view.getFullUrl());
@@ -71,5 +73,4 @@ public class KpiCleanerMapper extends Mapper<LongWritable, Text, LongWritable, T
             e.printStackTrace();
         }
     }
-
 }

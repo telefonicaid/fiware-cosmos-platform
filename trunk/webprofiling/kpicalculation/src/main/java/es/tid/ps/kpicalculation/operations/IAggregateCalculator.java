@@ -8,6 +8,5 @@ package es.tid.ps.kpicalculation.operations;
  * 
  */
 public interface IAggregateCalculator {
-
     public int process();
 }

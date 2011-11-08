@@ -3,6 +3,7 @@ package es.tid.ps.kpicalculation.cleaning;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.InvalidPropertiesFormatException;
@@ -23,23 +24,20 @@ import org.apache.hadoop.fs.Path;
  * 
  */
 public class KpiCalculationFilterChain {
-
     private List<IKpiCalculationFilter> handlers;
     private static String COLLECTION_ID = "kpifilters";
-    
 
-    public KpiCalculationFilterChain() {
-        Configuration conf = new Configuration();
-        conf.addResource("kpi-filtering.xml");
-        
+    public KpiCalculationFilterChain(Configuration conf) {
+
         handlers = new ArrayList<IKpiCalculationFilter>();
         Collection<String> classes = conf.getStringCollection(COLLECTION_ID);
         Iterator<String> it = classes.iterator();
-        while (it.hasNext())
-        {
+        while (it.hasNext()) {
             IKpiCalculationFilter filter;
             try {
-                filter = (IKpiCalculationFilter) Class.forName(it.next().trim()).newInstance();
+                filter = (IKpiCalculationFilter) Class
+                        .forName(it.next().trim()).newInstance();
+                        //.getConstructor(Configuration.class).newInstance(conf);
                 handlers.add(filter);
             } catch (InstantiationException e) {
                 // TODO Auto-generated catch block
@@ -50,7 +48,13 @@ public class KpiCalculationFilterChain {
             } catch (ClassNotFoundException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            }
+            } catch (IllegalArgumentException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (SecurityException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } 
         }
     }
 

@@ -8,7 +8,8 @@ package es.tid.ps.kpicalculation.data;
  * 
  */
 public enum PageViewInput {
-    VISITOR_ID(0), URL(1), DATE_TIME(2), HTTP_STATUS(3), MIME_TYPE(4), USER_AGENT(5), METHOD(6);
+    VISITOR_ID(0), URL(1), DATE_TIME(2), HTTP_STATUS(3), MIME_TYPE(4), USER_AGENT(
+            5), METHOD(6);
 
     private Integer value;
 

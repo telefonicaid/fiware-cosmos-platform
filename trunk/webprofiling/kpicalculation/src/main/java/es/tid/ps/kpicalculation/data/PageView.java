@@ -31,7 +31,7 @@ import org.apache.xerces.util.URI.MalformedURIException;
  */
 public class PageView {
     final private static String DELIMITER = "\t";
-  
+
     private String visitorId;
     private String protocol;
     private String fullUrl;
@@ -264,7 +264,8 @@ public class PageView {
      *            string to parse
      * 
      */
-    public PageView(String line) throws MalformedURLException, MalformedURIException {
+    public PageView(String line) throws MalformedURLException,
+            MalformedURIException {
         String[] listLine = line.trim().split(DELIMITER, -1);
 
         visitorId = listLine[PageViewInput.VISITOR_ID.getValue()];
@@ -296,14 +297,13 @@ public class PageView {
         status = listLine[PageViewInput.HTTP_STATUS.getValue()];
 
         // TODO:Mime type missing in tables.This is pending;
-
     }
 
     /**
      * Method that receives an URL and applies two Nutch normalizers to it.
      * First is applied the BasicURLNormalizer which is in charge of standard
-     * normalization processes, and after it the RegexURLNormalizer which is 
-     * an advanced normalizer whose functionalities are defined in a configuration
+     * normalization processes, and after it the RegexURLNormalizer which is an
+     * advanced normalizer whose functionalities are defined in a configuration
      * file.
      * 
      * @param inputUrl
@@ -317,7 +317,8 @@ public class PageView {
         Configuration conf = NutchConfiguration.create();
         normalizer.setConf(conf);
 
-        normalizedUrl = normalizer.normalize(inputUrl, URLNormalizers.SCOPE_DEFAULT);
+        normalizedUrl = normalizer.normalize(inputUrl,
+                URLNormalizers.SCOPE_DEFAULT);
 
         // Advanced Nutch URL normalization based on regular expressions
         RegexURLNormalizer norm = new RegexURLNormalizer(conf);
@@ -325,8 +326,8 @@ public class PageView {
     }
 
     /**
-     * Method that generates the string corresponding to the object.
-     * It will be used to emit this data in the mapper.
+     * Method that generates the string corresponding to the object. It will be
+     * used to emit this data in the mapper.
      * 
      * @return the output line of the object
      * 

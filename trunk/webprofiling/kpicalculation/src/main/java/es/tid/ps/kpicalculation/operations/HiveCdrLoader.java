@@ -42,9 +42,11 @@ public class HiveCdrLoader implements ICdrLoader {
     public HiveCdrLoader(Configuration configuration) {
         logger = Logger.getLogger(HiveCdrLoader.class.getName());
         conf = configuration;
+
         try {
             Class.forName(driverName);
-            Connection con = DriverManager.getConnection("jdbc:hive://pshdp02:10000", "", "");
+            Connection con = DriverManager.getConnection(
+                    "jdbc:hive://pshdp02:10000", "", "");
             stmt = con.createStatement();
         } catch (SQLException e) {
             // TODO Auto-generated catch block
@@ -53,7 +55,6 @@ public class HiveCdrLoader implements ICdrLoader {
             // TODO Auto-generated catch block
             logger.severe(e.toString());
         }
-
     }
 
     /**
@@ -68,27 +69,27 @@ public class HiveCdrLoader implements ICdrLoader {
     public int load(String folder) {
         try {
             FileSystem fs = FileSystem.get(conf);
-            FileStatus[] status = fs.listStatus(new Path(conf.get("kpicalculation.temp.path")), new PathFilter() {
-                
-                @Override
-                public boolean accept(Path arg0) {
-                    if( arg0.getName().startsWith("part-r-"))
-                        return true;
-                    return false;
-                }
-            });
-            
+            FileStatus[] status = fs.listStatus(
+                    new Path(conf.get("kpicalculation.temp.path")),
+                    new PathFilter() {
+                        @Override
+                        public boolean accept(Path arg0) {
+                            if (arg0.getName().startsWith("part-r-"))
+                                return true;
+                            return false;
+                        }
+                    });
+
             for (int i = 0; i < status.length; i++) {
                 System.out.println(status[i].getPath().getName());
-                String sql = MessageFormat.format("LOAD DATA INPATH \"{0}\" OVERWRITE INTO TABLE {1}",
+                String sql = MessageFormat.format(
+                        "LOAD DATA INPATH \"{0}\" OVERWRITE INTO TABLE {1}",
                         status[i].getPath(), TARGET_TABLE);
                 System.out.println(sql);
                 stmt.executeQuery(sql);
-                
             }
+
             fs.delete(new Path(conf.get("kpicalculation.temp.path")), true);
-            
-            
         } catch (IOException e) {
             e.printStackTrace();
         } catch (SQLException e) {
@@ -96,5 +97,4 @@ public class HiveCdrLoader implements ICdrLoader {
         }
         return 0;
     }
-
 }

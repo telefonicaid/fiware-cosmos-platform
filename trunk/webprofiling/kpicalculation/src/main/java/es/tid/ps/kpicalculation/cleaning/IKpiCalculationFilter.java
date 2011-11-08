@@ -8,7 +8,6 @@ package es.tid.ps.kpicalculation.cleaning;
  * 
  */
 public interface IKpiCalculationFilter {
-
     /**
      * Method that filters an URL passed as parameter. If the url passes the
      * defined filter nothing happens, and the execution of the program

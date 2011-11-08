@@ -41,6 +41,7 @@ install: release install_man
 	cp modules/moduletemplate/CMakeLists.txt $(SAMSON_HOME)/share/modules/moduletemplate
 	cp modules/moduletemplate/makefile $(SAMSON_HOME)/share/modules/moduletemplate
 	cp modules/moduletemplate/module $(SAMSON_HOME)/share/modules/moduletemplate
+	cp scripts/samsonModuleBootstrap $(SAMSON_HOME)/bin
 
 install_man: man
 	cp -r BUILD_RELEASE/man $(SAMSON_HOME)/

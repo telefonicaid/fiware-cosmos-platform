@@ -808,3 +808,62 @@ o Indexing makes the insert time almost 100% slower.
 
 ========================================================================================================================
 
+
+========================================================================================================================
+BIG TEST:
+
+samson01 - samson04 : Samson platform (Andreu starts it)
+samson05 - samson07 : MongoDB shard for 'History'
+samson08 - samson09 : MongoDB shard for 'Last Known Location'
+
+samson05-samson09:
+  sudo rm -rf /data/db
+  sudo mkdir /data/db
+  numactl --interleave=all mongod --nojournal --shardsvr --port 2001
+
+samson05
+  sudo rm -rf /data/configdb
+  sudo mkdir /data/configdb
+  numactl --interleave=all mongod --configsvr --port 2101
+  mongos --configdb localhost:2101
+  mongo --port 27017
+
+samson08
+  sudo rm -rf /data/configdb
+  sudo mkdir /data/configdb
+  numactl --interleave=all mongod --configsvr --port 2101
+  mongos --configdb localhost:2101
+  mongo --port 27017
+
+mongo (in samson05):
+  use admin
+  db.runCommand( { addshard : "samson05:2001" } );
+  db.runCommand( { addshard : "samson06:2001" } );
+  db.runCommand( { addshard : "samson07:2001" } );
+  db.runCommand( { enablesharding : "test" } )
+  use PassiveLocation
+  db.History.ensureIndex({"I": 1, "T": 1})
+  use admin
+  db.runCommand( { shardcollection : "PassiveLocation.History", key : { "I": 1, "T" : 1 } } )
+  use PassiveLocation
+  db.History.find().count()
+
+mongo (in samson08):
+  use admin
+  db.runCommand( { addshard : "samson08:2001" } );
+  db.runCommand( { addshard : "samson09:2001" } );
+  db.runCommand( { enablesharding : "test" } )
+  use PassiveLocation
+  db.LastKnownLocation.ensureIndex({"I": 1, "T": 1})
+  use admin
+  db.runCommand( { shardcollection : "PassiveLocation.LastKnownLocation", key : { "I": 1, "T" : 1 } } )
+  use PassiveLocation
+  db.LastKnownLocation.find().count()
+
+delilah (in torkel) to start streaming pipeline
+  cd ~/sb/samson/22/modules/passive_location
+  delilah -f stream_definition.txt
+
+?still needed, or are data faked by new additions?
+passiveLocationPush (in torkel)
+  passiveLocationPush cdrs --rate 40000 --timeOut 1

@@ -31,10 +31,13 @@ size_t timeOut;
 char breaker_sequence[1024];
 char controller[1024];
 char queue_name[1024];
-bool lines;                         // Flag to indicate that input is readed line by line
+bool lines;                         // Flag to indicate that input is read line by line
 
 static const char* manShortDescription = 
-"samsonPush is a easy-to-use client to send data to a particular queue in a SAMSON system. Just push data into the standart input\n";
+"samsonPush is a easy-to-use client to send data to a particular queue in a SAMSON system. Just push data into the standard input\n";
+
+static const char* manSynopsis =
+"[-controller str_controller] [-timeout int_t] [-buffer_size int_size] [-breaker_sequence str_pattern] [-lines bool] queue\n";
 
 PaArgument paArgs[] =
 {
@@ -93,6 +96,7 @@ int main( int argC , const char *argV[] )
     paConfig("log to file",                   (void*) false);
     paConfig("screen line format",            (void*) "TYPE:EXEC: TEXT");
     paConfig("man shortdescription",          (void*) manShortDescription);
+    paConfig("man synopsis",          (void*) manSynopsis);
     
     // Parse input arguments    
     paParse(paArgs, argC, (char**) argV, 1, false);

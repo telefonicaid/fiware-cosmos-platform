@@ -4,7 +4,7 @@ endif
 all:
 	SAMSON_HOME=$(SAMSON_HOME) make -C system
 	SAMSON_HOME=$(SAMSON_HOME) make -C txt
-#	SAMSON_HOME=$(SAMSON_HOME) make -C txt_md
+	SAMSON_HOME=$(SAMSON_HOME) make -C txt_md
 	SAMSON_HOME=$(SAMSON_HOME) make -C example
 	SAMSON_HOME=$(SAMSON_HOME) make -C tienda
 	SAMSON_HOME=$(SAMSON_HOME) make -C cdr
@@ -26,14 +26,12 @@ all:
 	SAMSON_HOME=$(SAMSON_HOME) make -C gg
 	SAMSON_HOME=$(SAMSON_HOME) make -C page_rank
 	SAMSON_HOME=$(SAMSON_HOME) make -C wiki
-
-
-	make -C simple_mobility
+	SAMSON_HOME=$(SAMSON_HOME) make -C simple_mobility
 
 release:
 	SAMSON_HOME=$(SAMSON_HOME) make release -C system
 	SAMSON_HOME=$(SAMSON_HOME) make release -C txt
-#	SAMSON_HOME=$(SAMSON_HOME) make release -C txt_md
+	SAMSON_HOME=$(SAMSON_HOME) make release -C txt_md
 	SAMSON_HOME=$(SAMSON_HOME) make release -C example
 	SAMSON_HOME=$(SAMSON_HOME) make release -C tienda
 	SAMSON_HOME=$(SAMSON_HOME) make release -C cdr
@@ -55,7 +53,7 @@ release:
 	SAMSON_HOME=$(SAMSON_HOME) make release -C gg
 	SAMSON_HOME=$(SAMSON_HOME) make release -C page_rank
 	SAMSON_HOME=$(SAMSON_HOME) make release -C wiki
-	make release -C simple_mobility
+	SAMSON_HOME=$(SAMSON_HOME) make release -C simple_mobility
 
 
 
@@ -110,9 +108,7 @@ install:
 	SAMSON_HOME=$(SAMSON_HOME) make install -C gg
 	SAMSON_HOME=$(SAMSON_HOME) make install -C page_rank
 	SAMSON_HOME=$(SAMSON_HOME) make install -C wiki
-
-
-	make reset -C simple_mobility
+	SAMSON_HOME=$(SAMSON_HOME) make install -C simple_mobility
 test:
 	SAMSON_HOME=$(SAMSON_HOME) make test -C txt
 	SAMSON_HOME=$(SAMSON_HOME) make test -C sort

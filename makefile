@@ -182,6 +182,9 @@ rpm: release modules man
 	cd modules/url;                   ../../scripts/samsonModuleRpm url $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	cd modules/urlbenchmark;         ../../scripts/samsonModuleRpm urlbenchmark $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	# cd modules/sna_light;             ../../scripts/samsonModuleRpm sna_light $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/mob2;                 ../../scripts/samsonModuleRpm mob2 $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/passive_location;     ../../scripts/samsonModuleRpm passive_location $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/txt_md;               ../../scripts/samsonModuleRpm txt_md $(SAMSON_VERSION) $(SAMSON_RELEASE)
 
 # currently the deb scripts require Samson be installed before 
 # the package can be generated. Using SAMSON_HOME we can override
@@ -204,6 +207,9 @@ deb: release modules man
 	cd modules/txt;                   ../../scripts/samsonModuleDeb txt $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	cd modules/url;                   ../../scripts/samsonModuleDeb url $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	cd modules/urlbenchmark;         ../../scripts/samsonModuleDeb urlbenchmark $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/mob2;                 ../../scripts/samsonModuleDeb mob2 $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/passive_location;     ../../scripts/samsonModuleDeb passive_location $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/txt_md;               ../../scripts/samsonModuleDeb txt_md $(SAMSON_VERSION) $(SAMSON_RELEASE)
 
 man: release
 	 mkdir -p BUILD_RELEASE/man/man1

@@ -36,6 +36,14 @@ PACKAGE_DIR=${BUILD_ROOT}/rpm/scratch/$rdir
 dependencylist()
 {
     echo -n "Requires: samson = $version, samson-devel = $version" >> rpm_module_list.$$
+    # package_deps contains a list of external dependencies, e.g. mongodb needed
+    # to ensure the correct functioning of the module
+    if [ -f package_deps ]; then
+        for needed_module in `cat package_deps`
+        do
+            echo -n ", $needed_module" >> deb_module_list.$$
+        done
+    fi
     if [ -f depends.txt ]; then
         for needed_module in `cat depends.txt`
         do

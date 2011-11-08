@@ -14,12 +14,15 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
 /**
  * Test cases for the Cliques Calculator reducer.
  * 
  * @author rgc@tid.es
  */
+@RunWith(BlockJUnit4ClassRunner.class)
 public class CliquesCalculatorReducerTest extends TestCase {
 
     private Reducer<Text, NodeCombination, Text, Text> reducer;

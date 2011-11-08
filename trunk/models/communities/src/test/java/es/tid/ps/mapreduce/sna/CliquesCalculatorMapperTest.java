@@ -13,11 +13,16 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
 /**
  * Test cases for the Cliques Calculator mapper.
+ * 
  * @author rgc@tid.es
  */
+@RunWith(BlockJUnit4ClassRunner.class)
 public class CliquesCalculatorMapperTest extends TestCase {
     private Mapper<Text, ArrayListWritable, Text, NodeCombination> mapper;
     private MapDriver<Text, ArrayListWritable, Text, NodeCombination> driver;
@@ -29,6 +34,7 @@ public class CliquesCalculatorMapperTest extends TestCase {
                 mapper);
     }
 
+    @Test
     public void testMapNodeCombinations() {
         List<Pair<Text, NodeCombination>> out = null;
 

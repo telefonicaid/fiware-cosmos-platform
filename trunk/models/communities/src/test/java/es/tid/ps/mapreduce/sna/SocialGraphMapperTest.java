@@ -15,13 +15,15 @@ import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
 /**
  * Test cases for the Social Graph mapper.
  * 
  * @author rgc@tid.es
- * 
  */
+@RunWith(BlockJUnit4ClassRunner.class)
 public class SocialGraphMapperTest extends TestCase {
 
     private Mapper<LongWritable, Text, Text, Text> mapper;
@@ -38,7 +40,8 @@ public class SocialGraphMapperTest extends TestCase {
         List<Pair<Text, Text>> out = null;
 
         try {
-            out = driver.withInput(new LongWritable(1), new Text("a|1|2")).run();
+            out = driver.withInput(new LongWritable(1), new Text("a|1|2"))
+                    .run();
 
         } catch (IOException ioe) {
             fail();
@@ -49,5 +52,20 @@ public class SocialGraphMapperTest extends TestCase {
         expected.add(new Pair<Text, Text>(new Text("2"), new Text("1")));
 
         assertListEquals(expected, out);
+    }
+
+    @Test
+    public void testParserError() {
+        try {
+            driver.withInput(new LongWritable(1), new Text("a 1 2")).run();
+        } catch (IOException ioe) {
+            fail();
+        }
+        long expected = 1L;
+        long out = driver.getCounters()
+                .findCounter(CommunityCounter.LINE_PARSER_SOCIAL_GRAPH_ERROR)
+                .getValue();
+
+        assertEquals(expected, out);
     }
 }

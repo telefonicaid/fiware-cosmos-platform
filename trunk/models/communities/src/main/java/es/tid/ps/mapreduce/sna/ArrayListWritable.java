@@ -25,7 +25,7 @@ import org.apache.hadoop.io.WritableComparable;
  */
 public class ArrayListWritable implements WritableComparable<ArrayListWritable> {
 
-    private List<String> values;
+    private List<String> values; 
 
     /**
      * Constructor

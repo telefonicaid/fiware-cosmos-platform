@@ -1,6 +1,7 @@
 package es.tid.ps.mapreduce.sna;
 
 import java.io.IOException;
+import java.util.StringTokenizer;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -46,8 +47,18 @@ public class SocialGraphMapper extends Mapper<LongWritable, Text, Text, Text> {
     @Override
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
-        String[] listLine = value.toString().split(DELIMITER, -1);
-        context.write(new Text(listLine[1]), new Text(listLine[2]));
-        context.write(new Text(listLine[2]), new Text(listLine[1]));
+
+        StringTokenizer stt = new StringTokenizer(value.toString(), DELIMITER);
+        if (stt.countTokens() < 3) {
+            context.getCounter(CommunityCounter.LINE_PARSER_SOCIAL_GRAPH_ERROR)
+                    .increment(1L);
+            return;
+        }
+        stt.nextToken();
+        String user1 = stt.nextToken();
+        String user2 = stt.nextToken();
+        
+        context.write(new Text(user1), new Text(user2));
+        context.write(new Text(user2), new Text(user1));
     }
 }

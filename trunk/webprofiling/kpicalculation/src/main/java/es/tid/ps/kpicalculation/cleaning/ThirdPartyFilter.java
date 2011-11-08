@@ -14,17 +14,18 @@ import org.apache.hadoop.conf.Configuration;
  * @author javierb
  * 
  */
-public class ThirdPartyFilter implements IKpiCalculationFilter {
+public class ThirdPartyFilter extends AbstractKpiCalculationFilter{
     private Pattern pattern;
     private Matcher matcher;
 
-    private static final String FORBIDDEN_PATTERN = "([^\\s]+(sexsearch\\.com|admeld\\.com|doubleclick\\.net|adserverplus\\.com|smartadserver\\.com)[^\\s]*)";
+    private static final String CONFIG_PARAMETER = "kpifilters.3rdparty";
+    private static final String REGULAR_EXPRESSION = "([^\\s]+{0}[^\\s]*)";
+    private static String forbiddenPattern = "";
 
-    public ThirdPartyFilter() {
-        // TODO(javierb): This initialisation should be replaced by the one
-        // using distributed cache
-       
-        pattern = Pattern.compile(FORBIDDEN_PATTERN, Pattern.CASE_INSENSITIVE);
+    public ThirdPartyFilter(Configuration conf) {
+        if( forbiddenPattern == "" )
+            forbiddenPattern = setPattern(REGULAR_EXPRESSION, conf.get(CONFIG_PARAMETER));
+        pattern = Pattern.compile(forbiddenPattern, Pattern.CASE_INSENSITIVE);
     }
 
     /**

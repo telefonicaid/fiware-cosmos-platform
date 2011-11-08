@@ -31,6 +31,7 @@ public class KpiCleanerMapperTest extends TestCase {
     protected void setUp() {
         mapper = new KpiCleanerMapper();
         driver = new MapDriver<LongWritable, Text, LongWritable, Text>(mapper);
+        driver.getConfiguration().addResource("kpi-filtering.xml");
     }
 
     @Test

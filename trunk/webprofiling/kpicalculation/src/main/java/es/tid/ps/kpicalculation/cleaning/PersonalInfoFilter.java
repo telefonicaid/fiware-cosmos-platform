@@ -14,17 +14,18 @@ import org.apache.hadoop.conf.Configuration;
  * @author javierb
  * 
  */
-public class PersonalInfoFilter implements IKpiCalculationFilter {
+public class PersonalInfoFilter extends AbstractKpiCalculationFilter {
     private Pattern pattern;
     private Matcher matcher;
 
-    private static final String FORBIDDEN_PATTERN = "([^\\s]+(pornhub\\.com)[^\\s]*)";
+    private static final String CONFIG_PARAMETER = "kpifilters.personalinfo";
+    private static final String REGULAR_EXPRESSION = "([^\\s]+{0}[^\\s]*)";
+    private static String forbiddenPattern = "";
 
-    public PersonalInfoFilter() {
-        // TODO(javierb): This initialisation should be replaced by the one
-        // using distributed cache
-       
-        pattern = Pattern.compile(FORBIDDEN_PATTERN, Pattern.CASE_INSENSITIVE);
+    public PersonalInfoFilter(Configuration conf) {
+        if( forbiddenPattern == "" )
+            forbiddenPattern = setPattern(REGULAR_EXPRESSION, conf.get(CONFIG_PARAMETER));
+        pattern = Pattern.compile(forbiddenPattern, Pattern.CASE_INSENSITIVE);
     }
 
     /**

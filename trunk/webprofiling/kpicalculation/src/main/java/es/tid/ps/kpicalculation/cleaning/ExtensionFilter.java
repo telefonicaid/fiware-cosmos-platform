@@ -16,16 +16,18 @@ import org.apache.hadoop.conf.Configuration;
  * @author javierb
  * 
  */
-public class ExtensionFilter implements IKpiCalculationFilter {
+public class ExtensionFilter extends AbstractKpiCalculationFilter{
     private Pattern pattern;
     private Matcher matcher;
 
-    private static final String CONFIG_PARAMETER = "";
-    private static final String FORBIDDEN_PATTERN = "([^\\s]+(\\.(?i)(js|jpg|jpeg|css|gif|png|bmp|ico|tif|tiff))$)";
+    private static final String CONFIG_PARAMETER = "kpifilters.extension";
+    private static final String REGULAR_EXPRESSION = "([^\\s]+(\\.(?i){0})$)";
+    private static String forbiddenPattern = "";
 
-    public ExtensionFilter() {
-        
-        pattern = Pattern.compile(FORBIDDEN_PATTERN, Pattern.CASE_INSENSITIVE);
+    public ExtensionFilter(Configuration conf) {
+        if( forbiddenPattern == "" )
+            forbiddenPattern = setPattern(REGULAR_EXPRESSION, conf.get(CONFIG_PARAMETER));
+        pattern = Pattern.compile(forbiddenPattern, Pattern.CASE_INSENSITIVE);
     }
 
     /**

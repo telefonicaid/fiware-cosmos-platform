@@ -36,8 +36,8 @@ public class KpiCalculationFilterChain {
             IKpiCalculationFilter filter;
             try {
                 filter = (IKpiCalculationFilter) Class
-                        .forName(it.next().trim()).newInstance();
-                        //.getConstructor(Configuration.class).newInstance(conf);
+                        .forName(it.next().trim())
+                        .getConstructor(Configuration.class).newInstance(conf);
                 handlers.add(filter);
             } catch (InstantiationException e) {
                 // TODO Auto-generated catch block
@@ -52,6 +52,12 @@ public class KpiCalculationFilterChain {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (SecurityException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             } 

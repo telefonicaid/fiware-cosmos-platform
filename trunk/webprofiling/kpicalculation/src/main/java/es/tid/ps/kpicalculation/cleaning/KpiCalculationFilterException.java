@@ -4,6 +4,11 @@ import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
 
 public class KpiCalculationFilterException extends RuntimeException {
 
+    public KpiCalculationFilterException(String message, Throwable cause, KpiCalculationCounter lineFilteredExtension) {
+        super(message, cause);
+        counter = lineFilteredExtension;
+    }
+
     private KpiCalculationCounter counter;
 
     public KpiCalculationFilterException(String message,

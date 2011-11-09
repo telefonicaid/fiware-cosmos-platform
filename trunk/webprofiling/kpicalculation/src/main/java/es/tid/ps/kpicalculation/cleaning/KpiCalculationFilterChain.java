@@ -25,7 +25,8 @@ public class KpiCalculationFilterChain {
     private List<IKpiCalculationFilter> handlers;
     private static String COLLECTION_ID = "kpifilters";
 
-    public KpiCalculationFilterChain(Configuration conf) throws KpiCalculationFilterException {
+    public KpiCalculationFilterChain(Configuration conf)
+            throws KpiCalculationFilterException {
 
         handlers = new ArrayList<IKpiCalculationFilter>();
         Collection<String> classes = conf.getStringCollection(COLLECTION_ID);
@@ -37,11 +38,11 @@ public class KpiCalculationFilterChain {
                         .forName(it.next().trim())
                         .getConstructor(Configuration.class).newInstance(conf);
                 handlers.add(filter);
-            } catch (Exception e) {
+            } catch (Exception exception) {
                 throw new KpiCalculationFilterException(
-                        "Wrong configuration of filter",
+                        "Wrong configuration of filter", exception,
                         KpiCalculationCounter.WRONG_FILTER_CONFIGURATION);
-            } 
+            }
         }
     }
 

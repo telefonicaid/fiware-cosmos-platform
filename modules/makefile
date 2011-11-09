@@ -8,6 +8,7 @@ all:
 	SAMSON_HOME=$(SAMSON_HOME) make -C example
 	SAMSON_HOME=$(SAMSON_HOME) make -C tienda
 	SAMSON_HOME=$(SAMSON_HOME) make -C cdr
+	SAMSON_HOME=$(SAMSON_HOME) make -C plot
 	SAMSON_HOME=$(SAMSON_HOME) make -C mobility
 	SAMSON_HOME=$(SAMSON_HOME) make -C mob
 	SAMSON_HOME=$(SAMSON_HOME) make -C mob2
@@ -35,6 +36,7 @@ release:
 	SAMSON_HOME=$(SAMSON_HOME) make release -C example
 	SAMSON_HOME=$(SAMSON_HOME) make release -C tienda
 	SAMSON_HOME=$(SAMSON_HOME) make release -C cdr
+	SAMSON_HOME=$(SAMSON_HOME) make release -C plot
 	SAMSON_HOME=$(SAMSON_HOME) make release -C mobility
 	SAMSON_HOME=$(SAMSON_HOME) make release -C mob
 	SAMSON_HOME=$(SAMSON_HOME) make release -C mob2
@@ -64,6 +66,7 @@ reset:
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C example 
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C tienda 
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C cdr
+	SAMSON_HOME=$(SAMSON_HOME) make reset -C plot
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C mobility
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C mob
 	SAMSON_HOME=$(SAMSON_HOME) make reset -C mob2

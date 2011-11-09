@@ -40,13 +40,14 @@ i: install
 install: release install_man
 	sudo make -C BUILD_RELEASE install
 	make release -C modules
-	mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
-	cp README $(SAMSON_HOME)/share/README.txt
-	cp modules/moduletemplate/CMakeLists.txt $(SAMSON_HOME)/share/modules/moduletemplate
-	cp modules/moduletemplate/makefile $(SAMSON_HOME)/share/modules/moduletemplate
-	cp modules/moduletemplate/module $(SAMSON_HOME)/share/modules/moduletemplate
-	cp scripts/samsonModuleBootstrap $(SAMSON_HOME)/bin
-	chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_HOME)
+	# FIXME Using sudo to install the files is a bit heavy handed
+	sudo mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
+	sudo cp README $(SAMSON_HOME)/share/README.txt
+	sudo cp modules/moduletemplate/CMakeLists.txt $(SAMSON_HOME)/share/modules/moduletemplate
+	sudo cp modules/moduletemplate/makefile $(SAMSON_HOME)/share/modules/moduletemplate
+	sudo cp modules/moduletemplate/module $(SAMSON_HOME)/share/modules/moduletemplate
+	sudo cp scripts/samsonModuleBootstrap $(SAMSON_HOME)/bin
+	sudo chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_HOME)
 
 install_man: man
 	cp -r BUILD_RELEASE/man $(SAMSON_HOME)/

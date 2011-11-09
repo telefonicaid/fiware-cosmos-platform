@@ -50,7 +50,7 @@ install: release install_man
 	sudo chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_HOME)
 
 install_man: man
-	cp -r BUILD_RELEASE/man $(SAMSON_HOME)/
+	sudo cp -r BUILD_RELEASE/man $(SAMSON_HOME)/
  
 clean:
 	make -C BUILD_DEBUG clean
@@ -144,6 +144,8 @@ reset:
 	sudo rm -f testing/module_test/Module.*
 	make reset -C modules
 
+cleansvn: reset
+	for file in `svn status | grep ? | awk '{print $$2}'`; do rm -rf $$file; done
 
 modules: release
 	make release -C modules
@@ -167,7 +169,7 @@ coverage: debug
 	cd BUILD_DEBUG ; ../scripts/samsonCoverage
 
 clear_ipcs:
-	for i in `sudo ipcs -m | grep -v key  | grep -v Memory  |  awk '{print $2}'`; do sudo ipcrm -m $i; done
+	for i in `sudo ipcs -m | grep -v key  | grep -v Memory  |  awk '{print $$2}'`; do sudo ipcrm -m $$i; done
 
 set_ssm_linux:
 	sudo sysctl -w kernel.shmmax=64000000

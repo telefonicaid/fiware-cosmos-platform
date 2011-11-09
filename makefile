@@ -46,7 +46,7 @@ install: release install_man
 	cp modules/moduletemplate/makefile $(SAMSON_HOME)/share/modules/moduletemplate
 	cp modules/moduletemplate/module $(SAMSON_HOME)/share/modules/moduletemplate
 	cp scripts/samsonModuleBootstrap $(SAMSON_HOME)/bin
-	chown -R samson:samson $(SAMSON_HOME)
+	chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_HOME)
 
 install_man: man
 	cp -r BUILD_RELEASE/man $(SAMSON_HOME)/

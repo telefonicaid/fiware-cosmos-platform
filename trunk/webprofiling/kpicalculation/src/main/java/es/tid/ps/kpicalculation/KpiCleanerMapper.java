@@ -9,6 +9,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.ps.kpicalculation.cleaning.KpiCalculationFilterChain;
+import es.tid.ps.kpicalculation.cleaning.KpiCalculationFilterException;
+import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
 import es.tid.ps.kpicalculation.data.PageView;
 
 /**
@@ -69,8 +71,9 @@ public class KpiCleanerMapper extends
         try {
             filter.filter(view.getFullUrl());
             context.write(key, new Text(view.toString()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (KpiCalculationFilterException e) {
+            context.getCounter(e.getCounter())
+            .increment(1L);
+        } 
     }
 }

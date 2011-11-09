@@ -20,7 +20,6 @@ import junit.framework.TestCase;
  * Test case for KpiCleanerMapper
  * 
  * @author javierb
- * 
  */
 public class KpiCleanerMapperTest extends TestCase {
 

@@ -1,19 +1,17 @@
 package es.tid.ps.kpicalculation.cleaning;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.InvalidPropertiesFormatException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
+
+import com.ibm.icu.text.MessageFormat;
+
+import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
 
 /**
  * Abstract class to implement the "chain of responsibility" pattern. This
@@ -27,7 +25,7 @@ public class KpiCalculationFilterChain {
     private List<IKpiCalculationFilter> handlers;
     private static String COLLECTION_ID = "kpifilters";
 
-    public KpiCalculationFilterChain(Configuration conf) {
+    public KpiCalculationFilterChain(Configuration conf) throws KpiCalculationFilterException {
 
         handlers = new ArrayList<IKpiCalculationFilter>();
         Collection<String> classes = conf.getStringCollection(COLLECTION_ID);
@@ -39,32 +37,15 @@ public class KpiCalculationFilterChain {
                         .forName(it.next().trim())
                         .getConstructor(Configuration.class).newInstance(conf);
                 handlers.add(filter);
-            } catch (InstantiationException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (IllegalArgumentException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (SecurityException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (NoSuchMethodException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            } catch (Exception e) {
+                throw new KpiCalculationFilterException(
+                        "Wrong configuration of filter",
+                        KpiCalculationCounter.WRONG_FILTER_CONFIGURATION);
             } 
         }
     }
 
-    public void filter(String url) throws Exception {
+    public void filter(String url) throws KpiCalculationFilterException {
         IKpiCalculationFilter currentFilter;
         ListIterator<IKpiCalculationFilter> it = handlers.listIterator();
 

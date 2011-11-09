@@ -39,9 +39,12 @@ PaArgument paArgs[] =
 	{ "-controller",            controller,           "CONTROLLER",            PaString, PaOpt, _i "localhost"  , PaNL, PaNL,       "controller IP:port"         },
 	{ "-header",                &show_header,         "SHOW_HEADER",           PaBool,    PaOpt,  false, false,  true,  "Show only header of blocks"   },
 	{ "-limit",                 &limit,               "MAX_KVS",               PaInt,     PaOpt,     0,      0,    10000,  "number of kvs to be shown for each block"   },
-	{ " ",                      queue_name,           "QUEUE",                 PaString,  PaOpt,  (long) "no_queue",   PaNL,   PaNL,  "name of the queue to push data"         },
+	{ " ",                      queue_name,           "QUEUE",                 PaString,  PaReq,  (long) "no_queue",   PaNL,   PaNL,  "name of the queue to push data"         },
     PA_END_OF_ARGS
 };
+
+static const char* manSynopsis =
+"[-help] [-controller str_controller] [-header bool] [-limit int_n] queue\n";
 
 static const char* manShortDescription = 
 "samsonPop is an easy-to-use client to receive data from a particular queue in a SAMSON system.\n";
@@ -93,6 +96,8 @@ int main( int argC , const char *argV[] )
     paConfig("log to file",                   (void*) false);
     paConfig("screen line format",            (void*) "TYPE:EXEC: TEXT");
     paConfig("man shortdescription",          (void*) manShortDescription);
+    paConfig("man synopsis",          (void*) manSynopsis);
+
     
     // Parse input arguments    
     paParse(paArgs, argC, (char**) argV, 1, false);

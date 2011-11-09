@@ -84,7 +84,7 @@ PaArgument paBuiltin[] =
  { "",          paTerm,       "!TERM",      PaStr, PaHid,  0, PaNL, PaNL, "terminal"             },
  { "",          paSystem,     "!SYSTEM",    PaStr, PaHid,  0, PaNL, PaNL, "system"               },
  { "",          paVisual,     "!VISUAL",    PaStr, PaHid,  0, PaNL, PaNL, "visual"               },
-// { "-t",        paTraceV,     "TRACE",      PaStr, PaOpt,  0, PaNL, PaNL, "trace level"          },
+ { "-t",        paTraceV,     "TRACE",      PaStr, PaOpt,  0, PaNL, PaNL, "trace level"          },
  { "-v",        &paVerbose,   "VERBOSE",    PaBool,PaOpt,  F,    T,    F, "verbose mode"         },
 // { "-d",        &paDebug,     "DEBUG",      PaBool,PaOpt,  F,    T,    F, "debug mode"           },
 // { "-toDo",     &paToDo,      "TODO",       PaBool,PaOpt,  F,    T,    F, "toDo mode" },

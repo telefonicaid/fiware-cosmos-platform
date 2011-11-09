@@ -7,6 +7,10 @@ endif
 ifndef SAMSON_RELEASE
 SAMSON_RELEASE=1
 endif
+# Who to install samson as
+ifndef SAMSON_OWNER
+SAMSON_OWNER=samson
+endif
 
 default: release modules man
 
@@ -42,6 +46,7 @@ install: release install_man
 	cp modules/moduletemplate/makefile $(SAMSON_HOME)/share/modules/moduletemplate
 	cp modules/moduletemplate/module $(SAMSON_HOME)/share/modules/moduletemplate
 	cp scripts/samsonModuleBootstrap $(SAMSON_HOME)/bin
+	chown -R samson:samson $(SAMSON_HOME)
 
 install_man: man
 	cp -r BUILD_RELEASE/man $(SAMSON_HOME)/

@@ -1084,7 +1084,7 @@ Status Endpoint2::msgTreat(void)
 		if (header.type == Message::Msg)
 			helloSend(Message::Ack);
 
-		if ((epMgr->me->type == Spawner) || (epMgr->me->type == Setup) || (epMgr->me->type == Controller))
+		if ((epMgr->me->type == Spawner) || (epMgr->me->type == Setup) )
 		{
 			LM_T(LmtThreads, ("I'm a Spawner/Controller/Setup - I don't use sender/reader threads!"));
 			delete packetP;
@@ -1092,7 +1092,9 @@ Status Endpoint2::msgTreat(void)
 		}
 
 		LM_T(LmtHello, ("Received Hello from %s (%d jobs pending)", name(), jobQueue.size()));
-		if (((epMgr->me->type == Worker) || (epMgr->me->type == Delilah)) && ((type == Worker) || (type == Delilah) || (type == Controller)))
+        // Andreu: Create threads for sending and receiving packets ( controller / worker / delilah )
+		//if (((epMgr->me->type == Worker) || (epMgr->me->type == Delilah)) && ((type == Worker) || (type == Delilah) || (type == Controller)))
+        if (( (epMgr->me->type == Worker) || (epMgr->me->type == Delilah) || (epMgr->me->type == Controller) ))
 		{
 			int  ps;
 			char semName[128];

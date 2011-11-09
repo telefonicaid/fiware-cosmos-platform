@@ -117,8 +117,8 @@ public:
 	au::Token            jobQueueSem;
 	au::list<Packet>     jobQueue;
 
-    bool thread_writer_running;    
-    bool thread_reader_running;    
+    bool thread_writer_running;     // Flag to indicate that there is a thread using this endpoint writing data
+    bool thread_reader_running;     // Flag to indicate that there is a thread using this endpoint reading data
     
 private:
 	EndpointManager*     epMgr;

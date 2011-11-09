@@ -193,12 +193,12 @@ script test_1
 	
 	code
 	{
-	set urlbenchmark.num_users               10;
-	set urlbenchmark.num_servers             10;
-	set urlbenchmark.num_paths_per_server    10;
-	set urlbenchmark.num_urls_per_user       7;
-	set urlbenchmark.num_categories          4;
-	set urlbenchmark.num_hits                3;
+	set urlbenchmark.num_users           10;
+	set urlbenchmark.num_servers           10;
+	set urlbenchmark.num_paths_per_server           10;
+	set urlbenchmark.num_urls_per_user           7;
+	set urlbenchmark.num_categories           4;
+	set urlbenchmark.num_hits           3;
 	
 	urlbenchmark.fake_visits_fixed urls -create -clear;
 	urlbenchmark.fake_servers servers -create -clear;

@@ -1,5 +1,11 @@
 # Some cleaning
-#rm /opt/samson/config/samsonPlatformProcesses
+echo "Starting sort test"
+rm /opt/samson/config/samsonPlatformProcesses
+/usr/local/bin/samsonKiller
+CONTROLLER_IP="localhost";
+export CONTROLLER_IP
+echo $CONTROLLER_IP
+
 
 # Generating random input data 
 ./generator 2000000000 > in.txt 
@@ -9,21 +15,21 @@
 if [ -n "${CONTROLLER_IP:+x}" ]; then
 	echo "Environment variable CONTROLLER_IP defined to: " $CONTROLLER_IP > test_complete_stdout
 	if [ $CONTROLLER_IP = "localhost" ]; then
-		if ! ps -C samsonSpawner > /dev/null
+		if ! ps -C samsonSpawner  > /dev/null
 		then
 			echo "Launching samsonSpawner" >> test_complete_stdout
-			samsonSpawner  >> test_complete_stdout &
+			samsonSpawner -local  >> test_complete_stdout &
 		else
 			echo "samsonSpawner already running" >> test_complete_stdout
 		fi
-		sleep 3
+	#	sleep 3
 	fi
-	/usr/local/bin/delilah -controller $CONTROLLER_IP -f test_complete_commands.txt >> test_complete_stdout 2> test_complete_stderr
+	/usr/local/bin/delilah -controller $CONTROLLER_IP -f test_complete_commands.txt >> test_complete_stdout 
 else
 	echo "Environment variable CONTROLLER_IP not defined, using samsonLocal" > test_complete_stdout
-	/usr/local/bin/samsonLocal -working . -f test_complete_commands.txt >> test_complete_stdout 2> test_complete_stderr
+	/usr/local/bin/samsonLocal -working . -f test_complete_commands.txt >> test_complete_stdout 
 fi
 
-
+samsonCat out > test_complete_out.txt
 # Checking the sort in the output file
-./valsort_uints out.txt
+./valsort_uints test_complete_out.txt

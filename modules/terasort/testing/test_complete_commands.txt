@@ -3,4 +3,5 @@ add data.txt -txt
 upload in.txt data.txt
 terasort.parse_file data.txt data.bin -create
 terasort.reduce_and_export data.bin out.txt -create
-download out.txt out.txt
+rm_local out
+download out.txt out

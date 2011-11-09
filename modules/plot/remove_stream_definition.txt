@@ -1,0 +1,4 @@
+
+# Remove stream operations
+rm_stream_operation plot.update_levels
+rm_stream_operation plot.publish_level_notifications

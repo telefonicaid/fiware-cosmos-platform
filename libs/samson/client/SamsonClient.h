@@ -146,8 +146,12 @@ namespace  samson {
     {
         
     public:
-        
+
         virtual size_t getBufferSize()=0;
+        
+        virtual size_t getTXTBufferSize()=0;
+        virtual char* getTXTBufferPointer()=0;
+        
         virtual void print_header()=0;
         virtual void print_content(int max_kvs)=0;
         
@@ -209,11 +213,21 @@ namespace  samson {
             engine::MemoryManager::shared()->destroyBuffer(buffer);
         }
         
-        virtual size_t getBufferSize()
+        size_t getBufferSize()
         {
             return buffer->getSize();
         }
 
+        size_t getTXTBufferSize()
+        {
+            return buffer->getSize() - sizeof( samson::KVHeader );
+        }
+
+        char* getTXTBufferPointer()
+        {
+            return data;
+        }
+        
         void print_header()
         {
             if( error.isActivated() )

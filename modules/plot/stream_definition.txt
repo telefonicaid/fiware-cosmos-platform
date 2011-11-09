@@ -1,0 +1,37 @@
+# ------------------------------------------------------------
+# Plot module stream operations
+# ------------------------------------------------------------#
+#
+# Plot module provides global level tracking with processing messages at queue ( level_updates )
+#
+# Each level_update comes with information about a particular level ( ex total number of users )
+# Streams operations provided in this module update internal state at queue levels and publish notifications when required
+# over queue level_notifications
+#
+# Stream operations
+# -----------------
+#
+# [1] Update "levels" using messages at "level_updates". Notifications are emited at queue level_notifications when required
+# [2] Transform level_notifications into a ascii output
+#
+####################################################################################
+#
+# [1] level_updates   --> [update levels][ plot.update_levels level_updates ] --> level_motifications
+# [2] level_motifications --> [ plot.push_level_notifications ] --> out_level_notifications
+#
+# 
+####################################################################################
+# Notes:
+##################################################################################### 
+#
+#
+####################################################################################
+
+
+add_stream_operation plot.update_levels plot.update_levels common.level_updates plot.levels plot.level_notifications plot.levels
+
+add_stream_operation plot.publish_level_notifications plot.publish_level_notifications plot.level_notifications plot.out_txt_level_notifications
+
+
+set_stream_operation_property plot.update_levels delayed_processing no
+set_stream_operation_property plot.publish_level_notifications delayed_processing no

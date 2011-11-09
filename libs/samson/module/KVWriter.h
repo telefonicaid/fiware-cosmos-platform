@@ -2,6 +2,7 @@
 #define KV_WRITER_H
 
 #include "samson/module/DataInstance.h"        /* DataInstance                             */
+#include <string>
 
 namespace samson {
     

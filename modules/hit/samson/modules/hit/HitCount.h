@@ -26,42 +26,76 @@ namespace hit{
             hits.value = 0;// No hits for the previous slot                                                                                                                               
           }
 
-          void update( unsigned long _current_time , size_t _current_hits )
+		  size_t cannonical( size_t input )
+		  {
+			 if ( input == 0 )
+				return 0;
+
+			 int t=0;
+			 while( input > 1000 )
+			 {
+				input /= 10;
+				t++;
+			 }
+
+			 for ( int i = 0 ; i < t  ; i++)
+				input *= 10;
+
+			 return input;
+		  }
+
+		  bool change_significantly( size_t from , size_t to )
+		  {
+			 return ( cannonical( from ) != cannonical( to ) );			 
+		  }
+
+          bool update( unsigned long _current_time , size_t _current_hits )
           {
+			 // Store previous values
+			 size_t previous_current_hits = current_hits.value;
+			 size_t previous_hits = getHits();
 
             if( _current_time == current_time.value )
-	      {
-		current_hits.value += _current_hits;
-	      }
+			{
+			   current_hits.value += _current_hits;
+			}
             else if( _current_time == ( current_time.value + 1 ) )
-	      {
-		// Move one slot...                                                                                                                                                         
-		current_time.value++;
-		hits.value = current_hits.value;
-		current_hits.value = _current_hits;
-	      }
-            else
-	      {
-		// Like init...                                                                                                                                                             
-		current_time.value = _current_time;
-		current_hits.value = _current_hits;
-		hits.value = 0;// No hits for the previous slot                                                                                                                             
-	      }
-          }
+			{
+			   // Move one slot....
 
+			   current_time.value++;
+			   hits.value = current_hits.value;
+			   current_hits.value = _current_hits;
+			}
+            else
+			{
+			   // Like init...                                                                                                                                                             
+			   current_time.value = _current_time;
+			   current_hits.value = _current_hits;
+			   hits.value = 0;// No hits for the previous slot                                                                                                                         
+			}
+
+			if( change_significantly( previous_hits , getHits() ) )
+			   return true;
+			if( change_significantly( previous_current_hits , current_hits.value ) )
+			   return true;
+
+			return false;
+          }
+		  
           bool hasContent()
           {
-            return( (hits.value != 0) || (current_hits.value) != 0 );
+			 return (getHits() > 0 );
           }
-
-	  size_t getHits()
-	  {
-	    return hits.value;
-	  }
-
-
+		  
+		  size_t getHits()
+		  {
+			 return hits.value + current_hits.value;
+		  }
+		  
+		  
 	};
-
+   
 
 } // end of namespace samson
 } // end of namespace hit

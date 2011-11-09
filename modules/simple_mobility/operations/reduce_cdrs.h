@@ -12,6 +12,8 @@
 #include <samson/modules/mobility/Position.h>
 #include <samson/modules/mobility/Record.h>
 
+#include <samson/modules/plot/LevelUpdate.h>
+
 #include <samson/modules/simple_mobility/User.h>
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/UInt.h>
@@ -30,6 +32,9 @@ namespace simple_mobility{
 	   samson::mobility::Record  record;      // Input record
 
 	   samson::system::String message;        // Message emited at the output
+
+	   samson::plot::LevelUpdate level_update; // Update level message ( for output 1 )
+
 
 	public:
 
@@ -70,6 +75,14 @@ helpLine: Update internal state
 			  // Update in the position
 			  record.parse( inputs[0].kvs[ inputs[0].num_kvs - 1 ]->value );
 
+
+
+/*
+			  double distance = user.position.distance( &record.position );
+			  message.value = au::str("Received a cdrs for user %lu moving %f %s --> %s" , key.value , distance,  user.position.str().c_str() , record.position.str().c_str() );
+			  writer->emit( 0 , &key , &message );
+*/
+
 			  // Emit whatever is necessary
 			  if( user.isTracking() )
 			  {
@@ -78,69 +91,62 @@ helpLine: Update internal state
 				 message.value = au::str("Update position of user %lu to [%d,%d] %s", key.value , position.x.value , position.y.value , position.time.str().c_str() );
 				 writer->emit( 0 , &key,  &message );				 
 */
-				 for (int i = 0 ; i < user.areas_length ; i++)
-				 {
-					bool in_previous = user.areas[i].isInside( &user.position );
-					bool in_now = user.areas[i].isInside( &record.position );
-
-					if( !in_previous && in_now )
-					{
-					   message.value = au::str("User enters area '%s' [%d,%d/%d] when moving from [%d,%d] to [%d,%d]" 
-											   , user.areas[i].name.value.c_str()
-											   , user.areas[i].center.latitude.value
-											   , user.areas[i].center.longitude.value
-											   , user.areas[i].radius.value
-											   , user.position.latitude.value
-											   , user.position.longitude.value
-											   , record.position.latitude.value
-											   , record.position.longitude.value
-						  );
-
-
-					   writer->emit( 0 , &key,  &message );
-					}
-
-					if( in_previous && !in_now )
-					{
-					   message.value = au::str("User leaves area '%s' [%d,%d/%d] when moving from [%d,%d] to [%d,%d]" 
-											   , user.areas[i].name.value.c_str()
-											   , user.areas[i].center.latitude.value
-											   , user.areas[i].center.longitude.value
-											   , user.areas[i].radius.value
-											   , user.position.latitude.value
-											   , user.position.longitude.value
-											   , record.position.latitude.value
-											   , record.position.longitude.value
-						  );
-
-					   writer->emit( 0 , &key,  &message );
-					}
-
-				 }
-
-
 			  }
 
+			  for (int i = 0 ; i < user.areas_length ; i++)
+			  {
+				 bool in_previous = user.areas[i].isInside( &user.position );
+				 bool in_now = user.areas[i].isInside( &record.position );
+
+
+/*
+				 double d1 = user.areas[i].center.distance( &user.position );
+				 double d2 = user.areas[i].center.distance( &record.position );
+				 message.value = au::str("Area %s at %s ( %f %f --> %d %d)" , user.areas[i].name.value.c_str() , user.areas[i].center.str().c_str() , d1 ,d2 , in_previous , in_now );					
+				 writer->emit( 0 , &key,  &message );
+*/
+				 
+				 if( !in_previous && in_now )
+				 {
+					level_update.increment( 1 );
+					writer->emit( 1 , &user.areas[i].name , &level_update );
+	
+					message.value = au::str("User enters area '%s' when moving from %s to %s" , user.areas[i].str().c_str() , user.position.str().c_str() , record.position.str().c_str() );
+					writer->emit( 0 , &key,  &message );					
+
+				 }
+				 
+				 if( in_previous && !in_now )
+				 {
+					level_update.decrement( 1 );
+					writer->emit( 1 , &user.areas[i].name , &level_update );
+					
+			   	    message.value = au::str("User  leaves '%s' when moving from %s to %s" , user.areas[i].str().c_str() , user.position.str().c_str() , record.position.str().c_str() );
+				    writer->emit( 0 , &key,  &message );
+				 }
+				 
+			  }
+			  
 			  // update state
 			  user.position.copyFrom( &record.position );
-
+			  
 		   }
-
-
-		   // Emit the state at the output
-		   writer->emit( 1 , &key , &user );
-
-
+		
+		   
+		// Emit the state at the output
+		   writer->emit( 2 , &key , &user );
+		   
+		   
 		}
-
+		
 		void finish(samson::KVWriter *writer )
 		{
 		}
-
-
-
+		
+		
+		
 	};
-
+   
 
 } // end of namespace simple_mobility
 } // end of namespace samson

@@ -38,6 +38,7 @@ reduce reduce_cdrs
 	in system.UInt mobility.Record
 	in system.UInt simple_mobility.User
 	out system.UInt system.String
+	out system.String plot.LevelUpdate
 	out system.UInt simple_mobility.User
 
 	helpLine "Update internal state"
@@ -48,6 +49,7 @@ reduce reduce_commands
 	in system.UInt system.StringVector
 	in system.UInt simple_mobility.User
 	out system.UInt system.String
+	out system.String plot.LevelUpdate
 	out system.UInt simple_mobility.User
 
 	helpLine "Update internal state"

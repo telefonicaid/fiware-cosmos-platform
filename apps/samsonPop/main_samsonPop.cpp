@@ -1,10 +1,11 @@
 
 /*
  
- samsonPush
+ samsonPop
  
  Example app using samsonClient lib
- It listen std input and push content to the samson cluster indicated by parameters
+ It connect to a SAMSON system to download contents from a queue
+
  
  AUTHOR: Andreu Urruela
  
@@ -39,7 +40,7 @@ PaArgument paArgs[] =
 	{ "-controller",            controller,           "CONTROLLER",            PaString, PaOpt, _i "localhost"  , PaNL, PaNL,       "controller IP:port"         },
 	{ "-header",                &show_header,         "SHOW_HEADER",           PaBool,    PaOpt,  false, false,  true,  "Show only header of blocks"   },
 	{ "-limit",                 &limit,               "MAX_KVS",               PaInt,     PaOpt,     0,      0,    10000,  "number of kvs to be shown for each block"   },
-	{ " ",                      queue_name,           "QUEUE",                 PaString,  PaReq,  (long) "no_queue",   PaNL,   PaNL,  "name of the queue to push data"         },
+	{ " ",                      queue_name,           "QUEUE",                 PaString,  PaOpt,  (long) "null",   PaNL,   PaNL,  "name of the queue to push data"         },
     PA_END_OF_ARGS
 };
 
@@ -103,6 +104,10 @@ int main( int argC , const char *argV[] )
     paParse(paArgs, argC, (char**) argV, 1, false);
     logFd = lmFirstDiskFileDescriptor();
     
+	if( strcmp(queue_name,"null") == 0 )
+	   LM_X(1,("Please specify a queue to receive data from"));
+
+
     // Instance of the client to connect to SAMSON system
     samson::SamsonClient client;
     

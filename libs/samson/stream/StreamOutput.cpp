@@ -20,7 +20,7 @@ namespace samson {
         
         StreamOutQueue::~StreamOutQueue()
         {
-            LM_M(("Destructor StreamOutQueue. Removing list %s", list->strShortDescription().c_str() ));
+            //LM_M(("Destructor StreamOutQueue. Removing list %s", list->strShortDescription().c_str() ));
             delete list;
         }
         
@@ -46,7 +46,7 @@ namespace samson {
         
         StreamOutConnection::~StreamOutConnection()
         {
-            LM_M(("Destructor StreamOutConnection"));
+            //LM_M(("Destructor StreamOutConnection"));
             stream_out_queues.clearMap();
             stream_out_queues.clear();
         }

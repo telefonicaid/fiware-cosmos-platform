@@ -6,6 +6,7 @@
 #ifndef _H_SAMSON_mobility_Position
 #define _H_SAMSON_mobility_Position
 
+#include <math.h>
 
 #include <samson/modules/mobility/Position_base.h>
 
@@ -24,6 +25,25 @@ namespace mobility{
 		  latitude.value = _latitude;
 		  longitude.value = _longitude;
 	   }
+
+	   double distance( Position* position )
+	   {
+		  double diff_latitude  = position->latitude.value  - latitude.value;
+		  double diff_longitude = position->longitude.value - longitude.value;
+
+		  diff_latitude  = diff_latitude  * M_PI / 180.0;
+		  diff_longitude = diff_longitude * M_PI / 180.0;
+		  
+		  return 6000000 * sqrt( diff_latitude*diff_latitude + diff_longitude*diff_longitude );
+	   }
+
+	   std::string str()
+	   {
+		  std::ostringstream output;
+		  output << "[ LAT: " << latitude.value << " , LON: " << longitude.value <<" ]";
+		  return output.str();
+	   }
+
 
 	};
 

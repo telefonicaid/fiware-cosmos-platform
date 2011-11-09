@@ -62,7 +62,8 @@ namespace samson {
             // Expected format add_stream_operation name operation input_queues... output_queues ... parameters
             
             au::CommandLine cmd;
-            cmd.set_flag_boolean("forward");    // Forward flag to indicate that this is a reduce forward operation ( no update if state )
+            cmd.set_flag_boolean("forward");            // Forward flag to indicate that this is a reduce forward operation ( no update if state )
+            cmd.set_flag_int("execution_period",0);     // Operations scheduled every X seconds ( input not removed )
             cmd.parse( command );
             
             if( cmd.get_num_arguments() < 3 )
@@ -94,7 +95,7 @@ namespace samson {
             }
             
             StreamOperation *stream_operation = NULL;
-
+            
             switch ( op->getType() ) {
                     
                 case Operation::map:
@@ -102,6 +103,11 @@ namespace samson {
                 case Operation::parserOut:
                     
                     stream_operation = new StreamOperationForward();
+                    
+                    // Special property
+                    if( cmd.get_flag_int("execution_period") > 0 )
+                        stream_operation->environment.setInt("system.execution_period",  cmd.get_flag_int("execution_period") );
+                    
                     break;
                     
                 case Operation::reduce:
@@ -309,11 +315,81 @@ namespace samson {
         
         void StreamOperationForward::review()
         {
-            last_review = "not considered";
+            // If execution period is defined, jist return
+            int execution_period = environment.getInt("system.execution_period", 0);
+            if( execution_period > 0 )
+            {
+                int time = cronometer.diffTimeInSeconds();
+                if( time < execution_period )
+                    last_review = au::str( "Next execution in %d seconds ( period %d )" , execution_period - time ,  execution_period );
+                else
+                    last_review = au::str( "Pendign to be executed inmediatelly  ( %d seconds > period %d )" , time ,  execution_period );
+                return;
+            }
             
+            
+            last_review = "not considered";
             // Extract data from input queue to the "input" blocklist ( no size limit... all blocks )
             Queue *input = streamManager->getQueue( input_queues[0] );
             getBlockList("input")->extractFrom( input->list , 0 );
+        }
+        
+        
+        void StreamOperationForward::sheduceQueueTasks( BlockList* input , size_t max_size )
+        {
+            // Get a new id for the next opertion
+            size_t id = streamManager->getNewId();
+            
+            // Get the operation itself
+            Operation *op = getOperation( );
+            
+            QueueTask *tmp = NULL;
+            switch ( op->getType() ) {
+                case Operation::parser:
+                {
+                    tmp = new ParserQueueTask( id , this ); 
+                }
+                    break;
+                    
+                case Operation::map:
+                {
+                    tmp = new MapQueueTask( id , this , KVRange(0,KVFILE_NUM_HASHGROUPS) ); 
+                }
+                    break;
+                    
+                case Operation::parserOut:
+                {
+                    tmp = new ParserOutQueueTask( id , this , KVRange(0,KVFILE_NUM_HASHGROUPS) ); 
+                }
+                    break;
+                    
+                default:
+                    LM_X(1,("Internal error"));
+                    break;
+            }
+            
+            // Set the outputs    
+            tmp->addOutputsForOperation(op);
+            
+            // Copy input data
+            tmp->getBlockList("input_0")->extractFrom( input , max_size );
+            
+            // Set working size for correct monitorization of data
+            tmp->setWorkingSize();
+            
+            // Update information about this operation
+            add( tmp );
+            
+            // Schedule tmp task into QueueTaskManager
+            streamManager->queueTaskManager.add( tmp );
+            
+            // Log activity    
+            streamManager->worker->logActivity( au::str("[ %s:%lu ] Processing %s from queue %s" , 
+                                                        name.c_str() , 
+                                                        id,
+                                                        tmp->getBlockList("input_0")->strShortDescription().c_str(),
+                                                        input_queues[0].c_str() 
+                                                        ));            
         }
         
         bool StreamOperationForward::scheduleNextQueueTasks( )
@@ -324,14 +400,33 @@ namespace samson {
                 return false;
             }
             
-            // Get the operation itself
-            Operation *op = getOperation( );
-            
             // Properties for this stream operation
             size_t max_size         = SamsonSetup::shared()->getUInt64("stream.max_operation_input_size");
             size_t min_size         = SamsonSetup::shared()->getUInt64("stream.min_operation_input_size");
             size_t max_latency      = environment.getSizeT("max_latency", 0);                                   // Max acceptable time to run an operation
             bool delayed_processing = ( environment.get("delayed_processing", "yes") == "yes" );
+            int execution_period    = environment.getInt("system.execution_period", 0 );
+            
+            
+            if( execution_period > 0 )
+            {
+               if( (num_operations == 0 ) || (cronometer.diffTimeInSeconds() > execution_period ) )
+               {
+                   cronometer.reset();
+                   
+                   // Process the entire input
+                   BlockList input;
+                   input.copyFrom( streamManager->getQueue( input_queues[0] )->list ); 
+                   
+                   while( !input.isEmpty() )
+                       sheduceQueueTasks( &input , max_size );
+                   
+               }
+                
+                return false;   // No more pending operations for this task
+            }
+            
+            
             
             last_review = "";
             
@@ -386,57 +481,7 @@ namespace samson {
             }
                 
             // We create a queue task here...
-                
-            // Get a new id for the next opertion
-            size_t id = streamManager->getNewId();
-            
-            QueueTask *tmp = NULL;
-            switch ( op->getType() ) {
-                case Operation::parser:
-                {
-                    tmp = new ParserQueueTask( id , this ); 
-                }
-                    break;
-                    
-                case Operation::map:
-                {
-                    tmp = new MapQueueTask( id , this , KVRange(0,KVFILE_NUM_HASHGROUPS) ); 
-                }
-                    break;
-                    
-                case Operation::parserOut:
-                {
-                    tmp = new ParserOutQueueTask( id , this , KVRange(0,KVFILE_NUM_HASHGROUPS) ); 
-                }
-                    break;
-                    
-                default:
-                    LM_X(1,("Internal error"));
-                    break;
-            }
-            
-            // Set the outputs    
-            tmp->addOutputsForOperation(op);
-            
-            // Copy input data
-            tmp->getBlockList("input_0")->extractFrom( input , max_size );
-            
-            // Set working size for correct monitorization of data
-            tmp->setWorkingSize();
-            
-            // Update information about this operation
-            add( tmp );
-                        
-            // Schedule tmp task into QueueTaskManager
-            streamManager->queueTaskManager.add( tmp );
-            
-            // Log activity    
-            streamManager->worker->logActivity( au::str("[ %s:%lu ] Processing %s from queue %s" , 
-                                                        name.c_str() , 
-                                                        id,
-                                                        tmp->getBlockList("input_0")->strShortDescription().c_str(),
-                                                        input_queues[0].c_str() 
-                                                ));
+            sheduceQueueTasks( input, max_size );
             
             return true;
         }

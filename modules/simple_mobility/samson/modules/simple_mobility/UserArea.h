@@ -21,11 +21,8 @@ namespace simple_mobility{
 
 	   bool isInside( samson::mobility::Position *position )
 	   {
-		  // Check if a particular position is inside or not
-		  double x_dif = position->latitude.value - center.latitude.value;
-		  double y_dif = position->longitude.value - center.longitude.value;
-
-		  double distance = 63780001 * sqrt(x_dif*x_dif + y_dif*y_dif );
+		  
+		  double distance = center.distance( position );
 
 		  if( distance < radius.value )
 			 return true;
@@ -33,6 +30,16 @@ namespace simple_mobility{
 			 return false;
 		  
 
+	   }
+
+
+	   std::string str()
+	   {
+		  std::ostringstream output;
+
+		  output << "[ AREA " << name.value << ": " << center.str() << " Radius " << radius.value << " ]";
+
+		  return output.str();
 	   }
 
 	};

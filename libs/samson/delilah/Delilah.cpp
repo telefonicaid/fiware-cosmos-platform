@@ -604,23 +604,31 @@ namespace samson {
 #pragma mark info interface ------------------------------------------------------------------------------------------------------------
     
     
+
     
     
-#define LS_QUEUES_FIELDS_VERBOSE "/name,t=name,left /block_info/num_blocks,t=#Blocks,format=uint64 /block_info/size,title=size,format=uint64 /block_info/size_on_memory^/block_info/size,format=per,t=on_memory /block_info/size_on_disk^/block_info/size,format=per,t=on_disk /block_info/size_locked^/block_info/size,format=per,t=locked  /block_info/min_time_diff,f=time,t=oldest /block_info/max_time_diff,f=time,t=earliest /num_divisions,t=#div,uint64 /block_info/num_divisions,t=#div"
+#define LS_QUEUES_FIELDS "/name,t=name,left /block_info/kv_info/kvs,t=#kvs,format=uint64 /block_info/kv_info/size,t=size,format=uint64 /block_info/format/key_format,t=key /block_info/format/value_format,t=value,left"
+
+#define LS_QUEUES_FIELDS_VERBOSE "/name,t=name,left  /block_info/kv_info/kvs,t=#kvs,format=uint64 /block_info/kv_info/size,t=size,format=uint64 /rate_kvs/rate,t=#kvs/s,format=uint64 /rate_size/rate,t=Bytes/s,format=uint64 /status,t=status,left"
     
-#define LS_QUEUES_FIELDS "/name,t=name,left  /block_info/kv_info/kvs,t=#kvs,format=uint64 /block_info/kv_info/size,t=size,format=uint64  /block_info/format/key_format,t=key /block_info/format/value_format,t=value,left /rate_kvs/rate,t=#kvs/s,format=uint64 /rate_size/rate,t=Bytes/s,format=uint64 /status,t=status,left"
+#define LS_QUEUES_FIELDS_VERBOSE_VERBOSE "/name,t=name,left /block_info/num_blocks,t=#Blocks,format=uint64 /block_info/size,title=size,format=uint64 /block_info/size_on_memory^/block_info/size,format=per,t=on_memory /block_info/size_on_disk^/block_info/size,format=per,t=on_disk /block_info/size_locked^/block_info/size,format=per,t=locked  /block_info/min_time_diff,f=time,t=oldest /block_info/max_time_diff,f=time,t=earliest /num_divisions,t=#div,uint64 /block_info/num_divisions,t=#div"
+    
     
     
 #define ENGINE_SHOW_COMMAND "info_command -delilah -worker -controller //engine_system /process_manager/num_running_processes^/process_manager/num_processes,t=process,format=per /memory_manager/used_memory^/memory_manager/memory,t=memory,format=per  /disk_manager/num_pending_operations+/disk_manager/num_running_operations,t=disk,f=uint64"
     
-#define LS_STREAM_OPERATIONS "info_command -worker //stream_operation /name,t=name /operation,t=operation,left  /status,t=status "
-    
-#define LS_STREAM_OPERATIONS_VERBOSE "info_command -worker //stream_operation /name,t=name /running_tasks,t=running_tasks /last_review,t=last_review /status,t=status"
-    
+#define LS_STREAM_OPERATIONS "info_command -worker //stream_operation /name,t=name,left /status,t=status "
+
+#define LS_STREAM_OPERATIONS_VERBOSE "info_command -worker //stream_operation /name,t=name,left /inputs,t=inputs /outputs,t=outputs /operation,t=operation,left "
+
+#define LS_STREAM_OPERATIONS_VERBOSE_VERBOSE "info_command -worker //stream_operation /name,t=name,left /running_tasks,t=running_tasks /last_review,t=last_review"
+
+
     
     std::string Delilah::info( std::string command )
     {
         au::CommandLine cmd;
+        cmd.set_flag_boolean("vv");
         cmd.set_flag_boolean("v");
         
         cmd.parse( command );
@@ -671,7 +679,10 @@ namespace samson {
 
             command << "info_command -worker //queue" << filter << " ";
             
-            if( cmd.get_flag_bool("v") )
+
+            if( cmd.get_flag_bool("vv") )
+                command << LS_QUEUES_FIELDS_VERBOSE_VERBOSE;
+            else if( cmd.get_flag_bool("v") )
                 command << LS_QUEUES_FIELDS_VERBOSE;
             else
                 command << LS_QUEUES_FIELDS;
@@ -689,7 +700,9 @@ namespace samson {
         
         if( main_command == "ls_stream_operations" )
         {
-            if( cmd.get_flag_bool("v")  )
+            if( cmd.get_flag_bool("vv")  )
+                return infoCommand(LS_STREAM_OPERATIONS_VERBOSE_VERBOSE);
+            else if( cmd.get_flag_bool("v")  )
                 return infoCommand(LS_STREAM_OPERATIONS_VERBOSE);
             else
                 return infoCommand(LS_STREAM_OPERATIONS);

@@ -46,7 +46,7 @@ PaArgument paArgs[] =
     { "-buffer_size",           &buffer_size,         "BUFFER_SIZE",           PaInt,    PaOpt,      10000000   ,    1,  64000000,  "Buffer size in bytes"           },
 	{ "-breaker_sequence",      breaker_sequence,     "BREAKER_SEQUENCE",      PaString, PaOpt, _i "\n"         , PaNL, PaNL,       "Breaker sequence ( by default \\n )"       },
 	{ "-lines",                 &lines,               "LINES",                 PaBool,    PaOpt,  false, false,  true,  "Read std-in line by line"   },
-    { " ",                      queue_name,           "QUEUE",                 PaString,  PaReq,  (long) "no_queue",   PaNL,   PaNL,  "name of the queue to push data"         },
+    { " ",                      queue_name,           "QUEUE",                 PaString,  PaOpt,  (long) "null",   PaNL,   PaNL,  "name of the queue to push data"         },
     PA_END_OF_ARGS
 };
 
@@ -77,7 +77,7 @@ size_t full_read( int fd , char* data , size_t size)
         ssize_t t = read( fd , data+read_size , size - read_size );
         
         if( t==-1)
-            LM_X(1,("Error reading input data"));
+		   LM_X(1,("Error reading input data"));
         
         if( t == 0)
             break;
@@ -101,6 +101,11 @@ int main( int argC , const char *argV[] )
     // Parse input arguments    
     paParse(paArgs, argC, (char**) argV, 1, false);
     logFd = lmFirstDiskFileDescriptor();
+
+
+	// Check queue is specified
+	if( strcmp( queue_name , "null") == 0 )
+	   LM_X(1,("Please, specify a queue to push data to"));
     
     // Instance of the client to connect to SAMSON system
     samson::SamsonClient client;

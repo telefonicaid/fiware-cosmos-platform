@@ -1,0 +1,60 @@
+Module plot
+{
+	title	"Plot module for displaying data"
+	author	"Andreu Urruela"
+	version "0.1"
+}
+
+data Level
+{
+	system.Float level;
+	system.Float published_level;   # Value last published
+}
+
+data LevelUpdate
+{
+	system.UInt8 command;  # Add / Remove / Set
+	system.Float level;	
+}
+
+data LevelNotification
+{
+	system.Float level;
+}
+
+# ------------------------------------------------------------
+# Reduce to update a Level
+# ------------------------------------------------------------
+
+reduce update_levels
+{
+	in system.String plot.LevelUpdate
+	in system.String plot.Level
+
+	out system.String plot.LevelNotification
+	out system.String plot.Level
+
+	helpLine "Update Level with LevelUpdate items. Push level at the output if significant change observed"
+}
+
+# ------------------------------------------------------------
+# Extract data
+# ------------------------------------------------------------
+
+
+parserOut publish_level_notifications
+{
+	in system.String plot.LevelNotification
+	helpLine "Get a txt version of content"
+}
+
+# ------------------------------------------------------------
+# Testing
+# ------------------------------------------------------------
+
+generator generator
+{
+	out system.String plot.LevelUpdate
+	helpLine "Simple generator for testing"
+}
+

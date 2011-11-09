@@ -13,10 +13,6 @@
 #include "samson/modules/system/UInt.h"
 #include "samson/modules/system/UInt.h"
 
-#include "ContinuousTopList.h"
-
-
-
 namespace samson{
 namespace hit{
 
@@ -24,8 +20,6 @@ namespace hit{
 class reduceHits : public samson::Reduce
 {
 
-
-	au::ContinuousTopList top;
 
 	samson::hit::Hit hit;
 	samson::hit::HitsState hitsState;

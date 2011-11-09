@@ -3,7 +3,7 @@ ADD_SUBDIRECTORY(samsonSetup)
 ADD_SUBDIRECTORY(samsonWorker)
 ADD_SUBDIRECTORY(samsonController)
 ADD_SUBDIRECTORY(delilah)
-#ADD_SUBDIRECTORY(delilahQt)
+ADD_SUBDIRECTORY(delilahQt)
 ADD_SUBDIRECTORY(samsonLocal)
 ADD_SUBDIRECTORY(samsonModuleParser)
 ADD_SUBDIRECTORY(samsonCat)
@@ -14,8 +14,9 @@ ADD_SUBDIRECTORY(samsonKiller)
 
 ADD_SUBDIRECTORY(samsonPush)
 ADD_SUBDIRECTORY(samsonPop)
-#ADD_SUBDIRECTORY(passiveLocationPush)
+ADD_SUBDIRECTORY(samsonPopQT)
 
+# Auxiliar apps
 ADD_SUBDIRECTORY(aux)
 
 #On hold

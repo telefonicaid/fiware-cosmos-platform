@@ -8,24 +8,74 @@ Module hit
 	version "0.1"
 }
 
+
+####################################################################################
+# Datas
+####################################################################################
+
 data Hit
 {
-        system.UInt time;
+    system.String concept;
 	system.UInt hits;
-        system.String concept;
 }
 
+data HitCollection
+{
+	vector hit.Hit hits;
+}
 
 data HitCount
 {
-	system.UInt   current_time;     # TimeStamp
-        system.UInt   current_hits;     # Hits during current slot
-        system.UInt   hits;             # Hits during previous slot ( really used to detect maximums )
+	system.UInt   current_time;     # Slot of the time-stamp
+    system.UInt   current_hits;     # Hits during current slot
+    system.UInt   hits;             # Hits during previous slot ( really used to detect maximums )
 }
 
-data HitsState
+data HitCountCollection
 {
-	vector hit.Hit hits;			# Top hits associated with the previous one  
+	list hit.HitCount hit_counts;   # Collection of hit_counts
+}
+
+####################################################################################
+# Main operations
+####################################################################################
+
+
+reduce reduceHitCounts
+{
+	in system.String system.UInt		# Input concepts and number of hits ( usually 1 )
+	in system.String hit.HitCount		# State for each string
+
+	out system.String hit.HitCount		# Output state of this concept if it changes significantly
+	out system.String hit.HitCount		# Output state for each string
+
+	helpLine "Aggregation of the hits per string. It emits output '0' if counter changes significantly"
+}
+
+
+reduce reduceHitCountCollection
+{
+	in system.String hit.HitCount              # Input hit count update
+	in system.String hit.HitCountCollection    # State of the top list
+
+	out system.String hit.HitCollection        # Top list of hits
+	out system.String hit.HitCountCollection
+
+	helpLine "Filter top elements per global-concept"
+}
+
+#
+# State is the top elements with more hist ( and the list of most hits in the current time-slot )
+#
+
+################################################################
+# Other operations
+################################################################
+
+parserOut export_hit_count_collection
+{
+	in system.String hit.HitCollection
+	helpLine "Export the top list of elements"
 }
 
 #
@@ -35,73 +85,16 @@ data HitsState
 generator generate_words
 {
         out system.String system.UInt
-
         helpLine "Generate 'hit.num_samples' random words with 'hit.word_length' chars. By default it generates 1M words with 6 letters"
 }
-
 
 #
 # Parser for words
 #
+
 parser parser_words
 {
-	out system.String system.UInt
-	
+	out system.String system.UInt	
 	helpLine "Parse input txt queue to generate individual counts of words"
 }
-
-
-
-reduce reduceHitCounts
-{
-	in system.String system.UInt		# Input concepts and number of hits
-	in system.String hit.HitCount		# State for each string
-
-	out system.UInt hit.Hit			# Output top entries during this operation
-	out system.String hit.HitCount		# Output state for each string
-
-	helpLine "Aggregation of the hits per string"
-}
-
-parserOut getHitCounts
-{
-	in system.String hit.HitCount
-
-	helpLine "Just get the current hits per word"
-}
-
-
-map mapHits
-{
-	in system.String hit.HitCount
-	out system.UInt hit.Hit
-	
-	helpLine "Map to transform aggregate HitCount information into Hits"
-}
-
-parserOutReduce reduceGetHits
-{
-	in system.UInt hit.Hit
-	helpLine "Sorts hits and prints txt output"
-}
-
-reduce reduceHits
-{
-	in system.UInt hit.Hit
-	in system.UInt hit.HitsState
-
-	out system.UInt hit.HitsState
-
-	helpLine "Reduce to accumulate top entries"
-
-}
-
-parserOut getHits
-{
-	in system.UInt hit.HitsState
-
-	helpLine "Just get the current hitsState"
-}
-
-
 

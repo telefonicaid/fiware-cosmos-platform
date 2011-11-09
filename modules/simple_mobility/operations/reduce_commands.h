@@ -13,6 +13,8 @@
 #include <samson/modules/system/StringVector.h>
 #include <samson/modules/system/UInt.h>
 
+#include <samson/modules/plot/LevelUpdate.h>
+
 
 namespace samson{
 namespace simple_mobility{
@@ -27,6 +29,9 @@ namespace simple_mobility{
 	   samson::system::StringVector command;         // Input command to update this state
 	   samson::system::String message;               // Message emited at the output
 
+	   samson::system::String level_update_key;     // String used to be emited with level_update
+	   samson::plot::LevelUpdate level_update;      // Level update message used to keep track the number of users with home/work defined
+
 	public:
 
 
@@ -36,6 +41,7 @@ namespace simple_mobility{
 input: system.UInt system.StringVector  
 input: system.UInt simple_mobility.User  
 output: system.UInt system.String
+output: system.String plot.LevelUpdate
 output: system.UInt simple_mobility.User
 
 helpLine: Update internal state
@@ -72,12 +78,26 @@ helpLine: Update internal state
 				 message.value = "Traking user on";
 				 writer->emit( 0 , &key,  &message );
 
+				 if( !user.isTracking() )
+				 {
+					level_update_key.value = "track";
+					level_update.increment( 1 );
+					writer->emit( 1 , &level_update_key , &level_update );
+				 }
+				 
 				 user.setTraking( true );
               }
               else if( command.values[0].value == "TRACK_OFF" )
               {
                  message.value = "Stop traking user off";
 				 writer->emit( 0 , &key,  &message );
+
+				 if( user.isTracking() )
+				 {
+					level_update_key.value = "track";
+					level_update.decrement( 1 );
+					writer->emit( 1 , &level_update_key , &level_update );
+				 }
 
 				 user.setTraking( false );
               }
@@ -93,24 +113,75 @@ helpLine: Update internal state
 				 else
 				 {
 					
-					samson::simple_mobility::UserArea *area = user.areasAdd();
+					// Review if the area exists to just update values
+					// PENDING TO DO....
 					
-					area->name.value = command.values[1].value;
-					area->center.latitude.value = atoi( command.values[2].value.c_str() );
-					area->center.longitude.value = atoi( command.values[3].value.c_str() );
-					area->radius.value   = atoi( command.values[4].value.c_str() );
-					
-					message.value = au::str( "Area '%s' created at point [%d,%d] with radiud %d " , 
-											 area->name.value.c_str() , 
-											 area->center.latitude.value , 
-											 area->center.longitude.value , 
-											 area->radius.value );
-					writer->emit( 0 , &key,  &message );
+					// Keep track of the total number of elements with are defined
+					bool previously_created = false;
+					for (int i = 0 ; i < user.areas_length ; i++ )
+					{
+					   if( user.areas[i].name.value == command.values[1].value )
+					   {
+						  previously_created = true;
+
+						  // Update content
+						  user.areas[i].center.latitude.value = atof( command.values[2].value.c_str() );
+						  user.areas[i].center.longitude.value = atof( command.values[3].value.c_str() );
+						  user.areas[i].radius.value   = atof( command.values[4].value.c_str() );
+
+						  message.value = au::str( "Area '%s' updated  at point [%f,%f] with radius %f " ,
+												   user.areas[i].name.value.c_str() ,
+												   user.areas[i].center.latitude.value ,
+												   user.areas[i].center.longitude.value ,
+												   user.areas[i].radius.value );
+						  writer->emit( 0 , &key,  &message );
+						  
+
+
+						  break;
+					   }
+
+					}
+
+
+					if( !previously_created )
+					{
+					   samson::simple_mobility::UserArea *area = user.areasAdd();
+					   
+					   area->name.value = command.values[1].value;
+					   area->center.latitude.value = atof( command.values[2].value.c_str() );
+					   area->center.longitude.value = atof( command.values[3].value.c_str() );
+					   area->radius.value   = atof( command.values[4].value.c_str() );
+					   
+					   message.value = au::str( "Area '%s' created at point [%f,%f] with radius %f " , 
+												area->name.value.c_str() , 
+												area->center.latitude.value , 
+												area->center.longitude.value , 
+												area->radius.value );
+					   writer->emit( 0 , &key,  &message );
+					   
+					   
+					   // Keep track of the total number of elements with are defined
+					   level_update_key.value = au::str("%s_defined" , area->name.value.c_str() );
+					   level_update.increment( 1 );
+					   writer->emit( 1 , &level_update_key , &level_update );					
+					}
+
 				 }
 
 			  }
 			  else if ( command.values[0].value == "CLEAR_AREAS" )
 			  {
+
+				 // Keep track of the total number of elements with are defined
+				 for (int i = 0 ; i < user.areas_length ; i++ )
+				 {
+					level_update_key.value = au::str("%s_defined" , user.areas[i].name.value.c_str() );
+					level_update.decrement( 1 );
+					writer->emit( 1 , &level_update_key , &level_update );
+				 }
+
+
 				 // remove areas for this user
 				 user.areasSetLength(0);
 
@@ -122,7 +193,7 @@ helpLine: Update internal state
            }
 
 		   // Emit the state again
-		   writer->emit( 1 , &key , &user );
+		   writer->emit( 2 , &key , &user );
 
 		}
 

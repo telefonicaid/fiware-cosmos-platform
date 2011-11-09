@@ -23,40 +23,34 @@ class reduceHitCounts : public samson::Reduce
 {
 
 
-	samson::system::String key;
-	samson::system::UInt tmp_hits;
+   samson::system::String key;         // Key concept
+   samson::system::UInt tmp_hits;      // Input counter for this key 
 
-	samson::hit::HitCount hitCount;
+	samson::hit::HitCount hitCount;    // State hitCounter for this concept
 
-	samson::system::UInt keyTime;
-	samson::hit::Hit hits;
-
-	size_t num_hits;
-	unsigned long current_time;
-
+	unsigned long current_time;        // Current time common to all the key-values
 
 public:
 
 
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
-	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
-
+/*	
+	If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
+	
 	input: system.String system.UInt
 	input: system.String hit.HitCount
-	output: system.UInt hit.Hit
-	output: system.String hit.HitCount
 
+	output: system.UInt hit.HitCount      // emit the output if it changes significantly
+	output: system.String hit.HitCount
+	
 	helpLine: Aggregation of the hits per string
+*/
+
 #endif // de INFO_COMMENT
 
 	void init(samson::KVWriter *writer )
 	{
-		current_time = time(NULL)/300;// Blocks of one minute ( to be selected with environment variable)
-		int period = time(NULL)%300;
-
-		//current_time = 0;// Only for testing, hits are accumulated continuously...
-
-		OLM_M(("reduceHitCounts::init(): Current time %lu [Next in %d ]" , current_time , 300 - period  ));
+		current_time = time(NULL)/300; // Blocks of 5 minute ( to be selected with environment variable )
 	}
 
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
@@ -64,55 +58,37 @@ public:
 		if( inputs[0].num_kvs > 0 )
 		{
 			key.parse( inputs[0].kvs[0]->key );
-			OLM_T(LMT_User06, ("hit.reduceHitCounts: Processing '%s' with %lu entries", key.value.c_str(), inputs[0].num_kvs));
+			hitCount.parse( inputs[0].kvs[0]->value );
 		}
-		else if( inputs[1].num_kvs > 0)
+		else if( inputs[1].num_kvs > 0 )
+		{
 			key.parse( inputs[1].kvs[0]->key );
+			hitCount.init( current_time , 0 );  // Current hits '0'
+		}
 		else
 			tracer->setUserError("Running operation with any key-value at input 0 or input 1");
 
-		//OLM_M(("Running reduce hits for %s with %lu / %lu kvs", key.value.c_str() , inputs[0].num_kvs , inputs[1].num_kvs ));
-		//return;
 
 		// Get the number of hits
-		num_hits = 0;
-
+		size_t num_hits = 0;
 		for( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
 		{
-
 			tmp_hits.parse( inputs[0].kvs[i]->value );
 			num_hits += tmp_hits.value;
 		}
 
-		if( inputs[1].num_kvs == 0 )
-		{
-			OLM_T(LMT_User06, ("hit.reduceHitCounts: New word:'%s' with %lu count", key.value.c_str(), num_hits));
-			hitCount.init( current_time , num_hits );
-		}
-		else if( inputs[1].num_kvs == 1)
-		{
-			hitCount.parse( inputs[1].kvs[0]->value );
-			OLM_T(LMT_User06, ("hit.reduceHitCounts: Existing word:'%s' with %lu old count(%lu consolidated) + %lu count to %lu updated", key.value.c_str(), hitCount.current_hits.value, hitCount.hits.value, num_hits, hitCount.current_hits.value+num_hits));
-			hitCount.update( current_time , num_hits );
+		// Update the hitCount structure with the number of this.
+		// It returns true if we need to notify at the output
+		bool sent_update = hitCount.update( current_time , num_hits );
 
-		}
-		else
-		{
-			char line[1024];
-			sprintf(line , "There are more than one state information for this key: '%s'" , key.value.c_str());
-			tracer->setUserError( line );
-		}
 
-		// Emit the state at the output if still we have state
+		// Emit state at output "0" if necessary ( changes significantly )
+		if( sent_update )
+		   writer->emit( 0,  &key , &hitCount );
+
+		// Emit the state at the output if still we have some counts....
 		if( hitCount.hasContent() )
-		{
-			keyTime.value = 0; // It is this way in reduceHits
-			hits.time.value = current_time;
-			hits.hits.value = num_hits;
-			hits.concept = key;
-			writer->emit( 0, &keyTime, &hits);
 			writer->emit( 1 , &key , &hitCount );
-		}
 
 	}
 

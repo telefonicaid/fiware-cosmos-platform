@@ -117,9 +117,9 @@ namespace samson {
 
             // Information about activity ( temporal counters )
             
-            int num_operations;
-            int num_blocks;
-            size_t temporal_size;
+            int num_operations;             // Number of operations performed so far
+            int num_blocks;                 // Number of blocks processed as inputs
+            size_t temporal_size;           // 
             FullKVInfo info;
             int temporal_core_seconds;
             
@@ -182,6 +182,8 @@ namespace samson {
         
         class StreamOperationForward : public StreamOperation
         {
+          
+            au::Cronometer cronometer;  // Cronometer of the last execution
             
         public:
             
@@ -189,6 +191,11 @@ namespace samson {
             void review();
             virtual bool scheduleNextQueueTasks( );
             std::string getStatus();
+            
+        private:
+
+            // Schedule individual operation taking input from input ( removing input )
+            void sheduceQueueTasks( BlockList* input , size_t max_size );
 
         };
 

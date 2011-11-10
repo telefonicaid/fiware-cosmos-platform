@@ -147,6 +147,10 @@ reset:
 cleansvn: reset
 	for file in `svn status | grep ? | awk '{print $$2}'`; do rm -rf $$file; done
 
+# Remove /opt/samson to guarantee a clean build
+cleanhudson:
+	rm -rf /opt/samson
+
 modules: release
 	make release -C modules
 

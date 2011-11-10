@@ -169,13 +169,13 @@ namespace samson {
                 }
                 
                 KVInfo* info = (KVInfo*) ( block->getData() + sizeof(KVHeader) );
-                
+                /*
                 LM_M(("Stream Mapping a block of size %s with %s kvs in %s ", 
                       au::str( block->getSize() ).c_str() ,  
                       au::str(header->info.kvs).c_str()  ,
                       au::str(header->info.size,"Bytes").c_str()  
                       ));
-                
+                */
                 char *data = block->getData() + KVFILE_TOTAL_HEADER_SIZE;
                 
                 for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)

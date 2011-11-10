@@ -68,8 +68,8 @@ PaArgument paBuiltin[] =
  { "-h",        &paUsageVar,  NULL,         PaBool,PaOpt,  F,    T,    F, "usage"                },
  { "-help",     &paHelpVar,   NULL,         PaBool,PaOpt,  F,    T,    F, "show help"            },
  { "--help",    &paHelpVar,   NULL,         PaBool,PaHid,  F,    T,    F, "show help"            },
- //{ "--version", &paVersion,   NULL,         PaBool,PaOpt,  F,    T,    F, "show version"         },
- //{ "-home",     paHome,       "!HOME",      PaStr, PaHid,  0, PaNL, PaNL, "home directory"       },
+ { "--version", &paVersion,   NULL,         PaBool,PaOpt,  F,    T,    F, "show version"         },
+// { "-home",     paHome,       "!HOME",      PaStr, PaHid,  0, PaNL, PaNL, "home directory"       },
  { "",          paUserName,   "!USER",      PaStr, PaHid,  0, PaNL, PaNL, "user name"            },
  { "",          paPwd,        "!PWD",       PaStr, PaHid,  0, PaNL, PaNL, "current dir"          },
  { "",          paColumns,    "!COLUMNS",   PaStr, PaHid,  0, PaNL, PaNL, "columns"              },
@@ -86,18 +86,18 @@ PaArgument paBuiltin[] =
  { "",          paVisual,     "!VISUAL",    PaStr, PaHid,  0, PaNL, PaNL, "visual"               },
  { "-t",        paTraceV,     "TRACE",      PaStr, PaOpt,  0, PaNL, PaNL, "trace level"          },
  { "-v",        &paVerbose,   "VERBOSE",    PaBool,PaOpt,  F,    T,    F, "verbose mode"         },
-// { "-d",        &paDebug,     "DEBUG",      PaBool,PaOpt,  F,    T,    F, "debug mode"           },
-// { "-toDo",     &paToDo,      "TODO",       PaBool,PaOpt,  F,    T,    F, "toDo mode" },
-// { "-r",        &paReads,     "READS",      PaBool,PaOpt,  F,    T,    F, "reads mode"           },
-// { "-w",        &paWrites,    "WRITES",     PaBool,PaOpt,  F,    T,    F, "writes mode"          },
-// { "-F",        &paFix,       "FIX",        PaBool,PaOpt,  F,    T,    F, "fixes mode"           },
-// { "-B",        &paBug,       "BUGS",       PaBool,PaOpt,  F,    T,    F, "bugs mode"            },
-// { "-b",        &paBuf,       "BUFS",       PaBool,PaOpt,  F,    T,    F, "buf mode"             },
-// { "-?",        &paDoubt,     "DOUBT",      PaBool,PaOpt,  F,    T,    F, "doubts mode"          },
-// { "-lmnc",     &paNoClear,   "NO_CLEAR",   PaBool,PaOpt,  F,    T,    F, "don't clear log file" },
-// { "-lmca",     &paClearAt,   "CLEAR_AT",   PaInt, PaOpt, -1, PaNL, PaNL, "clear at lines"       },
-// { "-lmkl",     &paKeepLines, "KEEP_LINES", PaInt, PaOpt, -1, PaNL, PaNL, "clear 'keep lines'"   },
-// { "-lmll",     &paLastLines, "LAST_LINES", PaInt, PaOpt, -1, PaNL, PaNL, "clear 'last lines'"   },
+ { "-d",        &paDebug,     "DEBUG",      PaBool,PaOpt,  F,    T,    F, "debug mode"           },
+ { "-toDo",     &paToDo,      "TODO",       PaBool,PaOpt,  F,    T,    F, "toDo mode" },
+ { "-r",        &paReads,     "READS",      PaBool,PaOpt,  F,    T,    F, "reads mode"           },
+ { "-w",        &paWrites,    "WRITES",     PaBool,PaOpt,  F,    T,    F, "writes mode"          },
+ { "-F",        &paFix,       "FIX",        PaBool,PaOpt,  F,    T,    F, "fixes mode"           },
+ { "-B",        &paBug,       "BUGS",       PaBool,PaOpt,  F,    T,    F, "bugs mode"            },
+ { "-b",        &paBuf,       "BUFS",       PaBool,PaOpt,  F,    T,    F, "buf mode"             },
+ { "-?",        &paDoubt,     "DOUBT",      PaBool,PaOpt,  F,    T,    F, "doubts mode"          },
+ { "-lmnc",     &paNoClear,   "NO_CLEAR",   PaBool,PaOpt,  F,    T,    F, "don't clear log file" },
+ { "-lmca",     &paClearAt,   "CLEAR_AT",   PaInt, PaOpt, -1, PaNL, PaNL, "clear at lines"       },
+ { "-lmkl",     &paKeepLines, "KEEP_LINES", PaInt, PaOpt, -1, PaNL, PaNL, "clear 'keep lines'"   },
+ { "-lmll",     &paLastLines, "LAST_LINES", PaInt, PaOpt, -1, PaNL, PaNL, "clear 'last lines'"   },
 
  PA_END_OF_ARGS
 };
@@ -133,20 +133,17 @@ int paBuiltinNoOf(void)
 int paBuiltinRemove(char* name)
 {
 	PaArgument* aP;
-	int         ix;
 
 	/* 1. lookup aP->option or aP->variable          */
 	/* 2. if found - mark the aP as PaRemoved        */
 	/* 3. Then paConfig needs the actions to do it   */
 
 	paIterateInit();
-	ix = 0;
 	while ((aP = paIterateNext(NULL)) != NULL)
 	{
 		char envVarName[128];
 
-		paEnvName(aP, envVarName, ix);
-		++ix;
+		paEnvName(aP, envVarName);
 
 		if (((aP->option) && (strcmp(name, aP->option) == 0))
 		|| ((aP->envName) && (strcmp(name, envVarName) == 0)))

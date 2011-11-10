@@ -52,16 +52,14 @@ char* paFromName(PaArgument* aP, char* out)
 char* paFrom(PaArgument* paList, const char* name)
 {
 	PaArgument* aP;
-	int         ix;
 
 	paIterateInit();
-	ix = 0;
+
 	while ((aP = paIterateNext(paList)) != NULL)
 	{
 		char envVarName[128];
 
-		paEnvName(aP, envVarName, ix);
-		++ix;
+		paEnvName(aP, envVarName);
 
 		if ((aP->option) && strcmp(aP->option, name) == 0)
 			break;

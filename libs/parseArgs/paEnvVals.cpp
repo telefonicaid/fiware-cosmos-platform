@@ -26,17 +26,19 @@ extern int builtins;
 *
 * paEnvName - get real name of variable (environment or RC-file variable)
 */
-char* paEnvName(PaArgument* aP, char* out, int ix)
+char* paEnvName(PaArgument* aP, char* out)
 {
+	bool isbuiltin = ((aP->what & PawBuiltin) == PawBuiltin);
+
 	if (aP->envName == NULL)
 		out[0] = 0;
 	else if (aP->envName[0] == 0)
 		out[0] = 0;
 	else if (aP->envName[0] == '!')
 		strcpy(out, &aP->envName[1]);
-	else if ((ix < builtins) && (paBuiltinPrefix != NULL) && (paBuiltinPrefix[0] != 0))
-		sprintf(out, "%s%s", paPrefix, aP->envName);
-	else if ((ix >= builtins) && (paPrefix != NULL) && (paPrefix[0] != 0))
+	else if (isbuiltin && (paBuiltinPrefix != NULL) && (paBuiltinPrefix[0] != 0))
+		sprintf(out, "%s%s", paBuiltinPrefix, aP->envName);
+	else if (!isbuiltin && (paPrefix != NULL) && (paPrefix[0] != 0))
 		sprintf(out, "%s%s", paPrefix, aP->envName);
 	else
 		sprintf(out, "%s", aP->envName);
@@ -54,7 +56,6 @@ int paEnvVals(PaArgument* paList)
 {
 	PaArgument*  aP;
 	char         w[512];
-	int          ix = 0;
 
 	paIterateInit();
 	while ((aP = paIterateNext(paList)) != NULL)
@@ -70,8 +71,7 @@ int paEnvVals(PaArgument* paList)
 			continue;
 		}
 
-		paEnvName(aP, envVarName, ix);
-		++ix;
+		paEnvName(aP, envVarName);
 
 		LM_T(LmtPaEnvVal, ("looking for '%s'", envVarName));
 

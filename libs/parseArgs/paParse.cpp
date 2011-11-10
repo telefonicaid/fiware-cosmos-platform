@@ -128,7 +128,7 @@ static bool envNameDuplicated(char* name, PaArgument* paList, int start)
 		if (aP->envName == NULL)
 			continue;
 
-		paEnvName(aP, envVarName, ix);
+		paEnvName(aP, envVarName);
 		
 		if (strcmp(name, envVarName) == 0)
 			++matches;
@@ -194,7 +194,7 @@ static int paArgInit(PaArgument* paList)
 			{
 				char envVarName[128];
 
-				sprintf(aP->name, "var %s", paEnvName(aP, envVarName, ix));
+				sprintf(aP->name, "var %s", paEnvName(aP, envVarName));
 				aP->what = PawVariable;
 			}
 		}
@@ -211,7 +211,7 @@ static int paArgInit(PaArgument* paList)
 			{
 				char envVarName[128];
 
-				sprintf(aP->name, "var %s", paEnvName(aP, envVarName, ix));
+				sprintf(aP->name, "var %s", paEnvName(aP, envVarName));
 				aP->what = PawVariable | PawParameter;
 			}
 		}
@@ -238,7 +238,7 @@ static int paArgInit(PaArgument* paList)
 			aP->removed = true;
 		}		  
 
-		paEnvName(aP, envVarName, ix);
+		paEnvName(aP, envVarName);
 		
 		if (envNameDuplicated(envVarName, paList, ix) == true)
 		{

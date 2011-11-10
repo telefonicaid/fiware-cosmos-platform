@@ -203,11 +203,10 @@ int paRcFileParse(PaArgument* paList)
 		varFound = false;
 
 		paIterateInit();
-		int ix = 0;
 		while ((aP = paIterateNext(paList)) != NULL)
 		{
-			paEnvName(aP, envVarName, ix);
-			++ix;
+			paEnvName(aP, envVarName);
+
 			if (strcmp(var, envVarName) == 0)
 			{
 				aP->from = PafRcFile;

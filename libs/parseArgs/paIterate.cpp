@@ -1,9 +1,10 @@
-#include "baStd.h"              /* BA standard header file                   */
-#include "logMsg/logMsg.h"             /* LM_ENTRY, LM_EXIT, ...                    */
+#include "baStd.h"               /* BA standard header file                   */
+#include "logMsg/logMsg.h"       /* LM_ENTRY, LM_EXIT, ...                    */
 
-#include "parseArgs/parseArgs.h"          /* PaArgument                                */
-#include "paBuiltin.h"          /* paBuiltin, paBuiltinNoOf                  */
-#include "paIterate.h"          /* Own interface                             */
+#include "parseArgs/parseArgs.h" /* PaArgument                                */
+#include "paBuiltin.h"           /* paBuiltin, paBuiltinNoOf                  */
+#include "paPrivate.h"           /* PawBuiltin                                */
+#include "paIterate.h"           /* Own interface                             */
 
 
 
@@ -42,7 +43,10 @@ PaArgument* paIterateNext(PaArgument* paList)
 	do
 	{
 		if (ix < builtins)
+		{
 			aP = &paBuiltin[ix];
+			aP->what |= PawBuiltin;
+		}
 		else if (paList != NULL)
 			aP = &paList[ix - builtins];
 		else

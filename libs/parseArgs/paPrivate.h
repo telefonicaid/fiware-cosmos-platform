@@ -31,7 +31,8 @@ typedef enum PaWhat
 {
    PawOption    = (1 << 0),
    PawParameter = (1 << 1),
-   PawVariable  = (1 << 2)
+   PawVariable  = (1 << 2),
+   PawBuiltin   = (1 << 3)
 } PaWhat;
 
 

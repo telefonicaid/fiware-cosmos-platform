@@ -28,13 +28,13 @@ char* escape(char out[], char* value)
 	int ix    = 0;
 	int outIx = 0;
 	
-	printf("In escape\n");
+	// printf("In escape\n");
 	if (value == NULL)
 		return (char*) "(null)";
 
 	while (value[ix] != 0)
 	{
-		printf("value[%d]: %d\n", ix, value[ix]);
+		// printf("value[%d]: %d\n", ix, value[ix]);
 		if (value[ix] == '\n')
 		{
 			out[outIx++] = '\\';
@@ -52,7 +52,7 @@ char* escape(char out[], char* value)
 	}
 	out[outIx] = 0;
 
-	printf("Done!\n");
+	// printf("Done!\n");
 	return out;
 }
 
@@ -97,7 +97,7 @@ static void getApVals
 		return;
 
 	case PaString:
-		printf("Calling 'escape' four times\n");
+		// printf("Calling 'escape' four times\n");
 		sprintf(defVal,  "'%s'", (defP->i != PaNoDef)? escape(out, (char*) aP->def) : "no default");
 		sprintf(minVal,  "'%s'", (minP->i != PaNoLim)? escape(out, (char*) aP->min)  : "no min limit");
 		sprintf(maxVal,  "'%s'", (maxP->i != PaNoLim)? escape(out, (char*) aP->max)  : "no max limit");
@@ -249,14 +249,12 @@ void paExtendedUsage(PaArgument* paList)
 	char         format[64];
 	char         progNAME[128];
 	bool         firstLine = true;
-	int          ix;
 
 	sprintf(progNAME, "Usage: %s ", progName);
 	spacePad = (char*) strdup(progNAME);
 	memset(spacePad, 0x20202020, strlen(spacePad));  /* replace progNAME */
 
 	paIterateInit();
-	ix = 0;
 	while ((aP = paIterateNext(paList)) != NULL)
 	{
 		char  name[128];
@@ -285,7 +283,7 @@ void paExtendedUsage(PaArgument* paList)
 		memset(name, 0, sizeof(name));
 		if (PA_IS_VARIABLE(aP))
 		{
-			paEnvName(aP, name, ix);
+			paEnvName(aP, name);
 			varNameMaxLen = MAX(strlen(name), (unsigned int) varNameMaxLen);
 		}
 		
@@ -308,8 +306,6 @@ void paExtendedUsage(PaArgument* paList)
 			sprintf(vals, "%s <= %s <= %s", escape(out, minVal), name, escape(out2, maxVal));
 
 		valsMaxLen = MAX(strlen(vals), (unsigned int) valsMaxLen);
-
-		++ix;
 	}
 	
 	sprintf(format, "%%-%ds %%-%ds %%-%ds %%-%ds %%s\n",
@@ -319,7 +315,6 @@ void paExtendedUsage(PaArgument* paList)
 			valsMaxLen + 2);
 
 	paIterateInit();
-	ix = 0;
 	while ((aP = paIterateNext(paList)) != NULL)
 	{
 		char  optName[128];
@@ -350,7 +345,7 @@ void paExtendedUsage(PaArgument* paList)
 	
 		/* 2. variable name */
 		if (PA_IS_VARIABLE(aP))
-			paEnvName(aP, varName, ix);
+			paEnvName(aP, varName);
 		else
 			strcpy(varName, " ");
 
@@ -471,7 +466,7 @@ static void paManUsage(PaArgument* paList)
 
 	paIterateInit();
 
-    while ((aP = paIterateNext(paList)) != NULL)
+	while ((aP = paIterateNext(paList)) != NULL)
 	{
 		if (aP->sort == PaHid)
 			continue;

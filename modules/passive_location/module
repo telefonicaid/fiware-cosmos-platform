@@ -7,11 +7,10 @@ Module passive_location
 
 data Record
 {
-	system.UInt imsi;
-	system.UInt imei;
+	system.UInt     imsi;
+	system.UInt     imei;
 	system.TimeUnix timestamp;
-	system.UInt32 cell_id;
-	
+	system.UInt32   cell_id;
 }
 
 
@@ -52,6 +51,7 @@ parser parse_cell_info
 generator mongo_location_import
 {
 	out system.UInt mobility.Record
+
 	helpLine "Import passive location data from a mongoDb server at 'mongo.ip' from table 'mongo.table'"
 }
 
@@ -70,7 +70,3 @@ map mongo_location_export
 	in system.UInt mobility.Record
 	helpLine "Export passive location data to a mongoDb server at 'mongo' to table 'mongo_table'"
 }
-
-
-
-

@@ -10,9 +10,10 @@
 #include <samson/module/samson.h>
 #include <samson/modules/passive_location/Record.h>
 #include <samson/modules/system/UInt.h>
-#include <samson/modules/cdr/mobCdr.h>
+#include <samson/modules/mobility/Record.h>
 
 #include "mongo/client/dbclient.h"
+#include "mongo/client/dbclientcursor.h"
 
 
 using namespace mongo;
@@ -26,6 +27,7 @@ namespace passive_location
 class mongo_location_export : public samson::Map
 {
 	std::string          mongo_ip;
+	std::string          mongo_lastloc_ip;
 	std::string          mongo_db;
 	std::string          mongo_lastloc_db;
 	std::string          mongo_collection;
@@ -36,6 +38,7 @@ class mongo_location_export : public samson::Map
 	std::string          mongo_db_path;
 	std::string          mongo_lastloc_db_path;
 	DBClientConnection*  mdbConnection;
+	DBClientConnection*  lastlocConnection;
 
 	std::vector<mongo::BSONObj>  dataVec;
 	int                          inserts;
@@ -63,8 +66,9 @@ void init(samson::KVWriter* writer)
 	last_location            = environment->get("mongo.lastloc",            "1");
 
 	mongo_ip                 = environment->get("mongo.ip",                 "no-mongo-ip");
+	mongo_lastloc_ip         = environment->get("mongo.lastloc_ip",         mongo_ip);
 	mongo_db                 = environment->get("mongo.db",                 "no-mongo-db");
-	mongo_lastloc_db         = environment->get("mongo.lastloc_db",         "no-mongo-db");
+	mongo_lastloc_db         = environment->get("mongo.lastloc_db",         mongo_db);
 	mongo_collection         = environment->get("mongo.collection",         "no-mongo-collection");
 	mongo_lastloc_collection = environment->get("mongo.lastloc_collection", "no-mongo-collection");
 
@@ -118,6 +122,27 @@ void init(samson::KVWriter* writer)
 		return;
 	}
 
+	if (mongo_lastloc_ip != mongo_ip)
+	{
+		lastlocConnection = new DBClientConnection();
+		OLM_M(("Connecting to mongo at '%s'", mongo_lastloc_ip.c_str()));
+		
+		try
+		{
+			mdbConnection->connect(mongo_lastloc_ip);
+		}
+		catch(mongo::ConnectException &e)
+		{
+			OLM_E(("Error connecting to mongo at '%s'", mongo_lastloc_ip.c_str()));
+			delete lastlocConnection;
+			lastlocConnection = NULL;
+			tracer->setUserError("error connecting to MongDB at" + mongo_lastloc_ip);
+			return;
+		}
+	}
+	else
+		lastlocConnection = mdbConnection;
+
 	mongo_db_path          = mongo_db         + "." + mongo_collection;
 	mongo_lastloc_db_path  = mongo_lastloc_db + "." + mongo_lastloc_collection;
 
@@ -155,32 +180,32 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 	for (size_t i = 0 ; i < inputs[0].num_kvs ; i++)
 	{
 		samson::system::UInt      key;
-		samson::cdr::mobCdr       value;
+		samson::mobility::Record  value;
 		auto_ptr<DBClientCursor>  result;
 
 		key.parse(inputs[0].kvs[i]->key);
 		value.parse(inputs[0].kvs[i]->value);
 
-		mongo::BSONObj record = BSON("I" << (long long int) value.phone.value <<
-									 "T" << (long long int) value.timeUnix.value <<
-									 "C" << (long long int) value.cellId.value <<
-									 "X" << (float) value.cellId.value <<
-									 "Y" << (float) value.cellId.value);
+		mongo::BSONObj record = BSON("I" << (long long int) value.userId.value      <<
+									 "T" << (long long int) value.timestamp.value   <<
+									 "C" << (long long int) value.cellId.value      <<
+									 "X" << (float) value.position.latitude.value   <<
+									 "Y" << (float) value.position.longitude.value);
 
 		if (mongo_last_location == 1)
 		{
 			mongo::Query   query;
 			mongo::BSONObj record;
 
-			record = BSON("_id" << (long long int) value.phone.value     <<
-						  "T"   << (long long int) value.timeUnix.value  <<
-						  "C"   << (long long int) value.cellId.value    <<
-						  "X"   << (float) value.cellId.value            <<
-						  "Y"   << (float) value.cellId.value);
-			query  = Query(BSON("_id" << (long long int) value.phone.value << 
-								"T"   << BSON("$lt" << (long long int) value.timeUnix.value)));
+			record = BSON("_id" << (long long int) value.userId.value       <<
+						  "T"   << (long long int) value.timestamp.value    <<
+						  "C"   << (long long int) value.cellId.value       <<
+						  "X"   << (float) value.position.latitude.value    <<
+						  "Y"   << (float) value.position.longitude.value);
+			query  = Query(BSON("_id" << (long long int) value.userId.value << 
+								"T"   << BSON("$lt" << (long long int) value.timestamp.value)));
 
-			mdbConnection->update(mongo_lastloc_db_path, query, record, true);
+			lastlocConnection->update(mongo_lastloc_db_path, query, record, true);
 		}
 
 		dataVec.push_back(record);

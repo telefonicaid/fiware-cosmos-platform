@@ -146,7 +146,7 @@ helpLine: Update internal state
 
 					if( !previously_created )
 					{
-					   samson::simple_mobility::UserArea *area = user.areasAdd();
+					   samson::mobility::Area *area = user.areasAdd();
 					   
 					   area->name.value = command.values[1].value;
 					   area->center.latitude.value = atof( command.values[2].value.c_str() );

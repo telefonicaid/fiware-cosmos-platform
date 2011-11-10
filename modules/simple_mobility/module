@@ -5,20 +5,13 @@ Module simple_mobility
     version "0.1.1"
 }
 
-data UserArea
-{
-	system.String     name;
-	mobility.Position center;   # Center of the area 
-	system.Float 	  radius;   # Max distance considered in this area
-}
-
 # Record stored for each user
 
 data User
 {
 	mobility.Position position;               # Last known position
 	system.Int8 track;						  # Flag to indicate if we want to track this user		 
-	vector simple_mobility.UserArea areas;	  # Areas defined for this user
+	vector mobility.Area areas;	  			  # Areas defined for this user
 }
 
 parser parser_cdrs

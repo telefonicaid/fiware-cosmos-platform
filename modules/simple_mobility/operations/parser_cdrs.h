@@ -9,7 +9,7 @@
 
 #include <samson/module/samson.h>
 #include <samson/modules/system/SimpleParser.h>    // SimpleParser
-#include <samson/modules/simple_mobility/Position.h>
+#include <samson/modules/mobility/Record.h>
 #include <samson/modules/system/UInt.h>
 
 
@@ -24,7 +24,7 @@ namespace simple_mobility{
 
        // Key values used to emit content
 	   samson::system::UInt key;
-	   samson::simple_mobility::Position value;
+	   samson::mobility::Record value;
 	   
 	public:
 
@@ -46,7 +46,7 @@ helpLine: Parse input CDRs to get user - position -timestamp elements
           // Split line in words
           split_in_words( line, words );
 
-		  // Expected format USER_ID CDR X Y time
+		  // Expected format USER_ID CDR lat lon time
 
           if( words.size() < 5 )
              return; // No content for a valid instruction
@@ -58,8 +58,10 @@ helpLine: Parse input CDRs to get user - position -timestamp elements
 		  key.value = atoll( words[0] );
 
 		  // Set the position
-		  value.set( atoll( words[2] ) ,  atoll( words[3] ) , atoll( words[4] ) );
-		  
+		  value.position.set( atoll( words[2] ) ,  atoll( words[3] ) );
+		  value.timestamp.value = atoll( words[4] );
+	      value.cellId.value = 0; // No cell id
+	   
 		  // Emit the key-value
 		  writer->emit( 0 , &key, &value );
 	   }	   

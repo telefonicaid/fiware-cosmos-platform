@@ -38,6 +38,12 @@ data Cell
 	mobility.Position  position;
 }
 
+data Area
+{
+    system.String     name;     # Name of this area ( home , work , ... )
+    mobility.Position center;   # Center of the area
+    system.Float      radius;   # Max distance considered in this area
+}
 
 # -------------------------------------------------
 # Fake Record generator

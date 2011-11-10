@@ -1,0 +1,52 @@
+# Some cleaning
+echo "Starting word count stream test 10GB"
+echo "Killing all previous processes..."
+rm /opt/samson/config/samsonPlatformProcesses
+samsonKiller
+echo "Setting controller IP..."
+CONTROLLER_IP="localhost";
+export CONTROLLER_IP
+echo $CONTROLLER_IP
+
+echo "Generating test data..."
+./word_generator 1000000000 > words_10GB.txt
+
+# Running inside build/testing
+samsonLocal -working . -f test_stream_10GB_commands.txt >test_stream_10GB_stdout
+if [ -n "${CONTROLLER_IP:+x}" ]; then
+        echo "Environment variable CONTROLLER_IP defined to: " $CONTROLLER_IP > test_stream_10GB_stdout
+        if [ $CONTROLLER_IP = "localhost" ]; then
+                if ! ps -C samsonSpawner  > /dev/null
+                then
+                        echo "Launching samsonSpawner" >> test_stream_10GB_stdout
+                        samsonSpawner -local >> test_stream_10GB_stdout
+                else
+                        echo "samsonSpawner already running" >> test_stream_10GB_stdout
+                fi
+               # sleep 3
+        fi
+        delilah -controller $CONTROLLER_IP -f test_stream_10GB_commands.txt >> test_stream_10GB_stdout
+else
+        echo "Environment variable CONTROLLER_IP not defined, using samsonLocal" > test_stream_10GB_stdout
+        samsonLocal -working . -f test_stream_10GB_commands.txt >> test_stream_10GB_stdout
+fi
+
+
+export LANG=C
+echo "Saving and sorting the output into a file..."
+samsonCat out_10GB | sort > out_10GB_md5.txt
+echo "Making the MD5 file to compare"
+md5sum out_10GB_md5.txt > test_stream_10GB_out.txt
+rm -rf out_10GB
+
+#Compare the produced output with the expected output
+diff  test_stream_10GB_out.txt test_stream_10GB_expected_out.txt >> test_stream_10GB_diff_result
+if [ $? = 0 ]; then
+        echo "TEST RESULT: OK"
+else
+        echo "TEST RESULT: KO"
+        exit 1
+
+fi
+echo "Done"
+

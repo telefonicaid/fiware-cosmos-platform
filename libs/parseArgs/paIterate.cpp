@@ -11,8 +11,8 @@
 *
 * static variables
 */
-static int ix = 0;
-static int builtins = -1;
+static int  ix       = 0;
+int         builtins = -1;
 
 
 

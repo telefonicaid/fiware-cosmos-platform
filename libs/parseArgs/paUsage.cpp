@@ -21,6 +21,45 @@
 
 /* ****************************************************************************
 *
+* escape - replace '/' for '//' ...
+*/
+char* escape(char out[], char* value)
+{
+	int ix    = 0;
+	int outIx = 0;
+	
+	printf("In escape\n");
+	if (value == NULL)
+		return (char*) "(null)";
+
+	while (value[ix] != 0)
+	{
+		printf("value[%d]: %d\n", ix, value[ix]);
+		if (value[ix] == '\n')
+		{
+			out[outIx++] = '\\';
+			out[outIx++] = 'n';
+		}
+		else if (value[ix] == '\t')
+		{
+			out[outIx++] = '\\';
+			out[outIx++] = 't';
+		}
+		else
+			out[outIx++] = value[ix];
+
+		++ix;
+	}
+	out[outIx] = 0;
+
+	printf("Done!\n");
+	return out;
+}
+
+
+
+/* ****************************************************************************
+*
 * getApVals - 
 */
 static void getApVals
@@ -35,6 +74,7 @@ static void getApVals
 	PaTypeUnion*  defP;
 	PaTypeUnion*  minP;
 	PaTypeUnion*  maxP;
+	char          out[256];
 
 	LM_T(LmtPaApVals, ("Fixing def, min, max, real values for %s", aP->name));
 
@@ -57,10 +97,11 @@ static void getApVals
 		return;
 
 	case PaString:
-		sprintf(defVal,  "'%s'", (defP->i != PaNoDef)? (char*) aP->def  : "no default");
-		sprintf(minVal,  "'%s'", (minP->i != PaNoLim)? (char*) aP->min  : "no min limit");
-		sprintf(maxVal,  "'%s'", (maxP->i != PaNoLim)? (char*) aP->max  : "no max limit");
-		sprintf(realVal, "'%s'", (aP->varP != NULL)?   (char*) aP->varP : "no value");
+		printf("Calling 'escape' four times\n");
+		sprintf(defVal,  "'%s'", (defP->i != PaNoDef)? escape(out, (char*) aP->def) : "no default");
+		sprintf(minVal,  "'%s'", (minP->i != PaNoLim)? escape(out, (char*) aP->min)  : "no min limit");
+		sprintf(maxVal,  "'%s'", (maxP->i != PaNoLim)? escape(out, (char*) aP->max)  : "no max limit");
+		sprintf(realVal, "'%s'", (aP->varP != NULL)?   escape(out, (char*) aP->varP) : "no value");
 		break;
 
 	case PaBoolean:
@@ -172,9 +213,9 @@ void paUsage(PaArgument* paList)
 		else if (PA_IS_OPTION(aP) && (aP->sort == PaReq))
 			sprintf(xName, "%s", paFullName(string, aP));
 		else if (PA_IS_PARAMETER(aP) && (aP->sort == PaOpt))
-			sprintf(xName, "(%s)", aP->description);
+			sprintf(xName, "[parameter: %s]", aP->description);
 		else if (PA_IS_PARAMETER(aP) && (aP->sort == PaReq))
-			sprintf(xName, "[%s]", aP->description);
+			sprintf(xName, "parameter: %s", aP->description);
 		else
 			strcpy(xName, "                    ");
 
@@ -208,12 +249,14 @@ void paExtendedUsage(PaArgument* paList)
 	char         format[64];
 	char         progNAME[128];
 	bool         firstLine = true;
+	int          ix;
 
 	sprintf(progNAME, "Usage: %s ", progName);
 	spacePad = (char*) strdup(progNAME);
 	memset(spacePad, 0x20202020, strlen(spacePad));  /* replace progNAME */
 
 	paIterateInit();
+	ix = 0;
 	while ((aP = paIterateNext(paList)) != NULL)
 	{
 		char  name[128];
@@ -222,6 +265,8 @@ void paExtendedUsage(PaArgument* paList)
 		char  minVal[20];
 		char  maxVal[20];
 		char  realVal[80];
+		char  out[256];
+		char  out2[256];
 
 		/* 1. Option Name */
 		memset(name, 0, sizeof(name));
@@ -240,7 +285,7 @@ void paExtendedUsage(PaArgument* paList)
 		memset(name, 0, sizeof(name));
 		if (PA_IS_VARIABLE(aP))
 		{
-			paEnvName(aP, name);
+			paEnvName(aP, name, ix);
 			varNameMaxLen = MAX(strlen(name), (unsigned int) varNameMaxLen);
 		}
 		
@@ -256,13 +301,15 @@ void paExtendedUsage(PaArgument* paList)
 		if ((aP->hasMinLimit == false) && (aP->hasMaxLimit == false))
 			sprintf(vals, "%s", name);
 		else if (aP->hasMinLimit == false)
-			sprintf(vals, "%s <= %s", name, maxVal);
+			sprintf(vals, "%s <= %s", name, escape(out, maxVal));
 		else if (aP->hasMaxLimit == false)
-			sprintf(vals, "%s >= %s", name, minVal);
+			sprintf(vals, "%s >= %s", name, escape(out, minVal));
 		else
-			sprintf(vals, "%s <= %s <= %s", minVal, name, maxVal);
+			sprintf(vals, "%s <= %s <= %s", escape(out, minVal), name, escape(out2, maxVal));
 
 		valsMaxLen = MAX(strlen(vals), (unsigned int) valsMaxLen);
+
+		++ix;
 	}
 	
 	sprintf(format, "%%-%ds %%-%ds %%-%ds %%-%ds %%s\n",
@@ -272,6 +319,7 @@ void paExtendedUsage(PaArgument* paList)
 			valsMaxLen + 2);
 
 	paIterateInit();
+	ix = 0;
 	while ((aP = paIterateNext(paList)) != NULL)
 	{
 		char  optName[128];
@@ -302,7 +350,7 @@ void paExtendedUsage(PaArgument* paList)
 	
 		/* 2. variable name */
 		if (PA_IS_VARIABLE(aP))
-			paEnvName(aP, varName);
+			paEnvName(aP, varName, ix);
 		else
 			strcpy(varName, " ");
 

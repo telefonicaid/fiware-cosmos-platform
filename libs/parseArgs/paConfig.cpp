@@ -38,6 +38,7 @@ bool       paExitOnError         = true;
 bool       paExitOnUsage         = true;
 bool       paPrintErrorsOnStderr = true;
 char*      paPrefix              = NULL;
+char*      paBuiltinPrefix       = NULL;
 char*      paVersionString       = NULL;
 char*      paExecVersion         = NULL;
 char*      paTraceInfoAtEol      = NULL;
@@ -121,6 +122,8 @@ static void paConfigInit(void)
 
 	if (paPrefix)
 		paPrefix              = strdup(paPrefix);
+	if (paBuiltinPrefix)
+		paBuiltinPrefix       = strdup(paBuiltinPrefix);
 	if (paProgName)
 		paProgName            = strdup(paProgName);
 	if (paRcFileName)
@@ -252,6 +255,12 @@ int paConfig(const char* item, void* value)
 		if (paPrefix != NULL)
 			free(paPrefix);
 		paPrefix = strdup((char*) val);
+	}
+	else if (strcmp(item, "builtin prefix") == 0)
+	{
+		if (paBuiltinPrefix != NULL)
+			free(paBuiltinPrefix);
+		paBuiltinPrefix = strdup((char*) val);
 	}
 	else if (strcmp(item, "prog name") == 0)
 	{
@@ -418,6 +427,8 @@ void paConfigCleanup(void)
 {
 	if (paPrefix)
 		free(paPrefix);
+	if (paBuiltinPrefix)
+		free(paBuiltinPrefix);
 	if (paProgName)
 		free(paProgName);
 	if (paRcFileName)

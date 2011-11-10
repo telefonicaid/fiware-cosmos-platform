@@ -9,17 +9,16 @@
 *
 *
 */
-#include <stdlib.h>             /* free, ...                                  */
-#include <string.h>             /* strdup, ...                                */
+#include <stdlib.h>               /* free, ...                                  */
+#include <string.h>               /* strdup, ...                                */
 
-#include "baStd.h"              /* BA_VEC_SIZE, ...                          */
-#include "logMsg/logMsg.h"             /* lmTraceSet                                */
+#include "baStd.h"                /* BA_VEC_SIZE, ...                          */
+#include "logMsg/logMsg.h"        /* lmTraceSet                                */
 
-#include "paPrivate.h"          /* PaTypeUnion, config variables, ...        */
-#include "paTraceLevels.h"      /* LmtPaDefaultValues, ...                   */
-#include "parseArgs/parseArgs.h"          /* paWarnings, paWarning                     */
-#include "paWarning.h"          /* Own interface                             */
-
+#include "paPrivate.h"            /* PaTypeUnion, config variables, ...        */
+#include "paTraceLevels.h"        /* LmtPaDefaultValues, ...                   */
+#include "parseArgs/parseArgs.h"  /* paWarnings, paWarning                     */
+#include "paWarning.h"            /* Own interface                             */
 
 
 

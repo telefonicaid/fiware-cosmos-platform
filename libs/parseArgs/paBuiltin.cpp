@@ -133,17 +133,21 @@ int paBuiltinNoOf(void)
 int paBuiltinRemove(char* name)
 {
 	PaArgument* aP;
+	int         ix;
 
 	/* 1. lookup aP->option or aP->variable          */
 	/* 2. if found - mark the aP as PaRemoved        */
 	/* 3. Then paConfig needs the actions to do it   */
 
 	paIterateInit();
+	ix = 0;
 	while ((aP = paIterateNext(NULL)) != NULL)
 	{
 		char envVarName[128];
 
-		paEnvName(aP, envVarName);
+		paEnvName(aP, envVarName, ix);
+		++ix;
+
 		if (((aP->option) && (strcmp(name, aP->option) == 0))
 		|| ((aP->envName) && (strcmp(name, envVarName) == 0)))
 		{

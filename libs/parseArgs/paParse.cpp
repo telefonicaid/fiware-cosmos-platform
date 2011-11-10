@@ -128,8 +128,8 @@ static bool envNameDuplicated(char* name, PaArgument* paList, int start)
 		if (aP->envName == NULL)
 			continue;
 
-		paEnvName(aP, envVarName);
-
+		paEnvName(aP, envVarName, ix);
+		
 		if (strcmp(name, envVarName) == 0)
 			++matches;
 	}
@@ -194,7 +194,7 @@ static int paArgInit(PaArgument* paList)
 			{
 				char envVarName[128];
 
-				sprintf(aP->name, "var %s", paEnvName(aP, envVarName));
+				sprintf(aP->name, "var %s", paEnvName(aP, envVarName, ix));
 				aP->what = PawVariable;
 			}
 		}
@@ -211,7 +211,7 @@ static int paArgInit(PaArgument* paList)
 			{
 				char envVarName[128];
 
-				sprintf(aP->name, "var %s", paEnvName(aP, envVarName));
+				sprintf(aP->name, "var %s", paEnvName(aP, envVarName, ix));
 				aP->what = PawVariable | PawParameter;
 			}
 		}
@@ -238,7 +238,7 @@ static int paArgInit(PaArgument* paList)
 			aP->removed = true;
 		}		  
 
-		paEnvName(aP, envVarName);
+		paEnvName(aP, envVarName, ix);
 		
 		if (envNameDuplicated(envVarName, paList, ix) == true)
 		{
@@ -444,7 +444,7 @@ int paParse
 
 		if (fP != NULL)
 		{
-			fprintf(fP, "\nEntire command line options: '%s'\n\n", paCommandLine);
+			fprintf(fP, "\nEntire command line: '%s'\n\n", paCommandLine);
 
 			fprintf(fP, "--- %s warnings ---\n", progName);
 			for (ix = 0; ix < paWarnings; ix++)

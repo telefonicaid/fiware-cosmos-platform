@@ -1,19 +1,19 @@
-#include <stdlib.h>             /* atoi                                      */
-#include <sys/types.h>          /* uid_t                                     */
-#include <unistd.h>             /* geteuid                                   */
-#include <pwd.h>                /* getpw                                     */
+#include <stdlib.h>              /* atoi                                      */
+#include <sys/types.h>           /* uid_t                                     */
+#include <unistd.h>              /* geteuid                                   */
+#include <pwd.h>                 /* getpw                                     */
 
-#include "baStd.h"              /* BA standard header file                   */
-#include "logMsg/logMsg.h"             /* lmVerbose, lmDebug, ...                   */
+#include "baStd.h"               /* BA standard header file                   */
+#include "logMsg/logMsg.h"       /* lmVerbose, lmDebug, ...                   */
 
-#include "paPrivate.h"          /* PaTypeUnion, config variables, ...        */
-#include "paTraceLevels.h"      /* LmtPaEnvVal, ...                          */
-#include "parseArgs/parseArgs.h"          /* PaArgument                                */
-#include "paBuiltin.h"          /* paBuiltinNoOf, ...                        */
-#include "paWarning.h"          /* paWarningAdd                              */
-#include "paIterate.h"          /* paIterateInit, paIterateNext              */
-#include "paEnvVals.h"          /* paEnvName                                 */
-#include "parseArgs/paConfig.h"           /* paConfigActions                           */
+#include "paPrivate.h"           /* PaTypeUnion, config variables, ...        */
+#include "paTraceLevels.h"       /* LmtPaEnvVal, ...                          */
+#include "parseArgs/parseArgs.h" /* PaArgument                                */
+#include "paBuiltin.h"           /* paBuiltinNoOf, ...                        */
+#include "paWarning.h"           /* paWarningAdd                              */
+#include "paIterate.h"           /* paIterateInit, paIterateNext              */
+#include "paEnvVals.h"           /* paEnvName                                 */
+#include "parseArgs/paConfig.h"  /* paConfigActions                           */
 
 
 
@@ -203,10 +203,11 @@ int paRcFileParse(PaArgument* paList)
 		varFound = false;
 
 		paIterateInit();
+		int ix = 0;
 		while ((aP = paIterateNext(paList)) != NULL)
 		{
-			paEnvName(aP, envVarName);
-
+			paEnvName(aP, envVarName, ix);
+			++ix;
 			if (strcmp(var, envVarName) == 0)
 			{
 				aP->from = PafRcFile;

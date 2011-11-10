@@ -22,6 +22,7 @@ extern bool       paUseBuiltins;
 extern bool       paExitOnError;
 extern bool       paExitOnUsage;
 extern bool       paPrintErrorsOnStderr;
+extern char*      paBuiltinPrefix;
 extern char*      paPrefix;
 extern char*      paRcFileName;
 extern char*      paRcFileDir;

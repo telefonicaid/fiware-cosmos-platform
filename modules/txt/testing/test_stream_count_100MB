@@ -13,17 +13,20 @@ echo "Controller:" $CONTROLLER_IP
 if [ -n "${CONTROLLER_IP:+x}" ]; then
         echo "Environment variable CONTROLLER_IP defined to: " $CONTROLLER_IP > test_stream_100MB_stdout
         if [ $CONTROLLER_IP = "localhost" ]; then
-                if ! ps -C samsonSpawner  > /dev/null
-                then
+#                if ! ps -C samsonSpawner  > /dev/null
+#                then
                         echo "Launching samsonSpawner" >> test_stream_100MB_stdout
                         samsonSpawner -local >> test_stream_100MB_stdout
-                else
-                        echo "samsonSpawner already running" >> test_stream_100MB_stdout
-                fi
+#                else
+#                        echo "samsonSpawner already running" >> test_stream_100MB_stdout
+#                fi
         fi
 
+		echo "Removing previous data for testing..."
+		delilah -f test_reset_commands.txt
+
 	echo "Generating test data..."
-	./word_generator 10000000 | samsonPush -controller $CONTROLLER_IP  words -v
+	word_generator 10000000 | samsonPush -controller $CONTROLLER_IP  words -v
 	
 
 which delilah
@@ -34,8 +37,7 @@ else
 fi
 
 
-#echo "Generating test data..."
-#./word_generator 10000000 | samsonPush  words -v
+#echo "Generating test
 
 
 export LANG=C

@@ -1,5 +1,6 @@
 
 SET (HEADERS
+	BlockInfo.h
     BlockManager.h
     BlockList.h
     Block.h
@@ -22,6 +23,7 @@ SET (HEADERS
 
 
 SET (SOURCES
+	BlockInfo.cpp
     BlockManager.cpp
     BlockList.cpp
     Block.cpp

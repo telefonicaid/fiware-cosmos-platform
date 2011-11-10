@@ -13,6 +13,7 @@
 #include "samson/stream/BlockList.h"                // stream::BlockList
 #include "samson/stream/StreamProcessBase.h"        // parent class public StreamProcessBase
 #include "samson/stream/Block.h"                    // samson::Stream::Block
+#include "samson/stream/BlockInfo.h"                // struct BlockInfo
 
 namespace samson {
     namespace stream {

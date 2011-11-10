@@ -46,7 +46,7 @@ PaArgument paArgs[] =
     { "-buffer_size",           &buffer_size,         "BUFFER_SIZE",           PaInt,    PaOpt,      10000000   ,    1,  64000000,  "Buffer size in bytes"           },
 	{ "-breaker_sequence",      breaker_sequence,     "BREAKER_SEQUENCE",      PaString, PaOpt, _i "\n"         , PaNL, PaNL,       "Breaker sequence ( by default \\n )"       },
 	{ "-lines",                 &lines,               "LINES",                 PaBool,    PaOpt,  false, false,  true,  "Read std-in line by line"   },
-    { " ",                      queue_name,           "QUEUE",                 PaString,  PaOpt,  (long) "null",   PaNL,   PaNL,  "name of the queue to push data"         },
+    { " ",                      queue_name,           "QUEUE",                 PaString,  PaReq,  (long) "null",   PaNL,   PaNL,  "name of the queue to push data"         },
     PA_END_OF_ARGS
 };
 
@@ -148,8 +148,7 @@ int main( int argC , const char *argV[] )
     std::string tmp_separator = breaker_sequence;
     literal_string( tmp_separator );
 
-    if( paVerbose )
-        LM_M(("Setup buffer_size %s / timeout %s / break_sequence '%s' " , au::str(buffer_size).c_str() , au::time_string( timeOut ).c_str() , tmp_separator.c_str() ));
+    LM_V(("Setup buffer_size %s / timeout %s / break_sequence '%s' ( length %d ) " , au::str(buffer_size).c_str() , au::time_string( timeOut ).c_str() , tmp_separator.c_str() , strlen(breaker_sequence) ));
 
     
     while( true )

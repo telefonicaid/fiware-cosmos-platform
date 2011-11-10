@@ -84,68 +84,117 @@ namespace au
         
     };   
     
+    template <class T,int n, int average_length>
+    class RRTAverage
+    {
+        
+    public:
+        
+        std::list<T> elements;
+
+        int n_average;
+        T average_accumulation;
+        
+        RRTAverage()
+        {
+            while( elements.size() < n )
+                elements.push_back( 0 );
+            
+            n_average = 0;
+            average_accumulation = 0;
+        }
+        
+        void push( T value )
+        {
+            
+            if( n_average == average_length )
+            {
+                elements.push_back( average_accumulation / (double) average_length );
+                
+                while (elements.size() > n)
+                    elements.pop_front();
+
+                // Init the accumulation
+                n_average = 0;
+                average_accumulation = 0;
+            }
+            
+            // Accumulate sample for the average
+            average_accumulation += value;
+            n_average++;    
+            
+        }
+        
+        int getNumSamples()
+        {
+            return elements.size();
+        }
+        
+        T getSample( int p )
+        {
+            // Check limits
+            if( p< 0 )
+                return 0;
+            if( p>(int)elements.size())
+                return 0;
+            
+            int c = 0;
+            typename std::list<T>::iterator it;
+            for ( it = elements.begin() ; it != elements.end() ; it++ )
+            {
+                if( c == p)
+                    return *it;
+                c++;
+            }
+            
+            return 0;
+        }
+        
+        T average()
+        {
+            T total;
+            typename std::list<T>::iterator it_elements;
+            for (it_elements = elements.begin() ; it_elements  != elements.end() ; it_elements++)
+                total += *it_elements;
+            
+            return total / elements.size();
+        }
+        
+        
+    };   
+    
+    
     
     template <class T>
     class ValueCollection
     {
         // Values forsize    
-        au::RRT<T ,60> samples_last_minute;
-        au::RRT<T ,60> samples_last_hour;
-        au::RRT<T ,24> samples_last_day;
-        
-        size_t samples;
+        au::RRTAverage<T ,200,1>    samples_last_seconds;
+        au::RRTAverage<T ,200,60>   samples_last_minutes;
+        au::RRTAverage<T ,200,3600> samples_last_houts;
         
     public:
         
         ValueCollection()
         {
-            samples = 0;
         }
         
         void push( T value )
         {
-            // Last minute
-            samples_last_minute.push( value );
-            
-            if( samples > 0 )
-                if( (samples % 60) == 0 )
-                    samples_last_hour.push( samples_last_minute.average() );
-            
-            if( samples > 0 )
-                if( ( samples % 3600 ) == 0 )
-                    samples_last_day.push( samples_last_hour.average() );
-            
-            samples++;
-         
+            samples_last_seconds.push( value );
+            samples_last_minutes.push( value );
+            samples_last_houts.push( value );
         }
         
         // For ploting
         int getNumSamples()
         {
-            return 24 + 60 + 60;
+            return samples_last_seconds.getNumSamples();
         }
         
         T getSample( int i )
         {
-            // Out of range...
-            if( i< 0)
-                return 0;
-            
-            if( i < 24 )
-                return samples_last_day.get( i );
-            
-            i-= 24;
-
-            if( i < 60 )
-                return samples_last_hour.get( i );
-
-            i-= 60;
-
-            if( i < 60 )
-                return samples_last_minute.get( i );
-            
-            // Out of range...
-            return 0;
+            return samples_last_seconds.getSample(i);
         }
                     
         

@@ -17,6 +17,7 @@
 
 #include "au/map.h"                         // au::map
 
+#include "BlockInfo.h"                              // struct BlockInfo
 
 namespace samson 
 {
@@ -37,6 +38,9 @@ namespace samson
             void copyFrom( BlockListContainer* other );
             
             void clearBlockListcontainer();
+            
+            // Get the information about contained blocks considering them only one if there are contained in multiple BlockLists    
+            BlockInfo getUniqueBlockInfo();
             
         };
     }

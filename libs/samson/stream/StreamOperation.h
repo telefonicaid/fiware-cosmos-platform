@@ -38,6 +38,7 @@
 
 #include "samson/data/SimpleDataManager.h"          // samson::SimpleDataManager
 
+#include "BlockInfo.h"                              // struct BlockInfo
 
 namespace samson {
     
@@ -115,13 +116,13 @@ namespace samson {
         public:
             
 
-            // Information about activity ( temporal counters )
+            // History of this operation
+            BlockInfo history_block_info;   // Historical information
+            int history_num_operations;             // Number of operations performed so far
+            int history_core_seconds;
             
-            int num_operations;             // Number of operations performed so far
-            int num_blocks;                 // Number of blocks processed as inputs
-            size_t temporal_size;           // 
-            FullKVInfo info;
-            int temporal_core_seconds;
+            //FullKVInfo info;
+            //size_t temporal_size;
             
             // List of current tasks running here
             std::set< QueueTask* > running_tasks;

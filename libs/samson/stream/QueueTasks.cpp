@@ -609,7 +609,16 @@ namespace samson {
         void ReduceQueueTask::finalize( StreamManager* streamManager )
         {
             if( !update_state_mode )
+            {
+                // Notify to the stream operation
+                std::string stream_operation_name = environment.get("system.stream_operation","");
+                StreamOperation* stream_operation = streamManager->getStreamOperation( stream_operation_name );
+                
+                if( stream_operation )
+                    stream_operation->remove( this );
+                
                 return;
+            }
             
             // Create the list with the outputs
             BlockList *tmp = new BlockList("ReduceQueueTask_outputs");

@@ -25,6 +25,8 @@
 
 #include "samson/module/KVSetStruct.h"              // samson::KVSetStruct
 
+#include "BlockInfo.h"                              // struct BlockInfo
+
 #include <set>
 
 namespace samson {

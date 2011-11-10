@@ -38,6 +38,25 @@ namespace plot{
 		  command.value = plot_level_set;
 		  level.value = _value;
 	   }
+
+	   std::string str()
+	   {
+		  std::ostringstream output;
+
+		  if( command.value == plot_level_increment )
+			 output << "Increment " << level.value;
+		  else if( command.value == plot_level_decrement )
+			 output << "Decrement " << level.value;
+		  else if( command.value == plot_level_set )
+			 output << "Set " << level.value;
+		  else
+			 output << "Unknown";
+
+
+		  return output.str();
+		  
+	   }
+
 	};
 
 

@@ -40,7 +40,7 @@ namespace samson {
         StreamOperation::StreamOperation( )
         {
             streamManager = NULL;
-
+            
             // Default enviroment parameters
             environment.set("max_latency" , "60" );
             environment.set("delayed_processing" , "no" );
@@ -48,13 +48,13 @@ namespace samson {
             
             
             // Additional information
-            num_operations = 0;
-            num_blocks = 0;
-            temporal_size = 0;
-            info.clear();
-            temporal_core_seconds = 0;
+            history_num_operations = 0;
+            history_core_seconds = 0;
+            //num_blocks = 0;
+            //temporal_size = 0;
+            //info.clear();
+            //temporal_core_seconds = 0;
             
-        
         }
         
         StreamOperation* StreamOperation::newStreamOperation( StreamManager *streamManager , std::string command , au::ErrorManager& error )
@@ -213,30 +213,35 @@ namespace samson {
                 output << output_queues[i] << " ";
             au::xml_close(output, "outputs");
             
+            
             au::xml_simple(output, "properties", environment.getEnvironmentDescription() );
             
             au::xml_simple(output,"status" , getStatus() );
 
             au::xml_simple(output,"last_review" , last_review );
-            
-            au::xml_simple(output, "core_seconds", environment.getInt("system.core_seconds" , 0 ) );
 
-            
             // Information about input
-            BlockInfo block_info_input = getBlockList("input")->getBlockInfo();
-            au::xml_single_element(output, "input", &block_info_input);
+            BlockInfo input_block_info = getUniqueBlockInfo();
+            au::xml_single_element(output, "input", &input_block_info);
 
             // Current running operations
             au::xml_simple(output, "running_tasks", running_tasks.size() );
 
             // Information about history
-            au::xml_simple(output, "history_running_tasks", num_operations);
-            au::xml_single_element(output, "history" , &info );
-
+            au::xml_simple(output, "history_block_info", history_block_info.str() );
+            au::xml_simple(output, "history_num_operations", history_num_operations);
+            au::xml_simple(output, "history_core_seconds", history_core_seconds );
             
-            // Cost in core*seconds / Mb
-            int cost = (double) temporal_core_seconds / ( (double) (temporal_size+1) / 1000000000.0 );
-            au::xml_simple(output, "cost", cost );
+            // Agregated history string
+            {
+                std::ostringstream output_history_str;
+                output_history_str << au::str( history_num_operations , "ops" ) << " " << history_block_info.strShort();
+                output_history_str << " ( " << history_core_seconds << " cs )";
+                
+                au::xml_simple(output, "history_str", output_history_str.str() );
+            }
+            
+            au::xml_simple( output , "input_str" , input_block_info.strShort() );
             
             au::xml_close(output, "stream_operation");
         }
@@ -261,26 +266,20 @@ namespace samson {
             int core_seconds = std::max( 1 , task->cronometer.getSeconds() );
             environment.appendInt("system.core_seconds" , core_seconds );
             
-            // Increate the temporal 
-            temporal_core_seconds += core_seconds;
+            // History counter about operations and core-seconds
+            history_num_operations++;
+            history_core_seconds += core_seconds;
             
             // Temporal updates
             BlockList *blockList = task->getBlockList("input_0");
             BlockInfo _info = blockList->getBlockInfo();
             
-            num_operations++;
-            num_blocks += _info.num_blocks;
-            temporal_size += _info.size;
-            info.append( _info.info );
         }
-        
-
         
         Operation* StreamOperation::getOperation()
         {
             return samson::ModulesManager::shared()->getOperation( operation );
         }
-        
         
 #pragma mark StreamOperationForward
         
@@ -327,10 +326,15 @@ namespace samson {
                 return;
             }
             
-            
+            // Default message for this stream operation if 'sheduceQueueTasks' is not called...
             last_review = "not considered";
+            
             // Extract data from input queue to the "input" blocklist ( no size limit... all blocks )
             Queue *input = streamManager->getQueue( input_queues[0] );
+            
+            // Update hisotry information since we wil absorve all data included in this list
+            input->list->update( history_block_info );
+            
             getBlockList("input")->extractFrom( input->list , 0 );
         }
         
@@ -389,7 +393,7 @@ namespace samson {
                                                         id,
                                                         tmp->getBlockList("input_0")->strShortDescription().c_str(),
                                                         input_queues[0].c_str() 
-                                                        ));            
+                                                        ));
         }
         
         bool StreamOperationForward::scheduleNextQueueTasks( )
@@ -408,9 +412,11 @@ namespace samson {
             int execution_period    = environment.getInt("system.execution_period", 0 );
             
             
+            // Periodically executed operations
+            // ------------------------------------------------------------------------------------------------------------------------
             if( execution_period > 0 )
             {
-               if( (num_operations == 0 ) || (cronometer.diffTimeInSeconds() > execution_period ) )
+               if( (history_num_operations == 0 ) || (cronometer.diffTimeInSeconds() > execution_period ) )
                {
                    cronometer.reset();
                    
@@ -425,7 +431,7 @@ namespace samson {
                 
                 return false;   // No more pending operations for this task
             }
-            
+            // ------------------------------------------------------------------------------------------------------------------------
             
             
             last_review = "";
@@ -498,10 +504,6 @@ namespace samson {
             if( running_tasks.size() > 0 )
                 output << "[ Running " << running_tasks.size() << " operations ] ";
             
-            output << "[ History " << au::str( num_operations , "ops" ) << "/";
-            output << au::str( temporal_size , "B" ) << "/";
-            output << au::str( info.kvs , "kvs" ) << "/";
-            output << au::str(getCoreSeconds(),"cs") << " ]";
             
             return output.str();
         }
@@ -571,6 +573,8 @@ namespace samson {
             
             // Get the input queue
             Queue *input = streamManager->getQueue( input_queues[0] );
+            
+            // Get state queue
             Queue *state = streamManager->getQueue( input_queues[1] );
             
             // Increase the number of divisions if necessary
@@ -596,6 +600,9 @@ namespace samson {
             // Extract data from input queue to the "input" blocklist ( no size limit... all blocks )
             BlockList tmp;
             tmp.extractFrom( input->list , 0 );
+            
+            // Update hisotry information since we wil absorve all data included in this list
+            tmp.update( history_block_info );
 
             std::list<Block*>::iterator b;
             for ( b = tmp.blocks.begin() ; b != tmp.blocks.end() ; b++ )
@@ -819,11 +826,6 @@ namespace samson {
             if( running_tasks.size() > 0 )
                 output << "[ Running " << running_tasks.size() << " operations ] ";
             
-            output << "[ History " << au::str( num_operations , "ops" ) << "/";
-            output << au::str( temporal_size , "B" ) << "/";
-            output << au::str( info.kvs , "kvs" ) << "/";
-            output << au::str(getCoreSeconds(),"cs") << " ]";
-            
             return output.str();
         }        
         
@@ -889,8 +891,11 @@ namespace samson {
             
             // Extract data from input queue to the "input" blocklist ( no size limit... all blocks )
             Queue *input = streamManager->getQueue( input_queues[0] );
-            getBlockList("input")->extractFrom( input->list , 0 );
+
+            // Update hisotry information since we wil absorve all data included in this list
+            input->list->update( history_block_info );
             
+            getBlockList("input")->extractFrom( input->list , 0 );
             
         }
         
@@ -1009,11 +1014,6 @@ namespace samson {
             
             if( running_tasks.size() > 0 )
                 output << "[ Running " << running_tasks.size() << " operations ] ";
-            
-            output << "[ History " << au::str( num_operations , "ops" ) << "/";
-            output << au::str( temporal_size , "B" ) << "/";
-            output << au::str( info.kvs , "kvs" ) << "/";
-            output << au::str(getCoreSeconds(),"cs") << " ]";
             
             return output.str();
         }

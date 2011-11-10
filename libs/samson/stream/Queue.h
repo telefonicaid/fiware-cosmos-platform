@@ -11,6 +11,8 @@
 #include "samson/common/coding.h"       // KVFullInfo
 #include "samson/common/samson.pb.h"    // samson::network::...
 
+#include "BlockInfo.h"                              // struct BlockInfo
+
 namespace samson {
     
     namespace stream

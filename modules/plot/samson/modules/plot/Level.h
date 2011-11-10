@@ -39,11 +39,11 @@ namespace plot{
 		  if( level.value == published_level.value )
 			 return false;
 
-		  if( published_level.value == 0)
+		  if( published_level.value == 0 )
 			 return true;
 
 		  double diff  = fabs( published_level.value - level.value ); 
-		  if( ( diff / published_level.value ) > 0.1 )
+		  if( ( diff / fabs(published_level.value) ) > 0.001 )
 			 return true;
 
 		  return false;

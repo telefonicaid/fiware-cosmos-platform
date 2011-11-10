@@ -1,7 +1,7 @@
 package es.tid.ps.mapreduce.mobility.data;
 
 /**
- * Enum in where define the counters that we are going to monitor into the
+ * Enum to define the counters that we are going to monitor into the
  * cluster. <br>
  * LINE_PARSER_USER_ERROR: the wrong lines into the user file. <br>
  * LINE_PARSER_CDRS_ERROR: the wrong lines into the cdrs file. <br>

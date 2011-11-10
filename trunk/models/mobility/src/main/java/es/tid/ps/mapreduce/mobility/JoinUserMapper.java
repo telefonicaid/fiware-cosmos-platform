@@ -12,15 +12,19 @@ import es.tid.ps.mapreduce.mobility.data.FileType;
 import es.tid.ps.mapreduce.mobility.data.MobilityCounter;
 
 /**
- * This class parses the file of Users into the platform, and emit one value for
- * each user, this line is used for check that the callers have been done by
- * users that we have their data. For doing it we used Reduce-Side Joins, in
- * where the Key is a composite key of the user_id and a identifier of the file
- * type. Example:
+ * This class parses the CDRs files, and emit one value for each line, this line
+ * is used for check that the calls have been done by users that we have their
+ * data. For doing it we used Reduce-Side Joins, in where the Key is a composite
+ * key of the user_id and a identifier of the file type. The format of file is:
+ * TODO rgc: I dont know the meaning of all fields
+ * <Phone_caller>|<Phone_receptor|....
+ * 
+ * Example:
  * <ol>
- * <li>Input:{key{filename@line},value 1090066531|P|17/04/2010||||||15%|||||NO
- * INFORMADO|-4|-4}</li>
- * <li>output(1): { key : {primary:1090066531, secondary:0}, values {} }</li>
+ * <li>Input: {key{line},value :
+ * 33F4303E978D89|4531232401|33F4303E978D89|0454531232404|2|01
+ * /06/2010|11:16:47|115|RMNACIO}</li>
+ * <li>output(1): { key : {primary:33F4303E978D89, secondary:1}, values {} }</li>
  * </ol>
  * 
  * @author rgc

@@ -598,6 +598,7 @@
     <modules>
         <module>communities</module>
         <module>mobility</module>
+        <module>mobility2</module>
     </modules>
     <properties>
         <copyright.year>2011</copyright.year>

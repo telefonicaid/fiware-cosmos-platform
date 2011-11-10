@@ -29,9 +29,9 @@ import es.tid.ps.mapreduce.mobility.data.FileType;
 import es.tid.ps.mapreduce.mobility.data.MobilityCounter;
 
 /**
- * This class makes the reduce phase in the generation of mobility in realise
+ * This class makes the reduce phase in the generation of mobility in release
  * 1.0. The partitioner of the process is override so, at each map arrives the
- * data of each user sorted by type, this means that firsts arrives the input
+ * data of each user sorted by type, this means that first arrives the input
  * from users into the platform and then arrives the data of the CDRs. With this
  * arrangement we filter the users that are into the platform checking if the
  * user identifier corresponds with data last input about User Information.
@@ -42,7 +42,7 @@ import es.tid.ps.mapreduce.mobility.data.MobilityCounter;
  * When all data of the user have been processed we review what is the maximum
  * in each time and emit a pair key/value
  * 
- * TODO rgc: now we have the timezones defines and codifies directly into the
+ * TODO rgc: now we have the timezones defined and codified directly into the
  * code, and the best options will be out to configuration
  * 
  * @author rgc

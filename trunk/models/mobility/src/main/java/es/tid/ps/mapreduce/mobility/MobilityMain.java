@@ -21,9 +21,9 @@ import es.tid.ps.mapreduce.mobility.data.CompositeKey;
  * This class generates the mobility of the Telefonica User from de cdrs,
  * Data-Users and Data-Cells. are doing in one map/reduce, and it is this class
  * that configure it. This is the implementation of "Mobility 1.0", during the
- * process we join the cdrs with the Data Users and disscart all lines that the
- * users is not in the list, then clasificate the cdrs by time into "home_time"
- * and work_time, at the end agregate the data by users and cell_id.
+ * process we join the cdrs with the Data Users and discard every line where
+ * users are not listed in, then clasificate the cdrs by time into "home_time"
+ * and work_time, at the end aggregate the data by users and cell_id.
  * */
 public class MobilityMain extends Configured implements Tool {
 
@@ -78,8 +78,7 @@ public class MobilityMain extends Configured implements Tool {
 
         FileOutputFormat.setOutputPath(mobilityJob, outputPath);
         mobilityJob.setSortComparatorClass(NaturalKeySortComparator.class);
-        mobilityJob
-                .setGroupingComparatorClass(NaturalKeySortComparator.class);
+        mobilityJob.setGroupingComparatorClass(NaturalKeySortComparator.class);
 
         return mobilityJob.waitForCompletion(true) ? 0 : 1;
     }

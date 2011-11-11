@@ -85,6 +85,7 @@ echo "%files"                                                >> $BUILD_ROOT/rpm/
 echo '/opt/samson/bin/samson*'                               >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '/opt/samson/bin/delilah'                               >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '/opt/samson/etc/setup.txt'                             >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo '/opt/samson/log'                                       >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%changelog"                                            >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
 #Definition for the devel package
@@ -119,7 +120,7 @@ echo "/opt/samson/share/*"                >> $BUILD_ROOT/rpm/SPECS/$specfile
 # Prepare the files needed for the "samson" package
 #
 rm -rf $PACKAGE_DIR
-mkdir -p $PACKAGE_DIR/opt/samson/{bin,etc,man}
+mkdir -p $PACKAGE_DIR/opt/samson/{bin,etc,man,log}
 mkdir -p $PACKAGE_DIR/opt/samson/{include,lib}
 mkdir -p $PACKAGE_DIR/opt/samson/include/samson/module
 mkdir -p $PACKAGE_DIR/opt/samson/include/samson/modules/system

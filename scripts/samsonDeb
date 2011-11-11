@@ -38,7 +38,7 @@ mkdir -p debian/opt/samson/bin
 mkdir -p debian/opt/samson/etc
 mkdir -p debian/opt/samson/data
 mkdir -p debian/opt/samson/blocks
-mkdir -p debian/opt/samson/logs
+mkdir -p debian/opt/samson/log
 mkdir -p debian/opt/samson/config
 mkdir -p debian/opt/samson/share
 

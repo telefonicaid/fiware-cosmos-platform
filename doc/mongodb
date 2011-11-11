@@ -819,11 +819,13 @@ samson08 - samson09 : MongoDB shard for 'Last Known Location'
 samson05-samson09:
   sudo rm -rf /data/db
   sudo mkdir /data/db
+  sudo chown samson:samson /data/db
   numactl --interleave=all mongod --nojournal --shardsvr --port 2001
 
 samson05
   sudo rm -rf /data/configdb
   sudo mkdir /data/configdb
+  sudo chown samson:samson /data/configdb
   numactl --interleave=all mongod --configsvr --port 2101
   mongos --configdb localhost:2101
   mongo --port 27017
@@ -840,7 +842,7 @@ mongo (in samson05):
   db.runCommand( { addshard : "samson05:2001" } );
   db.runCommand( { addshard : "samson06:2001" } );
   db.runCommand( { addshard : "samson07:2001" } );
-  db.runCommand( { enablesharding : "test" } )
+  db.runCommand( { enablesharding : "PassiveLocation" } )
   use PassiveLocation
   db.History.ensureIndex({"I": 1, "T": 1})
   use admin
@@ -852,7 +854,7 @@ mongo (in samson08):
   use admin
   db.runCommand( { addshard : "samson08:2001" } );
   db.runCommand( { addshard : "samson09:2001" } );
-  db.runCommand( { enablesharding : "test" } )
+  db.runCommand( { enablesharding : "PassiveLocation" } )
   use PassiveLocation
   db.LastKnownLocation.ensureIndex({"I": 1, "T": 1})
   use admin
@@ -867,3 +869,32 @@ delilah (in torkel) to start streaming pipeline
 ?still needed, or are data faked by new additions?
 passiveLocationPush (in torkel)
   passiveLocationPush cdrs --rate 40000 --timeOut 1
+
+
+===============================================================================
+
+Testing db.LastKnownLocation.update ...
+
+# Empty collection
+db.LastKnownLocation.drop()
+
+# Insert a document, _id '1', timestamp '1'
+db.LastKnownLocation.insert( { _id:1, T:1, C:1, X:1, Y:1 });
+db.LastKnownLocation.find()
+
+# Update that only document, changing the timestamp to 2
+db.LastKnownLocation.update( { _id:1 }, { _id:1, T:2, C:1, X:1, Y:1 }, true  )
+db.LastKnownLocation.find()
+
+# Update that only document, changing the timestamp to 3, but only if the old timestamp is 'less than 3' (which it is!)
+db.LastKnownLocation.update( { _id:1, T : { $lt: 3 }  }, { _id:1, T:3, C:1, X:1, Y:1 }, true  )
+db.LastKnownLocation.find()
+
+# Update that only document, changing the timestamp to 2, but only if the old timestamp is 'less than 2' (which it is NOT!)
+db.LastKnownLocation.update( { $and: [ { _id:1 },  { T : { $lt: 2 }  } ] }, { _id:1, T:2, C:1, X:1, Y:1 }, true  )
+db.LastKnownLocation.find()
+# The result is an error, no document found with this condition, but as a document with _id 1 exists, the INSERT fails. All Good!
+
+# Add another document, _id: "2", timestamp: "2"
+db.LastKnownLocation.update( { _id:2 }, { _id:2, T:2, C:1, X:1, Y:1 }, true  )
+db.LastKnownLocation.find()

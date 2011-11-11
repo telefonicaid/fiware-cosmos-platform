@@ -27,18 +27,14 @@ namespace passive_location
 class mongo_location_export : public samson::Map
 {
 	std::string          mongo_ip;
-	std::string          mongo_lastloc_ip;
 	std::string          mongo_db;
-	std::string          mongo_lastloc_db;
 	std::string          mongo_collection;
-	std::string          mongo_lastloc_collection;
+
+	int                  mongo_history;
 	int                  mongo_bulksize;
-	int                  mongo_last_location;
 
 	std::string          mongo_db_path;
-	std::string          mongo_lastloc_db_path;
 	DBClientConnection*  mdbConnection;
-	DBClientConnection*  lastlocConnection;
 
 	std::vector<mongo::BSONObj>  dataVec;
 	int                          inserts;
@@ -58,23 +54,20 @@ public:
 void init(samson::KVWriter* writer)
 {
 	std::string bulksize;
-	std::string last_location;
+	std::string history;
 
 	mdbConnection            = NULL;
 
 	bulksize                 = environment->get("mongo.bulksize",           "30000");
-	last_location            = environment->get("mongo.lastloc",            "1");
+	history                  = environment->get("mongo.history",            "1");
 
 	mongo_ip                 = environment->get("mongo.ip",                 "no-mongo-ip");
-	mongo_lastloc_ip         = environment->get("mongo.lastloc_ip",         mongo_ip);
 	mongo_db                 = environment->get("mongo.db",                 "no-mongo-db");
-	mongo_lastloc_db         = environment->get("mongo.lastloc_db",         mongo_db);
 	mongo_collection         = environment->get("mongo.collection",         "no-mongo-collection");
-	mongo_lastloc_collection = environment->get("mongo.lastloc_collection", "no-mongo-collection");
 
 	
 	mongo_bulksize           = atoi(bulksize.c_str());
-	mongo_last_location      = atoi(last_location.c_str());
+	mongo_history            = atoi(history.c_str());
 
 	if (mongo_ip == "no-mongo-ip")
 	{
@@ -88,21 +81,9 @@ void init(samson::KVWriter* writer)
 		return;
 	}
 
-	if (mongo_lastloc_db == "no-mongo-db")
-	{
-		tracer->setUserError("No last-location db specified. Please specify mongo database db name with 'mongo.lastloc_db' environment variable");
-		return;
-	}
-
 	if (mongo_collection == "no-mongo-collection")
 	{
 		tracer->setUserError("No collection specified. Please specify mongo database collection name with 'mongo.collection' environment variable");
-		return;
-	}
-
-	if (mongo_lastloc_collection == "no-mongo-collection")
-	{
-		tracer->setUserError("No last-location collection specified. Please specify mongo database collection name with 'mongo.lastloc_collection' environment variable");
 		return;
 	}
 
@@ -122,29 +103,7 @@ void init(samson::KVWriter* writer)
 		return;
 	}
 
-	if (mongo_lastloc_ip != mongo_ip)
-	{
-		lastlocConnection = new DBClientConnection();
-		OLM_M(("Connecting to mongo at '%s'", mongo_lastloc_ip.c_str()));
-		
-		try
-		{
-			mdbConnection->connect(mongo_lastloc_ip);
-		}
-		catch(mongo::ConnectException &e)
-		{
-			OLM_E(("Error connecting to mongo at '%s'", mongo_lastloc_ip.c_str()));
-			delete lastlocConnection;
-			lastlocConnection = NULL;
-			tracer->setUserError("error connecting to MongDB at" + mongo_lastloc_ip);
-			return;
-		}
-	}
-	else
-		lastlocConnection = mdbConnection;
-
 	mongo_db_path          = mongo_db         + "." + mongo_collection;
-	mongo_lastloc_db_path  = mongo_lastloc_db + "." + mongo_lastloc_collection;
 
 	inserts    = 0;
 
@@ -186,50 +145,54 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 		key.parse(inputs[0].kvs[i]->key);
 		value.parse(inputs[0].kvs[i]->value);
 
-		mongo::BSONObj record = BSON("I" << (long long int) value.userId.value      <<
-									 "T" << (long long int) value.timestamp.value   <<
-									 "C" << (long long int) value.cellId.value      <<
-									 "X" << (float) value.position.latitude.value   <<
-									 "Y" << (float) value.position.longitude.value);
-
-		if (mongo_last_location == 1)
+		if (mongo_history == 1)
 		{
-			mongo::Query   query;
-			mongo::BSONObj record;
+			mongo::BSONObj  record = BSON("I" << (long long int) value.userId.value      <<
+										  "T" << (long long int) value.timestamp.value   <<
+										  "C" << (long long int) value.cellId.value      <<
+										  "X" << (float) value.position.latitude.value   <<
+										  "Y" << (float) value.position.longitude.value);
 
-			record = BSON("_id" << (long long int) value.userId.value       <<
-						  "T"   << (long long int) value.timestamp.value    <<
-						  "C"   << (long long int) value.cellId.value       <<
-						  "X"   << (float) value.position.latitude.value    <<
-						  "Y"   << (float) value.position.longitude.value);
-			query  = Query(BSON("_id" << (long long int) value.userId.value << 
-								"T"   << BSON("$lt" << (long long int) value.timestamp.value)));
+			dataVec.push_back(record);
 
-			lastlocConnection->update(mongo_lastloc_db_path, query, record, true);
+			++inserts;
+			++insertsAcc;
+
+			if ((inserts % mongo_bulksize) == 0)
+			{
+				// OLM_M(("Inserting bulk of %d records (bulksize: %d)", inserts, mongo_bulksize));
+				mdbConnection->insert(mongo_db_path, dataVec);
+				dataVec.clear();
+				inserts = 0;
+			}
 		}
+		else
+		{
+			mongo::BSONObj  query;
+			mongo::BSONObj  record = BSON("_id" << (long long int) value.userId.value       <<
+										  "T"   << (long long int) value.timestamp.value    <<
+										  "C"   << (long long int) value.cellId.value       <<
+										  "X"   << (float) value.position.latitude.value    <<
+										  "Y"   << (float) value.position.longitude.value);
 
-		dataVec.push_back(record);
+			// db.LastKnownLocation.update( { _id:3, T : { $lt: 3 }  }, { _id:3, T:3, C:1, X:1, Y:1 }, true  )
+			query  = BSON("_id" << (long long int) value.userId.value << "T" << BSON("$lt" << (long long int) value.timestamp.value));
 
-		++inserts;
-		++insertsAcc;
+			mdbConnection->update(mongo_db_path, query, record, true);
+		}
+	}
 
+	if (mongo_history == 1)
+	{
 		if ((inserts % mongo_bulksize) == 0)
 		{
-			// OLM_M(("Inserting bulk of %d records (bulksize: %d)", inserts, mongo_bulksize));
 			mdbConnection->insert(mongo_db_path, dataVec);
 			dataVec.clear();
 			inserts = 0;
 		}
 	}
 
-	if ((inserts % mongo_bulksize) == 0)
-	{
-		mdbConnection->insert(mongo_db_path, dataVec);
-		dataVec.clear();
-		inserts = 0;
-	}
-
-	mdbConnection->ensureIndex(mongo_db_path, fromjson("{I:1}"));
+	// mdbConnection->ensureIndex(mongo_db_path, fromjson("{I:1}"));
 }
 
 
@@ -240,7 +203,7 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 */
 void finish(samson::KVWriter* writer)
 {
-	if (inserts != 0)
+	if ((mongo_history == 1) && (inserts != 0))
 	{
 		mdbConnection->insert(mongo_db_path, dataVec);
 		dataVec.clear();

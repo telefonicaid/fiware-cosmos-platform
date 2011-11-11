@@ -7,6 +7,7 @@
 * - Fill
 * - Upload
 * - Query
+* - update
 */
 #include <sys/types.h>
 #include <signal.h>
@@ -17,6 +18,10 @@
 
 #include "parseArgs.h"
 #include "logMsg.h"
+
+
+
+using namespace mongo;
 
 
 
@@ -57,6 +62,7 @@ int                         recordsInserted  = 0;
 int                         queriesPerformed = 0;
 
 
+
 /* ****************************************************************************
 *
 * Option variables
@@ -69,6 +75,7 @@ bool  empty;
 bool  dbfill;
 bool  upload;
 bool  query;
+bool  update;
 
 int   kvs;
 int   times;
@@ -76,9 +83,8 @@ int   bulksize;
 bool  indexed;
 bool  burst;
 bool  sleepsec;
-int   maxUserId;
-int   minUserId;
 int   userId;
+int   timestamp;
 int   days;
 int   test;
 int   queries;
@@ -96,10 +102,11 @@ PaArgument paArgs[] =
 	{ "-db",       db,          "DB_PATH",     PaString,  PaReq,  PaND,                     PaNL,  PaNL,  "name of data base"          },
 	{ "-coll",     collection,  "COLLECTION",  PaString,  PaReq,  PaND,                     PaNL,  PaNL,  "name of collection"         },
 
-	{ "-clear",    &empty,      "EMPTY",       PaBool,    PaOpt,  false,                    false, true,  "clear data base collection" },
+	{ "-clear",    &::empty,      "EMPTY",       PaBool,    PaOpt,  false,                    false, true,  "clear data base collection" },
 	{ "-fill",     &dbfill,     "FILL",        PaBool,    PaOpt,  false,                    false, true,  "initial filling of db"      },
 	{ "-upload",   &upload,     "UPLOAD",      PaBool,    PaOpt,  false,                    false, true,  "upload data to mongodb"     },
 	{ "-query",    &query,      "QUERY",       PaBool,    PaOpt,  false,                    false, true,  "db query"                   },
+	{ "-update",   &update,     "UPDATE",      PaBool,    PaOpt,  false,                    false, true,  "db update"                  },
 
 	{ "-kvs",      &kvs,        "KEYVALUES",   PaInt,     PaOpt,  40000,                    1,     M512,  "keyvalues"                  },
 	{ "-times",    &times,      "TIMES",       PaInt,     PaOpt,  0,                        0,     PaNL,  "times"                      },
@@ -108,9 +115,8 @@ PaArgument paArgs[] =
 	{ "-burst",    &burst,      "BURST",       PaBool,    PaOpt,  false,                    false, true,  "burst data send"            },
 	{ "-sleep",    &sleepsec,   "SLEEP",       PaBool,    PaOpt,  false,                    false, true,  "sleep rest of second"       },
 	{ "-queries",  &queries,    "QUERIES",     PaInt,     PaOpt,  10000,                    1,     M512,  "no of queries"              },
-	{ "-maxuid",   &maxUserId,  "MAXUSERID",   PaInt,     PaOpt,  M40,                      0,     M512,  "max user id"                },
-	{ "-minuid",   &minUserId,  "MINUSERID",   PaInt,     PaOpt,  1,                        0,     M512,  "min user id"                },
 	{ "-uid",      &userId,     "USERID",      PaInt,     PaOpt,  -1,                      -1,     M512,  "user id"                    },
+	{ "-ts",       &timestamp,  "TIMESTAMP",   PaInt,     PaOpt,  -1,                      -1,     M512,  "timestamp"                  },
 	{ "-days",     &days,       "DAYS",        PaInt,     PaOpt,  0,                        0,     M512,  "days"                       },
 	{ "-test",     &test,       "TEST",        PaInt,     PaOpt,  0,                        0,      100,  "test case"                  },
 
@@ -300,6 +306,48 @@ void dbQuery(void)
 
 /* ****************************************************************************
 *
+* dbUpdate - 
+*/ 
+void dbUpdate(void)
+{
+	mongo::Query    query;
+	mongo::BSONObj  record;
+	long long int   ts;
+	long long int   uid;
+
+	dbConnect();
+
+	if (timestamp == -1)
+		timestamp = time(NULL);
+
+	uid     = (long long int) userId;
+	ts      = (long long int) timestamp;
+
+	record = BSON("_id" << uid                <<
+				  "T"   << ts                 <<
+				  "C"   << (long long int) 1  <<
+				  "X"   << (float) 2.0        <<
+				  "Y"   << (float) 3.0);
+
+	// db.LastKnownLocation.update( { _id:3, T : { $lt: 3 }  }, { _id:3, T:3, C:1, X:1, Y:1 }, true  )
+#if 1
+	mongo::BSONObj q;
+	// query  = Query(BSON("_id" << uid << BSON("T"   << BSON("$lt" << ts))));
+	// query  = Query(BSON("_id" << uid << BSON("T" << "$lt" << ts)));
+	// query  = Query(BSON("_id" << uid << BSONObj("_id" << uid)));
+	// query  = BSON_ARRAY("_id" << uid << BSON_ARRAY("T" << BSON("$lt" << ts)));
+	query     =       BSON("_id" << uid << "T" << BSON( "$lt" << ts));
+#else
+	query  = Query(BSON("_id" << (long long int) userId << BSON("T"   << BSON("$lt" << (long long int) timestamp))));
+#endif
+	
+	mdbConnection->update(dbAndColl, query, record, true);
+}
+
+
+
+/* ****************************************************************************
+*
 * dbUpload - 
 */
 void dbUpload(int kvs, bool oneshot)
@@ -374,7 +422,7 @@ void dbUpload(int kvs, bool oneshot)
 			LM_W(("operation %d took longer than ONE second - %d.%06d secs!", operation, diff.tv_sec, diff.tv_usec));
 		else if (sleepsec == true)
 		{
-			LM_D(("sleeping 0.%06d seconds", 1000000 - diff.tv_usec));
+			LM_V(("sleeping 0.%06d seconds", 1000000 - diff.tv_usec));
 			usleep(1000000 - diff.tv_usec);
 
 			sleepTime.tv_usec += (1000000 - diff.tv_usec);
@@ -497,9 +545,9 @@ int main(int argC, char* argV[])
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
-	if (!empty && !dbfill && !query && !upload)
+	if (!::empty && !dbfill && !query && !upload && !update)
 	{
-		printf("Please pick one if the operating modes: '-clear', '-fill', '-query' or '-upload'\n");
+		printf("Please pick one if the operating modes: '-clear', '-fill', '-query' or '-upload' or '-upload'\n");
 		exit(1);
 	}
 
@@ -508,14 +556,16 @@ int main(int argC, char* argV[])
 
 	srand(time(NULL));
 
-	if (empty)
+	if (::empty)
 		dbClear();
 	else if (dbfill)
 		dbUpload(kvs, true);
 	else if (upload)
 		dbUpload(kvs, false);
 	else if (query != 0)
-		dbQuery();
+		::dbQuery();
+	else if (update != 0)
+		::dbUpdate();
 
 	report();
 

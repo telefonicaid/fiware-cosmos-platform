@@ -68,6 +68,7 @@ SET (STATIC_LIBS
 
 
 include_directories("${PROJECT_SOURCE_DIR}/libs")
+include_directories("/usr/local/KDAB/KDChart-2.3.0/src")
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})		# Required for QT intermediate files to compile
 
 # QT Operations

@@ -187,14 +187,14 @@ static int paArgInit(PaArgument* paList)
 		{
 			if (aP->envName == NULL)
 			{
-				sprintf(aP->name, "par %d", ++parNo);
+				sprintf(aP->name, "parameter %d", ++parNo);
 				aP->what = PawParameter;
 			}
 			else
 			{
 				char envVarName[128];
 
-				sprintf(aP->name, "var %s", paEnvName(aP, envVarName));
+				sprintf(aP->name, "variable/parameter %s", paEnvName(aP, envVarName));
 				aP->what = PawVariable;
 			}
 		}
@@ -204,14 +204,14 @@ static int paArgInit(PaArgument* paList)
 
 			if (aP->envName == NULL)
 			{
-				sprintf(aP->name, "par %d", parNo);
+				sprintf(aP->name, "parameter %d", parNo);
 				aP->what = PawParameter;
 			}
 			else
 			{
 				char envVarName[128];
 
-				sprintf(aP->name, "var %s", paEnvName(aP, envVarName));
+				sprintf(aP->name, "parameter %s", paEnvName(aP, envVarName));
 				aP->what = PawVariable | PawParameter;
 			}
 		}
@@ -444,11 +444,12 @@ int paParse
 
 		if (fP != NULL)
 		{
-			fprintf(fP, "\nEntire command line: '%s'\n\n", paCommandLine);
+			// fprintf(fP, "\nEntire command line: '%s'\n\n", paCommandLine);
 
-			fprintf(fP, "--- %s warnings ---\n", progName);
+			// fprintf(fP, "--- %s warnings ---\n", progName);
 			for (ix = 0; ix < paWarnings; ix++)
-				fprintf(fP, "Severity % 2d: %s\n\n", paWarning[ix].severity, paWarning[ix].string);
+			//	fprintf(fP, "Severity % 2d: %s\n\n", paWarning[ix].severity, paWarning[ix].string);
+				fprintf(fP, "%s\n\n", paWarning[ix].string);
 
 			if (paUsageOnAnyWarning)
 			  paUsage(paList);

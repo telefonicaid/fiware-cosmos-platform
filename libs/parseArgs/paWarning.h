@@ -20,7 +20,6 @@
 #define PA_WARNING(s, txt) \
 do                         \
 {                          \
-    LM_W((txt));           \
     paWarningAdd(s, txt);  \
 } while (0)
 

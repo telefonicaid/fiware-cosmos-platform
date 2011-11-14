@@ -46,7 +46,7 @@ PaArgument paArgs[] =
 	{ "-buffer_size",           &buffer_size,         "BUFFER_SIZE",           PaInt,     PaOpt,       10000000,      1,  64000000,  "Buffer size in bytes"                       },
 	{ "-breaker_sequence",      breaker_sequence,     "BREAKER_SEQUENCE",      PaString,  PaOpt,        _i "\n",   PaNL,      PaNL,  "Breaker sequence ( by default \\n )"        },
 	{ "-lines",                 &lines,               "LINES",                 PaBool,    PaOpt,          false,  false,      true,  "Read std-in line by line"                   },
-	{ " ",                      queue_name,           "QUEUE",                 PaString,  PaOpt,  (long) "null",   PaNL,      PaNL,  "name of the queue to push data"             },
+	{ " ",                      queue_name,           "QUEUE",                 PaString,  PaReq,      _i "null",   PaNL,      PaNL,  "name of the queue to push data"             },
 	PA_END_OF_ARGS
 };
 

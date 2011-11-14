@@ -67,7 +67,7 @@ void paWarningAdd(PaSeverity severity, char* txt)
 	paWarning[ix].string   = strdup(txt);
 	paWarning[ix].severity = severity;
 
-	LM_W((paWarning[ix].string));
+	// LM_W((paWarning[ix].string));
 	++ix;
 
 	++paWarnings;

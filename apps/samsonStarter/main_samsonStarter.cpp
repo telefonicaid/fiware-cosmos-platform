@@ -34,7 +34,7 @@
 */
 char           controllerHost[256];
 int            workers;
-const char*    ips[100];
+const char*    ips[100] = { NULL };
 bool           reset;
 bool           pList;
 bool           local;
@@ -260,6 +260,7 @@ int main(int argC, const char *argV[])
 {
 	memset(controllerHost, 0, sizeof(controllerHost));
 
+	// paConfig("trace levels",                  (void*) "0-255");
 	paConfig("prefix",                        (void*) "SSP_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
@@ -290,10 +291,30 @@ int main(int argC, const char *argV[])
 		ips[2]  = NULL;
 		workers = 1;
 	}
-	
+
+
+#if 0
+	// --------------------------------------------------------------------------
+	//
+	// TEST
+	//
+	printf("%lu elements in ips list\n", (long) ips[0]);
+	for (int ix = 1; ix <= (long) ips[0]; ix++)
+	{
+		printf("ips[%d] == '%s'\n", ix, ips[ix]);
+	}
+	exit(0);
+	//
+	// END TEST
+	//
+	// --------------------------------------------------------------------------
+#endif
+
 	if ((long) ips[0] != workers)
 		LM_X(1, ("%d workers specified on command line, but %d ips in ip-list", workers, (long) ips[0]));
 
+	if (workers == 0)
+	   LM_X(1, ("Can't start without workers ..."));
 
     // Init the engine
     engine::Engine::init();

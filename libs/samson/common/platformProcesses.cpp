@@ -10,13 +10,15 @@
 #include <unistd.h>             // read
 #include <fcntl.h>              // open, O_RDONLY, ...
 #include <sys/stat.h>           // struct stat
+#include <string>               // std::string ?
+#include <stdlib.h>             // free()
 
-#include "logMsg/logMsg.h"             // LM_*
-#include "logMsg/traceLevels.h"        // Lmt*
-#include "samson/common/samsonDirectories.h"  // SAMSON_PLATFORM_PROCESSES
+#include "logMsg/logMsg.h"                    // LM_*
+#include "logMsg/traceLevels.h"               // Lmt*
+#include "samson/common/samsonDirectories.h"  // SAMSON_PLATFORM_PROCESSES_FILENAME
 #include "samson/common/Process.h"            // Process
 #include "samson/common/platformProcesses.h"  // Own interface
-#include <stdlib.h>             // free()
+
 
 
 namespace samson
@@ -28,7 +30,33 @@ namespace samson
 *
 * ppFile - path to samson platform processes file
 */
-static char* ppFile = (char*)  SAMSON_PLATFORM_PROCESSES;
+static char* ppFile  = NULL;
+
+
+
+/* ****************************************************************************
+*
+* platformProcessesPathInit - 
+*/
+void platformProcessesPathInit(const char* working)
+{
+	if (ppFile == NULL)
+	{
+		std::string ppSdtStringFile = std::string(working) + "/etc/" + SAMSON_PLATFORM_PROCESSES_FILENAME;
+		ppFile          = strdup(ppSdtStringFile.c_str());
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* platformProcessesPathGet - 
+*/
+const char* platformProcessesPathGet(void)
+{
+	return ppFile;
+}
 
 
 
@@ -43,6 +71,9 @@ void platformProcessesSave(ProcessVector* pvP)
 	int    tot;
 	int    nb;
 	int    size = sizeof(ProcessVector) + pvP->processes * sizeof(pvP->processV[0]);
+
+	if (ppFile == NULL)
+		LM_X(1, ("platformProcessesPathInit not called ..."));
 
 	LM_T(LmtProcessVector, ("Saving Process Vector of %d processes", pvP->processes));
 	LM_T(LmtProcessVector, ("sizeof(Process): %d", sizeof(pvP->processV[0])));
@@ -103,6 +134,9 @@ ProcessVector* platformProcessesGet(int* sizeP)
 	int             fd;
 	ProcessVector*  pv;
 	int             pvSize;
+
+	if (ppFile == NULL)
+		LM_X(1, ("platformProcessesPathInit not called ..."));
 
 	LM_T(LmtProcessVector, ("Retrieving Process Vector"));
 

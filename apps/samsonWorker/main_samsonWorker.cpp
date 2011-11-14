@@ -22,11 +22,13 @@
 #include "engine/ProcessManager.h"
 
 #include "samson/common/samsonVersion.h"
+#include "samson/common/samsonVars.h"
+#include "samson/common/platformProcesses.h"
+#include "samson/common/SamsonSetup.h"
 #include "samson/network/Network2.h"
 #include "samson/network/Endpoint2.h"
 #include "samson/network/EndpointManager.h"
 #include "samson/worker/SamsonWorker.h"
-#include "samson/common/SamsonSetup.h"
 #include "samson/isolated/SharedMemoryManager.h"
 #include "samson/stream/BlockManager.h"
 #include "samson/module/ModulesManager.h"
@@ -37,23 +39,25 @@
 *
 * Option variables
 */
-bool             noLog;
-bool             local;
-char             workingDir[1024];
+SAMSON_ARG_VARS;
+
+bool     version;
+bool     noLog;
+bool     local;
 
 
 
-#define NOLS    _i "no log server"
-#define DEF_WD  _i SAMSON_DEFAULT_WORKING_DIRECTORY
 /* ****************************************************************************
 *
 * parse arguments
 */
 PaArgument paArgs[] =
 {
-	{ "-nolog",      &noLog,       "NO_LOG",      PaBool,    PaOpt,  false,  false,   true,  "no logging"            },
-	{ "-local",      &local,       "LOCAL",       PaBool,    PaOpt,  false,  false,   true,  "local execution"       },
-	{ "-working",     workingDir,  "WORKING",     PaString,  PaOpt, DEF_WD,   PaNL,   PaNL,  "working directory"     },
+	SAMSON_ARGS,
+
+	{ "-version", &version,  "SS_WORKER_VERSION",  PaBool,    PaOpt,  false,  false,   true,  "print version string and exit" },
+	{ "-nolog",   &noLog,    "SS_WORKER_NO_LOG",   PaBool,    PaOpt,  false,  false,   true,  "no logging"                    },
+	{ "-local",   &local,    "SS_WORKER_LOCAL",    PaBool,    PaOpt,  false,  false,   true,  "local execution"               },
 
 	PA_END_OF_ARGS
 };
@@ -118,7 +122,7 @@ void captureSIGPIPE( int s )
 */
 int main(int argC, const char *argV[])
 {
-	paConfig("prefix",                        (void*) "SSW_");
+	paConfig("builtin prefix",                (void*) "SS_WORKER_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
@@ -152,11 +156,13 @@ int main(int argC, const char *argV[])
     if( signal( SIGPIPE , captureSIGPIPE ) == SIG_ERR )
         LM_W(("SIGPIPE cannot be handled"));
     
+	samson::platformProcessesPathInit("/opt/samson");
+
     // Make sure this singlelton is created just once
     au::LockDebugger::shared();
     
 	samson::SamsonSetup::init();  // Load setup and create default directories
-    samson::SamsonSetup::shared()->setWorkingDirectory(workingDir);
+    samson::SamsonSetup::shared()->setWorkingDirectory(samsonWorking);
     
 	engine::SharedMemoryManager::init(samson::SamsonSetup::getInt("general.num_processess") , samson::SamsonSetup::getUInt64("general.shared_memory_size_per_buffer"));
 	engine::Engine::init();

@@ -11,7 +11,7 @@
 #include <fcntl.h>                 // open, O_RDONLY, ...
 #include <sys/stat.h>              // struct stat
 
-#include "au/LockDebugger.h"            // au::LockDebugger
+#include "au/LockDebugger.h"       // au::LockDebugger
 
 #include "parseArgs/parseArgs.h"
 #include "au/LockDebugger.h"
@@ -24,11 +24,11 @@
 #include "samson/common/samsonVersion.h"
 #include "samson/common/platformProcesses.h"
 #include "samson/common/SamsonSetup.h"
+#include "samson/common/samsonVars.h"
 #include "samson/network/Network2.h"
 #include "samson/network/Endpoint2.h"
 #include "samson/network/EndpointManager.h"
 #include "samson/controller/SamsonController.h"
-#include "samson/common/samsonDirectories.h"
 
 
 
@@ -36,19 +36,21 @@
 *
 * Option variables
 */
-char workingDir[1024];
+SAMSON_ARG_VARS;
+
 bool version;
 
 
 
-#define DEF_WD   _i SAMSON_DEFAULT_WORKING_DIRECTORY
 /* ****************************************************************************
 *
 * parse arguments
 */
 PaArgument paArgs[] =
 {
-	{ "-working",  workingDir, "WORKING", PaString, PaOpt, DEF_WD,  PaNL,  PaNL, "working directory" },
+	SAMSON_ARGS,
+
+	{ "-version", &version,  "SS_CONTROLLER_VERSION",  PaBool,    PaOpt,    false,    false,   true,  "print version string and exit" },
 
 	PA_END_OF_ARGS
 };
@@ -115,8 +117,7 @@ static const char* manVersion       = SAMSON_VERSION;
 */
 int main(int argC, const char* argV[])
 {
-
-	paConfig("prefix",                        (void*) "SSC_");
+	paConfig("builtin prefix",                (void*) "SS_CONTROLLER_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC/FILE[LINE] FUNC: TEXT");
@@ -136,7 +137,7 @@ int main(int argC, const char* argV[])
 
 	if (version)
 	{
-		printf("0.6\n");
+		printf("%s\n", SAMSON_VERSION);
 		exit(1);
 	}
 
@@ -147,13 +148,15 @@ int main(int argC, const char* argV[])
 	atexit(exitFunction);
 	atexit(google::protobuf::ShutdownProtobufLibrary);
 
+	samson::platformProcessesPathInit("/opt/samson");
+
     // Make sure this singlelton is created just once
     au::LockDebugger::shared();
     
 	// Init singletons
 	au::LockDebugger::shared();             // Lock usage debugging (necessary here where there is only one thread)
 	samson::SamsonSetup::init();  // Load setup and create all directories
-    samson::SamsonSetup::shared()->setWorkingDirectory(workingDir);
+    samson::SamsonSetup::shared()->setWorkingDirectory(samsonWorking);
     
     
 	engine::Engine::init();

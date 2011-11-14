@@ -20,6 +20,22 @@ namespace samson
 
 /* ****************************************************************************
 *
+* platformProcessesPathInit - 
+*/
+extern void platformProcessesPathInit(const char* working);
+
+
+
+/* ****************************************************************************
+*
+* platformProcessesPathGet - 
+*/
+extern const char* platformProcessesPathGet(void);
+
+
+
+/* ****************************************************************************
+*
 * platformProcessesSave - 
 */
 extern void platformProcessesSave(ProcessVector* wvP);

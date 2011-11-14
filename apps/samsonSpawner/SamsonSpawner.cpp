@@ -17,7 +17,6 @@
 #include "samson/common/Process.h"
 #include "samson/common/platformProcesses.h"  // platformProcessesSave
 #include "samson/common/ports.h"              // Samson platform ports
-#include "samson/common/samsonDirectories.h"  // SAMSON_PLATFORM_PROCESSES
 #include "samson/network/NetworkInterface.h"
 #include "samson/network/Packet.h"
 #include "samson/network/Network2.h"
@@ -30,7 +29,6 @@
 
 namespace samson
 {
-
 
 
 /* ****************************************************************************
@@ -252,7 +250,7 @@ int SamsonSpawner::timeoutFunction(void)
 {
 	pid_t         pid;
 	int           status;
-	Process*  processP;
+	Process*      processP;
 
 	processListShow("periodic");
 
@@ -308,7 +306,7 @@ int SamsonSpawner::timeoutFunction(void)
 	struct timeval  now;
 	struct timeval  diff;
 	
-	if (access(SAMSON_PLATFORM_PROCESSES, R_OK) != 0)
+	if (access(processListFilename.c_str(), R_OK) != 0)
 		LM_W(("'%s' died - NOT restarting it as the platform processes file isn't in place", processP->name));
 	else if (noRestarts == true)
 		LM_W(("'%s' died - NOT restarting it (option '-noRestarts' used)", processP->name));
@@ -345,7 +343,7 @@ int SamsonSpawner::timeoutFunction(void)
 void SamsonSpawner::reset(Endpoint2* ep)
 {
 	LM_W(("Got a Reset message from '%s'", ep->name()));
-	unlink(SAMSON_PLATFORM_PROCESSES);
+	unlink(processListFilename.c_str());
 
 	LM_T(LmtReset, ("killing local processes"));
 	restartInProgress    = true;

@@ -99,6 +99,9 @@ test_local_processes:
 # Debug Install / Distribute
 # ------------------------------------------------
 
+pdi: debug
+	sudo make -C BUILD_DEBUG install
+
 di:	debuginstall
 
 debuginstall: debug

@@ -20,11 +20,12 @@
 #include "engine/Engine.h"
 
 #include "samson/common/samsonVersion.h"
+#include "samson/common/samsonVars.h"
 #include "samson/common/SamsonSetup.h"
-#include "samson/common/samsonDirectories.h"
 #include "samson/common/Process.h"
 #include "samson/common/ports.h"
 #include "samson/common/daemonize.h"
+#include "samson/common/platformProcesses.h"
 
 #include "SamsonSpawner.h"
 
@@ -34,26 +35,29 @@
 *
 * Option variables
 */
+SAMSON_ARG_VARS;
+
+bool  version;
 bool  fg;
 bool  noRestarts;
 bool  reset;
 bool  local;
-char  workingDir[1024];
 
 
 
-#define DEF_WD  _i SAMSON_DEFAULT_WORKING_DIRECTORY
 /* ****************************************************************************
 *
 * parse arguments
 */
 PaArgument paArgs[] =
 {
-	{ "-fg",      &fg,          "FOREGROUND",   PaBool,    PaOpt,  false,    false,   true,  "don't start as daemon"   },
-	{ "-local",   &local,       "LOCAL",        PaBool,    PaOpt,  false,    false,   true,  "local"                   },
-	{ "-nr",      &noRestarts,  "NO_RESTARTS",  PaBool,    PaOpt,  false,    false,   true,  "don't restart processes" },
-	{ "-reset",   &reset,       "RESET",        PaBool,    PaOpt,  false,    false,   true,  "reset"                   },
-	{ "-working",  workingDir,  "WORKING",      PaString,  PaOpt,  DEF_WD,   PaNL,    PaNL,  "working directory"       },
+	SAMSON_ARGS,
+
+	{ "-version", &version,     "SS_SPAWNER_VERSION",      PaBool,    PaOpt,    false,    false,   true,  "print version string and exit"         },
+	{ "-fg",      &fg,          "SS_SPAWNER_FOREGROUND",   PaBool,    PaOpt,    false,    false,   true,  "don't start as daemon"                 },
+	{ "-local",   &local,       "SS_SPAWNER_LOCAL",        PaBool,    PaOpt,    false,    false,   true,  "start a one-node cluster in localhost" },
+	{ "-nr",      &noRestarts,  "SS_SPAWNER_NO_RESTARTS",  PaBool,    PaOpt,    false,    false,   true,  "don't restart processes"               },
+	{ "-reset",   &reset,       "SS_SPAWNER_RESET",        PaBool,    PaOpt,    false,    false,   true,  "reset"                                 },
 
 	PA_END_OF_ARGS
 };
@@ -66,6 +70,7 @@ PaArgument paArgs[] =
 */
 int                     logFd    = -1;
 samson::SamsonSpawner*  spawnerP = NULL;
+std::string             processListFilename;
 
 
 
@@ -142,12 +147,13 @@ int main(int argC, const char *argV[])
 	signal(SIGINT,  sigHandler);
 	signal(SIGTERM, sigHandler);
 
-	paConfig("prefix",                        (void*) "SSS_");
+	paConfig("builtin prefix",                (void*) "SS_SPAWNER_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC/FILE[LINE] FUNC: TEXT");
 	paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT (FUNC)");
 	paConfig("log to file",                   (void*) true);
+	paConfig("exit on usage",                 (void*) false);
 
     paConfig("man synopsis",                  (void*) manSynopsis);
     paConfig("man shortdescription",          (void*) manShortDescription);
@@ -165,12 +171,21 @@ int main(int argC, const char *argV[])
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
 
+	if (version)
+	{
+		printf("%s\n", SAMSON_VERSION);
+		exit(1);
+	}
+
+	samson::platformProcessesPathInit(samsonWorking);
+	processListFilename = samson::platformProcessesPathGet();
+
 	if ((reset == true) || (local == true))
 	{
-		if (access(SAMSON_PLATFORM_PROCESSES, R_OK) == 0)
+		if (access(processListFilename.c_str(), R_OK) == 0)
 		{
-			if (unlink(SAMSON_PLATFORM_PROCESSES) != 0)
-				LM_X(1, ("Sorry, unable to remove '%s'", SAMSON_PLATFORM_PROCESSES));
+			if (unlink(processListFilename.c_str()) != 0)
+				LM_X(1, ("Sorry, unable to remove '%s'", processListFilename.c_str()));
 		}
 
 		int res;
@@ -195,7 +210,7 @@ int main(int argC, const char *argV[])
 	
     
 	samson::SamsonSetup::init();
-    samson::SamsonSetup::shared()->setWorkingDirectory(workingDir);
+    samson::SamsonSetup::shared()->setWorkingDirectory(samsonWorking);
     
 	engine::Engine::init();
 	engine::MemoryManager::init( samson::SamsonSetup::getUInt64("general.memory") );

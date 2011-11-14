@@ -32,7 +32,6 @@
 #include "traceLevels.h"        // Trace Levels
 #include "parseArgs.h"          // parseArgs
 
-#include "samsonDirectories.h"  // SAMSON_IMAGES
 #include "ports.h"              // LOG_SERVER_PORT
 #include "iomConnect.h"         // iomConnect
 #include "Endpoint.h"           // Endpoint
@@ -113,7 +112,7 @@ bool    noPopups;
 
 
 #define LOC  (long int) "localhost"
-#define IMD  (long int) SAMSON_IMAGES
+#define IMD  (long int) "/opt/samson/config/images"
 /* ****************************************************************************
 *
 * Parse arguments

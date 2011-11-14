@@ -37,7 +37,7 @@ set_stream_operation_property pl.get_mobility_cell_records delayed_processing no
 # Get mobility.Record s ( combination with cell info )
 # ------------------------------------------------------------
 
-add_stream_operation pl.mobility_records  mobility.reduce_cell_latitude_longitude pl.mobility_cell_records pl.cells common.mobility_records pl.mobility_cell_records_error -forward
+add_stream_operation pl.mobility_records  mobility.reduce_cell_latitude_longitude pl.mobility_cell_records pl.cells common.mobility_records,common.mobility_records2 pl.mobility_cell_records_error -forward
 set_stream_operation_property pl.mobility_records max_latency 1
 
 

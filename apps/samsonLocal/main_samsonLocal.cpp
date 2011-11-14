@@ -48,14 +48,14 @@
  *
  * Option variables
  */
+SAMSON_ARG_VARS;
 char             controller[80];
 int              workers;
 bool             noLog;
-char			 workingDir[1024]; 	
 char			 commandFileName[1024];
 bool             thread_mode;
 
-SAMSON_ARG_VARS;
+
 
 #define S01 (long int) "samson01:1234"
 /* ****************************************************************************
@@ -64,7 +64,8 @@ SAMSON_ARG_VARS;
  */
 PaArgument paArgs[] =
 {
-    SAMSON_ARGS,
+	SAMSON_ARGS,
+
 	{ "-controller",  controller,       "CONTROLLER",  PaString,  PaOpt,   S01,   PaNL,   PaNL,  "controller IP:port"  },
 	{ "-workers",     &workers,         "WORKERS",     PaInt,     PaOpt,     1,      1,    100,  "number of workers"   },
 	{ "-nolog",       &noLog,           "NO_LOG",      PaBool,    PaOpt,    false,  false,   true,  "no logging"          },

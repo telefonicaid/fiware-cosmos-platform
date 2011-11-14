@@ -68,7 +68,7 @@ namespace samson
 	void UploadItem::submitToFileManager()
 	{
 		// Add to the file manager to be stored on disk
-        engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( buffer , SamsonSetup::dataFile( fileName ) , dataManager->getEngineId() );
+        engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( buffer , SamsonSetup::shared()->dataFile( fileName ) , dataManager->getEngineId() );
         operation->environment.setSizeT("id", id);
         
         
@@ -132,13 +132,13 @@ namespace samson
 	void DownloadItem::submitToFileManager()
 	{
 		std::string fileName = download_data_file->file().name();
-		size_t size = au::sizeOfFile( SamsonSetup::shared()->dataDirectory + "/" + fileName );
+		size_t size = au::sizeOfFile( SamsonSetup::shared()->dataFile( fileName ) );
 
 		buffer = engine::MemoryManager::shared()->newBuffer( "Buffer for downloading data" , size , MemoryOutputNetwork );
 		buffer->setSize( size );
 
         engine::DiskOperation *operation 
-            = engine::DiskOperation::newReadOperation( buffer->getData() ,  SamsonSetup::dataFile(fileName) , 0 , size , dataManager->getEngineId() );
+            = engine::DiskOperation::newReadOperation( buffer->getData() ,  SamsonSetup::shared()->dataFile(fileName) , 0 , size , dataManager->getEngineId() );
 
         operation->environment.setSizeT("id", id);
         engine::DiskManager::shared()->add( operation );

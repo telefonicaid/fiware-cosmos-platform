@@ -107,7 +107,7 @@ namespace samson {
         
         // Notification of the files
         {
-            int worker_update_files_period = samson::SamsonSetup::getInt("worker.update_files_period");
+            int worker_update_files_period = samson::SamsonSetup::shared()->getInt("worker.update_files_period");
             engine::Notification *notification = new engine::Notification(notification_worker_update_files);
             notification->environment.set("target", "SamsonWorker");
             notification->environment.setInt("worker", network->getWorkerId() );
@@ -116,7 +116,7 @@ namespace samson {
         
         // Notification to update state
         {
-            int worker_update_files_period = samson::SamsonSetup::getInt("worker.update_status_period" );
+            int worker_update_files_period = samson::SamsonSetup::shared()->getInt("worker.update_status_period" );
             engine::Notification *notification = new engine::Notification(notification_samson_worker_send_status_update);
             notification->environment.set("target", "SamsonWorker");
             notification->environment.setInt("worker", network->getWorkerId() );
@@ -125,7 +125,7 @@ namespace samson {
         
         
         {
-            int check_finish_tasks_period = samson::SamsonSetup::getInt("worker.period_check_finish_tasks" );
+            int check_finish_tasks_period = samson::SamsonSetup::shared()->getInt("worker.period_check_finish_tasks" );
             engine::Notification *notification = new engine::Notification(notification_samson_worker_check_finish_tasks);
             engine::Engine::shared()->notify( notification, check_finish_tasks_period );
             
@@ -473,7 +473,7 @@ namespace samson {
         
         DIR *dp;
         struct dirent *dirp;
-        std::string dir_path = SamsonSetup::shared()->dataDirectory;
+        std::string dir_path = SamsonSetup::shared()->dataDirectory();
         if((dp  = opendir( dir_path.c_str() )) == NULL) {
             
             // LOG and error to indicate that data directory cannot be access
@@ -482,7 +482,7 @@ namespace samson {
         
         while ((dirp = readdir(dp)) != NULL) {
             
-            std::string path = SamsonSetup::shared()->dataDirectory + "/" + dirp->d_name;
+            std::string path = SamsonSetup::shared()->dataDirectory() + "/" + dirp->d_name;
             
             struct ::stat info;
             stat(path.c_str(), &info);

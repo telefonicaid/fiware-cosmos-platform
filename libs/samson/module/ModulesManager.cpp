@@ -97,9 +97,7 @@ namespace samson
 	void ModulesManager::addModules()
 	{
 		// Load modules from "~/.samson/modules" && "/etc/samson/modules"
-		std::string modules_dir = SamsonSetup::shared()->modulesDirectory;
-		addModulesFromDirectory( modules_dir );
-		 
+		addModulesFromDirectory( SamsonSetup::shared()->modulesDirectory() );
 	}
 
 	void ModulesManager::addModulesFromDirectory( std::string dir_name )

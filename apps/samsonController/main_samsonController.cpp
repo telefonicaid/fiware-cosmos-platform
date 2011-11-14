@@ -155,14 +155,14 @@ int main(int argC, const char* argV[])
     
 	// Init singletons
 	au::LockDebugger::shared();             // Lock usage debugging (necessary here where there is only one thread)
-	samson::SamsonSetup::init();  // Load setup and create all directories
-    samson::SamsonSetup::shared()->setWorkingDirectory(samsonWorking);
-    
+
+    // Init Samson Setup
+	samson::SamsonSetup::init( samsonHome , samsonWorking );  // Load setup and create all directories
     
 	engine::Engine::init();
 	engine::DiskManager::init(1);
-	engine::ProcessManager::init(samson::SamsonSetup::getInt("general.num_processess"));
-	engine::MemoryManager::init(samson::SamsonSetup::getUInt64("general.memory"));
+	engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
+	engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
     
 	samson::ModulesManager::init();         // Init the modules manager
 

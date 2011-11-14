@@ -435,7 +435,7 @@ namespace samson
             
             
 			// Take the timeout for reading operations from the other site
-			int timeout_setup = SamsonSetup::getInt("isolated.timeout");
+			int timeout_setup = SamsonSetup::shared()->getInt("isolated.timeout");
             
 			LM_T(LmtIsolated, ("Isolated process %s: Reading a new message with timeout %d", getStatus().c_str() , timeout_setup));
             

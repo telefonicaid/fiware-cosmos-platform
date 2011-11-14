@@ -18,6 +18,7 @@
 #include "samson/common/traces.h"				// Traces stuff: samsonInitTrace(.) , ...
 #include "samson/common/SamsonSetup.h"		// samson::SamsonSetup
 #include "samson/common/SamsonSetup.h"		// samson::SamsonSetup
+#include "samson/common/samsonVars.h"       // SAMSON_
 
 #include "samson/module/ModulesManager.h"		// samson::ModulesManager
 #include "samson/module/Operation.h"	// samson::Operation
@@ -54,6 +55,7 @@ char			 workingDir[1024];
 char			 commandFileName[1024];
 bool             thread_mode;
 
+SAMSON_ARG_VARS;
 
 #define S01 (long int) "samson01:1234"
 /* ****************************************************************************
@@ -62,11 +64,11 @@ bool             thread_mode;
  */
 PaArgument paArgs[] =
 {
+    SAMSON_ARGS,
 	{ "-controller",  controller,       "CONTROLLER",  PaString,  PaOpt,   S01,   PaNL,   PaNL,  "controller IP:port"  },
 	{ "-workers",     &workers,         "WORKERS",     PaInt,     PaOpt,     1,      1,    100,  "number of workers"   },
 	{ "-nolog",       &noLog,           "NO_LOG",      PaBool,    PaOpt,    false,  false,   true,  "no logging"          },
 	{ "-thread_mode", &thread_mode,     "THREAD_MODE", PaBool,    PaOpt,    false,  false,   true,  "thread_mode"          },
-	{ "-working",     workingDir,       "WORKING",     PaString,  PaOpt,  _i SAMSON_DEFAULT_WORKING_DIRECTORY,   PaNL,   PaNL,  "Working directory"     },
 	{ "-f",           commandFileName,  "FILE_NAME",   PaString,  PaOpt,  _i "",   PaNL,   PaNL,  "File with commands to run"     },
 	PA_END_OF_ARGS
 };
@@ -140,9 +142,8 @@ int main(int argC, const char *argV[])
     // Make sure this singlelton is created just once
     au::LockDebugger::shared();
     
-    LM_M(("samsonLocal: Seting working directory as %s", workingDir ));
-	samson::SamsonSetup::init(  );		// Load setup and create default directories
-    samson::SamsonSetup::shared()->setWorkingDirectory(workingDir);
+	samson::SamsonSetup::init( samsonHome , samsonWorking );		// Load setup and create default directories
+    samson::SamsonSetup::shared()->createWorkingDirectories();      // Create working directories
 
 	engine::Engine::init();
     
@@ -150,10 +151,10 @@ int main(int argC, const char *argV[])
     // engine::Engine::add( new engine::EngineElementSleepTest() );
     
 	samson::ModulesManager::init();		// Init the modules manager
-	engine::SharedMemoryManager::init( samson::SamsonSetup::getInt("general.num_processess") , samson::SamsonSetup::getUInt64("general.shared_memory_size_per_buffer"));
+	engine::SharedMemoryManager::init( samson::SamsonSetup::shared()->getInt("general.num_processess") , samson::SamsonSetup::shared()->getUInt64("general.shared_memory_size_per_buffer"));
 	engine::DiskManager::init( 1 );
-	engine::ProcessManager::init( samson::SamsonSetup::getInt("general.num_processess") );
-	engine::MemoryManager::init(  samson::SamsonSetup::getUInt64("general.memory") );    
+	engine::ProcessManager::init( samson::SamsonSetup::shared()->getInt("general.num_processess") );
+	engine::MemoryManager::init(  samson::SamsonSetup::shared()->getUInt64("general.memory") );    
 	
     // Block Manager
     samson::stream::BlockManager::init();
@@ -161,7 +162,7 @@ int main(int argC, const char *argV[])
 	// Google protocol buffer deallocation
 	atexit(	google::protobuf::ShutdownProtobufLibrary );
 	
-	LM_M(("samsonLocal: Started with memory=%s and #processors=%d", au::str( samson::SamsonSetup::getUInt64("general.memory") , "B").c_str() , samson::SamsonSetup::getInt("general.num_processess") ));
+	LM_M(("samsonLocal: Started with memory=%s and #processors=%d", au::str( samson::SamsonSetup::shared()->getUInt64("general.memory") , "B").c_str() , samson::SamsonSetup::shared()->getInt("general.num_processess") ));
 	
 	// Fake network element with N workers
     center = new samson::NetworkFakeCenter(workers);

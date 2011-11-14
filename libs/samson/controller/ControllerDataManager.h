@@ -65,7 +65,6 @@ namespace samson {
 		 Get the fileName of the log file
 		 */
 		
-		static std::string getLogFileName( );
 
 		void fill( network::QueueList *ql , std::string command );
 		void fill( network::DownloadDataInitResponse* response , std::string queue );

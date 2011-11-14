@@ -17,6 +17,7 @@ SET (HEADERS
 	coding.h
 	MemoryTags.h
 	KVInputVector.h
+	samsonVars.h
 )
 
 SET (SOURCES

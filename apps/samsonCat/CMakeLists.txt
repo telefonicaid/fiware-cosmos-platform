@@ -16,6 +16,7 @@ SET( STATIC_LIBS
      au
      dl
      lm
+	 pa
      ${COMMON_SAMSON_LIBS}
 )
 

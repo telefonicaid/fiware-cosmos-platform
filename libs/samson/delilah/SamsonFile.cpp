@@ -152,16 +152,14 @@ namespace samson {
             char buffer[1025];
             int n = fread(buffer, 1, 1024, file);
             
-            while( (limit>0) && ( n > 0) )
+            while( n > 0 )
             {
                 int n_written = write(1, buffer, n);
-		if (n_written != n)
-		{
-			LM_E(("Error when writing %d bytes to stdout, only %d written", n, n_written));
-		}
+                if (n_written != n)
+                {
+                    LM_E(("Error when writing %d bytes to stdout, only %d written", n, n_written));
+                }
                 n = fread(buffer, 1,1024, file);
-                
-                limit-= n;
             }
             
             return;
@@ -216,11 +214,11 @@ namespace samson {
                     offset += value->parse(data+offset);
                     
                     std::cout << key->str() << " " << value->str() << std::endl;
-
+                    
                     limit--;
                     if( limit == 0)
                         break;
-
+                    
                 }
                 
                 if( offset != size)

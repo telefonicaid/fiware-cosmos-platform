@@ -18,14 +18,16 @@ namespace hit{
 	{
 
 	public:
+	   
+	   void init( std::string &_concept, size_t _current_time , size_t _current_hits  )
+	   {
+		  concept.value = _concept;
 
-          void init( unsigned long _current_time , size_t _current_hits  )
-          {
-            current_time.value = _current_time;
-            current_hits.value = _current_hits;
-            hits.value = 0;// No hits for the previous slot                                                                                                                               
-          }
-
+		  current_time.value = _current_time;
+		  current_hits.value = _current_hits;
+		  hits.value = 0;// No hits for the previous slot                                                                                                                               
+	   }
+	   
 		  size_t cannonical( size_t input )
 		  {
 			 if ( input == 0 )
@@ -93,6 +95,16 @@ namespace hit{
 			 return hits.value + current_hits.value;
 		  }
 		  
+
+		  std::string str()
+		  {
+			 std::ostringstream output;
+
+			 output << "[ C: " << concept.value << " T: " << current_time.value << " Hits ( " << current_hits.value << "," << hits.value << " ) ]";
+
+			 return output.str();
+		  }
+
 		  
 	};
    

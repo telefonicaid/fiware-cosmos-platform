@@ -10,20 +10,73 @@
 #include "au/CommandLine.h"		// au::CommandLine
 #include "au/ErrorManager.h"           // au::ErrorManager
 
+#include "status.h"                         // Status codes
+
+#include "samsonVars.h"                     // HOME AND WORKING DIRECTORIES
+
 #include "samson/common/samsonDirectories.h"	// SAMSON_SETUP_FILE
 #include "samson/common/SamsonSetup.h"		// Own interface
 
 namespace samson
 {
     
-	void createDirectory( std::string path )
+    SAMSON_EXTERNAL_VARS;
+/*
+ extern char  samsonHome[1024];
+extern char  samsonWorking[1024]
+*/
+    
+	Status createDirectory( std::string path )
 	{
 		if( mkdir(path.c_str()	, 0755) == -1 )
 		{
 			if( errno != EEXIST )
-				LM_X(1,("Error creating directory %s", path.c_str()));
+            {
+                LM_W(("Error creating directory %s (%s)", path.c_str() , strerror(errno)  ));
+                return Error;
+            }
 		}
+        
+        return OK;
 	}
+        
+    
+    Status createFullDirectory( std::string path )
+    {
+        if( path.length() == 0)
+            return Error;
+        
+        std::vector<std::string> components;
+        au::split( path , '/' , components );
+        
+        std::string accumulated_path;
+        if( path[0] == '/' )
+            accumulated_path += "/";
+
+        
+        for ( size_t i = 0 ; i < components.size() ; i++)
+        {
+            accumulated_path += components[i];
+            Status s = createDirectory(accumulated_path);
+            if( s != OK )
+            {
+                LM_W(("Error creating directory %s (%s)" , accumulated_path.c_str()  , status(s) ));
+                return s;
+            }
+            
+            accumulated_path += "/";
+            
+        }
+        
+        return OK;
+    }
+    
+    std::string cannonical_path( std::string path )
+    {
+        while( (path.size() > 0) && (path[ path.size()-1 ] == '/' ))
+            path.erase(path.size()-1);
+        return path;
+    }
     
     
 #pragma mark SetupItemCollection
@@ -114,6 +167,14 @@ namespace samson
         item->setValue( value );
     }
     
+    void SetupItemCollection::resetToDefaultValues()
+    {
+        au::map< std::string , SetupItem >::iterator it_items;
+        for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
+            it_items->second->resetToDefaultValue();
+    }
+    
+    
     std::string SetupItemCollection::str()
     {
         std::ostringstream output;
@@ -170,7 +231,7 @@ namespace samson
 	}
 	
     
-	void SamsonSetup::init()
+	void SamsonSetup::init( std::string samson_home , std::string samson_working )
 	{
         if( samsonSetup )
         {
@@ -178,7 +239,9 @@ namespace samson
             return;
         }
         
-		samsonSetup = new SamsonSetup( );
+		samsonSetup = new SamsonSetup( samson_home , samson_working );
+
+        
         
 	}
 
@@ -189,61 +252,27 @@ namespace samson
         delete samsonSetup;
         samsonSetup = NULL;
         
-        
-	}
-
-    
-    void SamsonSetup::setWorkingDirectory( std::string workingDirectory )
-	{
-
-		baseDirectory = workingDirectory;
-
-		logDirectory        = workingDirectory + "/log";
-		dataDirectory		= workingDirectory + "/data";
-        blocksDirectory     = workingDirectory + "/blocks";
-		modulesDirectory	= workingDirectory + "/modules";
-		setupDirectory		= workingDirectory + "/etc";
-		setupFile			= setupDirectory   + "/setup.txt";
-		configDirectory			= workingDirectory + "/config";
-				
-		// Create directories if necessary
-		createDirectory( workingDirectory );
-		createDirectory( logDirectory );
-		createDirectory( dataDirectory );
-		createDirectory( blocksDirectory );
-        createDirectory( modulesDirectory );        
-		createDirectory( setupDirectory );			
-		createDirectory( configDirectory );			
-		
-		// Load values from file ( if exist )
-		load( setupFile );
-        
-        // Check everything looks ok
-        au::ErrorManager errorManager;
-        check(&errorManager);
-        
-        if( errorManager.isActivated() ) 
-        {
-            LM_X(1, ("Error checking setup: %s" , errorManager.getMessage().c_str() ));
-        }
 	}
 	
-	SamsonSetup::SamsonSetup( )
+	SamsonSetup::SamsonSetup( std::string samson_home , std::string samson_working )
 	{
+        // Basic directories
+        _samson_home = cannonical_path( samson_home );
+        _samson_working = cannonical_path( samson_working );
         
         // General Platform parameters
-        add( "general.memory" , "10000000000" , "Global available memory " );                                    // Memory 2G
-        add( "general.num_processess" , "16" , "Number of cores" );                                              // Number of cores 2
-        add( "general.max_file_size" , "1000000000" , "Max size for generated files" );                          // Max file size 100 Mb
+        add( "general.memory" , "10000000000" , "Global available memory " );                                           // Memory 2G
+        add( "general.num_processess" , "16" , "Number of cores" );                                                     // Number of cores 2
+        add( "general.max_file_size" , "1000000000" , "Max size for generated files" );                                 // Max file size 100 Mb
         add( "general.shared_memory_size_per_buffer" , "268435456" , "Size of the shared memory segments" );            // Shared memory suze 64Mb
 
 		add( "general.max_parallel_outputs" , "2" , "Max number of parallel outputs");
 
         // Isolation Process
-		add( "isolated.timeout" , "300" , "Timeout for all 3rd partty operations" );                            // Max time isolated
+		add( "isolated.timeout" , "300" , "Timeout for all 3rd partty operations" );                                    // Max time isolated
 
         // Upload & Download operations
-		add( "load.buffer_size" , "67108864" , "Size of the data block for load operations" );                  // Load in blocks of 64 Mbytes
+		add( "load.buffer_size" , "67108864" , "Size of the data block for load operations" );                          // Load in blocks of 64 Mbytes
         
         // Delilah Client
         add("delilah.automatic_update_period" , "2" , "Period for the automatic update of information from the samson cluster" );      
@@ -260,38 +289,106 @@ namespace samson
         add("stream.min_operation_input_size" , "100000000" , "Minimum input data ( in bytes ) to run an automatic stream processing task");
         add("stream.max_operation_input_size" , "400000000" , "Maximum input data ( in bytes ) to run an automatic stream processing task");
         add("stream.max_state_division_size"  , "100000000" , "Maximum size for a division for a particular queue. If higher, queues automatically breaks apart");
+     
+        // load setup file
+        load( setupFileName() );
+
+        /*
+        // Check everything looks ok
+        au::ErrorManager errorManager;
+        check(&errorManager);
+        
+        if( errorManager.isActivated() ) 
+        {
+            LM_X(1, ("Error checking setup: %s" , errorManager.getMessage().c_str() ));
+        }        
+        */
         
 	}
 
+    std::string SamsonSetup::setupFileName()
+    {
+        return _samson_working + "/etc/setup.txt";
+    }
+    
+    std::string SamsonSetup::dataDirectory( )
+    {
+        return _samson_working + "/data";
+    }
+    
+    std::string SamsonSetup::dataFile( std::string filename )
+    {
+        return _samson_working + "/data/" + filename;
+    }
+    
+    std::string SamsonSetup::sharedMemoryLogFileName()
+    {
+        return _samson_working + "/log/shared_memory_ids.data";
+    }
+    
+    std::string SamsonSetup::controllerLogFileName()
+    {
+        return _samson_working + "/log/log_controller";
+    }
+    std::string SamsonSetup::modulesDirectory()
+    {
+        return _samson_home + "/modules";
+    }
+    
+    std::string SamsonSetup::blocksDirectory()
+    {
+        return _samson_working + "/blocks";
+    }
+    
+    std::string SamsonSetup::blockFileName( size_t id )
+    {
+        return _samson_working + "/blocks/" + au::str("%lu",id);
+    }
+    
+    std::string SamsonSetup::streamManagerLogFileName()
+    {
+        return _samson_working + "/log/log_stream_state.txt";
+    }
+    
+    std::string SamsonSetup::streamManagerAuxiliarLogFileName()
+    {
+        return _samson_working + "/log/log_stream_state.txt";
+    }
+    
     std::string SamsonSetup::get( std::string name )
     {
-        if( !samsonSetup )
-            LM_X(1, ("Please init SamsonSetup with SamsonSetup::init()"));
-
-        return samsonSetup->getValueForParameter( name );
+        return getValueForParameter( name );
     }
     
     size_t SamsonSetup::getUInt64( std::string name )
     {
-        if( !samsonSetup )
-            LM_X(1, ("Please init SamsonSetup with SamsonSetup::init()"));
-     
-        std::string value = samsonSetup->getValueForParameter( name );
-        
+        std::string value = getValueForParameter( name );
         return atoll( value.c_str() );
     }
 
     int SamsonSetup::getInt( std::string name )
     {
-        if( !samsonSetup )
-            LM_X(1, ("Please init SamsonSetup with SamsonSetup::init()"));
-        
-        std::string value = samsonSetup->getValueForParameter( name );
-        
+        std::string value = getValueForParameter( name );
         return atoi( value.c_str() );
     }
     
 	
+    
+    void SamsonSetup::createWorkingDirectories()
+    {
+        if( createFullDirectory( _samson_working ) != OK )
+            LM_X(1,("Error creating directory %s" , _samson_working.c_str() ));
+        if( createFullDirectory( _samson_working + "/data" )!= OK )
+            LM_X(1,("Error creating directory %s" , _samson_working.c_str() ));
+        if( createFullDirectory( _samson_working + "/log" )!= OK )
+            LM_X(1,("Error creating directory %s" , _samson_working.c_str() ));
+        if( createFullDirectory( _samson_working + "/blocks" )!= OK )
+            LM_X(1,("Error creating directory %s" , _samson_working.c_str() ));
+        if( createFullDirectory( _samson_working + "/etc" )!= OK )
+            LM_X(1,("Error creating directory %s" , _samson_working.c_str() ));
+        if( createFullDirectory( _samson_working + "/config" )!= OK )
+            LM_X(1,("Error creating directory %s" , _samson_working.c_str() ));
+    }
     
     void SamsonSetup::check( au::ErrorManager *error )
 	{
@@ -320,11 +417,7 @@ namespace samson
         
 	}
 
-    std::string SamsonSetup::dataFile( std::string filename )
-    {
-        return samsonSetup->dataDirectory + "/" + filename;
-    }
-	
+ 	
     
     void SamsonSetup::edit()
     {
@@ -388,6 +481,9 @@ namespace samson
     
     int SamsonSetup::save()
     {
+        // Recover the name of setup file
+        std::string setupFile = setupFileName();
+        
         FILE *file = fopen( setupFile.c_str() , "w" );
         if( !file )
         {

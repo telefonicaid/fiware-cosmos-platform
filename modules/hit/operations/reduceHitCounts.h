@@ -26,9 +26,9 @@ class reduceHitCounts : public samson::Reduce
    samson::system::String key;         // Key concept
    samson::system::UInt tmp_hits;      // Input counter for this key 
 
-	samson::hit::HitCount hitCount;    // State hitCounter for this concept
+   samson::hit::HitCount hitCount;    // State hitCounter for this concept
 
-	unsigned long current_time;        // Current time common to all the key-values
+   size_t current_time;        // Current time common to all the key-values
 
 public:
 
@@ -50,23 +50,32 @@ public:
 
 	void init(samson::KVWriter *writer )
 	{
-		current_time = time(NULL)/300; // Blocks of 5 minute ( to be selected with environment variable )
+	   int time_division_size = 10;  // Number of seconds for each "time slot"
+
+		current_time = time(NULL)/time_division_size; // Blocks of 5 minute ( to be selected with environment variable )
+		OLM_M(("Current time %lu" , current_time ));
 	}
 
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 	{
-		if( inputs[0].num_kvs > 0 )
-		{
-			key.parse( inputs[0].kvs[0]->key );
-			hitCount.parse( inputs[0].kvs[0]->value );
-		}
-		else if( inputs[1].num_kvs > 0 )
+
+
+		if( inputs[1].num_kvs > 0 )
 		{
 			key.parse( inputs[1].kvs[0]->key );
-			hitCount.init( current_time , 0 );  // Current hits '0'
+			hitCount.parse( inputs[1].kvs[0]->value );
+		}
+		else if( inputs[0].num_kvs > 0 )
+		{
+
+		   key.parse( inputs[0].kvs[0]->key );
+		   hitCount.init( key.value, current_time , 0 );  // Current hits '0'
 		}
 		else
+		{
 			tracer->setUserError("Running operation with any key-value at input 0 or input 1");
+			return;
+		}
 
 
 		// Get the number of hits
@@ -79,8 +88,14 @@ public:
 
 		// Update the hitCount structure with the number of this.
 		// It returns true if we need to notify at the output
-		bool sent_update = hitCount.update( current_time , num_hits );
 
+		OLM_M(("Updating %s with %d hits" , key.value.c_str() ,  (int)num_hits ));
+		OLM_M(("HitCount %s (%s)" , key.value.c_str() , hitCount.str().c_str() ));
+
+		bool sent_update = hitCount.update( current_time , num_hits );
+		
+		OLM_M(("HitCount %s (%s)" , key.value.c_str() , hitCount.str().c_str() ));
+		
 
 		// Emit state at output "0" if necessary ( changes significantly )
 		if( sent_update )

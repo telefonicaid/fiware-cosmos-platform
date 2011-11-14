@@ -66,7 +66,7 @@ namespace samson
 	
 	void ControllerTaskManager::reviewTasks()
 	{
-        int max_num_paralell_outputs = SamsonSetup::getInt("general.max_parallel_outputs");
+        int max_num_paralell_outputs = SamsonSetup::shared()->getInt("general.max_parallel_outputs");
         
 		int num_paralell_outputs = 0;
 

@@ -372,8 +372,9 @@ namespace samson {
         
         void StreamManager::saveStateToDisk()
         {
-            std::string fileName = SamsonSetup::shared()->logDirectory + "/" + "log_stream_state.txt";
-            std::string tmp_fileName = SamsonSetup::shared()->logDirectory + "/" + "tmp_log_stream_state.txt";
+            
+            std::string fileName = SamsonSetup::shared()->streamManagerLogFileName();
+            std::string tmp_fileName = SamsonSetup::shared()->streamManagerAuxiliarLogFileName();
             
             std::ostringstream output;
 
@@ -443,7 +444,8 @@ namespace samson {
             // Recovery list for the blocks...
             BlockList recovery_list("recovery_list");
             
-            std::string fileName = SamsonSetup::shared()->logDirectory + "/" + "log_stream_state.txt";
+            std::string fileName = SamsonSetup::shared()->streamManagerLogFileName();
+            
             FILE *file = fopen( fileName.c_str() , "r" );
 
             if( !file )

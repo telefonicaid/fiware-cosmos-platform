@@ -62,7 +62,7 @@ namespace samson {
 
         Block* BlockList::createBlockFromDisk( size_t id )
         {
-            std::string fileName =  Block::getFileNameForBlock( id );
+            std::string fileName =  SamsonSetup::shared()->blockFileName( id );
             
             FILE *file = fopen( fileName.c_str() , "r" );
             if(!file)

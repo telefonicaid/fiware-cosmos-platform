@@ -29,7 +29,7 @@ namespace samson {
         
             memory = 0;
             
-            max_memory = (double)SamsonSetup::getUInt64("general.memory")*0.8;  // 80% of memory for block manager
+            max_memory = (double)SamsonSetup::shared()->getUInt64("general.memory")*0.8;  // 80% of memory for block manager
 
         }
         
@@ -302,18 +302,18 @@ namespace samson {
             
             DIR *dp;
             struct dirent *dirp;
-            std::string dir_path = SamsonSetup::shared()->blocksDirectory;
+            std::string dir_path = SamsonSetup::shared()->blocksDirectory();
             if((dp  = opendir( dir_path.c_str() )) == NULL) {
                 
                 // LOG and error to indicate that data directory cannot be access
-                LM_W(("Not possible to open block directory %s to review old files" , SamsonSetup::shared()->blocksDirectory.c_str() ));
+                LM_W(("Not possible to open block directory %s to review old files" , SamsonSetup::shared()->blocksDirectory().c_str() ));
                 return;
             }
             
             while ((dirp = readdir(dp)) != NULL) 
             {
                 // Full path of the file
-                std::string path = SamsonSetup::shared()->blocksDirectory + "/" + dirp->d_name;
+                std::string path = SamsonSetup::shared()->blocksDirectory() + "/" + dirp->d_name;
                 
                 struct ::stat info;
                 stat(path.c_str(), &info);

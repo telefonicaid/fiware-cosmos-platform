@@ -481,7 +481,7 @@ namespace samson
         addFile( fileName , queue , info );
 
 		// Submit the operation
-        engine::DiskOperation *operation = engine::DiskOperation::newAppendOperation(  buffer ,  SamsonSetup::dataFile( fileName ) , getEngineId() );
+        engine::DiskOperation *operation = engine::DiskOperation::newAppendOperation(  buffer ,  SamsonSetup::shared()->dataFile( fileName ) , getEngineId() );
         addDiskOperation(operation);
 	}
 	

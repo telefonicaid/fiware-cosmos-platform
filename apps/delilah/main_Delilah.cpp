@@ -157,7 +157,7 @@ int main(int argC, const char *argV[])
     // Make sure this singlelton is created just once
     au::LockDebugger::shared();
 
-	samson::SamsonSetup::init();			// Load the main setup file
+	samson::SamsonSetup::init("","");			// Load the main setup file
 	
 	// Setup parameters from command line ( this is delilah so memory and load buffer size are configurable from command line )
     size_t _memory = (size_t) memory_gb * (size_t) (1024*1024*1024);
@@ -174,8 +174,8 @@ int main(int argC, const char *argV[])
 
 	engine::Engine::init();
 	engine::DiskManager::init(1);
-	engine::ProcessManager::init(samson::SamsonSetup::getInt("general.num_processess"));
-	engine::MemoryManager::init(samson::SamsonSetup::getUInt64("general.memory"));
+	engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
+	engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
     
 	samson::ModulesManager::init();         // Init the modules manager
 	

@@ -361,13 +361,13 @@ namespace samson
 		// Division is done in such a way that any of the parts do not get overloaded
 		
 		// Number of paralel processes in this system
-		int num_process = SamsonSetup::getInt("general.num_processess");
+		int num_process = SamsonSetup::shared()->getInt("general.num_processess");
 		
 		// Maximum size per hash-group
 		size_t max_size_per_group = reduceInformation->total_size / ( 4 * num_process );
 		
 		// Another limit for memory reasons
-		size_t max_size_per_group2 = ( SamsonSetup::getUInt64("general.memory") /4) - reduceInformation->total_num_input_files*KVFILE_NUM_HASHGROUPS*sizeof(KVInfo) - sizeof(KVHeader);
+		size_t max_size_per_group2 = ( SamsonSetup::shared()->getUInt64("general.memory") /4) - reduceInformation->total_num_input_files*KVFILE_NUM_HASHGROUPS*sizeof(KVInfo) - sizeof(KVHeader);
 		if( max_size_per_group2 < max_size_per_group)
 			max_size_per_group = max_size_per_group2;
 		
@@ -425,7 +425,7 @@ namespace samson
 		size_t offset			= sizeof( KVHeader );					// We skip the file header
 		size_t size				= sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
 		
-		engine::DiskOperation *item = engine::DiskOperation::newReadOperation(  SamsonSetup::dataFile( file->fileName ) , offset , size , file->getSimpleBufferForInfo() , getEngineId() );
+		engine::DiskOperation *item = engine::DiskOperation::newReadOperation(  SamsonSetup::shared()->dataFile( file->fileName ) , offset , size , file->getSimpleBufferForInfo() , getEngineId() );
 		return item;
 	}	
 	
@@ -493,7 +493,7 @@ namespace samson
 			// Schedule the read operation into the FileManager to read data content
 			engine::DiskOperation *item 
 			= engine::DiskOperation::newReadOperation( \
-									   SamsonSetup::dataFile( reduceInformation->file[f]->fileName ) , \
+									   SamsonSetup::shared()->dataFile( reduceInformation->file[f]->fileName ) , \
 									  reduceInformation->file[f]->getFileOffset( hg_begin ), \
 									  header.info.size, \
 									  buffer->getSimpleBufferAtOffset(offset),\
@@ -533,7 +533,7 @@ namespace samson
 		buffer = NULL;
 		
 		// Compute the required size for this operation
-		fileSize = au::sizeOfFile( SamsonSetup::shared()->dataDirectory + "/" + fileName );	
+		fileSize = au::sizeOfFile( SamsonSetup::shared()->dataFile( fileName ) );	
 		
         info.append( fileSize , 1 );    // Accumulated total input data
         
@@ -559,7 +559,7 @@ namespace samson
             if( !buffer )
                 LM_X(1,("Intern error: No buffer in read operations of task"));
             // Single file to be parsed
-            engine::DiskOperation *item = engine::DiskOperation::newReadOperation(  SamsonSetup::dataFile(fileName) , 0, fileSize, buffer->getSimpleBuffer() , getEngineId() );
+            engine::DiskOperation *item = engine::DiskOperation::newReadOperation(  SamsonSetup::shared()->dataFile(fileName) , 0, fileSize, buffer->getSimpleBuffer() , getEngineId() );
             addReadOperation(item);
         }
 		
@@ -612,7 +612,7 @@ namespace samson
 		reduceInformation->setup();
 		
 		// Organize the content so, that we generate necessary files
-		size_t max_item_content_size = SamsonSetup::getUInt64("general.max_file_size");
+		size_t max_item_content_size = SamsonSetup::shared()->getUInt64("general.max_file_size");
 		
 		// Create necessary reduce operations
 		int hg = 1;												// Evaluating current hash group	
@@ -651,7 +651,7 @@ namespace samson
 		size_t offset			= sizeof( KVHeader );					// We skip the file header
 		size_t size				= sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
 		
-		engine::DiskOperation *item = engine::DiskOperation::newReadOperation(  SamsonSetup::dataFile(file->fileName) , offset , size , file->getSimpleBufferForInfo() , getEngineId() );
+		engine::DiskOperation *item = engine::DiskOperation::newReadOperation(  SamsonSetup::shared()->dataFile(file->fileName) , offset , size , file->getSimpleBufferForInfo() , getEngineId() );
 		//item->tag = task->task_id;
 		return item;
 	}		
@@ -717,7 +717,7 @@ namespace samson
 			// Schedule the read operation into the FileManager to read data content
 			engine::DiskOperation *item 
 			= engine::DiskOperation::newReadOperation( \
-									   SamsonSetup::dataFile( reduceInformation->file[f]->fileName ) , \
+									   SamsonSetup::shared()->dataFile( reduceInformation->file[f]->fileName ) , \
 									  reduceInformation->file[f]->getFileOffset( hg_begin ), \
 									  header.info.size, \
 									  buffer->getSimpleBufferAtOffset(offset) , \

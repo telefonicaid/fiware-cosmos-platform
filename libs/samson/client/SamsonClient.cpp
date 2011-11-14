@@ -163,8 +163,10 @@ namespace samson {
     bool SamsonClient::init( std::string controller )
     {
                 
-        // Init the setup system
-        samson::SamsonSetup::init();    
+        
+        // Init the setup system 
+        LM_TODO(("Add the possibility to set particular directories for this..."));
+        samson::SamsonSetup::init( "/opt/samson/" , "/var/samson/" );    
 
         // Change the values for this parameters
         samson::SamsonSetup::shared()->setValueForParameter("general.memory", au::str("%lu",memory) );
@@ -172,11 +174,8 @@ namespace samson {
         
         engine::Engine::init();
         engine::DiskManager::init(1);
-        engine::ProcessManager::init(samson::SamsonSetup::getInt("general.num_processess"));
-        engine::MemoryManager::init(samson::SamsonSetup::getUInt64("general.memory"));
-        
-        // Modify modules directory to use modules ( samsonPop )
-        SamsonSetup::shared()->modulesDirectory = "/opt/samson/modules";
+        engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
+        engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
         
         samson::ModulesManager::init();         // Init the modules manager
         

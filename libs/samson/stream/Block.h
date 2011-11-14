@@ -84,10 +84,7 @@ namespace samson {
             // Set and Get priority ( manual ordering if blocks are not assigned to tasks )
             void setPriority( int _priority );
             int getPriority();
-            
-            // Statis function to give names to the files on disk
-            static std::string getFileNameForBlock( size_t id );
-            
+                        
             // Check if this block is not in any list anymore
             int getNumberOfLists();
 

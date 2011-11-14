@@ -15,8 +15,8 @@ Module hit
 
 data Hit
 {
-    system.String concept;
-	system.UInt hits;
+    system.String concept;     # Concept name ( word )
+	system.UInt hits;		   # Number of times this word appears
 }
 
 data HitCollection
@@ -26,7 +26,9 @@ data HitCollection
 
 data HitCount
 {
-	system.UInt   current_time;     # Slot of the time-stamp
+	system.String concept;          # Concept for this hit
+	system.UInt   current_time;     # Slot of the time-stamp ( usually time(NULL)/Constant )
+
     system.UInt   current_hits;     # Hits during current slot
     system.UInt   hits;             # Hits during previous slot ( really used to detect maximums )
 }
@@ -64,9 +66,8 @@ reduce reduceHitCountCollection
 	helpLine "Filter top elements per global-concept"
 }
 
-#
-# State is the top elements with more hist ( and the list of most hits in the current time-slot )
-#
+
+
 
 ################################################################
 # Other operations

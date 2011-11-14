@@ -207,13 +207,11 @@ int main(int argC, const char *argV[])
 
     // Make sure this singlelton is created just once
     au::LockDebugger::shared();
-	
     
-	samson::SamsonSetup::init();
-    samson::SamsonSetup::shared()->setWorkingDirectory(samsonWorking);
+	samson::SamsonSetup::init( samsonHome , samsonWorking );
     
 	engine::Engine::init();
-	engine::MemoryManager::init( samson::SamsonSetup::getUInt64("general.memory") );
+	engine::MemoryManager::init( samson::SamsonSetup::shared()->getUInt64("general.memory") );
 
 	spawnerP = new samson::SamsonSpawner();
 	spawnerP->init();	

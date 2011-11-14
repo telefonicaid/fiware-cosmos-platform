@@ -12,7 +12,6 @@
 
 #define SAMSON_CONTROLLER_DEFAULT_PORT		1234
 #define SAMSON_WORKER_DEFAULT_PORT			1235
-#define SAMSON_DEFAULT_WORKING_DIRECTORY	"/opt/samson"
 
 namespace au {
     class ErrorManager;
@@ -80,6 +79,10 @@ namespace samson {
             return name.substr(0, name.find(".",0 ) );
         }
         
+        void resetToDefaultValue()
+        {
+            value_available =  false;
+        }
         
     };
     
@@ -108,6 +111,9 @@ namespace samson {
         // Check if a particular property if defined
         bool isParameterDefined( std::string name );
         
+        // Come back to default parameters
+        void resetToDefaultValues();
+        
         std::string str();
         
     };
@@ -116,36 +122,39 @@ namespace samson {
 	class SamsonSetup : public SetupItemCollection
 	{
 		
-		SamsonSetup( );
+		SamsonSetup( std::string samson_home , std::string samson_working );
+        
+        std::string _samson_home;           // Home directory for SAMSON system
+        std::string _samson_working;        // Working directory for SAMSON system
 		
 	public:
 
-		static void init( );
+		static void init( std::string samson_home , std::string samson_working );
 		static void destroy( );
 		static SamsonSetup *shared();
-
-        // Set the main working directory ( for worker, controller )
-        void setWorkingDirectory( std::string workingDirectory );
-        
-		// Directories
-		std::string baseDirectory;
-		std::string logDirectory;
-		std::string dataDirectory;
-		std::string blocksDirectory;
-		std::string modulesDirectory;
-		std::string setupDirectory;
-		std::string setupFile;
-		std::string configDirectory;
-        
-        static std::string dataFile( std::string filename );
 		
         
         // Get access to parameters
+        std::string get( std::string name );
+        size_t getUInt64( std::string name );
+        int getInt( std::string name );
+
+        // Get names fo files
+        std::string setupFileName();                         // Get the Steup file
+        std::string sharedMemoryLogFileName();
+        std::string controllerLogFileName();
+        std::string dataDirectory(  );     
+        std::string dataFile( std::string filename );        // Get the name of a particular data file ( batch processing )
+        std::string modulesDirectory();
+        std::string blocksDirectory();
+        std::string blockFileName( size_t id );
+        std::string streamManagerLogFileName();
+        std::string streamManagerAuxiliarLogFileName();
         
-        static std::string get( std::string name );
-        static size_t getUInt64( std::string name );
-        static int getInt( std::string name );
         
+        // Create working directories
+        void createWorkingDirectories();
+
 	public:
 		
 		// Check if everything is ok. Exit if not

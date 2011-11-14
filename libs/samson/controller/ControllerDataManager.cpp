@@ -35,7 +35,7 @@ namespace samson {
 #pragma mark ----
 
     
-	ControllerDataManager::ControllerDataManager( SamsonController * _controller ) : DataManager( getLogFileName() )
+	ControllerDataManager::ControllerDataManager( SamsonController * _controller ) : DataManager( SamsonSetup::shared()->controllerLogFileName() )
 	{
         // Pointer to the contorller
         controller = _controller;
@@ -632,10 +632,6 @@ namespace samson {
 	
 	
 	
-	std::string ControllerDataManager::getLogFileName(   )
-	{
-		return SamsonSetup::shared()->logDirectory + "/log_controller";
-	}
 	
 	std::string ControllerDataManager::getStatus()
 	{
@@ -869,7 +865,7 @@ namespace samson {
 		}
 
 		// Check too many outputs error
-        int max_num_outputs = SamsonSetup::getInt("general.max_parallel_outputs"); 
+        int max_num_outputs = SamsonSetup::shared()->getInt("general.max_parallel_outputs"); 
         
 		if( info->operation->getType() != Operation::script )
 			if( (int)info->outputs.size() > max_num_outputs )

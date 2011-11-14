@@ -87,7 +87,7 @@ namespace samson {
 			file_size += (*iter)->getSize();
         }
      
-        size_t max_file_size = SamsonSetup::getUInt64("general.max_file_size");
+        size_t max_file_size = SamsonSetup::shared()->getUInt64("general.max_file_size");
         
         if( file_size > max_file_size )
         {
@@ -109,7 +109,7 @@ namespace samson {
         for (  au::list<engine::Buffer>::iterator iter = buffers.begin() ; iter != buffers.end() ; iter++)
 			file_size += (*iter)->getSize();
         
-        size_t max_file_size = SamsonSetup::getUInt64("general.max_file_size");
+        size_t max_file_size = SamsonSetup::shared()->getUInt64("general.max_file_size");
         
         if( file_size > max_file_size )
         {

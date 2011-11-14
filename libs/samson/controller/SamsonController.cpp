@@ -386,6 +386,12 @@ namespace samson {
                 network->send( fromId,  p2);
             }
                 break;
+             
+            case Message::WorkerCommandResponse:
+            {
+                // Nothing to do with confirmations from worker
+                return;
+            }
                 
 			case Message::Command:
 			{

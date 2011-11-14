@@ -294,12 +294,12 @@ int main(int argC, const char *argV[])
 	if ((long) ips[0] != workers)
 		LM_X(1, ("%d workers specified on command line, but %d ips in ip-list", workers, (long) ips[0]));
 
-	samson::SamsonSetup::init();
 
     // Init the engine
     engine::Engine::init();
-    
-	engine::MemoryManager::init(samson::SamsonSetup::getUInt64("general.memory"));
+
+    // Init memory manager ( network uses the memory manager to keep track of used memory ) 
+	engine::MemoryManager::init( 1000000000 );
 
 	samsonStarter = new SamsonStarter();
 	samsonStarter->procVecCreate(controllerHost, workers, ips);

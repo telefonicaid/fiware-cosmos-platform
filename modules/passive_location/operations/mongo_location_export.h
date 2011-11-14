@@ -18,6 +18,8 @@
 
 using namespace mongo;
 
+static int grandTotalInserts = 0;
+
 namespace samson
 {
 namespace passive_location
@@ -39,7 +41,6 @@ class mongo_location_export : public samson::Map
 	std::vector<mongo::BSONObj>  dataVec;
 	int                          inserts;
 
-	int                          insertsAcc;
 	int                          records;
 	int                          runs;
 
@@ -58,7 +59,7 @@ void init(samson::KVWriter* writer)
 
 	mdbConnection            = NULL;
 
-	bulksize                 = environment->get("mongo.bulksize",           "30000");
+	bulksize                 = environment->get("mongo.bulksize",           "5000");
 	history                  = environment->get("mongo.history",            "1");
 
 	mongo_ip                 = environment->get("mongo.ip",                 "no-mongo-ip");
@@ -107,7 +108,6 @@ void init(samson::KVWriter* writer)
 
 	inserts    = 0;
 
-	insertsAcc = 0;
 	records    = 0;
 	runs       = 0;
 }
@@ -156,11 +156,11 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 			dataVec.push_back(record);
 
 			++inserts;
-			++insertsAcc;
+			++grandTotalInserts;
 
-			if ((inserts % mongo_bulksize) == 0)
+			if ((inserts != 0) && ((inserts % mongo_bulksize) == 0))
 			{
-				// OLM_M(("Inserting bulk of %d records (bulksize: %d)", inserts, mongo_bulksize));
+				OLM_M(("Run[inside-loop]: Inserting bulk of %d records (bulksize: %d)", inserts, mongo_bulksize));
 				mdbConnection->insert(mongo_db_path, dataVec);
 				dataVec.clear();
 				inserts = 0;
@@ -175,7 +175,7 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 										  "X"   << (float) value.position.latitude.value    <<
 										  "Y"   << (float) value.position.longitude.value);
 
-			// db.LastKnownLocation.update( { _id:3, T : { $lt: 3 }  }, { _id:3, T:3, C:1, X:1, Y:1 }, true  )
+			// db.LastKnownLocation.update( { _id:1, T : { $lt: 3 }  }, { _id:1, T:3, C:1, X:1, Y:1 }, true  )
 			query  = BSON("_id" << (long long int) value.userId.value << "T" << BSON("$lt" << (long long int) value.timestamp.value));
 
 			mdbConnection->update(mongo_db_path, query, record, true);
@@ -184,8 +184,9 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 
 	if (mongo_history == 1)
 	{
-		if ((inserts % mongo_bulksize) == 0)
+		if ((inserts != 0) && ((inserts % mongo_bulksize) == 0))
 		{
+			OLM_M(("Run[out-of-loop]: Inserting bulk of %d records (bulksize: %d)", inserts, mongo_bulksize));
 			mdbConnection->insert(mongo_db_path, dataVec);
 			dataVec.clear();
 			inserts = 0;
@@ -205,11 +206,12 @@ void finish(samson::KVWriter* writer)
 {
 	if ((mongo_history == 1) && (inserts != 0))
 	{
+		OLM_M(("Finish: Inserting bulk of %d records (bulksize: %d)", inserts, mongo_bulksize));
 		mdbConnection->insert(mongo_db_path, dataVec);
 		dataVec.clear();
 	}
 
-	OLM_M(("%d inserts, %d records inserted, %d calls to run", insertsAcc, records, runs));
+	OLM_M(("Grand total: %d inserts, %d records inserted, %d calls to run", grandTotalInserts, records, runs));
 	delete mdbConnection;
 }
 

@@ -224,6 +224,46 @@ static int sListFix(char** sV, char* s, int* error)
 
 	while ((unsigned long) tmP < (unsigned long) endP)
 	{
+		// 1. eat beginning whitespace
+		while ((*tmP == ' ') || (*tmP == '\t'))
+			++tmP;
+		if (*tmP == 0)
+			break;
+
+		s = tmP;
+
+
+		// 2. Now we're at the start of the string - find WS after it and NULL it (if needed)
+		tmP = strchr(s, ' ');
+		if (tmP)
+		{
+			*tmP = 0;
+			++tmP;
+		}
+
+
+		// 3. We have an option - record it!
+		++ix;
+		sV[ix] = s;
+		LM_T(LmtPaSList, ("Found item %d in string-list: '%s'", ix + 1, s));
+		LM_T(LmtPaSList, ("rest: '%s'", s));
+
+		// 4. Point 's' to end-of the recently found option (if needed)
+		if (tmP)
+		{
+			s = tmP;
+		}
+		else
+		{
+			LM_T(LmtPaSList, ("A total of %d items in string-list", ix));
+			sV[0] = (char*) ix;
+			break;
+		}
+	}
+
+#if 0
+	while ((unsigned long) tmP < (unsigned long) endP)
+	{
 		tmP = strchr(s, ' ');
 		if (tmP == NULL)
 			tmP = strchr(s, '\t');
@@ -239,7 +279,16 @@ static int sListFix(char** sV, char* s, int* error)
 			break;
 		}
 
+		//while ((*tmP == ' ') || (*tmP == '\t'))
+		//   ++tmP;
+
+		//if (*tmP == 0)
+		//   break;
+
 		*tmP = 0;
+		if (s[0] == 0)
+			continue;
+
 		sV[ix + 1] = s;
 		s = &tmP[1];
 
@@ -247,6 +296,7 @@ static int sListFix(char** sV, char* s, int* error)
 		++ix;
 		LM_T(LmtPaSList, ("rest: '%s'", s));
 	}
+#endif
 
 	LM_T(LmtPaSList, ("got %d items in string-list", ix));
 

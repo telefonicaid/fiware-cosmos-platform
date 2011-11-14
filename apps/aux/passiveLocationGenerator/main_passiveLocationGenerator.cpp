@@ -62,7 +62,7 @@ int main( int argc , const char *argv[] )
 	while( true )
 	{
 	   // Generat 5 seconds data
-	   fprintf(stderr,"Generatoing %d messages\n",  (int)(5 * rate) );
+	   fprintf(stderr,"Generating %d messages\n",  (int)(5 * rate) );
 	   for( int i = 0 ; i < (int)(5 * rate); i++)
 	   {
 

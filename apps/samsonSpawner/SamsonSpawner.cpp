@@ -411,7 +411,11 @@ void SamsonSpawner::spawn(Process* process)
 	else
 		LM_X(1, ("Will only start workers and controllers - bad process type %d", process->type));
 
-	argV[argC] = NULL;
+	argV[argC++] = (char*) "-home";
+	argV[argC++] = samsonHome;
+	argV[argC++] = (char*) "-working";
+	argV[argC++] = samsonWorking;
+	argV[argC]   = NULL;
 
 	LM_T(LmtSpawn, ("Spawning process '%s'", argV[0]));
 	for (int ix = 0; ix < argC; ix++)

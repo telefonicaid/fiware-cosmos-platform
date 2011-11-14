@@ -44,6 +44,7 @@ void platformProcessesPathInit(const char* working)
 	{
 		std::string ppSdtStringFile = std::string(working) + "/etc/" + SAMSON_PLATFORM_PROCESSES_FILENAME;
 		ppFile          = strdup(ppSdtStringFile.c_str());
+		LM_T(LmtProcessVector, ("ppFile: '%s'", ppFile));
 	}
 }
 
@@ -138,10 +139,13 @@ ProcessVector* platformProcessesGet(int* sizeP)
 	if (ppFile == NULL)
 		LM_X(1, ("platformProcessesPathInit not called ..."));
 
-	LM_T(LmtProcessVector, ("Retrieving Process Vector"));
+	LM_T(LmtProcessVector, ("Retrieving Process Vector '%s'", ppFile));
 
 	if ((fd = open(ppFile, O_RDONLY)) == -1)
+	{
+		LM_T(LmtProcessVector, ("Error Opening Process Vector file '%s': %s", ppFile, strerror(errno)));
 		return NULL;
+	}
 	else if ((s = stat(ppFile, &statBuf)) == -1)
 	{
 		LM_E(("stat(%s): %s", ppFile, strerror(errno)));

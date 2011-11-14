@@ -17,6 +17,7 @@
 #include "samson/common/Process.h"
 #include "samson/common/platformProcesses.h"  // platformProcessesSave
 #include "samson/common/ports.h"              // Samson platform ports
+#include "samson/common/samsonVars.h"         // SAMSON_EXTERNAL_VARS
 #include "samson/network/NetworkInterface.h"
 #include "samson/network/Packet.h"
 #include "samson/network/Network2.h"
@@ -24,6 +25,14 @@
 #include "processList.h"                      // processListInit, Add, Remove and Lookup
 #include "globals.h"                          // Global variables for Spawner
 #include "SamsonSpawner.h"                    // Own interface
+
+
+
+/* ****************************************************************************
+*
+* External declaration of common Samson variables
+*/
+SAMSON_EXTERNAL_VARS;
 
 
 
@@ -402,25 +411,6 @@ void SamsonSpawner::spawn(Process* process)
 	else
 		LM_X(1, ("Will only start workers and controllers - bad process type %d", process->type));
 
-#if 0
-	if (process->verbose == true)   argV[argC++] = (char*) "-v";
-	if (process->debug   == true)   argV[argC++] = (char*) "-d";
-	if (process->reads   == true)   argV[argC++] = (char*) "-r";
-	if (process->writes  == true)   argV[argC++] = (char*) "-w";
-	if (process->toDo    == true)   argV[argC++] = (char*) "-toDo";
-
-
-	// Inheriting the trace levels from Spawner process
-	char traceLevels[512];
-	memset(traceLevels, 0, sizeof(traceLevels));
-	lmTraceGet(traceLevels, sizeof(traceLevels), process->traceLevels);
-	if (traceLevels[0] != 0)
-	{
-		argV[argC++] = (char*) "-t";
-		argV[argC++] = traceLevels;
-	}
-#endif
-
 	argV[argC] = NULL;
 
 	LM_T(LmtSpawn, ("Spawning process '%s'", argV[0]));
@@ -432,9 +422,12 @@ void SamsonSpawner::spawn(Process* process)
 	{
 		int ix;
 		int s;
+		char absPath[512];
 
 		LM_TODO(("Use close-on-exec!"));
-		s = execvp(argV[0], argV);
+		snprintf(absPath, sizeof(absPath), "%s/bin/%s", samsonHome, argV[0]);
+		argV[0] = absPath;
+		s = execvp(absPath, argV);
 		if (s == -1)
 			LM_E(("Back from EXEC: %s", strerror(errno)));
 		else

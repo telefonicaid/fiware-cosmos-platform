@@ -156,7 +156,7 @@ int main(int argC, const char *argV[])
     if( signal( SIGPIPE , captureSIGPIPE ) == SIG_ERR )
         LM_W(("SIGPIPE cannot be handled"));
     
-	samson::platformProcessesPathInit("/opt/samson");
+	samson::platformProcessesPathInit(samsonWorking);
 
     // Make sure this singlelton is created just once
     au::LockDebugger::shared();

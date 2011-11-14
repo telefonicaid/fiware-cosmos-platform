@@ -148,7 +148,7 @@ int main(int argC, const char* argV[])
 	atexit(exitFunction);
 	atexit(google::protobuf::ShutdownProtobufLibrary);
 
-	samson::platformProcessesPathInit("/opt/samson");
+	samson::platformProcessesPathInit(samsonWorking);
 
     // Make sure this singlelton is created just once
     au::LockDebugger::shared();

@@ -61,7 +61,7 @@ strncpy( l.fName ,  __FUNCTION__,sizeof(l.fName));                 \
 l.lineNo = __LINE__;                                               \
 l.stre[0] = 0;                                                     \
 tracer->trace( &l );                                               \
-} while (0);                                                       \
+} while (0)
 
 #define OLM_T(_tLev, s) OLM_G('T' , _tLev , s )
 #define OLM_D( s )      OLM_G('D' , 0     , s )

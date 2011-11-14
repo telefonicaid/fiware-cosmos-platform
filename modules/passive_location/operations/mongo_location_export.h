@@ -19,6 +19,7 @@
 using namespace mongo;
 
 static int grandTotalInserts = 0;
+static int grandTotalUpdates = 0;
 
 namespace samson
 {
@@ -178,6 +179,7 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 			// db.LastKnownLocation.update( { _id:1, T : { $lt: 3 }  }, { _id:1, T:3, C:1, X:1, Y:1 }, true  )
 			query  = BSON("_id" << (long long int) value.userId.value << "T" << BSON("$lt" << (long long int) value.timestamp.value));
 
+			++grandTotalUpdates;
 			mdbConnection->update(mongo_db_path, query, record, true);
 		}
 	}
@@ -198,6 +200,7 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 
 
 
+
 /* ****************************************************************************
 *
 * finish - 
@@ -211,7 +214,11 @@ void finish(samson::KVWriter* writer)
 		dataVec.clear();
 	}
 
-	OLM_M(("Grand total: %d inserts, %d records inserted, %d calls to run", grandTotalInserts, records, runs));
+	if (mongo_history == 1)
+		OLM_M(("Grand total: %d inserts, %d records inserted, %d calls to run", grandTotalInserts, records, runs));
+	else
+		OLM_M(("Grand total: %d updates, %d calls to run", grandTotalUpdates, runs));
+
 	delete mdbConnection;
 }
 

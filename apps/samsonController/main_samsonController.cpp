@@ -38,8 +38,6 @@
 */
 SAMSON_ARG_VARS;
 
-bool version;
-
 
 
 /* ****************************************************************************
@@ -49,8 +47,6 @@ bool version;
 PaArgument paArgs[] =
 {
 	SAMSON_ARGS,
-
-	{ "-version", &version,  "SS_CONTROLLER_VERSION",  PaBool,    PaOpt,    false,    false,   true,  "print version string and exit" },
 
 	PA_END_OF_ARGS
 };
@@ -134,12 +130,6 @@ int main(int argC, const char* argV[])
 	paConfig("man version",                   (void*) manVersion);
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
-
-	if (version)
-	{
-		printf("%s\n", SAMSON_VERSION);
-		exit(1);
-	}
 
 	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)

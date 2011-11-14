@@ -41,7 +41,6 @@
 */
 SAMSON_ARG_VARS;
 
-bool     version;
 bool     noLog;
 bool     local;
 
@@ -55,7 +54,6 @@ PaArgument paArgs[] =
 {
 	SAMSON_ARGS,
 
-	{ "-version", &version,  "SS_WORKER_VERSION",  PaBool,    PaOpt,  false,  false,   true,  "print version string and exit" },
 	{ "-nolog",   &noLog,    "SS_WORKER_NO_LOG",   PaBool,    PaOpt,  false,  false,   true,  "no logging"                    },
 	{ "-local",   &local,    "SS_WORKER_LOCAL",    PaBool,    PaOpt,  false,  false,   true,  "local execution"               },
 

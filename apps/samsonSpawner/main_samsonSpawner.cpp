@@ -37,7 +37,6 @@
 */
 SAMSON_ARG_VARS;
 
-bool  version;
 bool  fg;
 bool  noRestarts;
 bool  reset;
@@ -53,7 +52,6 @@ PaArgument paArgs[] =
 {
 	SAMSON_ARGS,
 
-	{ "-version", &version,     "SS_SPAWNER_VERSION",      PaBool,    PaOpt,    false,    false,   true,  "print version string and exit"         },
 	{ "-fg",      &fg,          "SS_SPAWNER_FOREGROUND",   PaBool,    PaOpt,    false,    false,   true,  "don't start as daemon"                 },
 	{ "-local",   &local,       "SS_SPAWNER_LOCAL",        PaBool,    PaOpt,    false,    false,   true,  "start a one-node cluster in localhost" },
 	{ "-nr",      &noRestarts,  "SS_SPAWNER_NO_RESTARTS",  PaBool,    PaOpt,    false,    false,   true,  "don't restart processes"               },
@@ -170,12 +168,6 @@ int main(int argC, const char *argV[])
 	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
-
-	if (version)
-	{
-		printf("%s\n", SAMSON_VERSION);
-		exit(1);
-	}
 
 	samson::platformProcessesPathInit(samsonWorking);
 	processListFilename = samson::platformProcessesPathGet();

@@ -69,6 +69,7 @@ PaArgument paBuiltin[] =
  { "-help",     &paHelpVar,   NULL,         PaBool,PaOpt,  F,    T,    F, "show help"            },
  { "--help",    &paHelpVar,   NULL,         PaBool,PaHid,  F,    T,    F, "show help"            },
  { "--version", &paVersion,   NULL,         PaBool,PaOpt,  F,    T,    F, "show version"         },
+ { "-version",  &paVersion,   NULL,         PaBool,PaOpt,  F,    T,    F, "show version"         },
 // { "-home",     paHome,       "!HOME",      PaStr, PaHid,  0, PaNL, PaNL, "home directory"       },
  { "",          paUserName,   "!USER",      PaStr, PaHid,  0, PaNL, PaNL, "user name"            },
  { "",          paPwd,        "!PWD",       PaStr, PaHid,  0, PaNL, PaNL, "current dir"          },

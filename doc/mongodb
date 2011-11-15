@@ -400,8 +400,9 @@ o Start the individual shards (mongod), config servers (mongod --configsvr), and
     
     % numactl --interleave=all mongod --configsvr --port 2101 
 
+	# For various config servers: --configdb samson01:2101,samson02:2101,samson03:2101
     % mongos --configdb localhost:2101 # Let mongos use the default port 27017 ...
-
+	
     % ./mongo --port 27017             # with the '--port' option you choose the port of mongod/mongos
     mongo> use admin
 

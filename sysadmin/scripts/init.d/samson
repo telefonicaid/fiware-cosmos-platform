@@ -1,0 +1,27 @@
+#! /bin/bash
+
+#
+# ---- sysadmin : init.d script for SAMSON ( samsonSpawner daemon )
+#
+
+PARAM=$1
+
+case $PARAM in
+
+        'start')
+
+                /usr/bin/sudo -u samson -i samsonSpawner
+                ;;
+
+        'stop')
+
+                /usr/bin/sudo -u samson -i samsonKiller
+                ;;
+
+        'restart')
+
+                /usr/bin/sudo -u samson -i samsonKiller
+                /usr/bin/sudo -u samson -i samsonSpawner
+                ;;
+esac
+

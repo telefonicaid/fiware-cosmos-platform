@@ -1,7 +1,7 @@
 Sysadmin NOTES FOR system init scripts installing/removal
 =========================================================
 
-	There are two pair of scripts for each linux distribution, the firs one will
+	There are two pair of scripts for each linux distribution, the first one will
 	create and put the init scripts necessary to get samson running at the startup
 	sequence. Also to have available the possibility of starting/stopping samson
 	daemons at will ( /etc/init.d/samson ).

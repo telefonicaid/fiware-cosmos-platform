@@ -101,6 +101,7 @@ echo                                                         >> $BUILD_ROOT/rpm/
 echo "%clean"                                                >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%files"                                                >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "%defattr(-, samson, samson, -)"                        >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "/opt/samson/modules/lib$module.so"                     >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "/opt/samson/include/samson/modules/$module/"'*.h'      >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%changelog"                                            >> $BUILD_ROOT/rpm/SPECS/$specfile

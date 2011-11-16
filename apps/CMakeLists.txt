@@ -3,7 +3,6 @@ ADD_SUBDIRECTORY(samsonSetup)
 ADD_SUBDIRECTORY(samsonWorker)
 ADD_SUBDIRECTORY(samsonController)
 ADD_SUBDIRECTORY(delilah)
-#ADD_SUBDIRECTORY(delilahQt)
 ADD_SUBDIRECTORY(samsonLocal)
 ADD_SUBDIRECTORY(samsonModuleParser)
 ADD_SUBDIRECTORY(samsonCat)
@@ -14,9 +13,11 @@ ADD_SUBDIRECTORY(samsonKiller)
 
 ADD_SUBDIRECTORY(samsonPush)
 ADD_SUBDIRECTORY(samsonPop)
-#ADD_SUBDIRECTORY(samsonPopQT)
-
-#ADD_SUBDIRECTORY(samsonTopicMonitor)
+if (HAVE_KDCHART)
+  ADD_SUBDIRECTORY(delilahQt)
+  ADD_SUBDIRECTORY(samsonPopQT)
+  ADD_SUBDIRECTORY(samsonTopicMonitor)
+endif (HAVE_KDCHART)
 
 # Auxiliar apps
 ADD_SUBDIRECTORY(aux)

@@ -50,29 +50,18 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 include_directories("/usr/include")
 include_directories("/usr/local/include")
 include_directories("/opt/local/include")
-include_directories("/usr/local/KDAB/KDChart-2.4.2/include")
-include_directories(" /usr/include/kdchart")
+# See if we have KDChart installed (check_include_files does not work due to these being C++ headers)
+FIND_PATH(HAVE_KDCHART KDChartChart PATHS /usr/local/KDAB/KDChart-2.3.0/include /usr/local/kdchart/include)
+if (HAVE_KDCHART)
+  MESSAGE("Using ${HAVE_KDCHART} for KDChart")
+  include_directories(${HAVE_KDCHART})
+endif (HAVE_KDCHART)
+
 
 
 link_directories("/opt/local/lib")
 link_directories("/usr/local/KDAB/KDChart-2.4.2/lib")
 link_directories("/usr/lib64")
-
-# Package
-# ----------------------------------------------------------------------
-
-if (CMAKE_BUILD_TYPE STREQUAL RELEASE)
-
-if (APPLE)
-#   include(${PROJECT_SOURCE_DIR}/packaging/CPackConfigBUNDLE.cmake)
-   include(${PROJECT_SOURCE_DIR}/packaging/CPackConfigTGZ.cmake)
-else (APPLE)
-   include(${PROJECT_SOURCE_DIR}/packaging/CPackConfigRPM.cmake)
-endif (APPLE)
-
-include(CPack)
-
-endif (CMAKE_BUILD_TYPE STREQUAL RELEASE)
 
 #
 # Architecture 

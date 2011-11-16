@@ -114,7 +114,7 @@ int main( int argC , const char *argV[] )
     // Set 1G RAM for uploading content
     client.setMemory( 1024*1024*1024 );
     
-    LM_M(("Connecting to %s ..." , controller));
+    LM_V(("Connecting to %s ..." , controller));
     
     // Init connection
     if( !client.init( controller ) )
@@ -122,11 +122,11 @@ int main( int argC , const char *argV[] )
         fprintf(stderr, "Error connecting with samson cluster: %s\n" , client.getErrorMessage().c_str() );
         exit(0);
     }
-    LM_M(("Conection to %s OK" , controller));
+    LM_V(("Conection to %s OK" , controller));
 
     
     // Connect to a particular queue
-    LM_M(("Connecting to queue %s" , queue_name ));
+    LM_V(("Connecting to queue %s" , queue_name ));
     client.connect_to_queue( queue_name );
 
     while( true )
@@ -150,11 +150,11 @@ int main( int argC , const char *argV[] )
     
     
     // Wait until all operations are complete
-    LM_M(("Waiting for all the push operations to complete..."));
+    LM_V(("Waiting for all the push operations to complete..."));
     
     client.waitUntilFinish();
     
-    LM_M(("Finish correctly\n"));
+    LM_V(("Finish correctly\n"));
     
 	
 }

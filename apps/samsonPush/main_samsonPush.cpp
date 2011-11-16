@@ -113,8 +113,7 @@ int main( int argC , const char *argV[] )
     // Set 1G RAM for uploading content
     client.setMemory( 1024*1024*1024 );
     
-    if( paVerbose )
-        LM_M(("Connecting to %s ..." , controller));
+    LM_V(("Connecting to %s ..." , controller));
     
     // Init connection
     if( !client.init( controller ) )
@@ -126,9 +125,7 @@ int main( int argC , const char *argV[] )
     // Create the push buffer to send data to a queue in buffer-mode
     samson::SamsonPushBuffer *pushBuffer = new samson::SamsonPushBuffer( &client , queue_name , timeOut );
 
-    if( paVerbose )
-        LM_M(("Conection to %s OK" , controller));
-
+    LM_V(("Conection to %s OK" , controller));
     
     // Read data in blocks, lock the separator backward
     // --------------------------------------------------------------------------------
@@ -217,8 +214,7 @@ int main( int argC , const char *argV[] )
     // Last push
     pushBuffer->flush();
 
-    if( paVerbose ) 
-        LM_M(("Total process %s" , au::str(total_process,"B").c_str() ));
+    LM_V(("Total process %s" , au::str(total_process,"B").c_str() ));
     
     
     // --------------------------------------------------------------------------------
@@ -239,8 +235,7 @@ int main( int argC , const char *argV[] )
     
     
     // Wait until all operations are complete
-    if( paVerbose ) 
-        LM_M(("Waiting for all the push operations to complete..."));
+    LM_V(("Waiting for all the push operations to complete..."));
     
     client.waitUntilFinish();
     

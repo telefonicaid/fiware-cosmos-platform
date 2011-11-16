@@ -201,7 +201,7 @@ int main(int argC, const char *argV[])
     au::LockDebugger::shared();
     
 	samson::SamsonSetup::init( samsonHome , samsonWorking );
-    
+	samson::SamsonSetup::shared()->createWorkingDirectories();      // Create working directories    
 	engine::Engine::init();
 	engine::MemoryManager::init( samson::SamsonSetup::shared()->getUInt64("general.memory") );
 

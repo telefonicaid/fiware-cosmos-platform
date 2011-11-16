@@ -8,6 +8,7 @@
 
 
 #include <samson/module/samson.h>
+#include <samson/modules/hit/common.h> // Common definitions for the module
 #include <samson/modules/hit/HitCollection.h>
 #include <samson/modules/hit/HitCount.h>
 #include <samson/modules/hit/HitCountCollection.h>
@@ -18,8 +19,165 @@ namespace samson{
 namespace hit{
 
 
+   class HitCountList
+   {
+      // List of elements in this list
+	  std::list<samson::hit::HitCount*> elements;
+
+      // Position in the history to consider
+	  int num_samples; 
+
+	  // Mínimum number of samples to be part of the "top" list
+	  size_t min_num_hits;
+
+   public:	  
+
+	  HitCountList( int _num_samples )
+	  {
+		 // Keep the number of samples considered in this list
+		 num_samples = _num_samples;		 
+
+		 // Minimum number of hits "0" as there are no real elements
+		 min_num_hits = 0;
+
+	  }
+
+	  std::string str()
+	  {
+		 std::ostringstream output;
+		 output << "---------------------------------------\n";
+		 output << "List for #samples " << num_samples << "\n";
+		 output << "---------------------------------------\n";
+
+		 std::list<samson::hit::HitCount*>::iterator it_elements;
+         for( it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
+			output << "\t" << (*it_elements)->str() << "\n";
+
+		 return output.str();
+	  }
+
+	  void add( samson::hit::HitCount* hit_count )
+	  {
+		 if( hit_count->hits[num_samples].value < min_num_hits )
+		 {
+			//printf("Not added since not enougth hits %lu < %lu\n" , hit_count->hits[num_samples].value  , min_num_hits );
+			return; // Nothing to do since we do not have the minimum number of elements
+		 }
+
+		 // Remove previous versions of the same element 		 
+		 std::list<samson::hit::HitCount*>::iterator it_elements;
+		 for( it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
+			if( (*it_elements)->concept.value == hit_count->concept.value )
+			   it_elements = elements.erase( it_elements );
+
+		 
+		 // Position to insert in the top list
+		 std::list<samson::hit::HitCount*>::iterator pos = _find_pos( hit_count );
+		 
+         // Add the element in the rigth position
+		 samson::hit::HitCount* _hit_count = new samson::hit::HitCount();
+		 _hit_count->copyFrom( hit_count );
+		 elements.insert( pos , _hit_count );
+
+		 // Remove old elements
+		 while( elements.size() > NUM_TOP_ELEMENTS )
+		 {
+			//printf("Removing elements since too many items %lu\n" , elements.size() );
+			samson::hit::HitCount* _hit_count = elements.back();
+			elements.pop_back();
+			
+			delete _hit_count;
+		 }
+	  
+	  }
+
+      void fill( samson::hit::HitCountCollection *hit_count_collection )
+	  {
+		 std::list<samson::hit::HitCount*>::iterator it_elements;
+         for( it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
+			hit_count_collection->hit_countsAdd()->copyFrom( *it_elements );
+	  }
+
+   private:
+
+	  std::list<samson::hit::HitCount*>::iterator _find_pos( samson::hit::HitCount* hit_count )
+	  {
+		 // Number of hits for the new element
+		 size_t _hits = hit_count->hits[ num_samples ].value;
+
+		 for (std::list<samson::hit::HitCount*>::iterator i = elements.begin() ; i != elements.end() ; i++ )
+		 {
+			if( _hits > (*i)->hits[ num_samples ].value )
+			   return i;
+		 }
+
+		 return elements.end();
+	  }	  
+
+   };
+
+
+   class HitCountListCollection
+   {
+	  std::vector<HitCountList*> hit_count_lists; // length NUM_TIME_SLOTS
+
+   public:
+
+	  HitCountListCollection( )
+	  {
+		 for (int i = 0; i < NUM_TIME_SLOTS ; i++ )
+			hit_count_lists.push_back( new HitCountList( i ) );
+	  }
+
+	  void add( samson::hit::HitCount* hit_count )
+	  {
+		 for (int i = 0; i < NUM_TIME_SLOTS ; i++ )
+			hit_count_lists[i]->add( hit_count );
+	  }
+
+	  void fill( samson::hit::HitCountCollection *hit_count_collection )
+	  {
+		 // Export data to store as state
+		 hit_count_collection->hit_countsSetLength( 0 );
+
+		 // Add data
+		 for (int i = 0; i < NUM_TIME_SLOTS ; i++ )
+			hit_count_lists[i]->fill( hit_count_collection );
+			
+	  }
+
+	  void fill_top( samson::hit::HitCountCollection *hit_count_collection )
+	  {
+		 // Export data to emit as top list
+		 hit_count_collection->hit_countsSetLength( 0 );
+
+		 // Add data of the top-level list
+	   	hit_count_lists[ NUM_TIME_SLOTS-1 ]->fill( hit_count_collection );
+			
+	  }
+
+	  std::string str()
+      { 
+		 std::ostringstream output;
+
+		 for (int i = 0; i < NUM_TIME_SLOTS ; i++ )
+            output << hit_count_lists[i]->str();
+
+         return output.str();
+      }
+
+
+   };
+
+
 	class reduceHitCountCollection : public samson::Reduce
 	{
+	   samson::system::String concept;                      // Concept
+	   samson::hit::HitCountCollection hitCountCollection;  // Value at input
+
+	   samson::hit::HitCount hit_count;                     // Input hit count
+
+	   size_t current_time; // Current time to update 
 
 	public:
 
@@ -37,10 +195,68 @@ helpLine: Filter top elements per global-concept
 
 		void init( samson::KVWriter *writer )
 		{
+		   current_time = time(NULL)/SECONDS_PER_TIME_SLOT;		
 		}
 
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
+
+		   // Global class to keep track of the top-lists
+		   HitCountListCollection collection;
+
+/*
+		   printf("*********************************************************************************\n");
+		   printf("Running....\n");
+		   printf("*********************************************************************************\n");
+		   printf("%s\n" , collection.str().c_str() );
+*/
+
+		   if( inputs[1].num_kvs > 0 )
+		   {
+
+			  concept.parse( inputs[1].kvs[0]->key );
+
+			  // Previous state
+			  hitCountCollection.parse( inputs[1].kvs[0]->value );			  
+
+			  // Sent all data to "collection"
+		      for ( int i = 0 ; i < hitCountCollection.hit_counts_length ; i++ )
+			  {
+				 //printf("Loading data from state %s\n" , hitCountCollection.hit_counts[i].str().c_str() );
+				 hitCountCollection.hit_counts[i].set_current_time( current_time );   // Update state information if necessary
+
+				 collection.add( &hitCountCollection.hit_counts[i] );
+			  }
+
+
+		   }
+		   else
+		   {
+			  // Just take the concept from the first key-value
+			  concept.parse( inputs[0].kvs[0]->key );
+		   }
+
+
+		   // Process all input data
+		   //printf("Processing %lu input elements" , inputs[0].num_kvs );
+		   for( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
+		   {
+			  hit_count.parse( inputs[0].kvs[i]->value );
+			  hit_count.set_current_time( current_time );   // Update to the current time ( if necessary )
+
+			  //printf("Processing %s\n" , hit_count.str().c_str() );
+			  collection.add( &hit_count );
+		   }
+
+
+		   // Emit the top list at channel "0"
+		   collection.fill_top( &hitCountCollection );
+		   writer->emit( 0 , &concept , &hitCountCollection );
+		   
+		   // Emit state at the output "1"
+		   collection.fill( &hitCountCollection );
+		   writer->emit( 1 , &concept , &hitCountCollection );
+
 		}
 
 		void finish( samson::KVWriter *writer )

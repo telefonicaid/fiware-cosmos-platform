@@ -8,6 +8,9 @@
 
 
 #include <samson/modules/hit/HitCountCollection_base.h>
+#include <samson/modules/hit/HitCount.h>
+
+#define NUM_TOP_ELEMENTS 10
 
 
 namespace samson{
@@ -16,6 +19,20 @@ namespace hit{
 
 	class HitCountCollection : public HitCountCollection_base
 	{
+
+	public:
+
+	   void init()
+	   {
+		  // Remove all previous hit_count's
+		  hit_countsSetLength(0);		  		  
+	   }
+
+	   void add( samson::hit::HitCount* hit_count )
+	   {
+		  hit_countsAdd()->copyFrom( hit_count );
+	   }
+
 	};
 
 

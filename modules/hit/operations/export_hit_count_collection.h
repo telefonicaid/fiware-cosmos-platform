@@ -8,7 +8,8 @@
 
 
 #include <samson/module/samson.h>
-#include <samson/modules/hit/HitCollection.h>
+#include <samson/modules/hit/HitCountCollection.h>
+#include <samson/modules/hit/common.h>
 #include <samson/modules/system/String.h>
 
 
@@ -19,13 +20,16 @@ namespace hit{
 	class export_hit_count_collection : public samson::ParserOut
 	{
 
+	   samson::system::String concept;
+	   samson::hit::HitCountCollection hit_count_collections;
+
 	public:
 
 
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-input: system.String hit.HitCollection  
+input: system.String hit.HitCountCollection  
 
 helpLine: Export the top list of elements
 #endif // de INFO_COMMENT
@@ -36,6 +40,23 @@ helpLine: Export the top list of elements
 
 		void run( KVSetStruct* inputs , TXTWriter *writer )
 		{
+		   for ( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
+		   {
+			  concept.parse( inputs[0].kvs[i]->key );
+			  hit_count_collections.parse( inputs[0].kvs[i]->value );
+
+			  std::ostringstream output;
+
+			  output << concept.value << " ";			  
+			  for ( int i = 0 ; i < hit_count_collections.hit_counts_length ; i++ )
+				 output << hit_count_collections.hit_counts[i].concept.value << " " << hit_count_collections.hit_counts[i].hits[NUM_TIME_SLOTS-1].value << " ";
+			  output << "\n";
+
+			  writer->emit( output.str() );
+			  
+		   }
+
+
 		}
 
 		void finish( TXTWriter *writer )

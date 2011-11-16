@@ -50,10 +50,7 @@ public:
 
 	void init(samson::KVWriter *writer )
 	{
-	   int time_division_size = 10;  // Number of seconds for each "time slot"
-
-		current_time = time(NULL)/time_division_size; // Blocks of 5 minute ( to be selected with environment variable )
-		OLM_M(("Current time %lu" , current_time ));
+	   current_time = time(NULL)/SECONDS_PER_TIME_SLOT;
 	}
 
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
@@ -67,9 +64,8 @@ public:
 		}
 		else if( inputs[0].num_kvs > 0 )
 		{
-
 		   key.parse( inputs[0].kvs[0]->key );
-		   hitCount.init( key.value, current_time , 0 );  // Current hits '0'
+		   hitCount.init( key.value, current_time );
 		}
 		else
 		{
@@ -77,6 +73,10 @@ public:
 			return;
 		}
 
+        // Update the current time
+		
+        hitCount.set_current_time( current_time );
+		
 
 		// Get the number of hits
 		size_t num_hits = 0;
@@ -89,20 +89,24 @@ public:
 		// Update the hitCount structure with the number of this.
 		// It returns true if we need to notify at the output
 
-		OLM_M(("Updating %s with %d hits" , key.value.c_str() ,  (int)num_hits ));
-		OLM_M(("HitCount %s (%s)" , key.value.c_str() , hitCount.str().c_str() ));
+		//OLM_M(("Updating %s with %d hits" , key.value.c_str() ,  (int)num_hits ));
+		//OLM_M(("HitCount %s (%s)" , key.value.c_str() , hitCount.str().c_str() ));
 
-		bool sent_update = hitCount.update( current_time , num_hits );
+		bool sent_update = hitCount.add_hits( num_hits );
 		
-		OLM_M(("HitCount %s (%s)" , key.value.c_str() , hitCount.str().c_str() ));
+		//OLM_M(("HitCount %s (%s)" , key.value.c_str() , hitCount.str().c_str() ));
 		
 
 		// Emit state at output "0" if necessary ( changes significantly )
 		if( sent_update )
-		   writer->emit( 0,  &key , &hitCount );
+		{
+		   samson::system::String key_output;
+		   key_output.value = "top";
+		   writer->emit( 0,  &key_output , &hitCount );
+		}
 
 		// Emit the state at the output if still we have some counts....
-		if( hitCount.hasContent() )
+		if( hitCount.hasHit() )
 			writer->emit( 1 , &key , &hitCount );
 
 	}

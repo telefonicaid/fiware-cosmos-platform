@@ -1,6 +1,4 @@
 
-
-
 Module hit
 {
 	title	"Hit manipulation"
@@ -13,30 +11,19 @@ Module hit
 # Datas
 ####################################################################################
 
-data Hit
-{
-    system.String concept;     # Concept name ( word )
-	system.UInt hits;		   # Number of times this word appears
-}
-
-data HitCollection
-{
-	vector hit.Hit hits;
-}
-
 data HitCount
 {
 	system.String concept;          # Concept for this hit
 	system.UInt   current_time;     # Slot of the time-stamp ( usually time(NULL)/Constant )
 
-    system.UInt   current_hits;     # Hits during current slot
-    system.UInt   hits;             # Hits during previous slot ( really used to detect maximums )
+	vector system.UInt hits;		# Hits in the last time-slots
 }
 
 data HitCountCollection
 {
-	list hit.HitCount hit_counts;   # Collection of hit_counts
+	vector hit.HitCount hit_counts;   # Collection of hit_counts
 }
+
 
 ####################################################################################
 # Main operations
@@ -60,8 +47,8 @@ reduce reduceHitCountCollection
 	in system.String hit.HitCount              # Input hit count update
 	in system.String hit.HitCountCollection    # State of the top list
 
-	out system.String hit.HitCollection        # Top list of hits
-	out system.String hit.HitCountCollection
+	out system.String hit.HitCountCollection       # Top list of hits
+	out system.String hit.HitCountCollection   # State of the top elements ( all top level per samples )
 
 	helpLine "Filter top elements per global-concept"
 }
@@ -75,27 +62,6 @@ reduce reduceHitCountCollection
 
 parserOut export_hit_count_collection
 {
-	in system.String hit.HitCollection
+	in system.String hit.HitCountCollection
 	helpLine "Export the top list of elements"
 }
-
-#
-# Simple generator to create "hit.num_samples" random strings at the output
-#
-
-generator generate_words
-{
-        out system.String system.UInt
-        helpLine "Generate 'hit.num_samples' random words with 'hit.word_length' chars. By default it generates 1M words with 6 letters"
-}
-
-#
-# Parser for words
-#
-
-parser parser_words
-{
-	out system.String system.UInt	
-	helpLine "Parse input txt queue to generate individual counts of words"
-}
-

@@ -6,110 +6,132 @@
 #ifndef _H_SAMSON_hit_HitCount
 #define _H_SAMSON_hit_HitCount
 
+#include <samson/modules/hit/common.h>
 
 #include <samson/modules/hit/HitCount_base.h>
 
 
 namespace samson{
-namespace hit{
+    namespace hit{
+                
+        class HitCount : public HitCount_base
+        {
+                        
+        public:
 
+            // Init structure creating all time-slot-counters
+            
+            void init( std::string &_concept, size_t _current_time )
+            {
+                // Set concept
+                concept.value = _concept;
+                
+                // Set current time
+                current_time.value = _current_time;
+                
+                // Init all the hits for all time-slots counters
+                hitsSetLength(0);		  
+                for (int i = 0 ; i < NUM_TIME_SLOTS ; i++ )
+                    hitsAdd()->value = 0;		  
+            }
+            
+            void set_current_time( size_t _current_time )
+            {
+                if( _current_time <= current_time.value )
+                    return; // Nothing to do
 
-	class HitCount : public HitCount_base
-	{
+                // Compute the time diff
+                size_t current_time_diff  = _current_time - current_time.value;
 
-	public:
-	   
-	   void init( std::string &_concept, size_t _current_time , size_t _current_hits  )
-	   {
-		  concept.value = _concept;
+				//printf("time %lu -> %lu diff %lu\n" , current_time.value , _current_time,  current_time_diff );
 
-		  current_time.value = _current_time;
-		  current_hits.value = _current_hits;
-		  hits.value = 0;// No hits for the previous slot                                                                                                                               
-	   }
-	   
-		  size_t cannonical( size_t input )
-		  {
-			 if ( input == 0 )
-				return 0;
+                // Move values to the rigth place
+				if( current_time_diff > 0 )
+				   if( current_time_diff < NUM_TIME_SLOTS )
+					  for( size_t i = 0 ; i <  NUM_TIME_SLOTS - current_time_diff ; i++ )			   
+					  {
+						 hits[ NUM_TIME_SLOTS - 1 - i ].value = hits[ NUM_TIME_SLOTS - i -1 - current_time_diff ].value;
+					  }
+                
+                // Set 0 to the new slots
+                for( size_t i = 0 ; i < std::min( (size_t) current_time_diff , (size_t) NUM_TIME_SLOTS ) ; i++ )
+				{
+				   //printf("Puting 0 to %lu\n" , i );
+                    hits[i].value = 0;
+				}
+                
+                // Set current time
+                current_time.value = _current_time;
+            }
+            
+            bool add_hits( size_t _hits )
+            {
+                bool ans = change_significantly( hits[0].value + _hits  , hits[0].value );
 
-			 int t=0;
-			 while( input > 1000 )
-			 {
-				input /= 10;
-				t++;
-			 }
+				for ( int i=0; i<NUM_TIME_SLOTS ; i++)
+				   hits[i].value += _hits;
 
-			 for ( int i = 0 ; i < t  ; i++)
-				input *= 10;
+                return ans;
+            }
 
-			 return input;
-		  }
-
-		  bool change_significantly( size_t from , size_t to )
-		  {
-			 return ( cannonical( from ) != cannonical( to ) );			 
-		  }
-
-          bool update( unsigned long _current_time , size_t _current_hits )
-          {
-			 // Store previous values
-			 size_t previous_current_hits = current_hits.value;
-			 size_t previous_hits = getHits();
-
-            if( _current_time == current_time.value )
+			bool hasHit()
 			{
-			   current_hits.value += _current_hits;
+			   for ( int i=0; i<NUM_TIME_SLOTS ; i++)
+				  if( hits[i].value > 0 )
+					 return true;
+			   return false;
 			}
-            else if( _current_time == ( current_time.value + 1 ) )
-			{
-			   // Move one slot....
+            
+            // Get hits functionality ( integrating over different number of slots )
 
-			   current_time.value++;
-			   hits.value = current_hits.value;
-			   current_hits.value = _current_hits;
-			}
-            else
-			{
-			   // Like init...                                                                                                                                                             
-			   current_time.value = _current_time;
-			   current_hits.value = _current_hits;
-			   hits.value = 0;// No hits for the previous slot                                                                                                                         
-			}
+            
+            // std::string representation of the content 
+            
+            std::string str()
+            {
+                std::ostringstream output;
+                
+                output << "[ C: " << concept.value << " T: " << current_time.value << " Hits";
+                output << " ( ";
+                for (int i = 0 ; i < NUM_TIME_SLOTS ; i++)
+                    output << hits[i].value << " ";
+                output << ") ]";
+                
+                return output.str();
+            }
+            
+            // Auxiliar functions to evaluate significant changes
+            
+            bool change_significantly( size_t from , size_t to )
+            {
+                return ( cannonical( from ) != cannonical( to ) );			 
+            }
+            
+            size_t cannonical( size_t input )
+            {
+                if ( input == 0 )
+                    return 0;
+                
+                int t=0;
+                while( input > 1000 )
+                {
+                    input /= 10;
+                    t++;
+                }
+                
+                for ( int i = 0 ; i < t  ; i++)
+                    input *= 10;
+                
+                return input;
+            }
 
-			if( change_significantly( previous_hits , getHits() ) )
-			   return true;
-			if( change_significantly( previous_current_hits , current_hits.value ) )
-			   return true;
 
-			return false;
-          }
-		  
-          bool hasContent()
-          {
-			 return (getHits() > 0 );
-          }
-		  
-		  size_t getHits()
-		  {
-			 return hits.value + current_hits.value;
-		  }
-		  
-
-		  std::string str()
-		  {
-			 std::ostringstream output;
-
-			 output << "[ C: " << concept.value << " T: " << current_time.value << " Hits ( " << current_hits.value << "," << hits.value << " ) ]";
-
-			 return output.str();
-		  }
-
-		  
-	};
-   
-
-} // end of namespace samson
+            
+            
+        };
+        
+        
+    } // end of namespace samson
 } // end of namespace hit
 
 #endif

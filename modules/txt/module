@@ -37,6 +37,14 @@ parser parser_words
 	helpLine "Parse a txt files emiting words at the output (value is always one)"
 }
 
+map filter_words_with_numbers_and_letters
+{
+	in system.String system.UInt
+	out system.String system.UInt
+
+	helpLine "Filter words containing only numbers and letter ( ommit words with non-printable ascii chars)"
+}
+
 map number_letters
 {
 	in system.String system.Void

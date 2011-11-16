@@ -9,7 +9,6 @@
 
 #include <samson/module/samson.h>
 #include <samson/modules/hit/common.h> // Common definitions for the module
-#include <samson/modules/hit/HitCollection.h>
 #include <samson/modules/hit/HitCount.h>
 #include <samson/modules/hit/HitCountCollection.h>
 #include <samson/modules/system/String.h>

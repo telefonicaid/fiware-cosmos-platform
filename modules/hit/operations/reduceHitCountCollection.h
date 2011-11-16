@@ -21,7 +21,7 @@ namespace hit{
    class HitCountList
    {
       // List of elements in this list
-	  std::list<samson::hit::HitCount*> elements;
+	  samson::hit::HitCount** hit_counts;
 
       // Position in the history to consider
 	  int num_samples; 
@@ -33,13 +33,28 @@ namespace hit{
 
 	  HitCountList( int _num_samples )
 	  {
-		 // Keep the number of samples considered in this list
+		 // Position in the history considered in this list
 		 num_samples = _num_samples;		 
 
 		 // Minimum number of hits "0" as there are no real elements
 		 min_num_hits = 0;
 
+		 // Alloc the list of elements
+		 hit_counts = (samson::hit::HitCount**) malloc( sizeof( samson::hit::HitCount* ) * NUM_TOP_ITEMS );
+
+		 for ( int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
+		 {
+			hit_counts[i] = new samson::hit::HitCount();
+			hit_counts[i]->init();
+		 }
+
 	  }
+
+	  ~HitCountList()
+	  {
+		 free( hit_counts );
+	  }
+
 
 	  std::string str()
 	  {
@@ -48,9 +63,8 @@ namespace hit{
 		 output << "List for #samples " << num_samples << "\n";
 		 output << "---------------------------------------\n";
 
-		 std::list<samson::hit::HitCount*>::iterator it_elements;
-         for( it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
-			output << "\t" << (*it_elements)->str() << "\n";
+		 for (int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
+			output << "\t" << hit_counts[i]->str() << "\n";
 
 		 return output.str();
 	  }
@@ -63,55 +77,68 @@ namespace hit{
 			return; // Nothing to do since we do not have the minimum number of elements
 		 }
 
-		 // Remove previous versions of the same element 		 
-		 std::list<samson::hit::HitCount*>::iterator it_elements;
-		 for( it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
-			if( (*it_elements)->concept.value == hit_count->concept.value )
-			   it_elements = elements.erase( it_elements );
 
-		 
-		 // Position to insert in the top list
-		 std::list<samson::hit::HitCount*>::iterator pos = _find_pos( hit_count );
-		 
-         // Add the element in the rigth position
-		 samson::hit::HitCount* _hit_count = new samson::hit::HitCount();
-		 _hit_count->copyFrom( hit_count );
-		 elements.insert( pos , _hit_count );
+		 // Look if the elements was previously posted to just update content...
+		 for ( int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
+			if( hit_counts[i]->concept.value == hit_count->concept.value )
+			{
+			   // Update content
+			   hit_counts[i]->copyFrom( hit_count );
 
-		 // Remove old elements
-		 while( elements.size() > NUM_TOP_ITEMS )
+			   while( (i>0) && ( hit_counts[i]->hits[num_samples] > hit_counts[i-1]->hits[num_samples] ) )
+			   {
+				  // Swap positions
+				  samson::hit::HitCount* tmp = hit_counts[i];
+				  hit_counts[i] = hit_counts[i-1];
+				  hit_counts[i-1] = tmp;
+
+				  i--;
+			   }
+
+			   while( (i<(NUM_TOP_ITEMS-1)) && ( hit_counts[i]->hits[num_samples] < hit_counts[i+1]->hits[num_samples] ) )
+			   {
+				  // Swap positions
+				  samson::hit::HitCount* tmp = hit_counts[i];
+				  hit_counts[i] = hit_counts[i+1];
+				  hit_counts[i+1] = tmp;
+
+				  i++;
+			   }
+
+			   return;
+			}
+
+		 // Look for the final position where this element will be placed
+		 int pos = 0;
+		 while( (pos<NUM_TOP_ITEMS) && hit_counts[pos]->hits[num_samples] > hit_count->hits[num_samples] )
+			pos++;
+
+		 if( pos < NUM_TOP_ITEMS )
 		 {
-			//printf("Removing elements since too many items %lu\n" , elements.size() );
-			samson::hit::HitCount* _hit_count = elements.back();
-			elements.pop_back();
-			
-			delete _hit_count;
+			// Reserve the last element ( will be removed )
+			samson::hit::HitCount* tmp = hit_counts[NUM_TOP_ITEMS-1]; // Take the last one
+
+			// Move all elements lower than this one...
+			for ( int j = (NUM_TOP_ITEMS-1) ; j >= pos ; j-- )
+			   hit_counts[j] = hit_counts[j-1];
+
+			// Put the last "reserved" element at the correct position
+			hit_counts[pos] = tmp;
+
+			// Copy content of the new one
+			hit_counts[pos]->copyFrom( hit_count );
+
 		 }
-	  
+
 	  }
 
       void fill( samson::hit::HitCountCollection *hit_count_collection )
 	  {
-		 std::list<samson::hit::HitCount*>::iterator it_elements;
-         for( it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
-			hit_count_collection->hit_countsAdd()->copyFrom( *it_elements );
+		 for ( int i = 0 ; i < NUM_TOP_ITEMS ; i++)
+			if( hit_counts[i]->hasHits() )
+			   hit_count_collection->hit_countsAdd()->copyFrom( hit_counts[i] );
 	  }
 
-   private:
-
-	  std::list<samson::hit::HitCount*>::iterator _find_pos( samson::hit::HitCount* hit_count )
-	  {
-		 // Number of hits for the new element
-		 size_t _hits = hit_count->hits[ num_samples ].value;
-
-		 for (std::list<samson::hit::HitCount*>::iterator i = elements.begin() ; i != elements.end() ; i++ )
-		 {
-			if( _hits > (*i)->hits[ num_samples ].value )
-			   return i;
-		 }
-
-		 return elements.end();
-	  }	  
 
    };
 

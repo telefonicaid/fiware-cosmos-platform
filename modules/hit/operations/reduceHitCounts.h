@@ -106,7 +106,7 @@ public:
 		}
 
 		// Emit the state at the output if still we have some counts....
-		if( hitCount.hasHit() )
+		if( hitCount.hasHits() )
 			writer->emit( 1 , &key , &hitCount );
 
 	}

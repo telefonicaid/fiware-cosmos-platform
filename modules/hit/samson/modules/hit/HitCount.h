@@ -20,6 +20,17 @@ namespace samson{
         public:
 
             // Init structure creating all time-slot-counters
+
+		   void init()
+		   {
+			  concept.value = "";
+			  current_time.value = 0;
+
+              // Init all the hits for all time-slots counters
+			  hitsSetLength(0);
+			  for (int i = 0 ; i < NUM_TIME_SLOTS ; i++ )
+				 hitsAdd()->value = 0;
+		   }
             
             void init( std::string &_concept, size_t _current_time )
             {
@@ -74,7 +85,7 @@ namespace samson{
                 return ans;
             }
 
-			bool hasHit()
+			bool hasHits()
 			{
 			   for ( int i=0; i<NUM_TIME_SLOTS ; i++)
 				  if( hits[i].value > 0 )

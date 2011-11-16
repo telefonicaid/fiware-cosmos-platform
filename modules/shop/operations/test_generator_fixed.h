@@ -32,7 +32,7 @@ namespace shop{
                     id = i;
                     operation.user = i%100;
                     operation.product = i%1000;
-                    operation.operation = i%2;
+                    operation.operationType = i%2;
 
                     writer->emit(0, &id, &operation);
             }

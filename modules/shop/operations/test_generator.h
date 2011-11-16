@@ -8,6 +8,8 @@
 
 
 #include <samson/module/samson.h>
+#include <samson/modules/shop/Operation.h>
+#include <samson/modules/system/UInt.h>
 
 
 namespace samson{
@@ -20,29 +22,50 @@ namespace shop{
 	public:
 
 
+#ifdef INFO_COMMENT //Just to include a comment without conflicting anything
+// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
+
+output: system.UInt shop.Operation
+
+helpLine: Simple generator that generates shop.Operation operations
+#endif // de INFO_COMMENT
+
+		void init( samson::KVWriter *writer )
+		{
+		}
+
+		void setup( int worker , int num_workers, int process , int num_processes )
+		{
+		}
+
 		void run( samson::KVWriter *writer )
 		{
-                        size_t num_samples = environment->getInt( "shop.samples", 10000);
+            size_t num_samples = environment->getInt( "shop.samples", 100000);
 
-                        samson::system::UInt id;
-                        samson::shop::Operation operation;
+            samson::system::UInt id;
+            samson::shop::Operation operation;
 
-                        for (size_t i = 0; (i < num_samples); i++)
-                        {
-                                id = i;
-                                operation.user = rand()%10000;
-                                operation.product = rand()%100;
-                                operation.operation = rand()%2;
+            for (size_t i = 0; (i < num_samples); i++)
+            {
+                    id = i;
+                    operation.user = rand()%10000;
+                    operation.product = rand()%100;
+                    operation.operationType = rand()%2;
 
-                                writer->emit(0, &id, &operation);
-                        }
+                    writer->emit(0, &id, &operation);
+            }
 		}
+
+		void finish( samson::KVWriter *writer )
+		{
+		}
+
 
 
 	};
 
 
-} // end of namespace samson
 } // end of namespace shop
+} // end of namespace samson
 
 #endif

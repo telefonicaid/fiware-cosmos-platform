@@ -161,7 +161,7 @@ reduce word_count_accumulate
 
 parserOut export_words
 {
-	in system.String system.Void
+	in system.String system.UInt
 
 	helpLine "Export words"
 }

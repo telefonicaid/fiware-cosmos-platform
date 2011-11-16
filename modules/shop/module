@@ -15,7 +15,7 @@ data Operation
 {
         system.UInt user;
         system.UInt product;
-        system.UInt operation;
+        system.UInt operationType;
 }
 
 data VectorProducts

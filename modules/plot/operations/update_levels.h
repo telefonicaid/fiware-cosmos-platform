@@ -34,6 +34,7 @@ namespace plot{
 
 input: system.String plot.LevelUpdate  
 input: system.String plot.Level  
+output: system.String plot.LevelNotification
 output: system.String plot.Level
 
 helpLine: Update Level with LevelUpdate items

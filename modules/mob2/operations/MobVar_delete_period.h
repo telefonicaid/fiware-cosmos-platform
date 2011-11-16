@@ -29,8 +29,8 @@ public:
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-	input: mob2.TelMonth mob2.CellMx
-	output: mob2.TelMonth mob2.CellMx
+	input: mob2.TelMonth cdr.CellPos
+	output: mob2.TelMonth cdr.CellPos
 
 	extendedHelp: 		Delete the period to calculate individual variables of a whole sample
 

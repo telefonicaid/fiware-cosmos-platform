@@ -8,6 +8,8 @@
 
 
 #include <samson/module/samson.h>
+#include <samson/modules/shop/VectorProducts.h>
+#include <samson/modules/system/UInt.h>
 
 
 namespace samson{
@@ -20,35 +22,52 @@ namespace shop{
 	public:
 
 
-		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
+#ifdef INFO_COMMENT //Just to include a comment without conflicting anything
+// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
+
+input: system.UInt system.UInt  
+output: system.UInt shop.VectorProducts
+
+helpLine: Reduce example; from key-values groups the list of products by user
+#endif // de INFO_COMMENT
+
+		void init( samson::KVWriter *writer )
 		{
-                        // Variables used to read content from the input
-                        samson::system::UInt input_key;
-                        samson::system::UInt input_value;
-
-                        // Variables used to store content for the output
-                        samson::shop::VectorProducts output_values;
-
-                        for (size_t i = 0; (i < inputs[0].num_kvs); i++)
-                        {
-                                input_key.parse(inputs[0].kvs[i]->key);
-                                input_value.parse(inputs[0].kvs[i]->value);
-
-                                if ((output_values.products_length == 0) || (output_values.products[output_values.products_length-1] != input_value.value))
-                                {
-                                        output_values.productsAdd()->copyFrom(&input_value);
-                                }
-                        }
-
-                        writer->emit( 0 , &input_key, &output_values);
-
 		}
+
+		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
+		{
+            // Variables used to read content from the input
+            samson::system::UInt input_key;
+            samson::system::UInt input_value;
+
+            // Variables used to store content for the output
+            samson::shop::VectorProducts output_values;
+
+            for (size_t i = 0; (i < inputs[0].num_kvs); i++)
+            {
+                    input_key.parse(inputs[0].kvs[i]->key);
+                    input_value.parse(inputs[0].kvs[i]->value);
+
+                    if ((output_values.products_length == 0) || (output_values.products[output_values.products_length-1] != input_value.value))
+                    {
+                            output_values.productsAdd()->copyFrom(&input_value);
+                    }
+            }
+
+            writer->emit( 0 , &input_key, &output_values);
+		}
+
+		void finish( samson::KVWriter *writer )
+		{
+		}
+
 
 
 	};
 
 
-} // end of namespace samson
 } // end of namespace shop
+} // end of namespace samson
 
 #endif

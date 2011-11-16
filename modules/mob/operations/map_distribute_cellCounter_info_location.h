@@ -32,7 +32,7 @@ public:
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-	input: system.UInt CellCounter
+	input: system.UInt mob.CellCounter
 	output: mob.PhoneLocCounter system.Void
 	output: mob.PhoneLocCounter system.Void
 	output: mob.PhoneLocCounter system.Void

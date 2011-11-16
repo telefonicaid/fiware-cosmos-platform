@@ -44,7 +44,7 @@ public:
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-	input: system.String page_rank.Links
+	input: system.String system.StringVector
 	input: system.String page_rank.Node
 	output: system.String page_rank.Message
 	output: system.String page_rank.Node

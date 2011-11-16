@@ -247,6 +247,12 @@ namespace samson
 			std::ifstream _file( fileName.str().c_str() );
 			if( _file.is_open() )
 			{
+				if (checkOperationFile(_file, info) == false)
+				{
+					std::cerr << "Error, " << fileName.str() << ": module declaration does not agree with header comment in implementation." << std::endl;
+					std::cerr << "\t\tPlease check and update the wrong declaration (module or implementation)." << std::endl;
+					exit(-1);
+				}
 				_file.close();
                 if( verbose )
                     std::cout << "File " << name << ".h is not generated because it already exist\n";
@@ -299,12 +305,32 @@ namespace samson
 			// Public tag
 			file << "\tpublic:\n";
 			file << "\n\n";
+
+#define INFO_MODULE " INFO_MODULE"
+#define END_INFO_MODULE " END_INFO_MODULE"
+#define INFO_COMMENT "#ifdef INFO_COMMENT"
+#define END_INFO_COMMENT "#endif // de INFO_COMMENT"
 			
-			file << "#ifdef INFO_COMMENT //Just to include a comment without conflicting anything\n";
-			file << "// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)" << "\n";
-			file << "\n";
-			file << info << "\n";
-			file << "#endif // de INFO_COMMENT" << "\n";
+			//file << "#ifdef INFO_COMMENT //Just to include a comment without conflicting anything\n";
+			file << "// " << INFO_MODULE << std::endl;
+			file << "// If interface changes and you do not recreate this file, you will have to update this information (and of course, the module file)" << std::endl;
+			file << "// Please, do not remove this comments, as it will be used to check consistency on module declaration" << std::endl;
+			file << "//\n";
+
+			size_t found_prev = 0;
+			size_t found=info.find_first_of("\n");
+			std::string line;
+			while (found!=string::npos)
+			{
+				line = info.substr(found_prev, found - found_prev);
+				file << "//  " << line << std::endl;
+				found_prev = found+1;
+				found=info.find_first_of("\n", found+1);
+			}
+			line = info.substr(found_prev, found - found_prev);
+			file << "// " << line << std::endl;
+			file << "// " << END_INFO_MODULE << std::endl;
+			//file << "#endif // of INFO_COMMENT" << "\n";
 			file << "\n";
 
 
@@ -437,7 +463,126 @@ namespace samson
 			return output.str();
 		}		
 		
-		
-		
+		bool checkOperationFile(std::ifstream &file, std::string info)
+		{
+
+
+			if( !file.is_open() )
+			{
+				std::cerr << "checkOperationFile: file should already be opened" << "\n";
+				exit(-1);
+			}
+
+			ostringstream o;
+			char buffer[1001];
+			bool header_info = false;
+			std::string infoFile;
+
+			while( !file.eof() )
+			{
+				file.getline( buffer , 1000);
+				//cout << "Checking:'" << buffer << std::endl;
+				if ((strstr(buffer, INFO_MODULE) != NULL) || (strstr(buffer, INFO_COMMENT) != NULL))
+				{
+					//cout << "Detected header" << std::endl;
+					header_info = true;
+				}
+				else if (header_info)
+				{
+					if ((strstr(buffer, END_INFO_MODULE)) || (strstr(buffer, END_INFO_COMMENT) != NULL))
+					{
+						//cout << "Detected end of header" << std::endl;
+						//cout << "Checking: info'" << info << std::endl;
+						//cout << "Checking: infoFile'" << infoFile << std::endl;
+						if (info.find(infoFile) == string::npos)
+						{
+							cerr << ">>> " << "Changed INFO_MODULE header" << std::endl;
+							cerr << ">>> " << "In .h:" << std::endl;
+							size_t found_prev = 0;
+							size_t found=infoFile.find_first_of("\n");
+							std::string line;
+							while (found!=string::npos)
+							{
+								line = infoFile.substr(found_prev, found - found_prev);
+								if ((line.find("input:") != string::npos) || (line.find("output:") != string::npos))
+								{
+									cerr << ">>>     //  " << line << std::endl;
+								}
+								found_prev = found+1;
+								found=infoFile.find_first_of("\n", found+1);
+							}
+							cerr << ">>> " << std::endl;
+							cerr << ">>> " << "Expected: " << std::endl;
+							found_prev = 0;
+							found=info.find_first_of("\n");
+							while (found!=string::npos)
+							{
+								line = info.substr(found_prev, found - found_prev);
+								if ((line.find("input:") != string::npos) || (line.find("output:") != string::npos))
+								{
+									cerr << ">>>     //  " << line << std::endl;
+								}
+								found_prev = found+1;
+								found=info.find_first_of("\n", found+1);
+							}
+							cerr << ">>> " << std::endl;
+							return false;
+						}
+						else
+						{
+							return true;
+						}
+					}
+					char *ptag;
+					char keyFormat[100];
+					char valueFormat[100];
+					char compareKey[100];
+					char compareValue[100];
+					if ((ptag = strstr(buffer, " //")) != NULL)
+					{
+						// If the use has added comments to the info line
+						*ptag = '\0';
+					}
+					if ((ptag = strstr(buffer, "input:")) != NULL)
+					{
+						//cout << "Detected input" << std::endl;
+						keyFormat[0] = '\0';
+						valueFormat[0] = '\0';
+						compareKey[0] = '\0';
+						compareValue[0] = '\0';
+						sscanf(ptag, "input: %s %s %s %s", keyFormat, valueFormat, compareKey, compareValue);
+
+#define COMPAREKEYFUNCTION "compareKeyFunction="
+#define COMPAREVALUEFUNCTION "compareValueFunction="
+
+						// Nasty workaround. Perhaps we only have compareValueFunction, and then we need to print an extra space
+						// to be the same as when parsing the module file
+						if (strstr(compareKey, COMPAREVALUEFUNCTION) != NULL)
+						{
+							infoFile += "input: " + std::string(keyFormat) + " " + std::string(valueFormat) + "  " + std::string(compareKey) + "\n";
+						}
+						else
+						{
+							infoFile += "input: " + std::string(keyFormat) + " " + std::string(valueFormat) + " " + std::string(compareKey) + " " + std::string(compareValue) + "\n";
+						}
+						//cout << "infoFilet" << infoFile << std::endl;
+					}
+					else if ((ptag = strstr(buffer, "output:")) != NULL)
+					{
+						//cout << "Detected output" << std::endl;
+						keyFormat[0] = '\0';
+						valueFormat[0] = '\0';
+						sscanf(ptag, "output: %s %s", keyFormat, valueFormat);
+						infoFile += "output: " + std::string(keyFormat) + " " + std::string(valueFormat) + "\n";
+						//cout << "infoFilet" << infoFile << std::endl;
+					}
+				}
+			}
+
+			return true;
+		}
+
 	};
 }
+
+

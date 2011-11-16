@@ -30,8 +30,8 @@ public:
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-	input: system.UInt system.samson::system::Void
-	output: system.UInt system.samson::system::UInt
+	input: system.UInt system.Void
+	output: system.UInt system.UInt
 
 	extendedHelp: 		Get statistics of a serie
 

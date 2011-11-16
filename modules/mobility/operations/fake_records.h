@@ -26,7 +26,7 @@ namespace mobility{
 			 
 	public:
 
-#ifdef INFO_COMMENT //Just to include a comment without conflicting anything
+#if 0
 // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)	   
 // output: system.UInt mobility.Record	   
 // helpLine: Fake generator to have some mobility.Record items for testing

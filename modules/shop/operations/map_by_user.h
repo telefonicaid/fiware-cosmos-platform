@@ -8,6 +8,8 @@
 
 
 #include <samson/module/samson.h>
+#include <samson/modules/shop/Operation.h>
+#include <samson/modules/system/UInt.h>
 
 
 namespace samson{
@@ -20,33 +22,50 @@ namespace shop{
 	public:
 
 
-		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
+#ifdef INFO_COMMENT //Just to include a comment without conflicting anything
+// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
+
+input: system.UInt shop.Operation  
+output: system.UInt system.UInt
+
+helpLine: Map example; from input_data [UInt - Operation] emits key-values [UInt - UInt] with user-id and product-id
+#endif // de INFO_COMMENT
+
+		void init( samson::KVWriter *writer )
 		{
-                        samson::system::UInt input_key;
-                        samson::shop::Operation input_value;
-                        samson::system::UInt output_value;
-                        samson::system::UInt output_key;
-
-                        for (size_t i = 0; (i < inputs[0].num_kvs); i++)
-                        {
-                                // Parse the input of each input key-value
-                                input_key.parse(inputs[0].kvs[i]->key);
-                                input_value.parse( inputs[0].kvs[i]->value );
-
-                                // Assign the output variables
-                                output_key = input_value.user;
-                                output_value = input_value.product;
-
-                                writer->emit( 0 , &output_key, &output_value);
-                        }
-
 		}
+
+		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
+		{
+            samson::system::UInt input_key;
+            samson::shop::Operation input_value;
+            samson::system::UInt output_value;
+            samson::system::UInt output_key;
+
+            for (size_t i = 0; (i < inputs[0].num_kvs); i++)
+            {
+                    // Parse the input of each input key-value
+                    input_key.parse(inputs[0].kvs[i]->key);
+                    input_value.parse( inputs[0].kvs[i]->value );
+
+                    // Assign the output variables
+                    output_key = input_value.user;
+                    output_value = input_value.product;
+
+                    writer->emit( 0 , &output_key, &output_value);
+            }
+		}
+
+		void finish( samson::KVWriter *writer )
+		{
+		}
+
 
 
 	};
 
 
-} // end of namespace samson
 } // end of namespace shop
+} // end of namespace samson
 
 #endif

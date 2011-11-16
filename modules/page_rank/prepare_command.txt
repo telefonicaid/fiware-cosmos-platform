@@ -9,15 +9,15 @@ add_stream_operation update_links page_rank.updateLinks graph nodes messages nod
 # Automatic update of the state if messages are available
 add_stream_operation update_messages page_rank.updateMessages messages nodes messages nodes
 
-# Set proprties for this queues
+# Set properties for this queues
 set_stream_operation_property parser_links max_latency 1
 set_stream_operation_property update_links max_latency 1
 set_stream_operation_property update_messages max_latency 1
 
-set_stream_operation_property parser_links priority 3
-set_stream_operation_property update_links priority 2
-set_stream_operation_property update_messages priority 1
+#set_stream_operation_property parser_links priority 3
+#set_stream_operation_property update_links priority 2
+#set_stream_operation_property update_messages priority 1
 
-set_stream_operation_property update_links paused yes
-set_stream_operation_property update_messages paused yes
+#set_stream_operation_property update_links paused yes
+#set_stream_operation_property update_messages paused yes
 

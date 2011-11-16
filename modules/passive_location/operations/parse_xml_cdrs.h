@@ -28,7 +28,7 @@ namespace passive_location{
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-output: system.UInt32 mobility.CellRecord
+output: system.UInt passive_location.Record
 
 helpLine: Parse input cdrs from Arkanum platform. Note that output key is cellid at the output
 #endif // de INFO_COMMENT

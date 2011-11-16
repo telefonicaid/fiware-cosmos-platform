@@ -35,7 +35,7 @@ public:
 
 	input: mob2.TwoInt mob2.ItinTime
 	input: mob2.TwoInt mob2.Bts_Counter
-	output: samson::system::UInt mob2.ItinTime
+	output: system.UInt mob2.ItinTime
 
 	extendedHelp: 		Filter cdrs to the pois of a client
 	Input 0: Cdrs with bts info

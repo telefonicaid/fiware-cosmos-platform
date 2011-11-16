@@ -145,6 +145,8 @@ namespace samson {
 					compareKeyFunction = "";
 				}
 
+
+
 				std::string optional_compareValueFunction = module_creator->itemAtPos(pos++).str;
 				std::string compareValueFunction;
 				

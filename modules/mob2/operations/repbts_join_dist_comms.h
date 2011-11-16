@@ -34,7 +34,7 @@ public:
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
 	input: system.UInt mob2.Node_Bts_Day
-	input: system.UInt system.samson::system::UInt
+	input: system.UInt system.UInt
 	output: system.UInt mob2.Bts_Counter
 
 	extendedHelp: 		Get percentages of communication of a client by bts and range

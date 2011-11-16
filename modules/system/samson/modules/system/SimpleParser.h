@@ -65,7 +65,7 @@ namespace system{
 
 			  if( ( line[pos] == separator ) || ( line[pos] == '\0' ) )
 			  {
-				 if( line[pos] == '\0' )
+				 if(( line[pos] == '\0' )|| (line[pos] == '\n'))
 					finish = true;
 
 				 // Artifical termination of string
@@ -75,7 +75,12 @@ namespace system{
 				 words.push_back(  &line[previous] );
 
 				 // Point to the next words
-				 previous = pos+1;
+				 // Jumps blank spaces
+				 while (line[pos] == ' ')
+				 {
+					 pos++;
+				 }
+				 previous = pos;
 
 			  }
 

@@ -35,7 +35,7 @@ public:
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
 	input: system.UInt mob2.Itinerary
-	output: system.Vector_samson::system::UInt system.Void
+	output: system.Vector_UInt system.Void
 
 	extendedHelp: 		Extract the week days when a movement is
 

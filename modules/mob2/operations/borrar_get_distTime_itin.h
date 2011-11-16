@@ -35,7 +35,7 @@ public:
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
 	input: system.UInt mob2.ItinMovement
-	output: system.UInt system.samson::system::Void
+	output: system.UInt system.Void
 
 	extendedHelp: 		Extract the number of minutes in movements of a client
 

@@ -40,7 +40,7 @@ public:
 	input: system.String system.UInt
 	input: system.String hit.HitCount
 
-	output: system.UInt hit.HitCount      // emit the output if it changes significantly
+	output: system.String hit.HitCount      // emit the output if it changes significantly
 	output: system.String hit.HitCount
 	
 	helpLine: Aggregation of the hits per string

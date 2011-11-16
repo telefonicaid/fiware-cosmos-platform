@@ -102,14 +102,14 @@ int main( int argC , const char *argV[])
 		if (tsCompare(stat_module.st_mtime, stat_output1.st_mtime) < 0)
 			if(tsCompare(stat_module.st_mtime, stat_output2.st_mtime) < 0)
             {
-                std::cerr << "samsonModuleParser: Not creating Modules.cpp and Modules.h since the module input file is older than the new one\n";
+                std::cerr << "samsonModuleParser: Not creating " << output1_filename << " and " << output2_filename << " since the module input file is older than the new one\n";
                 return 0;
             }
 #else        
         if( tsCompare( stat_module.st_mtimespec , stat_output1.st_mtimespec ) < 0 )
             if( tsCompare( stat_module.st_mtimespec , stat_output2.st_mtimespec ) < 0 )
             {
-                std::cerr << "samsonModuleParser: Not creating Modules.cpp and Modules.h since the module input file is older than the new one\n";
+                std::cerr << "samsonModuleParser: Not creating " << output1_filename << " and " << output2_filename << " since the module input file is older than the new one\n";
                 return 0;
             }
 #endif

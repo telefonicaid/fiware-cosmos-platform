@@ -42,8 +42,8 @@ public:
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 	// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-	input: system.UInt cdr.mobCdr
-	input: system.UInt mob2.CellMx
+	input: system.UInt32 cdr.mobCdr
+	input: system.UInt32 cdr.CellPos
 	output: mob2.TwoInt mob2.ItinTime
 
 	extendedHelp: 		Change cell of cdrs by bts for itineraries

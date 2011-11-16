@@ -28,7 +28,7 @@ namespace page_rank{
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-output: system.String page_rank.Links
+output: system.String system.StringVector
 
 helpLine: Parse a txt file where wvery line is node link1 link2 ....
 #endif // de INFO_COMMENT

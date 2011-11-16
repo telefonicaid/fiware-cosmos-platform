@@ -52,8 +52,8 @@ public:
 	input: system.UInt32 cdr.Cell
 	output: system.UInt cdr.mobCdr
 	output: system.UInt cdr.Cell
-	output: system.UInt CellCounter
-	output: system.UInt CellCounter
+	output: system.UInt mob.CellCounter
+	output: system.UInt mob.CellCounter
 
 	helpLine: Keep only CDRs with known cell id and add cell info from the catalogue.
 	extendedHelp: 		Keep only CDRs with known cell id and add cell info from the catalogue.

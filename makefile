@@ -1,6 +1,9 @@
 ifndef SAMSON_HOME
 SAMSON_HOME=/opt/samson
 endif
+ifndef SAMSON_WORKING
+SAMSON_WORKING=/var/samson
+endif
 ifndef SAMSON_VERSION
 SAMSON_VERSION=0.6
 endif
@@ -47,7 +50,13 @@ install: release install_man
 	sudo cp modules/moduletemplate/makefile $(SAMSON_HOME)/share/modules/moduletemplate
 	sudo cp modules/moduletemplate/module $(SAMSON_HOME)/share/modules/moduletemplate
 	sudo cp scripts/samsonModuleBootstrap $(SAMSON_HOME)/bin
+	getent group samson >/dev/null || sudo groupadd -r samson
+	getent passwd samson >/dev/null || sudo useradd -r -g samson -d /opt/samson -s /sbin/nologin -c 'SAMSON account' samson
 	sudo chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_HOME)
+	sudo mkdir -p /var/samson
+	sudo chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_WORKING)
+	sudo cp etc/profile.d/samson.sh /etc/profile.d/samson.sh
+	sudo cp etc/init/samson.conf /etc/init/samson.conf
 
 install_man: man
 	sudo cp -r BUILD_RELEASE/man $(SAMSON_HOME)/
@@ -145,6 +154,11 @@ reset:
 	sudo rm -f libs/data/data.pb.*
 	sudo rm -Rf /usr/local/include/samson
 	sudo rm -f testing/module_test/Module.*
+	sudo rm -f /etc/init/samson.conf
+	sudo rm -f /etc/profile.d/samson.sh
+	if [ "$(SAMSON_HOME)" != "/usr/local" ]; then sudo rm -rf $(SAMSON_HOME); fi
+	sudo rm -rf $(SAMSON_WORKING)
+	sudo rm -rf rpm
 	make reset -C modules
 
 cleansvn: reset
@@ -202,6 +216,10 @@ rpm: release modules man
 	cd modules/passive_location;     ../../scripts/samsonModuleRpm passive_location $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	cd modules/txt_md;               ../../scripts/samsonModuleRpm txt_md $(SAMSON_VERSION) $(SAMSON_RELEASE)
 
+publish_rpm: rpm
+	rsync  -v package/rpm/*.rpm repo@samson09.hi.inet:/var/repository/redhat/6/x86_64
+	ssh repo@samson09.hi.inet createrepo -q -d /var/repository/redhat/6/x86_64
+
 # currently the deb scripts require Samson be installed before 
 # the package can be generated. Using SAMSON_HOME we can override
 # the default install location so as to not trash a live installation
@@ -242,4 +260,9 @@ packages: install man rpm deb
 .PHONY : modules
 .PHONY : man
 
+# 
+# q
+# q
+# q
+# q
 # vim: noexpandtab

@@ -70,6 +70,7 @@ echo "Group:     Applications/Engineering"                   >> $BUILD_ROOT/rpm/
 echo "Source:    http://www.tid.es/samson-$version.tar.gz"   >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "BuildRoot: /var/tmp/%{name}-buildroot"                 >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "Requires: protobuf, ntp,tid-mongodb"                   >> $BUILD_ROOT/rpm/SPECS/$specfile 
+echo "Requires(pre): shadow-utils"                           >> $BUILD_ROOT/rpm/SPECS/$specfile 
 echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%description"                                          >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "SAMSON is a high-performance MapReduce platform that is designed for scaling tasks on a cluster of commodity hardware. This platform removes the need to develop a system for parallelizing and synchronizing work between servers, allowing a person to develop the analytical models needed to solve both current and future problems.  SAMSON extends the traditional MapReduce paradigm by allowing an external data source to stream data into and out of the cluster. This allows the system to handle any volume of data thus providing the ability to continuously process new inputs and output states without restriction."                    >> $BUILD_ROOT/rpm/SPECS/$specfile
@@ -77,15 +78,23 @@ echo                                                         >> $BUILD_ROOT/rpm/
 echo "%prep"                                                 >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%setup"                                                >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "%pre"  >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "getent group samson >/dev/null || groupadd -r samson"  >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "getent passwd samson >/dev/null || useradd -r -g samson -d /opt/samson -s /sbin/nologin -c 'SAMSON account' samson"  >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "exit 0"  >> $BUILD_ROOT/rpm/SPECS/$specfile
 #echo "%install"                                              >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%clean"                                                >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%files"                                                >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "%defattr(-, samson, samson, -)"                        >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '/opt/samson/bin/samson*'                               >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '/opt/samson/bin/delilah'                               >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '/opt/samson/etc/setup.txt'                             >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo '/opt/samson/log'                                       >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo '%dir /opt/samson/log'                                       >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo '%dir /var/samson'                                       >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo '/etc/profile.d/samson.sh'                                       >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo '/etc/init/samson.conf'                                       >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%changelog"                                            >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
 #Definition for the devel package
@@ -121,6 +130,9 @@ echo "/opt/samson/share/*"                >> $BUILD_ROOT/rpm/SPECS/$specfile
 #
 rm -rf $PACKAGE_DIR
 mkdir -p $PACKAGE_DIR/opt/samson/{bin,etc,man,log}
+mkdir -p $PACKAGE_DIR/var/samson
+mkdir -p $PACKAGE_DIR/etc/profile.d
+mkdir -p $PACKAGE_DIR/etc/init
 mkdir -p $PACKAGE_DIR/opt/samson/{include,lib}
 mkdir -p $PACKAGE_DIR/opt/samson/include/samson/module
 mkdir -p $PACKAGE_DIR/opt/samson/include/samson/modules/system
@@ -136,6 +148,8 @@ cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonSpawner/samsonSpawner           $PACKAGE
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonWorker/samsonWorker             $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/BUILD_RELEASE/apps/delilah/delilah                       $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/etc/setup.txt                                            $PACKAGE_DIR/opt/samson/etc
+cp $BUILD_ROOT/etc/profile.d/samson.sh                                     $PACKAGE_DIR/etc/profile.d/samson.sh
+cp $BUILD_ROOT/etc/init/samson.conf                                     $PACKAGE_DIR/etc/init/samson.conf
 cp $BUILD_ROOT/BUILD_RELEASE/libs/au/libau.a                            $PACKAGE_DIR/opt/samson/lib
 cp $BUILD_ROOT/BUILD_RELEASE/libs/logMsg/liblm.a                        $PACKAGE_DIR/opt/samson/lib
 cp $BUILD_ROOT/libs/samson/module/*.h                                   $PACKAGE_DIR/opt/samson/include/samson/module

@@ -55,12 +55,13 @@ FIND_PATH(HAVE_KDCHART KDChartChart PATHS /usr/local/KDAB/KDChart-2.3.0/include 
 if (HAVE_KDCHART)
   MESSAGE("Using ${HAVE_KDCHART} for KDChart")
   include_directories(${HAVE_KDCHART})
+  include_directories(${HAVE_KDCHART}/../src)
+  link_directories("${HAVE_KDCHART}/../lib")
 endif (HAVE_KDCHART)
 
 
 
 link_directories("/opt/local/lib")
-link_directories("/usr/local/KDAB/KDChart-2.4.2/lib")
 link_directories("/usr/lib64")
 
 #

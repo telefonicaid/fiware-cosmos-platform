@@ -823,7 +823,7 @@ samson05-samson09:
   sudo chown samson:samson /data/db
   numactl --interleave=all mongod --nojournal --shardsvr --port 2001
 
-samson05
+samson05+samson08
   sudo rm -rf /data/configdb
   sudo mkdir /data/configdb
   sudo chown samson:samson /data/configdb
@@ -831,14 +831,7 @@ samson05
   mongos --configdb localhost:2101
   mongo --port 27017
 
-samson08
-  sudo rm -rf /data/configdb
-  sudo mkdir /data/configdb
-  numactl --interleave=all mongod --configsvr --port 2101
-  mongos --configdb localhost:2101
-  mongo --port 27017
-
-mongo (in samson05):
+samson05 (mongo):
   use admin
   db.runCommand( { addshard : "samson05:2001" } );
   db.runCommand( { addshard : "samson06:2001" } );
@@ -851,27 +844,30 @@ mongo (in samson05):
   use PassiveLocation
   db.History.find().count()
 
-mongo (in samson08):
+samson08 (mongo):
   use admin
   db.runCommand( { addshard : "samson08:2001" } );
   db.runCommand( { addshard : "samson09:2001" } );
   db.runCommand( { enablesharding : "PassiveLocation" } )
   use PassiveLocation
-  db.LastKnownLocation.ensureIndex({"I": 1, "T": 1})
+  db.LastKnownLocation.ensureIndex({"_id": 1, "T": 1})
   use admin
-  db.runCommand( { shardcollection : "PassiveLocation.LastKnownLocation", key : { "I": 1, "T" : 1 } } )
+  db.runCommand( { shardcollection : "PassiveLocation.LastKnownLocation", key : { "_id": 1, "T" : 1 } } )
   use PassiveLocation
   db.LastKnownLocation.find().count()
 
 delilah (in torkel) to start streaming pipeline
-  cd ~/sb/samson/22/modules/passive_location
-  delilah -f stream_definition.txt
+  cd modules/passive_location
+  delilah -controller samson01 -f stream_preparation.txt
+  delilah -controller samson01 -f stream_pl_history.txt
+  delilah -controller samson01 -f stream_pl_last_known_location.txt
 
-?still needed, or are data faked by new additions?
-passiveLocationPush (in torkel)
-  passiveLocationPush cdrs --rate 40000 --timeOut 1
+passiveLocationPush (in some machine)
+  passiveLocationGenerator 10000 | samsonPush pl.in_xml_cdrs -v -buffer_size 10000 -timeout 1
 
 
+queries to PassiveLocation.LastKnownLocation:
+  ./BUILD_DEBUG/testing/test_mongo/test_mongo -server samson08:27017 -db PassiveLocation -coll LastKnownLocation -query -queries 5000
 ===============================================================================
 
 Testing db.LastKnownLocation.update ...

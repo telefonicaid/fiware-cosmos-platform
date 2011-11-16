@@ -76,6 +76,7 @@ namespace system{
 
 				 // Point to the next words
 				 // Jumps blank spaces
+				 pos++;
 				 while (line[pos] == ' ')
 				 {
 					 pos++;
@@ -83,8 +84,8 @@ namespace system{
 				 previous = pos;
 
 			  }
-
-			  pos++;
+			  else
+				 pos++;
 		   }
 
 		}

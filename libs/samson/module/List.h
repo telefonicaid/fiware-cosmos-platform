@@ -27,8 +27,6 @@ namespace samson {
     public:
 
         std::list<T*> elements;
-
-        
         
         ~List()
         {
@@ -74,6 +72,13 @@ namespace samson {
             elements.push_front( t );
             return t;
         }
+        
+        T* add( typename std::list<T*>::iterator it )
+        {
+            T* t = get_new_element();
+            elements.insert( it , t );
+            return t;
+        }
 
         void add_back(T* t)
         {
@@ -115,6 +120,20 @@ namespace samson {
             T*t =  elements.back();
             elements.pop_back();
             return t;
+        }
+        
+        void remove_front()
+        {
+            T*t = extract_front();
+            if( t )
+                push_to_reuse( t );
+        }
+        
+        void remove_back()
+        {
+            T*t = extract_back();
+            if( t )
+                push_to_reuse( t );
         }
         
         size_t count()

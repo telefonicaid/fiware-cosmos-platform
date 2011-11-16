@@ -675,7 +675,7 @@ namespace samson {
             
             std::ostringstream command;
 
-            command << "info_command -worker //queue" << filter << " ";
+            command << "info_command -worker //queues//queue" << filter << " ";
             
             if( cmd.get_flag_bool("vv") )
                 command << LS_QUEUES_FIELDS_VERBOSE_VERBOSE;

@@ -149,8 +149,8 @@ namespace engine
             if( shmid == -1)
             {
                 perror("shmid");
-                LM_E(("Error creating the shared memory buffer ( %d / %d ). Please review SAMSON documentation about shared memory usage",
-					  i ,shared_memory_num_buffers ));
+                LM_E(("Error creating the shared memory buffer of %s ( %d / %d ). Please review SAMSON documentation about shared memory usage",
+                      au::str( shared_memory_size_per_buffer , "B").c_str() , i ,shared_memory_num_buffers ));
 #ifdef __LP64__
                 LM_X(1, ("shmid  (%s)", strerror(errno)));
 #endif

@@ -9,7 +9,9 @@ then
 	exit 1
 fi
 
-
+if [ -z "${SAMSON_HOME}"]; then 
+   SAMSON_HOME=/opt/samson
+fi
 
 #
 # Using command line options

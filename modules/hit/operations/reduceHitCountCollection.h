@@ -187,7 +187,7 @@ namespace hit{
 
 input: system.String hit.HitCount  
 input: system.String hit.HitCountCollection  
-output: system.String hit.HitCollection
+output: system.String hit.HitCountCollection
 output: system.String hit.HitCountCollection
 
 helpLine: Filter top elements per global-concept

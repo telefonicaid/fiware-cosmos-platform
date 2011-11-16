@@ -16,7 +16,7 @@ ADD_SUBDIRECTORY(samsonPush)
 ADD_SUBDIRECTORY(samsonPop)
 #ADD_SUBDIRECTORY(samsonPopQT)
 
-ADD_SUBDIRECTORY(samsonTopicMonitor)
+#ADD_SUBDIRECTORY(samsonTopicMonitor)
 
 # Auxiliar apps
 ADD_SUBDIRECTORY(aux)

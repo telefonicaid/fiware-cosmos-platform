@@ -112,8 +112,8 @@ echo                                                         >> $BUILD_ROOT/rpm/
 rm -rf $PACKAGE_DIR
 mkdir -p $PACKAGE_DIR/opt/samson/include/samson/modules/$module
 mkdir -p $PACKAGE_DIR/opt/samson/modules
-cp /opt/samson/include/samson/modules/$module/*.h   $PACKAGE_DIR/opt/samson/include/samson/modules/$module/
-cp /opt/samson/modules/lib$module.so               $PACKAGE_DIR/opt/samson/modules/
+cp $SAMSON_HOME/include/samson/modules/$module/*.h   $PACKAGE_DIR/opt/samson/include/samson/modules/$module/
+cp $SAMSON_HOME/modules/lib$module.so               $PACKAGE_DIR/opt/samson/modules/
 
 
 #

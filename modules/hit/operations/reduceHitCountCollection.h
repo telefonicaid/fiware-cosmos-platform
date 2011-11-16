@@ -80,7 +80,7 @@ namespace hit{
 		 elements.insert( pos , _hit_count );
 
 		 // Remove old elements
-		 while( elements.size() > NUM_TOP_ELEMENTS )
+		 while( elements.size() > NUM_TOP_ITEMS )
 		 {
 			//printf("Removing elements since too many items %lu\n" , elements.size() );
 			samson::hit::HitCount* _hit_count = elements.back();

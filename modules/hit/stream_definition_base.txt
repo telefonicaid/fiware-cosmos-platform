@@ -1,0 +1,13 @@
+
+
+# Remove previous definitions
+rm_stream_operation hit.parser_words
+rm_stream_operation hit.filter
+
+# Parse input txt files to extract words
+add_stream_operation hit.parser_words txt.parser_words hit.in_txt hit.input_words_previous
+set_stream_operation_property hit.parser_words delayed_processing no
+
+# Filter input words to only accept letters and numbers
+add_stream_operation hit.filter txt.filter_words_with_numbers_and_letters hit.input_words_previous hit.input_words
+

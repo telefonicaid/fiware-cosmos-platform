@@ -1,0 +1,20 @@
+
+
+rm_stream_operation hit.reduce_words
+rm_stream_operation hit.reduce_tops
+rm_stream_operation hit.export_tops
+
+
+# Reduce words
+add_stream_operation hit.reduce_words hit.reduceHits hit.input_words hit.words hit.words_update hit.words 
+set_stream_operation_property hit.reduce_words delayed_processing no
+
+
+# Reduce top elements
+add_stream_operation hit.reduce_tops hit.reduceHitCollections hit.words_update hit.tops hit.output_tops hit.tops
+set_stream_operation_property hit.reduce_tops delayed_processing no
+
+
+# ParseOur results
+add_stream_operation hit.export_tops hit.export_hit_collection hit.output_tops hit.output_tops_txt
+set_stream_operation_property hit.export_tops delayed_processing no

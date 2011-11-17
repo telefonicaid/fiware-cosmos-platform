@@ -114,9 +114,10 @@ namespace samson {
         for ( file = files.begin() ; file != files.end() ; file++)
         {
             records += file->second->printContent( (limit==0)?0:(limit - records ) );
-            
-            if( records >= limit )
-                return;
+
+			if( limit > 0 )
+			   if( records >= limit )
+				  return;
         }
         
     }

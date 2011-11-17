@@ -77,7 +77,7 @@ namespace hit{
 		void init( samson::KVWriter *writer )
 		{
 		   std::ostringstream name;
-		   name << "top_" << rand()%10;
+		   name << "top_" << rand()%1000;
 		   top_concept.value = name.str();
 		}
 

@@ -9,7 +9,9 @@ then
 	exit 1
 fi
 
-
+if [ -z "${SAMSON_HOME}" ]; then
+    SAMSON_HOME=/opt/samson
+fi
 
 #
 # Using command line options
@@ -72,8 +74,8 @@ echo " " >> debian/DEBIAN/control
 echo "Description: Module ${lowercase_module} for use with the Samson Map Reduce Platform."  >> debian/DEBIAN/control
 
 mkdir -p debian/opt/samson/include/samson/modules/$module
-cp /opt/samson/include/samson/modules/$module/*.h   debian/opt/samson/include/samson/modules/${module}
-cp /opt/samson/modules/lib$module.so               debian/opt/samson/modules
+cp ${SAMSON_HOME}/include/samson/modules/$module/*.h   debian/opt/samson/include/samson/modules/${module}
+cp ${SAMSON_HOME}/modules/lib$module.so               debian/opt/samson/modules
 
 
 

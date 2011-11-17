@@ -41,6 +41,9 @@ mkdir -p debian/opt/samson/blocks
 mkdir -p debian/opt/samson/log
 mkdir -p debian/opt/samson/config
 mkdir -p debian/opt/samson/share
+mkdir -p debian/etc/init.d
+mkdir -p debian/etc/profile.d
+mkdir -p debian/etc/defaults
 
 echo "Package: samson"                                   > debian/DEBIAN/control
 echo "Version: $version"                                >> debian/DEBIAN/control
@@ -51,6 +54,27 @@ echo "Depends: libprotobuf6, ntp, tid-mongodb"          >> debian/DEBIAN/control
 echo "Maintainer: Andreu Urruela <andreu@tid.es>"       >> debian/DEBIAN/control
 echo "Description: SAMSON is a high-performance MapReduce platform that is designed for scaling tasks on a cluster of commodity hardware. This platform removes the need to develop a system for parallelizing and synchronizing work between servers, allowing a person to develop the analytical models needed to solve both current and future problems.  SAMSON extends the traditional MapReduce paradigm by allowing an external data source to stream data into and out of the cluster. This allows the system to handle any volume of data thus providing the ability to continuously process new inputs and output states without restriction."  >> debian/DEBIAN/control 
 
+cat > debian/DEBIAN/preinst <<PREINST
+#!/bin/sh
+getent group samson >/dev/null || groupadd -r samson
+getent passwd samson >/dev/null || useradd -r -g samson -d /opt/samson -s /sbin/nologin -c 'SAMSON account' samson
+PREINST
+chmod 0755 debian/DEBIAN/preinst
+
+cat > debian/DEBIAN/postinst <<POSTINST
+#!/bin/sh
+chown -R samson:samson /opt/samson
+update-rc.d samson defaults
+/etc/init.d/samson start
+POSTINST
+chmod 0755 debian/DEBIAN/postinst
+
+cat > debian/DEBIAN/prerm <<PRERM
+#!/bin/sh
+/etc/init.d/samson stop
+PRERM
+chmod 0755 debian/DEBIAN/prerm
+ 
 cp BUILD_RELEASE/apps/samsonCat/samsonCat              debian/opt/samson/bin
 cp BUILD_RELEASE/apps/samsonController/samsonController       debian/opt/samson/bin
 cp BUILD_RELEASE/apps/samsonData/samsonData             debian/opt/samson/bin
@@ -59,10 +83,13 @@ cp BUILD_RELEASE/apps/samsonModuleParser/samsonModuleParser     debian/opt/samso
 cp BUILD_RELEASE/apps/samsonSetup/samsonSetup            debian/opt/samson/bin
 cp BUILD_RELEASE/apps/samsonSpawner/samsonSpawner          debian/opt/samson/bin
 cp BUILD_RELEASE/apps/samsonWorker/samsonWorker           debian/opt/samson/bin
+cp BUILD_RELEASE/apps/samsonKiller/samsonKiller           debian/opt/samson/bin
 cp BUILD_RELEASE/apps/delilah/delilah                debian/opt/samson/bin
 cp etc/setup.txt             debian/opt/samson/etc
+cp etc/profile.d/samson.sh             debian/opt/samson/etc
+cp etc/profile.d/samson.sh             debian/etc/defaults/samson
+cp sysadmin/scripts/init.d/samson.ubuntu                          debian/etc/init.d/samson
 cp README debian/opt/samson/share
-#cp -R /usr/local/man/                    debian/usr/local/
 
 
 

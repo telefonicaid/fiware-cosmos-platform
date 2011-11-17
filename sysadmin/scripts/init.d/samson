@@ -1,27 +1,57 @@
-#! /bin/bash
-
+#!/bin/bash
 #
-# ---- sysadmin : init.d script for SAMSON ( samsonSpawner daemon )
+# samson          Start/Stop the SAMSON platform
 #
+# chkconfig: 2345 99 60
+# description: SAMSON is a high-performance MapReduce platform that is \
+#              designed for scaling tasks on a cluster of commodity hardware. \
+#              This platform removes the need to develop a system for \
+#              parallelizing and synchronizing work between servers, allowing \
+#              a person to develop the analytical models needed to solve both \
+#              current and future problems.
+### BEGIN INIT INFO
+# Provides: samsonSpawner
+# Required-Start: $local_fs $syslog
+# Required-Stop: $local_fs $syslog
+# Default-Start:  345
+# Default-Stop: 90
+# Short-Description: run samsonSpawner
+# Description: SAMSON is a high-performance MapReduce platform that is \
+#              designed for scaling tasks on a cluster of commodity hardware. \
+#              This platform removes the need to develop a system for \
+#              parallelizing and synchronizing work between servers, allowing \
+#              a person to develop the analytical models needed to solve both \
+#              current and future problems.
+### END INIT INFO
 
 PARAM=$1
+
+# Load the samson environment
+if [ -f /etc/profile.d/samson.sh ]; then
+    . /etc/profile.d/samson.sh
+fi
+
+if [ -z "${SAMSON_HOME}" ]; then
+  echo "\$SAMSON_HOME is not set, aborting"
+  exit 1
+fi
 
 case $PARAM in
 
         'start')
 
-                /usr/bin/sudo -u samson -i samsonSpawner
+                /usr/bin/sudo -u samson -i ${SAMSON_HOME}/bin/samsonSpawner
                 ;;
 
         'stop')
 
-                /usr/bin/sudo -u samson -i samsonKiller
+                /usr/bin/sudo -u samson -i ${SAMSON_HOME}/bin/samsonKiller
                 ;;
 
         'restart')
 
-                /usr/bin/sudo -u samson -i samsonKiller
-                /usr/bin/sudo -u samson -i samsonSpawner
+                /usr/bin/sudo -u samson -i ${SAMSON_HOME}/bin/samsonKiller
+                /usr/bin/sudo -u samson -i ${SAMSON_HOME}/bin/samsonSpawner
                 ;;
 esac
 

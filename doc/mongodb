@@ -745,7 +745,7 @@ and that's about as good as it gets, with Gigabit Ethernet, which is what was us
 
 KZ NOTE:
 Really, this test was done querying the 'big collection' when in reality the queries will go to the
-'last location' collection, so perhaps the test isn't that interesting ...
+'last known location' collection, so perhaps the test isn't that interesting ...
 
 
 
@@ -892,15 +892,16 @@ Pure insert:
   1 'shard':  100000 inserts/sec (with index, without sharding, bulksize: 5000) - TOO MUCH !!!
   1 'shard':  100000 inserts/sec (w/o index) - no probs - building index takes 40 secs (9.000.000 users)
 
+  We've seen that the inserts are MUCH faster if we let mongodb select the '_id' field ...
+  
 2. Same test, but a single mongo 'shard' (9,000,000 users)
 
-       0 KVs/s:  qps
-	 400 KVs/s:  qps
-    1000 KVs/s:  qps
-    3000 KVs/s:  qps
-	3500 KVs/s:  qps
-    4000 KVs/s:  qps
-
+       0 KVs/s:  3800 qps   (in local: 20000)
+	 400 KVs/s:  3400 qps
+    1000 KVs/s:  2900 qps   (in local: 11772)
+    3000 KVs/s:  1100 qps
+	3500 KVs/s:   740 qps   (in local: 2800)
+    4000 KVs/s:   250 qps   (in local:  100)
 
 3. Same test but now samson runs in same machine as mongo - compare same/different
 

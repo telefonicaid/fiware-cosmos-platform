@@ -58,6 +58,8 @@ namespace  samson {
         size_t size;    // Current size of the buffer
         int timeOut;    // Timeout in seconds to flush content to the queue
 
+        size_t total_size;    // Total accumulated size
+        
         au::Cronometer cronometer; // Time since the last flush
         
         au::Token token;

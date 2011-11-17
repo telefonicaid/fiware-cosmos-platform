@@ -68,6 +68,8 @@ namespace samson {
 
     void SamsonPushBuffer::push( const char *data , size_t length )
     {
+        // Keep accumulated size
+        total_size += length;
         
         // If this is the first time we push data, just reset the cronometert to zero
         if ( size == 0)
@@ -77,8 +79,7 @@ namespace samson {
         if( (size + length ) > max_buffer_size )
         {
             // Process buffer
-            if( paVerbose )
-                LM_M(("Pushing %s to queue %s\n" , au::str(size,"B").c_str() , queue.c_str()));
+            LM_V(("Pushing %s to queue %s. Total accumulated %s\n" , au::str(size,"B").c_str() , queue.c_str()  , au::str(total_size,"B").c_str() ));
             
             client->push(  queue , buffer, size );
 

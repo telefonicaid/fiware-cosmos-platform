@@ -14,78 +14,10 @@
 #include <samson/modules/system/String.h>
 
 
+#include "HitCollectionManager.h"
+
 namespace samson{
 namespace hit{
-
-   class HitCollectionManager
-   {
-
-   public:
-
-	   samson::hit::Hit** top_hits;
-	   size_t min_hits;
-
-
-	   HitCollectionManager()
-	   {
-		  top_hits = (samson::hit::Hit**) malloc( sizeof(samson::hit::Hit*) * NUM_TOP_ITEMS );
-
-		  for( int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
-		  {
-             top_hits[i] = new samson::hit::Hit();	   
-			 top_hits[i]->count.value = 0;
-			 top_hits[i]->concept.value = "";
-		  }
-		  min_hits = 0;
-	   }
-
-	   ~HitCollectionManager()
-	   {
-		  for( int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
-             delete top_hits[i];
-		  free( top_hits );
-	   }
-
-	   void add( samson::hit::Hit *hit )
-	   {
-		  if( hit->count.value < min_hits )
-			 return;
-
-		  // Check if we had this concept before, so just update the total acucmulated
-		  for (int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
-			 if( top_hits[i]->concept.value == hit->concept.value )
-			 {
-				top_hits[i]->count.value += hit->count.value;
-				return;
-			 }
-
-		  // Just look for the rigth place to update
-		  int pos = 0;
-		  while( ( pos < NUM_TOP_ITEMS ) && (top_hits[pos]->count.value > hit->count.value ) )
-			 pos++;
-
-		  if ( pos < NUM_TOP_ITEMS )
-		  {
-			 // Reserve the last one
-			 samson::hit::Hit* tmp_hit = top_hits[ NUM_TOP_ITEMS - 1 ];
-
-			 // Move necessary elements
-			 for( int i = NUM_TOP_ITEMS-1 ; i >= pos ; i-- )
-				top_hits[i] =  top_hits[i-1];
-			 
-			 // Put in place with updated values
-			 top_hits[pos] = tmp_hit;
-			 top_hits[pos]->copyFrom( hit );
-
-		  }
-
-
-	   }
-
-
-
-   };
- 
 
 
 	class reduceHitCollections : public samson::Reduce

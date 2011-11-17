@@ -65,7 +65,9 @@ reduce reduceHitCountCollection
 }
 
 
-
+####################################################################################
+# Simple demo
+####################################################################################
 
 reduce reduceHits
 {
@@ -75,6 +77,12 @@ reduce reduceHits
 	out system.String system.UInt  		 # Output accumulated version
 
 	helpLine "Simple accumulator in stream mode"
+}
+
+map filter_reduceHitCollections
+{
+	in system.String hit.Hit             
+	out system.String hit.Hit
 }
 
 reduce reduceHitCollections

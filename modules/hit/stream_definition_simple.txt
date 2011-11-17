@@ -9,9 +9,12 @@ rm_stream_operation hit.export_tops
 add_stream_operation hit.reduce_words hit.reduceHits hit.input_words hit.words hit.words_update hit.words 
 set_stream_operation_property hit.reduce_words delayed_processing no
 
+# Map operation to reduce word updates...
+add_stream_operation hit.filter_reduce_tops hit.filter_reduceHitCollections hit.words_update hit.words_update_filtered
+set_stream_operation_property hit.filter_reduce_tops delayed_processing no
 
 # Reduce top elements
-add_stream_operation hit.reduce_tops hit.reduceHitCollections hit.words_update hit.tops hit.output_tops hit.tops
+add_stream_operation hit.reduce_tops hit.reduceHitCollections hit.words_update_filtered hit.tops hit.output_tops hit.tops
 set_stream_operation_property hit.reduce_tops delayed_processing no
 
 

@@ -47,7 +47,7 @@ SAMSON_ARG_VARS;
 PaArgument paArgs[] =
 {
     SAMSON_ARGS,
-	{ "-limit",       &show_limit,         "",     PaInt,     PaOpt,     10,      0,    100000,      "Limit in the number of records"   },
+	{ "-limit",       &show_limit,         "",     PaInt,     PaOpt,     0,      0,    100000,      "Limit in the number of records"   },
 	{ "-header",      &show_header,        "",     PaBool,    PaOpt,    false,  false,   true,   "Show only header"          },
 	{ "-hg",          &show_hg,            "",     PaBool,    PaOpt,    false,  false,   true,   "Show only hash-group information" },
 	{ " ",            file_name,           "",     PaString,  PaReq,    (long)  "null",   PaNL,      PaNL,  "name of the file or directory to scan"   },

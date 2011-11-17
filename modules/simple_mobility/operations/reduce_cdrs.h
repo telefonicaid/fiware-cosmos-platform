@@ -42,9 +42,10 @@ namespace simple_mobility{
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-input: system.UInt simple_mobility.Position  
-input: system.UInt simple_mobility.User  
+input: system.UInt mobility.Record
+input: system.UInt simple_mobility.User
 output: system.UInt system.String
+output: system.String plot.LevelUpdate
 output: system.UInt simple_mobility.User
 
 helpLine: Update internal state

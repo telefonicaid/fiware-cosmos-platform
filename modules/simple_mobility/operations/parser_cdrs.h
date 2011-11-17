@@ -32,7 +32,7 @@ namespace simple_mobility{
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-output: system.UInt simple_mobility.Position
+output: system.UInt mobility.Record
 
 helpLine: Parse input CDRs to get user - position -timestamp elements
 #endif // de INFO_COMMENT

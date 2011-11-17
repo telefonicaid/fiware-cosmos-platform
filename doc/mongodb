@@ -851,9 +851,9 @@ samson08 (mongo):
   db.runCommand( { addshard : "samson09:2001" } );
   db.runCommand( { enablesharding : "PassiveLocation" } )
   use PassiveLocation
-  db.LastKnownLocation.ensureIndex({"_id": 1, "T": 1})
+  db.LastKnownLocation.ensureIndex({"_id": 1})
   use admin
-  db.runCommand( { shardcollection : "PassiveLocation.LastKnownLocation", key : { "_id": 1, "T" : 1 } } )
+  db.runCommand( { shardcollection : "PassiveLocation.LastKnownLocation", key : { "_id": 1 } } )
   use PassiveLocation
   db.LastKnownLocation.find().count()
 

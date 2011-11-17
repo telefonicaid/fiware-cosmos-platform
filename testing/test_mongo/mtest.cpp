@@ -257,7 +257,7 @@ void dbQuery(void)
 		int                                  hits;
 		std::auto_ptr<mongo::DBClientCursor> cursor;
 
-		userId = rand() % MAXUSER;
+		userId = 666666666 + rand() % 10000000;
 
 		if (strcmp(collection, "History") == 0)		  
 			cursor = mdbConnection->query(dbAndColl, QUERY("I" << userId));

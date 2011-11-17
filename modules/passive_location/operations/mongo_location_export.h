@@ -34,6 +34,7 @@ class mongo_location_export : public samson::Map
 	std::string          mongo_collection;
 
 	int                  mongo_history;
+	int                  mongo_lkl_fill;
 	int                  mongo_bulksize;
 
 	std::string          mongo_db_path;
@@ -57,19 +58,21 @@ void init(samson::KVWriter* writer)
 {
 	std::string bulksize;
 	std::string history;
+	std::string lkl_fill;
 
 	mdbConnection            = NULL;
 
 	bulksize                 = environment->get("mongo.bulksize",           "5000");
 	history                  = environment->get("mongo.history",            "1");
+	lkl_fill                 = environment->get("mongo.lkl_fill",           "0");
 
 	mongo_ip                 = environment->get("mongo.ip",                 "no-mongo-ip");
 	mongo_db                 = environment->get("mongo.db",                 "no-mongo-db");
 	mongo_collection         = environment->get("mongo.collection",         "no-mongo-collection");
-
 	
 	mongo_bulksize           = atoi(bulksize.c_str());
 	mongo_history            = atoi(history.c_str());
+	mongo_lkl_fill           = atoi(lkl_fill.c_str());
 
 	if (mongo_ip == "no-mongo-ip")
 	{
@@ -167,6 +170,27 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 				inserts = 0;
 			}
 		}
+		else if (mongo_lkl_fill == 1)
+		{
+			mongo::BSONObj  record = BSON("_id" << (long long int) value.userId.value       <<
+										  "T"   << (long long int) value.timestamp.value    <<
+										  "C"   << (long long int) value.cellId.value       <<
+										  "X"   << (float) value.position.latitude.value    <<
+										  "Y"   << (float) value.position.longitude.value);
+
+			dataVec.push_back(record);
+
+			++inserts;
+			++grandTotalInserts;
+
+			if ((inserts != 0) && ((inserts % mongo_bulksize) == 0))
+			{
+				OLM_M(("Run[inside-loop]: Inserting bulk of %d records (bulksize: %d)", inserts, mongo_bulksize));
+				mdbConnection->insert(mongo_db_path, dataVec);
+				dataVec.clear();
+				inserts = 0;
+			}
+		}
 		else
 		{
 			mongo::BSONObj  query;
@@ -184,7 +208,7 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 		}
 	}
 
-	if (mongo_history == 1)
+	if ((mongo_history == 1) || (mongo_lkl_fill == 1))
 	{
 		if ((inserts != 0) && ((inserts % mongo_bulksize) == 0))
 		{
@@ -207,7 +231,7 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 */
 void finish(samson::KVWriter* writer)
 {
-	if ((mongo_history == 1) && (inserts != 0))
+	if (((mongo_history == 1) || (mongo_lkl_fill == 1)) && (inserts != 0))
 	{
 		OLM_M(("Finish: Inserting bulk of %d records (bulksize: %d)", inserts, mongo_bulksize));
 		mdbConnection->insert(mongo_db_path, dataVec);

@@ -869,6 +869,46 @@ passiveLocationPush (in some machine)
 
 queries to PassiveLocation.LastKnownLocation:
   ./BUILD_DEBUG/testing/test_mongo/test_mongo -server samson08:27017 -db PassiveLocation -coll LastKnownLocation -query -queries 5000
+
+------------------------------------------------------------------------------------------------------------------------
+
+TEST RESULTS:
+1. 'LastKnownLocation' filled with 9,000,000 users (4 samsons, 3 mongo.History and 2 mongo.LastKnownLocation)
+
+       0 KVs/s:  3800 qps
+	 400 KVs/s:  3500 qps
+    1000 KVs/s:  2900 qps
+    3000 KVs/s:  1100 qps
+	3500 KVs/s:   500 qps
+    4000 KVs/s:   100 qps
+
+It seems we get to a total of around 4000 operations per second, between inserts and queries.
+It might very well be the network that is the limiting factor.
+
+Pure insert:
+  2 shards:   22000 inserts/sec (with index)
+  1 'shard':  50000  inserts/sec (with index, without sharding, bulksize: 5000)
+  1 'shard':  73000  inserts/sec (with index, without sharding, bulksize: 50000)
+  1 'shard':  100000 inserts/sec (with index, without sharding, bulksize: 5000) - TOO MUCH !!!
+  1 'shard':  100000 inserts/sec (w/o index) - no probs - building index takes 40 secs (9.000.000 users)
+
+2. Same test, but a single mongo 'shard' (9,000,000 users)
+
+       0 KVs/s:  qps
+	 400 KVs/s:  qps
+    1000 KVs/s:  qps
+    3000 KVs/s:  qps
+	3500 KVs/s:  qps
+    4000 KVs/s:  qps
+
+
+3. Same test but now samson runs in same machine as mongo - compare same/different
+
+
+2. Same test, but in a cluster of three nodes, see if SUMMA goes up to 6000
+
+
+
 ===============================================================================
 
 Testing db.LastKnownLocation.update ...

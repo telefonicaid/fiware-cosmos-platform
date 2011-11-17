@@ -66,7 +66,7 @@ namespace hit{
 			  hit_collection.parse( inputs[1].kvs[0]->value );
 
 			  for (int i = 0 ; i < hit_collection.hits_length ; i++ )
-				 manager.add( &hit_collection.hits[i] , true );
+				 manager.add( &hit_collection.hits[i] );
 
 		   }
 		   else
@@ -81,7 +81,7 @@ namespace hit{
 		   for ( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
 		   {
 			  hit.parse( inputs[0].kvs[i]->value );
-			  manager.add( &hit , true );
+			  manager.add( &hit );
 		   }
 
 

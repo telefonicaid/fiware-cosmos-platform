@@ -25,53 +25,66 @@
 
 #include "samson/client/SamsonClient.h"         // samson::SamsonClient
 
-bool random_user = false;
-size_t last_user = 0;
+size_t get_user_id( size_t pos )
+{
+   return 666666666 + pos;
+}
 
 
 int main( int argc , const char *argv[] )
 {
    au::CommandLine cmd;
-   cmd.set_flag_int( "users" , 100000 );
+   cmd.set_flag_uint64( "users" , 100000 );
+   cmd.set_flag_uint64( "num" , 0 );  // Number of messages
+   cmd.set_flag_boolean( "random" );     // Generate a message for all users
    cmd.parse( argc , argv );
 
-   int num_users = cmd.get_flag_int("users");
+   size_t num_users = cmd.get_flag_uint64("users");
+   size_t num       = cmd.get_flag_uint64("num");
+   bool random_user = cmd.get_flag_bool("random");
+
+   srand( time(NULL) );
+
 
    if( cmd.get_num_arguments() < 2 )
    {
-	   fprintf(stderr,"Usage %s rate_in_messages_per_second -users <num_users>\n", argv[0] );
+	   fprintf(stderr,"Usage %s rate_in_messages_per_second -users <num_users> -num <max_num_messages> -random \n", argv[0] );
 		exit(0);
    }
 
-	size_t rate = atoll( argv[1] );
-	size_t max_kvs = 0;
-	if( argc > 2 )
-	  max_kvs = atoll( argv[2] );
+   size_t rate = atoll( cmd.get_argument(1).c_str() );
 
-	// Small mini-buffer to generate
+
+   fprintf(stderr, "Running generator with rate=%lu num=%lu users=%lu\n" , rate , num , num_users );
+
+
+   // Small mini-buffer to generate
 	char *line = (char*) malloc( 20000 );
-
+	
 	// Control of time and size
 	au::Cronometer cronometer;
 
-	size_t total_size = 0;
-	size_t num_messages = 0;
+   size_t last_user = 0;
 
-	size_t theoretical_seconds = 0;
+   size_t total_size = 0;
+   size_t num_messages = 0;
+   
+   size_t theoretical_seconds = 0;
 
 	while( true )
 	{
 	   // Generat 5 seconds data
-	   fprintf(stderr,"Generating %d messages\n",  (int)(5 * rate) );
+	   fprintf(stderr,"Generating %d messages ( mesages in 5 seconds at %lu events/s ) \n",  (int)(5 * rate) , rate );
+
 	   for( int i = 0 ; i < (int)(5 * rate); i++)
 	   {
 
 		  size_t user_id;
 		  if( random_user )
-			 user_id = rand()%num_users;
+			 user_id = get_user_id( rand()%num_users );
 		  else
 		  {
-			 last_user = (last_user+1)%num_users;
+			 last_user = get_user_id( (last_user+1)%num_users );
 			 user_id = last_user;
 		  }
 
@@ -86,33 +99,33 @@ int main( int argc , const char *argv[] )
 		total_size += strlen(line);
 		num_messages++;
 
-
 		// Emit line to the output
 		std::cout << line << "\n";
 
-	   }
-
-	   if( max_kvs > 0 )
-	     if( num_messages > max_kvs )
-	       {
-		 fprintf(stderr,"Finish since a limit of %lu kvs was specified. Generated %lu key-vaue\n", max_kvs ,num_messages);
-
-		 return 0;
-	       }
-
-		// Detect if we need to sleep....
-		theoretical_seconds += 5;
-
-		size_t ellapsed_seconds = cronometer.diffTimeInSeconds();
-
-		// Sleep some time to simulate a particular rate
-		if( ellapsed_seconds < theoretical_seconds )
+		if( num > 0 )
 		{
-			int sleep_seconds = theoretical_seconds - ellapsed_seconds;
-			std::cerr << "Sleeping " << sleep_seconds << " seconds... num messages " << au::str(num_messages) << " size " << au::str( total_size , "bytes") << " time " << au::time_string(ellapsed_seconds) << " theoretical time " << au::time_string(theoretical_seconds)<<"\n";
-			sleep( sleep_seconds );
+		   if( num_messages >= num )
+		   {
+			  fprintf(stderr,"Generated %s messages" , au::str( num_messages).c_str() );
+			  exit(0);
+		   }
 		}
-
+		
+	   }
+	   
+	   // Detect if we need to sleep....
+	   theoretical_seconds += 5;
+	   
+	   size_t ellapsed_seconds = cronometer.diffTimeInSeconds();
+	   
+	   // Sleep some time to simulate a particular rate
+	   if( ellapsed_seconds < theoretical_seconds )
+	   {
+		  int sleep_seconds = theoretical_seconds - ellapsed_seconds;
+		  std::cerr << "Sleeping " << sleep_seconds << " seconds... We have generate " << au::str(num_messages) << " messages with size " << au::str( total_size , "bytes") << " time " << au::time_string(ellapsed_seconds) << " theoretical time " << au::time_string(theoretical_seconds)<<"\n";
+		  sleep( sleep_seconds );
+	   }
+	   
 	}
 
 }

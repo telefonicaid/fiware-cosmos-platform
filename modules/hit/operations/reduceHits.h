@@ -76,6 +76,9 @@ namespace hit{
 
 		void init( samson::KVWriter *writer )
 		{
+		   std::ostringstream name;
+		   name << "top_" << rand()%10;
+		   top_concept.value = name.str();
 		}
 
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
@@ -112,7 +115,7 @@ namespace hit{
 		   {
 			  //OLM_M(("Changed from %lu to %lu" , previous_value , count.value ));
 
-			  top_concept.value = "top";
+
 
 
 			  hit.concept.value = concept.value;

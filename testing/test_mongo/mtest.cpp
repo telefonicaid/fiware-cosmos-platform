@@ -208,6 +208,7 @@ void dbConnect(void)
 	dbAndColl = (std::string) db + "." + (std::string) collection;
 	connected = true;
 
+	LM_M(("Starting to measure time ..."));
 	gettimeofday(&startTime, NULL);
 }
 
@@ -253,10 +254,15 @@ void dbQuery(void)
 
 	for (int ix = 0; ix < queries; ix++)
 	{
+		int                                  hits;
+		std::auto_ptr<mongo::DBClientCursor> cursor;
+
 		userId = rand() % MAXUSER;
 
-		std::auto_ptr<mongo::DBClientCursor> cursor = mdbConnection->query(dbAndColl, QUERY("I" << userId));
-		int                                  hits;
+		if (strcmp(collection, "History") == 0)		  
+			cursor = mdbConnection->query(dbAndColl, QUERY("I" << userId));
+		else
+			cursor = mdbConnection->query(dbAndColl, QUERY("_id" << userId));
 
 		hits = 0;
 		while (cursor->more() != false)
@@ -323,24 +329,26 @@ void dbUpdate(void)
 	uid     = (long long int) userId;
 	ts      = (long long int) timestamp;
 
-	record = BSON("_id" << uid                <<
-				  "T"   << ts                 <<
-				  "C"   << (long long int) 1  <<
-				  "X"   << (float) 2.0        <<
-				  "Y"   << (float) 3.0);
+	if (strcmp(collection, "History") == 0)
+		record = BSON("I"   << uid                <<
+					  "T"   << ts                 <<
+					  "C"   << (long long int) 1  <<
+					  "X"   << (float) 2.0        <<
+					  "Y"   << (float) 3.0);
+	else
+		record = BSON("_id" << uid                <<
+					  "T"   << ts                 <<
+					  "C"   << (long long int) 1  <<
+					  "X"   << (float) 2.0        <<
+					  "Y"   << (float) 3.0);
+
 
 	// db.LastKnownLocation.update( { _id:3, T : { $lt: 3 }  }, { _id:3, T:3, C:1, X:1, Y:1 }, true  )
-#if 1
-	mongo::BSONObj q;
-	// query  = Query(BSON("_id" << uid << BSON("T"   << BSON("$lt" << ts))));
-	// query  = Query(BSON("_id" << uid << BSON("T" << "$lt" << ts)));
-	// query  = Query(BSON("_id" << uid << BSONObj("_id" << uid)));
-	// query  = BSON_ARRAY("_id" << uid << BSON_ARRAY("T" << BSON("$lt" << ts)));
-	query     =       BSON("_id" << uid << "T" << BSON( "$lt" << ts));
-#else
-	query  = Query(BSON("_id" << (long long int) userId << BSON("T"   << BSON("$lt" << (long long int) timestamp))));
-#endif
-	
+	if (strcmp(collection, "History") == 0)
+		query = BSON("I" << uid << "T" << BSON( "$lt" << ts));
+	else
+		query = BSON("_id" << uid << "T" << BSON( "$lt" << ts));
+
 	mdbConnection->update(dbAndColl, query, record, true);
 }
 
@@ -384,7 +392,11 @@ void dbUpload(int kvs, bool oneshot)
 			user = rand() % MAXUSER;
 
 			LM_D(("I:%d, P:%d, T:%d", user, position, timestamp));
-			record =  BSON("I" << user << "P" << position << "T" << timestamp);
+			if (strcmp(collection, "History") == 0)
+				record =  BSON("I" << user << "T" << timestamp << "C" << (long long int) 1 << "X"   << (float) 2.0 << "Y"   << (float) 3.0);
+			else
+				record =  BSON("_id" << user << "T" << timestamp << "C" << (long long int) 1 << "X"   << (float) 2.0 << "Y"   << (float) 3.0);
+
 			++position;
 			++timestamp;
 			++recordsInserted;
@@ -469,7 +481,12 @@ void* mobilityQuery(void* x)
 		times = 0;
 		for (int ix = 0; ix < queries; ix++)
 		{
-			std::auto_ptr<mongo::DBClientCursor> cursor = mdbConnection->query(dbAndColl, QUERY("I" << (long long int) userId));
+			std::auto_ptr<mongo::DBClientCursor> cursor;
+
+			if (strcmp(collection, "History") == 0)
+				cursor = mdbConnection->query(dbAndColl, QUERY("I" << (long long int) userId));
+			else
+				cursor = mdbConnection->query(dbAndColl, QUERY("_id" << (long long int) userId));
 
 			if (cursor->more() == false)
 				LM_X(1, ("No user with id %u found", userId));

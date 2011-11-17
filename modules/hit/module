@@ -11,6 +11,17 @@ Module hit
 # Datas
 ####################################################################################
 
+data Hit
+{
+	system.String concept; # Concept for this hit
+	system.UInt count;     # Number of times for this hit;
+}
+
+data HitCollection
+{
+	vector hit.Hit hits;   # Vector of hits
+}
+
 data HitCount
 {
 	system.String concept;          # Concept for this hit
@@ -56,6 +67,25 @@ reduce reduceHitCountCollection
 
 
 
+reduce reduceHits
+{
+	in system.String system.UInt         # Input hits
+	in system.String system.UInt         # Accumlated version
+	out system.String hit.Hit     		 # Output hits is changed significantly
+	out system.String system.UInt  		 # Output accumulated version
+
+	helpLine "Simple accumulator in stream mode"
+}
+
+reduce reduceHitCollections
+{
+	in system.String hit.Hit                # Hit updates
+	in system.String hit.HitCollection		# State with the top elements
+	out system.String hit.HitCollection 
+	out system.String hit.HitCollection     # State with the top elements	
+}
+
+
 ################################################################
 # Other operations
 ################################################################
@@ -63,5 +93,12 @@ reduce reduceHitCountCollection
 parserOut export_hit_count_collection
 {
 	in system.String hit.HitCountCollection
+	helpLine "Export the top list of elements"
+}
+
+
+parserOut export_hit_collection
+{
+	in system.String hit.HitCollection
 	helpLine "Export the top list of elements"
 }

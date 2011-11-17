@@ -156,9 +156,12 @@ void process_command( std::string line )
 
 	for ( int i = 0 ; i < num_concepts ; i++ )
 	{
-	   int font_size = 20.0 * (double) topics[i].num / (double) max_num;
+	   int font_size = 20.0 * ((double) topics[i].num) / ((double) max_num);
+	   if ( font_size < 2 )
+		  font_size = 2;
+
 	   //output_web << "<p style=\"font-size:" << font_size << "px;\">" << topics[i].concept << "</p> ";
-	   output_web << "<font size=" << font_size << ">" << topics[i].concept << " </font> ";
+	   output_web << "<font size=" << font_size << ">" << topics[i].concept  << " </font> ";
 	}
 
     // Parse content
@@ -173,8 +176,8 @@ void* process_income_blocks(void*)
 {
     while( true )
     {
-        char line[1024];
-        if( fgets( line, 1024 , stdin ) == NULL )
+        char line[100000];
+        if( fgets( line, 100000 , stdin ) == NULL )
             LM_X(0,("No more commands to process at stdin"));
 
         process_command( line );

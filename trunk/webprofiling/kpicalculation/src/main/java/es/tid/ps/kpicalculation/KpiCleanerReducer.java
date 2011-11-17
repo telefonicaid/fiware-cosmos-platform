@@ -13,15 +13,7 @@ public class KpiCleanerReducer extends
     protected void reduce(LongWritable key, Iterable<Text> values,
             Context context) throws IOException, InterruptedException {
         // ArrayListWritable out = new ArrayListWritable();
-        NullWritable k = null;
-        String str = null;
-        Text out = null;
-        for (Text text : values) {
-            if (str != text.toString()) {
-                str = text.toString();
-                out = text;
-            }
-        }
-        context.write(k, out);
+        
+        context.write(NullWritable.get(), values.iterator().next() );
     }
 }

@@ -7,11 +7,15 @@ package es.tid.ps.kpicalculation.data;
  * LINE_FILTERED_3RDPARTY: Number of lines filtered because of belonging to 3rd
  * Party domains <br>
  * LINE_FILTERED_PERSONAL_INFO: Number of lines filtered because of belonging to
- * Personal Info domains
- * WRONG_FILTER_CONFIGURATION: Number of wrong configured filters
+ * Personal Info domains WRONG_FILTER_CONFIGURATION: Number of wrong configured
+ * filters
  * 
  * @author javierb
  */
 public enum KpiCalculationCounter {
-    LINE_FILTERED_EXTENSION, LINE_FILTERED_3RDPARTY, LINE_FILTERED_PERSONAL_INFO, WRONG_FILTER_CONFIGURATION
+    LINE_FILTERED_EXTENSION, 
+    LINE_FILTERED_3RDPARTY, 
+    LINE_FILTERED_PERSONAL_INFO, 
+    WRONG_FILTER_CONFIGURATION, 
+    MALFORMED_URL
 }

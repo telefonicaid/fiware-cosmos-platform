@@ -1,6 +1,11 @@
 package es.tid.ps.kpicalculation.data;
 
 import java.net.MalformedURLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.nutch.net.URLNormalizers;
@@ -9,6 +14,10 @@ import org.apache.nutch.net.urlnormalizer.regex.RegexURLNormalizer;
 import org.apache.nutch.util.NutchConfiguration;
 import org.apache.xerces.util.URI;
 import org.apache.xerces.util.URI.MalformedURIException;
+
+import es.tid.ps.kpicalculation.cleaning.KpiCalculationFilterException;
+import es.tid.ps.kpicalculation.utils.KpiCalculationDateFormatter;
+import es.tid.ps.kpicalculation.utils.KpiCalculationNormalizer;
 
 /**
  * Class to parse input lines of CDR files to fit the required format of
@@ -264,37 +273,48 @@ public class PageView {
      *            string to parse
      * 
      */
-    public PageView(String line) throws MalformedURLException,
-            MalformedURIException {
-        String[] listLine = line.trim().split(DELIMITER, -1);
+    public PageView(String line) {
+        try {
 
-        visitorId = listLine[PageViewInput.VISITOR_ID.getValue()];
-        // The input url field is already stored normalized in this class
-        fullUrl = normalize(listLine[PageViewInput.URL.getValue()]);
+            String[] listLine = line.trim().split(DELIMITER, -1);
 
-        // Protocol, domain, path and query parts of the url are obtained from
-        // the fullurl field
-        URI uri = new URI(fullUrl);
-        protocol = uri.getScheme();
-        urlDomain = uri.getHost();
-        urlPath = uri.getPath();
-        urlQuery = uri.getQueryString();
+            visitorId = listLine[PageViewInput.VISITOR_ID.getValue()];
 
-        // Date and time are obteined from the full date received in the cdr
-        // line
-        dateView = listLine[PageViewInput.DATE_TIME.getValue()];
-        timeDay = listLine[PageViewInput.DATE_TIME.getValue()];
+            // The input url field is already stored normalized in this class
+            fullUrl = KpiCalculationNormalizer
+                    .normalize(listLine[PageViewInput.URL.getValue()]);
 
-        // At this moment these four fields are the user agent.
-        // TODO: It would be possible to process the user agent field for more
-        // granularity
-        userAgent = listLine[PageViewInput.USER_AGENT.getValue()];
-        browser = listLine[PageViewInput.USER_AGENT.getValue()];
-        device = listLine[PageViewInput.USER_AGENT.getValue()];
-        operSys = listLine[PageViewInput.USER_AGENT.getValue()];
+            // Protocol, domain, path and query parts of the url are obtained
+            // from
+            // the fullurl field
+            URI uri = new URI(fullUrl);
+            protocol = uri.getScheme();
+            urlDomain = uri.getHost();
+            urlPath = uri.getPath();
+            urlQuery = uri.getQueryString();
 
-        method = listLine[PageViewInput.METHOD.getValue()];
-        status = listLine[PageViewInput.HTTP_STATUS.getValue()];
+            // Date and time are obteined from the full date received in the cdr
+            // line
+            dateView = KpiCalculationDateFormatter
+                    .getDate(listLine[PageViewInput.DATE_TIME.getValue()]);
+            timeDay = KpiCalculationDateFormatter
+                    .getTime(listLine[PageViewInput.DATE_TIME.getValue()]);
+
+            // At this moment these four fields are the user agent.
+            // TODO: It would be possible to process the user agent field for
+            // more
+            // granularity
+            userAgent = listLine[PageViewInput.USER_AGENT.getValue()];
+            browser = listLine[PageViewInput.USER_AGENT.getValue()];
+            device = listLine[PageViewInput.USER_AGENT.getValue()];
+            operSys = listLine[PageViewInput.USER_AGENT.getValue()];
+
+            method = listLine[PageViewInput.METHOD.getValue()];
+            status = listLine[PageViewInput.HTTP_STATUS.getValue()];
+        } catch (Exception ex) {
+            throw new KpiCalculationDataException("The URL was wrong",
+                    KpiCalculationCounter.MALFORMED_URL);
+        }
 
         // TODO:Mime type missing in tables.This is pending;
     }

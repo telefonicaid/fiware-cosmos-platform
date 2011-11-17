@@ -46,11 +46,11 @@ public class KpiMain extends Configured implements Tool {
 
         // Normalization and filtering
         Configuration conf = getConf();
-        conf.set("mapred.reduce.tasks", "1");
         conf.set("kpicalculation.temp.path", tmpPath.toString());
         conf.addResource("kpi-filtering.xml");
         
         Job wpCleanerJob = new Job(conf, "Web Profiling ...");
+        wpCleanerJob.setNumReduceTasks(0);
         wpCleanerJob.setJarByClass(KpiMain.class);
         wpCleanerJob.setMapperClass(KpiCleanerMapper.class);
         wpCleanerJob.setReducerClass(KpiCleanerReducer.class);

@@ -74,7 +74,7 @@ public class HiveCdrLoader implements ICdrLoader {
                     new PathFilter() {
                         @Override
                         public boolean accept(Path arg0) {
-                            if (arg0.getName().startsWith("part-r-"))
+                            if (arg0.getName().startsWith("part-m-"))
                                 return true;
                             return false;
                         }
@@ -83,7 +83,7 @@ public class HiveCdrLoader implements ICdrLoader {
             for (int i = 0; i < status.length; i++) {
                 System.out.println(status[i].getPath().getName());
                 String sql = MessageFormat.format(
-                        "LOAD DATA INPATH \"{0}\" OVERWRITE INTO TABLE {1}",
+                        "LOAD DATA INPATH \"{0}\" INTO TABLE {1}",
                         status[i].getPath(), TARGET_TABLE);
                 System.out.println(sql);
                 stmt.executeQuery(sql);

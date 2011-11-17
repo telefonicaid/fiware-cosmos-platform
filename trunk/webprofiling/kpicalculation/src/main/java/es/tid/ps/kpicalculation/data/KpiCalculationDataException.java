@@ -1,16 +1,16 @@
-package es.tid.ps.kpicalculation.cleaning;
+package es.tid.ps.kpicalculation.data;
 
 import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
 
 /**
- * Extends RuntimeException and allows to notify mappers exceptions while
- * filtering data in web profiling module
- *  
+ * Extends RuntimeException and allows to notify mappers about errors in the
+ * input data received.
+ * 
  * @author javierb
  */
-public class KpiCalculationFilterException extends RuntimeException {
+public class KpiCalculationDataException extends RuntimeException {
 
-    public KpiCalculationFilterException(String message, Throwable cause,
+    public KpiCalculationDataException(String message, Throwable cause,
             KpiCalculationCounter lineFilteredExtension) {
         super(message, cause);
         counter = lineFilteredExtension;
@@ -18,7 +18,7 @@ public class KpiCalculationFilterException extends RuntimeException {
 
     private KpiCalculationCounter counter;
 
-    public KpiCalculationFilterException(String message,
+    public KpiCalculationDataException(String message,
             KpiCalculationCounter lineFilteredExtension) {
         super(message);
         counter = lineFilteredExtension;

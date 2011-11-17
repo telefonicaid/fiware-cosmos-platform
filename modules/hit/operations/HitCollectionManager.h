@@ -46,7 +46,7 @@ namespace hit{
 		  free( top_hits );
 	   }
 
-	   void add( samson::hit::Hit *hit )
+	   void add( samson::hit::Hit *hit , bool increasing )
 	   {
 		  if( hit->count.value < min_hits )
 			 return;
@@ -55,7 +55,13 @@ namespace hit{
 		  for (int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
 			 if( top_hits[i]->concept.value == hit->concept.value )
 			 {
-				top_hits[i]->count.value += hit->count.value;
+				if( increasing )
+				   top_hits[i]->count.value += hit->count.value;
+				else
+				{
+				   if( top_hits[i]->count.value < hit->count.value )
+					  top_hits[i]->count.value = hit->count.value;
+				}
 				return;
 			 }
 

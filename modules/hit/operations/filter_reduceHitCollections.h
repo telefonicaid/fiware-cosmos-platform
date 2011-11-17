@@ -48,7 +48,7 @@ namespace hit{
 		   for ( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
 		   {
 			  hit.parse( inputs[0].kvs[i]->value );
-			  manager.add( &hit );
+			  manager.add( &hit , false );
 		   }
 
 		}

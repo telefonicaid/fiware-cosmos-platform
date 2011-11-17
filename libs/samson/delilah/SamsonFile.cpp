@@ -141,10 +141,13 @@ namespace samson {
         return output.str();
     }
     
-    void SamsonFile::printContent( size_t &limit )
+    size_t SamsonFile::printContent( size_t limit )
     {
+        // Number of records displayed    
+        size_t records = 0 ;
+        
         if( error.isActivated())
-            return;
+            return records;
         
         if ( header.getKVFormat() == samson::KVFormat("txt","txt") )
         {
@@ -162,7 +165,7 @@ namespace samson {
                 n = fread(buffer, 1,1024, file);
             }
             
-            return;
+            return records;
         }
         
         
@@ -189,8 +192,6 @@ namespace samson {
         
         for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ;i++)
         {
-            if( limit <= 0 )
-                return;
             
             size_t size = info[i].size;
             size_t kvs = info[i].kvs; 
@@ -215,9 +216,10 @@ namespace samson {
                     
                     std::cout << key->str() << " " << value->str() << std::endl;
                     
-                    limit--;
-                    if( limit == 0)
-                        break;
+                    records++;
+                    if( limit > 0)
+                        if( records >= limit )
+                            return records;
                     
                 }
                 
@@ -228,7 +230,10 @@ namespace samson {
             }
             
             
-        }        
+        }
+        
+        return records;
+        
     }
     
 }

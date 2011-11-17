@@ -32,7 +32,7 @@ namespace samson {
         std::string getErrorMessage();
         std::string getHashGroups();
         
-        void printContent( size_t &limit );
+        size_t printContent( size_t limit );
         
     };
 

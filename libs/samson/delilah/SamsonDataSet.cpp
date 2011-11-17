@@ -108,10 +108,16 @@ namespace samson {
     
     void SamsonDataSet::printContent( size_t limit )
     {
+        size_t records = 0;
         
         au::map< std::string , SamsonFile >::iterator file;
         for ( file = files.begin() ; file != files.end() ; file++)
-            file->second->printContent( limit );
+        {
+            records += file->second->printContent( (limit==0)?0:(limit - records ) );
+            
+            if( records >= limit )
+                return;
+        }
         
     }
 }

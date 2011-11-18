@@ -1,21 +1,9 @@
 package es.tid.ps.kpicalculation.data;
 
-import java.net.MalformedURLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
+import java.util.StringTokenizer;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.nutch.net.URLNormalizers;
-import org.apache.nutch.net.urlnormalizer.basic.BasicURLNormalizer;
-import org.apache.nutch.net.urlnormalizer.regex.RegexURLNormalizer;
-import org.apache.nutch.util.NutchConfiguration;
 import org.apache.xerces.util.URI;
-import org.apache.xerces.util.URI.MalformedURIException;
 
-import es.tid.ps.kpicalculation.cleaning.KpiCalculationFilterException;
 import es.tid.ps.kpicalculation.utils.KpiCalculationDateFormatter;
 import es.tid.ps.kpicalculation.utils.KpiCalculationNormalizer;
 
@@ -24,19 +12,6 @@ import es.tid.ps.kpicalculation.utils.KpiCalculationNormalizer;
  * PAGE_VIEWS table in hive for web profiling module
  * 
  * @author javierb
- * 
- */
-/**
- * @author javierb
- *
- */
-/**
- * @author javierb
- *
- */
-/**
- * @author javierb
- * 
  */
 public class PageView {
     final private static String DELIMITER = "\t";
@@ -273,76 +248,50 @@ public class PageView {
      *            string to parse
      * 
      */
-    public PageView(String line) {
+    public PageView() {
+
+    }
+
+    public void set(String line) {
         try {
 
-            String[] listLine = line.trim().split(DELIMITER, -1);
+            StringTokenizer stt = new StringTokenizer(line, DELIMITER);
 
-            visitorId = listLine[PageViewInput.VISITOR_ID.getValue()];
+            // The id of the user generating the log
+            this.visitorId = stt.nextToken();
 
             // The input url field is already stored normalized in this class
-            fullUrl = KpiCalculationNormalizer
-                    .normalize(listLine[PageViewInput.URL.getValue()]);
+            this.fullUrl = KpiCalculationNormalizer.normalize(stt.nextToken());
 
             // Protocol, domain, path and query parts of the url are obtained
-            // from
-            // the fullurl field
-            URI uri = new URI(fullUrl);
-            protocol = uri.getScheme();
-            urlDomain = uri.getHost();
-            urlPath = uri.getPath();
-            urlQuery = uri.getQueryString();
+            // from the fullurl field URI
+            URI uri = new URI(this.fullUrl);
+            this.protocol = uri.getScheme();
+            this.urlDomain = uri.getHost();
+            this.urlPath = uri.getPath();
+            this.urlQuery = uri.getQueryString();
 
             // Date and time are obteined from the full date received in the cdr
             // line
-            dateView = KpiCalculationDateFormatter
-                    .getDate(listLine[PageViewInput.DATE_TIME.getValue()]);
-            timeDay = KpiCalculationDateFormatter
-                    .getTime(listLine[PageViewInput.DATE_TIME.getValue()]);
+            String date = stt.nextToken();
+            this.dateView = KpiCalculationDateFormatter.getDate(date);
+            this.timeDay = KpiCalculationDateFormatter.getTime(date);
 
-            // At this moment these four fields are the user agent.
-            // TODO: It would be possible to process the user agent field for
-            // more
-            // granularity
-            userAgent = listLine[PageViewInput.USER_AGENT.getValue()];
-            browser = listLine[PageViewInput.USER_AGENT.getValue()];
-            device = listLine[PageViewInput.USER_AGENT.getValue()];
-            operSys = listLine[PageViewInput.USER_AGENT.getValue()];
+            this.status = stt.nextToken();
 
-            method = listLine[PageViewInput.METHOD.getValue()];
-            status = listLine[PageViewInput.HTTP_STATUS.getValue()];
+            // Mime currently not used
+            // TODO:Mime type missing in tables.This is pending;
+            stt.nextToken();
+
+            this.userAgent = this.browser = this.device = this.operSys = stt
+                    .nextToken();
+
+            // Status of the request
+            this.method = stt.nextToken();
         } catch (Exception ex) {
             throw new KpiCalculationDataException("The URL was wrong",
                     KpiCalculationCounter.MALFORMED_URL);
         }
-
-        // TODO:Mime type missing in tables.This is pending;
-    }
-
-    /**
-     * Method that receives an URL and applies two Nutch normalizers to it.
-     * First is applied the BasicURLNormalizer which is in charge of standard
-     * normalization processes, and after it the RegexURLNormalizer which is an
-     * advanced normalizer whose functionalities are defined in a configuration
-     * file.
-     * 
-     * @param inputUrl
-     *            url to normalize
-     * @return the normalized url
-     * 
-     */
-    private String normalize(String inputUrl) throws MalformedURLException {
-        String normalizedUrl;
-        BasicURLNormalizer normalizer = new BasicURLNormalizer();
-        Configuration conf = NutchConfiguration.create();
-        normalizer.setConf(conf);
-
-        normalizedUrl = normalizer.normalize(inputUrl,
-                URLNormalizers.SCOPE_DEFAULT);
-
-        // Advanced Nutch URL normalization based on regular expressions
-        RegexURLNormalizer norm = new RegexURLNormalizer(conf);
-        return norm.normalize(normalizedUrl, URLNormalizers.SCOPE_DEFAULT);
     }
 
     /**

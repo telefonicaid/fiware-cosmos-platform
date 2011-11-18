@@ -1,6 +1,5 @@
 package es.tid.ps.kpicalculation.cleaning;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -8,8 +7,6 @@ import java.util.List;
 import java.util.ListIterator;
 
 import org.apache.hadoop.conf.Configuration;
-
-import com.ibm.icu.text.MessageFormat;
 
 import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
 

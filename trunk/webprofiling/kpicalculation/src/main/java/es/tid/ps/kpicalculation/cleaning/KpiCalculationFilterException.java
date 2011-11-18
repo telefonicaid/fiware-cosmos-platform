@@ -10,6 +10,8 @@ import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
  */
 public class KpiCalculationFilterException extends RuntimeException {
 
+    private static final long serialVersionUID = 1L;
+    
     public KpiCalculationFilterException(String message, Throwable cause,
             KpiCalculationCounter lineFilteredExtension) {
         super(message, cause);

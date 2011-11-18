@@ -8,11 +8,9 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.xerces.util.URI.MalformedURIException;
 
 import es.tid.ps.kpicalculation.cleaning.KpiCalculationFilterChain;
 import es.tid.ps.kpicalculation.cleaning.KpiCalculationFilterException;
-import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
 import es.tid.ps.kpicalculation.data.KpiCalculationDataException;
 import es.tid.ps.kpicalculation.data.PageView;
 import es.tid.ps.kpicalculation.utils.KpiCalculationDateFormatter;
@@ -52,6 +50,8 @@ public class KpiCleanerMapper extends
     private KpiCalculationNormalizer normalizer;
     @Resource
     private KpiCalculationDateFormatter dateFormatter;
+    @Resource
+    private PageView view;
 
     /**
      * Method that prepares the filters to be applied
@@ -62,9 +62,10 @@ public class KpiCleanerMapper extends
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
-        filter = new KpiCalculationFilterChain(context.getConfiguration());
-        normalizer = new KpiCalculationNormalizer();
-        dateFormatter = new KpiCalculationDateFormatter();
+        this.filter = new KpiCalculationFilterChain(context.getConfiguration());
+        this.normalizer = new KpiCalculationNormalizer();
+        this.dateFormatter = new KpiCalculationDateFormatter();
+        this.view = new PageView();
     }
 
     /**
@@ -78,17 +79,14 @@ public class KpiCleanerMapper extends
     @Override
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
-        try{
-            PageView view = new PageView(value.toString());
-            filter.filter(view.getFullUrl());
-            context.write(new Text(view.toString()), NullWritable.get());
+        try {
+            this.view.set(value.toString());
+            this.filter.filter(this.view.getFullUrl());
+            context.write(new Text(this.view.toString()), NullWritable.get());
         } catch (KpiCalculationFilterException e) {
-            context.getCounter(e.getCounter())
-            .increment(1L);
-        } catch (KpiCalculationDataException e)
-        {
-            context.getCounter(e.getCounter())
-            .increment(1L);
+            context.getCounter(e.getCounter()).increment(1L);
+        } catch (KpiCalculationDataException e) {
+            context.getCounter(e.getCounter()).increment(1L);
         }
     }
 }

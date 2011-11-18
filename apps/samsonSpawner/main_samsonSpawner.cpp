@@ -118,7 +118,7 @@ static const char* manDescription      =
 "all samson processes in the samson cluster.\n"
 "A samsonSpawner process must be running in a computer that is to be used as a samson node.\n"
 "It is seen to that this process is started automatically, so a node prepared to work as\n"
-"a samson node shouldn't have a problem with this, but in case 'samsonSetup' is reporting\n"
+"a samson node shouldn't have a problem with this, but in case 'samsonStarter' is reporting\n"
 "problems connecting to a samson node, at setting up the cluster (or at resetting it),\n"
 "the first thing to do is of course to see whether an IP connection exists, trying with 'ping',\n"
 "and the next step would be to log into the node and use 'ps' to see whether the samsonSpawner\n"

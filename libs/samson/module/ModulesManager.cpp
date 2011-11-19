@@ -102,6 +102,8 @@ namespace samson
 
 	void ModulesManager::addModulesFromDirectory( std::string dir_name )
 	{	
+        LM_T(LmtModuleManager,("Adding module at directory %s", dir_name.c_str() ));
+        
 		DIR *dp;
 		struct dirent *dirp;
 		if((dp  = opendir(dir_name.c_str())) == NULL) {
@@ -117,10 +119,7 @@ namespace samson
 			stat(path.c_str(), &info);
 			
 			if( S_ISREG(info.st_mode) )
-			{
-				LM_T( LmtModuleManager ,  ("Adding module from %s", path.c_str()));
 				addModule( path );
-			}
 			
 		}
 		closedir(dp);
@@ -134,21 +133,22 @@ namespace samson
         
 		LM_T(LmtModuleManager,("Reloading modules"));
 		
-		
+		LM_T(LmtModuleManager,("Clear previous operations and data-types"));
 		clearModule();  		// Clear this module itself (operations and datas)
         
         // Close handlers for all open modules
+		LM_T(LmtModuleManager,("Closing previous modules ( if any )"));
         au::map< std::string  , Module >::iterator m; 
         for ( m =  modules.begin(); m != modules.end() ; m++)
         {
             Module *module = m->second;
-            dlclose( module->hndl);
+            int res = dlclose( module->hndl);
+            if( res != 0)
+                LM_W(("Error while closing module %s", module->name.c_str() )); 
         }
 
-        
+		LM_T(LmtModuleManager,("Remove list of previous modules"));
         modules.clearMap();     // Remove all modules stored here
-		
-		LM_T(LmtModuleManager,("Adding modules again..."));
 		
 		// Add modules again
 		addModules();
@@ -172,6 +172,7 @@ namespace samson
 
 	void ModulesManager::addModule( std::string path )
 	{
+        LM_T(LmtModuleManager,("Adding module at path %s", path.c_str() ));
 		
 		void *hndl = dlopen(path.c_str(), RTLD_NOW);
 		if(hndl == NULL)
@@ -212,6 +213,7 @@ namespace samson
         if( platform_version == SAMSON_VERSION )
         {
             //SSLogger::log( SSLogger::message, "Loaded module at path" + path );
+            LM_T(LmtModuleManager,("Module %s ok. Adding operations and data types to ModulesManager" , module->name.c_str() ));
             module->hndl = hndl;
             addModule( module );
             

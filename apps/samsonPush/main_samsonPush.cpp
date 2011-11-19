@@ -32,6 +32,7 @@ char breaker_sequence[1024];
 char controller[1024];
 char queue_name[1024];
 bool lines;                         // Flag to indicate that input is read line by line
+int push_memory;                 // Global memory used as a bffer
 
 static const char* manShortDescription = 
 "samsonPush is a easy-to-use client to send data to a particular queue in a SAMSON system. Just push data into the standard input\n";
@@ -41,12 +42,13 @@ static const char* manSynopsis =
 
 PaArgument paArgs[] =
 {
-	{ "-controller",            controller,           "CONTROLLER",            PaString,  PaOpt, _i "localhost",   PaNL,      PaNL,  "controller IP:port"                         },
-	{ "-timeout",               &timeOut,             "TIMEOUT",               PaInt,     PaOpt,              0,      0,     10000,  "Timeout to deliver a block to the platform" },
-	{ "-buffer_size",           &buffer_size,         "BUFFER_SIZE",           PaInt,     PaOpt,       10000000,      1,  64000000,  "Buffer size in bytes"                       },
-	{ "-breaker_sequence",      breaker_sequence,     "BREAKER_SEQUENCE",      PaString,  PaOpt,        _i "\n",   PaNL,      PaNL,  "Breaker sequence ( by default \\n )"        },
-	{ "-lines",                 &lines,               "LINES",                 PaBool,    PaOpt,          false,  false,      true,  "Read std-in line by line"                   },
-	{ " ",                      queue_name,           "QUEUE",                 PaString,  PaReq,      _i "null",   PaNL,      PaNL,  "name of the queue to push data"             },
+	{ "-controller",  controller,            "",  PaString,  PaOpt, _i "localhost",   PaNL,       PaNL,  "controller IP:port"                         },
+	{ "-timeout",     &timeOut,              "",  PaInt,     PaOpt,              0,      0,      10000,  "Timeout to deliver a block to the platform" },
+	{ "-buffer_size", &buffer_size,          "",  PaInt,     PaOpt,       10000000,      1,   64000000,  "Buffer size in bytes"                       },
+	{ "-breaker_sequence", breaker_sequence, "",  PaString,  PaOpt,        _i "\n",   PaNL,       PaNL,  "Breaker sequence ( by default \\n )"        },
+	{ "-lines",       &lines,                "",  PaBool,    PaOpt,          false,  false,       true,  "Read std-in line by line"                   },
+	{ "-memory",      &push_memory,          "",  PaInt,     PaOpt,           1000,      1,    1000000,  "Memory in Mb used to push data ( default 1000)" },
+	{ " ",            queue_name,            "",  PaString,  PaReq,      _i "null",   PaNL,       PaNL,  "name of the queue to push data"             },
 	PA_END_OF_ARGS
 };
 
@@ -111,7 +113,9 @@ int main( int argC , const char *argV[] )
     samson::SamsonClient client;
     
     // Set 1G RAM for uploading content
-    client.setMemory( 1024*1024*1024 );
+    size_t total_memory = push_memory*1024*1024;
+    LM_V(("Setting memory for samson client %s" , au::str(total_memory,"B").c_str() ));
+    client.setMemory( total_memory );
     
     LM_V(("Connecting to %s ..." , controller));
     
@@ -139,14 +143,18 @@ int main( int argC , const char *argV[] )
     
 
     size_t size = 0;                // Bytes currently contained in the buffer
+    size_t total_size =0 ;          // Total accumulated size
     size_t total_process = 0;    
     
 
     std::string tmp_separator = breaker_sequence;
     literal_string( tmp_separator );
 
-    LM_V(("Setup buffer_size %s / timeout %s / break_sequence '%s' ( length %d ) " , au::str(buffer_size).c_str() , au::time_string( timeOut ).c_str() , tmp_separator.c_str() , strlen(breaker_sequence) ));
+    LM_V(("Input parameter buffer_size %s" , au::str(buffer_size).c_str() ));
+    LM_V(("Input parameter timeout %s " , au::time_string( timeOut ).c_str() ));
+    LM_V(("Input parameter break_sequence '%s' ( length %d ) " , tmp_separator.c_str() , strlen(breaker_sequence) ));
 
+    au::Cronometer cronometer;
     
     while( true )
     {
@@ -166,7 +174,35 @@ int main( int argC , const char *argV[] )
         {
             read_bytes = full_read( 0 , data + size , buffer_size - size );
         }
+        
+        total_size+= read_bytes;
 
+        // Information about current status....
+        
+        size_t memory = engine::MemoryManager::shared()->getMemory();
+        size_t used_memory = engine::MemoryManager::shared()->getUsedMemory();
+        double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
+        
+        LM_V(("Read %s from stdin. Accumulated %s in %s ( %s )" , 
+                au::str( read_bytes , "B" ).c_str(),
+                au::str( total_size , "B" ).c_str(),
+                au::time_string( cronometer.diffTimeInSeconds() ).c_str(),
+                au::str_rate( total_size , cronometer.diffTimeInSeconds() , "Bs" ).c_str()
+              ));
+                
+        
+        
+        if( used_memory > 0 )
+        {
+            LM_V(("Memory used %s / %s ( %s )", 
+                  au::str( used_memory , "B" ).c_str() , 
+                  au::str( memory , "B" ).c_str() , 
+                  au::percentage_string( memory_usage ).c_str() 
+                  ));
+        }
+       
+        // Print verbose the list of push components ( if any )
+        client.getInfoAboutPushConnections(true);
         
         //LM_M(("Read command for %lu bytes. Read %lu" , buffer_size - size , read_bytes ));
         
@@ -214,7 +250,7 @@ int main( int argC , const char *argV[] )
     // Last push
     pushBuffer->flush();
 
-    LM_V(("Total process %s" , au::str(total_process,"B").c_str() ));
+    LM_V(("Total pushed %s" , au::str(total_process,"B").c_str() ));
     
     
     // --------------------------------------------------------------------------------

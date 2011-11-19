@@ -61,6 +61,15 @@ namespace samson {
         std::string getDescription();
         std::string getIdAndConcept();
         
+        
+        // Short description
+        virtual std::string getShortDescription()
+        {
+            std::ostringstream output;
+            output << "[" << id << "]";
+            return output.str();
+        }
+        
     protected:
         
         void setConcept( std::string _concept );

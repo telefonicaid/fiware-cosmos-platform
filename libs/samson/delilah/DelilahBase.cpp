@@ -188,6 +188,7 @@ namespace samson {
         cmdLine.set_flag_boolean("worker");
         cmdLine.set_flag_boolean("delilah");
         cmdLine.set_flag_boolean("no_title");
+        cmdLine.set_flag_boolean("small_title");
         cmdLine.parse( command );
         
         std::ostringstream output;
@@ -199,7 +200,9 @@ namespace samson {
         // CONTROLLER
         if( cmdLine.get_flag_bool("controller") )
         {
-            if( !cmdLine.get_flag_bool("no_title") )
+            if ( cmdLine.get_flag_bool("small_title") )
+                output << "Controller :\n";
+            else if( !cmdLine.get_flag_bool("no_title") )
             {
                 output << "\n";
                 output << "================================================================================\n";
@@ -220,7 +223,9 @@ namespace samson {
             for ( size_t w = 0 ; w < workers_ids.size() ; w++ )
             {
                 
-                if( !cmdLine.get_flag_bool("no_title") )
+                if ( cmdLine.get_flag_bool("small_title") )
+                    output << "Worker " << workers_ids[w] << ":\n";
+                else if( !cmdLine.get_flag_bool("no_title") )
                 {
                     output << "\n";
                     output << "================================================================================\n";
@@ -237,7 +242,9 @@ namespace samson {
         // DELILAH
         if( cmdLine.get_flag_bool("delilah") )
         {
-            if( !cmdLine.get_flag_bool("no_title") )
+            if ( cmdLine.get_flag_bool("small_title") )
+                output << "Delilah :\n";
+            else if( !cmdLine.get_flag_bool("no_title") )
             {
                 output << "\n";
                 output << "================================================================================\n";

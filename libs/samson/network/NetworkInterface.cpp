@@ -15,6 +15,11 @@
 
 #include "engine/DiskStatistics.h"      // engine::DiskStatistics
 
+#include "engine/ProcessManager.h"      // engine::ProcessManager
+#include "engine/MemoryManager.h"       // engine::MemoryManager    
+#include "engine/DiskManager.h"         // engine::DiskManager    
+#include "engine/Engine.h"
+
 
 namespace samson
 {
@@ -119,5 +124,24 @@ void PacketReceiverInterface::_receive(Packet* packet)
 	engine::Engine::shared()->add( new PacketReceivedNotification( this , packet ) );
 	// receive( packet );
 }
+    
+    
+    // Auxiliar function to get generic engine - wide information
+    
+    void getInfoEngineSystem( std::ostringstream &output , NetworkInterface* network )
+    {
+        au::xml_open(output, "engine_system");
+        engine::MemoryManager::shared()->getInfo( output );
+        engine::DiskManager::shared()->getInfo( output  );
+        engine::ProcessManager::shared()->getInfo( output );
+        size_t uptime = engine::Engine::shared()->uptime.diffTimeInSeconds();
+        au::xml_simple( output , "uptime" , uptime );
+        
+        // Network information
+        au::xml_simple(output, "network_output",  network->getOutputBuffersSize() );
+        
+        au::xml_close(output, "engine_system");
+        
+    }
     
 }

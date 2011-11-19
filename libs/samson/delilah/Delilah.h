@@ -77,6 +77,8 @@ namespace samson {
 		// Private token to protect the local list of components
 		au::Token token;
         
+        friend class SamsonClient;
+        
     protected:
         
 		// Map of components that intercept messages
@@ -87,8 +89,11 @@ namespace samson {
 
         // Counter for the live messages
         au::CounterCollection<std::string> stream_out_queue_counters;
+        
     public:
+        
         delilah_process_stream_out_queue op_delilah_process_stream_out_queue;
+        
 	public:
 		
 		Environment environment;								// Environment properties to be sent in the next job

@@ -36,6 +36,7 @@
 #include "samson/network/Packet.h"
 
 #include "samson/delilah/Delilah.h"             // samson::Delilah
+#include "samson/delilah/DelilahComponent.h"    // samson::DelilahComponent
 
 #include "SamsonClient.h"                       // Own interface
 
@@ -78,8 +79,6 @@ namespace samson {
         
         if( (size + length ) > max_buffer_size )
         {
-            // Process buffer
-            LM_V(("Pushing %s to queue %s. Total accumulated %s\n" , au::str(size,"B").c_str() , queue.c_str()  , au::str(total_size,"B").c_str() ));
             
             client->push(  queue , buffer, size );
 
@@ -153,6 +152,8 @@ namespace samson {
         memory = 1024*1024*1024;
         
         load_buffer_size =  64*1024*1024;
+
+        total_push_size = 0;
         
     }
  
@@ -228,6 +229,23 @@ namespace samson {
     
     size_t SamsonClient::push( std::string queue , char *data , size_t length )
     {
+
+        // Accumulated size
+        total_push_size += length;
+        
+        // Process buffer
+        LM_V(("Pushing %s to queue %s. Total accumulated %s" , au::str(length,"B").c_str() , queue.c_str()  , au::str(total_push_size,"B").c_str() ));
+        
+        // Block this call if memory is not enougth
+        double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
+        while( memory_usage >= 0.8 )
+        {
+            LM_W(("Memory usage %s. Waiting until this goes below 80%..." , au::percentage_string( memory_usage ).c_str() )); 
+            getInfoAboutPushConnections(true);
+            sleep(1);
+            memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
+        }
+        
         
         samson::BufferDataSource * ds = new samson::BufferDataSource( data , length );
         
@@ -238,6 +256,10 @@ namespace samson {
 
         // Save the id to make sure it is finish before quiting...
         delilah_ids.push_back( id );
+
+        
+        // Clean previous jobs ( if any )
+        delilah->clearComponents();
         
         return id;
     }
@@ -289,7 +311,54 @@ namespace samson {
             return NULL;
     }
     
+    std::string SamsonClient::getInfoAboutPushConnections( bool print_verbose )
+    {
+        if( !delilah )
+            return "Connection not established";
+        
+        int num_components = 0;
+        
+        // Clean previous jobs ( if any )
+        delilah->clearComponents();
+        
+        std::ostringstream output;
+        {
+            au::TokenTaker tt(&delilah->token);
+
+            au::map<size_t , DelilahComponent>::iterator it_components;	
+            for( it_components = delilah->components.begin() ; it_components != delilah->components.end() ; it_components++)
+            {
+                if( it_components->second->type == DelilahComponent::push )
+                {
+                    output << it_components->second->getShortDescription() << " ";
+                    num_components++;
+                }
+            }
+        }
+        
+        if( print_verbose && ( num_components > 0 ) )
+            LM_V(( "Push components %s" , output.str().c_str() ));
+        
+        return output.str();
+        
+    }
     
+    std::string SamsonClient::getInfoAboutDelilahComponents()
+    {
+        // Clean previous jobs ( if any )
+        delilah->clearComponents();
+        
+        std::ostringstream output;
+        output << "[ ";
+        for( size_t i = 0 ; i < delilah_ids.size() ; i++)
+        {
+            if( delilah->isActive( delilah_ids[i]  ) )
+                output << delilah_ids[i] << " ";
+        }
+        output << "]";
+        
+        return output.str();
+    }
     
     
 }

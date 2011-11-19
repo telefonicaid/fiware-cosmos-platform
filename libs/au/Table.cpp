@@ -81,7 +81,7 @@ namespace au {
     
     std::string DataSetRow::get( std::string field )
     {
-        /*
+        
         // ^operation for dividing values
         //------------------------------------------------------------------------
         {
@@ -102,7 +102,7 @@ namespace au {
                 return "Error with ^ operation";
         }
         //------------------------------------------------------------------------
-        
+
         // +operation for dividing values
         //------------------------------------------------------------------------
         {
@@ -122,7 +122,6 @@ namespace au {
         }
         
         //------------------------------------------------------------------------        
-        */
         
         std::string *value = fields.findInMap( field );
         if( !value )

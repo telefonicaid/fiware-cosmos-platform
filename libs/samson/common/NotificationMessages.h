@@ -17,6 +17,7 @@
 // Notification to review worker_task ( in Stream manager )
 #define notification_review_stream_manager                "notification_review_stream_manager"
 #define notification_review_stream_manager_fast           "notification_review_stream_manager_fast"
+#define notification_review_stream_manager_save_state     "notification_review_stream_manager_save_state"
 
 // Notification to review timeout in SamsonPushBuffer
 

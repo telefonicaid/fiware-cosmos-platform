@@ -67,7 +67,7 @@ namespace samson {
             KVFormat format2 = file->second->format;
             if( format != format2 )
             {
-                error.set("Different formats in included files");
+                error.set("Different formats found in included files");
                 return;
             }
             

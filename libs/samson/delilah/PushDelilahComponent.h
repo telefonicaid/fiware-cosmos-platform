@@ -75,6 +75,9 @@ namespace samson {
         // Notifications
         void notify( engine::Notification* notification );
         
+        // Virtual in DelilahComponent
+        std::string getShortDescription();
+        
     private:
         
         void requestMemoryBuffer();

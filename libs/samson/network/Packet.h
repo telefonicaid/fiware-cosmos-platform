@@ -111,6 +111,20 @@ namespace samson
             return output.str();
         }
         
+        
+        size_t getSize()
+        {
+            size_t total = 0;
+            if ( buffer )
+                total += buffer->getSize();
+            
+            total+= dataLen;
+            
+            total += message->ByteSize();
+            
+            return total;
+        }
+        
 	};
 }
 

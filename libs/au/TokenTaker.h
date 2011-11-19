@@ -39,8 +39,9 @@ namespace au
         TokenTaker( Token* _token );
         TokenTaker( Token* _token, const char* name );
         ~TokenTaker();
-        
-        void stop( int time_out );
+
+        void stop(  );
+        //void stop( int time_out );
         
         void wakeUp();
         void wakeUpAll();

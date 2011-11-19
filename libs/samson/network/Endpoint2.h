@@ -203,6 +203,8 @@ public:
 
     int                  getIdInEndpointVector();   
     
+    size_t               getOutputBufferSize();
+    
 private:
 	Status               partRead(void* vbuf, long bufLen, long* bufLenP, const char* what);
 	Status               partWrite(void* dataP, int dataLen, const char* what);

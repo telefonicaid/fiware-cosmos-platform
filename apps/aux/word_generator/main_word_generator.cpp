@@ -6,6 +6,11 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "parseArgs/parseArgs.h"
+#include "parseArgs/paConfig.h"
+
+#include "logMsg/logMsg.h"
+
 #include "au/string.h" // au::str()
 #include "au/Cronometer.h"  // au::Cronometer
 #include "au/CommandLine.h" // au::CommandLine
@@ -14,33 +19,53 @@
 
 
 
-int main( int args , const char*argv[] )
+static const char* manShortDescription = 
+"word_generator a simple toll to generate random sequences of words. Usefull in demos about word counting and topic trenddding\n";
+
+static const char* manSynopsis =
+"   [-r] [-t secs] [-l len] num_words\n"
+"       [-ramdon] flag to generate randomized sequence of words\n"
+"       [-repeat secs] time_to_repeat in seconds with a new wave of words\n"
+"       [-l length] Number of letters of generated words ( default 9 ) \n"
+"       [-alphabet alphabet size] Number of differnt letters used to generate words ( default 10 ) \n";
+
+int word_length;
+int alphabet_length;
+bool rand_flag;
+int repeate_time;
+int num_lines;
+
+PaArgument paArgs[] =
 {
-    au::CommandLine cmd;
-    cmd.set_flag_boolean( "r");       // by default, fixed sequence of words
-    cmd.set_flag_int( "t" , 0 );       // by default, 0 seconds to repeat
-    cmd.set_flag_int( "l" , 9 );    
-    cmd.set_flag_int( "al" , 10 );  
-    cmd.parse (args, argv);
+	{ "-l",         &word_length,       "",  PaInt,     PaOpt,     9, 1,  30,         "Number of letters of generated words ( default 9 )" },    
+    { "-alphabet",  &alphabet_length,   "",  PaInt,     PaOpt,     10, 1, 30,         "Number of differnt letters used to generate words ( default 10 )" },
+	{ "-random",    &rand_flag,         "",  PaBool,    PaOpt,  false,  false, true,  "Flag to generate completelly randomized sequence of words"},
+	{ "-repeat",    &repeate_time,      "",  PaInt,     PaOpt,     0, 0, 10000,       "time_to_repeat in seconds with a new wave of words" },    
+	{ " ",          &num_lines,         "",  PaInt,     PaReq,    100, 1, 1000000000, "Number of words to be generated" }, 
+	PA_END_OF_ARGS
+};
+
+int logFd = -1;
+
+
+int main( int argC , const char*argV[] )
+{
     
-    if ( cmd.get_num_arguments() < 2 )
-    {
-        fprintf(stderr, "Usage: %s [-r] [-t secs] [-l len] num_words\n" , argv[0] );
-        fprintf(stderr, "       [-r] flag to generate randomized sequence of words\n" );
-        fprintf(stderr, "       [-t secs] time_to_repeat in seconds with a new wave of words\n" );
-        fprintf(stderr, "       [-l length] Number of letters of generated words ( default 9 ) \n" );
-        fprintf(stderr, "       [-al alphabet size] Number of differnt letters used to generate words ( default 10 ) \n" );
-        
-        exit(1);
-    }
+    paConfig("usage and exit on any warning", (void*) true);
     
-    int word_length = cmd.get_flag_int("l");
-    int alphabet_length = cmd.get_flag_int("al");
+    paConfig("log to screen",                 (void*) true);
+    paConfig("log to file",                   (void*) false);
+    paConfig("screen line format",            (void*) "TYPE:EXEC: TEXT");
+    paConfig("man shortdescription",          (void*) manShortDescription);
+    paConfig("man synopsis",                  (void*) manSynopsis);
+    paConfig("log to stderr",                 (void*) true);
     
-    bool rand_flag = cmd.get_flag_bool("r");
-    size_t repeate_time = cmd.get_flag_int("t");
+    // Parse input arguments    
+    paParse(paArgs, argC, (char**) argV, 1, false);
+    logFd = lmFirstDiskFileDescriptor();
     
-    size_t num_lines = atoll( cmd.get_argument(1).c_str() );
+    LM_V(("Generating %d words of %d chars every %d seconds (%s)" , num_lines , alphabet_length , repeate_time , rand_flag?"Randomly":"Non randomly"));
+    
     au::Cronometer cronometer;
     
     char word[100];
@@ -63,7 +88,7 @@ int main( int args , const char*argv[] )
     while( true )
     {
         
-        size_t local_num_lines = 0;
+        int local_num_lines = 0;
         
         while( local_num_lines < num_lines )
         {
@@ -84,9 +109,9 @@ int main( int args , const char*argv[] )
         {
             sleep( repeate_time );
             size_t total_seconds = cronometer.diffTimeInSeconds();
-            fprintf(stderr,"%s: Generated %s lines ( %s bytes ) in %s. Rate: %s / %s. Now sleeping %d seconds\n" 
-                    , argv[0] , au::str(total_num).c_str() , au::str(total_size).c_str(), au::time_string( total_seconds ).c_str() ,
-                    au::str( (double)total_num/(double)total_seconds ,"Lines/s" ).c_str() , au::str( (double)total_size/(double)total_seconds,"Bps").c_str() , (int)repeate_time  );
+            LM_V(( "Generated %s lines ( %s bytes ) in %s. Rate: %s / %s. Now sleeping %d seconds\n", 
+                  au::str(total_num).c_str() , au::str(total_size).c_str(), au::time_string( total_seconds ).c_str() ,
+                  au::str( (double)total_num/(double)total_seconds ,"Lines/s" ).c_str() , au::str( (double)total_size/(double)total_seconds,"Bps").c_str() , (int)repeate_time  ));
         }
         
     }

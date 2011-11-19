@@ -42,6 +42,30 @@ namespace samson
         setConcept( au::str("Pushing %s to queue/s %s" , au::str( dataSource->getTotalSize() , "bytes").c_str() , _queue.c_str() ) );
 	}	
     
+    std::string PushDelilahComponent::getShortDescription()
+    {
+        if( isComponentFinished() )
+        {
+            std::ostringstream output;
+            output << "[ ";
+            output << "Id " << id << " ";
+            output << "Finished ";
+            output << "]";
+            return output.str();
+            
+        }
+        
+        
+        std::ostringstream output;
+        output << "[ ";
+        output << "Id " << id << " ";
+        output << "Pushed ";
+        output << au::str( processedSize , "B" ) << " / " << au::str( totalSize , "B" );
+        output << "]";
+        return output.str();
+    }
+    
+    
     void PushDelilahComponent::addQueue( std::string  _queue )
     {
 		queues.insert( _queue );

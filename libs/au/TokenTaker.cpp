@@ -38,7 +38,15 @@ namespace au
     }
     
     
-    void TokenTaker::stop( int time_out )
+    void TokenTaker::stop(  )
+    {
+        // This unlock the mutex and froze the process in the condition
+        if( pthread_cond_wait(&token->_block, &token->_lock) != 0)
+            LM_X(1, ("Internal error at au::TokenTaker"));
+    }
+    
+    /*
+     void TokenTaker::stop( int time_out )
     {
         //LM_M(("Stop TokenTaker %s during %d for token %s", name , time_out, token->name));
         
@@ -70,8 +78,8 @@ namespace au
         
         //LM_M(("Finish Stop TokenTaker %s during %d for token %s", name , time_out, token->name));
         
-        
     }
+     */
     
     void TokenTaker::wakeUp()
     {

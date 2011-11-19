@@ -62,6 +62,9 @@ namespace au {
     std::string str( size_t value );
     std::string str( size_t value , std::string postfix );
     
+    std::string str_rate( size_t value , size_t time );
+    std::string str_rate( size_t value , size_t time , std::string postLabel );
+    
     // Indent a string text
     std::string indent( std::string txt );
     std::string indent( std::string txt , int num_spaces );

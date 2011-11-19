@@ -391,4 +391,20 @@ bool Network2::isConnected(unsigned int identifier)
 	return false;
 }
 
+// Andreu: Function to get the size accumluated in output buffers
+size_t Network2::getOutputBuffersSize()
+{
+    size_t total = 0;
+	for (unsigned int ix = 0; ix < epMgr->endpoints; ix++)
+	{
+		Endpoint2* ep = epMgr->endpoint[ix];
+		if (ep == NULL)
+			continue;
+        
+        total += ep->getOutputBufferSize();
+    }
+    return total;
+}
+    
+    
 }

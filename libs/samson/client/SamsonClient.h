@@ -327,6 +327,8 @@ namespace  samson {
         
         std::vector<size_t> delilah_ids;        // Delilah operation to wait for...
         
+        size_t total_push_size;
+        
 	public:
         
         // Default constructor
@@ -345,12 +347,15 @@ namespace  samson {
         std::string getErrorMessage();
         
         // Wait until all operations are finished
-        void waitUntilFinish();
-        
+        void waitUntilFinish();        
         
         // Live data connection
         void connect_to_queue( std::string queue );
         SamsonClientBlockInterface* getNextBlock( std::string queue );
+        
+        // Getting information about my connection
+        std::string getInfoAboutPushConnections( bool print_verbose );
+        std::string getInfoAboutDelilahComponents();
         
     };
     

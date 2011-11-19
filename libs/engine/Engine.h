@@ -48,8 +48,6 @@ namespace engine
 	
 	class Engine
 	{
-		
-        friend class NotificationListener;
         
 		// List of engine elements
 		// --------------------------------------------------------------------
@@ -57,7 +55,6 @@ namespace engine
 		au::list<EngineElement> elements;               // Elements of the samson engine
         
 		EngineElement *running_element;                 // Element that is currently running
-		int sleeping_time_seconds;                      // Time of sleep in the last call
 		
         au::Token *token;                               // General mutex to protect global variable engine and block the main thread if necessary
         
@@ -134,10 +131,14 @@ namespace engine
         // Only executed from friend class "NotificationElement"
         void send( Notification * notification );
         
+    private:
+        
+        EngineElement* intern_getNextElement();
+        bool isEmpty();
+
+        
     };
 
-    // Engine system get info
-    void getInfo( std::ostringstream& output );
     
 	
 };

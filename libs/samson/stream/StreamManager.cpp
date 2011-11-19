@@ -58,6 +58,12 @@ namespace samson {
                 engine::Notification *notification = new engine::Notification(notification_review_stream_manager_fast);
                 engine::Engine::shared()->notify( notification, 1 );
             }
+            {
+                engine::Notification *notification = new engine::Notification(notification_review_stream_manager_save_state);
+                engine::Engine::shared()->notify( notification, 1 );
+            }
+            
+            
 
             // Recover state from log-file
             recoverStateFromDisk();
@@ -68,6 +74,7 @@ namespace samson {
             // Engine listening commands
             listen( notification_review_stream_manager );
             listen( notification_review_stream_manager_fast );
+            listen( notification_review_stream_manager_save_state );
             listen( notification_samson_worker_check_finish_tasks );
             listen( notification_network_diconnected );
             
@@ -118,9 +125,6 @@ namespace samson {
                 // Remove finished worker tasks elements
                 workerCommands.removeInMapIfFinished();
                 
-                // Save state to disk just in case it crases
-                saveStateToDisk();
-                
                 // Review all WorkerCommand is necessary
                 au::map< size_t , WorkerCommand >::iterator it_workerCommands; 
                 for( it_workerCommands = workerCommands.begin() ; it_workerCommands != workerCommands.end() ; it_workerCommands++ )
@@ -130,6 +134,13 @@ namespace samson {
                 return;
             }
             
+            if ( notification->isName(notification_review_stream_manager_save_state) )
+            {
+                
+                // Save state to disk just in case it crases
+                saveStateToDisk();
+                return;
+            }
             
             if( notification->isName( notification_samson_worker_check_finish_tasks ) )
             {
@@ -338,6 +349,14 @@ namespace samson {
         
         void StreamManager::reviewStreamOperations()
         {
+            
+            double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
+            if ( memory_usage >= 1.0 )
+            {
+                LM_W(("Not schedulling new stream-tasks since memory usage is %s", au::percentage_string( memory_usage ).c_str() ));
+                return;
+            }
+            
             // List of operations to run in order...
             std::vector<StreamOperation*> ordered_stream_operations;
             

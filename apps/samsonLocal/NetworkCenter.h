@@ -157,7 +157,7 @@ namespace samson {
 				else
                 {
                     au::TokenTaker tt(&token);
-                    tt.stop(0);
+                    tt.stop();
                 }
 			}
 		}

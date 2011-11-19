@@ -91,11 +91,7 @@ int main(int argC, const char *argV[])
         samson::SamsonFile samsonFile( file_name );
         
         if( samsonFile.hasError() )
-        {
-            std::cerr << samsonFile.getErrorMessage();    
-            exit(0);
-        }
-        
+            LM_X(1,("%s", samsonFile.getErrorMessage().c_str() ));    
         
         if( show_header )
         {
@@ -118,10 +114,7 @@ int main(int argC, const char *argV[])
         samson::SamsonDataSet samsonDataSet( file_name );
         
         if( samsonDataSet.error.isActivated() )
-        {
-            std::cerr << samsonDataSet.error.getMessage();
-            exit(0);
-        };
+            LM_X(1,("%s", samsonDataSet.error.getMessage().c_str() ));    
         
         if( show_header )
         {
@@ -140,7 +133,7 @@ int main(int argC, const char *argV[])
     } 
     else
     {
-        std::cerr << "Error:"  << file_name << " is not a file or a directory.\n";
+        LM_E(("%s is not a file or a directory",file_name));
     }
     
     

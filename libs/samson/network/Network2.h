@@ -70,6 +70,7 @@ public:
 	size_t       send(PacketSenderInterface*, int, Packet*);
     void         getInfo( std::ostringstream& output );
 	bool         isConnected(unsigned int identifier);
+    size_t       getOutputBuffersSize();
 };
 
 }

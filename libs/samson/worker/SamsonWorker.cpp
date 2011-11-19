@@ -584,7 +584,7 @@ namespace samson {
         engine::Engine::shared()->getInfo( output );
         
         // Engine system
-        engine::getInfo(output);
+        samson::getInfoEngineSystem(output, network);
         
         // Modules manager
         ModulesManager::shared()->getInfo( output );

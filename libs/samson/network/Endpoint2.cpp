@@ -115,7 +115,7 @@ void* readerThread(void* vP)
             else
             {
                 au::TokenTaker tk( &ep->jobQueueSem );
-                tk.stop(-1);// wait forever
+                tk.stop();// wait forever
             }
             
             if (ep->stateGet() == Endpoint2::ScheduledForRemoval)
@@ -1354,5 +1354,16 @@ int Endpoint2::getIdInEndpointVector()
     return idInEndpointVector;
 }
     
+// Andreu: Function to get the size stored in the output buffers
+size_t  Endpoint2::getOutputBufferSize()
+{
+    au::TokenTaker tt(&jobQueueSem);
+    size_t total = 0;
+    au::list<Packet>::iterator it_jobQueue;
+    for( it_jobQueue = jobQueue.begin() ; it_jobQueue != jobQueue.end() ; it_jobQueue++)
+        total += (*it_jobQueue)->getSize();
+    return total;
+};
+
 
 }

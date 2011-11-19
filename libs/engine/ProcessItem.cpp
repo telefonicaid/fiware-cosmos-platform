@@ -143,7 +143,7 @@ namespace engine
 		processManager->haltProcessItem(this);
 		
 		// Stop this thread in the stopper loop
-        tt.stop(0);
+        tt.stop();
         
         // come back to the running state
         state = running;

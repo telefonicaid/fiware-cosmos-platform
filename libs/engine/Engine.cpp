@@ -59,7 +59,6 @@ namespace engine
     
 	Engine::Engine()
 	{
-		sleeping_time_seconds = 0;                  // Init the sleep time variable
         running_element = NULL;                     // Initially, no running element
         
         token = new au::Token("EngineToken");          // General mutex to protect global variable engine and block the main thread if necessary
@@ -126,67 +125,63 @@ namespace engine
         }
         
 	}
-            
-    void Engine::getNextElement( )
+     
+    
+    EngineElement* Engine::intern_getNextElement()
     {
+        // Mutex protection
+        au::TokenTaker tt(token , "Engine::getNextElement");
 
+        // Compute current time
+        time_t now = time(NULL);
+        
+        if( now >= elements.front()->getThriggerTime() )
+        {
+            EngineElement* element = elements.front();
+            elements.pop_front();
+            return element;
+        }
+        
+        return NULL;
+    }
+    
+    bool Engine::isEmpty()
+    {
         // Mutex protection
         au::TokenTaker tt(token , "Engine::getNextElement");
         
+        return ( elements.size() == 0);
+        
+    }
+    
+    void Engine::getNextElement( )
+    {
         // Defauly values
         running_element = NULL;
-        sleeping_time_seconds = 0;
         
         while( true )
         {
-            
-            if( elements.size() == 0)
-            {
-                // No more things to do
-                LM_T( LmtEngine, ("SamsonEngine: No more elements to process in the engine. Quitting ..."));
-                return; // Return with default values
-            }
-            
             // Keep a total counter of loops
             counter++;  
             
-            time_t now = time(NULL);
-            
-            if( now >= elements.front()->getThriggerTime() )
+            // If no more elements, just return
+            if( isEmpty() )
             {
-                running_element = elements.front();
-                elements.pop_front();
-                
-                
+                LM_T( LmtEngine, ("SamsonEngine: No more elements to process in the engine. Quitting ..."));
+                return;
+            }
+            
+            // Try to get an element
+            EngineElement* element = intern_getNextElement();
+
+            if( element )
+            {
+                running_element = element;
                 return;
             }
             else
-            {
-                
-                time_t trigger_time = elements.front()->getThriggerTime();
-                
-                if( trigger_time > now )
-                    sleeping_time_seconds =  trigger_time - now;
-                else
-                    LM_X(1,("Time triggered is not greater than now..."));
-                
-                // LM_M(("Sleeping time in seconds %d" , _sleeping_seconds ));
-                
-                struct timeval tv;
-                struct timespec ts;
-                gettimeofday(&tv, NULL);
-                ts.tv_sec = tv.tv_sec + sleeping_time_seconds;
-                ts.tv_nsec = 0;
-                
-                // Sleep a bit
-                if( sleeping_time_seconds > 0 )
-                {
-                    tt.stop(sleeping_time_seconds);
-                }
-                else
-                    LM_W(("Error in sleeping time at Engine"));
-                
-            }
+                sleep(1);   // Sleep until the next element
+            
         }
     }
     
@@ -194,7 +189,7 @@ namespace engine
 	{
 		
 		LM_T( LmtEngine , ("Engine run"));
-
+        
 		counter = 0;            // Init the counter to elements managed by this run-time
         
 		while( true )
@@ -219,7 +214,7 @@ namespace engine
                 
                 // Compute the time spent in this element
                 time_t t = cronometer.diffTimeInSeconds();
-		// Goyo
+                // Goyo
                 if( t > 600 )
                     LM_W(("Task %s spent %d seconds. This should not be more than 600", running_element->getDescription().c_str() , (int)t ));
                 
@@ -240,7 +235,7 @@ namespace engine
                 
             }
             
-                
+            
             
 		}
 		
@@ -265,18 +260,17 @@ namespace engine
     // get xml information
     void Engine::getInfo( std::ostringstream& output)
 	{
-        
-        au::xml_open(output, "engine");
-
         // Mutex protection
         au::TokenTaker tt(token , "Engine::str");
         
+        au::xml_open(output, "engine");
+
         au::xml_simple(output , "loops" , counter );
         
         if( running_element )
             au::xml_simple( output , "running_element" , running_element->getDescription() );
         else
-            au::xml_simple( output , "running_element" , au::str("Sleeping %d seconds",sleeping_time_seconds ) );
+            au::xml_simple( output , "running_element" , "No running element" );
 
         au::xml_iterate_list( output , "elements" , elements );
         
@@ -360,18 +354,6 @@ namespace engine
         
     }
     
-    void getInfo( std::ostringstream& output )
-    {
-        au::xml_open(output, "engine_system");
-        
-        MemoryManager::shared()->getInfo( output );
-        DiskManager::shared()->getInfo( output );
-        ProcessManager::shared()->getInfo( output );
-        
-        size_t uptime = engine::Engine::shared()->uptime.diffTimeInSeconds();
-        au::xml_simple( output , "uptime" , uptime );
-        
-        au::xml_close(output, "engine_system");
-    }
+
     
 }

@@ -469,6 +469,28 @@ namespace au {
          it must have found a matching sub string */
         return (sp < source) ? NULL : sp ;
     }
+
+    std::string str_rate( size_t value , size_t time ,  std::string postLabel   )
+    {
+        if( time == 0)
+        {
+            if( value == 0)
+                return au::str( 0 , postLabel );
+            else
+                return "[Inf]" + postLabel;
+        }
+        
+        double _rate = (double) value / (double) time;
+        return au::str( (size_t) _rate , postLabel );
+        
+    }
+    
+    std::string str_rate( size_t value , size_t time  )
+    {
+        return str_rate(value, time , "");
+        
+    }
+    
     
 
 }

@@ -99,23 +99,20 @@ namespace samson {
         {
             // Check controller
             
-            size_t last_update = 0;
 
+            size_t max_time_update = SamsonSetup::shared()->getInt("controller.max_worker_disconnected_time");
+            
             for ( int w = 0 ; w < num_workers ; w++)
             {
                 size_t tmp_time = cronometer_worker_xml_info[w].diffTimeInSeconds();
-                if( tmp_time > last_update )
-                    last_update = tmp_time;
+                if( tmp_time > max_time_update )
+                {
+                    // If execessive time .... kill all the tasks
+                    LM_W(("Worker %d has been disconnected %lu seconds disconnected: Killed all tasks" , w ,tmp_time ));
+                    jobManager.killAll( au::str("Error since a worker has been %lu seconds disconnected", tmp_time ) );
+                }
             }
         
-            //LM_M(("Max time disconected... %lu", last_update));
-            
-            if( last_update > (size_t)SamsonSetup::shared()->getInt("controller.max_worker_disconnected_time") )
-            {
-                // If execessive time .... kill all the tasks
-                LM_W(("Killed all task since there is a worker that has been %lu seconds disconnected" , last_update ));
-                jobManager.killAll( au::str("Error since a worker has been %lu seconds disconnected", last_update ) );
-            }
         }
         else
             LM_X(1,("Unexpected notification channel at SamsonController (%s)" , notification->getName() ));
@@ -159,6 +156,7 @@ namespace samson {
                     if( packet->message->has_info() )
                     {
                         worker_xml_info[workerId] = packet->message->info();
+                        // reset cronometer
                         cronometer_worker_xml_info[workerId].reset();
                     }
 				}
@@ -587,7 +585,7 @@ namespace samson {
         engine::Engine::shared()->getInfo( output );
         
         // Engine system
-        engine::getInfo(output);
+        samson::getInfoEngineSystem(output , network);
         
         // Modules manager
         ModulesManager::shared()->getInfo( output );

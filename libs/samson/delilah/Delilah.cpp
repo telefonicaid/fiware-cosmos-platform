@@ -516,10 +516,7 @@ namespace samson {
 		DelilahComponent *c = components.findInMap( id );
         
         if( !c )
-        {
-            LM_M(("No component found for id:%lu", id));
             return false;
-        }
         
 		return( !c->isComponentFinished() );
         
@@ -586,7 +583,7 @@ namespace samson {
         engine::Engine::shared()->getInfo( output );
 
         // Engine system
-        engine::getInfo(output);
+        samson::getInfoEngineSystem(output, network);
         
         // Modules manager
         ModulesManager::shared()->getInfo( output );
@@ -613,7 +610,7 @@ namespace samson {
     
 #define LS_QUEUES_FIELDS_VERBOSE_VERBOSE "/name,t=name,left /block_info/num_blocks,t=#Blocks,format=uint64 /block_info/size,title=size,format=uint64 /block_info/size_on_memory^/block_info/size,format=per,t=on_memory /block_info/size_on_disk^/block_info/size,format=per,t=on_disk /block_info/size_locked^/block_info/size,format=per,t=locked  /block_info/min_time_diff,f=time,t=oldest /block_info/max_time_diff,f=time,t=earliest /num_divisions,t=#div,uint64 /block_info/num_divisions,t=#div"
     
-#define ENGINE_SHOW_COMMAND "info_command -delilah -worker -controller //engine_system /process_manager/num_running_processes^/process_manager/num_processes,t=process,format=per /memory_manager/used_memory^/memory_manager/memory,t=memory,format=per  /disk_manager/num_pending_operations+/disk_manager/num_running_operations,t=disk,f=uint64"
+#define ENGINE_SHOW_COMMAND "info_command -delilah -worker -controller //engine_system  /uptime,title=up_time,f=time /process_manager/num_running_processes,t=#cores /process_manager/num_processes,t=#max_cores  /memory_manager/used_memory,t=used_memory,format=uint64 /memory_manager/memory,t=memory,format=uint64  /disk_manager/num_pending_operations,t=disk_ops,f=uint64 -small_title"
 
 
 #define LS_STREAM_OPERATIONS "info_command -worker //stream_operation /name,t=name,left /inputs,t=inputs /outputs,t=outputs /operation,t=operation,left "

@@ -11,7 +11,7 @@ SET( STATIC_LIBS
      pa
      dl
      pthread
-     readline
+     edit
      curses
 )
 

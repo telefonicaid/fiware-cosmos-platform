@@ -94,7 +94,7 @@ SET (LIBS
 	z
 	pa 
 	lm 
-	readline 
+	edit 
 	pthread
 	protobuf
 	${COMMON_SAMSON_LIBS}

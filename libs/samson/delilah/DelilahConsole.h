@@ -13,8 +13,6 @@
 
 #include <sstream>                  // std::ostringstream
 #include <time.h>
-#include <readline/readline.h>
-#include <readline/history.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>

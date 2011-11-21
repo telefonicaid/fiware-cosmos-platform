@@ -12,7 +12,7 @@ SET( STATIC_LIBS
      samsonCommon
      protobuf
      pthread
-     readline
+     edit
      au
      dl
      lm

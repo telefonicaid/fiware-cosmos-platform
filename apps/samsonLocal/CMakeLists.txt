@@ -32,7 +32,7 @@ SET( STATIC_LIBS
 	protobuf
 	dl
 	pthread
-	readline
+	edit
 	curses
 	${COMMON_SAMSON_LIBS}
 )

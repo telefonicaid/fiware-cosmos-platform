@@ -29,7 +29,7 @@ using namespace mongo;
 *
 * definitions - 
 */ 
-#define MAXUSER 40000000
+#define MAXUSER 10000000
 
 
 
@@ -257,7 +257,7 @@ void dbQuery(void)
 		int                                  hits;
 		std::auto_ptr<mongo::DBClientCursor> cursor;
 
-		userId = 666666666 + rand() % 10000000;
+		userId = 666666666 + rand() % MAXUSER;
 
 		if (strcmp(collection, "History") == 0)		  
 			cursor = mdbConnection->query(dbAndColl, QUERY("I" << userId));
@@ -389,7 +389,7 @@ void dbUpload(int kvs, bool oneshot)
 		{
 			mongo::BSONObj  record;
 
-			user = rand() % MAXUSER;
+			user = 666666666 + rand() % MAXUSER;
 
 			LM_D(("I:%d, P:%d, T:%d", user, position, timestamp));
 			if (strcmp(collection, "History") == 0)

@@ -111,7 +111,7 @@ Status UnhelloedEndpoint::msgTreat2(Packet* packetP)
 				ep->send(p);
 			}
 		}
-		else if ((samson::Endpoint2::Type) helloP->type == Worker)
+		else if (((samson::Endpoint2::Type) helloP->type == Worker) || ((samson::Endpoint2::Type) helloP->type == Setup))
 		{
 			LM_T(LmtUnhelloed, ("Time to update corresponding Worker endpoint and remove myself ..."));
 			ep = epMgr->lookup((samson::Endpoint2::Type) helloP->type, host);

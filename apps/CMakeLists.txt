@@ -19,6 +19,9 @@ if (HAVE_KDCHART)
   #ADD_SUBDIRECTORY(samsonTopicMonitor)
 endif (HAVE_KDCHART)
 
+# Sandbox...
+ADD_SUBDIRECTORY(samsonTest)
+
 # Auxiliar apps
 ADD_SUBDIRECTORY(aux)
 

@@ -45,7 +45,7 @@ dependencylist()
     if [ -f depends.txt ]; then
         for needed_module in `cat depends.txt`
         do
-            echo -n ", $needed_module (=$version)" >> deb_module_list.$$
+            echo -n ", samson-$needed_module (=$version)" >> deb_module_list.$$
         done
     fi
     cat deb_module_list.$$

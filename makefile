@@ -196,6 +196,7 @@ set_ssm_linux:
 	sudo sysctl -w kernel.shmmax=64000000
 
 rpm: release modules man
+	rm -rf package/rpm
 	scripts/samsonRpm $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	scripts/samsonModuleDependencies
 	cd modules/cdr;                   ../../scripts/samsonModuleRpm cdr $(SAMSON_VERSION) $(SAMSON_RELEASE)
@@ -214,6 +215,7 @@ rpm: release modules man
 	# cd modules/sna_light;             ../../scripts/samsonModuleRpm sna_light $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	cd modules/mob2;                 ../../scripts/samsonModuleRpm mob2 $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	cd modules/passive_location;     ../../scripts/samsonModuleRpm passive_location $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/mobility;     ../../scripts/samsonModuleRpm mobility $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	cd modules/txt_md;               ../../scripts/samsonModuleRpm txt_md $(SAMSON_VERSION) $(SAMSON_RELEASE)
 
 publish_rpm: rpm
@@ -224,6 +226,7 @@ publish_rpm: rpm
 # the package can be generated. Using SAMSON_HOME we can override
 # the default install location so as to not trash a live installation
 deb: release modules man
+	rm -rf package/deb
 	scripts/samsonDeb $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	scripts/samsonDebDev $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	scripts/samsonDebDocs $(SAMSON_VERSION) $(SAMSON_RELEASE)
@@ -243,6 +246,7 @@ deb: release modules man
 	cd modules/urlbenchmark;         ../../scripts/samsonModuleDeb urlbenchmark $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	cd modules/mob2;                 ../../scripts/samsonModuleDeb mob2 $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	cd modules/passive_location;     ../../scripts/samsonModuleDeb passive_location $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/mobility;     ../../scripts/samsonModuleDeb mobility $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	cd modules/txt_md;               ../../scripts/samsonModuleDeb txt_md $(SAMSON_VERSION) $(SAMSON_RELEASE)
 
 man: release

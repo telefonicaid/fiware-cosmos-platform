@@ -37,19 +37,40 @@ PACKAGE_DIR=${BUILD_ROOT}/rpm/scratch/$rdir
 # Generate a list of module dependencies needed to install this module
 dependencylist()
 {
-    echo -n "Requires: samson = $version, samson-devel = $version" >> rpm_module_list.$$
+    echo -n "Requires: samson = $version" >> rpm_module_list.$$
     # package_deps contains a list of external dependencies, e.g. mongodb needed
     # to ensure the correct functioning of the module
     if [ -f package_deps ]; then
         for needed_module in `cat package_deps`
         do
-            echo -n ", $needed_module" >> deb_module_list.$$
+            echo -n ", $needed_module" >> rpm_module_list.$$
         done
     fi
     if [ -f depends.txt ]; then
         for needed_module in `cat depends.txt`
         do
             echo -n ", samson-$needed_module = $version" >> rpm_module_list.$$
+        done
+    fi
+    cat rpm_module_list.$$
+    rm rpm_module_list.$$
+}
+
+develdependencylist()
+{
+    echo -n "Requires: samson-devel = $version" >> rpm_module_list.$$
+    # package_deps contains a list of external dependencies, e.g. mongodb needed
+    # to ensure the correct functioning of the module
+    if [ -f package_deps ]; then
+        for needed_module in `cat package_deps`
+        do
+            echo -n ", $needed_module-devel" >> rpm_module_list.$$
+        done
+    fi
+    if [ -f depends.txt ]; then
+        for needed_module in `cat depends.txt`
+        do
+            echo -n ", samson-$needed_module-devel = $version" >> rpm_module_list.$$
         done
     fi
     cat rpm_module_list.$$
@@ -103,10 +124,18 @@ echo                                                         >> $BUILD_ROOT/rpm/
 echo "%files"                                                >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%defattr(-, samson, samson, -)"                        >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "/opt/samson/modules/lib$module.so"                     >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo "/opt/samson/include/samson/modules/$module/"'*.h'      >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%changelog"                                            >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
-
+echo "%package devel"                           >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "Summary: Header files needed to develop with the samson-${module} module."  >> $BUILD_ROOT/rpm/SPECS/$specfile 
+echo "Group: Applications/Engineering"            >> $BUILD_ROOT/rpm/SPECS/$specfile
+develdependencylist                                               >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo                                     >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "%description devel"                               >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "Header files needed to develop with the samson-${module} module."                    >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "%files devel"                    				>> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "%defattr(-, samson, samson, -)"                        >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "/opt/samson/include/samson/modules/$module/"'*.h'      >> $BUILD_ROOT/rpm/SPECS/$specfile
 
 
 #
@@ -135,4 +164,4 @@ if [ ! -d $BUILD_ROOT/package/rpm/ ];
 then
     mkdir -p $BUILD_ROOT/package/rpm
 fi
-mv $BUILD_ROOT/rpm/RPMS/$arch/samson-$module-$version-$release.$arch.rpm $BUILD_ROOT/../../package/rpm/
+mv $BUILD_ROOT/rpm/RPMS/$arch/samson-$module*$version-$release.$arch.rpm $BUILD_ROOT/../../package/rpm/

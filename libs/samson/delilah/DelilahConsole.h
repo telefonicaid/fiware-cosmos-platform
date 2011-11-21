@@ -7,6 +7,7 @@
 *
 * DESCRIPTION			   Console terminal for delilah
 *
+* Portions Copyright (c) 1997 The NetBSD Foundation, Inc. All rights reserved
 */
 #include <cstdlib>				// atexit
 
@@ -17,8 +18,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
-#include <readline/readline.h>
-#include <readline/history.h>
+#include <editline/readline.h>
 #include <algorithm>
 
 #include "logMsg/logMsg.h"				

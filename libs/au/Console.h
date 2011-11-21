@@ -16,7 +16,9 @@
  * 
  * To run the console, you have the bloquing "runConsole" method. 
  *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
+ * COPYRIGHT       Copyright 2011 Andreu Urruela. All rights reserved.
+ *
+ * Portions Copyright (c) 1997 The NetBSD Foundation, Inc. All rights reserved
  *
  * ****************************************************************************/
 
@@ -33,8 +35,9 @@
 #include "au/Lock.h"             /* Lock                            */
 #include "au/Token.h"                   // au::Token
 #include <stdio.h>
-#include <readline/readline.h>
-#include <readline/history.h>
+
+#include <editline/readline.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <vector>

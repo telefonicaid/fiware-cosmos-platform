@@ -7,6 +7,7 @@
  *
  * DESCRIPTION			    Monitorization pannel for delilah
  *
+ * Portions Copyright (c) 1997 The NetBSD Foundation, Inc. All rights reserved
  */
 
 #include <cstdlib>                      // atexit
@@ -17,8 +18,7 @@
 #include <errno.h>
 #include <algorithm>
 
-#include <readline/readline.h>
-#include <readline/history.h>
+#include <editline/readline.h>
 
 #include "logMsg/logMsg.h"				// LM_M
 

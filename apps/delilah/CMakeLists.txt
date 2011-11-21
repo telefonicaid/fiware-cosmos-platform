@@ -13,7 +13,7 @@ SET (STATIC_LIBS
      pthread
      dl
      curses
-     readline
+     edit
      samsonNetwork
      samsonStream
      samsonModule

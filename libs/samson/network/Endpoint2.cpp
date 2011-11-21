@@ -216,7 +216,7 @@ const char* Endpoint2::typeName(Type type)
 	case Supervisor:     return "Supervisor";
 	case Delilah:        return "Delilah";
 	case Killer:         return "Killer";
-	case Setup:          return "Setup";
+	case Starter:        return "Starter";
 	case Listener:       return "Listener";
 	case Sender:         return "Sender";
 	case CoreWorker:     return "CoreWorker";
@@ -1084,9 +1084,9 @@ Status Endpoint2::msgTreat(void)
 		if (header.type == Message::Msg)
 			helloSend(Message::Ack);
 
-		if ((epMgr->me->type == Spawner) || (epMgr->me->type == Setup) )
+		if ((epMgr->me->type == Spawner) || (epMgr->me->type == Starter) )
 		{
-			LM_T(LmtThreads, ("I'm a Spawner/Controller/Setup - I don't use sender/reader threads!"));
+			LM_T(LmtThreads, ("I'm a Spawner/Controller/Starter - I don't use sender/reader threads!"));
 			delete packetP;
 			return OK;
 		}

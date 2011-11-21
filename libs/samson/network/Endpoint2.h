@@ -83,7 +83,7 @@ public:
 		Controller   = 2, // Must be the same value as libs/common/Process.h:PtController
 		Spawner,
 		Delilah,
-		Setup,
+		Starter,
 		Supervisor,
 		Killer,
 		Listener,

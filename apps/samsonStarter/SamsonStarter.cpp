@@ -21,7 +21,7 @@
 */
 SamsonStarter::SamsonStarter()
 {
-	networkP = new samson::Network2( samson::Endpoint2::Setup );
+	networkP = new samson::Network2(samson::Endpoint2::Starter);
 }
 
 

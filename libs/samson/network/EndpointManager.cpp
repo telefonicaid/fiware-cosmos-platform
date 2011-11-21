@@ -163,7 +163,7 @@ static Process* platformProcessLookup(HostMgr* hostMgr, ProcessVector* procVec, 
 	case Endpoint2::Spawner:       break;
 	case Endpoint2::Delilah:       initDelilah(controllerIp);    break;
 	case Endpoint2::Supervisor:    initSupervisor();             break;
-	case Endpoint2::Setup:         initSetup();                  break;
+	case Endpoint2::Starter:       initStarter();                  break;
 
     default:
 		LM_X(1, ("The endpoint type '%s' cannot have an Endpoint Manager", Endpoint2::typeName(type)));
@@ -395,9 +395,9 @@ void EndpointManager::initSupervisor(void)
 
 /* ****************************************************************************
 *
-* initSetup - 
+* initStarter - 
 */
-void EndpointManager::initSetup(void)
+void EndpointManager::initStarter(void)
 {
 	// LM_W(("Nothing done here, not sure if anything is needed ..."));
 }
@@ -704,9 +704,9 @@ Endpoint2* EndpointManager::indexedGet(unsigned int ix)
 
 /* ****************************************************************************
 *
-* setupAwait - 
+* starterAwait - 
 */
-Status EndpointManager::setupAwait(void)
+Status EndpointManager::starterAwait(void)
 {
 	Status             s;
 	Message::Header    header;
@@ -717,14 +717,14 @@ Status EndpointManager::setupAwait(void)
 	LM_TODO(("Instead of all this, perhaps I can just start the spawner and treat the messages in SamsonSpawner::receive ... ?"));
 
 	if (listener == NULL)
-		LM_RE(Error, ("Cannot await the setup to arrive if I have no Listener ..."));
+		LM_RE(Error, ("Cannot await the starter to arrive if I have no Listener ..."));
 
-	LM_T(LmtSetup, ("Awaiting samsonSetup to connect and pass the Process Vector"));
+	LM_T(LmtStarter, ("Awaiting samsonStarter to connect and pass the Process Vector"));
 	while (1)
 	{
 		UnhelloedEndpoint* ep;
 
-		LM_T(LmtSetup, ("Await FOREVER for an incoming connection"));
+		LM_T(LmtStarter, ("Await FOREVER for an incoming connection"));
 		if (listener->msgAwait(-1, -1, "Incoming Connection") != 0)
 			LM_X(1, ("Endpoint2::msgAwait error"));
 
@@ -742,10 +742,10 @@ Status EndpointManager::setupAwait(void)
 		}
 
 		
-		// Is the newly connected peer a 'samsonSetup' ?
-		if (ep->type != Endpoint2::Setup)
+		// Is the newly connected peer a 'samsonStarter' ?
+		if (ep->type != Endpoint2::Starter)
 		{
-			LM_E(("The incoming connection was from a '%s' (only Setup allowed)", ep->typeName()));
+			LM_E(("The incoming connection was from a '%s' (only Starter allowed)", ep->typeName()));
 			remove(ep);
 			continue;
 		}
@@ -785,7 +785,7 @@ Status EndpointManager::setupAwait(void)
             }
 			else if (header.code == Message::ProcessList)
 			{
-				LM_T(LmtSetup, ("Got a ProcessList, and that's OK, but I have nothing ... Let's Ack with NO DATA and continue to wait for a Process Vector ..."));
+				LM_T(LmtStarter, ("Got a ProcessList, and that's OK, but I have nothing ... Let's Ack with NO DATA and continue to wait for a Process Vector ..."));
 				ep->ack(Message::ProcessList);
 			}
 			else
@@ -811,13 +811,13 @@ Status EndpointManager::setupAwait(void)
 		ep->ack(header.code);
 
 		if ((s = ep->msgAwait(10, 0, "Connection Closed")) != OK)
-			LM_W(("All OK, except that samsonSetup didn't close connection in time. msgAwait(): %s", status(s)));
+			LM_W(("All OK, except that samsonStarter didn't close connection in time. msgAwait(): %s", status(s)));
 		else if ((s = ep->receive(&header, &dataP, &dataLen, packetP)) != ConnectionClosed)
-			LM_W(("All OK, except that samsonSetup didn't close connection when it was supposed to. receive(): %s", status(s)));
+			LM_W(("All OK, except that samsonStarter didn't close connection when it was supposed to. receive(): %s", status(s)));
 
-		show("Before removing samsonSetup");
+		show("Before removing samsonStarter");
 		remove(ep);
-		show("After removing samsonSetup", true);
+		show("After removing samsonStarter", true);
 		return OK;
 	}
 }

@@ -98,11 +98,11 @@ public:
 	void               initController();
 	void               initDelilah(const char* controllerIp);
 	void               initSupervisor();
-	void               initSetup();
+	void               initStarter();
 
 	int                procVecSet(ProcessVector* _procVec, bool save = true);
 	ProcessVector*     procVecGet(void);
-	Status             setupAwait(void);
+	Status             starterAwait(void);
 
 	void               timeout(void);
 	void               periodic(void);

@@ -167,7 +167,7 @@ void SamsonSpawner::init()
 	networkP->epMgr->procVecSet(pv);
 	if (pv == NULL)
 	{
-		networkP->epMgr->setupAwait();
+		networkP->epMgr->starterAwait();
 		
 		LM_T(LmtProcessVector, ("************* SAVING Process Vector"));
 		platformProcessesSave(networkP->epMgr->procVecGet());

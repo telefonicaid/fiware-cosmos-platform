@@ -12,7 +12,6 @@ echo $CONTROLLER_IP
 
 
 # Running inside build/testing
-samsonLocal -working . -f test_1GB_stream_commands.txt >test_1GB_stream_stdout
 if [ -n "${CONTROLLER_IP:+x}" ]; then
         echo "Environment variable CONTROLLER_IP defined to: " $CONTROLLER_IP > test_1GB_stream_stdout
         if [ $CONTROLLER_IP = "localhost" ]; then

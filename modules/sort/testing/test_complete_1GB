@@ -13,7 +13,6 @@ echo "Generating input file..."
 ./generator 1000000000 > data_1GB.txt
 
 # Running inside build/testing
-samsonLocal -working . -f test_complete_1GB_commands.txt >test_complete_1GB_stdout
 if [ -n "${CONTROLLER_IP:+x}" ]; then
         echo "Environment variable CONTROLLER_IP defined to: " $CONTROLLER_IP > test_complete_1GB_stdout
         if [ $CONTROLLER_IP = "localhost" ]; then

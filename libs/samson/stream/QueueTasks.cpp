@@ -126,7 +126,7 @@ namespace samson {
             // Get the operation
             Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation );
             
-            // Type of inputs ( for slecting key-values )
+            // Type of inputs ( for selecting key-values )
             std::vector<KVFormat> inputFormats =  operation->getInputFormats();
             
             if( inputFormats.size() != 1 )
@@ -187,7 +187,7 @@ namespace samson {
                         if( ( hg >= range.hg_begin ) && ( hg < range.hg_end) )
                         {
                             
-                            //LM_M(("Stream Mapping a block of size %s hasg group %d %s ", au::str( (*b)->getSize() ).c_str() , hg , info[hg].str().c_str() ));
+                            //LM_M(("Stream Mapping a block of size %s hash group %d %s ", au::str( (*b)->getSize() ).c_str() , hg , info[hg].str().c_str() ));
                             
                             inputVector.prepareInput( info[hg].kvs );
                             inputVector.addKVs( 0 , info[hg] , data );
@@ -225,7 +225,7 @@ namespace samson {
             // Get the operation
             Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation );
 
-            // Type of inputs ( for slecting key-values )
+            // Type of inputs ( for selecting key-values )
             std::vector<KVFormat> inputFormats =  operation->getInputFormats();
             
             if( inputFormats.size() != 1 )
@@ -345,11 +345,11 @@ namespace samson {
             int channel;        // Input channel associated to this block
             int current_hg;     // Current hash-group
             
-            char *data;         // Pointer used to acess next data
+            char *data;         // Pointer used to access next data
             
             BlockReader( Block* block , int _channel ) :  file( block->buffer->getData() )
             {
-                // Asigned channel
+                // Assigned channel
                 channel = _channel;
 
                 // We start always at hash-group "0"
@@ -366,7 +366,7 @@ namespace samson {
                 
                 while( current_hg < hg )
                 {
-                    //LM_M(("Skiping %lu bytes hg:%d->%d", info[current_hg].size , current_hg , hg));
+                    //LM_M(("Skipping %lu bytes hg:%d->%d", info[current_hg].size , current_hg , hg));
                     data += file.info[current_hg].size; // Skip data of this hash-group
                     current_hg++;
                 }

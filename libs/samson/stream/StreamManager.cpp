@@ -315,7 +315,7 @@ namespace samson {
         }
         
 
-        // Get information for monitorization
+        // Get information for monitoring
         void StreamManager::getInfo( std::ostringstream& output)
         {
             output << "<stream_manager>\n";

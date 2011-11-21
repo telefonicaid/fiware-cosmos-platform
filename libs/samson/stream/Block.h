@@ -60,6 +60,8 @@ namespace samson {
 
             std::set< BlockList* > lists;   // List where this block is contained
             
+            int requests;					// Number of times block has been detected as "not in memory" when scheduling a task;
+
             typedef enum
             {
                 on_memory,      // Initial state
@@ -143,7 +145,7 @@ namespace samson {
             // Debug string    
             std::string str();
 
-            // Xmlk version of the info
+            // Xml version of the info
             void getInfo( std::ostringstream& output);
             
             // Accessing information

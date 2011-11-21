@@ -138,10 +138,10 @@ namespace samson {
             void extractFrom( BlockList* list , size_t max_size );
             bool extractBlockFrom( BlockList *list );
             
-            // Get information for monitorization
+            // Get information for monitoring
             void getInfo( std::ostringstream& output);
             
-            // string containing all block_ids ( only debuggin )
+            // string containing all block_ids ( only debugging )
             std::string strBlockIds();
             
             // Check if all the blocks are contained in this range
@@ -152,7 +152,7 @@ namespace samson {
             void removeBlockIdsAt( std::set<size_t> &block_ids );
             bool isAnyBlockIncludedIn( std::set<size_t> &block_ids);
             
-            //Debuggin str
+            //Debugging str
             std::string strRanges();
 
             

@@ -169,7 +169,7 @@ namespace samson {
             block_info.getInfo(output);
 
             
-            au::xml_simple( output , "enviromemnt" , environment.getEnvironmentDescription() );
+            au::xml_simple( output , "environment" , environment.getEnvironmentDescription() );
             
             // Information about simple rate
             au::xml_single_element( output , "rate_kvs" , &simpleRate_kvs );
@@ -301,8 +301,8 @@ namespace samson {
             // Schedule new Block Break operations if necessary
             if( format == KVFormat("txt","txt") )
 			{
-                //LM_M(("Queue %s nor revied since format %s= txt" , name.c_str() , format.str().c_str() ));
-                return;  // No necessry operations for txt elements
+                //LM_M(("Queue %s nor revised since format %s= txt" , name.c_str() , format.str().c_str() ));
+                return;  // No necessary operations for txt elements
 			}
             
             // Set the minimum number of divisions ( when possible )
@@ -332,7 +332,7 @@ namespace samson {
                 
                 streamManager->queueTaskManager.add( task );
                 
-                //LM_M(("Running a block-break operation for queue %s %s" , name.c_str() , input->strBlockIds().c_str() ));                     
+                LM_T(LmtBlockManager,("Running a block-break operation for queue %s %s" , name.c_str() , input->strBlockIds().c_str() ));
             }
             
             /*
@@ -398,10 +398,11 @@ namespace samson {
                         if( num_blocks  > 0 )
                             if (( max_size > 0) && ( total_size > max_size ))
                                 return;
-                        
+                        LM_T(LmtBlockManager,("Adds block to be partitioned id=%lu, num_divisions:%d, total_size:%lu, max_size:%lu" , block->getId(), num_divisions, total_size, max_size ));
                         lock_block_ids.addId( block->getId() );
                         
                         outputBlockList->add( *b );
+                        num_blocks++;
                     }
                     
                 }

@@ -34,7 +34,8 @@ namespace samson {
             int num_reading_operations;     // Number of reading operations ( high priority blocks )
             
             size_t memory;                  // Total amount of memory used by all blocks
-            size_t max_memory;              // Maximum amount of memory to be used
+            size_t max_memory;              // Maximum amount of memory to always kept
+            size_t max_memory_abs;          // Maximum amount of memory to be used
             
         public:
 

@@ -48,14 +48,14 @@ namespace engine {
     {
         //au::TokenTaker tt( &token );
         
-        LM_T(LmtEngineNotification, ("Remove completelly object %lu", o  , o->engine_id  ));
+        LM_T(LmtEngineNotification, ("Remove completely object %lu", o  , o->engine_id  ));
         objects.extractFromMap( o->engine_id );
 
         // Remove from the vector of objects by name
         if( o->engine_name )
             objects_by_name.extractFromMap(o->engine_name);
         
-        // Remove from all constans listeners
+        // Remove from all constants listeners
         au::map< const char* , IdsCollection , au::strCompare >::iterator c;
         for ( c = channels.begin() ; c != channels.end() ; c++)
             c->second->remove( o->engine_id );

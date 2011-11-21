@@ -96,7 +96,7 @@ namespace samson
 		}
 	};
 	
-    // Get information for monitorization
+    // Get information for monitoring
     void ControllerTaskManager::getInfo( std::ostringstream& output)
 	{
         au::xml_open(output , "controller_task_manager");

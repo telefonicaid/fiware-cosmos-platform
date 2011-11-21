@@ -230,7 +230,7 @@ namespace samson {
 
 		if( commandLine.isArgumentValue(0, "remove_all" , "remove_all" ) )
 		{
-			// remove completelly queues
+			// remove completely queues
 			queues.clearMap();
             
 			// Clear the total counter of data

@@ -1,6 +1,8 @@
 
 #include <sstream>       
 
+#include "logMsg/logMsg.h"				// LM_M
+
 #include "au/file.h"                                // au::sizeOfFile
 
 #include "engine/ProcessManager.h"                  // engine::ProcessManager
@@ -56,6 +58,8 @@ namespace samson {
             
             // Add automatically to the Block Manager
             BlockManager::shared()->insert( block );   
+
+            LM_T(LmtBlockManager, ("BlockList::createBlock created block: '%s'", block->str().c_str()));
          
             return block;
         }
@@ -88,7 +92,7 @@ namespace samson {
             }
             
             
-            // Add block as allways
+            // Add block as always
             Block *block = new Block( id , fileSize , &header );
 
             // Insert this block in my list
@@ -102,6 +106,8 @@ namespace samson {
             
             fclose( file );
             
+            LM_T(LmtBlockManager, ("BlockList::createBlock created block: '%s'", block->str().c_str()));
+
             return block;
         }
         
@@ -282,7 +288,10 @@ namespace samson {
 
                 if( num_blocks  > 0 )
                     if (( max_size > 0) && ( total_size > max_size ))
+                    {
+                    	LM_T(LmtBlockManager,("Stop extractFrom list '%s' at block %s with (total_size(%lu) > max_size(%lu)) after %d blocks", list->name.c_str(), nextBlock->str().c_str(), total_size, max_size, num_blocks));
                         return;
+                    }
                 
                 add( nextBlock );
                 list->remove( nextBlock );
@@ -307,7 +316,12 @@ namespace samson {
             std::list<Block*>::iterator b;
             for ( b = blocks.begin() ; b != blocks.end() ; b++ )
                 if( ! (*b)->isContentOnMemory() )
-                    return false;
+                {
+                	LM_T(LmtBlockManager,("BlockList block id=%lu not in memory with %d requests", (*b)->getId(), (*b)->requests));
+                	(*b)->requests += 25;
+                	return false;
+                }
+
             
             return true;
         }

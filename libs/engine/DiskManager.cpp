@@ -116,9 +116,12 @@ namespace engine
 		
 		pthread_mutex_unlock(&mutex);
 		
+		LM_T( LmtDisk , ("DiskManager::finishDiskOperation erased and ready to send notification on file:%s", operation->fileName.c_str() ));
+
 		// Add a notification for this operation to the required target listener
         Notification *notification = new Notification( notification_disk_operation_request_response , operation , operation->listeners );
         notification->environment.copyFrom( &operation->environment );        // Recover the environment variables to identify this request
+        LM_T( LmtDisk , ("DiskManager::finishDiskOperation notification sent on file:%s and ready to share and checkDiskOperations", operation->fileName.c_str() ));
         Engine::shared()->notify(notification);    
 		
 		// Check if there are more operation to be executed

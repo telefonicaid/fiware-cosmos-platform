@@ -82,7 +82,7 @@ namespace samson
 		
         if( start == 0)
         {
-            // Add the main commands since it is the begining of the line
+            // Add the main commands since it is the beginning of the line
             op.addMainCommands();
             
             // Add all the operations
@@ -192,12 +192,12 @@ namespace samson
 
     const char* help_commands[][2] =                                            
     {                                                                           
-        { "info"                    ,   "Usage: info <xpath> [-limit tdeepth]\n\n"
-                                        "Tool used to query the general xml based monitorization. Used mainly for SAMSON debugging\n"
+        { "info"                    ,   "Usage: info <xpath> [-limit tdepth]\n\n"
+                                        "Tool used to query the general xml based monitoring. Used mainly for SAMSON debugging\n"
                                         "Example info //worker -limit 4\n" 
                                         "Inputs:\n"
-                                        "\t<xpath> Path in the xml document ( example //workerFor )\n"
-                                        "\tdeepth] Max depth int he xml tree\n"
+                                        "\t<xpath> Path in the xml document (example //workerFor)\n"
+                                        "\t[-limit tdepth] Max depth in the xml tree\n"
         },
         { "ls"                      ,   "Show a list of all the key-value sets (batch processing)" } ,                
         { "ls_local"                ,   "Show a list of current directory with relevant information about local data-sets" } ,                
@@ -207,7 +207,7 @@ namespace samson
         { "ls_modules"              ,   "Usage: ls_modules [name]\n\n"
                                         "Show a list of modules installed at controller, workers and delilah\n" 
                                         "Inputs:\n"
-                                        "\t[name] Optional name ( or first part of the name ) of a module to filter output\n"
+                                        "\t[name] Optional name (or first part of the name) of a module to filter output\n"
         } ,                
         { "rm"                      ,   "Usage: rm <set>\n\n"
                                         "Remove a key-value set (batch processing)" 
@@ -218,7 +218,7 @@ namespace samson
         { "clear"                   ,   "Usage: clear <set>\n\n"
                                         "Clear the content of a particular key-value set\n"
         },
-        { "ls_processes"            ,   "Shows a list with all the processes ( batch and stream ) running at workers"},
+        { "ls_processes"            ,   "Shows a list with all the processes (batch and stream) running at workers"},
 
         { "ls_operations"           ,   "Usage: ls_operations [op_name]\n\n"
                                         "Shows a list of available operations.\n"
@@ -251,9 +251,9 @@ namespace samson
                                         "\t[-f]            Flag to suppress the error if <set> already exists (with the same key-value types). If different key-value types, still error"
         },
         
-        { "sets"                    ,   "Enviroment variables are used to set some local properties at delilah that will be sent along with "
+        { "sets"                    ,   "Environment variables are used to set some local properties at delilah that will be sent along with "
                                         "all the command we sent to SAMSON platform. Use set and unset to define and remove these environment "
-                                        "variable. Note that thrird party software executed at SAMSON can use these values"
+                                        "variable. Note that third party software executed at SAMSON can use these values"
         },
         { "set"                     ,   "Usage: set <var> <value>\n\n"
                                         "Set environment variable <set> to value <value>\n" 
@@ -262,7 +262,7 @@ namespace samson
         { "unset"                   ,   "Usage: unset <var>\n\n"
                                         "Remove an environment variable\n"
                                         "Inputs:\n"
-                                        "\t<var> Name of the enviroment variable we want to remove.\n"
+                                        "\t<var> Name of the environment variable we want to remove.\n"
                                         "Type 'help sets' for more information about environment variables\n"
         },
         
@@ -277,9 +277,9 @@ namespace samson
         { "upload_data"             ,   "To upload a txt file to samson platform, follow these steps:\n"
                                         " * Create a txt data set with add command : add my_set -txt\n"
                                         " * Upload the content with upload command : upload my_local_file my_set\n\n"
-                                        "Once data is uploaded to the platform, several operations can be aplied for processing\n"
+                                        "Once data is uploaded to the platform, several operations can be applied for processing\n"
                                         "Try 'txt.parser_words my_set my_words -c' to transform this txt set into a binary one containing words\n\n"
-                                        "Any generated data-set ( txt or binary ) can be downloaded to a local directory with download command\n"
+                                        "Any generated data-set (txt or binary) can be downloaded to a local directory with download command\n"
                                         "Try download my_words local_my_words\n\n"
                                         "Finally, use samsonCat utility to visualize the content of these downloaded files.\n\n"
                                         "Type 'help add' , 'help upload' and 'help download' for help on individual commands\n"
@@ -288,14 +288,14 @@ namespace samson
                                         "Upload txt files to the platform (batch processing)" 
                                         "Inputs:\n"
                                         "\t<local_file_ir_directory>    Local txt file or directory containing txt files\n"
-                                        "\t<set>                        Name of the data set in SAMSON platform( create it with add -txt <set> )"    
+                                        "\t<set>                        Name of the data set in SAMSON platform (create it with add -txt <set>)"
                                         "Type 'help upload_data for more information about upload and download process\n"
         },
         { "download"                ,   "Usage: download  <set> <local_directory_name> [-force]\n\n"
                                         "Download the dataset from the platform to local directory\n" 
                                         "Inputs:\n"
-                                        "\t<local_directory_name>    Local name of the directory where files will be donwloadd\n"
-                                        "\t<set>                     Name of the data set in SAMSON platform( create it with add -txt <set> )\n"    
+                                        "\t<local_directory_name>    Local name of the directory where files will be downloaded\n"
+                                        "\t<set>                     Name of the data set in SAMSON platform (create it with add -txt <set>)\n"
                                         "\t[-force]                  Remove local directory if it exists\n"
                                         "Note: It is not necessary to create the directory. Delilah will do it for you\n",
         },
@@ -333,12 +333,12 @@ namespace samson
                                     "A new queue is generated with the contents of the operation's output\n"
                                     "Finally we can download contents of a queue to a local directory with...\n"
                                     " * pop <queue> <local_directory>\n"
-                                    "Use samsonCat to visualize contents of downloaded files\n"
+                                    "Use samsonCat to visualise contents of downloaded files\n"
             
         },
-        { "stream_processing"   , "Information about stream_processing comming soon..." 
+        { "stream_processing"   , "Information about stream_processing coming soon..."
         },
-        { "batch_processing"    , "Information about batch_processing comming soon..." 
+        { "batch_processing"    , "Information about batch_processing coming soon..."
         },
         
         { "ls_queues"               ,   "Usage: ls_queues [queue] [-v]\n\n"

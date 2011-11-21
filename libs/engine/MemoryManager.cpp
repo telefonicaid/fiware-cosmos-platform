@@ -99,7 +99,7 @@ namespace engine
 		//LM_M(("New memory buffer:%s, size:%lu, tag:%d, memory:%lu\n", b->str().c_str(), size, tag, _getUsedMemory()));
 		acum_memory += size;
 
-		//LM_M(("New memory buffer:%s, size:%lu, tag:%d, acum_memory:%lu\n", b->str().c_str(), size, tag, acum_memory));
+		LM_T(LmtMemory, ("New memory buffer:%s, size:%lu, tag:%d, acum_memory:%lu\n", b->str().c_str(), size, tag, acum_memory));
         
 		return b;
 	}	
@@ -122,7 +122,7 @@ namespace engine
         LM_T(LmtMemory, ("Dealloc buffer with max size %sbytes", au::str( b->getMaxSize() ).c_str() ) );
 		//LM_M(("destroying memory buffer:%s, memory:%lu\n", b->str().c_str(), _getUsedMemory()));
 		acum_memory -= b->getMaxSize();
-		//LM_M(("destroying memory buffer:%s, acum_memory:%lu\n", b->str().c_str(), acum_memory));
+		LM_T(LmtMemory, ("destroying memory buffer:%s, acum_memory:%lu\n", b->str().c_str(), acum_memory));
 		if (acum_memory < 0)
 		{
 			LM_W(("WARNING: memory track under 0 after destroying buffer:%s\n", b->str().c_str()));
@@ -146,7 +146,7 @@ namespace engine
         au::TokenTaker tk( &token );
         
         if( request->size > memory )
-            LM_X(-1,("Error managing memory: excesive memory request"));	
+            LM_X(-1,("Error managing memory: excessive memory request"));
         
         LM_T( LmtMemory , ("Adding memory request for %s" , au::str( request->size , "B" ).c_str() ));
         
@@ -178,7 +178,7 @@ namespace engine
 	// Function to check memory requests and notify using Engine if necessary
 	void MemoryManager::_checkMemoryRequests()
 	{
-        // Only used privatelly... no need to protect
+        // Only used privately... no need to protect
 		LM_T( LmtMemory , ("Checking memory requests Pending requests %u" , memoryRequests.size() ));
         
 		while( true )
@@ -189,23 +189,25 @@ namespace engine
             if( !r )
                 return;
 
-            //LM_M(("Cheking memory request with size %lu type percentadge %f "  , r->size , r->mem_percentadge ));
+            LM_T(LmtMemory, ("Checking memory request with size %lu type percentage %f "  , r->size , r->mem_percentadge ));
             
             if( r->mem_percentadge == 1.0 )
             {
-                // Extract the request properly
-                r = memoryRequests.extractFront();
-                if (!r )
-                    LM_X(1,("Internal error"));
+
 
                 
                 // Full memory request, it is granted if memory is bellow 100%
                 double memory_usage = _getMemoryUsage();
 
-                //LM_M(("memory usage %f"  , memory_usage ));
+                LM_T(LmtMemory, ("memory usage %f"  , memory_usage ));
                 
                 if( memory_usage < 1.0 )
                 {
+                    // Extract the request properly
+                    r = memoryRequests.extractFront();
+                    if (!r )
+                        LM_X(1,("Internal error"));
+
                     // Get the buffer
                     r->buffer = _newBuffer("Buffer from general request", r->size , 0 );   // By default ( tag == 0 )
                     
@@ -216,7 +218,7 @@ namespace engine
                 else
                     return;
                 
-                //LM_M(("Finish Cheking memory request 100%"));
+                //LM_M(("Finish Checking memory request 100%"));
 
             }
             else

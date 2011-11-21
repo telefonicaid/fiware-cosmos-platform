@@ -46,7 +46,7 @@ namespace samson {
             // Notifications
             void notify( engine::Notification* notification );
             
-            // Get information for monitorization
+            // Get information for monitoring
             void getInfo( std::ostringstream& output);
             
             // Return is there is activity

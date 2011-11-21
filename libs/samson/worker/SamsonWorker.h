@@ -97,7 +97,7 @@ namespace samson {
         // Notification from the engine about finished tasks
         void notify( engine::Notification* notification );
 
-        // Get information for monitorization
+        // Get information for monitoring
         void getInfo( std::ostringstream& output);
         
         // Log activity

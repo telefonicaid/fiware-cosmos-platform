@@ -67,13 +67,13 @@ namespace samson {
             // Number of divisions to meet ( block - break operations are scheduled if necessary ) 
             int num_divisions;
             
-            // Monitorization of the input rate
+            // Monitoring of the input rate
             au::SimpleRate simpleRate_kvs;
             au::SimpleRate simpleRate_size;
             
         public:
             
-            // List of blokcs contained in this queue
+            // List of blocks contained in this queue
             BlockList *list;
             
             // Constructor and destructor

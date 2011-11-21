@@ -93,7 +93,7 @@ namespace engine
         
     public:
         
-        // Get information for monitorization
+        // Get information for monitoring
         void getInfo( std::ostringstream& output);
         
     private:

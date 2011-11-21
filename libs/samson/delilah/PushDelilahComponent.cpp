@@ -98,6 +98,7 @@ namespace samson
     void PushDelilahComponent::requestMemoryBuffer()
     {
         // Add a memory request to be responded to me
+    	LM_M(("PushDelilahComponent::requestMemoryBuffer: Request size:%lu by %lu", 64*1024*1024, getEngineId()));
         engine::MemoryManager::shared()->add( new engine::MemoryRequest( 64*1024*1024 , 1.0 , getEngineId() ) );
     }
 
@@ -135,10 +136,11 @@ namespace samson
         if( notification->isName( notification_memory_request_response ) )
         {
             // New buffer to be used to send data to the workers
+        	LM_M(("PushDelilahComponent::notify: Received notification from memory request"));
             engine::MemoryRequest *memoryRequest = (engine::MemoryRequest *) notification->extractObject();
 
             if( !memoryRequest )
-                LM_X(1, ("Internal error: Memory request returnes without a buffer"));
+                LM_X(1, ("Internal error: Memory request returns without a buffer"));
 
             
             if ( !memoryRequest->buffer )
@@ -185,10 +187,17 @@ namespace samson
             delilah->network->sendToWorker( worker, packet);
             
             if( !dataSource->isFinish() )
+            {
+            	LM_M(("PushDelilahComponent::notify: Request a new MemoryBuffer"));
                 requestMemoryBuffer();  // Request the next element
+            }
             else
                 finish_process = true;  // Mark as finished
             
+        }
+        else
+        {
+        	LM_M(("PushDelilahComponent::notify: Received another type of notification"));
         }
         
     }

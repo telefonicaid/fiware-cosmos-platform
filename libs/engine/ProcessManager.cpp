@@ -98,7 +98,7 @@ namespace engine
             size_t working_size = item->working_size;
             int time_in_seconds = item->cronometer.getSeconds();
             
-            //LM_M(("Reported finish fo task '%s' in %d seconds with size %lu", name.c_str() , time_in_seconds , working_size ));
+            LM_T(LmtProcessManager, ("Reported finish to task '%s' in %d seconds with size %lu", name.c_str() , time_in_seconds , working_size ));
             au::SimpleRateCollection * simple_rate = rates.findOrCreate( name , name );
             simple_rate->push( working_size , time_in_seconds );
         }

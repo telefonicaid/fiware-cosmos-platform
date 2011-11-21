@@ -129,6 +129,7 @@ typedef enum TraceLevels
 	LmtDisk,                         // disk library	
 	LmtMemory,                       // memory library	
 	LmtProcessManager,
+	LmtBlockManager,
 
 	LmtModuleManager,                // Module Manager component
 	LmtOperations,                   // Operations organization (map & reduce level)

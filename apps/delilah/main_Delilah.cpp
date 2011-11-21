@@ -56,10 +56,10 @@ PaArgument paArgs[] =
 {
 	{ "-controller",       controller,           "CONTROLLER",       PaString, PaOpt, _i LOC, PaNL, PaNL, "controller IP:port"         },
 	{ "-memory",           &memory_gb,           "MEMORY",           PaInt,    PaOpt,      1,    1,  100, "memory in GBytes"           },
-	{ "-load_buffer_size", &load_buffer_size_mb, "LOAD_BUFFER_SIZE", PaInt,    PaOpt,     64,   64, 2048, "load buffer size in Mbytes" },
+	{ "-load_buffer_size", &load_buffer_size_mb, "LOAD_BUFFER_SIZE", PaInt,    PaOpt,     64,   64, 2048, "load buffer size in MBytes" },
 	{ "-f",                 commandFileName,     "FILE_NAME",        PaString, PaOpt,  _i "", PaNL, PaNL, "File with commands to run"  },
-	{ "-monitorization",    &monitorization,     "MONITORIZAITON",      PaBool,    PaOpt,  false, false,  true,  "Run monitorization tool"   },
-	{ "-command",           command,             "MONITORIZATION_COMMAND", PaString, PaOpt,  _i "overview", PaNL, PaNL, "Monitorization command"  },
+	{ "-monitorization",    &monitorization,     "MONITORIZAITON",      PaBool,    PaOpt,  false, false,  true,  "Run monitoring tool"   },
+	{ "-command",           command,             "MONITORIZATION_COMMAND", PaString, PaOpt,  _i "overview", PaNL, PaNL, "Monitoring command"  },
 
 	PA_END_OF_ARGS
 };
@@ -116,7 +116,7 @@ static const char* manSynopsis         = " [OPTION]";
 static const char* manShortDescription =  "delilah is the command-line client for SAMSON system\n";
 static const char* manDescription      =
     "\n"
-    "delilah is the command-line client to upload & download data, run processing commands and monitorice a SAMSON system.\n"
+    "delilah is the command-line client to upload & download data, run processing commands and monitor a SAMSON system.\n"
     "See pdf document about samson system to get more information about how to use delilah client"
     "\n";
 
@@ -154,7 +154,7 @@ int main(int argC, const char *argV[])
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 	
-    // Make sure this singlelton is created just once
+    // Make sure this singleton is created just once
     au::LockDebugger::shared();
 
 	samson::SamsonSetup::init("","");			// Load the main setup file
@@ -235,7 +235,7 @@ int main(int argC, const char *argV[])
 	if ( strcmp( commandFileName,"") != 0 )
 	{
         if( !delilahConsole )
-            LM_X(1, ("It is not valid to run monitorization with a commands file"));
+            LM_X(1, ("It is not valid to run monitoring with a commands file"));
         
 		FILE *f = fopen( commandFileName , "r" );
 		if( !f )
@@ -262,7 +262,7 @@ int main(int argC, const char *argV[])
                 
                 size_t id = delilahConsole->runAsyncCommand( line );
                 std::cerr << au::str("Processing: '%s' [ id generated %lu ]\n", line , id);
-                LM_M(("Processing: '%s' [ id generated %lu ]\n", line , id));
+		LM_M(("Processing: '%s' [ id generated %lu ]\n", line , id));
                 
                 if( id != 0)
                 {
@@ -276,9 +276,9 @@ int main(int argC, const char *argV[])
                         std::cerr << "Error: " << delilahConsole->errorMessage( id ) << "\n";
                         std::cerr << "Error running '" << line <<  "' at line " << num_line << "\n";
                         std::cerr << "Exiting...";
-                        
+
                         LM_E(("Error: %s",  delilahConsole->errorMessage( id ).c_str()));
-                        LM_E(("Error running '%s' at line %d\n", line, num_line));
+			LM_E(("Error running '%s' at line %d\n", line, num_line));
                         LM_E(("Exiting..."));
                     }
                     

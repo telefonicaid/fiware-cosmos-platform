@@ -102,7 +102,7 @@ static void serverIomRun(int listenFd)
 			if (endpoint->rFd != -1)
 			{
 				FD_SET(endpoint->rFd, &rFds);
-				LM_T(LmtSelect, ("select on fd %d", endpoint->rFd));
+				LM_T(LmtSelect, ("select on fd:%d", endpoint->rFd));
 				if (endpoint->rFd > listenFd)
 					max = endpoint->rFd;
 			}
@@ -112,7 +112,7 @@ static void serverIomRun(int listenFd)
 
 			LM_D(("calling select"));
 			fds = select(max + 1, &rFds, NULL, NULL, &tv);
-			LM_D(("select returned %d", fds));
+			LM_D(("select returned fd:%d", fds));
 		} while ((fds == -1) && (errno == EINTR));
 	
 		if (fds == -1)
@@ -297,7 +297,7 @@ int main(int argC, const char *argV[])
 		LM_T(LmtConnect, ("Connected to host '%s', port %d", host, port));
 	}
 
-	LM_T(LmtOpen, ("Opened fd %d - now run!", fd));
+	LM_T(LmtOpen, ("Opened fd:%d - now run!", fd));
 
 
 

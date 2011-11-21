@@ -247,7 +247,10 @@ namespace engine {
 			LM_T( LmtDisk , ("DiskManager: Opening file %s to write", fileName.c_str() ));
 			FILE *file = fopen( fileName.c_str() , "w" );
 			if ( !file )
+			{
+				LM_E(("Error opening file for writing, fileName:%s, errno:%d", fileName.c_str(), errno));
 				setError("Error opening file");
+			}
 			else
 			{
 				if( size > 0 )
@@ -259,14 +262,16 @@ namespace engine {
                         operation_time = DiskStatistics::timevaldiff( &start , &stop);
                     }
                     else
+                    {
+                    	LM_E(("Error writing data to file, fileName:%s, errno:%d", fileName.c_str(), errno));
                         setError("Error writing data to the file");
+                    }
                 }
                 else
                     operation_time = 0;
 
+				fclose(file);
 			}
-			
-			fclose(file);
 		}
 
 		if( type == DiskOperation::append )
@@ -274,7 +279,7 @@ namespace engine {
 			// Create a new file
 			
 			
-			LM_T( LmtDisk , ("DiskManager: Opening file %s to write", fileName.c_str() ));
+			LM_T( LmtDisk , ("DiskManager: Opening file %s to append", fileName.c_str() ));
 			FILE *file = fopen( fileName.c_str() , "a" );
 			if ( !file )
 				setError("Error opening file");
@@ -293,31 +298,38 @@ namespace engine {
                 }
                 else
                     operation_time = 0;
-                
+
+				fclose(file);
 			}
-			
-			fclose(file);
 		}
         
         
 		if( type == DiskOperation::read )
 		{
+			LM_T( LmtDisk , ("DiskManager: Opening file %s to read", fileName.c_str() ));
 
 			// Get the Read file from the Manager
             ReadFile *rf = diskManager->fileManager.getReadFile( fileName );
-            
-            LM_T( LmtDisk , ("DiskManager: Opening file %s to read", fileName.c_str() ));
-			
+
 			if( !rf->isValid() )
+			{
+				LM_E(("Internal error: Not valid read file %s" , fileName.c_str()));
 				setError( "Internal error: Not valid read file" );
+			}
 			else
 			{
                 if( rf->seek( offset ) )
+                {
+                	LM_E(("Error while seeking data from file %s" , fileName.c_str()));
                     setError( au::str("Error while seeking data from file %s" , fileName.c_str()));
+                }
 
                 
                 if( rf->read(read_buffer, size ) )
+                {
+                	LM_E(("Error while reading data from file %s" , fileName.c_str()));
                     setError( au::str("Error while reading data from file %s" , fileName.c_str()));
+                }
                 
 			}
             
@@ -356,7 +368,7 @@ namespace engine {
 		if( type == DiskOperation::remove)
 		{
 			
-			LM_T( LmtDisk , ("DiskManager: Removing file %s to read", fileName.c_str() ));
+			LM_T( LmtDisk , ("DiskManager: Removing file %s", fileName.c_str() ));
 			
 			// Remove the file
 			int c = ::remove( fileName.c_str() );
@@ -369,9 +381,9 @@ namespace engine {
         if( environment.get( destroy_buffer_after_write , "yes") == "yes" )
             destroyBuffer();
 		
+        LM_T( LmtDisk , ("DiskManager: Finished with file %s, ready to finishDiskOperation", fileName.c_str() ));
 		// Notify to the engine
 		diskManager->finishDiskOperation( this );
-        
 	}	
 	
 	void DiskOperation::destroyBuffer()

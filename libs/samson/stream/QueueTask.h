@@ -42,10 +42,10 @@ namespace samson {
             // Function executed just before task is deleted in the main thread
             virtual void finalize(StreamManager* streamManager){};
             
-            // Get information for monitorization
+            // Get information for monitoring
             void getInfo( std::ostringstream& output);
 
-            //  Set the input size to make sure ProcessItem can monitorize performance of this operation
+            //  Set the input size to make sure ProcessItem can monitor performance of this operation
             void setWorkingSize()
             {
                 // Note: We are consudering input form "input_0" since in update-state operations

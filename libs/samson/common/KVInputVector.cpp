@@ -85,7 +85,7 @@ namespace samson
 		kv  = NULL;
 		
 		max_num_kvs = 0;// Maximum number of kvs to be processes
-		num_kvs = 0;// Current numner of key-values pairs
+		num_kvs = 0;// Current number of key-values pairs
 		
 		valueSize = (DataSizeFunction *) malloc( sizeof( DataSizeFunction) * num_inputs );
         
@@ -111,7 +111,7 @@ namespace samson
 	{
 		int input = file.header->input;
 		
-		// Get the rigth size function
+		// Get the right size function
 		DataSizeFunction _valueSize = valueSize[input];
 		
 		// Get the pointer to data
@@ -151,7 +151,7 @@ namespace samson
 	
     void KVInputVector::addKVs(int input , KVInfo info , char *data )
     {
-		// Get the rigth size function
+		// Get the right size function
 		DataSizeFunction _valueSize = valueSize[input];
 		
 		// Local offset
@@ -175,8 +175,9 @@ namespace samson
 		
 		// Make sure the parsing is OK!
 		if( offset != info.size )
-			LM_X(1,("Error adding key-values to a KVInputVector for input %d (%s). (Offset %lu != info.size %lu) KVS %lu / %lu " , input , info.str().c_str() , offset , info.size , num_kvs , max_num_kvs  ));
-        
+		{
+			LM_X(1,("Error adding key-values to a KVInputVector for input %d (%s). (Offset %lu != info.size %lu) KVS num_kvs:%lu / max_num_kvs:%lu " , input , info.str().c_str() , offset , info.size , num_kvs , max_num_kvs  ));
+		}
     }
     
     
@@ -196,7 +197,7 @@ namespace samson
         // Sort the first part of the vector
         std::sort( _kv , _kv + middle_pos , compare );
         
-        // Merge with the second part of the vector( suppoused to be sorted )
+        // Merge with the second part of the vector( supposed to be sorted )
         std::inplace_merge(_kv, _kv+middle_pos, _kv+num_kvs , compare);
         
     }

@@ -14,8 +14,11 @@ namespace engine {
         thiggerTime = time(NULL) + delay;
         counter = 0;
         
-        description = "Unkown non-repeated engine element";
-        shortDescription = "Unk";
+
+        std::ostringstream txt;
+        txt << "Unknown once ( at " << thiggerTime  << " seconds ) engine element";
+        description = txt.str();
+        shortDescription = txt.str();
     }
     
     // Repeated action
@@ -28,7 +31,7 @@ namespace engine {
         counter = 0;
         
         std::ostringstream txt;
-        txt << "Unkown repeated ( every " << seconds  << " seconds ) engine element";
+        txt << "Unknown repeated ( at " << thiggerTime << " every " << seconds  << " seconds ) engine element";
         description = txt.str();
         
         shortDescription = "Unk";
@@ -42,6 +45,12 @@ namespace engine {
         counter++;
     }
     
+    void EngineElement::Reschedule(time_t now)
+    {
+        thiggerTime = now + delay;
+        counter++;
+    }
+
     time_t EngineElement::getThriggerTime()
     {
         return thiggerTime;
@@ -54,13 +63,17 @@ namespace engine {
     
     std::string EngineElement::getDescription()
     {
-        return description;
+        if( repeated )
+            return au::str( "[%s repeated count:%d triggerTime:%lu delay:%d ] %s" , description.c_str(), counter, thiggerTime, delay , shortDescription.c_str() );
+        else
+        	return au::str( "[%s once triggerTime:%lu  ] %s" , description.c_str(), thiggerTime , shortDescription.c_str() );
+        //return description;
     }
     
     std::string EngineElement::getShortDescription()
     {
         if( repeated )
-            return au::str( "[Repetition element period:%d count:%d ] %s" , counter, delay , shortDescription.c_str() );
+            return au::str( "[Repetition element count:%d triggerTime:%lu delay:%d ] %s" , counter, thiggerTime, delay , shortDescription.c_str() );
         else
             return shortDescription;
     }

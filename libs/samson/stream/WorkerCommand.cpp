@@ -38,7 +38,7 @@ namespace samson {
             originalWorkerCommand = new network::WorkerCommand();
             originalWorkerCommand->CopyFrom( _command );
             
-            // Extract enviroment properties
+            // Extract environment properties
             copyEnviroment( originalWorkerCommand->environment() , &enviroment );
             
             // Extract command for simplicity
@@ -72,7 +72,7 @@ namespace samson {
             cmd.set_flag_boolean("clear_inputs");
             cmd.parse( command );
             
-            // Original value for the falg
+            // Original value for the flag
             pending_to_be_executed =  true;
             finished = false;
             
@@ -103,7 +103,7 @@ namespace samson {
             if( !pending_to_be_executed )
                 return;
             
-            // Not pending any more, exept of something happen...
+            // Not pending any more, except of something happen...
             pending_to_be_executed = false;
             
             // Main command
@@ -112,7 +112,7 @@ namespace samson {
             
             if( main_command == "wait" )
             {
-                // Spetial operation to wait until no activity is present in stream manager
+                // Special operation to wait until no activity is present in stream manager
                 
                 if( streamManager->queueTaskManager.isActive() )
                     pending_to_be_executed = true;
@@ -140,7 +140,7 @@ namespace samson {
             if ( cmd.get_argument(0) == "rm_queue" )
             {
                 if( cmd.get_num_arguments() < 2 )
-                    finishWorkerTaskWithError( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
+                    finishWorkerTaskWithError( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
                 else
                 {
                     for ( int i = 1 ; i < cmd.get_num_arguments() ; i++ )
@@ -157,7 +157,7 @@ namespace samson {
             if ( cmd.get_argument(0) == "cp_queue" )
             {
                 if( cmd.get_num_arguments() < 3 )
-                    finishWorkerTaskWithError( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
+                    finishWorkerTaskWithError( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
                 else
                 {
                     std::string from_queue_name = cmd.get_argument(1);
@@ -174,7 +174,7 @@ namespace samson {
             if ( cmd.get_argument(0) == "set_queue_property" )
             {
                 if( cmd.get_num_arguments() < 4 )
-                    finishWorkerTaskWithError( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
+                    finishWorkerTaskWithError( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
                 else
                 {
                     std::string queue_name = cmd.get_argument(1);
@@ -263,7 +263,7 @@ namespace samson {
                     return;
                 }
                 
-                // Set the environemnt variable
+                // Set the environment variable
                 operation->environment.set( property , value );
                 
                 finishWorkerTask();
@@ -322,7 +322,7 @@ namespace samson {
                 
                 if( cmd.get_num_arguments() < 2 )
                 {
-                    finishWorkerTaskWithError( au::str("Not enougth parameters for command %s" , main_command.c_str() ) ); 
+                    finishWorkerTaskWithError( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
                     return;
                 }
                 
@@ -338,7 +338,7 @@ namespace samson {
                 // Check input output arguments...
                 if ( cmd.get_num_arguments() <  ( 2 + ( op->getNumInputs() + op->getNumOutputs() ) ) )
                 {
-                    finishWorkerTaskWithError( au::str("Not enougth arguments for operation %s" , operation_name.c_str() ) ); 
+                    finishWorkerTaskWithError( au::str("Not enough arguments for operation %s" , operation_name.c_str() ) );
                     return;
                 }
                 
@@ -415,7 +415,7 @@ namespace samson {
                                 list->copyFrom( queues[q]->list , range );
                             }
                             
-                            // Set the working size to get statictics at ProcessManager
+                            // Set the working size to get statistics at ProcessManager
                             tmp->setWorkingSize();
                             
                             // Add me as listener and increase the number of operations to run
@@ -458,11 +458,11 @@ namespace samson {
                         while( !inputBlockList.isEmpty() )
                         {
                             
-                            // Get a BlockList with cotent to be processed
+                            // Get a BlockList with content to be processed
                             BlockList inputData("input data");
                             inputData.extractFrom( &inputBlockList , max_size );
                             
-                            // Get a new id for the next opertion
+                            // Get a new id for the next operation
                             size_t id = streamManager->queueTaskManager.getNewId();
                             
                             QueueTask *tmp = NULL;
@@ -497,7 +497,7 @@ namespace samson {
                             // Copy input data
                             tmp->getBlockList("input_0")->copyFrom( &inputData );
                             
-                            // Set working size for correct monitorization of data
+                            // Set working size for correct monitoring of data
                             tmp->setWorkingSize();
                             
                             if( clear_inputs )
@@ -581,7 +581,7 @@ namespace samson {
         StreamOperationBase *WorkerCommand::getStreamOperation( Operation *op )
         {
             
-            int pos_argument = 1;   // We skipt the "run_stream_operation" or "run_stream_update_state" parameter
+            int pos_argument = 1;   // We skip the "run_stream_operation" or "run_stream_update_state" parameter
             
             std::string operation_name = cmd.get_argument(pos_argument++);
 

@@ -30,7 +30,7 @@ namespace engine
 	class EngineElement 
 	{
 		
-		time_t thiggerTime;							// Delay to process this item
+		//time_t thiggerTime;							// Delay to process this item
 		int delay;									// Delay of execution or period in repeated operations
 		bool repeated;								// Flag to determine if it is necessary to repeated the process
         int counter;                                // Number of times this element has been executed ( only in repeated )
@@ -41,6 +41,7 @@ namespace engine
         std::string shortDescription;               // Short description
         
 	public:
+        time_t thiggerTime;							// Delay to process this item
 		
 		virtual void run()=0;						// Run method to execute
 		
@@ -53,6 +54,7 @@ namespace engine
         
 		// Reschedule action once executed
 		void Reschedule();
+		void Reschedule(time_t now);
 		
 		time_t getThriggerTime();
 		

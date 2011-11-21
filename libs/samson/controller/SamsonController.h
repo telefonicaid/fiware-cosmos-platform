@@ -35,7 +35,7 @@
 #include "ControllerLoadManager.h"		// samson::ControllerLoadManager
 #include "engine/EngineElement.h"				// samson::EngineElement
 
-#define notification_monitorization                 "notification_monitorization"
+#define notification_monitoring                 "notification_monitoring"
 
 namespace samson {
 	
@@ -61,7 +61,7 @@ namespace samson {
 		// Top level job manager
 		JobManager jobManager;								
 
-		// Monitorization control for web-based moitoring tool
+		// Monitoring control for web-based monitoring tool
 		friend class SamsonControllerMonitor;
 		Monitor monitor;									
 		
@@ -71,7 +71,7 @@ namespace samson {
 		
         int num_workers;
 
-        // Unified information ( updated with information comming from workers )
+        // Unified information ( updated with information coming from workers )
         
 		friend class Job;
 		friend class JobManager;

@@ -27,8 +27,8 @@
 
 #include "engine/Engine.h"							// Own interface
 
-// Goyo. From 60 to 600
-#define ENGINE_MAX_RUNNING_TIME     600
+// Goyo. From 60 to 60000
+#define ENGINE_MAX_RUNNING_TIME     60000
 
 namespace engine
 {
@@ -51,7 +51,8 @@ namespace engine
         while( true )
         {
             engine->check();
-            sleep( ENGINE_MAX_RUNNING_TIME /2 );
+	    // Goyo
+            sleep( ENGINE_MAX_RUNNING_TIME /100 );
         }
 		return NULL;
 	}
@@ -120,7 +121,7 @@ namespace engine
 
         if( running_element && ( time_in_seconds > ENGINE_MAX_RUNNING_TIME  ) )
         {
-            LM_X(1,("Excesive time for an engine simple task (%d secs, max %d secs) for engine Element '%s'." ,  
+            LM_X(1,("Excessive time for an engine simple task (%d secs, max %d secs) for engine Element '%s'." ,
                   time_in_seconds , ENGINE_MAX_RUNNING_TIME, running_element->getDescription().c_str() ));
         }
         
@@ -199,13 +200,19 @@ namespace engine
             
             // Run or sleep
             if ( !running_element )
-                LM_X(1,("Internal errro at Engine"));
+                LM_X(1,("Internal error at Engine"));
             
             
             {
-                // Execute the item selectd as running_element
+                // Execute the item selected as running_element
                 
-                LM_T( LmtEngine, ("[START] Engine executing %s" , running_element->getDescription().c_str()));
+            	time_t now = time(NULL);
+                LM_T( LmtEngine, ("[START] Engine executing %s at time:%lu, wanted:%lu" , running_element->getDescription().c_str(), now, running_element->thiggerTime));
+
+                if ((now - running_element->thiggerTime) > 30)
+                {
+                	LM_W(("[WARNING] Task %s delayed %d seconds in starting. This should not be more than 30", running_element->getDescription().c_str() , (int)(now - running_element->thiggerTime )));
+                }
                 
                 // Reset cronometer for this particular task
                 cronometer.reset();
@@ -215,9 +222,9 @@ namespace engine
                 // Compute the time spent in this element
                 time_t t = cronometer.diffTimeInSeconds();
                 // Goyo
-                if( t > 600 )
-                    LM_W(("Task %s spent %d seconds. This should not be more than 600", running_element->getDescription().c_str() , (int)t ));
-                
+                if( t > 60000 )
+                    LM_W(("Task %s spent %d seconds. This should not be more than 60000", running_element->getDescription().c_str() , (int)t ));
+
                 LM_T( LmtEngine, ("[DONE] Engine executing %s" , running_element->getDescription().c_str()));
                 
                 EngineElement * _running_element = running_element;
@@ -227,7 +234,7 @@ namespace engine
                 if( _running_element->isRepeated() )
                 {
                     // Insert again
-                    _running_element->Reschedule();
+                    _running_element->Reschedule(now);
                     add( _running_element );
                 }
                 else

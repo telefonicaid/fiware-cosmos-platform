@@ -42,9 +42,11 @@ namespace samson {
         class SystemQueueTask : public engine::ProcessItem , public QueueTaskBase
         {
             
-            std::string concept;
             
+
         public:
+        	// Goyo moved to public
+        	std::string concept;
             
             SystemQueueTask( size_t _id , std::string _concept);            
             ~SystemQueueTask();

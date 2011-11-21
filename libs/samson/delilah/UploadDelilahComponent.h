@@ -34,15 +34,15 @@ namespace samson {
 			uninitialized,
 			waiting_controller_init_response,				// Waiting for the init response
 			sending_files_to_workers,						// Sending files and receiving response messaged
-			waiting_file_upload_confirmations,				// Files are completelly scheduled, so we are waiting confirmations form controllers
+			waiting_file_upload_confirmations,				// Files are completely scheduled, so we are waiting confirmations form controllers
 			waiting_controller_finish_response,				// Pending to receive the final message from controller
-			finish_with_error,								// Some error ocurred in the process
+			finish_with_error,								// Some error occurred in the process
 			finish											// Everything finished fine
 		} UploadStatus;
 
 		UploadStatus status;			// Status of the upload process
 		
-		au::Lock lock;					// Lock mechanish to protext ( async confirmation of the workers )
+		au::Lock lock;					// Lock mechanism to protect ( async confirmation of the workers )
 		
 		int num_workers;				// Total number of workers
 		
@@ -56,8 +56,8 @@ namespace samson {
 		size_t num_files;				// Num files generated
 		size_t num_confirmed_files;		// Num files confirmed by workers ( uploaded )
 		
-		int num_threads;				// Number of paralel threads to wait if necessary
-		int max_num_threads;			// Maximum number of paralell threads
+		int num_threads;				// Number of parallel threads to wait if necessary
+		int max_num_threads;			// Maximum number of parallel threads
 		
 		// Message prepared for the final confirmation
 		samson::network::UploadDataFinish *upload_data_finish;						
@@ -65,9 +65,9 @@ namespace samson {
 		// Id of the operation at the controller
 		size_t load_id;
 		
-		// Sumary information
+		// Summary information
 		size_t totalSize;				// Total size to be uploaded ( all files )
-		size_t processedSize;			// total size processed locally ( compressed and squeduled to the network )
+		size_t processedSize;			// total size processed locally ( compressed and scheduled to the network )
 		
 		size_t uploadedSize;			// Total size of uploaded files
 		size_t uploadedCompressedSize;	// Total size uploaded to workers ( compressed )
@@ -84,7 +84,7 @@ namespace samson {
 		
 		void run();     // Main method to start the upload process ( sending an init message to controller )
 		
-		void _run();	// Method only called by a separeted thread		
+		void _run();	// Method only called by a separated thread
 		
         // Functions to create the final confirmation message
 		void fillUpLoadDataFinishMessage( network::UploadDataFinish *confirmation );		

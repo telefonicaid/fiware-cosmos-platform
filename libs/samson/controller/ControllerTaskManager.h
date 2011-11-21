@@ -42,7 +42,7 @@ namespace samson {
         ~ControllerTaskManager();
         
 		/**
-		 Add a particular task into the controller scheduler from delailah command
+		 Add a particular task into the controller scheduler from delilah command
 		 */
 		
 		ControllerTask* addTask( ControllerTaskInfo *info , Job *job );
@@ -56,7 +56,7 @@ namespace samson {
 		/**
 		 Review if it is necessary to start another task
 		 Sometimes it is not possible to run multiple tasks concurrently to limit the number of "outputs"
-		 If to much outputs are active, buffers at the workers will staturate memory
+		 If to much outputs are active, buffers at the workers will saturate memory
 		 */
 		
 		void reviewTasks();
@@ -68,7 +68,7 @@ namespace samson {
 		void removeTask( size_t task_id );
 		
 		
-        // Get information for monitorization
+        // Get information for monitoring
         void getInfo( std::ostringstream& output);
 
 		

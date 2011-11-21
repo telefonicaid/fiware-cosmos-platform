@@ -59,7 +59,7 @@ namespace samson
     
 	void ProcessItemIsolated::run()
 	{
-        LM_T( LmtIsolated , ("Isolated process %s: start ******************************************************************************************* ",getStatus().c_str()));
+        LM_T( LmtIsolated , ("Isolated process %s: start ******************************************* ",getStatus().c_str()));
         
         
         if( isolated_process_as_tread )
@@ -97,6 +97,7 @@ namespace samson
         }
         else
         {
+        	LM_T( LmtIsolated , ("Isolated process %s: father about to fork",getStatus().c_str()));
             pid = fork();
             if ( pid < 0 )
                 LM_X(1,("Fork return an error"));
@@ -104,16 +105,17 @@ namespace samson
             if( pid == 0 )	// Children running the background process
             {
                 runBackgroundProcessRun();
+                LM_T(LmtIsolated,("Child in Background process finished, calling _exit that will close its side pipes: pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n", pipeFdPair1[1], pipeFdPair2[0]));
                 _exit(1000);
             }
         }
 		
-        // Enchange all the necessary messages between background and foreground process
-        LM_T( LmtIsolated , ("Isolated process %s: runExchangeMessages start ",getStatus().c_str()));
+        // Exchange all the necessary messages between background and foreground process
+        LM_T( LmtIsolated , ("Isolated process %s: father runExchangeMessages start, child pid=%d ",getStatus().c_str(), pid));
         
         runExchangeMessages();
         
-        LM_T( LmtIsolated , ("Isolated process %s: runExchangeMessages finish ",getStatus().c_str()));
+        LM_T( LmtIsolated , ("Isolated process %s: father runExchangeMessages finish ",getStatus().c_str()));
 		
 		// Close the rest of pipes all pipes
         if( isolated_process_as_tread )
@@ -128,7 +130,7 @@ namespace samson
 		close(pipeFdPair1[0]);
 		close(pipeFdPair2[1]);
 		
-		LM_T( LmtIsolated , ("Isolated process %s: finish ",getStatus().c_str()));
+		LM_T( LmtIsolated , ("Isolated process %s: waiting child pid=%d to finish ",getStatus().c_str(), pid));
 		
 		// Kill and wait the process
         if( !isolated_process_as_tread )
@@ -154,7 +156,7 @@ namespace samson
                 // Send a kill message if still not died
                 if( p!= pid )
                 {
-                    LM_T(LmtIsolated,("Killin background process manually"));
+                    LM_T(LmtIsolated,("Killing background process (%d) manually", pid));
                     kill( pid , SIGKILL );
                     
                     // Give the background process some air to die in peace
@@ -165,16 +167,20 @@ namespace samson
                     if ( WIFEXITED(stat_loc) )
                     {
                         int s = WEXITSTATUS( stat_loc );
-                        LM_T(LmtIsolated,("Background process existed with code %d",s));
+                        LM_T(LmtIsolated,("Background process (pid=%d) ended with exit with code %d",pid, s));
                         
                     }
                     else if( WIFSIGNALED( stat_loc ) )
                     {
                         int s = WTERMSIG( stat_loc );
-                        LM_T(LmtIsolated,("Background process existed with code %d",s));
+                        LM_T(LmtIsolated,("Background process (pid=%d) ended with signal with signal %d",pid, s));
+                        LM_W(("Background process (pid=%d) ended with signal with signal %d",pid, s));
                     }
                     else
-                        LM_T(LmtIsolated,("Background process 'crashed' with unknown reason"));
+                    {
+                        LM_T(LmtIsolated,("Background process (pid=%d) 'crashed' with unknown reason", pid));
+                        LM_E(("Background process (pid=%d) 'crashed' with unknown reason", pid));
+                    }
                 }
                 
             } while (p != pid);
@@ -191,7 +197,8 @@ namespace samson
         
         if( isProcessItemCanceled() )
         {
-            error.set( "ProcessItem canceled" );
+            error.set( "ProcessItem canceled");
+	    LM_W(("ProcessItem canceled, operation:%d",  message->operation() ));
             
             // Send a kill message and finish
             samson::network::MessagePlatformProcess * response = new samson::network::MessagePlatformProcess();
@@ -220,12 +227,16 @@ namespace samson
                 
                 runCode( operation );
                 
+                LM_T( LmtIsolated , ("Isolated process %s: runCode() returned from operation %d, preparing to send continue to pipeFdPair2[1]:%d",getStatus().c_str() , operation, pipeFdPair2[1] ));
+
                 // Send the continue
                 samson::network::MessagePlatformProcess * response = new samson::network::MessagePlatformProcess();
+                LM_T( LmtIsolated , ("Isolated process %s: response created ", getStatus().c_str()));
                 response->set_code( samson::network::MessagePlatformProcess_Code_code_ok );
+                LM_T( LmtIsolated , ("Isolated process %s: send the continue on pipeFdPair2[1]:%d ",getStatus().c_str() , pipeFdPair2[1] ));
                 if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
 		{
-		    LM_E(("Error sending message to run operation(%s), code(%d),  (pipeFdPair2[1]:%d) ",  operation, response->code(), pipeFdPair2[1]));
+		    LM_E(("Error sending message to run operation(%d), code(%d),  (pipeFdPair2[1]:%d) ",  operation, response->code(), pipeFdPair2[1]));
 		}
                 delete response;
                 
@@ -446,7 +457,7 @@ namespace samson
             if( c != au::OK )
             {
                 // Not possible to read the message for any reason
-				LM_E(("Isolated process %s: Not possible to read a message from pipeFdPair1[0]:%d with error_code' %s' in time_out:%d", getStatus().c_str() , pipeFdPair1[0], au::status(c), timeout_setup ));
+				LM_E(("Isolated process op:'%s', %s: Not possible to read a message from pipeFdPair1[0]:%d with error_code' %s' in time_out:%d", processItemIsolated_description.c_str() ,getStatus().c_str() , pipeFdPair1[0], au::status(c), timeout_setup ));
                 
 				error.set( au::str( "Third party operation '%s' has crashed - [ Error code %s ]", processItemIsolated_description.c_str() ,  au::status(c) ) );
                 return;
@@ -473,7 +484,7 @@ namespace samson
     void ProcessItemIsolated::sendMessageProcessPlatform(samson::network::MessageProcessPlatform *message )
     {
          
-        //LM_M(("Background process: Sending a message to process"));
+    	LM_T(LmtIsolated,("Background process: Sending a message to process on pipeFdPair1[1]:%d", pipeFdPair1[1]));
         
         // Write the message
         au::Status write_ans = au::writeGPB(pipeFdPair1[1], message );
@@ -627,27 +638,28 @@ namespace samson
             close(pipeFdPair2[1]);
             
             //Trazas Goyo
-            LM_T(LmtIsolated,("Child closing pipe descriptors not used. pipeFdPair1[0]:%d, pipeFdPair2[1]:%d\n", pipeFdPair1[0], pipeFdPair2[1]));
+            LM_T(LmtIsolated,("Child closing pipe descriptors not used. Child uses pipeFdPair1[0]:%d, pipeFdPair2[1]:%d\n", pipeFdPair1[0], pipeFdPair2[1]));
             
             for ( int i = 3 ;  i < 1024 ; i++ )
                 if( ( i != pipeFdPair1[1] ) && ( i!= pipeFdPair2[0] ) && ( i!= logFd ) ) 
                 {
                     
                     //Trazas Goyo
-                    LM_T(LmtIsolated, ("Child closing descriptors but pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, logFd:%d. fd:%d\n", pipeFdPair1[1], pipeFdPair2[0], logFd, i));
+                    //LM_T(LmtIsolated, ("Child closing descriptors but pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, logFd:%d. fd:%d\n", pipeFdPair1[1], pipeFdPair2[0], logFd, i));
                     
                     close( i );
                 }
         }
         
-        
+        LM_T(LmtIsolated,("Child sends the begin message"));
         // Send the "begin" message
         {
             samson::network::MessageProcessPlatform *message = new samson::network::MessageProcessPlatform();
             message->set_code( samson::network::MessageProcessPlatform_Code_code_begin );
             sendMessageProcessPlatform(message);
             delete message;
-        }        
+        }
+        LM_T(LmtIsolated,("Child begin message sent"));
 
         LM_T(LmtIsolated,("Running runIsolated"));
         
@@ -655,6 +667,7 @@ namespace samson
         
         //LM_M(("Finishing runIsolated"));
         
+ 		LM_T(LmtIsolated,("Child sends the end message"));
         // Send the "end" message
         {
             samson::network::MessageProcessPlatform *message = new samson::network::MessageProcessPlatform();
@@ -662,6 +675,7 @@ namespace samson
             sendMessageProcessPlatform(message);
             delete message;
         }
+        LM_T(LmtIsolated,("Child end message sent"));
 		
 		// Close the other side of the pipe
         if( !isolated_process_as_tread )
@@ -673,7 +687,7 @@ namespace samson
             LM_T(LmtIsolated,  ("Child closing used pipe descriptors because finished. pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n", pipeFdPair1[1], pipeFdPair2[0]));
         }
         
-        //LM_M(("Finishing runBackgroundProcessRun..."));
+        LM_T(LmtIsolated, ("Finishing runBackgroundProcessRun..."));
         
         
 	}	

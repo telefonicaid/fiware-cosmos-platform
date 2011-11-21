@@ -61,7 +61,7 @@ namespace engine {
 		// List of memory requests
 		au::list <MemoryRequest> memoryRequests;        // Only used for inputs ( tag == 0 )
 		
-        // List of active buffers for better monitorization
+        // List of active buffers for better monitoring
         std::set<Buffer*> buffers;
 
         // Private constructor for

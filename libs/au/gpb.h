@@ -102,7 +102,7 @@ namespace au
     au::Status readGPB( int fd , T** t , int time_out )
     {
         
-        //LM_M(("Reading a GPB message from fd %d ", fd ));
+    	LM_T(LmtIsolated, ("Reading a GPB message from fd:%d with timeout %d", fd, time_out ));
         
         Status iom = iomMsgAwait( fd , time_out );// Wait until this is ready
         
@@ -121,6 +121,7 @@ namespace au
                 return iom;
 	    }
         }
+        LM_T(LmtIsolated,("readGPB(): iomMsgAwait returned OK on fd:%d", fd));
         
         GPBHeader header;
         int nb = read( fd , &header , sizeof(header) );
@@ -154,7 +155,7 @@ namespace au
             return GPB_WrongReadSize;   // Error reading the size
 	}
         
-        //LM_M(("Reading a GPB message from fd %d (size %d)", fd , (int) size ));
+        //LM_M(("Reading a GPB message from fd:%d (size:%d)", fd , (int) size ));
         
         if( header.size > 1000000)
 		{
@@ -193,7 +194,7 @@ namespace au
     template <class T>
     Status writeGPB( int fd , T* t  )
     {
-        //LM_M(  ("Writing a GPB message to fd %d ( Size: %d )", fd , (int) t->ByteSize() ));
+        LM_T(LmtIsolated,("Writing a GPB message to fd:%d ( Size:%d )", fd , (int) t->ByteSize() ));
         
         if( !t->IsInitialized()  )
             return GPB_NotInitializedMessage;

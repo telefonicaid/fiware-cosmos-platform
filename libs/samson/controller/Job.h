@@ -116,19 +116,19 @@ namespace samson {
 			running,	// Running task
 			saving,		// Finish but waiting to save generated files
 			error,		// Finish because there was an error
-			finish,		// Completelly finish
+			finish,		// Completely finish
 		} JobStatus;
 		
 	private:
 		
 		JobManager *jobManager;			// Pointer to the job manager
-		size_t id;						// Identifier of the job ( this is the one reported to delialh to monitorize a job)
+		size_t id;						// Identifier of the job ( this is the one reported to delilah to monitor a job)
 
 		JobStatus _status;	// Status of this job
 
 		// Basic information about this job
 		time_t time_init;					// Init time of this job ( to monitor the operation )
-		int fromIdentifier;					// Identifier of the delailah that ordered this job
+		int fromIdentifier;					// Identifier of the delilah that ordered this job
 		int sender_id;						// Identifier at the sender side (the same delilah could send multiple jobs)
 		
 		std::string error_line;				// One line message for the error ( used in the cancel message of the data log)
@@ -156,7 +156,7 @@ namespace samson {
 		~Job();
         
 		/**
-		 Main routine to run commands until waiting for task confirmation or the job finishs
+		 Main routine to run commands until waiting for task confirmation or the job finishes
 		 */
 		
 		void run();

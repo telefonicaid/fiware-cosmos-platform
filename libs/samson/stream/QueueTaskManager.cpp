@@ -71,6 +71,8 @@ namespace samson {
                 
                 bool is_system_queue_task = (notification->environment.get("system.system_queue_task", "no") == "yes" );
                 
+                LM_T(LmtBlockManager, ("Notification of a finish at QueueTaskManager,  task %lu " , _id));
+
                 if( is_system_queue_task )
                 {
                     // Recover the running SystemQueueTask
@@ -162,16 +164,23 @@ namespace samson {
             if( queueTasks.size() == 0)
                 return false; // No more pending task to be executed
             
-            QueueTask * task = queueTasks.front();  // Take the front task
+            // Trying to search for the first task ready, instead of stopping at the front
+            for ( au::list<QueueTask>::iterator t = queueTasks.begin() ; t != queueTasks.end() ; t++ )
+            {
+
+
+            //QueueTask * task = queueTasks.front();  // Take the front task
+            	QueueTask * task = *t;  // Take the front task
             
             if( task->ready() )
             {
                 // Extract the task from the queue of pending tasks
-                QueueTask * _task = queueTasks.extractFront();
+                //QueueTask * _task = queueTasks.extractFront();
+            	QueueTask * _task = queueTasks.extractFromList(task);
                 
                 // Stupid check ;)
                 if( task != _task )
-                    LM_X(1, ("Internal error. Forbident concurrent access to Queue Tasks"));
+                    LM_X(1, ("Internal error. Forbidden concurrent access to Queue Tasks"));
                 
                 // Insert in the running vector
                 size_t task_id = _task->getId();
@@ -179,13 +188,17 @@ namespace samson {
                 
                 _task->setQueueTaskState("Scheduled");
                 
+                LM_T(LmtBlockManager, ("Scheduled task %lu " , task_id));
+
                 // Add this process item ( note that a notification will be used to notify when finished )
                 engine::ProcessManager::shared()->add( _task , getEngineId() );
                 
                 return true;
             }
-            else
-                return false; // The next task is not ready
+            //else
+            //    return false; // The next task is not ready
+            }
+            return false;
             
             
         }
@@ -196,16 +209,24 @@ namespace samson {
             if( systemQueueTasks.size() == 0)
                 return false; // No more pending task to be executed
             
-            SystemQueueTask * task = systemQueueTasks.front();  // Take the front task
+            // Trying to search for the first task ready, instead of stopping at the front
+            for ( au::list<SystemQueueTask>::iterator t = systemQueueTasks.begin() ; t != systemQueueTasks.end() ; t++ )
+            {
+
+
+
+            //SystemQueueTask * task = systemQueueTasks.front();  // Take the front task
+            	SystemQueueTask * task = *t;
             
             if( task->ready() )
             {
                 // Extract the task from the queue of pending tasks
-                SystemQueueTask * _task = systemQueueTasks.extractFront();
+                //SystemQueueTask * _task = systemQueueTasks.extractFront();
+            	SystemQueueTask * _task = systemQueueTasks.extractFromList(task);
                 
                 // Stupid check ;)
                 if( task != _task )
-                    LM_X(1, ("Internal error. Forbident concurrent access to Queue Tasks"));
+                    LM_X(1, ("Internal error. Forbidden concurrent access to Queue Tasks"));
                 
                 // Insert in the running vector
                 size_t task_id = _task->getId();
@@ -213,17 +234,21 @@ namespace samson {
                 
                 _task->setQueueTaskState("Scheduled");
 
+                LM_T(LmtBlockManager, ("Scheduled task %lu " , task_id));
+
                 // Add this process item ( note that a notification will be used to notify when finished )
                 engine::ProcessManager::shared()->add( _task , getEngineId() );
                 return true;
             }
-            else
-                return false; // The next task is not ready
+            //else
+            //    return false; // The next task is not ready
+            }
+            return false;
             
         }
         
         
-        // Get information for monitorization
+        // Get information for monitoring
         void QueueTaskManager::getInfo( std::ostringstream& output)
         {
             au::xml_iterate_map(output, "running_queue_tasks", runningTasks);

@@ -64,7 +64,7 @@ namespace samson {
             void push( BlockList* list );
             bool extractBlockFrom( BlockList *list );            
 
-            // Get XML monitorization information
+            // Get XML monitoring information
             void getInfo( std::ostringstream& output)
             {
                 au::xml_open(output , "stream_out_queue"); 
@@ -105,7 +105,7 @@ namespace samson {
             // Get the next task to be executed
             void scheduleNextTasks();
             
-            // Get XML monitorization information
+            // Get XML monitoring information
             void getInfo( std::ostringstream& output);
             
         };

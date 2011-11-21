@@ -396,12 +396,12 @@ namespace samson {
         
         if( time > hard_limit )
         {
-            output << au::str( "Error: Monitorization information is %d seconds old" , time );
+            output << au::str( "Error: Monitoring information is %d seconds old" , time );
             return false;
         }
         
         if( time > soft_limit )
-            output <<  au::str( "Warning: Monitorization information is %d seconds old\n" , time );
+            output <<  au::str( "Warning: Monitoring information is %d seconds old\n" , time );
         
         return true;
         

@@ -577,7 +577,7 @@ namespace samson {
         
     }
     
-    // Get information for monitorization
+    // Get information for monitoring
     void SamsonWorker::getInfo( std::ostringstream& output)
     {
         // Engine

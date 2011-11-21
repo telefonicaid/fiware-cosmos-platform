@@ -57,6 +57,8 @@ namespace samson {
             // Get the size of the packet
             size = buffer->getSize();
 
+            requests = 0;
+
             // Default state is on_memory because the buffer has been given at memory
             state = on_memory;
 
@@ -67,6 +69,8 @@ namespace samson {
             // Check range is coherent with the info vector
             if( !header->range.check( getKVInfo() ) )
                 LM_X(1,("Internal error: incoherence between range in header"));
+
+            LM_T(LmtBlockManager, ("Block created from buffer: %s", this->str().c_str()));
 
             
         }
@@ -89,6 +93,10 @@ namespace samson {
             header = (KVHeader*) malloc( sizeof( KVHeader ) );
             memcpy(header, _header , sizeof(KVHeader));
             
+            requests = 0;
+
+            LM_T(LmtBlockManager,("Block created from id: %s", this->str().c_str()));
+
         }
         
 
@@ -239,13 +247,15 @@ namespace samson {
             
             state = on_disk;
             
+            LM_T(LmtBlockManager,("destroyBuffer for block:'%s'", str().c_str()));
+
             engine::MemoryManager::shared()->destroyBuffer(buffer);
             buffer = NULL;
             
         }
         
         
-        // Notitifications
+        // Notifications
         
         void Block::notify( engine::Notification* notification )
         {
@@ -256,9 +266,15 @@ namespace samson {
                 engine::DiskOperation *operation = (engine::DiskOperation*) notification->extractObject();
                 delete operation;
 
-                // What ever operation it was it is allways ready
+                // Whatever operation it was it is always ready
                 state = ready;
                 
+                // To avoid having it freed before time to be locked by the task that requested it;
+                requests = 20;
+
+                LM_T(LmtBlockManager,("Block::notify block state set to ready for block:'%s'", str().c_str()));
+
+
                 
                 if( canBeRemoved() )
                     BlockManager::shared()->check( this );
@@ -311,7 +327,7 @@ namespace samson {
             output << "[ ";
             //output << "Task:" << task_id << " order: " << task_order << " ";
             if( header )
-                output << "HG " << header->range.str();
+                output << "HG id=" << id << " size=" << size << " " <<  header->range.str() << "(req:" << requests << " " << getState() << ")";
             output << " ]";
             return output.str();
         }
@@ -344,6 +360,12 @@ namespace samson {
         // Function to check if this block can be removed from block manager ( basically it is not contained anywhere )
         int Block::canBeRemoved()
         {
+        	// If block has been read because of "not in memory" requests, we don't want to remove it too soon;
+        	if ((state == ready) && (requests > 0))
+        	{
+        		requests--;
+        		return false;
+        	}
             if( lists.size() != 0)
                 return false;
             

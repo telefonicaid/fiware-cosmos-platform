@@ -1,6 +1,8 @@
 
 #include "samson/common/coding.h"
 
+#include "logMsg/logMsg.h"				// LM_M
+
 #include "BlockManager.h"       // samson::stream::BlockManager
 #include "Block.h"              // samson::Stream::Block
 
@@ -38,12 +40,19 @@ namespace samson {
             au::map<std::string, BlockList >::iterator b;
             for ( b = blockLists.begin() ; b != blockLists.end() ; b++ )
                 if( !b->second->isContentOnMemory() )
+                {
+                	LM_T(LmtBlockManager,("QueueTaskBase %lu blockList %s not in memory", id, b->first.c_str()));
                     return false;
+                }
+
             
             
-            // Put all the input blocks in the lock list to make sure it is in memoryt while running...
+            // Put all the input blocks in the lock list to make sure it is in memory while running...
             for ( b = blockLists.begin() ; b != blockLists.end() ; b++ )
+            {
+            	LM_T(LmtBlockManager,("QueueTaskBase %lu blockList %s blocked", id, b->first.c_str()));
                 lockBlockList->copyFrom( b->second );
+            }
             
             // Set the flag to true
             ready_flag =  true;

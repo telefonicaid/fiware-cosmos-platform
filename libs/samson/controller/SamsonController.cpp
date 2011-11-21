@@ -73,8 +73,8 @@ namespace samson {
 		packetReceiverDescription = "samsonController";
 		
         // Add as a listener to notifications    
-        listen( notification_monitorization );
-        engine::Engine::shared()->notify( new engine::Notification( notification_monitorization ) , 5  );
+        listen( notification_monitoring );
+        engine::Engine::shared()->notify( new engine::Notification( notification_monitoring ) , 5  );
         
         // receive notification to check the entire controller system
         listen( notification_check_controller );
@@ -93,7 +93,7 @@ namespace samson {
     {
         //LM_M(("Controller received a notification  %s " , notification->getName() ));
         
-        if( notification->isName(notification_monitorization) )
+        if( notification->isName(notification_monitoring) )
             monitor.takeSamples();
         else if( notification->isName(notification_check_controller) )
         {

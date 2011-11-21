@@ -96,7 +96,7 @@ namespace samson {
                     if( running_stream_out_queue_tasks.size() >= (size_t ) max_num_stream_out_queue_tasks )
                         return;  // No more operations can be scheduled
                     
-                    // Extrat the next block...
+                    // Extract the next block...
                     BlockList list;
                     
                     if(  stream_out_queue->extractBlockFrom( &list ) )
@@ -126,7 +126,7 @@ namespace samson {
         }
         
         
-        // Get XML monitorization information
+        // Get XML monitoring information
         void StreamOutConnection::getInfo( std::ostringstream& output)
         {
             au::xml_open(output,"stream_out_connection");

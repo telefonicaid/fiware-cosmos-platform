@@ -9,7 +9,7 @@
  * DESCRIPTION
  *
  * ProcessItem defined the task to be executed by ProcessManager
- * It should be an indepenent task ( no external access while running )
+ * It should be an independent task ( no external access while running )
  * It is managed by the process manager
  *
  * ****************************************************************************/
@@ -69,12 +69,12 @@ namespace engine {
 		
 		typedef enum 
 		{
-			queued,         // In the queu waiting to be executed
+			queued,         // In the queue waiting to be executed
 			running,        // Running in a background process
-			halted,         // temporary halted, when a slot is ready, read() function is evaluated to see if it can countinue
+			halted,         // temporary halted, when a slot is ready, read() function is evaluated to see if it can continue
 		} ProcessItemStatus;
 		        
-        bool canceled;      // Flag to indicate that this process has been canceled ( not forced exit )
+        bool canceled;      // Flag to indicate that this process has been cancelled ( not forced exit )
         
         // Internal state of the process
 		ProcessItemStatus  state;
@@ -147,12 +147,12 @@ namespace engine {
         
     public:
         
-        // Get information for xml monitorization
+        // Get information for xml monitoring
         void getInfo( std::ostringstream& output);
         
     protected:
         
-        // Interface to monitorize operations perforamnce
+        // Interface to monitor operations performance
         void setProcessItemOperationName( std::string _operation_name );
         void setProcessItemWorkingSize( size_t size );
 	

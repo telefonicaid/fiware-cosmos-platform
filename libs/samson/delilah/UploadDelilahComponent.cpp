@@ -135,6 +135,7 @@ namespace samson
             {
                 // Bloques for memory of thread puposes
 				sleep(1);
+				LM_M(("sleeps with (engine::MemoryManager::shared()->getMemoryUsageByTag( MemoryOutputNetwork ):%f > 1.0) or (num_threads:%d >= max_num_threads:%d)", engine::MemoryManager::shared()->getMemoryUsageByTag( MemoryOutputNetwork ), num_threads, max_num_threads));
             }
 			
 			// Create a buffer
@@ -158,6 +159,7 @@ namespace samson
 			// Activate the finish flag if necessary before sending the packet ( so at the reception the flag is activated )
 			if( fileSet.isFinish() )
 			{
+				LM_T(LmtDisk, ("Waiting last file confirmation"));
 				lock.lock();
 				status = waiting_file_upload_confirmations;	// Waiting at least the confirmation of this last file
 				lock.unlock();
@@ -178,6 +180,7 @@ namespace samson
 			std::ostringstream message;
 			message << "[ " << id << " ] < Buffer " << file_id << " > Created with size: " << au::str( b->getSize() , "B" );
 			delilah->showTrace( message.str() );
+			LM_T(LmtDisk, ("%s", message.str().c_str()));
 
 			lock.lock();
 
@@ -206,6 +209,7 @@ namespace samson
 			std::ostringstream message;
 			message << "[ " << id << " ] All input data locally processed";
 			delilah->showTrace( message.str() );
+			LM_M(("%s", message.str().c_str()));
 		}
 		
 		
@@ -245,9 +249,11 @@ namespace samson
 			std::ostringstream message;
 			message << "[ " << id << " ] < Buffer " << file_id << " > Sending ( Compresed Size: " << au::str(compress_size) << " Original Size: " << au::str(original_size) << ")";
 			pd->delilah->showTrace( message.str() );
+			LM_T(LmtDisk, ("%s", message.str().c_str()));
 		}
 		
 		pd->delilah->network->sendToWorker( pd->worker, pd->p);
+		LM_T(LmtDisk, ("Packet sent to worker"));
 		
 		// Free allocated input parameter
 		free( p );

@@ -41,7 +41,7 @@ namespace samson {
         {
             streamManager = NULL;
             
-            // Default enviroment parameters
+            // Default environment parameters
             environment.set("max_latency" , "60" );
             environment.set("delayed_processing" , "no" );
             environment.set("priority","0" );
@@ -62,7 +62,7 @@ namespace samson {
             // Expected format add_stream_operation name operation input_queues... output_queues ... parameters
             
             au::CommandLine cmd;
-            cmd.set_flag_boolean("forward");            // Forward flag to indicate that this is a reduce forward operation ( no update if state )
+            cmd.set_flag_boolean("forward");    // Forward flag to indicate that this is a reduce forward operation ( no update if state )
             cmd.set_flag_int("execution_period",0);     // Operations scheduled every X seconds ( input not removed )
             cmd.parse( command );
             
@@ -89,13 +89,13 @@ namespace samson {
             // Check the number of input / outputs
             if( cmd.get_num_arguments() < ( 3 + op->getNumInputs() +  op->getNumOutputs() ) )
             {
-                error.set( au::str("Not enougth parameters for operation %s. It has %d inputs and %d outputs" , operation.c_str() , (int) op->getNumInputs() ,  (int) op->getNumOutputs() ) );
+                error.set( au::str("Not enough parameters for operation %s. It has %d inputs and %d outputs" , operation.c_str() , (int) op->getNumInputs() ,  (int) op->getNumOutputs() ) );
                 return NULL;
                 
             }
             
             StreamOperation *stream_operation = NULL;
-            
+
             switch ( op->getType() ) {
                     
                 case Operation::map:
@@ -115,7 +115,7 @@ namespace samson {
                     
                     if( op->getNumInputs() != 2 )
                     {
-                        error.set( au::str("Only reduce operations with 2 inputs are supported at the moment. ( In the furure, reducers with 3 or more inputs will be supported.") );
+                        error.set( au::str("Only reduce operations with 2 inputs are supported at the moment. ( In the future, reducers with 3 or more inputs will be supported.") );
                         return NULL;
                     }
                     
@@ -129,7 +129,7 @@ namespace samson {
                     
                 case Operation::script:
                 {
-                    error.set( "Script operations cannot be used to process stream queues. Only parsers, maps and spetial reducers" );
+                    error.set( "Script operations cannot be used to process stream queues. Only parsers, maps and special reducers" );
                     return NULL;
                 }
                     break;
@@ -314,7 +314,7 @@ namespace samson {
         
         void StreamOperationForward::review()
         {
-            // If execution period is defined, jist return
+            // If execution period is defined, just return
             int execution_period = environment.getInt("system.execution_period", 0);
             if( execution_period > 0 )
             {
@@ -322,7 +322,7 @@ namespace samson {
                 if( time < execution_period )
                     last_review = au::str( "Next execution in %d seconds ( period %d )" , execution_period - time ,  execution_period );
                 else
-                    last_review = au::str( "Pendign to be executed inmediatelly  ( %d seconds > period %d )" , time ,  execution_period );
+                    last_review = au::str( "Pending to be executed immediately  ( %d seconds > period %d )" , time ,  execution_period );
                 return;
             }
             
@@ -332,7 +332,7 @@ namespace samson {
             // Extract data from input queue to the "input" blocklist ( no size limit... all blocks )
             Queue *input = streamManager->getQueue( input_queues[0] );
             
-            // Update hisotry information since we wil absorve all data included in this list
+            // Update history information since we will absorb all data included in this list
             input->list->update( history_block_info );
             
             getBlockList("input")->extractFrom( input->list , 0 );
@@ -341,7 +341,7 @@ namespace samson {
         
         void StreamOperationForward::sheduceQueueTasks( BlockList* input , size_t max_size )
         {
-            // Get a new id for the next opertion
+            // Get a new id for the next operation
             size_t id = streamManager->getNewId();
             
             // Get the operation itself
@@ -378,7 +378,7 @@ namespace samson {
             // Copy input data
             tmp->getBlockList("input_0")->extractFrom( input , max_size );
             
-            // Set working size for correct monitorization of data
+            // Set working size for correct monitoring of data
             tmp->setWorkingSize();
             
             // Update information about this operation
@@ -458,7 +458,7 @@ namespace samson {
                 return false;
             }
             
-            // Get detailed informtion about data to be processed
+            // Get detailed information about data to be processed
             BlockInfo operation_block_info = input->getBlockInfo();
 
             bool cancel_operation = false;
@@ -516,7 +516,7 @@ namespace samson {
             updating_division = new bool[KVFILE_NUM_HASHGROUPS];
             
             for (int i = 0 ; i < num_divisions ; i++ )
-                updating_division[i] =  false;  // Falg as non updating
+                updating_division[i] =  false;  // Flag as non updating
             
         }
         
@@ -601,8 +601,12 @@ namespace samson {
             BlockList tmp;
             tmp.extractFrom( input->list , 0 );
             
-            // Update hisotry information since we wil absorve all data included in this list
+            // Update history information since we will absorb all data included in this list
             tmp.update( history_block_info );
+
+
+
+
 
             std::list<Block*>::iterator b;
             for ( b = tmp.blocks.begin() ; b != tmp.blocks.end() ; b++ )
@@ -633,7 +637,7 @@ namespace samson {
             
             // Properties for this stream operation
             //size_t max_size         = SamsonSetup::shared()->getUInt64("stream.max_operation_input_size");
-            size_t max_size         = SamsonSetup::shared()->getUInt64("general.memory") / 2;       // Max memory to get 
+            size_t max_size         = SamsonSetup::shared()->getUInt64("general.memory") / 8;       // Max memory to get
             
             size_t min_size         = SamsonSetup::shared()->getUInt64("stream.min_operation_input_size");
             size_t max_latency      = environment.getSizeT("max_latency", 0);                                   // Max acceptable time to run an operation
@@ -692,7 +696,7 @@ namespace samson {
                 return false;
             }
             
-            // Get detailed informtion about data to be processed
+            // Get detailed information about data to be processed
             BlockInfo operation_block_info = input->getBlockInfo();
             
             bool cancel_operation = false;
@@ -728,13 +732,13 @@ namespace samson {
             ReduceQueueTask * task = new ReduceQueueTask( id , this , rangeForDivision( division, num_divisions ) );
             task->addOutputsForOperation(op);
             
-            // Spetial flag to indicate update_state mode ( process different output buffers )
+            // Special flag to indicate update_state mode ( process different output buffers )
             task->setUpdateStateDivision( division );
             
             task->getBlockList("input_0")->copyFrom( &inputBlockList );
             task->getBlockList("input_1")->copyFrom( &stateBlockList );
             
-            // Set the working size to get statictics at ProcessManager
+            // Set the working size to get statistics at ProcessManager
             task->setWorkingSize();
             
             // Update information about this operation
@@ -892,7 +896,7 @@ namespace samson {
             // Extract data from input queue to the "input" blocklist ( no size limit... all blocks )
             Queue *input = streamManager->getQueue( input_queues[0] );
 
-            // Update hisotry information since we wil absorve all data included in this list
+            // Update history information since we will absorb all data included in this list
             input->list->update( history_block_info );
             
             getBlockList("input")->extractFrom( input->list , 0 );
@@ -939,7 +943,7 @@ namespace samson {
                 return false;
             }
             
-            // Get detailed informtion about data to be processed
+            // Get detailed information about data to be processed
             BlockInfo operation_block_info = input->getBlockInfo();
             
             bool cancel_operation = false;
@@ -968,10 +972,10 @@ namespace samson {
             }
             
             
-            // Get a new id for the next opertion
+            // Get a new id for the next operation
             size_t id = streamManager->getNewId();
 
-            // Crete a new task
+            // Create a new task
             QueueTask *tmp = new ReduceQueueTask( id , this , KVRange(0,KVFILE_NUM_HASHGROUPS) );
             
             // Set the outputs    
@@ -983,7 +987,7 @@ namespace samson {
             Queue *aux = streamManager->getQueue( input_queues[1] );
             tmp->getBlockList("input_1")->copyFrom( aux->list );
             
-            // Set working size for correct monitorization of data
+            // Set working size for correct monitoring of data
             tmp->setWorkingSize();
             
             // Update information about this operation

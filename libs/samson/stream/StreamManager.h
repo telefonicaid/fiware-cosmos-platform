@@ -118,7 +118,7 @@ namespace samson {
             // Add a pop queue operation
             void addPopQueue(const network::PopQueue& pq , size_t delilahId, int fromId );
             
-            // Get information for monitorization
+            // Get information for monitoring
             void getInfo( std::ostringstream& output);
             
             // Engine notification function

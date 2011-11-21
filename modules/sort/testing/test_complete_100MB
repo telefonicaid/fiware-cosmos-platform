@@ -13,7 +13,7 @@ echo "Generating input file..."
 ./generator 100000000 > data_100MB.txt
 
 # Running inside build/testing
-/usr/local/bin/samsonLocal -working . -f test_complete_100MB_commands.txt >test_complete_100MB_stdout
+samsonLocal -working . -f test_complete_100MB_commands.txt >test_complete_100MB_stdout
 if [ -n "${CONTROLLER_IP:+x}" ]; then
         echo "Environment variable CONTROLLER_IP defined to: " $CONTROLLER_IP > test_complete_100MB_stdout
         if [ $CONTROLLER_IP = "localhost" ]; then
@@ -26,10 +26,10 @@ if [ -n "${CONTROLLER_IP:+x}" ]; then
                 fi
         #       sleep 3
         fi
-        /usr/local/bin/delilah -controller $CONTROLLER_IP -f test_complete_100MB_commands.txt >> test_complete_100MB_stdout
+        delilah -controller $CONTROLLER_IP -f test_complete_100MB_commands.txt >> test_complete_100MB_stdout
 else
         echo "Environment variable CONTROLLER_IP not defined, using samsonLocal" > test_complete_100MB_stdout
-        /usr/local/bin/samsonLocal -working . -f test_complete_100MB_commands.txt >> test_complete_100MB_stdout
+        samsonLocal -working . -f test_complete_100MB_commands.txt >> test_complete_100MB_stdout
 fi
 
 echo "Saving the output into a file..."

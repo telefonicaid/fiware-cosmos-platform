@@ -12,7 +12,7 @@ echo $CONTROLLER_IP
 
 
 # Running inside build/testing
-/usr/local/bin/samsonLocal -working . -f test_1GB_stream_commands.txt >test_1GB_stream_stdout
+samsonLocal -working . -f test_1GB_stream_commands.txt >test_1GB_stream_stdout
 if [ -n "${CONTROLLER_IP:+x}" ]; then
         echo "Environment variable CONTROLLER_IP defined to: " $CONTROLLER_IP > test_1GB_stream_stdout
         if [ $CONTROLLER_IP = "localhost" ]; then
@@ -25,10 +25,10 @@ if [ -n "${CONTROLLER_IP:+x}" ]; then
                 fi
                # sleep 3
         fi
-        /usr/local/bin/delilah -controller $CONTROLLER_IP -f test_1GB_stream_commands.txt >> test_1GB_stream_stdout
+        delilah -controller $CONTROLLER_IP -f test_1GB_stream_commands.txt >> test_1GB_stream_stdout
 else
         echo "Environment variable CONTROLLER_IP not defined, using samsonLocal" > test_1GB_stream_stdout
-        /usr/local/bin/samsonLocal -working . -f test_1GB_stream_commands.txt >> test_1GB_stream_stdout
+        samsonLocal -working . -f test_1GB_stream_commands.txt >> test_1GB_stream_stdout
 fi
 
 echo "Saving output into a single file..."

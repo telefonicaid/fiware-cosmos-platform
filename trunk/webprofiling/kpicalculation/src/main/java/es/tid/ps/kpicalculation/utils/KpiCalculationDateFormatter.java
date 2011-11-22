@@ -10,10 +10,8 @@ import java.util.Locale;
  * date and time in the wanted format
  * 
  * @author javierb
- * 
  */
 public class KpiCalculationDateFormatter {
-
     private static SimpleDateFormat inputFormat;
     private static SimpleDateFormat dateFormat;
     private static SimpleDateFormat timeFormat;
@@ -22,6 +20,10 @@ public class KpiCalculationDateFormatter {
      * Method that initializes the formatters
      */
     public KpiCalculationDateFormatter() {
+        if (inputFormat != null && dateFormat != null && timeFormat != null) {
+            // Aviod unnecessary re-initializations.
+            return;
+        }
         inputFormat = new SimpleDateFormat("ddMMMyyyyhhmmss", Locale.ENGLISH);
         dateFormat = new SimpleDateFormat("dd MM yyyy");
         timeFormat = new SimpleDateFormat("HH:mm:ss");
@@ -35,8 +37,8 @@ public class KpiCalculationDateFormatter {
      * @return the formatted date
      */
     public static String getDate(String inputDate) throws ParseException {
-        Date d = inputFormat.parse(inputDate);
-        return dateFormat.format(d);
+        Date date = inputFormat.parse(inputDate);
+        return dateFormat.format(date);
     }
 
     /**
@@ -47,7 +49,7 @@ public class KpiCalculationDateFormatter {
      * @return the formatted time
      */
     public static String getTime(String inputDate) throws ParseException {
-        Date d = inputFormat.parse(inputDate);
-        return timeFormat.format(d);
+        Date date = inputFormat.parse(inputDate);
+        return timeFormat.format(date);
     }
 }

@@ -15,6 +15,8 @@ ifndef SAMSON_OWNER
 SAMSON_OWNER=samson
 endif
 
+DISTRO=$(shell lsb_release -is)
+
 default: release modules man
 
 
@@ -56,7 +58,13 @@ install: release install_man
 	sudo mkdir -p /var/samson
 	sudo chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_WORKING)
 	sudo cp etc/profile.d/samson.sh /etc/profile.d/samson.sh
-	sudo cp etc/init/samson.conf /etc/init/samson.conf
+ifeq ($(DISTRO),Ubuntu)
+	sudo cp etc/init.d/samson.ubuntu /etc/init.d/samson
+else
+ifeq ($(DISTRO),Ubuntu)
+	sudo cp etc/init.d/samson.redhat /etc/init.d/samson
+endif
+endif
 
 install_man: man
 	sudo cp -r BUILD_RELEASE/man $(SAMSON_HOME)/
@@ -264,9 +272,4 @@ packages: install man rpm deb
 .PHONY : modules
 .PHONY : man
 
-# 
-# q
-# q
-# q
-# q
-# vim: noexpandtab
+#vim: noexpandtab

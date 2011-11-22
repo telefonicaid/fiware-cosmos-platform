@@ -33,7 +33,6 @@
 * Option variables
 */
 char           controllerHost[256];
-int            workers;
 const char*    ips[100] = { NULL };
 bool           reset;
 bool           pList;
@@ -48,7 +47,6 @@ bool           local;
 PaArgument paArgs[] =
 {
 	{ "-controller",   controllerHost,  "CONTROLLER", PaString,  PaOpt,  PaND,   PaNL,  PaNL,  "Controller host"               },
-	{ "-workers",     &workers,         "WORKERS",    PaInt,     PaOpt,     0,     0,   100,   "number of workers"             },
 	{ "-ips",          ips,             "IP_LIST",    PaSList,   PaOpt,  PaND,   PaNL,  PaNL,  "list of worker IPs"            },
 	{ "-local",       &local,           "LOCAL",      PaBool,    PaOpt,  false, false,  true,  "'cluster' only in localhost"   },
 	{ "-reset",       &reset,           "RESET",      PaBool,    PaOpt,  false, false,  true,  "reset platform"                },
@@ -191,7 +189,7 @@ static const char* manDescription      =
 "\n"
 "Example 1 - Start a samson cluster on nodes m1, m2, m3 and m4, where m3 is the controller node:\n"
 "\n"
-"  % samsonStarter -controller m3 -workers 4 -ips 'm1 m2 m3 m4'\n"
+"  % samsonStarter -controller m3 -ips 'm1 m2 m3 m4'\n"
 "\n"
 "\n"
 "Before running samsonStarter, one must make sure that samsonSpawer is running in all nodes\n"
@@ -258,6 +256,8 @@ static const char* manVersion       = SAMSON_VERSION;
 */
 int main(int argC, const char *argV[])
 {
+	int workers;
+
 	memset(controllerHost, 0, sizeof(controllerHost));
 
 	// paConfig("trace levels",                  (void*) "0-255");
@@ -310,8 +310,7 @@ int main(int argC, const char *argV[])
 	// --------------------------------------------------------------------------
 #endif
 
-	if ((long) ips[0] != workers)
-		LM_X(1, ("%d workers specified on command line, but %d ips in ip-list", workers, (long) ips[0]));
+	workers = (long) ips[0];
 
 	if (workers == 0)
 	   LM_X(1, ("Can't start without workers ..."));

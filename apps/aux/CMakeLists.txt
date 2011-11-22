@@ -1,4 +1,3 @@
 ADD_SUBDIRECTORY(word_generator)
 ADD_SUBDIRECTORY(simple_mobility_generator)
-ADD_SUBDIRECTORY(samson_stream_limit)
 ADD_SUBDIRECTORY(passiveLocationGenerator)

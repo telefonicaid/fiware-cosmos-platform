@@ -32,7 +32,8 @@ char breaker_sequence[1024];
 char controller[1024];
 char queue_name[1024];
 bool lines;                         // Flag to indicate that input is read line by line
-int push_memory;                 // Global memory used as a bffer
+int push_memory;                    // Global memory used as a bffer
+int max_rate;                       // Max rate
 
 static const char* manShortDescription = 
 "samsonPush is a easy-to-use client to send data to a particular queue in a SAMSON system. Just push data into the standard input\n";
@@ -45,6 +46,7 @@ PaArgument paArgs[] =
 	{ "-controller",  controller,            "",  PaString,  PaOpt, _i "localhost",   PaNL,       PaNL,  "controller IP:port"                         },
 	{ "-timeout",     &timeOut,              "",  PaInt,     PaOpt,              0,      0,      10000,  "Timeout to deliver a block to the platform" },
 	{ "-buffer_size", &buffer_size,          "",  PaInt,     PaOpt,       10000000,      1,   64000000,  "Buffer size in bytes"                       },
+	{ "-mr",          &max_rate,             "",  PaInt,     PaOpt,       10000000,      100000,   100000000,  "Max rate in bytes/s"                  },
 	{ "-breaker_sequence", breaker_sequence, "",  PaString,  PaOpt,        _i "\n",   PaNL,       PaNL,  "Breaker sequence ( by default \\n )"        },
 	{ "-lines",       &lines,                "",  PaBool,    PaOpt,          false,  false,       true,  "Read std-in line by line"                   },
 	{ "-memory",      &push_memory,          "",  PaInt,     PaOpt,           1000,      1,    1000000,  "Memory in Mb used to push data ( default 1000)" },
@@ -175,10 +177,10 @@ int main( int argC , const char *argV[] )
             read_bytes = full_read( 0 , data + size , buffer_size - size );
         }
         
+        // total bytes read
         total_size+= read_bytes;
 
         // Information about current status....
-        
         size_t memory = engine::MemoryManager::shared()->getMemory();
         size_t used_memory = engine::MemoryManager::shared()->getUsedMemory();
         double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
@@ -231,10 +233,20 @@ int main( int argC , const char *argV[] )
 
         // -----------------------------------------------------------------
 
+
+        // Sleep if necessary
+        size_t diff_time = cronometer.diffTimeInSeconds();
+        size_t theoretical_diff_time = (double) total_size / (double) max_rate;
+        if( theoretical_diff_time > diff_time )
+        {
+            int seconds = theoretical_diff_time / diff_time;
+            LM_V(("Sleeping %d seconds to respect max rate %s" , seconds , au::str( max_rate ).c_str() ));
+            sleep ( seconds );
+        }
+        
         
         // Total accumulation of data
         total_process +=  output_size;
-        
 
         // Move rest of data to the begining of the buffer
         if( output_size < size )

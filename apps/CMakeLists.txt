@@ -14,9 +14,9 @@ ADD_SUBDIRECTORY(samsonKiller)
 ADD_SUBDIRECTORY(samsonPush)
 ADD_SUBDIRECTORY(samsonPop)
 if (HAVE_KDCHART)
-  ADD_SUBDIRECTORY(delilahQt)
-  ADD_SUBDIRECTORY(samsonPopQT)
-  ADD_SUBDIRECTORY(samsonTopicMonitor)
+#  ADD_SUBDIRECTORY(delilahQt)
+#  ADD_SUBDIRECTORY(samsonPopQT)
+#  ADD_SUBDIRECTORY(samsonTopicMonitor)
 endif (HAVE_KDCHART)
 
 # Sandbox...

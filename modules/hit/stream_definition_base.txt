@@ -1,8 +1,8 @@
 
 
 # Remove previous definitions
-rm_stream_operation hit.parser_words
-rm_stream_operation hit.filter
+rm_stream_operation hit.parser_words -f
+rm_stream_operation hit.filter -f
 
 # Parse input txt files to extract words
 add_stream_operation hit.parser_words txt.parser_words hit.in_txt hit.input_words_previous

@@ -46,6 +46,7 @@ namespace samson {
             
             // Parse command
             cmd.set_flag_boolean("clear_inputs");
+            cmd.set_flag_boolean("f");
             
             cmd.parse( command );
             
@@ -217,11 +218,12 @@ namespace samson {
                 
                 if( cmd.get_num_arguments() < 2 )
                 {
-                    finishWorkerTaskWithError( "Usage: rm_stream_operation name " );
+                    finishWorkerTaskWithError( "Usage: rm_stream_operation name [-f] " );
                     return;
                 }
                 
                 std::string name            = cmd.get_argument( 1 );
+                bool force = cmd.get_flag_bool("f");
                 
                 // Check it the queue already exists
                 StreamOperation * operation = streamManager->stream_operations.extractFromMap( name );
@@ -229,8 +231,11 @@ namespace samson {
                 // Check if queue exist
                 if( !operation  )
                 {
-                    finishWorkerTaskWithError( au::str("StreamOperation %s does not exist" , name.c_str()  ) );
-                    return;
+				   if( force )
+					  finishWorkerTask();
+				   else
+					  finishWorkerTaskWithError( au::str("StreamOperation %s does not exist" , name.c_str()  ) );
+				   return;
                 }
                 else
                 {

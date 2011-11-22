@@ -98,7 +98,7 @@ namespace samson
     void PushDelilahComponent::requestMemoryBuffer()
     {
         // Add a memory request to be responded to me
-    	LM_M(("PushDelilahComponent::requestMemoryBuffer: Request size:%lu by %lu", 64*1024*1024, getEngineId()));
+    	//LM_M(("PushDelilahComponent::requestMemoryBuffer: Request size:%lu by %lu", 64*1024*1024, getEngineId()));
         engine::MemoryManager::shared()->add( new engine::MemoryRequest( 64*1024*1024 , 1.0 , getEngineId() ) );
     }
 
@@ -136,7 +136,7 @@ namespace samson
         if( notification->isName( notification_memory_request_response ) )
         {
             // New buffer to be used to send data to the workers
-        	LM_M(("PushDelilahComponent::notify: Received notification from memory request"));
+        	//LM_M(("PushDelilahComponent::notify: Received notification from memory request"));
             engine::MemoryRequest *memoryRequest = (engine::MemoryRequest *) notification->extractObject();
 
             if( !memoryRequest )

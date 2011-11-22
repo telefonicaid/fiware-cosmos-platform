@@ -274,8 +274,7 @@ namespace samson {
 
                 LM_T(LmtBlockManager,("Block::notify block state set to ready for block:'%s'", str().c_str()));
 
-
-                
+                // Review if if has to be removed
                 if( canBeRemoved() )
                     BlockManager::shared()->check( this );
             }
@@ -361,11 +360,15 @@ namespace samson {
         int Block::canBeRemoved()
         {
         	// If block has been read because of "not in memory" requests, we don't want to remove it too soon;
+            // Andreu: Review mechanism to avoid histeresis...
+            /*
         	if ((state == ready) && (requests > 0))
         	{
         		requests--;
         		return false;
         	}
+             */
+            
             if( lists.size() != 0)
                 return false;
             

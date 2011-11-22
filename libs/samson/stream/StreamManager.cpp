@@ -217,6 +217,8 @@ namespace samson {
             
             if( queue )
             {
+                // Remove all the elements in the blocklist to be reviews ( and free from memery if necessar y)
+                queue->list->clearBlockList();
                 delete queue;
             }
 

@@ -62,10 +62,16 @@ ifeq ($(DISTRO),Ubuntu)
 	sudo cp etc/init.d/samson.ubuntu /etc/init.d/samson
 	sudo update-rc.d samson defaults
 else
-ifeq ($(DISTRO),Ubuntu)
+ifeq ($(DISTRO),RedHatEnterpriseServer)
 	sudo cp etc/init.d/samson.redhat /etc/init.d/samson
 	sudo /sbin/chkconfig --add samson
 	sudo /sbin/chkconfig --level 35 samson on
+else
+ifeq ($(DISTRO),CentOS)
+	sudo cp etc/init.d/samson.redhat /etc/init.d/samson
+	sudo /sbin/chkconfig --add samson
+	sudo /sbin/chkconfig --level 35 samson on
+endif
 endif
 endif
 

@@ -102,7 +102,7 @@ namespace samson
 
 	void ModulesManager::addModulesFromDirectory( std::string dir_name )
 	{	
-        LM_T(LmtModuleManager,("Adding module at directory %s", dir_name.c_str() ));
+        LM_T(LmtModuleManager,("Adding modules from directory %s", dir_name.c_str() ));
         
 		DIR *dp;
 		struct dirent *dirp;
@@ -212,8 +212,14 @@ namespace samson
         
         if( platform_version == SAMSON_VERSION )
         {
-            //SSLogger::log( SSLogger::message, "Loaded module at path" + path );
-            LM_T(LmtModuleManager,("Module %s ok. Adding operations and data types to ModulesManager" , module->name.c_str() ));
+            LM_T(LmtModuleManager,("Module %s compiled for version %s ... OK!" , module->name.c_str() , platform_version.c_str()  ));
+            LM_T(LmtModuleManager,("Adding module %s (%s) %d ops & %d data-types" , 
+                        module->name.c_str() , 
+                        path.c_str() , 
+                        (int)module->operations.size(),
+                        (int)module->datas.size()
+                                   ));
+            
             module->hndl = hndl;
             addModule( module );
             

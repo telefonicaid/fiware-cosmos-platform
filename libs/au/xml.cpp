@@ -12,5 +12,11 @@ namespace au {
     {
         output << "</" << name << ">";
     }
+
+    void xml_content( std::ostringstream& output , std::string _content )
+    {
+        output << "<![CDATA[" << _content << "]]>";        
+    }
+    
     
 }

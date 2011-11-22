@@ -27,17 +27,19 @@
 
 namespace au {
 
-    
     // Simple xml tags
     void xml_open( std::ostringstream& output , std::string name );
     void xml_close( std::ostringstream& output , std::string name );
 
+    // Concept xml-protected 
+    void xml_content( std::ostringstream& output , std::string _content );
+    
     
     template< typename T>
     void xml_simple( std::ostringstream& output , std::string name , T value )
     {
         output << "<" << name << ">";
-        output << value;
+        output << "<![CDATA[" << value << "]]>";        
         output << "</" << name << ">";
     }
     

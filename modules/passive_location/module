@@ -1,7 +1,7 @@
 Module passive_location
 {
 	title	"Passive Location pilot ( mongoDB connection )"
-	author	"Andreu & Ken"
+	author	"Andreu & Ken mail:<andreu@tid.es>"
 	version "0.1"
 }
 

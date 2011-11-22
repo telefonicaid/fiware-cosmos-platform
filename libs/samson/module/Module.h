@@ -48,11 +48,12 @@ namespace samson
 		
         void getInfo( std::ostringstream& output)
         {
+            
             output << "<module>\n";
             
-            output << "<name>" << name << "</name>\n";
-            output << "<version>" << version << "</version>\n";
-            output << "<author>" << author << "</author>\n";
+            output << "<name><![CDATA[" << name << "]]></name>\n";
+            output << "<version><![CDATA[" << version << "]]></version>\n";
+            output << "<author><![CDATA[" << author << "]]></author>\n";
             
             output << "<operations>\n";
             for ( std::map<std::string, Operation*>::iterator o = operations.begin() ; o != operations.end() ; o++ )

@@ -94,7 +94,7 @@ void init( int argC, char *argV[] )
 	
     // Make sure this singlelton is created just once
     au::LockDebugger::shared();
-	samson::SamsonSetup::init();			// Load the main setup file
+	samson::SamsonSetup::init("","");			// Load the main setup file
 	
 	// Memory manager setup
     size_t _memory = (size_t) memory_gb * (size_t) (1024*1024*1024);
@@ -111,8 +111,8 @@ void init( int argC, char *argV[] )
     // Init all engine-related systems
 	engine::Engine::init();
 	engine::DiskManager::init(1);
-	engine::ProcessManager::init(samson::SamsonSetup::getInt("general.num_processess"));
-	engine::MemoryManager::init(samson::SamsonSetup::getUInt64("general.memory"));
+	engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
+	engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
     
     // Init the modules manager
 	samson::ModulesManager::init();         

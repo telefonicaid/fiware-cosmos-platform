@@ -88,7 +88,7 @@ cp BUILD_RELEASE/apps/delilah/delilah                debian/opt/samson/bin
 cp etc/setup.txt             debian/opt/samson/etc
 cp etc/profile.d/samson.sh             debian/opt/samson/etc
 cp etc/profile.d/samson.sh             debian/etc/defaults/samson
-cp sysadmin/scripts/init.d/samson.ubuntu                          debian/etc/init.d/samson
+cp etc/init.d/samson.ubuntu                          debian/etc/init.d/samson
 cp README debian/opt/samson/share
 
 

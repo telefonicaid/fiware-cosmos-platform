@@ -64,6 +64,7 @@ class Endpoint2
 	friend class WorkerEndpoint;
 	friend class ControllerEndpoint;
 	friend class DelilahEndpoint;
+	friend class StarterEndpoint;
 
 public:
 	typedef enum State

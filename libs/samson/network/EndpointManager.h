@@ -102,7 +102,6 @@ public:
 
 	int                procVecSet(ProcessVector* _procVec, bool save = true);
 	ProcessVector*     procVecGet(void);
-	Status             starterAwait(void);
 
 	void               timeout(void);
 	void               periodic(void);

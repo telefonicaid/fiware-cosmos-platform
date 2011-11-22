@@ -61,9 +61,9 @@ PaArgument paArgs[] =
 *
 * Global variables
 */
-int              logFd        = -1;
-SamsonStarter*   samsonStarter  = NULL;
-int              startTime;
+int                      logFd        = -1;
+samson::SamsonStarter*   samsonStarter  = NULL;
+int                      startTime;
 
 
 
@@ -321,7 +321,7 @@ int main(int argC, const char *argV[])
     // Init memory manager ( network uses the memory manager to keep track of used memory ) 
 	engine::MemoryManager::init( 1000000000 );
 
-	samsonStarter = new SamsonStarter();
+	samsonStarter = new samson::SamsonStarter();
 	samsonStarter->procVecCreate(controllerHost, workers, ips);
 
 	startTime = time(NULL);

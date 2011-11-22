@@ -11,7 +11,13 @@
 *
 */
 #include "samson/common/status.h"
+#include "samson/network/NetworkInterface.h"   // PacketReceiverInterface
 #include "samson/network/Network2.h"           // Network2
+
+
+
+namespace samson
+{
 
 
 
@@ -19,21 +25,25 @@
 *
 * SamsonStarter - 
 */
-class SamsonStarter
+class SamsonStarter : public PacketReceiverInterface
 {
 public:
 	SamsonStarter();
 	~SamsonStarter();
 
-	void                    procVecCreate(const char* controllerHost, int workers, const char* ip[]);
-	samson::Status          connect(void);
-	samson::Status          reset(void);               // Send a RESET to spawners
-	samson::Status          processList(void);
-	samson::Status          procVecSend();
-	void                    run();
+	void            receive(Packet* packetP);
 
-	samson::Network2*       networkP;
-	int                     spawners;
+	void            procVecCreate(const char* controllerHost, int workers, const char* ip[]);
+	Status          connect(void);
+	Status          reset(void);               // Send a RESET to spawners
+	Status          processList(void);
+	Status          procVecSend();
+	void            run();
+
+	Network2*       networkP;
+	int             spawners;
 };
+
+}
 
 #endif

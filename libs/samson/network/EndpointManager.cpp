@@ -36,6 +36,7 @@
 #include "ControllerEndpoint.h"
 #include "SpawnerEndpoint.h"
 #include "DelilahEndpoint.h"
+#include "StarterEndpoint.h"
 #include "EndpointManager.h"
 
 
@@ -485,6 +486,10 @@ Endpoint2* EndpointManager::add(Endpoint2::Type type, int id, Host* host, unsign
 		ep = new WebListenerEndpoint(this, id, host, port, rFd, wFd);
 		break;
 
+	case Endpoint2::Starter:
+		ep = new StarterEndpoint(this, id, host, rFd, wFd);
+		break;
+
 	default:
 		LM_X(1, ("Please Implement addition of '%s' endpoint!", Endpoint2::typeName(type)));
 	}
@@ -700,127 +705,6 @@ Endpoint2* EndpointManager::indexedGet(unsigned int ix)
 	return endpoint[ix];
 }
 
-
-
-/* ****************************************************************************
-*
-* starterAwait - 
-*/
-Status EndpointManager::starterAwait(void)
-{
-	Status             s;
-	Message::Header    header;
-	void*              dataP    = NULL;
-	long               dataLen  = 0;
-	Packet*            packetP  = new Packet(Message::Unknown);
-
-	LM_TODO(("Instead of all this, perhaps I can just start the spawner and treat the messages in SamsonSpawner::receive ... ?"));
-
-	if (listener == NULL)
-		LM_RE(Error, ("Cannot await the starter to arrive if I have no Listener ..."));
-
-	LM_T(LmtStarter, ("Awaiting samsonStarter to connect and pass the Process Vector"));
-	while (1)
-	{
-		UnhelloedEndpoint* ep;
-
-		LM_T(LmtStarter, ("Await FOREVER for an incoming connection"));
-		if (listener->msgAwait(-1, -1, "Incoming Connection") != 0)
-			LM_X(1, ("Endpoint2::msgAwait error"));
-
-		if ((ep = listener->accept()) == NULL)
-		{
-			LM_E(("error accepting an incoming connection"));
-			continue;
-		}
-
-		if ((s = ep->helloExchange(60, 0)) != OK)
-		{
-			LM_E(("Hello Exchange error: %s", status(s)));
-			delete ep;
-			continue;
-		}
-
-		
-		// Is the newly connected peer a 'samsonStarter' ?
-		if (ep->type != Endpoint2::Starter)
-		{
-			LM_E(("The incoming connection was from a '%s' (only Starter allowed)", ep->typeName()));
-			remove(ep);
-			continue;
-		}
-
-
-		// Reading the message (supposedly a ProcessVector)
-		while (1)
-		{
-			// Hello exchanged, now the endpoint will send a ProcessVector message
-			// Awaiting the message to arrive 
-			if ((s = ep->msgAwait(60, 0, "ProcessVector Message")) != 0)
-			   LM_X(1, ("msgAwait(ProcessVector): %s", status(s)));
-
-			if ((s = ep->receive(&header, &dataP, &dataLen, packetP)) != 0)
-			{
-				LM_E(("Endpoint2::receive error"));
-				remove(ep);
-				ep = NULL;
-				break;
-			}
-
-			// All OK ?
-			if (header.type != Message::Msg)
-			{
-				LM_W(("Read an unexpected '%s' Ack from '%s' - throwing it away!",  messageCode(header.code), ep->name()));
-				if (dataP != NULL)
-                    free(dataP);
-				remove(ep);
-				ep = NULL;
-				break;
-			}
-			else if (header.code == Message::ProcessVector)
-				break;
-			else if (header.code == Message::Reset)
-            {
-				LM_T(LmtSpawner,("Got a reset, and that's OK but I don't need to do anything, I have nothing started ... Let's just keep reading ..."));
-            }
-			else if (header.code == Message::ProcessList)
-			{
-				LM_T(LmtStarter, ("Got a ProcessList, and that's OK, but I have nothing ... Let's Ack with NO DATA and continue to wait for a Process Vector ..."));
-				ep->ack(Message::ProcessList);
-			}
-			else
-			{
-				LM_E(("Unexpected Message (%s %s)", messageCode(header.code), messageType(header.type)));
-				if (dataP != NULL)
-					free(dataP);
-				remove(ep);
-				continue;
-			}
-		}
-
-		if (ep == NULL)
-			continue;
-
-		// Copying the process vector
-		this->procVec = (ProcessVector*) malloc(dataLen);
-		if (this->procVec == NULL)
-			LM_X(1, ("Error allocating %d bytes for the Process Vector", dataLen));
-
-		memcpy(this->procVec, dataP, dataLen);
-		free(dataP);
-		ep->ack(header.code);
-
-		if ((s = ep->msgAwait(10, 0, "Connection Closed")) != OK)
-			LM_W(("All OK, except that samsonStarter didn't close connection in time. msgAwait(): %s", status(s)));
-		else if ((s = ep->receive(&header, &dataP, &dataLen, packetP)) != ConnectionClosed)
-			LM_W(("All OK, except that samsonStarter didn't close connection when it was supposed to. receive(): %s", status(s)));
-
-		show("Before removing samsonStarter");
-		remove(ep);
-		show("After removing samsonStarter", true);
-		return OK;
-	}
-}
 
 
 // ----------------------------------------------------------------------------

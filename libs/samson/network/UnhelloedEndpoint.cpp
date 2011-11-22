@@ -111,7 +111,17 @@ Status UnhelloedEndpoint::msgTreat2(Packet* packetP)
 				ep->send(p);
 			}
 		}
-		else if (((samson::Endpoint2::Type) helloP->type == Worker) || ((samson::Endpoint2::Type) helloP->type == Starter))
+		else if ((samson::Endpoint2::Type) helloP->type == Starter)
+		{
+			ep = epMgr->add((samson::Endpoint2::Type) helloP->type, id, host, port, rFd, wFd);
+			ep->state = Ready;
+
+			state = ScheduledForRemoval;
+			rFd   = -1;
+			wFd   = -1;
+			epMgr->show("Changed Unhelloed to Starter, The Unhelloed marked with ScheduledForRemoval", true);
+		}
+		else if ((samson::Endpoint2::Type) helloP->type == Worker) 
 		{
 			LM_T(LmtUnhelloed, ("Time to update corresponding Worker endpoint and remove myself ..."));
 			ep = epMgr->lookup((samson::Endpoint2::Type) helloP->type, host);

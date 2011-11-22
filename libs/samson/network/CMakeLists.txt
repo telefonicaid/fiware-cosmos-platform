@@ -29,6 +29,7 @@ SET (HEADERS
 	ControllerEndpoint.h
 	SpawnerEndpoint.h
 	DelilahEndpoint.h
+	StarterEndpoint.h
 
 	NetworkNode.h
 )
@@ -62,6 +63,7 @@ SET (SOURCES
 	ControllerEndpoint.cpp
 	SpawnerEndpoint.cpp
 	DelilahEndpoint.cpp
+	StarterEndpoint.cpp
 )
 
 # Include directories

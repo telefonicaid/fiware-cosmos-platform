@@ -163,17 +163,9 @@ void SamsonSpawner::init()
 	networkP->epMgr->listener = (ListenerEndpoint*) networkP->epMgr->add(Endpoint2::Listener, 0, networkP->epMgr->me->hostGet(), networkP->epMgr->me->portGet(), -1, -1);
 
 	ProcessVector* pv = platformProcessesGet();
+	if (pv != NULL)
+		processesStart(networkP->epMgr->procVecGet());
 
-	networkP->epMgr->procVecSet(pv);
-	if (pv == NULL)
-	{
-		networkP->epMgr->starterAwait();
-		
-		LM_T(LmtProcessVector, ("************* SAVING Process Vector"));
-		platformProcessesSave(networkP->epMgr->procVecGet());
-	}
-
-	processesStart(networkP->epMgr->procVecGet());
 	processListShow("INIT", true);
 	networkP->endpointListShow("INIT", true);
 }
@@ -212,24 +204,16 @@ void SamsonSpawner::receive(Packet* packetP)
 	ProcessVector*      procVec  = (ProcessVector*) packetP->dataP;
 	samson::Endpoint2*  ep       = networkP->epMgr->indexedGet((unsigned int) packetP->fromId);
 
-	if (ep == NULL)
-		LM_X(1, ("Got a message from endpoint %d, but endpoint manager has no endpoint at that index ...", packetP->fromId));
+	LM_T(LmtMsg, ("Treating message %s from endpoint %d", messageCode(packetP->msgCode), packetP->fromId));
 
 	switch (packetP->msgCode)
 	{
 	case Message::Reset:
+		LM_T(LmtMsg, ("Got a RESET message - resetting platform"));
 		if (packetP->msgType == Message::Ack)
 			LM_X(1, ("Spawner cannot receive Ack for Reset"));
 		reset(ep);
 		break;
-
-#if 0
-	case Message::ProcessList:
-		if (packetP->msgType == Message::Ack)
-			LM_X(1, ("Spawner cannot receive Ack for ProcessList"));
-		processList();
-		break;
-#endif
 
 	case Message::ProcessVector:
 		if (packetP->msgType == Message::Ack)
@@ -244,10 +228,140 @@ void SamsonSpawner::receive(Packet* packetP)
 		spawn(process);
 		break;
 
+#if 0
+	case Message::ProcessList:
+		if (packetP->msgType == Message::Ack)
+			LM_X(1, ("Spawner cannot receive Ack for ProcessList"));
+		processList();
+		break;
+#endif
+
 	default:
-		LM_X(1, ("No messages treated - got a '%s' from %s", messageCode(packetP->msgCode), ep->name()));
+		if (ep)
+			LM_X(1, ("No messages treated - got a '%s' from %s", messageCode(packetP->msgCode), ep->name()));
+		else
+			LM_X(1, ("No messages treated - got a '%s'", messageCode(packetP->msgCode)));
 	}
 }
+
+
+#if 0
+Status EndpointManager::starterAwait(void)
+{
+	Status             s;
+	Message::Header    header;
+	void*              dataP    = NULL;
+	long               dataLen  = 0;
+	Packet*            packetP  = new Packet(Message::Unknown);
+
+	LM_TODO(("Instead of all this, perhaps I can just start the spawner and treat the messages in SamsonSpawner::receive ... ?"));
+
+	if (listener == NULL)
+		LM_RE(Error, ("Cannot await the starter to arrive if I have no Listener ..."));
+
+	LM_T(LmtStarter, ("Awaiting samsonStarter to connect and pass the Process Vector"));
+	while (1)
+	{
+		UnhelloedEndpoint* ep;
+
+		LM_T(LmtStarter, ("Await FOREVER for an incoming connection"));
+		if (listener->msgAwait(-1, -1, "Incoming Connection") != 0)
+			LM_X(1, ("Endpoint2::msgAwait error"));
+
+		if ((ep = listener->accept()) == NULL)
+		{
+			LM_E(("error accepting an incoming connection"));
+			continue;
+		}
+
+		if ((s = ep->helloExchange(60, 0)) != OK)
+		{
+			LM_E(("Hello Exchange error: %s", status(s)));
+			delete ep;
+			continue;
+		}
+
+		
+		// Is the newly connected peer a 'samsonStarter' ?
+		if (ep->type != Endpoint2::Starter)
+		{
+			LM_E(("The incoming connection was from a '%s' (only Starter allowed)", ep->typeName()));
+			remove(ep);
+			continue;
+		}
+
+
+		// Reading the message (supposedly a ProcessVector)
+		while (1)
+		{
+			// Hello exchanged, now the endpoint will send a ProcessVector message
+			// Awaiting the message to arrive 
+			if ((s = ep->msgAwait(60, 0, "ProcessVector Message")) != 0)
+				LM_X(1, ("msgAwait(ProcessVector): %s", status(s)));
+
+			if ((s = ep->receive(&header, &dataP, &dataLen, packetP)) != 0)
+			{
+				LM_E(("Endpoint2::receive error"));
+				remove(ep);
+				ep = NULL;
+				break;
+			}
+
+			// All OK ?
+			if (header.type != Message::Msg)
+			{
+				LM_W(("Read an unexpected '%s' Ack from '%s' - throwing it away!",  messageCode(header.code), ep->name()));
+				if (dataP != NULL)
+                    free(dataP);
+				remove(ep);
+				ep = NULL;
+				break;
+			}
+			else if (header.code == Message::ProcessVector)
+				break;
+			else if (header.code == Message::Reset)
+            {
+				LM_T(LmtSpawner,("Got a reset, and that's OK but I don't need to do anything, I have nothing started ... Let's just keep reading ..."));
+            }
+			else if (header.code == Message::ProcessList)
+			{
+				LM_T(LmtStarter, ("Got a ProcessList, and that's OK, but I have nothing ... Let's Ack with NO DATA and continue to wait for a Process Vector ..."));
+				ep->ack(Message::ProcessList);
+			}
+			else
+			{
+				LM_E(("Unexpected Message (%s %s)", messageCode(header.code), messageType(header.type)));
+				if (dataP != NULL)
+					free(dataP);
+				remove(ep);
+				continue;
+			}
+		}
+
+		if (ep == NULL)
+			continue;
+
+		// Copying the process vector
+		this->procVec = (ProcessVector*) malloc(dataLen);
+		if (this->procVec == NULL)
+			LM_X(1, ("Error allocating %d bytes for the Process Vector", dataLen));
+
+		memcpy(this->procVec, dataP, dataLen);
+		free(dataP);
+		ep->ack(header.code);
+
+		if ((s = ep->msgAwait(10, 0, "Connection Closed")) != OK)
+			LM_W(("All OK, except that samsonStarter didn't close connection in time. msgAwait(): %s", status(s)));
+		else if ((s = ep->receive(&header, &dataP, &dataLen, packetP)) != ConnectionClosed)
+			LM_W(("All OK, except that samsonStarter didn't close connection when it was supposed to. receive(): %s", status(s)));
+
+		show("Before removing samsonStarter");
+		remove(ep);
+		show("After removing samsonStarter", true);
+		return OK;
+	}
+}
+#endif
 
 
 
@@ -351,7 +465,9 @@ int SamsonSpawner::timeoutFunction(void)
 */
 void SamsonSpawner::reset(Endpoint2* ep)
 {
-	LM_W(("Got a Reset message from '%s'", ep->name()));
+	if (ep)
+		LM_W(("Got a Reset message from '%s'", ep->name()));
+
 	unlink(processListFilename.c_str());
 
 	LM_T(LmtReset, ("killing local processes"));
@@ -359,10 +475,13 @@ void SamsonSpawner::reset(Endpoint2* ep)
 	localProcessesKill();
 	restartInProgress    = false;
 
-	LM_T(LmtReset, ("Sending ack to RESET message to %s", ep->name()));
-	Packet* packetP = new Packet(Message::Ack, Message::Reset);
-	ep->send(packetP);
-	networkP->epMgr->show("Got RESET", true);
+	if (ep)
+	{
+		LM_T(LmtReset, ("Sending ack to RESET message to %s", ep->name()));
+		Packet* packetP = new Packet(Message::Ack, Message::Reset);
+		ep->send(packetP);
+		networkP->epMgr->show("Got RESET", true);
+	}
 }
 
 
@@ -375,19 +494,18 @@ void SamsonSpawner::processVector(Endpoint2* ep, ProcessVector* procVec)
 {
 	networkP->epMgr->procVecSet(procVec);
 
-	LM_T(LmtProcessVector, ("Got Process Vector with %d processes from %s", procVec->processes, ep->name()));
-
-#if 0
-	// Supposedly, a RESET was sent before ...
-	restartInProgress = true;
-	localProcessesKill();
-	restartInProgress = false;
-#endif
+	if (ep)
+		LM_T(LmtProcessVector, ("Got Process Vector with %d processes from %s", procVec->processes, ep->name()));
+	else
+		LM_T(LmtProcessVector, ("Got Process Vector with %d processes", procVec->processes));
 
 	processesStart(procVec);
 
-	Packet* packetP = new Packet(Message::Ack, Message::ProcessVector);
-	ep->send(packetP);
+	if (ep)
+	{
+		Packet* packetP = new Packet(Message::Ack, Message::ProcessVector);
+		ep->send(packetP);
+	}
 }
 
 

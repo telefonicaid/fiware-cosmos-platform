@@ -104,6 +104,7 @@ namespace samson {
 
             
             // Spetial function to get all the blocks for a particular range loking them
+            void getBlocksForKVRange( KVRange range , BlockList *outputBlockList ); 
             bool getAndLockBlocksForKVRange( KVRange range , BlockList *outputBlockList ); 
             bool canLockBlocksForKVRange( KVRange range );
             

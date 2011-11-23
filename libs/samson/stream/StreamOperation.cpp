@@ -37,19 +37,19 @@ namespace samson {
             
         }        
         
-        StreamOperation::StreamOperation( )
+        StreamOperation::StreamOperation(  )
         {
             streamManager = NULL;
             
             // Default environment parameters
             environment.set("max_latency" , "60" );
-            environment.set("delayed_processing" , "no" );
-            environment.set("priority","0" );
+            environment.set("priority", "1" );
             
             
             // Additional information
             history_num_operations = 0;
             history_core_seconds = 0;
+            
             //num_blocks = 0;
             //temporal_size = 0;
             //info.clear();
@@ -63,7 +63,7 @@ namespace samson {
             
             au::CommandLine cmd;
             cmd.set_flag_boolean("forward");    // Forward flag to indicate that this is a reduce forward operation ( no update if state )
-            cmd.set_flag_int("execution_period",0);     // Operations scheduled every X seconds ( input not removed )
+            cmd.set_flag_int("divisions", SamsonSetup::shared()->getInt("general.num_processess") );    // Number of divisions in state operations 
             cmd.parse( command );
             
             if( cmd.get_num_arguments() < 3 )
@@ -103,11 +103,6 @@ namespace samson {
                 case Operation::parserOut:
                     
                     stream_operation = new StreamOperationForward();
-                    
-                    // Special property
-                    if( cmd.get_flag_int("execution_period") > 0 )
-                        stream_operation->environment.setInt("system.execution_period",  cmd.get_flag_int("execution_period") );
-                    
                     break;
                     
                 case Operation::reduce:
@@ -122,7 +117,7 @@ namespace samson {
                     if( cmd.get_flag_bool("forward") )
                         stream_operation = new StreamOperationForwardReduce();
                     else
-                        stream_operation = new StreamOperationUpdateState();
+                        stream_operation = new StreamOperationUpdateState( cmd.get_flag_int("divisions")  );
                     
                 }
                     break;
@@ -190,10 +185,13 @@ namespace samson {
         
         int StreamOperation::getPriority()
         {
-            return environment.getInt( "priority" , -1 );
+            int p = environment.getInt( "priority" , -1 );
+            
+            if( p <= 0)
+                return 1;
+            
+            return p;
         }
-        
-        
         
         void StreamOperation::getInfo( std::ostringstream &output )
         {
@@ -216,9 +214,8 @@ namespace samson {
             
             au::xml_simple(output, "properties", environment.getEnvironmentDescription() );
             
-            au::xml_simple(output,"status" , getStatus() );
 
-            au::xml_simple(output,"last_review" , last_review );
+            au::xml_simple(output,"last_review" , last_review + " " + getStatus() );
 
             // Information about input
             BlockInfo input_block_info = getUniqueBlockInfo();
@@ -314,18 +311,6 @@ namespace samson {
         
         void StreamOperationForward::review()
         {
-            // If execution period is defined, just return
-            int execution_period = environment.getInt("system.execution_period", 0);
-            if( execution_period > 0 )
-            {
-                int time = cronometer.diffTimeInSeconds();
-                if( time < execution_period )
-                    last_review = au::str( "Next execution in %d seconds ( period %d )" , execution_period - time ,  execution_period );
-                else
-                    last_review = au::str( "Pending to be executed immediately  ( %d seconds > period %d )" , time ,  execution_period );
-                return;
-            }
-            
             // Default message for this stream operation if 'sheduceQueueTasks' is not called...
             last_review = "not considered";
             
@@ -338,9 +323,42 @@ namespace samson {
             getBlockList("input")->extractFrom( input->list , 0 );
         }
         
-        
-        void StreamOperationForward::sheduceQueueTasks( BlockList* input , size_t max_size )
+        size_t StreamOperationForward::getNextQueueTaskPriorityParameter( )
         {
+            // Get the input BLockList
+            BlockList *input = getBlockList("input");
+            
+            if( input->isEmpty() )
+            {
+                last_review = au::str("No more tasks ( No data in queue %s )" , input_queues[0].c_str() );
+                return 0; // No task to be implemented
+            }
+
+            // Rigth now using size * time * priority
+            BlockInfo input_block_info = input->getBlockInfo();
+            return input_block_info.size * input_block_info.max_time_diff() * getPriority();
+        }
+        
+        void StreamOperationForward::scheduleNextQueueTasks( )
+        {
+            if( !isValid() )
+                LM_X(1,("scheduleNextQueueTasks for a non-valid operaiton"));
+            
+            // Properties for this stream operation
+            size_t max_size         = SamsonSetup::shared()->getUInt64("stream.max_operation_input_size");
+            
+            // Remove the last_review label
+            last_review = "";
+            
+            // Get the input BLockList
+            BlockList *input = getBlockList("input");
+            
+            if( input->isEmpty() )
+                LM_X(1,("Internal error. Empty input in stream operation...."));
+                     
+            // Get detailed information about data to be processed
+            BlockInfo operation_block_info = input->getBlockInfo();
+            
             // Get a new id for the next operation
             size_t id = streamManager->getNewId();
             
@@ -396,124 +414,17 @@ namespace samson {
                                                         ));
         }
         
-        bool StreamOperationForward::scheduleNextQueueTasks( )
-        {
-            if( !isValid() )
-            {
-                last_review = "Not valid operation";
-                return false;
-            }
-            
-            // Properties for this stream operation
-            size_t max_size         = SamsonSetup::shared()->getUInt64("stream.max_operation_input_size");
-            size_t min_size         = SamsonSetup::shared()->getUInt64("stream.min_operation_input_size");
-            size_t max_latency      = environment.getSizeT("max_latency", 0);                                   // Max acceptable time to run an operation
-            bool delayed_processing = ( environment.get("delayed_processing", "yes") == "yes" );
-            int execution_period    = environment.getInt("system.execution_period", 0 );
-            
-            
-            // Periodically executed operations
-            // ------------------------------------------------------------------------------------------------------------------------
-            if( execution_period > 0 )
-            {
-               if( (history_num_operations == 0 ) || (cronometer.diffTimeInSeconds() > execution_period ) )
-               {
-                   cronometer.reset();
-                   
-                   // Process the entire input
-                   BlockList input;
-                   input.copyFrom( streamManager->getQueue( input_queues[0] )->list ); 
-                   
-                   while( !input.isEmpty() )
-                       sheduceQueueTasks( &input , max_size );
-                   
-               }
-                
-                return false;   // No more pending operations for this task
-            }
-            // ------------------------------------------------------------------------------------------------------------------------
-            
-            
-            last_review = "";
-            
-            
-            if( isPaused() )
-            {
-                last_review = "Operation paused";
-                return false;
-            }
-            
-            if( !isValid() )
-            {
-                last_review = au::str("Stream operation not valid" );
-                return false;
-            }
-                        
-            // Get the input BLockList
-            BlockList *input = getBlockList("input");
-            
-            if( input->isEmpty() )
-            {
-                last_review = au::str("No data in queue %s" , input_queues[0].c_str() );
-                return false;
-            }
-            
-            // Get detailed information about data to be processed
-            BlockInfo operation_block_info = input->getBlockInfo();
-
-            bool cancel_operation = false;
-
-            if( delayed_processing )
-                if( operation_block_info.size < min_size )
-                    cancel_operation = true;
-            
-            
-            // Check if latency is too high....
-            if( cancel_operation )
-                if( ( max_latency > 0 ) && ( (size_t)operation_block_info.min_time_diff() > max_latency ) )
-                    cancel_operation = false;
-
-            
-            if( cancel_operation )
-            {
-                last_review = au::str("Queue %s has %s ( time %s ). Required %s to fire, or time > %s" , 
-                                      input_queues[0].c_str(),
-                                      au::str( operation_block_info.size ,"B" ).c_str() , 
-                                      au::time_string( operation_block_info.min_time_diff() ).c_str(),
-                                      au::str( min_size , "B" ).c_str(),
-                                      au::time_string( max_latency ).c_str()
-                                      );
-                return false;
-            }
-                
-            // We create a queue task here...
-            sheduceQueueTasks( input, max_size );
-            
-            return true;
-        }
         
-        std::string StreamOperationForward::getStatus()
-        {
-            std::ostringstream output;
-            
-            // Input data
-            size_t size = getBlockList("input")->getBlockInfo().size;
-            if ( size > 0 )
-                output << "[ Input data " << au::str( size ) << " ]";
-
-            if( running_tasks.size() > 0 )
-                output << "[ Running " << running_tasks.size() << " operations ] ";
-            
-            
-            return output.str();
-        }
         
 #pragma mark StreamOperationUpdateState::
  
-        StreamOperationUpdateState::StreamOperationUpdateState()
+        StreamOperationUpdateState::StreamOperationUpdateState( int _num_divisions )
         {
-            num_divisions = SamsonSetup::shared()->getInt("general.num_processess");
-            updating_division = new bool[KVFILE_NUM_HASHGROUPS];
+            // Number of divisions defined by user at creation time
+            num_divisions = _num_divisions;
+
+            // Alloc vector of booleans to flag what divisions we are updating...
+            updating_division = new bool[num_divisions];
             
             for (int i = 0 ; i < num_divisions ; i++ )
                 updating_division[i] =  false;  // Flag as non updating
@@ -569,34 +480,10 @@ namespace samson {
         
         void StreamOperationUpdateState::review()
         {
-            last_review = "not considered";
             
             // Get the input queue
             Queue *input = streamManager->getQueue( input_queues[0] );
             
-            // Get state queue
-            Queue *state = streamManager->getQueue( input_queues[1] );
-            
-            // Increase the number of divisions if necessary
-            int future_num_divisions = getMinNumDivisions();
-            if( future_num_divisions > num_divisions )
-            {
-                if( numUpdatingDivisions() == 0)
-                {
-                    // Transform blocklists
-                    transform_block_lists( num_divisions , future_num_divisions );
-                    num_divisions = future_num_divisions;
-                }
-                else
-                {
-                    // Waiting update operations to finish...
-                    
-                }
-            }
-            
-            // Set the minimum number of divisions for the state
-            state->setMinNumDivisions( num_divisions );
-
             // Extract data from input queue to the "input" blocklist ( no size limit... all blocks )
             BlockList tmp;
             tmp.extractFrom( input->list , 0 );
@@ -604,10 +491,7 @@ namespace samson {
             // Update history information since we will absorb all data included in this list
             tmp.update( history_block_info );
 
-
-
-
-
+            // Put content in all the input blocklist for all the divisions
             std::list<Block*>::iterator b;
             for ( b = tmp.blocks.begin() ; b != tmp.blocks.end() ; b++ )
             {
@@ -619,14 +503,29 @@ namespace samson {
             }
             
         }
+        size_t StreamOperationUpdateState::getNextQueueTaskPriorityParameter( )
+        {
+            int division = next_division_to_be_updated();
+            
+            if( division == -1 )
+                return 0; // No division to be updated
+            
+            // Get the input BLockList
+            BlockList *input = getBlockList( au::str("input_%d",division) );
+            
+            if( input->isEmpty() )
+                return 0; // No task to be implemented
+            
+            // Rigth now using size * time * priority
+            BlockInfo input_block_info = input->getBlockInfo();
+            return input_block_info.size * input_block_info.max_time_diff() * getPriority();
+        }
         
-        bool StreamOperationUpdateState::scheduleNextQueueTasks(  )
+        
+        void StreamOperationUpdateState::scheduleNextQueueTasks( )
         {
             if( !isValid() )
-            {
-                last_review = "Not valid operation";
-                return false;
-            }
+                LM_X(1,("scheduleNextQueueTasks for a non-valid operaiton"));
             
             // State queue
             std::string queue_state_name = input_queues[1];
@@ -636,47 +535,20 @@ namespace samson {
             Operation *op = getOperation( );
             
             // Properties for this stream operation
-            //size_t max_size         = SamsonSetup::shared()->getUInt64("stream.max_operation_input_size");
             size_t max_size         = SamsonSetup::shared()->getUInt64("general.memory") / 8;       // Max memory to get
             
-            size_t min_size         = SamsonSetup::shared()->getUInt64("stream.min_operation_input_size");
-            size_t max_latency      = environment.getSizeT("max_latency", 0);                                   // Max acceptable time to run an operation
-            bool delayed_processing = ( environment.get("delayed_processing", "yes") == "yes" );
-            
             last_review = "";
-            
-            if( isPaused() )
-            {
-                last_review = "Operation paused";
-                return false;
-            }
-            
-            if( !state->isReadyForDivisions( ) )
-            {
-                last_review = "State queue is not ready, breaking...";
-                return false;
-            }
-            
-            if( getMinNumDivisions() > num_divisions )
-            {
-                last_review = "Waiting to break state...";
-                return false;   // No schedule since we will break state
-            }
-            
-            // Run a new update operation
-            int division  = max_size_division();
+
+            int division = next_division_to_be_updated();
             
             if( division == -1 )
-            {
-                last_review = "No more divisions to update";
-                return false;
-            }
-            
+                LM_X(1,("Internal error"));
+
+            if( updating_division[division] )
+                LM_X(1,("Internal error"));
             
             // Updating division "division"
             // --------------------------------------------------------------------------------
-            if( updating_division[division] )
-                LM_X(1,("Internal error"));
             
             updating_division[division] = true;
             
@@ -691,40 +563,10 @@ namespace samson {
                 LM_X(1,("Internal error"));
                         
             if( inputBlockList.isEmpty() )
-            {
-                LM_X(1,("Internal error for updating division  %d / %d with no content... %s " , division , num_divisions,  inputBlockList.strShortDescription().c_str() ));     // division == -1
-                return false;
-            }
+                LM_X(1,("Interal error"));
             
             // Get detailed information about data to be processed
             BlockInfo operation_block_info = input->getBlockInfo();
-            
-            bool cancel_operation = false;
-            
-            if( delayed_processing )
-                if( operation_block_info.size < min_size )
-                    cancel_operation = true;
-            
-            
-            // Check if latency is too high....
-            if( cancel_operation )
-                if( ( max_latency > 0 ) && ( (size_t)operation_block_info.min_time_diff() > max_latency ) )
-                    cancel_operation = false;
-            
-            
-            if( cancel_operation )
-            {
-                last_review = au::str("Division %d has %s ( time %s ). Required %s to fire, or time > %s" , 
-                                      division,
-                                      au::str( operation_block_info.size ,"B" ).c_str() , 
-                                      au::time_string( operation_block_info.min_time_diff() ).c_str(),
-                                      au::str( min_size , "B" ).c_str(),
-                                      au::time_string( max_latency ).c_str()
-                                      );
-                return false;
-            }
-            
-            // We create a queue task here...
             
             // Get a new id for the next operation
             size_t id = streamManager->getNewId();
@@ -747,8 +589,6 @@ namespace samson {
             // Schedule tmp task into QueueTaskManager
             streamManager->queueTaskManager.add( task );
             
-            return true;
-            
         }
 
         int StreamOperationUpdateState::numUpdatingDivisions()
@@ -760,7 +600,25 @@ namespace samson {
             return total;
         }
         
-        int StreamOperationUpdateState::max_size_division()
+        size_t StreamOperationUpdateState::getMaxStateSize()
+        {
+            size_t max_size = 0 ;
+            Queue *state = streamManager->getQueue( input_queues[1] );
+
+            for (int i = 0 ; i < num_divisions ; i++ )
+            {
+                BlockList block_list;
+                state->getBlocksForKVRange( rangeForDivision(i,num_divisions) , &block_list );
+                size_t tmp = block_list.getBlockInfo().size;
+                if( tmp > max_size )
+                    max_size = tmp;
+            }
+
+            return max_size;
+        }
+        
+        
+        int StreamOperationUpdateState::next_division_to_be_updated()
         {
             // State queue to check if the state blocks can be locked
             std::string queue_state_name = input_queues[1];
@@ -773,7 +631,6 @@ namespace samson {
             {
                 if( !updating_division[i] )
                 {
-                    
                     if( state->canLockBlocksForKVRange( rangeForDivision(i, num_divisions) ) )
                     {
                         
@@ -791,47 +648,8 @@ namespace samson {
             return division;
         }
         
-        int StreamOperationUpdateState::getMinNumDivisions()
-        {
-            // Get the state queue & information about content
-            Queue *state = streamManager->getQueue( input_queues[1] );
-            BlockInfo block_info = state->list->getBlockInfo();
-            
-            double _min_num_divisions = (double)block_info.size / (double) SamsonSetup::shared()->getUInt64("stream.max_state_division_size");
-            int min_num_divisions = next_pow_2( (size_t) _min_num_divisions ); 
-            
-            int num_divisions_base = SamsonSetup::shared()->getInt("general.num_processess");
-            
-            // Minimum the number of cores and then 4*num_cores...
-            while( num_divisions_base < min_num_divisions )
-                num_divisions_base *= 4;
-            
-            return num_divisions_base;
-        }
         
-        std::string StreamOperationUpdateState::getStatus()
-        {
-            std::ostringstream output;
-            
-            int num_Updating_Divisions = numUpdatingDivisions();
-            
-            BlockList allBlocks;
-            getAllInputBlocks( &allBlocks );
-            BlockInfo allBlocksInfo = allBlocks.getBlockInfo();
-
-            if( allBlocksInfo.size > 0)
-                output << "[ Input data " << au::str(  allBlocksInfo.size , "B" ) << " ]";
-            
-            if( num_Updating_Divisions > 0 )
-                output << "[ Updating " << num_Updating_Divisions << " / " << num_divisions << " divisions ]"; 
-            else
-                output << "[ #Divs " << num_divisions << " ]";
-            
-            if( running_tasks.size() > 0 )
-                output << "[ Running " << running_tasks.size() << " operations ] ";
-            
-            return output.str();
-        }        
+       
         
         void StreamOperationUpdateState::getAllInputBlocks( BlockList *blockList )
         {
@@ -903,74 +721,43 @@ namespace samson {
             
         }
         
-        bool StreamOperationForwardReduce::scheduleNextQueueTasks( )
+        size_t StreamOperationForwardReduce::getNextQueueTaskPriorityParameter( )
+        {
+            // Get the input BLockList
+            BlockList *input = getBlockList("input");
+            
+            if( input->isEmpty() )
+            {
+                last_review = au::str("No more tasks ( No data in queue %s )" , input_queues[0].c_str() );
+                return 0; // No task to be implemented
+            }
+            
+            // Rigth now using size * time * priority
+            BlockInfo input_block_info = input->getBlockInfo();
+            return input_block_info.size * input_block_info.max_time_diff() * getPriority();
+        }        
+        
+        void StreamOperationForwardReduce::scheduleNextQueueTasks( )
         {
             if( !isValid() )
-            {
-                last_review = "Not valid operation";
-                return false;
-            }
+                LM_X(1,("scheduleNextQueueTasks for a non-valid operaiton"));
             
             // Get the operation itself
             Operation *op = getOperation( );
             
             // Properties for this stream operation
             size_t max_size         = SamsonSetup::shared()->getUInt64("stream.max_operation_input_size");
-            size_t min_size         = SamsonSetup::shared()->getUInt64("stream.min_operation_input_size");
-            size_t max_latency      = environment.getSizeT("max_latency", 0);                                   // Max acceptable time to run an operation
-            bool delayed_processing = ( environment.get("delayed_processing", "yes") == "yes" );
             
             last_review = "";
-            
-            if( isPaused() )
-            {
-                last_review = "Operation paused";
-                return false;
-            }
-            
-            if( !isValid() )
-            {
-                last_review = au::str("Stream operation not valid" );
-                return false;
-            }
             
             // Get the input BLockList
             BlockList *input = getBlockList("input");
             
             if( input->isEmpty() )
-            {
-                last_review = au::str("No data in queue %s" , input_queues[0].c_str() );
-                return false;
-            }
+                LM_X(1,("Internal erro"));
             
             // Get detailed information about data to be processed
             BlockInfo operation_block_info = input->getBlockInfo();
-            
-            bool cancel_operation = false;
-            
-            if( delayed_processing )
-                if( operation_block_info.size < min_size )
-                    cancel_operation = true;
-            
-            
-            // Check if latency is too high....
-            if( cancel_operation )
-                if( ( max_latency > 0 ) && ( (size_t)operation_block_info.min_time_diff() > max_latency ) )
-                    cancel_operation = false;
-            
-            
-            if( cancel_operation )
-            {
-                last_review = au::str("Queue %s has %s ( time %s ). Required %s to fire, or time > %s" , 
-                                      input_queues[0].c_str(),
-                                      au::str( operation_block_info.size ,"B" ).c_str() , 
-                                      au::time_string( operation_block_info.min_time_diff() ).c_str(),
-                                      au::str( min_size , "B" ).c_str(),
-                                      au::time_string( max_latency ).c_str()
-                                      );
-                return false;
-            }
-            
             
             // Get a new id for the next operation
             size_t id = streamManager->getNewId();
@@ -1004,23 +791,8 @@ namespace samson {
                                                         input_queues[0].c_str() 
                                                         ));
             
-            return true;
         }
         
-        std::string StreamOperationForwardReduce::getStatus()
-        {
-            std::ostringstream output;
-            
-            // Input data
-            size_t size = getBlockList("input")->getBlockInfo().size;
-            if ( size > 0 )
-                output << "[ Input data " << au::str( size ) << " ]";
-            
-            if( running_tasks.size() > 0 )
-                output << "[ Running " << running_tasks.size() << " operations ] ";
-            
-            return output.str();
-        }
         
         
     }

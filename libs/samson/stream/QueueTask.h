@@ -25,19 +25,10 @@ namespace samson {
         class QueueTask : public StreamProcessBase , public QueueTaskBase
         {
             
-            FullKVInfo queue_task_info;         // total information covered by this task
-            
-            
         public:
 
             // Constructor
             QueueTask( size_t _id , StreamOperationBase* streamOperation  );
-            
-            // Overloaded method for ProcessItem
-            virtual std::string getStatus()
-            {
-                return au::str("No task description for task %lu", id );
-            }
             
             // Function executed just before task is deleted in the main thread
             virtual void finalize(StreamManager* streamManager){};

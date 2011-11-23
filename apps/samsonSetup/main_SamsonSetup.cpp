@@ -122,10 +122,12 @@ public:
             samson::SamsonSetup::shared()->setValueForParameter( "general.memory" , "2000000000" );
             samson::SamsonSetup::shared()->setValueForParameter( "general.num_processess" , "2" );
             samson::SamsonSetup::shared()->setValueForParameter( "general.shared_memory_size_per_buffer" , "64000000" );
+            samson::SamsonSetup::shared()->setValueForParameter( "stream.max_operation_input_size" , "64000000" );
 
             writeWarningOnConsole("Properties general.memory                        = 2Gb");
             writeWarningOnConsole("Properties general.num_processess                = 2");
             writeWarningOnConsole("Properties general.shared_memory_size_per_buffer = 64Mb");
+            writeWarningOnConsole("Properties stream.max_operation_input_size       = 64Mb");
             return;
         }
         

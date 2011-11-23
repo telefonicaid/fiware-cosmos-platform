@@ -74,7 +74,6 @@ namespace samson {
             
             StreamOperationBase()
             {
-                
             }
             
             // Only used when running run_stream_operation
@@ -82,7 +81,6 @@ namespace samson {
             {
                 name = "manual";
                 operation = _operation;
-                
                 num_workers = _num_workers;
             }
             
@@ -98,7 +96,6 @@ namespace samson {
                 
                 // Copy environment properties
                 environment.copyFrom( &other->environment );
-                
             }
             
         };
@@ -116,10 +113,11 @@ namespace samson {
         public:
             
 
-            // History of this operation
+            // Total input history
             BlockInfo history_block_info;   // Historical information
-            int history_num_operations;             // Number of operations performed so far
-            int history_core_seconds;
+            
+            int history_num_operations;     // Number of operations performed so far
+            int history_core_seconds;       // Total core seconds used in this stream operation
             
             //FullKVInfo info;
             //size_t temporal_size;
@@ -130,13 +128,18 @@ namespace samson {
             // Private constructor
             StreamOperation( );
             
+            
+            virtual std::string getStatus()
+            {
+                return "( no status )";
+            }
+            
         public:
             
             // Static function to get a new Stream Operation
             static StreamOperation* newStreamOperation( StreamManager *streamManager , std::string command, au::ErrorManager& error );
             
             // Instruction to add or remove a particular task for this automatic rule
-            
             void add( QueueTask* task );
             void remove( QueueTask* task );
             
@@ -160,21 +163,28 @@ namespace samson {
                 LM_X(1,("Internal error")); // This should be always subclased
             }
             
-            virtual bool scheduleNextQueueTasks( )
-            {
-                LM_X(1,("Internal error")); // This should be always subclased
-                return false;
-            }
-            
-            virtual std::string getStatus()
-            {
-                return "Non implemented getStatus() at StreamOperation";
-            }
-            
             int getCoreSeconds()
             {
                 return environment.getInt("system.core_seconds" , 0 );
             }
+            
+            int getMaxTasks()
+            {
+                return environment.getInt("system.max_tasks" , 0 );
+            }
+            
+        private:
+            
+            // ------------------------------------------------------------------------------------
+            // Scheduling new tasks
+            // ------------------------------------------------------------------------------------
+            
+            // Function to know if there are new tasks to be scheduled and the priority of this next task
+            // Return "0" means "no task to be scheduled"
+            virtual size_t getNextQueueTaskPriorityParameter( )=0;
+            
+            // Function to schedule one or more tasks ( if we were the higher priority operation )
+            virtual void scheduleNextQueueTasks( )=0;
             
         };
         
@@ -190,13 +200,31 @@ namespace samson {
             
             bool isValid();
             void review();
-            virtual bool scheduleNextQueueTasks( );
-            std::string getStatus();
+            
+            virtual std::string getStatus()
+            {
+                std::ostringstream output;
+                output << "( ";
+                output << "Forward operation.";
+                size_t num_tasks = running_tasks.size();
+                if( num_tasks > 0 )
+                    output << "Running " << num_tasks << " tasks";
+                
+                int max_tasks = getMaxTasks();
+                if ( max_tasks > 0 )
+                    output << "Maximum " << max_tasks << " tasks";
+                output << ") ";
+                return output.str();
+            }
+            
             
         private:
 
-            // Schedule individual operation taking input from input ( removing input )
-            void sheduceQueueTasks( BlockList* input , size_t max_size );
+            // Priority for the next tasks
+            size_t getNextQueueTaskPriorityParameter( );
+            
+            // Scheduling new tasks
+            void scheduleNextQueueTasks( );
 
         };
 
@@ -205,70 +233,58 @@ namespace samson {
         {
             
             // Information to keep track of everything
-            int num_divisions;                  // Global number of divisions we are considering ( taking the size of the state )
-            bool *updating_division;            // Vector indicating if we are updating a particular divisions
+            int num_divisions;            // Number of divisions  ( state is divided and updated individually in divisions )
+            bool *updating_division;      // Vector indicating if we are updating a particular division ( not possible to update this division in paralel )
 
-            int numUpdatingDivisions();            
-            int max_size_division();            
-            int getMinNumDivisions();
+            int numUpdatingDivisions();            // Number of divisions currently being updated
+            int next_division_to_be_updated();     // Next division to be updated ( if any ) Criteria: maximum input and non being updated. 
             
         public:
             
-            StreamOperationUpdateState();
+            StreamOperationUpdateState( int _num_divisions );
             ~StreamOperationUpdateState();
+            
+            virtual std::string getStatus()
+            {
+                std::ostringstream output;
+                output << "( ";
+                output << "Update state with " << num_divisions << " division.";
+                size_t num_tasks = running_tasks.size();
+                if( num_tasks > 0 )
+                    output << "Running " << num_tasks << " tasks.";
+                
+                int max_tasks = getMaxTasks();
+                if ( max_tasks > 0 )
+                    output << "Maximum " << max_tasks << " tasks.";
+                
+                output << "Maximum state size " << au::str( getMaxStateSize() ) << ".";
+                
+                output << ") ";
+                return output.str();
+            }
+            
             
             bool isValid();
             void review();
-            virtual bool scheduleNextQueueTasks( );
-            std::string getStatus();
             
             void finish_update_division( int division )
             {
                 if( !updating_division[ division ] )
                     LM_W(("Update division finish without being locked... this should be an error"));
-                
                 updating_division[ division ] = false;
             }
-            
-            
-            void transform_block_lists( int previous_num_division , int future_num_division )
-            {
-                if( num_divisions != previous_num_division )
-                    LM_X(1,("Internal error"));
 
-                if( numUpdatingDivisions() != 0 )
-                    LM_X(1,("Internal error"));
-                
-                for (int i = 0 ; i < future_num_division ; i++ )
-                    updating_division[i] = false;
-                
-                BlockListContainer auxBlockListContainer;
-                auxBlockListContainer.copyFrom( this );
-                clearBlockListcontainer();
-
-                int factor = future_num_division / previous_num_division;
-                
-                for ( int i = 0 ; i < previous_num_division ; i++ )
-                {
-                    for ( int f = 0 ; f < factor ; f++ )
-                    {
-                        // Old queue i 
-                        BlockList *oldQueue = auxBlockListContainer.getBlockList( au::str("input_%d", i ) );
-
-                        // New queue i*factor + f
-                        BlockList *newQueue = getBlockList( au::str("input_%d", i*factor + f ) );
-                        
-                        // Copy content
-                        newQueue->copyFrom( oldQueue );
-                    }
-                }
-                
-                num_divisions = future_num_division;
-                
-            }
+        private:
             
+            // Priority for the next tasks
+            size_t getNextQueueTaskPriorityParameter( );
             
+            // Scheduling new tasks
+            void scheduleNextQueueTasks( );
+            
+            // Auxiliar function
             void getAllInputBlocks( BlockList *blockList );
+            size_t getMaxStateSize();
             
         };
 
@@ -279,10 +295,30 @@ namespace samson {
             
             bool isValid();
             void review();
-            bool scheduleNextQueueTasks( );
+
+            virtual std::string getStatus()
+            {
+                std::ostringstream output;
+                output << "( ";
+                output << "Forward reduce operation.";
+                size_t num_tasks = running_tasks.size();
+                if( num_tasks > 0 )
+                    output << "Running " << num_tasks << " tasks";
+                
+                int max_tasks = getMaxTasks();
+                if ( max_tasks > 0 )
+                    output << "Maximum " << max_tasks << " tasks";
+                output << ") ";
+                return output.str();
+            }            
             
-            std::string getStatus();
+        private:
             
+            // Priority for the next tasks
+            size_t getNextQueueTaskPriorityParameter( );
+            
+            // Scheduling new tasks
+            void scheduleNextQueueTasks( );
             
         };        
         

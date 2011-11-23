@@ -351,43 +351,73 @@ namespace samson {
         
         void StreamManager::reviewStreamOperations()
         {
-            
-            double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
-            if ( memory_usage >= 1.0 )
+            while( true )
             {
-                LM_W(("Not schedulling new stream-tasks since memory usage is %s", au::percentage_string( memory_usage ).c_str() ));
-                return;
-            }
-            
-            // List of operations to run in order...
-            std::vector<StreamOperation*> ordered_stream_operations;
-            
-            // First review all stream operations
-            au::map <std::string , StreamOperation>::iterator it_stream_operations;
-            for (it_stream_operations = stream_operations.begin() ; it_stream_operations != stream_operations.end() ; it_stream_operations++ )
-            {
-                it_stream_operations->second->review();
-                ordered_stream_operations.push_back( it_stream_operations->second );
-            }
-            
-            // Sort ordered_stream_operations
-            std::sort( ordered_stream_operations.begin() , ordered_stream_operations.end() , compareStreamOperation );
-            
-
-            for ( size_t i = 0 ; i < ordered_stream_operations.size() ; i++)
-            {
-                while( true )
+                // Find the most urgent stream operation
+                size_t max_priority_rank = 0;
+                StreamOperation *next_stream_operation = NULL;
+                
+                
+                // First review all stream operations
+                au::map <std::string , StreamOperation>::iterator it_stream_operations;
+                for (it_stream_operations = stream_operations.begin() ; it_stream_operations != stream_operations.end() ; it_stream_operations++ )
                 {
+                    StreamOperation *stream_operation = it_stream_operations->second;
                     
-                    // If it has enougth tasks, we do not schedule anything else
-                    if( queueTaskManager.hasEnougthTasks() )
-                        break;
+                    // Check non-valid operations
+                    if( !stream_operation->isValid() )
+                    {
+                        stream_operation->last_review = "Operation paused";
+                        continue;
+                    }
                     
-                    if( !ordered_stream_operations[i]->scheduleNextQueueTasks( ) )
-                        break;
+                    if( stream_operation->isPaused() )
+                    {
+                        stream_operation->last_review = "Operation paused";
+                        continue;
+                    }
+                    
+                    //  Review operation
+                    stream_operation->review(); // Basically take input data for input....
+                    
+                    
+                    // Let's see if we are really the next stream operation to be schedule next task...
+                    size_t tmp_max_priority_rank = stream_operation->getNextQueueTaskPriorityParameter();
+                    
+                    if( tmp_max_priority_rank > 0 )
+                        stream_operation->last_review = au::str( "Pending task ( prioriry %s )" ,  au::str( tmp_max_priority_rank ).c_str() );
+                    else
+                        stream_operation->last_review = au::str( "No pending tasks" ,  au::str( tmp_max_priority_rank ).c_str() );
+                        
+                    if ( ( tmp_max_priority_rank > 0 ) && (tmp_max_priority_rank > max_priority_rank ) )
+                    {
+                        // we found a new stream operation that is more priority than the previous one
+                        max_priority_rank = tmp_max_priority_rank;
+                        next_stream_operation = stream_operation;
+                    }
+                    
                 }
                 
+                double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
+                if ( memory_usage >= 1.0 )
+                {
+                    LM_W(("Not schedulling new stream-tasks since memory usage is %s ( criteria >= 1.0 )", au::percentage_string( memory_usage ).c_str() ));
+                    return;
+                }
+                
+                
+                // If it has enougth tasks, we do not schedule anything else
+                if( queueTaskManager.hasEnougthTasks() )
+                    return;
+                
+                if( !next_stream_operation )
+                    return; // No more operations to schedule
+
+                // Schedule next task ( or tasks in some particular cases... )
+                next_stream_operation->scheduleNextQueueTasks( );
+                
             }
+            
         }
         
         

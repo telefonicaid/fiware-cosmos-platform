@@ -241,6 +241,19 @@ namespace samson {
             
             return true;
         }
+        
+        void Queue::getBlocksForKVRange( KVRange range , BlockList *outputBlockList )
+        {
+            au::list< Block >::iterator block_it;
+            for ( block_it = list->blocks.begin() ; block_it != list->blocks.end() ; block_it++ )
+            {
+                Block *block = *block_it;
+                KVRange block_range = block->getKVRange();
+                
+                if( block_range.overlap( range ) )
+                    outputBlockList->add( block );
+            }
+        }
 
         bool Queue::getAndLockBlocksForKVRange( KVRange range , BlockList *outputBlockList )
         {

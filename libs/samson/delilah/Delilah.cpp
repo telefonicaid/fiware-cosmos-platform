@@ -617,7 +617,7 @@ namespace samson {
 
 #define LS_STREAM_OPERATIONS_VERBOSE "info_command -worker //stream_operation /name,t=name,left /input_str,t=input /running_tasks,t=running_tasks /history_str,t=history "
 
-#define LS_STREAM_OPERATIONS_VERBOSE_VERBOSE "info_command -worker //stream_operation /name,t=name,left /state,t=state /last_review,t=last_review"
+#define LS_STREAM_OPERATIONS_VERBOSE_VERBOSE "info_command -worker //stream_operation /name,t=name,left /last_review,t=last_review"
 
     
     std::string Delilah::info( std::string command )

@@ -48,7 +48,7 @@ MESSAGE( "Creating module ${MODULE_NAME}" )
 MESSAGE( "----------------------------------------------------------------------------")
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
-target_link_libraries(${MODULE_NAME} libmongoclient.a -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt  )
+target_link_libraries(${MODULE_NAME} -lmongoclient -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt  )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})

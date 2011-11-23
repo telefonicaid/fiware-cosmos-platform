@@ -944,15 +944,24 @@ Status Endpoint2::connect(void)
 	peer.sin_port        = htons(port);
 
 	LM_T(LmtConnect, ("Connecting to %s at %s:%d", name(), host->name, port));
-	if (::connect(wFd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
+	int retries = 10;
+	int tri     = 0;
+
+	while (1)
 	{
-		usleep(50000);
-		LM_W(("connect: %s", strerror(errno)));
 		if (::connect(wFd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
 		{
-			close();
-			LM_RE(ConnectError, ("Cannot connect to %s, port %d", host->name, port));
+			usleep(50000);
+			if (tri > retries)
+			{
+				close();
+				LM_RE(ConnectError, ("Cannot connect to %s, port %d (even after %d retries)", host->name, port, retries));
+			}
+
+			++tri;
 		}
+		else
+			break;
 	}
 
 #if 0

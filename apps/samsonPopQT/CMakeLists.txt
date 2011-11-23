@@ -24,10 +24,13 @@ SET(RESOURCES
 FIND_PACKAGE(Qt4 REQUIRED)
 
 SET (STATIC_LIBS
-  	 samsonClient
+         samsonClient
      delilahLib
      pa
      lm
+     pugi
+     engine
+     au
      protobuf
      pthread
      dl
@@ -36,9 +39,6 @@ SET (STATIC_LIBS
      samsonNetwork
      samsonStream
      samsonModule
-     engine
-     au
-     pugi
      samsonCommon
      kdchart
      ${COMMON_SAMSON_LIBS}

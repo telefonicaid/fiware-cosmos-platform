@@ -27,7 +27,7 @@ typedef enum TraceLevels
 	LmtProcessList1     = 20,
 	LmtProcessList2     = 21,
 
-	LmtStarterListShow  = 20,
+	LmtStarterListShow  = 22,
 	LmtSpawnerListShow,
 	LmtSpawnerList,
 	LmtProcessList,

@@ -26,7 +26,7 @@ public class KpiCalculationNormalizer {
      */
     public KpiCalculationNormalizer() {
         if (basicNorm != null && regexNorm != null) {
-            // Aviod unnecessary re-initializations.
+            // Avoid unnecessary re-initializations.
             return;
         }
         basicNorm = new BasicURLNormalizer();

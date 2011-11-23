@@ -21,7 +21,7 @@ public class KpiCalculationDateFormatter {
      */
     public KpiCalculationDateFormatter() {
         if (inputFormat != null && dateFormat != null && timeFormat != null) {
-            // Aviod unnecessary re-initializations.
+            // Avoid unnecessary re-initializations.
             return;
         }
         inputFormat = new SimpleDateFormat("ddMMMyyyyhhmmss", Locale.ENGLISH);

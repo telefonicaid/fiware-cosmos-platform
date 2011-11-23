@@ -59,7 +59,7 @@ std::string getHelpMessage()
     output << " save                     Save modified values\n";
     output << " check                    Check if current values are coherent\n";
     output << " edit                     Edit all property values\n";
-    output << " set_desktop              Set typical valies for desktop 2Gb & 2 cores\n";
+    output << " set_desktop              Set typical values for desktop (2GB RAM & 2 cores)\n";
     output << " quit                     Quit samsonSetup tool\n";
 
     return output.str();

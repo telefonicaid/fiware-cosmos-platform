@@ -128,6 +128,9 @@ test_local_processes:
 pdi: debug
 	sudo make -C BUILD_DEBUG install
 
+pdid: pdi
+	./scripts/samsonDist
+
 di:	debuginstall
 
 debuginstall: debug

@@ -95,7 +95,7 @@ static void resetAndStart(void)
 	if ((s = samsonStarter->reset()) != samson::OK)
 	   LM_X(1, ("Error sending RESET to all spawners: %s", status(s)));
 
-	if (reset)
+	if (reset == true)
 	{
 		LM_M(("Resetted platform - I'm done"));
 		exit(0);
@@ -313,7 +313,13 @@ int main(int argC, const char *argV[])
 	workers = (long) ips[0];
 
 	if (workers == 0)
-	   LM_X(1, ("Can't start without workers ..."));
+		LM_X(1, ("Can't start without workers ..."));
+
+	if ((reset == false) && (controllerHost[0] == 0))
+		LM_X(1, ("Please specify the controller ... (or do a reset!)"));
+
+	if ((reset == true) && (controllerHost[0] != 0))
+		LM_X(1, ("Sorry, can't both reset platform and start it - this is not implemented ...  Sorry about that!"));
 
     // Init the engine
     engine::Engine::init();

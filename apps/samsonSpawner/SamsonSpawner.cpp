@@ -403,11 +403,11 @@ int SamsonSpawner::timeoutFunction(void)
 	//
 	// Show all possible ionfo on death cause
 	//
-	LM_W(("caught death of process %d", pid));
+	LM_D(("caught death of process %d", pid));
 	if (WIFEXITED(status))
 		LM_W(("Supervised process '%s' died with exit code %d", processP->name, WEXITSTATUS(status)));
 	else if (WIFSIGNALED(status))
-		LM_W(("Supervised process '%s' died on signal %d", processP->name, WTERMSIG(status)));
+		LM_D(("Supervised process '%s' died on signal %d", processP->name, WTERMSIG(status)));
 
 	if (WCOREDUMP(status))
 		LM_W(("Supervised process '%s' produced a core dump", processP->name));
@@ -429,12 +429,12 @@ int SamsonSpawner::timeoutFunction(void)
 	struct timeval  now;
 	struct timeval  diff;
 	
-	if (access(processListFilename.c_str(), R_OK) != 0)
-		LM_W(("'%s' died - NOT restarting it as the platform processes file isn't in place", processP->name));
+	if (restartInProgress == true)
+		LM_W(("'%s' died - NOT restarting it (Restart in progress)", processP->name));
 	else if (noRestarts == true)
 		LM_W(("'%s' died - NOT restarting it (option '-noRestarts' used)", processP->name));
-	else if (restartInProgress == true)
-		LM_W(("'%s' died - NOT restarting it (Restart in progress)", processP->name));
+	else if (access(processListFilename.c_str(), R_OK) != 0)
+		LM_W(("'%s' died - NOT restarting it as the platform processes file isn't in place", processP->name));
 	else
 	{
 		LM_W(("'%s' died - restarting it", processP->name));
@@ -624,8 +624,15 @@ void SamsonSpawner::processesStart(ProcessVector* procVec)
 		hostP = networkP->epMgr->hostMgr->lookup(processP->host);
 		if (hostP != networkP->epMgr->hostMgr->localhostP)
 		{
-			LM_W(("Host '%s' is not ME (%s) - NOT starting process %d", processP->host, networkP->epMgr->hostMgr->localhostP->name, ix));
+			LM_T(LmtProcess, ("Host '%s' is not ME (%s) - NOT starting process %d", processP->host, networkP->epMgr->hostMgr->localhostP->name, ix));
 			continue;
+		}
+
+		// Let Controller time to start (or previous worker time to release socket) ...
+		if (ix != 0)
+		{
+			LM_D(("Delaying Worker start with one second"));
+			sleep(1);
 		}
 
 		LM_T(LmtProcess, ("Spawning process '%s'", processP->name));

@@ -271,13 +271,13 @@ Host* HostMgr::insert(const char* name, const char* ip)
 
 	if (name == NULL)
 	{
-		LM_W(("NULL host name for IP '%s'", ip));
+		LM_T(LmtHost, ("NULL host name for IP '%s'", ip));
 		name = ip;
 	}
 
 	if ((hostP = lookup(name)) != NULL)
 	{
-		LM_D(("host '%s' already in host list", name));
+		LM_T(LmtHost, ("host '%s' already in host list", name));
 		return hostP;
 	}
 

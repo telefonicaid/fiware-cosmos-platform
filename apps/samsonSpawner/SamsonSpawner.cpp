@@ -164,7 +164,7 @@ void SamsonSpawner::init()
 
 	ProcessVector* pv = platformProcessesGet();
 	if (pv != NULL)
-		processesStart(networkP->epMgr->procVecGet());
+		processesStart(pv);
 
 	processListShow("INIT", true);
 	networkP->endpointListShow("INIT", true);

@@ -41,12 +41,21 @@ PaArgument paArgs[] =
     { "-alphabet",  &alphabet_length,   "",  PaInt,     PaOpt,     10, 1, 30,         "Number of differnt letters used to generate words ( default 10 )" },
 	{ "-random",    &rand_flag,         "",  PaBool,    PaOpt,  false,  false, true,  "Flag to generate completelly randomized sequence of words"},
 	{ "-repeat",    &repeate_time,      "",  PaInt,     PaOpt,     0, 0, 10000,       "time_to_repeat in seconds with a new wave of words" },    
-	{ " ",          &num_lines,         "",  PaInt,     PaReq,    100, 1, 1000000000, "Number of words to be generated" }, 
+	{ " ",          &num_lines,         "",  PaInt,     PaOpt,     0, 0, 1000000000,  "Number of words to be generated" }, 
 	PA_END_OF_ARGS
 };
 
 int logFd = -1;
 
+char word[100];
+
+
+// Get a new random  word
+void getNewWord()
+{
+    for ( int i = 0 ; i < word_length ; i++ )
+        word[i] = 48 + rand()%alphabet_length;
+}
 
 int main( int argC , const char*argV[] )
 {
@@ -63,26 +72,31 @@ int main( int argC , const char*argV[] )
     // Parse input arguments    
     paParse(paArgs, argC, (char**) argV, 1, false);
     logFd = lmFirstDiskFileDescriptor();
+
     
+    // End of line for all the words...
+    word[word_length] = '\0';
+
     LM_V(("Generating %d words of %d chars every %d seconds (%s)" , num_lines , alphabet_length , repeate_time , rand_flag?"Randomly":"Non randomly"));
     
     au::Cronometer cronometer;
     
-    char word[100];
-    word[word_length] = '\0';
-    
-    
     size_t total_num = 0;
     size_t total_size = 0;
-    
+
+    // Init random numbers if random specified
     if (rand_flag)
-    {
         srand( time(NULL));
-    }
     else
-    {
         srand(0);
-    }
+    
+    
+    if( num_lines == 0)
+        while( true )
+        {
+            getNewWord();
+            printf("%s\n",word);            
+        }
     
     
     while( true )
@@ -92,8 +106,7 @@ int main( int argC , const char*argV[] )
         
         while( local_num_lines < num_lines )
         {
-            for ( int i = 0 ; i < word_length ; i++ )
-                word[i] = 48 + rand()%alphabet_length;
+            getNewWord();
             
             total_size += printf("%s\n",word);
             total_num++;

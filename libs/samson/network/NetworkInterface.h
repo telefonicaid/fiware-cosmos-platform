@@ -95,15 +95,17 @@ namespace samson {
      */
     class PacketReceiverInterface
     {
+        
+        // Method implemented to really receive the packet
+        // This method  is only called by PacketReceivedNotification
+        friend class PacketReceivedNotification;
+        virtual void receive(Packet* packet) = 0;
+        
     public:
         
         std::string packetReceiverDescription;
         
-        // Method to receive a packet
-        // It is responsability of this callback to delete the received packet with "delete packet"
-        virtual void receive(Packet* packet) = 0;
-        
-        // Convenient way to run the receive methods using Engine
+        // Convenient way to run the receive methods using Engine system
         void _receive(Packet* packet);
         
         // Method to recover the status of this element in JSON format

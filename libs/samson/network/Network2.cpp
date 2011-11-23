@@ -349,6 +349,8 @@ void Network2::getInfo( std::ostringstream& output )
     au::xml_open(output,"network");
     au::xml_open(output,"description");
 
+    output << "\n"; // clear visualitzation with tree command at delilah
+    
 	for (unsigned int ix = 0; ix < epMgr->endpoints; ix++)
 	{
 		ep = epMgr->endpoint[ix];

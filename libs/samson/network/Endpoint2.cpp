@@ -1331,7 +1331,7 @@ const char* Endpoint2::statusString(char* buf, int bufLen, int ix)
 		snprintf(fd, sizeof(fd), "%02d", rFdGet());
 	
 
-	if ((state == Connected || state == Ready || state == Loopback) && (rFd >= 0))
+	if ((state == Loopback) || ((state == Connected || state == Ready) && (rFd >= 0)))
 		conSign = '+';
 	else
 		conSign = '-';

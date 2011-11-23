@@ -128,6 +128,9 @@ public:
             writeWarningOnConsole("Properties general.num_processess                = 2");
             writeWarningOnConsole("Properties general.shared_memory_size_per_buffer = 64Mb");
             writeWarningOnConsole("Properties stream.max_operation_input_size       = 64Mb");
+
+            modified = true;
+
             return;
         }
         

@@ -152,7 +152,8 @@ Status UnhelloedEndpoint::msgTreat2(Packet* packetP)
 		{
 			extern void* readerThread(void* vP);
 			extern void* writerThread(void* vP);
-			if (((epMgr->me->type == Worker) || (epMgr->me->type == Delilah)) && ((ep->type == Worker) || (ep->type == Delilah) || (ep->type == Controller)))
+			//if (((epMgr->me->type == Worker) || (epMgr->me->type == Delilah)) && ((ep->type == Worker) || (ep->type == Delilah) || (ep->type == Controller)))
+            if ( (epMgr->me->type == Worker) || (epMgr->me->type == Delilah) || (epMgr->me->type == Controller) )
 			{
 				int  ps;
 				//char semName[128];

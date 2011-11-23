@@ -118,11 +118,9 @@ void NetworkInterface::runInBackground(void)
 */
 void PacketReceiverInterface::_receive(Packet* packet)
 {
-	LM_T(LmtNetworkInterface, ("NETWORK_INTERFACE Received packet type %s",messageCode(packet->msgCode)));
-		
 	// Using the engine to call the packet receiver asynchronously in a unique thread form
+	LM_T(LmtNetworkInterface, ("NETWORK_INTERFACE Received packet type %s",messageCode(packet->msgCode)));
 	engine::Engine::shared()->add( new PacketReceivedNotification( this , packet ) );
-	// receive( packet );
 }
     
     

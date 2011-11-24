@@ -466,6 +466,12 @@ Status Endpoint2::okToSend(void)
 
 	for (tryh = 0; tryh < tries; tryh++)
 	{
+        
+        if ( state == ScheduledForRemoval )
+            return Error;
+        if ( state == Disconnected )
+            return Error;
+        
 		timeVal.tv_sec  = 0;
 		timeVal.tv_usec = 100000;
 

@@ -28,6 +28,7 @@ xml.h
 Table.h
 Tree.h
 RRT.h
+cpu.h
 )
 
 SET (SOURCES
@@ -51,6 +52,7 @@ xml.cpp
 Table.cpp
 Tree.cpp
 RRT.cpp
+cpu.cpp
 )
 
 

@@ -168,7 +168,23 @@ namespace samson {
         
         // Init the setup system 
         LM_TODO(("Add the possibility to set particular directories for this..."));
-        samson::SamsonSetup::init( "/opt/samson/" , "/var/samson/" );    
+        
+        std::string samson_home =  "/opt/samson/";
+        std::string samson_working = "/var/samson/";
+
+        char *env_samson_working = getenv("SAMSON_WORKING");
+        char *env_samson_home = getenv("SAMSON_HOME");
+
+        if( env_samson_working )
+        {
+            samson_working = env_samson_working;
+        }
+        if( env_samson_home )
+        {
+            samson_home = env_samson_home;
+        }
+        
+        samson::SamsonSetup::init( samson_home , samson_working );    
 
         // Change the values for this parameters
         samson::SamsonSetup::shared()->setValueForParameter("general.memory", au::str("%lu",memory) );

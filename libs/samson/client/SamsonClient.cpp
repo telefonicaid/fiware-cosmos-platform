@@ -310,9 +310,16 @@ namespace samson {
     }
 
 
-    void SamsonClient::connect_to_queue( std::string queue )
+    void SamsonClient::connect_to_queue( std::string queue , bool flag_new , bool flag_remove )
     {
         std::string command = au::str("connect_to_queue %s" , queue.c_str() ); 
+        
+        if( flag_new )
+            command.append(" -new ");
+        
+        if( flag_remove )
+            command.append(" -remove ");
+        
         //LM_M(("Command to connect to queue '%s'", command.c_str() ));
         delilah->sendWorkerCommand( command , NULL );
     }

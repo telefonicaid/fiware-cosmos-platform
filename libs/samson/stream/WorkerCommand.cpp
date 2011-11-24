@@ -47,6 +47,8 @@ namespace samson {
             // Parse command
             cmd.set_flag_boolean("clear_inputs");
             cmd.set_flag_boolean("f");
+            cmd.set_flag_boolean("new");
+            cmd.set_flag_boolean("remove");
             
             cmd.parse( command );
             
@@ -281,12 +283,15 @@ namespace samson {
             {
                 if( cmd.get_num_arguments() < 2 )
                 {
-                    finishWorkerTaskWithError( "Usage: connect_to_queue queue" );
+                    finishWorkerTaskWithError( "Usage: connect_to_queue queue (-new) (-remove)" );
                     return;
                 }
                 std::string queue = cmd.get_argument(1);
                 
-                streamManager->connect_to_queue( fromId , queue );
+                bool flag_new = cmd.get_flag_bool("new");
+                bool flag_remove = cmd.get_flag_bool("remove");
+                
+                streamManager->connect_to_queue( fromId , queue , flag_new , flag_remove );
                 
                 finishWorkerTask();
                 return;

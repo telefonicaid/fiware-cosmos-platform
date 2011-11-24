@@ -350,7 +350,7 @@ namespace  samson {
         void waitUntilFinish();        
         
         // Live data connection
-        void connect_to_queue( std::string queue );
+        void connect_to_queue( std::string queue, bool flag_new , bool flag_remove );
         SamsonClientBlockInterface* getNextBlock( std::string queue );
         
         // Getting information about my connection

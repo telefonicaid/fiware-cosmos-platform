@@ -216,7 +216,7 @@ int main( int argC ,  char *argV[] )
     
     // Connect to a particular queue
     LM_M(("Connecting to queue %s" , queue_name ));
-    samson_client.connect_to_queue( queue_name );
+    samson_client.connect_to_queue( queue_name , false, false );
 
     
     

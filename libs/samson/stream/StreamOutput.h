@@ -54,11 +54,14 @@ namespace samson {
             std::string queue;              // Name of the queue we want to receive data
             BlockList* list;                // List of blocks that should be flush to this client
             
+            
+            bool flag_remove;
+            
             // au::Environment environment;    // Environment properties ( if necessary in the future )
             
             public :
             
-            StreamOutQueue( std::string _queue );
+            StreamOutQueue( std::string _queue ,bool _flag_remove );
             ~StreamOutQueue( );
             
             void push( BlockList* list );
@@ -90,16 +93,17 @@ namespace samson {
             
             StreamManager *streamManager;   // Pointer to the global stream manager                                     
             
+            
         public:
             
-            StreamOutConnection( StreamManager *_streamManager , int _fromId );
+            StreamOutConnection( StreamManager *_streamManager , int _fromId  );
             ~StreamOutConnection();
             
             // Push content if this queue if really connected
             void push( std::string queue , BlockList* list );
 
             // Add a queue for this user
-            StreamOutQueue* add_queue( std::string queue );
+            StreamOutQueue* add_queue( std::string queue ,bool _flag_remove );
             void remove_queue( std::string queue );
             
             // Get the next task to be executed

@@ -20,6 +20,7 @@ namespace au {
 
    int get_cpu_info( cpu_info* _info )
    {
+       /*
 	  unsigned regs[4];
 
 	  // Get vendor
@@ -60,7 +61,7 @@ namespace au {
 	  bool hyperThreads = cpuFeatures & (1 << 28) && cores < logical;
 
 	  _info->hyperThreads = hyperThreads;
-
+*/
 	  return 0;
    }
 

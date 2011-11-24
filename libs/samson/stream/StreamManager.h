@@ -129,7 +129,7 @@ namespace samson {
             StreamOperation* getStreamOperation( std::string name );
             
             // Connect and disconnect to a queue
-            void connect_to_queue( int fromId , std::string queue );
+            void connect_to_queue( int fromId , std::string queue , bool flag_new , bool flag_remove );
             void disconnect_from_queue( int fromId , std::string queue );
 
             // Reset all the content of this stream manager

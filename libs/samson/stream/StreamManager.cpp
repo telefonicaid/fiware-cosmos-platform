@@ -170,17 +170,16 @@ namespace samson {
         
         void StreamManager::addBlocks( std::string queue_name ,  BlockList *list )
         {
-            
-            // Get or create the queue
-            Queue *queue = getQueue( queue_name );
-            
-            // Add the blocks to the queue ( no information about any particular task at the moment )
-            queue->push( list );
-
             // Review stream_out_queues...
             au::map< int , StreamOutConnection >::iterator it_connections;
             for( it_connections = stream_out_connections.begin() ; it_connections != stream_out_connections.end() ; it_connections++)
                 it_connections->second->push( queue_name , list );
+
+            // Get or create the queue
+            Queue *queue = getQueue( queue_name );
+            
+            // Add the blocks to the queue
+            queue->push( list );
             
             // review all the automatic operations ( maybe we can only review affected operations in the future... )
             reviewStreamOperations();            
@@ -639,7 +638,7 @@ namespace samson {
             
         }
 
-        void StreamManager::connect_to_queue( int fromId , std::string queue )
+        void StreamManager::connect_to_queue( int fromId , std::string queue , bool flag_new , bool flag_remove )
         {
             StreamOutConnection* stream_out_connection = stream_out_connections.findInMap( fromId );
             if( !stream_out_connection)
@@ -648,10 +647,11 @@ namespace samson {
                 stream_out_connections.insertInMap(fromId, stream_out_connection );
             }
             
-            StreamOutQueue * stream_out_queue = stream_out_connection->add_queue( queue );
+            StreamOutQueue * stream_out_queue = stream_out_connection->add_queue( queue , flag_remove );
             
-            // Push the current content of the queue ( this should be optional in the future )
-            stream_out_queue->push( getQueue(queue)->list );
+            // Push the current content of the queue
+            if ( !flag_new )
+                stream_out_queue->push( getQueue(queue)->list );
             
         }
         

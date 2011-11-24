@@ -81,7 +81,7 @@ void* readerThread(void* vP)
         
         
         LM_T(LmtThreads, ("Writer thread(%s) 0x%x is running (REAL wFd: %d))    Endpoint at %p", ep->name(), pthread_self(), ep->wFdGet(), ep));
-        int ix = ep->getIdInEndpointVector();
+        //int ix = ep->getIdInEndpointVector();
         
         
         while (1)
@@ -108,7 +108,7 @@ void* readerThread(void* vP)
                     ep->stateSet(Endpoint2::ScheduledForRemoval);
                     ep->thread_writer_running = false;
                     ep->writerId = 0;
-                    LM_M(("quitting... writerThread %d" , ix));
+                    //LM_M(("quitting... writerThread %d" , ix));
                     return NULL;
                 }
             }

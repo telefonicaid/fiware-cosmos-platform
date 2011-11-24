@@ -87,7 +87,10 @@ Status ControllerEndpoint::msgTreat2(Packet* packetP)
             
         default:
             if (epMgr->packetReceiver == NULL)
-                LM_W(("No packetReceiver (SW bug) - got a '%s' %s from %s", messageCode(packetP->msgCode), messageType(packetP->msgType), name()));
+            {
+                // Some delilahs may not implement this
+                //LM_W(("No packetReceiver (SW bug) - got a '%s' %s from %s", messageCode(packetP->msgCode), messageType(packetP->msgType), name()));
+            }
             else
                 epMgr->packetReceiver->_receive(packetP);
             

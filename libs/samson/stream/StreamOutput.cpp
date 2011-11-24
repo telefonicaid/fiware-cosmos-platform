@@ -12,10 +12,12 @@ namespace samson {
 
 #pragma mark StreamOutQueue
         
-        StreamOutQueue::StreamOutQueue( std::string _queue )
+        StreamOutQueue::StreamOutQueue( std::string _queue , bool _flag_remove )
         {
             queue = _queue;
             list = new BlockList("StreamOutQueue " + queue );
+            
+            flag_remove = _flag_remove;
         }
         
         StreamOutQueue::~StreamOutQueue()
@@ -26,7 +28,10 @@ namespace samson {
         
         void StreamOutQueue::push( BlockList* _list )
         {
-            list->copyFrom( _list );
+            if( flag_remove )
+                list->extractFrom( _list , 0 );
+            else
+                list->copyFrom( _list );
         }
         
         bool StreamOutQueue::extractBlockFrom( BlockList *_list )
@@ -36,7 +41,7 @@ namespace samson {
         
 #pragma mark StreamOutConnection
         
-        StreamOutConnection::StreamOutConnection( StreamManager *_streamManager , int _fromId )
+        StreamOutConnection::StreamOutConnection( StreamManager *_streamManager , int _fromId  )
         {
             streamManager = _streamManager;         // Pointer to the stream manager
             fromId = _fromId;
@@ -58,9 +63,9 @@ namespace samson {
                 stream_out_queue->push( list );
         }
         
-        StreamOutQueue* StreamOutConnection::add_queue( std::string queue )
+        StreamOutQueue* StreamOutConnection::add_queue( std::string queue , bool _flag_remove )
         {
-            StreamOutQueue* stream_out_queue = new StreamOutQueue(queue);
+            StreamOutQueue* stream_out_queue = new StreamOutQueue(queue , _flag_remove);
             
             // Add a new listener for this queue ( if there was a previous one, is removed )
             stream_out_queues.insertInMap(queue, stream_out_queue );

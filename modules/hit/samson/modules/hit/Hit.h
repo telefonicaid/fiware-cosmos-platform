@@ -16,6 +16,33 @@ namespace hit{
 
 	class Hit : public Hit_base
 	{
+
+	public:
+
+	   std::string extractCategoryConcept()
+	   {
+		  size_t pos = concept.value.find('_');
+		  
+		  if( pos == std::string::npos )
+			 return "top";
+		  
+		  if( pos == 0 )
+		  {
+			 // Word starts with "_"
+			 
+			 std::string name = concept.value.substr( pos+1 , std::string::npos );
+			 concept.value = name;
+			 
+			 return "top";
+		  }
+		  
+		  
+		  std::string category_concept = concept.value.substr( 0 , pos );
+		  std::string name = concept.value.substr( pos+1 , std::string::npos );
+		  
+		  concept.value = name;
+		  return category_concept;
+	   }
 	};
 
 

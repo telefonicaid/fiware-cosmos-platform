@@ -12,39 +12,10 @@
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/UInt.h>
 
+#include "HitCollectionManager.h"
 
 namespace samson{
 namespace hit{
-
-
-
-   size_t cannonical( size_t input )
-   {
-	  if ( input == 0 )
-		 return 0;
-
-	  int t=0;
-	  while( input > 1000 )
-	  {
-		 input /= 10;
-		 t++;
-	  }
-
-	  for ( int i = 0 ; i < t  ; i++)
-		 input *= 10;
-
-	  return input;
-   }
-
-   bool change_significantly( size_t from , size_t to )
-   {
-	  if( ( from == 0 ) && ( to != 0) )
-		 return true;
-	  if( ( from != 0 ) && ( to == 0) )
-		 return true;
-
-	  return ( cannonical( from ) != cannonical( to ) );
-   }
 
 
 	class reduceHits : public samson::Reduce
@@ -54,10 +25,10 @@ namespace hit{
 	   samson::system::UInt count;
 	   samson::system::UInt tmp_count;
 
-	   // Outputs for the channel "0"
-	   samson::system::String top_concept;
+
 	   samson::hit::Hit hit;
 
+	   MultiHitCollectionManager manager;
 
 	public:
 
@@ -76,11 +47,6 @@ namespace hit{
 
 		void init( samson::KVWriter *writer )
 		{
-		   srand(time(NULL));
-
-		   std::ostringstream name;
-		   name << "top_" << rand()%1000;
-		   top_concept.value = name.str();
 		}
 
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
@@ -98,11 +64,6 @@ namespace hit{
 			  count.value = 0;
 		   }
 
-		   // Keep the previous value to emit if it changed significantly...
-		   size_t previous_value = count.value;
-
-		   //OLM_M(("Processing %s %lu", concept.value.c_str() , count.value ));
-
 
 		   // Take all input words into acocunt...
 		   for ( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
@@ -112,26 +73,19 @@ namespace hit{
 		   }
 
 
-		   // emit is changed....
-		   if( change_significantly( previous_value , count.value ) )
+		   // Store in the manager to emit when finishing...
+
+		   if( inputs[0].num_kvs > 0 )
 		   {
-			  //OLM_M(("Changed from %lu to %lu" , previous_value , count.value ));
-
-
-
 
 			  hit.concept.value = concept.value;
 			  hit.count.value = count.value;
 
-			  writer->emit( 0 , &top_concept , &hit );		   
-
+			  manager.add( &hit );
 
 		   }
 
-
-		   
-
-
+		   // Emit the state to keep track
 		   //OLM_M(("Emiting %s %lu" , concept.value.c_str() ,  count.value ));
 		   writer->emit( 1 , &concept , &count );
 
@@ -139,6 +93,7 @@ namespace hit{
 
 		void finish( samson::KVWriter *writer )
 		{
+		   manager.emit_hits( writer );
 		}
 
 

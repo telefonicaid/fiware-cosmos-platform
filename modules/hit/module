@@ -58,7 +58,7 @@ reduce reduceHitCountCollection
 	in system.String hit.HitCount              # Input hit count update
 	in system.String hit.HitCountCollection    # State of the top list
 
-	out system.String hit.HitCountCollection       # Top list of hits
+	out system.String hit.HitCountCollection   # Top list of hits
 	out system.String hit.HitCountCollection   # State of the top elements ( all top level per samples )
 
 	helpLine "Filter top elements per global-concept"
@@ -79,12 +79,6 @@ reduce reduceHits
 	helpLine "Simple accumulator in stream mode"
 }
 
-map filter_reduceHitCollections
-{
-	in system.String hit.Hit             
-	out system.String hit.Hit
-}
-
 reduce reduceHitCollections
 {
 	in system.String hit.Hit                # Hit updates
@@ -93,6 +87,13 @@ reduce reduceHitCollections
 	out system.String hit.HitCollection     # State with the top elements	
 }
 
+map split_words
+{
+	in system.String system.UInt   #Input words
+	out system.String system.UInt  #Outputs words ( more than one....)
+
+	helpLine "Duplicate some concepts like date, mail, ..... Ouput words are mail_XXX date_XXX"
+}
 
 ################################################################
 # Other operations

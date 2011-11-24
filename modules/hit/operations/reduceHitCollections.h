@@ -55,7 +55,7 @@ namespace hit{
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
-		   HitCollectionManager manager;
+		   HitCollectionManager* manager;
 		   
 		   // Read the state to start
 		   samson::hit::HitCollection hit_collection;
@@ -65,15 +65,20 @@ namespace hit{
 			  concept.parse( inputs[1].kvs[0]->key );
 			  hit_collection.parse( inputs[1].kvs[0]->value );
 
+			  manager = new HitCollectionManager( concept.value );
+
 			  for (int i = 0 ; i < hit_collection.hits_length ; i++ )
-				 manager.add( &hit_collection.hits[i] );
+				 manager->add( &hit_collection.hits[i] );
 
 		   }
 		   else
 		   {
 			  // take the concept from the first input
 			  concept.parse( inputs[0].kvs[0]->key );
+			  manager = new HitCollectionManager( concept.value );
 		   }
+
+
 
 
 		   // Parse all the inputs
@@ -81,7 +86,7 @@ namespace hit{
 		   for ( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
 		   {
 			  hit.parse( inputs[0].kvs[i]->value );
-			  manager.add( &hit );
+			  manager->add( &hit );
 		   }
 
 
@@ -89,14 +94,16 @@ namespace hit{
 		   samson::hit::HitCollection output_hit_collection;
 		   for (int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
 		   {
-			  if( manager.top_hits[i]->count.value > 0 )
-				 output_hit_collection.hitsAdd()->copyFrom( manager.top_hits[i] );
+			  if( manager->top_hits[i]->count.value > 0 )
+				 output_hit_collection.hitsAdd()->copyFrom( manager->top_hits[i] );
 		   }
 
 		   // Emitted at both channels 
 		   writer->emit( 0 , &concept , &output_hit_collection );
 		   writer->emit( 1 , &concept , &output_hit_collection );
 
+
+		   delete manager;
 
 		}
 

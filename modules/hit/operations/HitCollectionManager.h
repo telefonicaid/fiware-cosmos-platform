@@ -17,17 +17,20 @@
 namespace samson{
 namespace hit{
 
+
    class HitCollectionManager
    {
 
    public:
 
+	  std::string concept;
+
 	   samson::hit::Hit** top_hits;
-	   size_t min_hits;
 
-
-	   HitCollectionManager()
+	   HitCollectionManager( std::string _concept )
 	   {
+		  concept = _concept;
+
 		  top_hits = (samson::hit::Hit**) malloc( sizeof(samson::hit::Hit*) * NUM_TOP_ITEMS );
 
 		  for( int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
@@ -36,7 +39,7 @@ namespace hit{
 			 top_hits[i]->count.value = 0;
 			 top_hits[i]->concept.value = "";
 		  }
-		  min_hits = 0;
+
 	   }
 
 	   ~HitCollectionManager()
@@ -48,7 +51,7 @@ namespace hit{
 
 	   void add( samson::hit::Hit *hit  )
 	   {
-		  if( hit->count.value < min_hits )
+		  if( hit->count.value < top_hits[NUM_TOP_ITEMS-1]->count.value )
 			 return;
 
 		  // Check if we had this concept before, so just update the total acucmulated
@@ -84,7 +87,64 @@ namespace hit{
 
 	   }
 
+	   
+	   void emit_hits( samson::KVWriter* writer )
+	   {
+		  samson::system::String top_concept;
+		  top_concept.value = concept;
 
+		  for (int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
+			 if( top_hits[i]->count.value > 0 )
+			 {
+				top_concept.value = concept;
+				writer->emit( 0 , &top_concept , top_hits[i] );
+			 }
+	   }
+
+   };
+
+
+   class MultiHitCollectionManager
+   {
+
+	  std::vector<HitCollectionManager*> managers;
+
+   public:
+
+	  void add( samson::hit::Hit *hit  )
+	  {
+
+		 std::string concept = hit->extractCategoryConcept();
+		 add( concept.c_str() , hit ); 
+	  }
+
+	  void add( const char * concept , Hit* hit )
+	  {
+
+          // Just look for the rigth collection
+		 for ( size_t i = 0 ; i < managers.size() ; i++ )
+		 {
+			if( managers[i]->concept == concept )
+			{
+			   managers[i]->add( hit );
+			   return;
+			}
+		 }
+
+		 // Create a new one at the end
+		 HitCollectionManager*manager = new HitCollectionManager( concept );
+		 manager->add( hit  );
+		 managers.push_back( manager );
+
+	  }
+
+	  void emit_hits( samson::KVWriter* writer )
+	  {
+		 for ( size_t i = 0 ; i < managers.size() ; i++ )
+			managers[i]->emit_hits( writer );
+	  }
+
+	  
 
    };
  

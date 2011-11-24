@@ -1,28 +1,45 @@
 # Remove previous definitions
 rm_stream_operation hit.01.parser_words -f
 rm_stream_operation hit.02.filter -f
-rm_stream_operation hit.03.reduce_words -f
-rm_stream_operation hit.04.reduce_tops -f
-rm_stream_operation hit.05.export_tops -f
+rm_stream_operation hit.03.split -f
+
+rm_stream_operation hit.10.reduce_words -f
+
+rm_stream_operation hit.20.reduce_tops -f
+rm_stream_operation hit.21.export_tops -f
+
+
+rm_queue hit.01.in_txt -f
+rm_queue hit.02.input_words_previous -f
+rm_queue hit.03.input_words_previous2 -f
+rm_queue hit.04.input_words -f
+
+rm_queue hit.10.words -f
+
+rm_queue hit.11.words_update -f
+
+rm_queue hit.20.hit.tops -f
+rm_queue hit.21.output_tops -f
+rm_queue hit.22.output_tops_txt -f
 
 
 # Parse input txt files to extract words
-add_stream_operation hit.01.parser_words txt.parser_words hit.in_txt hit.input_words_previous
+add_stream_operation hit.01.parser_words txt.parser_words hit.01.in_txt hit.02.input_words_previous
 
-# Filter input words to only accept letters and numbers
-add_stream_operation hit.02.filter txt.filter_words_with_numbers_and_letters hit.input_words_previous hit.input_words
+# Convert to lower capital
+add_stream_operation hit.02.filter txt.concert_to_lower_case hit.02.input_words_previous hit.03.input_words_previous2
+
+# Split words
+add_stream_operation hit.03.split hit.split_words hit.03.input_words_previous2 hit.04.input_words
 
 # Reduce words
-add_stream_operation hit.03.reduce_words hit.reduceHits hit.input_words hit.words hit.words_update hit.words 
-
-# Map operation to reduce word updates...
-add_stream_operation hit.04.filter_reduce_tops hit.filter_reduceHitCollections hit.words_update hit.words_update_filtered
+add_stream_operation hit.10.reduce_words hit.reduceHits hit.04.input_words hit.10.words hit.11.words_update hit.10.words
 
 # Reduce top elements
-add_stream_operation hit.05.reduce_tops hit.reduceHitCollections hit.words_update_filtered hit.tops hit.output_tops hit.tops
+add_stream_operation hit.20.reduce_tops hit.reduceHitCollections hit.11.words_update hit.20.tops hit.21.output_tops hit.20.tops
 
 # ParseOur results
-add_stream_operation hit.06.export_tops hit.export_hit_collection hit.output_tops hit.output_tops_txt
+add_stream_operation hit.21.export_tops hit.export_hit_collection hit.21.output_tops hit.22.output_tops_txt
 
 
 

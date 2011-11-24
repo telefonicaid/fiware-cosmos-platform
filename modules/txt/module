@@ -45,6 +45,14 @@ map filter_words_with_numbers_and_letters
 	helpLine "Filter words containing only numbers and letter ( ommit words with non-printable ascii chars)"
 }
 
+map concert_to_lower_case
+{
+	in system.String system.UInt
+	out system.String system.UInt
+
+	helpLine "Convert to lower case. Also filtere words with non-printable chars"
+}
+
 map number_letters
 {
 	in system.String system.Void

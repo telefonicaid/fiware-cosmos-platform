@@ -269,7 +269,7 @@ int main(int argC, const char *argV[])
                     //LM_M(("Waiting until delilah-component %ul finish", id ));
                     // Wait until this operation is finished
                     while (delilahConsole->isActive( id ) )
-                        sleep(1);
+                        usleep(1000);
                     
                     if( delilahConsole->hasError( id ) )
                     {

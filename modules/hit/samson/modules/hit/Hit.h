@@ -21,14 +21,14 @@ namespace hit{
 
 	   std::string extractCategoryConcept()
 	   {
-		  size_t pos = concept.value.find('_');
+		  size_t pos = concept.value.find(' ');
 		  
 		  if( pos == std::string::npos )
 			 return "top";
 		  
 		  if( pos == 0 )
 		  {
-			 // Word starts with "_"
+			 // Word starts with " "
 			 
 			 std::string name = concept.value.substr( pos+1 , std::string::npos );
 			 concept.value = name;

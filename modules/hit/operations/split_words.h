@@ -54,7 +54,7 @@ namespace hit{
 
 			  if( word.isMail() )
 			  {
-				 word_mail.value = "mail_" + word.value;
+				 word_mail.value = "mail " + word.value;
 				 writer->emit( 0 , &word_mail , &count );				 
 			  }
 

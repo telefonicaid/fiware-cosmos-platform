@@ -101,6 +101,8 @@ namespace samson {
 
             addOption("connect_to_queue");
             addOption("disconnect_from_queue");
+            
+            addOption("ls_blocks");
 
         }
         

@@ -369,7 +369,10 @@ namespace samson
         { "ls_block_manager"        ,   "Get information about the block-manager for each worker\n" 
                                         "Type 'help stream_processing' for more information\n"
         },
-    
+
+        { "ls_blocks"               ,   "Get a complete list of blocks managed at each worker"
+        },
+        
         { "cp_queue"                ,   "Usage: cp_queue  <from_queue> <to_queue>\n\n"
                                         "Copy contents of queue <from_queue> to queue <to_queue>\n"
                                         "Type 'help queues' for more information\n"

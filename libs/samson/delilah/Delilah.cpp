@@ -596,6 +596,8 @@ namespace samson {
 #define LS_STREAM_OPERATIONS_VERBOSE_VERBOSE "info_command -worker //stream_operation /name,t=name,left /last_review,t=last_review"
 
     
+#define LS_BLOCKS "info_command -worker //block_manager/blocks/block /id,t=id /size,t=size,format=uint64 /state,t=state /lists_str,t=lists /kv_header/format/key_format,t=key /kv_header/format/value_format,t=value /kv_header/kv_info/kvs,t=#kvs,format=uint64 /kv_header/kv_info/size,t=size,format=uint64"
+    
     std::string Delilah::info( std::string command )
     {
         au::CommandLine cmd;
@@ -677,6 +679,11 @@ namespace samson {
             else
                 return infoCommand(LS_STREAM_OPERATIONS);
 
+        }
+        
+        if( main_command == "ls_blocks" )
+        {
+            return infoCommand(LS_BLOCKS);
         }
         
         if( main_command == "engine_show" )

@@ -340,10 +340,16 @@ namespace samson {
             au::xml_simple(output, "state", getState());
 
             au::xml_open(output, "lists");
+            std::ostringstream output_lists;
             std::set< BlockList* >::iterator l;
             for (l = lists.begin() ; l != lists.end() ; l++)
+            {
                 au::xml_simple(output, "list", (*l)->name );
+                output_lists << (*l)->name << " ";
+            }
             au::xml_close(output, "lists");
+            
+            au::xml_simple(output, "lists_str", output_lists.str() );
             
             header->getInfo( output );
 

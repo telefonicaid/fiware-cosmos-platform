@@ -298,6 +298,21 @@ public:
 		value = _value;
 	}
 
+
+	bool isMail()
+	{
+	   int count = 0;
+	   for (size_t i = 0 ; i < value.length() ; i++ )
+		  if( (char)value[i] == 64 )
+		  {
+			 count++;
+			 if( count >1 )
+				return false;
+		  }
+
+	   return( count == 1);
+	}
+
 };
 
 

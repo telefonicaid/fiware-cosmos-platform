@@ -24,7 +24,6 @@ public class KpiCalculationFilterChain {
 
     public KpiCalculationFilterChain(Configuration conf)
             throws KpiCalculationFilterException {
-
         handlers = new ArrayList<IKpiCalculationFilter>();
         Collection<String> classes = conf.getStringCollection(COLLECTION_ID);
         Iterator<String> it = classes.iterator();
@@ -46,7 +45,6 @@ public class KpiCalculationFilterChain {
     public void filter(String url) throws KpiCalculationFilterException {
         IKpiCalculationFilter currentFilter;
         ListIterator<IKpiCalculationFilter> it = handlers.listIterator();
-
         while (it.hasNext()) {
             currentFilter = it.next();
             currentFilter.filter(url);

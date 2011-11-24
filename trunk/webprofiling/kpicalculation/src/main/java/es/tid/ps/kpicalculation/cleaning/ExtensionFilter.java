@@ -2,8 +2,6 @@ package es.tid.ps.kpicalculation.cleaning;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 
@@ -16,21 +14,13 @@ import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
  * "chain of responsibility" if exists.
  * 
  * @author javierb
- * 
  */
 public class ExtensionFilter extends AbstractKpiCalculationFilter {
     private static final String CONFIG_PARAMETER = "kpifilters.extension";
     private static final String REGULAR_EXPRESSION = "([^\\s]+(\\.(?i){0})$)";
-    private static String forbiddenPattern = "";
-
-    private Pattern pattern;
-    private Matcher matcher;
 
     public ExtensionFilter(Configuration conf) {
-        if (forbiddenPattern == "")
-            forbiddenPattern = setPattern(REGULAR_EXPRESSION,
-                    conf.get(CONFIG_PARAMETER));
-        pattern = Pattern.compile(forbiddenPattern, Pattern.CASE_INSENSITIVE);
+        super(conf, CONFIG_PARAMETER, REGULAR_EXPRESSION);
     }
 
     /**
@@ -40,19 +30,17 @@ public class ExtensionFilter extends AbstractKpiCalculationFilter {
      */
     @Override
     public void filter(String s) throws KpiCalculationFilterException {
-        URI uri;
-
         try {
-            uri = new URI(s);
-            matcher = pattern.matcher(uri.getPath());
+            URI uri = new URI(s);
+            this.matcher = this.pattern.matcher(uri.getPath());
+            if (this.matcher.matches()) {
+                throw new KpiCalculationFilterException(
+                        "The URL provided has a forbidden extension",
+                        KpiCalculationCounter.LINE_FILTERED_EXTENSION);
+            }
         } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new KpiCalculationFilterException("The URL is malformed", e,
+                    KpiCalculationCounter.MALFORMED_URL);
         }
-
-        if (matcher.matches())
-            throw new KpiCalculationFilterException(
-                    "The URL provided has a forbidden extension",
-                    KpiCalculationCounter.LINE_FILTERED_EXTENSION);
     }
 }

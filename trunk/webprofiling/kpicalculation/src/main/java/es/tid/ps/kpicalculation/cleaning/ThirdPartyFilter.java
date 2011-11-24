@@ -1,8 +1,5 @@
 package es.tid.ps.kpicalculation.cleaning;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.hadoop.conf.Configuration;
 
 import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
@@ -14,21 +11,13 @@ import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
  * of the "chain of responsibility" if exists.
  * 
  * @author javierb
- * 
  */
 public class ThirdPartyFilter extends AbstractKpiCalculationFilter {
     private static final String CONFIG_PARAMETER = "kpifilters.3rdparty";
     private static final String REGULAR_EXPRESSION = "([^\\s]+{0}[^\\s]*)";
-    private static String forbiddenPattern = "";
-
-    private Pattern pattern;
-    private Matcher matcher;
 
     public ThirdPartyFilter(Configuration conf) {
-        if (forbiddenPattern == "")
-            forbiddenPattern = setPattern(REGULAR_EXPRESSION,
-                    conf.get(CONFIG_PARAMETER));
-        pattern = Pattern.compile(forbiddenPattern, Pattern.CASE_INSENSITIVE);
+        super(conf, CONFIG_PARAMETER, REGULAR_EXPRESSION);
     }
 
     /**
@@ -38,11 +27,11 @@ public class ThirdPartyFilter extends AbstractKpiCalculationFilter {
      */
     @Override
     public void filter(String s) throws KpiCalculationFilterException {
-        matcher = pattern.matcher(s);
-
-        if (matcher.matches())
+        this.matcher = this.pattern.matcher(s);
+        if (this.matcher.matches()) {
             throw new KpiCalculationFilterException(
                     "The URL provided belongs to third party domain",
                     KpiCalculationCounter.LINE_FILTERED_3RDPARTY);
+        }
     }
 }

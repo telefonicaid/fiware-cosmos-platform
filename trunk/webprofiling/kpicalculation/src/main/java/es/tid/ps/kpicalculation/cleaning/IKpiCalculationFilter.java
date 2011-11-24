@@ -5,7 +5,6 @@ package es.tid.ps.kpicalculation.cleaning;
  * profiling CDR's data
  * 
  * @author javierb
- * 
  */
 public interface IKpiCalculationFilter {
     /**

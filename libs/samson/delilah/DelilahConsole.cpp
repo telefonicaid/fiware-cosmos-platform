@@ -305,16 +305,18 @@ namespace samson
         { "pop"                     ,   "Usage: pop <queue> <local_dir>\n\n"
                                         "Pop content of a queue to a local directory. Also working for binary queues. Use samsonCat to check content"},
         
-        { "add_stream_operation"    ,   "Usage: add_stream_operation <name> <operation> <input .. output queues>\n\n"
-                                        "Add an operation to automatically process data from input queues to output queues\n"},
+        { "add_stream_operation"    ,   "Usage: add_stream_operation <name> <operation> <input .. output queues> [-forward] \n\n"
+                                        "Add an operation to automatically process data from input queues to output queues\n"
+        								"'-forward' option allows to schedule reduce operations without state\n\n"},
         
-        { "rm_stream_operation"     ,   "Usage: rm_stream_operation <name>\n\n"
-                                        "Remove a previously introduced operation with add_stream_operation\n"},
+        { "rm_stream_operation"     ,   "Usage: rm_stream_operation <name> [-f]\n\n"
+                                        "Remove a previously introduced operation with add_stream_operation\n"
+        								"'-f' option avoids complaints when the operation does not exist\n\n"},
 
         { "set_stream_operation_property"     , "Usage: set_stream_operation_property <name> <variable> <value>\n\n"},
         
-        { "ls_stream_operations"            , "Usage: ls_stream_operations [-v]\n"
-                                               "Show a list of stream operations. User '-v' option for a more verbose output\n"},
+        { "ls_stream_operations"            , "Usage: ls_stream_operations [-v] [-vv]\n"
+                                               "Show a list of stream operations. Use '-v' and '-vv' options for more verbose output\n"},
                 
         { "rm_queue"                ,   "Usage: rm_queue <queue>\n\n"
                                         "Remove queue <queue>\n" 
@@ -341,11 +343,12 @@ namespace samson
         { "batch_processing"    , "Information about batch_processing coming soon..."
         },
         
-        { "ls_queues"               ,   "Usage: ls_queues [queue] [-v]\n\n"
+        { "ls_queues"               ,   "Usage: ls_queues [queue] [-v][-vv]\n\n"
                                         "Show a list of current queues in all the workers\n" 
                                         "Inputs:\n"
                                         "\t[queue] : Name or first letters of queue to filter the output of this command\n"
                                         "\t[-v]    : Verbose mode\n"
+        								"\t[-vv]   : More verbose mode"
                                         "\n"
                                         "Type 'help queues' for more information\n"
             

@@ -177,7 +177,7 @@ namespace samson {
             
             if( packet->fromId == network->controllerGetIdentifier() )
             {
-                LM_M(("Delilah received a status report from controller"));
+			   //LM_M(("Delilah received a status report from controller"));
                 updateControllerXMLString( packet->message->info() );
                 return;
             }
@@ -186,7 +186,7 @@ namespace samson {
             int worker_id = network->getWorkerFromIdentifier( packet->fromId );
             if( worker_id != -1 )
             {
-                LM_M(("Delilah received a status report... worker id: %d", worker_id));
+			   //LM_M(("Delilah received a status report... worker id: %d", worker_id));
                 updateWorkerXMLString( worker_id , packet->message->info() );
             }
             else

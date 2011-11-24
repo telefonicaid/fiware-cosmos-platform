@@ -214,7 +214,7 @@ namespace samson {
         //std::cout << " OK\n";
         
         // Create a DelilahControler once network is ready
-        delilah = new Delilah( networkP, true );
+        delilah = new Delilah( networkP );
         
         // Set the funciton to process live stream data
         delilah->op_delilah_process_stream_out_queue = delialh_client_delilah_process_stream_out_queue;

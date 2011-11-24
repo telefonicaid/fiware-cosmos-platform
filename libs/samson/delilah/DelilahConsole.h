@@ -222,7 +222,7 @@ namespace samson {
 	public:
 		
         
-		DelilahConsole( NetworkInterface *network) : Delilah( network , true )
+		DelilahConsole( NetworkInterface *network ) : Delilah( network )
 		{
 			/* completion function for readline library */
 			rl_attempted_completion_function = readline_completion;

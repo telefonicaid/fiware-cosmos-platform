@@ -85,9 +85,6 @@ namespace samson {
 		// PacketReceiverInterface
 		void receive( Packet* packet );
 		
-		// Send information about the state of this worker to the controller
-		void sendWorkerStatus();
-		
 		// Nothing function to avoid warning
 		void touch(){};	
 		

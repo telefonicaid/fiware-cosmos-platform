@@ -39,8 +39,6 @@
 #include "samson/delilah/SamsonDataSet.h"       // samson::SamsonDataSet
 #include "samson/delilah/Delilah.h"             // Own interfce
 
-#define notification_delilah_automatic_update "notification_delilah_automatic_update"
-
 
 samson::Delilah* global_delilah = NULL;
 
@@ -51,7 +49,7 @@ namespace samson {
      *
      * Delilah::Delilah
      */
-    Delilah::Delilah( NetworkInterface* _network , bool automatic_update ) : token("Delilah_token")
+    Delilah::Delilah( NetworkInterface* _network ) : DelilahBase( _network->getNumWorkers() ) , token("Delilah_token")
     {
 		
         // Description for the PacketReceiver
@@ -68,15 +66,8 @@ namespace samson {
         // By default, no traces
         trace_on =  false;
         
-        // Default component to update local list of queues and operations
-        listen( notification_delilah_automatic_update );
-        
         // Listen notification about netowrk disconnection
         listen( notification_network_diconnected );
-        
-        // Emit a periodic notification
-        int delilah_automatic_update_period = samson::SamsonSetup::shared()->getInt( "delilah.automatic_update_period" );
-        engine::Engine::shared()->notify( new engine::Notification( notification_delilah_automatic_update ) , delilah_automatic_update_period );
 
         // Global pointer to access delilah
         global_delilah = this;
@@ -133,20 +124,6 @@ namespace samson {
             return;
         }        
         
-        // Send a message to the controller to receive an update of the information
-        if( notification->isName(notification_delilah_automatic_update) )
-        {
-            if( network->isConnected( network->controllerGetIdentifier()  ) )
-            {
-                // Message to update the worker status list
-                Packet*           p = new Packet(Message::StatusRequest);
-                p->message->set_delilah_id( 1 );    // Spetial id for global update
-                network->sendToController( p );
-            }
-            
-            return;
-        }
-        
         LM_X(1,("Delilah received an unexpected notification"));
         
     }
@@ -195,25 +172,29 @@ namespace samson {
         
         // StatusResponses are processed here
         
-        if( msgCode == Message::StatusResponse )
+        if( msgCode == Message::StatusReport )
         {
             
-            std::ostringstream output;
+            if( packet->fromId == network->controllerGetIdentifier() )
+            {
+                LM_M(("Delilah received a status report from controller"));
+                updateControllerXMLString( packet->message->info() );
+                return;
+            }
+                
             
-            output << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n";
-            output << "<samson>\n";
-            
-            std::string controller_and_worker_status = packet->message->info();
-            output << controller_and_worker_status;
-            
-            // Get my own status here ( delilah )
-            getInfo( output );
-            
-            output << "</samson>\n";
-
-            // Get the resulting string
-            updateXMLString( output.str() );
-            
+            int worker_id = network->getWorkerFromIdentifier( packet->fromId );
+            if( worker_id != -1 )
+            {
+                LM_M(("Delilah received a status report... worker id: %d", worker_id));
+                updateWorkerXMLString( worker_id , packet->message->info() );
+            }
+            else
+            {
+                LM_W(("Status report received from an unknown endpoint"));
+                return;
+            }
+             
             return;
         }
         
@@ -576,9 +557,6 @@ namespace samson {
     // Get information for monitorization
     void Delilah::getInfo( std::ostringstream& output)
     {
-        
-        au::xml_open(output, "delilah");
-        
         // Engine
         engine::Engine::shared()->getInfo( output );
 
@@ -590,8 +568,6 @@ namespace samson {
         
         // Network
         network->getInfo( output );
-        
-        au::xml_close(output, "delilah");
         
     }    
     

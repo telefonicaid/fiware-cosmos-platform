@@ -28,11 +28,9 @@ char* messageCode(MessageCode code)
 	case WorkerTask:                       return (char*) "WorkerTask";
 	case WorkerTaskKill:                   return (char*) "WorkerTaskKill";
 	case WorkerTaskFinish:                 return (char*) "WorkerTaskFinish";
-	case WorkerStatus:                     return (char*) "WorkerStatus";
+	case StatusReport:                     return (char*) "StatusReport";
 	case Command:                          return (char*) "Command";
 	case CommandResponse:		           return (char*) "CommandResponse";
-	case StatusRequest:                    return (char*) "StatusRequest";
-	case StatusResponse:		           return (char*) "StatusResponse";
 	case UploadDataInit:                   return (char*) "UploadDataInit";
 	case UploadDataInitResponse:           return (char*) "UploadDataInitResponse";
 	case UploadDataFile:                   return (char*) "UploadDataFile";

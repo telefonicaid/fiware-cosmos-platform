@@ -8,14 +8,30 @@
  */
 
 #include "au/TokenTaker.h"      // au::TokenTaker
+#include "au/xml.h"             // au::xml...
 
 #include "DelilahBase.h"        // Own interface
 
 namespace samson {
     
     
-    DelilahBase::DelilahBase() : delilah_base_token("DelilahMonitorizationData")
+    DelilahBase::DelilahBase(int _num_workers) : delilah_base_token("DelilahMonitorizationData")
     {
+        // Keep the number of workers
+        num_workers = _num_workers;
+        
+        controller = new XMLStringHolder();
+        for (int w=0;w<num_workers;w++)
+            worker.push_back( new XMLStringHolder() );
+    }
+
+    DelilahBase::~DelilahBase()
+    {
+        delete controller;
+        for (int w=0;w< num_workers;w++)
+            delete worker[w];
+        
+        worker.clear(); // Clear the vector
     }
     
     std::string DelilahBase::xmlString( int limit )
@@ -44,18 +60,61 @@ namespace samson {
         return pugi::values( doc , "//controller//queue/name" );
     }
     
-   
-    
-    void DelilahBase::updateXMLString( std::string txt )
+    void DelilahBase::updateControllerXMLString( std::string txt )
     {
         // thread protection
         au::TokenTaker tt( &delilah_base_token  );
         
-        // Set the txt for debuggin
-        xml_info = txt;
+        controller->update( txt );
+        _reviewXML();
+    }
+    
+    void DelilahBase::updateWorkerXMLString( int w, std::string txt )
+    {
+        // thread protection
+        au::TokenTaker tt( &delilah_base_token  );
         
-        // Reset the cronometer
-        cronometer_xml_info.reset();
+        if( ( w < 0 ) || ( w >= num_workers))
+        {
+            LM_W(("Wrong worker id..."));
+            return;
+        }
+        worker[w]->update( txt );
+        _reviewXML();
+    }
+   
+    
+    void DelilahBase::_reviewXML(  )
+    {
+        
+        std::ostringstream output;
+        
+        output << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n";
+        output << "<samson>\n";
+
+        output << "<controller>";
+        controller->append(output);
+        output << "</controller>";
+        
+        
+        for (int i = 0 ; i < num_workers ; i++ )
+        {
+            output << "<worker>";
+            au::xml_simple( output , "id" , i );
+            worker[i]->append( output );
+            output << "</worker>";
+        }
+        
+        // Get my own status here ( delilah )
+        output << "<delilah>";
+        getInfo( output );
+        output << "</delilah>";
+        
+
+        output << "</samson>\n";
+        
+        // Set the txt for debuggin
+        xml_info = output.str();
         
         // Parser the xml document into "doc"
         doc.reset();
@@ -396,27 +455,48 @@ namespace samson {
         
         if( time > hard_limit )
         {
-            output << au::str( "Error: Monitoring information is %d seconds old" , time );
+            output << au::str( "Error: Monitor information is %d seconds old" , time );
             return false;
         }
         
         if( time > soft_limit )
-            output <<  au::str( "Warning: Monitoring information is %d seconds old\n" , time );
+            output <<  au::str( "Warning: Monitor information is %d seconds old\n" , time );
         
         return true;
         
+    }
+    
+    std::string DelilahBase::updateTimeString()
+    {
+        std::ostringstream output;
+     
+        output << "Update times from SAMSON elements\n";
+        output << "-------------------------------------------------\n\n";
+        
+        output << "Controller updated " << au::time_string( controller->getTime() ) << "\n";
+        for (int i = 0 ; i < num_workers ; i++ )
+            output << "Worker " << au::str("%2d",i) << "  updated " << au::time_string( worker[i]->getTime() ) << "\n";
+
+        output << "-------------------------------------------------\n";
+        
+        return output.str();
     }
     
     int DelilahBase::_getUpdateSeconds()
     {
         
         // Get the 
-        int time = cronometer_xml_info.diffTimeInSeconds();
+        size_t time = controller->getTime();
         
-        // Sum the worker time
-        // TO BE COMPLETED
+
+        for (int w = 0 ; w < num_workers ; w++ )
+        {
+            size_t _time = worker[w]->getTime();
+            if (_time > time )
+                time = _time;
+        }
         
-        return time;
+        return (int) time;
     }    
     
 }

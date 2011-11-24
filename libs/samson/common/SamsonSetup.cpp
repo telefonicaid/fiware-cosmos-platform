@@ -265,6 +265,7 @@ extern char  samsonWorking[1024]
         add( "general.num_processess" , "16" , "Number of cores" );                                                     // Number of cores 2
         add( "general.max_file_size" , "1000000000" , "Max size for generated files" );                                 // Max file size 100 Mb
         add( "general.shared_memory_size_per_buffer" , "268435456" , "Size of the shared memory segments" );            // Shared memory suze 64Mb
+        add( "general.update_status_period", "2" , "Period for the automatic update from workers/controller to delilah" );        
 
 		add( "general.max_parallel_outputs" , "2" , "Max number of parallel outputs");
 
@@ -279,7 +280,6 @@ extern char  samsonWorking[1024]
 
         // Worker Parameters
         add("worker.update_files_period" ,"5" , "Period for the automatic update of files for each worker" );
-        add("worker.update_status_period", "3" , "Period for the automatic update from workers to controller" );        
         add("worker.period_check_finish_tasks", "5", "Period to review finished tasks in samsonWorker, to be clean from memory" );
 
         // Controller

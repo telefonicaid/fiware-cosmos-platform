@@ -64,11 +64,8 @@ namespace samson {
 		// Monitoring control for web-based monitoring tool
 		friend class SamsonControllerMonitor;
 		Monitor monitor;									
-		
-		// Status information of the workers
-        std::string* worker_xml_info;                       // XML version of the worker status information
-        au::Cronometer *cronometer_worker_xml_info;         // Cronometer to count the last update from workers
-		
+
+		// Number of workers
         int num_workers;
 
         // Unified information ( updated with information coming from workers )

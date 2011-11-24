@@ -51,7 +51,7 @@ bool DelilahConnection::isReady()
         return false;
     
     // Creating delilah object
-    delilah = new samson::Delilah( networkP , true );
+    delilah = new samson::Delilah( networkP );
     
     // Return everything is ready
     return true;        

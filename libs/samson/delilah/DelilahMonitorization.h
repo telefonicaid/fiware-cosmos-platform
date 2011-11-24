@@ -44,7 +44,7 @@ namespace samson {
         
 	public:
         
-		DelilahMonitorization( NetworkInterface *network , std::string _command ) : Delilah( network , true )
+		DelilahMonitorization( NetworkInterface *network , std::string _command ) : Delilah( network )
 		{
 			trace_on = true;
             setCommand( _command );    // Default command when starting

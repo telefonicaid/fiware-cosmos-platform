@@ -32,11 +32,41 @@ namespace samson {
      Class to hold monitorization data for delilah components ( delilah / monitorization )
      */
     
+    
+    class XMLStringHolder
+    {
+        std::string txt;
+        au::Cronometer cronometer;
+        
+    public:
+        
+        void update( std::string _txt )
+        {
+            txt = _txt;
+            cronometer.reset();
+        }
+        
+        size_t getTime()
+        {
+            return cronometer.diffTimeInSeconds();
+        }
+        
+        void append( std::ostringstream& output)
+        {
+            output << txt;
+        }
+        
+    };
+    
     class DelilahBase
     {
+        // XML information
+        int num_workers;
+        XMLStringHolder* controller;
+        std::vector<XMLStringHolder*> worker;
+        
         // Data collected with monitorization
         // Thread safe access 
-        
         au::Token delilah_base_token;
         
         // Global xml-based information from the system
@@ -45,20 +75,21 @@ namespace samson {
         // General document with the content of xml_info
         pugi::xml_document doc;
         
-        // Cronometer for xml_info update
-        au::Cronometer cronometer_xml_info;
-        
     public:
         
-        DelilahBase();
+        DelilahBase( int num_workers );
+        ~DelilahBase();
+        
+        void updateControllerXMLString( std::string txt );
+        void updateWorkerXMLString( int w, std::string txt );
+
+        // Own funciton to get xml content
+        virtual void getInfo( std::ostringstream& output )=0; 
         
         // Functions to recover content of the xml
         std::string xmlString( int limit );
         std::string xmlString( );
 
-        // Update the XML string
-        void updateXMLString( std::string txt );        
-        
         // Get the time for update
         int getUpdateSeconds();
 
@@ -75,8 +106,13 @@ namespace samson {
         
         au::TreeItem* getTreeItem( );
 
+        std::string updateTimeString();
         
     private:
+        
+        // Internal command to update the global xml document
+        void _reviewXML(  );        
+        
         
         std::string _infoCommand( std::string prefix ,  std::string command );
         bool _checkUpdateTime( std::ostringstream &output );

@@ -11,6 +11,7 @@
 #include "samson/common/Macros.h"                 // EXIT, ...
 #include "samson/common/SamsonSetup.h"            // samson::SamsonSetup
 #include "samson/common/Info.h"                 // samson::Info
+#include "samson/common/NotificationMessages.h"
 
 #include "samson/network/Message.h"                // Message::WorkerStatus, ...
 #include "samson/network/Packet.h"                 // samson::Packet
@@ -64,9 +65,6 @@ namespace samson {
 			LM_X(1,("Internal error: SamsonController starts with %d workers",num_workers));
 		
 
-        // XML status information commected from workers
-        worker_xml_info             = new std::string[num_workers];
-        cronometer_worker_xml_info  = new au::Cronometer[ num_workers ];
         
 
 		// Description for the PacketReceiver
@@ -81,25 +79,50 @@ namespace samson {
         engine::Engine::shared()->notify( new engine::Notification( notification_check_controller ) , 5  );
         
         
+        // Notification to send status periodically
+        listen( notification_update_status );
+        {
+            int update_period = samson::SamsonSetup::shared()->getInt("general.update_status_period" );
+            engine::Notification *notification = new engine::Notification(notification_update_status);
+            engine::Engine::shared()->notify( notification, update_period );
+        }
+
+        
+        
 	}	
 	
 	SamsonController::~SamsonController()
 	{
-        delete[] worker_xml_info;
-        delete[] cronometer_worker_xml_info;
 	}
     
     void SamsonController::notify( engine::Notification* notification )
     {
         //LM_M(("Controller received a notification  %s " , notification->getName() ));
-        
-        if( notification->isName(notification_monitoring) )
+
+        if ( notification->isName(notification_update_status))
+        {
+            Packet*                  p  = new Packet(Message::StatusReport);
+            
+            // This message is not critical - to be thrown away if worker not connected
+            p->disposable = true;
+            
+            // Include generic information about this worker
+            std::ostringstream info_str;
+            getInfo( info_str );
+            p->message->set_info(info_str.str() );
+            
+            // Send this message to all delilahs connnected
+            network->delilahSend( this , p );
+            
+        }
+        else if( notification->isName(notification_monitoring) )
             monitor.takeSamples();
         else if( notification->isName(notification_check_controller) )
         {
             // Check controller
-            
-
+            // Andreu: Status report should not be used to control disconnection
+            // samson 0.7 will come whitout controller, so let's just comment this
+/*
             size_t max_time_update = SamsonSetup::shared()->getInt("controller.max_worker_disconnected_time");
             
             for ( int w = 0 ; w < num_workers ; w++)
@@ -112,6 +135,7 @@ namespace samson {
                     jobManager.killAll( au::str("Error since a worker has been %lu seconds disconnected", tmp_time ) );
                 }
             }
+ */
         
         }
         else
@@ -144,31 +168,6 @@ namespace samson {
 				return;
 			}
 				break;
-			
-			case Message::WorkerStatus:
-			{
-				int workerId = network->getWorkerFromIdentifier(fromId);			
-
-				// Copy all the information here to be accessed when requesting that info
-				if (workerId != -1)
-				{
-                    // Update of the xml information contained here
-                    if( packet->message->has_info() )
-                    {
-                        worker_xml_info[workerId] = packet->message->info();
-                        // reset cronometer
-                        cronometer_worker_xml_info[workerId].reset();
-                    }
-				}
-                else
-                {
-                    LM_W(("Received a WorkerStatus from something different than a worker. From id %d", fromId )); 
-                }
-			}
-
-			return;
-				
-			break;
 	
 			case Message::DownloadDataInit:
 			{
@@ -362,28 +361,6 @@ namespace samson {
 			}
 			break;
 				
-            case Message::StatusRequest:
-            {
-                Packet *p2 = new Packet(Message::StatusResponse);
-                p2->message->set_delilah_id( packet->message->delilah_id() );
-                
-                std::ostringstream output;
-                
-                au::xml_single_element(output, "controller", this );
-
-                for (int i = 0 ; i < num_workers ; i++ )
-                {
-                    output << "<worker>\n";
-                    au::xml_simple( output , "id" , i );
-                    output << worker_xml_info[i];
-                    output << "</worker>\n";
-                }
-                    
-                p2->message->set_info( output.str() );
-                
-                network->send( fromId,  p2);
-            }
-                break;
              
             case Message::WorkerCommandResponse:
             {
@@ -601,19 +578,6 @@ namespace samson {
         
         // Network
         network->getInfo( output );
-        
-        // Compute up time
-        for (int i = 0 ; i < num_workers ; i++ )
-        {
-            au::xml_open(output , "update_time" );
-
-            int tmp_time = cronometer_worker_xml_info[i].diffTimeInSeconds();
-            
-            au::xml_simple( output , "worker" , i );
-            au::xml_simple( output , "time" , tmp_time );
-            au::xml_close(output , "update_time" );
-        }        
-        
         
     }
 

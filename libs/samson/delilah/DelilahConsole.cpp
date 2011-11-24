@@ -1068,6 +1068,13 @@ namespace samson
             
         }
         
+        
+        if( mainCommand == "times" )
+        {
+            writeOnConsole( updateTimeString() );
+            return 0;
+        }
+        
         if( mainCommand == "tree" )
         {
             au::TreeItem* item =  getTreeItem( );

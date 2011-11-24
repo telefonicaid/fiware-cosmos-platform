@@ -93,8 +93,6 @@ namespace samson {
         // Add SamsonWorker as listener of the update files
         listen(notification_worker_update_files );
         
-        // Add samsonWorker as listere to send an update of the satatus
-        listen(notification_samson_worker_send_status_update );
         
         // Add samsonWorker as lister to send traces to delilahs
         listen(notification_samson_worker_send_trace );
@@ -115,14 +113,12 @@ namespace samson {
         }
         
         // Notification to update state
+        listen( notification_update_status );
         {
-            int worker_update_files_period = samson::SamsonSetup::shared()->getInt("worker.update_status_period" );
-            engine::Notification *notification = new engine::Notification(notification_samson_worker_send_status_update);
-            notification->environment.set("target", "SamsonWorker");
-            notification->environment.setInt("worker", network->getWorkerId() );
-            engine::Engine::shared()->notify( notification, worker_update_files_period );
-        }
-        
+            int update_period = samson::SamsonSetup::shared()->getInt("general.update_status_period" );
+            engine::Notification *notification = new engine::Notification(notification_update_status);
+            engine::Engine::shared()->notify( notification, update_period );
+        }        
         
         {
             int check_finish_tasks_period = samson::SamsonSetup::shared()->getInt("worker.period_check_finish_tasks" );
@@ -162,28 +158,6 @@ namespace samson {
         network->sendToController( p );
     }
     
-    
-    /* ****************************************************************************
-     *
-     * SamsonWorker::sendWorkerStatus -
-     */
-    void SamsonWorker::sendWorkerStatus(void)
-    {
-        
-        Packet*                  p  = new Packet(Message::WorkerStatus);
-        
-        // This message is not critical - to be thrown away if worker not connected
-        p->disposable = true;
-        
-        // Include generic information about this worker
-        std::ostringstream info_str;
-        getInfo( info_str );
-        p->message->set_info(info_str.str() );
-        
-        // Send the message
-        network->sendToController( p );
-        
-    }
     
     /* ****************************************************************************
      *
@@ -349,8 +323,22 @@ namespace samson {
     {
         if ( notification->isName(notification_worker_update_files) )
             sendFilesMessage();
-        else if ( notification->isName(notification_samson_worker_send_status_update))
-            sendWorkerStatus();
+        else if ( notification->isName(notification_update_status))
+        {
+            Packet*                  p  = new Packet(Message::StatusReport);
+            
+            // This message is not critical - to be thrown away if worker not connected
+            p->disposable = true;
+            
+            // Include generic information about this worker
+            std::ostringstream info_str;
+            getInfo( info_str );
+            p->message->set_info(info_str.str() );
+            
+            // Send this message to all delilahs connnected
+            network->delilahSend( this , p );
+            
+        }
         else if ( notification->isName(notification_send_to_worker) )
         {
             Packet *packet = (Packet *)notification->extractObject();

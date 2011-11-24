@@ -107,7 +107,7 @@ namespace samson {
 		
 	public:
 		
-		Delilah( NetworkInterface *_network ,  bool automatic_update );
+		Delilah( NetworkInterface *_network );
 		~Delilah();
         
 		void initController(std::string controller);

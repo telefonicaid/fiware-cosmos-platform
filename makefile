@@ -274,6 +274,7 @@ publish_deb: deb
 	scp package/deb/* repo@samson09:/tmp/samson-deb-$(SAMSON_RELEASE)/
 	ssh repo@samson09 'cd /var/repository/ubuntu/natty; for deb in `reprepro list tid | grep " samson" | cut -f 2 -d" "`; do reprepro remove tid $$deb; done'
 	ssh repo@samson09 'cd /var/repository/ubuntu/natty; for deb in `ls /tmp/samson-deb-$(SAMSON_RELEASE)/samson*.deb`; do reprepro includedeb tid $$deb; done'
+	ssh repo@samson09 rm -rf /tmp/samson-deb-$(SAMSON_RELEASE)/
 
 man: release
 	 mkdir -p BUILD_RELEASE/man/man1

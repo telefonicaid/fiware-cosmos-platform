@@ -58,8 +58,12 @@ namespace hit{
 				 writer->emit( 0 , &word_mail , &count );				 
 			  }
 
+			  if( word.isStandartWord() )
+			  {
+				 word.convertToLowerCase();
+				 writer->emit( 0 , &word, &count ); 
+			  }
 
-			  writer->emit( 0 , &word, &count );
 		   }
 
 		}

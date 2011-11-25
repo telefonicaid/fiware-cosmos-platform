@@ -299,18 +299,79 @@ public:
 	}
 
 
+	void convertToLowerCase()
+	{
+       for (size_t i = 0 ; i < value.length() ; i++ )
+       {
+          char c = (char)value[i];
+
+          if( ( c >= 65 ) && (c<=90))
+          {
+			 value[i] = c + 32;
+          }	   
+	   }
+	}
+
+	bool isStandartWord()
+	{
+       for (size_t i = 0 ; i < value.length() ; i++ )
+       {
+          char c = (char)value[i];
+
+          if( ( c >= 97 ) && (c<=122))
+          {
+             // Lower case letter
+             continue;
+          }		  
+
+          if( ( c >= 65 ) && (c<=90))
+          {
+             // Lower case letter
+             continue;
+          }
+
+		  return false;
+	   }
+
+	   return true;
+	}
+
 	bool isMail()
 	{
-	   int count = 0;
+	   bool arroba_found = false;
+
 	   for (size_t i = 0 ; i < value.length() ; i++ )
-		  if( (char)value[i] == 64 )
+	   {
+		  char c = (char)value[i];
+
+		  if( c == 64 )
 		  {
-			 count++;
-			 if( count >1 )
+			 if ( arroba_found )
 				return false;
+			 else
+				arroba_found = true;
+			 continue;
 		  }
 
-	   return( count == 1);
+		  if( ( c >= 97 ) && (c<=122) )
+		  {
+			 // Lower case letter
+			 continue;
+		  }
+
+		  if( c == '.' ) 
+			 continue;
+		  if( c == '-' ) 
+			 continue;
+		  if( c == '_' ) 
+			 continue;
+
+		  return false;
+
+	   }
+
+	   return true;
+
 	}
 
 };

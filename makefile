@@ -269,6 +269,12 @@ deb: release modules man
 	cd modules/mobility;     ../../scripts/samsonModuleDeb mobility $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	cd modules/txt_md;               ../../scripts/samsonModuleDeb txt_md $(SAMSON_VERSION) $(SAMSON_RELEASE)
 
+publish_deb: deb
+	ssh repo@samson09 mkdir -p /tmp/samson-deb-$(SAMSON_RELEASE)/
+	scp package/deb/* repo@samson09:/tmp/samson-deb-$(SAMSON_RELEASE)/
+	ssh repo@samson09 'cd /var/repository/ubuntu/natty; for deb in `reprepro list tid | grep " samson" | cut -f 2 -d" "`; do reprepro remove tid $$deb; done'
+	ssh repo@samson09 'cd /var/repository/ubuntu/natty; for deb in `ls /tmp/samson-deb-$(SAMSON_RELEASE)/samson*.deb`; do reprepro includedeb tid $$deb; done'
+
 man: release
 	 mkdir -p BUILD_RELEASE/man/man1
 	 mkdir -p BUILD_RELEASE/man/man7

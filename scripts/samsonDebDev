@@ -48,7 +48,7 @@ echo "Version: $version"                                >> debian/DEBIAN/control
 echo "Section: tid"                                >> debian/DEBIAN/control
 echo "Priority: optional"                                >> debian/DEBIAN/control
 echo "Architecture: $arch"                              >> debian/DEBIAN/control
-echo "Depends: samson (=$version), boost-dev, ncurses-dev, make, gcc, cmake, libreadline-dev, libprotobuf-dev, protobuf-compiler, libboost-filesystem-dev, libboost-thread-dev, qt-make, libqt4-dev, tid-mongodb-dev" >> debian/DEBIAN/control
+echo "Depends: samson, libboost-dev, ncurses-dev, make, gcc, cmake, libreadline-dev, libprotobuf-dev, protobuf-compiler, libboost-filesystem-dev, libboost-thread-dev, qt4-qmake, libqt4-dev, tid-mongodb-dev" >> debian/DEBIAN/control
 echo "Maintainer: Andreu Urruela <andreu@tid.es>"       >> debian/DEBIAN/control
 echo "Description: SAMSON is a high-performance MapReduce platform that is designed for scaling tasks on a cluster of commodity hardware. This platform removes the need to develop a system for parallelizing and synchronizing work between servers, allowing a person to develop the analytical models needed to solve both current and future problems.  SAMSON extends the traditional MapReduce paradigm by allowing an external data source to stream data into and out of the cluster. This allows the system to handle any volume of data thus providing the ability to continuously process new inputs and output states without restriction."  >> debian/DEBIAN/control 
 

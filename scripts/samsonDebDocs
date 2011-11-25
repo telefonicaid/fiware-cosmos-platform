@@ -45,7 +45,7 @@ echo "Section: tid"                                                     >> debia
 echo "Priority: optional"                                               >> debian/DEBIAN/control
 echo "Architecture: $arch"                                              >> debian/DEBIAN/control
 echo "Maintainer: Andreu Urruela <andreu@tid.es>"                       >> debian/DEBIAN/control
-echo "Depends: samson (=$version)"                                      >> debian/DEBIAN/control
+echo "Depends: samson"                                      >> debian/DEBIAN/control
 echo "Description: Documentation for the SAMSON MapReduce Platform."    >> debian/DEBIAN/control 
 
 cp -r ./BUILD_RELEASE/man         debian/opt/samson

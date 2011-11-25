@@ -33,7 +33,7 @@ arch=$(dpkg --print-architecture)
 # Generate a list of module dependencies needed to install this module
 dependencylist()
 {
-    echo -n "Depends: samson (=$version), samson-devel (=$version)" >> deb_module_list.$$
+    echo -n "Depends: samson, samson-dev" >> deb_module_list.$$
     # package_deps contains a list of external dependencies, e.g. mongodb needed
     # to ensure the correct functioning of the module
     if [ -f package_deps ]; then
@@ -45,7 +45,7 @@ dependencylist()
     if [ -f depends.txt ]; then
         for needed_module in `cat depends.txt`
         do
-            echo -n ", samson-$needed_module (=$version)" >> deb_module_list.$$
+            echo -n ", samson-$needed_module" >> deb_module_list.$$
         done
     fi
     cat deb_module_list.$$

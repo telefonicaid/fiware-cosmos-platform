@@ -52,7 +52,7 @@ namespace samson{
 		    std::string str()
 		    {
        			std::ostringstream o;
-			o << rank.value << " outln:" << links_length << " inln:" << messages_length << " " << update_count.value << " " << updated_outputs.value;
+			o << rank.value << " outln:" << links_length << " inln:" << messages_length << " count:" << update_count.value << " outputs:" << updated_outputs.value;
 			return o.str();
 			
 		    }

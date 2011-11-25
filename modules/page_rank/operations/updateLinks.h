@@ -170,10 +170,10 @@ public:
 		}
 
 
-//		if ((input_key.value.compare("Mexico") == 0) || (input_key.value.compare("ABBA") == 0))
-//		{
-//			LM_M(("Reemit state: key:'%s' with %d incoming messages and %d outgoing links", input_key.value.c_str(), node.messages_length, node.links_length));
-//		}
+		if ((input_key.value.compare("Mexico") == 0) || (input_key.value.compare("ABBA") == 0))
+		{
+			LM_M(("Reemit state: key:'%s' with %d incoming messages and %d outgoing links", input_key.value.c_str(), node.messages_length, node.links_length));
+		}
 
 		// Emit the node at the end
 		writer->emit( 1 , &input_key , &node );

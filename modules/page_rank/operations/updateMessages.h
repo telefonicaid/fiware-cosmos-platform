@@ -110,10 +110,10 @@ public:
 			node.init();
 		}
 
-//		if ((key.value.compare("Mexico") == 0) || (key.value.compare("ABBA") == 0))
-//		{
-//			LM_M(("Message received: key:'%s' with %d incoming messages and %d outgoing links", key.value.c_str(), node.messages_length, node.links_length));
-//		}
+		if ((key.value.compare("Mexico") == 0) || (key.value.compare("ABBA") == 0))
+		{
+			LM_M(("Message received: key:'%s' with %d incoming messages and %d outgoing links", key.value.c_str(), node.messages_length, node.links_length));
+		}
 
 		// update the cycle counter
 		node.update_count.value++;
@@ -162,10 +162,10 @@ public:
 		// Note: We need to extract first to auxiliar vector ( with real copies of everything )
 		final_messages.clear();
 
-//		if ((key.value.compare("Mexico") == 0) || (key.value.compare("ABBA") == 0))
-//		{
-//			LM_M(("Copying to final_messages: key:'%s', num_messages:%d", key.value.c_str(), messages.size() ));
-//		}
+		if ((key.value.compare("Mexico") == 0) || (key.value.compare("ABBA") == 0))
+		{
+			LM_M(("Copying to final_messages: key:'%s', num_messages:%d", key.value.c_str(), messages.size() ));
+		}
 
 		for( std::map<const char* , double , strCompare>::iterator message_it = messages.begin() ; message_it != messages.end() ; message_it++ )		
 		{
@@ -185,10 +185,10 @@ public:
 		double previous_rank = node.rank.value;
 		node.recompute_rank();
 
-//		if ((key.value.compare("Mexico") == 0) || (key.value.compare("ABBA") == 0))
-//		{
-//			LM_M(("Recomputing rank: key:'%s', rank:%lf with %d incoming messages and %d outgoing links", key.value.c_str(), node.rank.value, node.messages_length, node.links_length));
-//		}
+		if ((key.value.compare("Mexico") == 0) || (key.value.compare("ABBA") == 0))
+		{
+			LM_M(("Recomputing rank: key:'%s', rank:%lf (prev:%lf) with %d incoming messages and %d outgoing links", key.value.c_str(), node.rank.value, previous_rank, node.messages_length, node.links_length));
+		}
 
 		// Re-emit my contribution to all the nodes if necessary
 		// ------------------------------------------------------------------------------------------------------
@@ -198,15 +198,21 @@ public:
 
 		node.updated_outputs.value = 0;
 
-		if( fabs( previous_rank - node.rank.value ) > TOLERANCE )
+		if( fabs( previous_rank - node.rank.value ) > (TOLERANCE * previous_rank))
 		{
 			//printf("Node %s not emiting rank  to %d connections\n" , key.value.c_str() , node.links_length );
+			if ((key.value.compare("Mexico") == 0) || (key.value.compare("ABBA") == 0))
+			{
+				LM_M(("Emit contributions: key:'%s' with %d incoming messages and %d outgoing links", key.value.c_str(), node.messages_length, node.links_length));
+			}
+
 
 			for (int i = 0 ; i < node.links_length ; i++)
 			{
 				output_message_key.value = node.links[i].value;
 				output_message_value.node.value = key.value;
 				output_message_value.contribution.value = node.contribution(); // contribution
+
 				writer->emit( 0 , &output_message_key , &output_message_value );
 
 				node.updated_outputs.value++;
@@ -214,18 +220,19 @@ public:
 		}
 		else
 		{
-//			if ((key.value.compare("Mexico") == 0) || (key.value.compare("ABBA") == 0))
-//			{
-//				LM_M(("Stopped: key:'%s', no change in rank, previous:%lf, updated:%lf", key.value.c_str(), previous_rank, node.rank.value));
-//			}
+			if ((key.value.compare("Mexico") == 0) || (key.value.compare("ABBA") == 0))
+			{
+				LM_M(("Stopped: key:'%s', no change in rank, previous:%lf, updated:%lf", key.value.c_str(), previous_rank, node.rank.value));
+			}
+			node.rank.value = previous_rank;
 		}
 
 		// ------------------------------------------------------------------------------------------------------
 
-//		if ((key.value.compare("Mexico") == 0) || (key.value.compare("ABBA") == 0))
-//		{
-//			LM_M(("Reemit state: key:'%s' with %d incoming messages and %d outgoing links", key.value.c_str(), node.messages_length, node.links_length));
-//		}
+		if ((key.value.compare("Mexico") == 0) || (key.value.compare("ABBA") == 0))
+		{
+			LM_M(("Reemit state: key:'%s' with %d incoming messages and %d outgoing links", key.value.c_str(), node.messages_length, node.links_length));
+		}
 
 		// Emit the node at the output...
 		writer->emit( 1 , &key , &node );

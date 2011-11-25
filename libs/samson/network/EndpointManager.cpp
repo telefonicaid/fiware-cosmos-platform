@@ -896,12 +896,14 @@ void EndpointManager::run(bool oneShot)
 				if (ep->rFd == -1)
 					continue;
 
-				if ((ep->isThreaded() == true) && (ep->state == Endpoint2::Ready))
+                // Andreu: If it is threaded, this has not to be handled here (independently of the state )
+				//if ((ep->isThreaded() == true) && (ep->state == Endpoint2::Ready))
+                if (ep->isThreaded() == true)
 					continue;
 
 				if (((ep->state == Endpoint2::Ready) || (ep->state == Endpoint2::Connected)) && (ep->rFd == -1))
 					LM_X(1, ("Endpoint %s is in state %s but its rFd is -1 ...", ep->name(), ep->stateName()));
-
+                
 				eps += 1;
 				max = MAX(max, ep->rFd);
 				FD_SET(ep->rFd, &rFds);
@@ -924,7 +926,7 @@ void EndpointManager::run(bool oneShot)
 					LM_W(("No fds to listen to ..."));
                  */
 				firstTimeForNoFdsToListenTo = false;
-				sleep(2);
+				//sleep(2);
 				fds = 0;
 				break;
 			}

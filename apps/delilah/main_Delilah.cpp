@@ -203,16 +203,19 @@ int main(int argC, const char *argV[])
 	//
 	// First, give controller some time for the interchange of Hello messages
 	//
-	samson::Packet*  packetP  = new samson::Packet(samson::Message::Msg, samson::Message::ProcessVector);
-
+    
 	LM_TODO(("I should probably go through NetworkInterface here ..."));
+	samson::Packet*  packetP  = new samson::Packet(samson::Message::Msg, samson::Message::ProcessVector);
 	networkP->epMgr->controller->send( packetP );
 
 	//
 	// What until the network is ready II
 	//
 	while (!networkP->ready(true))
+    {
 		usleep(1000);
+    }
+    
 	std::cout << " OK\n";
 	LM_M(("\nConnecting to all workers ... OK"));
 

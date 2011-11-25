@@ -161,7 +161,7 @@ void process_command( std::string line )
 		  font_size = 2;
 
 	   //output_web << "<p style=\"font-size:" << font_size << "px;\">" << topics[i].concept << "</p> ";
-	   output_web << "<font size=" << font_size << ">" << topics[i].concept  << " </font> ";
+        output_web << "<font size=" << font_size << ">" << topics[i].concept  << " ( " << au::str(topics[i].num) << " )  </font> ";
 	}
 
     // Parse content

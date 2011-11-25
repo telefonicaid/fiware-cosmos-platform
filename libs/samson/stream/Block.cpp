@@ -341,11 +341,19 @@ namespace samson {
 
             au::xml_open(output, "lists");
             std::ostringstream output_lists;
+            std::ostringstream output_tasks_str;
+            
             std::set< BlockList* >::iterator l;
             for (l = lists.begin() ; l != lists.end() ; l++)
             {
                 au::xml_simple(output, "list", (*l)->name );
                 output_lists << (*l)->name << " ";
+
+                // Show tasks ids
+                size_t task_id = (*l)->task_id;
+                if( task_id != (size_t) -1 )
+                    output_tasks_str << (*l)->task_id << " ";
+                
             }
             au::xml_close(output, "lists");
             
@@ -353,6 +361,9 @@ namespace samson {
             
             header->getInfo( output );
 
+
+            au::xml_simple(output, "tasks_str", output_tasks_str.str() );
+            
             au::xml_close(output, "block");
         }
         

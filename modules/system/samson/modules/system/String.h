@@ -339,6 +339,7 @@ public:
 	bool isMail()
 	{
 	   bool arroba_found = false;
+	   bool point_found_in_domain = false;
 
 	   for (size_t i = 0 ; i < value.length() ; i++ )
 	   {
@@ -346,6 +347,9 @@ public:
 
 		  if( c == 64 )
 		  {
+			 if( i == 0)
+				return false; // Not starting with "@"
+
 			 if ( arroba_found )
 				return false;
 			 else
@@ -360,7 +364,11 @@ public:
 		  }
 
 		  if( c == '.' ) 
+		  {
+			 if( arroba_found )
+				point_found_in_domain = true;
 			 continue;
+		  }
 		  if( c == '-' ) 
 			 continue;
 		  if( c == '_' ) 
@@ -370,7 +378,7 @@ public:
 
 	   }
 
-	   if( arroba_found )
+	   if( arroba_found && point_found_in_domain )
 		  return true;
 
 	   return false;

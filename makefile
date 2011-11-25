@@ -268,6 +268,23 @@ deb: release modules man
 	cd modules/passive_location;     ../../scripts/samsonModuleDeb passive_location $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	cd modules/mobility;     ../../scripts/samsonModuleDeb mobility $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	cd modules/txt_md;               ../../scripts/samsonModuleDeb txt_md $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/cdr;                   ../../scripts/samsonModuleDebDev cdr $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/example;               ../../scripts/samsonModuleDebDev example $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/graph;                 ../../scripts/samsonModuleDebDev graph $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/osn;                   ../../scripts/samsonModuleDebDev osn $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/sna;                   ../../scripts/samsonModuleDebDev sna $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/sort;                  ../../scripts/samsonModuleDebDev sort $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/system;                ../../scripts/samsonModuleDebDev system $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/terasort;              ../../scripts/samsonModuleDebDev terasort $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/testcomparefunctions; ../../scripts/samsonModuleDebDev testcomparefunctions $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/tienda;                ../../scripts/samsonModuleDebDev tienda $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/txt;                   ../../scripts/samsonModuleDebDev txt $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/url;                   ../../scripts/samsonModuleDebDev url $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/urlbenchmark;         ../../scripts/samsonModuleDebDev urlbenchmark $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/mob2;                 ../../scripts/samsonModuleDebDev mob2 $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/passive_location;     ../../scripts/samsonModuleDebDev passive_location $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/mobility;     ../../scripts/samsonModuleDebDev mobility $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	cd modules/txt_md;               ../../scripts/samsonModuleDebDev txt_md $(SAMSON_VERSION) $(SAMSON_RELEASE)
 
 publish_deb: deb
 	ssh repo@samson09 mkdir -p /tmp/samson-deb-$(SAMSON_RELEASE)/

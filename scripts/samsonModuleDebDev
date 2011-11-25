@@ -33,7 +33,7 @@ arch=$(dpkg --print-architecture)
 # Generate a list of module dependencies needed to install this module
 dependencylist()
 {
-    echo -n "Depends: samson" >> deb_module_list.$$
+    echo -n "Depends: samson-dev" >> deb_module_list.$$
     # package_deps contains a list of external dependencies, e.g. mongodb needed
     # to ensure the correct functioning of the module
     if [ -f package_deps ]; then
@@ -45,7 +45,7 @@ dependencylist()
     if [ -f depends.txt ]; then
         for needed_module in `cat depends.txt`
         do
-            echo -n ", samson-$needed_module" >> deb_module_list.$$
+            echo -n ",samson-${lowercase_module}, samson-$needed_module" >> deb_module_list.$$
         done
     fi
     cat deb_module_list.$$
@@ -60,10 +60,10 @@ if [ -d debian ]; then
 fi
 
 mkdir -p debian/DEBIAN
-mkdir -p debian/opt/samson/modules
+mkdir -p debian/opt/samson/include
 
 
-echo "Package: samson-${lowercase_module}"                 > debian/DEBIAN/control
+echo "Package: samson-${lowercase_module}-dev"           > debian/DEBIAN/control
 echo "Version: $version"                                >> debian/DEBIAN/control
 echo "Architecture: $arch"                              >> debian/DEBIAN/control
 echo "Section: tid"                                >> debian/DEBIAN/control
@@ -71,16 +71,14 @@ echo "Priority: optional"                                >> debian/DEBIAN/contro
 echo "Maintainer: Andreu Urruela <andreu@tid.es>"       >> debian/DEBIAN/control
 dependencylist                                          >> debian/DEBIAN/control
 echo " " >> debian/DEBIAN/control
-echo "Description: Module ${lowercase_module} for use with the Samson Map Reduce Platform."  >> debian/DEBIAN/control
+echo "Description: Development header files for the module ${lowercase_module} for use with the Samson Map Reduce Platform."  >> debian/DEBIAN/control
 
 mkdir -p debian/opt/samson/include/samson/modules/$module
-cp ${SAMSON_HOME}/modules/lib$module.so               debian/opt/samson/modules
-
-
+cp ${SAMSON_HOME}/include/samson/modules/$module/*.h   debian/opt/samson/include/samson/modules/${module}
 
 #
 # Create package
 #
-dpkg-deb --build debian samson-${lowercase_module}_$version-${release}_$arch.deb
+dpkg-deb --build debian samson-${lowercase_module}-dev_$version-${release}_$arch.deb
 mkdir -p ../../package/deb
-mv samson-${lowercase_module}_$version-${release}_$arch.deb ../../package/deb/samson-${lowercase_module}_$version-${release}_$arch.deb
+mv samson-${lowercase_module}-dev_$version-${release}_$arch.deb ../../package/deb/samson-${lowercase_module}-dev_$version-${release}_$arch.deb

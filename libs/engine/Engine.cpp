@@ -222,7 +222,7 @@ namespace engine
                 // Compute the time spent in this element
                 time_t t = cronometer.diffTimeInSeconds();
                 // Goyo
-                if( t > 60000 )
+                if( t > 1 )
                     LM_W(("Task %s spent %d seconds. This should not be more than 60000", running_element->getDescription().c_str() , (int)t ));
 
                 LM_T( LmtEngine, ("[DONE] Engine executing %s" , running_element->getDescription().c_str()));

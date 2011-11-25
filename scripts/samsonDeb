@@ -60,8 +60,6 @@ cat > debian/DEBIAN/preinst <<PREINST
 #!/bin/sh
 getent group samson >/dev/null || groupadd -r samson
 getent passwd samson >/dev/null || useradd -r -g samson -d /opt/samson -s /bin/bash -c 'SAMSON Platform account' samson
-#Force the bash shell since useradd does not appear to set it correctly
-chsh -s /bin/bash samson
 PREINST
 chmod 0755 debian/DEBIAN/preinst
 
@@ -77,6 +75,7 @@ chmod 0755 debian/DEBIAN/postinst
 cat > debian/DEBIAN/prerm <<PRERM
 #!/bin/sh
 /etc/init.d/samson stop
+userdel samson
 PRERM
 chmod 0755 debian/DEBIAN/prerm
  

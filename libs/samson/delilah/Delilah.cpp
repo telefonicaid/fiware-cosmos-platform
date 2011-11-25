@@ -607,6 +607,7 @@ namespace samson {
         au::CommandLine cmd;
         cmd.set_flag_boolean("vv");
         cmd.set_flag_boolean("v");
+        cmd.set_flag_int("limit" , 0);
         
         cmd.parse( command );
         
@@ -682,16 +683,25 @@ namespace samson {
                 return infoCommand(LS_STREAM_OPERATIONS_VERBOSE);
             else
                 return infoCommand(LS_STREAM_OPERATIONS);
-
+            
         }
         
         if( main_command == "ls_blocks" )
         {
+            std::string command;
+            
             if( cmd.get_flag_bool("v")  )
-                return infoCommand(LS_BLOCKS_VERBOSE);
+                command.append( LS_BLOCKS_VERBOSE );
             else
-                return infoCommand(LS_BLOCKS);
+                command.append( LS_BLOCKS );
+            
+            int limit = cmd.get_flag_int("limit");
 
+            if( limit > 0)
+                command.append( au::str(" -limit %d " , limit) );
+            
+            return infoCommand( command );
+            
         }
         
         if( main_command == "engine_show" )

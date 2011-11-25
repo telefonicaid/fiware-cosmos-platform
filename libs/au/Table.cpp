@@ -434,9 +434,15 @@ namespace au {
         
 
     }
-    
+
     std::string DataSetFilter::str( DataSet* input )
     {
+        return str( input , 0 );
+    }
+    
+    std::string DataSetFilter::str( DataSet* input , int limit  )
+    {
+        int num = 0;
         std::ostringstream output;
         
         // Length of each field
@@ -494,6 +500,11 @@ namespace au {
                 output << formated_value << " | ";
             }
             output << "\n";
+            num++;
+            
+            if( limit > 0 )
+                if( num >= limit ) 
+                    break;
 
         }
         

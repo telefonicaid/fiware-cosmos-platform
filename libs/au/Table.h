@@ -130,6 +130,7 @@ namespace au {
         DataSet* transform( DataSet* input );
         
         std::string str( DataSet* input );
+        std::string str( DataSet* input , int limit );
         
         
     };

@@ -390,8 +390,10 @@ namespace samson {
         // Parse input command
         au::CommandLine cmdLine;
         cmdLine.set_flag_boolean("info");
+        cmdLine.set_flag_int("limit",0);
         cmdLine.parse( command );
         
+        int limit = cmdLine.get_flag_int("limit");
         
         if( cmdLine.get_num_arguments() < 2 )
             return "Usage: info_command select_queue fields [options] [-info]";
@@ -432,7 +434,7 @@ namespace samson {
                 filter.add( new au::DataSetFilterColumn( field_definition ) );
             }
 
-            output << filter.str( &dataSet );
+            output << filter.str( &dataSet , limit );
 /*            
             au::DataSet* outputDataSet = filter.transform( &dataSet);
             output << outputDataSet->str();

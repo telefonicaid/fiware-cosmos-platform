@@ -223,7 +223,7 @@ namespace engine
                 time_t t = cronometer.diffTimeInSeconds();
                 // Goyo
                 if( t > 1 )
-                    LM_W(("Task %s spent %d seconds. This should not be more than 60000", running_element->getDescription().c_str() , (int)t ));
+                    LM_W(("[WARNING2] Task %s spent %s seconds.", running_element->getDescription().c_str() , au::time_string( t ).c_str()  ));
 
                 LM_T( LmtEngine, ("[DONE] Engine executing %s" , running_element->getDescription().c_str()));
                 

@@ -59,7 +59,9 @@ echo "Description: SAMSON is a high-performance MapReduce platform that is desig
 cat > debian/DEBIAN/preinst <<PREINST
 #!/bin/sh
 getent group samson >/dev/null || groupadd -r samson
-getent passwd samson >/dev/null || useradd -r -g samson -d /opt/samson -s /bin/bash -c 'SAMSON account' samson
+getent passwd samson >/dev/null || useradd -r -g samson -d /opt/samson -s /bin/bash -c 'SAMSON Platform account' samson
+#Force the bash shell since useradd does not appear to set it correctly
+chsh -s /bin/bash samson
 PREINST
 chmod 0755 debian/DEBIAN/preinst
 
@@ -87,6 +89,7 @@ cp BUILD_RELEASE/apps/samsonSetup/samsonSetup            debian/opt/samson/bin
 cp BUILD_RELEASE/apps/samsonSpawner/samsonSpawner          debian/opt/samson/bin
 cp BUILD_RELEASE/apps/samsonWorker/samsonWorker           debian/opt/samson/bin
 cp BUILD_RELEASE/apps/samsonKiller/samsonKiller           debian/opt/samson/bin
+cp BUILD_RELEASE/apps/samsonStarter/samsonStarter           debian/opt/samson/bin
 cp BUILD_RELEASE/apps/delilah/delilah               debian/opt/samson/bin
 cp etc/setup.txt                                    debian/var/samson/etc
 cp etc/setup.txt                                    debian/opt/samson/etc

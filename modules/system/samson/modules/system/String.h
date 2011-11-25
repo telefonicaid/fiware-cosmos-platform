@@ -370,7 +370,10 @@ public:
 
 	   }
 
-	   return true;
+	   if( arroba_found )
+		  return true;
+
+	   return false;
 
 	}
 

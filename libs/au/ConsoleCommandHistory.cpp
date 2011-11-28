@@ -1,4 +1,8 @@
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
 #include "au/ConsoleCommand.h"
 
 #include "au/ConsoleCommandHistory.h" // Own interface

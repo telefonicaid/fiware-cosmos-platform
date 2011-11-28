@@ -74,6 +74,10 @@ void init(samson::KVWriter* writer)
 	mongo_history            = atoi(history.c_str());
 	mongo_lkl_fill           = atoi(lkl_fill.c_str());
 
+
+	OLM_M(("Recovering value mongo_lkl_fill %s %d" , lkl_fill.c_str() ,  mongo_lkl_fill));
+
+
 	if (mongo_ip == "no-mongo-ip")
 	{
 		tracer->setUserError("No mongo ip specified. Please specify mongo ip with 'mongo.ip' environment variable");		
@@ -186,6 +190,7 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 			if ((inserts != 0) && ((inserts % mongo_bulksize) == 0))
 			{
 				OLM_M(("Run[inside-loop]: Inserting bulk of %d records (bulksize: %d)", inserts, mongo_bulksize));
+    			OLM_M(("Filling up LastKnown"));
 				mdbConnection->insert(mongo_db_path, dataVec);
 				dataVec.clear();
 				inserts = 0;

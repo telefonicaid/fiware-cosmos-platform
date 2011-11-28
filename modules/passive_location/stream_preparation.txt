@@ -41,17 +41,3 @@ add_stream_operation pl.mobility_records  mobility.reduce_cell_latitude_longitud
 set_stream_operation_property pl.mobility_records max_latency 1
 
 
-# ------------------------------------------------------------
-# Upload cell information
-# ------------------------------------------------------------
-
-push GSM_LATLONG.txt pl.cells.txt
-push UMTS_LATLONG.txt pl.cells.txt
-
-wait
-
-run_stream_operation passive_location.parse_cell_info pl.cells.txt pl.cells
-
-wait
-
-rm_queue pl.cells.txt

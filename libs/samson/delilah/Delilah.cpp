@@ -598,7 +598,7 @@ namespace samson {
     
 #define LS_BLOCKS "info_command -worker //block_manager/blocks/block /id,t=id /size,t=size,format=uint64 /state,t=state /tasks_str,t=tasks  /kv_header/format/key_format,t=key /kv_header/format/value_format,t=value /kv_header/kv_info/kvs,t=#kvs,format=uint64 /kv_header/kv_info/size,t=size,format=uint64"
 
-#define LS_BLOCKS_VERBOSE "info_command -worker //block_manager/blocks/block /id,t=id /size,t=size,format=uint64 /state,t=state /tasks_str,t=tasks  /lists_str,t=lists"
+#define LS_BLOCKS_VERBOSE "info_command -worker //block_manager/blocks/block /id,t=id /size,t=size,format=uint64 /state,t=state /tasks_str,t=tasks  /lists_str,t=lists,left"
 
     
     

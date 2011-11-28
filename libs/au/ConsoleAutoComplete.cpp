@@ -142,7 +142,8 @@ namespace au {
         
         for (size_t i=0;i<last_word_alternatives.size();i++)
         {
-            printf(  au::str("%%%d-s ", max_length ).c_str() , last_word_alternatives[i].c_str() );
+		   std::string format = std::string("%-") + au::str("%d",max_length) + std::string("s ");
+		   printf(  format.c_str()  , last_word_alternatives[i].c_str() );
             
             if( (i%num_words_per_row) == (size_t)(num_words_per_row-1) )
                 printf("\n");

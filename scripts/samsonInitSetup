@@ -1,0 +1,19 @@
+#!/bin/bash
+#
+# Script to initialize setup.txt configuration
+# Get the number of processors on this machine
+NO_PROCS=`cat /proc/cpuinfo | grep processor | wc -l`
+# Set general.num_processess
+sed -i "s/^general.num_processess.*/general.num_processess   $NO_PROCS/" /var/samson/etc/setup.txt
+# Get the memory 
+MEM_BYTES=`cat /proc/cpuinfo | grep MemTotal | awk '{print $2*1024}'`
+# Set the available system memory
+sed -i "s/^general.memory/general.memory   $MEM_BYTES/" /var/samson/etc/setup.txt
+
+# Determine if the server has enough shared memory defined. If not configure shmmax for our needs
+shmmax_needed=`grep "^general.shared_memory_size_per_buffer" /var/samson/etc/setup.txt | awk -v no_procs=$NO_PROCS '{ print $2*no_procs }'`
+shmmax_have=`sysctl -n kernel.shmmax`
+if [ "$shmmax_needed" -gt "$shmmax_have" ];
+then
+    echo "kernel.shmmax=$shmmax_needed" > /etc/sysctl.d/30-samson.conf
+fi

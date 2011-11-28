@@ -57,7 +57,7 @@ echo "Maintainer: Andreu Urruela <andreu@tid.es>"       >> debian/DEBIAN/control
 echo "Description: SAMSON is a high-performance MapReduce platform that is designed for scaling tasks on a cluster of commodity hardware. This platform removes the need to develop a system for parallelizing and synchronizing work between servers, allowing a person to develop the analytical models needed to solve both current and future problems.  SAMSON extends the traditional MapReduce paradigm by allowing an external data source to stream data into and out of the cluster. This allows the system to handle any volume of data thus providing the ability to continuously process new inputs and output states without restriction."  >> debian/DEBIAN/control 
 
 cat > debian/DEBIAN/preinst <<PREINST
-#!/bin/sh
+#!/bin/bash
 getent group samson >/dev/null || groupadd -r samson
 getent passwd samson >/dev/null || useradd -r -g samson -d /opt/samson -s /bin/bash -c 'SAMSON Platform account' samson
 PREINST
@@ -65,12 +65,7 @@ chmod 0755 debian/DEBIAN/preinst
 
 cat > debian/DEBIAN/postinst <<POSTINST
 #!/bin/sh
-shmmax_needed=`grep "^general.shared_memory_size_per_buffer" /opt/samson/etc/setup.txt | awk -v no_procs=$no_procs '{ print $2*no_procs }'`
-shmmax_have=`sysctl -n kernel.shmmax`
-if [ $shmmax_needed -gt $shmmax_have ];
-then
-    echo "kernel.shmmax=${shmmax_needed}" > /etc/sysctl.d/30-samson.conf
-fi
+bash /opt/samson/bin/samsonInitSetup
 chown -R samson:samson /opt/samson
 chown -R samson:samson /var/samson
 update-rc.d samson defaults
@@ -79,7 +74,7 @@ POSTINST
 chmod 0755 debian/DEBIAN/postinst
 
 cat > debian/DEBIAN/prerm <<PRERM
-#!/bin/sh
+#!/bin/bash
 /etc/init.d/samson stop
 userdel samson
 PRERM
@@ -101,6 +96,7 @@ cp etc/setup.txt                                    debian/opt/samson/etc
 cp etc/profile.d/samson.sh                          debian/etc/profile.d/samson.sh
 cp etc/init.d/samson.ubuntu                         debian/etc/init.d/samson
 cp README debian/opt/samson/share
+cp scripts/samsonInitSetup           debian/opt/samson/bin
 
 
 

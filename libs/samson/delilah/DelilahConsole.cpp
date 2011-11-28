@@ -303,7 +303,7 @@ namespace samson
         if ( t > 10 )
             return au::str("[%s] Delilah>", au::time_string(t).c_str() );
         else
-            return  "Delilah> ";
+            return  "Delilah>";
     }
 	
 	void DelilahConsole::evalCommand(std::string command)

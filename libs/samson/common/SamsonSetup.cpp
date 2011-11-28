@@ -256,7 +256,30 @@ extern char  samsonWorking[1024]
 	
 	SamsonSetup::SamsonSetup( std::string samson_home , std::string samson_working )
 	{
-        // Basic directories
+        // Init the setup system
+        LM_TODO(("Add the possibility to set particular directories for this..."));
+        
+        char *env_samson_working = getenv("SAMSON_WORKING");
+        char *env_samson_home = getenv("SAMSON_HOME");
+        if( env_samson_working && samson_working == "" )
+        {
+            samson_working = env_samson_working;
+        }
+        else
+        {
+           samson_working = "/var/samson/";
+        }
+    
+        if( env_samson_home && samson_home == "" )
+        {
+            samson_home = env_samson_home;
+        }
+        else
+        {
+            samson_home =  "/opt/samson/";
+        }
+        
+        //Basic directories
         _samson_home = cannonical_path( samson_home );
         _samson_working = cannonical_path( samson_working );
         

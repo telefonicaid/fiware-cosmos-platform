@@ -37,12 +37,15 @@ include_directories("/usr/local/include/")
 include_directories("${CMAKE_INSTALL_PREFIX}/include")
 include_directories("${PROJECT_SOURCE_DIR}/../../libs")
 
+link_directories("/opt/samson/lib")
 
 MESSAGE( "----------------------------------------------------------------------------")
 MESSAGE( "Creating module ${MODULE_NAME}" )
 MESSAGE( "----------------------------------------------------------------------------")
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
+TARGET_LINK_LIBRARIES(${MODULE_NAME} lm)
+
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})

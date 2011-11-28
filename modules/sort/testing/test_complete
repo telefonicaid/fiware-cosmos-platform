@@ -1,35 +1,60 @@
 # Some cleaning
-echo "Starting sort test"
-rm /opt/samson/config/samsonPlatformProcesses
-/usr/local/bin/samsonKiller
+#
+if [ -z "${SAMSON_HOME}" ];
+then
+   echo SAMSON_HOME is not defined
+   exit 1
+fi
+if [ -z "${SAMSON_WORKING}" ];
+then
+   echo SAMSON_WORKING is not defined
+   exit 1
+fi
+LOG=test_complete_$1_stdout
+echo "Starting sort $1 test..."
+echo "Killing all previous processes..."
+${SAMSON_HOME}/bin/samsonKiller
+if [ -f  ${SAMSON_WORKING}/config/samsonPlatformProcesses ];
+then
+   rm ${SAMSON_WORKING}/config/samsonPlatformProcesses
+fi
+echo "Setting controller IP..."
 CONTROLLER_IP="localhost";
 export CONTROLLER_IP
 echo $CONTROLLER_IP
 
-
-# Generating random input data 
-./generator 2000000000 > in.txt 
+echo "Generating input file..."
+# Generating random input data
+./generator $2 > data_$1.txt
+# To compare
+sort -n  data_$1.txt > data_$1_sorted.txt
 
 # Running inside build/testing
-#/usr/local/bin/samsonLocal -working . -f test_complete_commands.txt >test_complete_stdout 2>test_complete_stderr
+${SAMSON_HOME}/bin/samsonLocal -working . -f test_complete_$1_commands.txt > $LOG
 if [ -n "${CONTROLLER_IP:+x}" ]; then
-	echo "Environment variable CONTROLLER_IP defined to: " $CONTROLLER_IP > test_complete_stdout
-	if [ $CONTROLLER_IP = "localhost" ]; then
-		if ! ps -C samsonSpawner  > /dev/null
-		then
-			echo "Launching samsonSpawner" >> test_complete_stdout
-			samsonSpawner -local  >> test_complete_stdout &
-		else
-			echo "samsonSpawner already running" >> test_complete_stdout
-		fi
-	#	sleep 3
-	fi
-	/usr/local/bin/delilah -controller $CONTROLLER_IP -f test_complete_commands.txt >> test_complete_stdout 
+        echo "Environment variable CONTROLLER_IP defined to: " $CONTROLLER_IP > $LOG
+        if [ $CONTROLLER_IP = "localhost" ]; then
+                if ! ps -C samsonSpawner  > /dev/null
+                then
+                        echo "Launching samsonSpawner" >> $LOG
+                        samsonSpawner -local  >> $LOG
+                else
+                        echo "samsonSpawner already running" >> $LOG
+                fi
+        #       sleep 3
+        fi
+        $SAMSON_HOME/bin/delilah -controller $CONTROLLER_IP -f test_complete_$1_commands.txt >> $LOG
 else
-	echo "Environment variable CONTROLLER_IP not defined, using samsonLocal" > test_complete_stdout
-	/usr/local/bin/samsonLocal -working . -f test_complete_commands.txt >> test_complete_stdout 
+        echo "Environment variable CONTROLLER_IP not defined, using samsonLocal" > $LOG
+        $SAMSON_HOME/bin/samsonLocal -working . -f test_complete_$1_commands.txt >> $LOG
 fi
 
-samsonCat out > test_complete_out.txt
+echo "Saving the output into a file..."
+samsonCat out_$1 > test_complete_$1_out.txt
 # Checking the sort in the output file
-./valsort_uints test_complete_out.txt
+./valsort_uints test_complete_$1_out.txt
+diff data_$1_sorted.txt test_complete_$1_out.txt
+if [ $? -ne 0 ];
+then
+  exit 1
+fi

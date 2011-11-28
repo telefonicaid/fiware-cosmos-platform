@@ -263,7 +263,7 @@ namespace au {
             }
             
             char c;
-            if( read( 0 , &c , 1 ) )
+            if( read( 0 , &c , 1 ) != 1 )
                 LM_X(1, ("reading from stdin failed"));
             
             if( escaping )

@@ -1,22 +1,22 @@
-
-
 # Desktop setup 
 # ------------------------------------------------------------------------------------------
-memory 2147483648			# 2Gb of RAM memory
-max_file_size 100000000			# 100 Mb
-num_processes 	2			# Number of parallel processes working on this maxine	
-shm_size_per_buffer 67108864		# Buffer of 64 Mbytes
-num_paralell_outputs            2	# Maximum number of outputs for	any operation (	reduce / map / etc ... )
-max_open_files_per_device	20  	# Currently unused
-timeout_secs_isolatedProcess   600     # Isolated Process timeout (in secs)
+general.memory                          2147483648      # 2Gb of RAM memory
+general.max_file_size                   100000000       # 100 Mb
+general.num_processess                  2               # Number of parallel processes working on this maxine    
+general.shared_memory_size_per_buffer   67108864        # Buffer of 64 Mbytes
+general.max_parallel_outputs            2               # Maximum number of outputs for
+                                                        # any operation (reduce / map / etc ... )
+#general.max_open_files_per_device    20                # Currently unused
+isolated.timeout                        600             # Isolated Process timeout (in secs)
 
 # Server setup
 # ------------------------------------------------------------------------------------------
-#memory 15000000000			# 15Gb of RAM memory
-#max_file_size 500000000	  	# 500 Mb
-#num_processes 	8		  	# Number of parallel processes working on this maxine	
-#shm_size_per_buffer 256000000	  	# Buffer of 256 Mbytes
-#num_paralell_outputs            4	# Maximum number of outputs for any operation ( reduce / map / etc ... )
-#max_open_files_per_device	20  	# Currently unused
-#timeout_secs_isolatedProcess       600      # Isolated Process timeout (in secs)
+general.memory                          15000000000     # 15Gb of RAM memory
+general.max_file_size                   500000000       # 500 Mb
+general.num_processess                  8               # Number of parallel processes working on this maxine    
+general.shared_memory_size_per_buffer   256000000       # Buffer of 256 Mbytes
+general.max_paralell_outputs            4               # Maximum number of outputs for 
+                                                        # any operation ( reduce / map / etc ... )
+#max_open_files_per_device              20              # Currently unused
+isolated.timeout                        600             # Isolated Process timeout (in secs)
 

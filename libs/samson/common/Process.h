@@ -60,9 +60,9 @@ typedef struct Process
 {
 	samson::ProcessType      type;
 	int                      id;
-	char                     name[32];
-	char                     alias[32];
-	char                     host[32];
+	char                     name[64];
+	char                     alias[64];
+	char                     host[64];
 	unsigned short           port;
 	unsigned short           pad01;
 	int                      state;

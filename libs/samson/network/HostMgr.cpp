@@ -115,6 +115,7 @@ void HostMgr::localIps(void)
 	if (gethostname(hostName, sizeof(hostName)) == -1)
 		LM_X(1, ("gethostname: %s", strerror(errno)));
 
+	LM_T(LmtHost, ("hostName: '%s'", hostName));
 	localhostP = insert(hostName, "127.0.0.1"); // , "127.0.0.1" ...
 
 	memset(domainedName, 0, sizeof(domainedName));
@@ -275,6 +276,7 @@ Host* HostMgr::insert(const char* name, const char* ip)
 		name = ip;
 	}
 
+	LM_T(LmtHost, ("inserting '%s'", name));
 	if ((hostP = lookup(name)) != NULL)
 	{
 		LM_T(LmtHost, ("host '%s' already in host list", name));
@@ -318,6 +320,7 @@ Host* HostMgr::insert(const char* name, const char* ip)
 	}
 
 	// Already present ?
+	LM_T(LmtHost, ("Already present? '%s'", ip));
 	if ((ip != NULL) && (ip[0] != 0) && ((hostP = lookup(ip)) != NULL))
 		return hostP;
 
@@ -380,6 +383,7 @@ void HostMgr::aliasAdd(Host* host, const char* alias)
 	if (alias == NULL)
 		LM_RVE(("Alias is NULL (host: '%s')", host->name));
 
+	LM_T(LmtHost, ("adding alias '%s'", alias));
 	if ((hp = lookup(alias)) != NULL)
 	{
 		if (hp != host)
@@ -423,6 +427,7 @@ bool HostMgr::remove(const char* name)
 	Host*          hostP;
 	unsigned int   ix;
 
+	LM_T(LmtHost, ("removing '%s'", name));
 	hostP = lookup(name);
 	if (hostP == NULL)
 		LM_RE(false, ("Host '%s' not in list"));
@@ -452,7 +457,7 @@ bool HostMgr::remove(const char* name)
 		return true;
 	}
 
-	LM_RE(false, ("host pointer reurned from lookup not found ... internal bug!"));
+	LM_RE(false, ("host pointer returned from lookup not found ... internal bug!"));
 }
 
 
@@ -465,6 +470,8 @@ Host* HostMgr::lookup(const char* name)
 {
 	unsigned int ix;
 
+	LM_T(LmtHost, ("looking up '%s'", name));
+ 
 	if (name == NULL)
 		LM_RE(NULL, ("Cannot lookup a NULL hostname!"));
 

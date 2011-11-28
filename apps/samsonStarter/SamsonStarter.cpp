@@ -50,7 +50,9 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 	Process*       p;
 	Endpoint2*     ep;
 	int            spawnerId = 0;
-	int                    wIx       = 1;
+	int            wIx       = 1;
+
+	LM_T(LmtHost, ("controllerHost: '%s'", controllerHost));
 
 	if ((long) ips[0] != workers)
 		LM_X(1, ("%d workers specified on command line, but %d ips in ip-list", workers, (long) ips[0]));
@@ -58,9 +60,6 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 	pv = (ProcessVector*) calloc(1, size);
 	if (pv == NULL)
 		LM_X(1, ("error allocating %d bytes for process vector", size));
-
-	LM_M(("controllerHost: '%s'", controllerHost));
-	LM_M(("controllerHost[0]: %d", controllerHost[0]));
 
 	pv->processes      = workers + (controllerHost[0] != 0);
 	pv->processVecSize = size;
@@ -71,12 +70,12 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 	{
 		p = &pv->processV[ix];
 
-		LM_M(("Adding process %d", ix));
 		if ((ix == 0) && (controllerHost[0] != 0)) // Controller
 		{
 			snprintf(p->name,        sizeof(p->name),  "Controller");
 			snprintf(p->alias,       sizeof(p->alias), "Controller");
 			snprintf(p->host,        sizeof(p->host),   "%s", controllerHost);
+			LM_T(LmtHost, ("copied host name of size %d: '%s'", sizeof(p->host), p->host));
 
 			p->port = CONTROLLER_PORT;
 			p->type = PtController;
@@ -88,7 +87,6 @@ void SamsonStarter::procVecCreate(const char* controllerHost, int workers, const
 			snprintf(p->name,        sizeof(p->name),  "Worker");
 			snprintf(p->alias,       sizeof(p->alias), "Worker%02d", wIx);
 			snprintf(p->host,        sizeof(p->host),   "%s", ips[wIx]);
-			LM_M(("Added worker %d", wIx));
 
 			p->port = CONTROLLER_PORT;
 			p->type = PtWorker;

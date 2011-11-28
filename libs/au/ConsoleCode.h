@@ -5,6 +5,7 @@ namespace au {
 
     typedef enum
     {
+        au,         // Fancy stuff 
         tab,        // tab
         ret,        // return
         del,        // del
@@ -16,7 +17,8 @@ namespace au {
         move_up,
         move_down,
         move_end,
-        unknown,       // Unknown
+        unknown,        // Unknown
+        unfinished,     // Non finished codes
     } ConsoleCode;
     
     const char* getConsoleCodeName( ConsoleCode code );

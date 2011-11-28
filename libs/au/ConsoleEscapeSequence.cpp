@@ -7,6 +7,16 @@ namespace au {
     ConsoleEscapeSequence::ConsoleEscapeSequence()
     {
         init();
+        
+        // Suported sequences
+        sequences.push_back( new Sequence(127 , del_word) );
+        
+        sequences.push_back( new Sequence(91 , 65, move_up  ) );
+        sequences.push_back( new Sequence(91 , 66, move_down  ) );
+        sequences.push_back( new Sequence(91 , 67, move_forward  ) );
+        sequences.push_back( new Sequence(91 , 68, move_backward  ) );
+
+        sequences.push_back( new Sequence("au", au ) );
     }
     
     void ConsoleEscapeSequence::init()
@@ -14,65 +24,21 @@ namespace au {
         pos=0;
     }
     
-    void ConsoleEscapeSequence::add( char c )
-    {
-        sequence[pos++]=c;
-    }
-    
-    bool ConsoleEscapeSequence::isSequence( int c )
-    {
-        if ( pos != 1 )
-            return false;
-        if ( sequence[0] != c )
-            return false;
-        
-        return true;
-    }
-    
-    bool ConsoleEscapeSequence::isSequence( int c , int c2 )
-    {
-        if ( pos != 2 )
-            return false;
-        if ( sequence[0] != c )
-            return false;
-        if ( sequence[1] != c2 )
-            return false;
-        
-        return true;
-    }
-    
-    bool ConsoleEscapeSequence::isFinished()
-    {
-        if( (pos==1) && (sequence[0]==127)) // esc - del
-            return true;
-        
-        if ( pos == 2 )
-            if ( isCharInRange( sequence[1] , 64 , 95 ) )
-                return true;
-        
-        if( pos > 2 )
-            if( sequence[0] == '[' )
-                if ( isCharInRange( sequence[pos-1] , 64 , 126 ) )
-                    return true;
-        
-        return false;
-        
-    }
-    
-    std::string ConsoleEscapeSequence::description()
-    {
-        std::ostringstream output;
-        for (int i=0 ; i<pos ; i++ )
-            output << au::str("[%d]",sequence[i]);
-        
-        sequence[pos]='\0';
-        output << au::str("(%s)",sequence);
-        
-        return output.str();
-    }
-    
     ConsoleCode ConsoleEscapeSequence::getCode()
     {
+        
+        for (size_t i = 0 ;  i < sequences.size() ; i++ )
+        {
+            ConsoleCode code = sequences[i]->getCode(sequence, pos);
+            if ( code != unknown )
+                return code;
+        }
+        
+        return unknown;
+        
+        /*
+        
+        
         if( (pos==1) && (sequence[0]=127))
             return del_word;
         
@@ -89,6 +55,26 @@ namespace au {
             return move_down;
         
         return unknown;
+         */
     }
+
+    void ConsoleEscapeSequence::add( char c )
+    {
+        sequence[pos++]=c;
+    }
+    
+ 
+    std::string ConsoleEscapeSequence::description()
+    {
+        std::ostringstream output;
+        for (int i=0 ; i<pos ; i++ )
+            output << au::str("[%d]",sequence[i]);
+        
+        sequence[pos]='\0';
+        output << au::str("(%s)",sequence);
+        
+        return output.str();
+    }
+    
     
 }

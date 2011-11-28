@@ -6,6 +6,8 @@ namespace au {
     const char* getConsoleCodeName( ConsoleCode code )
     {
         switch (code) {
+            case au:      return "au"; break;
+                
             case tab:      return "tab"; break;
             case ret:      return "return"; break;
             case del:      return "del"; break;
@@ -22,6 +24,7 @@ namespace au {
             case del_rest_line: return "del_rest_line"; break;
                 
             case unknown:  return "Unknown"; break;
+            case unfinished:  return "Unknown"; break;
         }
         
         return "Error";

@@ -186,6 +186,10 @@ namespace au {
                 command_history->current()->delete_rest_line();
                 print_command();
                 break;
+            case au:
+                command_history->current()->add("Andreu Urruela (andreu@tid.es,andreu@urruela.com)");
+                print_command();
+                break;
                 
             default:
                 break;
@@ -269,11 +273,12 @@ namespace au {
             if( escaping )
             {
                 escape_sequence.add( c );
+
+                ConsoleCode code = escape_sequence.getCode();
                 
-                if ( escape_sequence.isFinished() )
+                
+                if ( code != unfinished )
                 {
-                    ConsoleCode code = escape_sequence.getCode();
-                    
                     if ( code == unknown )
                         writeWarningOnConsole( au::str( " Unknown escape sequence (%s)" , escape_sequence.description().c_str() ).c_str() );
                     else

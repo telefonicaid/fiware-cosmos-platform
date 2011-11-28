@@ -42,6 +42,10 @@ prepare: prepare_release prepare_debug
 
 i: install
 
+install_debug: debug install_man
+	sudo make -C BUILD_DEBUG install
+	make  -C modules
+
 install: release install_man
 	sudo make -C BUILD_RELEASE install
 	make release -C modules

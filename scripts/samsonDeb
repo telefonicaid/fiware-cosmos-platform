@@ -65,6 +65,12 @@ chmod 0755 debian/DEBIAN/preinst
 
 cat > debian/DEBIAN/postinst <<POSTINST
 #!/bin/sh
+shmmax_needed=`grep "^general.shared_memory_size_per_buffer" /opt/samson/etc/setup.txt | awk -v no_procs=$no_procs '{ print $2*no_procs }'`
+shmmax_have=`sysctl -n kernel.shmmax`
+if [ $shmmax_needed -gt $shmmax_have ];
+then
+    echo "kernel.shmmax=${shmmax_needed}" > /etc/sysctl.d/30-samson.conf
+fi
 chown -R samson:samson /opt/samson
 chown -R samson:samson /var/samson
 update-rc.d samson defaults

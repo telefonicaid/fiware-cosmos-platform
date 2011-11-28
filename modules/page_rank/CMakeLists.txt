@@ -37,14 +37,17 @@ include_directories("/usr/local/include/")
 include_directories("${CMAKE_INSTALL_PREFIX}/include")
 include_directories("${PROJECT_SOURCE_DIR}/../../libs")
 
-link_directories("/opt/samson/lib")
-
 MESSAGE( "----------------------------------------------------------------------------")
 MESSAGE( "Creating module ${MODULE_NAME}" )
 MESSAGE( "----------------------------------------------------------------------------")
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
-TARGET_LINK_LIBRARIES(${MODULE_NAME} lm)
+if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
+    find_library(LM_PATH lm PATHS ${PROJECT_SOURCE_DIR}/../../BUILD_DEBUG/libs/logMsg )
+elseif (CMAKE_BUILD_TYPE STREQUAL RELEASE)
+    find_library(LM_PATH lm PATHS ${PROJECT_SOURCE_DIR}/../../BUILD_RELEASE/libs/logMsg )
+endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
+TARGET_LINK_LIBRARIES( ${MODULE_NAME} ${LM_PATH} )
 
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)

@@ -11,12 +11,12 @@ isolated.timeout                        600             # Isolated Process timeo
 
 # Server setup
 # ------------------------------------------------------------------------------------------
-general.memory                          15000000000     # 15Gb of RAM memory
-general.max_file_size                   500000000       # 500 Mb
-general.num_processess                  8               # Number of parallel processes working on this maxine    
-general.shared_memory_size_per_buffer   256000000       # Buffer of 256 Mbytes
-general.max_paralell_outputs            4               # Maximum number of outputs for 
+#general.memory                          15000000000     # 15Gb of RAM memory
+#general.max_file_size                   500000000       # 500 Mb
+#general.num_processess                  8               # Number of parallel processes working on this maxine    
+#general.shared_memory_size_per_buffer   256000000       # Buffer of 256 Mbytes
+#general.max_paralell_outputs            4               # Maximum number of outputs for 
                                                         # any operation ( reduce / map / etc ... )
 #max_open_files_per_device              20              # Currently unused
-isolated.timeout                        600             # Isolated Process timeout (in secs)
+#isolated.timeout                        600             # Isolated Process timeout (in secs)
 

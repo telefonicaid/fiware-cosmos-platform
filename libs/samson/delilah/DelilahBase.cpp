@@ -23,6 +23,7 @@ namespace samson {
         controller = new XMLStringHolder();
         for (int w=0;w<num_workers;w++)
             worker.push_back( new XMLStringHolder() );
+        
     }
 
     DelilahBase::~DelilahBase()
@@ -120,7 +121,9 @@ namespace samson {
         doc.reset();
         std::istringstream is_xml_document( xml_info );
         pugi::xml_parse_result result = doc.load( is_xml_document );
-                
+
+        
+        
     }
     
     int DelilahBase::getUpdateSeconds()

@@ -30,7 +30,8 @@ namespace samson {
 			updater,
             push,
             pop,
-            worker_command          // Command send to each worker
+            worker_command,          // Command send to each worker
+            repeat                   // Repeater task
 		}DelilaComponentType;
 		
 		DelilaComponentType type;
@@ -82,6 +83,28 @@ namespace samson {
         void setComponentFinishedWithError( std::string error_message );
         
 	};
+    
+    
+    class RepeatDelilahComponent : public DelilahComponent , engine::Object
+    {
+        std::string command;
+        int seconds;
+        
+        au::Cronometer cronometer;
+        
+    public:
+      
+        RepeatDelilahComponent( std::string _command , int _seconds );
+		std::string getStatus();
+        void notify( engine::Notification* notification );
+
+		void receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+        {
+        }
+        
+        void run();
+        
+    };
 	
 }
 

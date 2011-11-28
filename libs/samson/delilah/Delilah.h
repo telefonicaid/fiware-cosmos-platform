@@ -187,7 +187,7 @@ namespace samson {
         
         bool checkXMLInfoUpdate();
         
-	private:		
+	protected:		
 		
 		size_t addComponent( DelilahComponent* component );
 		

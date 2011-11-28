@@ -491,6 +491,28 @@ namespace au {
         
     }
     
+    int getCommonChars( std::string& txt , std::string& txt2 )
+    {
+        size_t l = std::min( txt.length() , txt2.length() );
+        for (size_t i=0;i<l;i++)
+            if ( txt[i] != txt2[i] )
+                return i;
+        return l;
+    }
+    
+    bool isCharInRange( char c , char lower , char higher )
+    {
+        return ((c>=lower) && (c<=higher));
+    }
+
+    bool strings_begin_equal( std::string txt , std::string txt2 )
+    {
+        size_t l = std::min( txt.length() , txt2.length() );
+        for (size_t i=0;i<l;i++)
+            if ( txt[i] != txt2[i] )
+                return false;
+        return true;
+    }
     
 
 }

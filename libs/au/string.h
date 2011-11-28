@@ -87,6 +87,16 @@ namespace au {
     // Backward search of sequences
     const char *laststrstr(const char *source , const char *target );
     const char *laststrstr(const char *source , size_t source_length , const char *target );
+
+    // Get common number of chars
+    int getCommonChars( std::string& txt , std::string& txt2 );    
+    
+    // Check if char is in range
+    bool isCharInRange( char c , char lower , char higher );
+
+    //Check if two string begin with the same chars..
+    bool strings_begin_equal( std::string txt , std::string txt2 );
+
     
 }
 

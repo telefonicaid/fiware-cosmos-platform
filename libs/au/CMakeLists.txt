@@ -1,10 +1,18 @@
 SET (HEADERS
+utils.h
 status.h
 Descriptors.h
 gpb.h
 Environment.h
 CommandLine.h
+
 Console.h
+ConsoleCommand.h
+ConsoleCommandHistory.h
+ConsoleEscapeSequence.h
+ConsoleCode.h
+ConsoleAutoComplete.h
+
 ErrorManager.h
 Lock.h
 LockDebugger.h
@@ -32,10 +40,19 @@ cpu.h
 )
 
 SET (SOURCES
+utils.cpp
+
 Descriptors.cpp
 CommandLine.cpp
 Environment.cpp
+
 Console.cpp
+ConsoleCommand.cpp
+ConsoleCommandHistory.cpp
+ConsoleEscapeSequence.cpp
+ConsoleCode.cpp
+
+ConsoleAutoComplete.cpp
 ErrorManager.cpp
 Lock.cpp
 LockDebugger.cpp
@@ -66,3 +83,10 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # -----------------------------------------------------------------
 ADD_LIBRARY(au STATIC ${SOURCES} ${HEADERS})
 INSTALL(TARGETS au ARCHIVE DESTINATION lib)
+
+
+# au_test ( for debuggin )
+#ADD_EXECUTABLE(au_test au_test_main.cpp )
+#TARGET_LINK_LIBRARIES(au_test ${LIBS} au lm )
+#INSTALL(TARGETS               au_test        RUNTIME DESTINATION   bin)
+

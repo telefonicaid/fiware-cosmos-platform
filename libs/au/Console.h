@@ -1,90 +1,76 @@
 
-/* ****************************************************************************
- *
- * FILE            Console.h
- *
- * AUTHOR          Andreu Urruela
- *
- * PROJECT         au library
- *
- * DATE            Septembre 2011
- *
- * DESCRIPTION
- *
- * Class that implement a simple console to interact with the user.
- * Subclass this class implementing the evalCommand( std::string command )
- * 
- * To run the console, you have the bloquing "runConsole" method. 
- *
- * COPYRIGHT       Copyright 2011 Andreu Urruela. All rights reserved.
- *
- * Portions Copyright (c) 1997 The NetBSD Foundation, Inc. All rights reserved
- *
- * ****************************************************************************/
+#ifndef _AU_CONSOLE
+#define _AU_CONSOLE
 
-#ifndef SAMSON_CONSOLE_H
-#define SAMSON_CONSOLE_H
-
-#include <string.h>           /* memcpy, ... */
-#include <istream>
-#include <cstdlib>
-#include <iostream>
-#include <deque>
+#include <string>
 #include <list>
+#include <termios.h>                // termios
 
-#include "au/Lock.h"             /* Lock                            */
-#include "au/Token.h"                   // au::Token
-#include <stdio.h>
-
-#include <editline/readline.h>
-
-#include <stdlib.h>
-#include <string.h>
-#include <vector>
-#include <sstream>
+#include "au/ConsoleCode.h"
+#include "au/Token.h"
 
 namespace au {
 
+    class Console;
+    class ConsoleAutoComplete;
+    class ConsoleCommandHistory;
 
-	class Console
-	{
-		Lock lock;				//!< Lock as a control mechanism to log things into the console
-		bool quit_console;		//!< Flag to indicate that we want the console to quit ( can be set from outside the class with quit )
+    class Console
+    {
+        ConsoleCommandHistory *command_history;
+        struct termios old_tio, new_tio;
 
+        // Flag to quit internal loop
+        bool quit_console;
+        
+        // Pending messages to be displayed
+        pthread_t t_running;
+        std::list< std::string > pending_messages;
         au::Token token_pending_messages;
-        std::list<std::string> pending_messages;
-        pthread_t t;
-	public:		
+         
+    public:
         
-		Console();
-		virtual ~Console(){};
+        Console();
+        ~Console();
+        
+        void runConsole();
+        void quitConsole();
+        
+        /* Methods to write things on screen */
+        void writeWarningOnConsole( std::string message );
+        void writeErrorOnConsole( std::string message );
+        void writeOnConsole( std::string message );
 
-		virtual std::string getPrompt();				//!< Function to give the current prompt (can be overloaded in subclasses )
-		virtual void evalCommand( std::string command );//!< function to process a command instroduced by user	
-		
-		/* Methods to write things on screen	( now it is async ) */		
-		void writeWarningOnConsole( std::string message );
-		void writeErrorOnConsole( std::string message );
-		void writeOnConsole( std::string message );
+        // Customize console
+        virtual std::string getPrompt();
+        virtual void evalCommand( std::string command );
+        virtual void autoComplete( ConsoleAutoComplete* info );
         
-		void quitConsole(); // Set the console to quit
-		
-		
-	private:
-		
-		void printLines();
-		void printCommand();
-		void _print();
-		void print();
-		
+        void refresh();
+        
+    private:
+        
+        void init();
+        void finish();
+        void print_command();
+        bool isImputReady();
+
+
+        void process_auto_complete( ConsoleAutoComplete * info );
+        void process_char( char c );
+        void process_code( ConsoleCode code );
+
+        void process_background();
+        
+        bool isNormalChar( char c );
+        
+
         void write( std::string message );
         
-	public:
-
-		void runConsole();
-		
-	};
-	
-}	//namespace au
+    };
+    
+    
+}
 
 #endif
+

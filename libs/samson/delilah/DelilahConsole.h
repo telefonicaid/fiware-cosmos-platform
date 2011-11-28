@@ -24,6 +24,7 @@
 #include "au/TokenTaker.h"                  // au::TokenTake
 
 #include "au/Console.h"                     // au::Console
+#include "au/ConsoleAutoComplete.h"
 
 #include "DelilahClient.h"                  // ss:DelilahClient
 
@@ -31,185 +32,6 @@
 #include "samson/delilah/DelilahUtils.h"    // getXXXInfo()
 
 namespace samson {
-	
-	
-    char * command_generator (const char * text, int state);
-	char ** readline_completion ( const char* text, int start,int end );	
-
-	
-    int common_chars( const char* c1 , const char* c2);
-    char * strdup_common(const char* c , int len );
-
-    
-	class AutoCompletionOptions
-	{
-		std::vector<std::string> options;           // Vector of possible options
-		        
-	public:
-		
-		void clearOptions()
-		{
-			options.clear();
-		}
-		
-		void addOption( std::string v )
-		{
-			options.push_back( v );
-		}
-        
-        
-        void addMainCommands()
-        {
-            addOption("mv");
-            addOption("add");
-            addOption("operations");
-            addOption("datas");
-            addOption("ps_jobs");
-            addOption("ps_tasks");
-            addOption("workers");
-            addOption("upload");
-            addOption("push");
-            addOption("pop");
-            addOption("download");
-            addOption("load");
-            addOption("clear");
-            addOption("help");
-            addOption("set");
-            addOption("unset");
-            addOption("info");
-            addOption("add_stream_operation");
-            addOption("rm_stream_operation");
-            addOption("ls_stream_operations");
-            addOption("set_stream_operation_property");
-            addOption("rm_queue");                          // Remove a queue
-            addOption("ls_queues");                      // Get a list of all current tasks in the system
-            addOption("cp_queue");                      
-            addOption("ps_stream");                     // Get a list of stream task
-            addOption("ls_modules");                     // Get a list of stream task
-            addOption("ls");
-            addOption("ls_operations");         
-            addOption("ls_datas");         
-            addOption("ps_network");         
-            addOption("engine_show");
-            addOption("ls_local");
-            addOption("ls_block_manager");
-            addOption("rm_local");
-            addOption("run_stream_operation");
-            addOption("ls_operation_rates");
-            addOption("set_queue_property");
-            addOption("ls_stream_activity");
-
-            addOption("connect_to_queue");
-            addOption("disconnect_from_queue");
-            
-            addOption("ls_blocks");
-
-        }
-        
-        void addOperations()
-        {
-            if( global_delilah )
-            {
-                std::vector<std::string> operation_names = global_delilah->getOperationNames();
-                
-                for ( size_t i = 0 ;  i < operation_names.size() ; i++)
-                    addOption( operation_names[i] );
-            }
-        }
-        
-        void addQueues( )
-        {
-            if( global_delilah) 
-            {
-                std::vector<std::string> queue_names = global_delilah->getQueueNames();
-                
-                for ( size_t i = 0 ;  i < queue_names.size() ; i++)
-                    addOption( queue_names[i] );
-            }
-        }        
-        
-        void addQueueOptions( std::string key_format , std::string value_format )
-        {
-            /*
-             au::TokenTaker tt( &token_xml_info );
-            std::string c = au::str( "//controller//queue[format/key_format=\"%s\"][format/value_format=\"%s\"]" 
-                                    , key_format.c_str() , value_format.c_str() ); 
-            
-            std::vector<std::string> queue_names = pugi::values( doc , c );
-            
-            for ( size_t i = 0 ;  i < queue_names.size() ; i++)
-                addOption( queue_names[i] );
-           */
-        }        
-        
-        
-        void addQueueForOperation( std::string mainCommand , int argument_pos )
-        {
-            /*
-            pugi::xpath_node_set node_set;
-            
-            {
-                au::TokenTaker tt( &token_xml_info );
-                std::string c = au::str( "//controller//operation[name=\"%s\"]/input_formats/format[%d]" ,  mainCommand.c_str() , argument_pos+1 );
-                node_set = pugi::select_nodes(doc, c );
-            }
-            
-            if( node_set.size() > 0 )
-            {
-                std::string key_format = pugi::get( node_set[0].node() , "key_format" );
-                std::string value_format = pugi::get( node_set[0].node() , "value_format" );
-                
-                addQueueOptions(key_format, value_format);
-            } 
-             */
-        }
-        
-        
-        /*
-         Function to get the real options
-         */
-        
-        char** get( const char* text )
-        {
-            std::vector<std::string> real_options;      // Vector of final real options
-            
-			size_t len = strlen(text);
-            
-            for ( size_t i = 0 ; i < options.size() ; i++)
-				if ( strncmp ( options[i].c_str() , text, len) == 0 )
-                    real_options.push_back( options[i] );                    
-
-            // If no option... return NULL
-            if ( real_options.size() == 0 )
-                return (char**) NULL;
-
-            
-            // Create the vector of possible solution ( first = "the replacement", last  = NULL )
-            char **matches = (char**) malloc( sizeof(char*) * ( real_options.size() + 1 + 1 ) );
-            matches[ real_options.size()+1 ] = NULL; // The last should be a NULL
-
-            // let's compute the replacement as the min_common_legth copy of the the options
-            int min_common_length = real_options[0].length();
-            for ( size_t i = 1 ; i < real_options.size() ; i++)
-                min_common_length = std::min( min_common_length , common_chars( real_options[0].c_str()  , real_options[i].c_str() ) );
-
-            matches[0] = strdup_common( real_options[0].c_str() , min_common_length );
-
-
-            // Rest of options
-            for ( size_t i = 0 ; i < real_options.size() ; i++)
-            {
-                // Rememeber the first is for the "replacement"
-                matches[i+1] = strdup( real_options[i].c_str()  );
-            }
-            
-            
-            return matches;
-        }
-        
-     
-	};
-
 	
 	/**
 	 Main class for the DelilahConsole program
@@ -220,34 +42,15 @@ namespace samson {
 		
         std::string commandFileName;
         
-        
 	public:
 		
         
-		DelilahConsole( NetworkInterface *network ) : Delilah( network )
-		{
-			/* completion function for readline library */
-			rl_attempted_completion_function = readline_completion;
-
-			trace_on = false;
-		}
-		
-		~DelilahConsole()
-		{
-		}
+		DelilahConsole( NetworkInterface *network );		
+		~DelilahConsole();
 				
 		// Console funciton
 		// --------------------------------------------------------
 		
-		virtual std::string getPrompt()
-		{
-			return  "Delilah> ";
-		}
-		
-		virtual std::string getHeader()
-		{
-			return  "Delilah";
-		}
 		
         // Main run command
         void run();
@@ -259,7 +62,9 @@ namespace samson {
         }
                 
 		// Eval a command from the command line
+        virtual std::string getPrompt();
 		virtual void evalCommand( std::string command );
+        virtual void autoComplete( au::ConsoleAutoComplete* info );
 
 		// Run asynch command and returns the internal operation in delilah
 		size_t runAsyncCommand( std::string command );
@@ -302,6 +107,13 @@ namespace samson {
 			if( trace_on )
 				writeWarningOnConsole( message );
 		}
+        
+        
+        void run_repeat_command( std::string command )
+        {
+            LM_TODO(("Check what type of messages...."));
+            runAsyncCommand(command);
+        }
 
 	};
 

@@ -27,6 +27,7 @@
 #include "engine/Notification.h"                // engine::Notification
 
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
+#include "samson/common/samsonDirectories.h"    
 #include "samson/common/NotificationMessages.h" // notification_review_timeOut_SamsonPushBuffer
 
 #include "samson/module/ModulesManager.h"       // samson::ModulesManager
@@ -169,8 +170,8 @@ namespace samson {
         // Init the setup system 
         LM_TODO(("Add the possibility to set particular directories for this..."));
         
-        std::string samson_home =  "/opt/samson/";
-        std::string samson_working = "/var/samson/";
+        std::string samson_home =  SAMSON_HOME_DEFAULT;
+        std::string samson_working = SAMSON_WORKING_DEFAULT;
 
         char *env_samson_working = getenv("SAMSON_WORKING");
         char *env_samson_home = getenv("SAMSON_HOME");

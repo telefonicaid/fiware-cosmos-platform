@@ -267,7 +267,7 @@ extern char  samsonWorking[1024]
         }
         else
         {
-           samson_working = "/var/samson/";
+           samson_working = SAMSON_WORKING_DEFAULT;
         }
     
         if( env_samson_home && samson_home == "" )
@@ -276,7 +276,7 @@ extern char  samsonWorking[1024]
         }
         else
         {
-            samson_home =  "/opt/samson/";
+            samson_home =  SAMSON_HOME_DEFAULT;
         }
         
         //Basic directories

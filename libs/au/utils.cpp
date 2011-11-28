@@ -6,19 +6,18 @@
 #include <signal.h>
 
 
+#include "au/string.h"
+
 #include "au/utils.h" // Own interface
 
 namespace au {
     
     int getColumns()
     {
-        struct ttysize ts;
-        ioctl(0, TIOCGSIZE, &ts);
-        
-        //printf ("lines %d\n", ts.ts_lines);
-        //printf ("columns %d\n", ts.ts_cols);
-        
-        return ts.ts_cols;
+        int x,y;
+        get_term_size( 0 , &x, &y );
+
+        return x;
     }
     
     void clear_line()

@@ -97,6 +97,9 @@ namespace au {
     //Check if two string begin with the same chars..
     bool strings_begin_equal( std::string txt , std::string txt2 );
 
+    // Get information about terminal size
+    int get_term_size (int fd, int *x, int *y);
+
     
 }
 

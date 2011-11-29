@@ -332,6 +332,17 @@ namespace samson
                 info->add( queue_names[i] );
         }
     }        
+
+    void autoCompleteDataSets( au::ConsoleAutoComplete* info  )
+    {
+        if( global_delilah) 
+        {
+            std::vector<std::string> queue_names = global_delilah->getDataSetsNames();
+            
+            for ( size_t i = 0 ;  i < queue_names.size() ; i++)
+                info->add( queue_names[i] );
+        }
+    }        
     
     void autoCompleteQueueWithFormat(au::ConsoleAutoComplete* info  ,  std::string key_format , std::string value_format )
     {
@@ -427,6 +438,55 @@ namespace samson
             else
                 info->add("on");
         }
+        
+        // Upload
+        // ------------------------------------------------------------------------
+        
+        if ( info->completingSecondWord("upload") )
+        {
+            info->auto_complete_files("");
+            return;
+        }
+        if (info->completingThirdWord( "upload" , "*" ) )
+        {
+            autoCompleteDataSets( info );
+            return;
+        }
+        
+        // Download operation
+        // ------------------------------------------------------------------------
+        
+        if ( info->completingSecondWord("download") )
+        {
+            autoCompleteDataSets( info );
+            return;
+        }
+        
+        
+        // Push operation
+        // ------------------------------------------------------------------------
+        if ( info->completingSecondWord("push") )
+        {
+            info->auto_complete_files("");
+            return;
+        }
+        if (info->completingThirdWord( "push" , "*" ) )
+        {
+            autoCompleteQueues( info );
+            return;
+        }
+        // ------------------------------------------------------------------------
+        
+        
+        // Pop operation
+        // ------------------------------------------------------------------------
+        
+        if ( info->completingSecondWord("pop") )
+        {
+            autoCompleteQueues( info );
+            return;
+        }
+        
         
     }
     

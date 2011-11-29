@@ -6,11 +6,39 @@
 
 namespace au {
     
+    
+    class ConsoleAutoCompleteAlternative
+    {
+
+    public:
+        
+        std::string label;  // Label to show on screen
+        std::string command;   // Text to be compared with the current last word
+
+        bool add_space_if_unique;
+        
+        
+        ConsoleAutoCompleteAlternative( std::string txt )
+        {
+            label = txt;
+            command = txt;
+            add_space_if_unique = true;
+        }
+        
+        ConsoleAutoCompleteAlternative( std::string _label, std::string _command ,  bool _add_space_if_unique  )
+        {
+            command = _command;
+            label = _label;
+            add_space_if_unique = _add_space_if_unique;
+        }
+        
+    };
+    
     class ConsoleAutoComplete
     {
         
         // Alternatives for the last word        
-        std::vector<std::string> last_word_alternatives;
+        std::vector<ConsoleAutoCompleteAlternative> last_word_alternatives;
         
         std::string help_message;
         
@@ -23,6 +51,7 @@ namespace au {
         std::vector<std::string> previous_words;
         std::string last_word;
         
+        bool add_space_if_unique_alternative;
         
     public:
         
@@ -37,10 +66,14 @@ namespace au {
 
         // Add an alternative for the last word
         void add( std::string command );
+        void add( std::string label , std::string command , bool add_space );
+        void add( ConsoleAutoCompleteAlternative alternative );
 
         // Set some help message
         void setHelpMessage( std::string _help_message );
 
+        // Add files in the current directory
+        void auto_complete_files( std::string file_selector );
         
         // Get the string to add to the current comman
         std::string stringToAppend();

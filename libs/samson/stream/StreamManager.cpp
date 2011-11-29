@@ -62,7 +62,7 @@ namespace samson {
             }
             {
                 engine::Notification *notification = new engine::Notification(notification_review_stream_manager_save_state);
-                engine::Engine::shared()->notify( notification, 1 );
+                engine::Engine::shared()->notify( notification, 5 );
             }
             
             

@@ -86,6 +86,71 @@ namespace au
         
         
     }
+    
+    bool check_string_ends_with( std::string txt , std::string end_txt )
+    {
+        
+        if( txt.length() < end_txt.length() )
+            return false;
+        
+        for ( size_t i=0 ; i < end_txt.length() ; i++ )
+            if ( end_txt[ end_txt.length() - 1 - i] != txt[ txt.length() - 1 - i ] )
+                return false;
+        return true;
+    }
+    
+    std::string path_remove_last_component( std::string path )
+    {
+        size_t pos = path.find_last_of( '/' );
+        
+        if( pos == std::string::npos )
+        {
+            return "";
+        }
+        else
+        {
+            if( pos == 0 )
+                return "/";
+            
+            return path.substr( 0 , pos );
+        }
+        
+    }
+    
+    std::string get_directory_from_path( std::string path )
+    {
+        if ( ( path == "" ) || ( path == "." ) || ( path == "./" ) )
+            return "./";
+        
+        if ( path == "/" )
+            return path;
+        
+        
+        // Remove the last part of the path
+        size_t pos = path.find_last_of( '/' );
+        
+        if ( path[0] == '/' )
+        {
+            if( pos != 0 )
+                return path.substr( 0 , pos+1 );
+            else
+                return "/";
+        }
+        
+        if ( path[0] == '.' )
+        {
+            if( pos == std::string::npos )
+                return "./";
+            else
+                return path.substr( 0 , pos+1 );
+        }
+        
+        if( pos == std::string::npos )
+            return "./";
+        else
+            return "./" + path.substr( 0 , pos+1 );
+        
+    }
 
     
 }

@@ -1,12 +1,27 @@
 
 
+#include <sys/types.h>
+#include <dirent.h>
+#include <sys/stat.h>
+
 #include "au/string.h"
 #include "au/utils.h"
+#include "au/file.h"
 
 #include "au/ConsoleAutoComplete.h" // Own interface
 
 
 namespace au {
+    
+    
+    char get_last_char( std::string txt )
+    {
+        if( txt.length() == 0 )
+            return 0;
+        else
+            return txt[ txt.length() -1 ];
+    }
+    
     
     ConsoleAutoComplete::ConsoleAutoComplete( std::string command )
     {
@@ -21,6 +36,8 @@ namespace au {
                 previous_words.pop_back();
             }
         
+        add_space_if_unique_alternative = true;
+
     }
     
     bool ConsoleAutoComplete::completingSecondWord( std::string first_word )
@@ -61,12 +78,75 @@ namespace au {
     
     void ConsoleAutoComplete::add( std::string command )
     {
-        if ( command.length() < last_word.length() )
+        add( ConsoleAutoCompleteAlternative( command ) );
+    }
+    
+    void ConsoleAutoComplete::add( std::string label , std::string command , bool add_space )
+    {
+        add( ConsoleAutoCompleteAlternative( label, command , add_space ) );
+    }
+    
+    void ConsoleAutoComplete::add( ConsoleAutoCompleteAlternative alternative )
+    {
+        if ( alternative.command.length() < last_word.length() )
             return; // Not valid candidate
         
-        if( strings_begin_equal(command, last_word) )
-            last_word_alternatives.push_back( command );            
+        if( strings_begin_equal(alternative.command, last_word) )
+            last_word_alternatives.push_back( alternative );            
+        
     }
+    
+    void ConsoleAutoComplete::auto_complete_files( std::string file_selector )
+    {
+        std::string directory = get_directory_from_path( last_word );  // By default, take the last work as the directory to go
+        std::string base = path_remove_last_component( last_word );
+        
+        if( ( base.length() > 0 ) && ( base != "/" )) 
+            base.append("/");
+        
+        //printf("Last word '%s' dir='%s' base='%s'\n", last_word.c_str() , directory.c_str() , base.c_str() );
+
+        // Try to open directory
+        DIR *dp;
+        struct dirent *dirp;
+        if((dp  = opendir( directory.c_str() )) == NULL) 
+            return; // Nothing else to do...
+        
+        while ((dirp = readdir(dp)) != NULL) 
+        {
+            std::string fileName = dirp->d_name;
+            
+            // Skip ".files"
+            if( fileName.length()>0 )
+                if ( fileName[0] == '.' )
+                    continue;
+            
+            
+            
+            // Full path of the file
+            std::string path = path_from_directory( directory , dirp->d_name );
+            
+            struct ::stat info;
+            stat(path.c_str(), &info);
+
+            if( S_ISREG(info.st_mode) )
+            {
+                if ( check_string_ends_with( path , file_selector ) )
+                    add( fileName , base + fileName , true );
+            }
+            else if ( S_ISDIR(info.st_mode) )
+            {
+                add( fileName + "/" , base + fileName + "/" , false );
+            }
+            
+        }
+        
+        closedir(dp);
+
+        
+    
+    }
+    
     
     void ConsoleAutoComplete::setHelpMessage( std::string _help_message )
     {
@@ -78,9 +158,9 @@ namespace au {
         if (last_word_alternatives.size() == 0)
             return 0;
         
-        int common_chars = last_word_alternatives[0].length();
+        int common_chars = last_word_alternatives[0].command.length();
         for (size_t i=1;i<last_word_alternatives.size();i++)
-            replaceIfLower( common_chars , getCommonChars( last_word_alternatives[i] , last_word_alternatives[i-1]) );
+            replaceIfLower( common_chars , getCommonChars( last_word_alternatives[i].command , last_word_alternatives[i-1].command ) );
         
         return common_chars;
     }
@@ -94,11 +174,16 @@ namespace au {
         int last_word_length = last_word.length();
         int common_chars = common_chars_in_last_word_alternative();
         
-        std::string complete_text = last_word_alternatives[0].substr( last_word_length, common_chars - last_word_length );
+        std::string complete_text = last_word_alternatives[0].command.substr( last_word_length, common_chars - last_word_length );
         
         //printf("Complete %s", complete_text.c_str());
         if( last_word_alternatives.size() == 1 )
-            return  complete_text + " ";
+        {
+            if( last_word_alternatives[0].add_space_if_unique )
+                return  complete_text + " ";
+            else
+                return  complete_text;
+        }
         else
             return  complete_text;
     }
@@ -136,14 +221,14 @@ namespace au {
         int columns = getColumns();
         int max_length = 0;
         for (size_t i=0;i<last_word_alternatives.size();i++)
-            replaceIfHiger(max_length, last_word_alternatives[i].length() );
+            replaceIfHiger(max_length, last_word_alternatives[i].label.length() );
         
         int num_words_per_row = columns / ( max_length + 1 );
         
         for (size_t i=0;i<last_word_alternatives.size();i++)
         {
 		   std::string format = std::string("%-") + au::str("%d",max_length) + std::string("s ");
-		   printf(  format.c_str()  , last_word_alternatives[i].c_str() );
+		   printf(  format.c_str()  , last_word_alternatives[i].label.c_str() );
             
             if( (i%num_words_per_row) == (size_t)(num_words_per_row-1) )
                 printf("\n");

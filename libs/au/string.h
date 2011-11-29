@@ -100,6 +100,8 @@ namespace au {
     // Get information about terminal size
     int get_term_size (int fd, int *x, int *y);
 
+    // Get a fill path from a directory and file name
+    std::string path_from_directory( std::string directory , std::string file );
     
 }
 

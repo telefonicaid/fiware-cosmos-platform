@@ -39,6 +39,15 @@ namespace au {
     bool isRegularFile(char path[]);
 
     
+    bool check_string_ends_with( std::string txt , std::string end_txt );
+
+    // Working with paths
+    std::string path_remove_last_component( std::string path );
+    std::string get_directory_from_path( std::string path );
+
+   
+    
+    
 }
 
 #endif

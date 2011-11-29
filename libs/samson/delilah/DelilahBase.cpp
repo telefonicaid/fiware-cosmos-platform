@@ -55,10 +55,16 @@ namespace samson {
         return pugi::values( doc , "//controller//operation/name" );
     }
     
-    std::vector<std::string> DelilahBase::getQueueNames()
+    std::vector<std::string> DelilahBase::getDataSetsNames()
     {
         au::TokenTaker tt( &delilah_base_token  );
         return pugi::values( doc , "//controller//queue/name" );
+    }
+
+    std::vector<std::string> DelilahBase::getQueueNames()
+    {
+        au::TokenTaker tt( &delilah_base_token  );
+        return pugi::values( doc , "//worker//queue/name" );
     }
     
     void DelilahBase::updateControllerXMLString( std::string txt )

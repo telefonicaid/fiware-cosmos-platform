@@ -92,6 +92,9 @@ namespace samson {
             size_t worker_task_id;
 
             
+            //Save state stuff
+            bool currently_saving;              // Flag indicating if we are currently writing state to disk
+            
         public:
             
             StreamManager( ::samson::SamsonWorker* worker );

@@ -11,6 +11,8 @@
 #include "engine/Engine.h"              // engine::Engine
 #include "engine/MemoryManager.h"
 #include "engine/Notification.h"
+#include "engine/DiskOperation.h"
+#include "engine/DiskManager.h"
 
 #include "samson/common/Info.h"     // samson::Info
 #include "samson/common/EnvironmentOperations.h"    // copyEnviroment
@@ -70,6 +72,8 @@ namespace samson {
             
             id_pop_queue = 1;    // Init the id counter for pop queue operations
 
+            // Init flag to detect if we are saving state to disk
+            currently_saving = false;
 
             // Engine listening commands
             listen( notification_review_stream_manager );
@@ -160,6 +164,21 @@ namespace samson {
                     else
                         ++q;
                 }
+                return;
+            }
+            
+            if ( notification->isName( notification_disk_operation_request_response ) )
+            {
+                if( notification->environment.get("save_stream_state", "no") == "yes" )
+                {
+                    // Dissable flag to save again next time...
+                    currently_saving = false;
+                }
+                else
+                {
+                    LM_W(("Unknown disk notifiction in stream manafer %s" , notification->getDescription().c_str() ));
+                }
+                
                 return;
             }
             
@@ -423,6 +442,13 @@ namespace samson {
         void StreamManager::saveStateToDisk()
         {
             
+            if( currently_saving )
+            {
+                LM_W(("Not possible to save stream manafer state to disk ecause it is still writing the previous one"));
+                return;
+            }
+            
+            
             std::string fileName = SamsonSetup::shared()->streamManagerLogFileName();
             std::string tmp_fileName = SamsonSetup::shared()->streamManagerAuxiliarLogFileName();
             
@@ -464,11 +490,27 @@ namespace samson {
                 
             }
             
-            
-            
             // Foot just to make sure we finished correctly
             output << "# END -- SamsonStreamManager log " << au::todayString() << "\n";
 
+
+            // Put everything in the state string
+            std::string state_string = output.str();
+            currently_saving = true;
+
+            // Get a buffer with the rigth size
+            engine::Buffer* buffer = engine::MemoryManager::shared()->newBuffer( "buffer to save stream state" , state_string.length() , 0 );
+            if (!buffer )
+                LM_X(1, ("No buffer to save stream state"));
+            
+            // Copy content of the buffer
+            buffer->write( (char*) state_string.c_str() , state_string.length() );
+            
+            engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer  ,  tmp_fileName , getEngineId()  );
+            operation->environment.set("save_stream_state" , "yes" );
+            engine::DiskManager::shared()->add( operation );
+            
+            /*
             
             FILE *file = fopen( tmp_fileName.c_str() , "w" );
             if( !file )
@@ -485,6 +527,7 @@ namespace samson {
             
             if( r!= 0 )
                 LM_X(1,( "Error renaming log-file from stream data from %s to %s" , tmp_fileName.c_str() , fileName.c_str() ));
+             */
             
             
         }

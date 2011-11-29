@@ -238,12 +238,20 @@ int main( int argC , const char *argV[] )
         size_t diff_time = cronometer.diffTimeInSeconds();
         size_t theoretical_diff_time = (double) total_size / (double) max_rate;
         if( diff_time > 0 )
+        {
             if( theoretical_diff_time > diff_time )
             {
                 int seconds = theoretical_diff_time / diff_time;
                 LM_V(("Sleeping %d seconds to respect max rate %s" , seconds , au::str( max_rate ).c_str() ));
                 sleep ( seconds );
             }
+        }
+        else
+        {
+            // Do not accept more that 1 second data
+            if ( total_size > (size_t)max_rate )
+                sleep(1);
+        }
         
         
         // Total accumulation of data

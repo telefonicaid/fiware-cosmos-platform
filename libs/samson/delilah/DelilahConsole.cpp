@@ -825,14 +825,22 @@ namespace samson
         
 		if( mainCommand == "repeat" )
         {
-            std::string repeat_command;
-            for (int i=1;i<commandLine.get_num_arguments();i++)
-                repeat_command.append( commandLine.get_argument(i) + " " );
+            size_t pos = command.find("repeat");
+            if( pos != std::string::npos )
+            {
+                std::string repeat_command = command.substr( pos+6 , std::string::npos );
+                
+                RepeatDelilahComponent* component =  new RepeatDelilahComponent( repeat_command , 2 );
+                size_t id = addComponent( component );
+                component->run();
+                return id;
+
+            }
+            else
+                LM_W(("Strange behaviour with repeat command..."));
             
-            RepeatDelilahComponent* component =  new RepeatDelilahComponent( repeat_command , 2 );
-            size_t id = addComponent( component );
-            component->run();
-            return id;
+            return 0;
+            
         }
         
         

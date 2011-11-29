@@ -11,8 +11,6 @@ SET( STATIC_LIBS
      pa
      dl
      pthread
-     edit
-     curses
 )
 
 # Include directories

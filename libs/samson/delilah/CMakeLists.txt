@@ -4,7 +4,6 @@ SET (HEADERS
 	Delilah.h
 	DelilahUtils.h
 	DelilahConsole.h
-	DelilahMonitorization.h
 	DelilahClient.h
 	DelilahComponent.h
 	CommandDelilahComponent.h
@@ -23,7 +22,6 @@ SET (SOURCES
 	DelilahBase.cpp
 	DelilahUtils.cpp
 	DelilahConsole.cpp
-	DelilahMonitorization.cpp
 	DelilahComponent.cpp
 	CommandDelilahComponent.cpp
 	WorkerCommandDelilahComponent.cpp

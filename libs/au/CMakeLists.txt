@@ -27,7 +27,6 @@ ListMap.h
 varint.h
 Cronometer.h
 Rate.h
-CursesConsole.h
 CounterCollection.h
 file.h
 time.h
@@ -60,7 +59,6 @@ Token.cpp
 TokenTaker.cpp
 Cronometer.cpp
 Rate.cpp
-CursesConsole.cpp
 CounterCollection.cpp
 file.cpp
 time.cpp

@@ -830,9 +830,9 @@ namespace samson
                 repeat_command.append( commandLine.get_argument(i) + " " );
             
             RepeatDelilahComponent* component =  new RepeatDelilahComponent( repeat_command , 2 );
-            addComponent( component );
+            size_t id = addComponent( component );
             component->run();
-            return 0;
+            return id;
         }
         
         

@@ -21,7 +21,6 @@ SET (LIBS
     protobuf
     pthread
     dl
-    edit
     ${COMMON_SAMSON_LIBS}
 )
 

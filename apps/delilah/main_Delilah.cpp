@@ -33,7 +33,6 @@
 
 
 #include "samson/delilah/DelilahConsole.h"
-#include "samson/delilah/DelilahMonitorization.h"
 
 
 /* ****************************************************************************
@@ -58,47 +57,10 @@ PaArgument paArgs[] =
 	{ "-memory",           &memory_gb,           "MEMORY",           PaInt,    PaOpt,      1,    1,  100, "memory in GBytes"           },
 	{ "-load_buffer_size", &load_buffer_size_mb, "LOAD_BUFFER_SIZE", PaInt,    PaOpt,     64,   64, 2048, "load buffer size in MBytes" },
 	{ "-f",                 commandFileName,     "FILE_NAME",        PaString, PaOpt,  _i "", PaNL, PaNL, "File with commands to run"  },
-	{ "-monitorization",    &monitorization,     "MONITORIZAITON",      PaBool,    PaOpt,  false, false,  true,  "Run monitoring tool"   },
-	{ "-command",           command,             "MONITORIZATION_COMMAND", PaString, PaOpt,  _i "overview", PaNL, PaNL, "Monitoring command"  },
+	{ "-command",           command,             "MONITORIZATION_COMMAND", PaString, PaOpt,  _i "", PaNL, PaNL, "Monitoring command"  },
 
 	PA_END_OF_ARGS
 };
-
-
-/*
-class Delilah : public samson::PacketReceiverInterface, public samson::PacketSenderInterface
-{
-private:
-	samson::NetworkInterface* networkP;
-
-public:
-	Delilah(samson::NetworkInterface* network);
-	void receive(samson::Packet* packet);
-	void notificationSent(size_t id, bool success);
-};
-
-
-
-Delilah::Delilah(samson::NetworkInterface* network)
-{
-	networkP = network;
-}
-
-
-
-void Delilah::receive(samson::Packet* packet)
-{
-	LM_M(("Got a packet from endpoint %d (msg code '%s')", packet->fromId, samson::Message::messageCode(packet->msgCode)));
-}
-
-
-
-void Delilah::notificationSent(size_t id, bool success)
-{
-	LM_M(("Got a notification that a packet has been sent to endpoint %d", id));
-}
-*/
-
 
 /* ****************************************************************************
 *
@@ -221,19 +183,48 @@ int main(int argC, const char *argV[])
 
 
 	// Create a DelilahControler once network is ready
-	samson::DelilahConsole* delilahConsole = NULL;
-    samson::DelilahMonitorization* delilahMonitorization = NULL;
-	
-    if( !monitorization )
-        delilahConsole = new samson::DelilahConsole(networkP);
-    else
-        delilahMonitorization = new samson::DelilahMonitorization(networkP , command );
-	
-    // Not necessary anymore. Engine automatically starts with "init" call
-	//engine::Engine::runInBackground();
+	samson::DelilahConsole* delilahConsole = new samson::DelilahConsole(networkP);
 	
     // Special mode for file-based commands
     // ----------------------------------------------------------------
+    
+    if ( strcmp( command , "" ) != 0 )
+    {
+        // Running a single command
+
+
+        // Wait until it is ready to get some queries
+        while ( !delilahConsole->readyForQuery() ) 
+            usleep(1000);
+        
+        size_t id = delilahConsole->runAsyncCommand( command );
+        std::cerr << au::str("Processing: '%s' [ id generated %lu ]\n", command , id);
+        
+        if( id != 0)
+        {
+            //LM_M(("Waiting until delilah-component %ul finish", id ));
+            // Wait until this operation is finished
+            while (delilahConsole->isActive( id ) )
+            {
+                delilahConsole->flush();
+                usleep(1000);
+            }
+            
+            
+            if( delilahConsole->hasError( id ) )
+            {
+                std::cerr << "Error: " << delilahConsole->errorMessage( id ) << "\n";
+                std::cerr << "Error running '" << command << "'\n";
+                std::cerr << "Exiting...";
+            }
+            
+        }
+        
+        std::cerr << au::str("Flushing output: '%s'\n", command );
+        delilahConsole->flush();
+        
+        exit(0);
+    }
     
 	if ( strcmp( commandFileName,"") != 0 )
 	{
@@ -265,7 +256,7 @@ int main(int argC, const char *argV[])
                 
                 size_t id = delilahConsole->runAsyncCommand( line );
                 std::cerr << au::str("Processing: '%s' [ id generated %lu ]\n", line , id);
-		LM_M(("Processing: '%s' [ id generated %lu ]\n", line , id));
+                LM_M(("Processing: '%s' [ id generated %lu ]\n", line , id));
                 
                 if( id != 0)
                 {
@@ -279,9 +270,9 @@ int main(int argC, const char *argV[])
                         std::cerr << "Error: " << delilahConsole->errorMessage( id ) << "\n";
                         std::cerr << "Error running '" << line <<  "' at line " << num_line << "\n";
                         std::cerr << "Exiting...";
-
+                        
                         LM_E(("Error: %s",  delilahConsole->errorMessage( id ).c_str()));
-			LM_E(("Error running '%s' at line %d\n", line, num_line));
+                        LM_E(("Error running '%s' at line %d\n", line, num_line));
                         LM_E(("Exiting..."));
                     }
                     
@@ -297,11 +288,7 @@ int main(int argC, const char *argV[])
 		exit(0);
 	}    
     
-    if( delilahConsole )
-        delilahConsole->run();
-    
-    if( delilahMonitorization )
-        delilahMonitorization->run();
+    delilahConsole->run();
     
     
 }

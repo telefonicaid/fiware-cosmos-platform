@@ -222,6 +222,13 @@ namespace au {
         }
     }
     
+    void Console::flush()
+    {
+        process_background();
+        
+    }
+
+    
     bool Console::isNormalChar( char c )
     {
         if( ( c>= 32) && ( c<=126))

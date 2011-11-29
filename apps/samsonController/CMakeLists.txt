@@ -17,7 +17,6 @@ SET (LIBS
 	protobuf
 	pthread
 	dl
-	edit
 	samsonDataLib
 	samsonCommon
 	${COMMON_SAMSON_LIBS}

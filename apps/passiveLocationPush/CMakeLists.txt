@@ -24,8 +24,6 @@ SET( STATIC_LIBS
      protobuf
      dl
      pthread
-     edit
-     curses
 )
 
 # Include directories

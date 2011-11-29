@@ -16,7 +16,6 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
-#include <editline/readline.h>
 #include <algorithm>
 
 #include "logMsg/logMsg.h"				

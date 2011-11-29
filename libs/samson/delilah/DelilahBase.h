@@ -38,12 +38,21 @@ namespace samson {
         std::string txt;
         au::Cronometer cronometer;
         
+        
+        bool ready;
+        
     public:
+        
+        XMLStringHolder()
+        {
+            ready = false;
+        }
         
         void update( std::string _txt )
         {
             txt = _txt;
             cronometer.reset();
+            ready = true;
         }
         
         size_t getTime()
@@ -54,6 +63,11 @@ namespace samson {
         void append( std::ostringstream& output)
         {
             output << txt;
+        }
+        
+        bool isReady()
+        {
+            return ready;
         }
         
     };
@@ -107,6 +121,17 @@ namespace samson {
         au::TreeItem* getTreeItem( );
 
         std::string updateTimeString();
+        
+        bool readyForQuery()
+        {
+            if( !controller->isReady() )
+                return false;
+            for ( int i=0;i<num_workers;i++)
+                if( ! worker[i]->isReady() )
+                    return false;
+            return true;
+            
+        }
         
     private:
         

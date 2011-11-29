@@ -37,7 +37,6 @@
 #include "samson/controller/SamsonController.h"	// samson:: SasonController
 
 #include "samson/delilah/DelilahConsole.h"              // ss:DelilahConsole
-#include "samson/delilah/DelilahMonitorization.h"		// ss:DelilahMonitorization
 
 #include "FakeEndpoint.h"
 #include "NetworkFake.h"

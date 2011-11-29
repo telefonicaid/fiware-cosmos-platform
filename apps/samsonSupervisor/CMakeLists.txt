@@ -1,4 +1,4 @@
-find_package(Qt4 COMPONENTS QtCore QtGui QtSvg REQUIRED )
+1find_package(Qt4 COMPONENTS QtCore QtGui QtSvg REQUIRED )
 INCLUDE(${QT_USE_FILE})
 
 SET (SOURCES
@@ -94,7 +94,6 @@ SET (LIBS
 	z
 	pa 
 	lm 
-	edit 
 	pthread
 	protobuf
 	${COMMON_SAMSON_LIBS}

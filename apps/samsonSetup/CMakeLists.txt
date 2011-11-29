@@ -12,7 +12,6 @@ SET( STATIC_LIBS
      samsonCommon
      protobuf
      pthread
-     edit
      au
      dl
      lm

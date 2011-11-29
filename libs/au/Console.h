@@ -48,6 +48,9 @@ namespace au {
         
         void refresh();
         
+        // Make sure all messages are shown
+        void flush();
+        
     private:
         
         void init();

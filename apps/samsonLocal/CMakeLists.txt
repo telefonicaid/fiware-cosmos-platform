@@ -32,8 +32,6 @@ SET( STATIC_LIBS
 	protobuf
 	dl
 	pthread
-	edit
-	curses
 	${COMMON_SAMSON_LIBS}
 )
 

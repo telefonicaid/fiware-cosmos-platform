@@ -1,0 +1,14 @@
+
+Module web
+{
+	title	"Hit manipulation"
+	author	"Andreu Urruela & Richard Gass"
+	version "0.1"
+}
+
+
+parser parse_web_hits
+{
+    out system.String system.UInt
+
+}

@@ -1,0 +1,5 @@
+
+# Parser sending String UInt pairs to hit.04.input_words ( to be used toguether with hit demo )
+
+rm_stream_operation hit.04.input_words -f
+add_stream_operation web.parse_web_hits web.parse_web_hits web.01.input.txt hit.04.input_words

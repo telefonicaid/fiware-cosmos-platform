@@ -6,7 +6,6 @@
 #include "engine/Notification.h"       // engine::Notification
 
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
-#include "samson/common/NotificationMessages.h" // notification_block_manager_review
 
 #include "BlockList.h"          // BlockList
 #include "BlockManager.h"       // Own interface
@@ -37,13 +36,6 @@ namespace samson {
         
         BlockManager::~BlockManager()
         {
-        }
-
-        void BlockManager::initOldFilesCheck()
-        {
-            listen( notification_block_manager_review );
-            engine::Notification *notification = new engine::Notification(notification_block_manager_review );
-            engine::Engine::shared()->notify( notification, 60 );   // Review every minute ( include in setup? )
         }
         
         void BlockManager::init()
@@ -96,6 +88,12 @@ namespace samson {
             // If it can be removed, just remove...
             if( b->canBeRemoved() )
             {
+                
+                // Schedule remove file
+                engine::DiskOperation * operation = engine::DiskOperation::newRemoveOperation( b->getFileName() , getEngineId() );
+                engine::DiskManager::shared()->add( operation );
+                
+                
             	LM_T(LmtBlockManager,("In check, removing block:'%s'", b->str().c_str()));
                 if( b->isContentOnMemory() )
                 {
@@ -145,34 +143,22 @@ namespace samson {
                     _review();
                 }
                 
+                if( type == "remove" )
+                {
+                    // Nothing to do... an old block file has been removed
+                }
+
+                
             }
-            else if ( notification->isName( notification_block_manager_review ) )
+            else 
             {
-            	LM_T(LmtBlockManager,("Received another notification from notification_block_manager_review"  ));
-                // Review old blocks to be removed...
-                reviewOldFiles();
-                _review();
+                LM_W(("Unknown notification at BlockManager"));
             }
             
         }
         
         void BlockManager::_review()
         {
-            // Schedule new write operations ( low priority elements )
-
-//        	{
-//        		std::list<Block*>::iterator b;
-//        		int count = blocks.size();
-//        		int i = 0;
-//        		for ( b = blocks.begin() ; b != blocks.end() ; b++, i++ )
-//        		{
-//        			Block *block = *b;
-//
-//        			LM_T(LmtBlockManager,("block (%d of %d):'%s'", i, count, block->str().c_str()));
-//        		}
-//        	}
-
-
 
             
         	//LM_T(LmtBlockManager,("_review loop with %lu blocks, memory(%lu); max_memory(%lu); num_writing_operations(%d); num_reading_operations(%d)", blocks.size(), memory, max_memory, num_writing_operations, num_reading_operations));
@@ -364,89 +350,6 @@ namespace samson {
         size_t BlockManager::getNextBlockId()
         {
             return id++;
-        }
-        
-        
-        void BlockManager::reviewOldFiles( )
-        {
-            // List of active blocks
-            std::set<size_t> block_ids;
-            
-            std::list<Block*>::iterator it_block;
-            for ( it_block =  blocks.begin() ; it_block != blocks.end() ; it_block++ )
-                block_ids.insert( (*it_block)->getId() );
-
-            
-            // Get the list of files to be removed (  old blocks not used any more )
-            //std::set< std::string > remove_files;
-            
-            DIR *dp;
-            struct dirent *dirp;
-            std::string dir_path = SamsonSetup::shared()->blocksDirectory();
-            if((dp  = opendir( dir_path.c_str() )) == NULL) {
-                
-                // LOG and error to indicate that data directory cannot be access
-                LM_W(("Not possible to open block directory %s to review old files" , SamsonSetup::shared()->blocksDirectory().c_str() ));
-                return;
-            }
-            
-            while ((dirp = readdir(dp)) != NULL) 
-            {
-                // Full path of the file
-                std::string path = SamsonSetup::shared()->blocksDirectory() + "/" + dirp->d_name;
-                
-                struct ::stat info;
-                stat(path.c_str(), &info);
-                
-                if( S_ISREG(info.st_mode) )
-                {
-                    
-                    // Get modification date to see if it was just created
-                    time_t now;
-                    time (&now);
-                    double age = difftime ( now , info.st_mtime );
-                    
-                    if( age > 60*30 ) // Get some time (1 hour) to avoid sync errors
-                    {
-                        
-                        // Get the task from the file name 
-                        std::string file_name = dirp->d_name;
-                        
-                        size_t tmp_block_id = strtoll( file_name.c_str(), (char **)NULL, 10);
-
-                        if( block_ids.find( tmp_block_id ) == block_ids.end() )
-                        {
-                        	std::string file_name_abs = dir_path + "/" + file_name;
-                            
-                            // Add to be removed
-                            //remove_files.insert( path );
-							int c = ::unlink( file_name_abs.c_str() );
-							if( c != 0 )
-							{
-								LM_E(("Error removing file '%s', errno:%d\n", file_name_abs.c_str(), errno));
-							}
-							else
-							{
-								LM_T( LmtDisk , ("DiskManager: Removed file %s (%s)", file_name.c_str(), file_name_abs.c_str() ));
-							}
-                        }
-                    }
-                }
-            }
-            closedir(dp);
-            
-            // Remove the selected files
-            //for ( std::set< std::string >::iterator f = remove_files.begin() ; f != remove_files.end() ; f++)
-            //{
-            //
-            //    std::string fileName = *f;
-            //
-            //    // Add a remove operation to the engine ( target 0 means no specific listener to be notified )
-            //    engine::DiskOperation * operation =  engine::DiskOperation::newRemoveOperation(  fileName , 0 );
-            //    engine::DiskManager::shared()->add( operation );
-            //}
-            
-            
         }
         
         // Function used in the order of blocks

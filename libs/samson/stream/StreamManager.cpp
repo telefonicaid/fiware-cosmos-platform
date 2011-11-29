@@ -3,10 +3,12 @@
 #include <string>           // std::string
 #include <algorithm>        // std::ort
 #include <sstream>          // std::stringstream
-#include "Queue.h"          // samson::stream::Queue
-#include "Block.h"          // samson::stream::Block
+#include <sys/types.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 #include "au/time.h"            // au::todayString()
+#include "au/file.h"            
 
 #include "engine/Engine.h"              // engine::Engine
 #include "engine/MemoryManager.h"
@@ -34,6 +36,9 @@
 #include "samson/stream/PopQueueTask.h"
 #include "samson/stream/StreamOperation.h"
 #include "samson/stream/StreamOutput.h"
+#include "Queue.h"          // samson::stream::Queue
+#include "Block.h"          // samson::stream::Block
+
 
 #include "StreamManager.h"                      // Own interface
 
@@ -81,9 +86,6 @@ namespace samson {
             listen( notification_review_stream_manager_save_state );
             listen( notification_samson_worker_check_finish_tasks );
             listen( notification_network_diconnected );
-            
-            // Init the old file checking at block manager
-            BlockManager::shared()->initOldFilesCheck();
             
         }
 
@@ -537,6 +539,32 @@ namespace samson {
             // Recovery list for the blocks...
             BlockList recovery_list("recovery_list");
             
+            // Recover all the blocks in current blocks directory
+            // ------------------------------------------------------------------------------------------------
+            std::string blocks_dir = SamsonSetup::shared()->blocksDirectory();
+            DIR *dp;
+            struct dirent *dirp;
+            if((dp  = opendir( blocks_dir.c_str() )) != NULL) 
+            {
+                while ((dirp = readdir(dp)) != NULL) 
+                {
+                    std::string fileName = dirp->d_name;
+                    
+                    // Full path of the file
+                    std::string path = au::path_from_directory( blocks_dir , dirp->d_name );
+                    
+                    struct ::stat info;
+                    stat(path.c_str(), &info);
+                    
+                    if( S_ISREG(info.st_mode) )
+                        if ( !recovery_list.createBlockFromFile(path) )
+                            LM_W(("Problems recovering block from file %s", path.c_str() ));
+                }                                
+                closedir(dp);                
+            }
+            
+            
+            
             std::string fileName = SamsonSetup::shared()->streamManagerLogFileName();
             
             FILE *file = fopen( fileName.c_str() , "r" );
@@ -582,8 +610,6 @@ namespace samson {
                             // Set the minim block id to not overwrite previous blocks
                             BlockManager::shared()->setMinimumNextId( block_id );
                             Block* b = recovery_list.getBlock( block_id );
-                            if( !b )
-                                b = recovery_list.createBlockFromDisk( block_id );
                             
                             if( b )
                                 queue->push( b );

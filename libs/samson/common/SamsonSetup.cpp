@@ -368,6 +368,30 @@ extern char  samsonWorking[1024]
         return _samson_working + "/blocks/" + au::str("%lu",id);
     }
     
+    bool isNumber( std::string txt )
+    {
+        for (size_t i = 0 ; i < txt.length() ; i++ )
+            if( !au::isCharInRange( txt[i] , 48 , 57 ) )
+                return false;
+        return  true;
+    }
+    
+    bool SamsonSetup::blockIdFromFileName( std::string fileName , size_t *block_id )
+    {
+        std::string path = _samson_working + "/blocks/";
+        
+        if( fileName.substr(0,path.size()) != path )
+            return false;
+        
+        std::string number = fileName.substr( path.size() ).c_str();
+        
+        if( !isNumber(number) )
+            return false;
+        
+        *block_id = atoll( number.c_str() );
+        return true;
+    }
+    
     std::string SamsonSetup::streamManagerLogFileName()
     {
         return _samson_working + "/log/log_stream_state.txt";

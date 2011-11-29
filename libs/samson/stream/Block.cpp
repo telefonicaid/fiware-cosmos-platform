@@ -147,7 +147,7 @@ namespace samson {
             if( !buffer )
                 LM_X(1,("Not possible to get write operation over a block that it is not in memory"));
             
-            engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer ,  SamsonSetup::shared()->blockFileName(id) , getEngineId()  );
+            engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer ,  getFileName() , getEngineId()  );
             operation->addListener( BlockManager::shared()->getEngineId() );
             
             // set my id as environment property
@@ -165,7 +165,7 @@ namespace samson {
             engine::DiskOperation* operation;
 
             // Create the operation
-            std::string fileName = SamsonSetup::shared()->blockFileName(id);
+            std::string fileName = getFileName();
             operation = engine::DiskOperation::newReadOperation( fileName.c_str(), 0, size, buffer->getSimpleBuffer() , getEngineId() );
             
             // Also add as listener the block manager to deal with reordering after this read opertion is finished
@@ -177,6 +177,11 @@ namespace samson {
             return operation;
         }
         
+        
+        std::string Block::getFileName()
+        {
+            return SamsonSetup::shared()->blockFileName(id);
+        }
 
 
         // Command over the block

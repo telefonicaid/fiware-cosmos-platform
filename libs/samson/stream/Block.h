@@ -92,7 +92,10 @@ namespace samson {
 
             // Function to check if this block can be removed from block manager ( basically it is not contained anywhere )
             int canBeRemoved();
-                                    
+                
+            // Get file name for this block
+            std::string getFileName();
+            
         private:
             
             // Send notifications to write and read 

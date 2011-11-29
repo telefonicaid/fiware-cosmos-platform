@@ -147,7 +147,10 @@ namespace samson {
         std::string dataFile( std::string filename );        // Get the name of a particular data file ( batch processing )
         std::string modulesDirectory();
         std::string blocksDirectory();
+        
         std::string blockFileName( size_t id );
+        bool blockIdFromFileName( std::string fileName , size_t *id );
+
         std::string streamManagerLogFileName();
         std::string streamManagerAuxiliarLogFileName();
         

@@ -93,7 +93,7 @@ namespace samson {
             Block* createBlock( engine::Buffer *buffer );
 
             // Create a block for this BlockList
-            Block* createBlockFromDisk( size_t id );
+            Block* createBlockFromFile( std::string fileName );
             
             // Get the next element to be processed
             Block* top( );

@@ -64,9 +64,13 @@ namespace samson {
             return block;
         }
 
-        Block* BlockList::createBlockFromDisk( size_t id )
+        Block* BlockList::createBlockFromFile( std::string fileName )
         {
-            std::string fileName =  SamsonSetup::shared()->blockFileName( id );
+            //std::string fileName =  SamsonSetup::shared()->blockFileName( id );
+            size_t id;
+            
+            if( !SamsonSetup::shared()->blockIdFromFileName( fileName , &id ) )
+                return NULL;
             
             FILE *file = fopen( fileName.c_str() , "r" );
             if(!file)

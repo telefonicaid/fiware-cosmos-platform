@@ -91,13 +91,6 @@ namespace samson {
             void update( BlockInfo &block_info );
             void getInfo( std::ostringstream& output);
 
-
-        public:
-            void initOldFilesCheck();
-            
-        private:
-            void reviewOldFiles();
-            
             
         };
     }

@@ -1143,7 +1143,7 @@ void EndpointManager::show(const char* why, bool forced)
 		if (ep == NULL)
 			continue;
 
-		LM_T(tLevel, ("%s", ep->statusString(buf, sizeof(buf), ix)));
+		LM_T(tLevel, ("%s", ep->statusString(buf, sizeof(buf), ix, false)));
 	}
 	LM_T(tLevel, ("----------------------------------------------------------------------"));
 }

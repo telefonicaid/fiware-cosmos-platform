@@ -1319,7 +1319,7 @@ void Endpoint2::close(void)
 *
 * statusString - 
 */
-const char* Endpoint2::statusString(char* buf, int bufLen, int ix)
+const char* Endpoint2::statusString(char* buf, int bufLen, int ix, bool carriageReturn)
 {
 	char       jq[32];
 	char       fd[16];
@@ -1345,7 +1345,7 @@ const char* Endpoint2::statusString(char* buf, int bufLen, int ix)
 
 
 
-	snprintf(buf, bufLen, "%c%c%02d: %-12s %02d  %-20s %-20s %04d  %-2s (in: %03d/%s, out: %03d/%s) %s\n",
+	snprintf(buf, bufLen, "%c%c%02d: %-12s %02d  %-20s %-20s %04d  %-2s (in: %03d/%s, out: %03d/%s) %s%s",
 			 conSign,
 			 (threaded == true)? 's' : ' ',
 			 ix,
@@ -1359,7 +1359,8 @@ const char* Endpoint2::statusString(char* buf, int bufLen, int ix)
 			 au::str(bytesIn, "B").c_str(),
 			 msgsOut,
 			 au::str(bytesOut, "B").c_str(),
-			 jq);
+			 jq,
+			 (carriageReturn == true)? "\n" : "");
 
 	return buf;
 }

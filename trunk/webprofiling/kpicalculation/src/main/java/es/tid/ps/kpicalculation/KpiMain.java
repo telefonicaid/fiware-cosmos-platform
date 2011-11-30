@@ -30,11 +30,12 @@ import es.tid.ps.kpicalculation.operations.ICdrLoader;
  * queries are added sequentially and will need to be extracted to a properties
  * file in order to modify the process without the need of recompiling the
  * project
+ * 
+ * @author javierb
  */
 public class KpiMain extends Configured implements Tool {
-    
     private static String TEMP_PATH = "/user/javierb/temp";
-    
+
     public static void main(String[] args) throws Exception {
         int res = ToolRunner.run(new Configuration(), new KpiMain(), args);
         System.exit(res);
@@ -42,13 +43,14 @@ public class KpiMain extends Configured implements Tool {
 
     public int run(String[] args) throws Exception {
         Path inputPath = new Path(args[0]);
-        Path tmpPath = new Path(TEMP_PATH + "/tmp." + Long.toString(new Date().getTime()));
+        Path tmpPath = new Path(TEMP_PATH + "/tmp."
+                + Long.toString(new Date().getTime()));
 
         // Normalization and filtering
         Configuration conf = getConf();
         conf.set("kpicalculation.temp.path", tmpPath.toString());
         conf.addResource("kpi-filtering.xml");
-        
+
         Job wpCleanerJob = new Job(conf, "Web Profiling ...");
         wpCleanerJob.setNumReduceTasks(0);
         wpCleanerJob.setJarByClass(KpiMain.class);
@@ -63,19 +65,19 @@ public class KpiMain extends Configured implements Tool {
 
         FileInputFormat.addInputPath(wpCleanerJob, inputPath);
         FileOutputFormat.setOutputPath(wpCleanerJob, tmpPath);
-        
+
         if (!wpCleanerJob.waitForCompletion(true)) {
             return 1;
         }
-       
+
         // Data load into hive
         ICdrLoader loader = new HiveCdrLoader(conf);
         loader.load(TEMP_PATH);
-        
+
         // Calculation of aggregate data
         IAggregateCalculator agg = new AggregateCalculator();
         agg.process();
-        
+
         return 0;
     }
 }

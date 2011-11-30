@@ -39,8 +39,7 @@ import es.tid.ps.kpicalculation.utils.KpiCalculationNormalizer;
  * <li>Output: void</li>
  * </ol>
  * 
- * 
- * @author javierb@tid.es
+ * @author javierb
  */
 public class KpiCleanerMapper extends
         Mapper<LongWritable, Text, Text, NullWritable> {

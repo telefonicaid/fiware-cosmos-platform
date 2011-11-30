@@ -29,25 +29,25 @@
 #include "au/ErrorManager.h"        // au::ErrorManager
 #include "au/map.h"                 // au::map
 
-namespace au {
+#include "au/au_namespace.h"
 
-    size_t sizeOfFile( std::string fileName );
 
-    void removeDirectory( std::string fileName , au::ErrorManager & error ); 
+NAMESPACE_BEGIN(au)
 
-    bool isDirectory(char path[]);
-    bool isRegularFile(char path[]);
+size_t sizeOfFile( std::string fileName );
 
-    
-    bool check_string_ends_with( std::string txt , std::string end_txt );
+void removeDirectory( std::string fileName , au::ErrorManager & error ); 
 
-    // Working with paths
-    std::string path_remove_last_component( std::string path );
-    std::string get_directory_from_path( std::string path );
+bool isDirectory(char path[]);
+bool isRegularFile(char path[]);
 
-   
-    
-    
-}
+
+bool check_string_ends_with( std::string txt , std::string end_txt );
+
+// Working with paths
+std::string path_remove_last_component( std::string path );
+std::string get_directory_from_path( std::string path );
+
+NAMESPACE_END
 
 #endif

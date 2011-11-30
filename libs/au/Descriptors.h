@@ -26,35 +26,39 @@
 #include <sstream>
 #include "au/map.h"       // au::map
 
-namespace au {
+#include "au/au_namespace.h"
+
+NAMESPACE_BEGIN(au)
+
+
+class DescriptorsCounter
+{
+    std::string description;
+    int counter;
     
-    class DescriptorsCounter
-    {
-        std::string description;
-        int counter;
-        
-    public:
-        
-        DescriptorsCounter( std::string _description);
-        void increase();
-        std::string str();
-                
-    };
+public:
     
-    class Descriptors
-    {
-        
-        au::map< std::string , DescriptorsCounter> concepts;
-        
-    public:
-        
-        ~Descriptors();
-        
-        void add( std::string txt );
-        
-        std::string str();
-        
-    };
-}
+    DescriptorsCounter( std::string _description);
+    void increase();
+    std::string str();
+    
+};
+
+class Descriptors
+{
+    
+    au::map< std::string , DescriptorsCounter> concepts;
+    
+public:
+    
+    ~Descriptors();
+    
+    void add( std::string txt );
+    
+    std::string str();
+    
+};
+
+NAMESPACE_END
 
 #endif

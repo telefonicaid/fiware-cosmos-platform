@@ -23,25 +23,29 @@
 
 #include <pthread.h>             /* pthread_mutex_t */
 
-namespace au
+#include "au/au_namespace.h"
+
+
+NAMESPACE_BEGIN(au)
+
+class Lock;
+
+class StopLock
 {
-    class Lock;
+    friend class Lock;
     
-    class StopLock
+    Lock*          lock;
+    
+public:	
+    pthread_cond_t condition;
+    
+    StopLock(Lock* _lock)
     {
-        friend class Lock;
-        
-        Lock*          lock;
-        
-    public:	
-        pthread_cond_t condition;
-        
-        StopLock(Lock* _lock)
-        {
-            lock = _lock;
-            pthread_cond_init(&condition, NULL);
-        }
-    };
-}
+        lock = _lock;
+        pthread_cond_init(&condition, NULL);
+    }
+};
+
+NAMESPACE_END
 
 #endif

@@ -26,53 +26,56 @@
 #include <map>			   // std::map
 #include <stdlib.h>
 
-namespace au {
-	
-	class Environment
-	{
-		
-	public:
-		
-		std::map<std::string,std::string> environment;	
-		
-        void clearEnvironment();
-        
-		std::string get( std::string name , std::string default_value );
-		void set( std::string name , std::string value );
-		void unset( std::string name );
-		bool isSet( std::string name );
+#include "au/au_namespace.h"
 
-		void copyFrom( Environment *other );
-		
-		template<typename T>
-		void set( std::string name  , T value)
-		{
-			std::ostringstream v;
-			v << value;
-			set( name , v.str() ); 
-		}	
-		
-		void setInt( std::string name  , int value);
-		void setSizeT( std::string name  , size_t value);
-		void setDouble( std::string name  , double value);
+NAMESPACE_BEGIN(au)
 
-		int getInt( std::string name , int defaultValue);
-		size_t getSizeT( std::string name , size_t defaultValue);
-		double getDouble( std::string name , double defaultValue);
+class Environment
+{
+    
+public:
+    
+    std::map<std::string,std::string> environment;	
+    
+    void clearEnvironment();
+    
+    std::string get( std::string name , std::string default_value );
+    void set( std::string name , std::string value );
+    void unset( std::string name );
+    bool isSet( std::string name );
+    
+    void copyFrom( Environment *other );
+    
+    template<typename T>
+    void set( std::string name  , T value)
+    {
+        std::ostringstream v;
+        v << value;
+        set( name , v.str() ); 
+    }	
+    
+    void setInt( std::string name  , int value);
+    void setSizeT( std::string name  , size_t value);
+    void setDouble( std::string name  , double value);
+    
+    int getInt( std::string name , int defaultValue);
+    size_t getSizeT( std::string name , size_t defaultValue);
+    double getDouble( std::string name , double defaultValue);
+    
+    void appendInt( std::string name , int value );
+    void appendSizeT( std::string name , int value );
+    
+    // Description
+    std::string toString();
+    std::string getEnvironmentDescription();
+    
+    // Save and restore from string
+    std::string saveToString();
+    void recoverFromString( std::string input );
+    
+    
+};	
 
-        void appendInt( std::string name , int value );
-        void appendSizeT( std::string name , int value );
-        
-        // Description
-		std::string toString();
-        std::string getEnvironmentDescription();
+NAMESPACE_END
 
-        // Save and restore from string
-        std::string saveToString();
-        void recoverFromString( std::string input );
-        
-        
-	};	
-
-}
 #endif

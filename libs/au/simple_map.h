@@ -24,100 +24,103 @@
 
 #include "logMsg/logMsg.h"      // LM_X
 
-namespace au {
+#include "au/au_namespace.h"
+
+
+NAMESPACE_BEGIN(au)
+
+/**
+ Class to use map structures of <typedef,typedef> with addittional function for easy manitpulation
+ */
+
+template <typename K,class V>
+class simple_map : public std::map<K,V>
+{
     
-    /**
-     Class to use map structures of <typedef,typedef> with addittional function for easy manitpulation
+public:
+    
+    // Iterator definition
+    typename std::map<K, V >::iterator iter;
+    
+    
+    // Insert a pair of elements ( easy method )
+    // Returns the previous elements if any
+    void insertInMap( K& key , V& value)
+    {
+        removeInMap( key );
+        insert( std::pair<K,V>( key, value) );
+    }
+    
+    
+    bool isInMap( K& key ) 
+    {
+        typename std::map<K, V >::iterator iter = find(key);
+        return( iter != std::map<K,V>::end() );
+    }
+    
+    /*
+     Function to easyly get pointers in a std::map < value , Pointer* >
+     NULL if not found
      */
     
-    template <typename K,class V>
-    class simple_map : public std::map<K,V>
+    V findInMap( K& key ) 
     {
+        typename std::map<K, V >::iterator iter = find(key);
+        typename std::map<K, V >::iterator iter_end = std::map<K, V >::end();
         
-    public:
+        if ( iter == iter_end )
+            LM_X(1,("Error using findInMap. Please check first with isInMap"));
         
-        // Iterator definition
-        typename std::map<K, V >::iterator iter;
-        
-        
-        // Insert a pair of elements ( easy method )
-        // Returns the previous elements if any
-        void insertInMap( K& key , V& value)
-        {
-            removeInMap( key );
-            insert( std::pair<K,V>( key, value) );
-        }
-        
-        
-        bool isInMap( K& key ) 
-        {
-            typename std::map<K, V >::iterator iter = find(key);
-            return( iter != std::map<K,V>::end() );
-        }
-        
-        /*
-         Function to easyly get pointers in a std::map < value , Pointer* >
-         NULL if not found
-         */
-        
-        V findInMap( K& key ) 
-        {
-            typename std::map<K, V >::iterator iter = find(key);
-            typename std::map<K, V >::iterator iter_end = std::map<K, V >::end();
-            
-            if ( iter == iter_end )
-                LM_X(1,("Error using findInMap. Please check first with isInMap"));
-            
-            return iter->second;
-        }
-        
-        
-        /** 
-         Function to remove a particular entry if exist
-         Return if it really existed
-         */
-        
-        bool removeInMap( K& key ) 
-        {
-            typename std::map<K, V >::iterator iter = std::map<K,V>::find(key);
-            
-            if( iter == std::map<K,V>::end() )
-                return false;
-            else
-            {
-                std::map<K,V>::erase( iter );
-                return true;
-            }
-        }
-        
-        V extractFromMap(  K& key )
-        {
-            typename std::map<K, V >::iterator iter = std::map<K,V>::find(key);
-            typename std::map<K, V >::iterator iter_end = std::map<K,V>::end();
-            
-            if( iter == iter_end )
-            {
-                // Make sure to call isInMap before
-                LM_X(1,("Error extracting an element from an au::simple_map without checking first it was included"));
-            }
-            
-            V v = iter->second;
-            std::map<K,V>::erase(iter);
-            return v;
-            
-        }		
-        
-    };
+        return iter->second;
+    }
     
     
-    // Spetial map with const char* as key
+    /** 
+     Function to remove a particular entry if exist
+     Return if it really existed
+     */
     
-    struct strCompare : public std::binary_function<const char*, const char*, bool> {
-    public:
-        bool operator() (const char* str1, const char* str2) const
-        { return strcmp(str1, str2) < 0; }
-    };
+    bool removeInMap( K& key ) 
+    {
+        typename std::map<K, V >::iterator iter = std::map<K,V>::find(key);
+        
+        if( iter == std::map<K,V>::end() )
+            return false;
+        else
+        {
+            std::map<K,V>::erase( iter );
+            return true;
+        }
+    }
     
-}
+    V extractFromMap(  K& key )
+    {
+        typename std::map<K, V >::iterator iter = std::map<K,V>::find(key);
+        typename std::map<K, V >::iterator iter_end = std::map<K,V>::end();
+        
+        if( iter == iter_end )
+        {
+            // Make sure to call isInMap before
+            LM_X(1,("Error extracting an element from an au::simple_map without checking first it was included"));
+        }
+        
+        V v = iter->second;
+        std::map<K,V>::erase(iter);
+        return v;
+        
+    }		
+    
+};
+
+
+// Spetial map with const char* as key
+
+struct strCompare : public std::binary_function<const char*, const char*, bool> {
+public:
+    bool operator() (const char* str1, const char* str2) const
+    { return strcmp(str1, str2) < 0; }
+};
+
+NAMESPACE_END
 
 #endif

@@ -25,50 +25,53 @@
 #include <sys/time.h>	       // struct timeval
 #include <string>               // std::string
 
-namespace au {
+#include "au/au_namespace.h"
 
-    class Cronometer
-    {
-        time_t t;
-        
-    public:
-        
-        Cronometer();
 
-        // Reset the count to 0
-        void reset();
-        
-        // Get the time difference since the last reset ( or creation ) in second
-        time_t diffTimeInSeconds();
-        
-        // Get a string with the time ellapsed since last reset or creation
-        std::string str();
-        
-    };
+NAMESPACE_BEGIN(au)
+
+class Cronometer
+{
+    time_t t;
     
-    class CronometerSystem
-    {
-        Cronometer c;
-        int seconds;
-        bool running;
-        
-    public:
-
-        CronometerSystem();
-        
-        void start();
-        void stop();
-        
-        // Reset the count to 0
-        void reset();
-        
-        // Get a string with the time ellapsed since last reset or creation
-        std::string str();
-        
-        int getSeconds();
-        
-    };   
+public:
     
-}
+    Cronometer();
+    
+    // Reset the count to 0
+    void reset();
+    
+    // Get the time difference since the last reset ( or creation ) in second
+    time_t diffTimeInSeconds();
+    
+    // Get a string with the time ellapsed since last reset or creation
+    std::string str();
+    
+};
+
+class CronometerSystem
+{
+    Cronometer c;
+    int seconds;
+    bool running;
+    
+public:
+    
+    CronometerSystem();
+    
+    void start();
+    void stop();
+    
+    // Reset the count to 0
+    void reset();
+    
+    // Get a string with the time ellapsed since last reset or creation
+    std::string str();
+    
+    int getSeconds();
+    
+};   
+
+NAMESPACE_END
 
 #endif

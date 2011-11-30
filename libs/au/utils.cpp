@@ -10,23 +10,23 @@
 
 #include "au/utils.h" // Own interface
 
-namespace au {
-    
-    int getColumns()
-    {
-        int x,y;
-        get_term_size( 0 , &x, &y );
+NAMESPACE_BEGIN(au)
 
-        return x;
-    }
+int getColumns()
+{
+    int x,y;
+    get_term_size( 0 , &x, &y );
     
-    void clear_line()
-    {
-        printf("\r");
-        for (int i = 0 ;  i < getColumns() ; i++ )
-            printf(" ");
-        printf("\r");
-        fflush(stdout);
-    }
-
+    return x;
 }
+
+void clear_line()
+{
+    printf("\r");
+    for (int i = 0 ;  i < getColumns() ; i++ )
+        printf(" ");
+    printf("\r");
+    fflush(stdout);
+}
+
+NAMESPACE_END

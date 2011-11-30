@@ -25,94 +25,97 @@
 
 #include "au/map.h"
 
-namespace au {
+#include "au/au_namespace.h"
 
-    // Simple xml tags
-    void xml_open( std::ostringstream& output , std::string name );
-    void xml_close( std::ostringstream& output , std::string name );
 
-    // Concept xml-protected 
-    void xml_content( std::ostringstream& output , std::string _content );
-    
-    
-    template< typename T>
-    void xml_simple( std::ostringstream& output , std::string name , T value )
-    {
-        output << "<" << name << ">";
-        output << "<![CDATA[" << value << "]]>";        
-        output << "</" << name << ">";
-    }
-    
-    template< typename T>
-    void xml_single_element( std::ostringstream& output , std::string name , T* obj )
-    {
-        xml_open( output , name );
-        obj->getInfo( output );
-        xml_close( output , name );
-    }
-    
-    
-    template< typename T>
-    void xml_iterate_list( std::ostringstream& output , std::string name , T& vector )
-    {
-        au::xml_open(output, name);
-        
-        //typename std::map<K, V* >::iterator iter;
-        typename T::iterator iter;
-        
-        for (iter = vector.begin() ; iter != vector.end() ; iter++)
-            (*iter)->getInfo( output );
-        
-        au::xml_close(output, name);
-        
-    }
+NAMESPACE_BEGIN(au)
 
-    template< typename T>
-    void xml_reverse_iterate_list( std::ostringstream& output , std::string name , T& vector )
-    {
-        au::xml_open(output, name);
-        
-        //typename std::map<K, V* >::iterator iter;
-        typename T::r_iterator iter;
-        
-        for (iter = vector.r_begin() ; iter != vector.r_end() ; iter++)
-            (*iter)->getInfo( output );
-        
-        au::xml_close(output, name);
-        
-    }
+// Simple xml tags
+void xml_open( std::ostringstream& output , std::string name );
+void xml_close( std::ostringstream& output , std::string name );
+
+// Concept xml-protected 
+void xml_content( std::ostringstream& output , std::string _content );
+
+
+template< typename T>
+void xml_simple( std::ostringstream& output , std::string name , T value )
+{
+    output << "<" << name << ">";
+    output << "<![CDATA[" << value << "]]>";        
+    output << "</" << name << ">";
+}
+
+template< typename T>
+void xml_single_element( std::ostringstream& output , std::string name , T* obj )
+{
+    xml_open( output , name );
+    obj->getInfo( output );
+    xml_close( output , name );
+}
+
+
+template< typename T>
+void xml_iterate_list( std::ostringstream& output , std::string name , T& vector )
+{
+    au::xml_open(output, name);
     
+    //typename std::map<K, V* >::iterator iter;
+    typename T::iterator iter;
     
-    template< typename T>
-    void xml_iterate_list_object( std::ostringstream& output , std::string name , T& vector )
-    {
-        au::xml_open(output, name);
-        
-        //typename std::map<K, V* >::iterator iter;
-        typename T::iterator iter;
-        
-        for (iter = vector.begin() ; iter != vector.end() ; iter++)
-            (iter)->getInfo( output );
-        
-        au::xml_close(output, name);
-        
-    }
+    for (iter = vector.begin() ; iter != vector.end() ; iter++)
+        (*iter)->getInfo( output );
     
-    template< typename K, typename V>
-    void xml_iterate_map( std::ostringstream& output , std::string name , au::map< K , V >& vector )
-    {
-        au::xml_open(output, name);
-        
-        //typename std::map<K, V* >::iterator iter;
-        typename au::map< K , V >::iterator iter;
-        
-        for (iter = vector.begin() ; iter != vector.end() ; iter++)
-            iter->second->getInfo( output );
-        
-        au::xml_close(output, name);
-        
-    }
+    au::xml_close(output, name);
     
 }
+
+template< typename T>
+void xml_reverse_iterate_list( std::ostringstream& output , std::string name , T& vector )
+{
+    au::xml_open(output, name);
+    
+    //typename std::map<K, V* >::iterator iter;
+    typename T::r_iterator iter;
+    
+    for (iter = vector.r_begin() ; iter != vector.r_end() ; iter++)
+        (*iter)->getInfo( output );
+    
+    au::xml_close(output, name);
+    
+}
+
+
+template< typename T>
+void xml_iterate_list_object( std::ostringstream& output , std::string name , T& vector )
+{
+    au::xml_open(output, name);
+    
+    //typename std::map<K, V* >::iterator iter;
+    typename T::iterator iter;
+    
+    for (iter = vector.begin() ; iter != vector.end() ; iter++)
+        (iter)->getInfo( output );
+    
+    au::xml_close(output, name);
+    
+}
+
+template< typename K, typename V>
+void xml_iterate_map( std::ostringstream& output , std::string name , au::map< K , V >& vector )
+{
+    au::xml_open(output, name);
+    
+    //typename std::map<K, V* >::iterator iter;
+    typename au::map< K , V >::iterator iter;
+    
+    for (iter = vector.begin() ; iter != vector.end() ; iter++)
+        iter->second->getInfo( output );
+    
+    au::xml_close(output, name);
+    
+}
+
+NAMESPACE_END
 
 #endif

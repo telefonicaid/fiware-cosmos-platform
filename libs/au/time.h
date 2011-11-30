@@ -30,16 +30,20 @@
 #include "au/ErrorManager.h"        // au::ErrorManager
 #include "au/map.h"                 // au::map
 
-namespace au {
+#include "au/au_namespace.h"
 
 
-    int ellapsedSeconds(struct timeval *init_time);    
+NAMESPACE_BEGIN(au)
 
-    // String with today's timestamp
-	std::string todayString();
- 
-    // Get a string version of the time stamp
-    std::string str_time( time_t time );
-}
+
+int ellapsedSeconds(struct timeval *init_time);    
+
+// String with today's timestamp
+std::string todayString();
+
+// Get a string version of the time stamp
+std::string str_time( time_t time );
+
+NAMESPACE_END
 
 #endif

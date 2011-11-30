@@ -25,38 +25,41 @@
 #include <sstream>
 #include "au/map.h"       // au::map
 
-namespace au {
+#include "au/au_namespace.h"
+
+
+NAMESPACE_BEGIN(au)
+
+class Counter
+{
+    int c;
     
-    class Counter
-    {
-        int c;
-        
-    public:
-        
-        Counter();
-        
-        int get();
-    };
+public:
     
-    template <typename T>
-    class CounterCollection
+    Counter();
+    
+    int get();
+};
+
+template <typename T>
+class CounterCollection
+{
+    au::map<T,Counter> counters;
+    
+public:
+    
+    int getCounterFor(T t)
     {
-        au::map<T,Counter> counters;
-        
-    public:
-        
-        int getCounterFor(T t)
+        Counter *c = counters.findInMap( t );
+        if( !c )
         {
-            Counter *c = counters.findInMap( t );
-            if( !c )
-            {
-                c = new Counter();
-                counters.insertInMap( t , c);
-            }
-            return c->get();
+            c = new Counter();
+            counters.insertInMap( t , c);
         }
-    };
-    
-}
+        return c->get();
+    }
+};
+
+NAMESPACE_END
 
 #endif

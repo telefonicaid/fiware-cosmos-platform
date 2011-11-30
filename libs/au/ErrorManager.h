@@ -24,33 +24,35 @@
 #include <set>
 #include <sstream>		// std::ostringstream
 
-namespace au 
-{
+#include "au/au_namespace.h"
 
-	class ErrorManager
-	{
-		bool error;
-		std::string message;
-		
-	public:
-		
-		ErrorManager();
-		
-		void set( std::string _message );
-		
-		bool isActivated();
-		std::string getMessage(); 
-		
-        void set( ErrorManager *otherError );
-        
-        std::string str(); 
-      
-        // Get XML info for debuggin
-        void getInfo( std::ostringstream& output);
-        
-	};
-	
-}
+
+NAMESPACE_BEGIN(au)
+
+class ErrorManager
+{
+    bool error;
+    std::string message;
+    
+public:
+    
+    ErrorManager();
+    
+    void set( std::string _message );
+    
+    bool isActivated();
+    std::string getMessage(); 
+    
+    void set( ErrorManager *otherError );
+    
+    std::string str(); 
+    
+    // Get XML info for debuggin
+    void getInfo( std::ostringstream& output);
+    
+};
+
+NAMESPACE_END
 
 
 #endif

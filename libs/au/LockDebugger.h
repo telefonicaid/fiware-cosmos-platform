@@ -26,41 +26,40 @@
 #include <set>                   /* set                                      */
 #include <pthread.h>             /* pthread_mutex_t                          */
 
+#include "au/au_namespace.h"
 
-
-
-namespace au {
+NAMESPACE_BEGIN(au)
 
 class Lock;
 
-	class LockDebugger
-	{
-		pthread_mutex_t _lock;
-		
-		std::map< pthread_t , std::set< void* >* > locks;
-		
-		LockDebugger();
-		~LockDebugger();
-		
-	public:
-		
-		pthread_key_t key_title;	// A title for each thread
-		
-		static void setThreadTitle( std::string );
-		
-		void add_lock( void* new_lock );
-		void remove_lock(  void* new_lock );
-		
-		static LockDebugger* shared();
-		
-	private:
-		
-		std::string _getTitle();
-		std::set<void*> * _getLocksVector();	
-		bool _cross_blocking( void* new_lock );
-		
+class LockDebugger
+{
+    pthread_mutex_t _lock;
+    
+    std::map< pthread_t , std::set< void* >* > locks;
+    
+    LockDebugger();
+    ~LockDebugger();
+    
+public:
+    
+    pthread_key_t key_title;	// A title for each thread
+    
+    static void setThreadTitle( std::string );
+    
+    void add_lock( void* new_lock );
+    void remove_lock(  void* new_lock );
+    
+    static LockDebugger* shared();
+    
+private:
+    
+    std::string _getTitle();
+    std::set<void*> * _getLocksVector();	
+    bool _cross_blocking( void* new_lock );
+	
+};
 
-	};
-}
+NAMESPACE_END
 
 #endif

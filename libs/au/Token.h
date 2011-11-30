@@ -23,31 +23,33 @@
 
 #include <pthread.h>             /* pthread_mutex_t                          */
 
-namespace au
+#include "au/au_namespace.h"
+
+
+NAMESPACE_BEGIN(au)
+
+class Token
 {
-
-	class Token
-	{
-        const char * name;              // Name of the token
-
-		pthread_mutex_t _lock;			// Mutex to protect this tocken
-		pthread_cond_t _block;          // Condition to block threads that call stop
-        
-	 public:
-	  
-		Token( const char * name );
-		~Token();
-	  
-    private:
-
-        // It is only possible to retain teh token with the class TokenTaker
-        friend class TokenTaker;
-        
-		void retain();
-		void release();
-	  
-	};
+    const char * name;              // Name of the token
     
+    pthread_mutex_t _lock;			// Mutex to protect this tocken
+    pthread_cond_t _block;          // Condition to block threads that call stop
     
-}
+public:
+    
+    Token( const char * name );
+    ~Token();
+    
+private:
+    
+    // It is only possible to retain teh token with the class TokenTaker
+    friend class TokenTaker;
+    
+    void retain();
+    void release();
+    
+};
+
+NAMESPACE_END
+
 #endif

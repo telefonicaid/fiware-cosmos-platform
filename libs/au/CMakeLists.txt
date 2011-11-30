@@ -1,4 +1,6 @@
 SET (HEADERS
+au_namespace.h
+
 utils.h
 status.h
 Descriptors.h

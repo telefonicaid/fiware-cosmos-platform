@@ -28,55 +28,58 @@
 #include <set>          // std::set
 #include "logMsg/logMsg.h"		// LM_M()
 
-namespace au {
+#include "au/au_namespace.h"
 
-	/**
-	 CLass to use list structures of <class*> with additional function for easy manipulation
-	 */
-	
-	template <class V>
-	class set: public std::set<V*>
-	{
-	public:
 
-		/*
-         Remove all the elements in the set, deleting each one of them
-         Please, use clear if you just want to clear the set ( without deleting objects )
-         */
+NAMESPACE_BEGIN(au)
+
+/**
+ CLass to use list structures of <class*> with additional function for easy manipulation
+ */
+
+template <class V>
+class set: public std::set<V*>
+{
+public:
+    
+    /*
+     Remove all the elements in the set, deleting each one of them
+     Please, use clear if you just want to clear the set ( without deleting objects )
+     */
+    
+    void clearSet()
+    {
+        typename std::set<V* >::iterator iter;
         
-		void clearSet()
-		{
-			typename std::set<V* >::iterator iter;
-			
-			for (iter =  std::set<V*>::begin() ; iter != std::set<V*>::end() ; iter++)
-			{
-				delete *iter;
-			}
-			std::set<V*>::clear();
-		}
-        
-        /*
-         Extract a partircular element from the set.
-         Return value: The inptu value, if it was in the set, NULL otherwise
-        */
-        
-        V* extractFromSet( V* v )
+        for (iter =  std::set<V*>::begin() ; iter != std::set<V*>::end() ; iter++)
         {
-            typename std::set<V*>::iterator iter = std::set<V*>::find(v);
-            
-            if( iter == std::set<V*>::end() )
-                return NULL;
-            else
-            {
-                // Remove from the set
-                std::set<V*>::erase( v );
-                return v;
-            }
-            
-        }	
+            delete *iter;
+        }
+        std::set<V*>::clear();
+    }
+    
+    /*
+     Extract a partircular element from the set.
+     Return value: The inptu value, if it was in the set, NULL otherwise
+     */
+    
+    V* extractFromSet( V* v )
+    {
+        typename std::set<V*>::iterator iter = std::set<V*>::find(v);
         
-	};	
-  
-}
+        if( iter == std::set<V*>::end() )
+            return NULL;
+        else
+        {
+            // Remove from the set
+            std::set<V*>::erase( v );
+            return v;
+        }
+        
+    }	
+    
+};	
+
+NAMESPACE_END
 
 #endif

@@ -13,7 +13,7 @@
 #define SAMSON_CONTROLLER_DEFAULT_PORT		1234
 #define SAMSON_WORKER_DEFAULT_PORT			1235
 
-namespace au {
+NAMESPACE_BEGIN(au)
     class ErrorManager;
 }
 

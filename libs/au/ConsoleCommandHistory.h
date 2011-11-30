@@ -4,33 +4,36 @@
 #include <vector>
 #include <string>
 
-namespace au {
+#include "au/au_namespace.h"
+
+NAMESPACE_BEGIN(au)
+
+class ConsoleCommand;
+
+class ConsoleCommandHistory
+{
+    std::vector<ConsoleCommand*> commands;
+    size_t pos;
     
-    class ConsoleCommand;
+    std::string file_name;
     
-    class ConsoleCommandHistory
-    {
-        std::vector<ConsoleCommand*> commands;
-        size_t pos;
-        
-        std::string file_name;
-        
-    public:
-        
-        ConsoleCommandHistory();
-        ~ConsoleCommandHistory();
-        
-        ConsoleCommand* current();
-        
-        
-        void recover_history( );
-        void save_history();
-        
-        void move_up();
-        void move_down();
-        void new_command();
-        
-    };
-}
+public:
+    
+    ConsoleCommandHistory();
+    ~ConsoleCommandHistory();
+    
+    ConsoleCommand* current();
+    
+    
+    void recover_history( );
+    void save_history();
+    
+    void move_up();
+    void move_down();
+    void new_command();
+    
+};
+
+NAMESPACE_END
 
 #endif

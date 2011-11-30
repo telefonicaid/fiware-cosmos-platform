@@ -6,72 +6,76 @@
 #include "au/string.h"
 #include "au/ConsoleCode.h"
 
-namespace au {
-    
-    
-    class Sequence
-    {
-        std::string sequence;
-        ConsoleCode code;
-        
-    public:
+#include "au/au_namespace.h"
 
-        Sequence(char c , ConsoleCode _code )
-        {
-            // Save sequence
-            sequence = au::str("%c",c);
-            code = _code;
-        }
-        
-        Sequence(char c , char c2, ConsoleCode _code )
-        {
-            // Save sequence
-            sequence = au::str("%c%c",c,c2);
-            code = _code;
-        }
-        
-        Sequence( const char* seq , ConsoleCode _code )
-        {
-            // Save sequence
-            sequence = seq;
-            code = _code;
-        }
-        
-        ConsoleCode getCode( const char* s , int len )
-        {
-            if( (int) sequence.length() < len )
-                return unknown;
-            
-            for (int i =0;i<len;i++)
-                if ( sequence[i] != s[i] )
-                    return unknown;
-            
-            if( (int) sequence.length() > len )
-                return unfinished;
-            return code;
-        }
-        
-    };
+
+NAMESPACE_BEGIN(au)
+
+
+class Sequence
+{
+    std::string sequence;
+    ConsoleCode code;
     
+public:
     
-    class ConsoleEscapeSequence
+    Sequence(char c , ConsoleCode _code )
     {
-        std::vector<Sequence*> sequences; // Supported sequences
+        // Save sequence
+        sequence = au::str("%c",c);
+        code = _code;
+    }
+    
+    Sequence(char c , char c2, ConsoleCode _code )
+    {
+        // Save sequence
+        sequence = au::str("%c%c",c,c2);
+        code = _code;
+    }
+    
+    Sequence( const char* seq , ConsoleCode _code )
+    {
+        // Save sequence
+        sequence = seq;
+        code = _code;
+    }
+    
+    ConsoleCode getCode( const char* s , int len )
+    {
+        if( (int) sequence.length() < len )
+            return unknown;
         
-        char sequence[128];
-        int pos;
+        for (int i =0;i<len;i++)
+            if ( sequence[i] != s[i] )
+                return unknown;
         
-    public:
-        
-        ConsoleEscapeSequence();
-        
-        void init();
-        void add( char c );
-        
-        ConsoleCode getCode();
-        std::string description();
-        
-    };
-}
+        if( (int) sequence.length() > len )
+            return unfinished;
+        return code;
+    }
+    
+};
+
+
+class ConsoleEscapeSequence
+{
+    std::vector<Sequence*> sequences; // Supported sequences
+    
+    char sequence[128];
+    int pos;
+    
+public:
+    
+    ConsoleEscapeSequence();
+    
+    void init();
+    void add( char c );
+    
+    ConsoleCode getCode();
+    std::string description();
+    
+};
+
+NAMESPACE_END
 
 #endif

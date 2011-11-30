@@ -24,33 +24,34 @@
 
 #include <pthread.h>             /* pthread_mutex_t                          */
 
-namespace au
-{
-	
-    class Token;
-    
-    class TokenTaker
-    {
-        const char* name;
-        Token* token;
-        
-    public:
-        
-        TokenTaker( Token* _token );
-        TokenTaker( Token* _token, const char* name );
-        ~TokenTaker();
+#include "au/au_namespace.h"
 
-        void stop(  );
-        //void stop( int time_out );
-        
-        void wakeUp();
-        void wakeUpAll();
-        
-        
-        
-    };
+
+NAMESPACE_BEGIN(au)
+
+class Token;
+
+class TokenTaker
+{
+    const char* name;
+    Token* token;
+    
+public:
+    
+    TokenTaker( Token* _token );
+    TokenTaker( Token* _token, const char* name );
+    ~TokenTaker();
+    
+    void stop(  );
+    //void stop( int time_out );
+    
+    void wakeUp();
+    void wakeUpAll();
     
     
-}
+    
+};
+
+NAMESPACE_END
 
 #endif

@@ -29,7 +29,7 @@
 #include "engine/Object.h"      // engine::EngineNotification
 #include "engine/ObjectsManager.h"          // engine::ObjectsManager
 
-namespace au {
+NAMESPACE_BEGIN(au)
     class Error;
     class Token;
 }

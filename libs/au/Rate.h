@@ -29,145 +29,148 @@
 
 #include "au/xml.h"
 
-namespace au
+#include "au/au_namespace.h"
+
+
+NAMESPACE_BEGIN(au)
+
+
+/**
+ RateValue is a single sample when monitoring a particular rate in bytes/sec
+ */
+typedef struct
 {
+    time_t time;
+    size_t value;
+} RateValue;
 
-    /**
-     RateValue is a single sample when monitoring a particular rate in bytes/sec
-     */
-    typedef struct
+/**
+ RateItem: Collection of RateValue's to compute a particular rate
+ */
+
+class RateItem
+{
+    std::list<RateValue> values;        // List of values for the last minute
+    int max_time;                       // Maximum time to accumulate samples
+    
+    size_t total_size;                  // total size inside the "buffer"
+    
+public:
+    
+    RateItem( int _max_time );
+    
+    // Add a new sample
+    void push( size_t value );
+    
+    // Review old samples
+    void review();
+    
+    // Get information about the rate
+    int getNumOperation();
+    size_t getRate( );
+    size_t getTotalSize( );
+    
+};
+
+/*
+ Complete class to keep control of all the rate in a particular system
+ It keeps all the samples of the last minute and the last hour
+ */
+
+class Rate
+{
+    
+    RateItem last_minute;
+    RateItem last_hour;
+    
+public:
+    
+    Rate() : last_minute(60) , last_hour(3600)
     {
-        time_t time;
-        size_t value;
-    } RateValue;
-
-    /**
-     RateItem: Collection of RateValue's to compute a particular rate
-     */
+    }
     
-    class RateItem
+    // Puch a new value into the rate-system
+    void push( size_t value );
+    
+    // Get a string describing the rate
+    std::string str();
+    
+    // Get the last_minute rate
+    size_t getLastMinuteRate();
+    
+};
+
+
+/**
+ Simplifier version of the Rate for only the last minute
+ */
+
+class SimpleRate
+{
+    RateItem last_minute;
+    size_t total_size;
+    
+public:
+    
+    // Constructor
+    SimpleRate();
+    
+    // Puch a new value into the rate-system
+    void push( size_t value );
+    
+    // Get the last_minute rate
+    size_t getLastMinuteRate();
+    
+    // Get some information in xml format
+    void getInfo( std::ostringstream &output );
+    
+};
+
+
+// Simple Rate collection
+
+class SimpleRateCollection
+{
+    
+    std::string concept;
+    
+    int num_operations;
+    size_t size;
+    size_t time;
+    
+public:
+    
+    SimpleRateCollection( std::string _concept )
     {
-        std::list<RateValue> values;        // List of values for the last minute
-        int max_time;                       // Maximum time to accumulate samples
-
-        size_t total_size;                  // total size inside the "buffer"
-        
-    public:
-        
-        RateItem( int _max_time );
-        
-        // Add a new sample
-        void push( size_t value );
-
-        // Review old samples
-        void review();
-
-        // Get information about the rate
-        int getNumOperation();
-        size_t getRate( );
-        size_t getTotalSize( );
-        
-    };
-
-    /*
-     Complete class to keep control of all the rate in a particular system
-     It keeps all the samples of the last minute and the last hour
-     */
+        concept = _concept;
+        num_operations = 0 ;
+        size = 0;
+        time = 0;
+    }
     
-    class Rate
+    void push( size_t _size , int _time )
     {
-        
-        RateItem last_minute;
-        RateItem last_hour;
-                
-    public:
-        
-        Rate() : last_minute(60) , last_hour(3600)
-        {
-        }
-        
-        // Puch a new value into the rate-system
-        void push( size_t value );
-        
-        // Get a string describing the rate
-        std::string str();
-
-        // Get the last_minute rate
-        size_t getLastMinuteRate();
-        
-    };
+        num_operations++;
+        size += _size;
+        time += _time;
+    }
     
-    
-    /**
-     Simplifier version of the Rate for only the last minute
-     */
-    
-    class SimpleRate
+    void getInfo( std::ostringstream &output )
     {
-        RateItem last_minute;
-        size_t total_size;
+        au::xml_open(output, "simple_rate_collection");
         
-    public:
+        au::xml_simple(output , "concept" , concept );
         
-        // Constructor
-        SimpleRate();
+        au::xml_simple(output , "num_operations" , num_operations );
         
-        // Puch a new value into the rate-system
-        void push( size_t value );
+        au::xml_simple(output , "size" , size );
+        au::xml_simple(output , "time" , time );
         
-        // Get the last_minute rate
-        size_t getLastMinuteRate();
-        
-        // Get some information in xml format
-        void getInfo( std::ostringstream &output );
-        
-    };
+        au::xml_close(output, "simple_rate_collection");
+    }
     
-    
-    // Simple Rate collection
-    
-    class SimpleRateCollection
-    {
-        
-        std::string concept;
-        
-        int num_operations;
-        size_t size;
-        size_t time;
-        
-    public:
-        
-        SimpleRateCollection( std::string _concept )
-        {
-            concept = _concept;
-            num_operations = 0 ;
-            size = 0;
-            time = 0;
-        }
-        
-        void push( size_t _size , int _time )
-        {
-            num_operations++;
-            size += _size;
-            time += _time;
-        }
-        
-        void getInfo( std::ostringstream &output )
-        {
-            au::xml_open(output, "simple_rate_collection");
-            
-            au::xml_simple(output , "concept" , concept );
-            
-            au::xml_simple(output , "num_operations" , num_operations );
+};
 
-            au::xml_simple(output , "size" , size );
-            au::xml_simple(output , "time" , time );
-            
-            au::xml_close(output, "simple_rate_collection");
-        }
-        
-    };
-    
-    
-}
+NAMESPACE_END
+
 #endif

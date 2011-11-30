@@ -10,11 +10,11 @@
 #include "au/Token.h"
 
 namespace au {
-
+    
     class Console;
     class ConsoleAutoComplete;
     class ConsoleCommandHistory;
-
+    
     class Console
     {
         ConsoleCommandHistory *command_history;
@@ -28,6 +28,8 @@ namespace au {
         std::list< std::string > pending_messages;
         au::Token token_pending_messages;
          
+        int counter; // Used only for testing
+        
     public:
         
         Console();

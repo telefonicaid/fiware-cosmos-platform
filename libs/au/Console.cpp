@@ -28,6 +28,7 @@ namespace au {
     Console::Console() : token_pending_messages("token_pending_messages")
     {
         command_history = new ConsoleCommandHistory();
+        counter = 0;
     }
     
     Console::~Console()
@@ -63,16 +64,22 @@ namespace au {
         int _pos = command_history->current()->getPos();
         
         clear_line();
+        //printf("[%d]",counter); // debuggin
+        
         printf("%s %s", getPrompt().c_str() , _command.c_str());
         
         if( _pos != (int)_command.length() )
         {
             printf("\r");
             
+            //printf("[%d]",counter); // debuggin
+
             printf("%s " ,  getPrompt().c_str() );
             for (int i = 0 ; i < _pos ; i++ )
                 printf("%c",_command[i]);
         }
+        
+        counter++;
         
         fflush(stdout);
         // At the moment we are not considering pos_command
@@ -255,7 +262,6 @@ namespace au {
         bool escaping = false;   // Fag to indicate if we are inside a scape sequence...
         
         quit_console = false;
-        au::Cronometer cronometer;
         while( !quit_console )
         {
             
@@ -263,13 +269,6 @@ namespace au {
             {
                 // Review background messages
                 process_background();
-                
-                if( cronometer.diffTimeInSeconds() > 1 )
-                {
-                    cronometer.reset();
-                    print_command();  // Refresh prompt
-                }
-                
                 usleep(1000);
             }
             

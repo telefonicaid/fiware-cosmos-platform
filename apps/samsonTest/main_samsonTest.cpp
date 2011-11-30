@@ -66,6 +66,8 @@ int                   logFd  = -1;
 */
 int main(int argC, const char *argV[])
 {
+    
+    
 	paConfig("builtin prefix",                (void*) "SS_WORKER_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");

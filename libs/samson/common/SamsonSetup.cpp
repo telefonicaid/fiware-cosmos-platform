@@ -263,16 +263,20 @@ extern char  samsonWorking[1024]
         char *env_samson_home = getenv("SAMSON_HOME");
         
         if ( samson_working == "" )
+		{
             if( env_samson_working )
                 samson_working = env_samson_working;
             else
                 samson_working = SAMSON_WORKING_DEFAULT;
+		}
     
         if ( samson_home == "" )
+		{
             if( env_samson_home )
                 samson_home = env_samson_home;
             else
                 samson_home =  SAMSON_HOME_DEFAULT;
+		}
         
         //Basic directories
         _samson_home = cannonical_path( samson_home );

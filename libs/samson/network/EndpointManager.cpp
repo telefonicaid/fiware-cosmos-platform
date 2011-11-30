@@ -617,7 +617,7 @@ Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, int _id, int* ixP)
 	}
 
     // andreu: Converted to a trace ( not a warning anymore )
-    // Not a warning since a loopup is perform averytime and unhelloed connection send a hellp to make sure we do not duplicate...
+    // Not a warning since a lookup is perform averytime and unhelloed connection send a hellp to make sure we do not duplicate...
 
 	if (ixP != NULL)
 	{
@@ -647,6 +647,23 @@ Endpoint2* EndpointManager::lookup(Endpoint2::Type typ, const char* host)
 
 		if (hostMgr->match(endpoint[ix]->hostGet(), host) == true)
 			return endpoint[ix];
+	}
+
+	LM_W(("Cannot find endpoint of type '%d' in host '%s' - might be that the host is a long name, including domain ...", typ, host));
+
+	char* dot = (char*) strchr(host, '.');
+
+	if (dot != NULL)
+	{
+		LM_M(("Yes!  A dot WAS found in the hostname - I remove the domain from the hostname and I make a recursive call !"));
+		if (dot == host)
+			LM_W(("Ehhhh !!!!   hostname starts with a dot!  Sorry, can't do much about that, can I ?"));
+		else
+		{
+			*dot = 0;
+			LM_M(("recursive lookup call, new hostname: '%s'", host));
+			return lookup(typ, host);
+		}
 	}
 
 	return NULL;

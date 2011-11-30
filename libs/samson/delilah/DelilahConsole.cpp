@@ -48,7 +48,6 @@
 namespace samson
 {	
     
-    
     const char* general_commands[] =  
     { "ls_operations", "ls_datas", "reload", "set", "unset", "ls_local" , "rm_local" , 
         "ls_operation_rates", "info" , "ps" , "ls_modules", "engine_show" , "ps_network", "trace", NULL };                                           
@@ -56,7 +55,7 @@ namespace samson
     const char* batch_commands[] = { "ls" , "add" , "rm" , "mv" , "clear" , "clear_jobs" , "kill",
         "upload" , "download", "ps_jobs" , "ps_tasks", NULL };
     
-    const char* stream_commands[] = { "run_stream_operation", "push" , "pop", "add_stream_operation" , "rm_stream_operation" ,"set_stream_operation_property" , "rm_queue" , "cp_queue", "set_queue_property", "ls_queues",  "ps_stream", 
+    const char* stream_commands[] = { "run_stream_operation", "init_stream" , "push" , "pop", "add_stream_operation" , "rm_stream_operation" ,"set_stream_operation_property" , "rm_queue" , "cp_queue", "set_queue_property", "ls_queues",  "ps_stream", 
         "ls_stream_operations" , "ls_block_manager" , NULL};
     
     const char* general_description = "Samson is a distributed platform to process big-data unbounded streams of data.\nIt has two working modes: batch & stream.";
@@ -243,6 +242,8 @@ namespace samson
         },
         
         { "engine_show"             , "Show a status information of the engine (lower level system in SAMSON) in all workers and controller"},
+
+        { "init_stream"    ,   "Usage: run_stream_operation <op_name>\n\nInit stream operations from a script"},
         
         { "run_stream_operation"    ,   "Usage: run_stream_operation <op_name> [queues...] [-clear_inputs]\n\n"
             "Run a particular operation over queues.\n"
@@ -321,8 +322,20 @@ namespace samson
                 info->add( operation_names[i] );
         }
     }
+
+    void autoCompleteOperations( au::ConsoleAutoComplete* info , std::string type )
+    {
+        if( global_delilah )
+        {
+            std::vector<std::string> operation_names = global_delilah->getOperationNames( type );
+            
+            for ( size_t i = 0 ;  i < operation_names.size() ; i++)
+                info->add( operation_names[i] );
+        }
+    }
     
-    void autoCompleteQueues( au::ConsoleAutoComplete* info  )
+    
+    void autoCompleteQueues( au::ConsoleAutoComplete* info )
     {
         if( global_delilah) 
         {
@@ -335,7 +348,7 @@ namespace samson
 
     void autoCompleteDataSets( au::ConsoleAutoComplete* info  )
     {
-        if( global_delilah) 
+        if( global_delilah ) 
         {
             std::vector<std::string> queue_names = global_delilah->getDataSetsNames();
             
@@ -410,6 +423,15 @@ namespace samson
             autoCompleteOperations( info );
             return;
         }
+
+        if (info->completingSecondWord("init_stream") )
+        {
+            // Add operations
+            autoCompleteOperations( info , "script" );
+            return;
+        }
+        
+        
 
         if (info->completingSecondWord( "add_stream_operation" ) )
         {
@@ -1113,6 +1135,11 @@ namespace samson
         
 
         if( main_command == "run_stream_operation" )
+        {
+            return sendWorkerCommand( command , NULL );
+        }
+        
+        if( main_command == "init_stream" )
         {
             return sendWorkerCommand( command , NULL );
         }

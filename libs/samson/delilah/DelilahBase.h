@@ -109,6 +109,7 @@ namespace samson {
 
         // Simple queries to get a list of operations and queues
         std::vector<std::string> getOperationNames( );        
+        std::vector<std::string> getOperationNames( std::string type );        
         std::vector<std::string> getQueueNames();
         std::vector<std::string> getDataSetsNames();
 

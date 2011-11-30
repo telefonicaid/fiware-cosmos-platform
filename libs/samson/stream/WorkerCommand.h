@@ -61,8 +61,6 @@ namespace samson {
             // Command to run
             std::string command;
             
-            // Parsed version of the command
-            au::CommandLine cmd;
             
             // Environment properties
             Environment enviroment;
@@ -85,6 +83,7 @@ namespace samson {
             void setStreamManager( StreamManager * _streamManager );
             bool isFinished();
 
+            void runCommand( std::string command , au::ErrorManager* error );
             void run();
 
             void notify( engine::Notification* notification );

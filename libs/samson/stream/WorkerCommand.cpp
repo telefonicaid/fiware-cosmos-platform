@@ -44,14 +44,6 @@ namespace samson {
             // Extract command for simplicity
             command = originalWorkerCommand->command();
             
-            // Parse command
-            cmd.set_flag_boolean("clear_inputs");
-            cmd.set_flag_boolean("f");
-            cmd.set_flag_boolean("new");
-            cmd.set_flag_boolean("remove");
-            
-            cmd.parse( command );
-            
             // Original value for the flags
             pending_to_be_executed =  true;
             finished = false;
@@ -71,9 +63,6 @@ namespace samson {
             // Get directly the command to run
             command = _command;
             
-            // Parse command
-            cmd.set_flag_boolean("clear_inputs");
-            cmd.parse( command );
             
             // Original value for the flag
             pending_to_be_executed =  true;
@@ -100,8 +89,206 @@ namespace samson {
             return finished;
         }
         
+        void WorkerCommand::runCommand( std::string command , au::ErrorManager* error )
+        {
+            // Parse command
+            au::CommandLine cmd;
+            cmd.set_flag_boolean("clear_inputs");
+            cmd.set_flag_boolean("f");
+            cmd.set_flag_boolean("new");
+            cmd.set_flag_boolean("remove");
+            cmd.parse( command );
+            
+            if ( cmd.get_num_arguments() == 0 )
+            {
+                error->set("No command provided");
+                return;
+            }
+            
+            std::string main_command = cmd.get_argument(0);
+
+            if( main_command == "init_stream" )
+            {
+                if( cmd.get_num_arguments() < 2 )
+                    error->set( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
+                
+                std::string operation_name = cmd.get_argument(1);
+                
+                Operation *op = ModulesManager::shared()->getOperation(  operation_name );
+                if( !op )
+                {
+                    error->set( au::str("Unknown operation %s" , operation_name.c_str() ) ); 
+                    return;
+                }
+                
+                if (op->getType() != Operation::script )
+                {
+                    error->set( 
+                               au::str("Non valid operation %d. Only script operations supported for init_stream command" 
+                                       , operation_name.c_str()  ) ); 
+                    return;
+                }
+             
+                
+                // Read code, execute it recursivelly
+                au::ErrorManager sub_error;
+                for ( size_t i = 0 ; i < op->code.size() ; i++ )
+                {
+                    std::string sub_command = op->code[i];
+
+                    runCommand(sub_command, &sub_error);
+                    
+                    if( sub_error.isActivated() )
+                    {
+                        error->set( au::str("[%s:%d]%s" , operation_name.c_str() , i , sub_error.getMessage().c_str() ) );
+                        return;
+                    }
+                }
+                
+                return;
+                
+                
+            }
+            
+            if( main_command == "remove_all_stream" )
+            {
+                streamManager->reset();
+                return;
+            }
+            
+            if( main_command == "reload_modules" )
+            {
+                // Spetial operation to reload modules
+                ModulesManager::shared()->reloadModules();
+                return;
+            }
+            
+            if ( cmd.get_argument(0) == "rm_queue" )
+            {
+                if( cmd.get_num_arguments() < 2 )
+                    error->set( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
+                else
+                {
+                    for ( int i = 1 ; i < cmd.get_num_arguments() ; i++ )
+                    {
+                        std::string queue_name = cmd.get_argument(i);
+                        streamManager->remove_queue(  queue_name );
+                    }
+                }
+                return;
+            }
+            
+            if ( cmd.get_argument(0) == "cp_queue" )
+            {
+                if( cmd.get_num_arguments() < 3 )
+                    error->set( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
+                else
+                {
+                    std::string from_queue_name = cmd.get_argument(1);
+                    std::string to_queue_name = cmd.get_argument(2);
+                    streamManager->cp_queue(  from_queue_name , to_queue_name );
+                }
+                
+                return;
+            }
+            
+            if ( cmd.get_argument(0) == "set_queue_property" )
+            {
+                if( cmd.get_num_arguments() < 4 )
+                    error->set( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
+                else
+                {
+                    std::string queue_name = cmd.get_argument(1);
+                    std::string property = cmd.get_argument(2);
+                    std::string value = cmd.get_argument(3);
+                    
+                    Queue *queue = streamManager->getQueue( queue_name );
+                    queue->setProperty( property , value );
+                }
+                return;
+            }            
+            
+            if( main_command == "add_stream_operation" )
+            {
+                
+                au::ErrorManager tmp_error;
+                StreamOperation* stream_operation = StreamOperation::newStreamOperation(streamManager,  command , tmp_error );
+                
+                if( !stream_operation )
+                    error->set( tmp_error.getMessage() );
+                else
+                    streamManager->add( stream_operation );
+                
+                return;
+            }
+            
+            if( main_command == "rm_stream_operation" )
+            {
+                // Remove a particular stream operation
+                
+                if( cmd.get_num_arguments() < 2 )
+                {
+                    error->set( "Usage: rm_stream_operation name [-f] " );
+                    return;
+                }
+                
+                std::string name            = cmd.get_argument( 1 );
+                bool force = cmd.get_flag_bool("f");
+                
+                // Check it the queue already exists
+                StreamOperation * operation = streamManager->stream_operations.extractFromMap( name );
+                
+                // Check if queue exist
+                if( !operation  )
+                {
+                    if( !force )
+                        error->set( au::str("StreamOperation %s does not exist" , name.c_str()  ) );
+                }
+                else
+                    delete operation;
+                return;
+                
+            }
+            
+            if( main_command == "set_stream_operation_property" )
+            {
+                if( cmd.get_num_arguments() < 4 )
+                {
+                    error->set( "Usage: set_stream_operation_property name property value " );
+                    return;
+                }
+                
+                std::string name            = cmd.get_argument( 1 );
+                std::string property        = cmd.get_argument( 2 );
+                std::string value           = cmd.get_argument( 3 );
+                
+                // Check it the queue already exists
+                StreamOperation * operation = streamManager->stream_operations.findInMap( name );
+                
+                // Check if queue exist
+                if( !operation  )
+                    error->set( au::str("StreamOperation %s does not exist" , name.c_str()  ) );
+                else
+                    operation->environment.set( property , value );
+                
+                return;
+            }  
+
+            error->set( au::str("Unkown command %s" , main_command.c_str()  ) );
+
+        }
+
+        
         void WorkerCommand::run()
         {
+            // Parse command
+            au::CommandLine cmd;
+            cmd.set_flag_boolean("clear_inputs");
+            cmd.set_flag_boolean("f");
+            cmd.set_flag_boolean("new");
+            cmd.set_flag_boolean("remove");
+            cmd.parse( command );
+
             
             if( !pending_to_be_executed )
                 return;
@@ -124,160 +311,6 @@ namespace samson {
                 
                 return;
             }
-            
-            if( main_command == "remove_all_stream" )
-            {
-                streamManager->reset();
-                finishWorkerTask();
-                return;
-            }
-            
-            if( main_command == "reload_modules" )
-            {
-                // Spetial operation to reload modules
-                ModulesManager::shared()->reloadModules();
-                finishWorkerTask();
-                return;
-            }
-            
-            if ( cmd.get_argument(0) == "rm_queue" )
-            {
-                if( cmd.get_num_arguments() < 2 )
-                    finishWorkerTaskWithError( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
-                else
-                {
-                    for ( int i = 1 ; i < cmd.get_num_arguments() ; i++ )
-                    {
-                        std::string queue_name = cmd.get_argument(i);
-                        streamManager->remove_queue(  queue_name );
-                    }
-                    finishWorkerTask();
-                }
-                
-                return;
-            }
-            
-            if ( cmd.get_argument(0) == "cp_queue" )
-            {
-                if( cmd.get_num_arguments() < 3 )
-                    finishWorkerTaskWithError( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
-                else
-                {
-                    std::string from_queue_name = cmd.get_argument(1);
-                    std::string to_queue_name = cmd.get_argument(2);
-                    
-                    streamManager->cp_queue(  from_queue_name , to_queue_name );
-                    
-                    finishWorkerTask();
-                }
-                
-                return;
-            }
-            
-            if ( cmd.get_argument(0) == "set_queue_property" )
-            {
-                if( cmd.get_num_arguments() < 4 )
-                    finishWorkerTaskWithError( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
-                else
-                {
-                    std::string queue_name = cmd.get_argument(1);
-                    std::string property = cmd.get_argument(2);
-                    std::string value = cmd.get_argument(3);
-                    
-                    Queue *queue = streamManager->getQueue( queue_name );
-                    queue->setProperty( property , value );
-                    
-                    finishWorkerTask();
-                }
-                
-                return;
-            }            
-            
-            
-
-            if( main_command == "add_stream_operation" )
-            {
-
-                au::ErrorManager tmp_error;
-                StreamOperation* stream_operation = StreamOperation::newStreamOperation(streamManager,  command , tmp_error );
-
-                if( !stream_operation )
-                {
-                    finishWorkerTaskWithError( tmp_error.getMessage() );
-                    return;
-                }
-                
-                // Add this new stream operation
-                streamManager->add( stream_operation );
-
-                finishWorkerTask();
-                return;
-            }
-            
-            if( main_command == "rm_stream_operation" )
-            {
-                // Remove a particular stream operation
-                
-                if( cmd.get_num_arguments() < 2 )
-                {
-                    finishWorkerTaskWithError( "Usage: rm_stream_operation name [-f] " );
-                    return;
-                }
-                
-                std::string name            = cmd.get_argument( 1 );
-                bool force = cmd.get_flag_bool("f");
-                
-                // Check it the queue already exists
-                StreamOperation * operation = streamManager->stream_operations.extractFromMap( name );
-                
-                // Check if queue exist
-                if( !operation  )
-                {
-				   if( force )
-					  finishWorkerTask();
-				   else
-					  finishWorkerTaskWithError( au::str("StreamOperation %s does not exist" , name.c_str()  ) );
-				   return;
-                }
-                else
-                {
-                    delete operation;
-                    finishWorkerTask();
-                    return;
-                }
-                
-            }
-            
-            if( main_command == "set_stream_operation_property" )
-            {
-                if( cmd.get_num_arguments() < 4 )
-                {
-                    finishWorkerTaskWithError( "Usage: set_stream_operation_property name property value " );
-                    return;
-                }
-                
-                std::string name            = cmd.get_argument( 1 );
-                std::string property        = cmd.get_argument( 2 );
-                std::string value           = cmd.get_argument( 3 );
-                
-                // Check it the queue already exists
-                StreamOperation * operation = streamManager->stream_operations.findInMap( name );
-                
-                // Check if queue exist
-                if( !operation  )
-                {
-                    finishWorkerTaskWithError( au::str("StreamOperation %s does not exist" , name.c_str()  ) );
-                    return;
-                }
-                
-                // Set the environment variable
-                operation->environment.set( property , value );
-                
-                finishWorkerTask();
-                return;
-                
-
-            }            
             
             if( main_command == "connect_to_queue" )
             {
@@ -543,7 +576,14 @@ namespace samson {
                 
             }
             
-            finishWorkerTaskWithError( au::str("Unknown command %s" , main_command.c_str()  ) ); 
+            // Simple commands
+            au::ErrorManager error;
+            runCommand(command, &error);
+            
+            if( error.isActivated() )
+                finishWorkerTaskWithError( error.getMessage() ); 
+            else
+                finishWorkerTask();
             
         }
         
@@ -590,8 +630,11 @@ namespace samson {
         
         StreamOperationBase *WorkerCommand::getStreamOperation( Operation *op )
         {
+            // Parsing the global command
+            au::CommandLine cmd;
+            cmd.parse(command);
             
-            int pos_argument = 1;   // We skip the "run_stream_operation" or "run_stream_update_state" parameter
+            int pos_argument = 1;   // We skip the "run_stream_operation" parameter
             
             std::string operation_name = cmd.get_argument(pos_argument++);
 

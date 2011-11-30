@@ -1,12 +1,10 @@
 SET (SOURCES
 	main_samsonTopicMonitor.cpp
 	MainWindow.cpp
-	Plot.cpp
 )
 
 SET( HEADERS
 	 common.h
-	 Plot.h
 )
 
 SET (HEADERS_FOR_MOC

@@ -54,6 +54,13 @@ namespace samson {
         au::TokenTaker tt( &delilah_base_token  );
         return pugi::values( doc , "//controller//operation/name" );
     }
+
+    std::vector<std::string> DelilahBase::getOperationNames( std::string type  )
+    {
+        // thread protection
+        au::TokenTaker tt( &delilah_base_token  );
+        return pugi::values( doc , au::str("//controller//operation[type=\"%s\"]/name",type.c_str()) );
+    }
     
     std::vector<std::string> DelilahBase::getDataSetsNames()
     {

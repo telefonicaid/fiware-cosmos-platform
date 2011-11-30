@@ -42,10 +42,9 @@ namespace web{
 		   // Get the line in a c++ string                                                                                          
 		   std::vector<char*> words;
 
-
 		   split_in_words(line, words);
 
-		   OLM_T(251, ("words %s ", words[3]));
+		   //OLM_T(251, ("words %s ", words[3]));
 
 		   samson::system::String key;
 		   key.value = words[3];
@@ -54,6 +53,23 @@ namespace web{
 		   value.value = 1;
 
 		   writer->emit( 0 , &key , &value);
+
+
+		   if( words.size() >= 7 )
+		   {
+			  key.value = "url ";
+			  key.value.append( words[3] );
+			  key.value.append( words[6] );
+			  writer->emit( 0 , &key , &value);
+		   }
+			  
+		   if ( words.size() >= 8 )
+		   {
+			  key.value = "protocol ";
+			  key.value.append(words[7]);
+			  writer->emit(0,&key,&value);
+		   }
+
 		}
 
 		void finish( samson::KVWriter *writer )

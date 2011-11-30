@@ -155,7 +155,7 @@ int main(int argC, const char *argV[])
 	while (!networkP->ready())
 		usleep(1000);
 	std::cerr << " OK\n";
-	LM_M(("\nConnecting to SAMSOM controller %s ... OK", controller));
+	LM_M(("\nConnecting to SAMSON controller %s ... OK", controller));
 
 	std::cerr << "Connecting to all workers ...";
     std::cerr.flush();
@@ -175,11 +175,12 @@ int main(int argC, const char *argV[])
 	//
 	while (!networkP->ready(true))
     {
+		LM_M(("Awaiting ready II"));
 		usleep(1000);
     }
     
 	std::cout << " OK\n";
-	LM_M(("\nConnecting to all workers ... OK"));
+	LM_M(("Connected to controller and all workers"));
 
 
 	// Create a DelilahControler once network is ready
@@ -282,13 +283,10 @@ int main(int argC, const char *argV[])
 		
 		fclose(f);
 		
-        
 		LM_M(("samsonLocal exit correctly"));
 		
 		exit(0);
-	}    
-    
+	}
+
     delilahConsole->run();
-    
-    
 }

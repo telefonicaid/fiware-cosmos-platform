@@ -1,4 +1,4 @@
-SET( MODULE_NAME page_range )
+SET( MODULE_NAME page_rank )
 
 cmake_minimum_required(VERSION 2.6)
 

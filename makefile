@@ -44,7 +44,8 @@ MODULES=system \
 	page_rank \
 	wiki \
 	simple_mobility \
-	web
+	web \
+	twitter
 
 default: release modules man
 

@@ -17,8 +17,9 @@ endif
 
 DISTRO=$(shell lsb_release -is)
 
-default: release modules man
+MODULES = system txt txt_md example tienda cdr plot mobility mob mob2 passive_location graph sna snalight osn url urlbenchmark sort terasort testtime testcomparefunctions hit gg page_rank wiki simple_mobility web
 
+default: release modules man
 
 # ------------------------------------------------
 # Prepare CMAKE
@@ -223,24 +224,11 @@ rpm: release modules man
 	rm -rf package/rpm
 	scripts/samsonRpm $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	scripts/samsonModuleDependencies
-	cd modules/cdr;                   ../../scripts/samsonModuleRpm cdr $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/example;               ../../scripts/samsonModuleRpm example $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/graph;                 ../../scripts/samsonModuleRpm graph $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/osn;                   ../../scripts/samsonModuleRpm osn $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/sna;                   ../../scripts/samsonModuleRpm sna $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/sort;                  ../../scripts/samsonModuleRpm sort $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/system;                ../../scripts/samsonModuleRpm system $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/terasort;              ../../scripts/samsonModuleRpm terasort $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/testcomparefunctions; ../../scripts/samsonModuleRpm testcomparefunctions $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/tienda;                ../../scripts/samsonModuleRpm tienda $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/txt;                   ../../scripts/samsonModuleRpm txt $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/url;                   ../../scripts/samsonModuleRpm url $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/urlbenchmark;         ../../scripts/samsonModuleRpm urlbenchmark $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	# cd modules/sna_light;             ../../scripts/samsonModuleRpm sna_light $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/mob2;                 ../../scripts/samsonModuleRpm mob2 $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/passive_location;     ../../scripts/samsonModuleRpm passive_location $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/mobility;     ../../scripts/samsonModuleRpm mobility $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/txt_md;               ../../scripts/samsonModuleRpm txt_md $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	for module in $(MODULES); do \
+		cd modules/$$module; \
+		../../scripts/samsonModuleRpm $$module $(SAMSON_VERSION) $(SAMSON_RELEASE); \
+		cd ../..; \
+	done
 
 publish_rpm: rpm
 	rsync  -v package/rpm/*.rpm repo@samson09.hi.inet:/var/repository/redhat/6/x86_64
@@ -255,40 +243,11 @@ deb: release modules man
 	scripts/samsonDebDev $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	scripts/samsonDebDocs $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	scripts/samsonModuleDependencies
-	cd modules/cdr;                   ../../scripts/samsonModuleDeb cdr $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/example;               ../../scripts/samsonModuleDeb example $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/graph;                 ../../scripts/samsonModuleDeb graph $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/osn;                   ../../scripts/samsonModuleDeb osn $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/sna;                   ../../scripts/samsonModuleDeb sna $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/sort;                  ../../scripts/samsonModuleDeb sort $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/system;                ../../scripts/samsonModuleDeb system $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/terasort;              ../../scripts/samsonModuleDeb terasort $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/testcomparefunctions; ../../scripts/samsonModuleDeb testcomparefunctions $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/tienda;                ../../scripts/samsonModuleDeb tienda $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/txt;                   ../../scripts/samsonModuleDeb txt $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/url;                   ../../scripts/samsonModuleDeb url $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/urlbenchmark;         ../../scripts/samsonModuleDeb urlbenchmark $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/mob2;                 ../../scripts/samsonModuleDeb mob2 $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/passive_location;     ../../scripts/samsonModuleDeb passive_location $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/mobility;     ../../scripts/samsonModuleDeb mobility $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/txt_md;               ../../scripts/samsonModuleDeb txt_md $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/cdr;                   ../../scripts/samsonModuleDebDev cdr $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/example;               ../../scripts/samsonModuleDebDev example $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/graph;                 ../../scripts/samsonModuleDebDev graph $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/osn;                   ../../scripts/samsonModuleDebDev osn $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/sna;                   ../../scripts/samsonModuleDebDev sna $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/sort;                  ../../scripts/samsonModuleDebDev sort $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/system;                ../../scripts/samsonModuleDebDev system $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/terasort;              ../../scripts/samsonModuleDebDev terasort $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/testcomparefunctions; ../../scripts/samsonModuleDebDev testcomparefunctions $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/tienda;                ../../scripts/samsonModuleDebDev tienda $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/txt;                   ../../scripts/samsonModuleDebDev txt $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/url;                   ../../scripts/samsonModuleDebDev url $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/urlbenchmark;         ../../scripts/samsonModuleDebDev urlbenchmark $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/mob2;                 ../../scripts/samsonModuleDebDev mob2 $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/passive_location;     ../../scripts/samsonModuleDebDev passive_location $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/mobility;     ../../scripts/samsonModuleDebDev mobility $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	cd modules/txt_md;               ../../scripts/samsonModuleDebDev txt_md $(SAMSON_VERSION) $(SAMSON_RELEASE)
+	for module in $(MODULES); do \
+		cd modules/$$module; \
+		../../scripts/samsonModuleDeb $$module $(SAMSON_VERSION) $(SAMSON_RELEASE); \
+		cd ../..; \
+	done
 
 publish_deb: deb
 	ssh repo@samson09 mkdir -p /tmp/samson-deb-$(SAMSON_RELEASE)/

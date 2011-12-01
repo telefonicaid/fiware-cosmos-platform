@@ -1,124 +1,28 @@
 ifndef SAMSON_HOME
 SAMSON_HOME=/opt/samson
 endif
+MODULES = system txt txt_md example tienda cdr plot mobility mob mob2 passive_location graph sna snalight osn url urlbenchmark sort terasort testtime testcomparefunctions hit gg page_rank wiki simple_mobility web
+
+.PHONY: all release reset clean
 all:
-	SAMSON_HOME=$(SAMSON_HOME) make -C system
-	SAMSON_HOME=$(SAMSON_HOME) make -C txt
-	SAMSON_HOME=$(SAMSON_HOME) make -C txt_md
-	SAMSON_HOME=$(SAMSON_HOME) make -C example
-	SAMSON_HOME=$(SAMSON_HOME) make -C tienda
-	SAMSON_HOME=$(SAMSON_HOME) make -C cdr
-	SAMSON_HOME=$(SAMSON_HOME) make -C plot
-	SAMSON_HOME=$(SAMSON_HOME) make -C mobility
-	SAMSON_HOME=$(SAMSON_HOME) make -C mob
-	SAMSON_HOME=$(SAMSON_HOME) make -C mob2
-	SAMSON_HOME=$(SAMSON_HOME) make -C passive_location
-	SAMSON_HOME=$(SAMSON_HOME) make -C graph
-	SAMSON_HOME=$(SAMSON_HOME) make -C sna
-	SAMSON_HOME=$(SAMSON_HOME) make -C snalight
-	SAMSON_HOME=$(SAMSON_HOME) make -C osn
-	SAMSON_HOME=$(SAMSON_HOME) make -C url
-	SAMSON_HOME=$(SAMSON_HOME) make -C urlbenchmark
-	SAMSON_HOME=$(SAMSON_HOME) make -C sort
-	SAMSON_HOME=$(SAMSON_HOME) make -C terasort
-	SAMSON_HOME=$(SAMSON_HOME) make -C testtime
-	SAMSON_HOME=$(SAMSON_HOME) make -C testcomparefunctions
-	SAMSON_HOME=$(SAMSON_HOME) make -C hit
-	SAMSON_HOME=$(SAMSON_HOME) make -C gg
-	SAMSON_HOME=$(SAMSON_HOME) make -C page_rank
-	SAMSON_HOME=$(SAMSON_HOME) make -C wiki
-	SAMSON_HOME=$(SAMSON_HOME) make -C simple_mobility
-	SAMSON_HOME=$(SAMSON_HOME) make -C web
+	for module in $(MODULES); do \
+	   (SAMSON_HOME=$(SAMSON_HOME) make -C $$module); \
+	done
 
-release:
-	SAMSON_HOME=$(SAMSON_HOME) make release -C system
-	SAMSON_HOME=$(SAMSON_HOME) make release -C txt
-	SAMSON_HOME=$(SAMSON_HOME) make release -C txt_md
-	SAMSON_HOME=$(SAMSON_HOME) make release -C example
-	SAMSON_HOME=$(SAMSON_HOME) make release -C tienda
-	SAMSON_HOME=$(SAMSON_HOME) make release -C cdr
-	SAMSON_HOME=$(SAMSON_HOME) make release -C plot
-	SAMSON_HOME=$(SAMSON_HOME) make release -C mobility
-	SAMSON_HOME=$(SAMSON_HOME) make release -C mob
-	SAMSON_HOME=$(SAMSON_HOME) make release -C mob2
-	SAMSON_HOME=$(SAMSON_HOME) make release -C passive_location
-	SAMSON_HOME=$(SAMSON_HOME) make release -C graph
-	SAMSON_HOME=$(SAMSON_HOME) make release -C sna
-	SAMSON_HOME=$(SAMSON_HOME) make release -C snalight
-	SAMSON_HOME=$(SAMSON_HOME) make release -C osn
-	SAMSON_HOME=$(SAMSON_HOME) make release -C url
-	SAMSON_HOME=$(SAMSON_HOME) make release -C urlbenchmark
-	SAMSON_HOME=$(SAMSON_HOME) make release -C sort
-	SAMSON_HOME=$(SAMSON_HOME) make release -C terasort
-	SAMSON_HOME=$(SAMSON_HOME) make release -C testtime
-	SAMSON_HOME=$(SAMSON_HOME) make release -C testcomparefunctions
-	SAMSON_HOME=$(SAMSON_HOME) make release -C hit
-	SAMSON_HOME=$(SAMSON_HOME) make release -C gg
-	SAMSON_HOME=$(SAMSON_HOME) make release -C page_rank
-	SAMSON_HOME=$(SAMSON_HOME) make release -C wiki
-	SAMSON_HOME=$(SAMSON_HOME) make release -C simple_mobility
-	SAMSON_HOME=$(SAMSON_HOME) make release -C web
-
-
+release: 
+	for module in $(MODULES); do \
+	   (SAMSON_HOME=$(SAMSON_HOME) make release -C $$module); \
+	done
 
 reset:
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C system
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C txt 
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C txt_md
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C example 
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C tienda 
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C cdr
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C plot
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C mobility
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C mob
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C mob2
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C passive_location
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C graph
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C sna
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C snalight 
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C osn 
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C url 
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C urlbenchmark 
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C sort
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C terasort
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C testtime
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C testcomparefunctions
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C hit
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C gg
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C page_rank
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C wiki
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C simple_mobility
-	SAMSON_HOME=$(SAMSON_HOME) make reset -C web
-
-
+	for module in $(MODULES); do \
+	   (SAMSON_HOME=$(SAMSON_HOME) make reset -C $$module); \
+	done
 
 install:
-	SAMSON_HOME=$(SAMSON_HOME) make install -C system
-	SAMSON_HOME=$(SAMSON_HOME) make install -C txt 
-	SAMSON_HOME=$(SAMSON_HOME) make install -C txt_md
-	SAMSON_HOME=$(SAMSON_HOME) make install -C example 
-	SAMSON_HOME=$(SAMSON_HOME) make install -C tienda 
-	SAMSON_HOME=$(SAMSON_HOME) make install -C cdr
-	SAMSON_HOME=$(SAMSON_HOME) make install -C mob
-	SAMSON_HOME=$(SAMSON_HOME) make install -C mob2
-	SAMSON_HOME=$(SAMSON_HOME) make install -C passive_location
-	SAMSON_HOME=$(SAMSON_HOME) make install -C graph
-	SAMSON_HOME=$(SAMSON_HOME) make install -C sna
-	SAMSON_HOME=$(SAMSON_HOME) make install -C snalight 
-	SAMSON_HOME=$(SAMSON_HOME) make install -C osn 
-	SAMSON_HOME=$(SAMSON_HOME) make install -C url 
-	SAMSON_HOME=$(SAMSON_HOME) make install -C urlbenchmark 
-	SAMSON_HOME=$(SAMSON_HOME) make install -C sort
-	SAMSON_HOME=$(SAMSON_HOME) make install -C terasort
-	SAMSON_HOME=$(SAMSON_HOME) make install -C testtime
-	SAMSON_HOME=$(SAMSON_HOME) make install -C testcomparefunctions
-	SAMSON_HOME=$(SAMSON_HOME) make install -C hit
-	SAMSON_HOME=$(SAMSON_HOME) make install -C gg
-	SAMSON_HOME=$(SAMSON_HOME) make install -C page_rank
-	SAMSON_HOME=$(SAMSON_HOME) make install -C wiki
-	SAMSON_HOME=$(SAMSON_HOME) make install -C simple_mobility
-	SAMSON_HOME=$(SAMSON_HOME) make install -C web
-
+	for module in $(MODULES); do \
+	   (SAMSON_HOME=$(SAMSON_HOME) make install -C $$module); \
+	done
 
 test:
 	SAMSON_HOME=$(SAMSON_HOME) make test -C txt

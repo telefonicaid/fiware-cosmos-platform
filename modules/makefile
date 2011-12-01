@@ -29,7 +29,8 @@ MODULES=system \
 	page_rank \
 	wiki \
 	simple_mobility \
-	web
+	web \
+	twitter
 
 .PHONY: all release reset clean
 all:

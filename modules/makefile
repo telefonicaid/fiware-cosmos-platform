@@ -1,7 +1,35 @@
 ifndef SAMSON_HOME
 SAMSON_HOME=/opt/samson
 endif
-MODULES = system txt txt_md example tienda cdr plot mobility mob mob2 passive_location graph sna snalight osn url urlbenchmark sort terasort testtime testcomparefunctions hit gg page_rank wiki simple_mobility web
+
+# List of modules that gets used to build packages. *Don't forget* to update the main makefile as well when adding a new module
+MODULES=system \
+	txt \
+	txt_md \
+	example \
+	tienda \
+	cdr \
+	plot \
+	mobility \
+	mob \
+	mob2 \
+	passive_location \
+	graph \
+	sna \
+	snalight \
+	osn \
+	url \
+	urlbenchmark \
+	sort \
+	terasort \
+	testtime \
+	testcomparefunctions \
+	hit \
+	gg \
+	page_rank \
+	wiki \
+	simple_mobility \
+	web
 
 .PHONY: all release reset clean
 all:

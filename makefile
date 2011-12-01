@@ -17,7 +17,34 @@ endif
 
 DISTRO=$(shell lsb_release -is)
 
-MODULES = system txt txt_md example tienda cdr plot mobility mob mob2 passive_location graph sna snalight osn url urlbenchmark sort terasort testtime testcomparefunctions hit gg page_rank wiki simple_mobility web
+# List of modules that gets used to build packages. *Don't forget* to update modules/makefile as well when adding a new module
+MODULES=system \
+	txt \
+	txt_md \
+	example \
+	tienda \
+	cdr \
+	plot \
+	mobility \
+	mob \
+	mob2 \
+	passive_location \
+	graph \
+	sna \
+	snalight \
+	osn \
+	url \
+	urlbenchmark \
+	sort \
+	terasort \
+	testtime \
+	testcomparefunctions \
+	hit \
+	gg \
+	page_rank \
+	wiki \
+	simple_mobility \
+	web
 
 default: release modules man
 

@@ -49,9 +49,9 @@ public:
 
 	void init( samson::KVWriter *writer )
 	{
-	    std::string arr_stopwords_en[] = {"i", "you", "he", "she", "we", "they", "not", "yes", "me", "him", "her", "them", "my", "your", "his", "us", "their", "the", "a", "an", "to", "on", "in", "of", "if", "that", "and", "or", "this", "these", "those", "with", "is", "isn't", "do", "did", "does", "am", "are"};
+	    std::string arr_stopwords_en[] = {"i", "you", "he", "she", "it", "we", "they", "not", "yes", "no", "me", "him", "her", "them", "my", "your", "his", "us", "their", "the", "a", "an", "to", "on", "in", "of", "for", "if", "that", "and", "or", "this", "these", "those", "with", "is", "isn't", "do", "did", "does", "am", "are", "i'm", "at", "was", "were"};
         std::string arr_stopwords_es[] = {"yo", "tu", "él", "ella", "nosotros", "vosotros", "ellos", "ellas", "no", "si", "sí", "mi", "ti", "se", "nos", "os", "el", "la", "los", "las", "un", "uno", "una", "a", "de", "y", "o", "que", "por", "para", "del", "en", "con", "desde", "entre", "hacia", "hasta", "para", "según", "ni", "más", "ya", "su", "muy", "lo", "le", "les", "es", "como", "esto", "esta", "estos", "este", "esto"};
-        std::string arr_stopwords_pt[] = {"de", "e", "o", "a", "os", "as", "ter", "que", "eu", "mas", "para", "da", "na", "na", "nos", "nas"};
+        std::string arr_stopwords_pt[] = {"de", "e", "o", "a", "os", "as", "ter", "que", "eu", "mas", "para", "da", "na", "na", "nos", "nas", "pra", "por", "me", "em", "mais"};
         std::string arr_stopwords_fr[] = {"je", "tu", "il", "elle", "nous", "vous", "ils", "elles", "moi", "toi", "soi", "mon", "ma", "ton", "ta", "son", "sa", "le", "la", "les", "no", "pas", "à", "et", "ou", "que", "ce", "ces", "c'est", "pour", "par", "ce", "sur", "dans", "sous", "de", "en", "uns", "une", "unes"};
         std::string arr_stopwords_it[] = {"io", "e", "che", "chi", "de", "di", "un", "li", "le", "loro", "si", "non", "nostra", "nostri", "la", "il", "a", "quasi"};
         std::string arr_stopwords_de[] = {"ich", "und", "bei", "jetzt", "das", "den", "die", "mich", "dich", "du", "fur", "der", "so", "is", "wir", "um", "wird", "ohne", "des", "auch", "nein", "ja", "zum", "im"};
@@ -161,6 +161,10 @@ public:
 		value.value = 1;
 		writer->emit(0, &key, &value);
 
+        key.value = "topUserLang_" + lang + " " + user;
+        value.value = 1;
+        writer->emit(0, &key, &value);
+
 		p_tag_begin = p_end+strlen(": ");
 
 
@@ -169,10 +173,31 @@ public:
 			std::string word(p_tag_begin, p_end - p_tag_begin);
 			value.value = 1;
 
-            if (word.compare(0, 1, "@") == 0)
+			if (word.empty() || (word.compare(" ") == 0))
+			{
+                p_tag_begin = p_end+1;
+                continue;
+			}
+
+            if (word.compare("rt") == 0)
             {
+                p_tag_begin = p_end+1;
+                continue;
+            }
+
+            if ((word.compare(0, 1, "@") == 0) && (word.length() > 1))
+            {
+                if (word.compare(word.length()-1, 1, ":") == 0)
+                {
+                    word.erase(word.length() - 1, 1);
+                }
                 key.value = "topRefUser " + word;
                 writer->emit(0, &key, &value);
+
+                key.value = "topRefUserLang_" + lang + " " + user;
+                value.value = 1;
+                writer->emit(0, &key, &value);
+
                 p_tag_begin = p_end+1;
                 continue;
             }
@@ -180,6 +205,11 @@ public:
             {
                 key.value = "topURL " + word;
                 writer->emit(0, &key, &value);
+
+                key.value = "topURLLang_" + lang + " " + user;
+                value.value = 1;
+                writer->emit(0, &key, &value);
+
                 p_tag_begin = p_end+1;
                 continue;
             }
@@ -263,6 +293,12 @@ public:
 		{
 			std::string word(p_tag_begin, text_end - p_tag_begin);
 			value.value = 1;
+
+            if (word.empty() || (word.compare(" ") == 0))
+            {
+                return;
+            }
+
 
             if (word.compare(0, 1, "@") == 0)
             {

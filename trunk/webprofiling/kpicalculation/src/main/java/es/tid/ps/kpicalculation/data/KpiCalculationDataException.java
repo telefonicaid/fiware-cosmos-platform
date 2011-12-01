@@ -9,25 +9,23 @@ import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
  * @author javierb
  */
 public class KpiCalculationDataException extends RuntimeException {
+    private static final long serialVersionUID = -8134324326773415950L;
 
-    private static final long serialVersionUID = 1L;
-    
+    private KpiCalculationCounter counter;
+
     public KpiCalculationDataException(String message, Throwable cause,
             KpiCalculationCounter lineFilteredExtension) {
         super(message, cause);
-        counter = lineFilteredExtension;
+        this.counter = lineFilteredExtension;
     }
-
-    private KpiCalculationCounter counter;
 
     public KpiCalculationDataException(String message,
             KpiCalculationCounter lineFilteredExtension) {
         super(message);
-        counter = lineFilteredExtension;
+        this.counter = lineFilteredExtension;
     }
 
     public KpiCalculationCounter getCounter() {
-        return counter;
+        return this.counter;
     }
-
 }

@@ -105,8 +105,11 @@ bool Console::isImputReady()
 void Console::process_auto_complete( ConsoleAutoComplete * info )
 {
     // Do something with autocomplete information provided by thrid party
-    print_command();
-    printf("\n");
+    //print_command();
+    //printf("\n");
+
+    clear_line();
+    
     info->print_last_words_alternatives();
     
     // Add necessary stuff...    
@@ -269,7 +272,7 @@ void Console::runConsole()
         {
             // Review background messages
             process_background();
-            usleep(1000);
+            usleep(20000);
         }
         
         char c;

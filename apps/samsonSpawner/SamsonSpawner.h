@@ -28,27 +28,28 @@ namespace samson
 class SamsonSpawner : public PacketReceiverInterface
 {
 public:
-	SamsonSpawner();
-	~SamsonSpawner();
+    SamsonSpawner();
+    ~SamsonSpawner();
 
-	void         receive(Packet* packetP);
-	void         init();
-	void         init(ProcessVector* pv);
-	void         run(void);
-	int          timeoutFunction(void);
+    void           receive(Packet* packetP);
+    void           init();
+    void           init(ProcessVector* pv);
+    void           run(void);
+    int            timeoutFunction(void);
 	
 private:
-	Network2*     networkP;
-	bool          restartInProgress;
+    Network2*       networkP;
+    bool            restartInProgress;
+    ProcessVector*  pv;
 
-	void          reset(Endpoint2* ep);
-	void          processVector(Endpoint2* ep, ProcessVector* procVec);
-	void          spawn(Process* process);
-	void          localProcVecGenerate(void);
+    void            reset(Endpoint2* ep);
+    void            processVector(Endpoint2* ep, ProcessVector* procVec);
+    void            spawn(Process* process);
+    void            localProcVecGenerate(void);
 
-	void          processesStart(ProcessVector* procVec);
-	void          processesTest(ProcessVector* procVec);
-	void          localProcessesKill(void);
+    void            processesStart(ProcessVector* procVec);
+    void            processesTest(ProcessVector* procVec);
+    void            localProcessesKill(void);
 };
 
 }

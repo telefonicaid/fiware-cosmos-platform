@@ -25,7 +25,7 @@
 * static global vars
 */
 static samson::Process**  processV    = NULL;
-static unsigned int   processMax  = 0;
+static unsigned int       processMax  = 0;
 
 
 

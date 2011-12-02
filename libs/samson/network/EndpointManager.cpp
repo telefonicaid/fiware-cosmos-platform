@@ -80,7 +80,7 @@ static Process* platformProcessLookup(HostMgr* hostMgr, ProcessVector* procVec, 
 *
 * Constructor
 */
-    EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp) : token("EndpointManager")
+EndpointManager::EndpointManager(Endpoint2::Type type, const char* controllerIp) : token("EndpointManager")
 {
 	tmoSecs          = 2;
 	tmoUSecs         = 0;
@@ -411,14 +411,23 @@ void EndpointManager::initStarter(void)
 */
 EndpointManager::~EndpointManager()
 {
+    for (unsigned int ix = 0; ix < endpoints; ix++)
+    {
+        if (endpoint[ix] != NULL)
+            delete endpoint[ix];
+    }
+
     if (endpoint != NULL)
-		delete endpoint;
+        delete endpoint;
 
     if (hostMgr != NULL)
-		delete hostMgr;
+        delete hostMgr;
 
 	if (procVec != NULL)
-		delete procVec;
+        delete procVec;
+
+	if (me != NULL)
+        delete me;
 }
 
 

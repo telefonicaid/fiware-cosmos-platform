@@ -114,10 +114,147 @@ typedef struct PaVars
 
 /* ****************************************************************************
 *
+* paConfigCleanup - 
+*/
+void paConfigCleanup(void)
+{
+	if (paPrefix)
+    {
+		free(paPrefix);
+        paPrefix = NULL;
+    }
+	if (paBuiltinPrefix)
+    {
+		free(paBuiltinPrefix);
+        paBuiltinPrefix = NULL;
+    }
+	if (paProgName != NULL)
+    {
+		free(paProgName);
+        paProgName = NULL;
+    }
+	if (paRcFileName != NULL)
+    {
+		free(paRcFileName);
+        paRcFileName = NULL;
+    }
+	if (paRcFileDir)
+    {
+		free(paRcFileDir);
+        paRcFileDir = NULL;
+    }
+	if (paGenericRcDir)
+    {
+		free(paGenericRcDir);
+        paGenericRcDir = NULL;
+    }
+	if (paVersionString)
+    {
+		free(paVersionString);
+        paVersionString = NULL;
+    }
+	if (paExecVersion)
+    {
+		free(paExecVersion);
+        paExecVersion = NULL;
+    }
+	if (paHelpFile)
+    {
+		free(paHelpFile);
+        paHelpFile = NULL;
+    }
+	if (paHelpText)
+    {
+		free(paHelpText);
+        paHelpText = NULL;
+    }
+	if (paTracelevels)
+    {
+		free(paTracelevels);
+        paTracelevels = NULL;
+    }
+	if (paTraceInfoAtEol != NULL)
+    {
+        free(paTraceInfoAtEol);
+        paTraceInfoAtEol = NULL;
+    }
+	if (paLogFilePath != NULL)
+    {
+		free(paLogFilePath);
+        paLogFilePath = NULL;
+    }
+	if (paLogFileLineFormat != NULL)
+    {
+		free(paLogFileLineFormat);
+        paLogFileLineFormat = NULL;
+    }
+	if (paLogFileTimeFormat != NULL)
+    {
+        free(paLogFileTimeFormat);
+        paLogFileTimeFormat = NULL;
+    }
+	if (paLogScreenLineFormat != NULL)
+    {
+		free(paLogScreenLineFormat);
+        paLogScreenLineFormat = NULL;
+    }
+	if (paLogScreenTimeFormat != NULL)
+    {
+        free(paLogScreenTimeFormat);
+        paLogScreenTimeFormat = NULL;
+    }
+	if (paManSynopsis)
+    {
+		free(paManSynopsis);
+        paManSynopsis = NULL;
+    }
+	if (paManShortDescription)
+    {
+		free(paManShortDescription);
+        paManShortDescription = NULL;
+    }
+	if (paManDescription)
+    {
+		free(paManDescription);
+        paManDescription = NULL;
+    }
+	if (paManExitStatus)
+    {
+		free(paManExitStatus);
+        paManExitStatus = NULL;
+    }
+	if (paManAuthor)
+    {
+		free(paManAuthor);
+        paManAuthor = NULL;
+    }
+	if (paManReportingBugs)
+    {
+		free(paManReportingBugs);
+        paManReportingBugs = NULL;
+    }
+	if (paManCopyright)
+    {
+		free(paManCopyright);
+        paManCopyright = NULL;
+    }
+	if (paManVersion)
+    {
+		free(paManVersion);
+        paManVersion = NULL;
+    }
+}
+
+
+
+/* ****************************************************************************
+*
 * paConfigInit - 
 */
 static void paConfigInit(void)
 {
+    atexit(paConfigCleanup);
+
 	paWarningInit();
 
 	if (paPrefix)
@@ -193,6 +330,8 @@ static void paConfigInit(void)
 		paLogScreenTimeFormat = strdup("DEF");
 
 	/* Should all these be freed after paParse finishes? */
+
+    /* YES ! */
 }
 
 
@@ -226,7 +365,7 @@ int paConfig(const char* item, void* value)
 	else if (strcmp(item, "man exitstatus") == 0)
 	   paManExitStatus = strdup((char*) val);
 	else if (strcmp(item, "man author") == 0)
-	   paManAuthor = strdup((char*) val);
+	   paManAuthor = strdup((char*) val); 
 	else if (strcmp(item, "man reportingbugs") == 0)
 	   paManReportingBugs = strdup((char*) val);
 	else if (strcmp(item, "man copyright") == 0)
@@ -415,48 +554,4 @@ int paConfigActions(bool preTreat)
 	}
 
 	return 0;
-}
-
-
-
-/* ****************************************************************************
-*
-* paConfigCleanup - 
-*/
-void paConfigCleanup(void)
-{
-	if (paPrefix)
-		free(paPrefix);
-	if (paBuiltinPrefix)
-		free(paBuiltinPrefix);
-	if (paProgName)
-		free(paProgName);
-	if (paRcFileName)
-		free(paRcFileName);
-	if (paRcFileDir)
-		free(paRcFileDir);
-	if (paGenericRcDir)
-		free(paGenericRcDir);
-	if (paVersionString)
-		free(paVersionString);
-	if (paExecVersion)
-		free(paExecVersion);
-	if (paHelpFile)
-		free(paHelpFile);
-	if (paHelpText)
-		free(paHelpText);
-	if (paTracelevels)
-		free(paTracelevels);
-	if (paTraceInfoAtEol)
-		free(paTraceInfoAtEol);
-	if (paLogFilePath)
-		free(paLogFilePath);
-	if (paLogFileLineFormat)
-		free(paLogFileLineFormat);
-	if (paLogFileTimeFormat)
-		free(paLogFileTimeFormat);
-	if (paLogScreenLineFormat)
-		free(paLogScreenLineFormat);
-	if (paLogScreenTimeFormat)
-		free(paLogScreenTimeFormat);
 }

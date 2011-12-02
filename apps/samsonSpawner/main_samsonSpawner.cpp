@@ -162,7 +162,6 @@ int main(int argC, const char *argV[])
     paConfig("man version",                   (void*) manVersion);
 
 	paParse(paArgs, argC, (char**) argV, 1, false);
-	paConfigCleanup();
 
 	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)

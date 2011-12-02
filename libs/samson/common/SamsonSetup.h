@@ -89,7 +89,6 @@ namespace samson {
     
     class SetupItemCollection
     {
-        
     protected:
         
         au::map< std::string , SetupItem > items;

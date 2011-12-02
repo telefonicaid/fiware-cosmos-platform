@@ -60,11 +60,11 @@ if (HAVE_KDCHART)
 endif (HAVE_KDCHART)
 
 
-FIND_PATH( HAVE_QT Qt PATHS /opt/local/include )
+FIND_PATH( HAVE_QT Qt PATHS /opt/local/include /usr/include/qt4 )
 if ( HAVE_QT )
-   MESSAGE("Using ${HAVE_QT} for QT")
+    MESSAGE("Using ${HAVE_QT} for QT")
 else ( HAVE_QT )
-	MESSAGE("Not using QT library")
+    MESSAGE("Not using QT library")
 endif (HAVE_QT)
 
 

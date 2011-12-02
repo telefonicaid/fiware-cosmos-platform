@@ -23,25 +23,26 @@ namespace hit{
 
    public:
 
-	  std::string concept;
+	  std::string concept;	  
+	  samson::hit::Hit** top_hits;
 
-	   samson::hit::Hit** top_hits;
-
-	   HitCollectionManager( std::string _concept )
-	   {
-		  concept = _concept;
-
-		  top_hits = (samson::hit::Hit**) malloc( sizeof(samson::hit::Hit*) * NUM_TOP_ITEMS );
-
-		  for( int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
-		  {
-             top_hits[i] = new samson::hit::Hit();	   
-			 top_hits[i]->count.value = 0;
-			 top_hits[i]->concept.value = "";
-		  }
-
-	   }
-
+	  time_t reference_time_stamp;
+	  
+	  HitCollectionManager( std::string _concept )
+	  {
+		 concept = _concept;
+		 reference_time_stamp = 0; // Init with 0 to make sure it is updated the first time
+		 
+		 top_hits = (samson::hit::Hit**) malloc( sizeof(samson::hit::Hit*) * NUM_TOP_ITEMS );
+		 
+		 for( int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
+		 {
+			top_hits[i] = new samson::hit::Hit();	   
+			top_hits[i]->init(  );
+		 }
+		 
+	  }
+	  
 	   ~HitCollectionManager()
 	   {
 		  for( int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
@@ -49,8 +50,25 @@ namespace hit{
 		  free( top_hits );
 	   }
 
+
+	   void setTime( time_t new_reference_time_stamp )
+	   {
+		  for( int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
+			 top_hits[i]->setTime( new_reference_time_stamp );
+
+		  reference_time_stamp = new_reference_time_stamp;
+	   }
+
 	   void add( samson::hit::Hit *hit  )
 	   {
+		  
+		  // Upjust time
+		  if ( hit->time.value > reference_time_stamp )
+			 setTime( hit->time.value );
+		  else
+			 hit->setTime( reference_time_stamp );
+
+
 		  if( hit->count.value < top_hits[NUM_TOP_ITEMS-1]->count.value )
 			 return;
 
@@ -58,8 +76,7 @@ namespace hit{
 		  for (int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
 			 if( top_hits[i]->concept.value == hit->concept.value )
 			 {				
-				if( top_hits[i]->count.value < hit->count.value )
-				   top_hits[i]->count.value = hit->count.value;
+   			   top_hits[i]->count.value = hit->count.value;
 				
 				return;
 			 }

@@ -2,8 +2,8 @@
 Module hit
 {
 	title	"Hit manipulation"
-	author	"Andreu Urruela"
-	version "0.1"
+	author	"Andreu Urruela & Gregorio Escalada"
+	version "0.1.1"
 }
 
 
@@ -14,7 +14,8 @@ Module hit
 data Hit
 {
 	system.String concept; # Concept for this hit
-	system.UInt count;     # Number of times for this hit;
+	system.Float count;    # Number of times for this hit ( float to implement forgetting factor )
+	system.TimeUnix time;  # Reference time-samp for this hit
 }
 
 data HitCollection
@@ -22,59 +23,17 @@ data HitCollection
 	vector hit.Hit hits;   # Vector of hits
 }
 
-data HitCount
-{
-	system.String concept;          # Concept for this hit
-	system.UInt   current_time;     # Slot of the time-stamp ( usually time(NULL)/Constant )
-
-	vector system.UInt hits;		# Hits in the last time-slots
-}
-
-data HitCountCollection
-{
-	vector hit.HitCount hit_counts;   # Collection of hit_counts
-}
-
-
 ####################################################################################
 # Main operations
-####################################################################################
-
-
-reduce reduceHitCounts
-{
-	in system.String system.UInt		# Input concepts and number of hits ( usually 1 )
-	in system.String hit.HitCount		# State for each string
-
-	out system.String hit.HitCount		# Output state of this concept if it changes significantly
-	out system.String hit.HitCount		# Output state for each string
-
-	helpLine "Aggregation of the hits per string. It emits output '0' if counter changes significantly"
-}
-
-
-reduce reduceHitCountCollection
-{
-	in system.String hit.HitCount              # Input hit count update
-	in system.String hit.HitCountCollection    # State of the top list
-
-	out system.String hit.HitCountCollection   # Top list of hits
-	out system.String hit.HitCountCollection   # State of the top elements ( all top level per samples )
-
-	helpLine "Filter top elements per global-concept"
-}
-
-
-####################################################################################
-# Simple demo
 ####################################################################################
 
 reduce reduceHits
 {
 	in system.String system.UInt         # Input hits
-	in system.String system.UInt         # Accumlated version
-	out system.String hit.Hit     		 # Output hits is changed significantly
-	out system.String system.UInt  		 # Output accumulated version
+	in system.String hit.Hit             # State: Accumlated version
+
+	out system.String hit.Hit     		 # Output hits if candidate for the top hits
+	out system.String hit.Hit 	   	     # State: Accumulated version
 
 	helpLine "Simple accumulator in stream mode"
 }
@@ -87,40 +46,30 @@ reduce reduceHitCollections
 	out system.String hit.HitCollection     # State with the top elements	
 }
 
-map split_words
-{
-	in system.String system.UInt   #Input words
-	out system.String system.UInt  #Outputs words ( more than one....)
+####################################################################################
+# Init script for hit count 
+####################################################################################
 
-	helpLine "Duplicate some concepts like date, mail, ..... Ouput words are mail_XXX date_XXX"
-}
-
-script init_stream_operations_simple
+script init_stream_operations
 {
   code
   {
-    rm_stream_operation hit.01.parser_words -f;
-    rm_stream_operation hit.03.split -f;
-    rm_stream_operation hit.10.reduce_words -f;
+    rm_stream_operation hit.01.reduce_words -f;
     rm_stream_operation hit.20.reduce_tops -f;
     rm_stream_operation hit.21.export_tops -f;
 
-    rm_queue hit.01.in_txt -f;
-    rm_queue hit.03.input_words_previous -f;
-    rm_queue hit.04.input_words -f;
+    rm_queue hit.01.input_words -f;
     rm_queue hit.10.words -f;
     rm_queue hit.11.words_update -f;
     rm_queue hit.20.hit.tops -f;
     rm_queue hit.21.output_tops -f;
     rm_queue hit.22.output_tops_txt -f;
 
-    add_stream_operation hit.01.parser_words  txt.parser_words            hit.01.in_txt                               hit.03.input_words_previous;
-    add_stream_operation hit.03.split         hit.split_words             hit.03.input_words_previous                 hit.04.input_words;
-    add_stream_operation hit.10.reduce_words  hit.reduceHits              hit.04.input_words            hit.10.words  hit.11.words_update hit.10.words;
+    add_stream_operation hit.01.reduce_words  hit.reduceHits              hit.01.input_words            hit.10.words  hit.11.words_update hit.10.words;
     add_stream_operation hit.20.reduce_tops   hit.reduceHitCollections    hit.11.words_update           hit.20.tops   hit.21.output_tops hit.20.tops;
     add_stream_operation hit.21.export_tops   hit.export_hit_collection   hit.21.output_tops                          hit.22.output_tops_txt;
-
   }
+
 }
 
 
@@ -128,12 +77,13 @@ script init_stream_operations_simple
 # Other operations
 ################################################################
 
-parserOut export_hit_count_collection
+map split_words
 {
-	in system.String hit.HitCountCollection
-	helpLine "Export the top list of elements"
-}
+	in system.String system.UInt   #Input words
+	out system.String system.UInt  #Outputs words ( more than one....)
 
+	helpLine "Duplicate some concepts like date, mail, ..... Ouput words are mail_XXX date_XXX"
+}
 
 parserOut export_hit_collection
 {

@@ -7,6 +7,8 @@
 #define _H_SAMSON_hit_export_hit_collection
 
 
+#include <time.h>
+
 #include <samson/module/samson.h>
 #include <samson/modules/hit/HitCollection.h>
 #include <samson/modules/system/String.h>
@@ -52,7 +54,7 @@ namespace hit{
 			  for ( int i = 0 ; i < hit_collection.hits_length ; i ++ )
 			  {
 				 std::string concept = hit_collection.hits[i].concept.value;
-				 size_t count = hit_collection.hits[i].count.value;
+				 size_t count = hit_collection.hits[i].count.value; // convert to ingeger for displaying....
 				 output << concept << " " << count << " ";
 			  }
 

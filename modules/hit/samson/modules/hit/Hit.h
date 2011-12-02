@@ -6,6 +6,9 @@
 #ifndef _H_SAMSON_hit_Hit
 #define _H_SAMSON_hit_Hit
 
+#include <time.h>
+#include <limits.h>
+#include <stdint.h>
 
 #include <samson/modules/hit/Hit_base.h>
 
@@ -18,6 +21,27 @@ namespace hit{
 	{
 
 	public:
+
+	   void init( )
+	   {
+		  init( ""  , 0 );
+	   }
+
+	   void init( std::string _concept , time_t ts )
+	   {
+		  concept.value = _concept;
+		  count.value = 0;
+		  time.value = ts;
+	   }
+
+	   void setTime( time_t current_ts )
+	   {
+		  if( current_ts < time.value )
+			 return;
+
+          ::time_t diff =  current_ts - time.value;
+          count.value = (( (double) count.value ) * pow( 0.99666666  , (double) diff ));		  
+	   }
 
 	   std::string extractCategoryConcept()
 	   {

@@ -25,7 +25,6 @@ namespace hit{
 
 	   samson::system::String concept;
 
-
 	public:
 
 	   reduceHitCollections()
@@ -94,7 +93,7 @@ namespace hit{
 		   samson::hit::HitCollection output_hit_collection;
 		   for (int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
 		   {
-			  if( manager->top_hits[i]->count.value > 0 )
+			  if( manager->top_hits[i]->count.value >= 1 )
 				 output_hit_collection.hitsAdd()->copyFrom( manager->top_hits[i] );
 		   }
 

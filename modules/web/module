@@ -18,7 +18,6 @@ script init_stream_operations
     code
     {
 		rm_stream_operation hit.04.input_words -f;
-
 		add_stream_operation web.parse_web_hits web.parse_web_hits web.01.input.txt hit.04.input_words;
     }
 
@@ -31,8 +30,7 @@ script demo
     {
 		remove_all_stream;
 		init_stream web.init_stream_operations;
-		init_stream hit.init_stream_operations_simple;
-
+		init_stream hit.init_stream_operations;
     }
 
     helpLine "Init stream operations"

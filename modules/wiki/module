@@ -2,7 +2,7 @@ Module wiki
 {
     title   "Wikipedia operations"
     author  "Andreu Urruela & Gregorio Escalada"
-    version "0.1"
+    version "0.2"
 }
 
 data WordInfo
@@ -40,4 +40,27 @@ reduce reduce_inverted_index
 	out system.String wiki.WordInfo
 	
 	helpLine "Builds an inverted index (words or links), working on a state"
+}
+
+
+
+script init_stream_operations
+{
+	code
+	{
+		rm_stream_operation wiki.parser -f;
+		add_stream_operation wiki.parser  txt.parser_words wiki.01.input.txt hit.01.input_words;
+	}
+}
+
+script demo
+{
+    code
+    {
+        remove_all_stream;
+        init_stream wiki.init_stream_operations;
+        init_stream hit.init_stream_operations;
+    }
+
+    helpLine "Init stream operations"
 }

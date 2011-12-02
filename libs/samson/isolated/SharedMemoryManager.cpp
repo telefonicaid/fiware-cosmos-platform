@@ -60,16 +60,18 @@ namespace engine
     }
     
     
-	SharedMemoryManager::SharedMemoryManager( int _shared_memory_num_buffers , size_t _shared_memory_size_per_buffer) : token("SharedMemoryManager")
+	SharedMemoryManager::SharedMemoryManager( int _shared_memory_num_buffers , size_t _shared_memory_size_per_buffer) 
+          : token("SharedMemoryManager")
 	{
 		
         // Default values ( no shared memories )
-        shared_memory_num_buffers = _shared_memory_num_buffers;
-        shared_memory_size_per_buffer	= _shared_memory_size_per_buffer;
-		
+        shared_memory_num_buffers      = _shared_memory_num_buffers;
+        shared_memory_size_per_buffer  = _shared_memory_size_per_buffer;
+
+		// Name of the log file to store how to clean up memory
         sharedMemoryIdsFileName = samson::SamsonSetup::shared()->sharedMemoryLogFileName();
         
-		if( shared_memory_size_per_buffer == 0)
+		if( shared_memory_size_per_buffer == 0 )
 			LM_X(1,("Error in setup, invalid value for shared memory size %u", shared_memory_size_per_buffer ));
         
         // Boolean vector showing if a buffer is used
@@ -102,37 +104,50 @@ namespace engine
 	
 #pragma mark ----
 
+    void SharedMemoryManager::remove_previous_shared_areas()
+    {
+        size_t fileSize = au::sizeOfFile( sharedMemoryIdsFileName );
+        
+        int length = fileSize / sizeof(int);
+        int *ids = (int*) malloc( length * sizeof(int) );
+        if( !ids )
+            LM_X(1,("Malloc returned NULL"));
+        
+        FILE *file = fopen( sharedMemoryIdsFileName.c_str() , "r" );
+        if( file )
+        {
+            if( fread(ids, length * sizeof(int) , 1, file) == 1 )
+            {
+                LM_T(LmtMemory ,("Removing previous memory segments"));
+                removeSharedMemorySegments(ids, length);
+            }
+            fclose(file);
+        }
+        
+        free( ids );        
+    }
+    
+    void SharedMemoryManager::write_current_shared_areas_to_file()
+    {
+        FILE *file = fopen( sharedMemoryIdsFileName.c_str() , "w" );
+        if( file )
+        {
+            if( !fwrite(shm_ids, shared_memory_num_buffers * sizeof(int), 1, file) == 1)
+                LM_W(("Not possible to write shared memory segments on file %s. This could be a problem if the app crashes." , sharedMemoryIdsFileName.c_str()));
+            
+            fclose(file);
+        }
+        else
+            LM_W(("Not possible to write shared memory segments on file %s. This could be a problem if the app crashes." , sharedMemoryIdsFileName.c_str()));
+    }
+    
     void SharedMemoryManager::createSharedMemorySegments( )
     {
         
         // First try to remove the previous shared memory segments ( if any )
+        remove_previous_shared_areas();
         
-        // Get the size of the file ( if exist )
-        {
-            size_t fileSize = au::sizeOfFile( sharedMemoryIdsFileName );
-            
-            int length = fileSize / sizeof(int);
-            int *ids = (int*) malloc( length * sizeof(int) );
-            if( !ids )
-                LM_X(1,("Malloc returned NULL"));
-            
-            FILE *file = fopen( sharedMemoryIdsFileName.c_str() , "r" );
-            if( file )
-            {
-                if( fread(ids, length * sizeof(int) , 1, file) == 1 )
-                {
-                    LM_T(LmtMemory ,("Removing previous memory segments"));
-                    removeSharedMemorySegments(ids, length);
-                }
-                fclose(file);
-            }
-            
-            free( ids );
-        }
-        
-        // Create a new shared memory buffer starting at SS_SHARED_MEMORY_KEY_ID + start_id
-        // The return value means that a new shared memory buffer is created with if  SS_SHARED_MEMORY_KEY_ID + returned_value
-        
+        // Create a new shared memory buffer
         shm_ids = (int*) malloc( sizeof(int) * shared_memory_num_buffers );
         
         LM_T(LmtMemory ,("Creating shared memory buffers"));
@@ -141,36 +156,26 @@ namespace engine
         {
             int shmflg;		/* shmflg to be passed to shmget() */ 
             
-            //shmflg  = 384;			// Permission to read / write ( only owner )
+            //shmflg  = 384;		// Permission to read / write ( only owner )
             shmflg  = 384;			// Permission to read / write ( only owner )
             
             int shmid = shmget(IPC_PRIVATE , shared_memory_size_per_buffer, shmflg);
             
             if( shmid == -1)
             {
-                perror("shmid");
                 LM_E(("Error creating the shared memory buffer of %s ( %d / %d ). Please review SAMSON documentation about shared memory usage",
                       au::str( shared_memory_size_per_buffer , "B").c_str() , i ,shared_memory_num_buffers ));
-#ifdef __LP64__
                 LM_X(1, ("shmid  (%s)", strerror(errno)));
-#endif
             }
-            
             shm_ids[i] = shmid;
         }
-    
-        {
-            FILE *file = fopen( sharedMemoryIdsFileName.c_str() , "w" );
-            if( file )
-            {
-                if( !fwrite(shm_ids, shared_memory_num_buffers * sizeof(int), 1, file) == 1)
-                    LM_W(("Not possible to write shared memory segments on file %s. This could be a problem if the app crashes." , sharedMemoryIdsFileName.c_str()));
-                
-                fclose(file);
-            }
-            else
-                LM_W(("Not possible to write shared memory segments on file %s. This could be a problem if the app crashes." , sharedMemoryIdsFileName.c_str()));
-        }
+        
+        write_current_shared_areas_to_file();
+
+        
+        // Create the SharedMemoryItem's
+        for (int i = 0 ; i < shared_memory_num_buffers ; i++ )
+            shared_memory_items.push_back( createSharedMemory(i) );
         
     }
     
@@ -216,45 +221,23 @@ namespace engine
 		
 		shared_memory_used_buffers[id] = false;
 	}	
-	
-
     
-	SharedMemoryItem* SharedMemoryManager::getSharedMemory( int i )
-	{
-        
-		// Create a new shared memory area
-		SharedMemoryItem* _info = new SharedMemoryItem( i );
-		_info->shmid = shm_ids[i];
-        
-		// Attach to local-space memory
-		_info->data = (char *)shmat(_info->shmid, 0, 0);
-		if( _info->data == (char*)-1 )
-		{
-			perror("shmat: shmat failed"); 
-			LM_X(1, ("Error with shared memory while attaching to local memory ( shared memory id %d )\n",i));
-		}
-		
-		_info->size = shared_memory_size_per_buffer;
-		
-		return _info;		
-	}
-	
-	void SharedMemoryManager::freeSharedMemory(SharedMemoryItem* item)
-	{
-		if (item == NULL)
-			LM_RVE(("NULL SharedMemoryItem as input ..."));
-        
-		// Detach data
-		int ans = shmdt( item->data );
-		
-		// Make sure operation is correct
-		if( ans == -1)
-			LM_X(1,("Error calling shmdt"));
-		
-		// remove the item created with getSharedMemory
-		delete item;
-	}
 
+    SharedMemoryItem* SharedMemoryManager::getSharedMemoryPlatform( int i )
+    {
+        if( ( i < 0 ) || ( i >= (int)shared_memory_items.size() ) )
+           return NULL;
+           
+        return shared_memory_items[i];
+    }
+    
+    SharedMemoryItem* SharedMemoryManager::getSharedMemoryChild( int i )
+    {
+        return createSharedMemory(i);
+    }
+    
+    
+    
     std::string SharedMemoryManager::str()
     {
         if ( sharedMemoryManager )
@@ -282,5 +265,12 @@ namespace engine
     }
     
     
+	SharedMemoryItem* SharedMemoryManager::createSharedMemory( int i )
+	{
+		// Create a new shared memory area
+		SharedMemoryItem* _info = new SharedMemoryItem( i , shm_ids[i] , shared_memory_size_per_buffer );
+		return _info;		
+	}
 
+    
 }

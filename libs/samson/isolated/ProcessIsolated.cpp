@@ -33,10 +33,7 @@ namespace samson
         
         if( shm_id != -1 )
             engine::SharedMemoryManager::shared()->releaseSharedMemoryArea( shm_id );
-        
-        if ( item )
-            engine::SharedMemoryManager::shared()->freeSharedMemory( item );
-        
+                
         if( writer )
             delete writer;
         
@@ -52,7 +49,7 @@ namespace samson
             // Try to get a shared memory buffer to produce output
             shm_id = engine::SharedMemoryManager::shared()->retainSharedMemoryArea();
             if( shm_id != -1 )
-                item = engine::SharedMemoryManager::shared()->getSharedMemory( shm_id );
+                item = engine::SharedMemoryManager::shared()->getSharedMemoryPlatform( shm_id );
         }
         
         bool available_memory = true;

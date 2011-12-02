@@ -43,7 +43,7 @@ char concept[1024];
 PaArgument paArgs[] =
 {
 	{ "-title",       title,      "TITLE",       PaString, PaOpt, _i "no title"   , PaNL, PaNL,       "Title of the plot"         },
-	{ "-concept",     concept,    "CONCEPT",     PaString, PaOpt, _i "main"       , PaNL, PaNL,       "Concep to track"         },
+	{ "-concept",     concept,    "CONCEPT",     PaString, PaOpt, _i "top"        , PaNL, PaNL,       "Concep to track"         },
     PA_END_OF_ARGS
 };
 

@@ -24,7 +24,7 @@ namespace samson {
 		processIsolated = _processIsolated;
 		
 		// Get the assignated shared memory region
-		item = engine::SharedMemoryManager::shared()->getSharedMemory( processIsolated->shm_id );
+		item = engine::SharedMemoryManager::shared()->getSharedMemoryChild( processIsolated->shm_id );
 		
 		// General output buffer
 		buffer = item->data;
@@ -103,8 +103,6 @@ namespace samson {
 	{
 		// Free the shared memory item element
 		// Note: It is not necessary to delete item itself, since it has been done inside "freeSharedMemory"
-        if( item )
-            engine::SharedMemoryManager::shared()->freeSharedMemory( item );		
 
 		// Free minibuffer used to serialize key-value here
         // Note: If there was an error in the constructor, it may be NULL
@@ -282,7 +280,7 @@ namespace samson {
 		workerTaskItem = _workerTaskItem;
 		
 		// Get the assignated shared memory region
-		item = engine::SharedMemoryManager::shared()->getSharedMemory( workerTaskItem->shm_id );
+		item = engine::SharedMemoryManager::shared()->getSharedMemoryChild( workerTaskItem->shm_id );
 		
 		// Size if the firt position in the buffer 
 		size = (size_t*) item->data;

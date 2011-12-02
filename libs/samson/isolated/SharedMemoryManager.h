@@ -28,22 +28,9 @@
 #include "au/string.h"					// au::Format
 
 
-
-// #define SS_SHARED_MEMORY_KEY_ID	872934	// Not used any more since now, IPC_PRIVATE shared memory can be created
-
 namespace engine {
        
     class SharedMemoryItem;
-    
-	/**
-	 
-	 Memory manager is a singleton implementation to manager the memory used by any component of SAMSON
-	 A unifierd view of the memory is necessary to block some data-generator elements when we are close to the maximum memory
-	 It is also responsible to manage shared-memory areas to share between differnt processes. 
-	 Shared memory is used to isolate operations from main process
-	 
-	 */
-    
     class SharedMemoryManager;
     
     
@@ -59,21 +46,19 @@ namespace engine {
 		bool* shared_memory_used_buffers;                   // Bool vector showing if a particular shared memory buffer is used
         int * shm_ids;                                      // Vector containing all the shared memory identifiers
 		
+        std::vector<SharedMemoryItem*> shared_memory_items; // Vector containing all the SharedMemoryItem's
 		
         std::string sharedMemoryIdsFileName;
 
-        SharedMemoryManager( int _shared_memory_num_buffers , size_t _shared_memory_size_per_buffer);
+        SharedMemoryManager( int _shared_memory_num_buffers , size_t _shared_memory_size_per_buffer );
 
 	public:
 
-		~SharedMemoryManager();
-		
+		~SharedMemoryManager();		
         
 		// Init and destroy functions
         static void init( int _shared_memory_num_buffers , size_t _shared_memory_size_per_buffer);
         static SharedMemoryManager* shared();
-        
-        
         
 		/**
 		 Function to retain and release a free shared-memory area
@@ -83,27 +68,27 @@ namespace engine {
 		void releaseSharedMemoryArea( int id );
 
 		/**
-		 Functions to get and release a shared memory area
+		 Functions to get a Shared Memory Item
 		 */
 		
-		SharedMemoryItem* getSharedMemory( int i );
-		void freeSharedMemory(SharedMemoryItem* item);
+		SharedMemoryItem* getSharedMemoryPlatform( int i );        
+		SharedMemoryItem* getSharedMemoryChild( int i );        
 
-        /*
-         Function to create shared memory segments.
-         */
-        
-        void createSharedMemorySegments( );
-        
-        static void removeSharedMemorySegments( int *ids , int length );
-        
-        // Function to work with files
-        void removeSharedMemorySegmentsOnDisk( );
-        
-        
+        // Function to get some information
         static std::string str();
         std::string _str( );
 
+    private:
+        
+        void createSharedMemorySegments( );
+        static void removeSharedMemorySegments( int *ids , int length );
+        void remove_previous_shared_areas();
+        void write_current_shared_areas_to_file();
+        
+        // Function to create a SharedMemory item
+        SharedMemoryItem* createSharedMemory( int i );
+        
+        
 	};
 	
 };

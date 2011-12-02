@@ -19,18 +19,17 @@
 #include <set>						// std::set
 #include <list>						// std::list
 #include <iostream>					// std::cout
-#include "samson/common/samsonDirectories.h"		// SAMSON_SETUP_FILE
 
 
-#include "engine/Buffer.h"					// samson::Buffer
 #include "au/Token.h"					// au::Token
 #include "au/map.h"					// au::map
 #include "au/string.h"					// au::Format
 
+#include "engine/Buffer.h"					// samson::Buffer
+
+#include "samson/common/samsonDirectories.h"		// SAMSON_SETUP_FILE
 #include "samson/common/samson.pb.h"				// network::..
 
-
-// #define SS_SHARED_MEMORY_KEY_ID	872934	// Not used any more since now, IPC_PRIVATE shared memory can be created
 
 namespace engine {
     
@@ -53,11 +52,28 @@ namespace engine {
 		char *data;					/* Shared memory data */
 		size_t size;				/* Information about the size of this shared memory item */
 		
-		SharedMemoryItem( int _id )
+		SharedMemoryItem( int _id , int _shmid , size_t _size )
 		{
 			id = _id;
+            shmid = _shmid;
+            size = _size;
+            
+            // Attach to local-space memory
+            data = (char *) shmat( shmid, 0, 0 );
+            if( data == (char*)-1 )
+                LM_X(1, ("Error with shared memory while attaching to local memory ( shared memory id %d )\n", id ));
 		}
 		
+        ~SharedMemoryItem()
+        {
+            // Detach data if it was previously attached
+            if( data )
+            {
+                if( shmdt( data ) == -1 )
+                    LM_X(1,("Error calling shmdt"));
+            }            
+        }
+        
 		// --------------------------------------------------------------------------------
 		// Interfaces to get SimpleBuffer elements in order to read or write to them
 		// --------------------------------------------------------------------------------

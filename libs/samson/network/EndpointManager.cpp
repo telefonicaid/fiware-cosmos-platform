@@ -887,6 +887,7 @@ void EndpointManager::run(bool oneShot)
 
 	while (1)
 	{
+        
 		periodic();
 		
 		// Call cleanup function that removes all endpoints marked as 'ScheduledForRemoval' 
@@ -942,7 +943,9 @@ void EndpointManager::run(bool oneShot)
 				if (firstTimeForNoFdsToListenTo == true)
 					LM_W(("No fds to listen to ..."));
                  */
+
 				firstTimeForNoFdsToListenTo = false;
+                usleep(100000);
 				//sleep(2);
 				fds = 0;
 				break;

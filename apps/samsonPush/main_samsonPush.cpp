@@ -46,7 +46,7 @@ PaArgument paArgs[] =
 	{ "-controller",  controller,            "",  PaString,  PaOpt, _i "localhost",   PaNL,       PaNL,  "controller IP:port"                         },
 	{ "-timeout",     &timeOut,              "",  PaInt,     PaOpt,              0,      0,      10000,  "Timeout to deliver a block to the platform" },
 	{ "-buffer_size", &buffer_size,          "",  PaInt,     PaOpt,       10000000,      1,   64000000,  "Buffer size in bytes"                       },
-	{ "-mr",          &max_rate,             "",  PaInt,     PaOpt,       10000000,      100000,   100000000,  "Max rate in bytes/s"                  },
+	{ "-mr",          &max_rate,             "",  PaInt,     PaOpt,       10000000,      100,100000000,  "Max rate in bytes/s"                  },
 	{ "-breaker_sequence", breaker_sequence, "",  PaString,  PaOpt,        _i "\n",   PaNL,       PaNL,  "Breaker sequence ( by default \\n )"        },
 	{ "-lines",       &lines,                "",  PaBool,    PaOpt,          false,  false,       true,  "Read std-in line by line"                   },
 	{ "-memory",      &push_memory,          "",  PaInt,     PaOpt,           1000,      1,    1000000,  "Memory in Mb used to push data ( default 1000)" },

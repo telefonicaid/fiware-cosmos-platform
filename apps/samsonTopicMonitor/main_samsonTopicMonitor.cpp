@@ -27,6 +27,8 @@
 
 #include "samson/client/SamsonClient.h"         // samson::SamsonClient
 
+#include "common.h"
+
 #include <QtGui>
 
 // QT Elements
@@ -91,9 +93,17 @@ MainWindow *mainWindow;               // Main window....
 
 
 // Content to display on web display 
-std::string web_content;
-au::Token token_web_content("value_collections");
+// --------------------------------------------------------------------------------
 
+
+
+// --------------------------------------------------------------------------------
+
+au::Token token_web_content("value_collections");
+std::string web_content;
+std::vector<Topic> topics;
+
+// --------------------------------------------------------------------------------
 
 size_t getLineSize( char * data , size_t max)
 {
@@ -103,41 +113,28 @@ size_t getLineSize( char * data , size_t max)
     return max;
 }
 
-class Topic
-{
-   public:
 
-   std::string concept;
-   size_t num;
-
-   Topic( std::string _concept , size_t _num )
-   {
-	  concept = _concept;
-	  num = _num;
-   }
-
-};
 
 
 void process_command( std::string line )
 {
     au::TokenTaker tt(&token_web_content);
 
+    // Split input line in words
     std::vector<std::string> words;
     au::split( line , ' ' , words );
 
     // Not the rigth concept
 	if( ( words.size() == 0 ) || ( words[0] != concept) )
 	{
-	   LM_M(("Processing %s not %s" , concept , words[0].c_str() ));
+	   LM_M(("Skiping line with concept %s ( selecting concept %s)" , concept , words[0].c_str() ));
 	   return;
 	}
 
+    // Clear list of topics
+    topics.clear();
 
 	int num_concepts = (words.size()-1) / 2;  // Format word number
-
-	// List of topics
-	std::vector<Topic> topics;
 
 	// Maximum number of hits
 	size_t max_num = 0;

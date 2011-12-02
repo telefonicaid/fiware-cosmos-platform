@@ -3,13 +3,13 @@
 
 #include "ui_MainWindow.h"              // Parent class
 
-#include "Plot.h"                       // Basic plot using KDChart library
 
 class MainWindow : public QMainWindow , public Ui_MainWindow
 {    
     Q_OBJECT
     
-    Plot* plot;  // Main plot using KVChart
+        // Model for the list
+    QStandardItemModel model;
 	
 public:
     

@@ -32,6 +32,7 @@ extern char concept[1024];
 extern std::string web_content;
 extern au::Token token_web_content;
 
+extern std::vector<Topic> topics;
 
 MainWindow::MainWindow( QWidget *parent ) : QMainWindow(parent)
 {
@@ -49,6 +50,10 @@ MainWindow::MainWindow( QWidget *parent ) : QMainWindow(parent)
     else
         label_info->setText( title );
     
+    // Model for the list
+    tableView->setModel( &model );
+    
+    
     // General update model
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateTimer()));
@@ -63,6 +68,35 @@ void MainWindow::updateTimer()
 {
     // Take contentof web_content
     au::TokenTaker tt(&token_web_content);
+    
     webView->setHtml( web_content.c_str() );
+    
+    
+    // Update model for the list
+    
+    model.clear();
+
+    model.setColumnCount(2);
+    model.setRowCount( topics.size() );
+    
+    model.setHorizontalHeaderItem( 0 , new QStandardItem( QString(  "Concept" ) ) );
+    model.setHorizontalHeaderItem( 1 , new QStandardItem( QString(  "Hits" ) ) );
+    model.setHorizontalHeaderItem( 2 , new QStandardItem( QString(  "Hits" ) ) );
+    
+    
+    for (size_t i = 0 ; i < topics.size() ; i++ )
+    {
+        //model.setItem(i, 0, new QStandardItem( QString( au::str("%s",topics[i].concept.c_str() ).c_str() ) ) );
+        //model.setItem(i, 1, new QStandardItem( QString( au::str("%s", au::str(topics[i].num).c_str() ).c_str() ) ) );
+
+        model.setData( model.index(i,0) , au::str("%s",topics[i].concept.c_str() ).c_str() );
+        model.setData( model.index(i,1) , au::str("%s", au::str(topics[i].num).c_str() ).c_str() );
+        model.setData( model.index(i,2) , au::str("%lu", topics[i].num ).c_str() );
+    }
+    
+    // ------------------------------------------------------------------    
+    
+    
+    
 }
 

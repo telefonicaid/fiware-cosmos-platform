@@ -18,6 +18,7 @@
 #include "au/CommandLine.h"     // au::CommandLine
 
 
+#define PROGRESSIVE_NUMBER      20000
 
 static const char* manShortDescription = 
 "word_generator a simple toll to generate random sequences of words. Usefull in demos about word counting and topic trenddding\n";
@@ -27,21 +28,24 @@ static const char* manSynopsis =
 "       [-ramdon] flag to generate randomized sequence of words\n"
 "       [-repeat secs] time_to_repeat in seconds with a new wave of words\n"
 "       [-l length] Number of letters of generated words ( default 9 ) \n"
-"       [-alphabet alphabet size] Number of differnt letters used to generate words ( default 10 ) \n";
+"       [-alphabet alphabet size] Number of differnt letters used to generate words ( default 10 ) \n"
+   "       [-progresive] flag to generate sequences of numbers in incressing order ( hit demo )\n";
 
 int word_length;
 int alphabet_length;
 bool rand_flag;
 int repeate_time;
 int num_lines;
+bool progresive;
 
 PaArgument paArgs[] =
 {
-	{ "-l",         &word_length,       "",  PaInt,     PaOpt,     9, 1,  30,         "Number of letters of generated words ( default 9 )" },    
-    { "-alphabet",  &alphabet_length,   "",  PaInt,     PaOpt,     10, 1, 30,         "Number of differnt letters used to generate words ( default 10 )" },
-	{ "-random",    &rand_flag,         "",  PaBool,    PaOpt,  false,  false, true,  "Flag to generate completelly randomized sequence of words"},
-	{ "-repeat",    &repeate_time,      "",  PaInt,     PaOpt,     0, 0, 10000,       "time_to_repeat in seconds with a new wave of words" },    
-	{ " ",          &num_lines,         "",  PaInt,     PaOpt,     0, 0, 1000000000,  "Number of words to be generated" }, 
+	{ "-l",           &word_length,       "",  PaInt,     PaOpt,     9, 1,  30,         "Number of letters of generated words ( default 9 )" },    
+    { "-alphabet",    &alphabet_length,   "",  PaInt,     PaOpt,     10, 1, 30,         "Number of differnt letters used to generate words ( default 10 )" },
+	{ "-random",      &rand_flag,         "",  PaBool,    PaOpt,  false,  false, true,  "Flag to generate completelly randomized sequence of words"},
+	{ "-progressive", &progresive,        "",  PaBool,    PaOpt,  false,  false, true,  "Flag to generate sequences of numbers in incressing order"},
+	{ "-repeat",      &repeate_time,      "",  PaInt,     PaOpt,     0, 0, 10000,       "time_to_repeat in seconds with a new wave of words" },    
+	{ " ",            &num_lines,         "",  PaInt,     PaOpt,     0, 0, 1000000000,  "Number of words to be generated" }, 
 	PA_END_OF_ARGS
 };
 
@@ -49,10 +53,21 @@ int logFd = -1;
 
 char word[100];
 
+size_t progressive_counter=0;
+
+au::Cronometer cronometer;
 
 // Get a new random  word
 void getNewWord()
 {
+
+   if ( progresive )
+   {
+	  size_t slot = (progressive_counter++)/PROGRESSIVE_NUMBER;
+	  sprintf( word , "%lu" , slot );
+	  return;
+   }
+
     for ( int i = 0 ; i < word_length ; i++ )
         word[i] = 48 + rand()%alphabet_length;
 }
@@ -79,7 +94,7 @@ int main( int argC , const char*argV[] )
 
     LM_V(("Generating %d words of %d chars every %d seconds (%s)" , num_lines , alphabet_length , repeate_time , rand_flag?"Randomly":"Non randomly"));
     
-    au::Cronometer cronometer;
+
     
     size_t total_num = 0;
     size_t total_size = 0;

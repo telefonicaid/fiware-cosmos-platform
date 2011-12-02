@@ -16,8 +16,11 @@ ADD_SUBDIRECTORY(samsonPop)
 if (HAVE_KDCHART)
   ADD_SUBDIRECTORY(delilahQt)
   ADD_SUBDIRECTORY(samsonPopQT)
-  ADD_SUBDIRECTORY(samsonTopicMonitor)
 endif (HAVE_KDCHART)
+
+if (HAVE_QT)
+  ADD_SUBDIRECTORY(samsonTopicMonitor)
+endif (HAVE_QT)
 
 # Sandbox...
 ADD_SUBDIRECTORY(samsonTest)

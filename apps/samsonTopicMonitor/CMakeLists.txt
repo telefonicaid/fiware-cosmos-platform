@@ -36,7 +36,6 @@ SET (STATIC_LIBS
      au
      pugi
      samsonCommon
-     kdchart
      ${COMMON_SAMSON_LIBS}
 )
 

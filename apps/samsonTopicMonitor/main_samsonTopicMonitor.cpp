@@ -43,7 +43,7 @@ char concept[1024];
 PaArgument paArgs[] =
 {
 	{ "-title",       title,      "TITLE",       PaString, PaOpt, _i "no title"   , PaNL, PaNL,       "Title of the plot"         },
-	{ "-concept",     concept,    "CONCEPT",     PaString, PaOpt, _i "top"        , PaNL, PaNL,       "Concep to track"         },
+	{ "-concept",     concept,    "CONCEPT",     PaString, PaOpt, _i "top"        , PaNL, PaNL,       "Concept to track"         },
     PA_END_OF_ARGS
 };
 
@@ -124,10 +124,10 @@ void process_command( std::string line )
     std::vector<std::string> words;
     au::split( line , ' ' , words );
 
-    // Not the rigth concept
+    // Not the right concept
 	if( ( words.size() == 0 ) || ( words[0] != concept) )
 	{
-	   LM_M(("Skiping line with concept %s ( selecting concept %s)" , concept , words[0].c_str() ));
+	   LM_M(("Skipping line with concept %s ( selecting concept %s)" , concept , words[0].c_str() ));
 	   return;
 	}
 
@@ -198,10 +198,10 @@ int main( int argC ,  char *argV[] )
     logFd = lmFirstDiskFileDescriptor();
     
     if ( strcmp( concept,"main") == 0)
-        LM_W(("No concept specified with -concept optin. Traking 'main' concept...."));
+        LM_W(("No concept specified with -concept optin. Tracking 'main' concept...."));
     
     
-    // Run the thread to update incomming blocks
+    // Run the thread to update incoming blocks
     pthread_t t;
     pthread_create(&t, NULL, process_income_blocks, NULL);
 

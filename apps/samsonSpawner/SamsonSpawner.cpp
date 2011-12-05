@@ -101,7 +101,7 @@ SamsonSpawner::~SamsonSpawner()
 	processListDelete();
 
     if (pv != NULL)
-        delete pv;
+        free(pv);
 }
 
 

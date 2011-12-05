@@ -94,6 +94,7 @@ namespace samson {
         au::map< std::string , SetupItem > items;
         
     public:
+        ~SetupItemCollection();
       
         // Add a new parameter to consider
         void  add( std::string _name , std::string _default_value , std::string _description );
@@ -120,7 +121,6 @@ namespace samson {
     
 	class SamsonSetup : public SetupItemCollection
 	{
-		
 		SamsonSetup( std::string samson_home , std::string samson_working );
         
         std::string _samson_home;           // Home directory for SAMSON system

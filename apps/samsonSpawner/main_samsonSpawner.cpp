@@ -86,6 +86,7 @@ void sigHandler(int sigNo)
 	}
 
 	LM_W(("Caught signal %d\n", sigNo));
+    samson::SamsonSetup::destroy();
 	exit(1);
 }
 

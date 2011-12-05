@@ -22,8 +22,8 @@ namespace samson
     
     SAMSON_EXTERNAL_VARS;
 /*
- extern char  samsonHome[1024];
-extern char  samsonWorking[1024]
+  extern char  samsonHome[1024];
+  extern char  samsonWorking[1024]
 */
     
 	Status createDirectory( std::string path )
@@ -81,6 +81,11 @@ extern char  samsonWorking[1024]
     
 #pragma mark SetupItemCollection
     
+    SetupItemCollection::~SetupItemCollection()
+    {
+       items.clearMap();
+    }
+
     void  SetupItemCollection::add( std::string _name , std::string _default_value , std::string _description )
     {
         if( items.findInMap(_name) != NULL )

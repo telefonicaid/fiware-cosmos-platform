@@ -418,7 +418,7 @@ EndpointManager::~EndpointManager()
     }
 
     if (endpoint != NULL)
-        delete endpoint;
+        free(endpoint);
 
     if (hostMgr != NULL)
         delete hostMgr;

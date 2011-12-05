@@ -36,6 +36,18 @@ static char* ppFile  = NULL;
 
 /* ****************************************************************************
 *
+* platformProcessesExit - 
+*/
+void platformProcessesExit(void)
+{
+    if (ppFile != NULL)
+        free(ppFile);
+}
+
+
+
+/* ****************************************************************************
+*
 * platformProcessesPathInit - 
 */
 void platformProcessesPathInit(const char* working)

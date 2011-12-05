@@ -28,6 +28,14 @@ extern void platformProcessesPathInit(const char* working);
 
 /* ****************************************************************************
 *
+* platformProcessesExit - 
+*/
+extern void platformProcessesExit(void);
+
+
+
+/* ****************************************************************************
+*
 * platformProcessesPathGet - 
 */
 extern const char* platformProcessesPathGet(void);

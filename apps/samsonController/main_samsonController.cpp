@@ -68,21 +68,18 @@ samson::Network2*     networkP = NULL;
 */
 void exitFunction(void)
 {
-	LM_W(("Freeing up stuff before EXITING"));
-
 	if (networkP != NULL)
-	{
-		LM_M(("deleting Network instance"));
 		delete networkP;
-		networkP = NULL;
-	}
-
 	if (progName)
-	{
-		LM_M(("Freeing progName"));
 		free(progName);
-		progName = NULL;
-	}
+
+    networkP = NULL;
+    progName = NULL;
+
+    samson::platformProcessesExit();
+    samson::SamsonSetup::destroy();
+    engine::MemoryManager::destroy();
+    engine::Engine::destroy();
 }
 
 

@@ -44,9 +44,9 @@ namespace engine
 
     void MemoryManager::destroy( )
     {
-        LM_M(("MemoryManager terminating"));
+       // LM_M(("MemoryManager terminating"));
         
-        if( memoryManager )
+        if (memoryManager)
         {
             delete memoryManager;
             memoryManager = NULL;

@@ -74,6 +74,27 @@ std::string             processListFilename;
 
 /* ****************************************************************************
 *
+* cleanup - 
+*/
+static void cleanup(void)
+{
+	if (spawnerP)
+		delete spawnerP;
+
+	if (progName)
+		free(progName);
+
+    samson::platformProcessesExit();
+
+    samson::SamsonSetup::destroy();
+    engine::MemoryManager::destroy();
+    engine::Engine::destroy();
+}
+
+
+
+/* ****************************************************************************
+*
 * sigHandler - 
 */
 void sigHandler(int sigNo)
@@ -86,7 +107,6 @@ void sigHandler(int sigNo)
 	}
 
 	LM_W(("Caught signal %d\n", sigNo));
-    samson::SamsonSetup::destroy();
 	exit(1);
 }
 
@@ -98,11 +118,6 @@ void sigHandler(int sigNo)
 */
 void exitFunction(void)
 {
-	if (spawnerP)
-		delete spawnerP;
-
-	if (progName)
-		free(progName);
 }
 
 
@@ -145,6 +160,7 @@ int main(int argC, const char *argV[])
 {
 	signal(SIGINT,  sigHandler);
 	signal(SIGTERM, sigHandler);
+    atexit(cleanup);
 
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");

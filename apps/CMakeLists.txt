@@ -13,10 +13,13 @@ ADD_SUBDIRECTORY(samsonKiller)
 
 ADD_SUBDIRECTORY(samsonPush)
 ADD_SUBDIRECTORY(samsonPop)
-if (HAVE_KDCHART)
-  ADD_SUBDIRECTORY(delilahQt)
-  ADD_SUBDIRECTORY(samsonPopQT)
-endif (HAVE_KDCHART)
+
+if (HAVE_QT)
+   if (HAVE_KDCHART)
+     ADD_SUBDIRECTORY(delilahQt)
+     ADD_SUBDIRECTORY(samsonLevelMonitor)
+   endif (HAVE_KDCHART)
+endif (HAVE_QT)
 
 if (HAVE_QT)
   ADD_SUBDIRECTORY(samsonTopicMonitor)

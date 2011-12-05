@@ -22,7 +22,6 @@ SET( STATIC_LIBS
 	samsonDataLib
 	samsonStream
 	samsonIsolated
-
 	samsonNetwork
 	samsonCommon
 	pugi

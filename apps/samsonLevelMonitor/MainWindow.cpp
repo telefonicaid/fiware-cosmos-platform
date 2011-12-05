@@ -22,6 +22,8 @@
 
 extern samson::SamsonClient samson_client;
 
+extern char title[1024];
+extern char concept[1024];
 
 extern au::map<std::string , au::ContinuousValueCollection<double> > value_collections;
 extern au::Token token_value_collections;
@@ -41,7 +43,7 @@ MainWindow::MainWindow( QWidget *parent ) : QMainWindow(parent)
 
 	// Set the top label with information about the connected queue
     if( strcmp( title , "no_title") == 0)
-        label_info->setText( au::str("Connected to queue %s" , queue_name ).c_str() );
+        label_info->setText( au::str("Monitoring %s" , concept ).c_str() );
     else
         label_info->setText( title );
     

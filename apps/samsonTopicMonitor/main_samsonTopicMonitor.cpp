@@ -95,16 +95,6 @@ MainWindow *mainWindow;               // Main window....
 // Content to display on web display 
 // --------------------------------------------------------------------------------
 
-
-
-// --------------------------------------------------------------------------------
-
-au::Token token_web_content("value_collections");
-std::string web_content;
-std::vector<Topic> topics;
-
-// --------------------------------------------------------------------------------
-
 size_t getLineSize( char * data , size_t max)
 {
     for ( size_t i=0;i < max ; i++)
@@ -114,6 +104,13 @@ size_t getLineSize( char * data , size_t max)
 }
 
 
+// --------------------------------------------------------------------------------
+// Custom operations to parse input lines
+// --------------------------------------------------------------------------------
+
+au::Token token_web_content("value_collections");
+std::string web_content;
+std::vector<Topic> topics;
 
 
 void process_command( std::string line )

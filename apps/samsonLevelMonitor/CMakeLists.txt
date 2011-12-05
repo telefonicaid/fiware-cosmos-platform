@@ -1,5 +1,5 @@
 SET (SOURCES
-	main_samsonPopQT.cpp
+	main_samsonLevelMonitor.cpp
 	MainWindow.cpp
 	Plot.cpp
 )
@@ -24,21 +24,21 @@ SET(RESOURCES
 FIND_PACKAGE(Qt4 REQUIRED)
 
 SET (STATIC_LIBS
-         samsonClient
+  	 samsonClient
      delilahLib
      pa
      lm
-     pugi
-     engine
-     au
      protobuf
      pthread
      dl
      samsonNetwork
      samsonStream
      samsonModule
+     engine
+     au
+     pugi
+	 kdchart
      samsonCommon
-     kdchart
      ${COMMON_SAMSON_LIBS}
 )
 
@@ -56,12 +56,15 @@ QT4_ADD_RESOURCES(RESOURCES_RCC ${RESOURCES})
 INCLUDE(${QT_USE_FILE})
 ADD_DEFINITIONS(${QT_DEFINITIONS})
 
-# SAMSON Executable
-ADD_EXECUTABLE( samsonPopQT ${SOURCES} ${HEADERS} ${HEADERS_FOR_MOC} ${HEADERS_MOC} ${FORMS_HEADERS} ${RESOURCES_RCC} )
-TARGET_LINK_LIBRARIES(samsonPopQT ${STATIC_LIBS} )
-TARGET_LINK_LIBRARIES( samsonPopQT ${QT_LIBRARIES} )
 
-INSTALL(TARGETS samsonPopQT  RUNTIME DESTINATION   bin)
+execute_process(COMMAND            echo ${QT_LIBRARIES})
+
+# SAMSON Executable
+ADD_EXECUTABLE( samsonLevelMonitor ${SOURCES} ${HEADERS} ${HEADERS_FOR_MOC} ${HEADERS_MOC} ${FORMS_HEADERS} ${RESOURCES_RCC} )
+TARGET_LINK_LIBRARIES(samsonLevelMonitor ${STATIC_LIBS} )
+TARGET_LINK_LIBRARIES( samsonLevelMonitor ${QT_LIBRARIES} ${QT_QTWEBKIT_LIBRARY} )
+
+INSTALL(TARGETS samsonLevelMonitor  RUNTIME DESTINATION   bin)
 
 
 

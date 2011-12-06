@@ -2,6 +2,7 @@
 #include <algorithm>
 
 #include "au/ErrorManager.h"
+#include "au/string.h"
 
 #include "engine/Notification.h"
 #include "engine/ProcessManager.h"  
@@ -25,6 +26,49 @@
 namespace samson {
     namespace stream
     {
+        
+        bool ignoreCommand( std::string command )
+        {
+            if( command.length() == 0 )
+                return true;
+                
+            for ( size_t i=0 ; i<command.length() ; i++)
+                if ( command[i] != ' ' )
+                {
+                    if ( command[i] == '#' )
+                        return true;
+                    else
+                        return false;
+                }
+            
+            return true;
+        }
+        
+        class AliasManager
+        {
+            au::simple_map<std::string, std::string> aliases;
+            
+        public:
+            
+            void add( std::string reference , std::string name )
+            {
+                aliases.insertInMap(reference, name);
+            }
+            
+            std::string transform( std::string command )
+            {
+                au::simple_map<std::string, std::string>::iterator it_aliases;
+                
+                for ( it_aliases = aliases.begin() ; it_aliases != aliases.end() ; it_aliases++ )
+                    au::find_and_replace( command , it_aliases->first , it_aliases->second );
+                
+                return command;
+            }
+            
+            
+        };
+        
+        
         WorkerCommand::WorkerCommand( int _fromId , size_t _delilah_id ,  const network::WorkerCommand& _command )
         {
             streamManager = NULL;
@@ -91,13 +135,20 @@ namespace samson {
         
         void WorkerCommand::runCommand( std::string command , au::ErrorManager* error )
         {
+            
+            if( ignoreCommand( command ) )
+                return;
+            
             // Parse command
             au::CommandLine cmd;
             cmd.set_flag_boolean("clear_inputs");
             cmd.set_flag_boolean("f");
             cmd.set_flag_boolean("new");
             cmd.set_flag_boolean("remove");
+            cmd.set_flag_string("prefix", "");
             cmd.parse( command );
+            
+            std::string prefix = cmd.get_flag_string("prefix");
             
             if ( cmd.get_num_arguments() == 0 )
             {
@@ -106,13 +157,28 @@ namespace samson {
             }
             
             std::string main_command = cmd.get_argument(0);
-
+            
             if( main_command == "init_stream" )
             {
                 if( cmd.get_num_arguments() < 2 )
-                    error->set( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
+                {
+                    error->set( au::str("Not enough parameters for command 'init_stream' ( only %d argument provided )" , cmd.get_num_arguments()  ) );
+                    return;
+                }
+
+                std::string operation_name;
                 
-                std::string operation_name = cmd.get_argument(1);
+                if( cmd.get_num_arguments() == 3 )
+                {
+                    prefix.append( cmd.get_argument(1) );
+                    prefix.append(".");
+                    
+                    operation_name  = cmd.get_argument(2);
+                }
+                else if( cmd.get_num_arguments() == 2 )
+                {
+                    operation_name  = cmd.get_argument(1);
+                }
                 
                 Operation *op = ModulesManager::shared()->getOperation(  operation_name );
                 if( !op )
@@ -127,8 +193,11 @@ namespace samson {
                                au::str("Non valid operation %d. Only script operations supported for init_stream command" 
                                        , operation_name.c_str()  ) ); 
                     return;
-                }
-             
+                }             
+                
+                
+                // Structure to set names alias
+                AliasManager alias_manager;
                 
                 // Read code, execute it recursivelly
                 au::ErrorManager sub_error;
@@ -136,13 +205,43 @@ namespace samson {
                 {
                     std::string sub_command = op->code[i];
 
-                    runCommand(sub_command, &sub_error);
+                    
+                    au::CommandLine intern_cmdLine;
+                    intern_cmdLine.parse( sub_command );
+                    
+                    if( intern_cmdLine.get_argument(0) == "alias" )
+                    {
+                        if( intern_cmdLine.get_num_arguments() < 3 )
+                        {
+                            error->set( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
+                            return;
+                        }
+                        
+                        std::string reference = intern_cmdLine.get_argument(1);
+                        std::string value = intern_cmdLine.get_argument(2);
+                        
+                        //LM_M(("Alias %s=%s", reference.c_str() , value.c_str() ));
+                        
+                        alias_manager.add( reference , value);
+                    }
+                    else
+                    {
+                        std::string full_command = alias_manager.transform( sub_command );
+                        
+                        if( prefix.length() > 0 )
+                            full_command.append( au::str(" -prefix %s" , prefix.c_str() ) );
+                        
+                        //LM_M(("Full Command %s (original %s)" , full_command.c_str(),  sub_command.c_str() ));
+                        
+                        runCommand( full_command , &sub_error);
+                    }
                     
                     if( sub_error.isActivated() )
                     {
                         error->set( au::str("[%s:%d]%s" , operation_name.c_str() , i , sub_error.getMessage().c_str() ) );
                         return;
                     }
+                    
                 }
                 
                 return;
@@ -171,7 +270,7 @@ namespace samson {
                 {
                     for ( int i = 1 ; i < cmd.get_num_arguments() ; i++ )
                     {
-                        std::string queue_name = cmd.get_argument(i);
+                        std::string queue_name = prefix + cmd.get_argument(i);
                         streamManager->remove_queue(  queue_name );
                     }
                 }
@@ -184,8 +283,8 @@ namespace samson {
                     error->set( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
                 else
                 {
-                    std::string from_queue_name = cmd.get_argument(1);
-                    std::string to_queue_name = cmd.get_argument(2);
+                    std::string from_queue_name = prefix + cmd.get_argument(1);
+                    std::string to_queue_name   = prefix + cmd.get_argument(2);
                     streamManager->cp_queue(  from_queue_name , to_queue_name );
                 }
                 
@@ -198,9 +297,9 @@ namespace samson {
                     error->set( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
                 else
                 {
-                    std::string queue_name = cmd.get_argument(1);
-                    std::string property = cmd.get_argument(2);
-                    std::string value = cmd.get_argument(3);
+                    std::string queue_name = prefix + cmd.get_argument(1);
+                    std::string property   = cmd.get_argument(2);
+                    std::string value      = cmd.get_argument(3);
                     
                     Queue *queue = streamManager->getQueue( queue_name );
                     queue->setProperty( property , value );
@@ -208,11 +307,11 @@ namespace samson {
                 return;
             }            
             
-            if( main_command == "add_stream_operation" )
+            if( ( main_command == "add_stream_operation" ) || ( main_command == "aso"  ) )
             {
                 
                 au::ErrorManager tmp_error;
-                StreamOperation* stream_operation = StreamOperation::newStreamOperation(streamManager,  command , tmp_error );
+                StreamOperation* stream_operation = StreamOperation::newStreamOperation(streamManager , command , tmp_error );
                 
                 if( !stream_operation )
                     error->set( tmp_error.getMessage() );
@@ -232,20 +331,27 @@ namespace samson {
                     return;
                 }
                 
-                std::string name            = cmd.get_argument( 1 );
+                // Get flag force
                 bool force = cmd.get_flag_bool("f");
-                
-                // Check it the queue already exists
-                StreamOperation * operation = streamManager->stream_operations.extractFromMap( name );
-                
-                // Check if queue exist
-                if( !operation  )
+
+                for ( int i = 1 ; i < cmd.get_num_arguments() ; i ++ )
                 {
-                    if( !force )
-                        error->set( au::str("StreamOperation %s does not exist" , name.c_str()  ) );
+                    // New operation to remove
+                    std::string name = prefix + cmd.get_argument( i );
+                    
+                    // Check it the queue already exists
+                    StreamOperation * operation = streamManager->stream_operations.extractFromMap( name );
+                    
+                    // Check if queue exist
+                    if( !operation  )
+                    {
+                        if( !force )
+                            error->set( au::str("StreamOperation %s does not exist" , name.c_str()  ) );
+                    }
+                    else
+                        delete operation;
+                    
                 }
-                else
-                    delete operation;
                 return;
                 
             }
@@ -258,7 +364,7 @@ namespace samson {
                     return;
                 }
                 
-                std::string name            = cmd.get_argument( 1 );
+                std::string name            = prefix + cmd.get_argument( 1 );
                 std::string property        = cmd.get_argument( 2 );
                 std::string value           = cmd.get_argument( 3 );
                 
@@ -578,7 +684,7 @@ namespace samson {
             
             // Simple commands
             au::ErrorManager error;
-            runCommand(command, &error);
+            runCommand(  command, &error); // No prefix here
             
             if( error.isActivated() )
                 finishWorkerTaskWithError( error.getMessage() ); 

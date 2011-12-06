@@ -424,7 +424,14 @@ namespace samson
             return;
         }
 
-        if (info->completingSecondWord("init_stream") )
+        
+        if (info->completingSecondWord( "init_stream" ) )
+        {
+            autoCompleteOperations( info , "script" );
+            return;
+        }
+        
+        if (info->completingThirdWord("init_stream","*") )
         {
             // Add operations
             autoCompleteOperations( info , "script" );

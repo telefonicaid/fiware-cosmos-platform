@@ -57,14 +57,23 @@ namespace samson {
             
         }
         
-        StreamOperation* StreamOperation::newStreamOperation( StreamManager *streamManager , std::string command , au::ErrorManager& error )
+        StreamOperation* StreamOperation::newStreamOperation( StreamManager *streamManager ,  std::string command , au::ErrorManager& error )
         {
             // Expected format add_stream_operation name operation input_queues... output_queues ... parameters
             
             au::CommandLine cmd;
-            cmd.set_flag_boolean("forward");    // Forward flag to indicate that this is a reduce forward operation ( no update if state )
-            cmd.set_flag_int("divisions", SamsonSetup::shared()->getInt("general.num_processess") );    // Number of divisions in state operations 
+            
+            // Forward flag to indicate that this is a reduce forward operation ( no update if state )
+            cmd.set_flag_boolean("forward");    
+            
+            // Number of divisions in state operations 
+            cmd.set_flag_int("divisions", SamsonSetup::shared()->getInt("general.num_processess") );    
+            
+            // Prefix used to change names of queues and operations
+            cmd.set_flag_string("prefix", "");
             cmd.parse( command );
+
+            std::string prefix = cmd.get_flag_string("prefix");
             
             if( cmd.get_num_arguments() < 3 )
             {
@@ -72,7 +81,7 @@ namespace samson {
                 return NULL;
             }
             
-            std::string name            = cmd.get_argument( 1 );
+            std::string name            = prefix + cmd.get_argument( 1 );
             std::string operation       = cmd.get_argument( 2 );
             
             // If the operation exist, it will be replaced by this one, so no check if the stream operation is here
@@ -151,13 +160,13 @@ namespace samson {
             
             for (int i = 0 ; i < num_inputs ; i++ )
             {
-                std::string queue_name = cmd.get_argument( 3 + i );
+                std::string queue_name = prefix + cmd.get_argument( 3 + i );
                 stream_operation->input_queues.push_back( queue_name );
             }
             
             for (int i = 0 ; i < num_outputs ; i++ )
             {
-                std::string queue_name = cmd.get_argument( 3 + num_inputs + i );
+                std::string queue_name = prefix + cmd.get_argument( 3 + num_inputs + i );
                 stream_operation->output_queues.push_back( queue_name );
             }            
             

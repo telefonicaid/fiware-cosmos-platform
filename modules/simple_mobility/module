@@ -47,4 +47,59 @@ reduce reduce_commands
 
 	helpLine "Update internal state"
 }
-	
+
+
+script demo
+{
+	code
+	{
+		remove_all_stream; 
+		init_stream demo simple_mobility.init_stream_operations
+	}
+}
+
+script init_stream_operations
+{
+	code
+	{
+		# Queues;
+
+		alias [q1] 01.in_txt_commands;
+		alias [q2] 02.in_txt_cdrs;		
+		alias [q3] 10.commands;
+		alias [q4] 11.records;
+		alias [q5] 20.users;
+		alias [q6] 30.messages;
+		alias [q7] 99.plot.01.updates;
+		
+		# Operations;
+
+		alias [o1] 01.parser_commands;
+		alias [o2] 02.parser_cdrs;
+
+		alias [o3] 03.reduce_commands;
+		alias [o4] 04.reduce_cdrs;
+
+		# Clear;
+
+		rm_queue [q1] [q2] [q3] [q4] [q5] [q6] [q7] -f;
+		rm_stream_operation [o1] [o2] [o3] [o4] -f;
+
+		# Definitions;
+
+		add_stream_operation [o1]  simple_mobility.parser_commands    [q1]        [q3];
+		add_stream_operation [o2]  simple_mobility.parser_cdrs        [q2]        [q4];
+
+		add_stream_operation [o3]  simple_mobility.reduce_commands    [q3] [q5]   [q6] [q7] [q5];
+		add_stream_operation [o4]  simple_mobility.reduce_cdrs        [q4] [q5]   [q6] [q7] [q5];
+
+		init_stream 99.plot plot.init_stream_operations;
+	}
+}
+
+
+
+
+
+
+

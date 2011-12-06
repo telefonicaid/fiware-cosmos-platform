@@ -108,6 +108,7 @@ namespace samson {
             
             StreamManager *streamManager;   // Pointer to the stream manager to check ready
             std::string last_review;        // Comment from the last review
+            
             std::string command;            // Original command that originated this StreamOperation
             
         public:

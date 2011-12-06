@@ -58,3 +58,27 @@ generator generator
 	helpLine "Simple generator for testing"
 }
 
+script init_stream_operations
+{
+	code
+	{
+		# Queues
+		alias [q1] 01.updates;
+		alias [q2] 02.levels;
+		alias [q3] 03.levels_updates;
+		alias [q4] 04.txt_notifications; 
+		
+		# Operations
+		alias [o1] 01.update;
+		alias [o2] 02.publish;
+
+		# Remove queues and operations
+		rm_queue [q1] [q2] [q3] [q4] -f;
+		rm_stream_operation [o1] [o2] -f;
+
+		# Definitions
+		aso [o1]  plot.update_levels                   [q1] [q2] [q3] [q2];
+		aso [o2]  plot.publish_level_notifications	   [q3]      [q4];
+	}
+}
+

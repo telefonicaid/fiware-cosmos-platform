@@ -630,7 +630,7 @@ namespace samson {
                             queue->environment.recoverFromString( properties );
                             
                         }
-                        else if ( main_command == "add_stream_operation" )
+                        else if ( ( main_command == "add_stream_operation" ) || ( main_command == "aso" ) )
                         {
                             au::ErrorManager error;
                             StreamOperation *stream_operation = StreamOperation::newStreamOperation( this , std::string(line) , error );

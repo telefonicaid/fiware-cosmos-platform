@@ -106,6 +106,10 @@ int get_term_size (int fd, int *x, int *y);
 // Get a fill path from a directory and file name
 std::string path_from_directory( std::string directory , std::string file );
 
+// Find and replace 
+void find_and_replace( std::string &source, const std::string find, std::string replace );
+
+
 NAMESPACE_END
 
 

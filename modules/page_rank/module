@@ -78,3 +78,38 @@ script test
 
 	}
 }
+
+
+script demo
+{
+	code
+	{
+		remove_all_stream;
+		init_stream demo page_rank.init_stream_operations;
+	}
+}
+
+script init_stream_operations
+{
+	code
+	{		
+
+		alias [input]     01.graph.txt;
+		alias [links]     10.links;
+
+		alias [nodes]     20.nodes;
+		alias [messages]  30.messages;
+
+		alias [parser]           01.parser_links;
+		alias [update_links]     10.update_links;
+		alias [update_messages]  10.update_messages;
+
+		rm_queue [input] [graph] [nodes] [messages] -f;
+		rm_stream_operation [parser] [update_links] [update_messages] -f;
+	
+		add_stream_operation [parser]           wiki.parse_pages_to_links    [input]             [links];
+
+		add_stream_operation [update_links]     page_rank.updateLinks        [links] [nodes]     [messages] [nodes];
+		add_stream_operation [update_messages]  page_rank.updateMessages     [messages] [nodes]  [messages] [nodes];
+	}
+}

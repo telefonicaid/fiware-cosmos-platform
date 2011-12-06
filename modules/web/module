@@ -17,8 +17,18 @@ script init_stream_operations
 {
     code
     {
-		rm_stream_operation hit.04.input_words -f;
-		add_stream_operation web.parse_web_hits web.parse_web_hits web.01.input.txt hit.04.input_words;
+		# Queues;
+		alias [input]   01.input;
+		alias [words]   99.hit.01.input;
+
+		# Operations;
+		alias [parse_web]   01.parse_web;
+
+		# Definitions;
+		add_stream_operation  [parse_web]  web.parse_web_hits [input] [words];
+
+		# Auxiliar modules;
+		init_stream 99.hit hit.init_stream_operations
     }
 
     helpLine "Init stream operations"
@@ -29,11 +39,10 @@ script demo
     code
     {
 		remove_all_stream;
-		init_stream web.init_stream_operations;
-		init_stream hit.init_stream_operations;
+		init_stream demo web.init_stream_operations;
     }
 
-    helpLine "Init stream operations"
+    helpLine "Demo about web hit"
 }
 
 

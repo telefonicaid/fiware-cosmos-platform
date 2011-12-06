@@ -54,20 +54,26 @@ script init_stream_operations
 {
   code
   {
-    rm_stream_operation hit.01.reduce_words -f;
-    rm_stream_operation hit.20.reduce_tops -f;
-    rm_stream_operation hit.21.export_tops -f;
 
-    rm_queue hit.01.input_words -f;
-    rm_queue hit.10.words -f;
-    rm_queue hit.11.words_update -f;
-    rm_queue hit.20.hit.tops -f;
-    rm_queue hit.21.output_tops -f;
-    rm_queue hit.22.output_tops_txt -f;
+	# Queues;
+	alias [input]          01.input;
+	alias [words]          10.words;
+	alias [words_updats]   11.words_updates;
+	alias [tops]           20.tops;
+	alias [tops_out]       30.output_tops;
+	alias [tops_out_txt]   31.output_tops_txt;
 
-    add_stream_operation hit.01.reduce_words  hit.reduceHits              hit.01.input_words            hit.10.words  hit.11.words_update hit.10.words;
-    add_stream_operation hit.20.reduce_tops   hit.reduceHitCollections    hit.11.words_update           hit.20.tops   hit.21.output_tops hit.20.tops;
-    add_stream_operation hit.21.export_tops   hit.export_hit_collection   hit.21.output_tops                          hit.22.output_tops_txt;
+	# Operations;
+	alias [reduce_words]    01.reduce_words;
+	alias [reduce_tops]	    20.reduce_tops;
+	alias [export_tops]     30.export_tops;
+
+
+	# Definitions;
+    add_stream_operation [reduce_words] hit.reduceHits              [input] [words]              [words_updats] [words];
+    add_stream_operation [reduce_tops]  hit.reduceHitCollections    [words_updats] [tops]        [tops_out] [tops];
+    add_stream_operation [export_tops]  hit.export_hit_collection   [tops_out]                   [tops_out_txt];
+
   }
 
 }

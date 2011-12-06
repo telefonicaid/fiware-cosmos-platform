@@ -42,19 +42,16 @@ namespace web{
 		   // Get the line in a c++ string                                                                                          
 		   std::vector<char*> words;
 
+		   // Split input line in words
 		   split_in_words(line, words);
 
-		   //OLM_T(251, ("words %s ", words[3]));
-
-		   samson::system::String key;
+		   
+		   // Emit the thirs element as it is
 		   key.value = words[3];
-
-		   samson::system::UInt value;
 		   value.value = 1;
-
 		   writer->emit( 0 , &key , &value);
 
-
+		   // Emit full URL as 4th and 7th field
 		   if( words.size() >= 7 )
 		   {
 			  key.value = "url ";
@@ -62,13 +59,15 @@ namespace web{
 			  key.value.append( words[6] );
 			  writer->emit( 0 , &key , &value);
 		   }
-			  
+		   
+           // Emit the 9th field as protocol
 		   if ( words.size() >= 8 )
 		   {
 			  key.value = "protocol ";
 			  key.value.append(words[7]);
 			  writer->emit(0,&key,&value);
 		   }
+
 
 		}
 

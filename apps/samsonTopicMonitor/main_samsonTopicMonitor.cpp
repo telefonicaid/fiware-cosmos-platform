@@ -124,7 +124,7 @@ void process_command( std::string line )
     // Not the right concept
 	if( ( words.size() == 0 ) || ( words[0] != concept) )
 	{
-	   LM_M(("Skipping line with concept %s ( selecting concept %s)" , concept , words[0].c_str() ));
+	   LM_M(("Skipping line with concept %s ( selecting concept %s)" , words[0].c_str() , concept ));
 	   return;
 	}
 

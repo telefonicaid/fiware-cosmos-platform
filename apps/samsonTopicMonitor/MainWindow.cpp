@@ -96,6 +96,8 @@ void MainWindow::updateTimer()
     
     // ------------------------------------------------------------------    
     
+
+	tableView->resizeColumnsToContents();
     
     
 }

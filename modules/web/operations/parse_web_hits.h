@@ -35,6 +35,7 @@ namespace web{
 
 		void init( samson::KVWriter *writer )
 		{
+			  value.value = 1;
 		}
 
 		void parseLine( char * line , samson::KVWriter *writer )
@@ -47,9 +48,12 @@ namespace web{
 
 		   
 		   // Emit the thirs element as it is
-		   key.value = words[3];
-		   value.value = 1;
-		   writer->emit( 0 , &key , &value);
+		   if( words.size() >= 4 )
+		   {
+			  key.value = "ip ";
+			  key.value.append(  words[3] );
+			  writer->emit( 0 , &key , &value);
+		   }
 
 		   // Emit full URL as 4th and 7th field
 		   if( words.size() >= 7 )

@@ -40,7 +40,8 @@ namespace hit{
 			 return;
 
           ::time_t diff =  current_ts - time.value;
-          count.value = (( (double) count.value ) * pow( 0.99666666  , (double) diff ));		  
+          count.value = (( (double) count.value ) * pow( 0.99666666  , (double) diff ));
+		  time.value = current_ts;
 	   }
 
 	   std::string getConcept()

@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <iostream>
 #include <sstream>
 #include <sys/ioctl.h>
@@ -20,6 +21,32 @@
 #include "au/Console.h"  // Own interface
 
 
+struct termios old_tio, new_tio;
+
+void finish_console_mode()
+{
+    /* set the new settings immediately */
+    tcsetattr(STDIN_FILENO,TCSANOW,&old_tio);
+}
+
+void init_console_mode()
+{
+    /* get the terminal settings for stdin */
+    tcgetattr(STDIN_FILENO,&old_tio);
+    
+    /* we want to keep the old setting to restore them a the end */
+    new_tio=old_tio;
+    
+    /* disable canonical mode (buffered i/o) and local echo */
+    new_tio.c_lflag &=(~ICANON & ~ECHO);
+    
+    /* set the new settings immediately */
+    tcsetattr(STDIN_FILENO,TCSANOW,&new_tio);
+    
+    atexit( finish_console_mode );
+}
+
+
 NAMESPACE_BEGIN(au)
 
 Console *current_console=NULL;
@@ -36,27 +63,7 @@ Console::~Console()
     delete command_history;
 }
 
-void Console::init()
-{
-    /* get the terminal settings for stdin */
-    tcgetattr(STDIN_FILENO,&old_tio);
-    
-    /* we want to keep the old setting to restore them a the end */
-    new_tio=old_tio;
-    
-    /* disable canonical mode (buffered i/o) and local echo */
-    new_tio.c_lflag &=(~ICANON & ~ECHO);
-    
-    /* set the new settings immediately */
-    tcsetattr(STDIN_FILENO,TCSANOW,&new_tio);
-    
-}
 
-void Console::finish()
-{
-    /* set the new settings immediately */
-    tcsetattr(STDIN_FILENO,TCSANOW,&old_tio);
-}
 
 void Console::print_command()
 {
@@ -249,7 +256,7 @@ bool Console::isNormalChar( char c )
 void Console::runConsole()
 {
     // Init console
-    init();
+    init_console_mode();
     
     t_running = pthread_self();
     
@@ -328,7 +335,6 @@ void Console::runConsole()
         
     }
     
-    finish();
     
     // Clear line to quit nicely...
     clear_line();

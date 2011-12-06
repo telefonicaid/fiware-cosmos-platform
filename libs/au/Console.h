@@ -20,7 +20,6 @@ class ConsoleCommandHistory;
 class Console
 {
     ConsoleCommandHistory *command_history;
-    struct termios old_tio, new_tio;
     
     // Flag to quit internal loop
     bool quit_console;
@@ -57,8 +56,6 @@ public:
     
 private:
     
-    void init();
-    void finish();
     void print_command();
     bool isImputReady();
     

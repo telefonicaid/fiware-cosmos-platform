@@ -76,9 +76,28 @@ namespace hit{
 		  for (int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
 			 if( top_hits[i]->concept.value == hit->concept.value )
 			 {				
-   			   top_hits[i]->count.value = hit->count.value;
-				
-				return;
+    		     top_hits[i]->count.value = hit->count.value;				
+
+				 // Reorder if necessary
+				 while( ( i > 0 ) && ( top_hits[i]->count.value > top_hits[i-1]->count.value ) )
+				 {
+		 			 samson::hit::Hit* tmp_hit = top_hits[i];
+	    			 top_hits[i] =  top_hits[i-1];
+					 top_hits[i-1] =  tmp_hit;
+
+					 i--;
+				 }
+
+				 while( ( i <= (NUM_TOP_ITEMS-2) ) && ( top_hits[i]->count.value < top_hits[i+1]->count.value ) )
+				 {
+		 			 samson::hit::Hit* tmp_hit = top_hits[i];
+	    			 top_hits[i] =  top_hits[i+1];
+					 top_hits[i+1] =  tmp_hit;
+
+					 i++;
+				 }
+
+		  		 return;
 			 }
 
 		  // Just look for the rigth place to update

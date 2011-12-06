@@ -131,8 +131,8 @@ namespace hit{
 	  void add( samson::hit::Hit *hit  )
 	  {
 
-		 std::string concept = hit->extractCategoryConcept();
-		 add( concept.c_str() , hit ); 
+		 std::string category = hit->getCategory();
+		 add( category.c_str() , hit ); 
 	  }
 
 	  void add( const char * concept , Hit* hit )

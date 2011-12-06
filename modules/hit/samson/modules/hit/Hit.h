@@ -43,28 +43,29 @@ namespace hit{
           count.value = (( (double) count.value ) * pow( 0.99666666  , (double) diff ));		  
 	   }
 
-	   std::string extractCategoryConcept()
+	   std::string getConcept()
+	   {
+		  size_t pos = concept.value.find(' ');
+
+		  if( ( pos == std::string::npos ) || ( pos == 0 ))
+			 return concept.value;
+
+		  //std::string category_concept = concept.value.substr( 0 , pos );
+		  std::string name = concept.value.substr( pos+1 , std::string::npos );
+		  
+		  return name;
+	   }
+
+	   std::string getCategory()
 	   {
 		  size_t pos = concept.value.find(' ');
 		  
-		  if( pos == std::string::npos )
+		  if( ( pos == std::string::npos ) || ( pos == 0 ))
 			 return "top";
-		  
-		  if( pos == 0 )
-		  {
-			 // Word starts with " "
-			 
-			 std::string name = concept.value.substr( pos+1 , std::string::npos );
-			 concept.value = name;
-			 
-			 return "top";
-		  }
-		  
 		  
 		  std::string category_concept = concept.value.substr( 0 , pos );
-		  std::string name = concept.value.substr( pos+1 , std::string::npos );
+		  //std::string name = concept.value.substr( pos+1 , std::string::npos );
 		  
-		  concept.value = name;
 		  return category_concept;
 	   }
 	};

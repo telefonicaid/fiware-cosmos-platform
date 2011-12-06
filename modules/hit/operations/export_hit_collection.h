@@ -53,7 +53,7 @@ namespace hit{
 			  
 			  for ( int i = 0 ; i < hit_collection.hits_length ; i ++ )
 			  {
-				 std::string concept = hit_collection.hits[i].concept.value;
+				 std::string concept = hit_collection.hits[i].getConcept();
 				 size_t count = hit_collection.hits[i].count.value; // convert to ingeger for displaying....
 				 output << concept << " " << count << " ";
 			  }

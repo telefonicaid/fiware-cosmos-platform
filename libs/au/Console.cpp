@@ -330,6 +330,10 @@ void Console::runConsole()
     
     finish();
     
+    // Clear line to quit nicely...
+    clear_line();
+    printf("\n");
+    
     // Remove the signal handler...
     signal(SIGWINCH, SIG_IGN);
     

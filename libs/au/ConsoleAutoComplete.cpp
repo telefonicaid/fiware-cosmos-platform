@@ -196,11 +196,13 @@ std::string ConsoleAutoComplete::getHelpMessage()
 
 bool ConsoleAutoComplete::necessary_print_last_words_alternatives()
 {
+
     if ( last_word_alternatives.size() == 0 )
         return false;
     
     if ( last_word_alternatives.size() == 1 )
         return false;
+    
     
     int last_word_length = last_word.length();
     int common_chars = common_chars_in_last_word_alternative();
@@ -212,12 +214,10 @@ bool ConsoleAutoComplete::necessary_print_last_words_alternatives()
 void ConsoleAutoComplete::print_last_words_alternatives()
 {
     
-    if (help_message.length()>0) 
-        printf("help: %s\n" , help_message.c_str());
-    
     if( !necessary_print_last_words_alternatives() )
         return;
-    
+
+
     int columns = getColumns();
     int max_length = 0;
     for (size_t i=0;i<last_word_alternatives.size();i++)

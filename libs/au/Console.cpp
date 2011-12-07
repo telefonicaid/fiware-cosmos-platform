@@ -112,12 +112,20 @@ bool Console::isImputReady()
 void Console::process_auto_complete( ConsoleAutoComplete * info )
 {
     // Do something with autocomplete information provided by thrid party
-    //print_command();
-    //printf("\n");
 
-    clear_line();
+    std::string help_message = info->getHelpMessage();
     
-    info->print_last_words_alternatives();
+    if( ( help_message.length() > 0) || info->necessary_print_last_words_alternatives()  )
+    {
+        print_command();
+        printf("\n");
+    }
+
+    if( info->necessary_print_last_words_alternatives() )
+        info->print_last_words_alternatives();
+    
+    if( help_message.length() > 0 )
+        printf("Help: %s\n", help_message.c_str());
     
     // Add necessary stuff...    
     command_history->current()->add( info->stringToAppend() );

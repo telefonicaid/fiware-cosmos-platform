@@ -42,7 +42,7 @@ class ConsoleAutoComplete
     
     // Alternatives for the last word        
     std::vector<ConsoleAutoCompleteAlternative> last_word_alternatives;
-    
+
     std::string help_message;
     
 protected:

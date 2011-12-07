@@ -118,8 +118,6 @@ typedef struct PaVars
 */
 void paConfigCleanup(void)
 {
-    printf("in paConfigCleanup\n");
-
 	if (paPrefix)
     {
 		free(paPrefix);

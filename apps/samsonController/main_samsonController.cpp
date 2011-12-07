@@ -72,11 +72,7 @@ void exitFunction(void)
 {
 	if (networkP != NULL)
 		delete networkP;
-	if (progName)
-		free(progName);
-
     networkP = NULL;
-    progName = NULL;
 
     samson::platformProcessesExit();
 
@@ -89,8 +85,12 @@ void exitFunction(void)
         engine::Engine::destroy();
 	samson::ModulesManager::destroy();
 
-    printf("shutting down Google Protocol Buffers\n");
     google::protobuf::ShutdownProtobufLibrary();
+
+	if (progName)
+		free(progName);
+
+    progName = NULL;
 }
 
 

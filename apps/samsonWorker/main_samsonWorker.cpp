@@ -64,10 +64,12 @@ PaArgument paArgs[] =
 
 /* ****************************************************************************
 *
-* logFd - file descriptor for log file used in all libraries
+* global variables
 */
-int                   logFd  = -1;
-samson::SamsonWorker* worker = NULL;
+int                   logFd             = -1;
+samson::SamsonWorker* worker            = NULL;
+bool                  setupInitialized  = false;
+bool                  engineInitialized = false;
 
 
 
@@ -80,8 +82,20 @@ void exitFunction(void)
 	if (worker)
 		delete worker;
 
+    if (setupInitialized == true)
+        samson::SamsonSetup::destroy();
+
+    engine::MemoryManager::destroy();
+
+    if (engineInitialized == true)
+        engine::Engine::destroy();
+	samson::ModulesManager::destroy();
+
+    google::protobuf::ShutdownProtobufLibrary();
+
 	if (progName)
 		free(progName);
+    progName = NULL;
 }
 
 
@@ -120,6 +134,8 @@ void captureSIGPIPE( int s )
 */
 int main(int argC, const char *argV[])
 {
+	atexit(exitFunction);
+
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
@@ -140,9 +156,6 @@ int main(int argC, const char *argV[])
 
 	lmAux((char*) "father");
 
-	atexit(google::protobuf::ShutdownProtobufLibrary);
-	atexit(exitFunction);
-
 	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
@@ -159,10 +172,12 @@ int main(int argC, const char *argV[])
     au::LockDebugger::shared();
     
 	samson::SamsonSetup::init(samsonHome , samsonWorking);          // Load setup and create default directories
+    setupInitialized = true;
     samson::SamsonSetup::shared()->createWorkingDirectories();      // Create working directories
     
 	engine::SharedMemoryManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess") , samson::SamsonSetup::shared()->getUInt64("general.shared_memory_size_per_buffer"));
 	engine::Engine::init();
+    engineInitialized = true;
 	engine::DiskManager::init(1);
 	engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
 	engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));

@@ -225,6 +225,7 @@ void paUsage(PaArgument* paList)
 		strncat(paResultString, s, sizeof(paResultString) - 1);
     }
 
+    free(spacePad);
     LM_T(LmtPaUsage, ("presenting usage"));
     strncat(paResultString, "\r", sizeof(paResultString) - 1);
 

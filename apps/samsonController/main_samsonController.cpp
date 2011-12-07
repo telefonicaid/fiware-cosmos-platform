@@ -57,8 +57,10 @@ PaArgument paArgs[] =
 *
 * global variables
 */
-int                   logFd    = -1;
-samson::Network2*     networkP = NULL;
+int                   logFd             = -1;
+samson::Network2*     networkP          = NULL;
+bool                  setupInitialized  = false;
+bool                  engineInitialized = false;
 
 
 
@@ -77,9 +79,18 @@ void exitFunction(void)
     progName = NULL;
 
     samson::platformProcessesExit();
-    samson::SamsonSetup::destroy();
+
+    if (setupInitialized == true)
+        samson::SamsonSetup::destroy();
+
     engine::MemoryManager::destroy();
-    engine::Engine::destroy();
+
+    if (engineInitialized == true)
+        engine::Engine::destroy();
+	samson::ModulesManager::destroy();
+
+    printf("shutting down Google Protocol Buffers\n");
+    google::protobuf::ShutdownProtobufLibrary();
 }
 
 
@@ -126,14 +137,13 @@ int main(int argC, const char* argV[])
 	paConfig("man copyright",                 (void*) manCopyright);
 	paConfig("man version",                   (void*) manVersion);
 
+	atexit(exitFunction);
+
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
 	LM_T(LmtInit, ("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
 		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
-
-	atexit(exitFunction);
-	atexit(google::protobuf::ShutdownProtobufLibrary);
 
 	samson::platformProcessesPathInit(samsonWorking);
 
@@ -145,8 +155,11 @@ int main(int argC, const char* argV[])
 
     // Init Samson Setup
 	samson::SamsonSetup::init( samsonHome , samsonWorking );  // Load setup and create all directories
-    
+    setupInitialized = true;
+
 	engine::Engine::init();
+    engineInitialized = true;
+
 	engine::DiskManager::init(1);
 	engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
 	engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));

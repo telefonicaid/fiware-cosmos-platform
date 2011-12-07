@@ -658,11 +658,14 @@ do                                         \
 	fi += l;                               \
 } while (0)
 
-#define STRING_ADD(s, l)                   \
-do                                         \
-{                                          \
-	strncat(line, s, lineLen - 1);         \
-	fi += l;                               \
+#define STRING_ADD(s, l)                          \
+do                                                \
+{                                                 \
+	if (s != NULL)                                \
+		strncat(line, s, lineLen - 1);            \
+    else                                          \
+		strncat(line, "noprogname", lineLen - 1); \
+	fi += l;                                      \
 } while (0)
 
 #define INT_ADD(i, l)                      \
@@ -730,7 +733,7 @@ static char* lmLineFix
 		else if (strncmp(&format[fi], "TID", 3) == 0)
 			INT_ADD((int) tid, 3);
 		else if (strncmp(&format[fi], "EXEC", 4) == 0)
-			STRING_ADD(progName, 4);
+            STRING_ADD(progName, 4);
 		else if (strncmp(&format[fi], "AUX", 3) == 0)
 			STRING_ADD(aux, 3);
 		else if (strncmp(&format[fi], "FILE", 4) == 0)

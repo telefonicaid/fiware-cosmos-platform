@@ -11,114 +11,158 @@
 #include "au/CommandLine.h" // au::CommandLine
 
 
-typedef struct 
+class Position
 {
-   int x;
-   int y;
-	
-	void init ()
-	{
-		x=500;
-		y=500;
-	}
+    
+public:
+    
+    double x;
+    double y;
+    
+    Position()
+    {
+        x = 0;
+        y = 0;
+    }
+    
+    Position( double _x , double _y )
+    {
+        x = _x;
+        y = _y;
+    }
 
-   void limits( int* var )
-   {
-	  if( *var <  0)
-		 *var = 0;
-	  if( *var > 1000 )
-		 *var = 1000;
-   }
+    void set( double _x , double _y )
+    {
+        x = _x;
+        y = _y;
+    }
+    
+    void set_in_limits( )
+    {
+        set_in_limits(&x);
+        set_in_limits(&y);
+    }    
+    
+private:
+    
+    void set_in_limits( double* var )
+    {
+        if( *var <  0)
+            *var = 0;
+        if( *var > 1000 )
+            *var = 1000;
+    }    
 
-	void step()
-	{
-	   x+= rand()%21 - 10;
-	   y+= rand()%21 - 10;
+};
 
-	   limits(&x);
-	   limits(&y);
-
-	}
-	
-} User;
-
-User *users;
-
-int main( int args , char*argv[] )
+Position getHome( size_t user )
 {
+    return Position( 10 * ( user%100 )  , 1000 - 10 * ( user%100 ) );
+}
 
-  srand( time(NULL));
-  if ( args < 2 )
-  {
-    fprintf(stderr, "Usage: %s num_users [rate_in_events_per_seconds] ( default 10Kevents/sec )  [max_time (default 0 - no limit) ]\n" , argv[0] );
-    exit(1);
-  }
+Position getWork( size_t user )
+{
+    return Position( 1000 - 10 * ( user%100 ) , 10 * ( user%100 )  );
+}
 
-  size_t num_users = atoll( argv[1] );
-  size_t rate;
-  
-  if( args > 2 )
-	 rate = atoll( argv[2] );
-  else
-	 rate = 10000;
+Position getPosition( size_t user )
+{
+    if( time(NULL)%100 < 50 )
+        return getHome(user);
+    else
+        return getWork(user);
+    
+    return Position( rand()%1000 , rand()%1000 );
+}
 
+int main( int args , const char*argv[] )
+{
+    // Random sequence generated
+    srand( time(NULL));
+    
+    au::CommandLine cmd;
+    cmd.set_flag_uint64("users", 40000000 );    // Number of users
+    cmd.set_flag_uint64("rate", 10000 );    // Number of CDRS per second
+    cmd.set_flag_boolean("h");
+    cmd.set_flag_boolean("help");
+    cmd.set_flag_boolean("commands");
+    
+    cmd.parse( args, argv );
 
-  size_t max_time = 0;
-  if( args > 3 )
-  {
-	 max_time = atoll( argv[3] );
-  }
-
-  // Init users
-  users = (User*) malloc( sizeof( User) * num_users );
-  for ( size_t i = 0 ; i < num_users ; i++ )
-	 users[i].init();
-
-  size_t total_num = 0;
-  size_t total_size = 0;
-
-
-  au::Cronometer cronometer;
-  size_t theoretical_seconds = 0;
-
-  while( true )
-  {
-
-	 theoretical_seconds += 5; // 5 seconds generating data
-
-	 for ( size_t i = 0 ; i < 5*rate ; i++ )
-	 {
-		 size_t user = rand()%num_users;
-
-		 users[user].step();
- 		 total_size += printf("%lu CDR %d %d %lu\n", user , users[user].x , users[user].y , time(NULL) );
-		 total_num++;
-	 }
-
-	 if( max_time > 0 )
-		if( theoretical_seconds > max_time )
-		{
-		   fprintf(stderr,"%s: Finish generating data for time limit\n" , argv[0] );
-		   return 0;
-		}
-	 
-	 size_t total_seconds = cronometer.diffTimeInSeconds();
-
-	 if( total_seconds < theoretical_seconds )
-	 {
-		int seconds_to_sleep = (int) theoretical_seconds - total_seconds;
-		fprintf(stderr,"%s: Sleeping %d seconds to keep rate %s\n", argv[0] , seconds_to_sleep , au::str( rate , "Events/sec" ).c_str() );
-		sleep( seconds_to_sleep );
-	 }
-
-	 if( (theoretical_seconds%10) == 0)
-	 {
-		fprintf(stderr,"%s: Generated %s lines ( %s bytes ) in %s. Rate: %s / %s.\n" 
-			 , argv[0] , au::str(total_num).c_str() , au::str(total_size).c_str(), au::time_string( total_seconds ).c_str() ,
-			 au::str( (double)total_num/(double)total_seconds ,"Lines/s" ).c_str() , au::str( (double)total_size/(double)total_seconds,"Bps").c_str()  );
-	 }
-
-
-  }
-
+    if( cmd.get_flag_bool("h") || cmd.get_flag_bool("help") )
+    {
+        printf("\n");
+        printf(" ------------------------------------------------- \n");
+        printf(" Help %s\n" , argv[0] );
+        printf(" ------------------------------------------------- \n");
+        printf(" Simple command line tool to generate fake data for simple_mobility demo\n\n");
+        printf(" %s -commands       Generates the command to setup home/work areas\n", argv[0] );
+        printf(" %s                 Generates the CDRS \n", argv[0] );
+        printf("\n");
+        printf(" Option: -users       Change the number of users ( default 20000000 ) \n" );
+        printf(" Option: -rate        Change number of CDRS per second ( default 10000 ) \n" );
+        printf("\n");
+        return 0;
+    }
+    
+    size_t num_users = cmd.get_flag_uint64("users");
+    size_t rate = cmd.get_flag_uint64("rate");
+    
+    fprintf(stderr,"%s: Setup %lu users and %lu cdrs/second\n" , argv[0] , num_users , rate );
+    
+    size_t total_num = 0;
+    size_t total_size = 0;
+    
+    if( cmd.get_flag_bool("commands") )
+    {
+        for ( size_t i = 0 ; i < num_users ; i++ )
+        {
+            Position home = getHome(i);
+            Position work = getWork(i);
+            printf("%lu AREA_CREATE home %f %f 200 \n" , i ,  home.x , home.y );
+            printf("%lu AREA_CREATE work %f %f 200 \n" , i , work.x , work.y );
+        }
+        
+        fprintf(stderr,"%s: Generated %lu messages" , argv[0] , num_users );
+        return 0;
+    }
+    
+    
+    au::Cronometer cronometer;
+    size_t theoretical_seconds = 0;
+    
+    while( true )
+    {
+        // Generate messages for the next second....
+        theoretical_seconds += 1;         
+        for ( size_t i = 0 ; i < rate ; i++ )
+        {
+            size_t user = rand()%num_users;
+            
+            Position p = getPosition( user );
+            
+            total_size += printf("%lu CDR %f %f %lu\n", user , p.x , p.y , time(NULL) );
+            total_num++;
+        }
+        
+        size_t total_seconds = cronometer.diffTimeInSeconds();
+        
+        if( total_seconds < theoretical_seconds )
+        {
+            int seconds_to_sleep = (int) theoretical_seconds - total_seconds;
+            fprintf(stderr,"%s: Sleeping %d seconds to keep rate %s\n", 
+                    argv[0] , seconds_to_sleep , au::str( rate , "Events/sec" ).c_str() );
+            sleep( seconds_to_sleep );
+        }
+        
+        if( (theoretical_seconds%10) == 0)
+        {
+            fprintf(stderr,"%s: Generated %s lines ( %s bytes ) in %s. Rate: %s / %s.\n" 
+                    , argv[0] , au::str(total_num).c_str() , au::str(total_size).c_str(), au::time_string( total_seconds ).c_str() ,
+                    au::str( (double)total_num/(double)total_seconds ,"Lines/s" ).c_str() , au::str( (double)total_size/(double)total_seconds,"Bps").c_str()  );
+        }
+        
+        
+    }
+    
 }

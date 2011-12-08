@@ -46,6 +46,8 @@
 */
 SAMSON_ARG_VARS;
 
+int param_num_files;
+int param_file_size;
 
 /* ****************************************************************************
 *
@@ -54,6 +56,8 @@ SAMSON_ARG_VARS;
 PaArgument paArgs[] =
 {
 	SAMSON_ARGS,
+    { "-size",      &param_file_size,  "",  PaInt,     PaOpt,     64,   1, 1024,  "Size in megabytes of each file" },
+    { "-files",     &param_num_files,  "",  PaInt,     PaOpt,     100,  1, 1024,  "Number of files" },
 	PA_END_OF_ARGS
 };
 
@@ -125,8 +129,9 @@ class Test : public engine::Object
         num_threads = _num_threads;
         
         // Common setup
-        files_num = 100;
-        files_size = 64000000;
+        
+        files_num = param_num_files;
+        files_size = param_file_size * 1024 * 1024;
         
         files_num_write=0;
         files_num_read=0;
@@ -146,10 +151,11 @@ class Test : public engine::Object
     
     std::string str_results()
     {
-        return au::str("Test with %02d threads .............. Time %s / Rate %s " , 
+        return au::str("Test with %02d threads .............. Time %s / Accumulated size %s / Rate %s " , 
                        num_threads,
-                       au::str_time( final_time).c_str() ,
-                       au::str_rate( accumulated_size, final_time ).c_str()
+                       au::str_time( final_time ).c_str() ,
+                       au::str( accumulated_size ).c_str() ,
+                       au::str_time( final_time).c_str()
                        );
     }
     

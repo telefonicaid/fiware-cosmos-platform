@@ -155,7 +155,7 @@ class Test : public engine::Object
                        num_threads,
                        au::str_time( final_time ).c_str() ,
                        au::str( accumulated_size ).c_str() ,
-                       au::str_time( final_time).c_str()
+                       au::str_rate( accumulated_size , final_time ).c_str()
                        );
     }
     

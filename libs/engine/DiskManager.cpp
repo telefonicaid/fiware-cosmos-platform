@@ -6,6 +6,7 @@
 #include "logMsg/logMsg.h"				// LM_X
 
 #include "au/xml.h"         // au::xml...
+#include "au/TokenTaker.h"         // au::TokenTaker...
 
 #include "engine/Engine.h"							// engine::Engine
 #include "engine/EngineElement.h"					// engine::EngineElement
@@ -28,13 +29,10 @@ namespace engine
     
     void DiskManager::init( int _num_disk_operations )
     {
-        // Now it is only possible to run with 1
-        _num_disk_operations = 1;
-        
         if( diskManager )
             LM_X(1,("Please, init diskManager only once"));
         
-        diskManager = new DiskManager (_num_disk_operations );
+        diskManager = new DiskManager ( _num_disk_operations );
     }
  
     void DiskManager::destroy( )
@@ -56,39 +54,35 @@ namespace engine
     
 #pragma mark DiskManager
     
-    DiskManager::DiskManager( int _num_disk_operations )
+    DiskManager::DiskManager( int _num_disk_operations ) : token("engine::DiskManager")
     {
-		pthread_mutex_init(&mutex, 0);			// Mutex to protect elements
-        
         // Number of parallel disk operations
         num_disk_operations = _num_disk_operations;
     }
     
     DiskManager::~DiskManager()
     {
-		pthread_mutex_destroy(&mutex);			// Mutex to protect elements
     }
     
 	void DiskManager::add( DiskOperation *operation )
 	{
+        // Mutex protection
+        au::TokenTaker tt(&token);
+        
         // Set the pointer to myself
         operation->diskManager = this;
-        
-		pthread_mutex_lock(&mutex);
         
 		// Insert the operation in the queue of pending operations
         pending_operations.insert( _find_pos(operation), operation );
         
-		pthread_mutex_unlock(&mutex);
-        
 		// Check if we can start this operation
-		checkDiskOperations();
+		_checkDiskOperations();
 	}
 
 	void DiskManager::cancel( DiskOperation *operation )
 	{
         
-		pthread_mutex_lock(&mutex);
+        au::TokenTaker tt(&token);
 
         if( pending_operations.extractFromList( operation ) )
         {
@@ -97,11 +91,9 @@ namespace engine
             notification->environment.copyFrom( &operation->environment );        // Recover the environment variables to identify this request
             Engine::shared()->notify(notification);            
         }
-        
-		pthread_mutex_unlock(&mutex);
-        
+                
 		// Check if we can start this operation
-		checkDiskOperations();
+		_checkDiskOperations();
 	}
 	
     
@@ -109,77 +101,80 @@ namespace engine
 	{
         // Callback received from background process
         
-		pthread_mutex_lock(&mutex);
+        // Mutex protection
+        au::TokenTaker tt(&token);
         
 		running_operations.erase( operation );
 		diskStatistics.add( operation->getType() , operation->getSize() );
 		
-		pthread_mutex_unlock(&mutex);
-		
-		LM_T( LmtDisk , ("DiskManager::finishDiskOperation erased and ready to send notification on file:%s", operation->fileName.c_str() ));
+		LM_T( LmtDisk , ("DiskManager::finishDiskOperation erased and ready to send notification on file:%s", 
+                         operation->fileName.c_str() 
+                         ));
 
 		// Add a notification for this operation to the required target listener
         Notification *notification = new Notification( notification_disk_operation_request_response , operation , operation->listeners );
         notification->environment.copyFrom( &operation->environment );        // Recover the environment variables to identify this request
+        
         LM_T( LmtDisk , ("DiskManager::finishDiskOperation notification sent on file:%s and ready to share and checkDiskOperations", operation->fileName.c_str() ));
         Engine::shared()->notify(notification);    
 		
 		// Check if there are more operation to be executed
-		checkDiskOperations();
+		_checkDiskOperations();
 	}
 	
 	// Check if we can run more disk operations
-	void DiskManager::checkDiskOperations()
+	void DiskManager::_checkDiskOperations()
 	{
-		pthread_mutex_lock(&mutex);
-		
 		while( ( pending_operations.size() > 0 ) && ( running_operations.size() < (size_t)num_disk_operations ) )
 		{
 			// Extract the next operation
 			DiskOperation *operation = pending_operations.extractFront();
-			
+
+			// Insert in the running list
 			running_operations.insert( operation );
 			
 			// Run in background
 			operation->runInBackGround();
 		}
-		
-		pthread_mutex_unlock(&mutex);
-		
 	}
 
     int DiskManager::getNumOperations()
     {
-		pthread_mutex_lock(&mutex);
-        size_t num_operations = pending_operations.size() + diskManager->running_operations.size();
-		pthread_mutex_unlock(&mutex);
-        
-        return num_operations;
-        
+        // Mutex protection
+        au::TokenTaker tt(&token);
+
+        return pending_operations.size() + diskManager->running_operations.size();
     }
 
+    void DiskManager::setNumOperations( int _num_disk_operations )
+    {
+        // Mutex protection
+        au::TokenTaker tt(&token);
+
+        num_disk_operations = _num_disk_operations;
+    }
+    
     
     size_t DiskManager::getReadRate()
     {
-		pthread_mutex_lock(&mutex);
-        size_t rate = diskStatistics.item_read.getLastMinuteRate();
-		pthread_mutex_unlock(&mutex);
-        
-        return rate;
+        // Mutex protection
+        au::TokenTaker tt(&token);
+
+        return diskStatistics.item_read.getLastMinuteRate();
     }
     
     size_t DiskManager::getWriteRate()
     {
-		pthread_mutex_lock(&mutex);
-        size_t rate = diskStatistics.item_write.getLastMinuteRate();
-		pthread_mutex_unlock(&mutex);
-        
-        return rate;
+        // Mutex protection
+        au::TokenTaker tt(&token);
+
+        return diskStatistics.item_write.getLastMinuteRate();
     }
 
     void DiskManager::getInfo( std::ostringstream& output)
     {
-		pthread_mutex_lock(&mutex);
+        // Mutex protection
+        au::TokenTaker tt(&token);
 		
         output << "<disk_manager>\n";
         
@@ -202,14 +197,12 @@ namespace engine
         
         output << "</disk_manager>\n";
         
-		pthread_mutex_unlock(&mutex);
-        
     }
     
     std::string DiskManager::str()
 	{
-		
-		pthread_mutex_lock(&mutex);
+        // Mutex protection
+        au::TokenTaker tt(&token);
 		
         
 		// Disk Manager
@@ -253,8 +246,6 @@ namespace engine
 		disk_manager_status << "\n\tStatistics: ";
 		disk_manager_status << diskStatistics.getStatus();
 		
-		pthread_mutex_unlock(&mutex);
-        
         return disk_manager_status.str();
 		
 	}	
@@ -270,7 +261,7 @@ namespace engine
         return pending_operations.end();
     }
     
-    
+/*    
     void DiskManager::quit()
     {
 		pending_operations.clearList();		// Remove pending operations ( will never be notified )
@@ -282,5 +273,5 @@ namespace engine
         }
         
     }
-    
+*/    
 }

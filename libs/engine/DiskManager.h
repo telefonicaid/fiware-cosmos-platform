@@ -23,6 +23,7 @@
 #include <set>                      // std::set
 
 #include "au/list.h"                 // au::list
+#include "au/Token.h"                 // au::Token
 #include "au/ListMap.h"              // au::ListMap
 
 #include "engine/Object.h"     // engine::EngineNotification
@@ -50,7 +51,7 @@ namespace engine
         ReadFileManager fileManager;
         
 		// Disk Operations
-		pthread_mutex_t mutex;                          // Mutex to protect the background threads performing operations
+        au::Token token;
 		int num_disk_operations;						// Number of paralell disk operations allowed
         
 		au::list<DiskOperation> pending_operations;		// List of pending operations
@@ -73,11 +74,8 @@ namespace engine
         
     private:
         
-		void checkDiskOperations();                         // Check if we can run more disk operations
-        
-        // Remove pending operations and wait for the running ones
-        void quit();
-        
+		void _checkDiskOperations();                         // Check if we can run more disk operations
+        //void quit();                                         // Remove pending operations and wait for the running ones
 
     public:
         
@@ -87,6 +85,8 @@ namespace engine
 
         std::string str();
         void getInfo( std::ostringstream& output);
+        
+        void setNumOperations( int _num_disk_operations );
         
     private:
         

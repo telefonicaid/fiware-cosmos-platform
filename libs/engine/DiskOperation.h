@@ -94,7 +94,7 @@ namespace engine {
         
         //int tag;                          // General tag to identify the operation
         
-		au::ErrorManager error;					// Management of the error during this operation
+		au::ErrorManager error;				// Management of the error during this operation
 		size_t operation_time;				// Time spend in this operation for performance estimation
 		
 		// Constructors used to create Disk Operations ( to be submitted to Engine )

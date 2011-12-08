@@ -48,6 +48,8 @@ SAMSON_ARG_VARS;
 
 int param_num_files;
 int param_file_size;
+int param_max_threads;
+int param_trials;
 
 /* ****************************************************************************
 *
@@ -56,8 +58,10 @@ int param_file_size;
 PaArgument paArgs[] =
 {
 	SAMSON_ARGS,
-    { "-size",      &param_file_size,  "",  PaInt,     PaOpt,     64,   1, 1024,  "Size in megabytes of each file" },
-    { "-files",     &param_num_files,  "",  PaInt,     PaOpt,     100,  1, 1024,  "Number of files" },
+    { "-size",        &param_file_size,    "",  PaInt,     PaOpt,     64,   1, 1024,  "Size in megabytes of each file" },
+    { "-files",       &param_num_files,    "",  PaInt,     PaOpt,     100,  1, 1024,  "Number of files" },
+    { "-max_threads", &param_max_threads,  "",  PaInt,     PaOpt,     3,   1, 100,    "Max number of threads to test" },
+    { "-trials",      &param_trials,       "",  PaInt,     PaOpt,     3,   1, 100,    "Number of trials for each test" },
 	PA_END_OF_ARGS
 };
 
@@ -151,9 +155,9 @@ class Test : public engine::Object
     
     std::string str_results()
     {
-        return au::str("Test with %02d threads .............. Time %s / Accumulated size %s / Rate %s " , 
+        return au::str("Test with %02d threads Time %s / Accumulated size %s / Rate %s " , 
                        num_threads,
-                       au::str_time( final_time ).c_str() ,
+                       au::time_string( final_time ).c_str() ,
                        au::str( accumulated_size ).c_str() ,
                        au::str_rate( accumulated_size , final_time ).c_str()
                        );
@@ -167,6 +171,14 @@ class Test : public engine::Object
             
             int file = notification->environment.getInt("file", -1);
             std::string type = notification->environment.get("type", "-");
+            
+            engine::DiskOperation *operation = (engine::DiskOperation*) notification->extractObject();
+            
+            if( !operation )
+                LM_X(1, ("Operation not present in a disk operation notification"));
+            
+            if( operation->error.isActivated() )
+                LM_X(1, ("Disk operation [%s] failed: %s" , operation->getDescription().c_str() , operation->error.getMessage().c_str() ));
             
             if( file == -1 )
                 LM_X(1,("Received file %d", file));
@@ -199,7 +211,6 @@ class Test : public engine::Object
 
     void init()
     {
-        LM_M(("Seting number of threads %d",num_threads));
         engine::DiskManager::shared()->setNumOperations( num_threads );
     }
     
@@ -251,10 +262,16 @@ class Test : public engine::Object
     
     void run()
     {
-        LM_M(("Running test with %d files ( %s )" , files_num , au::str( files_size , "B").c_str() ));
-
         // Init setup for this test
         init();
+        
+        LM_M(("Running test with %d threads ( %d files of %s = %s )" 
+              , num_threads 
+              , files_num 
+              , au::str( files_size , "B").c_str() 
+              , au::str( ((size_t)files_num * (size_t)files_size) , "B").c_str() 
+              ));
+
 
         
         // Schedule writters
@@ -268,26 +285,31 @@ class Test : public engine::Object
         {
             usleep(100000);
             
-            
             if( cronometer_show_status.diffTimeInSeconds() > 10 )
             {
                 cronometer_show_status.reset();
                 
-                LM_M(("Time %s Accumulated size %s ( Rate %s )" , 
+                LM_V(("Progress  W:%d R:%d D:%d / %d " ,  files_num_write, files_num_read, files_num_remove, files_num ));
+                LM_V(("Partical results: Time %s Accumulated size %s ( Rate %s )" , 
                       au::time_string( cronometer.diffTimeInSeconds() ).c_str(),
                       au::str( accumulated_size , "B" ).c_str() ,
                       au::str_rate( accumulated_size ,  cronometer.diffTimeInSeconds() , "Bs" ).c_str()
                       ));
-                LM_M(("Progress  W:%d R:%d D:%d / %d " ,  files_num_write, files_num_read, files_num_remove, files_num ));
             }
         }
-        
         
         // Write results...
         final_time = cronometer.diffTimeInSeconds();
         
-    }
+        // Print results
+        LM_M(("Finish test: %s", str_results().c_str() ));
+        
+    }    
     
+    int getNumThreads()
+    {
+        return num_threads;
+    }
     
 private:
     
@@ -327,7 +349,8 @@ int main(int argC, const char *argV[])
 	paParse(paArgs, argC, (char**) argV, 1, false);
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
-    
+
+    /*
 	samson::SamsonSetup::init(samsonHome , samsonWorking);          // Load setup and create default directories
     samson::SamsonSetup::shared()->createWorkingDirectories();      // Create working directories
     
@@ -335,42 +358,43 @@ int main(int argC, const char *argV[])
                     samson::SamsonSetup::shared()->getInt("general.num_processess") , 
                     samson::SamsonSetup::shared()->getUInt64("general.shared_memory_size_per_buffer")
                                       );
-    
+    */
 	engine::Engine::init();
 	engine::DiskManager::init(1);
-	engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
-	engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
+	//engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
+	engine::MemoryManager::init( 1000000000 );
 
-
-    LM_M(("Starting..."));
+    LM_V(("---------------------------------------------------------------------------"));
+    LM_V(("Setup"));
+    LM_V(("---------------------------------------------------------------------------"));
+    LM_V(("%15s %d", "trials" , param_trials));
+    LM_V(("%15s %d", "max_threads" , param_max_threads));
+    LM_V(("%15s %d", "#files" , param_num_files));
+    LM_V(("%15s %d", "file size (MB)" , param_file_size));
+    LM_V(("---------------------------------------------------------------------------"));
     
     std::vector<Test*> tests;
 
-    // Add tests
-    tests.push_back( new Test(1) );
-    tests.push_back( new Test(1) );
-    tests.push_back( new Test(1) );
+    // Schedule all the tests
+    for ( int i=1;i<=param_max_threads;i++)
+        for (int t=0;t<param_trials;t++)
+            tests.push_back( new Test(i) );
     
-    tests.push_back( new Test(2) );
-    tests.push_back( new Test(2) );
-    tests.push_back( new Test(2) );
-    
-    tests.push_back( new Test(3) );
-    tests.push_back( new Test(3) );
-    tests.push_back( new Test(3) );
-    
-    tests.push_back( new Test(4) );
-    tests.push_back( new Test(4) );
-    tests.push_back( new Test(4) );
-    
+    // Run all tests
     for ( size_t i=0 ; i<tests.size() ; i++ )        
         tests[i]->run();
 
+    // Show results
     printf("---------------------------------------------------------------------------\n");
     printf("Results\n");
     printf("---------------------------------------------------------------------------\n");
     for ( size_t i=0 ; i<tests.size() ; i++ )        
+    {
+        if( (i>0) && (tests[i]->getNumThreads() != tests[i-1]->getNumThreads() ) )
+            printf("---------------------------------------------------------------------------\n");
         printf("%s\n" , tests[i]->str_results().c_str() );
+
+    }
     printf("---------------------------------------------------------------------------\n");
     
 }

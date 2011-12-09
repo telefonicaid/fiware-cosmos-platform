@@ -27,7 +27,7 @@
 #include "au/Cronometer.h"                  // au::Cronometer
 #include "au/namespace.h"                // NAMESPACE_BEGIN & NAMESPACE_END
 
-#include "Engine/EngineService.h"
+#include "engine/EngineService.h"
 #include "engine/Object.h"                  // engine::EngineNotification
 #include "engine/ObjectsManager.h"          // engine::ObjectsManager
 

@@ -28,32 +28,36 @@ parser parse_tweets
 }
 
 
-script demo_tweets
+
+script init_stream_operations
 {
-  code
-  {
-    remove_all_stream
+    code
+    {
+        # Queues;
+        alias [input]   01.input;
+        alias [words]   99.hit.01.input;
 
-    rm_stream_operation hit.01.parse_tweets -f;
-    rm_stream_operation hit.10.reduce_words -f;
-    rm_stream_operation hit.20.reduce_tops -f;
-    rm_stream_operation hit.21.export_tops -f;
+        # Operations;
+        alias [parse_web]   01.parser;
 
-    #rm_queue hit.01.in_txt -f;
-    #rm_queue hit.04.input_words -f;
-    #rm_queue hit.10.words -f;
-    #rm_queue hit.11.words_update -f;
-    #rm_queue hit.20.hit.tops -f;
-    #rm_queue hit.21.output_tops -f;
-    #rm_queue hit.22.output_tops_txt -f;
+        # Definitions;
+        add_stream_operation  [parse_web] twitter.parse_tweets [input] [words];
 
+        # Auxiliar modules;
+        init_stream 99.hit hit.init_stream_operations
+    }
 
-    add_stream_operation hit.01.parse_tweets  twitter.parse_tweets            hit.01.in_txt                               hit.04.input_words;
-    add_stream_operation hit.10.reduce_words  hit.reduceHits              hit.04.input_words            hit.10.words  hit.11.words_update hit.10.words;
-    add_stream_operation hit.20.reduce_tops   hit.reduceHitCollections    hit.11.words_update           hit.20.tops   hit.21.output_tops hit.20.tops;
-    add_stream_operation hit.21.export_tops   hit.export_hit_collection   hit.21.output_tops                          hit.22.output_tops_txt;
-
-  }
+    helpLine "Init stream operations"
 }
 
+script demo
+{
+    code
+    {
+        remove_all_stream;
+        init_stream demo twitter.init_stream_operations;
+    }
+
+    helpLine "Demo about web hit"
+}
 

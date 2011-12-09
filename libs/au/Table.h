@@ -31,7 +31,7 @@
 #include "au/map.h"                 // au::map
 #include "au/string.h"              // au::str(...)
 
-#include "au/au_namespace.h"
+#include "au/namespace.h"
 
 
 NAMESPACE_BEGIN(au)

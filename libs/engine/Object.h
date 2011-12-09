@@ -19,51 +19,52 @@
 
 #include <string>   // size_t
 
-namespace engine
+#include "au/namespace.h"
+
+NAMESPACE_BEGIN(engine)
+
+class Notification;
+
+/**
+ 
+ Base class for any element in the engine library to receive notifications
+ 
+ */
+
+class Object
 {
     
-    class Notification;
+    // Class the managers this objects
+    friend class ObjectsManager;
     
-    /**
-     
-     Base class for any element in the engine library to receive notifications
-     
-     */
+    // Unique identifier of this listener
+    size_t engine_id;
     
-    class Object
-    {
-        
-        // Class the managers this objects
-        friend class ObjectsManager;
-        
-        // Unique identifier of this listener
-        size_t engine_id;
-        
-        // Unique name
-        const char *engine_name;
-        
-    public:        
-        
-        Object();                               // Simple constructor ( object has an id )
-        Object( const char* engine_name);       // Object can be accessed by this name anywhere
-        virtual ~Object();                      // Destructor. ( virtual destructor is mandatory for generic remov
-
-    public:
-        
-        // Get my id as listener
-        size_t getEngineId();
-        
-    protected:
-
-        
-        // Start listening a particular notification
-        void listen( const char* notification_name );
-
-        virtual void notify( Notification* notification );
- 
-        
-    };
+    // Unique name
+    const char *engine_name;
     
-}
+public:        
+    
+    Object();                               // Simple constructor ( object has an id )
+    Object( const char* engine_name);       // Object can be accessed by this name anywhere
+    virtual ~Object();                      // Destructor. ( virtual destructor is mandatory for generic remov
+    
+public:
+    
+    // Get my id as listener
+    size_t getEngineId();
+    
+protected:
+    
+    
+    // Start listening a particular notification
+    void listen( const char* notification_name );
+    
+    virtual void notify( Notification* notification );
+    
+    
+};
+
+NAMESPACE_END
 
 #endif

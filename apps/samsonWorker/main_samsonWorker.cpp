@@ -68,8 +68,6 @@ PaArgument paArgs[] =
 */
 int                   logFd             = -1;
 samson::SamsonWorker* worker            = NULL;
-bool                  setupInitialized  = false;
-bool                  engineInitialized = false;
 
 
 
@@ -82,21 +80,11 @@ void exitFunction(void)
 	if (worker)
 		delete worker;
 
-    if (setupInitialized == true)
-        samson::SamsonSetup::destroy();
-
-    engine::MemoryManager::destroy();
-
-    if (engineInitialized == true)
-        engine::Engine::destroy();
-	samson::ModulesManager::destroy();
-
     google::protobuf::ShutdownProtobufLibrary();
-
-	if (progName)
-		free(progName);
-    progName = NULL;
+    
 }
+
+
 
 
 
@@ -121,6 +109,10 @@ static const char* manCopyright     = "Copyright (C) 2011 Telefonica Investigaci
 static const char* manVersion       = SAMSON_VERSION;
 
 
+void captureSIGINT( int s )
+{
+    LM_X(1, ("Signal SIGINT"));
+}
 
 void captureSIGPIPE( int s )
 {
@@ -134,7 +126,6 @@ void captureSIGPIPE( int s )
 */
 int main(int argC, const char *argV[])
 {
-	atexit(exitFunction);
 
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
@@ -165,6 +156,9 @@ int main(int argC, const char *argV[])
     // Capturing SIGPIPE
     if( signal( SIGPIPE , captureSIGPIPE ) == SIG_ERR )
         LM_W(("SIGPIPE cannot be handled"));
+
+    if( signal( SIGINT , captureSIGINT ) == SIG_ERR )
+        LM_W(("SIGINT cannot be handled"));
     
 	samson::platformProcessesPathInit(samsonWorking);
 
@@ -172,12 +166,12 @@ int main(int argC, const char *argV[])
     au::LockDebugger::shared();
     
 	samson::SamsonSetup::init(samsonHome , samsonWorking);          // Load setup and create default directories
-    setupInitialized = true;
     samson::SamsonSetup::shared()->createWorkingDirectories();      // Create working directories
     
-	engine::SharedMemoryManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess") , samson::SamsonSetup::shared()->getUInt64("general.shared_memory_size_per_buffer"));
 	engine::Engine::init();
-    engineInitialized = true;
+	engine::SharedMemoryManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess") , samson::SamsonSetup::shared()->getUInt64("general.shared_memory_size_per_buffer"));
+    
+    
 	engine::DiskManager::init(1);
 	engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
 	engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
@@ -203,10 +197,12 @@ int main(int argC, const char *argV[])
 	
 	worker = new samson::SamsonWorker(networkP);
 
-	// Not necessary anymore. Engine automatically starts with "init" call
-	// engine::Engine::run();
+
+    // Clean up function ( here to make sure, this cleanup function is called before Engine clean up function )
+	atexit(exitFunction);
     
     LM_M(("Running"));
+    
     while( true )
         sleep(10);
 }

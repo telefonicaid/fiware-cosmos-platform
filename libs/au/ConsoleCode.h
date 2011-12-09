@@ -1,7 +1,7 @@
 #ifndef _AU_CONSOLE_CODE
 #define _AU_CONSOLE_CODE
 
-#include "au/au_namespace.h"
+#include "au/namespace.h"
 
 
 NAMESPACE_BEGIN(au)

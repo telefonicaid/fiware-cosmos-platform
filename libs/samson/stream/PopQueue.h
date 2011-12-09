@@ -19,8 +19,7 @@
 #include "engine/Object.h"                      // engine::Object
 
 
-namespace engine
-{
+NAMESPACE_BEGIN(engine)
     class Buffer;
 }
 

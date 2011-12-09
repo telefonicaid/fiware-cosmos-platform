@@ -19,25 +19,23 @@
 #include <set>						// std::set
 #include <list>						// std::list
 #include <iostream>					// std::cout
+
 #include "samson/common/samsonDirectories.h"		// SAMSON_SETUP_FILE
 
-
+#include "engine/Engine.h"					// samson::Engine
 #include "engine/Buffer.h"					// samson::Buffer
+
 #include "au/Token.h"					// au::Token
 #include "au/map.h"					// au::map
 #include "au/string.h"					// au::Format
-
 
 namespace engine {
        
     class SharedMemoryItem;
     class SharedMemoryManager;
-    
-    
-	class SharedMemoryManager 
-	{
-            
         
+	class SharedMemoryManager : public engine::EngineService
+	{
 		au::Token token;                                    // Token to protect this instance and memoryRequests
 	
 		// Shared memory management
@@ -56,7 +54,7 @@ namespace engine {
 
 		~SharedMemoryManager();		
         
-		// Init and destroy functions
+		// Init
         static void init( int _shared_memory_num_buffers , size_t _shared_memory_size_per_buffer);
         static SharedMemoryManager* shared();
         

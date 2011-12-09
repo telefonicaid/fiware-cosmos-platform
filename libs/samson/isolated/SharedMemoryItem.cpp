@@ -19,8 +19,7 @@
 
 
 
-namespace engine
-{
+NAMESPACE_BEGIN(engine)
 	
 	
     

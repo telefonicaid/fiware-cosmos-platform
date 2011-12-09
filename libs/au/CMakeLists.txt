@@ -1,5 +1,10 @@
 SET (HEADERS
-au_namespace.h
+Object.h
+ObjectDictionary.h
+ObjectVector.h
+ObjectPool.h
+
+namespace.h
 
 utils.h
 status.h
@@ -41,6 +46,12 @@ cpu.h
 )
 
 SET (SOURCES
+
+Object.cpp
+ObjectDictionary.cpp
+ObjectVector.cpp
+ObjectPool.cpp
+
 utils.cpp
 
 Descriptors.cpp
@@ -89,4 +100,10 @@ INSTALL(TARGETS au ARCHIVE DESTINATION lib)
 #ADD_EXECUTABLE(au_test au_test_main.cpp )
 #TARGET_LINK_LIBRARIES(au_test ${LIBS} au lm )
 #INSTALL(TARGETS               au_test        RUNTIME DESTINATION   bin)
+
+# Unit testing
+ADD_EXECUTABLE( ut_au_object ut_au_object.cpp )
+TARGET_LINK_LIBRARIES( ut_au_object ${LIBS} au lm pa )
+INSTALL(TARGETS  ut_au_object RUNTIME DESTINATION   bin)
+
 

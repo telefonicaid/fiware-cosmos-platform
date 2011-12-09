@@ -24,7 +24,7 @@
 
 #include "logMsg/logMsg.h"      // LM_X
 
-#include "au/au_namespace.h"
+#include "au/namespace.h"
 
 
 NAMESPACE_BEGIN(au)

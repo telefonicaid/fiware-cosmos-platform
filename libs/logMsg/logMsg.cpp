@@ -850,6 +850,14 @@ static void asciiToLeft
 }
 
 
+// Andreu: Clean up function to remove progname
+
+void atExitCleanProgName()
+{
+	if (progName)
+		free(progName);
+    progName = NULL;
+}
 
 /* ************************************************************************* */
 /* ********************** EXTERNAL FUNCTIONS ******************************* */
@@ -871,6 +879,8 @@ LmStatus lmInit(void)
 	
 	PROGNAME_CHECK();
 
+    atexit(atExitCleanProgName);
+    
 	secondsAtStart = time(NULL);
 
 	auxOn          = false;

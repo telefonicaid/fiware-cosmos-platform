@@ -25,7 +25,7 @@
 #include <sys/time.h>	       // struct timeval
 #include <string>               // std::string
 
-#include "au/au_namespace.h"
+#include "au/namespace.h"
 
 
 NAMESPACE_BEGIN(au)

@@ -1,7 +1,7 @@
 #ifndef _H_AU_UTILS
 #define _H_AU_UTILS
 
-#include "au/au_namespace.h"
+#include "au/namespace.h"
 
 NAMESPACE_BEGIN(au)
 

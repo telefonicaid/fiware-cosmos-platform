@@ -20,7 +20,7 @@
 #ifndef _H_AU_STATUS
 #define _H_AU_STATUS
 
-#include "au/au_namespace.h"
+#include "au/namespace.h"
 
 NAMESPACE_BEGIN(au)
 

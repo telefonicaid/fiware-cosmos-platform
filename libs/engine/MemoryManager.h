@@ -29,138 +29,136 @@
 #include <iostream>					// std::cout
 
 #include "engine/Buffer.h"                  // samson::Buffer
+#include "engine/Engine.h"                  // samson::Buffer
 #include "au/Token.h"                       // au::Token
 #include "au/map.h"                         // au::map
 #include "au/list.h"                        // au::list
 #include "au/string.h"                      // au::Format
-
+#include "au/namespace.h"
 
 #define notification_memory_request_response    "notification_memory_request_response"
 
-namespace engine {
+NAMESPACE_BEGIN(engine)
 
-    class MemoryRequest;
+class MemoryRequest;
+
+/**
+ 
+ Memory manager is a singleton implementation to manager the memory used by any component of SAMSON
+ A unifierd view of the memory is necessary to block some data-generator elements when we are close to the maximum memory
+ It is also responsible to manage shared-memory areas to share between differnt processes. 
+ 
+ */
+
+class MemoryManager : engine::EngineService
+{
     
-	/**
-	 
-	 Memory manager is a singleton implementation to manager the memory used by any component of SAMSON
-	 A unifierd view of the memory is necessary to block some data-generator elements when we are close to the maximum memory
-	 It is also responsible to manage shared-memory areas to share between differnt processes. 
-	 
-	 */
-	
-	class MemoryManager 
-	{
-		
-		au::Token token;                                // Token to protect this instance and memoryRequests
-                                                        // It is necessary to protect since network thread can access directly here
-
-		size_t memory;                                  // Total available memory
-		size_t acum_memory;				// Simple counter to keep track total amount of memory _newed and not destroyed
-				
-		// List of memory requests
-		au::list <MemoryRequest> memoryRequests;        // Only used for inputs ( tag == 0 )
-		
-        // List of active buffers for better monitoring
-        std::set<Buffer*> buffers;
-
-        // Private constructor for
-		MemoryManager( size_t _memory );
-		
-	public:
-
-        static void init( size_t _memory );
-        static void destroy( );
-
-        static MemoryManager *shared();
-        
-		~MemoryManager();
-
-
-		 /*
-         --------------------------------------------------------------------
-		 DIRECT mecanish to request buffers ( synchronous interface )
-		 --------------------------------------------------------------------
-          */
-		
-		Buffer *newBuffer( std::string name ,  size_t size , int tag );
-
-	private:
-		
-		Buffer *_newBuffer( std::string name ,  size_t size , int tag );
-
-        
-        /*
-         --------------------------------------------------------------------
-		 INDIRECT mecanish to request buffers ( asynchronous interface )
-		 --------------------------------------------------------------------
-        */
-        
-        
-    public:
-        
-        void add( MemoryRequest *request );
-
-        void cancel( MemoryRequest *request );
-        
-    private:
-        
-        void _checkMemoryRequests();         // Check the pending memory requests
-
-        
-        /*
-         --------------------------------------------------------------------
-		 DIRECT AND INDIRECT mecanish to destroy a buffer 
-         ( synchronous & asynchronous interface )
-		 --------------------------------------------------------------------
-         */
-        
-	public:
-		
-		void destroyBuffer( Buffer *b );    		 //Interface to destroy a buffer of memory
-		
-        
-		
-	public:
-        
-		/*
-         --------------------------------------------------------------------
-		 Get information about memory usage
-		 --------------------------------------------------------------------
-         */
-		
-        size_t getMemory();
-        
-		int getNumBuffers();
-        size_t getUsedMemory();
-		double getMemoryUsage();
-        
-        
-		int getNumBuffersByTag( int tag );
-        size_t getUsedMemoryByTag( int tag );
-        double getMemoryUsageByTag( int tag );
-
-    private:
-		
-        double _getMemoryUsage();
-        size_t _getUsedMemory();
-
-        
-		int _getNumBuffersByTag( int tag );
-        size_t _getUsedMemoryByTag( int tag );
-        double _getMemoryUsageByTag( int tag );
-
-        
-	public:
-		
-		// Function for the main thread of memory
-		void runThread();        
-
-        // get xml information
-        void getInfo( std::ostringstream& output);
-
-	};
-	
+    au::Token token;                                // Token to protect this instance and memoryRequests
+                                                    // It is necessary to protect since network thread can access directly here
+    
+    size_t memory;                                  // Total available memory
+    size_t acum_memory;				// Simple counter to keep track total amount of memory _newed and not destroyed
+    
+    // List of memory requests
+    au::list <MemoryRequest> memoryRequests;        // Only used for inputs ( tag == 0 )
+    
+    // List of active buffers for better monitoring
+    std::set<Buffer*> buffers;
+    
+    // Private constructor for
+    MemoryManager( size_t _memory );
+    
+public:
+    
+    static void init( size_t _memory );
+    static MemoryManager *shared();
+    
+    ~MemoryManager();
+    
+    /*
+     --------------------------------------------------------------------
+     DIRECT mecanish to request buffers ( synchronous interface )
+     --------------------------------------------------------------------
+     */
+    
+    Buffer *newBuffer( std::string name ,  size_t size , int tag );
+    
+private:
+    
+    Buffer *_newBuffer( std::string name ,  size_t size , int tag );
+    
+    
+    /*
+     --------------------------------------------------------------------
+     INDIRECT mecanish to request buffers ( asynchronous interface )
+     --------------------------------------------------------------------
+     */
+    
+    
+public:
+    
+    void add( MemoryRequest *request );
+    
+    void cancel( MemoryRequest *request );
+    
+private:
+    
+    void _checkMemoryRequests();         // Check the pending memory requests
+    
+    
+    /*
+     --------------------------------------------------------------------
+     DIRECT AND INDIRECT mecanish to destroy a buffer 
+     ( synchronous & asynchronous interface )
+     --------------------------------------------------------------------
+     */
+    
+public:
+    
+    void destroyBuffer( Buffer *b );    		 //Interface to destroy a buffer of memory
+    
+    
+    
+public:
+    
+    /*
+     --------------------------------------------------------------------
+     Get information about memory usage
+     --------------------------------------------------------------------
+     */
+    
+    size_t getMemory();
+    
+    int getNumBuffers();
+    size_t getUsedMemory();
+    double getMemoryUsage();
+    
+    
+    int getNumBuffersByTag( int tag );
+    size_t getUsedMemoryByTag( int tag );
+    double getMemoryUsageByTag( int tag );
+    
+private:
+    
+    double _getMemoryUsage();
+    size_t _getUsedMemory();
+    
+    
+    int _getNumBuffersByTag( int tag );
+    size_t _getUsedMemoryByTag( int tag );
+    double _getMemoryUsageByTag( int tag );
+    
+    
+public:
+    
+    // Function for the main thread of memory
+    void runThread();        
+    
+    // get xml information
+    void getInfo( std::ostringstream& output);
+    
 };
+
+NAMESPACE_END
 
 #endif

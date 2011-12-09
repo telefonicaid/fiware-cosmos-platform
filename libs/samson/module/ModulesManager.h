@@ -38,7 +38,6 @@ namespace samson {
 		~ModulesManager();
 		
 		static void init();
-		static void destroy();
 		static ModulesManager* shared();
 		        
 	private:

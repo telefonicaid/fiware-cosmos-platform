@@ -70,21 +70,24 @@ namespace samson
         LM_T(LmtModuleManager,("Destroying ModulesManager"));
 	}
     
+    
+    void destroyModulesManager()
+    {
+        LM_V(("Destroying ModulesManager"));
+        delete modulesManager;
+        modulesManager = NULL;
+    }
 	
 	void ModulesManager::init()
 	{
 		if(modulesManager)
 			LM_X(1,("Error initializing Modules Manager twice"));
+        
+        LM_V(("Init ModulesManager"));
 		modulesManager = new ModulesManager();
+        
+        atexit( destroyModulesManager );
 	}
-
-    void ModulesManager::destroy(void)
-	{
-		if( modulesManager )
-			delete modulesManager;
-		modulesManager = NULL;
-	}
-
     
 	ModulesManager* ModulesManager::shared()
 	{

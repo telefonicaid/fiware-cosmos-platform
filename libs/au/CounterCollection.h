@@ -25,7 +25,7 @@
 #include <sstream>
 #include "au/map.h"       // au::map
 
-#include "au/au_namespace.h"
+#include "au/namespace.h"
 
 
 NAMESPACE_BEGIN(au)

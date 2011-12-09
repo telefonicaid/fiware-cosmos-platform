@@ -20,8 +20,7 @@
 #include "samson/network/Message.h"    // samson::Message::MessageCode
 #include "samson/network/Endpoint.h"   // samson::Endpoint::Type
 
-namespace engine
-{
+NAMESPACE_BEGIN(engine)
     class DiskStatistics;
 }
 

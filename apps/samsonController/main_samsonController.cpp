@@ -59,9 +59,6 @@ PaArgument paArgs[] =
 */
 int                   logFd             = -1;
 samson::Network2*     networkP          = NULL;
-bool                  setupInitialized  = false;
-bool                  engineInitialized = false;
-
 
 
 /* ****************************************************************************
@@ -72,25 +69,14 @@ void exitFunction(void)
 {
 	if (networkP != NULL)
 		delete networkP;
+    
     networkP = NULL;
 
     samson::platformProcessesExit();
 
-    if (setupInitialized == true)
-        samson::SamsonSetup::destroy();
-
-    engine::MemoryManager::destroy();
-
-    if (engineInitialized == true)
-        engine::Engine::destroy();
-	samson::ModulesManager::destroy();
 
     google::protobuf::ShutdownProtobufLibrary();
 
-	if (progName)
-		free(progName);
-
-    progName = NULL;
 }
 
 
@@ -113,6 +99,11 @@ static const char* manReportingBugs = "bugs to samson-dev@tid.es\n";
 static const char* manCopyright     = "Copyright (C) 2011 Telefonica Investigacion y Desarrollo";
 static const char* manVersion       = SAMSON_VERSION;
 
+
+void captureSIGINT( int s )
+{
+    LM_X(1, ("Signal SIGINT"));
+}
 
 
 /* ****************************************************************************
@@ -137,8 +128,9 @@ int main(int argC, const char* argV[])
 	paConfig("man copyright",                 (void*) manCopyright);
 	paConfig("man version",                   (void*) manVersion);
 
-	atexit(exitFunction);
-
+    if( signal( SIGINT , captureSIGINT ) == SIG_ERR )
+        LM_W(("SIGINT cannot be handled"));
+    
 	paParse(paArgs, argC, (char**) argV, 1, false);
 
 	LM_T(LmtInit, ("Started with arguments:"));
@@ -155,10 +147,9 @@ int main(int argC, const char* argV[])
 
     // Init Samson Setup
 	samson::SamsonSetup::init( samsonHome , samsonWorking );  // Load setup and create all directories
-    setupInitialized = true;
 
+    // Init engine
 	engine::Engine::init();
-    engineInitialized = true;
 
 	engine::DiskManager::init(1);
 	engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
@@ -171,6 +162,10 @@ int main(int argC, const char* argV[])
 	networkP->runInBackground();
    	samson::SamsonController controller(networkP);
 
+    // Andreu: This cleanup function should be here to make sure it is called before engine::Engine cleanups
+	atexit(exitFunction);
+    
+    
     LM_M(("Running"));
 	// Run the engine function
     while( true )

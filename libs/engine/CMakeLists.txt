@@ -4,6 +4,7 @@ ObjectsManager.h
 Buffer.h
 SimpleBuffer.h
 Engine.h
+EngineService.h
 Notification.h
 NotificationElement.h
 EngineElement.h
@@ -24,6 +25,7 @@ Object.cpp
 ObjectsManager.cpp
 Buffer.cpp
 Engine.cpp
+EngineService.cpp
 Notification.cpp
 NotificationElement.cpp
 EngineElement.cpp

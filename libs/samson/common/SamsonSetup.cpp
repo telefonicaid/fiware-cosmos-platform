@@ -232,9 +232,17 @@ namespace samson
 	{
 		if( !samsonSetup)
 			LM_X(1,("Please, init SamsonSetup with SamsonSetup::init()"));
+        
 		return samsonSetup;
 	}
 	
+    void destroy_SamsonSetup()
+    {
+        LM_V(("Destroying SamsonSetup"));
+        delete samsonSetup;
+        samsonSetup=NULL;
+    }
+                        
     
 	void SamsonSetup::init( std::string samson_home , std::string samson_working )
 	{
@@ -243,21 +251,14 @@ namespace samson
             LM_W(("Init SamsonSetup twice... ignoring"));
             return;
         }
+
+        LM_V(("Init SamsonSetup"));
         
 		samsonSetup = new SamsonSetup( samson_home , samson_working );
-
         
-        
+        atexit( destroy_SamsonSetup );
 	}
 
-    void SamsonSetup::destroy()
-	{
-        if( !samsonSetup )
-            LM_X(1,("Init SamsonSetup before destroying it"));
-        delete samsonSetup;
-        samsonSetup = NULL;
-        
-	}
 	
 	SamsonSetup::SamsonSetup( std::string samson_home , std::string samson_working )
 	{

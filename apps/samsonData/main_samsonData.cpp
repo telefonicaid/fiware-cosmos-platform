@@ -13,9 +13,6 @@
 
 
 
-//char* progName = (char*) "samsonData";
-
-
 
 std::string stringForAction( samson::data::Command_Action action )
 {

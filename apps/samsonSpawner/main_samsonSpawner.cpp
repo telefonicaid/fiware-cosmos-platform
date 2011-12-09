@@ -81,14 +81,9 @@ static void cleanup(void)
 	if (spawnerP)
 		delete spawnerP;
 
-	if (progName)
-		free(progName);
-
     samson::platformProcessesExit();
-
-    samson::SamsonSetup::destroy();
-    engine::MemoryManager::destroy();
-    engine::Engine::destroy();
+    //samson::SamsonSetup::destroy();
+    //engine::MemoryManager::destroy();
 }
 
 
@@ -160,7 +155,6 @@ int main(int argC, const char *argV[])
 {
 	signal(SIGINT,  sigHandler);
 	signal(SIGTERM, sigHandler);
-    atexit(cleanup);
 
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
@@ -215,14 +209,18 @@ int main(int argC, const char *argV[])
     // Make sure this singlelton is created just once
     au::LockDebugger::shared();
     
-	samson::SamsonSetup::init(samsonHome, samsonWorking);
+	samson::SamsonSetup::init(samsonHome, samsonWorking);           // Init SamsonSetup
 	samson::SamsonSetup::shared()->createWorkingDirectories();      // Create working directories    
-	engine::Engine::init();
-	engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
+    
+	engine::Engine::init();    // Init engine::Engine
+	engine::MemoryManager::init( samson::SamsonSetup::shared()->getUInt64("general.memory") );
 
 	spawnerP = new samson::SamsonSpawner();
 	spawnerP->init();	
 
+    // At exit should be here to remove stuff in roder
+    atexit(cleanup);
+    
 	LM_M(("Running"));
 	spawnerP->run();
 

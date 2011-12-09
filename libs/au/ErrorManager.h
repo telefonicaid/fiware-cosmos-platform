@@ -24,7 +24,7 @@
 #include <set>
 #include <sstream>		// std::ostringstream
 
-#include "au/au_namespace.h"
+#include "au/namespace.h"
 
 
 NAMESPACE_BEGIN(au)

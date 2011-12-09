@@ -23,7 +23,7 @@
 
 #include <pthread.h>             /* pthread_mutex_t */
 
-#include "au/au_namespace.h"
+#include "au/namespace.h"
 
 
 NAMESPACE_BEGIN(au)

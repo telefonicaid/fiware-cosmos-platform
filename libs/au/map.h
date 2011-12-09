@@ -31,7 +31,7 @@
 
 #include "logMsg/logMsg.h"					 // LM_M()
 
-#include "au/au_namespace.h"
+#include "au/namespace.h"
 
 NAMESPACE_BEGIN(au)
 
@@ -58,6 +58,14 @@ public:
         
         insert( std::pair<K,V*>( key, value) );
     }
+
+    // Insert a pair of elements ( easy method )
+    // No check over previous 
+    void insertNewInMap( K& key , V* value)
+    {
+        insert( std::pair<K,V*>( key, value) );
+    }
+    
     
     /*
      Function to easyly get pointers in a std::map < value , Pointer* >

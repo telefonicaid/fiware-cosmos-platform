@@ -18,43 +18,46 @@
 
 
 #include <cstring>
+
+#include "au/namespace.h"
+
 #include "engine/Object.h"      // engine::Object
 
-namespace engine {
+NAMESPACE_BEGIN(engine)
 
-    /**
-     Information about a particular request
-     */
+/**
+ Information about a particular request
+ */
 
-    class Buffer;
+class Buffer;
+
+class MemoryRequest : public Object
+{
     
-    class MemoryRequest : public Object
-    {
-        
-    public:
-        
-        // Size of the memory requets ( extracted from environment )
-        size_t size;
-        
-        // Percentadge of the memory to give this memory block
-        double mem_percentadge;
-        
-        // Listner to notify
-        size_t listner_id;
-
-        // Buffer alocated for this
-        Buffer *buffer;
-
-        // Basic constructor
-        MemoryRequest( size_t _size , double _mem_percentadge , size_t _listener_id );
-
-        // Get information in xml mode
-        void getInfo( std::ostringstream& output);
-
-        
-    };    
+public:
     
-	
-}
+    // Size of the memory requets ( extracted from environment )
+    size_t size;
+    
+    // Percentadge of the memory to give this memory block
+    double mem_percentadge;
+    
+    // Listner to notify
+    size_t listner_id;
+    
+    // Buffer alocated for this
+    Buffer *buffer;
+    
+    // Basic constructor
+    MemoryRequest( size_t _size , double _mem_percentadge , size_t _listener_id );
+    
+    // Get information in xml mode
+    void getInfo( std::ostringstream& output);
+    
+    
+};    
+
+
+NAMESPACE_END
 
 #endif

@@ -26,7 +26,9 @@ public abstract class MigrationController {
 
 	private final static String FS_NAME_SOURCE = "fs.name.source";
 	private final static String FS_NAME_DESTINATION = "fs.name.destination";
-	private final static String INITIAL_PATH = "initial.path";
+	private final static String OVERWRITE_FILES = "files.overwrite";
+	private static final String INITIAL_PATH = "initial.path";
+
 	private final static String DEFAULT_INITIAL_PATH = "/";
 
 	private final static int DATA_BLOCK_SIZE = 1024 * 1024 * 64;
@@ -34,6 +36,7 @@ public abstract class MigrationController {
 	protected final FileSystem hdfsSrc;
 	protected final FileSystem hdfsDst;
 	protected final String initialPath;
+	protected final Boolean overwrite;
 
 	/**
 	 * Constuctor
@@ -49,6 +52,8 @@ public abstract class MigrationController {
 		Configuration confDst = new Configuration();
 		confDst.set(FS_DEFAULT_NAME,
 				properties.getProperty(FS_NAME_DESTINATION));
+
+		overwrite = Boolean.getBoolean(properties.getProperty(OVERWRITE_FILES));
 
 		hdfsSrc = FileSystem.get(confSrc);
 		hdfsDst = FileSystem.get(confDst);
@@ -113,6 +118,11 @@ public abstract class MigrationController {
 		System.out.println("copy from " + inputFile + " to " + outputFile);
 		FSDataOutputStream out = null;
 		FSDataInputStream in = null;
+
+		if (!overwrite && hdfsDst.exists(outputFile)) {
+			return;
+		}
+		
 		try {
 			out = hdfsDst.create(outputFile);
 			in = hdfsSrc.open(inputFile);

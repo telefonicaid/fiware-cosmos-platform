@@ -243,7 +243,10 @@ namespace samson
         
         { "engine_show"             , "Show a status information of the engine (lower level system in SAMSON) in all workers and controller"},
 
-        { "init_stream"    ,   "Usage: run_stream_operation <op_name>\n\nInit stream operations from a script"},
+        { "init_stream"    ,   "Usage: init_stream [prefix] <script_name>\n\nInit stream operations from a script\n"
+                                "\t[prefix]       :if defined, it is used to name operations and queues\n"
+                                "\t<script_name>  :the name of the script (i.e. module.script), where stream operations are set with add_stream_operation\n"
+        },
         
         { "run_stream_operation"    ,   "Usage: run_stream_operation <op_name> [queues...] [-clear_inputs]\n\n"
             "Run a particular operation over queues.\n"

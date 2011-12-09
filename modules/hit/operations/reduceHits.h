@@ -6,7 +6,7 @@
 #ifndef _H_SAMSON_hit_reduceHits
 #define _H_SAMSON_hit_reduceHits
 
-#include <time.h>
+#include  <time.h>
 
 #include <samson/module/samson.h>
 #include <samson/modules/hit/Hit.h>
@@ -79,7 +79,7 @@ namespace hit{
 		   }
 
 
-		   if( hit.count.value >= 1 )
+		   if( hit.count.value >= 0.1 )
 		   {
 
 			  // Store in the manager to emit when finishing...

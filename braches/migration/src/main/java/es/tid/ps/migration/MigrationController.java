@@ -11,7 +11,7 @@ import org.apache.hadoop.fs.Path;
 
 /**
  * This abstract class provides the functionality for loading data from one
- * hadoop cluster to another. The requisites to used this class are: the version
+ * Hadoop cluster to another. The requisites to used this class are: the version
  * of the cluster are the same or a version or at least compatible versions.
  * 
  * The class extends this need to implement the functionality for defining how
@@ -24,8 +24,16 @@ public abstract class MigrationController {
 
 	private final static String FS_DEFAULT_NAME = "fs.default.name";
 
-	protected FileSystem hdfsSrc;
-	protected FileSystem hdfsDst;
+	private final static String FS_NAME_SOURCE = "fs.name.source";
+	private final static String FS_NAME_DESTINATION = "fs.name.destination";
+	private final static String INITIAL_PATH = "initial.path";
+	private final static String DEFAULT_INITIAL_PATH = "/";
+
+	private final static int DATA_BLOCK_SIZE = 1024 * 1024 * 64;
+
+	protected final FileSystem hdfsSrc;
+	protected final FileSystem hdfsDst;
+	protected final String initialPath;
 
 	/**
 	 * Constuctor
@@ -33,12 +41,20 @@ public abstract class MigrationController {
 	 * @throws IOException
 	 */
 	public MigrationController() throws IOException {
+
+		PropertiesPlaceHolder properties = PropertiesPlaceHolder.getInstance();
+
 		Configuration confSrc = new Configuration();
-		confSrc.set(FS_DEFAULT_NAME, "hdfs://pshdp01.hi.inet:8011");
+		confSrc.set(FS_DEFAULT_NAME, properties.getProperty(FS_NAME_SOURCE));
 		Configuration confDst = new Configuration();
-		confDst.set(FS_DEFAULT_NAME, "hdfs://pshdp01.hi.inet:8011");
+		confDst.set(FS_DEFAULT_NAME,
+				properties.getProperty(FS_NAME_DESTINATION));
+
 		hdfsSrc = FileSystem.get(confSrc);
 		hdfsDst = FileSystem.get(confDst);
+
+		initialPath = properties
+				.getProperty(INITIAL_PATH, DEFAULT_INITIAL_PATH);
 	}
 
 	/**
@@ -48,9 +64,7 @@ public abstract class MigrationController {
 	 * @throws IOException
 	 */
 	public void realizeMigration() throws IOException {
-		String initialPath = "/user/rgc";
-		Path path = new Path(initialPath);
-		processDirectory(path);
+		processDirectory(new Path(initialPath));
 	}
 
 	/**
@@ -64,10 +78,10 @@ public abstract class MigrationController {
 
 	/**
 	 * This method processes all the directories and files from a directory that
-	 * recives by param.
+	 * Receives by parameter.
 	 * 
 	 * @param directory
-	 *            tha path of directory that are will be processing
+	 *            path of directory that are will be processing
 	 * @throws IOException
 	 */
 	private void processDirectory(Path directory) throws IOException {
@@ -101,9 +115,8 @@ public abstract class MigrationController {
 		FSDataInputStream in = null;
 		try {
 			out = hdfsDst.create(outputFile);
-
 			in = hdfsSrc.open(inputFile);
-			byte buffer[] = new byte[1024 * 1024 * 64];
+			byte buffer[] = new byte[DATA_BLOCK_SIZE];
 			int bytesRead = 0;
 			while ((bytesRead = in.read(buffer)) != -1) {
 				out.write(buffer, 0, bytesRead);

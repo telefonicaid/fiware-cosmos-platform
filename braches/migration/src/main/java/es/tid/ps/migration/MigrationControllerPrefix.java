@@ -13,6 +13,8 @@ import org.apache.hadoop.fs.Path;
  */
 public class MigrationControllerPrefix extends MigrationController {
 
+	private final String prefix;
+	private final static String PREFIX_PROPERTY = "prefix.value";
 	/**
 	 * Constuctor
 	 * 
@@ -20,6 +22,7 @@ public class MigrationControllerPrefix extends MigrationController {
 	 */
 	public MigrationControllerPrefix() throws IOException {
 		super();
+		prefix = PropertiesPlaceHolder.getInstance().getProperty(PREFIX_PROPERTY, "");
 	}
 
 	/**
@@ -30,7 +33,6 @@ public class MigrationControllerPrefix extends MigrationController {
 	 * @return the path in the destination cluster
 	 */
 	protected Path generateOutputPath(Path sourcePath) {
-		Path prefix = new Path("/user/rgcmigration");
 		StringBuilder sb = new StringBuilder();
 		Path aux = sourcePath;
 		while (aux != null) {

@@ -10,6 +10,7 @@
 #include <unistd.h>                // read
 #include <fcntl.h>                 // open, O_RDONLY, ...
 #include <sys/stat.h>              // struct stat
+#include <signal.h>
 
 #include "au/LockDebugger.h"       // au::LockDebugger
 

@@ -202,6 +202,10 @@ public:
     {
         update_values();
 
+        // Add to rates
+        rate += size;
+        rate_hits += 1;
+        
         // Add new values
         total_size += size;
         total_num++;

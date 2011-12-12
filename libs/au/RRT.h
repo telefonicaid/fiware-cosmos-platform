@@ -170,9 +170,9 @@ template <class T>
 class ValueCollection
 {
     // Values forsize    
-    au::RRTAverage<T ,200,1>    samples_last_seconds;
-    au::RRTAverage<T ,200,60>   samples_last_minutes;
-    au::RRTAverage<T ,200,3600> samples_last_houts;
+    au::RRTAverage<T ,1000,1>    samples_last_seconds;
+    //au::RRTAverage<T ,200,60>   samples_last_minutes;
+    //au::RRTAverage<T ,200,3600> samples_last_houts;
     
 public:
     
@@ -183,8 +183,8 @@ public:
     void push( T value )
     {
         samples_last_seconds.push( value );
-        samples_last_minutes.push( value );
-        samples_last_houts.push( value );
+        //samples_last_minutes.push( value );
+        //samples_last_houts.push( value );
     }
     
     // For ploting

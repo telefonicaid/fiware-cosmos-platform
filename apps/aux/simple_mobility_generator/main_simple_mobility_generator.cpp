@@ -77,6 +77,23 @@ Position getPosition( size_t user )
     return Position( rand()%1000 , rand()%1000 );
 }
 
+size_t num_users;
+size_t current_user;
+bool progresive;
+
+size_t getUser()
+{
+    if ( progresive )
+    {
+        current_user++;
+        if( current_user >= num_users )
+            current_user=0;
+        return current_user;
+    }
+    
+    return rand()%num_users;
+}
+
 int main( int args , const char*argv[] )
 {
     // Random sequence generated
@@ -89,11 +106,15 @@ int main( int args , const char*argv[] )
     cmd.set_flag_boolean("h");
     cmd.set_flag_boolean("help");
     cmd.set_flag_boolean("commands");
+    cmd.set_flag_boolean("progressive");
     
     cmd.parse( args, argv );
 
     period = cmd.get_flag_uint64("period");
-    
+    progresive = cmd.get_flag_bool("progressive");
+    num_users = cmd.get_flag_uint64("users");
+    current_user = 0;
+
     if( cmd.get_flag_bool("h") || cmd.get_flag_bool("help") )
     {
         printf("\n");
@@ -107,11 +128,12 @@ int main( int args , const char*argv[] )
         printf(" Option: -users  X     Change the number of users ( default 20000000 ) \n" );
         printf(" Option: -rate   X     Change number of CDRS per second ( default 10000 ) \n" );
         printf(" Option: -period X     Change period work-home in seconds (default 300 secs )\n");
+        printf(" Option: -progressive  Non random sequence of messages\n";
         printf("\n");
         return 0;
     }
     
-    size_t num_users = cmd.get_flag_uint64("users");
+    
     size_t rate = cmd.get_flag_uint64("rate");
     
     fprintf(stderr,"%s: Setup %lu users and %lu cdrs/second\n" , argv[0] , num_users , rate );
@@ -143,7 +165,7 @@ int main( int args , const char*argv[] )
         theoretical_seconds += 1;         
         for ( size_t i = 0 ; i < rate ; i++ )
         {
-            size_t user = rand()%num_users;
+            size_t user = getUser();
             
             Position p = getPosition( user );
             

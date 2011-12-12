@@ -153,8 +153,8 @@ std::string Rate::str()
 {
     update_values();
     return au::str("[ Currently %s %s ] [ Accumulated in %s %s with %s ]" 
-                   , au::str( (1.0-factor)*rate_hits  , "hits/s" ).c_str() 
-                   , au::str( (1.0-factor)*rate , "B/s" ).c_str() 
+                   , au::str( getRate(rate_hits)  , "hits/s" ).c_str() 
+                   , au::str( getRate(rate) , "B/s" ).c_str() 
                    , au::time_string( global_cronometer.diffTime() ).c_str()
                    , au::str( total_num , "hits" ).c_str() 
                    , au::str( total_size , "B" ).c_str() 
@@ -187,6 +187,20 @@ void Rate::update_values()
     rate = rate * pow( factor  , time_diff );
     rate_hits = rate_hits * pow( factor  , time_diff );
 }
+
+double Rate::getRate( double value )
+{
+    double time_spam = 1.0 / ( 1.0 - factor );
+    double time = global_cronometer.diffTime();
+    if( time == 0 )
+        time = 1;
+    
+    if( time < time_spam )
+        return value / time;
+    else
+        return (1.0-factor)*rate_hits;
+}
+
 
 NAMESPACE_END
 

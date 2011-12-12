@@ -203,6 +203,8 @@ private:
     
     void update_values();
     
+    double getRate( double value );
+    
 };
 
 NAMESPACE_END

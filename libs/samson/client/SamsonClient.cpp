@@ -155,7 +155,7 @@ namespace samson {
         load_buffer_size =  64*1024*1024;
 
         total_push_size = 0;
-        
+        total_push_blocks = 0;
     }
  
     void SamsonClient::setMemory ( size_t _memory )
@@ -249,6 +249,7 @@ namespace samson {
 
         // Accumulated size
         total_push_size += length;
+        total_push_blocks++;
         
         // Process buffer
         LM_V(("Pushing %s to queue %s. Total accumulated %s" , au::str(length,"B").c_str() , queue.c_str()  , au::str(total_push_size,"B").c_str() ));

@@ -273,6 +273,7 @@ int main( int argC , const char *argV[] )
 
     LM_V(("Total pushed %s" , au::str(total_process,"B").c_str() ));
     
+    LM_V(("%s" , client.getStatisticsString().c_str() ));
     
     // --------------------------------------------------------------------------------
     

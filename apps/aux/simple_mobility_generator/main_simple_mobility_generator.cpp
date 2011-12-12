@@ -65,9 +65,11 @@ Position getWork( size_t user )
     return Position( 1000 - 10 * ( user%100 ) , 10 * ( user%100 )  );
 }
 
+int period;
+
 Position getPosition( size_t user )
 {
-    if( time(NULL)%100 < 50 )
+    if( time(NULL)%period < (period/2) )
         return getHome(user);
     else
         return getWork(user);
@@ -83,12 +85,15 @@ int main( int args , const char*argv[] )
     au::CommandLine cmd;
     cmd.set_flag_uint64("users", 40000000 );    // Number of users
     cmd.set_flag_uint64("rate", 10000 );    // Number of CDRS per second
+    cmd.set_flag_uint64("period", 300 );    // Period of work-home in seconds
     cmd.set_flag_boolean("h");
     cmd.set_flag_boolean("help");
     cmd.set_flag_boolean("commands");
     
     cmd.parse( args, argv );
 
+    period = cmd.get_flag_uint64("period");
+    
     if( cmd.get_flag_bool("h") || cmd.get_flag_bool("help") )
     {
         printf("\n");
@@ -99,8 +104,9 @@ int main( int args , const char*argv[] )
         printf(" %s -commands       Generates the command to setup home/work areas\n", argv[0] );
         printf(" %s                 Generates the CDRS \n", argv[0] );
         printf("\n");
-        printf(" Option: -users       Change the number of users ( default 20000000 ) \n" );
-        printf(" Option: -rate        Change number of CDRS per second ( default 10000 ) \n" );
+        printf(" Option: -users  X     Change the number of users ( default 20000000 ) \n" );
+        printf(" Option: -rate   X     Change number of CDRS per second ( default 10000 ) \n" );
+        printf(" Option: -period X     Change period work-home in seconds (default 300 secs )\n");
         printf("\n");
         return 0;
     }

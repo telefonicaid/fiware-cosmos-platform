@@ -26,13 +26,13 @@
 #include <string>               // std::string
 
 #include "au/namespace.h"
-
+#include <sys/time.h>
 
 NAMESPACE_BEGIN(au)
 
 class Cronometer
 {
-    time_t t;
+    struct timeval t;
     
 public:
     
@@ -43,11 +43,16 @@ public:
     
     // Get the time difference since the last reset ( or creation ) in second
     time_t diffTimeInSeconds();
+
+    double diffTime();
+    double diffTimeAndReset();
     
     // Get a string with the time ellapsed since last reset or creation
     std::string str();
     
 };
+
+
 
 class CronometerSystem
 {

@@ -73,8 +73,8 @@ namespace samson {
         // Mutex protection
         au::TokenTaker tt(&token);
         
-        // Keep accumulated size
-        total_size += length;
+        // Statistics
+        rate.push( length );
         
         // If this is the first time we push data, just reset the cronometert to zero
         if ( size == 0)
@@ -154,11 +154,7 @@ namespace samson {
     SamsonClient::SamsonClient()
     {
         memory = 1024*1024*1024;
-        
         load_buffer_size =  64*1024*1024;
-
-        total_push_size = 0;
-        total_push_blocks = 0;
     }
  
     void SamsonClient::setMemory ( size_t _memory )
@@ -249,13 +245,12 @@ namespace samson {
     
     size_t SamsonClient::push( std::string queue , char *data , size_t length )
     {
-
-        // Accumulated size
-        total_push_size += length;
-        total_push_blocks++;
+        // Statistics
+        rate.push( length );
         
-        // Process buffer
-        LM_V(("Pushing %s to queue %s. Total accumulated %s" , au::str(length,"B").c_str() , queue.c_str()  , au::str(total_push_size,"B").c_str() ));
+        // Show some info if -v option is selected
+        LM_V(("Pushing %s to queue %s" , au::str(length,"B").c_str() , queue.c_str() ));
+        LM_V(("SamsonClient info: %s"  , rate.str().c_str() ));
         
         // Block this call if memory is not enougth
         double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();

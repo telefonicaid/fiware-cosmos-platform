@@ -145,8 +145,6 @@ int main( int argC , const char *argV[] )
     
 
     size_t size = 0;                // Bytes currently contained in the buffer
-    size_t total_size =0 ;          // Total accumulated size
-    size_t total_process = 0;    
     
 
     std::string tmp_separator = breaker_sequence;
@@ -156,10 +154,15 @@ int main( int argC , const char *argV[] )
     LM_V(("Input parameter timeout %s " , au::time_string( timeOut ).c_str() ));
     LM_V(("Input parameter break_sequence '%s' ( length %d ) " , tmp_separator.c_str() , strlen(breaker_sequence) ));
 
-    au::Cronometer cronometer;
+    // Statistics about stdin rate ( it also controls max rate )
+    au::rate::Rate rate_stdin;
     
     while( true )
     {
+        
+        // --------------------------------------------------------------------
+        // Read content from stdin
+        // --------------------------------------------------------------------
         
         size_t read_bytes = 0;
         if( lines ) 
@@ -177,22 +180,15 @@ int main( int argC , const char *argV[] )
             read_bytes = full_read( 0 , data + size , buffer_size - size );
         }
         
-        // total bytes read
-        total_size+= read_bytes;
-
+        // Statistics about input size
+        rate_stdin.push( read_bytes );
+        
         // Information about current status....
         size_t memory = engine::MemoryManager::shared()->getMemory();
         size_t used_memory = engine::MemoryManager::shared()->getUsedMemory();
         double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
-        
-        LM_V(("Read %s from stdin. Accumulated %s in %s ( %s )" , 
-                au::str( read_bytes , "B" ).c_str(),
-                au::str( total_size , "B" ).c_str(),
-                au::time_string( cronometer.diffTimeInSeconds() ).c_str(),
-                au::str_rate( total_size , cronometer.diffTimeInSeconds() , "Bs" ).c_str()
-              ));
-                
-        
+
+        LM_V(("Stdin info: %s", rate_stdin.str().c_str())); 
         
         if( used_memory > 0 )
         {
@@ -235,27 +231,13 @@ int main( int argC , const char *argV[] )
 
 
         // Sleep if necessary
-        size_t diff_time = cronometer.diffTimeInSeconds();
-        size_t theoretical_diff_time = (double) total_size / (double) max_rate;
-        if( diff_time > 0 )
+        if ( rate_stdin.getGlobalRate() > (double) max_rate )
         {
-            if( theoretical_diff_time > diff_time )
-            {
-                int seconds = theoretical_diff_time / diff_time;
-                LM_V(("Sleeping %d seconds to respect max rate %s" , seconds , au::str( max_rate ).c_str() ));
-                sleep ( seconds );
-            }
-        }
-        else
-        {
-            // Do not accept more that 1 second data
-            if ( total_size > (size_t)max_rate )
-                sleep(1);
+            LM_V(("Stdin info: %s", rate_stdin.str().c_str())); 
+            LM_V(("Sleeping respect max rate %s" , au::str( max_rate ).c_str() ));
+            sleep ( 1 );
         }
         
-        
-        // Total accumulation of data
-        total_process +=  output_size;
 
         // Move rest of data to the begining of the buffer
         if( output_size < size )
@@ -271,7 +253,10 @@ int main( int argC , const char *argV[] )
     // Last push
     pushBuffer->flush();
 
-    LM_V(("Total pushed %s" , au::str(total_process,"B").c_str() ));
+
+    LM_V(("Stdin info: %s", rate_stdin.str().c_str())); 
+    LM_V(("PushBuffer info: %s", pushBuffer->rate.str().c_str())); 
+    LM_V(("SamsonClient info: %s", client.rate.str().c_str())); 
     
     LM_V(("%s" , client.getStatisticsString().c_str() ));
     

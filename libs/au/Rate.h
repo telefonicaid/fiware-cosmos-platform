@@ -26,8 +26,11 @@
 #include <string>    // std::String
 #include <time.h>
 #include <list>
+#include <math.h>
 
 #include "au/xml.h"
+#include "au/Cronometer.h"
+#include "au/string.h"
 
 #include "au/namespace.h"
 
@@ -170,6 +173,86 @@ public:
     }
     
 };
+
+NAMESPACE_BEGIN(rate)
+
+class Rate
+{
+   size_t total_size;   // Total number of bytes
+   size_t total_num;       // Total number of hits
+   
+   double rate;         // Aprox Rate in bytes/sec
+   double rate_hits;    // Aprox Rate of hits/sec
+
+   au::Cronometer cronometer;
+   au::Cronometer global_cronometer;
+    
+public:
+    
+    Rate()
+    {
+        total_size = 0;
+        total_num = 0;
+        
+        rate = 0;
+        rate_hits = 0;		
+    }
+    
+    void push( size_t size )
+    {
+        update_values();
+
+        // Add new values
+        total_size += size;
+        total_num++;
+    }
+    
+    std::string str()
+    {
+        update_values();
+        return au::str("[ Currently %s %s ] [ Accumulated in %s %s with %s ]" 
+                       , au::str( rate_hits , "hits/s" ).c_str() 
+                       , au::str( rate , "B/s" ).c_str() 
+                       , au::time_string( global_cronometer.diffTime() ).c_str()
+                       , au::str( total_num , "hits" ).c_str() 
+                       , au::str( total_size , "B" ).c_str() 
+                       );
+    }
+    
+    size_t getTotalNumberOfHits()
+    {
+        return total_num;
+    }
+    size_t getTotalSize()
+    {
+        return total_size;
+    }
+    
+    double getGlobalRate()
+    {
+        double time = global_cronometer.diffTime();
+        if( time <= 0 )
+            time = 1;
+        
+        return ((double) total_size) / time;
+    }
+    
+private:
+    
+    void update_values()
+    {
+        // Get time diferente since last update and reset cronometer
+        double time_diff = cronometer.diffTimeAndReset(); 
+        
+        rate = rate * pow( 0.99666666  , time_diff );
+        rate_hits = rate_hits * pow( 0.99666666  , time_diff );
+    }
+
+    
+};
+
+NAMESPACE_END
+
 
 NAMESPACE_END
 

@@ -29,6 +29,7 @@
 #include "au/TokenTaker.h"          // au::TokenTaker
 #include "au/list.h"               // au::list
 #include "au/map.h"               // au::map
+#include "au/Rate.h"               // au::rate::Rate
 
 #include "engine/Object.h"          // engine::Object
 #include "engine/Buffer.h"          // engine::Buffer
@@ -41,6 +42,7 @@
 namespace  samson {
     
     class SamsonClient;
+    
     
     /*
      Class used to push data to a txt queue in buffer mode
@@ -58,14 +60,15 @@ namespace  samson {
         size_t size;    // Current size of the buffer
         int timeOut;    // Timeout in seconds to flush content to the queue
 
-        size_t total_size;    // Total accumulated size
         
         au::Cronometer cronometer; // Time since the last flush
         
         au::Token token;
-
     
     public:
+        
+        au::rate::Rate rate; // Statistics about rate
+        
         SamsonPushBuffer( SamsonClient *client , std::string queue , int timeOut );
         ~SamsonPushBuffer();
 
@@ -108,7 +111,6 @@ namespace  samson {
     class BufferContainer 
     {
         au::Token token;
-        
         au::map< std::string , BufferList > buffer_lists;    // Buffers for live data
         
     public:
@@ -326,11 +328,10 @@ namespace  samson {
         std::string error_message;              // Error message if a particular operation fails
         
         std::vector<size_t> delilah_ids;        // Delilah operation to wait for...
-
-        int total_push_blocks;     // Accumulated number of packets
-        size_t total_push_size;    // Accumulated number of bytes
         
 	public:
+
+        au::rate::Rate rate;                    // Statistics about rate
         
         // Default constructor
         SamsonClient();
@@ -360,7 +361,7 @@ namespace  samson {
       
         std::string getStatisticsString()
         {
-            return au::str("Pushed %s in %d blocs", au::str(total_push_size,"B").c_str() , total_push_blocks );
+            return au::str("Pushed %s in %d blocs", au::str(rate.getTotalSize(),"B").c_str() , rate.getTotalNumberOfHits() );
         }
         
     };

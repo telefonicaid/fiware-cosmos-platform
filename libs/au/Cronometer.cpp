@@ -8,17 +8,49 @@ NAMESPACE_BEGIN(au)
 
 Cronometer::Cronometer()
 {
-    t = time( NULL );
+    if ( gettimeofday(&t,NULL) != 0)
+        LM_X(1, ("gettimeofday failed"));
 }
 
 void Cronometer::reset()
 {
-    t = time( NULL );
+    if ( gettimeofday(&t,NULL) != 0)
+        LM_X(1, ("gettimeofday failed"));
 }
 
 time_t Cronometer::diffTimeInSeconds()
 {
-    return time(NULL) - t;
+    struct timeval t2;
+    
+    if ( gettimeofday(&t2,NULL) != 0)
+        LM_X(1, ("gettimeofday failed"));
+
+    return t2.tv_sec - t.tv_sec;
+}
+
+double Cronometer::diffTimeAndReset()
+{
+    struct timeval t2;
+    
+    if ( gettimeofday(&t2,NULL) != 0)
+        LM_X(1, ("gettimeofday failed"));
+
+    // Reset the value to this new time reference
+    t = t2;
+    
+    return ( (double) t2.tv_sec ) + ((double)t2.tv_usec / 1000000.0) - ( (double) t.tv_sec ) - ((double)t.tv_usec / 1000000.0);
+    
+}
+
+double Cronometer::diffTime()
+{
+    struct timeval t2;
+    
+    if ( gettimeofday(&t2,NULL) != 0)
+        LM_X(1, ("gettimeofday failed"));
+    
+    return ( (double) t2.tv_sec ) + ((double)t2.tv_usec / 1000000.0) - ( (double) t.tv_sec ) - ((double)t.tv_usec / 1000000.0);
+
 }
 
 std::string Cronometer::str()

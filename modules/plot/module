@@ -76,6 +76,8 @@ script init_stream_operations
 		rm_queue [q1] [q2] [q3] [q4] -f;
 		rm_stream_operation [o1] [o2] -f;
 
+		set_queue_property [q4] max_size 0
+
 		# Definitions
 		aso [o1]  plot.update_levels                   [q1] [q2] [q3] [q2];
 		aso [o2]  plot.publish_level_notifications	   [q3]      [q4];

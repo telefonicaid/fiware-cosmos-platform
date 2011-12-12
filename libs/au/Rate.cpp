@@ -122,4 +122,72 @@ void SimpleRate::getInfo( std::ostringstream &output )
     au::xml_simple(output , "rate" , last_minute.getRate() );
 }        
 
+
+NAMESPACE_BEGIN(rate)
+
+Rate::Rate()
+{
+    total_size = 0;
+    total_num = 0;
+    
+    rate = 0;
+    rate_hits = 0;		
+    
+    factor = 0.99666666; // 300 seconds
+}
+
+void Rate::push( size_t size )
+{
+    update_values();
+    
+    // Add to rates
+    rate += size;
+    rate_hits += 1;
+    
+    // Add new values
+    total_size += size;
+    total_num++;
+}
+
+std::string Rate::str()
+{
+    update_values();
+    return au::str("[ Currently %s %s ] [ Accumulated in %s %s with %s ]" 
+                   , au::str( (1.0-factor)*rate_hits  , "hits/s" ).c_str() 
+                   , au::str( (1.0-factor)*rate , "B/s" ).c_str() 
+                   , au::time_string( global_cronometer.diffTime() ).c_str()
+                   , au::str( total_num , "hits" ).c_str() 
+                   , au::str( total_size , "B" ).c_str() 
+                   );
+}
+
+size_t Rate::getTotalNumberOfHits()
+{
+    return total_num;
+}
+size_t Rate::getTotalSize()
+{
+    return total_size;
+}
+
+double Rate::getGlobalRate()
+{
+    double time = global_cronometer.diffTime();
+    if( time <= 0 )
+        time = 1;
+    
+    return ((double) total_size) / time;
+}
+
+void Rate::update_values()
+{
+    // Get time diferente since last update and reset cronometer
+    double time_diff = cronometer.diffTimeAndReset(); 
+    
+    rate = rate * pow( factor  , time_diff );
+    rate_hits = rate_hits * pow( factor  , time_diff );
+}
+
+NAMESPACE_END
+
 NAMESPACE_END

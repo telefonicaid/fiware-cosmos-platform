@@ -128,7 +128,7 @@ int main( int args , const char*argv[] )
         printf(" Option: -users  X     Change the number of users ( default 20000000 ) \n" );
         printf(" Option: -rate   X     Change number of CDRS per second ( default 10000 ) \n" );
         printf(" Option: -period X     Change period work-home in seconds (default 300 secs )\n");
-        printf(" Option: -progressive  Non random sequence of messages\n";
+        printf(" Option: -progressive  Non random sequence of messages\n");
         printf("\n");
         return 0;
     }

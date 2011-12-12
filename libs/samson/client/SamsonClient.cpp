@@ -70,6 +70,9 @@ namespace samson {
 
     void SamsonPushBuffer::push( const char *data , size_t length )
     {
+        // Mutex protection
+        au::TokenTaker tt(&token);
+        
         // Keep accumulated size
         total_size += length;
         

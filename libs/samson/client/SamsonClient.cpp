@@ -48,13 +48,16 @@ namespace samson {
     
     SamsonPushBuffer::SamsonPushBuffer( SamsonClient *_client , std::string _queue , int _timeOut  ) : token("SamsonPushBuffer")
     {
+        // Client and queue name to push data to
         client = _client;
         queue = _queue;
-        max_buffer_size = 64*1024*1024 - sizeof(KVHeader) ; // Perfect size for this ;)
-        buffer = (char*) malloc( max_buffer_size );
 
+        // Init timeout to check
         timeOut =  _timeOut;
         
+        // Init the simple buffer
+        max_buffer_size = 64*1024*1024 - sizeof(KVHeader) ; // Perfect size for this ;)
+        buffer = (char*) malloc( max_buffer_size );
         size = 0;
         
         // Received notification about this
@@ -92,7 +95,8 @@ namespace samson {
             // Come back to "0"
             size = 0;
         }
-        else
+
+        // Copy new content to the upload buffer
         {
             // Acumulate contents
             memcpy(buffer+size, data, length);
@@ -112,8 +116,7 @@ namespace samson {
         if ( size > 0 )
         {
             // Process buffer
-            if( paVerbose )
-                LM_M(("Pushing %s to queue %s\n" , au::str(size,"B").c_str() , queue.c_str()));
+            LM_V(("SamsonPushBuffer: Pushing %s to queue %s\n" , au::str(size,"B").c_str() , queue.c_str()));
             client->push(  queue , buffer, size );
             
             // Come back to "0"
@@ -128,9 +131,8 @@ namespace samson {
         au::TokenTaker tt(&token);
         
         // We only expect notification about reviwing timeout
-        
-        if( timeOut > 0)
-            if( ( size > 0 ) && (cronometer.diffTimeInSeconds() > timeOut) )
+        if( timeOut > 0 )
+            if( ( size > 0 ) && ( cronometer.diffTimeInSeconds() > timeOut ) )
                 _flush();
         
     }

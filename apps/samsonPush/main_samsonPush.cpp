@@ -24,6 +24,7 @@
 #include "au/string.h"              // au::str()
 
 #include "samson/client/SamsonClient.h"         // samson::SamsonClient
+#include "samson/common/coding.h"               // KVHeader
 
 
 size_t buffer_size;
@@ -41,16 +42,18 @@ static const char* manShortDescription =
 static const char* manSynopsis =
 "[-help] [-controller str_controller] [-timeout int_t] [-buffer_size int_size] [-breaker_sequence str_pattern] [-lines bool] queue\n";
 
+int default_buffer_size = 64*1024*1024 - sizeof(samson::KVHeader);
+
 PaArgument paArgs[] =
 {
-	{ "-controller",  controller,            "",  PaString,  PaOpt, _i "localhost",   PaNL,       PaNL,  "controller IP:port"                         },
-	{ "-timeout",     &timeOut,              "",  PaInt,     PaOpt,              0,      0,      10000,  "Timeout to deliver a block to the platform" },
-	{ "-buffer_size", &buffer_size,          "",  PaInt,     PaOpt,       10000000,      1,   64000000,  "Buffer size in bytes"                       },
-	{ "-mr",          &max_rate,             "",  PaInt,     PaOpt,       10000000,      100,100000000,  "Max rate in bytes/s"                  },
-	{ "-breaker_sequence", breaker_sequence, "",  PaString,  PaOpt,        _i "\n",   PaNL,       PaNL,  "Breaker sequence ( by default \\n )"        },
-	{ "-lines",       &lines,                "",  PaBool,    PaOpt,          false,  false,       true,  "Read std-in line by line"                   },
-	{ "-memory",      &push_memory,          "",  PaInt,     PaOpt,           1000,      1,    1000000,  "Memory in Mb used to push data ( default 1000)" },
-	{ " ",            queue_name,            "",  PaString,  PaReq,      _i "null",   PaNL,       PaNL,  "name of the queue to push data"             },
+	{ "-controller",  controller,            "",  PaString,  PaOpt, _i "localhost",                PaNL,        PaNL,  "controller IP:port"                         },
+	{ "-timeout",     &timeOut,              "",  PaInt,     PaOpt,              0,                    0,       10000,  "Timeout to deliver a block to the platform" },
+	{ "-buffer_size", &buffer_size,          "",  PaInt,     PaOpt,       default_buffer_size,         1,   128000000,  "Buffer size in bytes"                       },
+	{ "-mr",          &max_rate,             "",  PaInt,     PaOpt,       10000000,      100,  100000000,  "Max rate in bytes/s"                  },
+	{ "-breaker_sequence", breaker_sequence, "",  PaString,  PaOpt,        _i "\n",   PaNL,         PaNL,  "Breaker sequence ( by default \\n )"        },
+	{ "-lines",       &lines,                "",  PaBool,    PaOpt,          false,  false,         true,  "Read std-in line by line"                   },
+	{ "-memory",      &push_memory,          "",  PaInt,     PaOpt,           1000,      1,      1000000,  "Memory in Mb used to push data ( default 1000)" },
+	{ " ",            queue_name,            "",  PaString,  PaReq,      _i "null",   PaNL,         PaNL,  "name of the queue to push data"             },
 	PA_END_OF_ARGS
 };
 
@@ -253,34 +256,18 @@ int main( int argC , const char *argV[] )
     // Last push
     pushBuffer->flush();
 
-
-    LM_V(("Stdin info: %s", rate_stdin.str().c_str())); 
-    LM_V(("PushBuffer info: %s", pushBuffer->rate.str().c_str())); 
+    LM_V(("--------------------------------------------------------------------------------"));
+    LM_V(("Stdin info:        %s", rate_stdin.str().c_str())); 
+    LM_V(("PushBuffer info:   %s", pushBuffer->rate.str().c_str())); 
     LM_V(("SamsonClient info: %s", client.rate.str().c_str())); 
-    
-    LM_V(("%s" , client.getStatisticsString().c_str() ));
-    
-    // --------------------------------------------------------------------------------
-    
-    
-    /*
-    char line[1024];
-    while( fgets(line, 1024, stdin) )
-    {
-        size_t line_length  = strlen(line) + 1;
-        pushBuffer->push(line, line_length );
-    }
-
-    // Flush content of the buffer
-    pushBuffer->flush();
-    */
-    
+    LM_V(("--------------------------------------------------------------------------------"));
     
     
     // Wait until all operations are complete
     LM_V(("Waiting for all the push operations to complete..."));
-    
     client.waitUntilFinish();
+
+    
     
 	
 }

@@ -326,8 +326,9 @@ namespace  samson {
         std::string error_message;              // Error message if a particular operation fails
         
         std::vector<size_t> delilah_ids;        // Delilah operation to wait for...
-        
-        size_t total_push_size;
+
+        int total_push_blocks;     // Accumulated number of packets
+        size_t total_push_size;    // Accumulated number of bytes
         
 	public:
         
@@ -356,6 +357,11 @@ namespace  samson {
         // Getting information about my connection
         std::string getInfoAboutPushConnections( bool print_verbose );
         std::string getInfoAboutDelilahComponents();
+      
+        std::string getStatisticsString()
+        {
+            return au::str("Pushed %s in %d blocs", au::str(total_push_size,"B").c_str() , total_push_blocks );
+        }
         
     };
     

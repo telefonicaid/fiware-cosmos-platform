@@ -263,7 +263,6 @@ namespace samson {
             memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
         }
         
-        
         samson::BufferDataSource * ds = new samson::BufferDataSource( data , length );
         
         std::vector<std::string>queues;
@@ -296,14 +295,8 @@ namespace samson {
             
             while (delilah->isActive( id ) )
             {
-                std::string description =  delilah->getDescription( id );
-/*
-#ifdef __LP64__
-                printf("SamsonClient: Waiting %lu: %s\n" , id , description.c_str() );
-#else
-                printf("SamsonClient: Waiting %d: %s\n" , id , description.c_str() );
-#endif
-*/              
+                std::string description =  delilah->getDescription( id );                
+                LM_V(("Waiting process %lu: %s", id , description.c_str()  ));
                 sleep(1);
             }
         }

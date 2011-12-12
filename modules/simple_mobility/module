@@ -93,7 +93,7 @@ script init_stream_operations
 		add_stream_operation [o3]  simple_mobility.reduce_commands    [q3] [q5]   [q6] [q7] [q5];
 		add_stream_operation [o4]  simple_mobility.reduce_cdrs        [q4] [q5]   [q6] [q7] [q5];
 
-		set_queue_property [q6] max_size 0
+		set_queue_property [q6] max_size 1
 
 		init_stream 99.plot plot.init_stream_operations;
 	}

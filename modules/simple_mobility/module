@@ -30,8 +30,8 @@ reduce reduce_cdrs
 {
 	in system.UInt mobility.Record
 	in system.UInt simple_mobility.User
-	out system.UInt system.String
-	out system.String plot.LevelUpdate
+	out system.UInt system.String                    # Notifications
+	out system.String system.Int32                   # Update of levels
 	out system.UInt simple_mobility.User
 
 	helpLine "Update internal state"
@@ -41,8 +41,8 @@ reduce reduce_commands
 {
 	in system.UInt system.StringVector
 	in system.UInt simple_mobility.User
-	out system.UInt system.String
-	out system.String plot.LevelUpdate
+	out system.UInt system.String                    # Notifications
+	out system.String system.Int32                   # Update levels
 	out system.UInt simple_mobility.User
 
 	helpLine "Update internal state"
@@ -70,7 +70,7 @@ script init_stream_operations
 		alias [q4] 11.records;
 		alias [q5] 20.users;
 		alias [q6] 30.messages;
-		alias [q7] 99.plot.01.updates;
+		alias [q7] 99.level.01.input;
 		
 		# Operations;
 
@@ -95,7 +95,8 @@ script init_stream_operations
 
 		set_queue_property [q6] max_size 1;
 
-		init_stream 99.plot plot.init_stream_operations;
+		# Connect with the level module to keep uptated the number of users at home/word...
+		init_stream 99.level level.init_stream_operations;
 	}
 }
 

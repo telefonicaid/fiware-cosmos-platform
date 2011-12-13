@@ -44,6 +44,15 @@ namespace simple_mobility{
 			 track.value = 0;
 	   }
 
+	   samson::mobility::Area* getArea( std::string name )
+	   {
+		  for (int i = 0 ; i < areas_length ; i++ )
+			 if( areas[i].name.value == name )
+				return &areas[i];
+
+		  return NULL;
+	   }
+
 
 	};
 

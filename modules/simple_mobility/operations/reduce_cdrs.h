@@ -12,11 +12,12 @@
 #include <samson/modules/mobility/Position.h>
 #include <samson/modules/mobility/Record.h>
 
-#include <samson/modules/plot/LevelUpdate.h>
 
 #include <samson/modules/simple_mobility/User.h>
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/UInt.h>
+
+#include <samson/modules/level/LevelInt32.h>
 
 
 namespace samson{
@@ -32,9 +33,8 @@ namespace simple_mobility{
 	   samson::mobility::Record  record;      // Input record
 
 	   samson::system::String message;        // Message emited at the output
-
-	   samson::plot::LevelUpdate level_update; // Update level message ( for output 1 )
-
+	   
+	   samson::level::LevelInt32 *level_int_32;
 
 	public:
 
@@ -45,7 +45,7 @@ namespace simple_mobility{
 input: system.UInt mobility.Record
 input: system.UInt simple_mobility.User
 output: system.UInt system.String
-output: system.String plot.LevelUpdate
+output: system.String system.Int32
 output: system.UInt simple_mobility.User
 
 helpLine: Update internal state
@@ -53,6 +53,7 @@ helpLine: Update internal state
 
 		void init(samson::KVWriter *writer )
 		{
+		   level_int_32 = new samson::level::LevelInt32( writer , 1 );
 		}
 
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
@@ -109,9 +110,8 @@ helpLine: Update internal state
 				 
 				 if( !in_previous && in_now )
 				 {
-					level_update.increment( 1 );
-					writer->emit( 1 , &user.areas[i].name , &level_update );
-	
+					level_int_32->push( user.areas[i].name.value , 1 );
+
 					message.value = au::str("User enters area '%s' when moving from %s to %s" , user.areas[i].str().c_str() , user.position.str().c_str() , record.position.str().c_str() );
 					writer->emit( 0 , &key,  &message );					
 
@@ -119,8 +119,7 @@ helpLine: Update internal state
 				 
 				 if( in_previous && !in_now )
 				 {
-					level_update.decrement( 1 );
-					writer->emit( 1 , &user.areas[i].name , &level_update );
+					level_int_32->push( user.areas[i].name.value , -1 );
 					
 			   	    message.value = au::str("User  leaves '%s' when moving from %s to %s" , user.areas[i].str().c_str() , user.position.str().c_str() , record.position.str().c_str() );
 				    writer->emit( 0 , &key,  &message );
@@ -142,6 +141,9 @@ helpLine: Update internal state
 		
 		void finish(samson::KVWriter *writer )
 		{
+           level_int_32->flush();
+           delete level_int_32;
+           level_int_32 = NULL;
 		}
 		
 		

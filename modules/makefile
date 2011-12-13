@@ -9,7 +9,7 @@ MODULES=system \
 	example \
 	tienda \
 	cdr \
-	plot \
+	level \
 	mobility \
 	mob \
 	mob2 \

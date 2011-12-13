@@ -13,7 +13,7 @@
 #include <samson/modules/system/StringVector.h>
 #include <samson/modules/system/UInt.h>
 
-#include <samson/modules/plot/LevelUpdate.h>
+#include <samson/modules/level/LevelInt32.h>
 
 
 namespace samson{
@@ -23,14 +23,15 @@ namespace simple_mobility{
 	class reduce_commands : public samson::Reduce
 	{
 
-	   samson::system::UInt key;              // User identifier
-	   samson::simple_mobility::User user;    // State information
+	   samson::system::UInt key;                     // User identifier
+	   samson::simple_mobility::User user;           // State information
 
 	   samson::system::StringVector command;         // Input command to update this state
 	   samson::system::String message;               // Message emited at the output
 
-	   samson::system::String level_update_key;     // String used to be emited with level_update
-	   samson::plot::LevelUpdate level_update;      // Level update message used to keep track the number of users with home/work defined
+	   // Class used to accumulate level updates
+	   samson::level::LevelInt32* level_int_32;
+
 
 	public:
 
@@ -41,7 +42,7 @@ namespace simple_mobility{
 input: system.UInt system.StringVector  
 input: system.UInt simple_mobility.User  
 output: system.UInt system.String
-output: system.String plot.LevelUpdate
+output: system.String system.Int32
 output: system.UInt simple_mobility.User
 
 helpLine: Update internal state
@@ -49,6 +50,7 @@ helpLine: Update internal state
 
 		void init(samson::KVWriter *writer )
 		{
+		   level_int_32 = new samson::level::LevelInt32( writer , 1 );
 		}
 
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
@@ -79,11 +81,7 @@ helpLine: Update internal state
 				 writer->emit( 0 , &key,  &message );
 
 				 if( !user.isTracking() )
-				 {
-					level_update_key.value = "track";
-					level_update.increment( 1 );
-					writer->emit( 1 , &level_update_key , &level_update );
-				 }
+					level_int_32->push( "track" , 1 );
 				 
 				 user.setTraking( true );
               }
@@ -93,12 +91,7 @@ helpLine: Update internal state
 				 writer->emit( 0 , &key,  &message );
 
 				 if( user.isTracking() )
-				 {
-					level_update_key.value = "track";
-					level_update.decrement( 1 );
-					writer->emit( 1 , &level_update_key , &level_update );
-				 }
-
+					level_int_32->push( "track" , -1 );
 				 user.setTraking( false );
               }
 			  else if ( command.values[0].value == "AREA_CREATE" )
@@ -113,39 +106,27 @@ helpLine: Update internal state
 				 else
 				 {
 					
-					// Review if the area exists to just update values
-					// PENDING TO DO....
-					
-					// Keep track of the total number of elements with are defined
-					bool previously_created = false;
-					for (int i = 0 ; i < user.areas_length ; i++ )
+					// Get this are if previously defined
+					samson::mobility::Area* area = user.getArea( command.values[1].value );
+
+					if( area )
 					{
-					   if( user.areas[i].name.value == command.values[1].value )
-					   {
-						  previously_created = true;
-
-						  // Update content
-						  user.areas[i].center.latitude.value = atof( command.values[2].value.c_str() );
-						  user.areas[i].center.longitude.value = atof( command.values[3].value.c_str() );
-						  user.areas[i].radius.value   = atof( command.values[4].value.c_str() );
-
-						  message.value = au::str( "Area '%s' updated  at point [%f,%f] with radius %f " ,
-												   user.areas[i].name.value.c_str() ,
-												   user.areas[i].center.latitude.value ,
-												   user.areas[i].center.longitude.value ,
-												   user.areas[i].radius.value );
-						  writer->emit( 0 , &key,  &message );
-						  
-
-
-						  break;
-					   }
-
+					   // Update area
+					   
+						area->center.latitude.value  = atof( command.values[2].value.c_str() );
+						area->center.longitude.value = atof( command.values[3].value.c_str() );
+						area->radius.value           = atof( command.values[4].value.c_str() );
+						
+						message.value = au::str( "Area '%s' updated  at point [%f,%f] with radius %f " ,
+												 area->name.value.c_str() ,
+												 area->center.latitude.value ,
+												 area->center.longitude.value ,
+												 area->radius.value );
+						writer->emit( 0 , &key,  &message );   											
 					}
-
-
-					if( !previously_created )
+					else
 					{
+						// Create a new area
 					   samson::mobility::Area *area = user.areasAdd();
 					   
 					   area->name.value = command.values[1].value;
@@ -162,11 +143,10 @@ helpLine: Update internal state
 					   
 					   
 					   // Keep track of the total number of elements with are defined
-					   level_update_key.value = au::str("%s_defined" , area->name.value.c_str() );
-					   level_update.increment( 1 );
-					   writer->emit( 1 , &level_update_key , &level_update );					
+					   std::string update_name  = au::str("%s_defined" , area->name.value.c_str() );
+					   level_int_32->push( update_name , 1 );						
 					}
-
+					
 				 }
 
 			  }
@@ -175,10 +155,9 @@ helpLine: Update internal state
 
 				 // Keep track of the total number of elements with are defined
 				 for (int i = 0 ; i < user.areas_length ; i++ )
-				 {
-					level_update_key.value = au::str("%s_defined" , user.areas[i].name.value.c_str() );
-					level_update.decrement( 1 );
-					writer->emit( 1 , &level_update_key , &level_update );
+				 {					   
+					std::string update_name  = au::str("%s_defined" , user.areas[i].name.value.c_str()  );
+					level_int_32->push( update_name , -1 );
 				 }
 
 
@@ -199,6 +178,9 @@ helpLine: Update internal state
 
 		void finish(samson::KVWriter *writer )
 		{
+		   level_int_32->flush();
+		   delete level_int_32;
+		   level_int_32 = NULL;
 		}
 
 

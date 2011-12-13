@@ -1,0 +1,65 @@
+Module level
+{
+	title	"Level module to keep track of global values "
+	author	"Andreu Urruela"
+	version "0.1"
+}
+
+
+# ------------------------------------------------------------
+# Reduce to update a Level
+# ------------------------------------------------------------
+
+reduce update_int32_levels
+{
+	in system.String system.Int32
+	in system.String system.Int32
+
+	out system.String system.Int32
+	out system.String system.Int32
+
+	helpLine "Update Level with incomming values. Accumulated value is emitted at two outputs"
+}
+
+# ------------------------------------------------------------
+# Extract data
+# ------------------------------------------------------------
+
+
+parserOut publish_int32_levels
+{
+	in system.String system.Int32
+	helpLine "Get a txt version of content"
+}
+
+# ------------------------------------------------------------
+# Init Stream
+# ------------------------------------------------------------
+
+script init_stream_operations
+{
+	code
+	{
+		# Queues
+		alias [input]      01.input;
+		alias [state]      02.levels;
+		alias [output]     03.levels_updates;
+		alias [output_txt] 04.levels_updates_txt; 
+		
+		# Operations
+		alias [o1] 01.update;
+		alias [o2] 02.publish;
+
+		# Remove queues and operations
+		rm_queue [input] [state] [output] [output_txt] -f;
+		rm_stream_operation [o1] [o2] -f;
+
+		# Properties for output queue
+		set_queue_property [output_txt] max_size 1000;
+
+		# Definitions
+		aso [o1]  level.update_int32_levels    [input] [state]       [output] [state];
+		aso [o2]  level.publish_int32_levels    [output]              [output_txt];
+	}
+}
+

@@ -168,6 +168,7 @@ int main( int argC , const char *argV[] )
         // --------------------------------------------------------------------
         
         size_t read_bytes = 0;
+        
         if( lines ) 
         {
             char * string = fgets(data , buffer_size, stdin );
@@ -246,7 +247,7 @@ int main( int argC , const char *argV[] )
         if( output_size < size )
         {
             memmove( data , data + output_size , size - output_size );
-            size = size-output_size;
+            size = size - output_size;
         }
         else
             size = 0;

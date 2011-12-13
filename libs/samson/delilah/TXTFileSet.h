@@ -31,15 +31,25 @@ namespace samson {
         
         BufferDataSource( char *_data , size_t _size )
         {
-            data = _data;
             size = _size;
+            
+            // Alloc and copy data
+            data = (char*) malloc( size );
+            memcpy(data, _data, size);            
+            
             pos = 0;
         }
         
         ~BufferDataSource()
         {
+            freeBuffer();
+        }
+        
+        void freeBuffer()
+        {
             if( data )
                 delete data;
+            data = NULL;
         }
         
 		bool isFinish()
@@ -55,19 +65,16 @@ namespace samson {
             {
                 b->write( &data[pos] , size-pos );
                 pos = size;
+                
+                // We can already free this buffer
+                freeBuffer();
+                
                 return 0;
             }
             else
             {
-                // Search the last return 
-                size_t pos2 = pos + available_size;
-                
-                while( (pos2 > pos) && (data[pos2] != '\n') )
-                    pos2--;
-                
-                
-                b->write( &data[pos] , pos2 - pos );
-                pos = pos2;
+                b->write( &data[pos] , available_size );
+                pos += available_size;
             }
             
             return 0;

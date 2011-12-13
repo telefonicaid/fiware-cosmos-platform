@@ -63,7 +63,10 @@ bool isOneOf( char c , std::string s );
 // Getting strings with format
 std::string str(const char* format, ...);
 std::string str( size_t value );
+std::string str_detail( size_t value );
+
 std::string str( size_t value , std::string postfix );
+std::string str_detail( size_t value , std::string postfix );
 
 std::string str_rate( size_t value , size_t time );
 std::string str_rate( size_t value , size_t time , std::string postLabel );

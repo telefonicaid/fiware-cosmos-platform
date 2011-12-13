@@ -284,6 +284,24 @@ std::string str( size_t value , std::string postfix )
 }
 
 
+std::string str_detail( size_t value )
+{
+    if( value < 1000 )
+        return str(value);
+    
+    return str("%lu (%s)" , value, au::str( value ).c_str() );
+}
+
+std::string str_detail( size_t value , std::string postfix )
+{
+    if( value < 1000 )
+        return str(value,postfix);
+    
+    return str("%lu %s (%s)" , value , postfix.c_str() , au::str( value, postfix ).c_str() );
+}
+
+
+
 bool isOneOf( char c , std::string s )
 {
     for (size_t i = 0 ; i < s.size() ; i++)

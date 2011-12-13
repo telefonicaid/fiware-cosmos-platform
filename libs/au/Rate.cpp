@@ -156,8 +156,8 @@ std::string Rate::str()
                    , au::str( getRate(rate_hits)  , "hits/s" ).c_str() 
                    , au::str( getRate(rate) , "B/s" ).c_str() 
                    , au::time_string( global_cronometer.diffTime() ).c_str()
-                   , au::str( total_num , "hits" ).c_str() 
-                   , au::str( total_size , "B" ).c_str() 
+                   , au::str_detail( total_num , "hits" ).c_str() 
+                   , au::str_detail( total_size , "B" ).c_str() 
                    );
 }
 

@@ -117,6 +117,7 @@ int main(int argC, const char *argV[])
         
         if( show_header )
         {
+            std::cout << "Total: " << samsonDataSet.info.strDetailed() << "\n"; 
             samsonDataSet.printHeaders();
             exit(0);
         }

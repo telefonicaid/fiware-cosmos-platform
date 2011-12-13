@@ -27,6 +27,7 @@ namespace samson {
         void printHeaders();
         void printContent( size_t limit );
         
+        
         std::string str();
     };
 }

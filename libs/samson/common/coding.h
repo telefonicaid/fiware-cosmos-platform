@@ -298,7 +298,17 @@ namespace samson {
 			o <<  "( " << au::str( kvs , "kvs" ) << " in " << au::str( size ,"bytes" ) << " )";  
 			return o.str();
 		}
-		
+        
+		std::string strDetailed()
+        {
+            return au::str("( %lu kvs [%s] in %lu bytes [%s] )"
+                           ,kvs
+                           ,au::str(kvs).c_str()
+                           ,size
+                           ,au::str(size).c_str()
+                           );
+        }
+        
         void getInfo( std::ostringstream& output)
         {
             au::xml_open(output,"kv_info");

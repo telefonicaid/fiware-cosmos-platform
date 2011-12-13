@@ -71,6 +71,7 @@ int main(int argC, const char *argV[])
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] (p.PID) FUNC: TEXT");
 	paConfig("screen line format",            (void*) "TYPE: TEXT");
 	paConfig("log to file",                   (void*) true);
+    paConfig("log to stderr",         (void*) true);
 	
 	paParse(paArgs, argC, (char**) argV, 1, false);// No more pid in the log file name
 	lmAux((char*) "father");

@@ -1,14 +1,14 @@
 #include <stdio.h>              /* stderr, stdout, ...                       */
+#include <cstdlib>				/* C++ free(.)								 */
 
 #include "baStd.h"              /* BA standard header file                   */
-#include "logMsg/logMsg.h"             /* lmVerbose, lmDebug, ...                   */
+#include "logMsg/logMsg.h"      /* lmVerbose, lmDebug, ...                   */
 
 #include "paPrivate.h"          /* PaTypeUnion, config variables, ...        */
 #include "paTraceLevels.h"      /* LmtPaEnvVal, ...                          */
-#include "parseArgs/paConfig.h"           /* paConfigActions                           */
+#include "parseArgs/paConfig.h" /* paConfigActions                           */
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */
 #include "paLogSetup.h"         /* Own interface                             */
-#include <cstdlib>				/* C++ free(.)								 */
 
 
 
@@ -88,12 +88,16 @@ int paLogSetup(void)
 			return -4;
 		}
 
-		lmToDo    = false;
-		lmVerbose = false;
-		lmDebug   = false;
+		lmToDo     = false;
+		lmVerbose  = false;
+		lmVerbose2 = false;
+		lmVerbose3 = false;
+		lmVerbose4 = false;
+		lmVerbose5 = false;
+		lmDebug    = false;
 		/* lmBug     = false; */
-		lmReads   = false;
-		lmWrites  = false;
+		lmReads    = false;
+		lmWrites   = false;
 
 		lmTraceSet((char*) "");
 

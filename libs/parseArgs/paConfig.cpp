@@ -80,6 +80,10 @@ char       paTraceV[1024];
 char*      paTracelevels         = NULL;
 
 bool       paVerbose             = false;
+bool       paVerbose2            = false;
+bool       paVerbose3            = false;
+bool       paVerbose4            = false;
+bool       paVerbose5            = false;
 bool       paDebug               = false;
 bool       paToDo                = false;
 bool       paReads               = false;
@@ -432,6 +436,14 @@ int paConfig(const char* item, void* value)
 	}
 	else if (strcmp(item, "verbose mode") == 0)
 		paVerbose = (bool) val;
+	else if (strcmp(item, "verbose2 mode") == 0)
+		paVerbose2 = (bool) val;
+	else if (strcmp(item, "verbose3 mode") == 0)
+		paVerbose3 = (bool) val;
+	else if (strcmp(item, "verbose4 mode") == 0)
+		paVerbose4 = (bool) val;
+	else if (strcmp(item, "verbose5 mode") == 0)
+		paVerbose5 = (bool) val;
 	else if (strcmp(item, "debug mode") == 0)
 		paDebug = (bool) val;
 	else if (strcmp(item, "toDo mode") == 0)
@@ -523,15 +535,19 @@ int paConfig(const char* item, void* value)
 */
 int paConfigActions(bool preTreat)
 {
-	lmVerbose = paVerbose;
-	lmDebug   = paDebug;
-	lmToDo    = paToDo;
-	lmReads   = paReads;
-	lmWrites  = paWrites;
-	lmFix     = paFix;
-	lmBug     = paBug;
-	lmDoubt   = paDoubt;
-	lmBuf     = paBuf;
+	lmVerbose  = paVerbose;
+	lmVerbose2 = paVerbose2;
+	lmVerbose3 = paVerbose3;
+	lmVerbose4 = paVerbose4;
+	lmVerbose5 = paVerbose5;
+	lmDebug    = paDebug;
+	lmToDo     = paToDo;
+	lmReads    = paReads;
+	lmWrites   = paWrites;
+	lmFix      = paFix;
+	lmBug      = paBug;
+	lmDoubt    = paDoubt;
+	lmBuf      = paBuf;
 
 	if (preTreat)
 		lmTraceSet(paTracelevels);

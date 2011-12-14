@@ -59,6 +59,10 @@ extern char*      paLogScreenTimeFormat;
 extern char*      paTracelevels;
 
 extern bool       paVerbose;
+extern bool       paVerbose2;
+extern bool       paVerbose3;
+extern bool       paVerbose4;
+extern bool       paVerbose5;
 extern bool       paDebug;
 extern bool       paToDo;
 extern bool       paReads;

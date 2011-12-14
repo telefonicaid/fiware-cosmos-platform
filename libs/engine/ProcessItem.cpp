@@ -129,6 +129,8 @@ std::string ProcessItem::getDescription()
 
 void ProcessItem::runInBackground()
 {
+    au::ExecesiveTimeAlarm("ProcessItem::runInBackground");
+
     // Create the thread as joinable to make sure we control when threads finish
     pthread_attr_t attr;
     pthread_attr_init(&attr);

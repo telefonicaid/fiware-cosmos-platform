@@ -185,6 +185,8 @@ void ProcessManager::cancel( ProcessItem *item )
 
 void ProcessManager::checkBackgroundProcesses()
 {
+    au::ExecesiveTimeAlarm("checkBackgroundProcesses");
+    
     while( true )
     {
         
@@ -286,6 +288,8 @@ void ProcessManager::token_haltProcessItem( ProcessItem* item )
 
 ProcessItem* ProcessManager::token_getNextProcessItem()
 {
+    au::ExecesiveTimeAlarm("ProcessManager::token_getNextProcessItem");
+    
     au::TokenTaker tt( &token );
 
     //LM_M(("Getting next item to process? (halted: %lu pending: %lu) " , halted_items.size() , items.size() ));

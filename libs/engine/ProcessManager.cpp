@@ -72,6 +72,7 @@ ProcessManager::~ProcessManager()
 
 void ProcessManager::notify( Notification* notification )
 {
+    au::ExecesiveTimeAlarm("ProcessManager::notify");
     
     if( notification->isName( notification_process_manager_check_background_process ) )                 
         checkBackgroundProcesses();

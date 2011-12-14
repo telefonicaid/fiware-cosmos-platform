@@ -196,8 +196,11 @@ void Engine::run()
             
             // Reset cronometer for this particular task
             cronometer.reset();
-            
-            running_element->run();
+
+            {
+                au::ExecesiveTimeAlarm( au::str("ProcessItem run '%s'",running_element->getDescription().c_str() ));
+                running_element->run();
+            }
             
             // Compute the time spent in this element
             double t = cronometer.diffTime();

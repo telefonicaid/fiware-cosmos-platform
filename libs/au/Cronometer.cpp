@@ -52,14 +52,17 @@ double Cronometer::diffTime()
     
     double diff = ( (double) t2.tv_sec ) + ((double)t2.tv_usec / 1000000.0) - ( (double) t.tv_sec ) - ((double)t.tv_usec / 1000000.0);
 
-    LM_M(("Cronometer diff %.02f (%d %d --> %d %d )"
-          ,diff
-          ,t.tv_sec
-          ,t.tv_usec
-          ,t2.tv_sec
-          ,t2.tv_usec
-          ));
-    
+/*    
+    {
+        LM_M(("Cronometer diff %.02f (%d %d --> %d %d )"
+              ,diff
+              ,t.tv_sec
+              ,t.tv_usec
+              ,t2.tv_sec
+              ,t2.tv_usec
+              ));
+    }
+*/    
     return diff;
 }
 

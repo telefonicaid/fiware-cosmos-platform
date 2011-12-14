@@ -159,10 +159,11 @@ void Engine::run()
             
             {
                 au::Cronometer c;
-                usleep( t*1000000 );
+                int microsecons = t*1000000;
+                usleep( microsecons );
                 double t_sleep = c.diffTime();
                 if ( t_sleep > std::max( 0.1, 2*t ) )
-                    LM_W(("Engine: Sleep returned after %.2f secs ( planned for %.2f secs )" ,t_sleep , t ));
+                    LM_W(("Engine: Sleep returned after %.2f secs ( planned for %.2f secs (%d usecs)  )" ,t_sleep , t , microsecons ));
             }
             continue; // Loop again to check again...
         }

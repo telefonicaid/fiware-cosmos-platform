@@ -15,15 +15,12 @@ NAMESPACE_BEGIN(au)
 
 TokenTaker::TokenTaker( Token* _token  )
 {
+    au::ExecesiveTimeAlarm alarm("TokenTaker::TokenTaker");
+    
     token = _token;
     name = "Unknown";
     
-    //LM_M(("New TokenTaker %s for token %s", name ,  token->name));
-    au::Cronometer c;
     token->retain();
-    double t = c.diffTime();
-    if ( t > 0.1 )
-        LM_W(("Token taker spent %.2f secs to lock mutex %s", t, token->name ));
 }
 
 TokenTaker::TokenTaker( Token* _token , const char* _name )

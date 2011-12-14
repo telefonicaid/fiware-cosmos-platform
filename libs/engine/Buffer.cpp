@@ -8,13 +8,18 @@
  *
  */
 
+
 #include <sstream>          // std::stringstream
-#include "au/string.h"		// au::Format
-#include "engine/Buffer.h"	// Own interface
-#include "au/xml.h"         // au::xml...
 
 #include "logMsg/logMsg.h"                     // lmInit, LM_*
 #include "logMsg/traceLevels.h"                // Trace Levels
+
+#include "au/string.h"		// au::Format
+#include "au/xml.h"         // au::xml...
+
+#include "engine/MemoryManager.h"
+#include "engine/Buffer.h"	// Own interface
+
 
 
 NAMESPACE_BEGIN(engine)
@@ -33,6 +38,9 @@ Buffer::Buffer( std::string name ,   size_t max_size , int _tag )
         _data = (char *) malloc(max_size);
         if( !_data )
         {
+            
+            LM_M(("Used memory %lu" , MemoryManager::shared()->getUsedMemory() ));
+            
 #ifdef __LP64__
             LM_X(1,("Error (errno:%d) allocating memory for %lu bytes for tag:%d and name:'%s'", errno, max_size, tag, name.c_str()));
 #else

@@ -323,6 +323,9 @@ namespace samson {
             // Only in state queues when trying to run update-state operations
             // setMinimumNumDivisions();
             
+            // Not break blocks any more
+            
+            /*
             while( true )
             {
                 //LM_M(("Queue %s: Num divisions %d.... %lu blocks" , name.c_str() , num_divisions , list->blocks.size() ));
@@ -348,7 +351,7 @@ namespace samson {
                 
                 LM_T(LmtBlockManager,("Running a block-break operation for queue %s %s" , name.c_str() , input->strBlockIds().c_str() ));
             }
-            
+            */
             /*
             // Compact if the over-headed is too high for a particular division
             //LM_TODO(("To be completed..."));

@@ -63,7 +63,7 @@ void getNewWord()
 
    if ( progresive )
    {
-	  size_t slot = (progressive_counter++)/PROGRESSIVE_NUMBER;
+	  unsigned long int slot = (progressive_counter++)/PROGRESSIVE_NUMBER;
 	  sprintf( word , "%lu" , slot );
 	  return;
    }

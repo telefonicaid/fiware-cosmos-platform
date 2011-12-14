@@ -55,7 +55,7 @@ int main( int argc , const char *argv[] )
    size_t rate = atoll( cmd.get_argument(1).c_str() );
 
 
-   fprintf(stderr, "Running generator with rate=%lu num=%lu users=%lu\n" , rate , num , num_users );
+   fprintf(stderr, "Running generator with rate=%lu num=%lu users=%lu\n" , (unsigned long int) rate, (unsigned long int) num, (unsigned long int) num_users );
 
 
    // Small mini-buffer to generate
@@ -73,8 +73,8 @@ int main( int argc , const char *argv[] )
 
 	while( true )
 	{
-	   // Generat 5 seconds data
-	   fprintf(stderr,"Generating %d messages ( mesages in 5 seconds at %lu events/s ) \n",  (int)(5 * rate) , rate );
+	   // Generate 5 seconds data
+	   fprintf(stderr,"Generating %d messages ( messages in 5 seconds at %lu events/s )\n", (int) (5 * rate), (unsigned long int) rate);
 
 	   for( int i = 0 ; i < (int)(5 * rate); i++)
 	   {
@@ -94,7 +94,7 @@ int main( int argc , const char *argv[] )
 		  if( (time(NULL)%200)> 100 )
 			 cell = 65534;
 		  
-			snprintf( line, 20000 ,  "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns0:AMRReport xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'  xmlns:ns0='http://O2.arcanum.vitria.com'  xsi:schemaLocation='http://O2.arcanum.vitria.com AMR.xsd'>  <SubscriberReport>    <User>      <IMSI>%lu</IMSI>      <PTMSI>FB869371</PTMSI>  <CellID>%d</CellID>   <Paging>      <Location>        <LocationArea>12124</LocationArea>        <RoutingArea>134</RoutingArea>      </Location>    </Paging>  </SubscriberReport>  <Timestamp>2011-07-21T16:07:47</Timestamp></ns0:AMRReport>" , user_id , cell );
+		  snprintf( line, 20000 ,  "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns0:AMRReport xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'  xmlns:ns0='http://O2.arcanum.vitria.com'  xsi:schemaLocation='http://O2.arcanum.vitria.com AMR.xsd'>  <SubscriberReport>    <User>      <IMSI>%lu</IMSI>      <PTMSI>FB869371</PTMSI>  <CellID>%d</CellID>   <Paging>      <Location>        <LocationArea>12124</LocationArea>        <RoutingArea>134</RoutingArea>      </Location>    </Paging>  </SubscriberReport>  <Timestamp>2011-07-21T16:07:47</Timestamp></ns0:AMRReport>" , (unsigned long int) user_id , cell );
 
 		total_size += strlen(line);
 		num_messages++;

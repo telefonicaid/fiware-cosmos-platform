@@ -77,7 +77,7 @@ Position getPosition( size_t user )
     return Position( rand()%1000 , rand()%1000 );
 }
 
-size_t num_users;
+unsigned long int  num_users;
 size_t current_user;
 bool progresive;
 
@@ -134,7 +134,7 @@ int main( int args , const char*argv[] )
     }
     
     
-    size_t rate = cmd.get_flag_uint64("rate");
+    unsigned long int rate = cmd.get_flag_uint64("rate");
     
     fprintf(stderr,"%s: Setup %lu users and %lu cdrs/second\n" , argv[0] , num_users , rate );
     
@@ -143,7 +143,7 @@ int main( int args , const char*argv[] )
     
     if( cmd.get_flag_bool("commands") )
     {
-        for ( size_t i = 0 ; i < num_users ; i++ )
+        for ( unsigned long int i = 0 ; i < num_users ; i++ )
         {
             Position home = getHome(i);
             Position work = getWork(i);
@@ -163,9 +163,9 @@ int main( int args , const char*argv[] )
     {
         // Generate messages for the next second....
         theoretical_seconds += 1;         
-        for ( size_t i = 0 ; i < rate ; i++ )
+        for ( unsigned long int i = 0 ; i < rate ; i++ )
         {
-            size_t user = getUser();
+            unsigned long int user = getUser();
             
             Position p = getPosition( user );
             

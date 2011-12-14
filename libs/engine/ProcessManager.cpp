@@ -191,6 +191,7 @@ void ProcessManager::checkBackgroundProcesses()
     
     while( true )
     {
+        au::ExecesiveTimeAlarm alarm( au::str("checkBackgroundProcesses item %d",counter)  , 0.1 / 16.0 );
         
         // Get the next process item to process
         ProcessItem * item = token_getNextProcessItem();
@@ -198,7 +199,6 @@ void ProcessManager::checkBackgroundProcesses()
         if( item )
         {
             counter++;
-            au::ExecesiveTimeAlarm alarm( au::str("checkBackgroundProcesses item %d",counter)  ,0.05 );
             
             // Run o re-run this item
             switch (item->state) 
@@ -220,9 +220,9 @@ void ProcessManager::checkBackgroundProcesses()
         }
         else
             break; // End of the loop
-     
+        
     }
-
+    
     if( counter>0 )
         LM_M(("Started %d background processes....",counter));
     

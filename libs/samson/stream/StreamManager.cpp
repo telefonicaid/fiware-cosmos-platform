@@ -446,7 +446,7 @@ namespace samson {
             
             if( currently_saving )
             {
-                LM_W(("Not possible to save stream manafer state to disk ecause it is still writing the previous one"));
+                LM_W(("Not possible to save stream manager state to disk because it is still writing the previous one"));
                 return;
             }
             

@@ -96,63 +96,7 @@ void Engine::finish_threads()
 
 
 
-EngineElement* Engine::intern_getNextElement()
-{
-    // Mutex protection
-    au::TokenTaker tt(&token , "Engine::getNextElement");
-    
-    // Compute current time
-    time_t now = time(NULL);
-    
-    if( now >= elements.front()->getThriggerTime() )
-    {
-        EngineElement* element = elements.front();
-        elements.pop_front();
-        return element;
-    }
-    
-    return NULL;
-}
 
-bool Engine::isEmpty()
-{
-    // Mutex protection
-    au::TokenTaker tt(&token , "Engine::getNextElement");
-    
-    return ( elements.size() == 0);
-    
-}
-
-void Engine::getNextElement( )
-{
-    // Defauly values
-    running_element = NULL;
-    
-    while( true )
-    {
-        // Keep a total counter of loops
-        counter++;  
-        
-        // If no more elements, just return
-        if( isEmpty() )
-        {
-            LM_T( LmtEngine, ("SamsonEngine: No more elements to process in the engine. Quitting ..."));
-            return;
-        }
-        
-        // Try to get an element
-        EngineElement* element = intern_getNextElement();
-        
-        if( element )
-        {
-            running_element = element;
-            return;
-        }
-        else
-            sleep(1);   // Sleep until the next element
-        
-    }
-}
 
 void Engine::run()
 {
@@ -163,13 +107,68 @@ void Engine::run()
     
     while( true )
     {
+        // Keep a total counter of loops
+        counter++;  
         
         // Finish this thread if necessary
         if( flag_finish_threads )
             return; 
         
-        // Get next element or sleep time
-        getNextElement( );
+        // Check if there are elements in the list
+        bool isEmpty;
+        {
+            // Mutex protection
+            au::TokenTaker tt(&token , "Engine::getNextElement");
+            isEmpty = ( elements.size() == 0);
+        }
+        
+        if( isEmpty )
+        {
+            LM_T( LmtEngine, ("SamsonEngine: No more elements to process in the engine. Quitting ..."));
+            return;
+        }
+        
+        // Get time for the next engine element
+        double t;
+        {
+            // Mutex protection to access elements
+            au::TokenTaker tt(&token , "Engine::getNextElement");
+            t = elements.front()->getTimeToTrigger();
+        }
+        
+        if( t > 0 )
+        {
+            if ( t > 0.1 )
+                t = 0.1; // Max time to sleep to avoid locks...
+            
+            // Sleeping a bit for the next engine element...
+            LM_T( LmtEngine, ("Engine: Sleeping %.2f secs ..." , t));
+            
+            {
+                // Mutex protection to show list
+                au::TokenTaker tt(&token , "Engine::getNextElement");
+                LM_T( LmtEngine, ("--------------------------------------------------------" ));
+                au::list<EngineElement>::iterator it_elements;
+                for (it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
+                {
+                    EngineElement *element = *it_elements;
+                    LM_T( LmtEngine, ("%s" , element->getShortDescription().c_str() ));    
+                }
+                LM_T( LmtEngine, ("--------------------------------------------------------" ));
+            }
+            
+            usleep( t*1000000 );
+            continue; // Loop again to check again...
+        }
+        
+        // Get the top element to be executed
+        {
+            // Mutex protection to access elements
+            au::TokenTaker tt(&token , "Engine::getNextElement");
+            
+            running_element = elements.front();
+            elements.pop_front();
+        }
         
         // Run or sleep
         if ( !running_element )
@@ -177,13 +176,15 @@ void Engine::run()
         
         {
             // Execute the item selected as running_element
+            LM_T( LmtEngine, ("[START] Engine executing %s" , running_element->getDescription().c_str() ));
             
-            time_t now = time(NULL);
-            LM_T( LmtEngine, ("[START] Engine executing %s at time:%lu, wanted:%lu" , running_element->getDescription().c_str(), now, running_element->thiggerTime));
-            
-            if ((now - running_element->thiggerTime) > 30)
+            int excesive_time = - running_element->getTimeToTrigger();
+            if ( excesive_time > 10 )
             {
-                LM_W(("[WARNING] Task %s delayed %d seconds in starting. This should not be more than 30", running_element->getDescription().c_str() , (int)(now - running_element->thiggerTime )));
+                LM_W(("Task %s delayed %d seconds in starting. This should not be more than 10"
+                      , running_element->getDescription().c_str() 
+                      , excesive_time 
+                      ));
             }
             
             // Reset cronometer for this particular task
@@ -193,20 +194,24 @@ void Engine::run()
             
             // Compute the time spent in this element
             double t = cronometer.diffTime();
-            // Goyo
+
             if( t > 1.0 )
-                LM_W(("[WARNING2] Task %s spent %s seconds.", running_element->getDescription().c_str() , au::time_string( t ).c_str()  ));
+            {
+                LM_W(("Task %s spent %.2f seconds."
+                      ,running_element->getDescription().c_str() 
+                      , t  
+                      ));
+            }
             
             LM_T( LmtEngine, ("[DONE] Engine executing %s" , running_element->getDescription().c_str()));
             
             EngineElement * _running_element = running_element;
-            
             running_element = NULL; // Put running element to NULL
             
             if( _running_element->isRepeated() )
             {
                 // Insert again
-                _running_element->Reschedule(now);
+                _running_element->Reschedule();
                 add( _running_element );
             }
             else
@@ -221,7 +226,7 @@ std::list<EngineElement*>::iterator Engine::_find_pos( EngineElement *e)
 {
     for (std::list<EngineElement*>::iterator i = elements.begin() ; i != elements.end() ; i++)
     {
-        if( (*i)->getThriggerTime() > e->getThriggerTime() )
+        if ( (*i)->getTimeToTrigger() > e->getTimeToTrigger() )
             return i;
     }
     
@@ -308,7 +313,7 @@ void Engine::add( EngineElement *element )
     au::TokenTaker tt(&token);
     
     // Insert an element in the engine
-    elements.insert( engine->_find_pos( element ) ,  element );
+    elements.insert( _find_pos( element ) ,  element );
     
     // Wake up main thread if sleeping
     tt.wakeUp();

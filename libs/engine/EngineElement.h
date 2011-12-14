@@ -40,9 +40,10 @@ protected:
     
     std::string description;                    // String for easy debugging
     std::string shortDescription;               // Short description
-    
+
+    timeval trigger_time;                       // Time when this engine will be fired
+
 public:
-    time_t thiggerTime;							// Delay to process this item
     
     virtual void run()=0;						// Run method to execute
     
@@ -55,15 +56,14 @@ public:
     
     // Reschedule action once executed
     void Reschedule();
-    void Reschedule(time_t now);
-    
-    time_t getThriggerTime();
     
     bool isRepeated();
     
     // Get a description string for debuggin
     std::string getDescription();
     std::string getShortDescription();
+
+    double getTimeToTrigger();
     
     // get xml information
     void getInfo( std::ostringstream& output);

@@ -85,8 +85,6 @@ private:
     // Find the position in the list to inser a new element
     std::list<EngineElement*>::iterator _find_pos( EngineElement *e);
     
-    // Internal function to get the next element to be processed or the sleep time until the next one.
-    void getNextElement( );
     
 public:
     
@@ -127,11 +125,6 @@ private:
     // Run a particular notification
     // Only executed from friend class "NotificationElement"
     void send( Notification * notification );
-    
-private:
-    
-    EngineElement* intern_getNextElement();
-    bool isEmpty();
     
     
 };

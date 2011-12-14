@@ -22,6 +22,26 @@
 
 NAMESPACE_BEGIN(engine)
 
+
+class DebugMethod
+{
+    std::string title;
+    au::Cronometer c;
+    
+    public:
+    
+    DebugMethod( std::string _title )
+    {
+        title = _title;
+    }
+    
+    ~DebugMethod()
+    {
+        LM_M(("DebugMethod: '%s' took %.4f secs" , title.c_str() , c.diffTime() ));
+    }
+    
+};
+
 static ProcessManager *processManager=NULL;
 
 void destroy_process_manager()
@@ -261,6 +281,7 @@ void ProcessManager::quit()
 
 ProcessItem* ProcessManager::token_finishProcessItem( ProcessItem* item )
 {
+    DebugMethod d( item->getDescription() + " (finish)" );
     //LM_M(("Token finish %s" , item->getDescription().c_str() ));
     
     au::TokenTaker tt( &token );
@@ -269,12 +290,16 @@ ProcessItem* ProcessManager::token_finishProcessItem( ProcessItem* item )
 
 ProcessItem* ProcessManager::token_cancelProcessItem( ProcessItem* item )
 {
+    DebugMethod d( item->getDescription() + " (cancel)" );
+    
     au::TokenTaker tt( &token );
     return items.extractFromSet( item );
 }
 
 void ProcessManager::token_haltProcessItem( ProcessItem* item )
 {
+    DebugMethod d( item->getDescription() + " (halt)" );
+    
     au::TokenTaker tt( &token );
     
     running_items.erase(item);
@@ -284,6 +309,8 @@ void ProcessManager::token_haltProcessItem( ProcessItem* item )
 
 ProcessItem* ProcessManager::token_getNextProcessItem()
 {
+    DebugMethod d( "Process Manager Getting next element" );
+    
     au::TokenTaker tt( &token );
 
     //LM_M(("Getting next item to process? (halted: %lu pending: %lu) " , halted_items.size() , items.size() ));
@@ -340,6 +367,8 @@ ProcessItem* ProcessManager::token_getNextProcessItem()
 
 void ProcessManager::token_add( ProcessItem* item )
 {
+    DebugMethod d( item->getDescription() + " (Adding)" );
+    
     if ( !item )
         LM_X(1, ("Major error in Process Manager"));
     
@@ -355,6 +384,8 @@ void ProcessManager::token_add( ProcessItem* item )
 
 void ProcessManager::token_getInfo( std::ostringstream& output)
 {
+    DebugMethod d( "ProcessManager getting info" );
+    
     au::TokenTaker tt( &token );
     au::xml_open(output, "process_manager");
     

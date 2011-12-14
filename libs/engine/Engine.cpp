@@ -192,9 +192,9 @@ void Engine::run()
             running_element->run();
             
             // Compute the time spent in this element
-            time_t t = cronometer.diffTimeInSeconds();
+            double t = cronometer.diffTime();
             // Goyo
-            if( t > 1 )
+            if( t > 1.0 )
                 LM_W(("[WARNING2] Task %s spent %s seconds.", running_element->getDescription().c_str() , au::time_string( t ).c_str()  ));
             
             LM_T( LmtEngine, ("[DONE] Engine executing %s" , running_element->getDescription().c_str()));

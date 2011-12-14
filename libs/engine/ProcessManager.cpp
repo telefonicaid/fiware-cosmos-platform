@@ -198,6 +198,7 @@ void ProcessManager::checkBackgroundProcesses()
         if( item )
         {
             counter++;
+            au::ExecesiveTimeAlarm alarm( au::str("checkBackgroundProcesses item %d",counter)  ,0.05 );
             
             // Run o re-run this item
             switch (item->state) 
@@ -225,7 +226,6 @@ void ProcessManager::checkBackgroundProcesses()
     if( counter>0 )
         LM_M(("Started %d background processes....",counter));
     
-    LM_T( LmtEngine , ("Engine state for background process: Pending %u Running %u Halted %u", items.size() , running_items.size() , halted_items.size()  ) );
     
 }
 

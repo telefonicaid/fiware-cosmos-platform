@@ -80,11 +80,12 @@ echo "%setup"                                                >> $BUILD_ROOT/rpm/
 echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%pre"  >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "getent group samson >/dev/null || groupadd -r samson"  >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo "getent passwd samson >/dev/null || useradd -r -g samson -d /opt/samson -s /sbin/nologin -c 'SAMSON account' samson"  >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "getent passwd samson >/dev/null || useradd -r -g samson -d /opt/samson -s /bin/bash -c 'SAMSON account' samson"  >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "exit 0"  >> $BUILD_ROOT/rpm/SPECS/$specfile
 #echo "%install"                                              >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%post"                                                >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo "bash /opt/samson/bin/samsonInitSetup"                 >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "/sbin/chkconfig --add samson"                                >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "/sbin/chkconfig --level 35 samson on"                  >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "/etc/init.d/samson start"                                >> $BUILD_ROOT/rpm/SPECS/$specfile
@@ -97,10 +98,10 @@ echo                                                         >> $BUILD_ROOT/rpm/
 echo "%files"                                                >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%defattr(-, samson, samson, -)"                        >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '/opt/samson/bin/samson*'                               >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo '/opt/samson/bin/delilah'                               >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo '/opt/samson/etc/setup.txt'                             >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo '/opt/samson/bin/delilah*'                              >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '%dir /opt/samson/log'                                  >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '%dir /var/samson'                                      >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo '/var/samson/etc/setup.txt'                             >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '%attr(755,root,root) /etc/init.d/samson'                 >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '%attr(-,root,root) /etc/profile.d/samson.sh'           >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%changelog"                                            >> $BUILD_ROOT/rpm/SPECS/$specfile
@@ -141,6 +142,7 @@ echo "/opt/samson/share/*"                >> $BUILD_ROOT/rpm/SPECS/$specfile
 rm -rf $PACKAGE_DIR
 mkdir -p $PACKAGE_DIR/opt/samson/{bin,etc,man,log}
 mkdir -p $PACKAGE_DIR/var/samson
+mkdir -p $PACKAGE_DIR/var/samson/etc
 mkdir -p $PACKAGE_DIR/etc/profile.d
 mkdir -p $PACKAGE_DIR/etc/init.d
 mkdir -p $PACKAGE_DIR/opt/samson/{include,lib}
@@ -159,11 +161,12 @@ cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonWorker/samsonWorker             $PACKAGE
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonKiller/samsonKiller             $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/BUILD_RELEASE/apps/delilah/delilah                       $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/scripts/samsonProcessesSupervise		                    $PACKAGE_DIR/opt/samson/bin
+cp $BUILD_ROOT/scripts/samsonInitSetup                                  $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonPush/samsonPush		            $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonPop/samsonPop		            $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonTopicMonitor/samsonTopicMonitor		$PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/BUILD_RELEASE/apps/delilahQT/delilahQT		            $PACKAGE_DIR/opt/samson/bin
-cp $BUILD_ROOT/etc/setup.txt                                            $PACKAGE_DIR/opt/samson/etc
+cp $BUILD_ROOT/etc/setup.txt                                            $PACKAGE_DIR/var/samson/etc
 cp $BUILD_ROOT/etc/init.d/samson.redhat                                 $PACKAGE_DIR/etc/init.d/samson
 cp $BUILD_ROOT/etc/profile.d/samson.sh                                  $PACKAGE_DIR/etc/profile.d/samson.sh
 cp $BUILD_ROOT/BUILD_RELEASE/libs/au/libau.a                            $PACKAGE_DIR/opt/samson/lib

@@ -15,5 +15,10 @@ shmmax_needed=`grep "^general.shared_memory_size_per_buffer" /var/samson/etc/set
 shmmax_have=`sysctl -n kernel.shmmax`
 if [ "$shmmax_needed" -gt "$shmmax_have" ];
 then
-    echo "kernel.shmmax=$shmmax_needed" > /etc/sysctl.d/30-samson.conf
+    if [ -f /etc/redhat-release ]; then
+        echo "kernel.shmmax=$shmmax_needed" >> /etc/sysctl.conf
+    fi
+    if [ -f /etc/ubuntu-release ]; then
+        echo "kernel.shmmax=$shmmax_needed" > /etc/sysctl.d/30-samson.conf
+    fi
 fi

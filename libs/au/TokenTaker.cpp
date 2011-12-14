@@ -23,7 +23,7 @@ TokenTaker::TokenTaker( Token* _token  )
     token->retain();
     double t = c.diffTime();
     if ( t > 0.1 )
-        LM_W(("Token taker spent %.2f secs to lock mutex %s", token->name ));
+        LM_W(("Token taker spent %.2f secs to lock mutex %s", t, token->name ));
 }
 
 TokenTaker::TokenTaker( Token* _token , const char* _name )

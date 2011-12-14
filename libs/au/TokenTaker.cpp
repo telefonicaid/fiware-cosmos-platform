@@ -6,7 +6,8 @@
 
 #include "LockDebugger.h"               // LockDebugger
 #include "au/Token.h"                   // au::Token
-#include "TokenTaker.h"				// Own interface
+#include "au/Cronometer.h"              // au::Cronometer
+#include "TokenTaker.h"				    // Own interface
 
 //#define DEBUG_AU_TOKEN
 
@@ -18,7 +19,11 @@ TokenTaker::TokenTaker( Token* _token  )
     name = "Unknown";
     
     //LM_M(("New TokenTaker %s for token %s", name ,  token->name));
+    au::Cronometer c;
     token->retain();
+    double t = c.diffTime();
+    if ( t > 0.1 )
+        LM_W(("Token taker spent %.2f secs to lock mutex %s", token->name ));
 }
 
 TokenTaker::TokenTaker( Token* _token , const char* _name )

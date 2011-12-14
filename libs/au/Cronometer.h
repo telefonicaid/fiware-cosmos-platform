@@ -25,8 +25,9 @@
 #include <sys/time.h>	       // struct timeval
 #include <string>               // std::string
 
+#include "logMsg/logMsg.h"
+
 #include "au/namespace.h"
-#include <sys/time.h>
 
 NAMESPACE_BEGIN(au)
 
@@ -76,6 +77,46 @@ public:
     int getSeconds();
     
 };   
+
+
+class ExecesiveTimeAlarm
+{
+    
+    std::string title;
+    double max_time;
+    
+    Cronometer c;
+    
+public:
+    
+    ExecesiveTimeAlarm( std::string _title )
+    {
+        title = _title;        
+        max_time = 0.1;  // Default value
+    }
+
+    ExecesiveTimeAlarm( std::string _title , double _max_time )
+    {
+        title = _title;        
+        max_time = _max_time;
+    }
+    
+    ~ExecesiveTimeAlarm()
+    {
+        double t = c.diffTime();
+        if(  t > max_time )
+        {
+            LM_W(("Excesive time ( %.4f > %.4f secs ) for '%s' "
+                  ,t
+                  ,max_time
+                  ,title.c_str()
+                  ));
+        }
+        
+    }
+    
+};
+
 
 NAMESPACE_END
 

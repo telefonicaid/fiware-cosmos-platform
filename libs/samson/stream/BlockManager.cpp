@@ -159,7 +159,7 @@ namespace samson {
         
         void BlockManager::_review()
         {
-
+            au::ExecesiveTimeAlarm("BlockManager::_review");
             
         	//LM_T(LmtBlockManager,("_review loop with %lu blocks, memory(%lu); max_memory(%lu); num_writing_operations(%d); num_reading_operations(%d)", blocks.size(), memory, max_memory, num_writing_operations, num_reading_operations));
             if( num_writing_operations < BLOCK_MANAGEMENT_MAX_WRITE_OPERATIONS )

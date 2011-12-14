@@ -36,9 +36,6 @@ if [ -z "${SAMSON_HOME}" ]; then
   exit 1
 fi
 
-# Setup the maximum shared memory segment size
-/sbin/sysctl -w kernel.shmmax=270000000
-
 case $PARAM in
 
         'start')

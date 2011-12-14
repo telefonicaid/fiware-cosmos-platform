@@ -198,7 +198,7 @@ void Engine::run()
             cronometer.reset();
 
             {
-                au::ExecesiveTimeAlarm( au::str("ProcessItem run '%s'",running_element->getDescription().c_str() ));
+                au::ExecesiveTimeAlarm alarm( au::str("ProcessItem run '%s'",running_element->getDescription().c_str() ));
                 running_element->run();
             }
             

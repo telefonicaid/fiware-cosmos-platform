@@ -72,7 +72,7 @@ ProcessManager::~ProcessManager()
 
 void ProcessManager::notify( Notification* notification )
 {
-    au::ExecesiveTimeAlarm("ProcessManager::notify");
+    au::ExecesiveTimeAlarm alarm("ProcessManager::notify");
     
     if( notification->isName( notification_process_manager_check_background_process ) )                 
         checkBackgroundProcesses();
@@ -186,7 +186,7 @@ void ProcessManager::cancel( ProcessItem *item )
 
 void ProcessManager::checkBackgroundProcesses()
 {
-    au::ExecesiveTimeAlarm("checkBackgroundProcesses");
+    au::ExecesiveTimeAlarm alarm("checkBackgroundProcesses");
     
     while( true )
     {
@@ -289,7 +289,7 @@ void ProcessManager::token_haltProcessItem( ProcessItem* item )
 
 ProcessItem* ProcessManager::token_getNextProcessItem()
 {
-    au::ExecesiveTimeAlarm("ProcessManager::token_getNextProcessItem");
+    au::ExecesiveTimeAlarm alarm("ProcessManager::token_getNextProcessItem");
     
     au::TokenTaker tt( &token );
 

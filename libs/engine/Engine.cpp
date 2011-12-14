@@ -142,8 +142,9 @@ void Engine::run()
                 t = 0.1; // Max time to sleep to avoid locks...
             
             // Sleeping a bit for the next engine element...
-            LM_T( LmtEngine, ("Engine: Sleeping %.2f secs ..." , 2*t));
+            LM_T( LmtEngine, ("Engine: Sleeping %.2f secs ..." , t));
             
+            /*
             {
                 // Mutex protection to show list
                 au::TokenTaker tt(&token , "Engine::getNextElement");
@@ -156,9 +157,10 @@ void Engine::run()
                 }
                 LM_T( LmtEngine, ("--------------------------------------------------------" ));
             }
+             */
             
             {
-                au::ExecesiveTimeAlarm alarm( "Engine sleep" , t );
+                au::ExecesiveTimeAlarm alarm( "Engine sleep" , 2*t );
                 int microsecons = t*1000000;
                 usleep( microsecons );
             }

@@ -126,25 +126,31 @@ echo "%defattr(-, samson, samson, -)"                        >> $BUILD_ROOT/rpm/
 echo "/opt/samson/modules/lib$module.so"                     >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%changelog"                                            >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo "%package devel"                           >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo "Summary: Header files needed to develop with the samson-${module} module."  >> $BUILD_ROOT/rpm/SPECS/$specfile 
-echo "Group: Applications/Engineering"            >> $BUILD_ROOT/rpm/SPECS/$specfile
-develdependencylist                                               >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo                                     >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo "%description devel"                               >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo "Header files needed to develop with the samson-${module} module."                    >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo "%files devel"                    				>> $BUILD_ROOT/rpm/SPECS/$specfile
-echo "%defattr(-, samson, samson, -)"                        >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo "/opt/samson/include/samson/modules/$module/"'*.h'      >> $BUILD_ROOT/rpm/SPECS/$specfile
+# Not all modules supply an external interface, disable the devel pacakge for those that don't
+# provide header files
+    if [ -d $SAMSON_HOME/include/samson/modules/$module ]; then
+    echo "%package devel"                           >> $BUILD_ROOT/rpm/SPECS/$specfile
+    echo "Summary: Header files needed to develop with the samson-${module} module."  >> $BUILD_ROOT/rpm/SPECS/$specfile 
+    echo "Group: Applications/Engineering"            >> $BUILD_ROOT/rpm/SPECS/$specfile
+    develdependencylist                                               >> $BUILD_ROOT/rpm/SPECS/$specfile
+    echo                                     >> $BUILD_ROOT/rpm/SPECS/$specfile
+    echo "%description devel"                               >> $BUILD_ROOT/rpm/SPECS/$specfile
+    echo "Header files needed to develop with the samson-${module} module."                    >> $BUILD_ROOT/rpm/SPECS/$specfile
+    echo "%files devel"                    				>> $BUILD_ROOT/rpm/SPECS/$specfile
+    echo "%defattr(-, samson, samson, -)"                        >> $BUILD_ROOT/rpm/SPECS/$specfile
+    echo "/opt/samson/include/samson/modules/$module/"'*.h'      >> $BUILD_ROOT/rpm/SPECS/$specfile
+fi
 
 
 #
 # Preparing the directory with the RPM contents
 #
 rm -rf $PACKAGE_DIR
-mkdir -p $PACKAGE_DIR/opt/samson/include/samson/modules/$module
 mkdir -p $PACKAGE_DIR/opt/samson/modules
-cp $SAMSON_HOME/include/samson/modules/$module/*.h   $PACKAGE_DIR/opt/samson/include/samson/modules/$module/
+if [ -d $SAMSON_HOME/include/samson/modules/$module ]; then
+    mkdir -p $PACKAGE_DIR/opt/samson/include/samson/modules/$module
+    cp $SAMSON_HOME/include/samson/modules/$module/*.h   $PACKAGE_DIR/opt/samson/include/samson/modules/$module/
+fi
 cp $SAMSON_HOME/modules/lib$module.so               $PACKAGE_DIR/opt/samson/modules/
 
 

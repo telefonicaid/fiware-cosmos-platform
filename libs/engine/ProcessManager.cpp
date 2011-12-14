@@ -220,10 +220,10 @@ void ProcessManager::checkBackgroundProcesses()
         else
             break; // End of the loop
      
-        if( counter>0 )
-            LM_M(("Started %d background processes....",counter));
-        
     }
+
+    if( counter>0 )
+        LM_M(("Started %d background processes....",counter));
     
     LM_T( LmtEngine , ("Engine state for background process: Pending %u Running %u Halted %u", items.size() , running_items.size() , halted_items.size()  ) );
     

@@ -158,6 +158,11 @@ cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonSpawner/samsonSpawner           $PACKAGE
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonWorker/samsonWorker             $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonKiller/samsonKiller             $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/BUILD_RELEASE/apps/delilah/delilah                       $PACKAGE_DIR/opt/samson/bin
+cp $BUILD_ROOT/scripts/samsonProcessesSupervise		                    $PACKAGE_DIR/opt/samson/bin
+cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonPush/samsonPush		            $PACKAGE_DIR/opt/samson/bin
+cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonPop/samsonPop		            $PACKAGE_DIR/opt/samson/bin
+cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonTopicMonitor/samsonTopicMonitor		$PACKAGE_DIR/opt/samson/bin
+cp $BUILD_ROOT/BUILD_RELEASE/apps/delilahQT/delilahQT		            $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/etc/setup.txt                                            $PACKAGE_DIR/opt/samson/etc
 cp $BUILD_ROOT/etc/init.d/samson.redhat                                 $PACKAGE_DIR/etc/init.d/samson
 cp $BUILD_ROOT/etc/profile.d/samson.sh                                  $PACKAGE_DIR/etc/profile.d/samson.sh

@@ -24,7 +24,6 @@ MODULES=system \
 	example \
 	tienda \
 	cdr \
-	plot \
 	mobility \
 	mob \
 	mob2 \
@@ -85,6 +84,7 @@ install: release install_man
 	sudo cp modules/moduletemplate/makefile $(SAMSON_HOME)/share/modules/moduletemplate
 	sudo cp modules/moduletemplate/module $(SAMSON_HOME)/share/modules/moduletemplate
 	sudo cp scripts/samsonModuleBootstrap $(SAMSON_HOME)/bin
+	sudo cp scripts/samsonProcessesSupervise $(SAMSON_HOME)/bin
 	getent group samson >/dev/null || sudo groupadd -r samson
 	getent passwd samson >/dev/null || sudo useradd -r -g samson -d /opt/samson -s /sbin/nologin -c 'SAMSON account' samson
 	sudo chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_HOME)

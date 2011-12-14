@@ -128,6 +128,8 @@ public:
     // Function to check if the process if ready to be executed ( usually after calling halt )
     virtual bool isReady(){ return true; };
     
+    std::string getDescription();
+    
 protected:
     
     void halt();			// command executed inside run() to stop the task until ready returns true

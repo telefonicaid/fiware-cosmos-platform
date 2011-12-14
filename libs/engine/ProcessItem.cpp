@@ -119,6 +119,13 @@ std::string ProcessItem::getStatus()
 }
 
 
+std::string ProcessItem::getDescription()
+{
+    return au::str("Process Item '%s' Status: %s"
+                   ,operation_name.c_str()
+                   ,getStatus().c_str()
+                   );
+}
 
 void ProcessItem::runInBackground()
 {

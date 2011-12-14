@@ -47,23 +47,22 @@ class Notification;
  Class to manage background jobs
  */
 
-class ProcessManager  : public engine::Object , engine::EngineService
+class ProcessManager  :  engine::Object , engine::EngineService
 {
     
     // Mutex to protect differnt queues
     au::Token token;
     
-    // Background processes
-    // --------------------------------------------------------------------
-    
-    int num_processes;						// Number of maximum simultaneous process running ( from setup )
     au::set<ProcessItem> items;				// List of items to be executed ( all priorities  )
     au::set<ProcessItem> running_items;		// Set of items currently being executed
     au::set<ProcessItem> halted_items;		// Set of items currently being executed but halted
-    
+
+    int num_processes;						// Number of maximum simultaneous process running ( from setup )
+
+    // Private constructor to be a singleton
     ProcessManager( int _num_processes);
     
-    //Statistics
+    // Statistics about operations
     au::map<std::string,au::SimpleRateCollection> rates;    // Information about rates
     
 public:
@@ -80,16 +79,19 @@ public:
     
 public:
     
-    // Publics but only called from SAMSON platform
-    void finishProcessItem( ProcessItem *item );		// Notification that this ProcessItem has finished
-    void haltProcessItem( ProcessItem *item );			// Notification that this ProcessItem is halted ( blocked until output memory is ready ) 
+    // Function to add a Process. It will be notifier by delegate mechanism
+    void add( ProcessItem *item , size_t listenerId );                          
+    // Function to cancel a Process. 
+    void cancel( ProcessItem *item );                   
     
 public:
     
-    void add( ProcessItem *item , size_t listenerId );                      // Function to add a Process. It will be notifier by delegate mechanism
-    void cancel( ProcessItem *item );                   // Function to cancel a Process. 
+    // Publics but only called from SAMSON platform ( background process notifying ... )
     
-    bool hasFreeCores();    // Check if there are less processes than cores
+    // Notification that this ProcessItem has finished
+    void finishProcessItem( ProcessItem *item );		
+    // Notification that this ProcessItem is halted ( blocked until output memory is ready ) 
+    void haltProcessItem( ProcessItem *item );			
     
 public:
     
@@ -98,13 +100,25 @@ public:
     
 private:
     
-    void checkBackgroundProcesses();                    // Check background process in order to see if new threads have to be created
+    // Check background process in order to see if new threads have to be created
+    void checkBackgroundProcesses();                    
     
     // Remove pending stuff and wait for the running
     void quit();
     
-    // Get the next background element to be executed in a parallel thread
-    ProcessItem* _getNextItemToRun();
+private:
+ 
+    // Operations over the lists of processes with token protection
+    
+    void token_add( ProcessItem* item );
+    ProcessItem* token_getNextProcessItem();
+    ProcessItem* token_finishProcessItem( ProcessItem* item );
+    ProcessItem* token_cancelProcessItem( ProcessItem* item );
+    void token_haltProcessItem( ProcessItem* item );
+    void token_getInfo( std::ostringstream& output);
+    
+    
+    
     
     
 };

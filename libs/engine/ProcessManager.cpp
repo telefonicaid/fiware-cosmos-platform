@@ -50,7 +50,9 @@ ProcessManager* ProcessManager::shared()
     return processManager;
 }
 
-ProcessManager::ProcessManager( int _num_processes ) : engine::EngineService("ProcessManager") , token("engine::ProcessManager")
+ProcessManager::ProcessManager( int _num_processes ) : 
+          engine::EngineService("ProcessManager") 
+          ,token("engine::ProcessManager")
 {
     // By default only one process at a time
     num_processes = _num_processes;  
@@ -76,11 +78,57 @@ void ProcessManager::notify( Notification* notification )
     
 }
 
+
+void ProcessManager::haltProcessItem( ProcessItem *item )
+{
+    token_haltProcessItem( item );
+
+    // Notification to review background processes
+    Notification * notification = new Notification( notification_process_manager_check_background_process );
+    Engine::shared()->notify( notification );
+    
+}   
+
+void ProcessManager::add( ProcessItem *item , size_t listenerId  )
+{
+    // We mae sure, items always come with a listenerId
+    item->addListenerId( listenerId );
+    
+    // set the pointer to myself
+    item->processManager = this;
+   
+    // set the pointer to myself
+    item->processManager = this;
+   
+    LM_T( LmtProcessManager , ("Adding ProcessItem") );
+    
+    // Add internally
+    token_add( item );
+    
+    LM_T( LmtProcessManager , ("Engine state for background process: Pending %u Running %u Halted %u", items.size() , running_items.size() , halted_items.size()  ) );
+    
+    LM_T( LmtProcessManager , ("Finish Adding ProcessItem") );
+    
+    // A notification will check if it is necessary to run a new process item
+    engine::Engine::shared()->notify( new Notification( notification_process_manager_check_background_process ) );
+    
+}
+
 void ProcessManager::finishProcessItem( ProcessItem *item )
 {
-    // Protect multi-thread access
-    au::TokenTaker tt( &token );
     
+    ProcessItem* item2 = token_finishProcessItem( item );
+    
+    if (!item2)
+    {
+        LM_W(("Finish of an engine proces item that was NOT in the list of running processses." ));
+        item->setCanceled();    // Activate the canceled flag to make the process kill itself when possible
+        delete item;
+        return;
+    }
+    
+    if( item2 != item )
+        LM_X(1, ("Major error in Process Manager"));
     
     // Statistics
     if ( ( item->operation_name != "unknown" ) && ( item->working_size > 0 ) )
@@ -94,176 +142,84 @@ void ProcessManager::finishProcessItem( ProcessItem *item )
         simple_rate->push( working_size , time_in_seconds );
     }
     
-    running_items.erase(item);
-    
-    // Send to me a notification to review background processes
+    // Send a notification to review process
     Engine::shared()->notify( new Notification( notification_process_manager_check_background_process ) );
     
     // Notify this using the notification Mechanism
-    {
-        Notification * notification = new Notification( notification_process_request_response , item , item->listeners );
-        notification->environment.copyFrom( &item->environment );
-        Engine::shared()->notify( notification );
-    }
-    
-}
-
-void ProcessManager::haltProcessItem( ProcessItem *item )
-{
-    // Protect multi-thread access
-    au::TokenTaker tt( &token );
-    
-    running_items.erase(item);
-    halted_items.insert(item);
-    
-    {
-        Notification * notification = new Notification( notification_process_manager_check_background_process );
-        Engine::shared()->notify( notification );
-    }
-    
-}   
-
-void ProcessManager::add( ProcessItem *item , size_t listenerId  )
-{
-    // We mae sure, items always come with a listenerId
-    item->addListenerId( listenerId );
-    
-    // Protect multi-thread access
-    au::TokenTaker tt( &token );
-    
-    LM_T( LmtProcessManager , ("Adding ProcessItem") );
-    
-    // set the pointer to myself
-    item->processManager = this;
-    
-    items.insert( item );
-    
-    LM_T( LmtProcessManager , ("Engine state for background process: Pending %u Running %u Halted %u", items.size() , running_items.size() , halted_items.size()  ) );
-    
-    LM_T( LmtProcessManager , ("Finish Adding ProcessItem") );
-    
-    // A notification will check if it is necessary to run a new process item
-    engine::Engine::shared()->notify( new Notification( notification_process_manager_check_background_process ) );
+    Notification * notification = new Notification( notification_process_request_response , item , item->listeners );
+    notification->environment.copyFrom( &item->environment );
+    Engine::shared()->notify( notification );
     
 }
 
 void ProcessManager::cancel( ProcessItem *item )
 {
-    // Protect multi-thread access
-    au::TokenTaker tt( &token );
+    // Remove from the list of items
+    ProcessItem* item2 = token_cancelProcessItem( item );
     
-    //LM_M(("Removing process item %p ",item));
-    
-    if ( items.extractFromSet( item ) )
+    if (!item2)
     {
-        //LM_M(("Removing item %p since it was still in the queue",item));
-        
-        // Set this process as error
-        item->error.set( "ProcessItem canceled" );
-        
-        // Notify this using the notification Mechanism
-        {
-            Notification * notification = new Notification( notification_process_request_response , item , item->listeners );
-            notification->environment.copyFrom( &item->environment );
-            notification->environment.set("error", "Canceled" );
-            Engine::shared()->notify( notification );
-        }
-        
-    }
-    else
-    {
-        //LM_M(("Flag item %p as cancel since it was NOT still in the queue",item));
+        LM_W(("Cancelation for an engine proces item that was NOT in the list of pending processses.... it is possible running" ));
         item->setCanceled();    // Activate the canceled flag to make the process kill itself when possible
+        return;
     }
+    
+    if( item2 != item )
+        LM_X(1, ("Major error in Process Manager"));
+    
+    // Set this process with an error
+    item->error.set( "ProcessItem canceled" );
+    
+    // Notify this using the notification Mechanism
+    Notification * notification = new Notification( notification_process_request_response 
+                                                   ,item 
+                                                   ,item->listeners 
+                                                   );
+    notification->environment.copyFrom( &item->environment );
+    notification->environment.set("error", "Canceled" );
+    Engine::shared()->notify( notification );
     
 }
 
 void ProcessManager::checkBackgroundProcesses()
 {
-    // Protect multi-thread access
-    au::TokenTaker tt( &token );
-    
-    // Get the next process item to process ( if CPU slots available )
-    ProcessItem * item = NULL;
-    
-    do
+    while( true )
     {
         
-        item = NULL;
-        if( (int)running_items.size() < num_processes )
-        {
-            // Space for another process running... get the item to be executed or continued
-            item = _getNextItemToRun();
-        }
+        // Get the next process item to process
+        ProcessItem * item = token_getNextProcessItem();
+
         
         if( item )
         {
-            running_items.insert( item );	// Insert in the set of running processes
-            
-            switch (item->state) {
+
+            // Run o re-run this item
+            switch (item->state) 
+            {
                 case ProcessItem::queued:
                     item->state = ProcessItem::running;
                     item->runInBackground();
                     break;
+                    
                 case ProcessItem::halted:
                     item->state = ProcessItem::running;
                     item->unHalt();
                     break;
+                    
                 default:
                     LM_X(1,("Unexpected state running item at Engine"));
                     break;
             }
         }
+        else
+            break; // End of the loop
         
-    } while ( item != NULL);
+    };
     
     LM_T( LmtEngine , ("Engine state for background process: Pending %u Running %u Halted %u", items.size() , running_items.size() , halted_items.size()  ) );
     
 }
 
-// Function ONLY used inside checkBackgroundProcesses, so it is protected by the its token taker
-
-ProcessItem* ProcessManager::_getNextItemToRun()
-{
-    
-    ProcessItem* item = NULL;
-    
-    // Halted process comes first 
-    
-    for (std::set<ProcessItem*>::iterator i = halted_items.begin() ; i != halted_items.end() ; i++ )
-    {
-        if( (*i)->isReady() )
-        {
-            item = *i;
-            halted_items.erase( item );
-            return item;
-        }
-    }
-    
-    // If not process in the halt list is ready,
-    // we get the highest priority element in the queue of pending processes
-    
-    for ( std::set<ProcessItem*>::iterator i =  items.begin() ; i!= items.end() ; i++)
-    {
-        if( (*i)->isReady() )   // Let's check if the process is ready to be executed
-        {
-            if( !item  )
-                item = *i;
-            else
-            {
-                if( (*i)->priority > item->priority )
-                    item = *i;
-            }
-        }
-    }
-    
-    if( item )
-        items.erase( item );	// Remove form the pending list
-    
-    // It is null if no process is required to be executed
-    return item;
-    
-}	
 
 
 int ProcessManager::getNumCores()
@@ -286,34 +242,7 @@ int ProcessManager::getNumUsedCores()
 
 void ProcessManager::getInfo( std::ostringstream& output)
 {
-    au::xml_open(output, "process_manager");
-    
-    au::xml_iterate_list(output, "queued", items);
-    
-    au::xml_iterate_list(output, "running", running_items);
-    
-    au::xml_iterate_list(output, "halted", halted_items);
-    
-    // List of rates
-    
-    au::xml_iterate_map( output , "rates", rates );
-    
-    // General information
-    
-    au::xml_simple( output , "num_processes" ,  num_processes );
-    au::xml_simple( output , "num_running_processes" ,  running_items.size() );
-    
-    au::xml_close(output, "process_manager");
-    
-}
-
-bool ProcessManager::hasFreeCores()
-{
-    au::TokenTaker tt( &token );
-    
-    size_t total_process = running_items.size() + items.size() + halted_items.size();
-    
-    return( total_process < (size_t) num_processes );
+    token_getInfo( output );    
 }
 
 void ProcessManager::quit()
@@ -324,10 +253,125 @@ void ProcessManager::quit()
     
     while( running_items.size() > 0 )
     {
-        LM_M(("Waiting to finish running background processes"));
+        LM_V(("Waiting to finish running background processes"));
         sleep(1);
     }
     
 }
+
+ProcessItem* ProcessManager::token_finishProcessItem( ProcessItem* item )
+{
+    //LM_M(("Token finish %s" , item->getDescription().c_str() ));
+    
+    au::TokenTaker tt( &token );
+    return running_items.extractFromSet(item);
+}
+
+ProcessItem* ProcessManager::token_cancelProcessItem( ProcessItem* item )
+{
+    au::TokenTaker tt( &token );
+    return items.extractFromSet( item );
+}
+
+void ProcessManager::token_haltProcessItem( ProcessItem* item )
+{
+    au::TokenTaker tt( &token );
+    
+    running_items.erase(item);
+    halted_items.insert(item);
+}
+
+
+ProcessItem* ProcessManager::token_getNextProcessItem()
+{
+    au::TokenTaker tt( &token );
+
+    //LM_M(("Getting next item to process? (halted: %lu pending: %lu) " , halted_items.size() , items.size() ));
+    
+    // Check if there are enougth slots..
+    if( (int)running_items.size() >= num_processes )
+        return NULL;
+    
+    ProcessItem* item = NULL;
+    
+    // Halted process comes first     
+    for (std::set<ProcessItem*>::iterator i = halted_items.begin() ; i != halted_items.end() ; i++ )
+    {
+        if( (*i)->isReady() )
+        {
+            item = *i;
+            halted_items.erase( item );
+            return item;
+        }
+    }
+    
+    // If not process in the halt list is ready,
+    // we get the highest priority element in the queue of pending processes    
+    for ( std::set<ProcessItem*>::iterator i =  items.begin() ; i!= items.end() ; i++)
+    {
+        ProcessItem * _item = *i;
+        
+        //LM_M(("Considering '%s'" , _item->getDescription().c_str() ));
+        
+        if( _item->isReady() )   // Let's check if the process is ready to be executed
+        {
+            if( !item )
+                item = _item;
+            else
+            {
+                if( _item->priority > item->priority )
+                    item = *i;
+            }
+        }
+    }
+    
+    if( item )
+    {
+        items.erase( item );	        // Remove form the pending list
+        running_items.insert( item );	// Insert in the set of running processes
+        
+        //LM_M(("Token next item %s" , item->getDescription().c_str() ));
+    }
+    
+    // It is null if no process is required to be executed
+    return item;
+}
+
+
+void ProcessManager::token_add( ProcessItem* item )
+{
+    if ( !item )
+        LM_X(1, ("Major error in Process Manager"));
+    
+    //LM_M(("Token added %s" , item->getDescription().c_str() ));
+    
+    // Protect multi-thread access
+    au::TokenTaker tt( &token );
+    
+    // Insert in the list of items
+    items.insert( item );
+    
+}
+
+void ProcessManager::token_getInfo( std::ostringstream& output)
+{
+    au::TokenTaker tt( &token );
+    au::xml_open(output, "process_manager");
+    
+    au::xml_iterate_list(output, "queued", items);
+    au::xml_iterate_list(output, "running", running_items);
+    au::xml_iterate_list(output, "halted", halted_items);
+    
+    // List of rates
+    au::xml_iterate_map( output , "rates", rates );
+    
+    // General information
+    au::xml_simple( output , "num_processes" ,  num_processes );
+    au::xml_simple( output , "num_running_processes" ,  running_items.size() );
+    
+    au::xml_close(output, "process_manager");
+    
+}
+
 
 NAMESPACE_END

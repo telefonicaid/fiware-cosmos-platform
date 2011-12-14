@@ -296,6 +296,7 @@ namespace samson {
 
         void Queue::review()
         {
+            au::ExecesiveTimeAlarm alarm("Queue::review");
             
             // Review the size contained in this queue if there is a limit defined....
             

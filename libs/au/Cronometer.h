@@ -92,7 +92,7 @@ public:
     ExecesiveTimeAlarm( std::string _title )
     {
         title = _title;        
-        max_time = 0.1;  // Default value
+        max_time = 0.5;  // Default value
     }
 
     ExecesiveTimeAlarm( std::string _title , double _max_time )

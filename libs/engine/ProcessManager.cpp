@@ -285,7 +285,6 @@ void ProcessManager::token_haltProcessItem( ProcessItem* item )
 
 ProcessItem* ProcessManager::token_getNextProcessItem()
 {
-    au::ExecesiveTimeAlarm alarm("ProcessManager::token_getNextProcessItem", 0.05 );
     
     au::TokenTaker tt( &token );
 

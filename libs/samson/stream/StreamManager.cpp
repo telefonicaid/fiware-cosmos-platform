@@ -371,6 +371,8 @@ namespace samson {
         
         void StreamManager::reviewStreamOperations()
         {
+            au::ExecesiveTimeAlarm alarm("StreamManager::reviewStreamOperations");
+            
             while( true )
             {
                 // Find the most urgent stream operation

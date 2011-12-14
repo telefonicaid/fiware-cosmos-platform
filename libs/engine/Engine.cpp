@@ -157,11 +157,13 @@ void Engine::run()
                 LM_T( LmtEngine, ("--------------------------------------------------------" ));
             }
             
-            au::Cronometer c;
-            usleep( t*1000000 );
-            double t_sleep = c.diffTime();
-            if ( t_sleep > std::max( 0.1, 2*t ) )
-                LM_W(("Engine: Sleep returned after %.2f secs ( planned for %.2f secs )" ,t_sleep , t ));
+            {
+                au::Cronometer c;
+                usleep( t*1000000 );
+                double t_sleep = c.diffTime();
+                if ( t_sleep > std::max( 0.1, 2*t ) )
+                    LM_W(("Engine: Sleep returned after %.2f secs ( planned for %.2f secs )" ,t_sleep , t ));
+            }
             continue; // Loop again to check again...
         }
         

@@ -158,12 +158,9 @@ void Engine::run()
             }
             
             {
-                au::Cronometer c;
+                au::ExecesiveTimeAlarm alarm( "Engine sleep" , t );
                 int microsecons = t*1000000;
                 usleep( microsecons );
-                double t_sleep = c.diffTime();
-                if ( t_sleep > std::max( 0.1, 2*t ) )
-                    LM_W(("Engine: Sleep returned after %.2f secs ( planned for %.2f secs (%d usecs)  )" ,t_sleep , t , microsecons ));
             }
             continue; // Loop again to check again...
         }
@@ -194,23 +191,10 @@ void Engine::run()
                       ));
             }
             
-            // Reset cronometer for this particular task
-            cronometer.reset();
-
             {
+                // Run the item controlling excesive time
                 au::ExecesiveTimeAlarm alarm( au::str("ProcessItem run '%s'",running_element->getDescription().c_str() ));
                 running_element->run();
-            }
-            
-            // Compute the time spent in this element
-            double t = cronometer.diffTime();
-
-            if( t > 0.2 )
-            {
-                LM_W(("Engine: Task %s spent %.2f seconds."
-                      ,running_element->getDescription().c_str() 
-                      , t  
-                      ));
             }
             
             LM_T( LmtEngine, ("[DONE] Engine executing %s" , running_element->getDescription().c_str()));

@@ -187,17 +187,18 @@ void ProcessManager::cancel( ProcessItem *item )
 void ProcessManager::checkBackgroundProcesses()
 {
     au::ExecesiveTimeAlarm alarm("checkBackgroundProcesses");
+    int counter=0;
     
     while( true )
     {
         
         // Get the next process item to process
         ProcessItem * item = token_getNextProcessItem();
-
         
         if( item )
         {
-
+            counter++;
+            
             // Run o re-run this item
             switch (item->state) 
             {
@@ -218,8 +219,11 @@ void ProcessManager::checkBackgroundProcesses()
         }
         else
             break; // End of the loop
+     
+        if( counter>0 )
+            LM_M(("Started %d background processes....",counter));
         
-    };
+    }
     
     LM_T( LmtEngine , ("Engine state for background process: Pending %u Running %u Halted %u", items.size() , running_items.size() , halted_items.size()  ) );
     
@@ -289,7 +293,7 @@ void ProcessManager::token_haltProcessItem( ProcessItem* item )
 
 ProcessItem* ProcessManager::token_getNextProcessItem()
 {
-    au::ExecesiveTimeAlarm alarm("ProcessManager::token_getNextProcessItem");
+    au::ExecesiveTimeAlarm alarm("ProcessManager::token_getNextProcessItem", 0.05 );
     
     au::TokenTaker tt( &token );
 

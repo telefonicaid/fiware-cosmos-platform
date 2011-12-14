@@ -21,4 +21,5 @@ then
     if [ -f /etc/ubuntu-release ]; then
         echo "kernel.shmmax=$shmmax_needed" > /etc/sysctl.d/30-samson.conf
     fi
+    sysctl -q -w kernel.shmmax=$shmmax_needed
 fi

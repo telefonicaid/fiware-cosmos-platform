@@ -165,6 +165,10 @@ typedef char* (*LmTracelevelName)(int level);
 
 #ifdef LM_NO_V
 #define LM_V(s)
+#define LM_V2(s)
+#define LM_V3(s)
+#define LM_V4(s)
+#define LM_V5(s)
 #else
 /* ****************************************************************************
 *
@@ -179,10 +183,74 @@ do {                                                                          \
       if ((text = lmTextGet s) != NULL)                                       \
       {                                                                       \
          lmOut(text, 'V', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
-         ::free(text);                                                          \
+         ::free(text);                                                        \
       }                                                                       \
    }                                                                          \
 } while (0)
+
+#define LM_V2(s)                                                              \
+do {                                                                          \
+   char* text;                                                                \
+                                                                              \
+   if (lmOk('2', 0) == LmsOk)                                                 \
+   {                                                                          \
+      if ((text = lmTextGet s) != NULL)                                       \
+      {                                                                       \
+         lmOut(text, '2', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
+         ::free(text);                                                        \
+      }                                                                       \
+   }                                                                          \
+} while (0)
+
+
+#define LM_V3(s)                                                              \
+do {                                                                          \
+   char* text;                                                                \
+                                                                              \
+   if (lmOk('3', 0) == LmsOk)                                                 \
+   {                                                                          \
+      if ((text = lmTextGet s) != NULL)                                       \
+      {                                                                       \
+         lmOut(text, '3', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
+         ::free(text);                                                        \
+      }                                                                       \
+   }                                                                          \
+} while (0)
+
+
+#define LM_V4(s)                                                              \
+do {                                                                          \
+   char* text;                                                                \
+                                                                              \
+   if (lmOk('4', 0) == LmsOk)                                                 \
+   {                                                                          \
+      if ((text = lmTextGet s) != NULL)                                       \
+      {                                                                       \
+         lmOut(text, '4', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
+         ::free(text);                                                        \
+      }                                                                       \
+   }                                                                          \
+} while (0)
+
+
+#define LM_V5(s)                                                              \
+do {                                                                          \
+   char* text;                                                                \
+                                                                              \
+   if (lmOk('5', 0) == LmsOk)                                                 \
+   {                                                                          \
+      if ((text = lmTextGet s) != NULL)                                       \
+      {                                                                       \
+         lmOut(text, '5', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL); \
+         ::free(text);                                                        \
+      }                                                                       \
+   }                                                                          \
+} while (0)
+
+#define LM_VV     LM_V2
+#define LM_VVV    LM_V3
+#define LM_VVVV   LM_V4
+#define LM_VVVVV  LM_V5
 #endif
 
 
@@ -958,6 +1026,10 @@ do {                                                                            
 extern int  lmBug2;
 extern bool lmBug;
 extern bool lmVerbose;
+extern bool lmVerbose2;
+extern bool lmVerbose3;
+extern bool lmVerbose4;
+extern bool lmVerbose5;
 extern bool lmDebug;
 extern bool lmHidden;
 extern bool lmToDo;

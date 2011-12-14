@@ -246,18 +246,22 @@ static int               lmSd                   = -1;
 *
 * Global variables
 */
-bool  lmDebug   = false;
-bool  lmHidden  = false;
-bool  lmVerbose = false;
-bool  lmToDo    = false;
-bool  lmDoubt   = false;
-bool  lmReads   = false;
-bool  lmWrites  = false;
-bool  lmBug     = false;
-bool  lmBuf     = false;
-bool  lmFix     = false;
+bool  lmDebug    = false;
+bool  lmHidden   = false;
+bool  lmVerbose  = false;
+bool  lmVerbose2 = false;
+bool  lmVerbose3 = false;
+bool  lmVerbose4 = false;
+bool  lmVerbose5 = false;
+bool  lmToDo     = false;
+bool  lmDoubt    = false;
+bool  lmReads    = false;
+bool  lmWrites   = false;
+bool  lmBug      = false;
+bool  lmBuf      = false;
+bool  lmFix      = false;
 
-LmxFp lmxFp     = NULL;
+LmxFp lmxFp      = NULL;
 
 
 
@@ -1461,6 +1465,14 @@ LmStatus lmOk(char type, int tLev)
 	if ((type == 'H') && (lmHidden == false))
 		return LmsNull;
 	if ((type == 'V') && (lmVerbose == false))
+		return LmsNull;
+	if ((type == '2') && (lmVerbose2 == false))
+		return LmsNull;
+	if ((type == '3') && (lmVerbose3 == false))
+		return LmsNull;
+	if ((type == '4') && (lmVerbose4 == false))
+		return LmsNull;
+	if ((type == '5') && (lmVerbose5 == false))
 		return LmsNull;
 	if ((type == 't') && (lmToDo == false))
 		return LmsNull;

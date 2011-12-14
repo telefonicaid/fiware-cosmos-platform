@@ -136,7 +136,7 @@ void Engine::run()
             t = elements.front()->getTimeToTrigger();
         }
         
-        if( t > 0 )
+        if( t > 0.01 ) // It not necessary to sleep less than 1/100 secs
         {
             if ( t > 0.1 )
                 t = 0.1; // Max time to sleep to avoid locks...

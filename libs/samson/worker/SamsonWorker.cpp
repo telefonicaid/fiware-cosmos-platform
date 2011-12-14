@@ -325,7 +325,7 @@ namespace samson {
             sendFilesMessage();
         else if ( notification->isName(notification_update_status))
         {
-            Packet*                  p  = new Packet(Message::StatusReport);
+            Packet* p  = new Packet(Message::StatusReport);
             
             // This message is not critical - to be thrown away if worker not connected
             p->disposable = true;

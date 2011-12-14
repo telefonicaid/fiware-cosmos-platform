@@ -157,7 +157,11 @@ void Engine::run()
                 LM_T( LmtEngine, ("--------------------------------------------------------" ));
             }
             
+            au::Cronometer c;
             usleep( t*1000000 );
+            double t_sleep = c.diffTime();
+            if ( t_sleep > 2*t )
+                LM_W(("Engine: Sleep returned after %.2 secs ( planned for %.2f secs )" ,t_sleep , t ));
             continue; // Loop again to check again...
         }
         
@@ -195,9 +199,9 @@ void Engine::run()
             // Compute the time spent in this element
             double t = cronometer.diffTime();
 
-            if( t > 1.0 )
+            if( t > 0.2 )
             {
-                LM_W(("Task %s spent %.2f seconds."
+                LM_W(("Engine: Task %s spent %.2f seconds."
                       ,running_element->getDescription().c_str() 
                       , t  
                       ));

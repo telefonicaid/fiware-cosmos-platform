@@ -13,9 +13,10 @@ SET( STATIC_LIBS
      delilahLib
      protobuf
      pthread
+     au
      dl
      lm
-	 pa
+     pa
      ${COMMON_SAMSON_LIBS}
 )
 

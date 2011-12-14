@@ -119,9 +119,6 @@ void MemoryManager::destroyBuffer(Buffer* b)
     // Check requests to schedule new notifications
     _checkMemoryRequests();
     
-    // Check process halted in the Engine
-    Engine::shared()->notify( new Notification( notification_process_manager_check_background_process ) );
-    
 }
 
 void MemoryManager::add( MemoryRequest *request )

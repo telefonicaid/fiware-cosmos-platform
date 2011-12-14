@@ -23,7 +23,6 @@
 NAMESPACE_BEGIN(engine)
 
 
-
 static ProcessManager *processManager=NULL;
 
 void destroy_process_manager()
@@ -44,6 +43,14 @@ void ProcessManager::init( int _num_processes)
     processManager = new ProcessManager( _num_processes );
 }
 
+void* run_check_background_processes(void *p)
+{
+    ProcessManager* pm = (ProcessManager*) p;
+    pm->check_background_processes();
+    return  NULL;
+    
+}
+
 ProcessManager* ProcessManager::shared()
 {
     if( !processManager )
@@ -58,12 +65,15 @@ ProcessManager::ProcessManager( int _num_processes ) :
 {
     // By default only one process at a time
     num_processes = _num_processes;  
+
+    // By default, we are not quitting    
+    quitting = false;
+            
+    // Run thread in background to check new processes
+    thread_running = true;
+    pthread_create(&t_scheduler, NULL, run_check_background_processes, this);
+
     
-    // Add the processManager as a listener for process request
-    listen( notification_process_manager_check_background_process );
-    
-    // Check every second if we should start a new process item
-    engine::Engine::shared()->notify( new Notification( notification_process_manager_check_background_process ) , 1 );
 }
 
 ProcessManager::~ProcessManager()
@@ -72,24 +82,13 @@ ProcessManager::~ProcessManager()
 
 void ProcessManager::notify( Notification* notification )
 {
-    au::ExecesiveTimeAlarm alarm("ProcessManager::notify");
-    
-    if( notification->isName( notification_process_manager_check_background_process ) )                 
-        checkBackgroundProcesses();
-    else        
-        LM_X(1,("Wrong notification at ProcessManager [Listener %lu] %s" , getEngineId() , notification->getDescription().c_str()));
-    
+    LM_X(1,("Wrong notification at ProcessManager [Listener %lu] %s" , getEngineId() , notification->getDescription().c_str()));
 }
 
 
 void ProcessManager::haltProcessItem( ProcessItem *item )
 {
-    token_haltProcessItem( item );
-
-    // Notification to review background processes
-    Notification * notification = new Notification( notification_process_manager_check_background_process );
-    Engine::shared()->notify( notification );
-    
+    token_haltProcessItem( item );    
 }   
 
 void ProcessManager::add( ProcessItem *item , size_t listenerId  )
@@ -111,9 +110,6 @@ void ProcessManager::add( ProcessItem *item , size_t listenerId  )
     LM_T( LmtProcessManager , ("Engine state for background process: Pending %u Running %u Halted %u", items.size() , running_items.size() , halted_items.size()  ) );
     
     LM_T( LmtProcessManager , ("Finish Adding ProcessItem") );
-    
-    // A notification will check if it is necessary to run a new process item
-    engine::Engine::shared()->notify( new Notification( notification_process_manager_check_background_process ) );
     
 }
 
@@ -144,10 +140,7 @@ void ProcessManager::finishProcessItem( ProcessItem *item )
         au::SimpleRateCollection * simple_rate = rates.findOrCreate( name , name );
         simple_rate->push( working_size , time_in_seconds );
     }
-    
-    // Send a notification to review process
-    Engine::shared()->notify( new Notification( notification_process_manager_check_background_process ) );
-    
+        
     // Notify this using the notification Mechanism
     Notification * notification = new Notification( notification_process_request_response , item , item->listeners );
     notification->environment.copyFrom( &item->environment );
@@ -184,22 +177,15 @@ void ProcessManager::cancel( ProcessItem *item )
     
 }
 
-void ProcessManager::checkBackgroundProcesses()
+void ProcessManager::check_background_processes()
 {
-    au::ExecesiveTimeAlarm alarm("checkBackgroundProcesses");
-    int counter=0;
-    
     while( true )
     {
-        au::ExecesiveTimeAlarm alarm( au::str("checkBackgroundProcesses item %d",counter)  , 0.1 / 16.0 );
-        
         // Get the next process item to process
         ProcessItem * item = token_getNextProcessItem();
         
         if( item )
         {
-            counter++;
-            
             // Run o re-run this item
             switch (item->state) 
             {
@@ -219,13 +205,9 @@ void ProcessManager::checkBackgroundProcesses()
             }
         }
         else
-            break; // End of the loop
+            usleep( 100000 ); // Sleep 0.1 seconds
         
     }
-    
-    if( counter>0 )
-        LM_M(("Started %d background processes....",counter));
-    
     
 }
 
@@ -257,14 +239,24 @@ void ProcessManager::getInfo( std::ostringstream& output)
 void ProcessManager::quit()
 {
     
+    // Set flag to indicate backgroun process we are quitting...
+    quitting = true;
+
+    LM_V(("ProcessManager: Waiting main thread to finish"));
+    while( thread_running )
+        usleep(100000);
+    LM_V(("ProcessManager: main thread finished"));
+    
     items.clearSet();				// List of items to be executed ( all priorities  )
     halted_items.clearSet();		// Set of items currently being executed but halted
     
     while( running_items.size() > 0 )
     {
-        LM_V(("Waiting to finish running background processes"));
+        LM_V(("ProcessManager: Waiting %d process to finish" , (int)running_items.size() ));
         sleep(1);
     }
+    
+    LM_V(("ProcessManager: Finish complete" , (int)running_items.size() ));
     
 }
 

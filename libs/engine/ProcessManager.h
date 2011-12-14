@@ -34,7 +34,6 @@
 #include "engine/Object.h"                  // engine::Object
 
 #define notification_process_request_response                   "notification_process_request_response"
-#define notification_process_manager_check_background_process   "notification_process_manager_check_background_process"
 
 NAMESPACE_BEGIN(engine)
 
@@ -64,6 +63,10 @@ class ProcessManager  :  engine::Object , engine::EngineService
     
     // Statistics about operations
     au::map<std::string,au::SimpleRateCollection> rates;    // Information about rates
+    
+    pthread_t t_scheduler; // Thread continuously checking for new process to be executed
+    bool thread_running;   // Flag to indicate that the background thread is running
+    bool quitting;         // Flag to indicate that we are quitting
     
 public:
     
@@ -100,11 +103,14 @@ public:
     
 private:
     
-    // Check background process in order to see if new threads have to be created
-    void checkBackgroundProcesses();                    
-    
     // Remove pending stuff and wait for the running
     void quit();
+
+    public:
+    // Only public to be executed from a separate thread
+    // Check background process in order to see if new threads have to be created
+    void check_background_processes();                    
+    
     
 private:
  

@@ -1,2 +1,4 @@
-samsonPop  demo.99.level.04.levels_updates_txt -new | samsonLevelMonitor -concept "home" -title "Users at home" &
-samsonPop  demo.99.level.04.levels_updates_txt -new | samsonLevelMonitor -concept "work" -title "Users at work" &
+samsonPop demo.99.level.04.levels_updates_txt -new | samsonLevelMonitor -concept work_defined -title "Work defined" &
+samsonPop demo.99.level.04.levels_updates_txt -new | samsonLevelMonitor -concept home_defined -title "Home defined" &
+samsonPop demo.99.level.04.levels_updates_txt -new | samsonLevelMonitor -concept work -title "Users at work" &
+samsonPop demo.99.level.04.levels_updates_txt -new | samsonLevelMonitor -concept home -title "Users at home" &

@@ -462,7 +462,7 @@ Status Endpoint2::okToSend(void)
 	fd_set          wFds;
 	struct timeval  timeVal;
 	int             tryh;
-	int             tries = 3000;
+	int             tries = 300;
 
 	for (tryh = 0; tryh < tries; tryh++)
 	{
@@ -472,8 +472,8 @@ Status Endpoint2::okToSend(void)
         if ( state == Disconnected )
             return Error;
         
-		timeVal.tv_sec  = 0;
-		timeVal.tv_usec = 100000;
+		timeVal.tv_sec  = 1;
+		timeVal.tv_usec = 0;
 
 		FD_ZERO(&wFds);
 		FD_SET(wFd, &wFds);
@@ -488,9 +488,10 @@ Status Endpoint2::okToSend(void)
 
         if( fds == -1 )
             LM_RE(Error, ("Select: %s", strerror(errno)));
-        
-        if( tryh%10 == 0 )
-            LM_W(("Problems to send to %s (%d/%d secs)", name(), tryh/10, tries/10));
+
+        if( tryh > 3 )
+            if( tryh%10 == 0 )
+                LM_W(("Problems to send to %s (%d/%d secs)", name(), tryh, tries ));
 	}
 
 	return Timeout;

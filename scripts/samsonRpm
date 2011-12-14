@@ -97,10 +97,12 @@ echo "%clean"                                                >> $BUILD_ROOT/rpm/
 echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%files"                                                >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%defattr(-, samson, samson, -)"                        >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo '/opt/samson/bin/samson*'                               >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo '/opt/samson/bin/delilah*'                              >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo '%dir /opt/samson'                                      >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo '%dir /opt/samson/etc'                                  >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '%dir /opt/samson/log'                                  >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '%dir /var/samson'                                      >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo '/opt/samson/bin/samson*'                               >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo '/opt/samson/bin/delilah*'                              >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '/var/samson/etc/setup.txt'                             >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '%attr(755,root,root) /etc/init.d/samson'                 >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '%attr(-,root,root) /etc/profile.d/samson.sh'           >> $BUILD_ROOT/rpm/SPECS/$specfile

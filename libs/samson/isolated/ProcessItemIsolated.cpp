@@ -10,6 +10,8 @@
 
 #include "au/gpb.h"                     // au::readGPB & au::writeGPB
 #include "au/ErrorManager.h"
+#include "au/Token.h"
+#include "au/TokenTaker.h"
 
 #include "engine/MemoryManager.h"			// engine::MemoryManager
 #include "engine/Notification.h"            // engine::Notification
@@ -32,8 +34,119 @@
 
 namespace samson
 {
+    
+    class PidElement
+    {
+        pid_t pid;
+        au::Cronometer cronometer;
+        int kill_count;
+        
+    public:
+        
+        PidElement( pid_t _pid )
+        {
+            pid = _pid;
+            kill_count = 0;
+        }
+        
+        bool wait()
+        {
+            int stat_loc;
+            pid_t p = waitpid(pid, &stat_loc , WNOHANG );
+            if( p == pid)
+            {
+                if ( WIFEXITED(stat_loc) )
+                {
+                    int s = WEXITSTATUS( stat_loc );
+                    LM_T(LmtIsolated,("Background process (pid=%d) ended with exit with code %d",pid, s));
+                    
+                }
+                else if( WIFSIGNALED( stat_loc ) )
+                {
+                    int s = WTERMSIG( stat_loc );
+                    LM_T(LmtIsolated,("Background process (pid=%d) ended with signal with signal %d",pid, s));
+                    LM_W(("Background process (pid=%d) ended with signal with signal %d",pid, s));
+                }
+                else
+                {
+                    LM_T(LmtIsolated,("Background process (pid=%d) 'crashed' with unknown reason", pid));
+                    LM_E(("Background process (pid=%d) 'crashed' with unknown reason", pid));
+                }
+                
+                
+                return true;
+            }
 
-   
+            if( cronometer.diffTime() > 3.0 ) // Three seconds to die
+            {
+                // Send a kill signal to this process
+                LM_T(LmtIsolated,("Killing background process (%d) manually", pid));
+                kill( pid , SIGKILL );
+                
+                kill_count++;
+                cronometer.reset();
+                
+                if( kill_count > 3 )
+                    LM_W(("Background process (pid %d) is not dying after %d kills" , pid , kill_count ));
+                
+            }
+            
+            
+            
+            return false;
+        }
+        
+    };
+
+    class PidCollection
+    {
+        au::Token token;
+        std::set<PidElement*> pids;
+        
+        public:
+        
+        PidCollection() : token("PidCollection")
+        {
+            
+        }
+        
+        void add( pid_t pid )
+        {
+            au::TokenTaker tt(&token);
+            pids.insert( new PidElement(pid) );
+            
+            if( pids.size() > 20 )
+                LM_W(("Waiting a high number of background process %d" , (int)  pids.size() ));
+                                  
+        }
+        
+        void clear()
+        {
+            au::TokenTaker tt(&token);
+            
+            std::set<PidElement*>::iterator it_pids;
+
+            for ( it_pids = pids.begin() ; it_pids != pids.end() ;  )
+            {
+                PidElement* pid_element = (*it_pids);
+                
+                if( pid_element->wait() )
+                {
+                    delete pid_element;
+                    pids.erase( it_pids++ );
+                }
+                else
+                    ++it_pids;
+                
+            }
+        }
+        
+        
+    };
+    
+    
+    PidCollection myPidCollection;
+    
     
     // Static variable to active the "thread" mode of the background process execution
     bool ProcessItemIsolated::isolated_process_as_tread = false;
@@ -139,56 +252,8 @@ namespace samson
         if( !isolated_process_as_tread )
         {
             
-            // Loop until the background thread is killed
-            sub_status = "Waiting";
-            int stat_loc;
-            pid_t p=0;
-            do
-            {
-                
-                // Wait for
-                for ( int i = 0 ; i < 100 ; i++)
-                {
-                    p = waitpid(pid, &stat_loc , WNOHANG );
-                    if( p == pid)
-                        break;
-                    usleep(10000);
-                }
-
-                
-                // Send a kill message if still not died
-                if( p!= pid )
-                {
-                    LM_T(LmtIsolated,("Killing background process (%d) manually", pid));
-                    kill( pid , SIGKILL );
-                    
-                    // Give the background process some air to die in peace
-                    usleep(10000);
-                }
-                else
-                {
-                    if ( WIFEXITED(stat_loc) )
-                    {
-                        int s = WEXITSTATUS( stat_loc );
-                        LM_T(LmtIsolated,("Background process (pid=%d) ended with exit with code %d",pid, s));
-                        
-                    }
-                    else if( WIFSIGNALED( stat_loc ) )
-                    {
-                        int s = WTERMSIG( stat_loc );
-                        LM_T(LmtIsolated,("Background process (pid=%d) ended with signal with signal %d",pid, s));
-                        LM_W(("Background process (pid=%d) ended with signal with signal %d",pid, s));
-                    }
-                    else
-                    {
-                        LM_T(LmtIsolated,("Background process (pid=%d) 'crashed' with unknown reason", pid));
-                        LM_E(("Background process (pid=%d) 'crashed' with unknown reason", pid));
-                    }
-                }
-                
-                LM_W(("Waiting for background process with pid %d" , pid));
-                
-            } while (p != pid);
+            myPidCollection.add(pid);
+            myPidCollection.clear();
         }
 		
         LM_T( LmtIsolated , ("Isolated process %s: Finish ******************************************************************************************* ",getStatus().c_str()));

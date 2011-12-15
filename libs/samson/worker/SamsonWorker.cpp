@@ -346,7 +346,7 @@ namespace samson {
             size_t max_memory = engine::MemoryManager::shared()->public_max_memory;
 
             size_t disk_read_rate = engine::DiskManager::shared()->diskStatistics.item_read.rate.getRate();
-            size_t disk_write_rate = engine::DiskManager::shared()->diskStatistics.item_read.rate.getRate();
+            size_t disk_write_rate = engine::DiskManager::shared()->diskStatistics.item_write.rate.getRate();
             
             LM_M(("Status [ P %s M %s D %s %s ]"
                   , au::percentage_string( num_processes, max_processes ).c_str()

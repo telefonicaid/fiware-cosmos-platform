@@ -142,8 +142,8 @@ public:
 	// Statistics
 	int                  msgsIn;
 	int                  msgsOut;
-	int                  bytesIn;
-	int                  bytesOut;
+	size_t               bytesIn;
+	size_t               bytesOut;
 	int                  msgsInErrors;
 	int                  msgsOutErrors;
 

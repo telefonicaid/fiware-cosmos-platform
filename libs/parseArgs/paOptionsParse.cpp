@@ -439,27 +439,39 @@ int paOptionsParse(PaArgument* paList, char* argV[], int argC)
 		{
 		case PaInt:
 		case PaIntU:
-			*((int*) aP->varP) = paGetVal(valueP, eP, o);
+            *((int*) aP->varP) = (int) (long long) paGetVal(valueP, eP, o);
+            if (*eP != PaOk)
+                return -1;
+
 			LM_T(LmtPaApVals, ("got value %d for %s", *((int*) aP->varP), aP->name)); 
 			break;
 
 		case PaInt64:
 		case PaIntU64:
-			*((long long*) aP->varP) = paGetVal(valueP, eP, o);
+			*((long long*) aP->varP) = (long long) paGetVal(valueP, eP, o);
+            if (*eP != PaOk)
+                return -1;
+
 			LM_T(LmtPaApVals, ("got value %ul for %s", *((long long*) aP->varP), aP->name)); 
 			break;
 
 		case PaChar:
 		case PaCharU:
-			*((char*)  aP->varP) = paGetVal(valueP, eP, o);
+            *((char*)  aP->varP) = (char) (long long) paGetVal(valueP, eP, o);
+            if (*eP != PaOk)
+                return -1;
+
 			LM_T(LmtPaApVals, ("got value %d for %s", *((char*) aP->varP), aP->name)); 
 			break;
 
 		case PaShort:
 		case PaShortU:
-			*((short*) aP->varP) = paGetVal(valueP, eP, o);
-			LM_T(LmtPaApVals, ("got value %d for %s", *((short*) aP->varP), aP->name));
-			break;
+            *((short*) aP->varP) = (short) (long long) paGetVal(valueP, eP, o);
+            if (*eP != PaOk)
+                return -1;
+
+            LM_T(LmtPaApVals, ("got value %d for %s", *((short*) aP->varP), aP->name));
+            break;
 
 		case PaFloat:
 			*((float*) aP->varP) = baStof(valueP);

@@ -32,7 +32,7 @@ typedef enum PaGetVal
 *
 * paGetVal - calculate the integer value of a string
 */
-extern PaGetVal paGetVal
+extern void* paGetVal
 (
    char*  string,
    int*   error,

@@ -14,11 +14,11 @@
 *
 * paGetVal - calculate the integer value of a string
 */
-PaGetVal paGetVal(char* string, int* error, char* fullname)
+void* paGetVal(char* string, int* error, char* fullname)
 {
 	char*     digs;
 	char*     str;
-	int       value;
+	void*     value;
 	int       type;
 	bool      negative = false;
 
@@ -39,7 +39,7 @@ PaGetVal paGetVal(char* string, int* error, char* fullname)
 	case PaHex: digs   = (char*) "0123456789abcdefABCDEF"; str = &string[2]; break;
 	case PaDec: digs   = (char*) "0123456789";             str = &string[0]; break;
 	case PaOct: digs   = (char*) "01234567";               str = &string[1]; break;
-	default:    *error = PaDef;                            return PaError;
+	default:    printf("Bad type ...\n"); *error = PaDef;                            return NULL;
 	}
 
 	if (strspn(str, digs) != strlen(str))
@@ -51,16 +51,21 @@ PaGetVal paGetVal(char* string, int* error, char* fullname)
 				((type == PaHex)? "a hexa" : (type == PaOct)? "an octa" : "a "));
 		PA_WARNING(PasBadValue, w);
 		*error = type;
-		return PaError;
+        // printf("%s\n", w);
+		return NULL;
 	}
 	
+    // printf("String: '%s'\n", string);
+    value = (void*) 19;
 	switch (type)
 	{
-	case PaHex: value  = (int) strtol(string, NULL, 16); break;
-	case PaDec: value  = baStoi(string);                 break;
-	case PaOct: value  = (int) strtol(string, NULL, 8);  break;
-	default:    *error = PaDef; return PaError;          break;
+	case PaHex: value  = (void*) strtoull(string, NULL, 16); break;
+	case PaDec: value  = (void*) baStoi(string);                   break;
+	case PaOct: value  = (void*) strtoull(string, NULL, 8);  break;
+	default:    *error = PaDef; return NULL;            break;
 	}
 
-	return (PaGetVal) ((negative == true)? -value : value);
+    // printf("Value: %llu\n", (long long) value);
+
+	return (void*) ((negative == true)? - (long long) value : (long long) value);
 }

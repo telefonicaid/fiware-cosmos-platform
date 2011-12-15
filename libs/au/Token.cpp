@@ -17,8 +17,14 @@ Token::Token( const char * _name )
     // Take the name for debuggin
     name = _name;
     
-    pthread_mutex_init(&_lock, 0);
-    pthread_cond_init(&_block, NULL);
+    int r_init = pthread_mutex_init(&_lock, 0);
+    int t_init_cond = pthread_cond_init(&_block, NULL);
+    
+    if( r_init != 0 )
+        LM_X(1, ("pthread_mutex_init for '%s' returned %d" , name , r_init ));
+    
+    if( t_init_cond != 0 )
+        LM_X(1, ("pthread_cond_init for '%s' returned %d" , name , t_init_cond ));
     
 }
 

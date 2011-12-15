@@ -48,10 +48,10 @@
 #include <ctype.h>              /* isprint                                   */
 #include <sys/stat.h>           /* fstat, S_IFDIR                            */
 #include <sys/time.h>           /* gettimeofday                              */
-#include <time.h>               /* time, localtime_r, .                      */
-#include <sys/timeb.h>               /* timeb, ftime, .                      */
+#include <time.h>               /* time, gmtime_r, ...                       */
+#include <sys/timeb.h>          /* timeb, ftime, ...                         */
 
-#include "logMsg/logMsg.h"             /* Own interface                             */
+#include "logMsg/logMsg.h"      /* Own interface                             */
 
 #undef NDEBUG
 #include <assert.h>
@@ -573,7 +573,7 @@ static char* dateGet(int index, char* line, int lineSize)
 	else
 	{
 		ftime(&timebuffer);
-		localtime_r(&secondsNow, &tmP);
+		gmtime_r(&secondsNow, &tmP);
 		strftime(line_tmp, 80, fds[index].timeFormat, &tmP);
 		snprintf(line, lineSize, "%s(%.3d)", line_tmp, timebuffer.millitm);
 	}
@@ -1530,7 +1530,7 @@ LmStatus lmFdRegister(int fd, const char* format, const char* timeFormat, const 
 		return LmsFdOccupied;
 
 	secsNow = time(NULL);
-	localtime_r(&secsNow, &tmP);
+	gmtime_r(&secsNow, &tmP);
 	
 	if ((fd >= 0) && (strcmp(info, "stdout") != 0))
 	{
@@ -2109,7 +2109,7 @@ LmStatus lmReopen(int index)
 			char       tm[80];
 			char       buf[80];
 				
-			localtime_r(&now, &tmP);
+			gmtime_r(&now, &tmP);
 			strftime(tm, 80, TIME_FORMAT_DEF, &tmP);
 
 			snprintf(buf, sizeof(buf), "Cleared at %s  (a reopen ...)\n",tm);
@@ -2310,7 +2310,7 @@ LmStatus lmClear(int index, int keepLines, int lastLines)
 				char       tm[80];
 				char       buf[80];
 				
-				localtime_r(&now, &tmP);
+				gmtime_r(&now, &tmP);
 				strftime(tm, 80, TIME_FORMAT_DEF, &tmP);
 				
 				snprintf(buf, sizeof(buf), "Cleared at %s\n", tm);

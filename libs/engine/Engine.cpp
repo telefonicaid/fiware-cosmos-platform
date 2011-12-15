@@ -36,10 +36,7 @@ NAMESPACE_BEGIN(engine)
 Engine *engine = NULL;
 
 void* runEngineBakground(void* e )
-{
-    // Free resources automatically when this thread finish
-    pthread_detach(pthread_self());    
-    
+{    
     engine->run();
     return NULL;
 }
@@ -52,9 +49,6 @@ Engine::Engine() :  EngineService("Engine") , token("EngineToken")
 
 Engine::~Engine()
 {
-    // Waiting for all threads to finish
-    engine->finish_threads();
-    
     // Remove pending elements in Engine
     elements.clearList();
 }
@@ -66,6 +60,13 @@ Engine* Engine::shared()
     return engine;
 }
 
+void Engine::quitEngineService()
+{
+    LM_V(("Quiting Engine..."));
+    flag_finish_threads = true;   // Flag to indicate main thread should finish
+    pthread_join(t, NULL);
+    LM_V(("Quiting Engine... DONE"));
+}
 
 void Engine::init()
 {
@@ -87,14 +88,6 @@ void Engine::init()
     
     // Function to remove this engine and all EngineServices like MemoryMamager, DiskManager, ProcessManager etc...
     atexit( destroy_engine_services );
-}
-
-void Engine::finish_threads()
-{
-    flag_finish_threads = true;
-    LM_M(("Waiting threads of Engine to finish..."));
-    pthread_join(t, NULL);
-    LM_M(("All Engine threads finished"));
 }
 
 

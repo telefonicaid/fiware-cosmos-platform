@@ -112,11 +112,11 @@ public:
     // Get an object by its registry names
     Object* getObjectByName( const char *name );
     
+public:
+    
+    void quitEngineService();
+
 private:
-    
-    // Function called from destroy to make sure no internal threads are running...
-    void finish_threads();
-    
     
     friend class NotificationElement;
     

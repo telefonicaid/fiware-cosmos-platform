@@ -51,6 +51,12 @@ public:
     {
         return name;
     }
+    
+    virtual void quitEngineService()
+    {
+        // function to quit background threads safely
+    }
+    
 };
 
 // Function to destroy all engine services when exit ( See engin::Engine::init() )

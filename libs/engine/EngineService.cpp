@@ -13,6 +13,11 @@ void destroy_engine_services()
     {
         EngineService * service = engine_services[engine_services.size()-1-i];
         LM_V(("Destroying EngineServide '%s'" , service->getEngineServiceName().c_str() ));
+
+        // Stop all background threads safely
+        service->quitEngineService();
+        
+        // Delete the object itself
         delete service;
     }
     

@@ -25,22 +25,12 @@ NAMESPACE_BEGIN(engine)
 
 static ProcessManager *processManager=NULL;
 
-void destroy_process_manager()
-{
-    //LM_M(("ProcessManager terminating"));
-    
-    if( processManager )
-    {
-        delete processManager;
-        processManager = NULL;
-    }
-}
-
 void ProcessManager::init( int _num_processes)
 {
     if( processManager )
         LM_X(1,("Please, init processManager only once"));
     processManager = new ProcessManager( _num_processes );
+    
 }
 
 void* run_check_background_processes(void *p)
@@ -73,6 +63,9 @@ ProcessManager::ProcessManager( int _num_processes ) :
     thread_running = true;
     pthread_create(&t_scheduler, NULL, run_check_background_processes, this);
 
+    
+    public_max_proccesses = num_processes;
+    public_num_proccesses = 0;
     
 }
 
@@ -236,7 +229,7 @@ void ProcessManager::getInfo( std::ostringstream& output)
     token_getInfo( output );    
 }
 
-void ProcessManager::quit()
+void ProcessManager::quitEngineService()
 {
     
     // Set flag to indicate backgroun process we are quitting...
@@ -288,6 +281,9 @@ ProcessItem* ProcessManager::token_getNextProcessItem()
     
     au::TokenTaker tt( &token );
 
+    // Update public information about the number of items running
+    public_num_proccesses = running_items.size();
+    
     //LM_M(("Getting next item to process? (halted: %lu pending: %lu) " , halted_items.size() , items.size() ));
     
     // Check if there are enougth slots..

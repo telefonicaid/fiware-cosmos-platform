@@ -337,6 +337,21 @@ namespace samson {
             
             // Send this message to all delilahs connnected
             network->delilahSend( this , p );
+
+            // Collect some information an print status...
+            int num_processes = engine::ProcessManager::shared()->public_num_proccesses;
+            int max_processes = engine::ProcessManager::shared()->public_max_proccesses;
+
+            size_t used_memory = engine::MemoryManager::shared()->public_used_memory;
+            size_t max_memory = engine::MemoryManager::shared()->public_max_memory;
+
+            LM_M(("Status [ Process %d / %d ] [ Memory %s / %s ]"
+                  , num_processes
+                  , max_processes
+                  , au::str(used_memory,"B").c_str()
+                  , au::str( max_memory ,"B").c_str() 
+                  ));
+            
             
         }
         else if ( notification->isName(notification_send_to_worker) )

@@ -56,7 +56,10 @@ MemoryManager::MemoryManager( size_t _memory ) : engine::EngineService("MemoryMa
 {
     // Total available memory
     memory = _memory;
-	acum_memory = 0;
+    
+    // Public values to be accessed without token
+    public_max_memory = memory;
+    public_used_memory = 0;
 }
 
 MemoryManager::~MemoryManager()
@@ -68,6 +71,7 @@ Buffer *MemoryManager::newBuffer( std::string name , size_t size , int tag )
 {
 	//LM_M(("Before new mutex  buffer:%s, size:%lu, tag:%d\n", name.c_str(), size, tag));
     au::TokenTaker tk( &token );
+
     
     Buffer *b = _newBuffer( name , size , tag );
     return b;
@@ -85,9 +89,11 @@ Buffer *MemoryManager::_newBuffer( std::string name , size_t size , int tag )
     buffers.insert( b );
     
     //LM_M(("New memory buffer:%s, size:%lu, tag:%d, memory:%lu\n", b->str().c_str(), size, tag, _getUsedMemory()));
-    acum_memory += size;
+
+    // Update public value
+    public_used_memory += size;
     
-    LM_T(LmtMemory, ("New memory buffer:%s, size:%lu, tag:%d, acum_memory:%lu\n", b->str().c_str(), size, tag, acum_memory));
+    LM_T(LmtMemory, ("New memory buffer:%s, size:%lu, tag:%d, acum_memory:%lu\n", b->str().c_str(), size, tag, public_used_memory));
     
     return b;
 }	
@@ -109,8 +115,10 @@ void MemoryManager::destroyBuffer(Buffer* b)
     
     LM_T(LmtMemory, ("Dealloc buffer with max size %sbytes", au::str( b->getMaxSize() ).c_str() ) );
     //LM_M(("destroying memory buffer:%s, memory:%lu\n", b->str().c_str(), _getUsedMemory()));
-    acum_memory -= b->getMaxSize();
-    LM_T(LmtMemory, ("destroying memory buffer:%s, acum_memory:%lu\n", b->str().c_str(), acum_memory));
+    
+    public_used_memory -= b->getMaxSize();
+    
+    LM_T(LmtMemory, ("destroying memory buffer:%s, acum_memory:%lu\n", b->str().c_str(), public_used_memory));
     
     
     b->free();

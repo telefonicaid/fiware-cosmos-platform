@@ -70,6 +70,11 @@ class ProcessManager  :  engine::Object , engine::EngineService
     
 public:
     
+    int public_max_proccesses;
+    int public_num_proccesses;
+    
+public:
+    
     ~ProcessManager();
     
     static void init( int _num_processes );
@@ -104,7 +109,7 @@ public:
 private:
     
     // Remove pending stuff and wait for the running
-    void quit();
+    void quitEngineService();
 
     public:
     // Only public to be executed from a separate thread

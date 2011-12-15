@@ -158,9 +158,10 @@ void Rate::push( size_t size )
 std::string Rate::str()
 {
     update_values();
-    return au::str("[ Currently %s %s ] [ Accumulated in %s %s with %s ]" 
+    return au::str("[ Currently %s %s ] [ Last sample %s ] [ Accumulated in %s %s with %s ]" 
                    , au::str( transformRate(rate_hits)  , "hits/s" ).c_str() 
                    , au::str( transformRate(rate) , "B/s" ).c_str() 
+                   , au::time_string( cronometer.diffTime() ).c_str()
                    , au::time_string( global_cronometer.diffTime() ).c_str()
                    , au::str_detail( total_num , "hits" ).c_str() 
                    , au::str_detail( total_size , "B" ).c_str() 

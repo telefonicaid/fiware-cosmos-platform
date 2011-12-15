@@ -351,8 +351,8 @@ namespace samson {
             LM_M(("Status [ P %s M %s D_in %s D_out %s ]"
                   , au::percentage_string( num_processes, max_processes ).c_str()
                   , au::percentage_string(used_memory, max_memory).c_str()
-                  , au::str( disk_read_rate ).c_str()
-                  , au::str( disk_write_rate ).c_str()
+                  , au::str( disk_read_rate , "Bs" ).c_str()
+                  , au::str( disk_write_rate , "Bs" ).c_str()
                   ));
             
         }

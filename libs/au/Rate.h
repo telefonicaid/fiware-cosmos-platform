@@ -202,11 +202,13 @@ public:
     double getGlobalRate();
     
     void setTimeLength( double t );
+
+    void update_values();
     
 private:
     
-    void update_values();
     double transformRate( double value );
+    double correctedRate( double value );
     
 };
 

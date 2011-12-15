@@ -178,7 +178,7 @@ size_t Rate::getTotalSize()
 
 double Rate::getRate()
 {
-    return transformRate(rate);
+    return transformRate( correctedRate(rate) );
 }
 
 double Rate::getGlobalRate()
@@ -211,6 +211,14 @@ double Rate::transformRate( double value )
         return value / time;
     else
         return (1.0-factor)*value;
+}
+
+double Rate::correctedRate( double value )
+{
+    double time_diff = cronometer.diffTimeAndReset(); 
+    
+    value = value * pow( factor  , time_diff );
+    return value;
 }
 
 

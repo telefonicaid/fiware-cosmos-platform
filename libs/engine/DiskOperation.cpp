@@ -233,11 +233,11 @@ void DiskOperation::runInBackGround()
 
 void DiskOperation::run(  )
 {
+    // Detect some slow disk access if rate is going bellow 10Mb/s in large operations
+    double alarm_time_secs = std::max(  (double) size / 10000000.0 , 5.0 );
+    au::ExecesiveTimeAlarm alarm( au::str("Disk Operation '%s;",getDescription().c_str() , alarm_time_secs ) );
     
     LM_T( LmtDisk , ("DiskManager: Running operation %s", getDescription().c_str() ));
-    
-    struct timeval start,stop;
-    gettimeofday(&start, NULL);
     
     if( type == DiskOperation::write )
     {
@@ -256,19 +256,13 @@ void DiskOperation::run(  )
             if( size > 0 )
             {
                 if( fwrite(buffer->getData(), size, 1 , file) == 1 )
-                {
                     fflush(file);
-                    gettimeofday(&stop, NULL);
-                    operation_time = DiskStatistics::timevaldiff( &start , &stop);
-                }
                 else
                 {
                     LM_E(("Error writing data to file, fileName:%s, errno:%d", fileName.c_str(), errno));
                     setError("Error writing data to the file");
                 }
             }
-            else
-                operation_time = 0;
             
             fclose(file);
         }
@@ -288,16 +282,10 @@ void DiskOperation::run(  )
             if( size > 0 )
             {
                 if( fwrite(buffer->getData(), size, 1 , file) == 1 )
-                {
                     fflush(file);
-                    gettimeofday(&stop, NULL);
-                    operation_time = DiskStatistics::timevaldiff( &start , &stop);
-                }
                 else
                     setError("Error writing data to the file");
             }
-            else
-                operation_time = 0;
             
             fclose(file);
         }

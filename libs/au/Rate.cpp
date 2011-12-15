@@ -136,6 +136,12 @@ Rate::Rate()
     factor = 0.99666666; // 300 seconds
 }
 
+void Rate::setTimeLength( double t )
+{
+    factor = ( t - 1 ) / t;
+}
+
+
 void Rate::push( size_t size )
 {
     update_values();

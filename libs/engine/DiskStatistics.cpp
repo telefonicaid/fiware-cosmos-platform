@@ -11,6 +11,7 @@ NAMESPACE_BEGIN(engine)
 
 DiskStatisticsItem::DiskStatisticsItem()
 {
+    rate.setTimeLength( 60 ); // Last minute statistics
 }	
 
 void DiskStatisticsItem::add( size_t _size )
@@ -20,22 +21,13 @@ void DiskStatisticsItem::add( size_t _size )
     
 }
 
-std::string DiskStatisticsItem::getStatus()
+void DiskStatisticsItem::getInfo( std::ostringstream& output)
 {
-    
-    std::ostringstream output;
-    output << rate.str();
-    return output.str();
+    output << "<description>" << rate.str() << "</description>\n";
+    au::xml_simple( output , "rate" , (size_t) rate.getRate() );
 }
 
-
 #pragma mark DiskStatistics
-/*	
- void DiskStatistics::add( DiskOperation *operation )
- {
- add( operation->getType() , operation->getSize() );
- }
- */	
 
 void DiskStatistics::add( DiskOperation::DiskOperationType type, size_t size )
 {
@@ -57,30 +49,28 @@ void DiskStatistics::add( DiskOperation::DiskOperationType type, size_t size )
             break;
             
     }
+    
     // Add the toal
     item_total.add( size );
     
 }
 
-std::string DiskStatistics::getStatus()
+void DiskStatistics::getInfo( std::ostringstream& output)
 {
-    std::ostringstream output;
-    output << "\n\tTotal: " << item_total.getStatus();
-    output << "\n\tRead:  " << item_read.getStatus();
-    output << "\n\tWrite: " << item_write.getStatus();
-    return	 output.str();
+    output << "<read>\n";
+    item_read.getInfo( output );
+    output << "</read>\n";
+    
+    output << "<write>\n";
+    item_write.getInfo( output );
+    output << "</write>\n";
+    
+    output << "<total>\n";
+    item_total.getInfo( output );
+    output << "</total>\n";
+    
 }
 
-size_t DiskStatistics::timevaldiff(struct timeval *starttime, struct timeval *finishtime)
-{
-    size_t msec=0;
-    msec+=(finishtime->tv_sec-starttime->tv_sec)*1000;
-    msec+=(finishtime->tv_usec-starttime->tv_usec)/1000;
-    
-    if( msec == 0)	/// Avoid div/0
-        msec = 1;
-    
-    return msec;
-}	
+
 
 NAMESPACE_END

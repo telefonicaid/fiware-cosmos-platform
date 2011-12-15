@@ -142,21 +142,6 @@ void DiskManager::setNumOperations( int _num_disk_operations )
 }
 
 
-size_t DiskManager::getReadRate()
-{
-    // Mutex protection
-    au::TokenTaker tt(&token);
-    
-    return diskStatistics.item_read.getLastMinuteRate();
-}
-
-size_t DiskManager::getWriteRate()
-{
-    // Mutex protection
-    au::TokenTaker tt(&token);
-    
-    return diskStatistics.item_write.getLastMinuteRate();
-}
 
 void DiskManager::getInfo( std::ostringstream& output)
 {
@@ -186,6 +171,7 @@ void DiskManager::getInfo( std::ostringstream& output)
     
 }
 
+/*
 std::string DiskManager::str()
 {
     // Mutex protection
@@ -236,7 +222,7 @@ std::string DiskManager::str()
     return disk_manager_status.str();
     
 }	
-
+*/
 
 au::list<DiskOperation>::iterator DiskManager::_find_pos( DiskOperation *diskOperation )
 {

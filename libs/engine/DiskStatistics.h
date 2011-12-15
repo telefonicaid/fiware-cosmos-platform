@@ -40,19 +40,7 @@ public:
     DiskStatisticsItem();
     
     void add( size_t _size );
-    
-    std::string getStatus();
-    
-    size_t getLastMinuteRate()
-    {
-        return (size_t) rate.getRate();
-    }
-    
-    void getInfo( std::ostringstream& output)
-    {
-        output << "<description>" << rate.str() << "</description>\n";
-        au::xml_simple( output , "rate" , getLastMinuteRate() );
-    }
+    void getInfo( std::ostringstream& output);
     
 };	
 
@@ -67,34 +55,7 @@ public:
     
     void add( DiskOperation::DiskOperationType type, size_t size );
     
-    //void add( DiskOperation *operation );
-    
-    std::string getStatus();
-    
-    static size_t timevaldiff(struct timeval *starttime, struct timeval *finishtime);
-    
-    static size_t timeSince(struct timeval *starttime)
-    {
-        struct timeval now;
-        gettimeofday(&now, NULL);
-        return timevaldiff(starttime, &now);
-    }
-    
-    void getInfo( std::ostringstream& output)
-    {
-        output << "<read>\n";
-        item_read.getInfo( output );
-        output << "</read>\n";
-        
-        output << "<write>\n";
-        item_write.getInfo( output );
-        output << "</write>\n";
-        
-        output << "<total>\n";
-        item_total.getInfo( output );
-        output << "</total>\n";
-        
-    }
+    void getInfo( std::ostringstream& output);
     
 };
 

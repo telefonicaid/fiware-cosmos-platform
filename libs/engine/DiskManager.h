@@ -80,10 +80,8 @@ private:
 public:
     
     int getNumOperations();                  // get the number of pending operations ( shown at information screen);
-    size_t getReadRate();                  
-    size_t getWriteRate();                 
     
-    std::string str();
+    //std::string str();
     void getInfo( std::ostringstream& output);
     
     void setNumOperations( int _num_disk_operations );

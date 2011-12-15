@@ -201,6 +201,8 @@ public:
     double getRate();
     double getGlobalRate();
     
+    void setTimeLength( double t );
+    
 private:
     
     void update_values();

@@ -197,13 +197,14 @@ public:
 
     size_t getTotalNumberOfHits();
     size_t getTotalSize();
+    
+    double getRate();
     double getGlobalRate();
-
+    
 private:
     
     void update_values();
-    
-    double getRate( double value );
+    double transformRate( double value );
     
 };
 

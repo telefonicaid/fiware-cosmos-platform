@@ -345,13 +345,15 @@ namespace samson {
             size_t used_memory = engine::MemoryManager::shared()->public_used_memory;
             size_t max_memory = engine::MemoryManager::shared()->public_max_memory;
 
-            LM_M(("Status [ Process %d / %d ] [ Memory %s / %s ]"
-                  , num_processes
-                  , max_processes
-                  , au::str(used_memory,"B").c_str()
-                  , au::str( max_memory ,"B").c_str() 
-                  ));
+            size_t disk_read_rate = engine::DiskManager::shared()->diskStatistics.item_read.rate.getRate();
+            size_t disk_write_rate = engine::DiskManager::shared()->diskStatistics.item_read.rate.getRate();
             
+            LM_M(("Status [ P %s M %s D %s %s ]"
+                  , au::percentage_string( num_processes, max_processes ).c_str()
+                  , au::percentage_string(used_memory, max_memory).c_str()
+                  , au::str( disk_read_rate ).c_str()
+                  , au::str( disk_write_rate ).c_str()
+                  ));
             
         }
         else if ( notification->isName(notification_send_to_worker) )

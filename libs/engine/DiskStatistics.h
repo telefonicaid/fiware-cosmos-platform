@@ -32,10 +32,10 @@ class DiskOperation;
 
 class DiskStatisticsItem
 {
-    // All the information about the rate
-    au::Rate rate;
     
 public:
+
+    au::rate::Rate rate;
     
     DiskStatisticsItem();
     
@@ -45,15 +45,14 @@ public:
     
     size_t getLastMinuteRate()
     {
-        return rate.getLastMinuteRate();
+        return (size_t) rate.getRate();
     }
     
     void getInfo( std::ostringstream& output)
     {
         output << "<description>" << rate.str() << "</description>\n";
-        au::xml_simple( output , "rate" , rate.getLastMinuteRate() );
+        au::xml_simple( output , "rate" , getLastMinuteRate() );
     }
-    
     
 };	
 

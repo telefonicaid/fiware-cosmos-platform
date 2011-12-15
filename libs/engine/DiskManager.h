@@ -58,11 +58,11 @@ class DiskManager : engine::EngineService
     au::list<DiskOperation> pending_operations;		// List of pending operations
     std::set<DiskOperation*> running_operations;	// Running operations
     
-    DiskStatistics diskStatistics;                  // Statistics
-    
     DiskManager( int _num_disk_operations );
     
 public:
+
+    DiskStatistics diskStatistics;                  // Statistics
     
     static void init( int _num_disk_operations );
     static DiskManager* shared();

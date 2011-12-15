@@ -128,8 +128,18 @@ void Engine::run()
     
     counter = 0;            // Init the counter to elements managed by this run-time
     
+    au::Cronometer engine_cronometer;
+    
+    
     while( true )
     {
+        
+        if( engine_cronometer.diffTime() > 5.0 )
+        {
+            LM_M(("Engine alive..."));
+            engine_cronometer.reset();
+        }
+        
         // Keep a total counter of loops
         counter++;  
         

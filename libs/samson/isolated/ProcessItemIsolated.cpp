@@ -183,6 +183,8 @@ namespace samson
                     }
                 }
                 
+                LM_W(("Waiting for background process with pid %d" , pid));
+                
             } while (p != pid);
         }
 		

@@ -37,22 +37,22 @@ void DiskStatistics::add( DiskOperation::DiskOperationType type, size_t size )
             item_read.add( size );
         }
             break;
+            
         case DiskOperation::append:
         case DiskOperation::write:
         {
             item_write.add( size );
         }
             break;
+            
         case DiskOperation::remove:
         {
         }
             break;
-            
     }
     
     // Add the toal
     item_total.add( size );
-    
 }
 
 void DiskStatistics::getInfo( std::ostringstream& output)

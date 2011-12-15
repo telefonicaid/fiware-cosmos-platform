@@ -345,10 +345,10 @@ namespace samson {
             size_t used_memory = engine::MemoryManager::shared()->public_used_memory;
             size_t max_memory = engine::MemoryManager::shared()->public_max_memory;
 
-            size_t disk_read_rate = engine::DiskManager::shared()->diskStatistics.item_read.rate.getRate();
-            size_t disk_write_rate = engine::DiskManager::shared()->diskStatistics.item_write.rate.getRate();
+            size_t disk_read_rate = (size_t) engine::DiskManager::shared()->diskStatistics.item_read.rate.getRate();
+            size_t disk_write_rate = (size_t) engine::DiskManager::shared()->diskStatistics.item_write.rate.getRate();
             
-            LM_M(("Status [ P %s M %s D %s %s ]"
+            LM_M(("Status [ P %s M %s D_in %s D_out %s ]"
                   , au::percentage_string( num_processes, max_processes ).c_str()
                   , au::percentage_string(used_memory, max_memory).c_str()
                   , au::str( disk_read_rate ).c_str()

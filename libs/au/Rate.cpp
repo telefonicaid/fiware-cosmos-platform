@@ -203,13 +203,14 @@ double Rate::transformRate( double value )
 {
     double time_spam = 1.0 / ( 1.0 - factor );
     double time = global_cronometer.diffTime();
+    
     if( time == 0 )
         time = 1;
     
     if( time < time_spam )
         return value / time;
     else
-        return (1.0-factor)*rate_hits;
+        return (1.0-factor)*value;
 }
 
 

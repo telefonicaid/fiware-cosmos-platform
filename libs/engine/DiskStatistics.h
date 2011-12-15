@@ -32,7 +32,6 @@ class DiskOperation;
 
 class DiskStatisticsItem
 {
-    
 public:
 
     au::rate::Rate rate;
@@ -54,7 +53,6 @@ public:
     DiskStatisticsItem item_total;
     
     void add( DiskOperation::DiskOperationType type, size_t size );
-    
     void getInfo( std::ostringstream& output);
     
 };

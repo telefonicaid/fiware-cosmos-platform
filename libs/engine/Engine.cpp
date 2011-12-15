@@ -95,8 +95,31 @@ void Engine::finish_threads()
 }
 
 
+void sleep_select( double time )
+{
+	fd_set          fds;
+	struct timeval  timeVal;
 
-
+    timeVal.tv_sec  = 0;
+    timeVal.tv_usec = 0;
+        
+    if( time >= 1.0 )
+    {
+        timeVal.tv_sec = (long) fabs(time);
+        time -= timeVal.tv_sec;
+    }
+    
+    timeVal.tv_usec = time*1000000;
+    
+    
+    
+    FD_ZERO(&fds);        
+    int r = select( 1 , NULL, &fds, NULL, &timeVal);
+    
+    if( r != 0 )
+        LM_W(("Select returned %d in sleep_select [ timeval %l %l ]",r  , timeVal.tv_sec , timeVal.tv_usec ));
+    
+}
 
 void Engine::run()
 {
@@ -160,10 +183,17 @@ void Engine::run()
              */
             
             {
-                au::ExecesiveTimeAlarm alarm( "Engine sleep" , 2*t );
+                au::ExecesiveTimeAlarm alarm( "Engine sleep2" , 2*t );
+                sleep_select( t );
+            }
+
+            /*
+            {
                 int microsecons = t*1000000;
+                au::ExecesiveTimeAlarm alarm( "Engine sleep" , 2*t );
                 usleep( microsecons );
             }
+             */
             continue; // Loop again to check again...
         }
         

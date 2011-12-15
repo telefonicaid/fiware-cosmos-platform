@@ -25,6 +25,8 @@ TokenTaker::TokenTaker( Token* _token  )
 
 TokenTaker::TokenTaker( Token* _token , const char* _name )
 {
+    au::ExecesiveTimeAlarm alarm("TokenTaker::TokenTaker");
+    
     token = _token;
     name = _name;
     

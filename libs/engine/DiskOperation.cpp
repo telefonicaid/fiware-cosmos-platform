@@ -235,6 +235,7 @@ void DiskOperation::run(  )
 {
     // Detect some slow disk access if rate is going bellow 10Mb/s in large operations
     double alarm_time_secs = std::max(  (double) size / 10000000.0 , 5.0 );
+
     au::ExecesiveTimeAlarm alarm( au::str("Disk Operation '%s;",getDescription().c_str() , alarm_time_secs ) );
     
     LM_T( LmtDisk , ("DiskManager: Running operation %s", getDescription().c_str() ));

@@ -196,7 +196,7 @@ void Rate::update_values()
     // Get time diferente since last update and reset cronometer
     double time_diff = cronometer.diffTimeAndReset(); 
     
-    rate = rate * pow( factor  , time_diff );
+    rate      = rate * pow( factor  , time_diff );
     rate_hits = rate_hits * pow( factor  , time_diff );
 }
 

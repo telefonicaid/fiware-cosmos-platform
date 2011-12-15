@@ -35,10 +35,12 @@ double Cronometer::diffTimeAndReset()
     if ( gettimeofday(&t2,NULL) != 0)
         LM_X(1, ("gettimeofday failed"));
 
+    double time_dif = ( (double) t2.tv_sec ) + ((double)t2.tv_usec / 1000000.0) - ( (double) t.tv_sec ) - ((double)t.tv_usec / 1000000.0);
+    
     // Reset the value to this new time reference
     t = t2;
     
-    return ( (double) t2.tv_sec ) + ((double)t2.tv_usec / 1000000.0) - ( (double) t.tv_sec ) - ((double)t.tv_usec / 1000000.0);
+    return time_dif;
     
 }
 

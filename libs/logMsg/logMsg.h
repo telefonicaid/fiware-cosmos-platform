@@ -1038,6 +1038,7 @@ extern bool lmDoubt;
 extern bool lmBuf;
 extern bool lmReads;
 extern bool lmWrites;
+extern bool lmAssertAtExit;
 
 
 

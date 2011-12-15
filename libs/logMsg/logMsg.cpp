@@ -246,22 +246,22 @@ static int               lmSd                   = -1;
 *
 * Global variables
 */
-bool  lmDebug    = false;
-bool  lmHidden   = false;
-bool  lmVerbose  = false;
-bool  lmVerbose2 = false;
-bool  lmVerbose3 = false;
-bool  lmVerbose4 = false;
-bool  lmVerbose5 = false;
-bool  lmToDo     = false;
-bool  lmDoubt    = false;
-bool  lmReads    = false;
-bool  lmWrites   = false;
-bool  lmBug      = false;
-bool  lmBuf      = false;
-bool  lmFix      = false;
-
-LmxFp lmxFp      = NULL;
+bool  lmDebug         = false;
+bool  lmHidden        = false;
+bool  lmVerbose       = false;
+bool  lmVerbose2      = false;
+bool  lmVerbose3      = false;
+bool  lmVerbose4      = false;
+bool  lmVerbose5      = false;
+bool  lmToDo          = false;
+bool  lmDoubt         = false;
+bool  lmReads         = false;
+bool  lmWrites        = false;
+bool  lmBug           = false;
+bool  lmBuf           = false;
+bool  lmFix           = false;
+bool  lmAssertAtExit  = false;
+LmxFp lmxFp           = NULL;
 
 
 
@@ -1780,12 +1780,11 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 	}
 	else if ((type == 'X') || (type == 'x'))
 	{
-#ifdef ASSERT_FOR_EXIT
-        assert(false);
-#endif
-        
-		if (exitFunction != NULL)
-			exitFunction(tLev, exitInput, text, (char*) stre);
+        if (exitFunction != NULL)
+            exitFunction(tLev, exitInput, text, (char*) stre);
+
+        if (lmAssertAtExit == true)
+            assert(false);
 
 		/* exit here, just in case */
 		exit(tLev);

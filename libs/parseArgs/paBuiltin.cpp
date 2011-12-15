@@ -23,6 +23,7 @@ bool        paVersion;
 char        paHome[512];
 bool        paNoClear;
 bool        paClearAt;
+bool        paAssertAtExit;
 int         paKeepLines;
 int         paLastLines;
 static int  dummy;
@@ -103,6 +104,7 @@ PaArgument paBuiltin[] =
  { "-lmca",     &paClearAt,   "CLEAR_AT",   PaInt, PaOpt, -1, PaNL, PaNL, "clear at lines"       },
  { "-lmkl",     &paKeepLines, "KEEP_LINES", PaInt, PaOpt, -1, PaNL, PaNL, "clear 'keep lines'"   },
  { "-lmll",     &paLastLines, "LAST_LINES", PaInt, PaOpt, -1, PaNL, PaNL, "clear 'last lines'"   },
+ { "-assert",   &paAssertAtExit, "ASSERT_AT_EXIT",  PaBool,PaOpt,  F,    T,    F, "assert instead of exiting" },
 
  PA_END_OF_ARGS
 };

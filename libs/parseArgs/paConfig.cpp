@@ -544,19 +544,20 @@ int paConfigActions(bool preTreat)
     if (paVerbose2 == true)
         paVerbose = true;
 
-	lmVerbose  = paVerbose;
-	lmVerbose2 = paVerbose2;
-	lmVerbose3 = paVerbose3;
-	lmVerbose4 = paVerbose4;
-	lmVerbose5 = paVerbose5;
-	lmDebug    = paDebug;
-	lmToDo     = paToDo;
-	lmReads    = paReads;
-	lmWrites   = paWrites;
-	lmFix      = paFix;
-	lmBug      = paBug;
-	lmDoubt    = paDoubt;
-	lmBuf      = paBuf;
+	lmVerbose       = paVerbose;
+	lmVerbose2      = paVerbose2;
+	lmVerbose3      = paVerbose3;
+	lmVerbose4      = paVerbose4;
+	lmVerbose5      = paVerbose5;
+	lmDebug         = paDebug;
+	lmToDo          = paToDo;
+	lmReads         = paReads;
+	lmWrites        = paWrites;
+	lmFix           = paFix;
+	lmBug           = paBug;
+	lmDoubt         = paDoubt;
+	lmBuf           = paBuf;
+    lmAssertAtExit  = paAssertAtExit;
 
 	if (preTreat)
 		lmTraceSet(paTracelevels);

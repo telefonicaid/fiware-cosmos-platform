@@ -112,44 +112,58 @@ static void getApVals
 		break;
 
 	case PaInt:
-		sprintf(defVal,  "%ld", aP->def);
-		sprintf(minVal,  "%ld", aP->min);
-		sprintf(maxVal,  "%ld", aP->max);
-		sprintf(realVal, "%ld", *((long*) aP->varP));
+        sprintf(defVal,  "%d", (int) (aP->def & 0xFFFFFFFF));
+		sprintf(minVal,  "%d", (int) (aP->min & 0xFFFFFFFF));
+		sprintf(maxVal,  "%d", (int) (aP->max & 0xFFFFFFFF));
+		sprintf(realVal, "%d", *((int*) aP->varP));
+		break;
+
+    case PaInt64:
+		sprintf(defVal,  "%lld", aP->def);
+		sprintf(minVal,  "%lld", aP->min);
+		sprintf(maxVal,  "%lld", aP->max);
+		sprintf(realVal, "%lld", *((long long*) aP->varP));
 		break;
 
 	case PaIntU:
-		sprintf(defVal,  "%lu", aP->def);
-		sprintf(minVal,  "%lu", aP->min);
-		sprintf(maxVal,  "%lu", aP->max);
-		sprintf(realVal, "%lu", *((unsigned long*) aP->varP));
+		sprintf(defVal,  "%u", (int) (aP->def & 0xFFFFFFFF));
+		sprintf(minVal,  "%u", (int) (aP->min & 0xFFFFFFFF));
+		sprintf(maxVal,  "%u", (int) (aP->max & 0xFFFFFFFF));
+		sprintf(realVal, "%u", *((unsigned int*) aP->varP));
+		break;
+
+    case PaIntU64:
+		sprintf(defVal,  "%llu",  aP->def);
+		sprintf(minVal,  "%llu",  aP->min);
+		sprintf(maxVal,  "%llu",  aP->max);
+		sprintf(realVal, "%llu", *((unsigned long long*) aP->varP));
 		break;
 
 	case PaShort:
-		sprintf(defVal,  "%ld", aP->def & 0xFFFF);
-		sprintf(minVal,  "%ld", aP->min & 0xFFFF);
-		sprintf(maxVal,  "%ld", aP->max & 0xFFFF);
+		sprintf(defVal,  "%d", (short) (aP->def & 0xFFFF));
+		sprintf(minVal,  "%d", (short) (aP->min & 0xFFFF));
+		sprintf(maxVal,  "%d", (short) (aP->max & 0xFFFF));
 		sprintf(realVal, "%d", (*((short*) aP->varP) & 0xFFFF));
 		break;
 
 	case PaShortU:
-		sprintf(defVal,  "%lu", aP->def & 0xFFFF);
-		sprintf(minVal,  "%lu", aP->min & 0xFFFF);
-		sprintf(maxVal,  "%lu", aP->max & 0xFFFF);
+		sprintf(defVal,  "%u", (int) (aP->def & 0xFFFF));
+		sprintf(minVal,  "%u", (int) (aP->min & 0xFFFF));
+		sprintf(maxVal,  "%u", (int) (aP->max & 0xFFFF));
 		sprintf(realVal, "%u", (*((unsigned short*) aP->varP) & 0xFFFF));
 		break;
 
 	case PaChar:
-		sprintf(defVal,  "%ld", aP->def & 0xFF);
-		sprintf(minVal,  "%ld", aP->min & 0xFF);
-		sprintf(maxVal,  "%ld", aP->max & 0xFF);
+		sprintf(defVal,  "%d", (int) (aP->def & 0xFF));
+		sprintf(minVal,  "%d", (int) (aP->min & 0xFF));
+		sprintf(maxVal,  "%d", (int) (aP->max & 0xFF));
 		sprintf(realVal, "%d", (*((char*) aP->varP) & 0xFF));
 		break;
 
 	case PaCharU:
-		sprintf(defVal,  "%lu", aP->def & 0xFF);
-		sprintf(minVal,  "%lu", aP->min & 0xFF);
-		sprintf(maxVal,  "%lu", aP->max & 0xFF);
+		sprintf(defVal,  "%u", (int) (aP->def & 0xFF));
+		sprintf(minVal,  "%u", (int) (aP->min & 0xFF));
+		sprintf(maxVal,  "%u", (int) (aP->max & 0xFF));
 		sprintf(realVal, "%u", (*((unsigned char*) aP->varP) & 0xFF));
 		break;
 

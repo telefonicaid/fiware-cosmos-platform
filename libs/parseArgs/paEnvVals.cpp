@@ -113,6 +113,12 @@ int paEnvVals(PaArgument* paList)
 				LM_T(LmtPaEnvVal, ("got value %d for %s", *((int*) aP->varP), envVarName));
 				break;
 
+			case PaInt64:
+			case PaIntU64:
+				*((long long *) aP->varP) = baStoi(val);
+				LM_T(LmtPaEnvVal, ("got value %d for %s", *((int*) aP->varP), envVarName));
+				break;
+
 			case PaShort:
 			case PaShortU:
 				*((short*) (long) aP->varP) = baStoi(val);

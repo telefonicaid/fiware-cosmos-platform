@@ -67,16 +67,18 @@ static char* require(PaType type)
 {
 	switch(type)
 	{
-	case PaString:  return (char*) "a string";          break;
-	case PaInt:     return (char*) "an int";            break;
-	case PaIntU:    return (char*) "an unsigned int";   break;
-	case PaShort:   return (char*) "a short";           break;
-	case PaFloat:   return (char*) "a float";           break;
-	case PaDouble:  return (char*) "a double";          break;
-	case PaShortU:  return (char*) "an unsigned short"; break;
-	case PaChar:    return (char*) "a char";            break;
-	case PaCharU:   return (char*) "an unsigned char";  break;
-	default:        return (char*) "<yes, what?>";      break;
+	case PaString:  return (char*) "a string";                    break;
+	case PaInt:     return (char*) "an int";                      break;
+	case PaIntU:    return (char*) "an unsigned int";             break;
+	case PaInt64:   return (char*) "a 64-bit integer";            break;
+	case PaIntU64:  return (char*) "a 64-bit unsigned integer";   break;
+	case PaShort:   return (char*) "a short";                     break;
+	case PaFloat:   return (char*) "a float";                     break;
+	case PaDouble:  return (char*) "a double";                    break;
+	case PaShortU:  return (char*) "an unsigned short";           break;
+	case PaChar:    return (char*) "a char";                      break;
+	case PaCharU:   return (char*) "an unsigned char";            break;
+	default:        return (char*) "<yes, what?>";                break;
 	}
 }
 
@@ -439,6 +441,12 @@ int paOptionsParse(PaArgument* paList, char* argV[], int argC)
 		case PaIntU:
 			*((int*) aP->varP) = paGetVal(valueP, eP, o);
 			LM_T(LmtPaApVals, ("got value %d for %s", *((int*) aP->varP), aP->name)); 
+			break;
+
+		case PaInt64:
+		case PaIntU64:
+			*((long long*) aP->varP) = paGetVal(valueP, eP, o);
+			LM_T(LmtPaApVals, ("got value %ul for %s", *((long long*) aP->varP), aP->name)); 
 			break;
 
 		case PaChar:

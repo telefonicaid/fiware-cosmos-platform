@@ -535,6 +535,15 @@ int paConfig(const char* item, void* value)
 */
 int paConfigActions(bool preTreat)
 {
+    if (paVerbose5 == true)
+        paVerbose4 = true;
+    if (paVerbose4 == true)
+        paVerbose3 = true;
+    if (paVerbose3 == true)
+        paVerbose2 = true;
+    if (paVerbose2 == true)
+        paVerbose = true;
+
 	lmVerbose  = paVerbose;
 	lmVerbose2 = paVerbose2;
 	lmVerbose3 = paVerbose3;

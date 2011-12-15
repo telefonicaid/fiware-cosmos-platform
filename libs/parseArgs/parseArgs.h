@@ -125,6 +125,8 @@ typedef enum PaType
    PaCharU,        PaChU  = PaCharU,
    PaInt,
    PaIntU,
+   PaInt64,
+   PaIntU64,
    PaFloat,
    PaDouble,
    PaIList,
@@ -174,9 +176,9 @@ typedef struct PaArgument
 	const char*  envName;
 	PaType       type;
 	PaSort       sort;
-	long         def;
-	long         min;
-	long         max;
+	long long    def;
+	long long    min;
+	long long    max;
 	const char*  description;
 
 

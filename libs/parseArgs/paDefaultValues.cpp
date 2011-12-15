@@ -38,7 +38,7 @@ int paDefaultValues(PaArgument* paList)
 	paIterateInit();
 	while ((aP = paIterateNext(paList)) != NULL)
 	{
-		int*  defP;
+		long long*  defP;
 
 		if (aP->def == PaNoDef)
 			continue;
@@ -49,19 +49,21 @@ int paDefaultValues(PaArgument* paList)
 		else
 			LM_T(LmtPaDefVal, ("setting default value for '%s' (%s)", aP->name, (char*) aP->def));
 
-		defP = (int*) &aP->def;
+		defP = (long long*) &aP->def;
 
 		switch (aP->type)
 		{
-		case PaInt:     *((int*)       aP->varP) = *defP;                    break;
-		case PaIntU:    *((int*)       aP->varP) = *defP;                    break;
-		case PaChar:    *((char*)      aP->varP) = (char)      *defP;        break;
-		case PaCharU:   *((char*)      aP->varP) = (char)      *defP;        break;
-		case PaShort:   *((short*)     aP->varP) = (short)     *defP;        break;
-		case PaShortU:  *((short*)     aP->varP) = (short)     *defP;        break;
-		case PaBoolean: *((bool*)      aP->varP) = (bool)      *defP;        break;
-		case PaFloat:   *((float*)     aP->varP) = (float)     *defP;        break;
-		case PaDouble:  *((double*)    aP->varP) = (double)    *defP;        break;
+		case PaInt:     *((int*)               aP->varP) = *defP;                    break;
+		case PaIntU:    *((int*)               aP->varP) = *defP;                    break;
+		case PaInt64:   *((long int*)          aP->varP) = *defP;                    break;
+		case PaIntU64:  *((unsigned long int*) aP->varP) = *defP;                    break;
+		case PaChar:    *((char*)              aP->varP) = (char)      *defP;        break;
+		case PaCharU:   *((char*)              aP->varP) = (char)      *defP;        break;
+		case PaShort:   *((short*)             aP->varP) = (short)     *defP;        break;
+		case PaShortU:  *((short*)             aP->varP) = (short)     *defP;        break;
+		case PaBoolean: *((bool*)              aP->varP) = (bool)      *defP;        break;
+		case PaFloat:   *((float*)             aP->varP) = (float)     *defP;        break;
+		case PaDouble:  *((double*)            aP->varP) = (double)    *defP;        break;
 					   
 		case PaString:
 			if (aP->def)

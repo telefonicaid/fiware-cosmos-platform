@@ -10,20 +10,20 @@
 *
 * baStoi - string to integer
 */
-int baStoi(char* string)
+long long baStoi(char* string)
 {
 	if (strncmp(string, "0x", 2) == 0)
-		return strtoul(&string[2], NULL, 16);
+		return strtoull(&string[2], NULL, 16);
 	else if (strncmp(string, "H'", 2) == 0)
-		return strtoul(&string[2], NULL, 16);
+		return strtoull(&string[2], NULL, 16);
 	else if (strncmp(string, "H", 1) == 0)
-		return strtoul(&string[1], NULL, 16);
+		return strtoull(&string[1], NULL, 16);
 	else if (strncmp(string, "0", 1) == 0)
-		return strtoul(&string[1], NULL, 8);
+		return strtoull(&string[1], NULL, 8);
 	else if (strncmp(string, "B", 1) == 0)
-		return strtoul(&string[1], NULL, 2);
+		return strtoull(&string[1], NULL, 2);
 
-	return atoi(string);
+	return (long long) atoi(string);
 }
 
 

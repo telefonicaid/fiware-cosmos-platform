@@ -43,15 +43,17 @@ typedef enum PaWhat
 */
 typedef union PaTypeUnion
 {
-   char             c;
-   unsigned char   uc;
-   short            s;
-   unsigned short  us;
-   int              i;
-   unsigned int    ui;
-   char*           string;
-   unsigned char*  ustring;
-   bool            boolean;
+   char                c;
+   unsigned char       uc;
+   short               s;
+   unsigned short      us;
+   int                 i;
+   unsigned int        ui;
+   long long           l;
+   unsigned long long  ul;
+   char*               string;
+   unsigned char*      ustring;
+   bool                boolean;
 } PaTypeUnion;
 
 

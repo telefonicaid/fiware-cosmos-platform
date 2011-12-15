@@ -43,18 +43,20 @@ static char* getSpaces(int spaces, char* s)
 */
 static int limits(PaArgument* paList, PaArgument* aP, char* input)
 {
-	char            valS[80];
-	bool            upper = true;
-	bool            lower = true;
-	char            w[512];
-	int             iVal;
-	short           sVal;
-	char            cVal;
-	float           fVal;
-	double          dVal;
-	unsigned int    uiVal;
-	unsigned short  usVal;
-	unsigned char   ucVal;
+	char                valS[80];
+	bool                upper = true;
+	bool                lower = true;
+	char                w[512];
+	long long           i64Val;
+	int                 iVal;
+	short               sVal;
+	char                cVal;
+	float               fVal;
+	double              dVal;
+	unsigned long long  ui64Val;
+	unsigned int        uiVal;
+	unsigned short      usVal;
+	unsigned char       ucVal;
 
 	if ((aP->type == PaSList) || (aP->type == PaIList) || (aP->type == PaBoolean))
 		return 0;
@@ -81,15 +83,17 @@ static int limits(PaArgument* paList, PaArgument* aP, char* input)
 
 	LM_T(LmtPaLimits, ("limit check for %s", aP->name));
 
-	w[0] = 0;
-	iVal = *((int*)             aP->varP);
-	sVal = *((short*)           aP->varP);
-	cVal = *((char*)            aP->varP);
-	fVal = *((float*)           aP->varP);
-	dVal = *((double*)          aP->varP);
-	uiVal = *((unsigned int*)   aP->varP);
-	usVal = *((unsigned short*) aP->varP);
-	ucVal = *((unsigned char*)  aP->varP);
+	w[0]    = 0;
+	i64Val  = *((long long*)            aP->varP);
+	iVal    = *((int*)                  aP->varP);
+	sVal    = *((short*)                aP->varP);
+	cVal    = *((char*)                 aP->varP);
+	fVal    = *((float*)                aP->varP);
+	dVal    = *((double*)               aP->varP);
+	uiVal   = *((unsigned int*)         aP->varP);
+	ui64Val = *((unsigned long long*)   aP->varP);
+	usVal   = *((unsigned short*)       aP->varP);
+	ucVal   = *((unsigned char*)        aP->varP);
 	
 	switch (aP->type)
 	{
@@ -122,10 +126,10 @@ static int limits(PaArgument* paList, PaArgument* aP, char* input)
 		||  (upper && (iVal > (int) aP->max)))
 		{
 			sprintf(valS, "%d", iVal);
-			sprintf(w, "%ld <= %d <= %ld (%s)",
-					aP->min,
-					iVal,
-					aP->max,
+			sprintf(w, "%d <= %d <= %d (%s)",
+                    (int) aP->min,
+					(int) iVal,
+					(int) aP->max,
 					aP->option? paFrom(paList, (char*) aP->option) : "parameter");
 		}
 		break;
@@ -137,9 +141,39 @@ static int limits(PaArgument* paList, PaArgument* aP, char* input)
 		||  (upper && (uiVal > (unsigned int) aP->max)))
 		{
 			sprintf(valS, "%u", uiVal);
-			sprintf(w, "%lu <= %u <= %lu (%s)",
+			sprintf(w, "%u <= %u <= %u (%s)",
+					(int) aP->min,
+					(int) uiVal,
+					(int) aP->max,
+					aP->option? paFrom(paList, (char*) aP->option) : "parameter");
+		}
+		break;
+		
+	case PaInt64:
+		LM_T(LmtPaLimits, ("checking '%s' (value %lld): limits '%d' - '%d'",
+						   aP->name, i64Val, aP->min, aP->max));
+		if ((lower && (i64Val < aP->min))
+		||  (upper && (i64Val > aP->max)))
+		{
+			sprintf(valS, "%lld", i64Val);
+			sprintf(w, "%lld <= %lld <= %lld (%s)",
 					aP->min,
-					uiVal,
+					i64Val,
+					aP->max,
+					aP->option? paFrom(paList, (char*) aP->option) : "parameter");
+		}
+		break;
+		
+	case PaIntU64:
+		LM_T(LmtPaLimits, ("checking '%s' (value %llu): limits '%d' - '%d'",
+						   aP->name, ui64Val, aP->min, aP->max));
+		if ((lower && (uiVal < (unsigned long long) aP->min))
+		||  (upper && (uiVal > (unsigned long long) aP->max)))
+		{
+			sprintf(valS, "%llu", ui64Val);
+			sprintf(w, "%llu <= %llu <= %llu (%s)",
+					aP->min,
+					ui64Val,
 					aP->max,
 					aP->option? paFrom(paList, (char*) aP->option) : "parameter");
 		}
@@ -152,10 +186,10 @@ static int limits(PaArgument* paList, PaArgument* aP, char* input)
 		||  (upper && (sVal > (short) aP->max)))
 		{
 			sprintf(valS, "%d", sVal);
-			sprintf(w, "%ld <= %d <= %ld (%s)",
-					aP->min,
+			sprintf(w, "%d <= %d <= %d (%s)",
+					(short) aP->min,
 					sVal,
-					aP->max,
+					(short) aP->max,
 					aP->option? paFrom(paList, (char*) aP->option) : "parameter");
 		}
 		break;
@@ -167,10 +201,10 @@ static int limits(PaArgument* paList, PaArgument* aP, char* input)
 		||  (upper && (usVal > (unsigned short) aP->max)))
 		{
 			sprintf(valS, "%u", usVal);
-			sprintf(w, "%lu <= %u <= %lu (%s)",
-					aP->min,
+			sprintf(w, "%u <= %u <= %u (%s)",
+					(short) aP->min,
 					usVal,
-					aP->max,
+					(short) aP->max,
 					aP->option? paFrom(paList, (char*) aP->option) : "parameter");
 		}
 		break;
@@ -182,10 +216,10 @@ static int limits(PaArgument* paList, PaArgument* aP, char* input)
 		||  (upper && (cVal > (char) aP->max)))
 		{
 			sprintf(valS, "%d", cVal);
-			sprintf(w, "%ld <= %d <= %ld (%s)",
-					aP->min,
+			sprintf(w, "%d <= %d <= %d (%s)",
+					(char) aP->min,
 					cVal,
-					aP->max,
+					(char) aP->max,
 					aP->option? paFrom(paList, (char*) aP->option) : "parameter");
 		}
 		break;
@@ -197,10 +231,10 @@ static int limits(PaArgument* paList, PaArgument* aP, char* input)
 		||  (upper && (ucVal > (unsigned char) aP->max)))
 		{
 			sprintf(valS, "%u", ucVal);
-			sprintf(w, "%lu <= %u <= %lu (%s)",
-					aP->min,
+			sprintf(w, "%u <= %u <= %u (%s)",
+					(char) aP->min,
 					ucVal,
-					aP->max,
+					(char) aP->max,
 					aP->option? paFrom(paList, (char*) aP->option) : "parameter");
 		}
 		break;
@@ -212,10 +246,10 @@ static int limits(PaArgument* paList, PaArgument* aP, char* input)
 		||  (upper && (fVal > (float) aP->max)))
 		{
 			sprintf(valS, "%f", fVal);
-			sprintf(w, "%ld.0 <= %f <= %ld.0 (%s)",
-				aP->min,
-				fVal,
-				aP->max,
+			sprintf(w, "%f <= %f <= %f (%s)",
+                    (float) aP->min,
+                    fVal,
+                    (float) aP->max,
 					aP->option? paFrom(paList, (char*) aP->option) : "parameter");
 		}
 		break;
@@ -227,10 +261,10 @@ static int limits(PaArgument* paList, PaArgument* aP, char* input)
 		||  (upper && (dVal > (double) aP->max)))
 		{
 			sprintf(valS, "%f", dVal);
-			sprintf(w, "%ld.0 <= %f <= %ld.0 (%s)",
-					aP->min,
+			sprintf(w, "%f <= %f <= %f (%s)",
+					(double) aP->min,
 					dVal,
-					aP->max,
+					(double) aP->max,
 					aP->option? paFrom(paList, (char*) aP->option) : "parameter");
 		}
 		break;

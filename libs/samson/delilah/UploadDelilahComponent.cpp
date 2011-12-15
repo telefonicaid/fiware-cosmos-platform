@@ -76,6 +76,9 @@ namespace samson
 	
 	void* runThreadDelilahLoadDataProcess(void *p)
 	{
+        // Free resources automatically when this thread finish
+        pthread_detach(pthread_self());
+        
 		DelilahUploadComponent *d = ((DelilahUploadComponent*)p);
 		d->_run();
 		return NULL;
@@ -217,6 +220,9 @@ namespace samson
 	
 	void* processUploadPacketData( void *p )
 	{
+        // Free resources automatically when this thread finish
+        pthread_detach(pthread_self());
+        
 		UploadPacketData * pd = (UploadPacketData*)p;
 		
 		size_t original_size = pd->p->buffer->getSize();

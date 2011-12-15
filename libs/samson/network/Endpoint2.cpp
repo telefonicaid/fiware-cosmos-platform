@@ -55,6 +55,9 @@ namespace samson
 */
 void* readerThread(void* vP)
 {
+    // Free resources automatically when this thread finish
+    pthread_detach(pthread_self());
+    
 	Endpoint2* ep = (Endpoint2*) vP;
 
 	LM_T(LmtThreads, ("Reader thread 0x%x for endpoint %s is running", pthread_self(), ep->name()));
@@ -77,6 +80,9 @@ void* readerThread(void* vP)
  */
     void* writerThread(void* vP)
     {
+        // Free resources automatically when this thread finish
+        pthread_detach(pthread_self());
+        
         Endpoint2* ep = (Endpoint2*) vP;
         
         

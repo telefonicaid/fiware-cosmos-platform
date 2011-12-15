@@ -6,6 +6,9 @@ namespace samson
 {
 	void* runNetworkFakeCenter(void*p)
 	{
+        // Free resources automatically when this thread finish
+        pthread_detach(pthread_self());
+        
 		((NetworkFakeCenter*)p)->run();		
 		return NULL;
 	}

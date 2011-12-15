@@ -14,6 +14,8 @@ NAMESPACE_BEGIN(engine)
 
 void* runProcessItem( void* p )
 {
+    // Free resources automatically when this thread finish
+    pthread_detach(pthread_self());
     
     ProcessItem* processItem = (ProcessItem*) p;
     
@@ -132,12 +134,9 @@ void ProcessItem::runInBackground()
     au::ExecesiveTimeAlarm alarm("ProcessItem::runInBackground");
 
     // Create the thread as joinable to make sure we control when threads finish
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
     
-    pthread_create(&t, &attr, runProcessItem, this);
-    pthread_attr_destroy( &attr );
+    pthread_create(&t, NULL, runProcessItem, this);
+
     
 }
 

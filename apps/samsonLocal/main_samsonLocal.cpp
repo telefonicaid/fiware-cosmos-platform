@@ -82,6 +82,9 @@ int logFd = -1;
 
 void *run_DelilahConsole(void* d)
 {
+    // Free resources automatically when this thread finish
+    pthread_detach(pthread_self());
+    
 	samson::DelilahConsole* delilahConsole = (samson::DelilahConsole*) d;
 	delilahConsole->run();
 

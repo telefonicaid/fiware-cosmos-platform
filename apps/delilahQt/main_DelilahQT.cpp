@@ -119,21 +119,23 @@ void init( int argC, char *argV[] )
     
 }
 
-
-
 void* run_thread_update(void*)
 {
-   while( true )
-   {
-	  // Update main tree with information every second in background	  
-	  if( delilahConnection->isReady() )
-		 replaceMainTreeItem( delilahConnection->delilah->getTreeItem( ) );
-
-	  sleep(1);
-   }
-
-   return NULL;
-
+    
+    // Free resources automatically when this thread finish
+    pthread_detach(pthread_self());
+    
+    while( true )
+    {
+        // Update main tree with information every second in background	  
+        if( delilahConnection->isReady() )
+            replaceMainTreeItem( delilahConnection->delilah->getTreeItem( ) );
+        
+        sleep(1);
+    }
+    
+    return NULL;
+    
 }
 
 int main(int argc, char *argv[])

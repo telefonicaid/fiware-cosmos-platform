@@ -141,6 +141,9 @@ void process_command( std::string line )
 
 void* process_income_blocks(void*)
 {
+    // Free resources automatically when this thread finish
+    pthread_detach(pthread_self());
+    
     while( true )
     {
         char line[100000];

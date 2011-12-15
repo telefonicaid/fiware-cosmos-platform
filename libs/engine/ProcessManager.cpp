@@ -35,6 +35,9 @@ void ProcessManager::init( int _num_processes)
 
 void* run_check_background_processes(void *p)
 {
+    // Free resources automatically when this thread finish
+    pthread_detach(pthread_self());
+    
     ProcessManager* pm = (ProcessManager*) p;
     pm->check_background_processes();
     return  NULL;

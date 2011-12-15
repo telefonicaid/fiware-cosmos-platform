@@ -10,6 +10,8 @@ NAMESPACE_BEGIN(engine)
 
 void* diskOperationRunInBackGround(void * _diskOperation)
 {
+    // Free resources automatically when this thread finish
+    pthread_detach(pthread_self());
     
     DiskOperation *diskOperation = (DiskOperation*) _diskOperation;
     diskOperation->run();

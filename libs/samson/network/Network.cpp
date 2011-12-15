@@ -812,6 +812,9 @@ std::vector<Endpoint*> Network::samsonEndpoints(Endpoint::Type type)
 */
 static void* senderThread(void* vP)
 {
+    // Free resources automatically when this thread finish
+    pthread_detach(pthread_self());
+    
 	Endpoint* ep    = (Endpoint*) vP;
 	
 	LM_T(LmtSenderThread, ("Sender Thread for '%s' running - wFd: %d (reading from fd %d) (process id: %d)", ep->name.c_str(), ep->wFd, ep->senderReadFd, (int) getpid()));
@@ -1791,6 +1794,9 @@ typedef struct MsgTreatParams
 */
 static void* msgTreatThreadFunction(void* vP)
 {
+    // Free resources automatically when this thread finish
+    pthread_detach(pthread_self());    
+    
 	MsgTreatParams*  paramP = (MsgTreatParams*) vP;
 	Endpoint*        ep     = paramP->ep;
 

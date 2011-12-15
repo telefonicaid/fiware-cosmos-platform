@@ -42,6 +42,9 @@ namespace samson
 	// Function to run by the backgroudn thread
 	void* run_ProcessItemIsolated( void* p )
 	{
+        // Free resources automatically when this thread finish
+        pthread_detach(pthread_self());
+        
 		ProcessItemIsolated* tmp = (ProcessItemIsolated*)p;
 		tmp->runBackgroundProcessRun();
 		return NULL;

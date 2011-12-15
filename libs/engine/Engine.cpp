@@ -37,6 +37,9 @@ Engine *engine = NULL;
 
 void* runEngineBakground(void* e )
 {
+    // Free resources automatically when this thread finish
+    pthread_detach(pthread_self());    
+    
     engine->run();
     return NULL;
 }

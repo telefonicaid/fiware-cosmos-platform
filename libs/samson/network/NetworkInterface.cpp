@@ -32,6 +32,9 @@ namespace samson
 */
 void* run_network_interface_background_thread(void* p)
 {
+    // Free resources automatically when this thread finish
+    pthread_detach(pthread_self());
+    
 	((NetworkInterface*) p)->run();
 	return NULL;
 }

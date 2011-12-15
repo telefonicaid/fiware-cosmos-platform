@@ -216,7 +216,7 @@ double Rate::transformRate( double value )
 
 double Rate::correctedRate( double value )
 {
-    double time_diff = cronometer.diffTimeAndReset(); 
+    double time_diff = cronometer.diffTime(); 
     
     value = value * pow( factor  , time_diff );
     return value;

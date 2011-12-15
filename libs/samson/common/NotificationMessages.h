@@ -21,9 +21,6 @@
 #define notification_review_stream_manager_fast           "notification_review_stream_manager_fast"
 #define notification_review_stream_manager_save_state     "notification_review_stream_manager_save_state"
 
-// Notification to review timeout in SamsonPushBuffer
-
-#define notification_review_timeOut_SamsonPushBuffer        "notification_review_timeOut_SamsonPushBuffer"
 
 // Notification that a network element has been disconnected
 #define notification_network_diconnected                    "notification_network_diconnected"

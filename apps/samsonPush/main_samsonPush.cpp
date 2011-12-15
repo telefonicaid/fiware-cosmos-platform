@@ -28,7 +28,6 @@
 
 
 size_t buffer_size;
-size_t timeOut;
 char breaker_sequence[1024];
 char controller[1024];
 char queue_name[1024];
@@ -46,14 +45,13 @@ int default_buffer_size = 64*1024*1024 - sizeof(samson::KVHeader);
 
 PaArgument paArgs[] =
 {
-	{ "-controller",  controller,            "",  PaString,  PaOpt, _i "localhost",                PaNL,        PaNL,  "controller IP:port"                         },
-	{ "-timeout",     &timeOut,              "",  PaInt,     PaOpt,              0,                    0,       10000,  "Timeout to deliver a block to the platform" },
-	{ "-buffer_size", &buffer_size,          "",  PaInt,     PaOpt,       default_buffer_size,         1,   128000000,  "Buffer size in bytes"                       },
-	{ "-mr",          &max_rate,             "",  PaInt,     PaOpt,       10000000,      100,  100000000,  "Max rate in bytes/s"                  },
-	{ "-breaker_sequence", breaker_sequence, "",  PaString,  PaOpt,        _i "\n",   PaNL,         PaNL,  "Breaker sequence ( by default \\n )"        },
-	{ "-lines",       &lines,                "",  PaBool,    PaOpt,          false,  false,         true,  "Read std-in line by line"                   },
+	{ "-controller",  controller,            "",  PaString,  PaOpt, _i "localhost",                PaNL,        PaNL,  "controller IP:port"                 },
+	{ "-buffer_size", &buffer_size,          "",  PaInt,     PaOpt,       default_buffer_size,         1,   default_buffer_size,  "Buffer size in bytes"    },
+	{ "-mr",          &max_rate,             "",  PaInt,     PaOpt,       10000000,      100,  100000000,  "Max rate in bytes/s"                            },
+	{ "-breaker_sequence", breaker_sequence, "",  PaString,  PaOpt,        _i "\n",   PaNL,         PaNL,  "Breaker sequence ( by default \\n )"            },
+	{ "-lines",       &lines,                "",  PaBool,    PaOpt,          false,  false,         true,  "Read std-in line by line"                       },
 	{ "-memory",      &push_memory,          "",  PaInt,     PaOpt,           1000,      1,      1000000,  "Memory in Mb used to push data ( default 1000)" },
-	{ " ",            queue_name,            "",  PaString,  PaReq,      _i "null",   PaNL,         PaNL,  "name of the queue to push data"             },
+	{ " ",            queue_name,            "",  PaString,  PaReq,      _i "null",   PaNL,         PaNL,  "name of the queue to push data"                 },
 	PA_END_OF_ARGS
 };
 
@@ -132,7 +130,7 @@ int main( int argC , const char *argV[] )
     }
 
     // Create the push buffer to send data to a queue in buffer-mode
-    samson::SamsonPushBuffer *pushBuffer = new samson::SamsonPushBuffer( &client , queue_name , timeOut );
+    samson::SamsonPushBuffer *pushBuffer = new samson::SamsonPushBuffer( &client , queue_name );
 
     LM_V(("Conection to %s OK" , controller));
     
@@ -154,7 +152,6 @@ int main( int argC , const char *argV[] )
     literal_string( tmp_separator );
 
     LM_V(("Input parameter buffer_size %s" , au::str(buffer_size).c_str() ));
-    LM_V(("Input parameter timeout %s " , au::time_string( timeOut ).c_str() ));
     LM_V(("Input parameter break_sequence '%s' ( length %d ) " , tmp_separator.c_str() , strlen(breaker_sequence) ));
 
     // Statistics about stdin rate ( it also controls max rate )
@@ -228,8 +225,8 @@ int main( int argC , const char *argV[] )
         
         //LM_M(("Processing buffer with %s --> %s block push to queue" , au::str(size).c_str() , au::str(output_size).c_str() ));
         
-        // Emit this block of data
-        pushBuffer->push(data, output_size );
+        // Emit this block of data ( always flushing to the platform )
+        pushBuffer->push(data, output_size, true );
 
         // -----------------------------------------------------------------
 

@@ -48,29 +48,28 @@ namespace  samson {
      Class used to push data to a txt queue in buffer mode
      */
      
-    class SamsonPushBuffer : public engine::Object
+    class SamsonPushBuffer
     {
         
         SamsonClient *client;
         std::string queue;
-        
+
+        // Buffer
         char *buffer;
         size_t max_buffer_size;
         
         size_t size;    // Current size of the buffer
-        int timeOut;    // Timeout in seconds to flush content to the queue
         
-        au::Cronometer cronometer; // Time since the last flush
         au::Token token;
     
     public:
         
         au::rate::Rate rate; // Statistics about rate
         
-        SamsonPushBuffer( SamsonClient *client , std::string queue , int timeOut );
+        SamsonPushBuffer( SamsonClient *client , std::string queue );
         ~SamsonPushBuffer();
 
-        void push( const char *data , size_t length );
+        void push( const char *data , size_t length , bool flushing );
         void flush();
 
         // Recevie notifications

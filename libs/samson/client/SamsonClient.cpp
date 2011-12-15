@@ -46,22 +46,18 @@
 namespace samson {
 
     
-    SamsonPushBuffer::SamsonPushBuffer( SamsonClient *_client , std::string _queue , int _timeOut  ) : token("SamsonPushBuffer")
+    SamsonPushBuffer::SamsonPushBuffer( SamsonClient *_client , std::string _queue  ) : token("SamsonPushBuffer")
     {
         // Client and queue name to push data to
         client = _client;
         queue = _queue;
 
-        // Init timeout to check
-        timeOut =  _timeOut;
         
         // Init the simple buffer
         max_buffer_size = 64*1024*1024 - sizeof(KVHeader) ; // Perfect size for this ;)
         buffer = (char*) malloc( max_buffer_size );
         size = 0;
         
-        // Received notification about this
-        listen( notification_review_timeOut_SamsonPushBuffer );
         
     }
     
@@ -71,7 +67,7 @@ namespace samson {
             free(buffer);
     }
 
-    void SamsonPushBuffer::push( const char *data , size_t length )
+    void SamsonPushBuffer::push( const char *data , size_t length , bool flushing )
     {
         // Mutex protection
         au::TokenTaker tt(&token);
@@ -79,19 +75,11 @@ namespace samson {
         // Statistics
         rate.push( length );
         
-        // If this is the first time we push data, just reset the cronometert to zero
-        if ( size == 0)
-            cronometer.reset();
-        
-        
         if( (size + length ) > max_buffer_size )
         {
-            
+            // Push to the client
             client->push(  queue , buffer, size );
 
-            // Reset cronometer
-            cronometer.reset();
-            
             // Come back to "0"
             size = 0;
         }
@@ -103,6 +91,9 @@ namespace samson {
             size += length;
 
         }
+        
+        if( flushing )
+            _flush();
     }
 
     void SamsonPushBuffer::flush()
@@ -124,19 +115,6 @@ namespace samson {
            
         }
     }
-
-    
-    void SamsonPushBuffer::notify( engine::Notification* notification )
-    {
-        au::TokenTaker tt(&token);
-        
-        // We only expect notification about reviwing timeout
-        if( timeOut > 0 )
-            if( ( size > 0 ) && ( cronometer.diffTimeInSeconds() > timeOut ) )
-                _flush();
-        
-    }
-    
 
     
 #pragma mark
@@ -236,10 +214,6 @@ namespace samson {
         
         // Set the funciton to process live stream data
         delilah->op_delilah_process_stream_out_queue = delialh_client_delilah_process_stream_out_queue;
-        
-        // Periodic notification to review timeout
-        engine::Notification *notification = new engine::Notification( notification_review_timeOut_SamsonPushBuffer  );
-        engine::Engine::shared()->notify( notification , 1);
         
         return true;
         

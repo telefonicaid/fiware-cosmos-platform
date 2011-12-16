@@ -8,21 +8,6 @@
 NAMESPACE_BEGIN(engine)
 
 
-void* diskOperationRunInBackGround(void * _diskOperation)
-{
-    // Free resources automatically when this thread finish
-    pthread_detach(pthread_self());
-    
-    DiskOperation *diskOperation = (DiskOperation*) _diskOperation;
-    diskOperation->run();
-    
-    return NULL;
-}
-
-#pragma mark ----
-
-
-
 DiskOperation::DiskOperation( )
 {
     // Some default values
@@ -226,19 +211,11 @@ void DiskOperation::setError( std::string message )
 }
 
 
-
-void DiskOperation::runInBackGround()
-{
-    pthread_create(&t, 0, diskOperationRunInBackGround, this);
-}
-
-
 void DiskOperation::run(  )
 {
     // Detect some slow disk access if rate is going bellow 10Mb/s in large operations
-    double alarm_time_secs = std::max(  (double) size / 10000000.0 , 5.0 );
-
-    au::ExecesiveTimeAlarm alarm( au::str("Disk Operation '%s;",getDescription().c_str() , alarm_time_secs ) );
+    //double alarm_time_secs = std::max(  (double) size / 10000000.0 , 5.0 );
+    //au::ExecesiveTimeAlarm alarm( au::str("Disk Operation '%s;",getDescription().c_str() , alarm_time_secs ) );
     
     LM_T( LmtDisk , ("DiskManager: Running operation %s", getDescription().c_str() ));
     

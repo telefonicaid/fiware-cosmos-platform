@@ -53,7 +53,10 @@ class DiskManager : engine::EngineService
     
     // Disk Operations
     au::Token token;
+
+    bool quitting;                                  // Flag to indicate background processes to quit
     int num_disk_operations;						// Number of paralell disk operations allowed
+    int num_disk_manager_workers;
     
     au::list<DiskOperation> pending_operations;		// List of pending operations
     std::set<DiskOperation*> running_operations;	// Running operations
@@ -72,10 +75,11 @@ public:
     void add( DiskOperation *operation );				// Add a disk operation to be executed in the background
     void cancel( DiskOperation *operation );			// Add a disk operation to be executed in the background
     
-private:
-    
-    void _checkDiskOperations();                         // Check if we can run more disk operations
-                                                         //void quit();                                         // Remove pending operations and wait for the running ones
+public:
+
+    // Main function for the background worker
+    // It is public only to be called form the thread-creation function
+    void run_worker();  
     
 public:
     
@@ -85,6 +89,8 @@ public:
     void getInfo( std::ostringstream& output);
     
     void setNumOperations( int _num_disk_operations );
+
+    void quitEngineService();
     
 private:
     
@@ -93,7 +99,15 @@ private:
     
     // Auxiliar function usedto insert new disk operations in place
     au::list<DiskOperation>::iterator _find_pos( DiskOperation *diskOperation );
+
+    // Auxiliar function to get the next operation ( NULL if no more disk operations )
+    DiskOperation * getNextDiskOperation();
     
+    void add_worker( );
+    bool check_quit_worker(  );
+    
+    int get_num_disk_manager_workers();
+    void createThreads();
     
 };
 

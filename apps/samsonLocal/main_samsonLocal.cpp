@@ -119,7 +119,7 @@ void deleteNetworkCenter()
 int main(int argC, const char *argV[])
 {
 	paConfig("usage and exit on any warning", (void*) true);
-	paConfig("log to screen",                 (void*) "only errors");
+	paConfig("log to screen",                 (void*) false);
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] (p.PID) FUNC: TEXT");
 	paConfig("screen line format",            (void*) "TYPE: TEXT");
 	paConfig("log to file",                   (void*) true);

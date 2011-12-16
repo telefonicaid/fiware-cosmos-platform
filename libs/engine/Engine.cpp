@@ -132,7 +132,7 @@ void Engine::run()
         
         if( engine_cronometer.diffTime() > 5.0 )
         {
-            LM_M(("Engine alive..."));
+            //LM_M(("Engine alive..."));
             engine_cronometer.reset();
         }
         

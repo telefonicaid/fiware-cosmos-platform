@@ -127,10 +127,7 @@ public:
     
 public:
     
-    // Run the operation in background and notify finish or error using Engine
-    void runInBackGround();
-    
-    // Run the operation ( only executed from the backgroudn thread )
+    // Run the operation
     void run();			
     
 private:

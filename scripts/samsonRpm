@@ -69,7 +69,7 @@ echo "License:   commercial"                                 >> $BUILD_ROOT/rpm/
 echo "Group:     Applications/Engineering"                   >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "Source:    http://www.tid.es/samson-$version.tar.gz"   >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "BuildRoot: /var/tmp/%{name}-buildroot"                 >> $BUILD_ROOT/rpm/SPECS/$specfile
-echo "Requires: protobuf, ntp,tid-mongodb"                   >> $BUILD_ROOT/rpm/SPECS/$specfile 
+echo "Requires: protobuf, ntp,tid-mongodb, kdchart"          >> $BUILD_ROOT/rpm/SPECS/$specfile 
 echo "Requires(pre): shadow-utils"                           >> $BUILD_ROOT/rpm/SPECS/$specfile 
 echo                                                         >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%description"                                          >> $BUILD_ROOT/rpm/SPECS/$specfile
@@ -161,6 +161,9 @@ cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonSetup/samsonSetup               $PACKAGE
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonSpawner/samsonSpawner           $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonWorker/samsonWorker             $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonKiller/samsonKiller             $PACKAGE_DIR/opt/samson/bin
+cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonStarter/samsonStarter           $PACKAGE_DIR/opt/samson/bin
+cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonLevelMonitor/samsonLevelMonitor $PACKAGE_DIR/opt/samson/bin
+cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonTopicMonitor/samsonTopicMonitor $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/BUILD_RELEASE/apps/delilah/delilah                       $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/scripts/samsonProcessesSupervise		                    $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/scripts/samsonInitSetup                                  $PACKAGE_DIR/opt/samson/bin

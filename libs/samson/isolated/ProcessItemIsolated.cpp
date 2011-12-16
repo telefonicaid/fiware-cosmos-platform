@@ -268,15 +268,15 @@ namespace samson
         if( isProcessItemCanceled() )
         {
             error.set( "ProcessItem canceled");
-	    LM_W(("ProcessItem canceled, operation:%d",  message->operation() ));
+            LM_W(("ProcessItem canceled, operation:%d",  message->operation() ));
             
             // Send a kill message and finish
             samson::network::MessagePlatformProcess * response = new samson::network::MessagePlatformProcess();
             response->set_code( samson::network::MessagePlatformProcess_Code_code_kill );
             if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
-	    {
-		    LM_E(("Error sending cancel response, code(%d),  (pipeFdPair2[1]:%d) ",  response->code(), pipeFdPair2[1]));
-	    }
+            {
+                LM_E(("Error sending cancel response, code(%d),  (pipeFdPair2[1]:%d) ",  response->code(), pipeFdPair2[1]));
+            }
             delete response;
             
             // Finish since it has been canceled
@@ -298,16 +298,16 @@ namespace samson
                 runCode( operation );
                 
                 LM_T( LmtIsolated , ("Isolated process %s: runCode() returned from operation %d, preparing to send continue to pipeFdPair2[1]:%d",getStatus().c_str() , operation, pipeFdPair2[1] ));
-
+                
                 // Send the continue
                 samson::network::MessagePlatformProcess * response = new samson::network::MessagePlatformProcess();
                 LM_T( LmtIsolated , ("Isolated process %s: response created ", getStatus().c_str()));
                 response->set_code( samson::network::MessagePlatformProcess_Code_code_ok );
                 LM_T( LmtIsolated , ("Isolated process %s: send the continue on pipeFdPair2[1]:%d ",getStatus().c_str() , pipeFdPair2[1] ));
                 if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
-		{
-		    LM_E(("Error sending message to run operation(%d), code(%d),  (pipeFdPair2[1]:%d) ",  operation, response->code(), pipeFdPair2[1]));
-		}
+                {
+                    LM_E(("Error sending message to run operation(%d), code(%d),  (pipeFdPair2[1]:%d) ",  operation, response->code(), pipeFdPair2[1]));
+                }
                 delete response;
                 
                 // Not finish the process
@@ -478,11 +478,11 @@ namespace samson
 
             if( message->code() != samson::network::MessageProcessPlatform_Code_code_begin )
             {
-                delete message;
+                error.set( au::str( "Problems starting background process since received code is not the expected 'protocol begin'" ));
                 return;
             }
-            else
-                delete message;
+
+            delete message;
         
             // Close the unnecessary pipes
             if( !isolated_process_as_tread )
@@ -498,12 +498,14 @@ namespace samson
                 samson::network::MessagePlatformProcess * response = new samson::network::MessagePlatformProcess();
                 response->set_code( samson::network::MessagePlatformProcess_Code_code_ok );
                 if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
-		{
-		    LM_E(("Error sending exchange message, code(%d),  (pipeFdPair2[1]:%d) ",  response->code(), pipeFdPair2[1]));
-		}
+                {
+                    LM_E(("Error sending exchange message, code(%d),  (pipeFdPair2[1]:%d) ",  response->code(), pipeFdPair2[1]));
+                    error.set( au::str( "Error in protocol between platform and background process (answering begin)" ));
+                    return;
+                }
                 delete response;
             }
-                
+            
             
         }
         

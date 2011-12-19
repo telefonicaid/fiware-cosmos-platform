@@ -158,6 +158,15 @@
             </plugin>
 
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-eclipse-plugin</artifactId>
+                <version>2.8</version>
+                <configuration>
+                    <downloadSources>true</downloadSources>
+                    <downloadJavadocs>false</downloadJavadocs>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <repositories>
@@ -168,12 +177,20 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-
-  <repository>
-    <id>thirdparty</id>
-    <url>http://ps2-ci/nexus/content/repositories/thirdparty</url>
-  </repository>
-
+        <repository>
+            <id>google-maven-repository</id>
+            <name>Google Maven Repository</name>
+            <url>http://google-maven-repository.googlecode.com/svn/repository/</url>
+        </repository>
+        <repository>
+            <id>thirdparty</id>
+            <url>http://ps2-ci/nexus/content/repositories/thirdparty</url>
+        </repository>
+        <repository>
+            <id>releases</id>
+            <name>Releases</name>
+            <url>https://oss.sonatype.org/content/repositories/releases</url>
+        </repository>
     </repositories>
     <developers>
         <developer>
@@ -229,38 +246,28 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
-            <version>${org.apache.hadoop}</version>
+            <version>${org.apache.hadoop}-cdh3u2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hadoop.compression</groupId>
+            <artifactId>hadoop-gpl-compression</artifactId>
+            <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-mrunit</artifactId>
             <version>${org.apache.hadoop}-cdh3u0</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.hadoop.hive</groupId>
-            <artifactId>hive-jdbc</artifactId>
-            <version>${org.apache.hadoop.hive}-cdh3u1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hadoop.hive</groupId>
-            <artifactId>hive-exec</artifactId>
-            <version>${org.apache.hadoop.hive}-cdh3u1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hadoop.hive</groupId>
-            <artifactId>hive-metastore</artifactId>
-            <version>${org.apache.hadoop.hive}-cdh3u1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hadoop.hive</groupId>
-            <artifactId>hive-service</artifactId>
-            <version>${org.apache.hadoop.hive}-cdh3u1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hadoop.hive</groupId>
-            <artifactId>hive-serde</artifactId>
-            <version>${org.apache.hadoop.hive}-cdh3u1</version>
-        </dependency>
+        <!-- <dependency> <groupId>org.apache.hadoop.hive</groupId> <artifactId>hive-jdbc</artifactId> 
+            <version>${org.apache.hadoop.hive}-cdh3u1</version> </dependency> <dependency> 
+            <groupId>org.apache.hadoop.hive</groupId> <artifactId>hive-exec</artifactId> 
+            <version>${org.apache.hadoop.hive}-cdh3u1</version> </dependency> <dependency> 
+            <groupId>org.apache.hadoop.hive</groupId> <artifactId>hive-metastore</artifactId> 
+            <version>${org.apache.hadoop.hive}-cdh3u1</version> </dependency> <dependency> 
+            <groupId>org.apache.hadoop.hive</groupId> <artifactId>hive-service</artifactId> 
+            <version>${org.apache.hadoop.hive}-cdh3u1</version> </dependency> <dependency> 
+            <groupId>org.apache.hadoop.hive</groupId> <artifactId>hive-serde</artifactId> 
+            <version>${org.apache.hadoop.hive}-cdh3u1</version> </dependency> -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -287,6 +294,7 @@
 
     <!-- Pendiente de la maquina de integración -->
     <distributionManagement>
+
         <!-- Repositorio para hacer el deploy de las releases -->
 
         <repository>
@@ -310,6 +318,7 @@
 
     <modules>
         <module>kpicalculation</module>
+
     </modules>
 
     <properties>

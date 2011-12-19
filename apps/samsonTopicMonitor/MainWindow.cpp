@@ -22,10 +22,6 @@
 
 extern samson::SamsonClient samson_client;
 
-
-extern au::map<std::string , au::ContinuousValueCollection<double> > value_collections;
-extern au::Token token_value_collections;
-
 extern char title[1024];
 extern char concept[1024];
 

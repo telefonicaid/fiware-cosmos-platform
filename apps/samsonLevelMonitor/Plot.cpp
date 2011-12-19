@@ -9,7 +9,7 @@
 #include <KDChartPosition>
 #include <KDChartLegend>
 
-Plot::Plot( QGroupBox *_box )
+Plot::Plot( QGroupBox *_box , const char* x_title ,  const char* y_title )
 {
    // Keep a pointer to the group ( change the title in the future )
 	box = _box;
@@ -33,6 +33,10 @@ Plot::Plot( QGroupBox *_box )
     //xAxis->setTitleText ( "X title" );
     //yAxis->setTitleText ( "Y title" );
 
+    
+    xAxis->setTitleText( QString( x_title ) );
+    yAxis->setTitleText( QString( y_title ) );
+    
     /*
     KDChart::TextAttributes ta = yAxis->textAttributes();
     KDChart::Measure me( ta.fontSize() );

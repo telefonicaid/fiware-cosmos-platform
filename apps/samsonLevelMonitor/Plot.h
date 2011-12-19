@@ -34,7 +34,7 @@ private:
     
 public:
     
-    Plot( QGroupBox *box );
+    Plot( QGroupBox *_box , const char* x_title ,  const char* y_title );
 	~Plot();
     
 	// Set labels for the plot

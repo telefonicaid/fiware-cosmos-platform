@@ -23,6 +23,9 @@
 extern samson::SamsonClient samson_client;
 
 extern char title[1024];
+extern char x_title[1024];
+extern char y_title[1024];
+
 extern char concept[1024];
 
 extern au::map<std::string , au::ContinuousValueCollection<double> > value_collections;
@@ -53,7 +56,7 @@ MainWindow::MainWindow( QWidget *parent ) : QMainWindow(parent)
     timer->start(1000);
 
     // Create the plot
-	plot = new Plot( groupBox_plot );
+	plot = new Plot( groupBox_plot , x_title , y_title );
     
 }
 

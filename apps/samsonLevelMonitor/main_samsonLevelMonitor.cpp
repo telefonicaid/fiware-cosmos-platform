@@ -36,14 +36,20 @@
 
 size_t buffer_size;
 size_t timeOut;
+double base;
 
 char title[1024];
+char x_title[1024];
+char y_title[1024];
 char concept[1024];
 
 PaArgument paArgs[] =
 {
-	{ "-title",       title,      "TITLE",       PaString, PaOpt, _i "no title"   , PaNL, PaNL,       "Title of the plot"         },
-	{ "-concept",     concept,    "CONCEPT",     PaString, PaOpt, _i "top"        , PaNL, PaNL,       "Concep to track"         },
+	{ "-title",      title,      "",       PaString, PaOpt, _i "Samson Level Monitor"   , PaNL, PaNL,       "Title of the plot"         },
+	{ "-x_title",    x_title,    "",       PaString, PaOpt, _i ""   , PaNL, PaNL,       "X-Title of the plot"         },
+	{ "-y_title",    y_title,    "",       PaString, PaOpt, _i ""   , PaNL, PaNL,       "Y-Title of the plot"         },
+	{ "-concept",    concept,    "CONCEPT",     PaString, PaOpt, _i "top"        , PaNL, PaNL,       "Concep to track"         },
+	{ "-base",       &base,      "",            PaDouble, PaOpt,      1.0        , 1.0, 1000000.0,       "Base to divide all numbers ( example 1000 1000000 .... )"   },
     PA_END_OF_ARGS
 };
 
@@ -52,56 +58,10 @@ static const char* manShortDescription =
 
 int logFd = -1;
 
-void find_and_replace( std::string &source, const std::string find, std::string replace ) {
-   size_t j;
-   for ( ; (j = source.find( find )) != std::string::npos ; ) {
-	  source.replace( j, find.length(), replace );
-   }
-}
-
-void literal_string( std::string& txt )
-{
-   std::string slash = "\n"; 
-   std::string replace_slash = "\\n";
-   find_and_replace( txt , slash , replace_slash );   
-}
-
-size_t full_read( int fd , char* data , size_t size)
-{
-    size_t read_size = 0;
-    
-    while( read_size < size )
-    {
-        ssize_t t = read( fd , data+read_size , size - read_size );
-        
-        if( t==-1)
-            LM_X(1,("Error reading input data"));
-        
-        if( t == 0)
-            break;
-        else
-            read_size+=t;
-    }
-    
-    return read_size;    
-}
-
 QApplication *app;                    // Global QT application object
 
 // Top global QT Elements
 MainWindow *mainWindow;               // Main window....
-
-
-// Content to display on web display 
-// --------------------------------------------------------------------------------
-
-size_t getLineSize( char * data , size_t max)
-{
-    for ( size_t i=0;i < max ; i++)
-        if( data[i] == '\n' )
-            return i+1;
-    return max;
-}
 
 // --------------------------------------------------------------------------------
 // Custom line process routine
@@ -116,8 +76,8 @@ void process_command( std::string line )
 {
     
     // Remove returns at the end
-    while ( line[ line.size()-1 ] == '\n' )
-        line.erase( line.size()-2 );
+    //    while ( line[ line.size()-1 ] == '\n' )
+    //    line.erase( line.size()-1 );
     
     au::CommandLine cmd;
     cmd.parse( line );
@@ -126,7 +86,9 @@ void process_command( std::string line )
         return; // Not valid format
     
     std::string name = cmd.get_argument(0);
-    double value =  atof( cmd.get_argument(1).c_str() );
+    double value =  atof( cmd.get_argument(1).c_str() ) / base;
+    
+    LM_V(("Converting %s --> %f", cmd.get_argument(1).c_str()  , value ));
     
     //std::cout << au::str( "Processing '%s' %s=%f\n" , line.c_str() , name.c_str() , value );
     if( name == concept) // Only accept selected concept
@@ -172,6 +134,13 @@ int main( int argC ,  char *argV[] )
     
     if ( strcmp( concept,"main") == 0)
         LM_W(("No concept specified with -concept optin. Traking 'main' concept...."));
+
+    
+    LM_V(("------------------------------------------------"));
+    LM_V(("SETUP"));
+    LM_V(("------------------------------------------------"));
+    LM_V(("Base %f",base));
+    LM_V(("------------------------------------------------"));
     
     
     // Run the thread to update incomming blocks

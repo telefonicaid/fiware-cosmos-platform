@@ -57,7 +57,7 @@ PaArgument paArgs[] =
 	{ "-memory",           &memory_gb,           "MEMORY",           PaInt,    PaOpt,      1,    1,  100, "memory in GBytes"           },
 	{ "-load_buffer_size", &load_buffer_size_mb, "LOAD_BUFFER_SIZE", PaInt,    PaOpt,     64,   64, 2048, "load buffer size in MBytes" },
 	{ "-f",                 commandFileName,     "FILE_NAME",        PaString, PaOpt,  _i "", PaNL, PaNL, "File with commands to run"  },
-	{ "-command",           command,             "MONITORIZATION_COMMAND", PaString, PaOpt,  _i "", PaNL, PaNL, "Monitoring command"  },
+	{ "-command",           command,             "MONITORIZATION_COMMAND", PaString, PaOpt,  _i "", PaNL, PaNL, "Single command to be executed"  },
 
 	PA_END_OF_ARGS
 };
@@ -224,6 +224,9 @@ int main(int argC, const char *argV[])
         std::cerr << au::str("Flushing output: '%s'\n", command );
         delilahConsole->flush();
         
+        // Last return to be pulish...
+        std::cout << std::endl;
+        
         exit(0);
     }
     
@@ -285,6 +288,9 @@ int main(int argC, const char *argV[])
 		
 		LM_M(("samsonLocal exit correctly"));
 		
+        // Last return to be pulish...
+        std::cout << std::endl;
+        
 		exit(0);
 	}
 

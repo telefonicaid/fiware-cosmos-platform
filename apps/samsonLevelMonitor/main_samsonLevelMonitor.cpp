@@ -45,9 +45,9 @@ char concept[1024];
 
 PaArgument paArgs[] =
 {
-	{ "-title",      title,      "",       PaString, PaOpt, _i "Samson Level Monitor"   , PaNL, PaNL,       "Title of the plot"         },
-	{ "-x_title",    x_title,    "",       PaString, PaOpt, _i ""   , PaNL, PaNL,       "X-Title of the plot"         },
-	{ "-y_title",    y_title,    "",       PaString, PaOpt, _i ""   , PaNL, PaNL,       "Y-Title of the plot"         },
+	{ "-title",      title,      "",            PaString, PaOpt, _i "Samson Level Monitor"   , PaNL, PaNL,       "Title of the plot"         },
+	{ "-x_title",    x_title,    "",            PaString, PaOpt, _i ""   , PaNL, PaNL,       "X-Title of the plot"         },
+	{ "-y_title",    y_title,    "",            PaString, PaOpt, _i ""   , PaNL, PaNL,       "Y-Title of the plot"         },
 	{ "-concept",    concept,    "CONCEPT",     PaString, PaOpt, _i "top"        , PaNL, PaNL,       "Concep to track"         },
 	{ "-base",       &base,      "",            PaDouble, PaOpt,      1.0        , 1.0, 1000000.0,       "Base to divide all numbers ( example 1000 1000000 .... )"   },
     PA_END_OF_ARGS

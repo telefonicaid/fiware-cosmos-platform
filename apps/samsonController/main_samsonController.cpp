@@ -105,6 +105,10 @@ void captureSIGINT( int s )
 {
     LM_X(1, ("Signal SIGINT"));
 }
+void captureSIGTERM( int s )
+{
+    LM_X(1, ("Signal SIGTERM"));
+}
 
 
 /* ****************************************************************************
@@ -131,6 +135,10 @@ int main(int argC, const char* argV[])
 
     if( signal( SIGINT , captureSIGINT ) == SIG_ERR )
         LM_W(("SIGINT cannot be handled"));
+
+    if( signal( SIGTERM , captureSIGTERM ) == SIG_ERR )
+        LM_W(("SIGTERM cannot be handled"));
+
     
 	paParse(paArgs, argC, (char**) argV, 1, false);
 

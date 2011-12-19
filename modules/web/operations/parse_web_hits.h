@@ -72,6 +72,12 @@ namespace web{
 			  writer->emit(0,&key,&value);
 		   }
 
+           if ( words.size() >= 6 )
+           {
+              key.value = "operation ";
+              key.value.append(words[5]);
+              writer->emit(0,&key,&value);
+           }
 
 		}
 

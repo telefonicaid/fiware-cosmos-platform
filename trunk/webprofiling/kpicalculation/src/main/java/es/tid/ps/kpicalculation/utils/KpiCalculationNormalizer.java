@@ -7,6 +7,7 @@ import org.apache.nutch.net.URLNormalizers;
 import org.apache.nutch.net.urlnormalizer.basic.BasicURLNormalizer;
 import org.apache.nutch.net.urlnormalizer.regex.RegexURLNormalizer;
 import org.apache.nutch.util.NutchConfiguration;
+import org.apache.nutch.util.domain.DomainSuffix;
 
 /**
  * Class used for normalization of url received in webprofiling module. It
@@ -24,7 +25,7 @@ public class KpiCalculationNormalizer {
     /**
      * Method that initializes the normalizers
      */
-    public KpiCalculationNormalizer() {
+    public static void init() {
         if (basicNorm != null && regexNorm != null) {
             // Avoid unnecessary re-initializations.
             return;
@@ -33,6 +34,7 @@ public class KpiCalculationNormalizer {
         Configuration conf = NutchConfiguration.create();
         basicNorm.setConf(conf);
         regexNorm = new RegexURLNormalizer(conf);
+       
     }
 
     /**
@@ -46,6 +48,7 @@ public class KpiCalculationNormalizer {
             throws MalformedURLException {
         String normalizedUrl = basicNorm.normalize(inputUrl,
                 URLNormalizers.SCOPE_DEFAULT);
+       
         // Advanced Nutch URL normalization based on regular expressions
         return regexNorm.normalize(normalizedUrl, URLNormalizers.SCOPE_DEFAULT);
     }

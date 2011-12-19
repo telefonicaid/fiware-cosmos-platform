@@ -1,35 +1,49 @@
 package es.tid.ps.kpicalculation.data;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.WritableComparable;
+import org.apache.nutch.util.URLUtil;
 import org.apache.xerces.util.URI;
 
 import es.tid.ps.kpicalculation.utils.KpiCalculationDateFormatter;
 import es.tid.ps.kpicalculation.utils.KpiCalculationNormalizer;
 
 /**
- * Class to parse input lines of CDR files to fit the required format of
- * PAGE_VIEWS table in hive for web profiling module
+ * Class to parse input lines of CDR files to fit the required format of a
+ * WebLog inside webprofiling module, to use it to calculate different kpis
  * 
  * @author javierb
  */
-public class PageView {
-    final private static String DELIMITER = "\t";
+public class WebLog implements WritableComparable<WebLog> {
 
-    private String visitorId;
-    private String protocol;
-    private String fullUrl;
-    private String urlDomain;
-    private String urlPath;
-    private String urlQuery;
-    private String dateView;
-    private String timeDay;
-    private String userAgent;
-    private String browser;
-    private String device;
-    private String operSys;
-    private String method;
-    private String status;
+    public String mainKey;
+    public String secondaryKey;
+
+    final protected static String DELIMITER = "\t";
+
+    private StringBuilder sBuilder;
+
+    public String visitorId;
+    public String protocol;
+    public String fullUrl;
+    public String urlDomain;
+    public String urlPath;
+    public String urlQuery;
+    public String dateView;
+    public String timeDay;
+    public String userAgent;
+    public String browser;
+    public String device;
+    public String operSys;
+    public String method;
+    public String status;
+    private Text text;
 
     /**
      * @return the visitorId
@@ -242,19 +256,40 @@ public class PageView {
     }
 
     /**
-     * Constructor method that parses a line and generates a PageView object
+     * @return the text
+     */
+    public Text getText() {
+        return text;
+    }
+
+    /**
+     * @param text
+     *            the value to set
+     */
+    public void setText(Text text) {
+        this.text = text;
+    }
+
+    /**
+     * Constructor method that generates a WebLog object. Needed initializations
+     * are done in this method.
+     */
+    public WebLog() {
+        this.text = new Text();
+        this.sBuilder = new StringBuilder();
+        KpiCalculationNormalizer.init();
+        KpiCalculationDateFormatter.init();
+    }
+
+    /**
+     * Method that parses a web log line and sets the properties of the class
      * 
      * @param line
      *            string to parse
-     * 
      */
-    public PageView() {
-
-    }
-
-    public void set(String line) {
+    public void set(String line) throws IllegalArgumentException,
+            SecurityException, IllegalAccessException, NoSuchFieldException {
         try {
-
             StringTokenizer stt = new StringTokenizer(line, DELIMITER);
 
             // The id of the user generating the log
@@ -267,7 +302,7 @@ public class PageView {
             // from the fullurl field URI
             URI uri = new URI(this.fullUrl);
             this.protocol = uri.getScheme();
-            this.urlDomain = uri.getHost();
+            this.urlDomain = URLUtil.getDomainName(this.fullUrl);
             this.urlPath = uri.getPath();
             this.urlQuery = uri.getQueryString();
 
@@ -277,20 +312,67 @@ public class PageView {
             this.dateView = KpiCalculationDateFormatter.getDate(date);
             this.timeDay = KpiCalculationDateFormatter.getTime(date);
 
+            // Http status code
             this.status = stt.nextToken();
 
             // Mime currently not used
             // TODO:Mime type missing in tables.This is pending;
             stt.nextToken();
 
+            // User agent used in the navigation
             this.userAgent = this.browser = this.device = this.operSys = stt
                     .nextToken();
 
-            // Status of the request
+            // method of the request
             this.method = stt.nextToken();
+
+            if (stt.hasMoreTokens()) {
+                throw new KpiCalculationDataException(
+                        "The line has too many fields",
+                        KpiCalculationCounter.WRONG_LINE_FORMAT);
+            }
+
+            this.initText();
+
         } catch (Exception ex) {
             throw new KpiCalculationDataException("The URL was wrong",
                     KpiCalculationCounter.MALFORMED_URL);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return this.sBuilder.toString();
+    }
+
+    /**
+     * Method that sets the properties of the class from a Text object
+     * 
+     * @param line
+     *            string to parse
+     */
+    public void set(Text txt) throws IllegalArgumentException,
+            SecurityException, IllegalAccessException, NoSuchFieldException {
+        this.text = txt;
+
+        StringTokenizer stt = new StringTokenizer(txt.toString(), DELIMITER);
+        try {
+            this.visitorId = stt.nextToken();
+            this.protocol = stt.nextToken();
+            this.fullUrl = stt.nextToken();
+            this.urlDomain = stt.nextToken();
+            this.urlPath = stt.nextToken();
+            this.urlQuery = stt.nextToken();
+            this.dateView = stt.nextToken();
+            this.timeDay = stt.nextToken();
+            this.userAgent = stt.nextToken();
+            this.browser = stt.nextToken();
+            this.device = stt.nextToken();
+            this.operSys = stt.nextToken();
+            this.method = stt.nextToken();
+            this.status = stt.nextToken();
+        } catch (NoSuchElementException e) {
+            System.out.println(txt.toString());
         }
     }
 
@@ -301,24 +383,54 @@ public class PageView {
      * @return the output line of the object
      * 
      */
-    public String toString() {
-        StringBuilder sBuilder = new StringBuilder();
+    private void initText() {
+        this.sBuilder.delete(0, sBuilder.length());
 
-        sBuilder.append(visitorId).append(DELIMITER);
-        sBuilder.append(protocol).append(DELIMITER);
-        sBuilder.append(fullUrl).append(DELIMITER);
-        sBuilder.append(urlDomain).append(DELIMITER);
-        sBuilder.append(urlPath).append(DELIMITER);
-        sBuilder.append(urlQuery).append(DELIMITER);
-        sBuilder.append(dateView).append(DELIMITER);
-        sBuilder.append(timeDay).append(DELIMITER);
-        sBuilder.append(userAgent).append(DELIMITER);
-        sBuilder.append(browser).append(DELIMITER);
-        sBuilder.append(device).append(DELIMITER);
-        sBuilder.append(operSys).append(DELIMITER);
-        sBuilder.append(method).append(DELIMITER);
-        sBuilder.append(status);
+        this.sBuilder.append(visitorId).append(DELIMITER);
+        this.sBuilder.append(protocol).append(DELIMITER);
+        this.sBuilder.append(fullUrl).append(DELIMITER);
+        this.sBuilder.append(urlDomain).append(DELIMITER);
+        this.sBuilder.append(urlPath).append(DELIMITER);
+        this.sBuilder.append(urlQuery).append(DELIMITER);
+        this.sBuilder.append(dateView).append(DELIMITER);
+        this.sBuilder.append(timeDay).append(DELIMITER);
+        this.sBuilder.append(userAgent).append(DELIMITER);
+        this.sBuilder.append(browser).append(DELIMITER);
+        this.sBuilder.append(device).append(DELIMITER);
+        this.sBuilder.append(operSys).append(DELIMITER);
+        this.sBuilder.append(method).append(DELIMITER);
+        this.sBuilder.append(status);
 
-        return sBuilder.toString();
+        this.text.set(sBuilder.toString());
+    }
+
+    @Override
+    public void readFields(DataInput in) throws IOException {
+        this.text.set(in.readUTF());
+    }
+
+    @Override
+    public void write(DataOutput out) throws IOException {
+        out.writeUTF(this.text.toString());
+    }
+
+    @Override
+    public int compareTo(WebLog pv) {
+        return this.text.toString().compareTo(pv.text.toString());
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object o) {
+        boolean result = false;
+        if (o instanceof WebLog) {
+            WebLog pv = (WebLog) o;
+            result = this.toString().equals(pv.toString());
+        }
+        return result;
     }
 }

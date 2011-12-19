@@ -37,7 +37,8 @@ public class AggregateCalculator implements IAggregateCalculator {
             Class.forName(driverName);
             Connection con = DriverManager.getConnection(
                     "jdbc:hive://pshdp02:10000", "", "");
-            stmt = con.createStatement();
+            this.stmt = con.createStatement();
+            
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             logger.severe(e.toString());
@@ -56,75 +57,75 @@ public class AggregateCalculator implements IAggregateCalculator {
         // Common aggregate KPI's
         try {
             logger.info("Calculating aggregate of page views by protocol, visitor and device...");
-            stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_VIS_DEV);
+            this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_VIS_DEV);
             logger.info("Aggregate processed...");
 
             logger.info("Calculating aggregate of page views by protocol and visitor ...");
-            stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_VIS);
+            this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_VIS);
             logger.info("Aggregate processed...");
 
             logger.info("Calculating aggregate of page views by protocol and device...");
-            stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_DEV);
+            this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_DEV);
             logger.info("Aggregate processed...");
 
             logger.info("Calculating aggregate of page views by protocol and method...");
-            stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_METHOD);
+            this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_METHOD);
             logger.info("Aggregate processed...");
 
             logger.info("Calculating aggregate of page views by protocol ...");
-            stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROTOCOL);
+            this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROTOCOL);
             logger.info("Aggregate processed...");
 
             logger.info("Calculating aggregate of visitors by protocol ...");
-            stmt.executeQuery(AggregateCalculatorQueries.VISITORS_BY_PROTOCOL);
+            this.stmt.executeQuery(AggregateCalculatorQueries.VISITORS_BY_PROTOCOL);
             logger.info("Aggregate processed...");
 
             // Browing aggregate KPI's
             logger.info("Calculating aggregate of page views by protocol, url and visitor ...");
-            stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_URL_VIS);
+            this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_URL_VIS);
             logger.info("Aggregate processed...");
 
             logger.info("Calculating aggregate of page views by protocol and url ...");
-            stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_URL);
+            this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_URL);
             logger.info("Aggregate processed...");
 
             logger.info("Calculating aggregate of visitors by protocol and url ...");
-            stmt.executeQuery(AggregateCalculatorQueries.VISITORS_BY_PROT_URL);
+            this.stmt.executeQuery(AggregateCalculatorQueries.VISITORS_BY_PROT_URL);
             logger.info("Aggregate processed...");
 
             logger.info("Calculating aggregate of page views by protocol, domain and visitor ...");
-            stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_DOM_VIS);
+            this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_DOM_VIS);
             logger.info("Aggregate processed...");
 
             logger.info("Calculating aggregate of page views by protocol and domain ...");
-            stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_DOM);
+            this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_DOM);
             logger.info("Aggregate processed...");
 
             logger.info("Calculating aggregate of visitors by protocol and domain ...");
-            stmt.executeQuery(AggregateCalculatorQueries.VISITORS_BY_PROT_DOM);
+            this.stmt.executeQuery(AggregateCalculatorQueries.VISITORS_BY_PROT_DOM);
             logger.info("Aggregate processed...");
 
             // Content aggregate KPI's
 
             logger.info("Calculating aggreagate of page views by category and visitor ...");
-            stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_CAT_VIS);
+            this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_CAT_VIS);
             logger.info("Aggregate processed...");
 
             logger.info("Calculating aggreagate of page views by category ...");
-            stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_CAT);
+            this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_CAT);
             logger.info("Aggregate processed...");
 
             logger.info("Calculating aggregate of visitors by category ...");
-            stmt.executeQuery(AggregateCalculatorQueries.VISITORS_BY_CATEGORY);
+            this.stmt.executeQuery(AggregateCalculatorQueries.VISITORS_BY_CATEGORY);
             logger.info("Aggregate processed...");
 
             // Queries aggregate KPI's
             logger.info("Calculating aggregate of searches by protocol, query key, visitor and searcher...");
-            stmt.executeQuery(AggregateCalculatorQueries.SEARCHES_BY_PROT_QKEY_VIS_SEARCHER);
+            this.stmt.executeQuery(AggregateCalculatorQueries.SEARCHES_BY_PROT_QKEY_VIS_SEARCHER);
             logger.info("Aggregate processed...");
 
             logger.info("Calculating aggregate of searches by protocol, query key and searcher...");
-            stmt.executeQuery(AggregateCalculatorQueries.SEARCHES_BY_PROT_QKEY_VIS);
+            this.stmt.executeQuery(AggregateCalculatorQueries.SEARCHES_BY_PROT_QKEY_VIS);
         } catch (SQLException ex) {
             logger.severe(ex.toString());
         }

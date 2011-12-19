@@ -11,10 +11,9 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.ps.kpicalculation.cleaning.KpiCalculationFilterChain;
 import es.tid.ps.kpicalculation.cleaning.KpiCalculationFilterException;
+import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
 import es.tid.ps.kpicalculation.data.KpiCalculationDataException;
-import es.tid.ps.kpicalculation.data.PageView;
-import es.tid.ps.kpicalculation.utils.KpiCalculationDateFormatter;
-import es.tid.ps.kpicalculation.utils.KpiCalculationNormalizer;
+import es.tid.ps.kpicalculation.data.WebLog;
 
 /**
  * This class receives lines of information of CDR´s files that will be used in
@@ -39,18 +38,17 @@ import es.tid.ps.kpicalculation.utils.KpiCalculationNormalizer;
  * <li>Output: void</li>
  * </ol>
  * 
- * @author javierb
+ * 
+ * @author javierb@tid.es
  */
 public class KpiCleanerMapper extends
-        Mapper<LongWritable, Text, Text, NullWritable> {
+        Mapper<LongWritable, Text, NullWritable, WebLog> {
     @Resource
     private KpiCalculationFilterChain filter;
-    @Resource
-    private KpiCalculationNormalizer normalizer;
-    @Resource
-    private KpiCalculationDateFormatter dateFormatter;
-    @Resource
-    private PageView view;
+
+    private WebLog view;
+
+    private NullWritable nullw;
 
     /**
      * Method that prepares the filters to be applied
@@ -62,9 +60,8 @@ public class KpiCleanerMapper extends
     protected void setup(Context context) throws IOException,
             InterruptedException {
         this.filter = new KpiCalculationFilterChain(context.getConfiguration());
-        this.normalizer = new KpiCalculationNormalizer();
-        this.dateFormatter = new KpiCalculationDateFormatter();
-        this.view = new PageView();
+        this.view = new WebLog();
+        this.nullw = NullWritable.get();
     }
 
     /**
@@ -81,11 +78,15 @@ public class KpiCleanerMapper extends
         try {
             this.view.set(value.toString());
             this.filter.filter(this.view.getFullUrl());
-            context.write(new Text(this.view.toString()), NullWritable.get());
+            context.getCounter(KpiCalculationCounter.LINE_STORED).increment(1L);
+            context.write(this.nullw, this.view);
         } catch (KpiCalculationFilterException e) {
             context.getCounter(e.getCounter()).increment(1L);
         } catch (KpiCalculationDataException e) {
             context.getCounter(e.getCounter()).increment(1L);
+        } catch (Exception e) {
+            context.getCounter(KpiCalculationCounter.WRONG_FILTERING_FIELDS)
+                    .increment(1L);
         }
     }
 }

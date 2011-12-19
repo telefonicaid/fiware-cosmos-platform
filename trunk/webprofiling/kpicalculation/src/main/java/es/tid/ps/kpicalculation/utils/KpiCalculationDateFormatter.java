@@ -19,9 +19,9 @@ public class KpiCalculationDateFormatter {
     /**
      * Method that initializes the formatters
      */
-    public KpiCalculationDateFormatter() {
+    public static void init() {
         if (inputFormat != null && dateFormat != null && timeFormat != null) {
-            // Avoid unnecessary re-initializations.
+            // Aviod unnecessary re-initializations.
             return;
         }
         inputFormat = new SimpleDateFormat("ddMMMyyyyhhmmss", Locale.ENGLISH);

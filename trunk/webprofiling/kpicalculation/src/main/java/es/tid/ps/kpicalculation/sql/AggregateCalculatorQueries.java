@@ -55,6 +55,7 @@ public class AggregateCalculatorQueries {
             + "GROUP BY "
             + "a.visitor_id, concat(a.url_domain,a.url_path) , a.protocol, a.date_view";
 
+    //Duplicated???
     final static public String PAGES_VIEWS_BY_PROT_URL = "INSERT OVERWRITE TABLE AG_PAGE_VIEWS_VIS "
             + "SELECT "
             + "a.visitor_id, a.protocol, a.date_view, sum(a.views_num) "
@@ -94,6 +95,7 @@ public class AggregateCalculatorQueries {
             + "ag_page_views_dom_vis a "
             + "GROUP BY "
             + "a.domain, a.protocol, a.date_view";
+   
 
     final static public String PAGES_VIEWS_BY_PROT_CAT_VIS = "INSERT OVERWRITE TABLE AG_PAGE_VIEWS_CCAT_VIS "
             + "SELECT "

@@ -25,12 +25,11 @@ public class HiveCdrLoader implements ICdrLoader {
     //
     private static String TARGET_TABLE = "PAGE_VIEWS";
 
-    private Statement stmt;
-
     private static String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
     private static Logger logger;
 
     private Configuration conf;
+    private Statement stmt;
 
     /**
      * Constructor method that receives the current context configuration
@@ -41,13 +40,13 @@ public class HiveCdrLoader implements ICdrLoader {
      */
     public HiveCdrLoader(Configuration configuration) {
         logger = Logger.getLogger(HiveCdrLoader.class.getName());
-        conf = configuration;
+        this.conf = configuration;
 
         try {
             Class.forName(driverName);
             Connection con = DriverManager.getConnection(
                     "jdbc:hive://pshdp02:10000", "", "");
-            stmt = con.createStatement();
+            this.stmt = con.createStatement();
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             logger.severe(e.toString());
@@ -86,7 +85,7 @@ public class HiveCdrLoader implements ICdrLoader {
                         "LOAD DATA INPATH \"{0}\" INTO TABLE {1}",
                         status[i].getPath(), TARGET_TABLE);
                 System.out.println(sql);
-                stmt.executeQuery(sql);
+                this.stmt.executeQuery(sql);
             }
 
             fs.delete(new Path(conf.get("kpicalculation.temp.path")), true);

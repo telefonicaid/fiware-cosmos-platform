@@ -3,7 +3,6 @@ package es.tid.ps.kpicalculation;
 import java.io.IOException;
 
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.ps.kpicalculation.data.WebLog;
@@ -23,7 +22,6 @@ public class KpiCounterCombiner extends
         Reducer<WebLog, IntWritable, WebLog, IntWritable> {
 
     private IntWritable counter;
-    private Text text;
 
     /**
      * Method that creates the objects that will be used during the reduce
@@ -35,7 +33,6 @@ public class KpiCounterCombiner extends
     protected void setup(Context context) throws IOException,
             InterruptedException {
         this.counter = new IntWritable();
-        this.text = new Text();
     }
 
     /**
@@ -55,8 +52,7 @@ public class KpiCounterCombiner extends
             res += values.iterator().next().get();
         }
 
-        counter.set(res);
-        text.set(key.mainKey);
-        context.write(key, counter);
+        this.counter.set(res);
+        context.write(key, this.counter);
     }
 }

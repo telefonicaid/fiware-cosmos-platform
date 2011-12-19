@@ -105,7 +105,9 @@ Position getWork( size_t user )
 
 Position getPosition( size_t user )
 {
-    if( time(NULL)%period < (period/2) )
+    int p = time(NULL)%period;
+    
+    if(  p < (period/2) )
         return getHome(user);
     else
         return getWork(user);

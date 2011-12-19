@@ -8,7 +8,8 @@
 #include "au/Token.h"
 #include "au/Cronometer.h"
 #include <unistd.h>
-
+#include <sys/types.h>
+#include <sys/wait.h>
 
 
 int logFd;

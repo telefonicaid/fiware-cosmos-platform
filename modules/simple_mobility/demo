@@ -12,7 +12,6 @@ USERS=40000000
 RATE=300000
 PERIOD=300
 
-POP_QUEUE=demo.99.level.04.levels_updates_txt
 PUSH_CDRS_QUEUE=demo.02.in_txt_cdrs
 PUSH_COMMANDS_QUEUE=demo.01.in_txt_commands
 
@@ -22,12 +21,6 @@ echo "Running simple mobility demo on SAMSON cluster at '$1'"
 echo "------------------------------------------------------------------------"
 echo "** Init demo with delilah...."
 delilah -controller $1 -command "init_stream simple_mobility.demo"
-
-echo "------------------------------------------------------------------------"
-echo "** Run visualitzation tools"
-samsonPop $POP_QUEUE -new | samsonLevelMonitor -concept work_defined,work -title "Users at work" -x_title "Time in seconds" -y_title "Number of users"   2>/dev/null >/dev/null &
-samsonPop $POP_QUEUE -new | samsonLevelMonitor -concept home_defined,home -title "Users at home" -x_title "Time in seconds" -y_title "Number of users"   2>/dev/null >/dev/null &
-
 
 echo "------------------------------------------------------------------------"
 echo "** Sending commands to the cluster"

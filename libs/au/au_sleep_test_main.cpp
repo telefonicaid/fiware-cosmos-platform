@@ -5,7 +5,7 @@
 
 #include "au/string.h"
 #include "au/time.h"
-#include "au/token.h"
+#include "au/Token.h"
 #include "au/Cronometer.h"
 #include <unistd.h>
 

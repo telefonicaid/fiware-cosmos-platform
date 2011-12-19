@@ -31,7 +31,7 @@ SET (STATIC_LIBS
      pugi
      au
      samsonCommon	
-    ${GTEST_LIBRARY}
+     ${GTEST_LIBRARY}
      ${GTESTMAIN_LIBRARY}
      ${COMMON_SAMSON_LIBS}
 )
@@ -43,8 +43,11 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 
 # Executable declaration
 # ------------------------------------------------------------
+
+if (GTEST_LIBRARY)
 ADD_EXECUTABLE(unitTest ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES(unitTest ${STATIC_LIBS} )
+endif (GTEST_LIBRARY)
 
 #INSTALL(TARGETS               unitTest
 #        RUNTIME DESTINATION   bin)

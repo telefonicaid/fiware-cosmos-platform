@@ -16,6 +16,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.ps.kpicalculation.KpiCleanerMapper;
+import es.tid.ps.kpicalculation.data.WebLog;
+import es.tid.ps.kpicalculation.data.WebLogFactory;
 
 import junit.framework.TestCase;
 
@@ -26,75 +28,105 @@ import junit.framework.TestCase;
  */
 public class KpiCleanerMapperTest extends TestCase {
 
-    private Mapper<LongWritable, Text, Text, NullWritable> mapper;
-    private MapDriver<LongWritable, Text, Text, NullWritable> driver;
-
+    private Mapper<LongWritable, Text, NullWritable, WebLog> mapper;
+    private MapDriver<LongWritable, Text, NullWritable, WebLog> driver;
+    private WebLog outputPage;
+    
+    
     @Before
     protected void setUp() {
-        mapper = new KpiCleanerMapper();
-        driver = new MapDriver<LongWritable, Text, Text, NullWritable>(mapper);
-        driver.getConfiguration().addResource("kpi-filtering.xml");
+        this.mapper = new KpiCleanerMapper();
+        this.driver = new MapDriver<LongWritable, Text, NullWritable, WebLog>(
+                this.mapper);
+        this.driver.getConfiguration().addResource("kpi-filtering.xml");
+        
+        this.outputPage = new WebLog();
+        this.outputPage.visitorId = "16737b1873ef03ad";
+        this.outputPage.protocol = "http";
+        this.outputPage.fullUrl = "http://0.0.tid.es/";
+        this.outputPage.urlDomain = "0.0.tid.es";
+        this.outputPage.urlPath = "/";
+        this.outputPage.urlQuery = "null";
+        this.outputPage.dateView = "01 12 2010";
+        this.outputPage.timeDay = "00:00:01";
+        this.outputPage.browser = "-Microsoft-CryptoAPI/6.1";
+        this.outputPage.device = "-Microsoft-CryptoAPI/6.1";
+        this.outputPage.userAgent = "-Microsoft-CryptoAPI/6.1";
+        this.outputPage.operSys = "-Microsoft-CryptoAPI/6.1";
+        this.outputPage.method = "GET";
+        this.outputPage.status = "304";
     }
 
     @Test
     public void testAllowedExtension() {
-        List<Pair<Text, NullWritable>> out = null;
-        String input = "16737b1873ef03ad	http://www.tid.es/index.html	1Dec2010000001	304	application/pkix-crl	-Microsoft-CryptoAPI/6.1	GET";
-        String output = "16737b1873ef03ad	http	http://tid.es/	tid.es	/	null	01 12 2010	00:00:01	-Microsoft-CryptoAPI/6.1	-Microsoft-CryptoAPI/6.1	-Microsoft-CryptoAPI/6.1	-Microsoft-CryptoAPI/6.1	GET	304";
+        List<Pair<NullWritable, WebLog>> out = null;
+        String input = "16737b1873ef03ad\thttp://www.0.0.tid.es/index.html\t" +
+                "1Dec2010000001\t304\tapplication/pkix-crl\t-Microsoft-CryptoAPI/6.1\tGET";
+       
 
         try {
-            out = driver.withInput(new LongWritable(0), new Text(input)).run();
+            
+            out = this.driver.withInput(new LongWritable(0), new Text(input))
+                    .run();
         } catch (IOException ioe) {
             fail();
         }
-
-        List<Pair<Text, NullWritable>> expected = new ArrayList<Pair<Text, NullWritable>>();
-        expected.add(new Pair<Text, NullWritable>(new Text(output), NullWritable.get()));
+       
+        List<Pair<NullWritable, WebLog>> expected = new ArrayList<Pair<NullWritable, WebLog>>();
+        expected.add(new Pair<NullWritable, WebLog>(NullWritable.get(), outputPage));
 
         assertListEquals(expected, out);
     }
 
     @Test
     public void testForbiddenExtension() {
-        List<Pair<Text, NullWritable>> out = null;
-        String line = "16737b1873ef03ad	http://www.tid.co.uk/foto.jpg	1Dec2010000001	304	application/pkix-crl	-Microsoft-CryptoAPI/6.1	GET";
+        List<Pair<NullWritable, WebLog>> out = null;
+        String line = "16737b1873ef03ad\thttp://www.tid.co.uk/foto.jpg\t" +
+                "1Dec2010000001\t304\tapplication/pkix-crl\t-Microsoft-CryptoAPI/6.1\tGET";
         try {
-            out = driver.withInput(new LongWritable(0), new Text(line)).run();
+            out = this.driver.withInput(new LongWritable(0), new Text(line))
+                    .run();
         } catch (IOException ioe) {
             fail();
         }
-        List<Pair<Text, NullWritable>> expected = new ArrayList<Pair<Text, NullWritable>>();
+        List<Pair<NullWritable, WebLog>> expected = new ArrayList<Pair<NullWritable, WebLog>>();
 
         assertListEquals(expected, out);
     }
 
     @Test
     public void testThirdPartyDomain() {
-        List<Pair<Text, NullWritable>> out = null;
-        String line = "16737b1873ef03ad	http://sexsearch.com/asfad	1Dec2010000001	304	application/pkix-crl	-Microsoft-CryptoAPI/6.1	GET";
+        List<Pair<NullWritable, WebLog>> out = null;
+        String line = "16737b1873ef03ad\thttp://sexsearch.com/asfad\t" +
+                "1Dec2010000001\t304\tapplication/pkix-crl\t-Microsoft-CryptoAPI/6.1\tGET";
 
         try {
-            out = driver.withInput(new LongWritable(0), new Text(line)).run();
+            out = this.driver.withInput(new LongWritable(0), new Text(line))
+                    .run();
         } catch (IOException ioe) {
             fail();
         }
-        List<Pair<Text, NullWritable>> expected = new ArrayList<Pair<Text, NullWritable>>();
 
+        List<Pair<NullWritable, WebLog>> expected = new ArrayList<Pair<NullWritable, WebLog>>();
         assertListEquals(expected, out);
     }
 
     @Test
     public void testPersonalInfoDomain() {
-        List<Pair<Text, NullWritable>> out = null;
-        String line = "16737b1873ef03ad	http://pornhub.com/t1/video	1Dec2010000001	304	application/pkix-crl	-Microsoft-CryptoAPI/6.1	GET";
+        List<Pair<NullWritable, WebLog>> out = null;
+        String line = "16737b1873ef03ad\thttp://pornhub.com/t1/video\t" +
+                "1Dec2010000001\t304\tapplication/pkix-crl\t-Microsoft-CryptoAPI/6.1\tGET";
 
         try {
-            out = driver.withInput(new LongWritable(0), new Text(line)).run();
+            out = this.driver.withInput(new LongWritable(0), new Text(line))
+                    .run();
         } catch (IOException ioe) {
             fail();
         }
-        List<Pair<Text, NullWritable>> expected = new ArrayList<Pair<Text, NullWritable>>();
 
+        List<Pair<NullWritable, WebLog>> expected = new ArrayList<Pair<NullWritable, WebLog>>();
         assertListEquals(expected, out);
     }
+    
+  
 }

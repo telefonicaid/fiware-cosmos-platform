@@ -6,9 +6,41 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "parseArgs/parseArgs.h"
+#include "parseArgs/paConfig.h"
+
+#include "logMsg/logMsg.h"
+
 #include "au/string.h" // au::str()
 #include "au/Cronometer.h"  // au::Cronometer
 #include "au/CommandLine.h" // au::CommandLine
+
+
+
+static const char* manShortDescription =  "Simple command line tool to generate fake data for simple_mobility demo\n";
+static const char* manSynopsis = "simple_mobility_generator [-commands] [-rate X] [-users X] [-period X] [-progressive] [-fix_position]\n";
+
+int users;
+int rate;
+int period;
+bool progresive;
+bool commands;
+bool fix_position;
+
+PaArgument paArgs[] =
+{
+	{ "-users"        , &users,          "",  PaInt,     PaOpt,       100000,    100,  100000000,         "Number of users" },    
+	{ "-rate"         , &rate,           "",  PaInt,     PaOpt,        10000,    100,    1000000,         "CDRs per second" },    
+	{ "-period"       , &period,         "",  PaInt,     PaOpt,          100,     10,      86400,         "Period in seconds" },    
+	{ "-progressive"  , &progresive,     "",  PaBool,    PaOpt,        false,  false, true,               "Generate cdrs in sequential order for all the users"},
+	{ "-commands"     , &commands,       "",  PaBool,    PaOpt,        false,  false, true,               "Generate commands to create user-areas (instead of cdrs)"},
+	{ "-fix_position" , &fix_position,   "",  PaBool,    PaOpt,        false,  false, true,               "Use fix positions for all users"},
+	PA_END_OF_ARGS
+};
+
+int logFd = -1;
+
+int current_user;
 
 
 class Position
@@ -57,15 +89,19 @@ private:
 
 Position getHome( size_t user )
 {
+    if( fix_position )
+        return Position ( 10 , 10 );
+    
     return Position( 10 * ( user%100 )  , 1000 - 10 * ( user%100 ) );
 }
 
 Position getWork( size_t user )
 {
+    if( fix_position )
+        return Position ( 900 , 900 );
+
     return Position( 1000 - 10 * ( user%100 ) , 10 * ( user%100 )  );
 }
-
-int period;
 
 Position getPosition( size_t user )
 {
@@ -77,84 +113,64 @@ Position getPosition( size_t user )
     return Position( rand()%1000 , rand()%1000 );
 }
 
-unsigned long int  num_users;
-size_t current_user;
-bool progresive;
 
 size_t getUser()
 {
     if ( progresive )
     {
         current_user++;
-        if( current_user >= num_users )
+        if( current_user >= users )
             current_user=0;
         return current_user;
     }
     
-    return rand()%num_users;
+    return rand()%users;
 }
 
-int main( int args , const char*argv[] )
+
+int main( int argC , const char*argV[] )
 {
     // Random sequence generated
     srand( time(NULL));
-    
-    au::CommandLine cmd;
-    cmd.set_flag_uint64("users", 40000000 );    // Number of users
-    cmd.set_flag_uint64("rate", 10000 );    // Number of CDRS per second
-    cmd.set_flag_uint64("period", 300 );    // Period of work-home in seconds
-    cmd.set_flag_boolean("h");
-    cmd.set_flag_boolean("help");
-    cmd.set_flag_boolean("commands");
-    cmd.set_flag_boolean("progressive");
-    
-    cmd.parse( args, argv );
 
-    period = cmd.get_flag_uint64("period");
-    progresive = cmd.get_flag_bool("progressive");
-    num_users = cmd.get_flag_uint64("users");
+    paConfig("usage and exit on any warning", (void*) true);
+    
+    paConfig("log to screen",                 (void*) true);
+    paConfig("log to file",                   (void*) false);
+    paConfig("screen line format",            (void*) "TYPE:EXEC: TEXT");
+    paConfig("man shortdescription",          (void*) manShortDescription);
+    paConfig("man synopsis",                  (void*) manSynopsis);
+    paConfig("log to stderr",                 (void*) true);
+    
+    // Parse input arguments    
+    paParse(paArgs, argC, (char**) argV, 1, false);
+    logFd = lmFirstDiskFileDescriptor();
+    
     current_user = 0;
 
-    if( cmd.get_flag_bool("h") || cmd.get_flag_bool("help") )
-    {
-        printf("\n");
-        printf(" ------------------------------------------------- \n");
-        printf(" Help %s\n" , argv[0] );
-        printf(" ------------------------------------------------- \n");
-        printf(" Simple command line tool to generate fake data for simple_mobility demo\n\n");
-        printf(" %s -commands       Generates the command to setup home/work areas\n", argv[0] );
-        printf(" %s                 Generates the CDRS \n", argv[0] );
-        printf("\n");
-        printf(" Option: -users  X     Change the number of users ( default 20000000 ) \n" );
-        printf(" Option: -rate   X     Change number of CDRS per second ( default 10000 ) \n" );
-        printf(" Option: -period X     Change period work-home in seconds (default 300 secs )\n");
-        printf(" Option: -progressive  Non random sequence of messages\n");
-        printf("\n");
-        return 0;
-    }
-    
-    
-    unsigned long int rate = cmd.get_flag_uint64("rate");
-    
-    fprintf(stderr,"%s: Setup %lu users and %lu cdrs/second\n" , argv[0] , num_users , rate );
-    
+    LM_V(("--------------------------------------------------"));
+    LM_V(("Setup"));
+    LM_V(("--------------------------------------------------"));
+    LM_V(("Users %d" , users));
+    LM_V(("Rate %d" , rate));
+    LM_V(("--------------------------------------------------"));
+        
     size_t total_num = 0;
     size_t total_size = 0;
     
-    if( cmd.get_flag_bool("commands") )
+    if (commands)
     {
-        for ( unsigned long int i = 0 ; i < num_users ; i++ )
+        for ( int i = 0 ; i < users ; i++ )
         {
             Position home = getHome(i);
             Position work = getWork(i);
-            printf("%lu AREA_CREATE home %f %f 200 \n" , i ,  home.x , home.y );
-            printf("%lu AREA_CREATE work %f %f 200 \n" , i , work.x , work.y );
+            printf("%d AREA_CREATE home %f %f 200 \n" , i ,  home.x , home.y );
+            printf("%d AREA_CREATE work %f %f 200 \n" , i , work.x , work.y );
         }
         
-        fprintf(stderr,"%s: Generated %lu messages" , argv[0] , num_users );
+        LM_M(("Generated %d messages" , users ));
         return 0;
     }
-    
     
     au::Cronometer cronometer;
     size_t theoretical_seconds = 0;
@@ -163,13 +179,12 @@ int main( int args , const char*argv[] )
     {
         // Generate messages for the next second....
         theoretical_seconds += 1;         
-        for ( unsigned long int i = 0 ; i < rate ; i++ )
+        for ( int i = 0 ; i < rate ; i++ )
         {
-            unsigned long int user = getUser();
-            
+            int user = getUser();
             Position p = getPosition( user );
             
-            total_size += printf("%lu CDR %f %f %lu\n", user , p.x , p.y , time(NULL) );
+            total_size += printf("%d CDR %f %f %lu\n", user , p.x , p.y , time(NULL) );
             total_num++;
         }
         
@@ -178,16 +193,20 @@ int main( int args , const char*argv[] )
         if( total_seconds < theoretical_seconds )
         {
             int seconds_to_sleep = (int) theoretical_seconds - total_seconds;
-            fprintf(stderr,"%s: Sleeping %d seconds to keep rate %s\n", 
-                    argv[0] , seconds_to_sleep , au::str( rate , "Events/sec" ).c_str() );
+            
+            LM_V(("Sleeping %d seconds to keep rate %s", seconds_to_sleep , au::str( rate , "Events/sec" ).c_str() ));
             sleep( seconds_to_sleep );
         }
         
         if( (theoretical_seconds%10) == 0)
         {
-            fprintf(stderr,"%s: Generated %s lines ( %s bytes ) in %s. Rate: %s / %s.\n" 
-                    , argv[0] , au::str(total_num).c_str() , au::str(total_size).c_str(), au::time_string( total_seconds ).c_str() ,
-                    au::str( (double)total_num/(double)total_seconds ,"Lines/s" ).c_str() , au::str( (double)total_size/(double)total_seconds,"Bps").c_str()  );
+            LM_V(("Generated %s lines ( %s bytes ) in %s. Rate: %s / %s." 
+                  ,au::str(total_num).c_str() 
+                  ,au::str(total_size).c_str()
+                  ,au::time_string( total_seconds ).c_str()
+                  ,au::str( (double)total_num/(double)total_seconds ,"Lines/s" ).c_str() 
+                  ,au::str( (double)total_size/(double)total_seconds,"Bps").c_str()  
+                  ));
         }
         
         

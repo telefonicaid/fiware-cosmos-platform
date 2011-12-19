@@ -101,6 +101,11 @@ INSTALL(TARGETS au ARCHIVE DESTINATION lib)
 #TARGET_LINK_LIBRARIES(au_test ${LIBS} au lm )
 #INSTALL(TARGETS               au_test        RUNTIME DESTINATION   bin)
 
+# au_sleep_test
+ADD_EXECUTABLE(au_sleep_test au_sleep_test_main.cpp )
+TARGET_LINK_LIBRARIES(au_sleep_test ${LIBS} au lm pa )
+INSTALL(TARGETS au_sleep_test        RUNTIME DESTINATION   bin)
+
 # Unit testing
 ADD_EXECUTABLE( ut_au_object ut_au_object.cpp )
 TARGET_LINK_LIBRARIES( ut_au_object ${LIBS} au lm pa )

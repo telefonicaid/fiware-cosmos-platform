@@ -68,6 +68,17 @@ double Cronometer::diffTime()
     return diff;
 }
 
+bool Cronometer::check( double time )
+{
+    if( diffTime() >= time )
+    {
+        reset();
+        return true;
+    }
+    return false;
+}
+
+
 std::string Cronometer::str()
 {
     return time_string(diffTimeInSeconds());

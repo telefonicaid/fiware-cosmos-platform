@@ -44,6 +44,15 @@ std::string todayString();
 // Get a string version of the time stamp
 std::string str_time( time_t time );
 
+
+// conversions
+double timeval_to_secs( timeval t );
+timeval secs_to_timeval( double s );
+
+size_t seconds_to_microseconds( double time );
+size_t seconds_to_nanoseconds( double time );
+
+
 NAMESPACE_END
 
 #endif

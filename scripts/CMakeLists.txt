@@ -2,6 +2,7 @@ SET (FILES
     samsonProcessesSupervise
     samsonValgrindSupervise
 	samsonModuleBootstrap
+	samsonPrepareServer
     samsonRun
 )
 

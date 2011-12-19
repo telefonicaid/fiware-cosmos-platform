@@ -11,7 +11,7 @@ NAMESPACE_BEGIN(engine)
 
 DiskStatisticsItem::DiskStatisticsItem()
 {
-    rate.setTimeLength( 60 ); // Last minute statistics
+    rate.setTimeLength( 10 ); // short term
 }	
 
 void DiskStatisticsItem::add( size_t _size )
@@ -32,23 +32,27 @@ void DiskStatisticsItem::getInfo( std::ostringstream& output)
 void DiskStatistics::add( DiskOperation::DiskOperationType type, size_t size )
 {
     switch (type) {
-        case DiskOperation::read:
-        {
-            item_read.add( size );
-        }
-            break;
-            
-        case DiskOperation::append:
-        case DiskOperation::write:
-        {
-            item_write.add( size );
-        }
-            break;
-            
-        case DiskOperation::remove:
-        {
-        }
-            break;
+	
+	case DiskOperation::read:
+	{
+	   //LM_M(("Add read sample %lu --> %s" , size , item_write.rate.str().c_str() ));
+		item_read.add( size );
+	}
+	break;
+    
+	case DiskOperation::append:
+	case DiskOperation::write:
+	{
+	   //LM_M(("Add write sample %lu --> %s" , size , item_write.rate.str().c_str() ));
+		item_write.add( size );
+		break;
+	}
+		
+	case DiskOperation::remove:
+	{
+		break;
+	}
+
     }
     
     // Add the toal

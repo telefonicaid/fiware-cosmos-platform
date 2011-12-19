@@ -199,6 +199,7 @@ public:
     size_t getTotalSize();
     
     double getRate();
+    double getHitRate();
     double getGlobalRate();
     
     void setTimeLength( double t );

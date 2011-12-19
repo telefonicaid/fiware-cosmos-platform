@@ -70,10 +70,11 @@ MainWindow *mainWindow;               // Main window....
 // Map of values collections ( updated from 
 au::Token token_value_collections("value_collections");
 au::map<std::string , au::ContinuousValueCollection<double> > value_collections;
-
+std::vector<std::string> concepts; // Vector with all the concepts
 
 void process_command( std::string line )
 {
+    
     
     // Remove returns at the end
     //    while ( line[ line.size()-1 ] == '\n' )
@@ -91,12 +92,14 @@ void process_command( std::string line )
     LM_V(("Converting %s --> %f", cmd.get_argument(1).c_str()  , value ));
     
     //std::cout << au::str( "Processing '%s' %s=%f\n" , line.c_str() , name.c_str() , value );
-    if( name == concept) // Only accept selected concept
-    {
-        au::TokenTaker tt(&token_value_collections); // We are the only element rigth now, but in the future we can have multiple
-        au::ContinuousValueCollection<double>* vc = value_collections.findOrCreate( name );
-        vc->set( value );
-    }    
+    
+    for ( size_t i = 0 ; i < concepts.size() ; i ++ )
+        if ( name == concepts[i] )
+        {
+            au::TokenTaker tt(&token_value_collections); // We are the only element rigth now, but in the future we can have multiple
+            au::ContinuousValueCollection<double>* vc = value_collections.findOrCreate( name );
+            vc->set( value );
+        }
 }
 
 
@@ -135,11 +138,15 @@ int main( int argC ,  char *argV[] )
     if ( strcmp( concept,"main") == 0)
         LM_W(("No concept specified with -concept optin. Traking 'main' concept...."));
 
+    // Split the concept in concepts to track all of them
+    au::split( concept , ',' , concepts );   
+
     
     LM_V(("------------------------------------------------"));
     LM_V(("SETUP"));
     LM_V(("------------------------------------------------"));
     LM_V(("Base %f",base));
+    LM_V(("concept %s (%d concepts)",concept,(int)concepts.size()));
     LM_V(("------------------------------------------------"));
     
     

@@ -60,8 +60,6 @@ MainWindow::MainWindow( QWidget *parent ) : QMainWindow(parent)
     
 }
 
-
-
 void MainWindow::updateTimer()
 {
     au::TokenTaker tt(&token_value_collections);

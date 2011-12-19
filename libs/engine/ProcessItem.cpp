@@ -44,6 +44,7 @@ ProcessItem::ProcessItem(  int _priority ) :token( "ProcessItem" )
     
     canceled = false;   // By default it is not canceled
     
+    //Javi: this is duplicate or should be other member?
     operation_name = "unknown";     // By default no statistcs are done
     working_size = 0;               // By default no content to be processed
 }

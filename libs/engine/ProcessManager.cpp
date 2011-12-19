@@ -22,9 +22,11 @@
 
 NAMESPACE_BEGIN(engine)
 
-
+//Javi: shouldn't this be better a member of ProcessManager rather than a global? (nicer encapsulation)
 static ProcessManager *processManager=NULL;
 
+//Javi: if init is only used to initialise the instance, it could be done in shared() when it checks for initialisation. 
+// It is a more classic implementation of singletons.
 void ProcessManager::init( int _num_processes)
 {
     if( processManager )
@@ -95,6 +97,7 @@ void ProcessManager::add( ProcessItem *item , size_t listenerId  )
     // set the pointer to myself
     item->processManager = this;
    
+    //Javi: duplicate. remove
     // set the pointer to myself
     item->processManager = this;
    

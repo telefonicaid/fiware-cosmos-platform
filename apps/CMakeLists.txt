@@ -15,6 +15,8 @@ ADD_SUBDIRECTORY(samsonKiller)
 ADD_SUBDIRECTORY(samsonPush)
 ADD_SUBDIRECTORY(samsonPop)
 
+ADD_SUBDIRECTORY(unitTest)
+
 if (HAVE_QT)
    if (HAVE_KDCHART)
      ADD_SUBDIRECTORY(delilahQt)

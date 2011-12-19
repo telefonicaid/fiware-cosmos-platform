@@ -4,15 +4,12 @@ package es.tid.ps.kpicalculation.data;
  * @author javierb
  */
 public class JobDetails {
-
     private String name;
     private String fields;
     private String group;
 
     public JobDetails(String name, String fields) {
-        this.name = name;
-        this.fields = fields;
-        this.group = null;
+        this(name, fields, null);
     }
 
     public JobDetails(String name, String fields, String group) {
@@ -44,5 +41,4 @@ public class JobDetails {
     public void setGroup(String group) {
         this.group = group;
     }
-
 }

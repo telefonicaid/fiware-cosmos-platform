@@ -38,15 +38,14 @@ public class PageViewKpiCounterComparator implements RawComparator<WebLog> {
         try {
             WebLogCounter o1 = new WebLogCounter();
             WebLogCounter o2 = new WebLogCounter();
-            buffer.reset(b1, s1, l1);
+            this.buffer.reset(b1, s1, l1);
             o1.readFields(buffer);
-            buffer.reset(b2, s2, l2);
+            this.buffer.reset(b2, s2, l2);
             o2.readFields(buffer);
             return compare(o1, o2);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     /*

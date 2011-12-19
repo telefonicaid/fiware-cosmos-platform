@@ -23,7 +23,6 @@ import es.tid.ps.kpicalculation.data.WebLog;
  */
 public class KpiCounterReducer extends
         Reducer<WebLog, IntWritable, Text, IntWritable> {
-
     private IntWritable counter;
     private Text text;
 
@@ -51,14 +50,12 @@ public class KpiCounterReducer extends
     @Override
     protected void reduce(WebLog key, Iterable<IntWritable> values,
             Context context) throws IOException, InterruptedException {
-
-        int res = 0;
-
+        int count = 0;
         while (values.iterator().hasNext()) {
-            res += values.iterator().next().get();
+            count += values.iterator().next().get();
         }
-        counter.set(res);
-        text.set(key.mainKey);
-        context.write(text, counter);
+        this.counter.set(count);
+        this.text.set(key.mainKey);
+        context.write(this.text, this.counter);
     }
 }

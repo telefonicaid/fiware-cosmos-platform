@@ -22,17 +22,15 @@ import org.apache.hadoop.io.Text;
  * @author javierb
  */
 public class WebLogCounter extends WebLog {
-
     protected static int HASH_CONST = 163;
+
     private Iterator<String> iterator;
     protected Collection<String> mainFields;
 
     public WebLogCounter() {
-        super();
     }
 
     public WebLogCounter(Collection<String> fields) {
-        super();
         this.mainFields = fields;
     }
 
@@ -59,7 +57,6 @@ public class WebLogCounter extends WebLog {
     @Override
     public int hashCode() {
         return this.mainKey.hashCode() * HASH_CONST;
-
     }
 
     @Override
@@ -72,8 +69,9 @@ public class WebLogCounter extends WebLog {
             SecurityException, IllegalAccessException, NoSuchFieldException {
         // TODO Auto-generated method stub
         super.set(line);
-        if (mainFields != null)
+        if (this.mainFields != null) {
             this.initMainKey(this.mainFields);
+        }
     }
 
     @Override
@@ -81,21 +79,22 @@ public class WebLogCounter extends WebLog {
             SecurityException, IllegalAccessException, NoSuchFieldException {
         // TODO Auto-generated method stub
         super.set(txt);
-        if (mainFields != null)
+        if (this.mainFields != null) {
             this.initMainKey(this.mainFields);
+        }
     }
 
     protected void initMainKey(Collection<String> mainFields)
             throws IllegalArgumentException, SecurityException,
             IllegalAccessException, NoSuchFieldException {
-        mainKey = "";
+        this.mainKey = "";
         this.iterator = mainFields.iterator();
 
-        while (iterator.hasNext()) {
-            mainKey += (String) this.getClass().getField(iterator.next())
-                    .get(this);
-            if (iterator.hasNext()) {
-                mainKey += "\t";
+        while (this.iterator.hasNext()) {
+            this.mainKey += (String) this.getClass()
+                    .getField(this.iterator.next()).get(this);
+            if (this.iterator.hasNext()) {
+                this.mainKey += "\t";
             }
         }
     }
@@ -113,5 +112,4 @@ public class WebLogCounter extends WebLog {
         }
         return false;
     }
-
 }

@@ -1,13 +1,11 @@
 package es.tid.ps.kpicalculation;
 
 import java.io.IOException;
-import java.util.Collection;
 
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.RawComparator;
 
 import es.tid.ps.kpicalculation.data.WebLog;
-import es.tid.ps.kpicalculation.data.WebLogFactory;
 import es.tid.ps.kpicalculation.data.WebLogCounterGroup;
 
 /**
@@ -40,9 +38,9 @@ public class PageViewKpiCounterGroupedComparator implements
         try {
             WebLog o1 = new WebLogCounterGroup();
             WebLog o2 = new WebLogCounterGroup();
-            buffer.reset(b1, s1, l1);
+            this.buffer.reset(b1, s1, l1);
             o1.readFields(buffer);
-            buffer.reset(b2, s2, l2);
+            this.buffer.reset(b2, s2, l2);
             o2.readFields(buffer);
             return compare(o1, o2);
         } catch (IOException e) {

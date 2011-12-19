@@ -21,7 +21,6 @@ import es.tid.ps.kpicalculation.data.WebLog;
  */
 public class KpiCounterByCombiner extends
         Reducer<WebLog, IntWritable, WebLog, IntWritable> {
-
     private static final IntWritable ONE = new IntWritable(1);
 
     /**

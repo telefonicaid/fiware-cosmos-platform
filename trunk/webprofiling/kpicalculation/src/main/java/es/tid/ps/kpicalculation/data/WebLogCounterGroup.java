@@ -24,11 +24,9 @@ import org.apache.hadoop.io.Text;
  * @author javierb
  */
 public class WebLogCounterGroup extends WebLogCounter {
-
     private String secondaryFields;
 
     public WebLogCounterGroup() {
-        super();
     }
 
     public WebLogCounterGroup(Collection<String> fields, String secondaryFields) {

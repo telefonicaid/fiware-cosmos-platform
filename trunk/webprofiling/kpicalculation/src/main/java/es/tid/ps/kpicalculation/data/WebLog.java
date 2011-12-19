@@ -21,11 +21,10 @@ import es.tid.ps.kpicalculation.utils.KpiCalculationNormalizer;
  * @author javierb
  */
 public class WebLog implements WritableComparable<WebLog> {
+    protected final static String DELIMITER = "\t";
 
     public String mainKey;
     public String secondaryKey;
-
-    final protected static String DELIMITER = "\t";
 
     private StringBuilder sBuilder;
 
@@ -49,7 +48,7 @@ public class WebLog implements WritableComparable<WebLog> {
      * @return the visitorId
      */
     public String getVisitorId() {
-        return visitorId;
+        return this.visitorId;
     }
 
     /**
@@ -64,7 +63,7 @@ public class WebLog implements WritableComparable<WebLog> {
      * @return the protocol
      */
     public String getProtocol() {
-        return protocol;
+        return this.protocol;
     }
 
     /**
@@ -79,7 +78,7 @@ public class WebLog implements WritableComparable<WebLog> {
      * @return the fullUrl
      */
     public String getFullUrl() {
-        return fullUrl;
+        return this.fullUrl;
     }
 
     /**
@@ -94,7 +93,7 @@ public class WebLog implements WritableComparable<WebLog> {
      * @return the urlDomain
      */
     public String getUrlDomain() {
-        return urlDomain;
+        return this.urlDomain;
     }
 
     /**
@@ -109,7 +108,7 @@ public class WebLog implements WritableComparable<WebLog> {
      * @return the urlPath
      */
     public String getUrlPath() {
-        return urlPath;
+        return this.urlPath;
     }
 
     /**
@@ -124,7 +123,7 @@ public class WebLog implements WritableComparable<WebLog> {
      * @return the urlQuery
      */
     public String getUrlQuery() {
-        return urlQuery;
+        return this.urlQuery;
     }
 
     /**
@@ -139,7 +138,7 @@ public class WebLog implements WritableComparable<WebLog> {
      * @return the dateView
      */
     public String getDateView() {
-        return dateView;
+        return this.dateView;
     }
 
     /**
@@ -154,7 +153,7 @@ public class WebLog implements WritableComparable<WebLog> {
      * @return the timeDay
      */
     public String getTimeDay() {
-        return timeDay;
+        return this.timeDay;
     }
 
     /**
@@ -169,7 +168,7 @@ public class WebLog implements WritableComparable<WebLog> {
      * @return the userAgent
      */
     public String getUserAgent() {
-        return userAgent;
+        return this.userAgent;
     }
 
     /**
@@ -184,7 +183,7 @@ public class WebLog implements WritableComparable<WebLog> {
      * @return the browser
      */
     public String getBrowser() {
-        return browser;
+        return this.browser;
     }
 
     /**
@@ -199,7 +198,7 @@ public class WebLog implements WritableComparable<WebLog> {
      * @return the device
      */
     public String getDevice() {
-        return device;
+        return this.device;
     }
 
     /**
@@ -214,7 +213,7 @@ public class WebLog implements WritableComparable<WebLog> {
      * @return the operSys
      */
     public String getOperSys() {
-        return operSys;
+        return this.operSys;
     }
 
     /**
@@ -229,7 +228,7 @@ public class WebLog implements WritableComparable<WebLog> {
      * @return the method
      */
     public String getMethod() {
-        return method;
+        return this.method;
     }
 
     /**
@@ -244,7 +243,7 @@ public class WebLog implements WritableComparable<WebLog> {
      * @return the status
      */
     public String getStatus() {
-        return status;
+        return this.status;
     }
 
     /**
@@ -259,7 +258,7 @@ public class WebLog implements WritableComparable<WebLog> {
      * @return the text
      */
     public Text getText() {
-        return text;
+        return this.text;
     }
 
     /**
@@ -333,7 +332,6 @@ public class WebLog implements WritableComparable<WebLog> {
             }
 
             this.initText();
-
         } catch (Exception ex) {
             throw new KpiCalculationDataException("The URL was wrong",
                     KpiCalculationCounter.MALFORMED_URL);
@@ -401,7 +399,7 @@ public class WebLog implements WritableComparable<WebLog> {
         this.sBuilder.append(method).append(DELIMITER);
         this.sBuilder.append(status);
 
-        this.text.set(sBuilder.toString());
+        this.text.set(this.sBuilder.toString());
     }
 
     @Override

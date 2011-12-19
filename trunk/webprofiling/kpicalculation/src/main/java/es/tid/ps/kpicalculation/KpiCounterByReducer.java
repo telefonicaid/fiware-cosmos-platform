@@ -28,12 +28,11 @@ import es.tid.ps.kpicalculation.data.WebLog;
  */
 public class KpiCounterByReducer extends
         Reducer<WebLog, IntWritable, Text, IntWritable> {
-
-    private String currentKey = "";
-    private int currentValue = 0;
+    private String currentKey;
+    private int currentValue;
     private IntWritable counter;
     private Text text;
-
+    
     /**
      * Method that creates the objects that will be used during the reduce
      * 
@@ -43,6 +42,8 @@ public class KpiCounterByReducer extends
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
+        this.currentKey = "";
+        this.currentValue = 0;
         this.counter = new IntWritable();
         this.text = new Text();
     }
@@ -58,16 +59,15 @@ public class KpiCounterByReducer extends
     @Override
     protected void reduce(WebLog key, Iterable<IntWritable> values,
             Context context) throws IOException, InterruptedException {
-
-        if (!key.mainKey.equals(currentKey)) {
-            if (!currentKey.equals("")) {
+        if (!key.mainKey.equals(this.currentKey)) {
+            if (!this.currentKey.isEmpty()) {
                 this.setValues();
-                context.write(text, counter);
+                context.write(this.text, this.counter);
             }
-            currentKey = key.mainKey;
-            currentValue = 1;
+            this.currentKey = key.mainKey;
+            this.currentValue = 1;
         } else {
-            currentValue++;
+            this.currentValue++;
         }
     }
 
@@ -82,7 +82,7 @@ public class KpiCounterByReducer extends
     protected void cleanup(Context context) throws IOException,
             InterruptedException {
         this.setValues();
-        context.write(text, counter);
+        context.write(this.text, this.counter);
         super.cleanup(context);
     }
 
@@ -91,7 +91,7 @@ public class KpiCounterByReducer extends
      * output.
      */
     private void setValues() {
-        text.set(currentKey);
-        counter.set(currentValue);
+        this.text.set(this.currentKey);
+        this.counter.set(this.currentValue);
     }
 }

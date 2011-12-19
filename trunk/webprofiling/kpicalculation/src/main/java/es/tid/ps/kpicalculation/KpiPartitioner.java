@@ -19,7 +19,6 @@ import es.tid.ps.kpicalculation.data.WebLog;
  * @author javierb
  */
 public class KpiPartitioner extends Partitioner<WebLog, IntWritable> {
-
     /**
      * Get the paritition number for a given key, in this case the partition is
      * calculate from the naturalKey of the structure CompositeKey

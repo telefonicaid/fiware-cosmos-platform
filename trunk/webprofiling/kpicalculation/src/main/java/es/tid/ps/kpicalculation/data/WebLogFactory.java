@@ -9,18 +9,12 @@ import java.util.Collection;
  * @author javierb@tid.es
  */
 public abstract class WebLogFactory {
-    public static WebLog instance = null;
-
-    public static Collection<String> primaryKeys = null;
-    public static String secondaryKeys = null;
-
-    public static WebLogType type = null;
-
     /**
-     * This method returns a weblog.
+     * This method creates a weblog instance, and returns it.
      */
-    public static WebLog getPageView() {
-        switch (type) {
+    public static WebLog getWebLog(Collection<String> primaryKeys,
+            String secondaryKeys, WebLogType wlType) {
+        switch (wlType) {
         case WEB_LOG:
             return new WebLog();
         case WEB_LOG_COUNTER:
@@ -30,23 +24,5 @@ public abstract class WebLogFactory {
         default:
             return null;
         }
-    }
-
-    /**
-     * This method sets the values needed in order to provide a type of weblog
-     * when it is requested to the factory.
-     * 
-     * @param mainKey
-     *            filtering keys to be used for calculating the kpi
-     * @param secKeys
-     *            secondary key to be used for grouping when calculating the kpi
-     * @param wlType
-     *            type of weblog to be returned.
-     */
-    public static void setKeys(Collection<String> mainKeys, String secKeys,
-            WebLogType wlType) {
-        primaryKeys = mainKeys;
-        secondaryKeys = secKeys;
-        type = wlType;
     }
 }

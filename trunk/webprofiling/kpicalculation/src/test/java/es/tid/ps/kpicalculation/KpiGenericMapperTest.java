@@ -67,7 +67,8 @@ public class KpiGenericMapperTest extends TestCase {
         }
         
         
-        WebLog key = WebLogFactory.getPageView();
+        WebLog key = WebLogFactory.getWebLog(null, null,
+                WebLogType.WEB_LOG_COUNTER);
         key.mainKey = "http\t-Microsoft-CryptoAPI/6.1";
 
         List<Pair<WebLog, IntWritable>> expected = new ArrayList<Pair<WebLog, IntWritable>>();
@@ -101,7 +102,8 @@ public class KpiGenericMapperTest extends TestCase {
 
        
         
-        WebLog key = WebLogFactory.getPageView();
+        WebLog key = WebLogFactory.getWebLog(null, null,
+                WebLogType.WEB_LOG_COUNTER_GROUP);
         key.mainKey = "http\t-Microsoft-CryptoAPI/6.1";
         key.secondaryKey = "16737b1873ef03ad";
 

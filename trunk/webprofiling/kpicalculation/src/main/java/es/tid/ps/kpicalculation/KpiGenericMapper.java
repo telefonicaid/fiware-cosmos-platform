@@ -57,12 +57,10 @@ public class KpiGenericMapper extends
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
-        WebLogFactory.setKeys(
-                context.getConfiguration().getStringCollection(
-                        MAIN_FIELDS_PARAMETER),
-                context.getConfiguration().get(GROUP_FIELD_PARAMETER), 
-                WebLogType.valueOf(context.getConfiguration().get(TYPE_PARAMETER)));
-        this.view = WebLogFactory.getPageView();
+        this.view = WebLogFactory.getWebLog(context.getConfiguration()
+                .getStringCollection(MAIN_FIELDS_PARAMETER), context
+                .getConfiguration().get(GROUP_FIELD_PARAMETER), WebLogType
+                .valueOf(context.getConfiguration().get(TYPE_PARAMETER)));
     }
 
     /**

@@ -55,8 +55,8 @@ public class KpiCounterByReducerTest extends  TestCase{
             List<IntWritable> values = new ArrayList<IntWritable>();
             Collection<String> col = new ArrayList();
             col.add("protocol");
-            WebLogFactory.setKeys(col, "visitorId", WebLogType.WEB_LOG_COUNTER_GROUP);
-            WebLog p = WebLogFactory.getPageView();
+            WebLog p = WebLogFactory.getWebLog(col, "visitorId",
+                    WebLogType.WEB_LOG_COUNTER_GROUP);
             p.mainKey = "http\ttid.es";
             p.secondaryKey = "16737b1873ef03ad";
             values.add(new IntWritable(1));

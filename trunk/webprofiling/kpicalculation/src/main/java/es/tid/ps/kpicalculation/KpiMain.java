@@ -125,13 +125,12 @@ public class KpiMain extends Configured implements Tool {
                 aggregationJob.getConfiguration().setStrings(
                         "kpi.aggregation.type",
                         WebLogType.WEB_LOG_COUNTER_GROUP.toString());
-                WebLogFactory.setKeys(
+                aggregationJob.setMapOutputKeyClass(WebLogFactory.getWebLog(
                         aggregationJob.getConfiguration().getStringCollection(
                                 "kpi.aggregation.fields"),
                         aggregationJob.getConfiguration().get(
                                 "kpi.aggregation.group"),
-                        WebLogType.WEB_LOG_COUNTER_GROUP);
-
+                        WebLogType.WEB_LOG_COUNTER_GROUP).getClass());
                 aggregationJob.setCombinerClass(KpiCounterByCombiner.class);
                 aggregationJob.setReducerClass(KpiCounterByReducer.class);
                 aggregationJob
@@ -142,12 +141,12 @@ public class KpiMain extends Configured implements Tool {
                 aggregationJob.getConfiguration().setStrings(
                         "kpi.aggregation.type",
                         WebLogType.WEB_LOG_COUNTER.toString());
-                WebLogFactory.setKeys(
+                aggregationJob.setMapOutputKeyClass(WebLogFactory.getWebLog(
                         aggregationJob.getConfiguration().getStringCollection(
                                 "kpi.aggregation.fields"),
                         aggregationJob.getConfiguration().get(
                                 "kpi.aggregation.group"),
-                        WebLogType.WEB_LOG_COUNTER);
+                        WebLogType.WEB_LOG_COUNTER).getClass());
                 aggregationJob.setCombinerClass(KpiCounterCombiner.class);
                 aggregationJob.setReducerClass(KpiCounterReducer.class);
                 aggregationJob
@@ -161,9 +160,6 @@ public class KpiMain extends Configured implements Tool {
             aggregationJob.setPartitionerClass(KpiPartitioner.class);
 
             aggregationJob.setInputFormatClass(LzoTextInputFormat.class);
-
-            aggregationJob.setMapOutputKeyClass(WebLogFactory.getPageView()
-                    .getClass());
             aggregationJob.setMapOutputValueClass(IntWritable.class);
             aggregationJob.setOutputKeyClass(Text.class);
             aggregationJob.setOutputValueClass(IntWritable.class);

@@ -1,0 +1,13 @@
+
+echo "Simple mobility demo"
+
+# Check number of arguments
+if [ $# -ne 1 ]
+then
+  echo "Usage: `basename $0` {samson-controller}"
+  exit 1
+fi
+
+POP_QUEUE=demo.99.level.04.levels_updates_txt
+
+samsonPop -controller $1 $POP_QUEUE

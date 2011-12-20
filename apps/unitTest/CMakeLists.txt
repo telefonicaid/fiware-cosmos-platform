@@ -1,4 +1,6 @@
 SET (SOURCES
+    engine_test.cpp
+    diskManager_test.cpp
     main_UnitTest.cpp
 )
 
@@ -7,11 +9,11 @@ find_path(GTEST_INCLUDE_DIR gtest/gtest.h
           PATHS /usr/includes 
           PATH_SUFFIXES gtest )
 
-find_library(GTEST_LIBRARY libgtest
-             PATHS /usr/lib64 )
+find_library(GTEST_LIBRARY libgtest.a
+             PATHS /usr/lib64 /usr/local/lib64)
 
-find_library(GTESTMAIN_LIBRARY libgtest_main
-             PATHS /usr/lib64 )
+find_library(GTESTMAIN_LIBRARY libgtest_main.a
+             PATHS /usr/lib64 /usr/local/lib64)
 
 SET (HEADERS
      ${GTEST_INCLUDE_DIR}

@@ -1,0 +1,18 @@
+
+
+CONCEPT=url
+
+# Check number of arguments
+# ------------------------------------------------------------
+if [ $# -ne 1 ]
+then
+  read -p "Enter server where SAMSON is running " SERVER
+else
+    SERVER=$1
+fi
+echo "Conecting to SAMSON in $SERVER"
+# ------------------------------------------------------------
+
+POP_QUEUE=demo.99.hit.31.output_tops_txt
+samsonPop -controller $SERVER $POP_QUEUE \
+     | samsonTopicMonitor -concept $CONCEPT -title "Top urls"

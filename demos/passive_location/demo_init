@@ -1,8 +1,4 @@
 
-CELL_TXT_QUEUE=cells.txt
-CELL_QUEUE=04.cells
-
-
 # Check number of arguments
 # ------------------------------------------------------------
 if [ $# -ne 1 ]
@@ -25,8 +21,5 @@ else
 fi
 # ------------------------------------------------------------
 
-delilah -controller $SERVER -command "rm_queue $CELL_TXT_QUEUE $CELL_QUEUE"
-cat GSM_LATLONG.txt | samsonPush -controller $SERVER $CELL_TXT_QUEUE
-cat UMTS_LATLONG.txt  | samsonPush -controller $SERVER $CELL_TXT_QUEUE
-delilah -controller $SERVER -command "run_stream_operation passive_location.parse_cell_info $CELL_TXT_QUEUE $CELL_QUEUE"
-delilah -controller $SERVER -command "rm_queue $CELL_TXT_QUEUE"
+delilah -controller $SERVER -command "init_stream passive_location.demo"
+

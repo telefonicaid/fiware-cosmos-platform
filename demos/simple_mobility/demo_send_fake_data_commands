@@ -25,5 +25,5 @@ fi
 # ------------------------------------------------------------
 
 simple_mobility_generator -users $USERS -commands \
-     | samsonPush -controller $SERVER $PUSH_COMMANDS_QUEUE -mr 50000000
+     | samsonPush -controller $SERVER $PUSH_COMMANDS_QUEUE -mr 50000000 -v
 

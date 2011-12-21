@@ -168,6 +168,15 @@ std::string Rate::str()
                    );
 }
 
+std::string Rate::strAccumulatedAndRate()
+{
+    //update_values();
+    return au::str("[ Accumulated %s at %s ]" 
+                   , au::str_detail( total_size , "B" ).c_str() 
+                   , au::str( getRate() , "B/s" ).c_str() 
+                   );
+}
+
 size_t Rate::getTotalNumberOfHits()
 {
     return total_num;

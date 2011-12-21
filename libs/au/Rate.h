@@ -194,6 +194,7 @@ public:
     Rate();
     void push( size_t size );
     std::string str();
+    std::string strAccumulatedAndRate();
 
     size_t getTotalNumberOfHits();
     size_t getTotalSize();

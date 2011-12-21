@@ -217,6 +217,10 @@ int main(int argC, const char *argV[])
                 std::cerr << "Error: " << delilahConsole->errorMessage( id ) << "\n";
                 std::cerr << "Error running '" << command << "'\n";
                 std::cerr << "Exiting...";
+                
+                LM_E(("Error running '%s' \n", command ));
+                LM_E(("Error: %s",  delilahConsole->errorMessage( id ).c_str()));
+
             }
             
         }
@@ -275,9 +279,8 @@ int main(int argC, const char *argV[])
                         std::cerr << "Error running '" << line <<  "' at line " << num_line << "\n";
                         std::cerr << "Exiting...";
                         
-                        LM_E(("Error: %s",  delilahConsole->errorMessage( id ).c_str()));
                         LM_E(("Error running '%s' at line %d\n", line, num_line));
-                        LM_E(("Exiting..."));
+                        LM_E(("Error: %s",  delilahConsole->errorMessage( id ).c_str()));
                     }
                     
                 }

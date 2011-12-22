@@ -62,6 +62,7 @@ TEST(enginetest, getInfoTest) {
     engine::Engine::shared()->getInfo( info );
     CMarkup xmlData( info.str() );
     std::cout << info.str() << std::endl;
+    xmlData.FindElem();
     //if(xmlData.FindElem("engine_element"))
     //{
         std::cout << "Data: " << xmlData.GetData() << std::endl;

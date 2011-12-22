@@ -47,10 +47,10 @@ include_directories("${PROJECT_SOURCE_DIR}/extern")
 # Executable declaration
 # ------------------------------------------------------------
 
-#if (GTEST_LIBRARY)
+if (GTEST_LIBRARY)
 ADD_EXECUTABLE(unitTest ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES(unitTest ${STATIC_LIBS} )
-#endif (GTEST_LIBRARY)
+endif (GTEST_LIBRARY)
 
 #INSTALL(TARGETS               unitTest
 #        RUNTIME DESTINATION   bin)

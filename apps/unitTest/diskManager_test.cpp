@@ -12,12 +12,13 @@
 *
 */
 
-#include "engine/DiskManager.h"
-
 #include "gtest/gtest.h"
 
+#include "engine/DiskManager.h"
+
+
 // Test engine's instantiation
-TEST(diskmanagertest, dminstantiationtest) {
+TEST(dmtest, dminstantiationtest) {
     //access instance without initialise. Should return NULL.
     EXPECT_EQ(engine::DiskManager::shared(), static_cast<engine::DiskManager*>(NULL)) << "Uninitialized DiskManager should be null"; //using just NULL produces compilation error
     //call init() and then instance. Should return a valid one.
@@ -28,9 +29,7 @@ TEST(diskmanagertest, dminstantiationtest) {
 
 }
 
-
 // Test diskoperations add/remove
-TEST(diskmanagertest, diskoperationtest) {
-    
+TEST(dmtest, dmdiskoperationtest) {
     EXPECT_TRUE(true);
 }

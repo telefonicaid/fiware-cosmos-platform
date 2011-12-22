@@ -1,7 +1,7 @@
 SET (SOURCES
+    main_UnitTest.cpp
     engine_test.cpp
     diskManager_test.cpp
-    main_UnitTest.cpp
 )
 
 
@@ -20,6 +20,8 @@ SET (HEADERS
 )
 
 SET (STATIC_LIBS
+     ${GTEST_LIBRARY}
+     ${GTESTMAIN_LIBRARY}
      engine
      pa
      lm
@@ -32,24 +34,23 @@ SET (STATIC_LIBS
      samsonModule
      pugi
      au
-     samsonCommon	
-     ${GTEST_LIBRARY}
-     ${GTESTMAIN_LIBRARY}
+     samsonCommon
+     xmlmarkup	
      ${COMMON_SAMSON_LIBS}
 )
 
 # Include directories
 # ------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs")
-
+include_directories("${PROJECT_SOURCE_DIR}/extern")
 
 # Executable declaration
 # ------------------------------------------------------------
 
-if (GTEST_LIBRARY)
+#if (GTEST_LIBRARY)
 ADD_EXECUTABLE(unitTest ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES(unitTest ${STATIC_LIBS} )
-endif (GTEST_LIBRARY)
+#endif (GTEST_LIBRARY)
 
 #INSTALL(TARGETS               unitTest
 #        RUNTIME DESTINATION   bin)

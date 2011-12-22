@@ -92,7 +92,8 @@ if (error EQUAL 0)
   ADD_SUBDIRECTORY(scripts)
   ADD_SUBDIRECTORY(libs)
   ADD_SUBDIRECTORY(apps)
-
+  ADD_SUBDIRECTORY(extern)
+  
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
 ADD_SUBDIRECTORY(testing)	# Test module and ctest stuff

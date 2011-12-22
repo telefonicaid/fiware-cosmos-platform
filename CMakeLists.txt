@@ -46,10 +46,22 @@ if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
 
+#
 # Common include
+#
 include_directories("/usr/include")
 include_directories("/usr/local/include")
 include_directories("/opt/local/include")
+
+#
+# Library directories
+#
+link_directories("/opt/local/lib")
+link_directories("/usr/lib64")
+
+#
+# External dependency checks
+#
 # See if we have KDChart installed (check_include_files does not work due to these being C++ headers)
 FIND_PATH(HAVE_KDCHART KDChartChart PATHS /usr/local/KDAB/KDChart-2.3.0/include /usr/local/kdchart/include /usr/local/KDAB/KDChart-2.4.2/include)
 if (HAVE_KDCHART)
@@ -59,7 +71,7 @@ if (HAVE_KDCHART)
   link_directories("${HAVE_KDCHART}/../lib")
 endif (HAVE_KDCHART)
 
-
+# QT check
 FIND_PATH( HAVE_QT Qt PATHS /opt/local/include /usr/include/qt4 )
 if ( HAVE_QT )
     MESSAGE("Using ${HAVE_QT} for QT")
@@ -67,9 +79,13 @@ else ( HAVE_QT )
     MESSAGE("Not using QT library")
 endif (HAVE_QT)
 
-
-link_directories("/opt/local/lib")
-link_directories("/usr/lib64")
+# Google Test - http://code.google.com/p/googletest/downloads/list
+FIND_LIBRARY ( HAVE_GTEST gtest PATHS /usr/lib64 /usr/local/lib64 )
+if ( HAVE_GTEST )
+    MESSAGE("Using ${HAVE_GTEST} for Google Test")
+else ( HAVE_GTEST )
+    MESSAGE("Not using the Google Test library")
+endif (HAVE_GTEST)
 
 #
 # Architecture 

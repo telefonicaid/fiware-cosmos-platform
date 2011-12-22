@@ -9,10 +9,7 @@ find_path(GTEST_INCLUDE_DIR gtest/gtest.h
           PATHS /usr/includes 
           PATH_SUFFIXES gtest )
 
-find_library(GTEST_LIBRARY libgtest.a
-             PATHS /usr/lib64 /usr/local/lib64)
-
-find_library(GTESTMAIN_LIBRARY libgtest_main.a
+find_library(GTESTMAIN_LIBRARY gtest_main
              PATHS /usr/lib64 /usr/local/lib64)
 
 SET (HEADERS
@@ -20,7 +17,7 @@ SET (HEADERS
 )
 
 SET (STATIC_LIBS
-     ${GTEST_LIBRARY}
+     ${HAVE_GTEST}
      ${GTESTMAIN_LIBRARY}
      engine
      pa
@@ -47,10 +44,8 @@ include_directories("${PROJECT_SOURCE_DIR}/extern")
 # Executable declaration
 # ------------------------------------------------------------
 
-if (GTEST_LIBRARY)
 ADD_EXECUTABLE(unitTest ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES(unitTest ${STATIC_LIBS} )
-endif (GTEST_LIBRARY)
 
 #INSTALL(TARGETS               unitTest
 #        RUNTIME DESTINATION   bin)

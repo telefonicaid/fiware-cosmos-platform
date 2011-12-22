@@ -15,17 +15,16 @@ ADD_SUBDIRECTORY(samsonKiller)
 ADD_SUBDIRECTORY(samsonPush)
 ADD_SUBDIRECTORY(samsonPop)
 
-ADD_SUBDIRECTORY(unitTest)
+if (HAVE_GTEST)
+   ADD_SUBDIRECTORY(unitTest)
+endif (HAVE_GTEST)
 
 if (HAVE_QT)
-   if (HAVE_KDCHART)
-     ADD_SUBDIRECTORY(delilahQt)
-     ADD_SUBDIRECTORY(samsonLevelMonitor)
-   endif (HAVE_KDCHART)
-endif (HAVE_QT)
-
-if (HAVE_QT)
-  ADD_SUBDIRECTORY(samsonTopicMonitor)
+    if (HAVE_KDCHART)
+        ADD_SUBDIRECTORY(delilahQt)
+        ADD_SUBDIRECTORY(samsonLevelMonitor)
+    endif (HAVE_KDCHART)
+    ADD_SUBDIRECTORY(samsonTopicMonitor)
 endif (HAVE_QT)
 
 # Sandbox...

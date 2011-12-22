@@ -33,9 +33,7 @@
 
 #include "au/namespace.h"
 
-
 NAMESPACE_BEGIN(au)
-
 
 
 // Conversion function

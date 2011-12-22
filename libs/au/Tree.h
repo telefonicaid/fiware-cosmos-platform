@@ -35,8 +35,6 @@
 
 NAMESPACE_BEGIN(au)
 
-
-
 // Conversion function
 double toDouble( std::string value );
 std::string toString( double value );

@@ -546,4 +546,17 @@ std::string path_from_directory( std::string directory , std::string file )
     
 }
 
+std::string string_in_color(std::string message , std::string color )
+{
+    std::ostringstream output;
+    if ( ( color == "red" ) || ( color == "r" ) )
+        output << "\033[1;31m"<< message << "\033[0m";
+    else
+        output << message;
+    
+    return  output.str();
+
+}
+
+
 NAMESPACE_END

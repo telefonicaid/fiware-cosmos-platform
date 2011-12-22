@@ -40,6 +40,7 @@ namespace samson {
 	{
 		
         std::string commandFileName;
+        bool table_collection_mode; // Falg to indicate that we are running commands over table collection
         
 	public:
 		

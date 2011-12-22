@@ -112,6 +112,9 @@ std::string path_from_directory( std::string directory , std::string file );
 // Find and replace 
 void find_and_replace( std::string &source, const std::string find, std::string replace );
 
+std::string string_in_color(std::string txt , std::string color );
+
+
 
 NAMESPACE_END
 

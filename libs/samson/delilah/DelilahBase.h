@@ -14,7 +14,9 @@
 #include <vector>                       // std::vector
 
 #include "au/Token.h"                   // au::Token
+#include "tables/TableCollection.h"
 #include "au/Cronometer.h"              // au::Cronometer
+#include "au/ConsoleAutoComplete.h"
 
 #include "DelilahUtils.h"               // 
 
@@ -89,6 +91,8 @@ namespace samson {
         // General document with the content of xml_info
         pugi::xml_document doc;
         
+        au::table::TableCollection table_collection;
+        
     public:
         
         DelilahBase( int num_workers );
@@ -134,6 +138,20 @@ namespace samson {
             return true;
             
         }
+        
+        
+        std::string runTableCollectionCommand( std::string command)
+        {
+            au::TokenTaker tt( &delilah_base_token  );
+            return table_collection.runCommand( command );
+        }
+        
+        void autoCompleteWithTableCollection( au::ConsoleAutoComplete* info )
+        {
+            au::TokenTaker tt( &delilah_base_token  );
+            table_collection.autoComplete( info );
+        }
+        
         
     private:
         

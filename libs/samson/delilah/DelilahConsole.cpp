@@ -282,6 +282,9 @@ namespace samson
         
         { "connect_to_queue"        , "Connect to a particular queue to receive live data from SAMSON"},
         { "disconnect_from_queue"   , "Disconnects from a particular queue to not receive live data from SAMSON"},
+        
+        { "set_database_mode"       , "set_database_mode on/off    Activate or deactivate debug database mode"},
+        
         { NULL , NULL }   
     };
     
@@ -289,6 +292,8 @@ namespace samson
     DelilahConsole::DelilahConsole( NetworkInterface *network ) : Delilah( network )
     {
         trace_on = false;
+        
+        table_collection_mode = false;  // By default we are not in this mode
         
         // Schedule a notification to review repeat-tasks
         engine::Engine::shared()->notify( new engine::Notification( notification_delilah_review_repeat_tasks  ) , 1 );
@@ -303,6 +308,10 @@ namespace samson
     
     std::string DelilahConsole::getPrompt()
     {
+        
+        if( table_collection_mode )
+            return "Database >";
+        
         int t = getUpdateSeconds();
         if ( t > 10 )
             return au::str("[%s] Delilah>", au::time_string(t).c_str() );
@@ -409,6 +418,17 @@ namespace samson
     
     void DelilahConsole::autoComplete( au::ConsoleAutoComplete* info )
     {
+        
+        
+        if( table_collection_mode )
+        {
+            if ( info->completingFirstWord() )
+                info->add("set_database_mode off");
+            
+            autoCompleteWithTableCollection( info );
+            return;
+        }
+            
         if ( info->completingFirstWord() )
         {
             // Add console commands
@@ -636,12 +656,69 @@ namespace samson
 		std::string mainCommand;
         
 		if( commandLine.get_num_arguments() == 0)
-		{
-            //clear();
 			return 0;	// Zero means no pending operation to check
-		}
 		else
 			mainCommand = commandLine.get_argument(0);
+
+        
+        
+        if( table_collection_mode )
+        {
+            
+            if( mainCommand == "set_database_mode" )
+            {
+                if( commandLine.get_num_arguments() < 2 )
+                {
+                    writeErrorOnConsole("Usage: set_database_mode on/off");
+                    return 0;
+                }
+                
+                if( commandLine.get_argument(1) == "on" )
+                {
+                    table_collection_mode = true;  
+                    writeWarningOnConsole("Database mode activated");
+                }
+                else if( commandLine.get_argument(1) == "off" )
+                {
+                    table_collection_mode = false;  
+                    writeWarningOnConsole("Database mode deactivated");
+                }
+                else
+                    writeErrorOnConsole("Usage: set_database_mode on/off");
+                
+                return 0;
+            }
+            
+            // Run data base command
+            writeOnConsole( runTableCollectionCommand(command) );
+            return 0;
+        }
+        
+        
+        if( mainCommand == "set_database_mode" )
+        {
+            if( commandLine.get_num_arguments() < 2 )
+            {
+                writeErrorOnConsole("Usage: set_database_mode on/off");
+                return 0;
+            }
+            
+            if( commandLine.get_argument(1) == "on" )
+            {
+                table_collection_mode = true;  
+                writeWarningOnConsole("Database mode activated");
+            }
+            else if( commandLine.get_argument(1) == "off" )
+            {
+                table_collection_mode = false;  
+                writeWarningOnConsole("Database mode deactivated");
+            }
+            else
+                writeErrorOnConsole("Usage: set_database_mode on/off");
+            
+            return 0;
+        }
+        
         
 		if ( commandLine.isArgumentValue(0,"help","h") )
 		{

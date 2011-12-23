@@ -15,9 +15,11 @@
 #include "gtest/gtest.h"
 
 #include "engine/Engine.h"
+#include "engine/EngineService.h"
 #include "engine/Notification.h"
 #include "engine/NotificationElement.h"
 #include "engine/Object.h"
+
 #include "xmlmarkup/xmlmarkup.h"
 
 
@@ -173,6 +175,8 @@ TEST(enginetest, quitEngineServiceTest) {
     std::ostringstream info;
     engine::Engine::shared()->getInfo( info );
     std::cout << info.str() << std::endl << std::endl;
+    
+    //std::cout << "engine_services" << ::engine::engine_services.size()<< std::endl;
     
     engine::Engine::shared()->quitEngineService();
 

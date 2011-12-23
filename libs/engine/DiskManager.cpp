@@ -39,6 +39,16 @@ DiskManager* DiskManager::shared()
     return diskManager;
 }
 
+void DiskManager::reset( int _num_disk_operations )
+{
+    if( diskManager )
+    {
+        diskManager->quitEngineService();
+        diskManager = NULL;    
+    }
+    
+}
+
 #pragma mark DiskManager
 
 void* run_disk_manager_worker( void* p )

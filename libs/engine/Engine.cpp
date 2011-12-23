@@ -90,6 +90,16 @@ void Engine::init()
     atexit( destroy_engine_services );
 }
 
+void Engine::reset()
+{
+    if ( engine )
+    {
+        shared()->quitEngineService();
+        //delete engine;
+        engine = NULL;
+        shared()->init();    
+    }
+}
 
 void sleep_select( double time )
 {

@@ -69,7 +69,7 @@ public:
     
     static void init( int _num_disk_operations );
     static DiskManager* shared();
-    static void reset( int _num_disk_operations );
+    static void reset();
    
     ~DiskManager();
     

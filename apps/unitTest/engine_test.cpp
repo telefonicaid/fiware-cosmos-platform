@@ -167,25 +167,23 @@ TEST(enginetest, getObjectByNameTest) {
 }   
 
 
-//quitEngineService() (TODO:llamar a getEngineServiceName() )
+//quitEngineService()
 TEST(enginetest, quitEngineServiceTest) {
     engine::Engine::shared()->reset();
     engine::Engine::init();
 
     std::ostringstream info;
     engine::Engine::shared()->getInfo( info );
-    std::cout << info.str() << std::endl << std::endl;
-    
-    //std::cout << "engine_services" << ::engine::engine_services.size()<< std::endl;
+    //std::cout << info.str() << std::endl << std::endl;
     
     engine::Engine::shared()->quitEngineService();
 
     engine::Engine::shared()->getInfo( info );
-    std::cout << info.str() << std::endl;
+    //std::cout << std::endl << std::endl << info.str() << std::endl;
 
     //Check that it is out of the run() loop TODO:How???
     //EXPECT_EQ(engine::Engine::shared()->
-    EXPECT_TRUE(true);
+    //EXPECT_TRUE(true);
 
 
 }

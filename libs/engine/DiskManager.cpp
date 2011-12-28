@@ -39,7 +39,7 @@ DiskManager* DiskManager::shared()
     return diskManager;
 }
 
-void DiskManager::reset( int _num_disk_operations )
+void DiskManager::reset()
 {
     if( diskManager )
     {

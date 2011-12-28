@@ -1,7 +1,7 @@
 SET (SOURCES
     main_UnitTest.cpp
-    engine_test.cpp
     diskManager_test.cpp
+    engine_test.cpp
 )
 
 

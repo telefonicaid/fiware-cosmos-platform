@@ -188,6 +188,8 @@ TEST(diskManagerTest, quitEngineServiceTest) {
     std::cout << "AFTER: " << info.str() << std::endl;
     */
     
+    std::ostringstream info;
+    engine::DiskManager::shared()->getInfo( info );
     CMarkup xmlData( info.str() );
     xmlData.FindElem("disk_manager");
     xmlData.IntoElem();

@@ -1,5 +1,6 @@
 SET (SOURCES
     main_UnitTest.cpp
+    buffer_test.cpp
     diskManager_test.cpp
     engine_test.cpp
 )

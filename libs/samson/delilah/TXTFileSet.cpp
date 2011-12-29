@@ -55,7 +55,7 @@ namespace samson
             free( previousBuffer );
         
 		// Remove the last chars until a complete line and keep for the next read
-		if( b->removeLastUnfinishedLine( &previousBuffer , &previousBufferSize ) != 0)
+		if( b->removeLastUnfinishedLine( previousBuffer , previousBufferSize ) != 0)
             return 1;   // Error filling the buffer
 
         // No error here

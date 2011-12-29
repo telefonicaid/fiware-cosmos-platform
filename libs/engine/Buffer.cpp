@@ -136,7 +136,7 @@ void Buffer::write( std::ifstream &inputStream )
  Remove the size of this set of characters
  */
 
-int Buffer::removeLastUnfinishedLine( char ** buffer , size_t *buffer_size)
+int Buffer::removeLastUnfinishedLine( char *& buffer , size_t& buffer_size)
 {
     
     size_t last_line_size = 0;
@@ -146,10 +146,10 @@ int Buffer::removeLastUnfinishedLine( char ** buffer , size_t *buffer_size)
     if( last_line_size == getSize() )
         return 1;   // Error... not final line found in the buffer
     
-    *buffer = (char*) malloc( last_line_size );
-    memcpy(*buffer, _data + _size - last_line_size , last_line_size);
+    buffer = (char*) malloc( last_line_size );
+    memcpy(buffer, _data + _size - last_line_size , last_line_size);
     
-    *buffer_size = last_line_size;
+    buffer_size = last_line_size;
     
     // Reduce the size of this buffer
     _size -= last_line_size;

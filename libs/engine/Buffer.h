@@ -136,7 +136,7 @@ public:
     // ------------------------------------------
     
     // Remove the last characters of an unfinished line and put them in buffer.
-    int removeLastUnfinishedLine( char ** buffer , size_t* buffer_size);
+    int removeLastUnfinishedLine( char *& buffer , size_t& buffer_size);
     
     
 public:

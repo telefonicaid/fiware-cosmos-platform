@@ -1,6 +1,6 @@
 /* ****************************************************************************
 *
-* FILE            engineTest.cpp
+* FILE            diskManagerTest.cpp
 *
 * AUTHOR          Javier Lois
 *
@@ -20,8 +20,7 @@
 
 #include "xmlmarkup/xmlmarkup.h"
 
-
-// Test engine's instantiation
+// Test DiskManager's instantiation
 TEST(diskManagerTest, instantiationTest) {
     //access instance without initialise. Should return NULL.
     EXPECT_EQ(engine::DiskManager::shared(), static_cast<engine::DiskManager*>(NULL)) 
@@ -43,7 +42,7 @@ TEST(diskManagerTest, addTest) {
 
     std::ostringstream info;
     //engine::DiskManager::shared()->getInfo( info );
-    //td::cout << info.str() << std::endl;
+    //std::cout << info.str() << std::endl;
     
     EXPECT_EQ(engine::DiskManager::shared()->getNumOperations(), 1) << "Wrong number of disk operations";
     

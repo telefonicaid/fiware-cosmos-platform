@@ -101,6 +101,8 @@ TEST(BufferTest, skipWriteTest) {
     readBuffer[11] = '\0';
     //the string "01234..." should start at position 1 instead of 0    
     EXPECT_EQ(strcmp(readBuffer+1, "0123456789"), 0) << "wrong data after skipWriting";
+
+    engine::MemoryManager::shared()->destroyBuffer(buffer1);
 }    
 
 // Write on the buffer the maximum possible ammount of data
@@ -121,6 +123,8 @@ TEST(BufferTest, ifstreamWriteTest) {
     buffer1->read(readBuffer,15);
     readBuffer[15] = '\0';
     EXPECT_EQ(strcmp(readBuffer, "012345678901234"), 0) << "wrong data after writing from ifstream";
+
+    engine::MemoryManager::shared()->destroyBuffer(buffer1);
 }    
 
 // Get available space to write with "write call"
@@ -131,7 +135,10 @@ TEST(BufferTest, getAvailableWriteTest) {
     char data[21] ="01234567890123456789";
     buffer1->write(data, 10);
     EXPECT_EQ(buffer1->getAvailableWrite(), 5);
+
+    engine::MemoryManager::shared()->destroyBuffer(buffer1);
 }    
+
 // Skip some space without reading
 //Test size_t skipRead( size_t size);
 TEST(BufferTest, skipReadTest) {
@@ -146,6 +153,8 @@ TEST(BufferTest, skipReadTest) {
     //std::cout << "readBuffer: " << readBuffer << std::endl;
     //readbuffer should have started reading at 3 instead of 0
     EXPECT_EQ(strcmp(readBuffer, "3456"), 0) << "wrong data after skipRead";
+
+    engine::MemoryManager::shared()->destroyBuffer(buffer1);
 }
 
 //Test size_t read( char *output_buffer, size_t output_size);
@@ -159,6 +168,8 @@ TEST(BufferTest, readTest) {
     readBuffer[4] = '\0';
     //std::cout << "readBuffer: " << readBuffer << std::endl;
     EXPECT_EQ(strcmp(readBuffer, "0123"), 0) << "Reading error";
+
+    engine::MemoryManager::shared()->destroyBuffer(buffer1);
 }
     
 // Get pending bytes to be read
@@ -172,6 +183,8 @@ TEST(BufferTest, getSizePendingReadTest) {
     buffer1->read(readBuffer, 4);
     //std::cout << "readBuffer: " << readBuffer << std::endl;
     EXPECT_EQ(buffer1->getSizePendingRead(), 6) << "Wrong pending read size";
+
+    engine::MemoryManager::shared()->destroyBuffer(buffer1);
 }
     
 // Get a pointer to the data space
@@ -187,6 +200,7 @@ TEST(BufferTest, getDataTest) {
     //std::cout << "readBuffer: " << readBuffer << std::endl;
     EXPECT_EQ(strcmp(readBuffer, "0123"), 0) << "Error accesing buffer data pointer";
     
+    engine::MemoryManager::shared()->destroyBuffer(buffer1);
 }    
 // Set used size manually
 //Test void setSize( size_t size );
@@ -203,6 +217,8 @@ TEST(BufferTest, setSizeTest) {
     readBuffer[11] = '\0';
     //the string "01234..." should start at position 1 instead of 0    
     EXPECT_EQ(strcmp(readBuffer+1, "0123456789"), 0) << "wrong data after manually setting used size";
+
+    engine::MemoryManager::shared()->destroyBuffer(buffer1);
 }    
     
 //Test SimpleBuffer getSimpleBuffer();
@@ -221,6 +237,7 @@ TEST(BufferTest, getSimpleBufferTest) {
     //std::cout << "readBuffer: " << readBuffer << std::endl;
     EXPECT_EQ(strcmp(readBuffer, "0123"), 0) << "Wrong data in the SimpleBuffer";
     
+    engine::MemoryManager::shared()->destroyBuffer(buffer1);
 }    
 
 //Test SimpleBuffer getSimpleBufferAtOffset(size_t offset);
@@ -280,6 +297,29 @@ TEST(BufferTest, removeLastUnfinishedLineTest) {
     
 // get xml information
 //Test void getInfo( std::ostringstream& output);
+TEST(BufferTest, getInfoTest) {
+    engine::MemoryManager::init(1000);
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
+    char data[21] ="0123456789";
+    buffer1->write(data, 10);
+    buffer1->skipRead(2);
+    
+    std::ostringstream info;
+    buffer1->getInfo( info );
+    //std::cout << info.str() << std::endl;
+    
+    //read and check xml
+    CMarkup xmlData( info.str() );
+    xmlData.FindElem();
+    xmlData.IntoElem();
+    xmlData.FindElem("max_size");
+    EXPECT_EQ(xmlData.GetData(), "15") << "Error writing max_size tag";
+    xmlData.FindElem("size");
+    EXPECT_EQ(xmlData.GetData(), "10") << "Error writing size tag";
+    xmlData.FindElem("offset");
+    EXPECT_EQ(xmlData.GetData(), "2") << "Error writing offset tag";
+    xmlData.FindElem("name");
+    EXPECT_EQ(strcmp(xmlData.GetData().c_str(), "buffer1"), 0) << "Error writing name tag";
 
-
+}
 

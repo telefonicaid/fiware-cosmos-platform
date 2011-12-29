@@ -112,7 +112,7 @@ TEST(BufferTest, ifstreamWriteTest) {
     engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
 
     std::ifstream file(fileName.c_str());
-    ASSERT_TRUE(file.is_open()) << "Error opening test file ./testdata.txt at execution path";
+    ASSERT_TRUE(file.is_open()) << "Error opening test file ./testdata.txt at execution path. Copy it from the source directory.";
     buffer1->write(file);
     
     EXPECT_EQ(buffer1->getSize(), 15);
@@ -244,23 +244,37 @@ TEST(BufferTest, getSimpleBufferAtOffsetTest) {
 // Remove the last characters of an unfinished line and put them in buffer.
 //Test int removeLastUnfinishedLine( char ** buffer , size_t* buffer_size);
 TEST(BufferTest, removeLastUnfinishedLineTest) {
-    std::string fileName = "./testdata.txt";
+    //std::string fileName = "./testdata.txt";
 
     engine::MemoryManager::init(1000);
     engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
 
-    std::ifstream file(fileName.c_str());
+    /*std::ifstream file(fileName.c_str());
     ASSERT_TRUE(file.is_open()) << "Error opening test file ./testdata.txt at execution path";
-    buffer1->write(file);
+    buffer1->write(file);*/
+    
+    char data[21] ="0123\n0123\n012";
+    buffer1->write(data, 15);
+
 
     char* readBuffer = NULL;
     size_t bufferSize;
-    buffer1->removeLastUnfinishedLine(&readBuffer, &bufferSize);
-    std::cout << "readBuffer: " << readBuffer << "bufferSize: " << bufferSize << std::endl;
+    buffer1->removeLastUnfinishedLine(readBuffer, bufferSize);
+    //Check that data in the result buffer is okay
+    EXPECT_EQ(strcmp(readBuffer, "012"), 0) << "removeLastUnfinishedLine() returned wrong data in buffer";    
+    EXPECT_EQ(bufferSize, 5) << "removeLastUnfinishedLine() returned wrong buffer size";    
     
-    if readBuffer!= NULL
+    //Check that the original buffer's data has been correctly modified
+    char readBuffer2[15];
+    memcpy(readBuffer2, buffer1->getData(), buffer1->getSize());
+    readBuffer2[buffer1->getSize()] = '\0';
+
+    EXPECT_EQ(strcmp(readBuffer2, "0123\n0123\n"), 0) << "Wrong data in buffer after removeLastUnfinishedLine call";    
+    EXPECT_EQ(buffer1->getSize(), 10) << "Wrong buffer size after removeLastUnfinishedLine call";
+    
+   if (readBuffer!= NULL)
     {
-        delete readBuffer;
+        free(readBuffer);
     }
 }    
     

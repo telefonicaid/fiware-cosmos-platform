@@ -1,8 +1,10 @@
 SET (SOURCES
     main_UnitTest.cpp
     buffer_test.cpp
+    diskStatistics_test.cpp
     diskOperation_test.cpp
     diskManager_test.cpp
+    memoryManager_test.cpp
     engine_test.cpp
 )
 

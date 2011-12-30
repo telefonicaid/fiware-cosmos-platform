@@ -25,7 +25,6 @@
 
 // Tests engine's instantiation
 TEST(enginetest, instantiationtest) {
-    //engine::Engine* test_engine = NULL;
     //access instance without initialise. Should return NULL.
     EXPECT_EQ(engine::Engine::shared(), static_cast<engine::Engine*>(NULL)) << "Uninitialized engine should be null"; //using just NULL produces compilation error
     //call init() and then instance. Should return a valid one.

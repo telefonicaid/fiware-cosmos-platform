@@ -319,7 +319,7 @@ TEST(BufferTest, getInfoTest) {
     xmlData.FindElem("offset");
     EXPECT_EQ(xmlData.GetData(), "2") << "Error writing offset tag";
     xmlData.FindElem("name");
-    EXPECT_EQ(strcmp(xmlData.GetData().c_str(), "buffer1"), 0) << "Error writing name tag";
+    EXPECT_EQ(xmlData.GetData(), "buffer1") << "Error writing name tag";
 
 }
 

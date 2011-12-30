@@ -1,5 +1,6 @@
 SET (SOURCES
     main_UnitTest.cpp
+    object_test.cpp
     buffer_test.cpp
     diskStatistics_test.cpp
     diskOperation_test.cpp

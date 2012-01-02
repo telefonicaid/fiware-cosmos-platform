@@ -108,13 +108,13 @@ TEST(BufferTest, skipWriteTest) {
 // Write on the buffer the maximum possible ammount of data
 //Test void write( std::ifstream &inputStream );
 TEST(BufferTest, ifstreamWriteTest) {
-    std::string fileName = "./testdata.txt";
+    std::string fileName = "test_data/testdata.txt";
 
     engine::MemoryManager::init(1000);
     engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
 
     std::ifstream file(fileName.c_str());
-    ASSERT_TRUE(file.is_open()) << "Error opening test file ./testdata.txt at execution path. Copy it from the source directory.";
+    ASSERT_TRUE(file.is_open()) << "Error opening test file test_data/testdata.txt at execution path. Copy it from the source directory.";
     buffer1->write(file);
     
     EXPECT_EQ(buffer1->getSize(), 15);

@@ -35,7 +35,7 @@ TEST(diskManagerTest, instantiationTest) {
 TEST(diskManagerTest, addTest) {
     engine::Engine::init();
     engine::DiskManager::reset();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(3);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
     engine::DiskManager::shared()->add(operation);
@@ -54,12 +54,13 @@ TEST(diskManagerTest, addTest) {
 TEST(diskManagerTest, cancelTest) {
     engine::Engine::init();
     engine::DiskManager::reset();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(3);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
     engine::DiskManager::shared()->add(operation);
     EXPECT_EQ(engine::DiskManager::shared()->getNumOperations(), 1) << "Error adding operation";
     engine::DiskManager::shared()->cancel(operation);
+    usleep(50000);
     EXPECT_EQ(engine::DiskManager::shared()->getNumOperations(), 0) << "Operation was not cancelled";
 
 }
@@ -68,10 +69,10 @@ TEST(diskManagerTest, cancelTest) {
     
 //test int getNumOperations();
 TEST(diskManagerTest, getNumOperationsTest) {
-    //add two operations and check that ir returns 2
+    //add two operations and check that it returns 2
     engine::Engine::init();
     engine::DiskManager::reset();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(3);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
     engine::DiskManager::shared()->add(operation);
@@ -86,7 +87,7 @@ TEST(diskManagerTest, getNumOperationsTest) {
 TEST(diskManagerTest, getInfoTest) {
     engine::Engine::init();
     engine::DiskManager::reset();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(3);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
     engine::DiskManager::shared()->add(operation);
@@ -143,7 +144,7 @@ TEST(diskManagerTest, getInfoTest) {
 TEST(diskManagerTest, setNumOperationsTest) {
     engine::Engine::init();
     engine::DiskManager::reset();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(3);
 
     /*std::ostringstream info;
     engine::DiskManager::shared()->getInfo( info );
@@ -166,7 +167,7 @@ TEST(diskManagerTest, setNumOperationsTest) {
 TEST(diskManagerTest, quitEngineServiceTest) {
     engine::Engine::init();
     engine::DiskManager::reset();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(3);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
     engine::DiskManager::shared()->add(operation);

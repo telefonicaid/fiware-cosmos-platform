@@ -2,7 +2,7 @@ SET (SOURCES
     main_UnitTest.cpp
     object_test.cpp
     objectsManager_test.cpp
-    #operationscontainer_test.cpp
+    operationscontainer_test.cpp
     buffer_test.cpp
     diskStatistics_test.cpp
     diskOperation_test.cpp
@@ -36,9 +36,10 @@ SET (STATIC_LIBS
      samsonNetwork
      samsonStream
      samsonModule
+     samsonWorkerLib
      pugi
-     au
      samsonCommon
+     au
      xmlmarkup	
      ${COMMON_SAMSON_LIBS}
 )

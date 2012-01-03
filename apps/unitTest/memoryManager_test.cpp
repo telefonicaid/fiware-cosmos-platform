@@ -141,7 +141,7 @@ TEST(memorymanagertest, getNumBuffersByTagTest) {
 //Test void runThread();        
     
 //Test void getInfo( std::ostringstream& output);
-TEST(memorymanagertest, testGetInfoTest) {
+TEST(memorymanagertest, getInfoTest) {
     engine::Engine::init();
     engine::MemoryManager::init(1000);
   

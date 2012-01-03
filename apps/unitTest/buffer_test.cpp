@@ -256,6 +256,8 @@ TEST(BufferTest, getSimpleBufferAtOffsetTest) {
     //std::cout << "readBuffer: " << readBuffer << std::endl;
     //The dta in the SimpleBuffer should start at 2 instead of 0
     EXPECT_EQ(strcmp(readBuffer, "2345"), 0) << "Wrong data in the SimpleBuffer";
+
+    engine::MemoryManager::shared()->destroyBuffer(buffer1);
 }    
 
 // Remove the last characters of an unfinished line and put them in buffer.
@@ -293,6 +295,8 @@ TEST(BufferTest, removeLastUnfinishedLineTest) {
     {
         free(readBuffer);
     }
+    
+    engine::MemoryManager::shared()->destroyBuffer(buffer1);
 }    
     
 // get xml information
@@ -321,5 +325,6 @@ TEST(BufferTest, getInfoTest) {
     xmlData.FindElem("name");
     EXPECT_EQ(xmlData.GetData(), "buffer1") << "Error writing name tag";
 
+    engine::MemoryManager::shared()->destroyBuffer(buffer1);
 }
 

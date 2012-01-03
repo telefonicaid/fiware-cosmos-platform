@@ -145,6 +145,7 @@ coverage: prepare_coverage
 	mkdir -p coverage
 	lcov -d BUILD_COVERAGE --capture --output-file coverage/samson.info
 	lcov -r coverage/samson.info "/usr/include/*" -o coverage/samson.info
+	lcov -r coverage/samson.info "/usr/local/include/*" -o coverage/samson.info
 	genhtml -o coverage coverage/samson.info
 # ------------------------------------------------
 # Testing

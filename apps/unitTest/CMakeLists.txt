@@ -1,5 +1,6 @@
 SET (SOURCES
     main_UnitTest.cpp
+    readFile_test.cpp
     object_test.cpp
     objectsManager_test.cpp
     #processManager_test.cpp

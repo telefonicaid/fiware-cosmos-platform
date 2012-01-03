@@ -61,6 +61,10 @@ prepare_debug:
 	mkdir BUILD_DEBUG || true
 	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
 
+prepare_coverage:
+	mkdir BUILD_COVERAGE || true
+	cd BUILD_COVERAGE; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCOVERAGE=True -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
+
 
 prepare: prepare_release prepare_debug
 
@@ -134,11 +138,14 @@ debug: prepare_debug
 # DEBUG Version
 # ------------------------------------------------
 
-debug_coverage:
-	mkdir BUILD_DEBUG_COVERAGE || true
-	cd BUILD_DEBUG_COVERAGE; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCOVERAGE=True
-	make -C BUILD_DEBUG_COVERAGE # -j8
-
+coverage: prepare_coverage
+	make -C BUILD_COVERAGE # -j8
+	lcov -d BUILD_COVERAGE -z	
+	BUILD_COVERAGE/apps/unitTest/unitTest
+	mkdir -p coverage
+	lcov -d BUILD_COVERAGE --capture --output-file coverage/samson.info
+	lcov -r coverage/samson.info "/usr/include/*" -o coverage/samson.info
+	genhtml -o coverage coverage/samson.info
 # ------------------------------------------------
 # Testing
 # ------------------------------------------------
@@ -238,9 +245,6 @@ clean_qt:
 v: di
 	valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  samsonLocal  2> output_valgrind_samsonLocal
 
-
-coverage: debug
-	cd BUILD_DEBUG ; ../scripts/samsonCoverage
 
 clear_ipcs:
 	for i in `sudo ipcs -m | grep -v key  | grep -v Memory  |  awk '{print $$2}'`; do sudo ipcrm -m $$i; done

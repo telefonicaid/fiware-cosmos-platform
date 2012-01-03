@@ -25,7 +25,13 @@ if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
   MESSAGE("cmake: DEBUG compilation")
   add_definitions(-DDEBUG -DDEBUG_$ENV{USER} -DDEBUG_${USER})
-  set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -g -Werror")
+  if (COVERAGE)
+    MESSAGE("cmake: Coverage compilation")
+    set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -g -Werror -fprofile-arcs -ftest-coverage")
+    set (CMAKE_EXE_LINKER_FLAGS "-fprofile-arcs -ftest-coverage")
+  else (NOT COVERAGE)
+    set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -g -Werror")
+  endif (COVERAGE)
 
 elseif (CMAKE_BUILD_TYPE STREQUAL RELEASE)
 
@@ -121,20 +127,3 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 else ()
     MESSAGE("cmake: NOT OK")
 endif (error EQUAL 0)
-
-
-# Code coverage
-
-if(COVERAGE)
-  set_target_properties( 
-		pa lm
-		 samsonCore samsonCommon   samsonDataLib  samsonNetwork
-		delilahLib samsonWorkerLib samsonControllerLib 
-		test_memory test_disk test_hostMgr test_unit
-                PROPERTIES
-                COMPILE_FLAGS "-O0 --coverage -fprofile-arcs -ftest-coverage"
-                LINK_FLAGS "--coverage -fprofile-arcs")
-
-endif(COVERAGE)
-
-

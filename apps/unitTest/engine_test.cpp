@@ -36,14 +36,12 @@ TEST(enginetest, instantiationtest) {
 //test run()
 TEST(enginetest, runTest) {
     //TODO: How can we test this??
-    engine::Engine::shared()->reset();
     engine::Engine::init();
     //engine::Engine::shared()->run();
 }
 
 //test get_info( std::ostringstream& output)
 TEST(enginetest, getInfoTest) {
-    engine::Engine::shared()->reset();
     engine::Engine::init();
 
     std::ostringstream info;
@@ -84,7 +82,6 @@ TEST(enginetest, getInfoTest) {
 
 //notify( Notification*  notification )
 TEST(enginetest, notificationTest) {
-    engine::Engine::shared()->reset();
     engine::Engine::init();
     engine::Notification* notification1 = new engine::Notification("test_notification1");
     engine::Notification* notification2 = new engine::Notification("test_notification2");
@@ -120,11 +117,8 @@ TEST(enginetest, notificationTest) {
 
 //void add( EngineElement *element );	
 TEST(enginetest, addTest) {
-    engine::Engine::shared()->reset();
     engine::Engine::init();
     engine::EngineElementSleepTest* testElement = new engine::EngineElementSleepTest();
-    //engine::Notification* notification = new engine::Notification("test_notification");
-    //engine::NotificationElement* notificationElement1 = new engine::NotificationElement(notification);
     engine::Engine::shared()->add(testElement);
     
     //get info and check that the element was added
@@ -135,14 +129,19 @@ TEST(enginetest, addTest) {
     xmlData.FindElem();
     xmlData.IntoElem();
  
-    //testelement is the second element in the engine, so we look for it
+    //Find the corresponding element in the list of elements in the engine
     xmlData.FindElem("elements");
     xmlData.IntoElem(); 
-    xmlData.FindElem("engine_element");
-    xmlData.FindElem("engine_element");
-    xmlData.IntoElem(); 
-    xmlData.FindElem("description");
-    EXPECT_TRUE(xmlData.GetData().find("Sleep element just to sleep 10 seconds") != std::string::npos ) << "EngineElement not added" ;
+    bool found = false;
+    while(xmlData.FindElem("engine_element") && !found)
+    {
+        xmlData.IntoElem(); 
+        xmlData.FindElem("description");
+        found = xmlData.GetData().find("Sleep element just to sleep 10 seconds") != std::string::npos;
+        xmlData.OutOfElem(); 
+    }
+    
+    EXPECT_TRUE( found ) << "EngineElement not added" ;
 
     //std::cout << "Probando add(): " << info.str() << std::endl;
     
@@ -155,7 +154,6 @@ TEST(enginetest, addTest) {
 
 //Object* getObjectByName( const char *name );
 TEST(enginetest, getObjectByNameTest) {
-    engine::Engine::shared()->reset();
      engine::Engine::init();
     engine::Object* testObject = new engine::Object("test_object");
     //Now the object should be registered in engine
@@ -168,7 +166,6 @@ TEST(enginetest, getObjectByNameTest) {
 
 //quitEngineService()
 TEST(enginetest, quitEngineServiceTest) {
-    engine::Engine::shared()->reset();
     engine::Engine::init();
 
     std::ostringstream info;

@@ -71,7 +71,6 @@ public:
     ~Engine();
     
     static void init();
-    static void reset();
     static Engine* shared();
     
 public:

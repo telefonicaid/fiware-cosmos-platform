@@ -23,7 +23,6 @@
 //Test void remove( Object* o );
 TEST(objectsmanagertest, addRemoveGetIdTest) {
     engine::Engine::init();
-    engine::Engine::shared()->reset();
 
     engine::ObjectsManager om;
     

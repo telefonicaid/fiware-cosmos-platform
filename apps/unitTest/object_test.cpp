@@ -22,7 +22,6 @@
 // Tests size_t getEngineId();
 TEST(objecttest, getEngineIdTest) {
     engine::Engine::init();
-    engine::Engine::shared()->reset();
     engine::Object object1("engine");
     engine::Object object2;
     engine::Object object3;

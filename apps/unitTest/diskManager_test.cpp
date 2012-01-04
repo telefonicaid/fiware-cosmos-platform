@@ -31,62 +31,9 @@ TEST(diskManagerTest, instantiationTest) {
                 << "DiskManager instance should not be null after instantiation"; 
 }
 
-//test void add( DiskOperation *operation )
-TEST(diskManagerTest, addTest) {
-    engine::Engine::init();
-    engine::DiskManager::reset();
-    engine::DiskManager::init(3);
-    char buffer[1024*1024];
-    engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
-    engine::DiskManager::shared()->add(operation);
-
-    std::ostringstream info;
-    //engine::DiskManager::shared()->getInfo( info );
-    //std::cout << info.str() << std::endl;
-    
-    EXPECT_EQ(engine::DiskManager::shared()->getNumOperations(), 1) << "Wrong number of disk operations";
-    
-
-}
-
-
-//test void cancel( DiskOperation *operation );
-TEST(diskManagerTest, cancelTest) {
-    engine::Engine::init();
-    engine::DiskManager::reset();
-    engine::DiskManager::init(3);
-    char buffer[1024*1024];
-    engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
-    engine::DiskManager::shared()->add(operation);
-    EXPECT_EQ(engine::DiskManager::shared()->getNumOperations(), 1) << "Error adding operation";
-    engine::DiskManager::shared()->cancel(operation);
-    usleep(50000);
-    EXPECT_EQ(engine::DiskManager::shared()->getNumOperations(), 0) << "Operation was not cancelled";
-
-}
-
-//test void run_worker();  (TODO: How??)
-    
-//test int getNumOperations();
-TEST(diskManagerTest, getNumOperationsTest) {
-    //add two operations and check that it returns 2
-    engine::Engine::init();
-    engine::DiskManager::reset();
-    engine::DiskManager::init(3);
-    char buffer[1024*1024];
-    engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
-    engine::DiskManager::shared()->add(operation);
-    engine::DiskOperation* operation2 = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
-    engine::DiskManager::shared()->add(operation2);
-    
-    EXPECT_EQ(engine::DiskManager::shared()->getNumOperations(), 2) << "Error in getNumOperations()";
-    
-}
-    
 //test void getInfo( std::ostringstream& output);
 TEST(diskManagerTest, getInfoTest) {
     engine::Engine::init();
-    engine::DiskManager::reset();
     engine::DiskManager::init(3);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
@@ -139,11 +86,59 @@ TEST(diskManagerTest, getInfoTest) {
 
     
 }
+
+//test void add( DiskOperation *operation )
+TEST(diskManagerTest, addTest) {
+    engine::Engine::init();
+    engine::DiskManager::init(3);
+    char buffer[1024*1024];
+    engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
+    engine::DiskManager::shared()->add(operation);
+
+    std::ostringstream info;
+    //engine::DiskManager::shared()->getInfo( info );
+    //std::cout << info.str() << std::endl;
+    
+    EXPECT_EQ(engine::DiskManager::shared()->getNumOperations(), 1) << "Wrong number of disk operations";
+    
+
+}
+
+
+//test void cancel( DiskOperation *operation );
+TEST(diskManagerTest, cancelTest) {
+    engine::Engine::init();
+    engine::DiskManager::init(3);
+    char buffer[1024*1024];
+    engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
+    engine::DiskManager::shared()->add(operation);
+    EXPECT_EQ(engine::DiskManager::shared()->getNumOperations(), 1) << "Error adding operation";
+    engine::DiskManager::shared()->cancel(operation);
+    usleep(50000);
+    EXPECT_EQ(engine::DiskManager::shared()->getNumOperations(), 0) << "Operation was not cancelled";
+
+}
+
+//test void run_worker();  (TODO: How??)
+    
+//test int getNumOperations();
+TEST(diskManagerTest, getNumOperationsTest) {
+    //add two operations and check that it returns 2
+    engine::Engine::init();
+    engine::DiskManager::init(3);
+    char buffer[1024*1024];
+    engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
+    engine::DiskManager::shared()->add(operation);
+    engine::DiskOperation* operation2 = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
+    engine::DiskManager::shared()->add(operation2);
+    
+    EXPECT_EQ(engine::DiskManager::shared()->getNumOperations(), 2) << "Error in getNumOperations()";
+    
+}
     
 //test void setNumOperations( int _num_disk_operations );
 TEST(diskManagerTest, setNumOperationsTest) {
     engine::Engine::init();
-    engine::DiskManager::reset();
     engine::DiskManager::init(3);
 
     /*std::ostringstream info;
@@ -166,7 +161,6 @@ TEST(diskManagerTest, setNumOperationsTest) {
 //test void quitEngineService();
 TEST(diskManagerTest, quitEngineServiceTest) {
     engine::Engine::init();
-    engine::DiskManager::reset();
     engine::DiskManager::init(3);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );

@@ -5,18 +5,43 @@
  * @author dmicol
  */
 public class Categories {
+    /**
+     * Initializes the dictionary wrapper using the terms in domain file.
+     * 
+     * @param iMode
+     *            the operation mode (value should be 1)
+     * @param szTermsInDomainFlatFileName
+     *            the terms in domain file name
+     * @return whether the initialization succeeded
+     */
     public native boolean InitFromTermsInDomainFlatFile(int iMode,
             String szTermsInDomainFlatFileName);
 
+    /**
+     * Loads the comScore dictionary in memory.
+     * 
+     * @param iMode
+     *            the operation mode (value should be 1)
+     * @param szTermsInDomainFlatFileName
+     *            the terms in domain file name
+     * @param szDictionaryName
+     *            the file name of the dictionary
+     * @return whether the load of the dictionary succeeded
+     */
     public native boolean LoadCSDictionary(int iMode,
             String szTermsInDomainFlatFileName, String szDictionaryName);
 
-    public native boolean ApplyDictionaryUsingUrl(String szURL);
+    /**
+     * Applies the dictionary to the given URL, and returns the pattern ID for
+     * such URL.
+     * 
+     * @param szURL
+     *            the url to apply the dictionary to
+     * @return the pattern ID of the URL
+     */
+    public native long ApplyDictionaryUsingUrl(String szURL);
 
     static {
         System.loadLibrary("Categories");
-    }
-
-    public static void main(String[] args) {
     }
 }

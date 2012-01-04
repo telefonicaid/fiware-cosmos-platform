@@ -28,7 +28,7 @@ JNIEXPORT jboolean JNICALL Java_Categories_LoadCSDictionary
  * Method:    ApplyDictionaryUsingUrl
  * Signature: (Ljava/lang/String;)Z
  */
-JNIEXPORT jboolean JNICALL Java_Categories_ApplyDictionaryUsingUrl
+JNIEXPORT jlong JNICALL Java_Categories_ApplyDictionaryUsingUrl
   (JNIEnv *, jobject, jstring);
 
 #ifdef __cplusplus

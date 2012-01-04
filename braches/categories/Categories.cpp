@@ -46,13 +46,18 @@ JNIEXPORT jboolean JNICALL Java_Categories_LoadCSDictionary
   return retVal;
 }
 
-JNIEXPORT jboolean JNICALL Java_Categories_ApplyDictionaryUsingUrl
+JNIEXPORT jlong JNICALL Java_Categories_ApplyDictionaryUsingUrl
   (JNIEnv *env, jobject jobj, jstring szURL) {
-  bool retVal = false;
+  long retVal;
   const char *nativeURL = (*env).GetStringUTFChars(szURL, 0);
   long lPatternID;
-  // TODO(dmicol): need to return the pattern ID properly.
-  retVal = ApplyDictionaryUsingUrl(nativeURL, &lPatternID);
+  if (ApplyDictionaryUsingUrl(nativeURL, &lPatternID)) {
+    // If successful, return the pattern ID.
+    retVal = lPatternID;
+  } else {
+    // Return 0 for failure.
+    retVal = 0;
+  }
   (*env).ReleaseStringUTFChars(szURL, nativeURL);
   return retVal;
 }

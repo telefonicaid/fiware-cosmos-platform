@@ -76,6 +76,7 @@ chmod 0755 debian/DEBIAN/postinst
 cat > debian/DEBIAN/prerm <<PRERM
 #!/bin/bash
 /etc/init.d/samson stop
+update-rc.d samson remove
 userdel samson
 PRERM
 chmod 0755 debian/DEBIAN/prerm

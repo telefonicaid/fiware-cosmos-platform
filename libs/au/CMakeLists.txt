@@ -43,6 +43,7 @@ Table.h
 Tree.h
 RRT.h
 cpu.h
+ProcessStats.h
 )
 
 SET (SOURCES
@@ -81,6 +82,7 @@ Table.cpp
 Tree.cpp
 RRT.cpp
 cpu.cpp
+ProcessStats.cpp
 )
 
 

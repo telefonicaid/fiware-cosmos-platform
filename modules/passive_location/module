@@ -22,7 +22,14 @@ parser parse_xml_cdrs
 {
 	out system.UInt passive_location.Record   
 
-	helpLine "Parse input cdrs from Arkanum platform. Note that output key is cellid at the output"
+	helpLine "Parse input cdrs from Arkanum platform. Note that output key is imei at the output"
+}
+
+parser parse_tek_drs
+{
+	out system.UInt32 passive_location.Record   
+
+	helpLine "Parse input binary OHDRs from Tektroniks platform (probes). Note that output key is cellid"
 }
 
 map get_mobility_cell_records

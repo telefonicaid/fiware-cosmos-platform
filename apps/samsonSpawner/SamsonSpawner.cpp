@@ -216,7 +216,7 @@ void SamsonSpawner::receive(Packet* packetP)
 		LM_T(LmtMsg, ("Got a RESET message - resetting platform"));
 		if (packetP->msgType == Message::Ack)
 			LM_X(1, ("Spawner cannot receive Ack for Reset"));
-		reset(ep);
+		reset(NULL);
 		break;
 
 	case Message::ProcessVector:

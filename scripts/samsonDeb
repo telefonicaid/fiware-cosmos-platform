@@ -91,13 +91,12 @@ cp BUILD_RELEASE/apps/samsonWorker/samsonWorker           debian/opt/samson/bin
 cp BUILD_RELEASE/apps/samsonKiller/samsonKiller           debian/opt/samson/bin
 cp BUILD_RELEASE/apps/samsonStarter/samsonStarter           debian/opt/samson/bin
 cp BUILD_RELEASE/apps/delilah/delilah               debian/opt/samson/bin
-cp scrìpts/samsonProcessesSupervise                 debian/opt/samson/bin
+cp scripts/samsonProcessesSupervise                 debian/opt/samson/bin
 cp BUILD_RELEASE/apps/samsonPush/samsonPush		debian/opt/samson/bin
 cp BUILD_RELEASE/apps/samsonPop/samsonPop		debian/opt/samson/bin
 cp BUILD_RELEASE/apps/samsonTopicMonitor/samsonTopicMonitor		debian/opt/samson/bin
 cp BUILD_RELEASE/apps/delilahQt/delilahQT		debian/opt/samson/bin
 cp etc/setup.txt                                    debian/var/samson/etc
-cp etc/setup.txt                                    debian/opt/samson/etc
 cp etc/profile.d/samson.sh                          debian/etc/profile.d/samson.sh
 cp etc/init.d/samson.ubuntu                         debian/etc/init.d/samson
 cp README debian/opt/samson/share

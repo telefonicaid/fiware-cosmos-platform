@@ -77,6 +77,36 @@ i: install
 install_debug: debug install_man
 	sudo make -C BUILD_DEBUG install
 	make  -C modules
+	# FIXME Using sudo to install the files is a bit heavy handed
+	sudo mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
+	sudo cp README $(SAMSON_HOME)/share/README.txt
+	sudo cp modules/moduletemplate/CMakeLists.txt $(SAMSON_HOME)/share/modules/moduletemplate
+	sudo cp modules/moduletemplate/makefile $(SAMSON_HOME)/share/modules/moduletemplate
+	sudo cp modules/moduletemplate/module $(SAMSON_HOME)/share/modules/moduletemplate
+	sudo cp scripts/samsonModuleBootstrap $(SAMSON_HOME)/bin
+	sudo cp scripts/samsonProcessesSupervise $(SAMSON_HOME)/bin
+	getent group samson >/dev/null || sudo groupadd -r samson
+	getent passwd samson >/dev/null || sudo useradd -r -g samson -d /opt/samson -s /sbin/nologin -c 'SAMSON account' samson
+	sudo chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_HOME)
+	sudo mkdir -p /var/samson
+	sudo chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_WORKING)
+	sudo cp etc/profile.d/samson.sh /etc/profile.d/samson.sh
+ifeq ($(DISTRO),Ubuntu)
+	sudo cp etc/init.d/samson.ubuntu /etc/init.d/samson
+	sudo update-rc.d samson defaults
+else
+ifeq ($(DISTRO),RedHatEnterpriseServer)
+	sudo cp etc/init.d/samson.redhat /etc/init.d/samson
+	sudo /sbin/chkconfig --add samson
+	sudo /sbin/chkconfig --level 35 samson on
+else
+ifeq ($(DISTRO),CentOS)
+	sudo cp etc/init.d/samson.redhat /etc/init.d/samson
+	sudo /sbin/chkconfig --add samson
+	sudo /sbin/chkconfig --level 35 samson on
+endif
+endif
+endif
 
 install: release install_man
 	sudo make -C BUILD_RELEASE install

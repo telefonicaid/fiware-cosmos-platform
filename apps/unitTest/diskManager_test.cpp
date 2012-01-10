@@ -18,17 +18,28 @@
 
 #include "engine/DiskManager.h"
 
-#include "xmlmarkup/xmlmarkup.h"
+#include "au/ProcessStats.h"
 
+#include "xmlparser/xmlParser.h"
+  
 // Test DiskManager's instantiation
 TEST(diskManagerTest, instantiationTest) {
+    ProcessStats pstats;
+    unsigned long threadsBefore =  pstats.get_nthreads();
+
     //access instance without initialise. Should return NULL.
     EXPECT_EQ(engine::DiskManager::shared(), static_cast<engine::DiskManager*>(NULL)) 
               << "Uninitialized DiskManager should be null"; //using just NULL produces compilation error
+
     //call init() and then shared(). Should return a valid one.
     engine::DiskManager::init(3);
     ASSERT_TRUE(engine::DiskManager::shared() != static_cast<engine::DiskManager*>(NULL)) 
                 << "DiskManager instance should not be null after instantiation"; 
+
+    //check that new threads have been created
+    pstats.refresh();
+    unsigned long threadsAfter =  pstats.get_nthreads();
+    EXPECT_TRUE(threadsAfter > threadsBefore);
 }
 
 //test void getInfo( std::ostringstream& output);
@@ -41,10 +52,31 @@ TEST(diskManagerTest, getInfoTest) {
 
     std::ostringstream info;
     engine::DiskManager::shared()->getInfo( info );
-    //std::cout << info.str() << std::endl;
 
     //XML parsing
-    CMarkup xmlData( info.str() );
+    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_manager");
+    EXPECT_EQ(std::string(xMainNode.getChildNode("num_pending_operations").getClear().lpszValue), "1") << "Error writing pending operations tag";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("num_running_operations").getClear().lpszValue), "1") << "Error writing running operations tag";
+    XMLNode queuedNode = xMainNode.getChildNode("queued");
+    XMLNode diskOperationNode = queuedNode.getChildNode("disk_operation");
+    EXPECT_EQ(std::string(diskOperationNode.getChildNode("type").getText()), "read") << "Error writing type tag";
+    EXPECT_EQ(std::string(diskOperationNode.getChildNode("file_name").getText()), "test_filename.txt") << "Error writing file_name tag";
+    EXPECT_EQ(std::string(diskOperationNode.getChildNode("size").getText()), "1") << "Error writing size tag";
+    EXPECT_EQ(std::string(diskOperationNode.getChildNode("offset").getText()), "0") << "Error writing offset tag";
+    
+    XMLNode statisticsNode = xMainNode.getChildNode("statistics");
+    XMLNode readNode = statisticsNode.getChildNode("read");
+    EXPECT_TRUE(std::string(readNode.getChildNode("description").getText()).find("Currently    0 hits/s    0 B/s")) << "Error writing read statistics tag";
+     EXPECT_EQ(std::string(readNode.getChildNode("rate").getClear().lpszValue), "0") << "Error writing read rate tag";
+    XMLNode writeNode = statisticsNode.getChildNode("read");
+    EXPECT_TRUE(std::string(writeNode.getChildNode("description").getText()).find("Currently    0 hits/s    0 B/s")) << "Error writing write statistics tag";
+     EXPECT_EQ(std::string(writeNode.getChildNode("rate").getClear().lpszValue), "0") << "Error writing write rate tag";
+    XMLNode totalNode = statisticsNode.getChildNode("read");
+    EXPECT_TRUE(std::string(totalNode.getChildNode("description").getText()).find("Currently    0 hits/s    0 B/s")) << "Error writing total statistics tag";
+     EXPECT_EQ(std::string(totalNode.getChildNode("rate").getClear().lpszValue), "0") << "Error writing total rate tag";
+   
+    
+/*    CMarkup xmlData( info.str() );
     xmlData.FindElem("disk_manager");
     xmlData.IntoElem();
     xmlData.FindElem("num_pending_operations");
@@ -63,6 +95,7 @@ TEST(diskManagerTest, getInfoTest) {
     xmlData.FindElem("size");
     EXPECT_EQ(xmlData.GetData(), "1") << "Error writing size tag";
     xmlData.FindElem("offset");
+if(xmlData.GetData()!="0") std::cout << info.str() << std::endl;    
     EXPECT_EQ(xmlData.GetData(), "0") << "Error writing offset tag";
     xmlData.OutOfElem();//disk_element
     xmlData.OutOfElem();//queued
@@ -83,7 +116,7 @@ TEST(diskManagerTest, getInfoTest) {
     xmlData.FindElem("description");
     EXPECT_TRUE(xmlData.GetData().find("Currently    0 hits/s    0 B/s")) << "Error writing total statistics tag";
     xmlData.OutOfElem();//total
-
+*/
     
 }
 
@@ -96,8 +129,6 @@ TEST(diskManagerTest, addTest) {
     engine::DiskManager::shared()->add(operation);
 
     std::ostringstream info;
-    //engine::DiskManager::shared()->getInfo( info );
-    //std::cout << info.str() << std::endl;
     
     EXPECT_EQ(engine::DiskManager::shared()->getNumOperations(), 1) << "Wrong number of disk operations";
     
@@ -141,21 +172,16 @@ TEST(diskManagerTest, setNumOperationsTest) {
     engine::Engine::init();
     engine::DiskManager::init(3);
 
-    /*std::ostringstream info;
-    engine::DiskManager::shared()->getInfo( info );
-    std::cout << "BEFORE: " << info.str() << std::endl;
-    */
+    ProcessStats pstats;
+    long threadsBefore = pstats.get_nthreads();
 
-    engine::DiskManager::shared()->setNumOperations(3);
+    engine::DiskManager::shared()->setNumOperations(6);
+
+    pstats.refresh();
+    long threadsAfter = pstats.get_nthreads(); //should be threadsBefore+3, since we extended the number of operations from 3 to 6
+
+    EXPECT_EQ(threadsAfter - threadsBefore, 3) << "Error in setNumOperations()";
     
-    /*info.str("");
-    engine::DiskManager::shared()->getInfo( info );
-    std::cout  << std::endl << std::endl << "AFTER: " << info.str() << std::endl;
-    */
-
-    //EXPECT_EQ(engine::DiskManager::shared()->getNumOperations(), 3) << "Error in setNumOperations()";
-
-    //TODO: how to get the number of threads created or number of disk manager workers
 }
 
 //test void quitEngineService();
@@ -166,31 +192,15 @@ TEST(diskManagerTest, quitEngineServiceTest) {
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
     engine::DiskManager::shared()->add(operation);
 
-    /*std::ostringstream info;
-    engine::DiskManager::shared()->getInfo( info );
-    std::cout << "BEFORE: " << info.str() << std::endl;
-    */
-    
+    ProcessStats pstats;
+    unsigned long threadsBefore = pstats.get_nthreads();
     engine::DiskManager::shared()->quitEngineService();
-    //give time for the service to stop
-    usleep(10000);
+    pstats.refresh();
+    unsigned long threadsAfter = pstats.get_nthreads();
     
-    //Now the number of pending operations should be 0
-    //std::ostringstream info;
-    /*info.str("");
-    engine::DiskManager::shared()->getInfo( info );
-    std::cout << "AFTER: " << info.str() << std::endl;
-    */
-    
-    std::ostringstream info;
-    engine::DiskManager::shared()->getInfo( info );
-    CMarkup xmlData( info.str() );
-    xmlData.FindElem("disk_manager");
-    xmlData.IntoElem();
-    xmlData.FindElem("num_pending_operations");
-    //EXPECT_EQ(xmlData.GetData(), "0") << "DiskManager services not stopped with quitEngineService()";
-    //TODO: How to test that the services have stopped?
-    
-        
+    //Now the number of threads should have been reduced
+    EXPECT_TRUE(threadsAfter < threadsBefore);
 }
+
+
  

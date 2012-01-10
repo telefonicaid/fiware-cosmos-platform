@@ -42,7 +42,8 @@ SET (STATIC_LIBS
      pugi
      samsonCommon
      au
-     xmlmarkup	
+     xmlmarkup
+     xmlparser	
      ${COMMON_SAMSON_LIBS}
 )
 

@@ -1,0 +1,2 @@
+gcc -g -c arcanumTunnel.c
+gcc -o arcanumTunnel arcanumTunnel.o

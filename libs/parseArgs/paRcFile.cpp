@@ -234,10 +234,12 @@ int paRcFileParse(PaArgument* paList)
 		case PaBoolean:
 			if ((strcmp(val, "TRUE") == 0)
 			||  (strcmp(val, "ON")   == 0)
+			||  (strcmp(val, "yes")   == 0)
 			||  (strcmp(val, "1")    == 0))
 				*((bool*) (long) aP->varP) = true;
 			else if ((strcmp(val, "FALSE") == 0)
 			||       (strcmp(val, "OFF")   == 0)
+			||       (strcmp(val, "no")   == 0)
 			||       (strcmp(val, "0")     == 0))
 				*((bool*) (long) aP->varP) = false;
 			else

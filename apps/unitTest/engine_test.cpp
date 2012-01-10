@@ -20,28 +20,32 @@
 #include "engine/NotificationElement.h"
 #include "engine/Object.h"
 
+#include "au/ProcessStats.h"
+
 #include "xmlmarkup/xmlmarkup.h"
 
 
 // Tests engine's instantiation
-TEST(enginetest, instantiationtest) {
+TEST(engineTest, instantiationTest) {
+    //get initial number of threads
+    ProcessStats pstats;
+    unsigned long beforeThreads = pstats.get_nthreads();
     //access instance without initialise. Should return NULL.
     EXPECT_EQ(engine::Engine::shared(), static_cast<engine::Engine*>(NULL)) << "Uninitialized engine should be null"; //using just NULL produces compilation error
     //call init() and then instance. Should return a valid one.
     engine::Engine::init();
     EXPECT_TRUE(engine::Engine::shared() != static_cast<engine::Engine*>(NULL)) << "engine instance should not be null after instantiation"; 
-    
+    //get number of threads now. Should be bigger. This tests run()
+    pstats.refresh();
+    unsigned long afterThreads = pstats.get_nthreads();
+    EXPECT_TRUE(afterThreads > beforeThreads);
 }
 
 //test run()
-TEST(enginetest, runTest) {
-    //TODO: How can we test this??
-    engine::Engine::init();
-    //engine::Engine::shared()->run();
-}
+//we can consider that if it passed the threads test in instantiationTest, that means that the run() thread is running
 
 //test get_info( std::ostringstream& output)
-TEST(enginetest, getInfoTest) {
+TEST(engineTest, getInfoTest) {
     engine::Engine::init();
 
     std::ostringstream info;
@@ -81,7 +85,7 @@ TEST(enginetest, getInfoTest) {
 }
 
 //notify( Notification*  notification )
-TEST(enginetest, notificationTest) {
+TEST(engineTest, notificationTest) {
     engine::Engine::init();
     engine::Notification* notification1 = new engine::Notification("test_notification1");
     engine::Notification* notification2 = new engine::Notification("test_notification2");
@@ -116,7 +120,7 @@ TEST(enginetest, notificationTest) {
 
 
 //void add( EngineElement *element );	
-TEST(enginetest, addTest) {
+TEST(engineTest, addTest) {
     engine::Engine::init();
     engine::EngineElementSleepTest* testElement = new engine::EngineElementSleepTest();
     engine::Engine::shared()->add(testElement);
@@ -153,7 +157,7 @@ TEST(enginetest, addTest) {
 
 
 //Object* getObjectByName( const char *name );
-TEST(enginetest, getObjectByNameTest) {
+TEST(engineTest, getObjectByNameTest) {
      engine::Engine::init();
     engine::Object* testObject = new engine::Object("test_object");
     //Now the object should be registered in engine
@@ -165,22 +169,18 @@ TEST(enginetest, getObjectByNameTest) {
 
 
 //quitEngineService()
-TEST(enginetest, quitEngineServiceTest) {
+TEST(engineTest, quitEngineServiceTest) {
     engine::Engine::init();
 
-    std::ostringstream info;
-    engine::Engine::shared()->getInfo( info );
-    //std::cout << info.str() << std::endl << std::endl;
+    //Check the number of threads. After the call to quitEngineService the number of threads should decrease
+    ProcessStats pstats;
+    unsigned long beforeThreads = pstats.get_nthreads();
     
     engine::Engine::shared()->quitEngineService();
 
-    engine::Engine::shared()->getInfo( info );
-    //std::cout << std::endl << std::endl << info.str() << std::endl;
+    pstats.refresh();
+    unsigned long afterThreads = pstats.get_nthreads();
 
-    //Check that it is out of the run() loop TODO:How???
-    //EXPECT_EQ(engine::Engine::shared()->
-    //EXPECT_TRUE(true);
-
-
+    EXPECT_TRUE(afterThreads < beforeThreads);
 }
 

@@ -17,6 +17,7 @@
 
 #include "gtest/gtest.h"
 
+#include "au/ProcessStats.h"
 #include "engine/OperationsContainer.h"
 #include "engine/DiskOperation.h"
 #include "engine/DiskManager.h"
@@ -41,7 +42,7 @@ TEST(operationsContainerTest, addMemoryRequestTest) {
     engine::MemoryRequest* request = new engine::MemoryRequest(10, 50.0, 1);
 
     //std::cout << "container: " << container.getOperationsContainerStr() << std::endl;
-
+    
     container.add(request);
     container.erase(request);
     
@@ -173,7 +174,12 @@ TEST(operationsContainerTest, cancelEngineOperationsTest) {
     
     EXPECT_TRUE(container.hasPendingEngineOperations());
 
-    container.cancelEngineOperations();    
+    ProcessStats pstats;
+    std::cout << pstats.get_nthreads() << std::endl;
+
+    container.cancelEngineOperations();
+    pstats.refresh();    
+   std::cout << pstats.get_nthreads() << std::endl;
 
     //TODO: this function just sends the cancel signal but does not clear the operations list. How can we test this?
     //EXPECT_TRUE(container.hasPendingEngineOperations() == false);

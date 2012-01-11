@@ -35,7 +35,7 @@ MemoryManager* memoryManager = NULL;
 void MemoryManager::init( size_t _memory )
 {
     if ( memoryManager )
-        LM_X(1, ("Please, init Memory manager only once"));
+        LM_E(("Please, init Memory manager only once"));
     
     memoryManager =  new MemoryManager( _memory );
     
@@ -44,7 +44,7 @@ void MemoryManager::init( size_t _memory )
 MemoryManager* MemoryManager::shared()
 {
     if (!memoryManager )
-        LM_X(1, ("Please, init Memory manager before using it"));
+        LM_E(("Please, init Memory manager before using it, calling memoryManager::init()"));
     
     return memoryManager;
 }

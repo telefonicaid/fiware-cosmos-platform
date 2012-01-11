@@ -24,37 +24,69 @@
 
 /* ****************************************************************************
 *
-* initLog - 
+* initLog() 
+* Initialise log
 */
-void initLog(char* pname)
+
+LmStatus initLog(char* pname)
 {
-    //Initialise log
-	LmStatus    s;
-	char        w[512];
-	int lmSd;
-	int fd = 1;
-	progName = (char*)malloc(512);
-	strcpy(progName, pname);
+    LmStatus s;
+    int      i2;
+    char w[512];
+
+    //
+    // 1. create the progName variable, removing path etc.
+    //    progName is used to create the logfile among other things
     /*if ((progName = lmProgName(pname, 1, false)) == NULL)
+        return LmsPrognameError;
+        */
+	progName = (char*)malloc(512);
+	strcpy(progName, "unitTest");
+        
+
+    //
+    // 2. Register fd 1 (stdout) so that I get traces on the console (fourth parameter is just a name)
+    //    If you don't want traces to stdout /or any file descriptor), don't use this call ...
+    int      i1;
+    if ((s = lmFdRegister(1, "TYPE:EXEC/FUNC: TEXT", "DEF", "nul", &i1)) != LmsOk)
     {
-        return;
-    }*/
-    s = lmFdRegister(fd, "DEF", "DEF", "stdout", &lmSd);
-    if (s != LmsOk)
-    {
-        sprintf(w, "lmFdRegister: %s", lmStrerror(s));
+       sprintf(w, "lmInit: %s", lmStrerror(s));
         std::cerr << w << std::endl;
-        return;
+         return s;
+    }
+    
+
+    //
+    // 3. Register a log file, first parameter is the directory. The name of the log file uses progName and 'Log' is appended
+    //
+    if ((s = lmPathRegister("/tmp", "DEF", "DEF", &i2)) != LmsOk)
+    {
+       sprintf(w, "lmInit: %s", lmStrerror(s));
+        std::cerr << w << std::endl;
+        return s;
     }
 
-	lmExitFunction(NULL, NULL);
-	
+    //
+    // 4. Start the whole thing ...
+    //
     if ((s = lmInit()) != LmsOk)
     {
-        sprintf(w, "lmInit: %s", lmStrerror(s));
+       sprintf(w, "lmInit: %s", lmStrerror(s));
         std::cerr << w << std::endl;
-        return;
-    } 
+        return s;
+    }
+
+    //
+    // set the trace level, according to the variable tLevel
+    //
+    if ((s = lmTraceSet(0)) != LmsOk)
+    {
+       sprintf(w, "lmInit: %s", lmStrerror(s));
+        std::cerr << w << std::endl;
+        return s;
+    }
+   
+    return LmsOk;
 }
 
 /* ****************************************************************************
@@ -72,7 +104,7 @@ int main(int argc, char **argv) {
 
     samson::SamsonSetup::init("","");
 */    //char* pname = (char*)malloc(255);
-    //initLog(argv[0]);
+    initLog(argv[0]);
     //int logfdp;
     //samson::samsonInitTrace(argc, const_cast<const char**>(argv), &logfdp, true, false);
     ::testing::InitGoogleTest(&argc, argv);

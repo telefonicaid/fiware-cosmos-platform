@@ -16,7 +16,7 @@
 
 #include "engine/DiskStatistics.h"
 
-#include "xmlmarkup/xmlmarkup.h"
+#include "xmlparser/xmlParser.h"
 
 //Test getInfo()
 TEST(diskStatisticsTest, emptyTest) {
@@ -24,35 +24,25 @@ TEST(diskStatisticsTest, emptyTest) {
     
     std::ostringstream info;
     stats.getInfo( info );
+//std::cout<<info.str()<<std::endl;
     
     //read and check xml
-    CMarkup xmlData( info.str() );
-    xmlData.FindElem("read");
-    xmlData.IntoElem();
-    xmlData.FindElem("description");
-    EXPECT_EQ(xmlData.GetData(),
+    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"");
+    XMLNode readNode = xMainNode.getChildNode("read");
+    EXPECT_EQ(std::string(readNode.getChildNode("description").getText()),
         "[ Currently    0 hits/s    0 B/s ] [ Last sample  00:00:00 ] [ Accumulated in  00:00:00    0 hits with    0 B ]") 
         << "Error writing read description tag";
-    xmlData.FindElem("rate");
-    EXPECT_EQ(xmlData.GetData(), "0") << "Error writing read rate tag";
-    xmlData.OutOfElem();
-    xmlData.FindElem("write");
-    xmlData.IntoElem();
-   xmlData.FindElem("description");
-    EXPECT_EQ(xmlData.GetData(),
+    EXPECT_EQ(std::string(readNode.getChildNode("rate").getClear().lpszValue), "0") << "Error writing read rate tag";
+    XMLNode writeNode = xMainNode.getChildNode("write");
+    EXPECT_EQ(std::string(writeNode.getChildNode("description").getText()),
         "[ Currently    0 hits/s    0 B/s ] [ Last sample  00:00:00 ] [ Accumulated in  00:00:00    0 hits with    0 B ]") 
         << "Error writing write description tag";
-     xmlData.FindElem("rate");
-    EXPECT_EQ(xmlData.GetData(), "0") << "Error writing read rate tag";
-    xmlData.OutOfElem();
-    xmlData.FindElem("total");
-    xmlData.IntoElem();
-    xmlData.FindElem("description");
-    EXPECT_EQ(xmlData.GetData(),
+    EXPECT_EQ(std::string(writeNode.getChildNode("rate").getClear().lpszValue), "0") << "Error writing write rate tag";
+    XMLNode totalNode = xMainNode.getChildNode("total");
+    EXPECT_EQ(std::string(totalNode.getChildNode("description").getText()),
         "[ Currently    0 hits/s    0 B/s ] [ Last sample  00:00:00 ] [ Accumulated in  00:00:00    0 hits with    0 B ]") 
         << "Error writing read description tag";
-    xmlData.FindElem("rate");
-    EXPECT_EQ(xmlData.GetData(), "0") << "Error writing total rate tag";
+    EXPECT_EQ(std::string(totalNode.getChildNode("rate").getClear().lpszValue), "0") << "Error writing write rate tag";
 
 }
 
@@ -69,29 +59,27 @@ TEST(diskStatisticsTest, addTest) {
     //but if I don't the result is very variable and cannot be tested. 
     //It makes the test execution time 1 second long which is a lot. Is there a better way? 
     //(using usleep with times smaller than a second gives undefined results too)
-    sleep(1);
+    //sleep(1);
     
     std::ostringstream info;
     stats.getInfo( info );
     //std::cout << info.str() << std::endl;
     
     //read and check xml
-    CMarkup xmlData( info.str() );
-    xmlData.FindElem("read");
-    xmlData.IntoElem();
-    xmlData.FindElem("rate");
-    EXPECT_EQ(xmlData.GetData(), "2") << "Error writing read rate tag";
-    xmlData.OutOfElem();
-    xmlData.FindElem("write");
-    xmlData.IntoElem();
-    xmlData.FindElem("rate");
-    EXPECT_EQ(xmlData.GetData(), "8") << "Error writing read rate tag";
-    xmlData.OutOfElem();
-    xmlData.FindElem("total");
-    xmlData.IntoElem();
-    xmlData.FindElem("rate");
-    EXPECT_EQ(xmlData.GetData(), "10") << "Error writing read rate tag";
-    xmlData.OutOfElem();
+    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"");
+    XMLNode readNode = xMainNode.getChildNode("read");
+    EXPECT_EQ(std::string(readNode.getChildNode("rate").getClear().lpszValue), "2") << "Error writing read rate tag";
+    XMLNode writeNode = xMainNode.getChildNode("write");
+    EXPECT_EQ(std::string(writeNode.getChildNode("description").getText()),
+        "[ Currently    0 hits/s    0 B/s ] [ Last sample  00:00:00 ] [ Accumulated in  00:00:00    0 hits with    0 B ]") 
+        << "Error writing write description tag";
+    EXPECT_EQ(std::string(writeNode.getChildNode("rate").getClear().lpszValue), "8") << "Error writing write rate tag";
+    XMLNode totalNode = xMainNode.getChildNode("total");
+    EXPECT_EQ(std::string(totalNode.getChildNode("description").getText()),
+        "[ Currently    0 hits/s    0 B/s ] [ Last sample  00:00:00 ] [ Accumulated in  00:00:00    0 hits with    0 B ]") 
+        << "Error writing read description tag";
+    EXPECT_EQ(std::string(totalNode.getChildNode("rate").getClear().lpszValue), "10") << "Error writing write rate tag";
+    
 }
     
 

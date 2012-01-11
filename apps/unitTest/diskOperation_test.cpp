@@ -16,7 +16,7 @@
 
 #include "engine/DiskManager.h"
 
-#include "xmlmarkup/xmlmarkup.h"
+#include "xmlparser/xmlParser.h"
 
 //Test void getInfo( std::ostringstream& output);
 TEST(diskOperationTest, getInfoTest) {
@@ -30,17 +30,11 @@ TEST(diskOperationTest, getInfoTest) {
     //std::cout << info.str() << std::endl;
     
     //parse and check xml
-    CMarkup xmlData( info.str() );
-    xmlData.FindElem();
-    xmlData.IntoElem();
-    xmlData.FindElem("type");
-    EXPECT_EQ(xmlData.GetData(), "read") << "Error writing read tag";
-    xmlData.FindElem("file_name");
-    EXPECT_EQ(xmlData.GetData(), "test_filename.txt") << "Error writing file_name tag";
-    xmlData.FindElem("size");
-    EXPECT_EQ(xmlData.GetData(), "5") << "Error writing size tag";
-    xmlData.FindElem("offset");
-    EXPECT_EQ(xmlData.GetData(), "3") << "Error writing offset tag";
+    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
+    EXPECT_EQ(std::string(xMainNode.getChildNode("type").getText()), "read") << "Error writing read tag";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_filename.txt") << "Error writing file_name tag";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "5") << "Error writing size tag";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("offset").getText()), "3") << "Error writing offset tag";
 }
 
 //Test static DiskOperation* newReadOperation( char *data , std::string fileName , size_t offset , size_t size , size_t _listenerId  );
@@ -57,15 +51,10 @@ TEST(diskOperationTest, newReadOperationTest) {
     std::ostringstream info;
     operation->getInfo( info );
     //std::cout << info.str() << std::endl;
-    CMarkup xmlData( info.str() );
-    xmlData.FindElem();
-    xmlData.IntoElem();
-    xmlData.FindElem("file_name");
-    EXPECT_EQ(xmlData.GetData(), "test_filename.txt") << "Wrong file_name in constructor";
-    xmlData.FindElem("size");
-    EXPECT_EQ(xmlData.GetData(), "6") << "Wrong size in constructor";
-    xmlData.FindElem("offset");
-    EXPECT_EQ(xmlData.GetData(), "3") << "Wrong offset in constructor";
+    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
+    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_filename.txt") << "Wrong file_name in constructor";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "6") << "Wrong size in constructor";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("offset").getText()), "3") << "Wrong offset in constructor";
 }
 
 //Test static DiskOperation* newWriteOperation( Buffer* buffer ,  std::string fileName , size_t _listenerId  );
@@ -82,15 +71,11 @@ TEST(diskOperationTest, newWriteOperationTest) {
     //parse and check xml for the rest of values
     std::ostringstream info;
     operation->getInfo( info );
-    CMarkup xmlData( info.str() );
-    xmlData.FindElem();
-    xmlData.IntoElem();
-    xmlData.FindElem("file_name");
-    EXPECT_EQ(xmlData.GetData(), "test_filename.txt") << "Wrong file_name in constructor";
-    xmlData.FindElem("size");
-    EXPECT_EQ(xmlData.GetData(), "0") << "Wrong size in constructor";
-    xmlData.FindElem("offset");
-    EXPECT_EQ(xmlData.GetData(), "0") << "Wrong offset in constructor";
+    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
+    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_filename.txt") << "Wrong file_name in constructor";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "0") << "Wrong size in constructor";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("offset").getText()), "0") << "Wrong offset in constructor";
+    
 }
 
 //Test static DiskOperation* newAppendOperation( Buffer* buffer ,  std::string fileName , size_t _listenerId  );
@@ -107,15 +92,10 @@ TEST(diskOperationTest, newAppendOperationTest) {
     //parse and check xml for the rest of values
     std::ostringstream info;
     operation->getInfo( info );
-    CMarkup xmlData( info.str() );
-    xmlData.FindElem();
-    xmlData.IntoElem();
-    xmlData.FindElem("file_name");
-    EXPECT_EQ(xmlData.GetData(), "test_filename.txt") << "Wrong file_name in constructor";
-    xmlData.FindElem("size");
-    EXPECT_EQ(xmlData.GetData(), "0") << "Wrong size in constructor";
-    xmlData.FindElem("offset");
-    EXPECT_EQ(xmlData.GetData(), "0") << "Wrong offset in constructor";
+    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
+    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_filename.txt") << "Wrong file_name in constructor";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "0") << "Wrong size in constructor";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("offset").getText()), "0") << "Wrong offset in constructor";
 }
 
 //Test static DiskOperation* newRemoveOperation( std::string fileName, size_t _listenerId );
@@ -129,13 +109,9 @@ TEST(diskOperationTest, newRemoveOperationTest) {
     //parse and check xml for the rest of values
     std::ostringstream info;
     operation->getInfo( info );
-    CMarkup xmlData( info.str() );
-    xmlData.FindElem();
-    xmlData.IntoElem();
-    xmlData.FindElem("file_name");
-    EXPECT_EQ(xmlData.GetData(), "test_filename.txt") << "Wrong file_name in constructor";
-    xmlData.FindElem("size");
-    EXPECT_EQ(xmlData.GetData(), "0") << "Wrong size in constructor";
+    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
+    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_filename.txt") << "Wrong file_name in constructor";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "0") << "Wrong size in constructor";
 }
 
 //Test static DiskOperation * newReadOperation( std::string _fileName , size_t _offset , size_t _size ,  SimpleBuffer simpleBuffer , size_t _listenerId );
@@ -153,15 +129,10 @@ TEST(diskOperationTest, newReadOperation2Test) {
     //parse and check xml for the rest of values
     std::ostringstream info;
     operation->getInfo( info );
-    CMarkup xmlData( info.str() );
-    xmlData.FindElem();
-    xmlData.IntoElem();
-    xmlData.FindElem("file_name");
-    EXPECT_EQ(xmlData.GetData(), "test_filename.txt") << "Wrong file_name in constructor";
-    xmlData.FindElem("size");
-    EXPECT_EQ(xmlData.GetData(), "6") << "Wrong size in constructor";
-    xmlData.FindElem("offset");
-    EXPECT_EQ(xmlData.GetData(), "3") << "Wrong offset in constructor";
+    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
+    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_filename.txt") << "Wrong file_name in constructor";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "6") << "Wrong size in constructor";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("offset").getText()), "3") << "Wrong offset in constructor";
 }
     
     

@@ -27,7 +27,7 @@ static DiskManager *diskManager = NULL;
 void DiskManager::init( int _num_disk_operations )
 {
     if( diskManager )
-        LM_X(1,("Please, init diskManager only once"));
+        LM_E(("Please, init diskManager only once"));
     
     diskManager = new DiskManager ( _num_disk_operations );
 }
@@ -35,7 +35,7 @@ void DiskManager::init( int _num_disk_operations )
 DiskManager* DiskManager::shared()
 {
     if (!diskManager)
-        LM_X(1, ("Please init DiskManager before using it"));
+        LM_E(("Please init DiskManager before using it, calling DiskManager::init()"));
     return diskManager;
 }
 

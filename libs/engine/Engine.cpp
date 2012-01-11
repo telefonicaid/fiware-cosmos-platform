@@ -55,8 +55,12 @@ Engine::~Engine()
 
 Engine* Engine::shared()
 {
-    if (!engine )
-        LM_X(1,("Please init Engine with Engine::init()"));
+    if (!engine)
+    {
+	   LM_E(("Please initialize Engine before using it, calling Engine::init()"));
+	   return NULL;
+	}
+
     return engine;
 }
 

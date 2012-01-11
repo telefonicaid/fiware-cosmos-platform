@@ -174,12 +174,7 @@ TEST(operationsContainerTest, cancelEngineOperationsTest) {
     
     EXPECT_TRUE(container.hasPendingEngineOperations());
 
-    ProcessStats pstats;
-    std::cout << pstats.get_nthreads() << std::endl;
-
     container.cancelEngineOperations();
-    pstats.refresh();    
-   std::cout << pstats.get_nthreads() << std::endl;
 
     //TODO: this function just sends the cancel signal but does not clear the operations list. How can we test this?
     //EXPECT_TRUE(container.hasPendingEngineOperations() == false);

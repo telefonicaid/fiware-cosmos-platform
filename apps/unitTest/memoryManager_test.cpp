@@ -17,10 +17,10 @@
 #include "engine/MemoryManager.h"
 #include "engine/MemoryRequest.h"
 
-#include "xmlmarkup/xmlmarkup.h"
+#include "xmlparser/xmlParser.h"
 
 // Tests engine's instantiation
-TEST(memorymanagertest, instantiationTest) {
+TEST(memoryManagerTest, instantiationTest) {
     //access instance without initialise. Should return NULL.
     EXPECT_EQ(engine::MemoryManager::shared(), static_cast<engine::MemoryManager*>(NULL)) << "Uninitialized MemoryManager should be null";
     //call init() and then instance. Should return a valid one.
@@ -30,7 +30,7 @@ TEST(memorymanagertest, instantiationTest) {
 }
 
 //Test void getInfo( std::ostringstream& output);
-TEST(memorymanagertest, getInfoTest) {
+TEST(memoryManagerTest, getInfoTest) {
     engine::Engine::init();
     engine::MemoryManager::init(1000);
   
@@ -44,47 +44,39 @@ TEST(memorymanagertest, getInfoTest) {
     engine::MemoryManager::shared()->getInfo( info );
     //std::cout << info.str() << std::endl;
 
-    CMarkup xmlData( info.str() );
-    xmlData.FindElem();
-    xmlData.IntoElem();
+    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"memory_manager");
  
-    //First engine_element will be notification test_notification1
-    xmlData.FindElem("memory");
-    EXPECT_EQ(xmlData.GetData(), "1000") << "Error in memory tag";    
-    xmlData.FindElem("used_memory");
-    EXPECT_EQ(xmlData.GetData(), "110") << "Error in used_memory tag";    
-    xmlData.FindElem("num_buffers");
-    EXPECT_EQ(xmlData.GetData(), "2") << "Error in num_buffers tag";    
-    xmlData.FindElem("buffers");
-    xmlData.IntoElem(); 
-    xmlData.FindElem("buffer");
-    xmlData.IntoElem(); 
-    xmlData.FindElem("max_size");
-    EXPECT_EQ(xmlData.GetData(), "100") << "Error writing max_size tag";
-    xmlData.FindElem("size");
-    EXPECT_EQ(xmlData.GetData(), "0") << "Error writing size tag";
-    xmlData.FindElem("offset");
-    EXPECT_EQ(xmlData.GetData(), "0") << "Error writing offset tag";
-    xmlData.FindElem("name");
-    EXPECT_EQ(xmlData.GetData(), "buffer1") << "Error writing name tag";
-    xmlData.OutOfElem();
-    xmlData.FindElem("buffer");
-    xmlData.IntoElem(); 
-    xmlData.FindElem("max_size");
-    EXPECT_EQ(xmlData.GetData(), "10") << "Error writing max_size tag";
-    xmlData.FindElem("size");
-    EXPECT_EQ(xmlData.GetData(), "0") << "Error writing size tag";
-    xmlData.FindElem("offset");
-    EXPECT_EQ(xmlData.GetData(), "0") << "Error writing offset tag";
-    xmlData.FindElem("name");
-    EXPECT_EQ(xmlData.GetData(), "Buffer from request") << "Error writing name tag";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("memory").getClear().lpszValue), "1000") << "Error in memory tag";    
+    EXPECT_EQ(std::string(xMainNode.getChildNode("used_memory").getClear().lpszValue), "110") << "Error in used_memory tag";    
+    EXPECT_EQ(std::string(xMainNode.getChildNode("num_buffers").getClear().lpszValue), "2") << "Error in num_buffers tag";    
+    XMLNode buffersNode = xMainNode.getChildNode("buffers");
+    //There has to be two buffers: "buffer from request" and "buffer1", but the order can vary, so we need to find out
+    XMLNode buffer1Node = xMainNode.getChildNode("buffers").getChildNode("buffer", 0);
+    ASSERT_TRUE(!buffer1Node.isEmpty());
+    XMLNode buffer2Node = xMainNode.getChildNode("buffers").getChildNode("buffer", 1);
+    ASSERT_TRUE(!buffer2Node.isEmpty());
+    //If the order was not right, swap them
+    if(strcmp(buffer1Node.getChildNode("name").getClear().lpszValue, "buffer1") != 0)
+    {
+        XMLNode tmp = buffer1Node;
+        buffer1Node = buffer2Node;
+        buffer2Node = tmp; 
+    }
+    EXPECT_EQ(std::string(buffer1Node.getChildNode("max_size").getClear().lpszValue), "100") << "Error writing max_size tag";
+    EXPECT_EQ(std::string(buffer1Node.getChildNode("size").getClear().lpszValue), "0") << "Error writing size tag";
+    EXPECT_EQ(std::string(buffer1Node.getChildNode("offset").getClear().lpszValue), "0") << "Error writing offset tag";
+    EXPECT_EQ(std::string(buffer1Node.getChildNode("name").getClear().lpszValue), "buffer1") << "Error writing name tag";
+    EXPECT_EQ(std::string(buffer2Node.getChildNode("max_size").getClear().lpszValue), "10") << "Error writing max_size tag";
+    EXPECT_EQ(std::string(buffer2Node.getChildNode("size").getClear().lpszValue), "0") << "Error writing size tag";
+    EXPECT_EQ(std::string(buffer2Node.getChildNode("offset").getClear().lpszValue), "0") << "Error writing offset tag";
+    EXPECT_EQ(std::string(buffer2Node.getChildNode("name").getClear().lpszValue), "Buffer from request") << "Error writing name tag";
 
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
 
 }
 
 //Test void add( MemoryRequest *request );
-TEST(memorymanagertest, addTest) {
+TEST(memoryManagerTest, addTest) {
     engine::Engine::init();
     engine::MemoryManager::init(1000);
     engine::MemoryRequest* request = new engine::MemoryRequest(10, 50.0, 1);
@@ -96,7 +88,7 @@ TEST(memorymanagertest, addTest) {
 //Test void cancel( MemoryRequest *request );
 //Test Buffer *newBuffer( std::string name ,  size_t size , int tag );
 //Test void destroyBuffer( Buffer *b );
-TEST(memorymanagertest, newBufferDestroyBufferTest) {
+TEST(memoryManagerTest, newBufferDestroyBufferTest) {
     engine::Engine::init();
     engine::MemoryManager::init(1000);
     engine::Buffer* buffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  100 , 1 );
@@ -106,7 +98,7 @@ TEST(memorymanagertest, newBufferDestroyBufferTest) {
 }    
 
 //Test int getNumBuffers();
-TEST(memorymanagertest, getNumBuffersTest) {
+TEST(memoryManagerTest, getNumBuffersTest) {
     engine::Engine::init();
     engine::MemoryManager::init(1000);
     EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 0) << "Should bew no buffers";
@@ -123,7 +115,7 @@ TEST(memorymanagertest, getNumBuffersTest) {
 
 //Test size_t getUsedMemory();
 //Test double getMemoryUsage();
-TEST(memorymanagertest, getUsedMemoryTest) {
+TEST(memoryManagerTest, getUsedMemoryTest) {
     engine::Engine::init();
     engine::MemoryManager::init(1000);
     EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemory(), 0) << "Used memory does not match";
@@ -148,7 +140,7 @@ TEST(memorymanagertest, getUsedMemoryTest) {
 //Test int getNumBuffersByTag( int tag );
 //Test size_t getUsedMemoryByTag( int tag );
 //Test double getMemoryUsageByTag( int tag );
-TEST(memorymanagertest, getNumBuffersByTagTest) {
+TEST(memoryManagerTest, getNumBuffersByTagTest) {
     engine::Engine::init();
     engine::MemoryManager::init(1000);
     EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemoryByTag(1), 0) << "Used memory does not match";

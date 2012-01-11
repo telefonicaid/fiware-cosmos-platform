@@ -23,6 +23,7 @@
 #include <netinet/tcp.h>        // TCP_NODELAY
 #include <unistd.h>             // close
 #include <fcntl.h>              // fcntl, F_SETFD
+#include <inttypes.h>           // int32_t, ...
 
 
 
@@ -107,6 +108,8 @@ typedef struct Node
 * global variables - 
 */ 
 static int  verbose = 0;
+static int  filter  = 0;
+
 Node        node1;
 Node        node2;
 char        buffer[8 * 1024 * 1024];
@@ -304,6 +307,18 @@ void tmoHandler(void)
 
 /* ****************************************************************************
 *
+* filteredTunnel - 
+*/
+void filteredTunnel(Node* from, Node* to)
+{
+	E(("Sorry, filter not implemented ..."));
+	exit(51);
+}
+
+
+
+/* ****************************************************************************
+*
 * tunnel - 
 */
 void tunnel(Node* from, Node* to)
@@ -311,6 +326,12 @@ void tunnel(Node* from, Node* to)
 	int nb;
 	int size;
 	int total;
+
+	if (filter == 1)
+	{
+		filteredTunnel(from, to);
+		return;
+	}
 
 	nb = read(from->fd, buffer, sizeof(buffer));
 	if (nb == -1)
@@ -382,6 +403,20 @@ void run(Node* node1, Node* node2)
 
 /* ****************************************************************************
 *
+* usage - 
+*/
+void usage(char* progName)
+{
+	printf("Usage:\n");
+	printf("  %s -u\n", progName);
+	printf("  %s ip:port:role ip:port:role [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)] [-filter (use filter to remove unwanted data)]\n", progName);
+	exit(1);
+}
+
+
+
+/* ****************************************************************************
+*
 * main - 
 */
 int main(int argC, char* argV[])
@@ -389,10 +424,43 @@ int main(int argC, char* argV[])
 	char* node1info = argV[1];
 	char* node2info = argV[2];
 	
-	if ((argC != 3) && (argC != 5))
-		X(1, ("Usage: %s: IP:port IP2:port [-v <verbose level (0-5)>]\n", argV[0]));
+	if (strcmp(argV[1], "-u") == 0)
+		usage(argV[0]);
 
-	verbose = atoi(argV[4]);
+	if (argC < 3)
+		usage(argV[0]);
+
+	int ix = 3;
+	while (ix < argC)
+	{
+		if (strcmp(argV[ix], "-v") == 0)
+			verbose = 1;
+		else if (strcmp(argV[ix], "-vv") == 0)
+			verbose = 2;
+		else if (strcmp(argV[ix], "-vvv") == 0)
+			verbose = 3;
+		else if (strcmp(argV[ix], "-vvvv") == 0)
+			verbose = 4;
+		else if (strcmp(argV[ix], "-vvvvv") == 0)
+			verbose = 5;
+		else if (strcmp(argV[ix], "-filter") == 0)
+		{
+			X(51, ("Sorry, filter not implemented ..."));
+			filter = 1;
+		}
+		else if (strcmp(argV[ix], "-u") == 0)
+			usage(argV[0]);
+		else
+		{
+			X(1, ("%s: unrecognized option '%s'\n\nUsage: %s: IP:port:role IP2:port:role [-v <verbose level (0-5)>] [-u (usage)] [-filter (use filter to remove unwanted data)]\n",
+				  argV[0], argV[ix], argV[0]));
+
+			usage(argV[0]);
+		}
+
+		++ix;
+	}
+
 
 	nodeParse(node1info, &node1);
 	nodeParse(node2info, &node2);

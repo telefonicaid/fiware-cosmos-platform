@@ -1,2 +1,2 @@
 gcc -g -c arcanumTunnel.c
-gcc -o arcanumTunnel arcanumTunnel.o
+gcc -o arcanumTunnel -lsocket -lc -lnsl arcanumTunnel.o

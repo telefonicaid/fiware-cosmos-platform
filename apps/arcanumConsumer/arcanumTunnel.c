@@ -423,7 +423,12 @@ int main(int argC, char* argV[])
 {
 	char* node1info = argV[1];
 	char* node2info = argV[2];
-	
+
+        if (argC == 1)
+        {
+          usage(argV[0]);
+          exit(1);
+        }
 	if (strcmp(argV[1], "-u") == 0)
 		usage(argV[0]);
 

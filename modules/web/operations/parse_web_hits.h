@@ -54,6 +54,11 @@ namespace web{
 			  key.value.append(  words[3] );
 			  writer->emit( 0 , &key , &value);
 		   }
+		   else
+		   {
+			LM_E(("Error, line too short:'%s'", line));
+		   }
+		   
 
 		   // Emit full URL as 4th and 7th field
 		   if( words.size() >= 7 )

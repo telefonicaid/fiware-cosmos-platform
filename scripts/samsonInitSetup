@@ -6,7 +6,7 @@ NO_PROCS=`cat /proc/cpuinfo | grep processor | wc -l`
 # Set general.num_processess
 sed -i "s/^general.num_processess.*/general.num_processess   $NO_PROCS/" /var/samson/etc/setup.txt
 # Get the memory 
-MEM_BYTES=`cat /proc/cpuinfo | grep MemTotal | awk '{print $2*1024}'`
+MEM_BYTES=`cat /proc/meminfo | grep MemTotal | awk '{print $2*1024}'`
 # Set the available system memory
 sed -i "s/^general.memory/general.memory   $MEM_BYTES/" /var/samson/etc/setup.txt
 

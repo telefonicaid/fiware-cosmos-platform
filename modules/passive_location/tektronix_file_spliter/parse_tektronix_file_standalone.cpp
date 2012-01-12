@@ -45,13 +45,15 @@ int main( int argc, const char *argv[])
     unsigned char *p_end_ohdr;
 
     unsigned int sizeOHDR = 0;
+    int typeMsg = 0;
     int numDRs = 0;
 
     unsigned int sizeDR = 0;
     int typeDR = 0;
-    int timestamp = 0;
-    int imsi = 0;
-    int imei = 0;
+    uint64_t timestamp = 0;
+    uint64_t imsi = 0;
+    uint64_t imei = 0;
+    uint64_t msisdn = 0;
     int probeId = 0;
 
 
@@ -108,12 +110,12 @@ int main( int argc, const char *argv[])
     while( p_blob < p_end_blob )
     {
         p_init_ohdr = p_blob;
-        if (parse_OHDR_header(&p_blob, &sizeOHDR, &numDRs))
+        if (parse_OHDR_header(&p_blob, &sizeOHDR, &numDRs, &typeMsg))
         {
             p_end_ohdr = p_init_ohdr + sizeOHDR;
             for (int i = 0; ((i < numDRs) && (p_blob < p_end_ohdr)); i++)
             {
-                if (parse_DR(&p_blob, &sizeDR, &typeDR, &timestamp, &imsi, &imei, &probeId))
+                if (parse_DR(&p_blob, &sizeDR, &typeDR, &timestamp, &imsi, &imei, &msisdn, &probeId))
                 {
                     //                        equip_id.value = probeId;
                     //
@@ -121,7 +123,7 @@ int main( int argc, const char *argv[])
                     //                        record.imei.value = imei;
                     //                        record.timestamp.value = timestamp;
                     //                        record.cell_id.value = probeId;
-                    //                        //OLM_M(("Ready to emit probeId:%d", probeId));
+                    //                        //LM_M(("Ready to emit typeDR:%d for msisdn:%lu at probeId:%d at %lu(%s)", typeDR, msisdn, probeId, record.timestamp.value, record.timestamp.str().c_str()));
                     //
                     //                        // Emit the record at the output
                     //                        writer->emit(0, &equip_id, &record);
@@ -129,12 +131,12 @@ int main( int argc, const char *argv[])
             }
             if (p_blob != p_end_ohdr)
             {
-                //OLM_M(("Alignment failed in a OHDR of %d DRs", numDRs));
+                fprintf(stderr, "Alignment failed in a OHDR of %d DRs", numDRs);
             }
         }
         else
         {
-            //OLM_M(("OHDR ignored because not valid header"));
+            frprintf(stderr, "OHDR ignored because not valid header, with typeMsg=%d", typeMsg);
         }
         //OLM_M(("p_end_blob - p_blob=%lu (length(%lu))", p_end_blob - p_blob, length));
         if ((p_blob - p_chunk) > size)

@@ -32,7 +32,7 @@ TEST(diskManagerTest, instantiationTest) {
               << "Uninitialized DiskManager should be null"; //using just NULL produces compilation error
 
     //call init() and then shared(). Should return a valid one.
-    engine::DiskManager::init(3);
+    engine::DiskManager::init(10);
     ASSERT_TRUE(engine::DiskManager::shared() != static_cast<engine::DiskManager*>(NULL)) 
                 << "DiskManager instance should not be null after instantiation"; 
 
@@ -45,20 +45,23 @@ TEST(diskManagerTest, instantiationTest) {
 //test void getInfo( std::ostringstream& output);
 TEST(diskManagerTest, getInfoTest) {
     engine::Engine::init();
-    engine::DiskManager::init(3);
+    engine::DiskManager::init(10);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
     engine::DiskManager::shared()->add(operation);
 
     std::ostringstream info;
     engine::DiskManager::shared()->getInfo( info );
+    //std::cout << std::endl << info.str() << std::endl;
 
     //XML parsing
     XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_manager");
     EXPECT_EQ(std::string(xMainNode.getChildNode("num_pending_operations").getClear().lpszValue), "1") << "Error writing pending operations tag";
     EXPECT_EQ(std::string(xMainNode.getChildNode("num_running_operations").getClear().lpszValue), "1") << "Error writing running operations tag";
     XMLNode queuedNode = xMainNode.getChildNode("queued");
+    ASSERT_TRUE(!queuedNode.isEmpty());
     XMLNode diskOperationNode = queuedNode.getChildNode("disk_operation");
+    ASSERT_TRUE(!diskOperationNode.isEmpty());
     EXPECT_EQ(std::string(diskOperationNode.getChildNode("type").getText()), "read") << "Error writing type tag";
     EXPECT_EQ(std::string(diskOperationNode.getChildNode("file_name").getText()), "test_filename.txt") << "Error writing file_name tag";
     EXPECT_EQ(std::string(diskOperationNode.getChildNode("size").getText()), "1") << "Error writing size tag";
@@ -74,56 +77,13 @@ TEST(diskManagerTest, getInfoTest) {
     XMLNode totalNode = statisticsNode.getChildNode("read");
     EXPECT_TRUE(std::string(totalNode.getChildNode("description").getText()).find("Currently    0 hits/s    0 B/s")) << "Error writing total statistics tag";
      EXPECT_EQ(std::string(totalNode.getChildNode("rate").getClear().lpszValue), "0") << "Error writing total rate tag";
-   
-    
-/*    CMarkup xmlData( info.str() );
-    xmlData.FindElem("disk_manager");
-    xmlData.IntoElem();
-    xmlData.FindElem("num_pending_operations");
-    EXPECT_EQ(xmlData.GetData(), "1") << "Error writing pending operations tag";
-    xmlData.FindElem("num_running_operations");
-    EXPECT_EQ(xmlData.GetData(), "1") << "Error writing running operations tag";
-    //xmlData.OutOfElem();
-    xmlData.FindElem("queued");
-    xmlData.IntoElem();
-    xmlData.FindElem("disk_operation");
-    xmlData.IntoElem();
-    xmlData.FindElem("type");
-    EXPECT_EQ(xmlData.GetData(), "read") << "Error writing type tag";
-    xmlData.FindElem("file_name");
-    EXPECT_EQ(xmlData.GetData(), "test_filename.txt") << "Error writing file_name tag";
-    xmlData.FindElem("size");
-    EXPECT_EQ(xmlData.GetData(), "1") << "Error writing size tag";
-    xmlData.FindElem("offset");
-if(xmlData.GetData()!="0") std::cout << info.str() << std::endl;    
-    EXPECT_EQ(xmlData.GetData(), "0") << "Error writing offset tag";
-    xmlData.OutOfElem();//disk_element
-    xmlData.OutOfElem();//queued
-    xmlData.FindElem("statistics");
-    xmlData.IntoElem();
-    xmlData.FindElem("read");
-    xmlData.IntoElem();
-    xmlData.FindElem("description");
-    EXPECT_TRUE(xmlData.GetData().find("Currently    0 hits/s    0 B/s")) << "Error writing read statistics tag";
-    xmlData.OutOfElem();//read
-    xmlData.FindElem("write");
-    xmlData.IntoElem();
-    xmlData.FindElem("description");
-    EXPECT_TRUE(xmlData.GetData().find("Currently    0 hits/s    0 B/s")) << "Error writing write statistics tag";
-    xmlData.OutOfElem();//write
-    xmlData.FindElem("total");
-    xmlData.IntoElem();
-    xmlData.FindElem("description");
-    EXPECT_TRUE(xmlData.GetData().find("Currently    0 hits/s    0 B/s")) << "Error writing total statistics tag";
-    xmlData.OutOfElem();//total
-*/
     
 }
 
 //test void add( DiskOperation *operation )
 TEST(diskManagerTest, addTest) {
     engine::Engine::init();
-    engine::DiskManager::init(3);
+    engine::DiskManager::init(10);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
     engine::DiskManager::shared()->add(operation);
@@ -139,7 +99,7 @@ TEST(diskManagerTest, addTest) {
 //test void cancel( DiskOperation *operation );
 TEST(diskManagerTest, cancelTest) {
     engine::Engine::init();
-    engine::DiskManager::init(3);
+    engine::DiskManager::init(10);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
     engine::DiskManager::shared()->add(operation);
@@ -156,7 +116,7 @@ TEST(diskManagerTest, cancelTest) {
 TEST(diskManagerTest, getNumOperationsTest) {
     //add two operations and check that it returns 2
     engine::Engine::init();
-    engine::DiskManager::init(3);
+    engine::DiskManager::init(10);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
     engine::DiskManager::shared()->add(operation);
@@ -170,24 +130,24 @@ TEST(diskManagerTest, getNumOperationsTest) {
 //test void setNumOperations( int _num_disk_operations );
 TEST(diskManagerTest, setNumOperationsTest) {
     engine::Engine::init();
-    engine::DiskManager::init(3);
+    engine::DiskManager::init(10);
 
     ProcessStats pstats;
     long threadsBefore = pstats.get_nthreads();
 
-    engine::DiskManager::shared()->setNumOperations(6);
+    engine::DiskManager::shared()->setNumOperations(14);
 
     pstats.refresh();
-    long threadsAfter = pstats.get_nthreads(); //should be threadsBefore+3, since we extended the number of operations from 3 to 6
+    long threadsAfter = pstats.get_nthreads(); //should be threadsBefore+4, since we extended the number of operations from 10 to 14
 
-    EXPECT_EQ(threadsAfter - threadsBefore, 3) << "Error in setNumOperations()";
+    EXPECT_EQ(threadsAfter - threadsBefore, 4) << "Error in setNumOperations()";
     
 }
 
 //test void quitEngineService();
 TEST(diskManagerTest, quitEngineServiceTest) {
     engine::Engine::init();
-    engine::DiskManager::init(3);
+    engine::DiskManager::init(10);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
     engine::DiskManager::shared()->add(operation);

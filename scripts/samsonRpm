@@ -98,6 +98,7 @@ echo                                                         >> $BUILD_ROOT/rpm/
 echo "%files"                                                >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo "%defattr(-, samson, samson, -)"                        >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '%dir /opt/samson'                                      >> $BUILD_ROOT/rpm/SPECS/$specfile
+echo '%dir /opt/samson/bin'                                      >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '%dir /opt/samson/etc'                                  >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '%dir /opt/samson/log'                                  >> $BUILD_ROOT/rpm/SPECS/$specfile
 echo '%dir /var/samson'                                      >> $BUILD_ROOT/rpm/SPECS/$specfile

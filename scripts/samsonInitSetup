@@ -18,8 +18,11 @@ then
     if [ -f /etc/redhat-release ]; then
         echo "kernel.shmmax=$shmmax_needed" >> /etc/sysctl.conf
     fi
-    if [ -f /etc/ubuntu-release ]; then
-        echo "kernel.shmmax=$shmmax_needed" > /etc/sysctl.d/30-samson.conf
+    if [ -f /etc/lsb-release ]; then
+        . /etc/lsb-release
+        if [ "${DISTRIB_ID}" = "Ubuntu" ]; then
+    	    echo "kernel.shmmax=$shmmax_needed" > /etc/sysctl.d/30-samson.conf
+        fi
     fi
     sysctl -q -w kernel.shmmax=$shmmax_needed
 fi

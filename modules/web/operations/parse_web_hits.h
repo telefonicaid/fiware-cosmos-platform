@@ -12,6 +12,8 @@
 #include <samson/modules/system/UInt.h>
 #include <samson/modules/system/SimpleParser.h>
 
+#include <logMsg/logMsg.h>
+
 namespace samson{
 namespace web{
 

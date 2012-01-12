@@ -22,7 +22,7 @@
 
 #include "au/ProcessStats.h"
 
-#include "xmlmarkup/xmlmarkup.h"
+#include "xmlparser/xmlParser.h"
 
 
 // Tests engine's instantiation
@@ -53,35 +53,22 @@ TEST(engineTest, getInfoTest) {
     //std::cout << info.str() << std::endl;
     
     //XML parsing class
-    CMarkup xmlData( info.str() );
-    xmlData.FindElem();
-    xmlData.IntoElem();
-    //Loops is not testable because it can vary
-    //xmlData.FindElem("loops");
-    //EXPECT_EQ(xmlData.GetData(), "1") << "Error writing loops tag";
-    xmlData.FindElem("running_element");
-    //std::cout << "running_element: " << xmlData.GetData() << std::endl;
-    EXPECT_EQ(xmlData.GetData(), "No running element") << "Error writing running element tag";
-    xmlData.FindElem("elements");
-    xmlData.IntoElem(); 
-    xmlData.FindElem("engine_element");
-    xmlData.IntoElem(); //engine_element 
-    xmlData.FindElem("short_description");
+    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"engine");
+    //Loops value is not testable because it varies with time, but we can at least check that it is set
+    EXPECT_TRUE(!xMainNode.getChildNode("loops").isEmpty()) << "Error writing loops tag";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("running_element").getClear().lpszValue), "No running element") << "Error writing running element tag";
+    XMLNode elementNode = xMainNode.getChildNode("elements").getChildNode("engine_element");
+    ASSERT_TRUE(!elementNode.isEmpty());
     //std::cout << "short description: " << xmlData.GetData() << std::endl;
-    EXPECT_EQ(xmlData.GetData(), "[ EngineElement in 10.00 secs ( repetition count:0 delay:10 ) ] Not:[ Not: alive]") << \
-                      "Error writing short_description tag";
-    xmlData.FindElem("description");
-    //std::cout << "description: " << xmlData.GetData() << std::endl;
-    EXPECT_EQ(xmlData.GetData(), 
-              "[ Notification [ Notification alive Targets: () () ] repeated count:0 time:10.00 delay:10 ] Not:[ Not: alive]")
-               << "Error writing description tag";
-    xmlData.OutOfElem();
-    xmlData.OutOfElem();
-    xmlData.FindElem("uptime");
-    //std::cout << "uptime: " << xmlData.GetData() << std::endl;
-    EXPECT_EQ(xmlData.GetData(), "0") << "Error writing uptime tag";
+    EXPECT_EQ(std::string(elementNode.getChildNode("short_description").getClear().lpszValue), 
+        "[ EngineElement in 10.00 secs ( repetition count:0 delay:10 ) ] Not:[ Not: alive]") 
+        << "Error writing short_description tag";
+    EXPECT_EQ(std::string(elementNode.getChildNode("description").getClear().lpszValue), 
+        "[ Notification [ Notification alive Targets: () () ] repeated count:0 time:10.00 delay:10 ] Not:[ Not: alive]")
+        << "Error writing description tag";
+    //Uptime value is not testable because it varies with time, but we can at least check that it is set
+    EXPECT_TRUE(!xMainNode.getChildNode("uptime").isEmpty()) << "Error writing uptime tag";
     
-    //std::cout << std::endl << std::endl << xmlData.GetDoc() << std::endl;
 }
 
 //notify( Notification*  notification )
@@ -91,28 +78,29 @@ TEST(engineTest, notificationTest) {
     engine::Notification* notification2 = new engine::Notification("test_notification2");
     engine::Engine::shared()->notify(notification1);
     engine::Engine::shared()->notify(notification2, 3);
-    //get info and check it is right
+    //get xml info and check it there
     std::ostringstream info;
     engine::Engine::shared()->getInfo( info );
     //std::cout << info.str() << std::endl;
 
-    CMarkup xmlData( info.str() );
-    xmlData.FindElem();
-    xmlData.IntoElem();
- 
+    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"engine");
+    XMLNode element1Node = xMainNode.getChildNode("elements").getChildNode("engine_element",0);
+    XMLNode element2Node = xMainNode.getChildNode("elements").getChildNode("engine_element",1);
+    ASSERT_TRUE(!element1Node.isEmpty() && !element2Node.isEmpty());
+    //If the order was not right, swap them
+    if(std::string(element1Node.getChildNode("description").getClear().lpszValue).find("test_notification1") == false)
+    {
+        XMLNode tmp = element1Node;
+        element1Node = element2Node;
+        element2Node = tmp; 
+    }
+
+
     //First engine_element will be notification test_notification1
-    xmlData.FindElem("elements");
-    xmlData.IntoElem(); 
-    xmlData.FindElem("engine_element");
-    xmlData.IntoElem(); //engine_element 
-    xmlData.FindElem("description");
-    EXPECT_TRUE(xmlData.GetData().find("test_notification1") != std::string::npos ) << "notification not registered" ;
-    xmlData.OutOfElem();
-    //Second engine_element will be notification test_notification2
-    xmlData.FindElem("engine_element");
-    xmlData.IntoElem(); //engine_element 
-    xmlData.FindElem("description");
-    EXPECT_TRUE(xmlData.GetData().find("test_notification2") != std::string::npos ) << "notification not registered" ;
+    EXPECT_TRUE(std::string(element1Node.getChildNode("description").getClear().lpszValue).find("test_notification1")) 
+        << "notification not registered" ;
+    EXPECT_TRUE(std::string(element2Node.getChildNode("description").getClear().lpszValue).find("test_notification2")) 
+        << "notification not registered" ;
     
     //delete notification1;
     //delete notification2;
@@ -129,30 +117,22 @@ TEST(engineTest, addTest) {
     std::ostringstream info;
     engine::Engine::shared()->getInfo( info );
 
-    CMarkup xmlData( info.str() );
-    xmlData.FindElem();
-    xmlData.IntoElem();
+    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"engine");
  
     //Find the corresponding element in the list of elements in the engine
-    xmlData.FindElem("elements");
-    xmlData.IntoElem(); 
     bool found = false;
-    while(xmlData.FindElem("engine_element") && !found)
+    int i = 0;
+    XMLNode elementNode = xMainNode.getChildNode("elements").getChildNode("engine_element",i);
+    while(!elementNode.isEmpty() && !found)
     {
-        xmlData.IntoElem(); 
-        xmlData.FindElem("description");
-        found = xmlData.GetData().find("Sleep element just to sleep 10 seconds") != std::string::npos;
-        xmlData.OutOfElem(); 
+        found = std::string(elementNode.getChildNode("description").getClear().lpszValue).find("Sleep element just to sleep 10 seconds");
+        i++;
+        if (!found) elementNode = xMainNode.getChildNode("elements").getChildNode("engine_element",i);
     }
     
     EXPECT_TRUE( found ) << "EngineElement not added" ;
 
-    //std::cout << "Probando add(): " << info.str() << std::endl;
-    
-    EXPECT_TRUE(true);
     //delete testElement;
-
-   
 }   
 
 

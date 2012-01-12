@@ -128,8 +128,8 @@ int connectToServer(const char* host, unsigned short port)
 		if (connect(fd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
 		{
 			++tri;
-			LM_E(("connect intent %d failed: %s", tri, strerror(errno)));
-			usleep(50000);
+			// LM_E(("connect intent %d failed: %s", tri, strerror(errno)));
+			usleep(500000);
 			if (tri > retries)
 			{
 				close(fd);
@@ -162,8 +162,12 @@ void readFromServer(int fd)
 		if (nb == -1)
 			LM_X(1, ("error reading from socket: %s", strerror(errno)));
 		else if (nb == 0)
-			LM_E(("Read zero bytes"));
-		else
+		{
+            LM_E(("Read zero bytes ... closing connection and reconnecting!"));
+            close(fd);
+            fd = connectToServer(host, port);
+        }
+        else
 		{
             LM_M(("Read a buffer of %d bytes from %s - now ... what do I do with it ...?", nb, host));
 		}

@@ -12,6 +12,7 @@
 */
 #include <stdio.h>              // printf
 #include <string.h>             // strstr, etc ...
+#include <strings.h>             // strstr, etc ...
 #include <sys/types.h>          // types needed by socket include files
 #include <errno.h>              // errno
 #include <stdlib.h>             // free

@@ -16,7 +16,12 @@ shmmax_have=`sysctl -n kernel.shmmax`
 if [ "$shmmax_needed" -gt "$shmmax_have" ];
 then
     if [ -f /etc/redhat-release ]; then
-        echo "kernel.shmmax=$shmmax_needed" >> /etc/sysctl.conf
+        have_shmmax=`grep "^kernel.shmmax" /etc/sysctl.conf`
+        if [ ${have_shmmax} -eq 0 ]; then
+            echo "kernel.shmmax=$shmmax_needed" >> /etc/sysctl.conf
+        else
+           sed -i "s/^kernel.shmmax=[0-9]\+/kernel.shmmax=${shmmax_needed}/" /etc/sysctl.conf
+        fi
     fi
     if [ -f /etc/lsb-release ]; then
         . /etc/lsb-release

@@ -112,8 +112,20 @@ void HostMgr::localIps(void)
 	char   domain[128];
 	char   domainedName[128];
 
-	if (gethostname(hostName, sizeof(hostName)) == -1)
-		LM_X(1, ("gethostname: %s", strerror(errno)));
+	while (1)
+	{
+		if (gethostname(hostName, sizeof(hostName)) == -1)
+			LM_X(1, ("gethostname: %s", strerror(errno)));
+
+		if (strcmp(hostName, "localhost") == 0)
+		{
+			LM_W(("Host name 'localhost' - awaiting an allowed host name ..."));
+			sleep(1);
+			continue;
+		}
+
+		break;
+	}
 
 	LM_T(LmtHost, ("hostName: '%s'", hostName));
 	localhostP = insert(hostName, "127.0.0.1"); // , "127.0.0.1" ...

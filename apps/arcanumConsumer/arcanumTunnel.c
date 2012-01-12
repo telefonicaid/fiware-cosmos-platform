@@ -224,6 +224,8 @@ void connectToServer(Node* nodeP)
 */
 void acceptConnection(Node* nodeP)
 {
+    
+    V1(("Accepting connection on fd %d", nodeP->listenFd));
 	nodeP->fd = accept(nodeP->listenFd, NULL, 0);
 	if (nodeP->fd == -1)
 		X(6, ("accept: %s", strerror(errno)));
@@ -242,6 +244,9 @@ void nodeParse(char* nodeInfo, Node* nodeP)
 	char  role[32];
 
 	V5(("parsing node '%s'", nodeInfo));
+
+    nodeP->listenFd = -1;
+    nodeP->fd       = -1;
 
 	char* tmP = strstr(nodeInfo, ":");
 	if (tmP == NULL)
@@ -281,11 +286,23 @@ int nodeInit(Node* nodeP)
 {
 	int fd;
 	
+    if (nodeP->fd != -1)
+    {
+        close(nodeP->fd);
+        nodeP->fd = -1;
+    }
+
 	if (nodeP->role == NrServer)
 	{
-		V2(("Initializing server for host '%s' and port %d", nodeP->host, nodeP->port));
-		serverInit(nodeP);
-		V2(("Accepting connections from '%s', port %d", nodeP->host, nodeP->port));
+        if (nodeP->listenFd <= 0)
+        {
+            V2(("Initializing server for host '%s' and port %d", nodeP->host, nodeP->port));
+            serverInit(nodeP);
+            V2(("Accepting connections from '%s', port %d", nodeP->host, nodeP->port));
+        }
+        else
+            V1(("Awaiting client to reconnect"));
+
 		acceptConnection(nodeP); // Await for someone to connect
 	}
 	else
@@ -339,7 +356,10 @@ void tunnel(Node* from, Node* to)
 	if (nb == -1)
 		X(41, ("reading data (node '%s:%d'): %s", from->host, from->port, strerror(errno)));
 	else if (nb == 0)
-		X(42, ("Node '%s:%d' closed the connection", from->host, from->port));
+	{
+        E(("Node '%s:%d' closed the connection", from->host, from->port));
+        nodeInit(from);
+    }
 	else
 	{
 		size  = nb;
@@ -349,12 +369,20 @@ void tunnel(Node* from, Node* to)
 		{
 			nb = write(to->fd, &buffer[total], size - total);
 			if (nb == -1)
-				X(41, ("writing data to node '%s:%d': %s", to->host, to->port, strerror(errno)));
+			{
+                E(("writing data to node '%s:%d': %s", to->host, to->port, strerror(errno)));
+                nodeInit(to);
+            }
 			else if (nb == 0)
-				X(42, ("written ZERO bytes to node '%s:%d': %s", to->host, to->port, strerror(errno)));
-
-			V1(("Tunneled %d bytes to '%s:%d'", nb, to->host, to->port));
-			total += nb;
+			{
+                E(("written ZERO bytes to node '%s:%d'!", to->host, to->port));
+                nodeInit(to);
+            }
+            else
+            {
+                V1(("Tunneled %d bytes to '%s:%d'", nb, to->host, to->port));
+                total += nb;
+            }
 		}
 	}
 }

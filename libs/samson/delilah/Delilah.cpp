@@ -38,6 +38,7 @@
 #include "samson/delilah/DelilahUtils.h"        // node_to_string_function
 #include "samson/delilah/SamsonDataSet.h"       // samson::SamsonDataSet
 #include "samson/delilah/Delilah.h"             // Own interfce
+#include "samson/delilah/DelilahConsole.h"      // samson::DelilahConsole
 
 
 samson::Delilah* global_delilah = NULL;
@@ -174,6 +175,14 @@ namespace samson {
         
         if( msgCode == Message::StatusReport )
         {
+            // Goyo. Trying to protect against info reports after quitting delilah (SAMSON-312)
+            // Not sure about other notifications
+            DelilahConsole * delilah_console = (DelilahConsole *) this;
+
+            if (delilah_console->isQuitting())
+            {
+                return;
+            }
             
             if( packet->fromId == network->controllerGetIdentifier() )
             {

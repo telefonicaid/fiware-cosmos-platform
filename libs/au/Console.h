@@ -54,6 +54,9 @@ public:
     // Make sure all messages are shown
     void flush();
     
+    /* ask about Console quit status */
+    bool isQuitting();
+
 private:
     
     void print_command();

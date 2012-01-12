@@ -358,6 +358,12 @@ void Console::quitConsole()
     quit_console = true;
 }
 
+/* ask about Console quit status */
+/* Goyo. Trying to protect against info reports after quitting delilah (SAMSON-312) */
+bool Console::isQuitting()
+{
+    return quit_console;
+}
 
 /* Methods to write things on screen */
 void Console::writeWarningOnConsole( std::string message )

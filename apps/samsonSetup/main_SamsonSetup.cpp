@@ -104,7 +104,7 @@ public:
 
             if( !samson::SamsonSetup::shared()->isParameterDefined( property ) )
             {
-                writeErrorOnConsole(au::str("Paramter '%s' not defined" , property.c_str()) );
+                writeErrorOnConsole(au::str("Parameter '%s' not defined" , property.c_str()) );
                 return;
             }
             

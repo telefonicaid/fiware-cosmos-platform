@@ -333,6 +333,7 @@ void tunnel(Node* from, Node* to)
 		return;
 	}
 
+    V2(("reading ..."));
 	nb = read(from->fd, buffer, sizeof(buffer));
 	if (nb == -1)
 		X(41, ("reading data (node '%s:%d'): %s", from->host, from->port, strerror(errno)));
@@ -342,6 +343,7 @@ void tunnel(Node* from, Node* to)
 	{
 		size  = nb;
 		total = 0;
+        V2(("Sending %d bytes to other side", size));
 		while (total < size)
 		{
 			nb = write(to->fd, &buffer[total], size - total);

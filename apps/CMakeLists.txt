@@ -11,6 +11,7 @@ ADD_SUBDIRECTORY(samsonDiskTest)
 ADD_SUBDIRECTORY(samsonStarter)
 ADD_SUBDIRECTORY(samsonData)
 ADD_SUBDIRECTORY(samsonKiller)
+ADD_SUBDIRECTORY(passiveLocationPush)
 
 ADD_SUBDIRECTORY(samsonPush)
 ADD_SUBDIRECTORY(samsonPop)

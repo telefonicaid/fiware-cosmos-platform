@@ -156,7 +156,7 @@ int main(int argC, const char *argV[])
 	signal(SIGINT,  sigHandler);
 	signal(SIGTERM, sigHandler);
 
-    paConfig("builtin prefix",                (void*) "SS_SPAWNER");
+	paConfig("builtin prefix",                (void*) "SS_SPAWNER_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC/FILE[LINE] FUNC: TEXT");

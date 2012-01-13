@@ -21,6 +21,7 @@
 #include "engine/Engine.h"
 
 #include "samson/common/samsonVersion.h"
+#include "samson/common/samsonVars.h"
 #include "samson/common/status.h"
 #include "samson/common/SamsonSetup.h"
 #include "samson/network/Endpoint2.h"
@@ -32,6 +33,8 @@
 *
 * Option variables
 */
+SAMSON_ARG_VARS;
+
 char           controllerHost[256];
 const char*    ips[100] = { NULL };
 bool           reset;
@@ -46,11 +49,13 @@ bool           local;
 */
 PaArgument paArgs[] =
 {
-    { "-controller",   controllerHost,  "CONTROLLER", PaString,  PaOpt,  PaND,   PaNL,  PaNL,  "Controller host"               },
-    { "-ips",          ips,             "IP_LIST",    PaSList,   PaOpt,  PaND,   PaNL,  PaNL,  "list of worker IPs"            },
-    { "-local",       &local,           "LOCAL",      PaBool,    PaOpt,  false, false,  true,  "'cluster' only in localhost"   },
-    { "-reset",       &reset,           "RESET",      PaBool,    PaOpt,  false, false,  true,  "reset platform"                },
-    { "-plist",       &pList,           "P_LIST",     PaBool,    PaOpt,  false, false,  true,  "process list of platform"      },
+	SAMSON_ARGS,
+
+    { "-controller",   controllerHost,  "SS_STARTER_CONTROLLER",       PaString,  PaOpt,  PaND,   PaNL,  PaNL,  "Controller host"               },
+    { "-ips",          ips,             "SS_STARTER_IP_LIST",          PaSList,   PaOpt,  PaND,   PaNL,  PaNL,  "list of worker IPs"            },
+    { "-local",       &local,           "SS_STARTER_LOCAL",            PaBool,    PaOpt,  false, false,  true,  "'cluster' only in localhost"   },
+    { "-reset",       &reset,           "SS_STARTER_RESET",            PaBool,    PaOpt,  false, false,  true,  "reset platform"                },
+    { "-plist",       &pList,           "SS_STARTER_PROCESS_LIST",     PaBool,    PaOpt,  false, false,  true,  "process list of platform"      },
 
     PA_END_OF_ARGS
 };
@@ -261,7 +266,7 @@ int main(int argC, const char *argV[])
     memset(controllerHost, 0, sizeof(controllerHost));
 
     // paConfig("trace levels",                  (void*) "0-255");
-    paConfig("prefix",                        (void*) "SSP_");
+    paConfig("builtin prefix",                (void*) "SS_STARTER_");
     paConfig("usage and exit on any warning", (void*) true);
     paConfig("log to screen",                 (void*) "only errors");
     paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT");

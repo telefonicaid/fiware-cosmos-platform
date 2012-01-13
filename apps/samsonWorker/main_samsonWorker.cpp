@@ -126,7 +126,7 @@ void captureSIGPIPE( int s )
 */
 int main(int argC, const char *argV[])
 {
-
+	paConfig("builtin prefix",                (void*) "SS_WORKER_");
 	paConfig("usage and exit on any warning", (void*) true);
 	paConfig("log to screen",                 (void*) "only errors");
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");

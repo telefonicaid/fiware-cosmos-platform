@@ -17,8 +17,6 @@
 #include "engine/Engine.h"
 #include "engine/Object.h"
 
-#include "xmlmarkup/xmlmarkup.h"
-
 // Tests size_t getEngineId();
 TEST(objecttest, getEngineIdTest) {
     engine::Engine::init();

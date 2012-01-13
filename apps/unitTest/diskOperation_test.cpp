@@ -21,7 +21,7 @@
 //Test void getInfo( std::ostringstream& output);
 TEST(diskOperationTest, getInfoTest) {
     engine::Engine::init();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(10);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 3 , 5, 0 );
     
@@ -40,7 +40,7 @@ TEST(diskOperationTest, getInfoTest) {
 //Test static DiskOperation* newReadOperation( char *data , std::string fileName , size_t offset , size_t size , size_t _listenerId  );
 TEST(diskOperationTest, newReadOperationTest) {
     engine::Engine::init();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(10);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 3 , 6, 2 );
     
@@ -60,7 +60,7 @@ TEST(diskOperationTest, newReadOperationTest) {
 //Test static DiskOperation* newWriteOperation( Buffer* buffer ,  std::string fileName , size_t _listenerId  );
 TEST(diskOperationTest, newWriteOperationTest) {
     engine::Engine::init();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(10);
     engine::MemoryManager::init(1000);
     engine::Buffer* buffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
     engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer , "test_filename.txt" , 2 );
@@ -81,7 +81,7 @@ TEST(diskOperationTest, newWriteOperationTest) {
 //Test static DiskOperation* newAppendOperation( Buffer* buffer ,  std::string fileName , size_t _listenerId  );
 TEST(diskOperationTest, newAppendOperationTest) {
     engine::Engine::init();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(10);
     engine::MemoryManager::init(1000);
     engine::Buffer* buffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
     engine::DiskOperation* operation = engine::DiskOperation::newAppendOperation( buffer , "test_filename.txt" , 2 );
@@ -101,7 +101,7 @@ TEST(diskOperationTest, newAppendOperationTest) {
 //Test static DiskOperation* newRemoveOperation( std::string fileName, size_t _listenerId );
 TEST(diskOperationTest, newRemoveOperationTest) {
     engine::Engine::init();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(10);
     engine::DiskOperation* operation = engine::DiskOperation::newRemoveOperation( "test_filename.txt" , 2 );
     
     EXPECT_EQ(operation->getType(), engine::DiskOperation::remove) << "Wrong type value";
@@ -117,7 +117,7 @@ TEST(diskOperationTest, newRemoveOperationTest) {
 //Test static DiskOperation * newReadOperation( std::string _fileName , size_t _offset , size_t _size ,  SimpleBuffer simpleBuffer , size_t _listenerId );
 TEST(diskOperationTest, newReadOperation2Test) {
     engine::Engine::init();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(10);
     engine::MemoryManager::init(1000);
     char data[100];
     engine::SimpleBuffer buffer(data, 100);
@@ -147,7 +147,7 @@ TEST(diskOperationTest, directoryPathTest) {
 //Test void setError( std::string message );
 TEST(diskOperationTest, setErrorTest) {
     engine::Engine::init();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(10);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 3 , 6, 2 );
 
@@ -159,7 +159,7 @@ TEST(diskOperationTest, setErrorTest) {
 //Test std::string getDescription();
 TEST(diskOperationTest, getDescriptionTest) {
     engine::Engine::init();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(10);
     char charBuffer[1024*1024];
     engine::MemoryManager::init(1000);
     engine::Buffer* engineBuffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
@@ -178,7 +178,7 @@ TEST(diskOperationTest, getDescriptionTest) {
 //Test std::string getShortDescription();
 TEST(diskOperationTest, getShortDescriptionTest) {
     engine::Engine::init();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(10);
     char charBuffer[1024*1024];
     engine::MemoryManager::init(1000);
     engine::Buffer* engineBuffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
@@ -197,7 +197,7 @@ TEST(diskOperationTest, getShortDescriptionTest) {
 //Test DiskOperationType getType()
 TEST(diskOperationTest, getTypeTest) {
     engine::Engine::init();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(10);
     char charBuffer[1024*1024];
     engine::MemoryManager::init(1000);
     engine::Buffer* engineBuffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
@@ -217,7 +217,7 @@ TEST(diskOperationTest, getTypeTest) {
 //Test size_t getSize()
 TEST(diskOperationTest, getSizeTest) {
     engine::Engine::init();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(10);
     char charBuffer[1024*1024];
     engine::MemoryManager::init(1000);
     engine::Buffer* engineBuffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
@@ -232,7 +232,7 @@ TEST(diskOperationTest, getSizeTest) {
 //Test void destroyBuffer();
 TEST(diskOperationTest, destroyBufferTest) {
     engine::Engine::init();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(10);
     engine::MemoryManager::init(1000);
     engine::Buffer* buffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
     engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer , "test_filename.txt" , 2 );
@@ -245,7 +245,7 @@ TEST(diskOperationTest, destroyBufferTest) {
 //Test bool compare( DiskOperation *operation );
 TEST(diskOperationTest, compareTest) {
     engine::Engine::init();
-    engine::DiskManager::init(1);
+    engine::DiskManager::init(10);
      char charBuffer[1024*1024];
     engine::MemoryManager::init(1000);
     engine::Buffer* engineBuffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );

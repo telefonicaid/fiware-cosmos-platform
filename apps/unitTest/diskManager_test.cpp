@@ -56,11 +56,22 @@ TEST(diskManagerTest, getInfoTest) {
 
     //XML parsing
     XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_manager");
-    EXPECT_EQ(std::string(xMainNode.getChildNode("num_pending_operations").getClear().lpszValue), "1") << "Error writing pending operations tag";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("num_running_operations").getClear().lpszValue), "1") << "Error writing running operations tag";
-    XMLNode queuedNode = xMainNode.getChildNode("queued");
-    ASSERT_TRUE(!queuedNode.isEmpty());
-    XMLNode diskOperationNode = queuedNode.getChildNode("disk_operation");
+    //Check that pending operations and running operations have a value
+    EXPECT_TRUE(xMainNode.getChildNode("num_pending_operations").getClear().lpszValue != (char*)NULL) << "Error writing pending operations tag";
+    EXPECT_TRUE(xMainNode.getChildNode("num_running_operations").getClear().lpszValue != NULL) << "Error writing running operations tag";
+    //If pending operations is set to 1, the operation is in <queued>, otherwise it is in <running>
+    XMLNode tmpNode;
+    if(strcmp(xMainNode.getChildNode("num_pending_operations").getClear().lpszValue, "1") == 0)
+    {
+        tmpNode = xMainNode.getChildNode("queued");
+    }
+    else
+    {
+        tmpNode = xMainNode.getChildNode("running");
+    }
+    
+    ASSERT_TRUE(!tmpNode.isEmpty());
+    XMLNode diskOperationNode = tmpNode.getChildNode("disk_operation");
     ASSERT_TRUE(!diskOperationNode.isEmpty());
     EXPECT_EQ(std::string(diskOperationNode.getChildNode("type").getText()), "read") << "Error writing type tag";
     EXPECT_EQ(std::string(diskOperationNode.getChildNode("file_name").getText()), "test_filename.txt") << "Error writing file_name tag";
@@ -70,10 +81,10 @@ TEST(diskManagerTest, getInfoTest) {
     XMLNode statisticsNode = xMainNode.getChildNode("statistics");
     XMLNode readNode = statisticsNode.getChildNode("read");
     EXPECT_TRUE(std::string(readNode.getChildNode("description").getText()).find("Currently    0 hits/s    0 B/s")) << "Error writing read statistics tag";
-     EXPECT_EQ(std::string(readNode.getChildNode("rate").getClear().lpszValue), "0") << "Error writing read rate tag";
+    EXPECT_EQ(std::string(readNode.getChildNode("rate").getClear().lpszValue), "0") << "Error writing read rate tag";
     XMLNode writeNode = statisticsNode.getChildNode("read");
     EXPECT_TRUE(std::string(writeNode.getChildNode("description").getText()).find("Currently    0 hits/s    0 B/s")) << "Error writing write statistics tag";
-     EXPECT_EQ(std::string(writeNode.getChildNode("rate").getClear().lpszValue), "0") << "Error writing write rate tag";
+    EXPECT_EQ(std::string(writeNode.getChildNode("rate").getClear().lpszValue), "0") << "Error writing write rate tag";
     XMLNode totalNode = statisticsNode.getChildNode("read");
     EXPECT_TRUE(std::string(totalNode.getChildNode("description").getText()).find("Currently    0 hits/s    0 B/s")) << "Error writing total statistics tag";
      EXPECT_EQ(std::string(totalNode.getChildNode("rate").getClear().lpszValue), "0") << "Error writing total rate tag";
@@ -88,8 +99,6 @@ TEST(diskManagerTest, addTest) {
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
     engine::DiskManager::shared()->add(operation);
 
-    std::ostringstream info;
-    
     EXPECT_EQ(engine::DiskManager::shared()->getNumOperations(), 1) << "Wrong number of disk operations";
     
 

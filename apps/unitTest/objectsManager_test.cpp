@@ -15,6 +15,7 @@
 #include "gtest/gtest.h"
 
 #include "engine/Engine.h"
+#include "engine/Notification.h"
 #include "engine/Object.h"
 
 #include "xmlmarkup/xmlmarkup.h"
@@ -36,6 +37,10 @@ TEST(objectsmanagertest, addRemoveGetIdTest) {
     //object2 is in the channel, so getObjectByName must return NULL
     EXPECT_EQ(om.getObjectByName("object2"), static_cast<engine::Object*>(NULL));    
     
+    engine::Object* testObject = new engine::Object("test_object");
+    engine::Notification* notification1 = new engine::Notification("test_notification1", testObject, 1);
+    om.send(notification1);
+     
     om.remove(&object1);
     om.remove(&object2, "channel1");
     

@@ -1,10 +1,18 @@
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.util.HashMap;
+
 /**
- * Class that defines the native methods to access the comScore
- * dictionary API via JNI.
+ * Class that defines the native methods to access the comScore dictionary API
+ * via JNI.
  * 
  * @author dmicol
  */
 public class Categories {
+    private final static String DELIMITER = "\t";
+
     /**
      * Initializes the dictionary wrapper using the terms in domain file.
      * 
@@ -43,5 +51,53 @@ public class Categories {
 
     static {
         System.loadLibrary("Categories");
+    }
+
+    /**
+     * Loads the file which contains the category pattern mappings.
+     * 
+     * @param fileName
+     *            the file name that contains the mappings.
+     * @return the map of pattern IDs to category IDs.
+     */
+    public HashMap<Long, Long> loadCategoryPatternMapping(String fileName)
+            throws IOException {
+        HashMap<Long, Long> categoryPatternMap = new HashMap<Long, Long>();
+        FileInputStream fis = new FileInputStream(fileName);
+        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+        while (br.ready()) {
+            String line = br.readLine();
+            String[] columns = line.trim().split(DELIMITER);
+            Long patternID = Long.parseLong(columns[0]);
+            Long categoryID = Long.parseLong(columns[columns.length - 1]);
+            categoryPatternMap.put(patternID, categoryID);
+        }
+        br.close();
+        fis.close();
+        return categoryPatternMap;
+    }
+
+    /**
+     * Loads the file that contains the category IDs and their corresponding names.
+     * 
+     * @param fileName
+     *            the file name that contains the list of category IDs and names.
+     * @return the map of category IDs to names.
+     */
+    public HashMap<Long, String> loadCategoryNames(String fileName)
+            throws IOException {
+        HashMap<Long, String> categoryNames = new HashMap<Long, String>();
+        FileInputStream fis = new FileInputStream(fileName);
+        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+        while (br.ready()) {
+            String line = br.readLine();
+            String[] columns = line.trim().split(DELIMITER);
+            Long categoryID = Long.parseLong(columns[0]);
+            String categoryName = columns[1];
+            categoryNames.put(categoryID, categoryName);
+        }
+        br.close();
+        fis.close();
+        return categoryNames;
     }
 }

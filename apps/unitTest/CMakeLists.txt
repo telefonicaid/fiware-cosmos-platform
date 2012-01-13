@@ -4,6 +4,7 @@ SET (SOURCES
     object_test.cpp
     objectsManager_test.cpp
     #processManager_test.cpp
+    processItem_test.cpp
     operationscontainer_test.cpp
     buffer_test.cpp
     diskStatistics_test.cpp

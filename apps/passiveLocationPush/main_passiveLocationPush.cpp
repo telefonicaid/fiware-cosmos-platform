@@ -54,7 +54,6 @@ char            queueName[256];
 bool            arcanum;
 char            host[256];
 unsigned short  port       = 0;
-int             bufSize;
 int             timeout    = 0;
 double          rate       = 1;
 
@@ -73,7 +72,6 @@ PaArgument paArgs[] =
     { "-host",       host,         "SS_PLP_ARCANUM_HOST", PaString,  PaOpt,           PaND,    PaNL,   PaNL,  "arcanum tunnel host"      },
     { "-port",       &port,        "SS_PLP_ARCANUM_PORT", PaShortU,  PaOpt,           1099,    1024,  65535,  "arcanum tunnel port"      },
     { "-queue",      queueName,    "SS_PLP_QUEUE_NAME",   PaString,  PaOpt,           PaND,    PaNL,   PaNL,  "name of the queue"        },
-    { "-bufSize",    &bufSize,     "SS_PLP_BUF_SIZE",     PaInt,     PaOpt,          K(16),       1,   M(8),  "buffer size"              },
     { "-timeout",    &timeout,     "SS_PLP_TIMEOUT",      PaInt,     PaOpt,              0,       0,   3600,  "timeout"                  },
     { "-rate",       &rate,        "SS_PLP_RATE",         PaDouble,  PaOpt,         _i 1.0,    PaNL,   PaNL,  "rate"                     },
     { "-controller", controller,   "SS_PLP_CONTROLLER",   PaString,  PaOpt, _i "localhost",    PaNL,   PaNL,  "controller IP"            },
@@ -88,7 +86,8 @@ PaArgument paArgs[] =
 *
 * Global variables 
 */
-char buf[M(8) + 1];   // MAX size: 8 megas ... ?
+unsigned int  bufSize = M(8) + 1;
+char          buf[M(8) + 1];   // MAX size: 8 megas ... ?
 
 
 
@@ -149,31 +148,66 @@ int connectToServer(const char* host, unsigned short port)
 *
 * readFromServer - 
 */
-void readFromServer(int fd)
+void readFromServer(int fd, samson::SamsonPushBuffer* pushBuffer)
 {
-	int  nb;
-	int  sz;
+	int           nb;
+	unsigned int  tot;
+    unsigned int  dataLen;
 
-	sz = bufSize;
 	while (1)
 	{
-		memset(buf, 0, bufSize + 1);
-		nb = read(fd, buf, sz);
+        //
+        // Read header - 4 bytes that contains the length of the nextcoming data
+        //
+        nb = read(fd, &dataLen, sizeof(dataLen));
 		if (nb == -1)
 			LM_X(1, ("error reading from socket: %s", strerror(errno)));
 		else if (nb == 0)
 		{
-            LM_E(("Read zero bytes ... closing connection and reconnecting!"));
+            LM_E(("Reading header: got zero bytes ... closing connection and reconnecting!"));
             close(fd);
             fd = connectToServer(host, port);
+            continue;
         }
-        else
-		{
-            LM_M(("Read a buffer of %d bytes from %s - now ... what do I do with it ...?", nb, host));
-		}
-	}
-}
 
+        if (dataLen > bufSize)
+            LM_X(1, ("next data package too big ... (%d bytes) - change bufSize and recompile!", dataLen));
+
+        LM_M(("Got a header. dataLen: %d. Now reading the data ...", dataLen));
+		memset(buf, 0, bufSize + 1);
+
+
+        //
+        // Read data buffer
+        //
+        tot = 0;
+        while (tot < dataLen)
+        {
+            nb = read(fd, &buf[tot], dataLen - tot);
+            if (nb <= 0)
+            {
+                if (nb == -1)
+                    LM_E(("error reading from socket: %s", strerror(errno)));
+                else
+                    LM_E(("Read zero bytes ... closing connection and reconnecting!"));
+                    
+                close(fd);
+                fd = connectToServer(host, port);
+                tot = 0;
+                break;
+            }
+
+            tot += nb;
+            LM_M(("Read %d of %d bytes of data", tot, dataLen));
+        }
+
+        if (tot == dataLen)
+        {
+            LM_M(("Read a buffer of %d bytes from %s - injecting it to samson", dataLen, host));
+            pushBuffer->push(buf, dataLen, true);
+        }
+    }
+}
 
 
 /* ****************************************************************************
@@ -191,7 +225,7 @@ void arcanumData(samson::SamsonPushBuffer* pushBuffer)
         LM_X(1, ("Error connecting to server '%s', port %d", host, port));
 
     LM_V(("calling readFromServer"));
-    readFromServer(fd);
+    readFromServer(fd, pushBuffer);
 }
 
 

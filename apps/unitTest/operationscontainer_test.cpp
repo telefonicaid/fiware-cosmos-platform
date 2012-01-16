@@ -62,7 +62,7 @@ TEST(operationsContainerTest, addDiskOperationTest) {
     
     container.add(operation);
     
-    EXPECT_TRUE(container.getOperationsContainerStr().find("1 disk ops"));
+    EXPECT_TRUE(container.getOperationsContainerStr().find("1 disk ops") != std::string::npos);
     EXPECT_TRUE(container.hasPendingEngineOperations());
     
     delete operation;
@@ -79,11 +79,11 @@ TEST(operationsContainerTest, eraseDiskOperationTest) {
     
     container.add(operation);
     
-    EXPECT_TRUE(container.getOperationsContainerStr().find("1 disk ops"));
+    EXPECT_TRUE(container.getOperationsContainerStr().find("1 disk ops") != std::string::npos);
     EXPECT_TRUE(container.hasPendingEngineOperations());
     
     container.erase(operation);
-    EXPECT_TRUE(container.getOperationsContainerStr().find("0 disk ops"));
+    EXPECT_TRUE(container.getOperationsContainerStr().find("0 disk ops") != std::string::npos);
     EXPECT_TRUE(container.hasPendingEngineOperations() == false);
 
     delete operation;
@@ -101,7 +101,7 @@ TEST(operationsContainerTest, addProcessItemTest) {
     
     container.add(&item);
     
-    EXPECT_TRUE(container.getOperationsContainerStr().find("1 item ops"));
+    EXPECT_TRUE(container.getOperationsContainerStr().find("1 item ops") != std::string::npos);
     EXPECT_TRUE(container.hasPendingEngineOperations());
     
 }
@@ -118,12 +118,12 @@ TEST(operationsContainerTest, eraseProcessItemTest) {
     
     container.add(&item);
     
-    EXPECT_TRUE(container.getOperationsContainerStr().find("1 item ops"));
+    EXPECT_TRUE(container.getOperationsContainerStr().find("1 item ops") != std::string::npos);
     EXPECT_TRUE(container.hasPendingEngineOperations());
     
     container.erase(&item);
    
-    EXPECT_TRUE(container.getOperationsContainerStr().find("0 item ops"));
+    EXPECT_TRUE(container.getOperationsContainerStr().find("0 item ops") != std::string::npos);
     EXPECT_TRUE(container.hasPendingEngineOperations() == false);
 }
 
@@ -174,6 +174,9 @@ TEST(operationsContainerTest, cancelEngineOperationsTest) {
     
     EXPECT_TRUE(container.hasPendingEngineOperations());
 
+    ProcessStats pstats;
+    size_t beforeThreads = pstats.get_nthreads();
+
     container.cancelEngineOperations();
 
     //TODO: this function just sends the cancel signal but does not clear the operations list. How can we test this?
@@ -208,7 +211,7 @@ TEST(operationsContainerTest, getOperationsContainerStrTest) {
     container.add(&item3);
     
     //std::cout << "container: " << container.getOperationsContainerStr() << std::endl;
-    EXPECT_TRUE(container.getOperationsContainerStr().find("1 disk ops & 3 item ops"));
+    EXPECT_TRUE(container.getOperationsContainerStr().find("1 disk ops & 3 item ops") != std::string::npos);
     
 }
 

@@ -80,14 +80,17 @@ TEST(diskManagerTest, getInfoTest) {
     
     XMLNode statisticsNode = xMainNode.getChildNode("statistics");
     XMLNode readNode = statisticsNode.getChildNode("read");
-    EXPECT_TRUE(std::string(readNode.getChildNode("description").getText()).find("Currently    0 hits/s    0 B/s")) << "Error writing read statistics tag";
+    EXPECT_TRUE(std::string(readNode.getChildNode("description").getText()).find("Currently    0 hits/s    0 B/s") 
+        != std::string::npos) << "Error writing read statistics tag";
     EXPECT_EQ(std::string(readNode.getChildNode("rate").getClear().lpszValue), "0") << "Error writing read rate tag";
     XMLNode writeNode = statisticsNode.getChildNode("read");
-    EXPECT_TRUE(std::string(writeNode.getChildNode("description").getText()).find("Currently    0 hits/s    0 B/s")) << "Error writing write statistics tag";
+    EXPECT_TRUE(std::string(writeNode.getChildNode("description").getText()).find("Currently    0 hits/s    0 B/s") 
+        != std::string::npos) << "Error writing write statistics tag";
     EXPECT_EQ(std::string(writeNode.getChildNode("rate").getClear().lpszValue), "0") << "Error writing write rate tag";
     XMLNode totalNode = statisticsNode.getChildNode("read");
-    EXPECT_TRUE(std::string(totalNode.getChildNode("description").getText()).find("Currently    0 hits/s    0 B/s")) << "Error writing total statistics tag";
-     EXPECT_EQ(std::string(totalNode.getChildNode("rate").getClear().lpszValue), "0") << "Error writing total rate tag";
+    EXPECT_TRUE(std::string(totalNode.getChildNode("description").getText()).find("Currently    0 hits/s    0 B/s") 
+        != std::string::npos) << "Error writing total statistics tag";
+    EXPECT_EQ(std::string(totalNode.getChildNode("rate").getClear().lpszValue), "0") << "Error writing total rate tag";
     
 }
 

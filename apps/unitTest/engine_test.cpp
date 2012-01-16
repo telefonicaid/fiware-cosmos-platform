@@ -89,7 +89,7 @@ TEST(engineTest, notificationTest) {
     XMLNode element2Node = xMainNode.getChildNode("elements").getChildNode("engine_element",1);
     ASSERT_TRUE(!element1Node.isEmpty() && !element2Node.isEmpty());
     //If the order was not right, swap them
-    if(std::string(element1Node.getChildNode("description").getClear().lpszValue).find("test_notification1") == false)
+    if(std::string(element1Node.getChildNode("description").getClear().lpszValue).find("test_notification1") == std::string::npos)
     {
         XMLNode tmp = element1Node;
         element1Node = element2Node;
@@ -98,9 +98,9 @@ TEST(engineTest, notificationTest) {
 
 
     //First engine_element will be notification test_notification1
-    EXPECT_TRUE(std::string(element1Node.getChildNode("description").getClear().lpszValue).find("test_notification1")) 
+    EXPECT_TRUE(std::string(element1Node.getChildNode("description").getClear().lpszValue).find("test_notification1") != std::string::npos) 
         << "notification not registered" ;
-    EXPECT_TRUE(std::string(element2Node.getChildNode("description").getClear().lpszValue).find("test_notification2")) 
+    EXPECT_TRUE(std::string(element2Node.getChildNode("description").getClear().lpszValue).find("test_notification2") != std::string::npos) 
         << "notification not registered" ;
     
     //delete notification1;
@@ -126,7 +126,7 @@ TEST(engineTest, addTest) {
     XMLNode elementNode = xMainNode.getChildNode("elements").getChildNode("engine_element",i);
     while(!elementNode.isEmpty() && !found)
     {
-        found = std::string(elementNode.getChildNode("description").getClear().lpszValue).find("Sleep element just to sleep 10 seconds");
+        found = std::string(elementNode.getChildNode("description").getClear().lpszValue).find("Sleep element just to sleep 10 seconds") != std::string::npos;
         i++;
         if (!found) elementNode = xMainNode.getChildNode("elements").getChildNode("engine_element",i);
     }

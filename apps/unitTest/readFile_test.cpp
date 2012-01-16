@@ -55,6 +55,11 @@ TEST(readfileTest, seekTest) {
         data[5] = '\0';
         EXPECT_EQ(strcmp(data, "23456"), 0 ); 
     }
+    
+    engine::ReadFile fileBad("badfile");
+    EXPECT_EQ(fileBad.seek(2), 1) << "Trying to seek a bad file should return 1";
+    
+
 }
     
 //Test bool isValid();

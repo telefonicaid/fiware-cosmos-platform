@@ -12,8 +12,10 @@ OBJS1        = arcanumTunnel.o
 OBJS2        = sniffer.o
 OBJS3        = arcanumTestServer.o
 
-#LIBS         = -lsocket -lc -lnsl
-
+OS           = $(shell uname)
+ifeq ($(OS),SunOS)
+  LIBS       = -lsocket -lc -lnsl
+endif
 
 
 all:		 $(EXEC1) $(EXEC2) $(EXEC3)

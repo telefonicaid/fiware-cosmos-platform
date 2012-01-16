@@ -79,10 +79,19 @@ TEST(memoryManagerTest, getInfoTest) {
 TEST(memoryManagerTest, addTest) {
     engine::Engine::init();
     engine::MemoryManager::init(1000);
-    engine::MemoryRequest* request = new engine::MemoryRequest(10, 50.0, 1);
+    engine::MemoryRequest* request = new engine::MemoryRequest(0, 50.0, 1);
     engine::MemoryManager::shared()->add(request);
     
     EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 1) << "Memory request was not added";
+
+    //get MemoryRequest info and check it is right
+    std::ostringstream info;
+    request->getInfo( info );
+    //std::cout << info.str() << std::endl;
+
+    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"memory_request");
+    EXPECT_TRUE(!xMainNode.isEmpty());
+    
 }    
 
 //Test void cancel( MemoryRequest *request );

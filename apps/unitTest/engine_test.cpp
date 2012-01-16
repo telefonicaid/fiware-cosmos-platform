@@ -75,8 +75,10 @@ TEST(engineTest, getInfoTest) {
 //notify( Notification*  notification )
 TEST(engineTest, notificationTest) {
     engine::Engine::init();
-    engine::Notification* notification1 = new engine::Notification("test_notification1");
-    engine::Notification* notification2 = new engine::Notification("test_notification2");
+    engine::Object* testObject1 = new engine::Object("test_object1");
+    engine::Object* testObject2 = new engine::Object("test_object2");
+    engine::Notification* notification1 = new engine::Notification("test_notification1", testObject1);
+    engine::Notification* notification2 = new engine::Notification("test_notification2", testObject2);
     engine::Engine::shared()->notify(notification1);
     engine::Engine::shared()->notify(notification2, 3);
     //get xml info and check it there
@@ -103,6 +105,16 @@ TEST(engineTest, notificationTest) {
     EXPECT_TRUE(std::string(element2Node.getChildNode("description").getClear().lpszValue).find("test_notification2") != std::string::npos) 
         << "notification not registered" ;
     
+    //Test notification functions
+    EXPECT_TRUE(notification2->containsObject());
+    EXPECT_EQ(notification2->extractObject(), static_cast<engine::Object*>(testObject2));
+    EXPECT_EQ(notification2->extractObject(), static_cast<engine::Object*>(NULL));
+    EXPECT_TRUE(!notification2->containsObject());
+    notification1->destroyObjects();    
+    EXPECT_TRUE(!notification1->containsObject());
+    notification1->destroyObjects();    
+    EXPECT_EQ(notification1->extractObject(), static_cast<engine::Object*>(NULL));
+    
     //delete notification1;
     //delete notification2;
 }
@@ -113,7 +125,7 @@ TEST(engineTest, addTest) {
     engine::Engine::init();
     engine::EngineElementSleepTest* testElement = new engine::EngineElementSleepTest();
     engine::Engine::shared()->add(testElement);
-    
+
     //get info and check that the element was added
     std::ostringstream info;
     engine::Engine::shared()->getInfo( info );
@@ -158,10 +170,14 @@ TEST(engineTest, quitEngineServiceTest) {
     unsigned long beforeThreads = pstats.get_nthreads();
     
     engine::Engine::shared()->quitEngineService();
-
+    
     pstats.refresh();
     unsigned long afterThreads = pstats.get_nthreads();
 
     EXPECT_TRUE(afterThreads < beforeThreads);
+    
 }
+
+
+
 

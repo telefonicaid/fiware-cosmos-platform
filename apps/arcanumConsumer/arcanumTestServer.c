@@ -12,6 +12,7 @@
 * ToDo
 *
 */
+#include <stdio.h>              // printf
 #include <sys/types.h>          // types needed by socket include files
 #include <stdlib.h>             // free
 #include <sys/socket.h>         // socket, bind, listen
@@ -138,7 +139,11 @@ int main(int argC, char* argV[])
 		}
 
 		if (cFd != -1)
-			write(cFd, "This is a line\n", 16);
+		{
+            int nb;
+
+            nb = write(cFd, "This is a line\n", 16);
+        }
 	}
 
 	return 0;

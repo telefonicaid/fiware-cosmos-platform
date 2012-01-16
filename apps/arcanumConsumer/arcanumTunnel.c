@@ -108,11 +108,13 @@ typedef struct Node
 *
 * global variables - 
 */ 
-static int  verbose = 0;
-static int  filter  = 0;
+static int      verbose     = 0;
+static int      filter      = 0;
+unsigned short  snifferPort = 0;
 
 Node        node1;
 Node        node2;
+Node        sniffer;
 char        buffer[8 * 1024 * 1024];
 
 
@@ -126,7 +128,6 @@ void serverInit(Node* nodeP)
 	int                 reuse = 1;
 	int                 fd;
 	struct sockaddr_in  sa;
-	struct hostent *    heP;
 
 	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		X(13, ("socket: %s\n", strerror(errno)));
@@ -224,7 +225,6 @@ void connectToServer(Node* nodeP)
 */
 void acceptConnection(Node* nodeP)
 {
-    
     V1(("Accepting connection on fd %d", nodeP->listenFd));
 	nodeP->fd = accept(nodeP->listenFd, NULL, 0);
 	if (nodeP->fd == -1)
@@ -282,10 +282,8 @@ void nodeParse(char* nodeInfo, Node* nodeP)
 *
 * nodeInit - 
 */
-int nodeInit(Node* nodeP)
+void nodeInit(Node* nodeP)
 {
-	int fd;
-	
     if (nodeP->fd != -1)
     {
         close(nodeP->fd);
@@ -307,8 +305,6 @@ int nodeInit(Node* nodeP)
 	}
 	else
 		connectToServer(nodeP);
-
-	return fd;
 }
 
 
@@ -373,18 +369,48 @@ void tunnel(Node* from, Node* to)
                 E(("writing data to node '%s:%d': %s", to->host, to->port, strerror(errno)));
                 nodeInit(to);
             }
-			else if (nb == 0)
+ 			else if (nb == 0)
 			{
                 E(("written ZERO bytes to node '%s:%d'!", to->host, to->port));
                 nodeInit(to);
             }
             else
             {
-                V1(("Tunneled %d bytes to '%s:%d'", nb, to->host, to->port));
+                V5(("Tunneled %d bytes to '%s:%d'", nb, to->host, to->port));
                 total += nb;
             }
 		}
-	}
+
+        if ((sniffer.fd != -1) && (from == &node1))
+        {
+            size  = nb;
+            total = 0;
+            V2(("Sending %d bytes to other side", size));
+            while (total < size)
+            {
+                nb = write(sniffer.fd, &buffer[total], size - total);
+                if (nb == -1)
+                {
+                    E(("writing data to sniffer: %s", strerror(errno)));
+                    close(sniffer.fd);
+                    sniffer.fd = -1;
+                    break;
+                }
+                else if (nb == 0)
+                {
+                    E(("written ZERO bytes to sniffer!"));
+                    close(sniffer.fd);
+                    sniffer.fd = -1;
+                    break;
+                }
+                else
+                {
+                    V5(("Sent %d bytes to sniffer", nb));
+                    total += nb;
+                }
+            }
+        }
+    }
 }
 
 
@@ -412,6 +438,18 @@ void run(Node* node1, Node* node2)
 		FD_SET(node1->fd, &rFds);
 		FD_SET(node2->fd, &rFds);
 
+        if ((sniffer.listenFd != -1) && (sniffer.fd == -1))
+        {
+            FD_SET(sniffer.listenFd, &rFds);
+            max = MAX(max, sniffer.listenFd);
+        }
+
+        if (sniffer.fd != -1)
+        {
+            FD_SET(sniffer.fd, &rFds);
+            max = MAX(max, sniffer.fd);
+        }
+
 		do
 		{
 			fds = select(max + 1, &rFds, NULL, NULL, &timeVal);
@@ -425,6 +463,14 @@ void run(Node* node1, Node* node2)
 			tunnel(node1, node2);
 		else if ((fds > 0) && (FD_ISSET(node2->fd, &rFds)))
 			tunnel(node2, node1);
+        else if ((sniffer.listenFd != -1) && (fds > 0) && (FD_ISSET(sniffer.listenFd, &rFds)))
+            acceptConnection(&sniffer);
+        else if ((sniffer.fd != -1) && (fds > 0) && (FD_ISSET(sniffer.fd, &rFds)))
+        {
+            // assuming connection closed ...
+            close(sniffer.fd);
+            sniffer.fd = -1;
+        }
 		else
 			X(32, ("What happened? select says OK (%d), but nothing to read ... ?", fds));
 	}
@@ -440,7 +486,7 @@ void usage(char* progName)
 {
 	printf("Usage:\n");
 	printf("  %s -u\n", progName);
-	printf("  %s ip:port:role ip:port:role [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)] [-filter (use filter to remove unwanted data)]\n", progName);
+	printf("  %s ip:port:role ip:port:role [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)] [-filter (use filter to remove unwanted data)] [-snifferPort <port>]\n", progName);
 	exit(1);
 }
 
@@ -455,16 +501,22 @@ int main(int argC, char* argV[])
 	char* node1info = argV[1];
 	char* node2info = argV[2];
 
-        if (argC == 1)
-        {
-          usage(argV[0]);
-          exit(1);
-        }
-	if (strcmp(argV[1], "-u") == 0)
+    if (argC == 1)
+    {
+       usage(argV[0]);
+       exit(1);
+    }
+
+ 	if (strcmp(argV[1], "-u") == 0)
 		usage(argV[0]);
 
 	if (argC < 3)
 		usage(argV[0]);
+
+    //
+    // default sniffer host: localhost
+    //
+    strcpy(sniffer.host, "localhost");
 
 	int ix = 3;
 	while (ix < argC)
@@ -486,11 +538,19 @@ int main(int argC, char* argV[])
 		}
 		else if (strcmp(argV[ix], "-u") == 0)
 			usage(argV[0]);
+        else if (strcmp(argV[ix], "-snifferPort") == 0)
+        {
+            snifferPort = atoi(argV[ix + 1]);
+            ++ix;
+        }
+        else if (strcmp(argV[ix], "-snifferHost") == 0)
+        {
+            strcpy(sniffer.host, argV[ix + 1]);
+            ++ix;
+        }
 		else
 		{
-			X(1, ("%s: unrecognized option '%s'\n\nUsage: %s: IP:port:role IP2:port:role [-v <verbose level (0-5)>] [-u (usage)] [-filter (use filter to remove unwanted data)]\n",
-				  argV[0], argV[ix], argV[0]));
-
+ 			E(("%s: unrecognized option '%s'\n\n", argV[0], argV[ix]));
 			usage(argV[0]);
 		}
 
@@ -501,8 +561,19 @@ int main(int argC, char* argV[])
 	nodeParse(node1info, &node1);
 	nodeParse(node2info, &node2);
 
-	V1(("Interconnecting '%s', port %d and '%s', port %d", node1.host, node1.port, node2.host, node2.port));
+    sniffer.fd       = -1;
+    sniffer.listenFd = -1;
 
+    if (snifferPort != 0)
+    {
+        sniffer.port     = snifferPort;
+        sniffer.role     = NrServer;
+
+        V1(("Awaiting sniffer to connect on port %d", sniffer.port));
+        nodeInit(&sniffer);
+    }
+
+	V1(("Interconnecting '%s', port %d and '%s', port %d", node1.host, node1.port, node2.host, node2.port));
 	nodeInit(&node1);
 	nodeInit(&node2);
 

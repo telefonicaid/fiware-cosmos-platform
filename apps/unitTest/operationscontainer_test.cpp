@@ -174,9 +174,6 @@ TEST(operationsContainerTest, cancelEngineOperationsTest) {
     
     EXPECT_TRUE(container.hasPendingEngineOperations());
 
-    ProcessStats pstats;
-    size_t beforeThreads = pstats.get_nthreads();
-
     container.cancelEngineOperations();
 
     //TODO: this function just sends the cancel signal but does not clear the operations list. How can we test this?

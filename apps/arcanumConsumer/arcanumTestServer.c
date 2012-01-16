@@ -24,6 +24,7 @@
 #include <unistd.h>             // close
 #include <fcntl.h>              // fcntl, F_SETFD
 #include <errno.h>              // errno
+#include <string.h>		// strerror
 
 
 

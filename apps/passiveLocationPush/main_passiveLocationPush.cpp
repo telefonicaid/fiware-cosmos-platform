@@ -171,7 +171,7 @@ void readFromServer(int fd, samson::SamsonPushBuffer* pushBuffer)
         }
 
         if (dataLen > bufSize)
-            LM_X(1, ("next data package too big ... (%d bytes) - change bufSize and recompile!", dataLen));
+           LM_X(1, ("next data package too big ... (%d bytes (0x%x)) - change bufSize and recompile!", dataLen, dataLen));
 
         LM_M(("Got a header. dataLen: %d. Now reading the data ...", dataLen));
 		memset(buf, 0, bufSize + 1);

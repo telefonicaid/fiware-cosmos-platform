@@ -22,8 +22,8 @@
 TEST(diskOperationTest, getInfoTest) {
     engine::Engine::init();
     engine::DiskManager::init(10);
-    char buffer[1024*1024];
-    engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 3 , 5, 0 );
+    char charBuffer[1024*1024];
+    engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( charBuffer , "test_data/test_data.txt" , 3 , 5, 0 );
     
     std::ostringstream info;
     operation->getInfo( info );
@@ -32,7 +32,7 @@ TEST(diskOperationTest, getInfoTest) {
     //parse and check xml
     XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
     EXPECT_EQ(std::string(xMainNode.getChildNode("type").getText()), "read") << "Error writing read tag";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_filename.txt") << "Error writing file_name tag";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_data/test_data.txt") << "Error writing file_name tag";
     EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "5") << "Error writing size tag";
     EXPECT_EQ(std::string(xMainNode.getChildNode("offset").getText()), "3") << "Error writing offset tag";
 }
@@ -42,7 +42,7 @@ TEST(diskOperationTest, newReadOperationTest) {
     engine::Engine::init();
     engine::DiskManager::init(10);
     char buffer[1024*1024];
-    engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 3 , 6, 2 );
+    engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_data/test_data.txt" , 3 , 6, 2 );
     
     
     EXPECT_EQ(operation->getType(), engine::DiskOperation::read) << "Wrong type value";
@@ -52,7 +52,7 @@ TEST(diskOperationTest, newReadOperationTest) {
     operation->getInfo( info );
     //std::cout << info.str() << std::endl;
     XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
-    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_filename.txt") << "Wrong file_name in constructor";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_data/test_data.txt") << "Wrong file_name in constructor";
     EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "6") << "Wrong size in constructor";
     EXPECT_EQ(std::string(xMainNode.getChildNode("offset").getText()), "3") << "Wrong offset in constructor";
 }
@@ -63,7 +63,7 @@ TEST(diskOperationTest, newWriteOperationTest) {
     engine::DiskManager::init(10);
     engine::MemoryManager::init(1000);
     engine::Buffer* buffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
-    engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer , "test_filename.txt" , 2 );
+    engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer , "test_data/test_data.txt" , 2 );
     
     
     EXPECT_EQ(operation->getType(), engine::DiskOperation::write) << "Wrong type value";
@@ -72,7 +72,7 @@ TEST(diskOperationTest, newWriteOperationTest) {
     std::ostringstream info;
     operation->getInfo( info );
     XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
-    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_filename.txt") << "Wrong file_name in constructor";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_data/test_data.txt") << "Wrong file_name in constructor";
     EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "0") << "Wrong size in constructor";
     EXPECT_EQ(std::string(xMainNode.getChildNode("offset").getText()), "0") << "Wrong offset in constructor";
     

@@ -1,40 +1,47 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>es.tid.ps</groupId>
-	<artifactId>dynamicprofile</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<repositories>
-		<repository>
-			<id>cdh-repository</id>
-			<url> https://repository.cloudera.com/content/repositories/releases/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-	<properties>
-		<copyright.year>2011</copyright.year>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<org.apache.hadoop>0.20.2</org.apache.hadoop>
-		<org.apache.hadoop.hive>0.7.1</org.apache.hadoop.hive>
-		<jvm.version>1.6</jvm.version>
-	</properties>
-	<dependencies>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-core</artifactId>
-			<version>${org.apache.hadoop}-cdh3u2</version>
-		</dependency>
-		<dependency>
-			<groupId>es.tid.ps</groupId>
-			<artifactId>kpicalculation</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-	</dependencies>
-	<build>
-		<plugins>
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>es.tid.ps</groupId>
+    <artifactId>dynamicprofile</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <repositories>
+        <repository>
+            <id>cdh-repository</id>
+            <url>https://repository.cloudera.com/artifactory/libs-release-local</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>ps2-nexus</id>
+            <url>http://ps2-ci/nexus/content/groups/public-snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+    <properties>
+        <copyright.year>2011</copyright.year>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <org.apache.hadoop>0.20.2</org.apache.hadoop>
+        <org.apache.hadoop.hive>0.7.1</org.apache.hadoop.hive>
+        <jvm.version>1.6</jvm.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-core</artifactId>
+            <version>${org.apache.hadoop}-cdh3u2</version>
+        </dependency>
+        <dependency>
+            <groupId>es.tid.ps</groupId>
+            <artifactId>kpicalculation</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -43,21 +50,6 @@
                     <source>1.6</source>
                 </configuration>
             </plugin>
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<forkMode>once</forkMode>
-					<environmentVariables>
-						<LD_LIBRARY_PATH>target</LD_LIBRARY_PATH>
-					</environmentVariables>
-					<systemProperties>
-						<property>
-							<name>java.library.tmpdir</name>
-							<value>target</value>
-						</property>
-					</systemProperties>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+        </plugins>
+    </build>
 </project>

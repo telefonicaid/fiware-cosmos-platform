@@ -45,7 +45,9 @@ class Notification;
 
 class DiskManager : engine::EngineService
 {
-    
+    //singleton instance
+    static DiskManager *diskManager;
+
     friend class DiskOperation;
     
     // File manager ( conatins all the open files )

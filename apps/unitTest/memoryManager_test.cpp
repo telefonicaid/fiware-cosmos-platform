@@ -31,7 +31,7 @@ TEST(memoryManagerTest, instantiationTest) {
 
 //Test void getInfo( std::ostringstream& output);
 TEST(memoryManagerTest, getInfoTest) {
-    engine::Engine::init();
+    //engine::Engine::init();
     engine::MemoryManager::init(1000);
   
     engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  100 , 1 );
@@ -77,7 +77,7 @@ TEST(memoryManagerTest, getInfoTest) {
 
 //Test void add( MemoryRequest *request );
 TEST(memoryManagerTest, addTest) {
-    engine::Engine::init();
+    //engine::Engine::init();
     engine::MemoryManager::init(1000);
     engine::MemoryRequest* request = new engine::MemoryRequest(0, 50.0, 1);
     engine::MemoryManager::shared()->add(request);
@@ -98,7 +98,7 @@ TEST(memoryManagerTest, addTest) {
 //Test Buffer *newBuffer( std::string name ,  size_t size , int tag );
 //Test void destroyBuffer( Buffer *b );
 TEST(memoryManagerTest, newBufferDestroyBufferTest) {
-    engine::Engine::init();
+    //engine::Engine::init();
     engine::MemoryManager::init(1000);
     engine::Buffer* buffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  100 , 1 );
     EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 1) << "Buffer was not created";
@@ -108,7 +108,7 @@ TEST(memoryManagerTest, newBufferDestroyBufferTest) {
 
 //Test int getNumBuffers();
 TEST(memoryManagerTest, getNumBuffersTest) {
-    engine::Engine::init();
+    //engine::Engine::init();
     engine::MemoryManager::init(1000);
     EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 0) << "Should bew no buffers";
     engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  100 , 1 );
@@ -125,7 +125,7 @@ TEST(memoryManagerTest, getNumBuffersTest) {
 //Test size_t getUsedMemory();
 //Test double getMemoryUsage();
 TEST(memoryManagerTest, getUsedMemoryTest) {
-    engine::Engine::init();
+    //engine::Engine::init();
     engine::MemoryManager::init(1000);
     EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemory(), 0) << "Used memory does not match";
     EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsage(), 0.0) << "Memory usage does not match";
@@ -150,7 +150,7 @@ TEST(memoryManagerTest, getUsedMemoryTest) {
 //Test size_t getUsedMemoryByTag( int tag );
 //Test double getMemoryUsageByTag( int tag );
 TEST(memoryManagerTest, getNumBuffersByTagTest) {
-    engine::Engine::init();
+    //engine::Engine::init();
     engine::MemoryManager::init(1000);
     EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemoryByTag(1), 0) << "Used memory does not match";
     EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsageByTag(1), 0.0) << "Memory usage does not match";

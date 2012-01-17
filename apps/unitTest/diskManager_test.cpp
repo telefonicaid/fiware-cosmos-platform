@@ -44,7 +44,7 @@ TEST(diskManagerTest, instantiationTest) {
 
 //test void getInfo( std::ostringstream& output);
 TEST(diskManagerTest, getInfoTest) {
-    engine::Engine::init();
+    //engine::Engine::init();
     engine::DiskManager::init(10);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
@@ -96,7 +96,7 @@ TEST(diskManagerTest, getInfoTest) {
 
 //test void add( DiskOperation *operation )
 TEST(diskManagerTest, addTest) {
-    engine::Engine::init();
+    //engine::Engine::init();
     engine::DiskManager::init(10);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
@@ -110,7 +110,7 @@ TEST(diskManagerTest, addTest) {
 
 //test void cancel( DiskOperation *operation );
 TEST(diskManagerTest, cancelTest) {
-    engine::Engine::init();
+    //engine::Engine::init();
     engine::DiskManager::init(10);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
@@ -127,7 +127,7 @@ TEST(diskManagerTest, cancelTest) {
 //test int getNumOperations();
 TEST(diskManagerTest, getNumOperationsTest) {
     //add two operations and check that it returns 2
-    engine::Engine::init();
+    //engine::Engine::init();
     engine::DiskManager::init(10);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
@@ -141,7 +141,7 @@ TEST(diskManagerTest, getNumOperationsTest) {
     
 //test void setNumOperations( int _num_disk_operations );
 TEST(diskManagerTest, setNumOperationsTest) {
-    engine::Engine::init();
+    //engine::Engine::init();
     engine::DiskManager::init(10);
 
     ProcessStats pstats;
@@ -158,7 +158,7 @@ TEST(diskManagerTest, setNumOperationsTest) {
 
 //test void quitEngineService();
 TEST(diskManagerTest, quitEngineServiceTest) {
-    engine::Engine::init();
+    //engine::Engine::init();
     engine::DiskManager::init(10);
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );

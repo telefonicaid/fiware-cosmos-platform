@@ -52,7 +52,7 @@ class MemoryRequest;
 
 class MemoryManager : engine::EngineService
 {
-    
+    static MemoryManager* memoryManager;            // Singleton Instance pointer
     au::Token token;                                // Token to protect this instance and memoryRequests
                                                     // It is necessary to protect since network thread can access directly here
     

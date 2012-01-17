@@ -31,9 +31,9 @@ TEST(engineTest, instantiationTest) {
     ProcessStats pstats;
     unsigned long beforeThreads = pstats.get_nthreads();
     //access instance without initialise. Should return NULL.
-    EXPECT_EQ(engine::Engine::shared(), static_cast<engine::Engine*>(NULL)) << "Uninitialized engine should be null"; //using just NULL produces compilation error
+    //EXPECT_EQ(engine::Engine::shared(), static_cast<engine::Engine*>(NULL)) << "Uninitialized engine should be null"; //using just NULL produces compilation error
     //call init() and then instance. Should return a valid one.
-    engine::Engine::init();
+    //engine::Engine::init();
     EXPECT_TRUE(engine::Engine::shared() != static_cast<engine::Engine*>(NULL)) << "engine instance should not be null after instantiation"; 
     //get number of threads now. Should be bigger. This tests run()
     pstats.refresh();
@@ -46,7 +46,7 @@ TEST(engineTest, instantiationTest) {
 
 //test get_info( std::ostringstream& output)
 TEST(engineTest, getInfoTest) {
-    engine::Engine::init();
+    //engine::Engine::init();
 
     std::ostringstream info;
     engine::Engine::shared()->getInfo( info );
@@ -74,7 +74,7 @@ TEST(engineTest, getInfoTest) {
 
 //notify( Notification*  notification )
 TEST(engineTest, notificationTest) {
-    engine::Engine::init();
+    //engine::Engine::init();
     engine::Object* testObject1 = new engine::Object("test_object1");
     engine::Object* testObject2 = new engine::Object("test_object2");
     engine::Notification* notification1 = new engine::Notification("test_notification1", testObject1);
@@ -122,7 +122,7 @@ TEST(engineTest, notificationTest) {
 
 //void add( EngineElement *element );	
 TEST(engineTest, addTest) {
-    engine::Engine::init();
+    //engine::Engine::init();
     engine::EngineElementSleepTest* testElement = new engine::EngineElementSleepTest();
     engine::Engine::shared()->add(testElement);
 
@@ -151,7 +151,7 @@ TEST(engineTest, addTest) {
 
 //Object* getObjectByName( const char *name );
 TEST(engineTest, getObjectByNameTest) {
-     engine::Engine::init();
+    //engine::Engine::init();
     engine::Object* testObject = new engine::Object("test_object");
     //Now the object should be registered in engine
     EXPECT_EQ(engine::Engine::shared()->getObjectByName("test_object"), testObject);
@@ -163,7 +163,7 @@ TEST(engineTest, getObjectByNameTest) {
 
 //quitEngineService()
 TEST(engineTest, quitEngineServiceTest) {
-    engine::Engine::init();
+    //engine::Engine::init();
 
     //Check the number of threads. After the call to quitEngineService the number of threads should decrease
     ProcessStats pstats;

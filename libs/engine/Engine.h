@@ -49,6 +49,9 @@ class Notification;
 
 class Engine : public EngineService
 {
+    // Common engine instance
+    static Engine* engine;
+
     au::list<EngineElement> elements;               // Elements of the samson engine
     
     EngineElement *running_element;                 // Element that is currently running

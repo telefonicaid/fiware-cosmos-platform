@@ -30,7 +30,8 @@ NAMESPACE_BEGIN(engine)
 
 #pragma mark ------------------------------------------------------------------------
 
-MemoryManager* memoryManager = NULL;
+//Initialise singleton instance pointer
+MemoryManager* MemoryManager::memoryManager = NULL;
 
 void MemoryManager::init( size_t _memory )
 {

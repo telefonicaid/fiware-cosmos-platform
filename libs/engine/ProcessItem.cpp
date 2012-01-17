@@ -38,13 +38,11 @@ ProcessItem::ProcessItem(  int _priority ) :token( "ProcessItem" )
 {
     
     priority = _priority;
-    operation_name = "unknown";	// Default message for the status
     progress = 0;		// Initial progress to "0"
     state = queued;
     
     canceled = false;   // By default it is not canceled
     
-    //Javi: this is duplicate or should be other member?
     operation_name = "unknown";     // By default no statistcs are done
     working_size = 0;               // By default no content to be processed
 }

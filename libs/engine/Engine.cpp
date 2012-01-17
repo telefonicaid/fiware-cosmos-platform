@@ -32,12 +32,12 @@
 
 NAMESPACE_BEGIN(engine)
 
-// Common engine
-Engine *engine = NULL;
+//Initialise singleton instance pointer to NULL
+Engine *Engine::engine = NULL;
 
 void* runEngineBakground(void* e )
 {    
-    engine->run();
+    Engine::shared()->run();
     return NULL;
 }
 
@@ -57,10 +57,9 @@ Engine* Engine::shared()
 {
     if (!engine)
     {
-	   LM_E(("Please initialize Engine before using it, calling Engine::init()"));
-	   return NULL;
+	   LM_E(("Engine was not initialised. Calling Engine::init()"));
+	   init();
 	}
-
     return engine;
 }
 

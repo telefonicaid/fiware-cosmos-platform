@@ -48,8 +48,9 @@ class Notification;
 
 class ProcessManager  :  engine::Object , engine::EngineService
 {
+    static ProcessManager* processManager;  //Singleton Instance pointer
     
-    // Mutex to protect differnt queues
+    // Mutex to protect different queues
     au::Token token;
     
     au::set<ProcessItem> items;				// List of items to be executed ( all priorities  )

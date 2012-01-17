@@ -22,7 +22,8 @@
 NAMESPACE_BEGIN(engine)
 
 
-static DiskManager *diskManager = NULL;
+//iniitalise singleton instance pointer to NULL
+DiskManager* DiskManager::diskManager = NULL;
 
 void DiskManager::init( int _num_disk_operations )
 {

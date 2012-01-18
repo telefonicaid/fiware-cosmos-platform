@@ -12,7 +12,7 @@
 */
 #include <stdio.h>              // printf
 #include <string.h>             // strstr, etc ...
-#include <strings.h>             // strstr, etc ...
+#include <strings.h>            // strstr, etc ...
 #include <sys/types.h>          // types needed by socket include files
 #include <errno.h>              // errno
 #include <stdlib.h>             // free
@@ -78,24 +78,11 @@ do {                                                              \
 
 /* ****************************************************************************
 *
-* NodeRole - server or client ...
-*/
-typedef enum NodeRole
-{
-	NrUndefined,
-	NrServer = 1,
-	NrClient
-} NodeRole;
-
-
-
-/* ****************************************************************************
-*
 * Node - 
 */
 typedef struct Node
 {
-	NodeRole        role;
+    char*           name;
 	char            host[128];
 	unsigned short  port;
 	int             listenFd;
@@ -111,11 +98,11 @@ typedef struct Node
 static int      verbose     = 0;
 static int      filter      = 0;
 unsigned short  snifferPort = 0;
-
-Node        node1;
-Node        node2;
-Node        sniffer;
-char        buffer[8 * 1024 * 1024];
+Node            arcanum;
+Node            samson;
+Node            sniffer;
+int             buffer[2 * 1024 * 1024];
+int             bufSize = 8 * 1024 * 1024;
 
 
 
@@ -136,14 +123,18 @@ void serverInit(Node* nodeP)
 
 	memset((char*) &sa, 0, sizeof(sa));
 
-	if (nodeP->host == NULL)
-		sa.sin_addr.s_addr = INADDR_ANY;
+	if (nodeP->host[0] == 0)
+	{
+        sa.sin_addr.s_addr = INADDR_ANY;
+        V2(("Listen socket for '%s' bound to 'ANY' host, port %d", nodeP->name, nodeP->port));
+    }
 	else
 	{
-		struct hostent* heP;
+        struct hostent* heP;
 		
-		heP = gethostbyname(nodeP->host);
-		bcopy(heP->h_addr, &sa.sin_addr, heP->h_length);
+        heP = gethostbyname(nodeP->host);
+        bcopy(heP->h_addr, &sa.sin_addr, heP->h_length);
+        V2(("Listen socket for '%s' bound to host '%s', port %d", nodeP->name, nodeP->host, nodeP->port));
 	}
 
 	sa.sin_family      = AF_INET;
@@ -151,6 +142,7 @@ void serverInit(Node* nodeP)
 	
 	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char*) &reuse, sizeof(reuse));
 	
+    V1(("Binding '%s' to port %d", nodeP->name, nodeP->port));
 	if (bind(fd, (struct sockaddr*) &sa, sizeof(struct sockaddr_in)) == -1)
 	{
 		close(fd);
@@ -166,55 +158,7 @@ void serverInit(Node* nodeP)
 	nodeP->listenFd = fd;
 	nodeP->fd       = -1;
 
-	V3(("Opened listen socket on fd %d for connections from '%s', port %d", nodeP->listenFd, nodeP->host, nodeP->port));
-}
-
-
-
-/* ****************************************************************************
-*
-* connectToServer - 
-*/
-void connectToServer(Node* nodeP)
-{
-	struct hostent*     hp;
-	struct sockaddr_in  peer;
-	int                 fd;
-
-	if ((hp = gethostbyname(nodeP->host)) == NULL)
-		X(23, ("gethostbyname(%s): %s", nodeP->host, strerror(errno)));
-
-	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-		X(24, ("socket: %s", strerror(errno)));
-	
-	memset((char*) &peer, 0, sizeof(peer));
-
-	peer.sin_family      = AF_INET;
-	peer.sin_addr.s_addr = ((struct in_addr*) (hp->h_addr))->s_addr;
-	peer.sin_port        = htons(nodeP->port);
-
-	V2(("Connecting to %s:%d", nodeP->host, nodeP->port));
-	int retries = 200;
-	int tri     = 0;
-
-	while (1)
-	{
-		if (connect(fd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
-		{
-			++tri;
-			E(("connect intent %d failed: %s", tri, strerror(errno)));
-			usleep(50000);
-			if (tri > retries)
-			{
-				close(fd);
-				X(25, ("Cannot connect to %s, port %d (even after %d retries)", nodeP->host, nodeP->port, retries));
-			}
-		}
-		else
-			break;
-	}
-
-	nodeP->fd = fd;
+	V2(("Opened listen socket on fd %d for connections from '%s', port %d", nodeP->listenFd, nodeP->host, nodeP->port));
 }
 
 
@@ -225,7 +169,7 @@ void connectToServer(Node* nodeP)
 */
 void acceptConnection(Node* nodeP)
 {
-    V1(("Accepting connection on fd %d", nodeP->listenFd));
+    V2(("Accepting connection on fd %d", nodeP->listenFd));
 	nodeP->fd = accept(nodeP->listenFd, NULL, 0);
 	if (nodeP->fd == -1)
 		X(6, ("accept: %s", strerror(errno)));
@@ -241,7 +185,6 @@ void nodeParse(char* nodeInfo, Node* nodeP)
 {
 	char* nodeInfoCopy = strdup(nodeInfo);
 	char* portStart;
-	char  role[32];
 
 	V5(("parsing node '%s'", nodeInfo));
 
@@ -250,29 +193,20 @@ void nodeParse(char* nodeInfo, Node* nodeP)
 
 	char* tmP = strstr(nodeInfo, ":");
 	if (tmP == NULL)
-		X(2, ("No colon found in '%s' - bad format, sorry", nodeInfo));
+    {
+        nodeP->host[0] = 0;
+        nodeP->port    = atoi(nodeInfo);
+    }
+    else
+    {
+        *tmP   = 0;
+        ++tmP;
+        strcpy(nodeP->host, nodeInfo);
+        portStart = tmP;
+        nodeP->port = atoi(portStart);
+    }
 
-	*tmP   = 0;
-	++tmP;
-	strcpy(nodeP->host, nodeInfo);
-	portStart = tmP;
-	
-	tmP = strstr(tmP, ":");
-	if (tmP == NULL)
-        X(3, ("Second colon not found in '%s' - bad format, sorry", nodeInfoCopy));
-	*tmP = 0;
-	++tmP;
-	nodeP->port = atoi(portStart);
-	strcpy(role, tmP);
-
-	if (strcmp(role, "server") == 0)
-		nodeP->role = NrServer;
-	else if (strcmp(role, "client") == 0)
-		nodeP->role = NrClient;
-	else
-		X(4, ("Bad role in '%s': '%s' - must be either 'server' or 'client'", nodeInfoCopy, role));
-
-	V4(("host: '%s', port: '%d', role: %s", nodeP->host, nodeP->port, (nodeP->role == NrClient)? "client" : "server"));
+	V4(("host: '%s', port: '%d'", nodeP->host, nodeP->port));
 	free(nodeInfoCopy);
 }
 
@@ -282,29 +216,12 @@ void nodeParse(char* nodeInfo, Node* nodeP)
 *
 * nodeInit - 
 */
-void nodeInit(Node* nodeP)
+void nodeInit(Node* nodeP, char* name)
 {
-    if (nodeP->fd != -1)
-    {
-        close(nodeP->fd);
-        nodeP->fd = -1;
-    }
+    nodeP->name = strdup(name);
 
-	if (nodeP->role == NrServer)
-	{
-        if (nodeP->listenFd <= 0)
-        {
-            V2(("Initializing server for host '%s' and port %d", nodeP->host, nodeP->port));
-            serverInit(nodeP);
-            V2(("Accepting connections from '%s', port %d", nodeP->host, nodeP->port));
-        }
-        else
-            V1(("Awaiting client to reconnect"));
-
-		acceptConnection(nodeP); // Await for someone to connect
-	}
-	else
-		connectToServer(nodeP);
+    V1(("Initializing '%s' server for host '%s' and port %d", nodeP->name, nodeP->host, nodeP->port));
+    serverInit(nodeP);
 }
 
 
@@ -315,6 +232,7 @@ void nodeInit(Node* nodeP)
 */
 void tmoHandler(void)
 {
+    V1(("Got a TIMEOUT ..."));
 }
 
 
@@ -323,7 +241,7 @@ void tmoHandler(void)
 *
 * filteredTunnel - 
 */
-void filteredTunnel(Node* from, Node* to)
+void filteredTunnel(void)
 {
 	E(("Sorry, filter not implemented ..."));
 	exit(51);
@@ -333,84 +251,134 @@ void filteredTunnel(Node* from, Node* to)
 
 /* ****************************************************************************
 *
+* nodeClose - 
+*/
+void nodeClose(Node* nodeP)
+{
+    close(nodeP->fd);
+    nodeP->fd = -1;
+}
+
+
+
+/* ****************************************************************************
+*
+* forward - 
+*/
+void forward(Node* nodeP, char* buf, int size)
+{
+    int nb;
+    int total;
+    int* bfr = (int*) buf;
+
+
+    V1(("Buffer size of packet: %d", ntohl(bfr[0])));
+    total = 0;
+    while (total < size)
+    {
+        nb = write(nodeP->fd, &buf[total], size - total);
+        if (nb == -1)
+        {
+            E(("writing data to node '%s': %s", nodeP->name, strerror(errno)));
+            nodeClose(nodeP);
+            return;
+        }
+        else if (nb == 0)
+        {
+            E(("written ZERO bytes to node '%s'!", nodeP->name));
+            nodeClose(nodeP);
+            return;
+        }
+
+        V1(("Tunneled %d bytes to '%s'", nb, nodeP->name));
+        total += nb;
+    }
+}
+
+
+
+int nbAccumulated = 0;
+/* ****************************************************************************
+*
 * tunnel - 
 */
-void tunnel(Node* from, Node* to)
+void tunnel(void)
 {
-	int nb;
-	int size;
-	int total;
+	int    nb;
+    int    dataLen;
+    char*  data;
+    int    tot;
 
 	if (filter == 1)
 	{
-		filteredTunnel(from, to);
+		filteredTunnel();
 		return;
 	}
 
-    V2(("reading ..."));
-	nb = read(from->fd, buffer, sizeof(buffer));
-	if (nb == -1)
-		X(41, ("reading data (node '%s:%d'): %s", from->host, from->port, strerror(errno)));
-	else if (nb == 0)
-	{
-        E(("Node '%s:%d' closed the connection", from->host, from->port));
-        nodeInit(from);
+    memset(buffer, 0, bufSize);
+        
+    //
+    // Read header that contains the data length
+    //
+    nb = read(arcanum.fd, &dataLen, sizeof(dataLen));
+    if (nb == -1)
+    {
+        E(("Error reading from the ARCANUM node: %s", strerror(errno)));
+        nodeClose(&arcanum);
+        return;
     }
-	else
-	{
-		size  = nb;
-		total = 0;
-        V2(("Sending %d bytes to other side", size));
-		while (total < size)
-		{
-			nb = write(to->fd, &buffer[total], size - total);
-			if (nb == -1)
-			{
-                E(("writing data to node '%s:%d': %s", to->host, to->port, strerror(errno)));
-                nodeInit(to);
-            }
- 			else if (nb == 0)
-			{
-                E(("written ZERO bytes to node '%s:%d'!", to->host, to->port));
-                nodeInit(to);
-            }
-            else
-            {
-                V5(("Tunneled %d bytes to '%s:%d'", nb, to->host, to->port));
-                total += nb;
-            }
-		}
+    else if (nb == 0)
+    {
+        E(("The ARCANUM node closed the connection"));
+        nodeClose(&arcanum);
+        return;
+    }
 
-        if ((sniffer.fd != -1) && (from == &node1))
+    dataLen = ntohl(dataLen);
+    V4(("read a header - now reading %d bytes of data ...", dataLen));
+
+    if (dataLen > bufSize)
+        X(1, ("data len (%d) too large ... (0x%x)", dataLen, dataLen));
+
+    // Setting first 4 bytes - the length of the nextcoming data
+    buffer[0] = htonl(dataLen);
+
+
+    //
+    // Read the data
+    //
+    data = (char*) &buffer[1];
+    V5(("Reading packet of %d bytes", dataLen));
+    tot = 0;
+    while (tot < dataLen)
+    {
+
+        nb = read(arcanum.fd, &data[tot], dataLen - tot);
+        if (nb == -1)
         {
-            size  = nb;
-            total = 0;
-            V2(("Sending %d bytes to other side", size));
-            while (total < size)
-            {
-                nb = write(sniffer.fd, &buffer[total], size - total);
-                if (nb == -1)
-                {
-                    E(("writing data to sniffer: %s", strerror(errno)));
-                    close(sniffer.fd);
-                    sniffer.fd = -1;
-                    break;
-                }
-                else if (nb == 0)
-                {
-                    E(("written ZERO bytes to sniffer!"));
-                    close(sniffer.fd);
-                    sniffer.fd = -1;
-                    break;
-                }
-                else
-                {
-                    V5(("Sent %d bytes to sniffer", nb));
-                    total += nb;
-                }
-            }
+            E(("Error reading from the ARCANUM node: %s", strerror(errno)));
+            nodeClose(&arcanum);
+            return;
         }
+        else if (nb == 0)
+        {
+            E(("Read zero bytes from the ARCANUM node"));
+            nodeClose(&arcanum);
+            return;
+        }
+
+        tot += nb;
     }
+
+
+    nbAccumulated += nb;
+    V1(("Sending %d bytes to other side (total: %d bytes)", nb, nbAccumulated));
+
+    if (samson.fd != -1)
+        forward(&samson, (char*) buffer, nb + 4);
+
+    if (sniffer.fd != -1)
+        forward(&sniffer, (char*) buffer, nb + 4);
 }
 
 
@@ -419,36 +387,67 @@ void tunnel(Node* from, Node* to)
 *
 * run - 
 */
-void run(Node* node1, Node* node2)
+void run(void)
 {
 	int             fds;
 	int             max;
 	fd_set          rFds;
 	struct timeval  timeVal;
 
-	V1(("tunneling between fd %d and fd %d", node1->fd, node2->fd));
-
-	max = MAX(node1->fd, node2->fd);
 	while (1)
 	{
-		timeVal.tv_sec  = 1;
-		timeVal.tv_usec = 0;
+        timeVal.tv_sec  = 5;
+        timeVal.tv_usec = 0;
 		
-		FD_ZERO(&rFds);
-		FD_SET(node1->fd, &rFds);
-		FD_SET(node2->fd, &rFds);
+        max = 0;
+        FD_ZERO(&rFds);
+        FD_SET(arcanum.fd, &rFds);
 
-        if ((sniffer.listenFd != -1) && (sniffer.fd == -1))
+
+        //
+        // Arcanum
+        //
+        if (arcanum.fd != -1)
         {
-            FD_SET(sniffer.listenFd, &rFds);
-            max = MAX(max, sniffer.listenFd);
+            FD_SET(arcanum.fd, &rFds);
+            max = MAX(max, arcanum.fd);
+        }
+        else if (arcanum.listenFd != -1)
+        {
+            FD_SET(arcanum.listenFd, &rFds);
+            max = MAX(max, arcanum.listenFd);
         }
 
+
+        //
+        // Samson
+        //
+        if (samson.fd != -1)
+        {
+            FD_SET(samson.fd, &rFds);
+            max = MAX(max, samson.fd);
+        }
+        else if (samson.listenFd != -1)
+        {
+            FD_SET(samson.listenFd, &rFds);
+            max = MAX(max, samson.listenFd);
+        }
+
+
+        //
+        // Sniffer
+        //
         if (sniffer.fd != -1)
         {
             FD_SET(sniffer.fd, &rFds);
             max = MAX(max, sniffer.fd);
         }
+        else if (sniffer.listenFd != -1)
+        {
+            FD_SET(sniffer.listenFd, &rFds);
+            max = MAX(max, sniffer.listenFd);
+        }
+
 
 		do
 		{
@@ -459,18 +458,18 @@ void run(Node* node1, Node* node2)
 			X(31, ("select error: %s", strerror(errno)));
 		else if (fds == 0)
 			tmoHandler();
-		else if ((fds > 0) && (FD_ISSET(node1->fd, &rFds)))
-			tunnel(node1, node2);
-		else if ((fds > 0) && (FD_ISSET(node2->fd, &rFds)))
-			tunnel(node2, node1);
-        else if ((sniffer.listenFd != -1) && (fds > 0) && (FD_ISSET(sniffer.listenFd, &rFds)))
+        else if (FD_ISSET(sniffer.listenFd, &rFds))
             acceptConnection(&sniffer);
-        else if ((sniffer.fd != -1) && (fds > 0) && (FD_ISSET(sniffer.fd, &rFds)))
-        {
-            // assuming connection closed ...
-            close(sniffer.fd);
-            sniffer.fd = -1;
-        }
+        else if (FD_ISSET(arcanum.listenFd, &rFds))
+            acceptConnection(&arcanum);
+        else if (FD_ISSET(samson.listenFd, &rFds))
+            acceptConnection(&samson);
+		else if (FD_ISSET(arcanum.fd, &rFds))
+			tunnel();
+		else if (FD_ISSET(samson.fd, &rFds))
+            nodeClose(&samson);
+        else if (FD_ISSET(sniffer.fd, &rFds))
+            nodeClose(&sniffer);
 		else
 			X(32, ("What happened? select says OK (%d), but nothing to read ... ?", fds));
 	}
@@ -486,7 +485,7 @@ void usage(char* progName)
 {
 	printf("Usage:\n");
 	printf("  %s -u\n", progName);
-	printf("  %s ip:port:role ip:port:role [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)] [-filter (use filter to remove unwanted data)] [-snifferPort <port>]\n", progName);
+	printf("  %s [-arcanum (ip:port)] [-samson (ip:port)] [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)] [-filter (use filter to remove unwanted data)] [-snifferPort <port>]\n", progName);
 	exit(1);
 }
 
@@ -498,8 +497,9 @@ void usage(char* progName)
 */
 int main(int argC, char* argV[])
 {
-	char* node1info = argV[1];
-	char* node2info = argV[2];
+    char* arcanumInfo = NULL;
+    char* samsonInfo  = NULL;
+    char* snifferInfo = NULL;
 
     if (argC == 1)
     {
@@ -518,10 +518,25 @@ int main(int argC, char* argV[])
     //
     strcpy(sniffer.host, "localhost");
 
-	int ix = 3;
+	int ix = 1;
 	while (ix < argC)
 	{
-		if (strcmp(argV[ix], "-v") == 0)
+        if (strcmp(argV[ix], "-arcanum") == 0)
+        {
+            arcanumInfo = argV[ix + 1];
+            ++ix;
+        }
+        else if (strcmp(argV[ix], "-samson") == 0)
+        {
+            samsonInfo = argV[ix + 1];
+            ++ix;
+        }
+        else if (strcmp(argV[ix], "-sniffer") == 0)
+        {
+            snifferInfo = argV[ix + 1];
+            ++ix;
+        }
+        else if (strcmp(argV[ix], "-v") == 0)
 			verbose = 1;
 		else if (strcmp(argV[ix], "-vv") == 0)
 			verbose = 2;
@@ -538,16 +553,6 @@ int main(int argC, char* argV[])
 		}
 		else if (strcmp(argV[ix], "-u") == 0)
 			usage(argV[0]);
-        else if (strcmp(argV[ix], "-snifferPort") == 0)
-        {
-            snifferPort = atoi(argV[ix + 1]);
-            ++ix;
-        }
-        else if (strcmp(argV[ix], "-snifferHost") == 0)
-        {
-            strcpy(sniffer.host, argV[ix + 1]);
-            ++ix;
-        }
 		else
 		{
  			E(("%s: unrecognized option '%s'\n\n", argV[0], argV[ix]));
@@ -558,26 +563,33 @@ int main(int argC, char* argV[])
 	}
 
 
-	nodeParse(node1info, &node1);
-	nodeParse(node2info, &node2);
-
-    sniffer.fd       = -1;
-    sniffer.listenFd = -1;
-
-    if (snifferPort != 0)
+    if (arcanumInfo == NULL)
     {
-        sniffer.port     = snifferPort;
-        sniffer.role     = NrServer;
-
-        V1(("Awaiting sniffer to connect on port %d", sniffer.port));
-        nodeInit(&sniffer);
+        printf("Option '-arcanum' not set. Using default values ");
+        arcanumInfo = "172.74.200.200:1234";
     }
 
-	V1(("Interconnecting '%s', port %d and '%s', port %d", node1.host, node1.port, node2.host, node2.port));
-	nodeInit(&node1);
-	nodeInit(&node2);
+    if (samsonInfo == NULL)
+    {
+        printf("Option '-samson' not set. Using default values ");
+        samsonInfo = "1099";
+    }
 
-	run(&node1, &node2);
+    if (snifferInfo == NULL)
+    {
+        printf("Option '-sniffer' not set. Using default values ");
+        snifferInfo = "localhost:1199";
+    }
+
+    nodeParse(arcanumInfo, &arcanum);
+	nodeParse(samsonInfo,  &samson);
+	nodeParse(snifferInfo, &sniffer);
+
+	nodeInit(&samson,  "samson");
+	nodeInit(&arcanum, "arcanum");
+    nodeInit(&sniffer, "sniffer");
+
+	run();
 
 	return 0;
 }

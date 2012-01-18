@@ -155,6 +155,9 @@ void suppress_sigpipe(int fd)
 #else
     signal(SIGPIPE, ignore);
 #endif  /* ! defined(MSG_NOSIGNAL) && ! defined(SO_NOSIGPIPE) */
+
+    signal(SIGPIPE, ignore);
+    sigignore(SIGPIPE);
 }
 
 
@@ -341,6 +344,9 @@ int main(int argC, char* argV[])
 
 	if (fd == -1)
 		X(1, ("error connecting to host '%s', port %d", host, port));
+
+    signal(SIGPIPE, ignore);
+    sigignore(SIGPIPE);
 
 	writeToServer(fd);
 

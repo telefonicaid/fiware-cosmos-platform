@@ -649,6 +649,7 @@ int main(int argC, char* argV[])
     nodeInit(&sniffer, "sniffer");
 
     signal(SIGPIPE, sigHandler);
+    sigignore(SIGPIPE);
 
 	run();
 

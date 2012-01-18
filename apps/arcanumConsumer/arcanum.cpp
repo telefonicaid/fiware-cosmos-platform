@@ -25,6 +25,7 @@
 #include <fcntl.h>              // fcntl, F_SETFD
 #include <signal.h>             // SIGPIPE, ...
 #include <errno.h>              // errno
+#include <string.h>             // strerror
 
 
 

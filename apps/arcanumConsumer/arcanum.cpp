@@ -124,7 +124,7 @@ struct control
 
 #if ! defined(MSG_NOSIGNAL) && ! defined(SO_NOSIGPIPE)
 #include <pthread.h>
-static struct control control;
+static struct control control = { PTHREAD_MUTEX_INITIALIZER, 0, -1, 0 };
 #endif
 
 /* ****************************************************************************
@@ -134,8 +134,6 @@ static struct control control;
 void suppress_sigpipe(int fd)
 {
 #if ! defined(MSG_NOSIGNAL) && ! defined(SO_NOSIGPIPE)
-   control.mutex  = PTHREAD_MUTEX_INITIALIZER;
-   control.socket = -1;
 
    /*
     We want to ignore possible SIGPIPE that we can generate on write.

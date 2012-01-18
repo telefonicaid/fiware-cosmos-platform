@@ -123,11 +123,7 @@ struct control
 
 
 #if 0
-static struct control control = {
-   .mutex = PTHREAD_MUTEX_INITIALIZER,
-
-   .socket = -1,
-};
+static struct control control;
 #endif
 
 /* ****************************************************************************
@@ -137,6 +133,9 @@ static struct control control = {
 void suppress_sigpipe(int fd)
 {
 #if ! defined(MSG_NOSIGNAL) && ! defined(SO_NOSIGPIPE)
+   control.mutex  = PTHREAD_MUTEX_INITIALIZER;
+   control.socket = -1;
+
    /*
     We want to ignore possible SIGPIPE that we can generate on write.
     SIGPIPE is delivered *synchronously* and *only* to the thread

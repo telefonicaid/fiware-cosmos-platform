@@ -178,9 +178,10 @@ char* dateStringGet(void)
 
     ftime(&timebuffer);
     gmtime_r(&secondsNow, &tmP);
-    strftime(dateBuf, dateBufLen, "%Y-%d-%h", &tmP);
+    // strftime(dateBuf, dateBufLen, "%Y-%m-%d %H:%M", &tmP);
+    strftime(dateBuf, dateBufLen, "%Y-%m-%d", &tmP);
 
-    return buf;
+    return dateBuf;
 }
 
 

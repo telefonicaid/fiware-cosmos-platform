@@ -485,7 +485,7 @@ void usage(char* progName)
 {
 	printf("Usage:\n");
 	printf("  %s -u\n", progName);
-	printf("  %s [-arcanum (ip:port)] [-samson (ip:port)] [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)] [-filter (use filter to remove unwanted data)] [-snifferPort <port>]\n", progName);
+	printf("  %s [-arcanum (ip:port)] [-samson (ip:port)] [-sniffer (ip:port)] [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)] [-filter]\n", progName);
 	exit(1);
 }
 

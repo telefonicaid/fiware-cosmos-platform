@@ -88,6 +88,41 @@ void ignore(int sig)
 
 
 
+struct config
+{
+   int signal_no;
+   sigset_t signal_mask;
+   sigset_t sigpipe_mask;
+   int safe_unload_delay;
+};
+
+struct config config;
+
+
+struct control
+{
+   pthread_mutex_t mutex;
+
+   pid_t pid;
+   int socket;
+   pid_t my_pid;
+
+//   struct control_buffer command;
+   char *command_args;
+
+   bool sigpipe_pending;
+   bool sigpipe_unblock;
+
+   bool need_newline;
+
+   int save_errno;
+   int cancellation;
+
+   bool version_mismatch;
+};
+
+
+
 /* ****************************************************************************
 *
 * suppress_sigpipe - 

@@ -175,13 +175,14 @@ namespace samson {
         
         if( msgCode == Message::StatusReport )
         {
-            // Goyo. Trying to protect against info reports after quitting delilah (SAMSON-312)
+            // Goyo. Trying to protect against info reports after quitting delilah (SAMSON-314)
             // Not sure about other notifications
             DelilahConsole * delilah_console = (DelilahConsole *) this;
 
             if (delilah_console->isQuitting())
             {
-                return;
+                LM_W(("With ( msgCode == Message::StatusReport ) delilah_console->isQuitting"));
+                //return;
             }
             
             if( packet->fromId == network->controllerGetIdentifier() )

@@ -43,7 +43,18 @@ void Token::retain(  )
     // LOCK the mutex
     int ans = pthread_mutex_lock(&_lock);
     if( ans )
-        LM_X(1,("Token %s: pthread_mutex_lock returned error %d (%p)", name, ans, this));
+    {
+        LM_E(("Error %d getting mutex (EINVAL:%d, EFAULT:%d, EDEADLK:%d", ans, EINVAL, EFAULT, EDEADLK));
+        // Goyo. The segmentation fault when quitting delilah seems to be related (at least) to a corruption in name (SAMSON-314)
+        if ((name != NULL) & (name != (char *)0xffffffff))
+        {
+            LM_E(("Token %s: pthread_mutex_lock returned error %d (%p)", name, ans, this));
+        }
+        else
+        {
+            LM_E(("Token (wrong name:%p): pthread_mutex_lock returned error %d (%p)", name, ans, this));
+        }
+    }
     
 }
 
@@ -53,10 +64,21 @@ void Token::release( )
 #ifdef DEBUG_AU_TOKEN
     LockDebugger::shared()->remove_lock( this );
 #endif		
-    // LOCK the mutex
+    // UNLOCK the mutex
     int ans = pthread_mutex_unlock(&_lock);
     if( ans )
-        LM_X(1,("Token %s: pthread_mutex_lock returned error %d (%p)", name, ans, this));
+    {
+        LM_E(("Error %d releasing mutex (EINVAL:%d, EFAULT:%d, EPERM:%d", ans, EINVAL, EFAULT, EPERM));
+        // Goyo. The segmentation fault when quitting delilah seems to be related to a corruption in name (SAMSON-314)
+        if (name != NULL)
+        {
+            LM_E(("Token %p: pthread_mutex_unlock returned error %d (%p)", name, ans, this));
+        }
+        else
+        {
+            LM_E(("Token (NULL name:%p): pthread_mutex_lock returned error %d (%p)", name, ans, this));
+        }
+    }
 }
 
 NAMESPACE_END

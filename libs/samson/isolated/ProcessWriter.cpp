@@ -95,7 +95,7 @@ namespace samson {
 		node = (NodeBuffer*) ( buffer + sizeof(OutputChannel) * num_outputs * num_workers );
 		num_nodes = ( size - (sizeof(OutputChannel)* num_outputs* num_workers )) / sizeof( NodeBuffer );
 	
-		// Clear this strucutre to receive new key-values
+		// Clear this structure to receive new key-values
 		clear();
 	}
 	
@@ -141,6 +141,7 @@ namespace samson {
             error_message << "Different hash-type for key at output # " << output;
             error_message << ". Used " << key->getName() << " instead of ";
             error_message << outputKeyDataInstance[output]->getName() << ".";
+            LM_E(("Error: %s", error_message.str().c_str()));
 
             processIsolated->setUserError( error_message.str() );
             return;
@@ -154,6 +155,7 @@ namespace samson {
             error_message << "Different hash-type for value at output # " << output;
             error_message << ". Used " << value->getName() << " instead of ";
             error_message << outputValueDataInstance[output]->getName() << ".";
+            LM_E(("Error: %s", error_message.str().c_str()));
             
             processIsolated->setUserError( error_message.str() );
             return;
@@ -167,18 +169,18 @@ namespace samson {
         size_t key_size_theoretical = key->parse( miniBuffer );
         
         if( key_size != key_size_theoretical  )
-            LM_W(("Error serializing data. Different ky size serialzing key %lu sv %lu"  , key_size , key_size_theoretical));
+            LM_W(("Error serializing data. Different key size serializing key %lu sv %lu"  , key_size , key_size_theoretical));
         
 		size_t value_size               = value->serialize( miniBuffer + key_size );
 		size_t value_size_theoretical	= value->parse( miniBuffer + key_size );
         
         if( value_size != value_size_theoretical )
-            LM_W(("Error serializing data. Different ky size serialzing value %lu sv %lu"  , value_size , value_size_theoretical));
+            LM_W(("Error serializing data. Different key size serializing value %lu sv %lu"  , value_size , value_size_theoretical));
         
         // Total size including key & value
 		miniBufferSize		= key_size + value_size;
 		
-		// Emit the miniBuffer to the rigth place
+		// Emit the miniBuffer to the right place
 		int hg = key->hash(KVFILE_NUM_HASHGROUPS); 
 		
 		// Detect the server to sent
@@ -192,7 +194,7 @@ namespace samson {
 		if( _hgOutput->last_node != KV_NODE_UNASIGNED )
 			availableSpace += node[ _hgOutput->last_node ].availableSpace( );
 		
-		//std::cout << "Emiting " << miniBufferSize << " bytes. Available: " << availableSpace << "\n";
+		//std::cout << "Emitting " << miniBufferSize << " bytes. Available: " << availableSpace << "\n";
 		
 		// Check if it will fit
 		if( miniBufferSize >= availableSpace )

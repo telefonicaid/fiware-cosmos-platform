@@ -627,7 +627,7 @@ namespace samson
 	void ProcessItemIsolated::setUserError( std::string error_message )
 	{
         
-        LM_T(LmtIsolated,("Background process: Sending user error %s", error_message.c_str() ));
+        LM_E(("Background process: Sending user error %s", error_message.c_str() ));
         
         samson::network::MessageProcessPlatform *message = new samson::network::MessageProcessPlatform();
         message->set_code( samson::network::MessageProcessPlatform_Code_code_user_error );

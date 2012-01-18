@@ -122,6 +122,13 @@ struct control
 };
 
 
+#if 0
+static struct control control = {
+   .mutex = PTHREAD_MUTEX_INITIALIZER,
+
+   .socket = -1,
+};
+#endif
 
 /* ****************************************************************************
 *

@@ -38,6 +38,7 @@ char*           host       = (char*) "172.17.200.200";
 unsigned short  port       = 1099;
 int             verbose    = 0;
 char*           filePrefix = "arcanumPackets";
+char*           timeFormat = "%Y-%m-%d";
 
 
 
@@ -178,8 +179,7 @@ char* dateStringGet(void)
 
     ftime(&timebuffer);
     gmtime_r(&secondsNow, &tmP);
-    // strftime(dateBuf, dateBufLen, "%Y-%m-%d %H:%M", &tmP);
-    strftime(dateBuf, dateBufLen, "%Y-%m-%d", &tmP);
+    strftime(dateBuf, dateBufLen, timeFormat, &tmP);
 
     return dateBuf;
 }
@@ -199,6 +199,7 @@ void readFromServer(int fd)
     int   storageFd;
     int   packets = 0;
     char* dString;
+    int   totalBytes = 0;
 
     dateString = strdup(dateStringGet());
     storageFd  = storageOpen();
@@ -257,7 +258,8 @@ void readFromServer(int fd)
         }
 
         ++packets;
-        V3(("Got package %d", packets));
+        totalBytes += dataLen;
+        V1(("Got package %d (total bytes: %d)", packets, totalBytes));
 
         nb = write(storageFd, &dataLen, sizeof(dataLen));
         if (nb != sizeof(dataLen))
@@ -278,7 +280,7 @@ void usage(char* progName)
 {
 	printf("Usage:\n");
 	printf("  %s -u\n", progName);
-	printf("  %s [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)] [-host (hostname)] [-port (port to connect to)] [-filePrefix (prefix)]\n", progName);
+	printf("  %s [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)] [-host (hostname)] [-port (port to connect to)] [-filePrefix (prefix)] [-timeFormat (time format for storage file)]\n", progName);
 	exit(1);
 }
 
@@ -320,6 +322,11 @@ int main(int argC, char* argV[])
         else if (strcmp(argV[ix], "-filePrefix") == 0)
         {
             filePrefix = strdup(argV[ix + 1]);
+            ++ix;
+        }
+        else if (strcmp(argV[ix], "-timeFormat") == 0)
+        {
+            timeFormat = strdup(argV[ix + 1]);
             ++ix;
         }
 		else

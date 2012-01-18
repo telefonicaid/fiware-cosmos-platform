@@ -112,12 +112,16 @@ int connectToServer(void)
 
 
 
+/* ****************************************************************************
+*
+* writeToServer - 
+*/
 void writeToServer(int fd)
 {
     int buf[100];
     int loopNo        = 1;
     int bytesWritten  = 0;
-
+    int grandTotal    = 0;
     buf[0]            = htonl(99 * 4);  
 
     while (1)
@@ -129,6 +133,8 @@ void writeToServer(int fd)
             buf[ix] = ix;
 
         nb = write(fd, buf, sizeof(buf));
+        grandTotal += nb;
+        LM_V(("Written %d bytes to server (total: %d)", nb, grandTotal));
         if (nb != sizeof(buf))
         {
            if (nb == -1)
@@ -147,7 +153,9 @@ void writeToServer(int fd)
               continue;
            }
 
-           LM_X(1, ("Not written all bytes (only %d of %d) - lazy bastard! Implement the write-loop and recompile!", nb, sizeof(buf)));
+           LM_W(("Not written all bytes (only %d of %d) - assuming tunnel closed connection", nb, sizeof(buf)));
+           close(fd);
+           fd = connectToServer();
         }
 
         usleep(sleepTime);

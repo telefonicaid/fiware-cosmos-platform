@@ -25,7 +25,7 @@
 #include <unistd.h>             // close
 #include <fcntl.h>              // fcntl, F_SETFD
 #include <inttypes.h>           // int32_t, ...
-
+#include <signal.h>             // SIGPIPE, sigignore, ...
 
 
 /* ****************************************************************************
@@ -170,9 +170,12 @@ void serverInit(Node* nodeP)
 void acceptConnection(Node* nodeP)
 {
     V2(("Accepting connection on fd %d", nodeP->listenFd));
-	nodeP->fd = accept(nodeP->listenFd, NULL, 0);
+    nodeP->fd = accept(nodeP->listenFd, NULL, 0);
 	if (nodeP->fd == -1)
-		X(6, ("accept: %s", strerror(errno)));
+        X(6, ("accept: %s", strerror(errno)));
+
+    // int set = 1;
+    // setsockopt(nodeP->fd, SOL_SOCKET, SO_NOSIGPIPE, (void*) &set, sizeof(int));
 } 
 
 
@@ -271,6 +274,35 @@ void forward(Node* nodeP, char* buf, int size)
     int total;
     int* bfr = (int*) buf;
 
+
+    //
+    // Check if we can write ...
+    //
+    int             fds;
+    fd_set          wFds;
+    struct timeval  timeVal;
+
+    timeVal.tv_sec  = 0;
+    timeVal.tv_usec = 0;
+    
+    FD_ZERO(&wFds);
+    FD_SET(nodeP->fd, &wFds);
+
+    do
+    {
+        fds = select(nodeP->fd + 1, NULL, &wFds, NULL, &timeVal);
+    } while ((fds == -1) && (errno == EINTR));
+
+    if (fds == -1)
+       X(37, ("select error: %s", strerror(errno)));
+    else if (fds == 0)
+    {
+        E(("Node '%s' closed connection", nodeP->name));
+        nodeClose(nodeP);
+        return;
+    }
+    else if (!FD_ISSET(nodeP->fd, &wFds))
+        X(33, ("Cannot write to '%s'. Should REALLY never get here ...", nodeP->name));
 
     V1(("Buffer size of packet: %d", ntohl(bfr[0])));
     total = 0;
@@ -449,7 +481,7 @@ void run(void)
         }
 
 
-		do
+        do
 		{
 			fds = select(max + 1, &rFds, NULL, NULL, &timeVal);
 		} while ((fds == -1) && (errno == EINTR));
@@ -488,6 +520,18 @@ void usage(char* progName)
 	printf("  %s [-arcanum (ip:port)] [-samson (ip:port)] [-sniffer (ip:port)] [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)] [-filter]\n", progName);
 	exit(1);
 }
+
+
+
+/* ****************************************************************************
+*
+* sigHandler - 
+*/
+void sigHandler(int sigNo)
+{
+    E(("Got signal %d", sigNo));
+}
+
 
 
 
@@ -588,6 +632,8 @@ int main(int argC, char* argV[])
 	nodeInit(&samson,  "samson");
 	nodeInit(&arcanum, "arcanum");
     nodeInit(&sniffer, "sniffer");
+
+    signal(SIGPIPE, sigHandler);
 
 	run();
 

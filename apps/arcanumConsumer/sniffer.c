@@ -264,7 +264,7 @@ void readFromServer(int fd)
            E(("Error writing dataLen to storage file"));
         nb = write(storageFd, buf,      dataLen); 
         if (nb != dataLen)
-           E(("Error writing packet %d to storage file", packets));
+           E(("Error writing packet %d to storage file (written %d bytes out of %d)", packets, nb, dataLen));
 	}
 }
 

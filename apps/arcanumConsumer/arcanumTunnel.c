@@ -433,7 +433,6 @@ void run(void)
 		
         max = 0;
         FD_ZERO(&rFds);
-        FD_SET(arcanum.fd, &rFds);
 
 
         //
@@ -498,9 +497,9 @@ void run(void)
             acceptConnection(&samson);
 		else if (FD_ISSET(arcanum.fd, &rFds))
 			tunnel();
-		else if (FD_ISSET(samson.fd, &rFds))
+		else if ((samson.fd != -1) && FD_ISSET(samson.fd, &rFds))
             nodeClose(&samson);
-        else if (FD_ISSET(sniffer.fd, &rFds))
+        else if ((sniffer.fd != -1) && FD_ISSET(sniffer.fd, &rFds))
             nodeClose(&sniffer);
 		else
 			X(32, ("What happened? select says OK (%d), but nothing to read ... ?", fds));
@@ -624,6 +623,22 @@ int main(int argC, char* argV[])
         printf("Option '-sniffer' not set. Using default values ");
         snifferInfo = "localhost:1199";
     }
+
+
+
+    //
+    // For Solaris ...
+    //
+    memset(&samson, 0,  sizeof(samson));
+    memset(&arcanum, 0, sizeof(arcanum));
+    memset(&sniffer, 0, sizeof(sniffer));
+    samson.fd         = -1;
+    samson.listenFd   = -1;
+    arcanum.fd        = -1;
+    arcanum.listenFd  = -1;
+    sniffer.fd        = -1;
+    sniffer.listenFd  = -1;
+
 
     nodeParse(arcanumInfo, &arcanum);
 	nodeParse(samsonInfo,  &samson);

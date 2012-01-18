@@ -13,7 +13,11 @@ public class CategoryExtractionReducer extends
 
     @Override
     public void setup(Context context) throws IOException {
-        DictionaryHandler.init("", "", "", "");
+        DictionaryHandler.init(
+                context.getConfiguration().get("termsInDomainFlatFileName"),
+                context.getConfiguration().get("dictionaryFileName"),
+                context.getConfiguration().get("categoryPatterMappingFileName"),
+                context.getConfiguration().get("categoryNamesFileName"));
     }
 
     @Override

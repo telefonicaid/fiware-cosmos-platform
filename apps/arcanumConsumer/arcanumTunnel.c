@@ -489,13 +489,13 @@ void run(void)
 			X(31, ("select error: %s", strerror(errno)));
 		else if (fds == 0)
 			tmoHandler();
-        else if (FD_ISSET(sniffer.listenFd, &rFds))
+        else if ((sniffer.listenFd != -1) && FD_ISSET(sniffer.listenFd, &rFds))
             acceptConnection(&sniffer);
-        else if (FD_ISSET(arcanum.listenFd, &rFds))
+        else if ((arcanum.listenFd != -1) && FD_ISSET(arcanum.listenFd, &rFds))
             acceptConnection(&arcanum);
-        else if (FD_ISSET(samson.listenFd, &rFds))
+        else if ((samson.listenFd != -1) && FD_ISSET(samson.listenFd, &rFds))
             acceptConnection(&samson);
-		else if (FD_ISSET(arcanum.fd, &rFds))
+		else if ((arcanum.fd != -1) && FD_ISSET(arcanum.fd, &rFds))
 			tunnel();
 		else if ((samson.fd != -1) && FD_ISSET(samson.fd, &rFds))
             nodeClose(&samson);

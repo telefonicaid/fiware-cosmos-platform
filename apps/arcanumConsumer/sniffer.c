@@ -281,6 +281,7 @@ void usage(char* progName)
 	printf("Usage:\n");
 	printf("  %s -u\n", progName);
 	printf("  %s [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)] [-host (hostname)] [-port (port to connect to)] [-filePrefix (prefix)] [-timeFormat (time format for storage file)]\n", progName);
+
 	exit(1);
 }
 

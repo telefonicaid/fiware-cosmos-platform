@@ -80,6 +80,52 @@ int             verbose   = 0;
 
 /* ****************************************************************************
 *
+* ignore - 
+*/
+void ignore(int sig)
+{
+}
+
+
+
+/* ****************************************************************************
+*
+* suppress_sigpipe - 
+*/
+void suppress_sigpipe(int fd)
+{
+#if ! defined(MSG_NOSIGNAL) && ! defined(SO_NOSIGPIPE)
+   /*
+    We want to ignore possible SIGPIPE that we can generate on write.
+    SIGPIPE is delivered *synchronously* and *only* to the thread
+    doing the write.  So if it is reported as already pending (which
+    means the thread blocks it), then we do nothing: if we generate
+    SIGPIPE, it will be merged with the pending one (there's no
+    queuing), and that suits us well.  If it is not pending, we block
+    it in this thread (and we avoid changing signal action, because it
+    is per-process).
+   */
+
+   sigset_t pending;
+   sigpending(&pending);
+   control.sigpipe_pending = sigismember(&pending, SIGPIPE);
+   if (! control.sigpipe_pending)
+   {
+      sigset_t blocked;
+      pthread_sigmask(SIG_BLOCK, &config.sigpipe_mask, &blocked);
+
+      /* Maybe is was blocked already?  */
+      control.sigpipe_unblock = ! sigismember(&blocked, SIGPIPE);
+   }
+#else
+    signal(SIGPIPE, ignore);
+#endif  /* ! defined(MSG_NOSIGNAL) && ! defined(SO_NOSIGPIPE) */
+}
+
+
+
+/* ****************************************************************************
+*
 * connectToServer - 
 */
 int connectToServer(void)
@@ -126,6 +172,7 @@ int connectToServer(void)
 			break;
 	}
 
+    suppress_sigpipe(fd);
 	return fd;
 }
 
@@ -191,16 +238,6 @@ void writeToServer(int fd)
 
 /* ****************************************************************************
 *
-* ignore - 
-*/
-void ignore(int sig)
-{
-}
-
-
-
-/* ****************************************************************************
-*
 * usage - 
 */
 void usage(char* progName)
@@ -219,8 +256,6 @@ void usage(char* progName)
 */
 int main(int argC, char* argV[])
 {
-    signal(SIGPIPE, ignore);
-
     if (argC == 1)
     {
        usage(argV[0]);

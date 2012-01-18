@@ -4,7 +4,29 @@
 #include <string.h>
 #include <stdlib.h>
 
-//#include "logMsg/logMsg.h"
+#include "tektronix_data.h"
+
+#include "logMsg/logMsg.h"
+
+void init_tek_record(struct struct_tek_record *tek_record)
+{
+    tek_record->typeDR = 0;
+    tek_record->timestamp = 0;
+    tek_record->imsi = 0;
+    tek_record->imei = 0;
+    tek_record->msisdn = 0;
+    tek_record->probeId = 0;
+    tek_record->LAC = 0;
+    tek_record->cellID = 0;
+    tek_record->callType = 0;
+    tek_record->callNumber = 0;
+    tek_record->DTAPCause = 0;
+    tek_record->BSSMAPCause = 0;
+    tek_record->CCCause = NULL;
+    tek_record->MMCause = NULL;
+    tek_record->RANAPCause = NULL;
+    tek_record->ALCAPCause = NULL;
+}
 
 bool parse_OHDR_header(unsigned char **p_ohdr, uint32_t *sizeOHDR, int *numDRs, int *typeMsg)
 {
@@ -13,57 +35,53 @@ bool parse_OHDR_header(unsigned char **p_ohdr, uint32_t *sizeOHDR, int *numDRs, 
 
     for (int i = 0; (i < 232); i++)
     {
-        //OLM_M(("ohdr[%d](0x%0x) = 0x%0x", i, *p_ohdr+i, int((*p_ohdr)[i])));
+        //LM_M(("ohdr[%d](0x%0x) = 0x%0x", i, *p_ohdr+i, int((*p_ohdr)[i])));
     }
 
 
 #define OHDR_HEADER_SIZE 12
     *sizeOHDR = ntohl(*((uint32_t *)*p_ohdr)) + sizeof(uint32_t);
-    //OLM_M(("tras ntohl() sizeOHDR:%u", *sizeOHDR));
+    //LM_M(("tras ntohl() sizeOHDR:%u", *sizeOHDR));
 
     *typeMsg = int(*(*p_ohdr+sizeof(uint32_t)));
     if (*typeMsg != 130)
     {
-        //LM_M(("OHDR is not a data message type (%d != expected 130)", int(*(*p_ohdr+sizeof(uint32_t)))));
+        LM_W(("OHDR is not a data message type (%d != expected 130)", int(*(*p_ohdr+sizeof(uint32_t)))));
 
         *p_ohdr += *sizeOHDR;
         return false;
     }
     else
     {
-        //OLM_M(("OHDR IS a data message type (%d == expected 130)", int(*(*p_ohdr+sizeof(uint32_t)))));
+        //LM_M(("OHDR IS a data message type (%d == expected 130)", int(*(*p_ohdr+sizeof(uint32_t)))));
     }
     *numDRs = int(*(*p_ohdr+ 2*sizeof(uint32_t)));
-    //OLM_M(("numDRs:%u", *numDRs));
+    LM_M(("numDRs:%u", *numDRs));
     *p_ohdr += OHDR_HEADER_SIZE;
     return true;
 }
 
 
-bool parse_DR(unsigned char **p_dr, uint32_t *sizeDR, int *typeDR, uint64_t *timestamp, uint64_t *imsi, uint64_t *imei, uint64_t *msisdn, int *probeId)
+bool parse_DR(unsigned char **p_dr, uint32_t *sizeDR, struct struct_tek_record *tek_record)
 {
 
-    *typeDR = 0;
-    *timestamp = 0;
-    *imsi = 0;
-    *imei = 0;
-    *msisdn = 0;
-    *probeId = 0;
+init_tek_record(tek_record);
+
 
     for (int i = 0; (i < 232); i++)
     {
-        //OLM_M(("dr[%d](0x%0x) = 0x%0x", i, *p_dr+i, int((*p_dr)[i])));
+        //LM_M(("dr[%d](0x%0x) = 0x%0x", i, *p_dr+i, int((*p_dr)[i])));
     }
 
 #define DR_HEADER_SIZE 4
     *sizeDR = ntohs(*((uint16_t *)*p_dr));
-    //OLM_M(("tras ntohs() sizeDR:%u", *sizeDR));
+    //LM_M(("tras ntohs() sizeDR:%u", *sizeDR));
 
     int total_lengh_elementIDs = int(*(*p_dr+3));
-    //OLM_M(("total_lengh_elementIDs:%d", total_lengh_elementIDs));
+    //LM_M(("total_lengh_elementIDs:%d", total_lengh_elementIDs));
 
     unsigned char bitmask = *(*p_dr+sizeof(uint16_t));
-    //OLM_M(("bitmask:0x%0x", int(bitmask)));
+    //LM_M(("bitmask:0x%0x", int(bitmask)));
     if (bitmask == 0)
     {
         *p_dr += *sizeDR;
@@ -71,7 +89,7 @@ bool parse_DR(unsigned char **p_dr, uint32_t *sizeDR, int *typeDR, uint64_t *tim
     }
 #define TYPE_gsmA 2
 #define TYPE_UMTS 5
-    *typeDR = int(bitmask & 0x07);
+    tek_record->typeDR = int(bitmask & 0x07);
 
 #define DR_WORDSECTION_SIZE_gsmA 44
 #define DR_WORDSECTION_SIZE_UMTS 52
@@ -79,33 +97,52 @@ bool parse_DR(unsigned char **p_dr, uint32_t *sizeDR, int *typeDR, uint64_t *tim
 #define DR_SHORTSECTION_SIZE_gsmA 28
 #define DR_SHORTSECTION_SIZE_UMTS 24
 
-    int num_elementIDs = 0;
-    int fixed_length_word_section = 0;
-    int fixed_length_short_section = 0;
-    int desp_probeId = 0;
-    int bit_imsi = 0;
-    int bit_imei = 0;
-    int bit_msisdn = 0;
+    int num_elementIDs = -1;
+    int fixed_length_word_section = -1;
+    int fixed_length_short_section = -1;
+    int bit_SF_probeId = -1;
+    int bit_SF_lac = -1;;
+    int bit_SF_cellID = -1;
+    int bit_SF_callType = -1;
+    int bit_SF_DTAPCause = -1;
+    int bit_SF_MSSMAPCause = -1;
+    int bit_VF_imsi = -1;
+    int bit_VF_imei = -1;
+    int bit_VF_msisdn = -1;
+    int bit_VF_CCCause = -1;
+    int bit_VF_MMCause = -1;
+    int bit_VF_RANAPCause = -1;
+    int bit_VF_ALCAPCause = -1;
 
     int varSize = 0;
 
-    if (*typeDR == TYPE_gsmA)
+    if (tek_record->typeDR == TYPE_gsmA)
     {
-        //OLM_M(("typeDR=gsm-A"));
-        //OLM_M(("bitmask >> 3: 0x%0x", int(bitmask >> 3)));
+        LM_M(("typeDR=gsm-A"));
+        //LM_M(("bitmask >> 3: 0x%0x", int(bitmask >> 3)));
         total_lengh_elementIDs = total_lengh_elementIDs - 1;
 
         num_elementIDs = int(bitmask >> 3) & 0x07;
         fixed_length_word_section = DR_WORDSECTION_SIZE_gsmA;
         fixed_length_short_section = DR_SHORTSECTION_SIZE_gsmA;
-        desp_probeId = 0;
-        bit_imsi = 0;
-        bit_msisdn = 1;
-        bit_imei = 2;
+
+
+        bit_SF_probeId = 0;
+        bit_SF_lac = 4;
+        bit_SF_cellID = 5;
+        bit_SF_MSSMAPCause = 6;
+        bit_SF_DTAPCause = 7;
+        bit_SF_callType = 10;
+
+
+        bit_VF_imsi = 0;
+        bit_VF_msisdn = 1;
+        bit_VF_imei = 2;
+
     }
-    else if (*typeDR == TYPE_UMTS)
+    else if (tek_record->typeDR == TYPE_UMTS)
     {
-        //OLM_M(("typeDR=UMTS"));
+        LM_M(("typeDR=UMTS"));
         // If UMTS, size came in words, not bytes
         *sizeDR = *sizeDR * sizeof(uint32_t);
         total_lengh_elementIDs = total_lengh_elementIDs * sizeof(uint32_t);
@@ -113,18 +150,29 @@ bool parse_DR(unsigned char **p_dr, uint32_t *sizeDR, int *typeDR, uint64_t *tim
         num_elementIDs = int((bitmask >> 3) & 0x03);
         fixed_length_word_section = DR_WORDSECTION_SIZE_UMTS;
         fixed_length_short_section = DR_SHORTSECTION_SIZE_UMTS;
-        desp_probeId = 1;
-        bit_imsi = 0;
-        bit_imei = 8;
-        bit_msisdn = 10;
+
+        bit_SF_probeId = 1;
+        bit_SF_callType = 3;
+        bit_SF_lac = 5;
+        bit_SF_cellID = 7;
+
+
+
+        bit_VF_imsi = 0;
+        bit_VF_ALCAPCause = 4;
+        bit_VF_RANAPCause = 5;
+        bit_VF_CCCause = 6;
+        bit_VF_MMCause = 7;
+        bit_VF_imei = 8;
+        bit_VF_msisdn = 10;
     }
     else
     {
-        //OLM_M(("Error, unknown type %d, (gsmA:%d, UMTS:%d)", *typeDR, TYPE_gsmA, TYPE_UMTS));
+        LM_E(("Error, unknown type %d, (gsmA:%d, UMTS:%d)", tek_record->typeDR, TYPE_gsmA, TYPE_UMTS));
         *p_dr += *sizeDR;
         return false;
     }
-    //OLM_M(("tras typeDR sizeDR:%u", *sizeDR));
+    //LM_M(("tras typeDR sizeDR:%u", *sizeDR));
     //LM_M(("tras typeDR total_lengh_elementIDs:%d", total_lengh_elementIDs));
 
     //LM_M(("num_elementIDs:%d", num_elementIDs));
@@ -134,25 +182,65 @@ bool parse_DR(unsigned char **p_dr, uint32_t *sizeDR, int *typeDR, uint64_t *tim
     for (int i = 0; (i < num_elementIDs); i++)
     {
         uint32_t elementMask = ntohl(*((uint32_t *)p_elementsID_mask));
-        //OLM_M(("elementMask:0x%0x", elementMask));
+        //LM_M(("elementMask:0x%0x", elementMask));
         if (((elementMask >> 29) & 0x00000007) == 0)
         {
-            //OLM_M(("Fixed Length Word section"));
+            //LM_M(("Fixed Length Word section"));
+            if ((elementMask & 0x00000001))
+            {
+                tek_record->callNumber = ntohl(*((uint32_t *)(p_elementsID_mask + sizeof(uint32_t))));
+                //LM_M(("Fixed: callNumber:0x%0x", tek_record->callNumber));
+
+            }
             if ((elementMask >> 1) & 0x00000001)
             {
-                *timestamp = ntohl(*((uint32_t *)(p_elementsID_mask + 2*sizeof(uint32_t))));
-                //LM_M(("Fixed: timestamp:0x%0x", *timestamp));
+                tek_record->timestamp = ntohl(*((uint32_t *)(p_elementsID_mask + 2*sizeof(uint32_t))));
+                //LM_M(("Fixed: timestamp:0x%0x", tek_record->timestamp));
             }
 
             p_elementsID_mask += fixed_length_word_section;
         }
         else if (((elementMask >> 29) & 0x00000007) == 1)
         {
-            //OLM_M(("Fixed Length Short section"));
-            if ((elementMask >> desp_probeId) & 0x00000001)
+            unsigned char *p_ini_SFElements = p_elementsID_mask + sizeof(uint32_t);
+#define NUM_2BYTELENGTH_FIELDS 12
+            for (int j = 0; (j < NUM_2BYTELENGTH_FIELDS); j++)
             {
-                *probeId = ntohs(*((uint16_t *)(p_elementsID_mask + (sizeof(uint32_t) + sizeof(uint32_t)*desp_probeId))));
-                //OLM_M(("probeId:0x%0x", *probeId));
+                if ((elementMask >> j) & 0x00000001)
+                {
+                    if (j == bit_SF_probeId)
+                    {
+                        tek_record->probeId = ntohs(*((uint16_t *)(p_ini_SFElements)));
+                        //LM_M(("probeId:0x%0x", tek_record->probeId));
+                    }
+                    else if (j == bit_SF_lac)
+                    {
+                        tek_record->LAC = ntohs(*((uint16_t *)(p_ini_SFElements)));
+                        LM_M(("LAC:0x%0x", tek_record->LAC));
+                    }
+                    else if (j == bit_SF_cellID)
+                    {
+                        tek_record->cellID = ntohs(*((uint16_t *)(p_ini_SFElements)));
+                        LM_M(("cellID:0x%0x", tek_record->cellID));
+                    }
+                    else if (j == bit_SF_callType)
+                    {
+                        tek_record->callType = ntohs(*((uint16_t *)(p_ini_SFElements)));
+                        //LM_M(("callType:0x%0x", tek_record->callType));
+                    }
+                    else if (j == bit_SF_DTAPCause)
+                    {
+                        tek_record->DTAPCause = ntohs(*((uint16_t *)(p_ini_SFElements)));
+                        //LM_M(("DTAPCause:0x%0x", tek_record->DTAPCause));
+                    }
+                    else if (j == bit_SF_MSSMAPCause)
+                    {
+                        tek_record->BSSMAPCause = ntohs(*((uint16_t *)(p_ini_SFElements)));
+                        //LM_M(("BSSMAPCause:0x%0x", tek_record->BSSMAPCause));
+                    }
+
+                    p_ini_SFElements += sizeof(uint16_t);
+                }
             }
 
             p_elementsID_mask += fixed_length_short_section;
@@ -168,59 +256,58 @@ bool parse_DR(unsigned char **p_dr, uint32_t *sizeDR, int *typeDR, uint64_t *tim
                 {
                     varSize = int(*p_ini_varElements);
                     p_ini_varElements++;
-                    //LM_M(("Detected element:%d with varSize:%d", j, varSize));
+                    LM_M(("Detected element:%d with varSize:%d", j, varSize));
 
-                    if ((j == bit_imsi) || (j == bit_imei) || (j == bit_msisdn))
+                    char *bufferVarSize = (char *)malloc(varSize+1);
+                    char *p_buffer = bufferVarSize;
+                    for (int k = 0; (k < varSize); k++)
                     {
-                        char *bufferVarSize = (char *)malloc(varSize+1);
-                        char *p_buffer = bufferVarSize;
-                        for (int k = 0; (k < varSize); k++)
-                        {
-                            *p_buffer++ = *p_ini_varElements++;
-                        }
-                        *p_buffer = '\0';
+                        *p_buffer++ = *p_ini_varElements++;
+                    }
+                    *p_buffer = '\0';
 
-                        //LM_M(("bufferVarSize:'%s'", bufferVarSize));
+
+                    if (j == bit_VF_imsi)
+                    {
                         uint64_t bufferLong = atoll(bufferVarSize);
-                        //OLM_M(("bufferLong:%lu", bufferLong));
-
-                        if (j == bit_imsi)
-                        {
-                            *imsi = bufferLong;
-                            //LM_M(("imsi:0x%0x", *imsi));
-                        }
-                        else if (j == bit_msisdn)
-                        {
-                            *msisdn = bufferLong;
-                            //LM_M(("msisdn:0x%0x", *msisdn));
-                        }
-                        else
-                        {
-                            *imei = bufferLong;
-                            //LM_M(("imei:0x%0x", *imei));
-                        }
-
-                        free(bufferVarSize);
+                        tek_record->imsi = bufferLong;
+                        LM_M(("imsi:0x%0x", tek_record->imsi));
                     }
-                    else
+                    else if (j == bit_VF_imei)
                     {
-                        char *bufferVarSize = (char *)malloc(varSize+1);
-                        char *p_buffer = bufferVarSize;
-                        for (int k = 0; (k < varSize); k++)
-                        {
-                            *p_buffer++ = *p_ini_varElements++;
-                        }
-                        *p_buffer = '\0';
-
-                        //LM_M(("bufferVarSize:'%s'", bufferVarSize));
-                        free(bufferVarSize);
-                        //p_ini_varElements += varSize;
+                        uint64_t bufferLong = atoll(bufferVarSize);
+                        tek_record->imei = bufferLong;
+                        LM_M(("imei:0x%0x", tek_record->imei));
                     }
-
+                    else if (j == bit_VF_msisdn)
+                    {
+                        uint64_t bufferLong = atoll(bufferVarSize);
+                        tek_record->msisdn = bufferLong;
+                        LM_M(("msisdn:0x%0x", tek_record->msisdn));
+                    }
+                    else if (j == bit_VF_CCCause)
+                    {
+                        tek_record->CCCause = strdup(bufferVarSize);
+                        //LM_M(("CCCause:%s", tek_record->CCCause));
+                    }
+                    else if (j == bit_VF_MMCause)
+                    {
+                        tek_record->MMCause = strdup(bufferVarSize);
+                        //LM_M(("MMCause:%s", tek_record->MMCause));
+                    }
+                    else if (j == bit_VF_RANAPCause)
+                    {
+                        tek_record->RANAPCause = strdup(bufferVarSize);
+                        //LM_M(("RANAPCause:%s", tek_record->RANAPCause));
+                    }
+                    else if (j == bit_VF_ALCAPCause)
+                    {
+                        tek_record->ALCAPCause = strdup(bufferVarSize);
+                        //LM_M(("ALCAPCause:%s", tek_record->ALCAPCause));
+                    }
+                    free(bufferVarSize);
                 }
-
             }
-
         }
         else
         {

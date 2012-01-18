@@ -19,7 +19,7 @@ namespace passive_location{
    class parse_cell_info : public samson::system::SimpleParser
 	{
 
-	   samson::mobility::Cell cell;      // Information about this cell
+	   samson::passive_location::Cell cell;      // Information about this cell
 
 	   std::vector<char*> words;    // Vector used to store words parsed at each line
 	   std::vector<char*> lat_lon;  // Vector used to store lat and lon from a particular field
@@ -30,8 +30,8 @@ namespace passive_location{
 
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
-// output: system.UInt32 mobility.Cell
-// helpLine: Parse input txt file containing cell information( latitude & longitude )
+// output: system.UInt32 passive_location.Cell
+// helpLine: Parse input txt file containing cell information( latitude & longitude ). key is cellID composed of ((LAC leftdesp 16) | cellID)
 #endif // de INFO_COMMENT
 
 	   void init( samson::KVWriter *writer )
@@ -53,7 +53,27 @@ namespace passive_location{
 		  // Extract information
 
           // Cell id is in field "1"
-		  cell.cellId.value = atol( words[1] );
+		  uint32_t cellId = atol( words[1]);
+		  // LAC is in field "2"
+		  uint32_t LAC = atol(words[2]);
+
+		  // We compose location id with ((LAC << 16) | cell_id), in a uint32_t field
+		  cell.cellId.value = (LAC << 16) | cellId;
+		  LM_M(("Composed cellId: From LAC:%d(0x%0x) and cellId:%d(0x%0x) composed:%d(0x%0x)", LAC, LAC, cellId, cellId, cell.cellId.value, cell.cellId.value));
+
+		  if (!strcmp(words[3], "900"))
+		  {
+		      cell.type.value = 1;
+		  }
+		  else if (!strcmp(words[3], "UMTS"))
+          {
+              cell.type.value = 2;
+          }
+		  else
+		  {
+		      OLM_E(("Error, unknow network type(%s), not gsm-A nor UMTS\n", words[3]));
+		      cell.type.value = 0;
+		  }
 
 		  // lat lon is in field "7" in format "latitude,longitude"
 		  char* lat_lon_definition = words[7] + 1; // Skip '"'
@@ -62,7 +82,7 @@ namespace passive_location{
 		  split_in_words( lat_lon_definition, lat_lon , ',' );
 
 		  if( lat_lon.size() != 2 )
-			 return; // Worng format;
+			 return; // Wrong format;
 		  
 		  cell.position.latitude.value = atof( lat_lon[0] );
 		  cell.position.longitude.value = atof( lat_lon[1] );

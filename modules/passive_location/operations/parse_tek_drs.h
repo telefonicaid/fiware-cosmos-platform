@@ -14,7 +14,6 @@
 
 #include "logMsg/logMsg.h"
 
-
 #include "tektronix_data.h"
 
 
@@ -25,7 +24,7 @@ namespace passive_location{
 class parse_tek_drs : public samson::Parser
 {
 
-    samson::system::UInt32 equip_id;            // Used as key at the output
+    samson::system::UInt user;            // Used as key at the output
     samson::passive_location::Record record;    // Used as value at the output
 
 public:
@@ -61,12 +60,8 @@ public:
         int numDRs = 0;
 
         unsigned int sizeDR = 0;
-        int typeDR = 0;
-        uint64_t timestamp = 0;
-        uint64_t imsi = 0;
-        uint64_t imei = 0;
-        uint64_t msisdn = 0;
-        int probeId = 0;
+        struct struct_tek_record tek_record;
+
 
         for (int i = 0; (i < 232); i++)
         {
@@ -81,18 +76,29 @@ public:
                 p_end_ohdr = p_init_ohdr + sizeOHDR;
                 for (int i = 0; ((i < numDRs) && (p_blob < p_end_ohdr)); i++)
                 {
-                    if (parse_DR(&p_blob, &sizeDR, &typeDR, &timestamp, &imsi, &imei, &msisdn, &probeId))
+                    init_tek_record(&tek_record);
+                    if (parse_DR(&p_blob, &sizeDR, &tek_record))
                     {
-                        equip_id.value = probeId;
 
-                        record.imsi.value = imsi;
-                        record.imei.value = imei;
-                        record.timestamp.value = timestamp;
-                        record.cell_id.value = probeId;
-                        LM_M(("Ready to emit typeDR:%d for msisdn:%lu at probeId:%d at %lu(%s)", typeDR, msisdn, probeId, record.timestamp.value, record.timestamp.str().c_str()));
+
+                        user.value = tek_record.imsi;
+
+                        record.imsi.value = tek_record.imsi;
+                        record.imei.value = tek_record.imei;
+                        record.timestamp.value = tek_record.timestamp;
+                        // We compose location id with ((LAC << 16) | cell_id), in a uint32_t field
+                        uint32_t cellIdTmp = tek_record.LAC;
+                        record.cellId.value = (cellIdTmp << 16) | tek_record.cellID;
+
+                        LM_M(("Ready to emit typeDR:%d for callNumber:%d imsi:%lu at cellId:%d in LAC:%d (compose:%lu) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.imsi, tek_record.cellID, tek_record.LAC, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
 
                         // Emit the record at the output
-                        writer->emit(0, &equip_id, &record);
+                        writer->emit(0, &user, &record);
+
+                        free(tek_record.CCCause);
+                        free(tek_record.MMCause);
+                        free(tek_record.RANAPCause);
+                        free(tek_record.ALCAPCause);
                     }
                 }
                 if (p_blob != p_end_ohdr)

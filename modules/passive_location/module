@@ -2,43 +2,56 @@ Module passive_location
 {
 	title	"Passive Location pilot ( mongoDB connection )"
 	author	"Andreu & Ken mail:<andreu@tid.es>"
-	version "0.1"
+	version "0.2"
 }
 
 data Record
 {
 	system.UInt     imsi;
 	system.UInt     imei;
+	system.UInt		msisdn;
 	system.TimeUnix timestamp;
-	system.UInt32   cell_id;
+	system.UInt32   cellId;  
 }
 
+data Cell
+{
+	system.UInt32      cellId;
+	system.UInt8       type;
+	mobility.Position  position;
+}
+
+data User
+{
+	system.UInt	       msisdn;
+	system.UInt	       imsi;
+	system.UInt	       imei;
+}
 
 # ------------------------------------------------------------
-# Parse input data to generate mobility.CellRecords
+# Parse input data (from Arcanum) to generate passive_location.Record 
 # ------------------------------------------------------------
 
 parser parse_xml_cdrs
 {
 	out system.UInt passive_location.Record   
 
-	helpLine "Parse input cdrs from Arkanum platform. Note that output key is imei at the output"
+	helpLine "Parse input cdrs from Arkanum platform. Note that output key is imsi at the output"
 }
+
+
+# ------------------------------------------------------------
+# Parse input data (from Tektronix probes) to generate passive_location.Record 
+# ------------------------------------------------------------
 
 parser parse_tek_drs
 {
-	out system.UInt32 passive_location.Record   
+	out system.UInt passive_location.Record   
 
-	helpLine "Parse input binary OHDRs from Tektroniks platform (probes). Note that output key is cellid"
+	helpLine "Parse input binary OHDRs from Tektroniks platform (probes). Note that output key is imsi"
 }
 
-map get_mobility_cell_records
-{
-	in system.UInt passive_location.Record
-	out system.UInt32 mobility.CellRecord
 
-	helpLine "Transform passive_location.Record into a mobility.CellRecord"
-}
 
 # ------------------------------------------------------------
 # Parse cell's table
@@ -46,9 +59,78 @@ map get_mobility_cell_records
 
 parser parse_cell_info
 {
-	out system.UInt32 mobility.Cell
+	out system.UInt32 passive_location.Cell
 
-	helpLine "Parse input txt file containing cell information( latitude & longitude )"
+	helpLine "Parse input txt file containing cell information( latitude & longitude ). Key is cellId composed of ((LAC left_desp 16) | cellID)"
+}
+
+# ------------------------------------------------------------
+# Parse User's table
+# ------------------------------------------------------------
+
+parser parse_user_info
+{
+	out system.UInt passive_location.User
+
+	helpLine "Parse input txt file containing user info to extract msisdn from imsi. key is imsi"
+}
+
+
+
+# ------------------------------------------------------------
+# Join of location records with user info from table, to extract MSISDN
+# ------------------------------------------------------------
+
+reduce reduce_user_msisdn
+{
+	in system.UInt  passive_location.Record   # Records (key = imsi)
+	in system.UInt  passive_location.User     # User    (key = imsi)
+
+	out	system.UInt passive_location.Record   # Records ( key = msisdn )
+	out system.UInt passive_location.Record   # Records with a non-existing imsi (key = imsi)
+
+	helpLine "Extract msisdn info from user table"
+}
+
+
+# ------------------------------------------------------------
+# Map of location records to reduce the amount of data sent to mongo
+# ------------------------------------------------------------
+
+map get_mobility_cell_records
+{
+	in system.UInt passive_location.Record
+	
+	out system.UInt32 mobility.CellRecord
+
+	helpLine "Transform passive_location.Record into a mobility.CellRecord"
+}
+
+
+# ------------------------------------------------------------
+# Join of mobility.Cellrecord with cell info from table 
+# ------------------------------------------------------------
+
+reduce reduce_cell_latitude_longitude
+{
+	in 	system.UInt32 mobility.CellRecord	  # CellRecords ( key = cellID )
+	in 	system.UInt32 passive_location.Cell   # Cell information
+
+	out	system.UInt mobility.Record		    # Records ( key = userId )
+	out system.UInt32 mobility.CellRecord   # Records with a non-existing cell-id (key = cellId)
+
+	helpLine "Add lat-lon information to Records. Note that key at the input is cellid,key at the output user-id"
+}
+
+# ------------------------------------------------------------
+# To keep alive the last queue
+# ------------------------------------------------------------
+
+parserOut dummy_output
+{
+	in system.UInt mobility.Record
+	
+	helpLine "dummy parserOut to have access to the queue"
 }
 
 # ------------------------------------------------------------
@@ -61,6 +143,7 @@ generator mongo_location_import
 
 	helpLine "Import passive location data from a mongoDb server at 'mongo.ip' from table 'mongo.table'"
 }
+
 
 generator mongo_latlong_import
 {
@@ -89,29 +172,50 @@ script init_stream_operations
 	{
 		# Queues;
 
-		alias [q1]     01.in_xml_cdrs;
-		alias [q2]     02.xml_records;
-		alias [q3]     03.cell_records;		
-		alias [cells]  04.cells;
-		alias [r1]     20.records;
-		alias [r2]     20.records2;
+		alias [cells.txt] 00.in_cells;
+		alias [users.txt] 00.in_users;
+		alias [cells]     01.cells;		
+		alias [users]     01.users;
+		alias [q2]        02.in_xml_cdrs;
+		alias [q2t]       02.in_tek_cdrs;
+		alias [q3]        03.user_records;
+		alias [q3c]       03.user_records.copia;
+		alias [nouser]    03.no_user;
+		alias [q4]        04.cell_records;	
+		alias [q4c]       04.cell_records.copia;			
+		alias [q4r]       04.cell_red_records;		
+		alias [q4rc]      04.cell_red_records.copia;	
+		alias [nocell]    04.no_cell;	
+		alias [r1]        20.records;
+		alias [r2]        20.records2;
+		
 
 		# Operations;
 
-		alias [parser_xml]          00.parser_xml_cdrs;
-		alias [get_cell_records]    10.get_mobility_cell_records;
-		alias [join_cells]          20.mobility_records;
+       alias [parse_cell]          00.parse_cell;
+       alias [parse_user]          00.parse_user;
+
+		alias [parser_xml]          01.parser_xml_cdrs;
+		alias [parser_tek]          01.parser_tek_drs;
+		alias [join_msisdn]         20.join_msisdn;
+		alias [get_cell_records]    25.get_mobility_cell_records;
+		alias [join_cells]          26.mobility_records;
 		alias [export_history]      30.export_mongo;
 		alias [export_lkl]          31.export_mongo_lkl;
 
+		add_stream_operation  [parse_cell]        passive_location.parse_cell_info                [cells.txt]    [cells];
+		add_stream_operation  [parse_user]        passive_location.parse_user_info                [users.txt]    [users];
 
-		add_stream_operation  [parser_xml]        passive_location.parse_xml_cdrs                [q1]           [q2];
-		add_stream_operation  [get_cell_records]  passive_location.get_mobility_cell_records     [q2]           [q3];
-
-		add_stream_operation  [join_cells]        mobility.reduce_cell_latitude_longitude        [q3] [cells]   [r1],[r2] [cells] -forward;
-
-		add_stream_operation  [export_history]    passive_location.mongo_location_export  [r1];
-		add_stream_operation  [export_lkl]        passive_location.mongo_location_export  [r2];
+		add_stream_operation  [parser_xml]        passive_location.parse_xml_cdrs                 [q2]           [q3];
+		add_stream_operation  [parser_tek]        passive_location.parse_tek_drs                  [q2t]          [q3],[q3c];
+		
+		add_stream_operation  [join_msisdn]       passive_location.reduce_user_msisdn             [q3] [users]   [q4],[q4c] [nouser] -forward;
+		
+		add_stream_operation  [get_cell_records]  passive_location.get_mobility_cell_records      [q4]           [q4r],[q4rc];
+		add_stream_operation  [join_cells]        passive_location.reduce_cell_latitude_longitude [q4r] [cells]  [r1],[r2] [nocell] -forward;
+		
+		add_stream_operation  [export_history]    passive_location.mongo_location_export          [r1];
+		add_stream_operation  [export_lkl]        passive_location.mongo_location_export          [r2];
 
 		set_stream_operation_property   [export_history]      mongo.ip                  samson05;
 		set_stream_operation_property   [export_history]      mongo.db                  PassiveLocation;
@@ -121,8 +225,6 @@ script init_stream_operations
 		set_stream_operation_property   [export_lkl]  mongo.db                  PassiveLocation;
 		set_stream_operation_property   [export_lkl]  mongo.collection          LastKnownLocation;
 		set_stream_operation_property   [export_lkl]  mongo.history             0;
-
-
     }
 }
 

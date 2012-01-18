@@ -18,8 +18,6 @@ namespace passive_location{
 
 	class parse_xml_cdrs : public samson::Parser
 	{
-
-        samson::system::UInt32 cell_id;             // Used as key at the output
         samson::passive_location::Record record;    // Used as value at the output
         
 	public:
@@ -30,7 +28,7 @@ namespace passive_location{
 
 output: system.UInt passive_location.Record
 
-helpLine: Parse input cdrs from Arkanum platform. Note that output key is cellid at the output
+helpLine: Parse input cdrs from Arkanum platform. Note that output key is imsi at the output
 #endif // de INFO_COMMENT
 
 		void init( samson::KVWriter *writer )
@@ -76,6 +74,7 @@ helpLine: Parse input cdrs from Arkanum platform. Note that output key is cellid
             // Init everything
             record.imsi.value = 0;
             record.imei.value = 0;
+            record.msisdn = 0;
             record.timestamp.value = 0;
             
             
@@ -120,6 +119,28 @@ helpLine: Parse input cdrs from Arkanum platform. Note that output key is cellid
                 p_xml = p_sep+1;
             }
             
+#define XML_TAG_LACID "<LocationArea>"
+            if ((p_tag_begin = strstr(p_xml, XML_TAG_LACID)) == NULL)
+            {
+                //OLM_E(("xml without XML_TAG_LACID"));
+                return;
+            }
+            p_tag_begin += strlen(XML_TAG_LACID);
+            if ((p_sep = strchr(p_tag_begin, '<')) == NULL)
+            {
+                OLM_E(("xml without LAC end"));
+                return;
+            }
+            *p_sep = '\0';
+            uint32_t LAC = strtoul(p_tag_begin, &endptr, 10 );
+            uint32_t cellIdTmp= (LAC << 16) & 0xffff0000;
+            if (*endptr != '\0')
+            {
+                OLM_E(("xml with wrong LAC:'%s'", p_tag_begin));
+                return;
+            }
+            p_xml = p_sep+1;
+
 #define XML_TAG_CELLID "<CellID>"
             if ((p_tag_begin = strstr(p_xml, XML_TAG_CELLID)) == NULL)
             {
@@ -133,14 +154,15 @@ helpLine: Parse input cdrs from Arkanum platform. Note that output key is cellid
                 return;
             }
             *p_sep = '\0';
-            record.cell_id.value = strtoul(p_tag_begin, &endptr, 10 );
+            uint32_t cellID = strtoul(p_tag_begin, &endptr, 10 );
+            record.cellId.value = cellIdTmp | cellID;
             if (*endptr != '\0')
             {
                 OLM_E(("xml with wrong cellId:'%s'", p_tag_begin));
                 return;
             }
             p_xml = p_sep+1;
-            
+
 #define XML_TAG_TIMESTAMP "<Timestamp>"
             if ((p_tag_begin = strstr(p_xml, XML_TAG_TIMESTAMP)) == NULL)
             {
@@ -163,7 +185,7 @@ helpLine: Parse input cdrs from Arkanum platform. Note that output key is cellid
 
             
             // Emit the record at the output
-            writer->emit(0, &record.imei, &record);
+            writer->emit(0, &record.imsi, &record);
             
             return;
             

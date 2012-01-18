@@ -49,12 +49,8 @@ int main( int argc, const char *argv[])
     int numDRs = 0;
 
     unsigned int sizeDR = 0;
-    int typeDR = 0;
-    uint64_t timestamp = 0;
-    uint64_t imsi = 0;
-    uint64_t imei = 0;
-    uint64_t msisdn = 0;
-    int probeId = 0;
+    struct struct_tek_record tek_record;
+
 
 
     if (cmd.get_num_arguments() < 2)
@@ -98,6 +94,7 @@ int main( int argc, const char *argv[])
 
     //OLM_M(("length:%lu", length));
 
+
     p_blob = (unsigned char *)data;
     p_end_blob = (unsigned char *)data + length;
     p_chunk = p_blob;
@@ -115,7 +112,8 @@ int main( int argc, const char *argv[])
             p_end_ohdr = p_init_ohdr + sizeOHDR;
             for (int i = 0; ((i < numDRs) && (p_blob < p_end_ohdr)); i++)
             {
-                if (parse_DR(&p_blob, &sizeDR, &typeDR, &timestamp, &imsi, &imei, &msisdn, &probeId))
+                init_tek_record(&tek_record);
+                if (parse_DR(&p_blob, &sizeDR, &tek_record))
                 {
                     //                        equip_id.value = probeId;
                     //
@@ -127,6 +125,11 @@ int main( int argc, const char *argv[])
                     //
                     //                        // Emit the record at the output
                     //                        writer->emit(0, &equip_id, &record);
+                    free(tek_record.CCCause);
+                    free(tek_record.MMCause);
+                    free(tek_record.RANAPCause);
+                    free(tek_record.ALCAPCause);
+
                 }
             }
             if (p_blob != p_end_ohdr)
@@ -136,7 +139,7 @@ int main( int argc, const char *argv[])
         }
         else
         {
-            frprintf(stderr, "OHDR ignored because not valid header, with typeMsg=%d", typeMsg);
+            fprintf(stderr, "OHDR ignored because not valid header, with typeMsg=%d", typeMsg);
         }
         //OLM_M(("p_end_blob - p_blob=%lu (length(%lu))", p_end_blob - p_blob, length));
         if ((p_blob - p_chunk) > size)

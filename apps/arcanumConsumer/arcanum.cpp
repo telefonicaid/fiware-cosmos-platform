@@ -122,7 +122,8 @@ struct control
 };
 
 
-#if 0
+#if ! defined(MSG_NOSIGNAL) && ! defined(SO_NOSIGPIPE)
+#include <pthread.h>
 static struct control control;
 #endif
 

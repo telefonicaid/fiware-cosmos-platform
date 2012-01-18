@@ -12,6 +12,7 @@
 * ToDo
 *
 */
+#include <stdio.h>              // printf, ...
 #include <sys/types.h>          // types needed by socket include files
 #include <stdlib.h>             // free
 #include <sys/socket.h>         // socket, bind, listen
@@ -23,11 +24,45 @@
 #include <unistd.h>             // close
 #include <fcntl.h>              // fcntl, F_SETFD
 #include <signal.h>             // SIGPIPE, ...
+#include <errno.h>              // errno
 
-#include "logMsg/traceLevels.h"
-#include "logMsg/logMsg.h"
-#include "parseArgs/parseArgs.h"
-#include "parseArgs/paConfig.h"
+
+
+/* ****************************************************************************
+*
+* Debug macros
+*/
+#define M(s)                                                      \
+do {                                                              \
+    printf("%s[%d]: %s: ", __FILE__, __LINE__, __FUNCTION__);     \
+    printf s;                                                     \
+    printf("\n");                                                 \
+} while (0)
+
+#define V0(level, s)                                              \
+do {                                                              \
+    if (verbose >= level)                                         \
+        M(s);                                                     \
+} while (0)
+
+#define V1(s) V0(1, s)
+#define V2(s) V0(2, s)
+#define V3(s) V0(3, s)
+#define V4(s) V0(4, s)
+#define V5(s) V0(5, s)
+#define E(s)  M(s)
+
+#define X(code, s)                                                \
+do {                                                              \
+    M(s);                                                         \
+    exit(code);                                                   \
+} while (0)
+
+#define R(r, s)                                                   \
+do {                                                              \
+    M(s);                                                         \
+    return r;                                                     \
+} while (0)
 
 
 
@@ -35,27 +70,10 @@
 *
 * Option variables
 */
-char            host[512];
-unsigned short  port;
-int             bufSize;
-int             sleepTime;
-
-
-
-#define HOST "172.17.200.200"
-/* ****************************************************************************
-*
-* parse arguments
-*/
-PaArgument paArgs[] =
-{
-	{ "-host",   host,      "HOST",       PaStr,     PaOpt,  _i HOST,  PaNL,         PaNL,  "host name of server"               },
-	{ "-port",  &port,      "PORT",       PaShortU,  PaOpt,     1099,     1,        65000,  "port for server where to connect"  },
-	{ "-size",  &bufSize,   "BUF_SIZE",   PaInt,     PaOpt,     1024,    10,    16 * 1024,  "size of read buffer"               },
-	{ "-sleep", &sleepTime, "SLEEP_TIME", PaInt,     PaOpt,     100000,   1,      1000000,  "sleep time between reads (micros)" },
-
-	PA_END_OF_ARGS
-};
+char*           host      = (char*) "172.17.200.200";
+unsigned short  port      = 1234;
+int             sleepTime = 100000;
+int             verbose   = 0;
 
 
 
@@ -70,15 +88,15 @@ int connectToServer(void)
 	int                 fd;
 
 	if (host == NULL)
-		LM_RE(-1, ("no hostname given"));
+		R(-1, ("no hostname given"));
 	if (port == 0)
-		LM_RE(-1, ("Cannot connect to '%s' - port is ZERO", host));
+		R(-1, ("Cannot connect to '%s' - port is ZERO", host));
 
 	if ((hp = gethostbyname(host)) == NULL)
-		LM_RE(-1, ("gethostbyname(%s): %s", host, strerror(errno)));
+		R(-1, ("gethostbyname(%s): %s", host, strerror(errno)));
 
 	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-		LM_RE(-1, ("socket: %s", strerror(errno)));
+		R(-1, ("socket: %s", strerror(errno)));
 	
 	memset((char*) &peer, 0, sizeof(peer));
 
@@ -86,7 +104,7 @@ int connectToServer(void)
 	peer.sin_addr.s_addr = ((struct in_addr*) (hp->h_addr))->s_addr;
 	peer.sin_port        = htons(port);
 
-	LM_V(("Connecting to %s:%d", host, port));
+	V2(("Connecting to %s:%d", host, port));
 	int retries = 7200;
 	int tri     = 0;
 
@@ -95,12 +113,12 @@ int connectToServer(void)
 		if (connect(fd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
 		{
 			++tri;
-			LM_E(("connect intent %d failed: %s", tri, strerror(errno)));
+			E(("connect intent %d failed: %s", tri, strerror(errno)));
 			usleep(500000);
 			if (tri > retries)
 			{
 				close(fd);
-				LM_RE(-1, ("Cannot connect to %s, port %d (even after %d retries)", host, port, retries));
+				R(-1, ("Cannot connect to %s, port %d (even after %d retries)", host, port, retries));
 			}
 		}
 		else
@@ -134,26 +152,26 @@ void writeToServer(int fd)
 
         nb = write(fd, buf, sizeof(buf));
         grandTotal += nb;
-        LM_V(("Written %d bytes to server (total: %d)", nb, grandTotal));
+        V2(("Written %d bytes to server (total: %d)", nb, grandTotal));
         if (nb != sizeof(buf))
         {
            if (nb == -1)
            {
-              LM_E(("write to tunnel: %s", strerror(errno)));
-              LM_E(("Assuming connection closed, reconnecting ..."));
+              E(("write to tunnel: %s", strerror(errno)));
+              E(("Assuming connection closed, reconnecting ..."));
               close(fd);
               fd = connectToServer();
               continue;
            }
            else if (nb == 0)
            {
-              LM_E(("written ZERO bytes to tunnel - assuming connection closed, reconnecting ..."));
+              E(("written ZERO bytes to tunnel - assuming connection closed, reconnecting ..."));
               close(fd);
               fd = connectToServer();
               continue;
            }
 
-           LM_W(("Not written all bytes (only %d of %d) - assuming tunnel closed connection", nb, sizeof(buf)));
+           E(("Not written all bytes (only %d of %d) - assuming tunnel closed connection", nb, (int) sizeof(buf)));
            close(fd);
            fd = connectToServer();
         }
@@ -164,7 +182,7 @@ void writeToServer(int fd)
         bytesWritten += nb;
 
         if ((loopNo % 50) == 0)
-            LM_V(("%d packets written, %d bytes in total", loopNo, bytesWritten));
+            V1(("%d packets written, %d bytes in total", loopNo, bytesWritten));
         }
 }
 
@@ -182,36 +200,76 @@ void ignore(int sig)
 
 /* ****************************************************************************
 *
+* usage - 
+*/
+void usage(char* progName)
+{
+	printf("Usage:\n");
+	printf("  %s -u\n", progName);
+	printf("  %s [-host (host)] [-port (port)] [-sleep (microsecs)] [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)]\n", progName);
+	exit(1);
+}
+
+
+
+/* ****************************************************************************
+*
 * main - 
 */
 int main(int argC, char* argV[])
 {
     signal(SIGPIPE, ignore);
 
-	paConfig("usage and exit on any warning", (void*) true);
-	paConfig("log to screen",                 (void*) true);
-	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
-	paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT");
-	paConfig("log to file",                   (void*) true);
+    if (argC == 1)
+    {
+       usage(argV[0]);
+       exit(1);
+    }
 
-	// paConfig("man synopsis",                  (void*) manSynopsis);
-	// paConfig("man shortdescription",          (void*) manShortDescription);
-	// paConfig("man description",               (void*) manDescription);
-	// paConfig("man exitstatus",                (void*) manExitStatus);
-	// paConfig("man author",                    (void*) manAuthor);
-	// paConfig("man reportingbugs",             (void*) manReportingBugs);
-	// paConfig("man copyright",                 (void*) manCopyright);
-	// paConfig("man version",                   (void*) manVersion);
+    int  ix = 1;
 
-    
-	paParse(paArgs, argC, (char**) argV, 1, false);
+	while (ix < argC)
+	{
+        if (strcmp(argV[ix], "-u") == 0)
+            usage(argV[0]);
+		else if (strcmp(argV[ix], "-v") == 0)
+			verbose = 1;
+		else if (strcmp(argV[ix], "-vv") == 0)
+			verbose = 2;
+		else if (strcmp(argV[ix], "-vvv") == 0)
+			verbose = 3;
+		else if (strcmp(argV[ix], "-vvvv") == 0)
+			verbose = 4;
+		else if (strcmp(argV[ix], "-vvvvv") == 0)
+			verbose = 5;
+        else if (strcmp(argV[ix], "-host") == 0)
+        {
+            host = strdup(argV[ix + 1]);
+            ++ix;
+        }
+        else if (strcmp(argV[ix], "-port") == 0)
+        {
+            port = atoi(argV[ix + 1]);
+            ++ix;
+        }
+        else if (strcmp(argV[ix], "-sleep") == 0)
+        {
+            sleepTime = atoi(argV[ix + 1]);
+            ++ix;
+        }
+		else
+		{
+ 			E(("%s: unrecognized option '%s'\n\n", argV[0], argV[ix]));
+			usage(argV[0]);
+		}
 
-	lmAux((char*) "father");
+		++ix;
+    }
 
 	int fd = connectToServer();
 
 	if (fd == -1)
-		LM_X(1, ("error connecting to host '%s', port %d", host, port));
+		X(1, ("error connecting to host '%s', port %d", host, port));
 
 	writeToServer(fd);
 

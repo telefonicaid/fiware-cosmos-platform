@@ -12,7 +12,6 @@ OBJS1        = arcanumTunnel.o
 OBJS2        = sniffer.o
 OBJS3        = arcanumTestServer.o
 OBJS4        = arcanum.o
-LIBS2        = -L../../BUILD_DEBUG/libs/logMsg/ -llm   -L../../BUILD_DEBUG/libs/parseArgs/ -lpa
 
 OS           = $(shell uname)
 
@@ -36,7 +35,7 @@ $(EXEC3):	$(OBJS3)
 			$(CPP) -o $@ $(OBJS3) $(LIBS)
 
 $(EXEC4):	$(OBJS4)
-			$(CPP) -o $@ $(OBJS4) $(LIBS) $(LIBS2)
+			$(CPP) -o $@ $(OBJS4) $(LIBS)
 
 arcanum.o:  arcanum.cpp
 			$(CPP) $(CFLAGS) -c $^ -o $@

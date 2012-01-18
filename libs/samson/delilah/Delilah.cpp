@@ -181,7 +181,7 @@ namespace samson {
 
             if (delilah_console->isQuitting())
             {
-                LM_W(("With ( msgCode == Message::StatusReport ) delilah_console->isQuitting"));
+                LM_T(LmtNodeMessages, ("With ( msgCode == Message::StatusReport ) delilah_console->isQuitting"));
                 //return;
             }
             
@@ -215,7 +215,7 @@ namespace samson {
             
             if( !packet->buffer )
             {
-                LM_W(("StreamOutQueue message whitout a buffer"));
+                LM_W(("StreamOutQueue message without a buffer"));
                 return;
             }
             

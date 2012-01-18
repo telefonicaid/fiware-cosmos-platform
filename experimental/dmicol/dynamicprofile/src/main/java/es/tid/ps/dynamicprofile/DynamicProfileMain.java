@@ -21,6 +21,7 @@ public class DynamicProfileMain {
 
         Job job = new Job(conf, "Dynamic profile");
         job.setJobName("dynamicprofile");
+        job.setJarByClass(DynamicProfileMain.class);
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputKeyClass(CompositeKey.class);
         job.setOutputValueClass(CategoryInformation.class);

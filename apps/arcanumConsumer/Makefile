@@ -13,17 +13,20 @@ OBJS2        = sniffer.o
 OBJS3        = arcanumTestServer.o
 OBJS4        = arcanum.o
 
+ARCHIVE      = ArcanumTunnelTools.tar
+
 OS           = $(shell uname)
 
 ifeq ($(OS),SunOS)
   LIBS       = -lsocket -lc -lnsl
 endif
 
+.PHONY 	     = clean package
 
-all:		 $(EXEC1) $(EXEC2) $(EXEC3) $(EXEC4)
+all:		$(EXEC1) $(EXEC2) $(EXEC3) $(EXEC4)
 
 clean:
-			\rm $(EXEC1) $(EXEC2) $(EXEC3) $(EXEC4) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4)
+			rm -f $(EXEC1) $(EXEC2) $(EXEC3) $(EXEC4) $(OBJS1) $(OBJS2) $(OBJS3) $(OBJS4) $(ARCHIVE).gz
 
 $(EXEC1):	$(OBJS1)
 			$(CPP) -o $@ $(OBJS1) $(LIBS)
@@ -46,3 +49,6 @@ arcanum.o:  arcanum.cpp
 %.o: %.c
 		$(CC) $(CFLAGS) -c $^ -o $@
 
+package: all
+			tar -cf $(ARCHIVE) $(EXEC1) $(EXEC2) $(EXEC4) $(EXEC1).c $(EXEC2).c $(EXEC4).c Makefile
+			gzip $(ARCHIVE)

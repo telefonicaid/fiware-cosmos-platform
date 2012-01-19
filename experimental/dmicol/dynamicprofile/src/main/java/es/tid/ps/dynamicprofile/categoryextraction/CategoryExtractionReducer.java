@@ -1,12 +1,14 @@
 package es.tid.ps.dynamicprofile.categoryextraction;
 
 import java.io.IOException;
-
-import org.apache.hadoop.mapreduce.Reducer;
+import java.util.Iterator;
 
 import es.tid.ps.dynamicprofile.dictionary.DictionaryHandler;
+import es.tid.ps.kpicalculation.data.WebLog;
+
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapreduce.Reducer;
 
 public class CategoryExtractionReducer extends
         Reducer<CompositeKey, NullWritable, CompositeKey, CategoryInformation> {
@@ -14,8 +16,8 @@ public class CategoryExtractionReducer extends
 
     @Override
     public void setup(Context context) throws IOException {
-        DictionaryHandler.init(DistributedCache.getLocalCacheFiles(
-                context.getConfiguration()));
+        DictionaryHandler.init(DistributedCache.getLocalCacheFiles(context
+                .getConfiguration()));
     }
 
     @Override
@@ -33,8 +35,10 @@ public class CategoryExtractionReducer extends
 
         // Count the number of instances of the same URL
         long count = 0;
-        while (values.iterator().hasNext()) {
+        Iterator<NullWritable> it = values.iterator();
+        while (it.hasNext()) {
             count++;
+            it.next();
         }
 
         CategoryInformation cat = new CategoryInformation(key.getPrimaryKey(),

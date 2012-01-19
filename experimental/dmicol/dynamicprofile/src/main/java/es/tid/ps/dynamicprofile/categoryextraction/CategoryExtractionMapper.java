@@ -12,11 +12,12 @@ public class CategoryExtractionMapper extends
     public void map(LongWritable key, Text value, Context context) {
         try {
             WebLog webLog = new WebLog();
-            webLog.set(value.toString());
+            webLog.set(value);
             CompositeKey cKey = new CompositeKey(webLog.visitorId,
                     webLog.fullUrl);
             context.write(cKey, NullWritable.get());
         } catch (Exception ex) {
+            System.err.println(ex.getMessage());
             context.getCounter(CategoryExtractionCounter.WRONG_FILTERING_FIELDS)
                     .increment(1L);
             ex.printStackTrace(System.err);

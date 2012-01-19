@@ -6,6 +6,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.ps.dynamicprofile.dictionary.DictionaryHandler;
 import es.tid.ps.kpicalculation.data.WebLog;
+import org.apache.hadoop.filecache.DistributedCache;
 
 public class CategoryExtractionReducer extends
         Reducer<CompositeKey, WebLog, CompositeKey, CategoryInformation> {
@@ -13,11 +14,8 @@ public class CategoryExtractionReducer extends
 
     @Override
     public void setup(Context context) throws IOException {
-        DictionaryHandler.init(
-                context.getConfiguration().get("termsInDomainFlatFileName"),
-                context.getConfiguration().get("dictionaryFileName"),
-                context.getConfiguration().get("categoryPatterMappingFileName"),
-                context.getConfiguration().get("categoryNamesFileName"));
+        DictionaryHandler.init(DistributedCache.getLocalCacheFiles(
+                context.getConfiguration()));
     }
 
     @Override

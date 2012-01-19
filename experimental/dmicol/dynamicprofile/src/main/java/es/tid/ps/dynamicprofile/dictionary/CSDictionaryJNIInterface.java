@@ -3,13 +3,13 @@ package es.tid.ps.dynamicprofile.dictionary;
 /**
  * Class that defines the native methods to access the comScore dictionary API
  * via JNI.
- * 
+ *
  * @author dmicol
  */
 public class CSDictionaryJNIInterface {
     /**
      * Initializes the dictionary wrapper using the terms in domain file.
-     * 
+     *
      * @param iMode
      *            the operation mode (value should be 1)
      * @param szTermsInDomainFlatFileName
@@ -21,7 +21,7 @@ public class CSDictionaryJNIInterface {
 
     /**
      * Loads the comScore dictionary in memory.
-     * 
+     *
      * @param iMode
      *            the operation mode (value should be 1)
      * @param szTermsInDomainFlatFileName
@@ -36,7 +36,7 @@ public class CSDictionaryJNIInterface {
     /**
      * Applies the dictionary to the given URL, and returns the pattern ID for
      * such URL.
-     * 
+     *
      * @param szURL
      *            the url to apply the dictionary to
      * @return the pattern ID of the URL
@@ -44,6 +44,7 @@ public class CSDictionaryJNIInterface {
     public native long ApplyDictionaryUsingUrl(String szURL);
 
     static {
-        System.load("/user/hdfs/libCategories.so");
+        System.load("/opt/hadoop/lib/native/Linux-amd64-64/libcsCFD.so.1");
+        System.load("/opt/hadoop/lib/native/Linux-amd64-64/libCategories.so");
     }
 }

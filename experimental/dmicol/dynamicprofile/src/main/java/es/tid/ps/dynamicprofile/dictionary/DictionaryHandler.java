@@ -5,21 +5,47 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.HashMap;
+import org.apache.hadoop.fs.Path;
 
 public abstract class DictionaryHandler {
     private final static String DELIMITER = "\t";
-    
+
     private static CSDictionaryJNIInterface dictionary = null;
     private static HashMap<Long, Long> categoryPatternMap = null;
     private static HashMap<Long, String> categoryNames = null;
     private static boolean isInitialized = false;
 
-    public static void init(String termsInDomainFlatFileName,
-            String dictionaryFileName, String categoryPatterMappingFileName,
-            String categoryNamesFileName) throws IOException {
+    private static final String TERMS_IN_DOMAIN_FILENAME =
+            "cs_terms_in_domain.bcp";
+    private static final String DICTIONARY_FILENAME =
+            "cs_mmxi_143.bcp.gz";
+    private static final String CATEGORY_PATTERN_MAPPING_FILENAME =
+            "pattern_category_mapping_143m.txt";
+    private static final String CATEGORY_NAMES_FILENAME =
+            "cat_subcat_lookup_143m.txt";
+
+    public static void init(Path[] dictionayFiles)throws IOException {
         if (isInitialized) {
             return;
         }
+
+        String termsInDomainFlatFileName = null;
+        String dictionaryFileName = null;
+        String categoryPatterMappingFileName = null;
+        String categoryNamesFileName = null;
+
+        for (Path path: dictionayFiles) {
+            if (path.getName().equals(TERMS_IN_DOMAIN_FILENAME)) {
+                termsInDomainFlatFileName = path.toString();
+            } else if (path.getName().equals(DICTIONARY_FILENAME)) {
+                dictionaryFileName = path.toString();
+            } else if (path.getName().equals(CATEGORY_PATTERN_MAPPING_FILENAME)) {
+                categoryPatterMappingFileName = path.toString();
+            } else if (path.getName().equals(CATEGORY_NAMES_FILENAME)) {
+                categoryNamesFileName = path.toString();
+            }
+        }
+
         dictionary = new CSDictionaryJNIInterface();
         dictionary.LoadCSDictionary(1, termsInDomainFlatFileName,
                 dictionaryFileName);
@@ -27,7 +53,7 @@ public abstract class DictionaryHandler {
         loadCategoryNames(categoryNamesFileName);
         isInitialized = true;
     }
-    
+
     public static String getUrlCategories(String url) {
         if (!isInitialized) {
             return null;
@@ -49,7 +75,7 @@ public abstract class DictionaryHandler {
 
     /**
      * Loads the file which contains the category pattern mappings.
-     * 
+     *
      * @param fileName
      *            the file name that contains the mappings.
      * @return the map of pattern IDs to category IDs.
@@ -73,7 +99,7 @@ public abstract class DictionaryHandler {
     /**
      * Loads the file that contains the category IDs and their corresponding
      * names.
-     * 
+     *
      * @param fileName
      *            the file name that contains the list of category IDs and
      *            names.

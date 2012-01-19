@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.net.URI;
 import java.util.HashMap;
 import org.apache.hadoop.fs.Path;
 
@@ -24,7 +25,7 @@ public abstract class DictionaryHandler {
     private static final String CATEGORY_NAMES_FILENAME =
             "cat_subcat_lookup_143m.txt";
 
-    public static void init(Path[] dictionayFiles)throws IOException {
+    public static void init(Path[] dictionayFiles) throws IOException {
         if (isInitialized) {
             return;
         }
@@ -58,8 +59,10 @@ public abstract class DictionaryHandler {
         if (!isInitialized) {
             return null;
         }
-        long patternId = dictionary.ApplyDictionaryUsingUrl(url);
-        if (patternId < 1) {
+        URI uri = URI.create(url);
+        String normalizedUrl = uri.getHost() + uri.getPath();
+        long patternId = dictionary.ApplyDictionaryUsingUrl(normalizedUrl);
+        if (patternId <= 1) {
             return null;
         }
         if (!categoryPatternMap.containsKey(patternId)) {

@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.ps.dynamicprofile.dictionary.DictionaryHandler;
+import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
 import es.tid.ps.kpicalculation.data.WebLog;
 import org.apache.hadoop.filecache.DistributedCache;
 
@@ -24,6 +25,11 @@ public class CategoryExtractionReducer extends
         // Use the comScore API
         String url = values.iterator().next().fullUrl;
         String categories = DictionaryHandler.getUrlCategories(url);
+        if (categories.isEmpty()) {
+            context.getCounter(CategoryExtractionCounter.EMPTY_CATEGORY).increment(1L);
+        } else {
+            context.getCounter(CategoryExtractionCounter.VALID_CATEGORY).increment(1L);
+        }
 
         // Count the number of instances of the same URL
         long count = 0;

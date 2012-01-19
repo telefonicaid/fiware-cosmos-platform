@@ -4,6 +4,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
+import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
 import es.tid.ps.kpicalculation.data.WebLog;
 
 public class CategoryExtractionMapper extends
@@ -17,6 +18,8 @@ public class CategoryExtractionMapper extends
                     webLog.fullUrl);
             context.write(cKey, webLog);
         } catch (Exception ex) {
+            context.getCounter(CategoryExtractionCounter.WRONG_FILTERING_FIELDS)
+                    .increment(1L);
         }
     }
 }

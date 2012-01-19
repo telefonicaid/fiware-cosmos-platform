@@ -16,7 +16,6 @@
 package es.tid.ps.dynamicprofile.categoryextraction;
 
 import org.apache.hadoop.io.NullWritable;
-import es.tid.ps.kpicalculation.data.WebLog;
 import java.util.List;
 import org.junit.Test;
 import org.apache.hadoop.io.LongWritable;

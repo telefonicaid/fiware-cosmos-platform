@@ -4,7 +4,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import es.tid.ps.kpicalculation.data.WebLog;
 import org.apache.hadoop.io.NullWritable;
 
 public class CategoryExtractionMapper extends
@@ -12,7 +11,7 @@ public class CategoryExtractionMapper extends
     @Override
     public void map(LongWritable key, Text value, Context context) {
         try {
-            WebLog webLog = new CustomWebLog();
+            WebLog webLog = new WebLog();
             webLog.set(value.toString());
             CompositeKey cKey = new CompositeKey(webLog.visitorId,
                     webLog.fullUrl);

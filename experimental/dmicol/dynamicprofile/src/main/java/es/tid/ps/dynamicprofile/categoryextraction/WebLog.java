@@ -1,6 +1,6 @@
 // <editor-fold defaultstate="collapsed" desc="Copyright © 2012 Telefónica Investigación y Desarrollo S.A.U.">
 //
-//   File        : CustomWebLog.java
+//   File        : WebLog.java
 //
 //   Copyright © 2012 Telefónica Investigación y Desarrollo S.A.U.
 //
@@ -13,18 +13,15 @@
 // </editor-fold>
 package es.tid.ps.dynamicprofile.categoryextraction;
 
-import es.tid.ps.kpicalculation.data.WebLog;
+public class WebLog {
+    private static final String DELIMITER ="\t";
+    public String visitorId;
+    public String fullUrl;
 
-public class CustomWebLog extends WebLog {
-
-    @Override
     public void set(String line) throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
         String[] fields = line.split(DELIMITER);
 
         this.visitorId = fields[0];
         this.fullUrl = fields[2];
     }
-
-    
-
 }

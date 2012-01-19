@@ -36,9 +36,15 @@
             <version>${org.apache.hadoop}-cdh3u2</version>
         </dependency>
         <dependency>
-            <groupId>es.tid.ps</groupId>
-            <artifactId>kpicalculation</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <groupId>com.hadoop.compression</groupId>
+            <artifactId>hadoop-gpl-compression</artifactId>
+            <version>0.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mrunit</artifactId>
+            <version>${org.apache.hadoop}-cdh3u0</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

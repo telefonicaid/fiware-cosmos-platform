@@ -24,11 +24,12 @@ public class CategoryExtractionReducer extends
         // Use the comScore API
         String url = key.getSecondaryKey();
         String categories = DictionaryHandler.getUrlCategories(url);
-        if (categories.isEmpty()) {
+        if (categories == null || categories.isEmpty()) {
             context.getCounter(CategoryExtractionCounter.EMPTY_CATEGORY).increment(1L);
-        } else {
-            context.getCounter(CategoryExtractionCounter.VALID_CATEGORY).increment(1L);
+            return;
         }
+
+        context.getCounter(CategoryExtractionCounter.VALID_CATEGORY).increment(1L);
 
         // Count the number of instances of the same URL
         long count = 0;

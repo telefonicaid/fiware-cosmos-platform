@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import es.tid.ps.dynamicprofile.dictionary.DictionaryHandler;
-import es.tid.ps.kpicalculation.data.WebLog;
 
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.io.NullWritable;

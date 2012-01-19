@@ -12,7 +12,7 @@ public class CategoryExtractionMapper extends
     public void map(LongWritable key, Text value, Context context) {
         try {
             WebLog webLog = new WebLog();
-            webLog.set(value);
+            webLog.set(value.toString());
             CompositeKey cKey = new CompositeKey(webLog.visitorId,
                     webLog.fullUrl);
             context.write(cKey, NullWritable.get());

@@ -7,6 +7,7 @@ import java.net.URI;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.*;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
@@ -23,6 +24,8 @@ public class DynamicProfileMain {
         job.setJobName("dynamicprofile");
         job.setJarByClass(DynamicProfileMain.class);
         job.setInputFormatClass(LzoTextInputFormat.class);
+        job.setMapOutputKeyClass(CompositeKey.class);
+        job.setMapOutputValueClass(NullWritable.class);
         job.setOutputKeyClass(CompositeKey.class);
         job.setOutputValueClass(CategoryInformation.class);
         job.setOutputFormatClass(TextOutputFormat.class);

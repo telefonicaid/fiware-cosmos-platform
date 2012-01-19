@@ -5,12 +5,11 @@ import java.io.IOException;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.ps.dynamicprofile.dictionary.DictionaryHandler;
-import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
-import es.tid.ps.kpicalculation.data.WebLog;
 import org.apache.hadoop.filecache.DistributedCache;
+import org.apache.hadoop.io.NullWritable;
 
 public class CategoryExtractionReducer extends
-        Reducer<CompositeKey, WebLog, CompositeKey, CategoryInformation> {
+        Reducer<CompositeKey, NullWritable, CompositeKey, CategoryInformation> {
     private final static String CATEGORY_DELIMITER = "/";
 
     @Override
@@ -20,10 +19,10 @@ public class CategoryExtractionReducer extends
     }
 
     @Override
-    protected void reduce(CompositeKey key, Iterable<WebLog> values,
+    protected void reduce(CompositeKey key, Iterable<NullWritable> values,
             Context context) throws IOException, InterruptedException {
         // Use the comScore API
-        String url = values.iterator().next().fullUrl;
+        String url = key.getSecondaryKey();
         String categories = DictionaryHandler.getUrlCategories(url);
         if (categories.isEmpty()) {
             context.getCounter(CategoryExtractionCounter.EMPTY_CATEGORY).increment(1L);

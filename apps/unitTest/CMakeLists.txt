@@ -1,17 +1,22 @@
 SET (SOURCES
     main_UnitTest.cpp
-    readFile_test.cpp
-    object_test.cpp
-    objectsManager_test.cpp
-    #processManager_test.cpp
-    processItem_test.cpp
-    operationscontainer_test.cpp
-    buffer_test.cpp
-    diskStatistics_test.cpp
-    diskOperation_test.cpp
-    diskManager_test.cpp
-    memoryManager_test.cpp
-    engine_test.cpp
+
+    #samson/network
+    network/network2_test.cpp
+
+    #engine
+    engine/readFile_test.cpp
+    engine/object_test.cpp
+    engine/objectsManager_test.cpp
+    #engine/processManager_test.cpp
+    engine/processItem_test.cpp
+    engine/operationscontainer_test.cpp
+    engine/buffer_test.cpp
+    engine/diskStatistics_test.cpp
+    engine/diskOperation_test.cpp
+    engine/diskManager_test.cpp
+    engine/memoryManager_test.cpp
+    engine/engine_test.cpp
 )
 
 

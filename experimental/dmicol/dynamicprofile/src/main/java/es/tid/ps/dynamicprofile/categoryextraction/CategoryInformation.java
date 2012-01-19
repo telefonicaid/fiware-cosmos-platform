@@ -60,17 +60,18 @@ public class CategoryInformation implements Writable {
         this.categoryNames = categoryNames;
     }
 
+    @Override
     public void readFields(DataInput in) throws IOException {
-        this.deserialize(in.readUTF());
+        this.deserialize(in.readLine());
     }
 
+    @Override
     public void write(DataOutput out) throws IOException {
-        out.writeUTF(this.serialize());
+        out.writeChars(this.serialize() + "\n");
     }
 
     private String serialize() {
         StringBuilder sBuilder = new StringBuilder();
-        sBuilder.delete(0, sBuilder.length());
         sBuilder.append(this.userId).append(DELIMITER);
         sBuilder.append(this.url).append(DELIMITER);
         sBuilder.append(this.count);

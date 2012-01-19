@@ -1,8 +1,8 @@
 CC           = gcc
 CPP          = g++
 INCLUDE      = -I../../libs/
-DFLAGS       = 
-CFLAGS       = $(INCLUDE) $(DFLAGS) -O2 -fPIC -Wall -Wno-unused-function $(DFLAGS) $(INCLUDE)
+DFLAGS       = -DOS=$(OS)
+cFLAGS       = $(INCLUDE) $(DFLAGS) -g  -fPIC -Wall -Wno-unused-function $(DFLAGS) $(INCLUDE)
 
 EXEC1        = arcanumTunnel
 EXEC2        = sniffer
@@ -49,6 +49,8 @@ arcanum.o:  arcanum.cpp
 %.o: %.c
 		$(CC) $(CFLAGS) -c $^ -o $@
 
-package: all
-			tar -cf $(ARCHIVE) $(EXEC1) $(EXEC2) $(EXEC4) $(EXEC1).c $(EXEC2).c $(EXEC4).c Makefile
-			gzip $(ARCHIVE)
+package: $(EXEC1) $(EXEC2) $(EXEC4)
+			tar -cf $(ARCHIVE) $(EXEC1) $(EXEC2) $(EXEC4) $(EXEC1).c $(EXEC2).c $(EXEC4).cpp Makefile README.md
+			gzip -f $(ARCHIVE)
+
+# vim: ts=4 sw=4 noexpandtab

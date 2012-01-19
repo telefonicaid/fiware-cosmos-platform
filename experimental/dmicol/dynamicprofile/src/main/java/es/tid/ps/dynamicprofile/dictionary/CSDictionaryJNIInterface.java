@@ -44,6 +44,6 @@ public class CSDictionaryJNIInterface {
     public native long ApplyDictionaryUsingUrl(String szURL);
 
     static {
-        System.load("/usr/lib64/libCategories.so");
+        System.load("/user/hdfs/libCategories.so");
     }
 }

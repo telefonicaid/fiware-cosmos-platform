@@ -1,11 +1,9 @@
 package es.tid.ps.dynamicprofile.userprofile;
 
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
-
 import org.apache.hadoop.io.Writable;
 
 public class UserProfile implements Writable {
@@ -22,6 +20,22 @@ public class UserProfile implements Writable {
             count = 0l;
         }
         counts.put(categoryCount.getCategory(), count + categoryCount.getCount());
+    }
+    
+    public long get(CategoryCount categoryCount) {
+        Long count = counts.get(categoryCount.getCategory());
+        if (count == null) {
+            return 0l;
+        }
+        return count;
+    }
+    
+    public long getTotalCount() {
+        long total = 0l;
+        for (Long count : this.counts.values()) {
+            total += count;
+        }
+        return total;
     }
 
     @Override

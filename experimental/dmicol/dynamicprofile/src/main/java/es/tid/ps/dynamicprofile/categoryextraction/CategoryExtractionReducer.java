@@ -24,7 +24,7 @@ public class CategoryExtractionReducer extends
             Context context) throws IOException, InterruptedException {
         // Use the comScore API
         String url = key.getSecondaryKey();
-        String categories = DictionaryHandler.getUrlCategories(url);
+        String categories = getCategories(url);
         if (categories == null || categories.isEmpty()) {
             context.getCounter(CategoryExtractionCounter.EMPTY_CATEGORY).increment(1L);
             return;
@@ -32,17 +32,23 @@ public class CategoryExtractionReducer extends
 
         context.getCounter(CategoryExtractionCounter.VALID_CATEGORY).increment(1L);
 
-        // Count the number of instances of the same URL
+        CategoryInformation cat = new CategoryInformation(key.getPrimaryKey(),
+                key.getSecondaryKey(), countURLInstances(values),
+                categories.split(CATEGORY_DELIMITER));
+        context.write(key, cat);
+    }
+
+    protected String getCategories(String url) {
+        return DictionaryHandler.getUrlCategories(url);
+    }
+
+    private long countURLInstances(Iterable<NullWritable> values) {
         long count = 0;
         Iterator<NullWritable> it = values.iterator();
         while (it.hasNext()) {
             count++;
             it.next();
         }
-
-        CategoryInformation cat = new CategoryInformation(key.getPrimaryKey(),
-                key.getSecondaryKey(), count,
-                categories.split(CATEGORY_DELIMITER));
-        context.write(key, cat);
+        return count;
     }
 }

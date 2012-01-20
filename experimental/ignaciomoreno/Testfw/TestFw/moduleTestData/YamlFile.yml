@@ -1,0 +1,9 @@
+#Yaml File example
+
+hello: hola
+
+bye: adios
+
+log:
+    - troncho
+    - registro

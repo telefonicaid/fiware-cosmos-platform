@@ -12,7 +12,6 @@ import java.io.IOException;
  * @author sortega@tid.es
  */
 public class CategoryCount implements Writable {
-
     private String category;
     private long count;
 
@@ -27,7 +26,7 @@ public class CategoryCount implements Writable {
     }
 
     public String getCategory() {
-        return category;
+        return this.category;
     }
 
     public void setCategory(String category) {
@@ -35,7 +34,7 @@ public class CategoryCount implements Writable {
     }
 
     public long getCount() {
-        return count;
+        return this.count;
     }
 
     public void setCount(int count) {
@@ -44,34 +43,40 @@ public class CategoryCount implements Writable {
 
     @Override
     public void write(DataOutput output) throws IOException {
-        output.writeUTF(category);
-        output.writeLong(count);
+        output.writeUTF(this.category);
+        output.writeLong(this.count);
     }
 
     @Override
     public void readFields(DataInput input) throws IOException {
-        category = input.readUTF();
-        count = input.readLong();
+        this.category = input.readUTF();
+        this.count = input.readLong();
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null)
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         final CategoryCount other = (CategoryCount) obj;
-        if ((this.category == null) ? (other.category != null) : !this.category.equals(other.category))
+        if ((this.category == null) ? (other.category != null) : !this.category.
+                equals(other.category)) {
             return false;
-        if (this.count != other.count)
+        }
+        if (this.count != other.count) {
             return false;
+        }
         return true;
     }
 
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 23 * hash + (this.category != null ? this.category.hashCode() : 0);
+        hash = 23 * hash
+                + (this.category != null ? this.category.hashCode() : 0);
         hash = 23 * hash + (int) (this.count ^ (this.count >>> 32));
         return hash;
     }

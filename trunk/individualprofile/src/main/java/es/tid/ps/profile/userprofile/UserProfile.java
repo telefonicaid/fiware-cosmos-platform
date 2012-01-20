@@ -13,23 +13,24 @@ import org.apache.hadoop.io.Writable;
  */
 public class UserProfile implements Writable {
     private String userId;
-    private Map<String, Long> counts = new HashMap<String, Long>();
+    private Map<String, Long> counts;
 
     public void setUserId(String userId) {
         this.userId = userId;
+        this.counts = new HashMap<String, Long>();
     }
 
     public void add(CategoryCount categoryCount) {
-        Long count = counts.get(categoryCount.getCategory());
+        Long count = this.counts.get(categoryCount.getCategory());
         if (count == null) {
             count = 0l;
         }
-        counts.put(categoryCount.getCategory(),
+        this.counts.put(categoryCount.getCategory(),
                 count + categoryCount.getCount());
     }
 
-    public long get(CategoryCount categoryCount) {
-        Long count = counts.get(categoryCount.getCategory());
+    public long getCount(CategoryCount categoryCount) {
+        Long count = this.counts.get(categoryCount.getCategory());
         if (count == null) {
             return 0l;
         }
@@ -45,7 +46,7 @@ public class UserProfile implements Writable {
     }
 
     public long getCount(String categoryName) {
-        Long count = counts.get(categoryName);
+        Long count = this.counts.get(categoryName);
         if (count == null) {
             return 0l;
         } else {
@@ -56,7 +57,7 @@ public class UserProfile implements Writable {
     @Override
     public void write(DataOutput output) throws IOException {
         ArrayList<Map.Entry<String, Long>> entries =
-                new ArrayList<Map.Entry<String, Long>>(counts.entrySet());
+                new ArrayList<Map.Entry<String, Long>>(this.counts.entrySet());
 
         Collections.sort(entries, new Comparator<Map.Entry<String, Long>>() {
             @Override
@@ -66,9 +67,9 @@ public class UserProfile implements Writable {
             }
         });
 
-        output.writeUTF(userId);
+        output.writeUTF(this.userId);
         output.writeInt(entries.size());
-        for (Map.Entry<String, Long> entry: entries) {
+        for (Map.Entry<String, Long> entry : entries) {
             output.writeUTF(entry.getKey());
             output.writeLong(entry.getValue().longValue());
         }
@@ -76,12 +77,12 @@ public class UserProfile implements Writable {
 
     @Override
     public void readFields(DataInput input) throws IOException {
-        userId = input.readUTF();
+        this.userId = input.readUTF();
         int entries = input.readInt();
-        for (int i=0; i<entries; i++) {
+        for (int i = 0; i < entries; i++) {
             String category = input.readUTF();
             long count = input.readLong();
-            counts.put(category, count);
+            this.counts.put(category, count);
         }
     }
 }

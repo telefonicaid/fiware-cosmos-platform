@@ -8,9 +8,9 @@ import java.net.URI;
 import java.util.HashMap;
 import org.apache.hadoop.fs.Path;
 
-/* 
+/*
  * Class to handle the comScore dictionary.
- * 
+ *
  * @author dmicol
  */
 public abstract class DictionaryHandler {
@@ -40,7 +40,7 @@ public abstract class DictionaryHandler {
         String categoryPatterMappingFileName = null;
         String categoryNamesFileName = null;
 
-        for (Path path: dictionayFiles) {
+        for (Path path : dictionayFiles) {
             if (path.getName().equals(TERMS_IN_DOMAIN_FILENAME)) {
                 termsInDomainFlatFileName = path.toString();
             } else if (path.getName().equals(DICTIONARY_FILENAME)) {

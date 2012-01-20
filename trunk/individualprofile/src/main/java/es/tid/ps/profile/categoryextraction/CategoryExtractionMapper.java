@@ -1,16 +1,13 @@
 package es.tid.ps.profile.categoryextraction;
 
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import org.apache.hadoop.io.NullWritable;
-
-/* 
+/**
  * Enum with the list of counters to use in the CategoryExtraction mapreduces.
- * 
+ *
  * @author dmicol
- */
+ **/
 public class CategoryExtractionMapper extends
         Mapper<LongWritable, Text, CompositeKey, NullWritable> {
     @Override

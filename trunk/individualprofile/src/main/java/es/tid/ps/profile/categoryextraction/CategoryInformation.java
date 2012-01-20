@@ -14,7 +14,6 @@ import org.apache.hadoop.io.Writable;
  */
 public class CategoryInformation implements Writable {
     protected final static String DELIMITER = "\t";
-
     private String userId;
     private String url;
     private long count;
@@ -71,7 +70,7 @@ public class CategoryInformation implements Writable {
 
         int categories = in.readInt();
         this.categoryNames = new String[categories];
-        for (int i=0; i<categories; i++) {
+        for (int i = 0; i < categories; i++) {
             this.categoryNames[i] = in.readUTF();
         }
     }
@@ -81,7 +80,6 @@ public class CategoryInformation implements Writable {
         out.writeUTF(this.userId);
         out.writeUTF(this.url);
         out.writeLong(this.count);
-
         out.writeInt(this.categoryNames.length);
         for (String categoryName : this.categoryNames) {
             out.writeUTF(categoryName);
@@ -97,10 +95,14 @@ public class CategoryInformation implements Writable {
             return false;
         }
         final CategoryInformation other = (CategoryInformation) obj;
-        if ((this.userId == null) ? (other.userId != null) : !this.userId.equals(other.userId))
+        if ((this.userId == null) ? (other.userId != null)
+                : !this.userId.equals(other.userId)) {
             return false;
-        if ((this.url == null) ? (other.url != null) : !this.url.equals(other.url))
+        }
+        if ((this.url == null) ? (other.url != null) : !this.url.equals(
+                other.url)) {
             return false;
+        }
         if (this.count != other.count) {
             return false;
         }

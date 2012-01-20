@@ -30,17 +30,17 @@ public class DynamicProfileMain {
         Path categoriesPath = new Path(args[1]);
         Path profilePath = new Path(args[2]);
 
-        Job ceJob = categoryExtractionJob(webLogsPath, categoriesPath);
+        Job ceJob = configureCategoryExtractionJob(webLogsPath, categoriesPath);
         if (!ceJob.waitForCompletion(true)) {
             System.exit(1);
         }
-        Job upJob = userProfileJob(categoriesPath, profilePath);
+        Job upJob = configureUserProfileJob(categoriesPath, profilePath);
         if (!upJob.waitForCompletion(true)) {
             System.exit(1);
         }
     }
 
-    private static Job categoryExtractionJob(Path webLogsPath,
+    private static Job configureCategoryExtractionJob(Path webLogsPath,
             Path categoriesPath) throws IOException, IllegalStateException {
         Configuration conf = new Configuration();
         Job job = new Job(conf, "CategoryExtraction");
@@ -74,7 +74,7 @@ public class DynamicProfileMain {
         return job;
     }
 
-    private static Job userProfileJob(Path categoriesPath, Path profilePath)
+    private static Job configureUserProfileJob(Path categoriesPath, Path profilePath)
             throws IOException, IllegalStateException {
         Job job = new Job(new Configuration(), "UserProfile");
         job.setJarByClass(DynamicProfileMain.class);

@@ -21,7 +21,7 @@ public class UserProfile implements Writable {
         }
         counts.put(categoryCount.getCategory(), count + categoryCount.getCount());
     }
-    
+
     public long get(CategoryCount categoryCount) {
         Long count = counts.get(categoryCount.getCategory());
         if (count == null) {
@@ -29,7 +29,7 @@ public class UserProfile implements Writable {
         }
         return count;
     }
-    
+
     public long getTotalCount() {
         long total = 0l;
         for (Long count : this.counts.values()) {
@@ -61,7 +61,7 @@ public class UserProfile implements Writable {
         });
 
         output.writeUTF(userId);
-        output.write(entries.size());
+        output.writeInt(entries.size());
         for (Map.Entry<String, Long> entry: entries) {
             output.writeUTF(entry.getKey());
             output.writeLong(entry.getValue().longValue());

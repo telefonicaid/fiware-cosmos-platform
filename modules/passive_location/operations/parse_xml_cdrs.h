@@ -8,8 +8,9 @@
 
 
 #include <samson/module/samson.h>
-#include <samson/modules/mobility/CellRecord.h>
-#include <samson/modules/system/UInt32.h>
+#include <samson/modules/passive_location/Record.h>
+#include <samson/modules/passive_location/CompleteTMSI.h>
+#include <samson/modules/system/UInt.h>
 
 
 namespace samson{
@@ -18,8 +19,10 @@ namespace passive_location{
 
 class parse_xml_cdrs : public samson::Parser
 {
-    samson::system::UInt user;            // Used as key at the output
-    samson::passive_location::Record record;    // Used as value at the output
+    samson::system::UInt user;                              // Used as key at the output
+    samson::passive_location::Record record;                // Used as value at the output
+    samson::passive_location::CompleteTMSI completeTMSI;    // Used as value at the output
+
 
 public:
 
@@ -80,8 +83,11 @@ public:
         record.DRType.value = 0;
         record.callType.value = 0;
 
+        uint32_t LAC;
         uint32_t cellIdTmp = 0;
         uint32_t cellID = 0;
+
+        uint64_t tmsi = 0;
 
         int output_queue = 0;
 
@@ -92,7 +98,7 @@ public:
             p_tag_begin += strlen(XML_TAG_USERID);
             if ((p_sep = strchr(p_tag_begin, '<')) == NULL)
             {
-                OLM_E(("xml without userId end"));
+                OLM_E(("xml without IMSI end"));
                 return;
             }
             *p_sep = '\0';
@@ -109,13 +115,36 @@ public:
             //OLM_E(("xml without userId"));
         }
 
-        #define XML_TAG_IMEI "<IMEI>"
+#define XML_TAG_PTMSI "<PTMSI>"
+        if ((p_tag_begin = strstr(p_xml, XML_TAG_PTMSI)) != NULL)
+        {
+            p_tag_begin += strlen(XML_TAG_PTMSI);
+            if ((p_sep = strchr(p_tag_begin, '<')) == NULL)
+            {
+                OLM_E(("xml without PTMSI end"));
+                return;
+            }
+            *p_sep = '\0';
+            tmsi = strtoul(p_tag_begin, &endptr, 10 );
+            if (*endptr != '\0')
+            {
+                OLM_E(("xml with wrong userId:'%s'", p_tag_begin));
+                return;
+            }
+            p_xml = p_sep+1;
+        }
+        else
+        {
+            //OLM_E(("xml without IMEI"));
+        }
+
+#define XML_TAG_IMEI "<IMEI>"
         if ((p_tag_begin = strstr(p_xml, XML_TAG_IMEI)) != NULL)
         {
             p_tag_begin += strlen(XML_TAG_IMEI);
             if ((p_sep = strchr(p_tag_begin, '<')) == NULL)
             {
-                OLM_E(("xml without userId end"));
+                OLM_E(("xml without IMEI end"));
                 return;
             }
             *p_sep = '\0';
@@ -143,7 +172,7 @@ public:
                 return;
             }
             *p_sep = '\0';
-            uint32_t LAC = strtoul(p_tag_begin, &endptr, 10 );
+            LAC = strtoul(p_tag_begin, &endptr, 10 );
             cellIdTmp = (LAC << 16) & 0xffff0000;
             if (*endptr != '\0')
             {
@@ -205,20 +234,26 @@ public:
             OLM_E(("xml without timeStamp"));
         }
 
+        completeTMSI.tmsi.value = tmsi;
+        completeTMSI.LAC.value = LAC;
+
+
         if ((cellIdTmp == 0) || (cellID == 0))
         {
-            output_queue = 2;
-            user.value = record.imsi.value;
+            writer->emit(2, &user, &record);
         }
         else if (record.imei.value == 0)
         {
-            output_queue = 1;
-            user.value = record.imei.value;
+            writer->emit(1, &completeTMSI, &record);
         }
         else
         {
-            output_queue = 0;
-            user.value = record.imsi.value;
+            writer->emit(0, &user, &record);
+        }
+
+        if ((user.value != 0) && (LAC != 0))
+        {
+            writer->emit(3, &completeTMSI, &user);
         }
 
 

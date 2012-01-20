@@ -7,6 +7,7 @@ struct struct_tek_record
     uint64_t timestamp;
     uint64_t imsi;
     uint64_t imei;
+    uint64_t tmsi;
     uint64_t msisdn;
     int probeId;
     int LAC;

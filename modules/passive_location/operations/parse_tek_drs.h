@@ -10,6 +10,7 @@
 #include <arpa/inet.h> // ntohl(), ntohs()
 #include <samson/module/samson.h>
 #include <samson/modules/passive_location/Record.h>
+#include <samson/modules/passive_location/CompleteTMSI.h>
 #include <samson/modules/system/UInt.h>
 
 #include "logMsg/logMsg.h"
@@ -24,8 +25,9 @@ namespace passive_location{
 class parse_tek_drs : public samson::Parser
 {
 
-    samson::system::UInt user;            // Used as key at the output
-    samson::passive_location::Record record;    // Used as value at the output
+    samson::system::UInt user;                              // Used as key at the output
+    samson::passive_location::Record record;                // Used as value at the output
+    samson::passive_location::CompleteTMSI completeTMSI;    // Used as value at the output
 
 public:
 
@@ -83,23 +85,10 @@ public:
                     if (parse_DR(&p_blob, &sizeDR, &tek_record))
                     {
 
+                        completeTMSI.tmsi.value = tek_record.tmsi;
+                        completeTMSI.LAC.value = tek_record.LAC;
 
-                        if ((tek_record.cellID == 0) || (tek_record.LAC == 0))
-                        {
-                            output_queue = 2;
-                            user.value = tek_record.imsi;
-                        }
-                        else if (tek_record.imsi == 0)
-                        {
-                            output_queue = 1;
-                            user.value = tek_record.imei;
-                        }
-                        else
-                        {
-                            output_queue = 0;
-                            user.value = tek_record.imsi;
-                        }
-
+                        user.value = tek_record.imsi;
 
                         record.imsi.value = tek_record.imsi;
                         record.imei.value = tek_record.imei;
@@ -112,8 +101,24 @@ public:
 
                         LM_M(("Ready to emit by queue:%d typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", output_queue, tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
 
-                        // Emit the record at the output
-                        writer->emit(output_queue, &user, &record);
+                        // Emit the record at the corresponding output
+                        if ((tek_record.cellID == 0) || (tek_record.LAC == 0))
+                        {
+                            writer->emit(2, &user, &record);
+                        }
+                        else if (tek_record.imsi == 0)
+                        {
+                            writer->emit(1, &completeTMSI, &record);
+                        }
+                        else
+                        {
+                           writer->emit(0, &user, &record);
+                        }
+
+                        if ((tek_record.imsi != 0) && (tek_record.LAC != 0))
+                        {
+                            writer->emit(3, &completeTMSI, &user);
+                        }
 
                         free(tek_record.CCCause);
                         free(tek_record.MMCause);

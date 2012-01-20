@@ -156,7 +156,7 @@ int main( int argc, const char *argv[])
                         strftime(timestampStr, MAX_TIME_LENGTH, "%Y%m%d%H%M%s", &st_time);
 
 
-                        fprintf(outputTxtFile, "%d|%d|%lu|%lu|%d|%d|%s|%d|%d|%s|%s|%s|%s\n", tek_record.typeDR, tek_record.callType, tek_record.imsi, tek_record.imei, tek_record.LAC, tek_record.cellID, timestampStr, tek_record.DTAPCause, tek_record.BSSMAPCause, tek_record.CCCause, tek_record.MMCause, tek_record.RANAPCause, tek_record.ALCAPCause);
+                        fprintf(outputTxtFile, "%d|%d|%lu|%lu|%lu|%d|%d|%s|%d|%d|%s|%s|%s|%s\n", tek_record.typeDR, tek_record.callType, tek_record.imsi, tek_record.tmsi, tek_record.imei, tek_record.LAC, tek_record.cellID, timestampStr, tek_record.DTAPCause, tek_record.BSSMAPCause, tek_record.CCCause, tek_record.MMCause, tek_record.RANAPCause, tek_record.ALCAPCause);
                     }
 
                     //                        equip_id.value = probeId;

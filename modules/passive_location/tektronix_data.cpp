@@ -108,6 +108,7 @@ init_tek_record(tek_record);
     int bit_SF_MSSMAPCause = -1;
     int bit_VF_imsi = -1;
     int bit_VF_imei = -1;
+    int bit_VF_tmsi = -1;
     int bit_VF_msisdn = -1;
     int bit_VF_CCCause = -1;
     int bit_VF_MMCause = -1;
@@ -138,6 +139,7 @@ init_tek_record(tek_record);
         bit_VF_imsi = 0;
         bit_VF_msisdn = 1;
         bit_VF_imei = 2;
+        bit_VF_tmsi = 6;
 
     }
     else if (tek_record->typeDR == TYPE_UMTS)
@@ -159,6 +161,7 @@ init_tek_record(tek_record);
 
 
         bit_VF_imsi = 0;
+        bit_VF_tmsi = 1;
         bit_VF_ALCAPCause = 4;
         bit_VF_RANAPCause = 5;
         bit_VF_CCCause = 6;
@@ -272,6 +275,12 @@ init_tek_record(tek_record);
                         uint64_t bufferLong = atoll(bufferVarSize);
                         tek_record->imsi = bufferLong;
                         //LM_M(("imsi:0x%0x", tek_record->imsi));
+                    }
+                    if (j == bit_VF_tmsi)
+                    {
+                        uint64_t bufferLong = atoll(bufferVarSize);
+                        tek_record->tmsi = bufferLong;
+                        //LM_M(("tmsi:0x%0x", tek_record->tmsi));
                     }
                     else if (j == bit_VF_imei)
                     {

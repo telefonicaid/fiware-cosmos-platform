@@ -6,6 +6,11 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 import org.apache.hadoop.io.NullWritable;
 
+/* 
+ * Enum with the list of counters to use in the CategoryExtraction mapreduces.
+ * 
+ * @author dmicol
+ */
 public class CategoryExtractionMapper extends
         Mapper<LongWritable, Text, CompositeKey, NullWritable> {
     @Override
@@ -17,10 +22,8 @@ public class CategoryExtractionMapper extends
                     webLog.fullUrl);
             context.write(cKey, NullWritable.get());
         } catch (Exception ex) {
-            System.err.println(ex.getMessage());
             context.getCounter(CategoryExtractionCounter.WRONG_FILTERING_FIELDS)
                     .increment(1L);
-            ex.printStackTrace(System.err);
         }
     }
 }

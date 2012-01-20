@@ -8,13 +8,13 @@ import java.net.URI;
 import java.util.HashMap;
 import org.apache.hadoop.fs.Path;
 
+/* 
+ * Class to handle the comScore dictionary.
+ * 
+ * @author dmicol
+ */
 public abstract class DictionaryHandler {
-    private final static String DELIMITER = "\t";
-
-    private static CSDictionaryJNIInterface dictionary = null;
-    private static HashMap<Long, Long> categoryPatternMap = null;
-    private static HashMap<Long, String> categoryNames = null;
-    private static boolean isInitialized = false;
+    private static final String DELIMITER = "\t";
 
     private static final String TERMS_IN_DOMAIN_FILENAME =
             "cs_terms_in_domain.bcp";
@@ -24,6 +24,11 @@ public abstract class DictionaryHandler {
             "pattern_category_mapping_143m.txt";
     private static final String CATEGORY_NAMES_FILENAME =
             "cat_subcat_lookup_143m.txt";
+
+    private static CSDictionaryJNIInterface dictionary = null;
+    private static HashMap<Long, Long> categoryPatternMap = null;
+    private static HashMap<Long, String> categoryNames = null;
+    private static boolean isInitialized = false;
 
     public static void init(Path[] dictionayFiles) throws IOException {
         if (isInitialized) {
@@ -40,7 +45,8 @@ public abstract class DictionaryHandler {
                 termsInDomainFlatFileName = path.toString();
             } else if (path.getName().equals(DICTIONARY_FILENAME)) {
                 dictionaryFileName = path.toString();
-            } else if (path.getName().equals(CATEGORY_PATTERN_MAPPING_FILENAME)) {
+            } else if (path.getName().equals(
+                    CATEGORY_PATTERN_MAPPING_FILENAME)) {
                 categoryPatterMappingFileName = path.toString();
             } else if (path.getName().equals(CATEGORY_NAMES_FILENAME)) {
                 categoryNamesFileName = path.toString();
@@ -76,13 +82,6 @@ public abstract class DictionaryHandler {
         return categoryName;
     }
 
-    /**
-     * Loads the file which contains the category pattern mappings.
-     *
-     * @param fileName
-     *            the file name that contains the mappings.
-     * @return the map of pattern IDs to category IDs.
-     */
     private static void loadCategoryPatternMapping(String fileName)
             throws IOException {
         categoryPatternMap = new HashMap<Long, Long>();
@@ -99,15 +98,6 @@ public abstract class DictionaryHandler {
         fis.close();
     }
 
-    /**
-     * Loads the file that contains the category IDs and their corresponding
-     * names.
-     *
-     * @param fileName
-     *            the file name that contains the list of category IDs and
-     *            names.
-     * @return the map of category IDs to names.
-     */
     private static void loadCategoryNames(String fileName) throws IOException {
         categoryNames = new HashMap<Long, String>();
         FileInputStream fis = new FileInputStream(fileName);

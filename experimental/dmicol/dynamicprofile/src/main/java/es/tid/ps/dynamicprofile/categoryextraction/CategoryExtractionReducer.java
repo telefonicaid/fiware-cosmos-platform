@@ -2,13 +2,17 @@ package es.tid.ps.dynamicprofile.categoryextraction;
 
 import java.io.IOException;
 import java.util.Iterator;
-
-import es.tid.ps.dynamicprofile.dictionary.DictionaryHandler;
-
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.ps.dynamicprofile.dictionary.DictionaryHandler;
+
+/* 
+ * Enum with the list of counters to use in the CategoryExtraction mapreduces.
+ * 
+ * @author dmicol, sortega
+ */
 public class CategoryExtractionReducer extends
         Reducer<CompositeKey, NullWritable, CompositeKey, CategoryInformation> {
     private final static String CATEGORY_DELIMITER = "/";
@@ -26,11 +30,12 @@ public class CategoryExtractionReducer extends
         String url = key.getSecondaryKey();
         String categories = getCategories(url);
         if (categories == null || categories.isEmpty()) {
-            context.getCounter(CategoryExtractionCounter.EMPTY_CATEGORY).increment(1L);
+            context.getCounter(CategoryExtractionCounter.EMPTY_CATEGORY).
+                    increment(1L);
             return;
         }
-
-        context.getCounter(CategoryExtractionCounter.VALID_CATEGORY).increment(1L);
+        context.getCounter(CategoryExtractionCounter.VALID_CATEGORY).
+                increment(1L);
 
         CategoryInformation cat = new CategoryInformation(key.getPrimaryKey(),
                 key.getSecondaryKey(), countURLInstances(values),

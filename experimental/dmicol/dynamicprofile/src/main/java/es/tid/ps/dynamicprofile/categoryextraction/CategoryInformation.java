@@ -3,13 +3,15 @@ package es.tid.ps.dynamicprofile.categoryextraction;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
-
 import org.apache.hadoop.io.Writable;
 
+/* 
+ * Class that represents information about categories, users, and the number of
+ * visits to URLs of such categories.
+ * 
+ * @author dmicol
+ */
 public class CategoryInformation implements Writable {
     protected final static String DELIMITER = "\t";
 
@@ -88,19 +90,23 @@ public class CategoryInformation implements Writable {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null)
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         final CategoryInformation other = (CategoryInformation) obj;
         if ((this.userId == null) ? (other.userId != null) : !this.userId.equals(other.userId))
             return false;
         if ((this.url == null) ? (other.url != null) : !this.url.equals(other.url))
             return false;
-        if (this.count != other.count)
+        if (this.count != other.count) {
             return false;
-        if (!Arrays.deepEquals(this.categoryNames, other.categoryNames))
+        }
+        if (!Arrays.deepEquals(this.categoryNames, other.categoryNames)) {
             return false;
+        }
         return true;
     }
 

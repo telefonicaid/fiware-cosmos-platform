@@ -3,14 +3,10 @@ package es.tid.ps.dynamicprofile.categoryextraction;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
 import org.apache.hadoop.io.WritableComparable;
 
 /**
- * The key type for this Map Reduce application.
- * 
- * This particular key has two parts, the String users identifier and file type
- * identifier.
+ * Composite key for mapreduces that contains two components.
  * 
  * @author dmicol, rgc
  */

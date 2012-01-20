@@ -38,6 +38,15 @@ public class UserProfile implements Writable {
         return total;
     }
 
+    public long getCount(String categoryName) {
+        Long count = counts.get(categoryName);
+        if (count == null) {
+            return 0l;
+        } else {
+            return count;
+        }
+    }
+
     @Override
     public void write(DataOutput output) throws IOException {
         ArrayList<Map.Entry<String, Long>> entries =

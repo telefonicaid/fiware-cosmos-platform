@@ -72,7 +72,7 @@ public:
         {
             OLM_W(("More than one cell description for cellId:%u (%lu infos)", cellId_key.value, inputs[1].num_kvs));
         }
-        LM_M(("Emitting %lu records for cellId:%u", inputs[0].num_kvs, cellId_key.value));
+        //LM_M(("Emitting %lu records for cellId:%u", inputs[0].num_kvs, cellId_key.value));
 
 
         cell.parse( inputs[1].kvs[0]->value ); // Only consider the first one...

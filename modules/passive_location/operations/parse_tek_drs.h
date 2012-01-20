@@ -62,6 +62,9 @@ public:
         unsigned int sizeDR = 0;
         struct struct_tek_record tek_record;
 
+        int output_queue = 0;
+
+
 
         for (int i = 0; (i < 232); i++)
         {
@@ -81,7 +84,22 @@ public:
                     {
 
 
-                        user.value = tek_record.imsi;
+                        if ((tek_record.cellID == 0) || (tek_record.LAC == 0))
+                        {
+                            output_queue = 2;
+                            user.value = tek_record.imsi;
+                        }
+                        else if (tek_record.imsi == 0)
+                        {
+                            output_queue = 1;
+                            user.value = tek_record.imei;
+                        }
+                        else
+                        {
+                            output_queue = 0;
+                            user.value = tek_record.imsi;
+                        }
+
 
                         record.imsi.value = tek_record.imsi;
                         record.imei.value = tek_record.imei;
@@ -89,11 +107,13 @@ public:
                         // We compose location id with ((LAC << 16) | cell_id), in a uint32_t field
                         uint32_t cellIdTmp = tek_record.LAC;
                         record.cellId.value = (cellIdTmp << 16) | tek_record.cellID;
+                        record.callType.value = tek_record.callType;
+                        record.DRType.value = tek_record.typeDR;
 
-                        LM_M(("Ready to emit typeDR:%d for callNumber:%d imsi:%lu at cellId:%d in LAC:%d (compose:%lu) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.imsi, tek_record.cellID, tek_record.LAC, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
+                        LM_M(("Ready to emit by queue:%d typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", output_queue, tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
 
                         // Emit the record at the output
-                        writer->emit(0, &user, &record);
+                        writer->emit(output_queue, &user, &record);
 
                         free(tek_record.CCCause);
                         free(tek_record.MMCause);

@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <time.h>
 
 #include <au/CommandLine.h>
 
@@ -14,17 +15,23 @@ int main( int argc, const char *argv[])
 
     au::CommandLine cmd;
     cmd.set_flag_uint64( "size" , 50*1024*1024 );
+    cmd.set_flag_boolean( "txt" );
     cmd.parse( argc , argv );
 
 
-    size_t size = 50*1024*1024;
+    size_t size =  cmd.get_flag_uint64("size");
+    bool txt = cmd.get_flag_bool("txt");
+    bool newFile = true;
+
     char *inputFile;
     char *outputFile_base;
-    char outputFile[1024];
+    char outputFileName[1024];
+    char outputTxtFileName[1024];
 
     struct stat pstat;
-    int inputFd;
-    int outputFd;
+    int inputFd = -1;
+    int outputFd = -1;
+    FILE *outputTxtFile = NULL;
     size_t length;
     char *data;
     size_t n_read;
@@ -55,7 +62,7 @@ int main( int argc, const char *argv[])
 
     if (cmd.get_num_arguments() < 2)
     {
-        fprintf(stderr, "%s input output_base [-size max_size] \n", argv[0]);
+        fprintf(stderr, "%s input output_base [-size max_size] [-txt] \n", argv[0]);
         exit(2);
     }
 
@@ -99,13 +106,33 @@ int main( int argc, const char *argv[])
     p_end_blob = (unsigned char *)data + length;
     p_chunk = p_blob;
 
-    for (int i = 0; (i < 232); i++)
-    {
-        //OLM_M(("data[%d](0x%0x) = 0x%0x", i, p_blob+i, int(p_blob[i])));
-    }
+//    for (int i = 0; (i < 232); i++)
+//    {
+//        OLM_M(("data[%d](0x%0x) = 0x%0x", i, p_blob+i, int(p_blob[i])));
+//    }
+
+
 
     while( p_blob < p_end_blob )
     {
+        if (txt && newFile)
+        {
+            if (outputTxtFile)
+            {
+                fclose(outputTxtFile);
+            }
+
+            sprintf(outputTxtFileName, "%s_%d.txt", outputFile_base, numChunk);
+            if ((outputTxtFile = fopen(outputTxtFileName, "w")) == NULL)
+            {
+                fprintf(stderr, "Error al hacer open del fichero %s\n", outputTxtFileName);
+                perror(outputTxtFileName);
+                exit(-4);
+            }
+
+            newFile = false;
+        }
+
         p_init_ohdr = p_blob;
         if (parse_OHDR_header(&p_blob, &sizeOHDR, &numDRs, &typeMsg))
         {
@@ -115,6 +142,23 @@ int main( int argc, const char *argv[])
                 init_tek_record(&tek_record);
                 if (parse_DR(&p_blob, &sizeDR, &tek_record))
                 {
+
+                    if (txt)
+                    {
+#define MAX_TIME_LENGTH 81
+                        char timestampStr[MAX_TIME_LENGTH];
+
+                        struct tm st_time;
+                        time_t time = tek_record.timestamp;
+
+                        localtime_r( &time, &st_time);
+
+                        strftime(timestampStr, MAX_TIME_LENGTH, "%Y%m%d%H%M%s", &st_time);
+
+
+                        fprintf(outputTxtFile, "%d|%d|%lu|%lu|%d|%d|%s|%d|%d|%s|%s|%s|%s\n", tek_record.typeDR, tek_record.callType, tek_record.imsi, tek_record.imei, tek_record.LAC, tek_record.cellID, timestampStr, tek_record.DTAPCause, tek_record.BSSMAPCause, tek_record.CCCause, tek_record.MMCause, tek_record.RANAPCause, tek_record.ALCAPCause);
+                    }
+
                     //                        equip_id.value = probeId;
                     //
                     //                        record.imsi.value = imsi;
@@ -145,11 +189,11 @@ int main( int argc, const char *argv[])
         if ((p_blob - p_chunk) > size)
         {
             fprintf(stdout, "New chunk of %lu bytes (size:%lu)\n", (p_blob - p_chunk), size);
-            sprintf(outputFile, "%s_%d.bin", outputFile_base, numChunk);
-            if ((outputFd = open(outputFile, O_CREAT|O_WRONLY, 0666)) < 0)
+            sprintf(outputFileName, "%s_%d.bin", outputFile_base, numChunk);
+            if ((outputFd = open(outputFileName, O_CREAT|O_WRONLY, 0666)) < 0)
             {
-                fprintf(stderr, "Error al hacer open del fichero %s\n", outputFile);
-                perror(outputFile);
+                fprintf(stderr, "Error al hacer open del fichero %s\n", outputFileName);
+                perror(outputFileName);
                 exit(-4);
             }
 
@@ -160,6 +204,7 @@ int main( int argc, const char *argv[])
             }
             close(outputFd);
             numChunk++;
+            newFile = true;
             p_chunk = p_blob;
         }
     }

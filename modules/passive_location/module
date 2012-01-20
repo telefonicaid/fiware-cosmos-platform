@@ -11,7 +11,9 @@ data Record
 	system.UInt     imei;
 	system.UInt		msisdn;
 	system.TimeUnix timestamp;
-	system.UInt32   cellId;  
+	system.UInt32   cellId; 
+	system.UInt16   callType;
+	system.UInt8    DRType; 
 }
 
 data Cell
@@ -34,9 +36,11 @@ data User
 
 parser parse_xml_cdrs
 {
-	out system.UInt passive_location.Record   
+	out system.UInt passive_location.Record   # Emitted with key = imsi
+	out system.UInt passive_location.Record   # Whem imsi = 0, emitted with key = imei
+	out system.UInt passive_location.Record   # If no cellId or LAC is parsed in the record
 
-	helpLine "Parse input cdrs from Arkanum platform. Note that output key is imsi at the output"
+	helpLine "Parse input cdrs from Arkanum platform. Note that output key is imsi for the first output,when imsi is avalilable. If imsi == 0, sent to second output with imei"
 }
 
 
@@ -46,7 +50,9 @@ parser parse_xml_cdrs
 
 parser parse_tek_drs
 {
-	out system.UInt passive_location.Record   
+	out system.UInt passive_location.Record   # Emitted with key = imsi
+	out system.UInt passive_location.Record   # Whem imsi = 0, emitted with key = imei
+	out system.UInt passive_location.Record   # If no cellId or LAC is parsed in the record
 
 	helpLine "Parse input binary OHDRs from Tektroniks platform (probes). Note that output key is imsi"
 }
@@ -70,7 +76,8 @@ parser parse_cell_info
 
 parser parse_user_info
 {
-	out system.UInt passive_location.User
+	out system.UInt passive_location.User  # Emitted with key = imsi
+	out system.UInt passive_location.User  # Emitted with key = imei
 
 	helpLine "Parse input txt file containing user info to extract msisdn from imsi. key is imsi"
 }
@@ -78,10 +85,10 @@ parser parse_user_info
 
 
 # ------------------------------------------------------------
-# Join of location records with user info from table, to extract MSISDN
+# Join of location records with user info from table, to extract MSISDN, from imsi info
 # ------------------------------------------------------------
 
-reduce reduce_user_msisdn
+reduce reduce_user_msisdn_by_imsi
 {
 	in system.UInt  passive_location.Record   # Records (key = imsi)
 	in system.UInt  passive_location.User     # User    (key = imsi)
@@ -89,9 +96,23 @@ reduce reduce_user_msisdn
 	out	system.UInt passive_location.Record   # Records ( key = msisdn )
 	out system.UInt passive_location.Record   # Records with a non-existing imsi (key = imsi)
 
-	helpLine "Extract msisdn info from user table"
+	helpLine "Extract msisdn info from user table, based on imsi"
 }
 
+# ------------------------------------------------------------
+# Join of location records with user info from table, to extract MSISDN, from imei info
+# ------------------------------------------------------------
+
+reduce reduce_user_msisdn_by_imei
+{
+	in system.UInt  passive_location.Record   # Records (key = imei)
+	in system.UInt  passive_location.User     # User    (key = imei)
+
+	out	system.UInt passive_location.Record   # Records ( key = msisdn )
+	out system.UInt passive_location.Record   # Records with a non-existing imsi (key = imei)
+
+	helpLine "Extract msisdn info from user table, based on imei"
+}
 
 # ------------------------------------------------------------
 # Map of location records to reduce the amount of data sent to mongo
@@ -172,22 +193,33 @@ script init_stream_operations
 	{
 		# Queues;
 
-		alias [cells.txt] 00.in_cells;
-		alias [users.txt] 00.in_users;
-		alias [cells]     01.cells;		
-		alias [users]     01.users;
-		alias [q2]        02.in_xml_cdrs;
-		alias [q2t]       02.in_tek_cdrs;
-		alias [q3]        03.user_records;
-		alias [q3c]       03.user_records.copia;
-		alias [nouser]    03.no_user;
-		alias [q4]        04.cell_records;	
-		alias [q4c]       04.cell_records.copia;			
-		alias [q4r]       04.cell_red_records;		
-		alias [q4rc]      04.cell_red_records.copia;	
-		alias [nocell]    04.no_cell;	
-		alias [r1]        20.records;
-		alias [r2]        20.records2;
+		alias [cells.txt]   00.in_cells;
+		alias [users.txt]   00.in_users;
+		alias [cells]       01.cells;		
+		alias [users_imsi]  01.users_by_imsi;
+		alias [users_imei]  01.users_by_imei;
+		alias [q2]          02.in_xml_cdrs;
+		alias [q2t]         02.in_tek_cdrs;
+		
+		alias [q3]          030.user_records;
+		alias [q3c]         030.user_records.copia;
+		alias [q3n]         031.no_imsi_records;
+		alias [q3nc]        031.no_imsi_records.copia;
+		alias [q30]         032.no_cell_info;
+		alias [q30c]         032.no_cell_info.copia;
+		
+		alias [q4]          040.cell_records;	
+		alias [q4c]         040.cell_records.copia;	
+		alias [nouser_imsi] 041.no_user_imsi;	
+		alias [nouser_imsic] 041.no_user_imsi.copia;	
+		alias [nouser1]      042.no_user_imsi0_no_by_imei;		
+		alias [nouser2]      042.no_user_no_by_imsi_imei;	
+		alias [q4r]         043.cell_red_records;		
+		alias [q4rc]        043.cell_red_records.copia;	
+		
+		alias [r1]          200.records;
+		alias [r2]          200.records2;
+		alias [nocell]      201.no_cell_join;	
 		
 
 		# Operations;
@@ -197,34 +229,38 @@ script init_stream_operations
 
 		alias [parser_xml]          01.parser_xml_cdrs;
 		alias [parser_tek]          01.parser_tek_drs;
-		alias [join_msisdn]         20.join_msisdn;
+		alias [join_imsi_msisdn]    20.join_imsi_msisdn;
+		alias [join_imei_msisdn1]   21.join_imei_msisdn;
+		alias [join_imei_msisdn2]   22.join_imei_msisdn;
 		alias [get_cell_records]    25.get_mobility_cell_records;
 		alias [join_cells]          26.mobility_records;
 		alias [export_history]      30.export_mongo;
 		alias [export_lkl]          31.export_mongo_lkl;
 
-		add_stream_operation  [parse_cell]        passive_location.parse_cell_info                [cells.txt]    [cells];
-		add_stream_operation  [parse_user]        passive_location.parse_user_info                [users.txt]    [users];
+		add_stream_operation  [parse_cell]        passive_location.parse_cell_info                [cells.txt]       [cells];
+		add_stream_operation  [parse_user]        passive_location.parse_user_info                [users.txt]       [users_imsi] [users_imei];
 
-		add_stream_operation  [parser_xml]        passive_location.parse_xml_cdrs                 [q2]           [q3];
-		add_stream_operation  [parser_tek]        passive_location.parse_tek_drs                  [q2t]          [q3],[q3c];
+		add_stream_operation  [parser_xml]        passive_location.parse_xml_cdrs                 [q2]              [q3] [q3n] [q30];
+		add_stream_operation  [parser_tek]        passive_location.parse_tek_drs                  [q2t]             [q3] [q3n] [q30];
 		
-		add_stream_operation  [join_msisdn]       passive_location.reduce_user_msisdn             [q3] [users]   [q4],[q4c] [nouser] -forward;
+		add_stream_operation  [join_imsi_msisdn]   passive_location.reduce_user_msisdn_by_imsi     [q3] [users_imsi]          [q4] [nouser_imsi] -forward;
+		add_stream_operation  [join_imei_msisdn1]  passive_location.reduce_user_msisdn_by_imei     [q3n] [users_imei]         [q4] [nouser1] -forward;
+		add_stream_operation  [join_imei_msisdn2]  passive_location.reduce_user_msisdn_by_imei     [nouser_imsi] [users_imei] [q4] [nouser2] -forward;
 		
-		add_stream_operation  [get_cell_records]  passive_location.get_mobility_cell_records      [q4]           [q4r],[q4rc];
-		add_stream_operation  [join_cells]        passive_location.reduce_cell_latitude_longitude [q4r] [cells]  [r1],[r2] [nocell] -forward;
+		add_stream_operation  [get_cell_records]  passive_location.get_mobility_cell_records      [q4]              [q4r];
+		add_stream_operation  [join_cells]        passive_location.reduce_cell_latitude_longitude [q4r] [cells]     [r1],[r2] [nocell] -forward;
 		
-		add_stream_operation  [export_history]    passive_location.mongo_location_export          [r1];
-		add_stream_operation  [export_lkl]        passive_location.mongo_location_export          [r2];
+		#add_stream_operation  [export_history]    passive_location.mongo_location_export          [r1];
+		#add_stream_operation  [export_lkl]        passive_location.mongo_location_export          [r2];
 
-		set_stream_operation_property   [export_history]      mongo.ip                  samson05;
-		set_stream_operation_property   [export_history]      mongo.db                  PassiveLocation;
-		set_stream_operation_property   [export_history]      mongo.collection          History;
+		#set_stream_operation_property   [export_history]      mongo.ip                  samson05;
+		#set_stream_operation_property   [export_history]      mongo.db                  PassiveLocation;
+		#set_stream_operation_property   [export_history]      mongo.collection          History;
 
-		set_stream_operation_property   [export_lkl]  mongo.ip                  samson08;
-		set_stream_operation_property   [export_lkl]  mongo.db                  PassiveLocation;
-		set_stream_operation_property   [export_lkl]  mongo.collection          LastKnownLocation;
-		set_stream_operation_property   [export_lkl]  mongo.history             0;
+		#set_stream_operation_property   [export_lkl]  mongo.ip                  samson08;
+		#set_stream_operation_property   [export_lkl]  mongo.db                  PassiveLocation;
+		#set_stream_operation_property   [export_lkl]  mongo.collection          LastKnownLocation;
+		#set_stream_operation_property   [export_lkl]  mongo.history             0;
     }
 }
 

@@ -47,14 +47,27 @@ public:
         // MSISDN|IMSI|IMEI|date|brand|model
 
         // IMSI id is in field "1"
-        user.imsi = atoll( words[1]);
+        user.imsi.value = atoll( words[1]);
         // MSISDN is in field "0"
-        user.msisdn = atol(words[0]);
+        user.msisdn.value = atol(words[0]);
         // IMEI is in field "2"
-        user.imei = atol(words[2]);
+        user.imei.value = atol(words[2]);
+
+        if ((user.imsi.value == 0) || (user.imei.value == 0) || (user.msisdn == 0))
+        {
+            LM_W (("Parsing:'%s' imsi:%lu, imei:%lu, msisdn:%lu", line, user.imsi.value, user.imei.value, user.msisdn.value));
+        }
+
+        if ((user.imsi.value == 0) && (user.imei.value == 0))
+        {
+            return;
+        }
+
 
         // Emit the user information, by IMSI
         writer->emit( 0 , &user.imsi , &user );
+        // Emit the user information, by IMEI
+        writer->emit( 1 , &user.imei , &user );
 
     }
 

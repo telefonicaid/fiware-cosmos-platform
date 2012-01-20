@@ -6,7 +6,7 @@
 
 #include "tektronix_data.h"
 
-#include "logMsg/logMsg.h"
+//#include "logMsg/logMsg.h"
 
 void init_tek_record(struct struct_tek_record *tek_record)
 {
@@ -46,7 +46,7 @@ bool parse_OHDR_header(unsigned char **p_ohdr, uint32_t *sizeOHDR, int *numDRs, 
     *typeMsg = int(*(*p_ohdr+sizeof(uint32_t)));
     if (*typeMsg != 130)
     {
-        LM_W(("OHDR is not a data message type (%d != expected 130)", int(*(*p_ohdr+sizeof(uint32_t)))));
+        //LM_W(("OHDR is not a data message type (%d != expected 130)", int(*(*p_ohdr+sizeof(uint32_t)))));
 
         *p_ohdr += *sizeOHDR;
         return false;
@@ -56,7 +56,7 @@ bool parse_OHDR_header(unsigned char **p_ohdr, uint32_t *sizeOHDR, int *numDRs, 
         //LM_M(("OHDR IS a data message type (%d == expected 130)", int(*(*p_ohdr+sizeof(uint32_t)))));
     }
     *numDRs = int(*(*p_ohdr+ 2*sizeof(uint32_t)));
-    LM_M(("numDRs:%u", *numDRs));
+    //LM_M(("numDRs:%u", *numDRs));
     *p_ohdr += OHDR_HEADER_SIZE;
     return true;
 }
@@ -118,7 +118,7 @@ init_tek_record(tek_record);
 
     if (tek_record->typeDR == TYPE_gsmA)
     {
-        LM_M(("typeDR=gsm-A"));
+        //LM_M(("typeDR=gsm-A"));
         //LM_M(("bitmask >> 3: 0x%0x", int(bitmask >> 3)));
         total_lengh_elementIDs = total_lengh_elementIDs - 1;
 
@@ -142,7 +142,7 @@ init_tek_record(tek_record);
     }
     else if (tek_record->typeDR == TYPE_UMTS)
     {
-        LM_M(("typeDR=UMTS"));
+        //LM_M(("typeDR=UMTS"));
         // If UMTS, size came in words, not bytes
         *sizeDR = *sizeDR * sizeof(uint32_t);
         total_lengh_elementIDs = total_lengh_elementIDs * sizeof(uint32_t);
@@ -168,7 +168,7 @@ init_tek_record(tek_record);
     }
     else
     {
-        LM_E(("Error, unknown type %d, (gsmA:%d, UMTS:%d)", tek_record->typeDR, TYPE_gsmA, TYPE_UMTS));
+        //LM_E(("Error, unknown type %d, (gsmA:%d, UMTS:%d)", tek_record->typeDR, TYPE_gsmA, TYPE_UMTS));
         *p_dr += *sizeDR;
         return false;
     }
@@ -216,12 +216,12 @@ init_tek_record(tek_record);
                     else if (j == bit_SF_lac)
                     {
                         tek_record->LAC = ntohs(*((uint16_t *)(p_ini_SFElements)));
-                        LM_M(("LAC:0x%0x", tek_record->LAC));
+                        //LM_M(("LAC:0x%0x", tek_record->LAC));
                     }
                     else if (j == bit_SF_cellID)
                     {
                         tek_record->cellID = ntohs(*((uint16_t *)(p_ini_SFElements)));
-                        LM_M(("cellID:0x%0x", tek_record->cellID));
+                        //LM_M(("cellID:0x%0x", tek_record->cellID));
                     }
                     else if (j == bit_SF_callType)
                     {
@@ -256,7 +256,7 @@ init_tek_record(tek_record);
                 {
                     varSize = int(*p_ini_varElements);
                     p_ini_varElements++;
-                    LM_M(("Detected element:%d with varSize:%d", j, varSize));
+                    //LM_M(("Detected element:%d with varSize:%d", j, varSize));
 
                     char *bufferVarSize = (char *)malloc(varSize+1);
                     char *p_buffer = bufferVarSize;
@@ -271,19 +271,19 @@ init_tek_record(tek_record);
                     {
                         uint64_t bufferLong = atoll(bufferVarSize);
                         tek_record->imsi = bufferLong;
-                        LM_M(("imsi:0x%0x", tek_record->imsi));
+                        //LM_M(("imsi:0x%0x", tek_record->imsi));
                     }
                     else if (j == bit_VF_imei)
                     {
                         uint64_t bufferLong = atoll(bufferVarSize);
                         tek_record->imei = bufferLong;
-                        LM_M(("imei:0x%0x", tek_record->imei));
+                        //LM_M(("imei:0x%0x", tek_record->imei));
                     }
                     else if (j == bit_VF_msisdn)
                     {
                         uint64_t bufferLong = atoll(bufferVarSize);
                         tek_record->msisdn = bufferLong;
-                        LM_M(("msisdn:0x%0x", tek_record->msisdn));
+                        //LM_M(("msisdn:0x%0x", tek_record->msisdn));
                     }
                     else if (j == bit_VF_CCCause)
                     {

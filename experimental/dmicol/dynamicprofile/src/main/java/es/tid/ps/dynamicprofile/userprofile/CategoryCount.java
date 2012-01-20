@@ -6,6 +6,11 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+/**
+ * Represents a category count.
+ * 
+ * @author sortega@tid.es
+ */
 public class CategoryCount implements Writable {
 
     private String category;

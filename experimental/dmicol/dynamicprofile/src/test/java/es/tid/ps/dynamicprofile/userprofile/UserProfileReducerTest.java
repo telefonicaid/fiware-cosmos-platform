@@ -23,6 +23,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
+ * Test case for UserProfileReducer
  *
  * @author sortega@tid.es
  */

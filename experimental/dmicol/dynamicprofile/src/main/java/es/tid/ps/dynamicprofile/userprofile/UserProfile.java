@@ -6,6 +6,11 @@ import java.io.IOException;
 import java.util.*;
 import org.apache.hadoop.io.Writable;
 
+/**
+ * User profile: frequencies by category for a given user.
+ *
+ * @author sortega@tid.es
+ */
 public class UserProfile implements Writable {
     private String userId;
     private Map<String, Long> counts = new HashMap<String, Long>();
@@ -19,7 +24,8 @@ public class UserProfile implements Writable {
         if (count == null) {
             count = 0l;
         }
-        counts.put(categoryCount.getCategory(), count + categoryCount.getCount());
+        counts.put(categoryCount.getCategory(),
+                count + categoryCount.getCount());
     }
 
     public long get(CategoryCount categoryCount) {
@@ -55,7 +61,7 @@ public class UserProfile implements Writable {
         Collections.sort(entries, new Comparator<Map.Entry<String, Long>>() {
             @Override
             public int compare(Map.Entry<String, Long> left,
-                               Map.Entry<String, Long> right) {
+                    Map.Entry<String, Long> right) {
                 return left.getValue().compareTo(right.getValue());
             }
         });

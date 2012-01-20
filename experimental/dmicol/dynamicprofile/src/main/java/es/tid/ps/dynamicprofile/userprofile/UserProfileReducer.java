@@ -5,6 +5,12 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
 
+/**
+ * Aggregates category counts into a user profile.
+ * <user, [category count]> -> <user, profile>
+ *
+ * @author sortega@tid.es
+ */
 public class UserProfileReducer extends Reducer<Text, CategoryCount, Text,
         UserProfile> {
     @Override

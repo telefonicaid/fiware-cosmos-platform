@@ -22,12 +22,14 @@ import org.junit.Test;
 import static java.util.Arrays.*;
 
 /**
+ * Test case for CategoryExtractionReducer
  *
  * @author sortega@tid.es
  */
 public class CategoryExtractionReducerTest {
     private CategoryExtractionReducer instance;
-    private ReduceDriver<CompositeKey, NullWritable, CompositeKey, CategoryInformation> driver;
+    private ReduceDriver<CompositeKey, NullWritable, CompositeKey,
+            CategoryInformation> driver;
 
     @Before
     public void setUp() {
@@ -42,7 +44,8 @@ public class CategoryExtractionReducerTest {
                 return "SPORTS/NEWS";
             }
         };
-        driver = new ReduceDriver<CompositeKey, NullWritable, CompositeKey, CategoryInformation>(instance);
+        driver = new ReduceDriver<CompositeKey, NullWritable, CompositeKey,
+                CategoryInformation>(instance);
     }
 
     @Test

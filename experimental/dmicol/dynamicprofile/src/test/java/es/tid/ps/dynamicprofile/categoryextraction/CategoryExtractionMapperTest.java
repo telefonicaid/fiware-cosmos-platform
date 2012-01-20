@@ -26,6 +26,8 @@ import org.junit.Before;
 import static org.junit.Assert.*;
 
 /**
+ * Test case for CategoryExtractionMapper
+ *
  * @author sortega@tid.es
  */
 public class CategoryExtractionMapperTest {
@@ -35,13 +37,14 @@ public class CategoryExtractionMapperTest {
     @Before
     public void setUp() throws Exception {
         instance = new CategoryExtractionMapper();
-        driver = new MapDriver<LongWritable, Text, CompositeKey, NullWritable>(instance);
+        driver = new MapDriver<LongWritable, Text, CompositeKey,
+                NullWritable>(instance);
     }
 
     @Test
     public void mapLogLine() throws Exception {
         String input = "cfae4f24cb42c12d\thttp\t"
-                + "http://xml.weather.com/mobile/android/factoids/delivery/1130.xml\t"
+                + "http://xml.weather.com/mobile/android/factoids/delivery\t"
                 + "weather.com\t/mobile/android/factoids/delivery/1130.xml\t"
                 + "null\t30\t10\t2010\t0\t0\t-Java0\t-Java0\t-Java0\t-Java0\t"
                 + "GET\t200";

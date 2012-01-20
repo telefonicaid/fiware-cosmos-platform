@@ -24,6 +24,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
+ * Use case for CategoryInformation
+ * 
  * @author sortega@tid.es
  */
 public class CategoryInformationTest {

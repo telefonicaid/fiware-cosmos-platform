@@ -21,28 +21,30 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- *
+ * Test case for UserProfileMapper
+ * 
  * @author sortega@tid.es
  */
 public class UserProfileMapperTest {
-    private MapDriver<CompositeKey, CategoryInformation, Text, CategoryCount> driver;
+    private MapDriver<CompositeKey, CategoryInformation, Text, CategoryCount>
+            driver;
 
     @Before
     public void setUp() {
-        driver = new MapDriver<CompositeKey, CategoryInformation, Text, CategoryCount>(
-                new UserProfileMapper());
+        driver = new MapDriver<CompositeKey, CategoryInformation, Text,
+                CategoryCount>(new UserProfileMapper());
     }
 
     @Test
     public void mapTest() {
-        String visitorId = "12345";
+        String user = "12345";
         String url = "http://tid.es";
-        CompositeKey key = new CompositeKey(visitorId, url);
-        CategoryInformation categories = new CategoryInformation(visitorId,
-                url, 10, new String [] {"SERVICES", "NEWS"});
+        CompositeKey key = new CompositeKey(user, url);
+        CategoryInformation categories = new CategoryInformation(user, url, 10,
+                new String [] {"SERVICES", "NEWS"});
         driver.withInput(key, categories)
-              .withOutput(new Text(visitorId), new CategoryCount("SERVICES", 10))
-              .withOutput(new Text(visitorId), new CategoryCount("NEWS", 10))
-              .runTest();
+                .withOutput(new Text(user), new CategoryCount("SERVICES", 10))
+                .withOutput(new Text(user), new CategoryCount("NEWS", 10))
+                .runTest();
     }
 }

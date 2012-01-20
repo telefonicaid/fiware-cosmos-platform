@@ -4,6 +4,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
@@ -62,37 +63,54 @@ public class CategoryInformation implements Writable {
 
     @Override
     public void readFields(DataInput in) throws IOException {
-        this.deserialize(in.readLine());
+        this.userId = in.readUTF();
+        this.url = in.readUTF();
+        this.count = in.readLong();
+
+        int categories = in.readInt();
+        this.categoryNames = new String[categories];
+        for (int i=0; i<categories; i++) {
+            this.categoryNames[i] = in.readUTF();
+        }
     }
 
     @Override
     public void write(DataOutput out) throws IOException {
-        out.writeChars(this.serialize() + "\n");
-    }
+        out.writeUTF(this.userId);
+        out.writeUTF(this.url);
+        out.writeLong(this.count);
 
-    private String serialize() {
-        StringBuilder sBuilder = new StringBuilder();
-        sBuilder.append(this.userId).append(DELIMITER);
-        sBuilder.append(this.url).append(DELIMITER);
-        sBuilder.append(this.count);
+        out.writeInt(this.categoryNames.length);
         for (String categoryName : this.categoryNames) {
-            sBuilder.append(DELIMITER).append(categoryName);
+            out.writeUTF(categoryName);
         }
-        return sBuilder.toString();
     }
 
-    private void deserialize(String text) {
-        StringTokenizer stt = new StringTokenizer(text, DELIMITER);
-        try {
-            this.userId = stt.nextToken();
-            this.url = stt.nextToken();
-            this.count = Long.parseLong(stt.nextToken());
-            ArrayList<String> categoryNames = new ArrayList<String>();
-            while (stt.hasMoreTokens()) {
-                categoryNames.add(stt.nextToken());
-            }
-            this.categoryNames = (String[]) categoryNames.toArray();
-        } catch (NoSuchElementException ex) {
-        }
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final CategoryInformation other = (CategoryInformation) obj;
+        if ((this.userId == null) ? (other.userId != null) : !this.userId.equals(other.userId))
+            return false;
+        if ((this.url == null) ? (other.url != null) : !this.url.equals(other.url))
+            return false;
+        if (this.count != other.count)
+            return false;
+        if (!Arrays.deepEquals(this.categoryNames, other.categoryNames))
+            return false;
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 97 * hash + (this.userId != null ? this.userId.hashCode() : 0);
+        hash = 97 * hash + (this.url != null ? this.url.hashCode() : 0);
+        hash = 97 * hash + (int) (this.count ^ (this.count >>> 32));
+        hash = 97 * hash + Arrays.deepHashCode(this.categoryNames);
+        return hash;
     }
 }

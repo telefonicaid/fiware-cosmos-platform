@@ -13,14 +13,12 @@
 // </editor-fold>
 package es.tid.ps.dynamicprofile.categoryextraction;
 
-import org.junit.Ignore;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataInput;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
-import org.apache.hadoop.io.file.tfile.ByteArray;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -31,35 +29,26 @@ import static org.junit.Assert.*;
 public class CategoryInformationTest {
     private CategoryInformation instance;
 
-    @Test
-    public void testWrite() throws Exception {
+    @Before
+    public void setUp() {
         instance = new CategoryInformation("XX0001",
                 "http://www.google.com/weather", 128,
                 new String[] {"SPORTS", "LIFESTYLE"});
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        DataOutput output = new DataOutputStream(bytes);
-
-        instance.write(output);
-
-        assertEquals(
-                "XX0001\thttp://www.google.com/weather\t128\tSPORTS\tLIFESTYLE\n",
-                bytes.toString("UTF-16"));
     }
 
-    @Test @Ignore
-    public void testRead() throws Exception {
-        byte[] bytes = "XX0001\thttp://www.google.com/weather\t128\tSPORTS\tLIFESTYLE\n"
-                .getBytes("UTF-16");
+    @Test
+    public void testSerializationRoundTrip() throws Exception {
+        // Serialization
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        DataOutput output = new DataOutputStream(bytes);
+        instance.write(output);
+
+        // Deserialization
         DataInput input = new DataInputStream(
-                new ByteArrayInputStream(bytes, 2, bytes.length));
+                new ByteArrayInputStream(bytes.toByteArray()));
+        CategoryInformation copy = new CategoryInformation();
+        copy.readFields(input);
 
-        instance = new CategoryInformation();
-        instance.readFields(input);
-
-        assertEquals("XX0001", instance.getUserId());
-        assertEquals("http://www.google.com/weather", instance.getUrl());
-        assertEquals(128l, instance.getCount());
-        assertArrayEquals(new String[] {"SPORTS", "LIFESTYLE"},
-                instance.getCategoryNames());
+        assertEquals(instance, copy);
     }
 }

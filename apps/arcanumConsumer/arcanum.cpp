@@ -1,12 +1,12 @@
 /* ****************************************************************************
 *
-* FILE                     arcanumConsumer.cpp
+* FILE                     arcanum.cpp
 *
 * DESCRIPTION              
 *
 * AUTHOR                   Ken Zangelin
 *
-* CREATION DATE            Dec 9 2011
+* CREATION DATE            Jan 17 2012
 *
 *
 * ToDo
@@ -74,6 +74,7 @@ do {                                                              \
 char*           host      = (char*) "172.17.200.200";
 unsigned short  port      = 1234;
 int             sleepTime = 100000;
+int             sleepEach = 1;
 int             verbose   = 0;
 
 
@@ -173,72 +174,74 @@ void suppress_sigpipe(int fd)
 */
 int connectToServer(void)
 {
-	struct hostent*     hp;
-	struct sockaddr_in  peer;
-	int                 fd;
+    struct hostent*     hp;
+    struct sockaddr_in  peer;
+    int                 fd;
 
-	if (host == NULL)
-		R(-1, ("no hostname given"));
-	if (port == 0)
-		R(-1, ("Cannot connect to '%s' - port is ZERO", host));
+    if (host == NULL)
+        R(-1, ("no hostname given"));
+    if (port == 0)
+        R(-1, ("Cannot connect to '%s' - port is ZERO", host));
 
-	if ((hp = gethostbyname(host)) == NULL)
-		R(-1, ("gethostbyname(%s): %s", host, strerror(errno)));
+    if ((hp = gethostbyname(host)) == NULL)
+        R(-1, ("gethostbyname(%s): %s", host, strerror(errno)));
 
-	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-		R(-1, ("socket: %s", strerror(errno)));
-	
-	memset((char*) &peer, 0, sizeof(peer));
+    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+        R(-1, ("socket: %s", strerror(errno)));
+    
+    memset((char*) &peer, 0, sizeof(peer));
 
-	peer.sin_family      = AF_INET;
-	peer.sin_addr.s_addr = ((struct in_addr*) (hp->h_addr))->s_addr;
-	peer.sin_port        = htons(port);
+    peer.sin_family      = AF_INET;
+    peer.sin_addr.s_addr = ((struct in_addr*) (hp->h_addr))->s_addr;
+    peer.sin_port        = htons(port);
 
-	V2(("Connecting to %s:%d", host, port));
-	int retries = 7200;
-	int tri     = 0;
+    V2(("Connecting to %s:%d", host, port));
+    int retries = 7200;
+    int tri     = 0;
 
-	while (1)
-	{
-		if (connect(fd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
-		{
-			++tri;
-			E(("connect intent %d failed: %s", tri, strerror(errno)));
-			usleep(500000);
-			if (tri > retries)
-			{
-				close(fd);
-				R(-1, ("Cannot connect to %s, port %d (even after %d retries)", host, port, retries));
-			}
-		}
-		else
-			break;
-	}
+    while (1)
+    {
+        if (connect(fd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
+        {
+            ++tri;
+            E(("connect intent %d failed: %s", tri, strerror(errno)));
+            usleep(500000);
+            if (tri > retries)
+            {
+                close(fd);
+                R(-1, ("Cannot connect to %s, port %d (even after %d retries)", host, port, retries));
+            }
+        }
+        else
+            break;
+    }
 
     suppress_sigpipe(fd);
-	return fd;
+    return fd;
 }
 
 
 
+#define BUFSIZE 0x100
 /* ****************************************************************************
 *
 * writeToServer - 
 */
 void writeToServer(int fd)
 {
-    int buf[100];
+    int buf[BUFSIZE];
     int loopNo        = 1;
     int bytesWritten  = 0;
     int grandTotal    = 0;
-    buf[0]            = htonl(99 * 4);  
+
+    buf[0]            = htonl((BUFSIZE - 1) * 4);  
 
     while (1)
     {
         int  nb;
-        int  ix;
 
-        for (ix = 1; ix < 100; ix++)
+        int  ix;
+        for (ix = 1; ix < BUFSIZE; ix++)
             buf[ix] = ix;
 
         nb = write(fd, buf, sizeof(buf));
@@ -267,7 +270,14 @@ void writeToServer(int fd)
            fd = connectToServer();
         }
 
-        usleep(sleepTime);
+        if (sleepTime != 0)
+        {
+            if (loopNo % sleepEach == 0)
+            {
+                V1(("sleeping %d micros each %d loops", sleepTime, sleepEach));
+                usleep(sleepTime);
+            }
+        }
 
         ++loopNo;
         bytesWritten += nb;
@@ -285,10 +295,10 @@ void writeToServer(int fd)
 */
 void usage(char* progName)
 {
-	printf("Usage:\n");
-	printf("  %s -u\n", progName);
-	printf("  %s [-host (host)] [-port (port)] [-sleep (microsecs)] [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)]\n", progName);
-	exit(1);
+    printf("Usage:\n");
+    printf("  %s -u\n", progName);
+    printf("  %s [-host (host)] [-port (port)] [-sleepTime (microsecs)] [-sleepEach (loops)] [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)]\n", progName);
+    exit(1);
 }
 
 
@@ -307,20 +317,20 @@ int main(int argC, char* argV[])
 
     int  ix = 1;
 
-	while (ix < argC)
-	{
+    while (ix < argC)
+    {
         if (strcmp(argV[ix], "-u") == 0)
             usage(argV[0]);
-		else if (strcmp(argV[ix], "-v") == 0)
-			verbose = 1;
-		else if (strcmp(argV[ix], "-vv") == 0)
-			verbose = 2;
-		else if (strcmp(argV[ix], "-vvv") == 0)
-			verbose = 3;
-		else if (strcmp(argV[ix], "-vvvv") == 0)
-			verbose = 4;
-		else if (strcmp(argV[ix], "-vvvvv") == 0)
-			verbose = 5;
+        else if (strcmp(argV[ix], "-v") == 0)
+            verbose = 1;
+        else if (strcmp(argV[ix], "-vv") == 0)
+            verbose = 2;
+        else if (strcmp(argV[ix], "-vvv") == 0)
+            verbose = 3;
+        else if (strcmp(argV[ix], "-vvvv") == 0)
+            verbose = 4;
+        else if (strcmp(argV[ix], "-vvvvv") == 0)
+            verbose = 5;
         else if (strcmp(argV[ix], "-host") == 0)
         {
             host = strdup(argV[ix + 1]);
@@ -331,29 +341,36 @@ int main(int argC, char* argV[])
             port = atoi(argV[ix + 1]);
             ++ix;
         }
-        else if (strcmp(argV[ix], "-sleep") == 0)
+        else if (strcmp(argV[ix], "-sleepTime") == 0)
         {
             sleepTime = atoi(argV[ix + 1]);
+            M(("Sleep time: %d microseconds", sleepTime));
             ++ix;
         }
-		else
-		{
- 			E(("%s: unrecognized option '%s'\n\n", argV[0], argV[ix]));
-			usage(argV[0]);
-		}
+        else if (strcmp(argV[ix], "-sleepEach") == 0)
+        {
+            sleepEach = atoi(argV[ix + 1]);
+            M(("Sleep each %d loops", sleepEach));
+            ++ix;
+        }
+        else
+        {
+            E(("%s: unrecognized option '%s'\n\n", argV[0], argV[ix]));
+            usage(argV[0]);
+        }
 
-		++ix;
+        ++ix;
     }
 
-	int fd = connectToServer();
+    int fd = connectToServer();
 
-	if (fd == -1)
-		X(1, ("error connecting to host '%s', port %d", host, port));
+    if (fd == -1)
+        X(1, ("error connecting to host '%s', port %d", host, port));
 
     signal(SIGPIPE, ignore);
     sigignore(SIGPIPE);
 
-	writeToServer(fd);
+    writeToServer(fd);
 
-	return 0;
+    return 0;
 }

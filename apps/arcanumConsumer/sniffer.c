@@ -42,15 +42,22 @@ char*           timeFormat = "%Y-%m-%d";
 
 
 
+#define BUFSIZE (16 * 1024 * 1024)
 /* ****************************************************************************
 *
 * Global variables
 */
-char   buf[4 * 1024 + 1];
-int    bufSize = 4 * 1024 + 1;
-char*  dateString;
-char   dateBuf[80];
-int    dateBufLen = 80;
+char*           dateString;
+char            dateBuf[80];
+int             dateBufLen = 80;
+int             buffer[BUFSIZE];
+char            savedBuffer[128 * 1024];
+int             bufSize           = BUFSIZE;
+int             savedMissing      = 0;
+int             savedLen          = 0;
+int             storageFd         = -1;
+int             nbAccumulated     = 0;
+int             packets           = 0;
 
 
 
@@ -188,86 +195,167 @@ char* dateStringGet(void)
 
 /* ****************************************************************************
 *
+* packetStore - 
+*/
+void packetStore(int fd, char* buffer)
+{
+    int  nb;
+    int  dataLen = ntohl(*((int*) buffer));
+
+    dataLen += 4;
+    V1(("Writing %d of data to storage file", dataLen));
+
+    nb = write(storageFd, buffer, dataLen); 
+    if (nb != dataLen)
+        E(("Error writing packet %d to storage file (written %d bytes out of %d)", packets, nb, dataLen));
+}
+
+
+
+/* ****************************************************************************
+*
+* bufPush - 
+*/
+void bufPush(int* bufP, int size)
+{
+    char*  buffer     = (char*) bufP;
+    int    packetLen;
+
+    //
+    // First time?
+    //
+    if (storageFd == -1)
+    {
+        dateString = strdup(dateStringGet());
+        storageFd  = storageOpen();
+    }
+
+
+
+    //
+    // Change storage file, due to date change?
+    //
+    char* dString = dateStringGet();
+    if (strcmp(dString, dateString) != 0)
+    {
+        free(dateString);
+        dateString = strdup(dString);
+            
+        close(storageFd);
+        storageFd  = storageOpen();
+    }
+        
+
+
+    //
+    // Any data leftover from last push?
+    // Add the data from buffer to make it a whole packet,
+    // and then forward this 'incomplete' packet first
+    //
+    if (savedLen != 0)
+    {
+        V1(("Detected a saved buffer of %d bytes, adding another %d bytes to it", savedLen, savedMissing));
+
+        if (size >= savedMissing)
+        {
+            int* iP = (int*) savedBuffer;
+            V1(("Restoring a saved packet: 0x%x 0x%x 0x%x 0x%x", iP[0], iP[1], iP[2], iP[3]));
+
+            memcpy(&savedBuffer[savedLen], buffer, savedMissing);
+
+            packetStore(storageFd, savedBuffer);
+
+            buffer   = &buffer[savedMissing];
+            size    -= savedMissing;
+            savedLen = 0;
+            packets  = packets + 1;
+        }
+        else
+        {
+            V1(("Buffer too small to fill an entire packet - copying a part and reading again ..."));
+            memcpy(&savedBuffer[savedLen], buffer, size);
+            savedLen += size;
+            return;
+        }
+    }
+
+
+    //
+    // Now, finally, loop over all packets in the buffer and write them to file
+    //
+    while (size > 0)
+    {
+        packetLen = ntohl(*((int*) buffer));
+        V2(("parsed a packet of %d data length (bigendian: 0x%x)", packetLen, *((int*) buffer)));
+
+        if (packetLen != (4 * 0x100) - 4)
+            X(1, ("Bad packetLen: %d (original: 0x%x, htohl: 0x%x)", packetLen, *((int*) buffer), ntohl(*((int*) buffer))));
+
+        if (size >= packetLen + 4)
+        {
+            ++packets;
+            V1(("Got package %d (grand total bytes read: %d)", packets, nbAccumulated));
+
+            packetStore(storageFd, buffer);
+
+            buffer = &buffer[packetLen + 4];
+            size  -= (packetLen + 4);
+        }
+        else
+        {
+            memcpy(savedBuffer, buffer, size);
+            savedLen       = size;
+            savedMissing   = packetLen + 4 - savedLen;
+
+            V1(("Saved packet %d of %d bytes (packetLen: %d, so %d bytes missing ...)", packets, savedLen, packetLen, savedMissing));
+
+            int* iP = (int*) savedBuffer;
+            V1(("saved: 0x%x 0x%x 0x%x 0x%x", iP[0], iP[1], iP[2], iP[3]));
+            return; // read more ...
+        }
+    }
+}
+
+
+
+/* ****************************************************************************
+*
 * readFromServer - 
 */
 void readFromServer(int fd)
 {
-	int   nb;
-	int   sz;
-    int   dataLen;
-    int   tot;
-    int   storageFd;
-    int   packets = 0;
-    char* dString;
-    int   totalBytes = 0;
-
-    dateString = strdup(dateStringGet());
-    storageFd  = storageOpen();
+	int    nb;
+	int    sz;
 
     V2(("Reading from server"));
 	sz = bufSize;
 	while (1)
 	{
-		memset(buf, 0, bufSize);
-
-
+        
         //
-        // Change storage file, due to date change?
+        // Read as much as we possibly can ...
         //
-        dString = dateStringGet();
-        if (strcmp(dString, dateString) != 0)
+        nb = read(fd, buffer, sizeof(buffer));
+        if (nb > 0)
         {
-            free(dateString);
-            dateString = strdup(dString);
-            
-            close(storageFd);
-            storageFd  = storageOpen();
+            nbAccumulated += nb;
+
+            V2(("Read %d bytes of data from arcanum (grand total: %d)", nb, nbAccumulated));
+
+            bufPush(buffer, nb);
         }
-        
-        
-        //
-        // Read header that contains the data length
-        //
-		nb = read(fd, &dataLen, sizeof(dataLen));
-		if (nb == -1)
-			X(1, ("error reading from socket: %s", strerror(errno)));
-		else if (nb == 0)
-		{
-            E(("Tunnel closed the connection - reconnecting"));
+        else
+        {
+            if (nb == -1)
+                E(("Error reading from the Tunnel: %s", strerror(errno)));
+            else
+                E(("The Tunnel closed the connection?"));
+
             close(fd);
-            fd = connectToServer();
-            continue;
+            fd       = connectToServer();
+            savedLen = 0;
         }
-
-
-        //
-        // Read the data
-        //
-        dataLen = ntohl(dataLen);
-        V4(("read a header - now reading %d bytes of data ...", dataLen));        
-        tot = 0;
-        while (tot < dataLen)
-        {
-           nb = read(fd, &buf[tot], dataLen - tot);
-           if (nb == -1)
-               X(1, ("error reading from socket: %s", strerror(errno)));
-           else if (nb == 0)
-               E(("Read zero bytes"));
-
-           tot += nb;
-        }
-
-        ++packets;
-        totalBytes += dataLen;
-        V1(("Got package %d (total bytes: %d)", packets, totalBytes));
-
-        nb = write(storageFd, &dataLen, sizeof(dataLen));
-        if (nb != sizeof(dataLen))
-           E(("Error writing dataLen to storage file"));
-        nb = write(storageFd, buf,      dataLen); 
-        if (nb != dataLen)
-           E(("Error writing packet %d to storage file (written %d bytes out of %d)", packets, nb, dataLen));
-	}
+    }
 }
 
 

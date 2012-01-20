@@ -27,6 +27,9 @@
 #include <inttypes.h>           // int32_t, ...
 #include <signal.h>             // SIGPIPE, sigignore, ...
 
+extern int sigignore(int sig);
+
+
 
 /* ****************************************************************************
 *
@@ -91,6 +94,7 @@ typedef struct Node
 
 
 
+#define BUFSIZE (16 * 1024 * 1024)
 /* ****************************************************************************
 *
 * global variables - 
@@ -101,8 +105,14 @@ unsigned short  snifferPort = 0;
 Node            arcanum;
 Node            samson;
 Node            sniffer;
-int             buffer[2 * 1024 * 1024];
-int             bufSize = 8 * 1024 * 1024;
+int             buffer[BUFSIZE];
+char            savedBuffer[128 * 1024];
+int             bufSize           = BUFSIZE;
+int             savedMissing      = 0;
+int             savedLen          = 0;
+int             packetsSent       = 0;
+int             packetsForSniffer = 0;
+
 
 
 
@@ -126,7 +136,7 @@ void serverInit(Node* nodeP)
 	if (nodeP->host[0] == 0)
 	{
         sa.sin_addr.s_addr = INADDR_ANY;
-        V2(("Listen socket for '%s' bound to 'ANY' host, port %d", nodeP->name, nodeP->port));
+        V3(("Listen socket for '%s' bound to 'ANY' host, port %d", nodeP->name, nodeP->port));
     }
 	else
 	{
@@ -134,7 +144,7 @@ void serverInit(Node* nodeP)
 		
         heP = gethostbyname(nodeP->host);
         bcopy(heP->h_addr, &sa.sin_addr, heP->h_length);
-        V2(("Listen socket for '%s' bound to host '%s', port %d", nodeP->name, nodeP->host, nodeP->port));
+        V3(("Listen socket for '%s' bound to host '%s', port %d", nodeP->name, nodeP->host, nodeP->port));
 	}
 
 	sa.sin_family      = AF_INET;
@@ -158,7 +168,7 @@ void serverInit(Node* nodeP)
 	nodeP->listenFd = fd;
 	nodeP->fd       = -1;
 
-	V2(("Opened listen socket on fd %d for connections from '%s', port %d", nodeP->listenFd, nodeP->host, nodeP->port));
+	V3(("Opened listen socket on fd %d for connections from '%s', port %d", nodeP->listenFd, nodeP->host, nodeP->port));
 }
 
 
@@ -169,11 +179,16 @@ void serverInit(Node* nodeP)
 */
 void acceptConnection(Node* nodeP)
 {
-    V2(("Accepting connection on fd %d", nodeP->listenFd));
+    V3(("Accepting connection on fd %d", nodeP->listenFd));
     nodeP->fd = accept(nodeP->listenFd, NULL, 0);
 	if (nodeP->fd == -1)
         X(6, ("accept: %s", strerror(errno)));
 
+    if (nodeP == &sniffer)
+    {
+        V1(("Resetting sniffer packet count"));
+        packetsForSniffer = 0;
+    }
     // int set = 1;
     // setsockopt(nodeP->fd, SOL_SOCKET, SO_NOSIGPIPE, (void*) &set, sizeof(int));
 } 
@@ -235,7 +250,7 @@ void nodeInit(Node* nodeP, char* name)
 */
 void tmoHandler(void)
 {
-    V1(("Got a TIMEOUT ..."));
+    V2(("Got a TIMEOUT ..."));
 }
 
 
@@ -268,7 +283,7 @@ void nodeClose(Node* nodeP)
 *
 * forward - 
 */
-void forward(Node* nodeP, char* buf, int size)
+void forward(Node* nodeP, char* buf, int size, int retries)
 {
     int nb;
     int total;
@@ -297,14 +312,17 @@ void forward(Node* nodeP, char* buf, int size)
        X(37, ("select error: %s", strerror(errno)));
     else if (fds == 0)
     {
-        E(("Node '%s' closed connection", nodeP->name));
-        nodeClose(nodeP);
+        if (retries == 0)
+            E(("Cannot write to node '%s' - loosing packet %d", nodeP->name, packetsSent));
+        usleep(1000);
+        forward(nodeP, buf, size, ++retries);
+        // nodeClose(nodeP);
         return;
     }
     else if (!FD_ISSET(nodeP->fd, &wFds))
         X(33, ("Cannot write to '%s'. Should REALLY never get here ...", nodeP->name));
 
-    V1(("Buffer size of packet: %d", ntohl(bfr[0])));
+    V2(("Buffer size of packet: %d", ntohl(bfr[0])));
     total = 0;
     while (total < size)
     {
@@ -322,8 +340,93 @@ void forward(Node* nodeP, char* buf, int size)
             return;
         }
 
-        V1(("Tunneled %d bytes to '%s'", nb, nodeP->name));
+        if (retries != 0)
+            M(("Tunneled packet %d of %d bytes to '%s'", packetsSent, nb, nodeP->name));
+        else
+            V2(("Tunneled %d bytes to '%s'", nb, nodeP->name));
         total += nb;
+    }
+}
+
+
+
+
+/* ****************************************************************************
+*
+* bufPush - 
+*/ 
+void bufPush(int* bufP, int size)
+{
+    int    packetLen;
+    char*  buffer = (char*) bufP;
+
+    //
+    // Any data leftover from last push?
+    // Add the data from buffer to make it a whole packet,
+    // and then forward this 'incomplete' packet first
+    //
+    if (savedLen != 0)
+    {
+        int* dataLenP = (int*) savedBuffer;
+        int  dataLen  = ntohl(*dataLenP);
+
+        if (sniffer.fd != -1)
+            V1(("packet %d was 'saved' (dataLen: %d, savedLen: %d)", packetsSent, dataLen, savedLen));
+
+        memcpy(&savedBuffer[savedLen], buffer, savedMissing);
+        int* iP = (int*) savedBuffer;
+        V1(("Restoring a saved packet (adding %d bytes): 0x%x 0x%x 0x%x 0x%x", savedMissing, iP[0], iP[1], iP[2], iP[3]));
+        if (samson.fd != -1)
+            forward(&samson, savedBuffer, dataLen, 0);
+        if (sniffer.fd != -1)
+        {
+            V1(("packet %d (%d for sniffer) has dataLen %d (0x%x)", packetsSent, packetsForSniffer, dataLen, dataLen));
+            forward(&sniffer, savedBuffer, dataLen, 0);
+            ++packetsForSniffer;
+        }
+
+        buffer = &buffer[savedMissing];
+        size  -= savedMissing;
+
+        savedLen     = 0;
+        savedMissing = 0;
+        ++packetsSent;
+    }
+
+    while (size > 0)
+    {
+        packetLen = ntohl(*((int*) buffer));
+        V2(("parsed a packet of %d data length (bigendian: 0x%x)", packetLen, *((int*) buffer)));
+        if (size >= packetLen + 4)
+        {
+            ++packetsSent;
+            
+            if (samson.fd != -1)
+                forward(&samson, buffer, packetLen + 4, 0);
+            if (sniffer.fd != -1)
+            {
+                forward(&sniffer, buffer, packetLen + 4, 0);
+                ++packetsForSniffer;
+            }
+        }
+        else
+        {
+            memcpy(savedBuffer, buffer, size);
+            savedLen       = size;
+            savedMissing   = packetLen + 4 - savedLen;
+
+            if (sniffer.fd != -1)
+            {
+                V1(("Saved packet %d of %d bytes (packetLen: %d, so %d bytes missing ...)", packetsForSniffer, size, packetLen, savedMissing));
+
+                int* xP = (int*) savedBuffer;
+                V1(("saved: 0x%x 0x%x 0x%x 0x%x", xP[0], xP[1], xP[2], xP[3]));
+            }
+            return; // read more ...
+        }
+
+        buffer = &buffer[packetLen + 4];
+        size  -= packetLen + 4;
     }
 }
 
@@ -337,9 +440,6 @@ int nbAccumulated = 0;
 void tunnel(void)
 {
 	int    nb;
-    int    dataLen;
-    char*  data;
-    int    tot;
 
 	if (filter == 1)
 	{
@@ -347,12 +447,12 @@ void tunnel(void)
 		return;
 	}
 
-    memset(buffer, 0, bufSize);
+    memset(buffer, 0, sizeof(buffer));
         
     //
-    // Read header that contains the data length
+    // Read as much as we possibly can ...
     //
-    nb = read(arcanum.fd, &dataLen, sizeof(dataLen));
+    nb = read(arcanum.fd, buffer, sizeof(buffer));
     if (nb == -1)
     {
         E(("Error reading from the ARCANUM node: %s", strerror(errno)));
@@ -366,6 +466,13 @@ void tunnel(void)
         return;
     }
 
+    V2(("Read %d bytes of data from arcanum", nb));
+
+    bufPush(buffer, nb);
+    nbAccumulated += nb;
+}
+
+#if 0
     dataLen = ntohl(dataLen);
     V4(("read a header - now reading %d bytes of data ...", dataLen));
 
@@ -403,15 +510,15 @@ void tunnel(void)
     }
 
 
-    nbAccumulated += nb;
-    V1(("Sending %d bytes to other side (total: %d bytes)", nb, nbAccumulated));
+    V2(("Sending %d bytes to other side (total: %d bytes)", nb, nbAccumulated));
 
     if (samson.fd != -1)
-        forward(&samson, (char*) buffer, nb + 4);
+        forward(&samson, (char*) buffer, nb + 4, 0);
 
     if (sniffer.fd != -1)
-        forward(&sniffer, (char*) buffer, nb + 4);
+        forward(&sniffer, (char*) buffer, nb + 4, 0);
 }
+#endif
 
 
 

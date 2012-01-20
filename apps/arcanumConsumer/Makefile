@@ -1,8 +1,8 @@
 CC           = gcc
 CPP          = g++
 INCLUDE      = -I../../libs/
-DFLAGS       = -DOS=$(OS)
-cFLAGS       = $(INCLUDE) $(DFLAGS) -g  -fPIC -Wall -Wno-unused-function $(DFLAGS) $(INCLUDE)
+DFLAGS       = -Wall -DOS=$(OS)
+CFLAGS       = $(INCLUDE) $(DFLAGS) -O2 -fPIC -Wall -Wno-unused-function $(DFLAGS) $(INCLUDE)
 
 EXEC1        = arcanumTunnel
 EXEC2        = sniffer

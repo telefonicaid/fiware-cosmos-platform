@@ -47,11 +47,7 @@ public class UserProfile implements Writable {
 
     public long getCount(String categoryName) {
         Long count = this.counts.get(categoryName);
-        if (count == null) {
-            return 0l;
-        } else {
-            return count;
-        }
+        return (count == null) ? 0l : count;
     }
 
     @Override

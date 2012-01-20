@@ -4,10 +4,10 @@
 
 sqoop eval --connect jdbc:mysql://pshdp01/psdb --username hadoop --password hadoop -e "truncate table ag_page_views_proto_day_aux"
 sqoop export --connect jdbc:mysql://pshdp01/psdb --table ag_page_views_proto_day_aux --username hadoop --password hadoop --jar-file ./aggregates_web_profiling.jar --class-name ag_page_views_proto_day --export-dir /user/cesargg/sqoop/ag_page_views_proto_day
-sqoop eval --connect jdbc:mysql://pshdp01/psdb --username hadoop --password hadoop -e "truncate table ag_page_views_proto_month_aux"
-sqoop export --connect jdbc:mysql://pshdp01/psdb --table ag_page_views_proto_month_aux --username hadoop --password hadoop --jar-file ./aggregates_web_profiling.jar --class-name ag_page_views_proto_month --export-dir /user/cesargg/sqoop/ag_page_views_proto_month
-sqoop eval --connect jdbc:mysql://pshdp01/psdb --username hadoop --password hadoop -e "truncate table ag_page_views_proto_year_aux"
-sqoop export --connect jdbc:mysql://pshdp01/psdb --table ag_page_views_proto_year_aux --username hadoop --password hadoop --jar-file ./aggregates_web_profiling.jar --class-name ag_page_views_proto_year --export-dir /user/cesargg/sqoop/ag_page_views_proto_year
+sqoop eval --connect jdbc:mysql://pshdp01/psdb --username hadoop --password hadoop -e "truncate table ag_page_views_proto_month"
+sqoop eval --connect jdbc:mysql://pshdp01/psdb --username hadoop --password hadoop -e "insert into ag_page_views_proto_month select protocol, month, year, sum(views_num) from ag_page_views_proto_day group by protocol, month, year"
+sqoop eval --connect jdbc:mysql://pshdp01/psdb --username hadoop --password hadoop -e "truncate table ag_page_views_proto_year"
+sqoop eval --connect jdbc:mysql://pshdp01/psdb --username hadoop --password hadoop -e "insert into ag_page_views_proto_year select protocol, year, sum(views_num) from ag_page_views_proto_month group by protocol, year"
 
 sqoop eval --connect jdbc:mysql://pshdp01/psdb --username hadoop --password hadoop -e "truncate table ag_page_views_method_day_aux"
 sqoop export --connect jdbc:mysql://pshdp01/psdb --table ag_page_views_method_day_aux --username hadoop --password hadoop --jar-file ./aggregates_web_profiling.jar --class-name ag_page_views_method_day --export-dir /user/cesargg/sqoop/ag_page_views_method_day

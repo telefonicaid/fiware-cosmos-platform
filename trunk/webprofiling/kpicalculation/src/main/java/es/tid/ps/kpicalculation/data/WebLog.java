@@ -3,6 +3,8 @@ package es.tid.ps.kpicalculation.data;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
@@ -34,8 +36,7 @@ public class WebLog implements WritableComparable<WebLog> {
     public String urlDomain;
     public String urlPath;
     public String urlQuery;
-    public String dateView;
-    public String timeDay;
+    public Calendar date;
     public String userAgent;
     public String browser;
     public String device;
@@ -135,33 +136,18 @@ public class WebLog implements WritableComparable<WebLog> {
     }
 
     /**
-     * @return the dateView
+     * @return the date
      */
-    public String getDateView() {
-        return this.dateView;
+    public Calendar getDate() {
+        return this.date;
     }
 
     /**
-     * @param dateView
+     * @param date
      *            the value to set
      */
-    public void setDateView(String dateView) {
-        this.dateView = dateView;
-    }
-
-    /**
-     * @return the timeDay
-     */
-    public String getTimeDay() {
-        return this.timeDay;
-    }
-
-    /**
-     * @param timeDay
-     *            the value to set
-     */
-    public void setTimeDay(String timeDay) {
-        this.timeDay = timeDay;
+    public void setDate(Calendar date) {
+        this.date = date;
     }
 
     /**
@@ -276,8 +262,9 @@ public class WebLog implements WritableComparable<WebLog> {
     public WebLog() {
         this.text = new Text();
         this.sBuilder = new StringBuilder();
+        this.date = Calendar.getInstance();
         KpiCalculationNormalizer.init();
-        KpiCalculationDateFormatter.init();
+        KpiCalculationDateFormatter.init(WebLog.DELIMITER);
     }
 
     /**
@@ -308,8 +295,7 @@ public class WebLog implements WritableComparable<WebLog> {
             // Date and time are obteined from the full date received in the cdr
             // line
             String date = stt.nextToken();
-            this.dateView = KpiCalculationDateFormatter.getDate(date);
-            this.timeDay = KpiCalculationDateFormatter.getTime(date);
+            this.date = KpiCalculationDateFormatter.getValue(date);
 
             // Http status code
             this.status = stt.nextToken();
@@ -361,8 +347,14 @@ public class WebLog implements WritableComparable<WebLog> {
             this.urlDomain = stt.nextToken();
             this.urlPath = stt.nextToken();
             this.urlQuery = stt.nextToken();
-            this.dateView = stt.nextToken();
-            this.timeDay = stt.nextToken();
+            this.date.set(Calendar.DAY_OF_MONTH,
+                    Integer.parseInt(stt.nextToken()));
+            //Calendar months values are from  0:January to 11:December
+            this.date.set(Calendar.MONTH, Integer.parseInt(stt.nextToken()) - 1);
+            this.date.set(Calendar.YEAR, Integer.parseInt(stt.nextToken()));
+            this.date.set(Calendar.HOUR_OF_DAY,
+                    Integer.parseInt(stt.nextToken()));
+            this.date.set(Calendar.MINUTE, Integer.parseInt(stt.nextToken()));
             this.userAgent = stt.nextToken();
             this.browser = stt.nextToken();
             this.device = stt.nextToken();
@@ -390,8 +382,11 @@ public class WebLog implements WritableComparable<WebLog> {
         this.sBuilder.append(urlDomain).append(DELIMITER);
         this.sBuilder.append(urlPath).append(DELIMITER);
         this.sBuilder.append(urlQuery).append(DELIMITER);
-        this.sBuilder.append(dateView).append(DELIMITER);
-        this.sBuilder.append(timeDay).append(DELIMITER);
+        this.sBuilder.append(date.get(Calendar.DAY_OF_MONTH)).append(DELIMITER);
+        this.sBuilder.append(date.get(Calendar.MONTH)).append(DELIMITER);
+        this.sBuilder.append(date.get(Calendar.YEAR)).append(DELIMITER);
+        this.sBuilder.append(date.get(Calendar.HOUR_OF_DAY)).append(DELIMITER);
+        this.sBuilder.append(date.get(Calendar.MINUTE)).append(DELIMITER);
         this.sBuilder.append(userAgent).append(DELIMITER);
         this.sBuilder.append(browser).append(DELIMITER);
         this.sBuilder.append(device).append(DELIMITER);

@@ -51,7 +51,9 @@ public class KpiCleanerMapper extends
     private NullWritable nullw;
 
     /**
-     * Method that prepares the filters to be applied
+     * Method that prepares the filters to be applied. The classes implementing
+     * them and the values to be filtered for each of them will be loaded from
+     * the kpi-filtering.xml file
      * 
      * @param context
      *            contains the context of the job run
@@ -59,6 +61,7 @@ public class KpiCleanerMapper extends
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
+        context.getConfiguration().addResource("kpi-filtering.xml");
         this.filter = new KpiCalculationFilterChain(context.getConfiguration());
         this.view = new WebLog();
         this.nullw = NullWritable.get();

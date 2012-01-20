@@ -1,6 +1,7 @@
 package es.tid.ps.kpicalculation;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -23,8 +24,10 @@ import es.tid.ps.kpicalculation.data.WebLog;
  */
 public class KpiCounterReducer extends
         Reducer<WebLog, IntWritable, Text, IntWritable> {
+    private static final String USE_HASHCODE = "kpi.aggregation.hashmap";
     private IntWritable counter;
     private Text text;
+    private boolean useHashCode;
 
     /**
      * Method that creates the objects that will be used during the reduce
@@ -35,6 +38,8 @@ public class KpiCounterReducer extends
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
+        this.useHashCode = context.getConfiguration().getBoolean(USE_HASHCODE,
+                false);
         this.counter = new IntWritable();
         this.text = new Text();
     }
@@ -51,11 +56,17 @@ public class KpiCounterReducer extends
     protected void reduce(WebLog key, Iterable<IntWritable> values,
             Context context) throws IOException, InterruptedException {
         int count = 0;
-        while (values.iterator().hasNext()) {
-            count += values.iterator().next().get();
+
+        Iterator<IntWritable> it = values.iterator();
+        while (it.hasNext()) {
+            count += it.next().get();
         }
         this.counter.set(count);
-        this.text.set(key.mainKey);
+        if (this.useHashCode) {
+            this.text.set(key.hashCode() + "\t" + key.mainKey);
+        } else {
+            this.text.set(key.mainKey);
+        }
         context.write(this.text, this.counter);
     }
 }

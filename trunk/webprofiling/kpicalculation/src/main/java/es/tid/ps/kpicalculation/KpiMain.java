@@ -48,7 +48,7 @@ public class KpiMain extends Configured implements Tool {
 
     public int run(String[] args) throws Exception {
         Path inputPath = new Path(args[0]);
-        Path outputPath;
+        Path outputPath = new Path(args[1]);
         Date date = new Date();
         Path tmpPath = new Path(TEMP_PATH + "/tmp."
                 + Long.toString(new Date().getTime()));

@@ -2,6 +2,7 @@ package es.tid.ps.kpicalculation;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.apache.hadoop.io.LongWritable;
@@ -47,8 +48,8 @@ public class KpiCleanerMapperTest extends TestCase {
         this.outputPage.urlDomain = "0.0.tid.es";
         this.outputPage.urlPath = "/";
         this.outputPage.urlQuery = "null";
-        this.outputPage.dateView = "01 12 2010";
-        this.outputPage.timeDay = "00:00:01";
+        this.outputPage.date = new GregorianCalendar();
+        this.outputPage.date.set(2010, 12, 1, 0, 0);
         this.outputPage.browser = "-Microsoft-CryptoAPI/6.1";
         this.outputPage.device = "-Microsoft-CryptoAPI/6.1";
         this.outputPage.userAgent = "-Microsoft-CryptoAPI/6.1";

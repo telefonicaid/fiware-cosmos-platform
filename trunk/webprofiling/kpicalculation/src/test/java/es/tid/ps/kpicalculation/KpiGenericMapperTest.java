@@ -41,9 +41,7 @@ public class KpiGenericMapperTest extends TestCase {
         this.driver = new MapDriver<LongWritable, Text, WebLog, IntWritable>(
                 this.mapper);
         driver.getConfiguration().setStrings("kpi.aggregation.fields",
-                "protocol,device");
-       
-
+                "protocol,device,date");
     }
 
     @Test
@@ -54,22 +52,20 @@ public class KpiGenericMapperTest extends TestCase {
                 WebLogType.WEB_LOG_COUNTER.toString());
         Text input = new Text(
                 "16737b1873ef03ad\thttp\thttp://tid.es/\ttid.es\t"
-                        + "/\tnull\t01 12 2010\t00:00:01\t-Microsoft-CryptoAPI/6.1\t"
+                        + "/\tnull\t09\t12\t2010\t00\t00\t-Microsoft-CryptoAPI/6.1\t"
                         + "-Microsoft-CryptoAPI/6.1\t-Microsoft-CryptoAPI/6.1\t-Microsoft-CryptoAPI/6.1\t"
                         + "GET\t304");
 
-        // key.set("http\t-Microsoft-CryptoAPI/6.1\t01 12 2010","16737b1873ef03ad");
-        try {
+       try {
 
             out = this.driver.withInput(new LongWritable(0), input).run();
         } catch (IOException ioe) {
             fail();
         }
-        
-        
+                
         WebLog key = WebLogFactory.getWebLog(null, null,
                 WebLogType.WEB_LOG_COUNTER);
-        key.mainKey = "http\t-Microsoft-CryptoAPI/6.1";
+        key.mainKey = "http\t-Microsoft-CryptoAPI/6.1\t09\t12\t2010";
 
         List<Pair<WebLog, IntWritable>> expected = new ArrayList<Pair<WebLog, IntWritable>>();
         expected.add(new Pair<WebLog, IntWritable>(key, new IntWritable(1)));
@@ -86,25 +82,20 @@ public class KpiGenericMapperTest extends TestCase {
                 WebLogType.WEB_LOG_COUNTER_GROUP.toString());
         Text input = new Text(
                 "16737b1873ef03ad\thttp\thttp://tid.es/\ttid.es\t"
-                        + "/\tnull\t01 12 2010\t00:00:01\t-Microsoft-CryptoAPI/6.1\t"
+                        + "/\tnull\t09\t12\t2010\t00\t00\t-Microsoft-CryptoAPI/6.1\t"
                         + "-Microsoft-CryptoAPI/6.1\t-Microsoft-CryptoAPI/6.1\t-Microsoft-CryptoAPI/6.1\t"
                         + "GET\t304");
 
-        Text output = new Text("http\t-Microsoft-CryptoAPI/6.1\t01 12 2010");
-
-        try {
+       try {
             out = this.driver.withInput(new LongWritable(0), input).run();
 
         } catch (IOException ioe) {
             fail();
         }
-        
-
-       
-        
+               
         WebLog key = WebLogFactory.getWebLog(null, null,
                 WebLogType.WEB_LOG_COUNTER_GROUP);
-        key.mainKey = "http\t-Microsoft-CryptoAPI/6.1";
+        key.mainKey = "http\t-Microsoft-CryptoAPI/6.1\t09\t12\t2010";
         key.secondaryKey = "16737b1873ef03ad";
 
         List<Pair<WebLog, IntWritable>> expected = new ArrayList<Pair<WebLog, IntWritable>>();
@@ -112,5 +103,4 @@ public class KpiGenericMapperTest extends TestCase {
 
         assertListEquals(expected, out);
     }
-
 }

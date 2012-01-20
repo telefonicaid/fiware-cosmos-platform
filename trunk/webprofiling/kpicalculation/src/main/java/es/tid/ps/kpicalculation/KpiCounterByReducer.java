@@ -28,11 +28,15 @@ import es.tid.ps.kpicalculation.data.WebLog;
  */
 public class KpiCounterByReducer extends
         Reducer<WebLog, IntWritable, Text, IntWritable> {
+    private static final String USE_HASHCODE = "kpi.aggregation.hashmap";
     private String currentKey;
+    private int currentHashCode;
     private int currentValue;
     private IntWritable counter;
     private Text text;
-    
+    // Defines if the hashCode is written as the first field of the output
+    private boolean useHashCode;
+
     /**
      * Method that creates the objects that will be used during the reduce
      * 
@@ -43,9 +47,12 @@ public class KpiCounterByReducer extends
     protected void setup(Context context) throws IOException,
             InterruptedException {
         this.currentKey = "";
+        this.currentHashCode = 0;
         this.currentValue = 0;
         this.counter = new IntWritable();
         this.text = new Text();
+        this.useHashCode = context.getConfiguration().getBoolean(USE_HASHCODE,
+                false);
     }
 
     /**
@@ -65,6 +72,7 @@ public class KpiCounterByReducer extends
                 context.write(this.text, this.counter);
             }
             this.currentKey = key.mainKey;
+            this.currentHashCode = key.hashCode();
             this.currentValue = 1;
         } else {
             this.currentValue++;
@@ -91,7 +99,11 @@ public class KpiCounterByReducer extends
      * output.
      */
     private void setValues() {
-        this.text.set(this.currentKey);
+        if (this.useHashCode) {
+            this.text.set(this.currentHashCode + "\t" + this.currentKey);
+        } else {
+            this.text.set(this.currentKey);
+        }
         this.counter.set(this.currentValue);
     }
 }

@@ -3,10 +3,13 @@ package es.tid.ps.kpicalculation.data;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.hadoop.io.Text;
+
+import es.tid.ps.kpicalculation.utils.KpiCalculationDateFormatter;
 
 /**
  * Class representing a WebLog in the webprofiling module used to calculate
@@ -91,8 +94,14 @@ public class WebLogCounter extends WebLog {
         this.iterator = mainFields.iterator();
 
         while (this.iterator.hasNext()) {
-            this.mainKey += (String) this.getClass()
-                    .getField(this.iterator.next()).get(this);
+            String attribute = this.iterator.next();
+            if (attribute.equals("date")) {
+                this.mainKey += KpiCalculationDateFormatter
+                        .getFormattedDate(this.date);
+            } else {
+                this.mainKey += (String) this.getClass().getField(attribute)
+                        .get(this);
+            }
             if (this.iterator.hasNext()) {
                 this.mainKey += "\t";
             }

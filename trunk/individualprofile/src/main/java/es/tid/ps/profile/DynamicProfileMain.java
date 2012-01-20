@@ -1,17 +1,9 @@
 package es.tid.ps.profile;
 
-import es.tid.ps.profile.categoryextraction.CategoryExtractionMapper;
-import es.tid.ps.profile.categoryextraction.CategoryExtractionReducer;
-import es.tid.ps.profile.categoryextraction.CategoryInformation;
-import es.tid.ps.profile.userprofile.CategoryCount;
-import es.tid.ps.profile.userprofile.UserProfile;
-import es.tid.ps.profile.userprofile.UserProfileMapper;
-import es.tid.ps.profile.userprofile.UserProfileReducer;
-
-import com.hadoop.mapreduce.LzoTextInputFormat;
-import es.tid.ps.profile.categoryextraction.WebLog;
 import java.io.IOException;
 import java.net.URI;
+
+import com.hadoop.mapreduce.LzoTextInputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.Path;
@@ -23,6 +15,12 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+
+import es.tid.ps.profile.categoryextraction.*;
+import es.tid.ps.profile.userprofile.CategoryCount;
+import es.tid.ps.profile.userprofile.UserProfile;
+import es.tid.ps.profile.userprofile.UserProfileMapper;
+import es.tid.ps.profile.userprofile.UserProfileReducer;
 
 public class DynamicProfileMain {
     private static final String COM_SCORE_BASE = "/user/hdfs/comscore/";
@@ -48,9 +46,9 @@ public class DynamicProfileMain {
         Job job = new Job(conf, "CategoryExtraction");
         job.setJarByClass(DynamicProfileMain.class);
         job.setInputFormatClass(LzoTextInputFormat.class);
-        job.setMapOutputKeyClass(WebLog.class);
+        job.setMapOutputKeyClass(UserNavigation.class);
         job.setMapOutputValueClass(NullWritable.class);
-        job.setOutputKeyClass(WebLog.class);
+        job.setOutputKeyClass(UserNavigation.class);
         job.setOutputValueClass(CategoryInformation.class);
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
         job.setMapperClass(CategoryExtractionMapper.class);

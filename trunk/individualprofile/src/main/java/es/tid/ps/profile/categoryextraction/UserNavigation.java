@@ -5,12 +5,12 @@ package es.tid.ps.profile.categoryextraction;
  *
  * @author sortega
  */
-public class WebLog {
+public class UserNavigation {
     private static final String DELIMITER = "\t";
     public String visitorId;
     public String fullUrl;
 
-    public WebLog() {
+    public UserNavigation() {
     }
 
     public void set(String line) {

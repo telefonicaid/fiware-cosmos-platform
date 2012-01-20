@@ -13,7 +13,7 @@ public class CategoryExtractionMapper extends
     @Override
     public void map(LongWritable key, Text value, Context context) {
         try {
-            WebLog webLog = new WebLog();
+            UserNavigation webLog = new UserNavigation();
             webLog.set(value.toString());
             CompositeKey cKey = new CompositeKey(webLog.visitorId,
                     webLog.fullUrl);

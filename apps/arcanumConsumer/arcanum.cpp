@@ -222,7 +222,7 @@ int connectToServer(void)
 
 
 
-#define BUFSIZE 0x100
+#define BUFSIZE 180
 /* ****************************************************************************
 *
 * writeToServer - 
@@ -230,45 +230,49 @@ int connectToServer(void)
 void writeToServer(int fd)
 {
     int buf[BUFSIZE];
+	int bufSize       = BUFSIZE;
     int loopNo        = 1;
     int bytesWritten  = 0;
     int grandTotal    = 0;
 
-    buf[0]            = htonl((BUFSIZE - 1) * 4);  
-
     while (1)
     {
         int  nb;
-
         int  ix;
-        for (ix = 1; ix < BUFSIZE; ix++)
+		int  tot;
+
+		// bufSize = bufSize - (loopNo % 5);
+		buf[0]  = htonl((bufSize - 1) * 4);  
+        for (ix = 1; ix < bufSize; ix++)
             buf[ix] = ix;
 
-        nb = write(fd, buf, sizeof(buf));
-        grandTotal += nb;
-        V2(("Written %d bytes to server (total: %d)", nb, grandTotal));
-        if (nb != sizeof(buf))
-        {
-           if (nb == -1)
-           {
-              E(("write to tunnel: %s", strerror(errno)));
-              E(("Assuming connection closed, reconnecting ..."));
-              close(fd);
-              fd = connectToServer();
-              continue;
-           }
-           else if (nb == 0)
-           {
-              E(("written ZERO bytes to tunnel - assuming connection closed, reconnecting ..."));
-              close(fd);
-              fd = connectToServer();
-              continue;
-           }
+		tot = 0;
+		while (tot < bufSize)
+		{
+			nb = write(fd, &buf[tot], bufSize - tot);
+			grandTotal += nb;
+			V2(("Written %d bytes to server (total: %d)", nb, grandTotal));
+			if (nb != sizeof(buf))
+			{
+				if (nb == -1)
+				{
+					E(("write to tunnel: %s", strerror(errno)));
+					E(("Assuming connection closed, reconnecting ..."));
+					close(fd);
+					fd = connectToServer();
+					continue;
+				}
+				else if (nb == 0)
+				{
+					E(("written ZERO bytes to tunnel - assuming connection closed, reconnecting ..."));
+					close(fd);
+					fd = connectToServer();
+					continue;
+				}
 
-           E(("Not written all bytes (only %d of %d) - assuming tunnel closed connection", nb, (int) sizeof(buf)));
-           close(fd);
-           fd = connectToServer();
-        }
+				tot += nb;
+			}
+		}
 
         if (sleepTime != 0)
         {

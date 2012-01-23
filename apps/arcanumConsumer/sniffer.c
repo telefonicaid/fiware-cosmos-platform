@@ -288,8 +288,8 @@ void bufPush(int* bufP, int size)
         packetLen = ntohl(*((int*) buffer));
         V2(("parsed a packet of %d data length (bigendian: 0x%x)", packetLen, *((int*) buffer)));
 
-        if (packetLen != (4 * 0x100) - 4)
-            X(1, ("Bad packetLen: %d (original: 0x%x, htohl: 0x%x)", packetLen, *((int*) buffer), ntohl(*((int*) buffer))));
+        // if (packetLen != (4 * 0x100) - 4)
+        //    X(1, ("Bad packetLen: %d (original: 0x%x, htohl: 0x%x)", packetLen, *((int*) buffer), ntohl(*((int*) buffer))));
 
         if (size >= packetLen + 4)
         {

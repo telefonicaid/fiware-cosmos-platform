@@ -46,7 +46,7 @@ public class IndividualProfileMain {
         Job job = new Job(conf, "CategoryExtraction");
         job.setJarByClass(IndividualProfileMain.class);
         job.setInputFormatClass(LzoTextInputFormat.class);
-        job.setMapOutputKeyClass(UserNavigation.class);
+        job.setMapOutputKeyClass(CompositeKey.class);
         job.setMapOutputValueClass(NullWritable.class);
         job.setOutputKeyClass(UserNavigation.class);
         job.setOutputValueClass(CategoryInformation.class);

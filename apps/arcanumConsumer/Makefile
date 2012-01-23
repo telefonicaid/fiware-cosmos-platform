@@ -4,16 +4,16 @@ INCLUDE      = -I../../libs/
 DFLAGS       = -Wall -DOS=$(OS)
 CFLAGS       = $(INCLUDE) $(DFLAGS) -O2 -fPIC -Wall -Wno-unused-function $(DFLAGS) $(INCLUDE)
 
-EXEC1        = arcanumTunnel
+EXEC1        = tektronixTunnel
 EXEC2        = sniffer
-EXEC3        = arcanumTestServer
-EXEC4        = arcanum
-OBJS1        = arcanumTunnel.o
+EXEC3        = tektronixTestServer
+EXEC4        = tektronix
+OBJS1        = tektronixTunnel.o
 OBJS2        = sniffer.o
-OBJS3        = arcanumTestServer.o
-OBJS4        = arcanum.o
+OBJS3        = tektronixTestServer.o
+OBJS4        = tektronix.o
 
-ARCHIVE      = ArcanumTunnelTools.tar
+ARCHIVE      = tektronixTunnelTools.tar
 
 OS           = $(shell uname)
 
@@ -40,7 +40,7 @@ $(EXEC3):	$(OBJS3)
 $(EXEC4):	$(OBJS4)
 			$(CPP) -o $@ $(OBJS4) $(LIBS)
 
-arcanum.o:  arcanum.cpp
+tektronix.o:  tektronix.cpp
 			$(CPP) $(CFLAGS) -c $^ -o $@
 
 %.o: %.cpp

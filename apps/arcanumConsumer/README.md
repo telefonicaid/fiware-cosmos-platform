@@ -1,5 +1,5 @@
-Arcanum Tools
-=============
+Tektronix Tools
+===============
 
 Sniffer
 -------
@@ -18,22 +18,22 @@ default if "-timeFormat" is not specified "%Y-%m-%d" is used. If
 you want it to roll over every hour use, "%Y-%m-%d %H". 
 
 The flag "-filePrefix" defines the name of the file (without the timestamp) and
-defaults to "arcanumPackets" if not set on the command line. The path the files
+efaults to "tektronixPackets" if not set on the command line. The path the files
 get written to is hard-coded to /data/indigo and cannot be changed (without
 recompiling the source code).
 
 Tunnel 
 ------
 
-    ./arcanumTunnel [-arcanum (ip:port)] [-samson (ip:port)] [-sniffer (ip:port)] [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)] [-filter]
+    ./tektronixTunnel [-tektronix (ip:port)] [-samson (ip:port)] [-sniffer (ip:port)] [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)] [-filter]
 
-Setup a tunnel/bridge between arcanum and samson with the option to hook a
+Setup a tunnel/bridge between tektronix and samson with the option to hook a
 sniffer that can dump the data stream to flat files.
 
 Arcanum Simulator
 -----------------
 
-    ./arcanum [-host (host)] [-port (port)] [-sleep (microsecs)] [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)]+
+    ./tektronix [-host (host)] [-port (port)] [-sleepTime (microsecs)] [-sleepEach (loops)] [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)]
 
 This is the new simulator program. Every "-sleep" microseconds it sends a 400
 byte packet to the designated host/port. Testing on a Solaris VM we see a limit
@@ -52,9 +52,9 @@ If you run the following programs, each in their own terminal/screen session,
 with a spare to look at the dumps from the sniffer, you can get a feel for how
 the tools work without having to connect to the actual Arcanum stream.
 
-arcanumTunnel -arcanum localhost:2001 -sniffer localhost:2002 -samson localhost:2003 -v 
+tektronixTunnel -tektronix localhost:2001 -sniffer localhost:2002 -samson localhost:2003 -v 
 sniffer -host localhost -port 2002 -vvv -timeFormat "%Y%m%d%H%M" # rotate the files every minute
-arcanum -host localhost -port 2001 -sleep 1000 -v  # try to generate 1000 packets (400 bytes each) every second.
+tektronix -host localhost -port 2001 -sleep 1000 -v  # try to generate 1000 packets (400 bytes each) every second.
 
 In the fourth session/window check the files in /data/indigo to see they are
 being created and that every minute they are rolling over into a new file. You

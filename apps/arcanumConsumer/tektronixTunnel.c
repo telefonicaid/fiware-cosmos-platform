@@ -1,6 +1,6 @@
 /* ****************************************************************************
 *
-* FILE                      arcanumTunnel.c - interconnect two machines 
+* FILE                      tektronixTunnel.c - interconnect two machines 
 *
 * AUTHOR                    Ken Zangelin, Telefonica I+D
 *
@@ -102,7 +102,7 @@ typedef struct Node
 static int      verbose     = 0;
 static int      filter      = 0;
 unsigned short  snifferPort = 0;
-Node            arcanum;
+Node            tektronix;
 Node            samson;
 Node            sniffer;
 int             buffer[BUFSIZE];
@@ -452,21 +452,21 @@ void tunnel(void)
     //
     // Read as much as we possibly can ...
     //
-    nb = read(arcanum.fd, buffer, sizeof(buffer));
+    nb = read(tektronix.fd, buffer, sizeof(buffer));
     if (nb == -1)
     {
         E(("Error reading from the ARCANUM node: %s", strerror(errno)));
-        nodeClose(&arcanum);
+        nodeClose(&tektronix);
         return;
     }
     else if (nb == 0)
     {
         E(("The ARCANUM node closed the connection"));
-        nodeClose(&arcanum);
+        nodeClose(&tektronix);
         return;
     }
 
-    V2(("Read %d bytes of data from arcanum", nb));
+    V2(("Read %d bytes of data from tektronix", nb));
 
     bufPush(buffer, nb);
     nbAccumulated += nb;
@@ -492,17 +492,17 @@ void tunnel(void)
     while (tot < dataLen)
     {
 
-        nb = read(arcanum.fd, &data[tot], dataLen - tot);
+        nb = read(tektronix.fd, &data[tot], dataLen - tot);
         if (nb == -1)
         {
             E(("Error reading from the ARCANUM node: %s", strerror(errno)));
-            nodeClose(&arcanum);
+            nodeClose(&tektronix);
             return;
         }
         else if (nb == 0)
         {
             E(("Read zero bytes from the ARCANUM node"));
-            nodeClose(&arcanum);
+            nodeClose(&tektronix);
             return;
         }
 
@@ -545,15 +545,15 @@ void run(void)
         //
         // Arcanum
         //
-        if (arcanum.fd != -1)
+        if (tektronix.fd != -1)
         {
-            FD_SET(arcanum.fd, &rFds);
-            max = MAX(max, arcanum.fd);
+            FD_SET(tektronix.fd, &rFds);
+            max = MAX(max, tektronix.fd);
         }
-        else if (arcanum.listenFd != -1)
+        else if (tektronix.listenFd != -1)
         {
-            FD_SET(arcanum.listenFd, &rFds);
-            max = MAX(max, arcanum.listenFd);
+            FD_SET(tektronix.listenFd, &rFds);
+            max = MAX(max, tektronix.listenFd);
         }
 
 
@@ -598,11 +598,11 @@ void run(void)
 			tmoHandler();
         else if ((sniffer.listenFd != -1) && FD_ISSET(sniffer.listenFd, &rFds))
             acceptConnection(&sniffer);
-        else if ((arcanum.listenFd != -1) && FD_ISSET(arcanum.listenFd, &rFds))
-            acceptConnection(&arcanum);
+        else if ((tektronix.listenFd != -1) && FD_ISSET(tektronix.listenFd, &rFds))
+            acceptConnection(&tektronix);
         else if ((samson.listenFd != -1) && FD_ISSET(samson.listenFd, &rFds))
             acceptConnection(&samson);
-		else if ((arcanum.fd != -1) && FD_ISSET(arcanum.fd, &rFds))
+		else if ((tektronix.fd != -1) && FD_ISSET(tektronix.fd, &rFds))
 			tunnel();
 		else if ((samson.fd != -1) && FD_ISSET(samson.fd, &rFds))
             nodeClose(&samson);
@@ -623,7 +623,7 @@ void usage(char* progName)
 {
 	printf("Usage:\n");
 	printf("  %s -u\n", progName);
-	printf("  %s [-arcanum (ip:port)] [-samson (ip:port)] [-sniffer (ip:port)] [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)] [-filter]\n", progName);
+	printf("  %s [-tektronix (ip:port)] [-samson (ip:port)] [-sniffer (ip:port)] [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)] [-filter]\n", progName);
 	exit(1);
 }
 
@@ -647,7 +647,7 @@ void sigHandler(int sigNo)
 */
 int main(int argC, char* argV[])
 {
-    char* arcanumInfo = NULL;
+    char* tektronixInfo = NULL;
     char* samsonInfo  = NULL;
     char* snifferInfo = NULL;
 
@@ -671,9 +671,9 @@ int main(int argC, char* argV[])
 	int ix = 1;
 	while (ix < argC)
 	{
-        if (strcmp(argV[ix], "-arcanum") == 0)
+        if (strcmp(argV[ix], "-tektronix") == 0)
         {
-            arcanumInfo = argV[ix + 1];
+            tektronixInfo = argV[ix + 1];
             ++ix;
         }
         else if (strcmp(argV[ix], "-samson") == 0)
@@ -713,10 +713,10 @@ int main(int argC, char* argV[])
 	}
 
 
-    if (arcanumInfo == NULL)
+    if (tektronixInfo == NULL)
     {
-        printf("Option '-arcanum' not set. Using default values ");
-        arcanumInfo = "172.74.200.200:1234";
+        printf("Option '-tektronix' not set. Using default values ");
+        tektronixInfo = "172.74.200.200:1234";
     }
 
     if (samsonInfo == NULL)
@@ -737,22 +737,22 @@ int main(int argC, char* argV[])
     // For Solaris ...
     //
     memset(&samson, 0,  sizeof(samson));
-    memset(&arcanum, 0, sizeof(arcanum));
+    memset(&tektronix, 0, sizeof(tektronix));
     memset(&sniffer, 0, sizeof(sniffer));
     samson.fd         = -1;
     samson.listenFd   = -1;
-    arcanum.fd        = -1;
-    arcanum.listenFd  = -1;
+    tektronix.fd        = -1;
+    tektronix.listenFd  = -1;
     sniffer.fd        = -1;
     sniffer.listenFd  = -1;
 
 
-    nodeParse(arcanumInfo, &arcanum);
+    nodeParse(tektronixInfo, &tektronix);
 	nodeParse(samsonInfo,  &samson);
 	nodeParse(snifferInfo, &sniffer);
 
 	nodeInit(&samson,  "samson");
-	nodeInit(&arcanum, "arcanum");
+	nodeInit(&tektronix, "tektronix");
     nodeInit(&sniffer, "sniffer");
 
     signal(SIGPIPE, sigHandler);

@@ -22,7 +22,7 @@ import es.tid.ps.profile.userprofile.UserProfile;
 import es.tid.ps.profile.userprofile.UserProfileMapper;
 import es.tid.ps.profile.userprofile.UserProfileReducer;
 
-public class DynamicProfileMain {
+public class IndividualProfileMain {
     private static final String COM_SCORE_BASE = "/user/hdfs/comscore/";
 
     public static void main(String[] args) throws Exception {
@@ -44,7 +44,7 @@ public class DynamicProfileMain {
             Path categoriesPath) throws IOException, IllegalStateException {
         Configuration conf = new Configuration();
         Job job = new Job(conf, "CategoryExtraction");
-        job.setJarByClass(DynamicProfileMain.class);
+        job.setJarByClass(IndividualProfileMain.class);
         job.setInputFormatClass(LzoTextInputFormat.class);
         job.setMapOutputKeyClass(UserNavigation.class);
         job.setMapOutputValueClass(NullWritable.class);
@@ -77,7 +77,7 @@ public class DynamicProfileMain {
     private static Job configureUserProfileJob(Path categoriesPath, Path profilePath)
             throws IOException, IllegalStateException {
         Job job = new Job(new Configuration(), "UserProfile");
-        job.setJarByClass(DynamicProfileMain.class);
+        job.setJarByClass(IndividualProfileMain.class);
         job.setInputFormatClass(SequenceFileInputFormat.class);
         job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(CategoryCount.class);

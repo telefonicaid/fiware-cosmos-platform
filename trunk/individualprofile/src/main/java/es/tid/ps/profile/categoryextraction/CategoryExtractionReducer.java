@@ -27,24 +27,31 @@ public class CategoryExtractionReducer extends
     @Override
     protected void reduce(CompositeKey key, Iterable<NullWritable> values,
             Context context) throws IOException, InterruptedException {
-        // Use the comScore API
         String url = key.getSecondaryKey();
-        String categories = getCategories(url);
+        String categories = this.getCategories(url);
+        long urlInstances = this.countURLInstances(values);
+
         if (categories == null || categories.isEmpty()) {
-            context.getCounter(CategoryExtractionCounter.EMPTY_CATEGORY).
+            context.getCounter(CategoryExtractionCounter.UNKNOWN_URLS).
                     increment(1L);
+            context.getCounter(CategoryExtractionCounter.UNKNOWN_VISITS).
+                    increment(urlInstances);
+            // TODO: do something smart for URL category extraction.
             return;
         }
-        context.getCounter(CategoryExtractionCounter.VALID_CATEGORY).
-                increment(1L);
 
-        CategoryInformation cat = new CategoryInformation(key.getPrimaryKey(),
-                key.getSecondaryKey(), countURLInstances(values),
-                categories.split(CATEGORY_DELIMITER));
+        context.getCounter(CategoryExtractionCounter.KNOWN_URLS).
+                increment(1L);
+        context.getCounter(CategoryExtractionCounter.KNOWN_VISITS).
+                increment(urlInstances);
+        CategoryInformation cat = new CategoryInformation(
+                key.getPrimaryKey(), key.getSecondaryKey(),
+                urlInstances, categories.split(CATEGORY_DELIMITER));
         context.write(key, cat);
     }
 
     protected String getCategories(String url) {
+        // Use the comScore API.
         return DictionaryHandler.getUrlCategories(url);
     }
 

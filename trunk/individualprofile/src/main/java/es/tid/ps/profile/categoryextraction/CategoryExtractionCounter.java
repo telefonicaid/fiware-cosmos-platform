@@ -7,6 +7,8 @@ package es.tid.ps.profile.categoryextraction;
  */
 public enum CategoryExtractionCounter {
     WRONG_FILTERING_FIELDS,
-    EMPTY_CATEGORY,
-    VALID_CATEGORY
+    KNOWN_URLS,
+    UNKNOWN_URLS,
+    KNOWN_VISITS,
+    UNKNOWN_VISITS
 }

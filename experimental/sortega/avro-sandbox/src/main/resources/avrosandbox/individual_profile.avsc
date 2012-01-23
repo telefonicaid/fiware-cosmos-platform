@@ -1,0 +1,25 @@
+{
+  "type" : "record",
+  "name" : "IndividualProfile",
+  "namespace" : "avrosandbox",
+  "fields" : [ {
+    "name" : "userId",
+    "type" : "string"
+  }, {
+    "name" : "categories",
+    "type" : {
+      "type" : "array",
+      "items" : {
+        "type" : "record",
+        "name" : "CategoryInfo",
+        "fields" : [ {
+          "name" : "name",
+          "type" : "string"
+        }, {
+          "name" : "count",
+          "type" : "long"
+        } ]
+      }
+    }
+  } ]
+}

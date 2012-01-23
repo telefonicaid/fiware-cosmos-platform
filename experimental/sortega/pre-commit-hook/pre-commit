@@ -1,0 +1,105 @@
+#!/opt/local/bin/perl
+use LWP::UserAgent;
+use JSON;
+use Data::Dumper;
+
+use constant USERNAME => "hookuser";
+use constant PASSWORD => "h00kuser";
+use constant REVIEW_BOARD_URL => "http://bigdatacodereviews.hi.inet";
+use constant SVNLOOK_PATH => "/opt/local/bin/svnlook";
+use constant PROTECTED_PATH_REGEX => "^trunk/";
+
+my $repo = $ARGV[0];
+my $txn  = $ARGV[1];
+
+{
+    package RequestAgent;
+    @ISA = qw(LWP::UserAgent);
+
+    sub new { 
+	my $self = LWP::UserAgent::new(@_);
+	$self->agent("RBHook/0.1 ");
+	$self;
+    }
+
+    sub get_basic_credentials {
+	return (::USERNAME, ::PASSWORD);
+    }
+}
+
+sub get_review {
+    my $id = shift;
+    my $req = HTTP::Request->new(GET => 
+	REVIEW_BOARD_URL . "/api/review-requests/$id/reviews/");
+    $req->header(Accept => 'application/json');
+
+    my $ua = RequestAgent->new;
+    my $res = $ua->request($req);
+    unless ($res->is_success) {
+	print STDERR "Review request $id does not exists or the service is not " .
+		     "working properly.\n" .  $res->status_line;
+	exit(1);
+    }
+
+    return decode_json($res->content);
+}
+
+sub validate_review {
+    my ($id, $review_request) = @_;
+
+    my %revisions = ();
+    for my $review (@{$review_request->{"reviews"}}) {
+	$revisions{$review->{links}->{user}->{title}} = {
+	    ShipIt => ${$review->{ship_it}},
+	    URL => $review->{links}->{self}->{href}
+	};
+    }
+
+    unless (%revisions) {
+	print STDERR "Review-request $id was not reviewed.\n" .
+	             "Please, go to " . REVIEW_BOARD_URL . "/r/$id";
+	exit(2);
+    }
+
+    for my $review (values %revisions) {
+	unless ($review->{ShipIt}) {
+	    print STDERR "Review-request $id is not marked as 'ship it'\n" .
+			"Please, go to $review->{URL}\n";
+	    exit(3);
+	}
+    }
+}
+
+sub has_protected_paths {
+    open(my $changesfd, SVNLOOK_PATH . " changed -t \"$txn\" \"$repo\" |")
+	or die "Cannot inspect changes";
+    my $re = PROTECTED_PATH_REGEX;
+    while(<$changesfd>) {
+	my ($path) = /^.\s+(.*)$/;
+	return 1 if $path =~ /$re/;
+    }
+    close ($changesfd);
+    return 0;
+}
+
+sub get_change_review_id {
+    my $svnlook = SVNLOOK_PATH;
+    my $msg = `$svnlook log -t "$txn" "$repo"`;
+    chomp($msg);
+    if ($msg =~ /changereview:(\d+)/) {
+	return $1;
+    } else {
+	return 0;
+    }
+}
+
+if (has_protected_paths()) {
+    my $id = get_change_review_id();
+
+    if ($id) {
+	validate_review($id, get_review($id));
+    } else {
+	print STDERR "No id no commit\n";
+	exit(4);
+    }
+}

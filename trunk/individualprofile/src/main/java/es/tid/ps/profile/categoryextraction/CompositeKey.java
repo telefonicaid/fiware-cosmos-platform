@@ -36,6 +36,10 @@ public class CompositeKey implements WritableComparable<CompositeKey> {
         return this.primaryKey;
     }
 
+    public void setPrimaryKey(String primaryKey) {
+        this.primaryKey = primaryKey;
+    }
+
     /**
      * Get the fileIdKey
      *
@@ -43,6 +47,10 @@ public class CompositeKey implements WritableComparable<CompositeKey> {
      */
     public String getSecondaryKey() {
         return this.secondaryKey;
+    }
+
+    public void setSecondaryKey(String secondaryKey) {
+        this.secondaryKey = secondaryKey;
     }
 
     /*

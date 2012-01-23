@@ -1,6 +1,9 @@
 package es.tid.ps.profile.categoryextraction;
 
-import org.apache.hadoop.io.*;
+import java.io.IOException;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 /**
@@ -10,14 +13,23 @@ import org.apache.hadoop.mapreduce.Mapper;
  **/
 public class CategoryExtractionMapper extends
         Mapper<LongWritable, Text, CompositeKey, NullWritable> {
+    private UserNavigation webLog;
+    private CompositeKey cKey;
+
+    @Override
+    protected void setup(Context context) throws IOException,
+            InterruptedException {
+        this.webLog = new UserNavigation();
+        this.cKey = new CompositeKey();
+    }
+
     @Override
     public void map(LongWritable key, Text value, Context context) {
         try {
-            UserNavigation webLog = new UserNavigation();
-            webLog.set(value.toString());
-            CompositeKey cKey = new CompositeKey(webLog.visitorId,
-                    webLog.fullUrl);
-            context.write(cKey, NullWritable.get());
+            this.webLog.set(value.toString());
+            this.cKey.setPrimaryKey(this.webLog.visitorId);
+            this.cKey.setSecondaryKey(this.webLog.fullUrl);
+            context.write(this.cKey, NullWritable.get());
         } catch (Exception ex) {
             context.getCounter(CategoryExtractionCounter.WRONG_FILTERING_FIELDS)
                     .increment(1L);

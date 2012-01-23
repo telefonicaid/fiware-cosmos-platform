@@ -17,7 +17,7 @@ public class CategoryCount implements Writable {
 
     public CategoryCount() {
         this.category = null;
-        this.count = 0;
+        this.count = 0l;
     }
 
     public CategoryCount(String category, long count) {
@@ -37,7 +37,7 @@ public class CategoryCount implements Writable {
         return this.count;
     }
 
-    public void setCount(int count) {
+    public void setCount(long count) {
         this.count = count;
     }
 

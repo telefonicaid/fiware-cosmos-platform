@@ -14,14 +14,25 @@ import es.tid.ps.profile.categoryextraction.CompositeKey;
  */
 public class UserProfileMapper extends Mapper<CompositeKey, CategoryInformation,
         Text, CategoryCount> {
+    private Text userId;
+    private CategoryCount categoryCount;
+
+    @Override
+    protected void setup(Context context) throws IOException,
+            InterruptedException {
+        this.userId = new Text();
+        this.categoryCount = new CategoryCount();
+    }
+
     @Override
     protected void map(CompositeKey key, CategoryInformation categoryInfo,
             Context context)
             throws IOException, InterruptedException {
-        Text userId = new Text(categoryInfo.getUserId());
+        this.userId.set(categoryInfo.getUserId());
         for (String category : categoryInfo.getCategoryNames()) {
-            context.write(userId, new CategoryCount(category,
-                    categoryInfo.getCount()));
+            this.categoryCount.setCategory(category);
+            this.categoryCount.setCount(categoryInfo.getCount());
+            context.write(this.userId, this.categoryCount);
         }
     }
 }

@@ -13,14 +13,21 @@ import java.io.IOException;
  */
 public class UserProfileReducer extends Reducer<Text, CategoryCount, Text,
         UserProfile> {
+    private UserProfile profile;
+
+    @Override
+    protected void setup(Context context) throws IOException,
+            InterruptedException {
+        this.profile = new UserProfile();
+    }
+
     @Override
     protected void reduce(Text userId, Iterable<CategoryCount> counts,
             Context context) throws IOException, InterruptedException {
-        UserProfile profile = new UserProfile();
-        profile.setUserId(userId.toString());
+        this.profile.setUserId(userId.toString());
         for (CategoryCount count : counts) {
-            profile.add(count);
+            this.profile.add(count);
         }
-        context.write(userId, profile);
+        context.write(userId, this.profile);
     }
 }

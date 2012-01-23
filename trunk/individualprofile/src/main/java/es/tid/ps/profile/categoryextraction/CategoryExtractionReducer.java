@@ -18,8 +18,15 @@ public class CategoryExtractionReducer extends
         Reducer<CompositeKey, NullWritable, CompositeKey, CategoryInformation> {
     private final static String CATEGORY_DELIMITER = "/";
 
+    private CategoryInformation catInfo;
+
     @Override
     public void setup(Context context) throws IOException {
+        this.setupDictionary(context);
+        this.catInfo = new CategoryInformation();
+    }
+
+    protected void setupDictionary(Context context) throws IOException {
         DictionaryHandler.init(DistributedCache.getLocalCacheFiles(context
                 .getConfiguration()));
     }
@@ -44,10 +51,11 @@ public class CategoryExtractionReducer extends
                 increment(1L);
         context.getCounter(CategoryExtractionCounter.KNOWN_VISITS).
                 increment(urlInstances);
-        CategoryInformation cat = new CategoryInformation(
-                key.getPrimaryKey(), key.getSecondaryKey(),
-                urlInstances, categories.split(CATEGORY_DELIMITER));
-        context.write(key, cat);
+        this.catInfo.setUserId(key.getPrimaryKey());
+        this.catInfo.setUrl(key.getSecondaryKey());
+        this.catInfo.setCount(urlInstances);
+        this.catInfo.setCategoryNames(categories.split(CATEGORY_DELIMITER));
+        context.write(key, this.catInfo);
     }
 
     protected String getCategories(String url) {
@@ -56,7 +64,7 @@ public class CategoryExtractionReducer extends
     }
 
     private long countURLInstances(Iterable<NullWritable> values) {
-        long count = 0;
+        long count = 0l;
         Iterator<NullWritable> it = values.iterator();
         while (it.hasNext()) {
             count++;

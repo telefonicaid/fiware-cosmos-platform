@@ -74,6 +74,7 @@ public class UserProfile implements Writable {
     @Override
     public void readFields(DataInput input) throws IOException {
         this.userId = input.readUTF();
+        this.counts = new HashMap<String, Long>();
         int entries = input.readInt();
         for (int i = 0; i < entries; i++) {
             String category = input.readUTF();

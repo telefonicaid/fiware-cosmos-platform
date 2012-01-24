@@ -48,7 +48,7 @@ public class IndividualProfileMain {
         job.setInputFormatClass(LzoTextInputFormat.class);
         job.setMapOutputKeyClass(CompositeKey.class);
         job.setMapOutputValueClass(NullWritable.class);
-        job.setOutputKeyClass(UserNavigation.class);
+        job.setOutputKeyClass(CompositeKey.class);
         job.setOutputValueClass(CategoryInformation.class);
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
         job.setMapperClass(CategoryExtractionMapper.class);

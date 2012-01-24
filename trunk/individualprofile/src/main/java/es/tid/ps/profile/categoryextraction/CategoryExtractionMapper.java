@@ -26,9 +26,9 @@ public class CategoryExtractionMapper extends
     @Override
     public void map(LongWritable key, Text value, Context context) {
         try {
-            this.webLog.set(value.toString());
-            this.cKey.setPrimaryKey(this.webLog.visitorId);
-            this.cKey.setSecondaryKey(this.webLog.fullUrl);
+            this.webLog.parse(value.toString());
+            this.cKey.setPrimaryKey(this.webLog.getVisitorId());
+            this.cKey.setSecondaryKey(this.webLog.getFullUrl());
             context.write(this.cKey, NullWritable.get());
         } catch (Exception ex) {
             context.getCounter(CategoryExtractionCounter.WRONG_FILTERING_FIELDS)

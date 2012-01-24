@@ -61,20 +61,22 @@ sub get_change_review_id {
     my $svnlook = SVNLOOK_PATH;
     my $msg = `$svnlook log -r "$rev" "$repo"`;
     chomp($msg);
-    if ($msg =~ /changereview:(\d+)/) {
+    if ($msg =~ /changereview:(\d+|later)/) {
 	return $1;
     } else {
-	return 0;
+	return undef;
     }
 }
 
 if (has_protected_paths()) {
     my $id = get_change_review_id();
 
-    if ($id) {
-	submit_change($id);
-    } else {
+    if (not $id) {
 	print STDERR "No change review id to commit\n";
 	exit(4);
+    }
+    
+    if ($id ne 'later') {
+	submit_change($id);
     }
 }

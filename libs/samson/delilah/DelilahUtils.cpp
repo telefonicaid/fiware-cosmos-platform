@@ -424,6 +424,7 @@ namespace samson {
         pugi::xml_node running = node_process_manager.first_element_by_path("running");
         pugi::xml_node queued = node_process_manager.first_element_by_path("queued");
         pugi::xml_node halted = node_process_manager.first_element_by_path("halted");
+        if (running || queued || halted );
         
         int num_processes = pugi::getInt( node_process_manager ,"num_processes");
         int num_running_processes = pugi::getInt( node_process_manager ,"num_running_processes");

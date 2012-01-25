@@ -57,4 +57,5 @@ void daemonize(void)
 	s = freopen("/dev/null", "r", stdin);
 	s = freopen("/dev/null", "w", stdout);
 	s = freopen("/dev/null", "w", stderr);
+        if (s);
 }

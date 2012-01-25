@@ -134,6 +134,7 @@ namespace samson {
         doc.reset();
         std::istringstream is_xml_document( xml_info );
         pugi::xml_parse_result result = doc.load( is_xml_document );
+	if (result);
 
         
         

@@ -146,6 +146,7 @@ static void newWayCheck(struct sockaddr_in sin, int len)
 	memset(hostname,    0, sizeof(hostname));
 	memset(servicename, 0, sizeof(servicename));
 	s = getnameinfo((const struct sockaddr*) &sin, len, hostname, sizeof(hostname), servicename, sizeof(servicename), flags);
+        if (s);
 	LM_T(LmtGetnameinfo, ("Name: '%s', Service: '%s'", hostname, servicename));
 }
 

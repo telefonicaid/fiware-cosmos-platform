@@ -153,6 +153,7 @@ static void logHookFunction(void* vP, char* text, char type, const char* date, c
 
 	supervisor = networkP->endpoint[SUPERVISOR];
 	me         = networkP->endpoint[ME];
+	if (me);
 
 	// LM_H(("******************* Sending trace ?\n"));
 	if ((logSocket == -1) || (supervisor == NULL) || (supervisor->wFd == -1) || (supervisor->state != Endpoint::Connected) || (supervisor->helloReceived != true))

@@ -867,7 +867,7 @@ void EndpointManager::timeout(void)
 void EndpointManager::run(bool oneShot)
 {
 	Endpoint2*       ep;
-	int              ix;
+	//int              ix;
 	fd_set           rFds;
 	int              max;
 	struct timeval   tv;
@@ -888,7 +888,7 @@ void EndpointManager::run(bool oneShot)
 			char fdsString[512];
 
 			FD_ZERO(&rFds);
-			ix   = 0;
+			//ix   = 0;
 			max  = 0;
 			eps  = 0;
 			memset(fdsString, 0, sizeof(fdsString));
@@ -935,6 +935,7 @@ void EndpointManager::run(bool oneShot)
                  */
 
 				firstTimeForNoFdsToListenTo = false;
+				if (firstTimeForNoFdsToListenTo);
                 usleep(100000);
 				//sleep(2);
 				fds = 0;

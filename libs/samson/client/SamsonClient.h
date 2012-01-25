@@ -253,6 +253,7 @@ namespace  samson {
 
 				// Write the content to the output
 				nb = write(1, data, header->info.size);
+				if (nb);
 				return;
             }
             

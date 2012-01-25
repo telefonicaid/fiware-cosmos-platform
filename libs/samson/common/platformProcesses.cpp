@@ -162,6 +162,7 @@ ProcessVector* platformProcessesGet(int* sizeP)
 	{
 		LM_E(("stat(%s): %s", ppFile, strerror(errno)));
 		seriousError = true;
+		if (seriousError);
 	}
 
 	if (chmod(ppFile, 0744) != 0)

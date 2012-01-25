@@ -11,11 +11,11 @@ SET (STATIC_LIBS
      lm
      protobuf
      pthread
-     dl
      curses
      samsonNetwork
      samsonStream
      samsonModule
+     dl
      engine
      pugi
      au

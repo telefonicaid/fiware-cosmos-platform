@@ -510,6 +510,7 @@ namespace samson {
                     size_t task = 0;
                     if( pos != std::string::npos )
                         task = atoll( file_name.substr( 0 , pos ).c_str() );
+                    if (task);
                     
                     if( files.find( file_name ) == files.end() )
                     {

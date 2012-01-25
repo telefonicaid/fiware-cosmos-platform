@@ -66,7 +66,7 @@ namespace samson {
 		size_t file_size = 0;
         int current_hg_set = (*buffers.begin())->hg_set;
 
-        au::list<engine::Buffer>::iterator first_iter = buffers.begin();
+        //au::list<engine::Buffer>::iterator first_iter = buffers.begin();
         au::list<engine::Buffer>::iterator last_iter = ++buffers.begin();
         
         for (  au::list<engine::Buffer>::iterator iter = ++buffers.begin() ; iter != buffers.end() ; iter++)

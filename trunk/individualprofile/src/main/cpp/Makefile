@@ -5,16 +5,16 @@ LDDFLAGS=-I/usr/java/default/include -I$(COMSCOREDIR) \
 
 all: libCategories.so
 
-es/tid/ps/profile/dictionary/CSDictionaryJNIInterface.class:
-	javac -d . ../java/es/tid/ps/profile/dictionary/CSDictionaryJNIInterface.java
+es/tid/ps/profile/dictionary/comscore/CSDictionaryJNIInterface.class:
+	javac -d . ../java/es/tid/ps/profile/dictionary/comscore/CSDictionaryJNIInterface.java
 
-es_tid_ps_profile_dictionary_CSDictionaryJNIInterface.h: es/tid/ps/profile/dictionary/CSDictionaryJNIInterface.class
-	javah -jni es.tid.ps.profile.dictionary.CSDictionaryJNIInterface
+es_tid_ps_profile_dictionary_comscore/CSDictionaryJNIInterface.h: es/tid/ps/profile/dictionary/comscore/CSDictionaryJNIInterface.class
+	javah -jni es.tid.ps.profile.dictionary.comscore.CSDictionaryJNIInterface
 
-libCategories.so: es_tid_ps_profile_dictionary_CSDictionaryJNIInterface.h es_tid_ps_profile_dictionary_CSDictionaryJNIInterface.cpp
-	g++ $(CXXFLAGS) $(LDDFLAGS) -o libCategories.so es_tid_ps_profile_dictionary_CSDictionaryJNIInterface.cpp $(COMSCOREDIR)/libcsCFD.so.1.0
+libCategories.so: es_tid_ps_profile_dictionary_comscore_CSDictionaryJNIInterface.h es_tid_ps_profile_dictionary_comscore_CSDictionaryJNIInterface.cpp
+	g++ $(CXXFLAGS) $(LDDFLAGS) -o libCategories.so es_tid_ps_profile_dictionary_comscore_CSDictionaryJNIInterface.cpp $(COMSCOREDIR)/libcsCFD.so.1.0
 
 clean:
-	rm -rf es es_tid_ps_profile_dictionary_CSDictionaryJNIInterface.h libCategories.so
+	rm -rf es es_tid_ps_profile_dictionary_comscore_CSDictionaryJNIInterface.h libCategories.so
 
 .PHONY: clean all

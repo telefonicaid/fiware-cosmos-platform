@@ -1,4 +1,4 @@
-package es.tid.ps.profile.dictionary;
+package es.tid.ps.profile.dictionary.comscore;
 
 /**
  * Class that defines the native methods to access the comScore dictionary API

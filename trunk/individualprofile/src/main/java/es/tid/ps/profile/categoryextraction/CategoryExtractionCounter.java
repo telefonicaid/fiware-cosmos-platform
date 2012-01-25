@@ -6,9 +6,9 @@ package es.tid.ps.profile.categoryextraction;
  * @author dmicol
  */
 public enum CategoryExtractionCounter {
+    UNPROCESSED_VISITS,
     WRONG_FILTERING_FIELDS,
-    KNOWN_URLS,
-    UNKNOWN_URLS,
     KNOWN_VISITS,
+    IRRELEVANT_VISITS,
     UNKNOWN_VISITS
 }

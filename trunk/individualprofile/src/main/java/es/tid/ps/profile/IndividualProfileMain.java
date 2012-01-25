@@ -43,6 +43,7 @@ public class IndividualProfileMain {
     private static Job configureCategoryExtractionJob(Path webLogsPath,
             Path categoriesPath) throws IOException, IllegalStateException {
         Configuration conf = new Configuration();
+
         Job job = new Job(conf, "CategoryExtraction");
         job.setJarByClass(IndividualProfileMain.class);
         job.setInputFormatClass(LzoTextInputFormat.class);
@@ -66,7 +67,7 @@ public class IndividualProfileMain {
                 URI.create(COM_SCORE_BASE + "cs_mmxi_143.bcp.gz"),
                 job.getConfiguration());
         DistributedCache.addCacheFile(URI.create(COM_SCORE_BASE
-                + "pattern_category_mapping_143m.txt"), job.getConfiguration());
+                + "patterns_to_categories.txt"), job.getConfiguration());
         DistributedCache.addCacheFile(
                 URI.create(COM_SCORE_BASE + "cat_subcat_lookup_143m.txt"),
                 job.getConfiguration());

@@ -13,13 +13,17 @@
 // </editor-fold>
 package es.tid.ps.profile.categoryextraction;
 
-import org.apache.hadoop.io.NullWritable;
 import java.io.IOException;
+import static java.util.Arrays.asList;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
-import static java.util.Arrays.*;
+
+import es.tid.ps.profile.dictionary.Categorization;
+import es.tid.ps.profile.dictionary.CategorizationResult;
 
 /**
  * Test case for CategoryExtractionReducer
@@ -36,12 +40,27 @@ public class CategoryExtractionReducerTest {
         instance = new CategoryExtractionReducer() {
             @Override
             protected void setupDictionary(Context context) throws IOException {
-                // Preventing dictionay initialization
+                // Avoid loading the real dictionary
             }
 
             @Override
-            protected String getCategories(String url) {
-                return "SPORTS/NEWS";
+            protected Categorization categorize(String url) {
+                Categorization categorization = new Categorization();
+                if (url.equals("http://www.marca.es/basket")) {
+                    categorization.result = CategorizationResult.KNOWN_URL;
+                    categorization.categories =
+                            new String[] { "SPORTS", "NEWS" };
+                } else if (url.equals("http://www.mutxamel.org")) {
+                    categorization.result = CategorizationResult.UNKNOWN_URL;
+                } else if (url.equals("http://www.realmadrid.com")) {
+                    categorization.result = CategorizationResult.IRRELEVANT_URL;
+                } else if (url.isEmpty()) {
+                    categorization.result =
+                            CategorizationResult.GENERIC_FAILURE;
+                } else {
+                    assert false;
+                }
+                return categorization;
             }
         };
         driver = new ReduceDriver<CompositeKey, NullWritable, CompositeKey,
@@ -49,7 +68,7 @@ public class CategoryExtractionReducerTest {
     }
 
     @Test
-    public void testReduce() throws Exception {
+    public void testKnownUrl() throws Exception {
         String visitorId = "CA003B";
         String fullURL = "http://www.marca.es/basket";
         CompositeKey key = new CompositeKey(visitorId, fullURL);
@@ -61,5 +80,43 @@ public class CategoryExtractionReducerTest {
         driver.withInput(key, asList(NullWritable.get(), NullWritable.get()))
               .withOutput(key, expectedCategoryInformation)
               .runTest();
+        assertEquals(2l, driver.getCounters().findCounter(
+                CategoryExtractionCounter.KNOWN_VISITS).getValue());
+    }
+    
+    @Test
+    public void testUnknownUrl() throws Exception {
+        String visitorId = "CA003C";
+        String fullURL = "http://www.mutxamel.org";
+        CompositeKey key = new CompositeKey(visitorId, fullURL);
+
+        driver.withInput(key, asList(NullWritable.get(), NullWritable.get()))
+              .runTest();
+        assertEquals(2l, driver.getCounters().findCounter(
+                CategoryExtractionCounter.UNKNOWN_VISITS).getValue());
+    }
+        
+    @Test
+    public void testIrrelevantUrl() throws Exception {
+        String visitorId = "CA003D";
+        String fullURL = "http://www.realmadrid.com";
+        CompositeKey key = new CompositeKey(visitorId, fullURL);
+
+        driver.withInput(key, asList(NullWritable.get(), NullWritable.get()))
+              .runTest();
+        assertEquals(2l, driver.getCounters().findCounter(
+                CategoryExtractionCounter.IRRELEVANT_VISITS).getValue());
+    }
+            
+    @Test
+    public void testGenericFailure() throws Exception {
+        String visitorId = "CA003E";
+        String fullURL = "";
+        CompositeKey key = new CompositeKey(visitorId, fullURL);
+
+        driver.withInput(key, asList(NullWritable.get(), NullWritable.get()))
+            .runTest();
+        assertEquals(2l, driver.getCounters().findCounter(
+                CategoryExtractionCounter.UNPROCESSED_VISITS).getValue());
     }
 }

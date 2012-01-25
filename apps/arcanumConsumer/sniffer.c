@@ -42,7 +42,6 @@ char*           timeFormat = "%Y-%m-%d";
 
 
 
-#define BUFSIZE (16 * 1024 * 1024)
 /* ****************************************************************************
 *
 * Global variables
@@ -50,9 +49,7 @@ char*           timeFormat = "%Y-%m-%d";
 char*           dateString;
 char            dateBuf[80];
 int             dateBufLen = 80;
-int             buffer[BUFSIZE];
 char            savedBuffer[128 * 1024];
-int             bufSize           = BUFSIZE;
 int             savedMissing      = 0;
 int             savedLen          = 0;
 int             storageFd         = -1;
@@ -96,6 +93,35 @@ do {                                                              \
     M(s);                                                         \
     return r;                                                     \
 } while (0)
+
+
+
+/* ****************************************************************************
+*
+* bufPresent - 
+*/
+void bufPresent(char* title, char* buf, int bufLen)
+{
+	int ix = 0;
+
+	if (verbose < 2)
+	   return;
+
+	printf("----- %s -----\n", title);
+
+	while (ix < bufLen)
+	{
+		if (ix % 16 == 0)
+			printf("%08x:  ", ix);
+		printf("%02x ", buf[ix] & 0xFF);
+		++ix;
+		if (ix % 16 == 0)
+			printf("\n");
+	}
+
+	printf("\n");
+	printf("\n");	
+}
 
 
 
@@ -197,17 +223,17 @@ char* dateStringGet(void)
 *
 * packetStore - 
 */
-void packetStore(int fd, char* buffer)
+void packetStore(int fd, char* buf)
 {
     int  nb;
-    int  dataLen = ntohl(*((int*) buffer));
+    int  bufLen = ntohl(*((int*) buf));
 
-    dataLen += 4;
-    V1(("Writing %d of data to storage file", dataLen));
+    bufLen += 4;
+    V1(("Writing %d of data to storage file", bufLen));
 
-    nb = write(storageFd, buffer, dataLen); 
-    if (nb != dataLen)
-        E(("Error writing packet %d to storage file (written %d bytes out of %d)", packets, nb, dataLen));
+    nb = write(storageFd, buf, bufLen); 
+    if (nb != bufLen)
+        E(("Error writing packet %d to storage file (written %d bytes out of %d)", packets, nb, bufLen));
 }
 
 
@@ -216,10 +242,9 @@ void packetStore(int fd, char* buffer)
 *
 * bufPush - 
 */
-void bufPush(int* bufP, int size)
+void bufPush(char* buf, int size)
 {
-    char*  buffer     = (char*) bufP;
-    int    packetLen;
+    int packetLen;
 
     //
     // First time?
@@ -240,7 +265,7 @@ void bufPush(int* bufP, int size)
     {
         free(dateString);
         dateString = strdup(dString);
-            
+		
         close(storageFd);
         storageFd  = storageOpen();
     }
@@ -249,23 +274,23 @@ void bufPush(int* bufP, int size)
 
     //
     // Any data leftover from last push?
-    // Add the data from buffer to make it a whole packet,
+    // Add the data from buf to make it a whole packet,
     // and then forward this 'incomplete' packet first
     //
     if (savedLen != 0)
     {
-        V1(("Detected a saved buffer of %d bytes, adding another %d bytes to it", savedLen, savedMissing));
+        V1(("Detected a saved buf of %d bytes, adding another %d bytes to it", savedLen, savedMissing));
 
         if (size >= savedMissing)
         {
             int* iP = (int*) savedBuffer;
-            V1(("Restoring a saved packet: 0x%x 0x%x 0x%x 0x%x", iP[0], iP[1], iP[2], iP[3]));
+            V1(("Restoring a saved packet: 0x%08x 0x%08x 0x%08x 0x%08x", iP[0], iP[1], iP[2], iP[3]));
 
-            memcpy(&savedBuffer[savedLen], buffer, savedMissing);
+            memcpy(&savedBuffer[savedLen], buf, savedMissing);
 
             packetStore(storageFd, savedBuffer);
 
-            buffer   = &buffer[savedMissing];
+            buf   = &buf[savedMissing];
             size    -= savedMissing;
             savedLen = 0;
             packets  = packets + 1;
@@ -273,7 +298,7 @@ void bufPush(int* bufP, int size)
         else
         {
             V1(("Buffer too small to fill an entire packet - copying a part and reading again ..."));
-            memcpy(&savedBuffer[savedLen], buffer, size);
+            memcpy(&savedBuffer[savedLen], buf, size);
             savedLen += size;
             return;
         }
@@ -281,29 +306,29 @@ void bufPush(int* bufP, int size)
 
 
     //
-    // Now, finally, loop over all packets in the buffer and write them to file
+    // Now, finally, loop over all packets in the buf and write them to file
     //
     while (size > 0)
     {
-        packetLen = ntohl(*((int*) buffer));
-        V2(("parsed a packet of %d data length (bigendian: 0x%x)", packetLen, *((int*) buffer)));
+        packetLen = ntohl(*((int*) buf));
+        V1(("parsed a packet of %d data length (bigendian: 0x%x)", packetLen, *((int*) buf)));
 
-        // if (packetLen != (4 * 0x100) - 4)
-        //    X(1, ("Bad packetLen: %d (original: 0x%x, htohl: 0x%x)", packetLen, *((int*) buffer), ntohl(*((int*) buffer))));
+		if (packetLen > 3000) // For example ...
+           X(1, ("Bad packetLen: %d (original: 0x%x, htohl: 0x%x)", packetLen, *((int*) buf), ntohl(*((int*) buf))));
 
         if (size >= packetLen + 4)
         {
             ++packets;
             V1(("Got package %d (grand total bytes read: %d)", packets, nbAccumulated));
 
-            packetStore(storageFd, buffer);
+            packetStore(storageFd, buf);
 
-            buffer = &buffer[packetLen + 4];
+            buf = &buf[packetLen + 4];
             size  -= (packetLen + 4);
         }
         else
         {
-            memcpy(savedBuffer, buffer, size);
+            memcpy(savedBuffer, buf, size);
             savedLen       = size;
             savedMissing   = packetLen + 4 - savedLen;
 
@@ -318,29 +343,28 @@ void bufPush(int* bufP, int size)
 
 
 
+#define BUFSIZE (16 * 1024 * 1024)
+char            buffer[BUFSIZE];
+int             bufSize           = BUFSIZE;
 /* ****************************************************************************
 *
 * readFromServer - 
 */
 void readFromServer(int fd)
 {
-	int    nb;
-	int    sz;
+	int nb;
 
     V2(("Reading from server"));
-	sz = bufSize;
 	while (1)
 	{
-        
-        //
         // Read as much as we possibly can ...
-        //
         nb = read(fd, buffer, sizeof(buffer));
         if (nb > 0)
         {
             nbAccumulated += nb;
 
-            V2(("Read %d bytes of data from arcanum (grand total: %d)", nb, nbAccumulated));
+            V2(("Read %d bytes of data from tunnel (grand total: %d)", nb, nbAccumulated));
+			bufPresent("Read from Tunnel", buffer, nb);
 
             bufPush(buffer, nb);
         }

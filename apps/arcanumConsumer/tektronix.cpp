@@ -222,57 +222,64 @@ int connectToServer(void)
 
 
 
-#define BUFSIZE 180
+// 15 * 4 == 60
+// 60 + 4 == 64 == 4 lines ...
+#define BUFSIZE 180 
 /* ****************************************************************************
 *
 * writeToServer - 
 */
 void writeToServer(int fd)
 {
-    int buf[BUFSIZE];
-	int bufSize       = BUFSIZE;
-    int loopNo        = 1;
-    int bytesWritten  = 0;
-    int grandTotal    = 0;
+    char  buf[BUFSIZE + 10];
+	int   bufSize       = BUFSIZE + 10;
+    int   loopNo        = 1;
+    int   bytesWritten  = 0;
+    int   grandTotal    = 0;
 
     while (1)
     {
-        int  nb;
         int  ix;
 		int  tot;
+		int* dataSizeP = (int*) buf;
+		int  dataSize;
+		int  totalSize;
 
-		// bufSize = bufSize - (loopNo % 5);
-		buf[0]  = htonl((bufSize - 1) * 4);  
-        for (ix = 1; ix < bufSize; ix++)
-            buf[ix] = ix;
+		dataSize    = bufSize - (loopNo % 10);
+		totalSize   = dataSize + 4;
+		*dataSizeP  = htonl((dataSize));
+        for (ix = 4; ix < dataSize; ix++)
+            buf[ix] = ix - 4;
 
 		tot = 0;
-		while (tot < bufSize)
+		while (tot < totalSize)
 		{
-			nb = write(fd, &buf[tot], bufSize - tot);
+			int  nb;
+
+			nb = write(fd, &buf[tot], totalSize - tot);
 			grandTotal += nb;
 			V2(("Written %d bytes to server (total: %d)", nb, grandTotal));
-			if (nb != sizeof(buf))
+			if (nb == -1)
 			{
-				if (nb == -1)
-				{
-					E(("write to tunnel: %s", strerror(errno)));
-					E(("Assuming connection closed, reconnecting ..."));
-					close(fd);
-					fd = connectToServer();
-					continue;
-				}
-				else if (nb == 0)
-				{
-					E(("written ZERO bytes to tunnel - assuming connection closed, reconnecting ..."));
-					close(fd);
-					fd = connectToServer();
-					continue;
-				}
-
-				tot += nb;
+				E(("write to tunnel: %s", strerror(errno)));
+				E(("Assuming connection closed, reconnecting ..."));
+				close(fd);
+				fd = connectToServer();
+				continue;
 			}
+			else if (nb == 0)
+			{
+				E(("written ZERO bytes to tunnel - assuming connection closed, reconnecting ..."));
+				close(fd);
+				fd = connectToServer();
+				continue;
+			}
+
+			bytesWritten += nb;
+			tot += nb;
 		}
+
+		V1(("written a packet of %d bytes", bufSize));
 
         if (sleepTime != 0)
         {
@@ -284,11 +291,10 @@ void writeToServer(int fd)
         }
 
         ++loopNo;
-        bytesWritten += nb;
 
         if ((loopNo % 50) == 0)
             V1(("%d packets written, %d bytes in total", loopNo, bytesWritten));
-        }
+	}
 }
 
 

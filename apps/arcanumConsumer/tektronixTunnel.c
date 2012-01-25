@@ -105,7 +105,7 @@ unsigned short  snifferPort = 0;
 Node            tektronix;
 Node            samson;
 Node            sniffer;
-int             buffer[BUFSIZE];
+char            buffer[BUFSIZE];
 char            savedBuffer[128 * 1024];
 int             bufSize           = BUFSIZE;
 int             savedMissing      = 0;
@@ -113,6 +113,34 @@ int             savedLen          = 0;
 int             packetsSent       = 0;
 int             packetsForSniffer = 0;
 
+
+
+/* ****************************************************************************
+*
+* bufPresent - 
+*/
+void bufPresent(char* title, char* buf, int bufLen)
+{
+	int ix = 0;
+
+	if (verbose < 2)
+	   return;
+
+	printf("----- %s -----\n", title);
+
+	while (ix < bufLen)
+	{
+		if (ix % 16 == 0)
+			printf("%08x:  ", ix);
+		printf("%02x ", buf[ix] & 0xFF);
+		++ix;
+		if (ix % 16 == 0)
+			printf("\n");
+	}
+
+	printf("\n");
+	printf("\n");	
+}
 
 
 
@@ -355,37 +383,48 @@ void forward(Node* nodeP, char* buf, int size, int retries)
 *
 * bufPush - 
 */ 
-void bufPush(int* bufP, int size)
+void bufPush(char* buf, int size)
 {
     int    packetLen;
-    char*  buffer = (char*) bufP;
 
     //
     // Any data leftover from last push?
-    // Add the data from buffer to make it a whole packet,
+    // Add the data from buf to make it a whole packet,
     // and then forward this 'incomplete' packet first
     //
     if (savedLen != 0)
     {
         int* dataLenP = (int*) savedBuffer;
         int  dataLen  = ntohl(*dataLenP);
+		int  totalLen = dataLen + 4;
 
-        if (sniffer.fd != -1)
-            V1(("packet %d was 'saved' (dataLen: %d, savedLen: %d)", packetsSent, dataLen, savedLen));
+		if (size < savedMissing)
+		{
+			V1(("Got a packet not big enough to fill entire saved buffer - adding %d bytes to saved buffer", size));
+			memcpy(&savedBuffer[savedLen], buf, size);
+			savedMissing -= size;
+			savedLen     += size;
+			return;
+		}
 
-        memcpy(&savedBuffer[savedLen], buffer, savedMissing);
+        //if (sniffer.fd != -1)
+        //    V1(("packet %d was 'saved' (dataLen: %d, savedLen: %d)", packetsSent, dataLen, savedLen));
+
+		V1(("adding %d bytes to saved packet", savedMissing));
+        memcpy(&savedBuffer[savedLen], buf, savedMissing);
         int* iP = (int*) savedBuffer;
         V1(("Restoring a saved packet (adding %d bytes): 0x%x 0x%x 0x%x 0x%x", savedMissing, iP[0], iP[1], iP[2], iP[3]));
         if (samson.fd != -1)
-            forward(&samson, savedBuffer, dataLen, 0);
+            forward(&samson, savedBuffer, totalLen, 0);
         if (sniffer.fd != -1)
         {
             V1(("packet %d (%d for sniffer) has dataLen %d (0x%x)", packetsSent, packetsForSniffer, dataLen, dataLen));
-            forward(&sniffer, savedBuffer, dataLen, 0);
+			bufPresent("saved buffer", savedBuffer, totalLen);
+            forward(&sniffer, savedBuffer, totalLen, 0);
             ++packetsForSniffer;
         }
 
-        buffer = &buffer[savedMissing];
+        buf    = &buf[savedMissing];
         size  -= savedMissing;
 
         savedLen     = 0;
@@ -395,37 +434,42 @@ void bufPush(int* bufP, int size)
 
     while (size > 0)
     {
-        packetLen = ntohl(*((int*) buffer));
-        V2(("parsed a packet of %d data length (bigendian: 0x%x)", packetLen, *((int*) buffer)));
+		int* packetLenP = (int*) buf;
+        packetLen = ntohl(*packetLenP);
+
+        V2(("parsed a packet of %d data length (bigendian: 0x%08x)", packetLen, *packetLenP));
         if (size >= packetLen + 4)
         {
             ++packetsSent;
-            
+			V1(("Forwarding packet %d of %d bytes (including header of 4 bytes)", packetsSent, packetLen + 4));
             if (samson.fd != -1)
-                forward(&samson, buffer, packetLen + 4, 0);
+                forward(&samson, buf, packetLen + 4, 0);
             if (sniffer.fd != -1)
             {
-                forward(&sniffer, buffer, packetLen + 4, 0);
+                forward(&sniffer, buf, packetLen + 4, 0);
                 ++packetsForSniffer;
             }
         }
         else
         {
-            memcpy(savedBuffer, buffer, size);
+            memcpy(savedBuffer, buf, size);
             savedLen       = size;
             savedMissing   = packetLen + 4 - savedLen;
+			V1(("Saved %d bytes (%d missing for a full packet) (0x%x 0x%x 0x%x 0x%x)", savedLen, savedMissing,
+				savedBuffer[0] & 0xFF , savedBuffer[1] & 0xFF, savedBuffer[2] & 0xFF, savedBuffer[3] & 0xFF));
 
             if (sniffer.fd != -1)
             {
-                V1(("Saved packet %d of %d bytes (packetLen: %d, so %d bytes missing ...)", packetsForSniffer, size, packetLen, savedMissing));
+                // V1(("Saved packet %d of %d bytes to 'savedBuffer' (packetLen: %d, so %d bytes missing ...)",
+				//	packetsForSniffer, size, packetLen, savedMissing));
 
-                int* xP = (int*) savedBuffer;
-                V1(("saved: 0x%x 0x%x 0x%x 0x%x", xP[0], xP[1], xP[2], xP[3]));
+                // int* xP = (int*) savedBuffer;
+                // V1(("saved: 0x%x 0x%x 0x%x 0x%x", xP[0], xP[1], xP[2], xP[3]));
             }
             return; // read more ...
         }
 
-        buffer = &buffer[packetLen + 4];
+        buf = &buf[packetLen + 4];
         size  -= packetLen + 4;
     }
 }
@@ -448,25 +492,26 @@ void tunnel(void)
 	}
 
     memset(buffer, 0, sizeof(buffer));
-        
+	
     //
     // Read as much as we possibly can ...
     //
     nb = read(tektronix.fd, buffer, sizeof(buffer));
     if (nb == -1)
     {
-        E(("Error reading from the ARCANUM node: %s", strerror(errno)));
+        E(("Error reading from the TEKTRONIX node: %s", strerror(errno)));
         nodeClose(&tektronix);
         return;
     }
     else if (nb == 0)
     {
-        E(("The ARCANUM node closed the connection"));
+        E(("The TEKTRONIX node closed the connection"));
         nodeClose(&tektronix);
         return;
     }
 
-    V2(("Read %d bytes of data from tektronix", nb));
+    V1(("Read %d bytes of data from tektronix", nb));
+	bufPresent("buffer from tektronix", buffer, nb);
 
     bufPush(buffer, nb);
     nbAccumulated += nb;
@@ -495,13 +540,13 @@ void tunnel(void)
         nb = read(tektronix.fd, &data[tot], dataLen - tot);
         if (nb == -1)
         {
-            E(("Error reading from the ARCANUM node: %s", strerror(errno)));
+            E(("Error reading from the TEKTRONIX node: %s", strerror(errno)));
             nodeClose(&tektronix);
             return;
         }
         else if (nb == 0)
         {
-            E(("Read zero bytes from the ARCANUM node"));
+            E(("Read zero bytes from the TEKTRONIX node"));
             nodeClose(&tektronix);
             return;
         }
@@ -543,7 +588,7 @@ void run(void)
 
 
         //
-        // Arcanum
+        // Tektronix
         //
         if (tektronix.fd != -1)
         {

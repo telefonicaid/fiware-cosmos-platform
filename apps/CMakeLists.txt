@@ -31,8 +31,8 @@ endif (HAVE_QT)
 # Sandbox...
 ADD_SUBDIRECTORY(samsonTest)
 
-# Auxiliar apps
-ADD_SUBDIRECTORY(aux)
+# Extra apps
+ADD_SUBDIRECTORY(extra)
 
 #On hold
 #ADD_SUBDIRECTORY(samsonSupervisor)

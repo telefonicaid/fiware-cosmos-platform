@@ -185,7 +185,9 @@ void bufPresent(const char* title, char* buf, int bufLen)
 */
 void bufPush(char* buf, int size, samson::SamsonPushBuffer* pushBuffer)
 {
-    int packetLen;
+    int    packetLen;
+	char*  initialBuf = buf;
+	int    totalLen   = 0;
 
     //
     // Any data leftover from last push?
@@ -233,16 +235,25 @@ void bufPush(char* buf, int size, samson::SamsonPushBuffer* pushBuffer)
 
         if (size >= packetLen + 4)
         {
+			totalLen += packetLen + 4;
+
             ++packets;
             LM_D(("Got package %d (grand total bytes read: %d)", packets, nbAccumulated));
 
-            pushBuffer->push(buf, packetLen + 4, true);
+			//
+			//
+			// Don't push here ... push all packets afterwards ...
+            // pushBuffer->push(buf, packetLen + 4, true);
+			//
 
             buf = &buf[packetLen + 4];
             size  -= (packetLen + 4);
         }
         else
         {
+			if (totalLen != 0)
+				pushBuffer->push(initialBuf, totalLen, true);
+
             memcpy(savedBuffer, buf, size);
             savedLen       = size;
             savedMissing   = packetLen + 4 - savedLen;

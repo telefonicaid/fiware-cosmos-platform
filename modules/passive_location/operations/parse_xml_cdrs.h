@@ -22,6 +22,7 @@ class parse_xml_cdrs : public samson::Parser
     samson::system::UInt user;                              // Used as key at the output
     samson::passive_location::Record record;                // Used as value at the output
     samson::passive_location::CompleteTMSI completeTMSI;    // Used as value at the output
+    samson::passive_location::IMSIbyTime imsiTime;    // Used as value at the output
 
 
 public:
@@ -30,7 +31,11 @@ public:
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
     // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-    output: system.UInt passive_location.Record
+    //out system.UInt passive_location.Record                     # Emitted with key = imsi
+    //out passive_location.CompleteTMSI passive_location.Record   # Whem imsi = 0, emitted with key = tmsi
+    //out system.UInt passive_location.Record                     # If no cellId or LAC is parsed in the record
+    //out passive_location.CompleteTMSI passive_location.IMSIbyTime               # Queue to recover imsi from tmsi
+
 
     helpLine: Parse input cdrs from Arkanum platform. Note that output key is imsi at the output
 #endif // de INFO_COMMENT
@@ -237,7 +242,6 @@ public:
         completeTMSI.tmsi.value = tmsi;
         completeTMSI.LAC.value = LAC;
 
-
         if ((cellIdTmp == 0) || (cellID == 0))
         {
             writer->emit(2, &user, &record);
@@ -253,7 +257,9 @@ public:
 
         if ((user.value != 0) && (LAC != 0))
         {
-            writer->emit(3, &completeTMSI, &user);
+            imsiTime.imsi.value = user.value;
+            imsiTime.timestamp.value = record.timestamp.value;
+            writer->emit(3, &completeTMSI, &imsiTime);
         }
 
 

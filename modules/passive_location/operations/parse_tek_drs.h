@@ -28,6 +28,7 @@ class parse_tek_drs : public samson::Parser
     samson::system::UInt user;                              // Used as key at the output
     samson::passive_location::Record record;                // Used as value at the output
     samson::passive_location::CompleteTMSI completeTMSI;    // Used as value at the output
+    samson::passive_location::IMSIbyTime imsiTime;    // Used as value at the output
 
 public:
 
@@ -36,7 +37,11 @@ public:
     // If interface changes and you do not recreate this file, you will have to update this information (and of course, the module file)
     // Please, do not remove this comments, as it will be used to check consistency on module declaration
     //
-    //  output: system.UInt32 passive_location.Record
+    // out system.UInt passive_location.Record                     # Emitted with key = imsi
+    // out passive_location.CompleteTMSI passive_location.Record   # Whem imsi = 0, emitted with key = tmsi
+    // out system.UInt passive_location.Record                     # If no cellId or LAC is parsed in the record
+    // out passive_location.CompleteTMSI passive_location.IMSIbyTime               # Queue to recover imsi from tmsi
+
     //
     // helpLine: Parse input binary OHDRs from Tektroniks platform (probes). Note that output key is cellid
     //  END_INFO_MODULE
@@ -63,8 +68,6 @@ public:
 
         unsigned int sizeDR = 0;
         struct struct_tek_record tek_record;
-
-        int output_queue = 0;
 
 
 
@@ -99,25 +102,32 @@ public:
                         record.callType.value = tek_record.callType;
                         record.DRType.value = tek_record.typeDR;
 
-                        LM_M(("Ready to emit by queue:%d typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", output_queue, tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
+                        LM_M(("Ready to emit typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu tmsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.tmsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
 
                         // Emit the record at the corresponding output
                         if ((tek_record.cellID == 0) || (tek_record.LAC == 0))
                         {
+                            LM_W(("Emit records without cellId: typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
                             writer->emit(2, &user, &record);
                         }
                         else if (tek_record.imsi == 0)
                         {
+                            LM_W(("Emit records without imsi: typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu tmsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.tmsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
+
                             writer->emit(1, &completeTMSI, &record);
                         }
                         else
                         {
+                            LM_W(("Emit complete records: typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
                            writer->emit(0, &user, &record);
                         }
 
                         if ((tek_record.imsi != 0) && (tek_record.LAC != 0))
                         {
-                            writer->emit(3, &completeTMSI, &user);
+                            imsiTime.imsi.value = user.value;
+                            imsiTime.timestamp.value = tek_record.timestamp;
+
+                            writer->emit(3, &completeTMSI, &imsiTime);
                         }
 
                         free(tek_record.CCCause);

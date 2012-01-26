@@ -22,7 +22,7 @@ namespace passive_location{
 
 	    samson::passive_location::CompleteTMSI completeTMSI;    // Input key
 	    samson::passive_location::Record record;                // Input value
-	    samson::system::UInt imsi;                              // Input value of the translation table
+	    samson::passive_location::IMSIbyTime imsiTime;                              // Input value of the translation table
 
 
 	public:
@@ -33,7 +33,8 @@ namespace passive_location{
 // Please, do not remove this comments, as it will be used to check consistency on module declaration
 //
 //  input: passive_location.CompleteTMSI passive_location.Record  
-//  input: passive_location.CompleteTMSI system.UInt  
+//  input: passive_location.CompleteTMSI passive_location.IMSIbyTime
+//  output: system.UInt passive_location.Record
 //  output: system.UInt passive_location.Record
 //  output: system.UInt passive_location.Record
 //  
@@ -65,6 +66,10 @@ namespace passive_location{
                     {
                         writer->emit( 1 , &record.imei , &record );
                     }
+                    else
+                    {
+                        writer->emit(2, &completeTMSI.tmsi, &record);
+                    }
                 }
                 return;
             }
@@ -83,7 +88,7 @@ namespace passive_location{
                 // But easiest if we are sure we only have one
             }
 
-            imsi.parse( inputs[1].kvs[inputs[1].num_kvs-1]->value );
+            imsiTime.parse( inputs[1].kvs[inputs[1].num_kvs-1]->value );
 
             //LM_M(("Emitting %lu records for imsi:%lu", inputs[0].num_kvs, imsi_key.value));
 
@@ -92,14 +97,15 @@ namespace passive_location{
                 record.parse( inputs[0].kvs[i]->value );
 
                 // Complete the complete record
-                record.imsi.value = imsi.value;
+                record.imsi.value = imsiTime.imsi.value;
 
                 if (record.imsi.value == 0)
                 {
-                    LM_W(("Found imsi:%lu == 0 (tmsi:%lu,%u)", completeTMSI.tmsi.value, completeTMSI.LAC.value));
+                    LM_W(("Found imsi:%lu == 0 (tmsi:%lu,%u)", record.imsi.value, completeTMSI.tmsi.value, completeTMSI.LAC.value));
                 }
+                LM_W(("Resolved imsi:%lu for (tmsi:%lu,%u)", record.imsi.value, completeTMSI.tmsi.value, completeTMSI.LAC.value));
 
-                writer->emit( 0 , &record.msisdn , &record );
+                writer->emit( 0 , &record.imsi , &record );
             }
             return;
 

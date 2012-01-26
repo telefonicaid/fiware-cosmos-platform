@@ -87,7 +87,14 @@ PaArgument paArgs[] =
 * Global variables 
 */
 unsigned int  bufSize = M(8) + 1;
-char          buf[M(8) + 1];   // MAX size: 8 megas ... ?
+char          buf[M(8) + 1];            // MAX size: 8 megas ... ?
+char          buffer[M(8) + 1];         // MAX size: 8 megas ... ?
+char          savedBuffer[128 * 1024];
+int           savedMissing      = 0;
+int           savedLen          = 0;
+int           storageFd         = -1;
+int           nbAccumulated     = 0;
+int           packets           = 0;
 
 
 
@@ -95,7 +102,7 @@ char          buf[M(8) + 1];   // MAX size: 8 megas ... ?
 *
 * connectToServer - 
 */
-int connectToServer(const char* host, unsigned short port)
+int connectToServer(void)
 {
 	struct hostent*     hp;
 	struct sockaddr_in  peer;
@@ -143,7 +150,152 @@ int connectToServer(const char* host, unsigned short port)
 }
 
 
+/* ****************************************************************************
+*
+* bufPresent - 
+*/
+void bufPresent(const char* title, char* buf, int bufLen)
+{
+	int ix = 0;
 
+	if (lmVerbose < 2)
+	   return;
+
+	printf("----- %s -----\n", title);
+
+	while (ix < bufLen)
+	{
+		if (ix % 16 == 0)
+			printf("%08x:  ", ix);
+		printf("%02x ", buf[ix] & 0xFF);
+		++ix;
+		if (ix % 16 == 0)
+			printf("\n");
+	}
+
+	printf("\n");
+	printf("\n");	
+}
+
+
+
+/* ****************************************************************************
+*
+* bufPush - 
+*/
+void bufPush(char* buf, int size, samson::SamsonPushBuffer* pushBuffer)
+{
+    int packetLen;
+
+    //
+    // Any data leftover from last push?
+    // Add the data from buf to make it a whole packet,
+    // and then forward this 'incomplete' packet first
+    //
+    if (savedLen != 0)
+    {
+        LM_D(("Detected a saved buf of %d bytes, adding another %d bytes to it", savedLen, savedMissing));
+
+        if (size >= savedMissing)
+        {
+            int* iP = (int*) savedBuffer;
+            LM_D(("Restoring a saved packet: 0x%08x 0x%08x 0x%08x 0x%08x", iP[0], iP[1], iP[2], iP[3]));
+
+            memcpy(&savedBuffer[savedLen], buf, savedMissing);
+
+            pushBuffer->push(savedBuffer, savedLen + savedMissing, true); // Is the '4' included here ... ?
+
+            buf   = &buf[savedMissing];
+            size    -= savedMissing;
+            savedLen = 0;
+            packets  = packets + 1;
+        }
+        else
+        {
+            LM_D(("Buffer too small to fill an entire packet - copying a part and reading again ..."));
+            memcpy(&savedBuffer[savedLen], buf, size);
+            savedLen += size;
+            return;
+        }
+    }
+
+
+    //
+    // Now, finally, loop over all packets in the buf and write them to file
+    //
+    while (size > 0)
+    {
+        packetLen = ntohl(*((int*) buf));
+        LM_D(("parsed a packet of %d data length (bigendian: 0x%x)", packetLen, *((int*) buf)));
+
+		if (packetLen > 3000) // For example ...
+           LM_X(1, ("Bad packetLen: %d (original: 0x%x, htohl: 0x%x)", packetLen, *((int*) buf), ntohl(*((int*) buf))));
+
+        if (size >= packetLen + 4)
+        {
+            ++packets;
+            LM_D(("Got package %d (grand total bytes read: %d)", packets, nbAccumulated));
+
+            pushBuffer->push(buf, packetLen + 4, true);
+
+            buf = &buf[packetLen + 4];
+            size  -= (packetLen + 4);
+        }
+        else
+        {
+            memcpy(savedBuffer, buf, size);
+            savedLen       = size;
+            savedMissing   = packetLen + 4 - savedLen;
+
+            LM_D(("Saved packet %d of %d bytes (packetLen: %d, so %d bytes missing ...)", packets, savedLen, packetLen, savedMissing));
+
+            int* iP = (int*) savedBuffer;
+            LM_D(("saved: 0x%x 0x%x 0x%x 0x%x", iP[0], iP[1], iP[2], iP[3]));
+            return; // read more ...
+        }
+    }
+}
+
+
+
+/* ****************************************************************************
+*
+* readFromServer - 
+*/
+void readFromServer(int fd, samson::SamsonPushBuffer* pushBuffer)
+{
+	int nb;
+
+    LM_D(("Reading from server"));
+	while (1)
+	{
+        // Read as much as we possibly can ...
+        nb = read(fd, buffer, sizeof(buffer));
+        if (nb > 0)
+        {
+            nbAccumulated += nb;
+
+            LM_D(("Read %d bytes of data from tunnel (grand total: %d)", nb, nbAccumulated));
+			bufPresent("Read from Tunnel", buffer, nb);
+
+            bufPush(buffer, nb, pushBuffer);
+        }
+        else
+        {
+            if (nb == -1)
+                LM_E(("Error reading from the Tunnel: %s", strerror(errno)));
+            else
+                LM_E(("The Tunnel closed the connection?"));
+
+            close(fd);
+            fd       = connectToServer();
+            savedLen = 0;
+        }
+    }
+}
+
+
+#if 0
 /* ****************************************************************************
 *
 * readFromServer - 
@@ -166,7 +318,7 @@ void readFromServer(int fd, samson::SamsonPushBuffer* pushBuffer)
 		{
             LM_E(("Reading header: got zero bytes ... closing connection and reconnecting!"));
             close(fd);
-            fd = connectToServer(host, port);
+            fd = connectToServer();
             continue;
         }
 
@@ -192,7 +344,7 @@ void readFromServer(int fd, samson::SamsonPushBuffer* pushBuffer)
                     LM_E(("Read zero bytes ... closing connection and reconnecting!"));
                     
                 close(fd);
-                fd = connectToServer(host, port);
+                fd = connectToServer();
                 tot = 0;
                 break;
             }
@@ -208,6 +360,8 @@ void readFromServer(int fd, samson::SamsonPushBuffer* pushBuffer)
         }
     }
 }
+#endif
+
 
 
 /* ****************************************************************************
@@ -220,7 +374,7 @@ void arcanumData(samson::SamsonPushBuffer* pushBuffer)
 
     // 1. connect to host:port ...
     LM_V(("connecting to %s:%d", host, port));
-    fd = connectToServer(host, port);
+    fd = connectToServer();
     if (fd == -1)
         LM_X(1, ("Error connecting to server '%s', port %d", host, port));
 

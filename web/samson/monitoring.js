@@ -5,7 +5,7 @@ fetchDataList();
 function fetchDataList() {		
 	$.ajax({
 			 //url: "http://localhost/samson/graphs_parameters.json",
-			 url: "http://samson01/samson/get.php",
+			 url: "get.php",
 			 method: 'GET',
 			 dataType: 'json',
 			 success: onDataReceivedList
@@ -156,7 +156,7 @@ fetchDataGraph(typesystem,timesystem,typequeues,timequeues,system_param,queue_la
      function fetchDataGraph(typesystem,timesystem,typequeues,timequeues,system_param,queue_label,queue_param,init) {
 			$.ajax({
                 //url: "http://localhost/samson/graphs_parameters.json",
-			    url: "http://samson01/samson/get.php",
+			    url: "get.php",
                 method: 'GET',
                 dataType: 'json',
                 success: onDataReceivedGraph

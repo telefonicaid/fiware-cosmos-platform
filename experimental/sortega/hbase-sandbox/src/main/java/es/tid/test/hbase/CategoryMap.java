@@ -26,7 +26,7 @@ public class CategoryMap extends HashMap<String, Double> {
         heap.addAll(this.entrySet());
         
         List<String> topN = new ArrayList<String>(n);
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n && !topN.isEmpty(); i++) {
             topN.add(heap.remove().getKey());
         }
         return topN;

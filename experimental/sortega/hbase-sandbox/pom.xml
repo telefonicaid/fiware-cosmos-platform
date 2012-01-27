@@ -6,7 +6,7 @@
     <groupId>es.tid.test</groupId>
     <artifactId>hbase-sandbox</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
 
     <name>hbase-sandbox</name>
     <url>http://maven.apache.org</url>
@@ -38,6 +38,12 @@
             <artifactId>junit</artifactId>
             <version>4.10</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <artifactId>jetty</artifactId>
+            <groupId>org.mortbay.jetty</groupId>
+            <type>jar</type>
+            <version>6.1.26</version>
         </dependency>
     </dependencies>
     <reporting>

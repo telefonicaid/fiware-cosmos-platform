@@ -25,7 +25,7 @@ public class CSDictionary implements Dictionary {
             "patterns_to_categories.txt";
     private static final String CATEGORY_NAMES_FILENAME =
             "cat_subcat_lookup_143m.txt";
-
+    
     private boolean isInitialized;
     private final List<Path> dictionayFiles;
     private CSDictionaryJNIInterface dictionary;
@@ -36,7 +36,7 @@ public class CSDictionary implements Dictionary {
         this.isInitialized = false;
         this.dictionayFiles = Arrays.asList(dictionayFiles);
     }
-    
+
     @Override
     public void init() throws IOException {
         if (this.isInitialized) {
@@ -71,44 +71,57 @@ public class CSDictionary implements Dictionary {
 
     @Override
     public Categorization categorize(String url) {
-        Categorization categorization = new Categorization();
         if (!this.isInitialized) {
-            categorization.result = CategorizationResult.GENERIC_FAILURE;
-            return categorization;
+            throw new IllegalStateException(
+                    "Cannot categorize prior to dictionary initialization.");
         }
 
         URI uri = URI.create(url);
         String normalizedUrl = uri.getHost() + uri.getPath();
         long patternId = this.dictionary.ApplyDictionaryUsingUrl(normalizedUrl);
         if (patternId < 0) {
-            categorization.result = CategorizationResult.IRRELEVANT_URL;
+            return this.processIrrelevantUrl();
         } else if (patternId == 0) {
-            // Undocumented API return value
-            categorization.result = CategorizationResult.GENERIC_FAILURE;
+            throw new IllegalArgumentException("Invalid pattern ID.");
         } else if (patternId == 1) {
-            categorization.result = CategorizationResult.UNKNOWN_URL;
+            return this.processUknownUrl();
         } else {
-            long[] categoryIds;
-            try {
-                categoryIds = this.patternToCategoryMap.getCategories(
-                        patternId);
-            } catch (IllegalArgumentException ex) {
-                categorization.result = CategorizationResult.GENERIC_FAILURE;
-                System.err.println(ex.getMessage());
-                return categorization;
-            }
-
-            String[] categoryNames = new String[categoryIds.length];
-            for (int i = 0; i < categoryIds.length; i++) {
-                categoryNames[i] = this.categoryIdToNameMap.getCategoryName(
-                        categoryIds[i]);
-            }
-            categorization.result = CategorizationResult.KNOWN_URL;
-            categorization.categories = categoryNames;
+            return this.processKnownUrl(patternId);
         }
+    }
+
+    private Categorization processKnownUrl(long patternId) {
+        Categorization categorization = new Categorization();
+        long[] categoryIds;
+        try {
+            categoryIds = this.patternToCategoryMap.getCategories(patternId);
+        } catch (IllegalArgumentException ex) {
+            categorization.result = CategorizationResult.GENERIC_FAILURE;
+            return categorization;
+        }
+
+        String[] categoryNames = new String[categoryIds.length];
+        for (int i = 0; i < categoryIds.length; i++) {
+            categoryNames[i] = this.categoryIdToNameMap.getCategoryName(
+                    categoryIds[i]);
+        }
+        categorization.result = CategorizationResult.KNOWN_URL;
+        categorization.categories = categoryNames;
         return categorization;
     }
 
+    private Categorization processUknownUrl() {
+        Categorization categorization = new Categorization();
+        categorization.result = CategorizationResult.UNKNOWN_URL;
+        return categorization;
+    }
+
+    private Categorization processIrrelevantUrl() {
+        Categorization categorization = new Categorization();
+        categorization.result = CategorizationResult.IRRELEVANT_URL;
+        return categorization;
+    }
+    
     private void loadCategoryPatternMapping(String fileName)
             throws IOException {
         this.patternToCategoryMap = new CSPatternToCategoryMap();
@@ -121,7 +134,7 @@ public class CSDictionary implements Dictionary {
 
     private void loadCategoryNames(String fileName) throws IOException {
         this.categoryIdToNameMap = new CSCategoryIdToNameMap();
-        
+
         FileInputStream file = new FileInputStream(fileName);
         InputStreamReader input = new InputStreamReader(file);
         this.categoryIdToNameMap.init(input);

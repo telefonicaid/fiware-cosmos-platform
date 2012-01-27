@@ -40,6 +40,9 @@
 #include "samson/client/SamsonClient.h"         // samson::SamsonClient
 #include "samson/common/samsonVars.h"
 
+#include <signal.h>
+
+
 
 
 /* ****************************************************************************
@@ -97,6 +100,16 @@ int           nbAccumulated     = 0;
 int           packets           = 0;
 
 
+/*********************************************************************************
+ *  Handler for SIGINT
+ *
+ */
+sig_atomic_t signaled_quit = false;
+void captureSIGINT( int s )
+{
+    signaled_quit = true;
+}
+
 
 /* ****************************************************************************
 *
@@ -134,7 +147,7 @@ int connectToServer(void)
 		if (connect(fd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
 		{
 			++tri;
-			// LM_E(("connect intent %d failed: %s", tri, strerror(errno)));
+			LM_W(("connect intent %d failed: %s", tri, strerror(errno)));
 			usleep(500000);
 			if (tri > retries)
 			{
@@ -196,7 +209,7 @@ void bufPush(char* buf, int size, samson::SamsonPushBuffer* pushBuffer)
     //
     if (savedLen != 0)
     {
-        LM_D(("Detected a saved buf of %d bytes, adding another %d bytes to it", savedLen, savedMissing));
+        LM_V(("Detected a saved buf of %d bytes, adding another %d bytes to it", savedLen, savedMissing));
 
         if (size >= savedMissing)
         {
@@ -204,6 +217,8 @@ void bufPush(char* buf, int size, samson::SamsonPushBuffer* pushBuffer)
             LM_D(("Restoring a saved packet: 0x%08x 0x%08x 0x%08x 0x%08x", iP[0], iP[1], iP[2], iP[3]));
 
             memcpy(&savedBuffer[savedLen], buf, savedMissing);
+
+            LM_V(("Pushing a border record of %d bytes", savedLen + savedMissing));
 
             pushBuffer->push(savedBuffer, savedLen + savedMissing, true); // Is the '4' included here ... ?
 
@@ -228,10 +243,15 @@ void bufPush(char* buf, int size, samson::SamsonPushBuffer* pushBuffer)
     while (size > 0)
     {
         packetLen = ntohl(*((int*) buf));
-        LM_D(("parsed a packet of %d data length (bigendian: 0x%x)", packetLen, *((int*) buf)));
+        LM_V(("parsed a packet of %d data length (bigendian: 0x%x)", packetLen, *((int*) buf)));
 
+        // We are having problems when dying, so we'll try to avoid the LM_X,
+        // and try to process the block
 		if (packetLen > 3000) // For example ...
-           LM_X(1, ("Bad packetLen: %d (original: 0x%x, htohl: 0x%x)", packetLen, *((int*) buf), ntohl(*((int*) buf))));
+		{
+           //LM_X(1, ("Bad packetLen: %d (original: 0x%x, htohl: 0x%x)", packetLen, *((int*) buf), ntohl(*((int*) buf))));
+		    LM_E(("Suspicious packetLen: %d (original: 0x%x, htohl: 0x%x)", packetLen, *((int*) buf), ntohl(*((int*) buf))));
+		}
 
         if (size >= packetLen + 4)
         {
@@ -252,7 +272,10 @@ void bufPush(char* buf, int size, samson::SamsonPushBuffer* pushBuffer)
         else
         {
 			if (totalLen != 0)
+			{
+			    LM_V(("Pushing a block of %d bytes (packets:%d)", totalLen, packets));
 				pushBuffer->push(initialBuf, totalLen, true);
+			}
 
             memcpy(savedBuffer, buf, size);
             savedLen       = size;
@@ -278,7 +301,7 @@ void readFromServer(int fd, samson::SamsonPushBuffer* pushBuffer)
 	int nb;
 
     LM_D(("Reading from server"));
-	while (1)
+	while (signaled_quit == false)
 	{
         // Read as much as we possibly can ...
         nb = read(fd, buffer, sizeof(buffer));
@@ -533,6 +556,11 @@ int main(int argC, const char* argV[])
 
     paParse(paArgs, argC, (char**) argV, 1, false);
 
+    if( signal( SIGINT , captureSIGINT ) == SIG_ERR )
+    {
+        LM_W(("SIGINT cannot be handled"));
+    }
+
     LM_M(("Here"));
     // Instance of the client to connect to SAMSON system
     samson::SamsonClient client;
@@ -562,4 +590,18 @@ int main(int argC, const char* argV[])
         arcanumData(pushBuffer);
     else
         fakeData(pushBuffer);
+
+    // Only here if we received a SIGQUIT
+    // Last push
+    pushBuffer->flush();
+
+    LM_V(("--------------------------------------------------------------------------------"));
+    LM_V(("PushBuffer info:   %s", pushBuffer->rate.str().c_str()));
+    LM_V(("SamsonClient info: %s", client.rate.str().c_str()));
+    LM_V(("--------------------------------------------------------------------------------"));
+
+
+    // Wait until all operations are complete
+    LM_V(("Waiting for all the push operations to complete..."));
+    client.waitUntilFinish();
 }

@@ -102,7 +102,7 @@ public:
                         record.callType.value = tek_record.callType;
                         record.DRType.value = tek_record.typeDR;
 
-                        LM_M(("Ready to emit typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu tmsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.tmsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
+                        //LM_M(("Ready to emit typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu tmsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.tmsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
 
                         // Emit the record at the corresponding output
                         if ((tek_record.cellID == 0) || (tek_record.LAC == 0))
@@ -112,13 +112,13 @@ public:
                         }
                         else if (tek_record.imsi == 0)
                         {
-                            LM_W(("Emit records without imsi: typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu tmsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.tmsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
+                            //LM_W(("Emit records without imsi: typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu tmsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.tmsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
 
                             writer->emit(1, &completeTMSI, &record);
                         }
                         else
                         {
-                            LM_W(("Emit complete records: typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
+                            //LM_W(("Emit complete records: typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
                            writer->emit(0, &user, &record);
                         }
 

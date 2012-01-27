@@ -108,7 +108,7 @@ void init(samson::KVWriter* writer)
 		OLM_E(("Error connecting to mongo at '%s'", mongo_ip.c_str()));
 		delete mdbConnection;
 		mdbConnection = NULL;
-		tracer->setUserError("error connecting to MongDB at" + mongo_ip);
+		tracer->setUserError("error connecting to MongDB at " + mongo_ip);
 		return;
 	}
 

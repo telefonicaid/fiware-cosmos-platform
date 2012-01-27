@@ -120,8 +120,7 @@ reduce reduce_user_imsi_by_tmsi
 	in passive_location.CompleteTMSI passive_location.IMSIbyTime               # Queue to recover imsi from tmsi
 
 	out	system.UInt passive_location.Record   # Records ( key = msisdn )
-	out system.UInt passive_location.Record   # Records with a non-existing tmsi (key = imei)
-	out system.UInt passive_location.Record   # Records with a non-existing tmsi and imei = 0 (key = tmsi)
+	out system.UInt passive_location.Record   # Records with a non-existing tmsi (key = imei) (both imei == 0 and imei != 0, because no recovering from imei)
 
 	helpLine "Extract imsi info from tmsi_imsi table, based on previous records"
 }
@@ -252,13 +251,12 @@ script init_stream_operations
 		alias [records_cellid0]  032.cellid0;
 				
 		alias [records_cell]          040.records_by_cellid;	
-		alias [nouser_imsi]        041.no_user_imsi;	
-		alias [nouser_imsi_imei0]   042.no_user_imsi_imei0;		
-		alias [records_noimsi_noimei]      043.no_user_no_by_imsi_imei;	
-		alias [redrecords]         044.redrecords_by_cell;			
+		alias [nouser_imsi_from_tmsi]        041.nouser_imsi_from_tmsi;	
+		alias [nouser_msisdn_from_imsi]      042.nouser_msisdn_from_imsi;	
+		alias [redrecords]         043.redrecords_by_cell;			
 		
-		alias [redrecords_cell]          200.records;
-		alias [redrecords_cell_copy]          200.records.copy;
+		alias [redrecords_history]          200.records_history;
+		alias [redrecords_lkl]          200.redrecords_lkl;
 		alias [redrecords_nocell]      201.redrecords_no_cell_join;	
 		
 		# Operations;
@@ -272,7 +270,7 @@ script init_stream_operations
 		alias [update_tmsi]         10.update_tmsi;
 		alias [join_tmsi_imsi]      19.join_tmsi_imsi;
 		alias [join_imsi_msisdn]    20.join_imsi_msisdn;
-		alias [join_imei_msisdn]   21.join_imei_msisdn;
+		alias [join_imei_msisdn]    21.join_imei_msisdn;
 		alias [get_cell_records]    25.get_mobility_cell_records;
 		alias [join_cells]          26.mobility_records;
 		alias [export_history]      30.export_mongo;
@@ -282,28 +280,30 @@ script init_stream_operations
 		add_stream_operation  [parse_user]        passive_location.parse_user_info                [users.txt]       [users_imsi] [users_imei];
 
 		add_stream_operation  [parser_xml]        passive_location.parse_xml_cdrs                 [xml.txt]              [records] [records_imsi0] [records_cellid0] [tmsi_imsi];
-		add_stream_operation  [parser_tek]        passive_location.parse_tek_drs                  [tek.txt]             [records],[records].bkup [records_imsi0],[records_imsi0].bkup [records_cellid0],[records_cellid0].bkup [tmsi_imsi],[tmsi_imsi].bkup;
+		add_stream_operation  [parser_tek]        passive_location.parse_tek_drs                  [tek.txt]             [records],[records].bkup_tek  [records_imsi0],[records_imsi0].bkup [records_cellid0],[records_cellid0].bkup [tmsi_imsi],[tmsi_imsi].bkup;
 
 		add_stream_operation  [update_tmsi]        passive_location.update_tmsi_imsi_table                  [tmsi_imsi] [tmsi_table]            [tmsi_table];
 
-		add_stream_operation  [join_tmsi_imsi]    passive_location.reduce_user_imsi_by_tmsi        [records_imsi0] [tmsi_table]           [records] [nouser_imsi],[nouser_imsi].bkup [nouser_imsi_imei0] -forward;
+		add_stream_operation  [join_tmsi_imsi]    passive_location.reduce_user_imsi_by_tmsi        [records_imsi0] [tmsi_table]           [records],[records].bkup_tmsi [nouser_imsi_from_tmsi] -forward;
 		
-		add_stream_operation  [join_imsi_msisdn]   passive_location.reduce_user_msisdn_by_imsi     [records] [users_imsi]          [records_cell] [nouser_imsi],[nouser_imsi].bkup -forward;
-		add_stream_operation  [join_imei_msisdn]  passive_location.reduce_user_msisdn_by_imei     [nouser_imsi] [users_imei]         [records_cell] [records_noimsi_noimei] -forward;
+		add_stream_operation  [join_imsi_msisdn]   passive_location.reduce_user_msisdn_by_imsi     [records] [users_imsi]          [records_cell] [nouser_msisdn_from_imsi] -forward;
+		#add_stream_operation  [join_imei_msisdn]  passive_location.reduce_user_msisdn_by_imei     [nouser_imsi] [users_imei]         [records_cell] [records_noimsi_noimei] -forward;
 		
 		add_stream_operation  [get_cell_records]  passive_location.get_mobility_cell_records      [records_cell]              [redrecords],[redrecords].bkup;
-		add_stream_operation  [join_cells]        passive_location.reduce_cell_latitude_longitude [redrecords] [cells]     [redrecords_cell],[redrecords_cell_copy] [redrecords_nocell] -forward;
-		#add_stream_operation  [export_history]    passive_location.mongo_location_export          [redrecords_cell];
-		#add_stream_operation  [export_lkl]        passive_location.mongo_location_export          [redrecords_cell_copy];
+		add_stream_operation  [join_cells]        passive_location.reduce_cell_latitude_longitude [redrecords] [cells]     [redrecords_history],[redrecords_lkl],[redrecords_lkl].bkup [redrecords_nocell] -forward;
+		add_stream_operation  [export_history]    passive_location.mongo_location_export          [redrecords_history];
+		add_stream_operation  [export_lkl]        passive_location.mongo_location_export          [redrecords_lkl];
 
-		#set_stream_operation_property   [export_history]      mongo.ip                  samson05;
-		#set_stream_operation_property   [export_history]      mongo.db                  PassiveLocation;
-		#set_stream_operation_property   [export_history]      mongo.collection          History;
+		#set_stream_operation_property   [export_history]      mongo.ip                  samson05;  #TID's cluster
+		set_stream_operation_property   [export_history]      mongo.ip                  localhost;  #PassiveLocation cluster
+		set_stream_operation_property   [export_history]      mongo.db                  PassiveLocation;
+		set_stream_operation_property   [export_history]      mongo.collection          History;
 
-		#set_stream_operation_property   [export_lkl]  mongo.ip                  samson08;
-		#set_stream_operation_property   [export_lkl]  mongo.db                  PassiveLocation;
-		#set_stream_operation_property   [export_lkl]  mongo.collection          LastKnownLocation;
-		#set_stream_operation_property   [export_lkl]  mongo.history             0;
+		#set_stream_operation_property   [export_lkl]  mongo.ip                  samson08;  #TID's cluster
+		set_stream_operation_property   [export_lkl]  mongo.ip                  localhost; 	#PassiveLocation cluster	
+		set_stream_operation_property   [export_lkl]  mongo.db                  PassiveLocation;
+		set_stream_operation_property   [export_lkl]  mongo.collection          LastKnownLocation;
+		set_stream_operation_property   [export_lkl]  mongo.history             0;
     }
 }
 

@@ -52,7 +52,7 @@ namespace passive_location{
 	        if( inputs[1].num_kvs == 0)
 	        {
 	            imsi_key.parse(inputs[0].kvs[0]->key);
-	            LM_W(("No userInfo for imsi:%lu (%lu records)", imsi_key.value, inputs[0].num_kvs));
+	            //LM_W(("No userInfo for imsi:%lu (%lu records)", imsi_key.value, inputs[0].num_kvs));
 
 	            // Non existing user... forward input to output 1
 	            for ( uint64_t i = 0 ; i< inputs[0].num_kvs ; i++)
@@ -68,11 +68,11 @@ namespace passive_location{
 	        }
 
 	        imsi_key.parse(inputs[1].kvs[0]->key);
-
-	        if (imsi_key.value == 0)
-	        {
-	            LM_W (("Records with imsi == 0, inputs[0].num_kvs:%lu, inputs[1].num_kvs:%lu", inputs[0].num_kvs, inputs[1].num_kvs));
-	        }
+//
+//	        if (imsi_key.value == 0)
+//	        {
+//	            LM_W (("Records with imsi == 0, inputs[0].num_kvs:%lu, inputs[1].num_kvs:%lu", inputs[0].num_kvs, inputs[1].num_kvs));
+//	        }
 
 	        if (inputs[1].num_kvs > 1)
 	        {
@@ -97,10 +97,10 @@ namespace passive_location{
                     LM_W(("Found msisdn:%lu == 0 (imsi:%lu), with record.imei:%lu from userInfo.imei:%lu", record.msisdn.value, record.imsi.value, record.imei.value, userInfo.imei.value));
                 }
 
-	            if (record.imei.value != userInfo.imei.value)
-	            {
-	                LM_W(("For user msisdn:%lu (imsi:%lu), different record.imei:%lu from userInfo.imei:%lu", record.msisdn.value, record.imsi.value, record.imei.value, userInfo.imei.value));
-	            }
+//	            if (record.imei.value != userInfo.imei.value)
+//	            {
+//	                LM_W(("For user msisdn:%lu (imsi:%lu), different record.imei:%lu from userInfo.imei:%lu", record.msisdn.value, record.imsi.value, record.imei.value, userInfo.imei.value));
+//	            }
 
 	            writer->emit( 0 , &record.msisdn , &record );
 	        }

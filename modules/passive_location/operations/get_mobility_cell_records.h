@@ -43,7 +43,7 @@ public:
     void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
     {
         user.parse(inputs[0].kvs[0]->key);
-        LM_M(("Processing %lu records for user:%lu", inputs[0].num_kvs, user.value));
+        //LM_M(("Processing %lu records for user:%lu", inputs[0].num_kvs, user.value));
 
         for (uint64_t i=0 ; i<inputs[0].num_kvs ; i++)
         {

@@ -61,7 +61,7 @@ namespace passive_location{
 
 		  // We compose location id with ((LAC << 16) | cell_id), in a uint32_t field
 		  cell.cellId.value = (LAC << 16) | cellId;
-		  LM_M(("Composed cellId: From LAC:%d(0x%0x) and cellId:%d(0x%0x) composed:%d(0x%0x)", LAC, LAC, cellId, cellId, cell.cellId.value, cell.cellId.value));
+		  //LM_M(("Composed cellId: From LAC:%d(0x%0x) and cellId:%d(0x%0x) composed:%d(0x%0x)", LAC, LAC, cellId, cellId, cell.cellId.value, cell.cellId.value));
 		  if ((cellId == 0) || (LAC == 0))
 		  {
 		      LM_W(("Parsing:'%s' LAC:%u, cellId:%u, compose:%u", line, LAC, cellId, cell.cellId.value));
@@ -77,7 +77,7 @@ namespace passive_location{
           }
 		  else
 		  {
-		      OLM_E(("Error, unknow network type(%s), not gsm-A nor UMTS\n", words[3]));
+		      OLM_E(("Error, unknown network type(%s), not gsm-A nor UMTS\n", words[3]));
 		      cell.type.value = 0;
 		  }
 

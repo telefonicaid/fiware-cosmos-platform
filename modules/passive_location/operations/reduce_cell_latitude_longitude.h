@@ -55,7 +55,7 @@ public:
         if( inputs[1].num_kvs == 0)
         {
             cellId_key.parse(inputs[0].kvs[0]->key);
-            LM_W(("No cellInfo for cellId:%u(0x%0x) (%lu records)", cellId_key.value, cellId_key.value, inputs[0].num_kvs));
+            //LM_W(("No cellInfo for cellId:%u(0x%0x) (%lu records)", cellId_key.value, cellId_key.value, inputs[0].num_kvs));
 
             // Non existing cell... forward input to output 1
             for ( uint64_t i = 0 ; i< inputs[0].num_kvs ; i++)

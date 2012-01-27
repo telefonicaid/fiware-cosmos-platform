@@ -36,7 +36,6 @@ namespace passive_location{
 //  input: passive_location.CompleteTMSI passive_location.IMSIbyTime
 //  output: system.UInt passive_location.Record
 //  output: system.UInt passive_location.Record
-//  output: system.UInt passive_location.Record
 //  
 // helpLine: Extract imsi info from tmsi_imsi table, based on previous records
 //  END_INFO_MODULE
@@ -55,31 +54,34 @@ namespace passive_location{
             if( inputs[1].num_kvs == 0)
             {
                 completeTMSI.parse(inputs[0].kvs[0]->key);
-                LM_W(("No userInfo for tmsi:%lu,%u (%lu records)", completeTMSI.tmsi.value, completeTMSI.LAC.value, inputs[0].num_kvs));
+                //LM_W(("No userInfo for tmsi:%lu,%u (%lu records)", completeTMSI.tmsi.value, completeTMSI.LAC.value, inputs[0].num_kvs));
 
                 // Non existing user... forward input to output 1
                 for ( uint64_t i = 0 ; i< inputs[0].num_kvs ; i++)
                 {
                     record.parse( inputs[0].kvs[i]->value );
                     // Emitted by imei, in order to try later a second option
-                    if (record.imei.value != 0)
-                    {
-                        writer->emit( 1 , &record.imei , &record );
-                    }
-                    else
-                    {
-                        writer->emit(2, &completeTMSI.tmsi, &record);
-                    }
+                    // But it has not been possible to recover MSISDN from IMEI, if not successful with IMSI,
+                    // so we just dump all the records, and remove the join with IMEI key
+//                    if (record.imei.value != 0)
+//                    {
+//                        writer->emit( 1 , &record.imei , &record );
+//                    }
+//                    else
+//                    {
+//                        writer->emit(2, &completeTMSI.tmsi, &record);
+//                    }
+                    writer->emit(1, &completeTMSI.tmsi, &record);
                 }
                 return;
             }
 
             completeTMSI.parse(inputs[1].kvs[0]->key);
 
-            if (completeTMSI.tmsi.value == 0)
-            {
-                LM_W (("Records with tmsi == 0, inputs[0].num_kvs:%lu, inputs[1].num_kvs:%lu", inputs[0].num_kvs, inputs[1].num_kvs));
-            }
+//            if (completeTMSI.tmsi.value == 0)
+//            {
+//                LM_W (("Records with tmsi == 0, inputs[0].num_kvs:%lu, inputs[1].num_kvs:%lu", inputs[0].num_kvs, inputs[1].num_kvs));
+//            }
 
             if (inputs[1].num_kvs > 1)
             {
@@ -99,11 +101,11 @@ namespace passive_location{
                 // Complete the complete record
                 record.imsi.value = imsiTime.imsi.value;
 
-                if (record.imsi.value == 0)
-                {
-                    LM_W(("Found imsi:%lu == 0 (tmsi:%lu,%u)", record.imsi.value, completeTMSI.tmsi.value, completeTMSI.LAC.value));
-                }
-                LM_W(("Resolved imsi:%lu for (tmsi:%lu,%u)", record.imsi.value, completeTMSI.tmsi.value, completeTMSI.LAC.value));
+//                if (record.imsi.value == 0)
+//                {
+//                    LM_W(("Found imsi:%lu == 0 (tmsi:%lu,%u)", record.imsi.value, completeTMSI.tmsi.value, completeTMSI.LAC.value));
+//                }
+//                LM_W(("Resolved imsi:%lu for (tmsi:%lu,%u)", record.imsi.value, completeTMSI.tmsi.value, completeTMSI.LAC.value));
 
                 writer->emit( 0 , &record.imsi , &record );
             }

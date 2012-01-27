@@ -2,7 +2,8 @@ package es.tid.ps.profile.dictionary.comscore;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.Collection;
 import java.util.HashMap;
 
 /**
@@ -18,12 +19,12 @@ public class CSCategoryIdToNameMap {
     public CSCategoryIdToNameMap() {
     }
     
-    public void init(InputStreamReader input) throws IOException {
+    public void init(Reader input) throws IOException {
         this.map = new HashMap<Long, String>();
 
         BufferedReader br = new BufferedReader(input);
-        while (br.ready()) {
-            String line = br.readLine();
+        String line;
+        while ((line = br.readLine()) != null) {
             String[] columns = line.trim().split(DELIMITER);
             Long categoryId = Long.parseLong(columns[0]);
             String categoryName = columns[1];
@@ -32,7 +33,15 @@ public class CSCategoryIdToNameMap {
         br.close();
     }
     
+    public Collection<String> getCategories() {
+        return this.map.values();
+    }
+    
     public String getCategoryName(long categoryId) {
+        if (!this.map.containsKey(categoryId)) {
+            throw new IllegalArgumentException("Unknown category ID: " +
+                    categoryId);
+        }
         return this.map.get(categoryId);
     }
 }

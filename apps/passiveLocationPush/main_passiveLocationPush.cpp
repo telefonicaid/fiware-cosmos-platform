@@ -301,6 +301,7 @@ void readFromServer(int fd, samson::SamsonPushBuffer* pushBuffer)
 	int nb;
 
     LM_D(("Reading from server"));
+    LM_M(("readFromServer enters with signaled_quit:%d", signaled_quit));
 	while (signaled_quit == false)
 	{
         // Read as much as we possibly can ...
@@ -326,6 +327,7 @@ void readFromServer(int fd, samson::SamsonPushBuffer* pushBuffer)
             savedLen = 0;
         }
     }
+	LM_M(("readFromServer returns with signaled_quit:%d", signaled_quit));
 }
 
 
@@ -560,6 +562,7 @@ int main(int argC, const char* argV[])
     {
         LM_W(("SIGINT cannot be handled"));
     }
+    signaled_quit = false;
 
     LM_M(("Here"));
     // Instance of the client to connect to SAMSON system

@@ -407,9 +407,6 @@ void bufPush(char* buf, int size)
 			return;
 		}
 
-        //if (sniffer.fd != -1)
-        //    V1(("packet %d was 'saved' (dataLen: %d, savedLen: %d)", packetsSent, dataLen, savedLen));
-
 		V1(("adding %d bytes to saved packet", savedMissing));
         memcpy(&savedBuffer[savedLen], buf, savedMissing);
         int* iP = (int*) savedBuffer;
@@ -436,6 +433,9 @@ void bufPush(char* buf, int size)
     {
 		int* packetLenP = (int*) buf;
         packetLen = ntohl(*packetLenP);
+
+        if (packetLen > 3000)
+           X(1, ("packet len: %d (0x%x) - afraid we're out of sync ...", packetLen, packetLen));
 
         V2(("parsed a packet of %d data length (bigendian: 0x%08x)", packetLen, *packetLenP));
         if (size >= packetLen + 4)
@@ -491,7 +491,7 @@ void tunnel(void)
 		return;
 	}
 
-    memset(buffer, 0, sizeof(buffer));
+    // memset(buffer, 0, sizeof(buffer));
 	
     //
     // Read as much as we possibly can ...
@@ -516,54 +516,6 @@ void tunnel(void)
     bufPush(buffer, nb);
     nbAccumulated += nb;
 }
-
-#if 0
-    dataLen = ntohl(dataLen);
-    V4(("read a header - now reading %d bytes of data ...", dataLen));
-
-    if (dataLen > bufSize)
-        X(1, ("data len (%d) too large ... (0x%x)", dataLen, dataLen));
-
-    // Setting first 4 bytes - the length of the nextcoming data
-    buffer[0] = htonl(dataLen);
-
-
-    //
-    // Read the data
-    //
-    data = (char*) &buffer[1];
-    V5(("Reading packet of %d bytes", dataLen));
-    tot = 0;
-    while (tot < dataLen)
-    {
-
-        nb = read(tektronix.fd, &data[tot], dataLen - tot);
-        if (nb == -1)
-        {
-            E(("Error reading from the TEKTRONIX node: %s", strerror(errno)));
-            nodeClose(&tektronix);
-            return;
-        }
-        else if (nb == 0)
-        {
-            E(("Read zero bytes from the TEKTRONIX node"));
-            nodeClose(&tektronix);
-            return;
-        }
-
-        tot += nb;
-    }
-
-
-    V2(("Sending %d bytes to other side (total: %d bytes)", nb, nbAccumulated));
-
-    if (samson.fd != -1)
-        forward(&samson, (char*) buffer, nb + 4, 0);
-
-    if (sniffer.fd != -1)
-        forward(&sniffer, (char*) buffer, nb + 4, 0);
-}
-#endif
 
 
 

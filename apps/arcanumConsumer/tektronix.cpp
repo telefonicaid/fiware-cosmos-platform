@@ -292,7 +292,7 @@ void writeToServer(int fd)
 
         ++loopNo;
 
-        if ((loopNo % 50) == 0)
+        if ((loopNo % 101) == 0)
             V1(("%d packets written, %d bytes in total", loopNo, bytesWritten));
 	}
 }

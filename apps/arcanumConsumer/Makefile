@@ -1,7 +1,7 @@
 CC           = gcc
 CPP          = g++
 INCLUDE      = -I../../libs/
-DFLAGS       = -Wall -DOS=$(OS)
+DFLAGS       = -Wall -DOS=$(OS) -g
 CFLAGS       = $(INCLUDE) $(DFLAGS) -O2 -fPIC -Wall -Wno-unused-function $(DFLAGS) $(INCLUDE)
 
 EXEC1        = tektronixTunnel

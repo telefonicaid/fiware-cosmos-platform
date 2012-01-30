@@ -76,6 +76,7 @@ unsigned short  port      = 1234;
 int             sleepTime = 100000;
 int             sleepEach = 1;
 int             verbose   = 0;
+char*           path      = NULL;
 
 
 
@@ -229,13 +230,21 @@ int connectToServer(void)
 *
 * writeToServer - 
 */
-void writeToServer(int fd)
+void writeToServer(int fd, char* path)
 {
-    char  buf[BUFSIZE + 10];
+    char  buf[10000];
 	int   bufSize       = BUFSIZE + 10;
     int   loopNo        = 1;
     int   bytesWritten  = 0;
     int   grandTotal    = 0;
+    int   dataFd        = -1;
+
+    if (path != NULL)
+    {
+        dataFd = open(path, O_RDONLY);
+        if (dataFd == -1)
+            X(1, ("error opening %s: %s", path, strerror(errno)));
+    }
 
     while (1)
     {
@@ -245,11 +254,28 @@ void writeToServer(int fd)
 		int  dataSize;
 		int  totalSize;
 
-		dataSize    = bufSize - (loopNo % 10);
-		totalSize   = dataSize + 4;
-		*dataSizeP  = htonl((dataSize));
-        for (ix = 4; ix < dataSize; ix++)
-            buf[ix] = ix - 4;
+        if (dataFd == -1)
+        {
+            dataSize    = bufSize - (loopNo % 10);
+            totalSize   = dataSize + 4;
+            *dataSizeP  = htonl((dataSize));
+            for (ix = 4; ix < dataSize; ix++)
+                buf[ix] = ix - 4;
+        }
+        else
+        {
+            int nb;
+
+            dataSize  = 10000 - (loopNo % 123);
+            nb = read(dataFd, buf, dataSize);
+            if (nb == -1)
+                X(1, ("error reading from input file '%s': %s", path, strerror(errno)));
+            if (nb == 0)
+                X(1, ("read ZERO bytes from input file '%s'", path));
+
+            dataSize  = nb;
+            totalSize = dataSize;
+        }
 
 		tot = 0;
 		while (tot < totalSize)
@@ -279,7 +305,7 @@ void writeToServer(int fd)
 			tot += nb;
 		}
 
-		V1(("written a packet of %d bytes", bufSize));
+		V1(("written a packet of %d bytes", dataSize));
 
         if (sleepTime != 0)
         {
@@ -307,7 +333,7 @@ void usage(char* progName)
 {
     printf("Usage:\n");
     printf("  %s -u\n", progName);
-    printf("  %s [-host (host)] [-port (port)] [-sleepTime (microsecs)] [-sleepEach (loops)] [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)]\n", progName);
+    printf("  %s [-host (host)] [-port (port)] [-path (file to read from)] [-sleepTime (microsecs)] [-sleepEach (loops)] [-v | -vv | -vvv | -vvvv | -vvvvv (verbose level 1-5)]\n", progName);
     exit(1);
 }
 
@@ -363,6 +389,12 @@ int main(int argC, char* argV[])
             M(("Sleep each %d loops", sleepEach));
             ++ix;
         }
+        else if (strcmp(argV[ix], "-path") == 0)
+        {
+            path = strdup(argV[ix + 1]);
+            M(("Reading from file '%s'", path));
+            ++ix;
+        }
         else
         {
             E(("%s: unrecognized option '%s'\n\n", argV[0], argV[ix]));
@@ -380,7 +412,7 @@ int main(int argC, char* argV[])
     signal(SIGPIPE, ignore);
     sigignore(SIGPIPE);
 
-    writeToServer(fd);
+    writeToServer(fd, path);
 
     return 0;
 }

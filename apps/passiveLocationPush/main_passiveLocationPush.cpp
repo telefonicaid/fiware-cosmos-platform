@@ -8,7 +8,7 @@
 *
 *
 * Generate random xml documents simulating information from OSS Passive Location pilot
-* OR: connects to arcanumTunnel to receive real data and injects that data in samson
+* OR: connects to tektronixTunnel to receive real data and injects that data in samson
 *
 */
 #include <stdio.h>              // printf
@@ -34,6 +34,7 @@
 
 #include "parseArgs/parseArgs.h"
 #include "parseArgs/paConfig.h"
+#include "parseArgs/paUsage.h"
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 
@@ -54,7 +55,8 @@ SAMSON_ARG_VARS;
 char            controller[256];
 char            file[256];
 char            queueName[256];
-bool            arcanum;
+bool            tektronix;
+bool            fake;
 char            host[256];
 unsigned short  port       = 0;
 int             timeout    = 0;
@@ -71,14 +73,15 @@ PaArgument paArgs[] =
 {
     SAMSON_ARGS,
 
-    { "-arcanum",    &arcanum,     "SS_PLP_ARCANUM",      PaBool,    PaOpt,          false,    false,  true,  "act as arcanum consumer"  },
-    { "-host",       host,         "SS_PLP_ARCANUM_HOST", PaString,  PaOpt,           PaND,    PaNL,   PaNL,  "arcanum tunnel host"      },
-    { "-port",       &port,        "SS_PLP_ARCANUM_PORT", PaShortU,  PaOpt,           1099,    1024,  65535,  "arcanum tunnel port"      },
-    { "-queue",      queueName,    "SS_PLP_QUEUE_NAME",   PaString,  PaOpt,           PaND,    PaNL,   PaNL,  "name of the queue"        },
-    { "-timeout",    &timeout,     "SS_PLP_TIMEOUT",      PaInt,     PaOpt,              0,       0,   3600,  "timeout"                  },
-    { "-rate",       &rate,        "SS_PLP_RATE",         PaDouble,  PaOpt,         _i 1.0,    PaNL,   PaNL,  "rate"                     },
-    { "-controller", controller,   "SS_PLP_CONTROLLER",   PaString,  PaOpt, _i "localhost",    PaNL,   PaNL,  "controller IP"            },
-    { "-file",       file,         "SS_PLP_FILE",         PaString,  PaOpt, _i "generator",    PaNL,   PaNL,  "file"                     },
+    { "-tektronix", &tektronix,    "SS_PLP_TEKTRONIX",      PaBool,    PaOpt,          false,    false,  true,  "act as tektronix consumer"  },
+    { "-fake",      &fake,         "SS_PLP_FAKE",           PaBool,    PaOpt,          false,    false,  true,  "fake data"                  },
+    { "-host",       host,         "SS_PLP_TEKTRONIX_HOST", PaString,  PaOpt,           PaND,    PaNL,   PaNL,  "tektronix tunnel host"      },
+    { "-port",       &port,        "SS_PLP_TEKTRONIX_PORT", PaShortU,  PaOpt,           1099,    1024,  65535,  "tektronix tunnel port"      },
+    { "-queue",      queueName,    "SS_PLP_QUEUE_NAME",     PaString,  PaOpt,           PaND,    PaNL,   PaNL,  "name of the queue"          },
+    { "-timeout",    &timeout,     "SS_PLP_TIMEOUT",        PaInt,     PaOpt,              0,       0,   3600,  "timeout"                    },
+    { "-rate",       &rate,        "SS_PLP_RATE",           PaDouble,  PaOpt,         _i 1.0,    PaNL,   PaNL,  "rate"                       },
+    { "-controller", controller,   "SS_PLP_CONTROLLER",     PaString,  PaOpt, _i "localhost",    PaNL,   PaNL,  "controller IP"              },
+    { "-file",       file,         "SS_PLP_FILE",           PaString,  PaOpt, _i "generator",    PaNL,   PaNL,  "file"                       },
 
     PA_END_OF_ARGS
 };
@@ -220,7 +223,10 @@ void bufPush(char* buf, int size, samson::SamsonPushBuffer* pushBuffer)
 
             LM_V(("Pushing a border record of %d bytes", savedLen + savedMissing));
 
-            pushBuffer->push(savedBuffer, savedLen + savedMissing, true); // Is the '4' included here ... ?
+            if (fake == false)
+                pushBuffer->push(savedBuffer, savedLen + savedMissing, true); // Is the '4' included here ... ?
+            else
+                LM_V(("NOT pushing buffer of %d bytes (dataLen: %d)", savedLen + savedMissing, *iP));
 
             buf   = &buf[savedMissing];
             size    -= savedMissing;
@@ -243,7 +249,9 @@ void bufPush(char* buf, int size, samson::SamsonPushBuffer* pushBuffer)
     while (size > 0)
     {
         packetLen = ntohl(*((int*) buf));
-        LM_V(("parsed a packet of %d data length (bigendian: 0x%x)", packetLen, *((int*) buf)));
+
+        if ((packets % 100) == 0)
+            LM_V(("parsed packet %d of %d data length (bigendian: 0x%x)", packets, packetLen, *((int*) buf)));
 
         // We are having problems when dying, so we'll try to avoid the LM_X,
         // and try to process the block
@@ -273,8 +281,14 @@ void bufPush(char* buf, int size, samson::SamsonPushBuffer* pushBuffer)
         {
 			if (totalLen != 0)
 			{
+                int* iP = (int*) initialBuf;
+
 			    LM_V(("Pushing a block of %d bytes (packets:%d)", totalLen, packets));
-				pushBuffer->push(initialBuf, totalLen, true);
+
+                if (fake == false)
+                    pushBuffer->push(initialBuf, totalLen, true);
+                else
+                    LM_V(("NOT pushing buffer of %d bytes (dataLen: %d)", totalLen, *iP));
 			}
 
             memcpy(savedBuffer, buf, size);
@@ -402,9 +416,9 @@ void readFromServer(int fd, samson::SamsonPushBuffer* pushBuffer)
 
 /* ****************************************************************************
 *
-* arcanumData - 
+* tektronixData - 
 */
-void arcanumData(samson::SamsonPushBuffer* pushBuffer)
+void tektronixData(samson::SamsonPushBuffer* pushBuffer)
 {
     int fd;
 
@@ -564,36 +578,41 @@ int main(int argC, const char* argV[])
     }
     signaled_quit = false;
 
-    LM_M(("Here"));
     // Instance of the client to connect to SAMSON system
     samson::SamsonClient client;
 
-    LM_M(("Here"));
     // Set 1G RAM for uploading content
     client.setMemory(1024 * 1024 * 1024);
-    LM_M(("Here"));
 
     LM_V(("Connecting to '%s'", controller));
 
     // Initialize connection
-    LM_M(("Here"));
-    if (!client.init(controller))
-        LM_X(0, ("Error connecting to samson cluster (controller at: '%s'): %s\n" , controller, client.getErrorMessage().c_str()));
+    samson::SamsonPushBuffer* pushBuffer;
+    if ((tektronix == true) && (fake == true))
+        pushBuffer = NULL;
+    else
+    {
+        if (!client.init(controller))
+            LM_X(0, ("Error connecting to samson cluster (controller at: '%s'): %s\n" , controller, client.getErrorMessage().c_str()));
 
-    LM_M(("Here"));
-    samson::SamsonPushBuffer* pushBuffer = new samson::SamsonPushBuffer(&client, queueName);
-    LM_M(("Here"));
+        pushBuffer = new samson::SamsonPushBuffer(&client, queueName);
+    }
 
     LM_V(("rate: %f MBs", rate));
     if (timeout > 0)
         LM_V(("timeout: %ds", timeout));
 
     LM_M(("Here"));
-    if (arcanum == true)
-        arcanumData(pushBuffer);
-    else
+    if (tektronix == true)
+        tektronixData(pushBuffer);
+    else if (fake == true)
         fakeData(pushBuffer);
-
+    else
+    {
+        fprintf(stderr, "%s: bad parameters - either '-tektronix' or '-fake' must be used", paProgName);
+        paUsage(paArgs);
+    }
+    
     // Only here if we received a SIGQUIT
     // Last push
     pushBuffer->flush();

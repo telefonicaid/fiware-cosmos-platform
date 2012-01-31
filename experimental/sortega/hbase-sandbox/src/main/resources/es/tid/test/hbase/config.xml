@@ -16,6 +16,6 @@
     </property>
     <property>
         <name>hbase.zookeeper.quorum</name>
-        <value>pshdp02</value>
+        <value>pshdp02.hi.inet</value>
     </property>
 </configuration>

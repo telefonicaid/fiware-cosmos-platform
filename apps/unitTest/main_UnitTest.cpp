@@ -47,14 +47,14 @@ LmStatus initLog(char* pname)
     //
     // 2. Register fd 1 (stdout) so that I get traces on the console (fourth parameter is just a name)
     //    If you don't want traces to stdout /or any file descriptor), don't use this call ...
-    int      i1;
+    /*int      i1;
     if ((s = lmFdRegister(1, "TYPE:EXEC/FUNC: TEXT", "DEF", "nul", &i1)) != LmsOk)
     {
        sprintf(w, "lmInit: %s", lmStrerror(s));
         std::cerr << w << std::endl;
          return s;
     }
-    
+    */
 
     //
     // 3. Register a log file, first parameter is the directory. The name of the log file uses progName and 'Log' is appended

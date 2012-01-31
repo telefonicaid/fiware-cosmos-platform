@@ -26,10 +26,6 @@
 #include "samson/common/samsonDirectories.h"  // SAMSON_WORKER_DEFAULT_PORT
 #include "samson/common/samson.pb.h"			// samson::network::
 
-
-#include "WorkerTaskManager.h"	// samson::WorkerTaskManager
-#include "LoadDataManager.h"	// samson::LoadDataManager
-
 #include "samson/data/SimpleDataManager.h"          // samson::SimpleDataManager
 
 #include "samson/common/NotificationMessages.h"
@@ -71,11 +67,7 @@ namespace samson {
 	public:
 
         NetworkInterface *network;                      // Network interface to communicate with the rest of the system
-		
-		WorkerTaskManager taskManager;                  // Task manager for batch processing operations
-        
-		LoadDataManager loadDataManager;                // Element used to save incoming txt files to disk ( it waits until finish and notify delilah )
-		
+				
         stream::StreamManager* streamManager;           // Manager of all the stream-processing queues in the system
         
         std::list < WorkerLog > activityLog;            // Activity log for this worker
@@ -84,12 +76,6 @@ namespace samson {
 
 		// PacketReceiverInterface
 		void receive( Packet* packet );
-		
-		// Nothing function to avoid warning
-		void touch(){};	
-		
-		// Process list of files ( to remove unnecessary files )
-		void processListOfFiles( const network::QueueList& ql);
 		
         // Notification from the engine about finished tasks
         void notify( engine::Notification* notification );
@@ -104,9 +90,6 @@ namespace samson {
 		
 		virtual void notificationSent(size_t id, bool success) {}
 		
-		// Sent an "ls" to get the list of files ( to remove the rest )
-		void sendFilesMessage();
-        
 
 	};
 	

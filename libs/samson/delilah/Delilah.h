@@ -57,8 +57,6 @@ namespace samson {
     
 	class DelilahClient;
 	class DelilahComponent;
-	class DelilahUploadComponent;
-	class DelilahDownloadComponent;
     class PushDelilahComponent;
     class PopDelilahComponent;
     class DataSource;
@@ -121,13 +119,10 @@ namespace samson {
 		virtual void notificationSent(size_t id, bool success);
 
 		// Add particular process that will take input parameters
-		size_t addUploadData( std::vector<std::string> fileNames , std::string queue , bool compresion, int _max_num_threads);
-		size_t addDownloadProcess( std::string queue , std::string fileName , bool show_on_screen );
         size_t addPushData( std::vector<std::string> fileNames , std::vector<std::string> queues );
         size_t addPushData( DataSource* dataSource , std::vector<std::string> queues );
         size_t addPopData( std::string queue_name , std::string fileName , bool force_flag );
 
-		size_t sendCommand( std::string command , engine::Buffer *buffer );
 		size_t sendWorkerCommand( std::string command , engine::Buffer *buffer );
 		
 		

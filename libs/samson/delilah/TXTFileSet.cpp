@@ -9,6 +9,8 @@
 #include "DelilahClient.h"					// samson::DelilahClient
 #include "samson/common/SamsonSetup.h"					// samson::SamsonSetup
 
+#include "TXTFileSet.h"
+
 namespace samson
 {
 	

@@ -12,7 +12,6 @@
 #include "samson/network/Packet.h"				// samson::Packet
 #include "samson/delilah/Delilah.h"			// ss:Delilah
 #include "samson/worker/SamsonWorker.h"		// samson::SamsonWorker
-#include "samson/controller/SamsonController.h"	// samson:: SasonController
 
 #include "FakeEndpoint.h"		// samson::EndPoint
 #include "NetworkFake.h"        // NetworkFake

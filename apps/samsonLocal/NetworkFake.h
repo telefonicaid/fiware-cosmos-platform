@@ -7,7 +7,6 @@
 #include "samson/network/Message.h"            // samson::Message::MessageCode
 #include "samson/delilah/Delilah.h"			// ss:Delilah
 #include "samson/worker/SamsonWorker.h"		// samson::SamsonWorker
-#include "samson/controller/SamsonController.h"	// samson:: SasonController
 #include "samson/network/Endpoint.h"			// samson::EndPoint
 
 
@@ -22,6 +21,7 @@ namespace samson {
 		
 		// Pointer to the controller
 		NetworkFakeCenter *center;
+        
 		int worker_id;							// To know who is me
 		PacketReceiverInterface *receiver;
 		

@@ -5,7 +5,6 @@
 
 namespace samson {
 
-	
 	class Delilah;
 	class Buffer;
 	

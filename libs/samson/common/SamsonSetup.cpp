@@ -307,7 +307,6 @@ namespace samson
         add("delilah.automatic_update_period" , "2" , "Period for the automatic update of information from the samson cluster" );      
 
         // Worker Parameters
-        add("worker.update_files_period" ,"5" , "Period for the automatic update of files for each worker" );
         add("worker.period_check_finish_tasks", "5", "Period to review finished tasks in samsonWorker, to be clean from memory" );
 
         // Controller

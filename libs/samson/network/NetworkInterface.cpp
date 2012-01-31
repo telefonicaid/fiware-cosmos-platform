@@ -92,6 +92,7 @@ void NetworkInterface::sendToWorker(int workerId, Packet* p)
 *
 * sendToController - 
 */
+    /*
 void NetworkInterface::sendToController( Packet *p)
 {
     //LM_M(("Sending message to controller"));
@@ -99,7 +100,7 @@ void NetworkInterface::sendToController( Packet *p)
     //LM_M(("End sending message to controller"));
 	send(endPoint, p);
 }
-
+*/
 
 
 /* ****************************************************************************

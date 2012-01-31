@@ -22,7 +22,8 @@ namespace samson {
 	/**
 	 Simple component created when a command is send to the controller ( waiting for answeres )
 	 */
-	
+
+	/*
 	class CommandDelilahComponent : public DelilahComponent
 	{
 		std::string command;
@@ -39,7 +40,7 @@ namespace samson {
 		std::string getStatus();
 		
 	};
-
+*/
 	
 	
 	

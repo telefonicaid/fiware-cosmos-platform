@@ -1,5 +1,5 @@
 
-
+/*	
 
 #include "au/CommandLine.h"            // samson::CommandLine
 
@@ -16,7 +16,7 @@
 
 namespace samson {
 
-	
+
 	CommandDelilahComponent::CommandDelilahComponent(std::string _command , engine::Buffer * _buffer) : DelilahComponent( DelilahComponent::command )
 	{
 		command = _command;
@@ -115,4 +115,6 @@ namespace samson {
 	}
 	
 }
+ 
+ */
 

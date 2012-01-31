@@ -1,4 +1,4 @@
-
+/*
 
 #include "engine/MemoryManager.h"					// samson::MemoryManager
 #include "engine/Buffer.h"							// samson::Buffer
@@ -235,9 +235,6 @@ namespace samson
 		if ( pd->uploadDataProcess->compression )
 		{
             LM_X(1,("Not implemented!!"));
-            /*
-             ??
-             */
 			
 		}
 		else
@@ -540,3 +537,5 @@ namespace samson
 	}
 	
 }
+            
+            */

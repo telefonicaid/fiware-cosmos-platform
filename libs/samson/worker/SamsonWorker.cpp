@@ -43,8 +43,6 @@
 
 #include "samson/network/NetworkInterface.h"    // samson::NetworkInterface
 
-#define notification_worker_update_files    "notification_worker_update_files"
-
 
 namespace samson {
     
@@ -71,7 +69,7 @@ namespace samson {
      *
      * Constructor
      */
-    SamsonWorker::SamsonWorker( NetworkInterface* _network ) :  taskManager(this) , loadDataManager(this)
+    SamsonWorker::SamsonWorker( NetworkInterface* _network )
     {
         network = _network;
         network->setNodeName("SamsonWorker");
@@ -89,11 +87,7 @@ namespace samson {
         network->setPacketReceiver(this);
         
         srand((unsigned int) time(NULL));
-        
-        // Add SamsonWorker as listener of the update files
-        listen(notification_worker_update_files );
-        
-        
+                
         // Add samsonWorker as lister to send traces to delilahs
         listen(notification_samson_worker_send_trace );
         
@@ -102,15 +96,6 @@ namespace samson {
         
         // Listen this notification to send packets
         listen( notification_samson_worker_send_packet );
-        
-        // Notification of the files
-        {
-            int worker_update_files_period = samson::SamsonSetup::shared()->getInt("worker.update_files_period");
-            engine::Notification *notification = new engine::Notification(notification_worker_update_files);
-            notification->environment.set("target", "SamsonWorker");
-            notification->environment.setInt("worker", network->getWorkerId() );
-            engine::Engine::shared()->notify( notification, worker_update_files_period );
-        }
         
         // Notification to update state
         listen( notification_update_status );
@@ -128,36 +113,19 @@ namespace samson {
         }
         
         
-        
+        /*
         // Send a "hello" command message just to notify the controller about me
         Packet *p = new Packet( Message::Command );
         network::Command *command = p->message->mutable_command();
         command->set_command("hello");
         network->sendToController(p);
-        
+        */
+         
         
     }
     
     
-    /* ****************************************************************************
-     *
-     * run -
-     */
-    
-    void SamsonWorker::sendFilesMessage()
-    {
-        Packet*           p = new Packet(Message::Command);
-        network::Command* c = p->message->mutable_command();
-        
-        // This message is not critical - to be thrown away if worker not connected
-        p->disposable = true;
-        
-        c->set_command( "ls" );
-        p->message->set_delilah_id( 0 ); // At the moment no sence at the controller
-        //copyEnviroment( &environment , c->mutable_environment() );
-        network->sendToController( p );
-    }
-    
+
     
     /* ****************************************************************************
      *
@@ -167,7 +135,8 @@ namespace samson {
     {
         LM_T(LmtNodeMessages, ("SamsonWorker received %s from endpoint %d" , packet->str().c_str(), packet->fromId));
         
-        int fromId = packet->fromId;
+        //int fromId = packet->fromId;
+        
         Message::MessageCode msgCode = packet->msgCode;
         
         if( msgCode == Message::PushBlock )
@@ -216,81 +185,7 @@ namespace samson {
             }
             return;
         }
-        
-        if (msgCode == Message::WorkerTask)
-        {
-            // A packet with a particular command is received (controller expect to send a confirmation message)
-            LM_T(LmtTask, ("Got a WorkerTask message"));
-            
-            // add task to the task manager
-            taskManager.addTask( packet->message->worker_task() );
-            return;
-        }
-        
-        if (msgCode == Message::WorkerTaskKill)
-        {
-            // A packet with a particular command is received (controller expect to send a confirmation message)
-            LM_T(LmtTask, ("Got a WorkerTaskKill message"));
-            
-            // add task to the task manager
-            taskManager.killTask( packet->message->worker_task_kill() );
-            return;
-        }
-        
-        // List of local file ( remove unnecessary files )
-        if (msgCode == Message::CommandResponse)
-        {
-            processListOfFiles( packet->message->command_response().queue_list() );
-            return;
-        }
-        
-        
-        // Load data files to be latter confirmed to controller
-        if (msgCode == Message::UploadDataFile)
-        {
-            loadDataManager.addUploadItem(fromId, packet->message->upload_data_file(), packet->message->delilah_id() , packet->buffer );
-            return;
-        }
-        
-        // Download data files
-        if (msgCode == Message::DownloadDataFile)
-        {
-            loadDataManager.addDownloadItem(fromId, packet->message->download_data_file() , packet->message->delilah_id() );
-            return;
-        }
-        
-        /**
-		 Data packets go directly to the DataBuffer to be joined and flushed to disk
-		 DataManager is notifyed when created a new file or finish everything
-         */
-        
-        if( msgCode == Message::WorkerDataExchange )
-        {
-            // New data packet for a particular queue inside a particular task environment
-            
-            size_t task_id = packet->message->data().task_id();
-            network::WorkerDataExchange data = packet->message->data();
-            taskManager.addBuffer( task_id , data, packet->buffer );
-            
-            return;
-        }
-        
-        /**
-		 Data Close message is sent to notify that no more data will be generated
-		 We have to wait for "N" messages ( one per worker )
-         */
-        
-        if( msgCode == Message::WorkerDataExchangeClose )
-        {
-            
-            size_t task_id = packet->message->data_close().task_id();
-            int worker_from = network->getWorkerFromIdentifier( fromId );
-            
-            taskManager.finishWorker( worker_from , task_id );
-            
-            return;
-        }
-        
+             
         if( msgCode == Message::PopQueue )
         {
             
@@ -309,7 +204,6 @@ namespace samson {
             }
             
             stream::WorkerCommand *workerCommand = new stream::WorkerCommand(  packet->fromId , packet->message->delilah_id() , packet->message->worker_command() );
-            
             streamManager->addWorkerCommand( workerCommand );
             return;
         }
@@ -321,9 +215,7 @@ namespace samson {
     // Receive notifications
     void SamsonWorker::notify( engine::Notification* notification )
     {
-        if ( notification->isName(notification_worker_update_files) )
-            sendFilesMessage();
-        else if ( notification->isName(notification_update_status))
+        if ( notification->isName(notification_update_status))
         {
             Packet* p  = new Packet(Message::StatusReport);
             
@@ -420,160 +312,6 @@ namespace samson {
             LM_X(1, ("SamsonWorker received an unexpected notification %s", notification->getDescription().c_str()));
     }
     
-    
-    
-    /**
-	 Process the list of files removing unnecessary files
-     */
-    
-    void SamsonWorker::processListOfFiles( const ::samson::network::QueueList& ql)
-    {
-        LM_T(LmtDisk, ("Starts processListOfFiles()"));
-        
-        // Generate list of local files ( to not remove them )
-        std::set<std::string> files;
-        
-        // List of load_id process currently running
-        std::set<size_t> load_id;
-        
-        // Get the elements provided by the controller
-        for (int q = 0 ; q < ql.queue_size() ; q++)
-        {
-            const network::FullQueue& queue = ql.queue(q);
-            for (int f = 0 ; f < queue.file_size() ; f++)
-            {
-                const network::File &file =  queue.file(f);
-                files.insert( file.name() );
-                //LM_T(LmtDisk,("Add queue.file()((%s) to files not to be removed", file.name().c_str()));
-            }
-        }
-        
-        // Get the files from the active tasks to not remove them
-        for (int t = 0 ; t < ql.tasks_size() ; t++)
-            for (int f = 0 ; f < ql.tasks(t).filename_size() ; f++)
-            {
-                files.insert( ql.tasks(t).filename(f)  );
-                //LM_T(LmtDisk,("Add ql.tasks(%d).filename(%d)((%s) to files not to be removed", t, f, ql.tasks(t).filename(f).c_str()));
-            }
-        
-        
-        // Get the list of files generated by running tasks
-        taskManager.addCurrentGeneratedFiles( files );
-        
-        // Get the list of active load_ids to not remove temporal files of these upload operations
-        for (int t = 0 ; t < ql.load_id_size() ; t++)
-            load_id.insert(ql.load_id(t));
-        
-        // Show on screen for debuggin...
-        /*
-         LM_M(("Process list of files %lu" , files.size() ));
-         std::set<std::string>::iterator f;
-         for (f = files.begin() ; f!= files.end() ; f++)
-         std::cout << "File: " << *f << "\n";
-         */
-        
-        // Get the list of files to be removed
-        
-        //std::set< std::string > remove_files;
-        
-        DIR *dp;
-        struct dirent *dirp;
-        std::string dir_path = SamsonSetup::shared()->dataDirectory();
-        if((dp  = opendir( dir_path.c_str() )) == NULL) {
-            
-            // LOG and error to indicate that data directory cannot be access
-            return;
-        }
-        
-        while ((dirp = readdir(dp)) != NULL) {
-            
-            std::string path = SamsonSetup::shared()->dataDirectory() + "/" + dirp->d_name;
-            
-            struct ::stat info;
-            stat(path.c_str(), &info);
-            
-            
-            if( S_ISREG(info.st_mode) )
-            {
-                
-                // Get modification date to see if it was just created
-                time_t now;
-                time (&now);
-                double age = difftime ( now , info.st_mtime );
-                
-                if( age > 7200 ) // Get some time to avoid cross-message between controller and worker
-                {
-                    
-                    // Get the task from the file name
-                    std::string file_name = dirp->d_name;
-                    size_t pos = file_name.find("_");
-                    size_t task = 0;
-                    if( pos != std::string::npos )
-                        task = atoll( file_name.substr( 0 , pos ).c_str() );
-                    if (task);
-                    
-                    if( files.find( file_name ) == files.end() )
-                    {
-                        LM_T(LmtDisk,("Detected ancient (> 7200) file(%s) not present in active list", file_name.c_str()));
-                        // If the file is not in the list remove this
-                        std::string file_name_abs = dir_path + "/" + file_name;
-                        
-                        if( file_name.substr( 0 , 14 ) == "file_updaload_" )
-                        {
-                            // Exception: temporal upload files
-                            size_t pos = file_name.find("_" , 14);
-                            size_t _load_id = atoll( file_name.substr(14 , pos).c_str() );
-                            if( load_id.find(_load_id ) == load_id.end() )
-                            {
-                                LM_T(LmtDisk,("Removing file %s since the id (%lu) is not in the list of active load operations (size:%d)", file_name.c_str() , _load_id , load_id.size() ));
-                                //remove_files.insert( dirp->d_name );
-                                
-                                int c = ::unlink( file_name_abs.c_str() );
-                                if( c != 0 )
-                                {
-                                    LM_E(("Error removing file '%s', errno:%d\n", file_name_abs.c_str(), errno));
-                                }
-                                else
-                                {
-                                    LM_T( LmtDisk , ("DiskManager: Removed file %s", file_name.c_str() ));
-                                }
-                            }
-                        }
-                        else
-                        {
-                            LM_T(LmtDisk,("Remove file %s since it is not in any queue", file_name.c_str()));
-                            //remove_files.insert( dirp->d_name );
-                            int c = ::unlink( file_name_abs.c_str() );
-                            if( c != 0 )
-                            {
-                                LM_E(("Error removing file '%s', errno:%d\n", file_name_abs.c_str(), errno));
-                            }
-                            else
-                            {
-                                LM_T( LmtDisk , ("DiskManager: Removed file %s", file_name.c_str() ));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        closedir(dp);
-        
-        
-        
-        // Remove the selected files
-        //for ( std::set< std::string >::iterator f = remove_files.begin() ; f != remove_files.end() ; f++)
-        //{
-        // Add a remove opertion to the engine ( target 0 means no specific listener to be notified )
-        // Remove the file
-        //engine::DiskOperation * operation =  engine::DiskOperation::newRemoveOperation(  SamsonSetup::dataFile(*f) , 0 );
-        //engine::DiskManager::shared()->add( operation );
-        //}
-        LM_T(LmtDisk, ("Ends processListOfFiles()"));
-        
-        
-    }
-    
     void SamsonWorker::logActivity( std::string log)
     {
         activityLog.push_back( WorkerLog(log) );
@@ -594,10 +332,7 @@ namespace samson {
         
         // Modules manager
         ModulesManager::shared()->getInfo( output );
-        
-        // Worker task manager
-        taskManager.getInfo(output);
-        
+                
         // Block manager
         stream::BlockManager::shared()->getInfo( output );
         

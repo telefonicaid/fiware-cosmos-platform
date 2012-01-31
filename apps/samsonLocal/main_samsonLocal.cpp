@@ -34,8 +34,6 @@
 
 #include "samson/worker/SamsonWorker.h"		// samson::SamsonWorker
 
-#include "samson/controller/SamsonController.h"	// samson:: SasonController
-
 #include "samson/delilah/DelilahConsole.h"              // ss:DelilahConsole
 
 #include "FakeEndpoint.h"
@@ -107,7 +105,6 @@ void deleteWorkers()
         delete _workers[i];
 }
 
-
 void deleteNetworkCenter()
 {
     if ( center )
@@ -170,10 +167,6 @@ int main(int argC, const char *argV[])
 	// Fake network element with N workers
     center = new samson::NetworkFakeCenter(workers);
     atexit(deleteNetworkCenter);
-	
-	// Create one controller, one dalilah and N workers
-	samson::SamsonController controller( center->getNetwork(-1) );
-
 	
     samson::DelilahConsole* delilahConsole = NULL;
     samson::DelilahQt* delilahQt = NULL;

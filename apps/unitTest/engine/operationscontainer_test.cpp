@@ -25,12 +25,25 @@
 #include "engine/MemoryManager.h"
 #include "engine/ProcessItem.h"
 #include "engine/MemoryRequest.h"
-#include "samson/worker/DataBufferProcessItem.h" //to test ProcessItem
-#include "samson/worker/BufferVector.h" //to test ProcessItem
-#include "samson/controller/Queue.h"
 
 #include "xmlmarkup/xmlmarkup.h"
 
+//ProcessItem is pure virtual. In order to test it we need to create a derived class
+
+class ProcessItemExample : public engine::ProcessItem
+{
+public:
+
+ProcessItemExample() : engine::ProcessItem(5)
+   {
+   }
+
+   void run()
+   {
+      // Do nothing ;)
+   }
+
+};
 
 //Test void add( engine::MemoryRequest* memoryRequest );
 TEST(operationsContainerTest, addMemoryRequestTest) {
@@ -95,9 +108,8 @@ TEST(operationsContainerTest, addProcessItemTest) {
     engine::Engine::init();
     engine::OperationsContainer container;
     
-    samson::network::Queue queue;
-    samson::QueueuBufferVector* qbvector = new samson::QueueuBufferVector(queue, false);
-    samson::DataBufferProcessItem item(qbvector);
+
+	ProcessItemExample item;
     
     container.add(&item);
     
@@ -111,10 +123,8 @@ TEST(operationsContainerTest, addProcessItemTest) {
 TEST(operationsContainerTest, eraseProcessItemTest) {
     engine::Engine::init();
     engine::OperationsContainer container;
-    
-    samson::network::Queue queue;
-    samson::QueueuBufferVector* qbvector = new samson::QueueuBufferVector(queue, false);
-    samson::DataBufferProcessItem item(qbvector);
+
+	ProcessItemExample item;    
     
     container.add(&item);
     
@@ -138,9 +148,7 @@ TEST(operationsContainerTest, hasPendingEngineOperationsTest) {
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 3 , 5, 0 );
 
-    samson::network::Queue queue;
-    samson::QueueuBufferVector* qbvector = new samson::QueueuBufferVector(queue, false);
-    samson::DataBufferProcessItem item(qbvector);
+	ProcessItemExample item;    
     
     container.add(operation);
     container.add(&item);
@@ -165,9 +173,7 @@ TEST(operationsContainerTest, cancelEngineOperationsTest) {
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 3 , 5, 0 );
 
-    samson::network::Queue queue;
-    samson::QueueuBufferVector* qbvector = new samson::QueueuBufferVector(queue, false);
-    samson::DataBufferProcessItem item(qbvector);
+	ProcessItemExample item;    
     
     container.add(operation);
     //container.add(&item);
@@ -191,16 +197,9 @@ TEST(operationsContainerTest, getOperationsContainerStrTest) {
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 3 , 5, 0 );
 
-    samson::network::Queue queue1;
-    samson::network::Queue queue2;
-    samson::network::Queue queue3;
-    samson::QueueuBufferVector* qbvector1 = new samson::QueueuBufferVector(queue1, false);
-    samson::QueueuBufferVector* qbvector2 = new samson::QueueuBufferVector(queue2, false);
-    samson::QueueuBufferVector* qbvector3 = new samson::QueueuBufferVector(queue3, false);
-
-    samson::DataBufferProcessItem item1(qbvector1);
-    samson::DataBufferProcessItem item2(qbvector2);
-    samson::DataBufferProcessItem item3(qbvector3);
+	ProcessItemExample item1;    
+	ProcessItemExample item2;    
+	ProcessItemExample item3;    
     
     container.add(operation);
     container.add(&item1);

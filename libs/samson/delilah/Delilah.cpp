@@ -108,9 +108,7 @@ namespace samson {
         {
             int id = notification->environment.getInt("id",-1);
             
-            if( network->controllerGetIdentifier() == id )
-                showWarningMessage(au::str("Controller  got disconnected"));
-            else if( network->getWorkerFromIdentifier(id) != -1 )
+            if( network->getWorkerFromIdentifier(id) != -1 )
                 showWarningMessage(au::str("Worker %d got disconnected" , network->getWorkerFromIdentifier(id) ));
             else
                 showWarningMessage(au::str("Some unknown network element got disconnected" , network->getWorkerFromIdentifier(id) ));
@@ -185,15 +183,6 @@ namespace samson {
                 //return;
             }
             
-            if( packet->fromId == network->controllerGetIdentifier() )
-            {
-                // Not updating any more from controller... it will die soon ;)
-			   //LM_M(("Delilah received a status report from controller"));
-               //updateControllerXMLString( packet->message->info() );
-                return;
-            }
-                
-            
             int worker_id = network->getWorkerFromIdentifier( packet->fromId );
             if( worker_id != -1 )
             {
@@ -266,35 +255,6 @@ namespace samson {
     
 #pragma mark Load data process
     
-	/* ****************************************************************************
-     *
-     * loadData - 
-     */
-	size_t Delilah::addUploadData( std::vector<std::string> fileNames , std::string queue , bool compresion ,int max_num_threads)
-	{
-		DelilahUploadComponent * d = new DelilahUploadComponent( fileNames , queue , compresion, max_num_threads );
-		
-		size_t tmp_id = addComponent(d);	
-		
-		d->run();
-		
-		return tmp_id;
-	}
-	
-	/* ****************************************************************************
-	 *
-	 * download data - 
-	 */
-	
-	
-	size_t Delilah::addDownloadProcess( std::string queue , std::string fileName , bool force_flag )
-	{
-		DelilahDownloadComponent *d = new DelilahDownloadComponent( queue , fileName , force_flag );
-		size_t tmp_id = addComponent(d);	
-		d->run();
-		
-		return tmp_id;
-	}
     
 	/* ****************************************************************************
      *
@@ -469,21 +429,6 @@ namespace samson {
 		
 		return output.str();    
     }
-    
-    size_t Delilah::sendCommand( std::string command , engine::Buffer *buffer )
-	{
-		
-		// Add a components for the reception
-		CommandDelilahComponent *c = new CommandDelilahComponent( command , buffer );
-        
-		// Get the id of this operation
-		size_t tmp_id = addComponent( c );
-		
-		// Send the packet to the controller
-		c->run();
-		
-		return tmp_id;
-	}	
     
     size_t Delilah::sendWorkerCommand( std::string command , engine::Buffer *buffer )
 	{

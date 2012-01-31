@@ -8,7 +8,6 @@ SET (HEADERS
 SET( STATIC_LIBS
      samsonClient
      samsonWorkerLib
-     samsonControllerLib
      delilahLib
      engine
      samsonModule
@@ -17,7 +16,7 @@ SET( STATIC_LIBS
      samsonIsolated
      samsonNetwork
      samsonCommon
-     pugi
+     tables
      au
      lm
      pa

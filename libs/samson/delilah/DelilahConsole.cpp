@@ -645,24 +645,6 @@ namespace samson
             return 0;
         }
         
-        if ( mainCommand == "download")
-        {
-            if ( commandLine.get_num_arguments() < 3)
-            {
-                writeErrorOnConsole( "Error: Usage: download data_set_name local_file_name\n");
-                return 0;
-            }
-            
-            std::string queue_name = commandLine.get_argument(1);
-            std::string fileName = commandLine.get_argument(2);
-            
-            size_t id = addDownloadProcess(queue_name, fileName , commandLine.get_flag_bool("force"));
-            
-            std::ostringstream o;
-            o << "[ " << id << " ] Download data process started.";
-            writeWarningOnConsole(o.str());
-            return id;
-        }
         
         if ( mainCommand == "ps" )
         {
@@ -732,105 +714,6 @@ namespace samson
             
             return 0;
             
-        }
-        
-        
-        // Upload and download operations
-        // ------------------------------------------------------------------------------------
-        
-        
-        if( mainCommand == "upload" )
-        {
-            if( commandLine.get_num_arguments() < 3)
-            {
-                writeErrorOnConsole("Usage: upload file <file2> .... <fileN> queue");
-                return 0;
-            }
-            
-            std::vector<std::string> fileNames;
-            for (int i = 1 ; i < (commandLine.get_num_arguments()-1) ; i++)
-            {
-                std::string fileName = commandLine.get_argument(i);
-                
-                struct stat buf;
-                stat( fileName.c_str() , &buf );
-                
-                if( S_ISREG(buf.st_mode) )
-                {
-                    if( trace_on )
-                    {
-                        
-                        std::ostringstream message;
-                        message << "Including regular file " << fileName;
-                        writeOnConsole( message.str() );
-                    }
-                    
-                    fileNames.push_back( fileName );
-                }
-                else if ( S_ISDIR(buf.st_mode) )
-                {
-                    if( trace_on )
-                    {
-                        std::ostringstream message;
-                        message << "Including directory " << fileName;
-                        writeOnConsole( message.str() );
-                    }
-                    
-                    {
-                        // first off, we need to create a pointer to a directory
-                        DIR *pdir = opendir (fileName.c_str()); // "." will refer to the current directory
-                        struct dirent *pent = NULL;
-                        if (pdir != NULL) // if pdir wasn't initialised correctly
-                        {
-                            while ((pent = readdir (pdir))) // while there is still something in the directory to list
-                                if (pent != NULL)
-                                {
-                                    std::ostringstream localFileName;
-                                    localFileName << fileName << "/" << pent->d_name;
-                                    
-                                    struct stat buf2;
-                                    stat( localFileName.str().c_str() , &buf2 );
-                                    
-                                    if( S_ISREG(buf2.st_mode) )
-                                        fileNames.push_back( localFileName.str() );
-                                    
-                                }
-                            // finally, let's close the directory
-                            closedir (pdir);						
-                        }
-                    }
-                } 
-                else
-                {
-                    if( trace_on )
-                    {
-                        std::ostringstream message;
-                        message << "Skipping " << fileName;
-                        writeOnConsole( message.str() );
-                    }
-                }
-            }
-            
-            std::string queue = commandLine.get_argument( commandLine.get_num_arguments()-1 );
-            
-            bool compresion = false;
-            /*
-             // Compression deactivated temporary
-             if( commandLine.get_flag_bool("gz") )
-             compresion = true;
-             if( commandLine.get_flag_bool("plain") )
-             compresion = false;
-             */
-            
-            int max_num_thread = commandLine.get_flag_int("threads"); 
-            
-            size_t id = addUploadData(fileNames, queue,compresion , max_num_thread);
-            
-            //std::ostringstream o;
-            //o << "[ " << id << " ] Load data process started with " << fileNames.size() << " files";
-            //writeWarningOnConsole(o.str());
-            
-            return id;
         }
         
         // Push data to a queue
@@ -1086,9 +969,8 @@ namespace samson
             return 0;
         }
         
-        // By default, we consider a normal command sent to controller
-        return sendCommand( command , NULL );
-        
+        writeWarningOnConsole( au::str("Unknown command %s" , main_command.c_str() ) );
+        return 0;
     }
     
     int DelilahConsole::_receive(int fromId, Message::MessageCode msgCode, Packet* packet)

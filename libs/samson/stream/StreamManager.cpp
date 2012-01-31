@@ -18,6 +18,7 @@
 
 #include "samson/common/Info.h"     // samson::Info
 #include "samson/common/EnvironmentOperations.h"    // copyEnviroment
+#include "samson/common/SamsonSetup.h" 
 
 #include "samson/module/ModulesManager.h"   // ModulesManager
 
@@ -451,7 +452,6 @@ namespace samson {
                 LM_W(("Not possible to save stream manager state to disk because it is still writing the previous one"));
                 return;
             }
-            
             
             std::string fileName = SamsonSetup::shared()->streamManagerLogFileName();
             std::string tmp_fileName = SamsonSetup::shared()->streamManagerAuxiliarLogFileName();

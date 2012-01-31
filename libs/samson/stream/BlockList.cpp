@@ -10,6 +10,7 @@
 #include "samson/common/EnvironmentOperations.h"    // getStatus()
 #include "samson/common/Info.h"                     // samson::Info
 #include "samson/common/coding.h"                   // KVInfo
+#include "samson/common/SamsonSetup.h" 
 
 #include "samson/module/ModulesManager.h"           
 

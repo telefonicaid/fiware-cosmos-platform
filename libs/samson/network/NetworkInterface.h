@@ -159,25 +159,15 @@ namespace samson {
         virtual bool ready() = 0;
         virtual bool ready(bool connectedToAllWorkers) { return false; };
         
-        // Init functions of the network element - not used in Network2
-        virtual void init(Endpoint::Type type, const char* alias, unsigned short port = 0, const char* controllerName = NULL) {};
-        virtual void initAsSamsonController(void) = 0;
-        
         // Set the receiver element (this should be notified about the package)
         virtual void setPacketReceiver(PacketReceiverInterface* receiver) = 0;
         
-        // These two aren't used in Network2
-        virtual void setDataReceiver(DataReceiverInterface* receiver)       { LM_X(1, ("Please implement setDataReceiverInterface")); };
-        virtual void setReadyReceiver(ReadyReceiverInterface* receiver)     { LM_X(1, ("Please implement setReadyReceiverInterface")); };
-        
-        
         // Get identifiers of known elements
-        virtual int controllerGetIdentifier()  = 0;    // Get the identifier of the controller
-        virtual int workerGetIdentifier(int i) = 0;    // Get the identifier of the i-th worker
-        virtual int getMyidentifier()          = 0;    // Get my identifier
-        virtual int getNumWorkers()            = 0;    // Get the number of workers
-        virtual int getNumEndpoints() { return 0; }    // Get the number of endpoints
-        
+        //        virtual int controllerGetIdentifier()  = 0;    // Get the identifier of the controller
+        virtual int workerGetIdentifier(int i) = 0;              // Get the identifier of the i-th worker
+        virtual int getMyidentifier()          = 0;              // Get my identifier
+        virtual int getNumWorkers()            = 0;              // Get the number of workers
+        virtual int getNumEndpoints() { return 0; }              // Get the number of endpoints
         
         // Get information about network element
         virtual size_t getOutputBuffersSize() { return 0; };
@@ -217,7 +207,7 @@ namespace samson {
         // New API to send packets    
         void send(int endpoint, Packet* p);
         void sendToWorker(int workerId, Packet* p);
-        void sendToController(Packet* p);
+        //void sendToController(Packet* p);
         
     private:
         

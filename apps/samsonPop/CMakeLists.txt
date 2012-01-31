@@ -8,7 +8,6 @@ SET (HEADERS
 SET( STATIC_LIBS
      samsonClient
      samsonWorkerLib
-     samsonControllerLib
      delilahLib
      engine
      samsonModule

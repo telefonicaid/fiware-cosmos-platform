@@ -6,7 +6,6 @@
 
 #include "samson/delilah/Delilah.h"			// ss:Delilah
 #include "samson/worker/SamsonWorker.h"		// samson::SamsonWorker
-#include "samson/controller/SamsonController.h"	// samson:: SasonController
 #include "samson/network/Endpoint.h"			// samson::EndPoint
 
 

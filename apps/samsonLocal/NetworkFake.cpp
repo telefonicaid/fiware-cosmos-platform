@@ -31,6 +31,8 @@ namespace samson {
 	// Get identifiers of known elements
 	int NetworkFake::controllerGetIdentifier()
 	{
+        assert(false);
+        LM_X(1,("Not accessing controller any-mode"));
 		return -1;
 	}
 

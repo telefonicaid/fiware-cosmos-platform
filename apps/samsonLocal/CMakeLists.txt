@@ -15,7 +15,6 @@ SET (HEADERS
 
 SET( STATIC_LIBS
     samsonWorkerLib
-    samsonControllerLib
     delilahLib
     delilahQtLib
     engine

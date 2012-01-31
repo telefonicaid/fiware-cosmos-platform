@@ -20,10 +20,22 @@
 
 #include "au/ProcessStats.h"
 
-//ProcessItem is pure virtual. In order to test it we need to use DataBufferProcessItem, which is derived from it
-#include "samson/worker/DataBufferProcessItem.h" //to test ProcessItem
-#include "samson/worker/BufferVector.h" //to test ProcessItem
-#include "samson/controller/Queue.h"
+//ProcessItem is pure virtual. In order to test it we need to create a derived class
+
+class ProcessItemExample : public engine::ProcessItem
+{
+public:
+
+   ProcessItemExample() : engine::ProcessItem(5)
+   {
+   }
+   
+   void run()
+   {
+	  // Do nothing ;)
+   }
+
+};
 
 #include "xmlparser/xmlParser.h"
 
@@ -35,9 +47,7 @@
 TEST(processItemTest, getStatusTest) {
     engine::Engine::init();
 
-    samson::network::Queue queue;
-    samson::QueueuBufferVector* qbvector = new samson::QueueuBufferVector(queue, false);
-    samson::DataBufferProcessItem item(qbvector);
+    ProcessItemExample item;;
     
     EXPECT_EQ(item.getStatus(), "Q:10:Prewrite    0 Bytes") << "Error getting status";
     EXPECT_TRUE(item.isReady()) << "Item should be ready";
@@ -51,9 +61,7 @@ TEST(processItemTest, getStatusTest) {
 TEST(processItemTest, isCanceledTest) {
     engine::Engine::init();
 
-    samson::network::Queue queue;
-    samson::QueueuBufferVector* qbvector = new samson::QueueuBufferVector(queue, false);
-    samson::DataBufferProcessItem item(qbvector);
+    ProcessItemExample item;;
     
     EXPECT_TRUE(item.isProcessItemCanceled() == false) << "ProcessItem should not be canceled";
     item.setCanceled();
@@ -65,9 +73,7 @@ TEST(processItemTest, isCanceledTest) {
 TEST(processItemTest, getInfoTest) {
     engine::Engine::init();
 
-    samson::network::Queue queue;
-    samson::QueueuBufferVector* qbvector = new samson::QueueuBufferVector(queue, false);
-    samson::DataBufferProcessItem item(qbvector);
+    ProcessItemExample item;;
     item.addListenerId(1);
     
     std::ostringstream info;
@@ -88,9 +94,7 @@ TEST(processItemTest, getInfoTest) {
 TEST(processItemTest, isRunningTest) {
     engine::Engine::init();
 
-    samson::network::Queue queue;
-    samson::QueueuBufferVector* qbvector = new samson::QueueuBufferVector(queue, false);
-    samson::DataBufferProcessItem item(qbvector);
+    ProcessItemExample item;;
     
     EXPECT_TRUE(!item.isRunning());
     item.unHalt();
@@ -104,9 +108,7 @@ TEST(processItemTest, isRunningTest) {
     engine::ProcessManager::init(10);
     engine::MemoryManager::init(1000);
 
-    samson::network::Queue queue;
-    samson::QueueuBufferVector* qbvector = new samson::QueueuBufferVector(queue, false);
-    samson::DataBufferProcessItem item(qbvector);
+    ProcessItemExample item;;
     
     ProcessStats pstats;
     size_t beforeThreads = pstats.get_nthreads();

@@ -1,3 +1,4 @@
+/*
 
 #ifndef _H_DELILAH_DOWNLOAD_DATA_PROCESS
 #define _H_DELILAH_DOWNLOAD_DATA_PROCESS
@@ -55,3 +56,5 @@ namespace samson {
 }
 
 #endif
+
+*/

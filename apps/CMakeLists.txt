@@ -1,18 +1,17 @@
-ADD_SUBDIRECTORY(samsonSpawner)
+ADD_SUBDIRECTORY(samsonLocal)
+
 ADD_SUBDIRECTORY(samsonSetup)
 ADD_SUBDIRECTORY(samsonWorker)
-ADD_SUBDIRECTORY(samsonController)
 ADD_SUBDIRECTORY(delilah)
-ADD_SUBDIRECTORY(samsonLocal)
 ADD_SUBDIRECTORY(samsonModuleParser)
-ADD_SUBDIRECTORY(samsonCat)
-#ADD_SUBDIRECTORY(samsonTest)
-ADD_SUBDIRECTORY(samsonDiskTest)
-ADD_SUBDIRECTORY(samsonStarter)
-ADD_SUBDIRECTORY(samsonData)
-ADD_SUBDIRECTORY(samsonKiller)
-#ADD_SUBDIRECTORY(passiveLocationPush)
 
+ADD_SUBDIRECTORY(samsonCat)
+#ADD_SUBDIRECTORY(samsonData)
+
+#ADD_SUBDIRECTORY(samsonTest)
+#ADD_SUBDIRECTORY(samsonDiskTest)
+
+ADD_SUBDIRECTORY(passiveLocationPush)
 ADD_SUBDIRECTORY(samsonPush)
 ADD_SUBDIRECTORY(samsonPop)
 
@@ -27,9 +26,6 @@ if (HAVE_QT)
     endif (HAVE_KDCHART)
     ADD_SUBDIRECTORY(samsonTopicMonitor)
 endif (HAVE_QT)
-
-# Sandbox...
-ADD_SUBDIRECTORY(samsonTest)
 
 # Extra apps
 ADD_SUBDIRECTORY(extra)

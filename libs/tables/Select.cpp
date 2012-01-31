@@ -1,4 +1,6 @@
 
+#include <algorithm>
+
 #include "Table.h"
 #include "Tree.h"
 

@@ -1,10 +1,10 @@
 
 SET (HEADERS
-	DelilahQT.h
+	DelilahQt.h
 )
 
 SET (SOURCES
-	DelilahQT.cpp
+	DelilahQt.cpp
 )
 
 # Include directories

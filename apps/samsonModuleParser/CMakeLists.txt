@@ -21,8 +21,8 @@ samsonCommon
 protobuf
 pthread
 dl
-au
 tables
+au
 lm
 pa
 ${COMMON_SAMSON_LIBS}

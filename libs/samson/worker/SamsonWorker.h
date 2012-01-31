@@ -64,7 +64,7 @@ namespace samson {
         
 	public: 
 		
-		SamsonWorker(NetworkInterface* network);
+		SamsonWorker( NetworkInterface* network );
         
         friend class StreamManager;                     // Friend to be able to log to dataManager
         

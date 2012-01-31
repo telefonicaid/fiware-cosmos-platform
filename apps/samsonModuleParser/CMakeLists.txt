@@ -5,7 +5,6 @@ DataType.cpp
 DataContainer.cpp
 ModuleContainer.cpp
 OperationContainer.cpp
-samson_module.cpp
 )
 
 SET (HEADERS
@@ -15,7 +14,6 @@ DataCreator.h
 DataType.h
 ModuleContainer.h
 OperationContainer.h
-samson_module.h
 )
 
 SET (LIBS
@@ -24,6 +22,7 @@ protobuf
 pthread
 dl
 au
+tables
 lm
 pa
 ${COMMON_SAMSON_LIBS}
@@ -34,10 +33,18 @@ ${COMMON_SAMSON_LIBS}
 include_directories("${PROJECT_SOURCE_DIR}/libs")
 
 
-# SAMSON Executable
+# Executables
 # ------------------------------------------------------------
-ADD_EXECUTABLE(samsonModuleParser ${SOURCES} ${HEADERS})
+
+ADD_EXECUTABLE(samsonModuleParser main_samsonModuleParser.cpp  ${SOURCES} ${HEADERS})
 TARGET_LINK_LIBRARIES(samsonModuleParser ${LIBS} )
 
+ADD_EXECUTABLE(samsonModuleEditor main_samsonModuleEditor.cpp  ${SOURCES} ${HEADERS})
+TARGET_LINK_LIBRARIES(samsonModuleEditor ${LIBS} )
+
+
 INSTALL(TARGETS               samsonModuleParser
+        RUNTIME DESTINATION   bin)
+
+INSTALL(TARGETS               samsonModuleEditor
         RUNTIME DESTINATION   bin)

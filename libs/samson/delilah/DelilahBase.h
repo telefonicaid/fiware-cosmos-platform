@@ -14,13 +14,13 @@
 #include <vector>                       // std::vector
 
 #include "au/Token.h"                   // au::Token
-#include "tables/TableCollection.h"
+#include "tables/DataBase.h"
 #include "au/Cronometer.h"              // au::Cronometer
 #include "au/ConsoleAutoComplete.h"
 
 #include "DelilahUtils.h"               // 
 
-#include "pugi/pugi.h"                  // pugi::... node_to_string_function
+#include "tables/pugi.h"                  // pugi::... node_to_string_function
 
 namespace samson {
     
@@ -37,24 +37,25 @@ namespace samson {
     
     class XMLStringHolder
     {
-        std::string txt;
-        au::Cronometer cronometer;
-        
-        
-        bool ready;
+        au::Cronometer cronometer;     // Cronometer used to monitorize the updated time
+        std::string xml_data;          // xml content
+        size_t counter;                   // Number of times this has been updated
         
     public:
         
         XMLStringHolder()
         {
-            ready = false;
+            counter = 0;
         }
         
-        void update( std::string _txt )
+        au::tables::TreeItem* update( std::string _txt )
         {
-            txt = _txt;
             cronometer.reset();
-            ready = true;
+            counter++;
+            
+            xml_data = _txt;    // Keep the xml document just for debuggin
+            
+            return au::tables::TreeItem::getTreeFromXML( _txt );            
         }
         
         size_t getTime()
@@ -62,15 +63,11 @@ namespace samson {
             return cronometer.diffTimeInSeconds();
         }
         
-        void append( std::ostringstream& output)
+        size_t getNumUpdated()
         {
-            output << txt;
+            return counter;
         }
         
-        bool isReady()
-        {
-            return ready;
-        }
         
     };
     
@@ -78,92 +75,57 @@ namespace samson {
     {
         // XML information
         int num_workers;
-        XMLStringHolder* controller;
+
+        // XML data holders for workers and this delilah
         std::vector<XMLStringHolder*> worker;
         
-        // Data collected with monitorization
-        // Thread safe access 
-        au::Token delilah_base_token;
+        // XML data holders for this delilah
+        XMLStringHolder* delilah;
+    
+    protected:
         
-        // Global xml-based information from the system
-        std::string xml_info;
-        
-        // General document with the content of xml_info
-        pugi::xml_document doc;
-        
-        au::table::TableCollection table_collection;
+        // Data base used to keep all monitorization information
+        au::tables::DataBase database;
         
     public:
         
         DelilahBase( int num_workers );
         ~DelilahBase();
         
-        void updateControllerXMLString( std::string txt );
+        // Update internal monitorization from all elements
+        void updateDelilahXMLString( std::string txt );
         void updateWorkerXMLString( int w, std::string txt );
 
         // Own funciton to get xml content
         virtual void getInfo( std::ostringstream& output )=0; 
         
-        // Functions to recover content of the xml
-        std::string xmlString( int limit );
-        std::string xmlString( );
-
-        // Get the time for update
+        // Get the max time since the last monitorization update
         int getUpdateSeconds();
 
-        // Simple queries to get a list of operations and queues
+        // Simple queries to get a list of operations, queues, etc...
         std::vector<std::string> getOperationNames( );        
         std::vector<std::string> getOperationNames( std::string type );        
         std::vector<std::string> getQueueNames();
         std::vector<std::string> getDataSetsNames();
 
-        // Advance query interface
-        std::string infoCommand( std::string command );        
-        std::string getStringInfo( std::string path , node_to_string_function _node_to_string_function  , int options );
-        std::string getQuery( std::string query , int limit );
-
-        au::DataSet* getDataSet( std::string command );
-        
-        au::TreeItem* getTreeItem( );
-
+        // String with information about updates
         std::string updateTimeString();
-        
-        bool readyForQuery()
-        {
-            if( !controller->isReady() )
-                return false;
-            for ( int i=0;i<num_workers;i++)
-                if( ! worker[i]->isReady() )
-                    return false;
-            return true;
-            
-        }
-        
-        
-        std::string runTableCollectionCommand( std::string command)
-        {
-            au::TokenTaker tt( &delilah_base_token  );
-            return table_collection.runCommand( command );
-        }
-        
-        void autoCompleteWithTableCollection( au::ConsoleAutoComplete* info )
-        {
-            au::TokenTaker tt( &delilah_base_token  );
-            table_collection.autoComplete( info );
-        }
-        
-        
-    private:
-        
-        // Internal command to update the global xml document
-        void _reviewXML(  );        
-        
-        
-        std::string _infoCommand( std::string prefix ,  std::string command );
-        bool _checkUpdateTime( std::ostringstream &output );
-        int _getUpdateSeconds();
-        au::DataSet* _getDataSet( std::string command );
 
+        // Run a command over database
+        std::string runDatabaseCommand( std::string command);
+
+        // Autocomplete for database mode
+        void autoCompleteForDatabaseCommand( au::ConsoleAutoComplete* info );
+        
+        // Check if at least monitorization information has been received once from all workers
+        bool allWorkersUpdatedOnce()
+        {
+            for ( size_t w = 0 ; w < worker.size() ; w++ )
+                if( worker[w]->getNumUpdated() == 0 )
+                    return false;
+
+            return true;
+        }
         
     };
 }

@@ -7,7 +7,6 @@
  * ***************************************************************************/
 
 #include <samson/module/samsonVersion.h>   /* SAMSON_VERSION                             */
-#include "samson_module.h"			/* Own interface                              */
 #include <samson/module/Data.h>            /* DataInstance                               */
 #include "au/CommandLine.h"			/* AUCommandLine                              */
 #include "DataContainer.h"
@@ -74,10 +73,9 @@ int main( int argC , const char *argV[])
 		exit(1);
 	}
 	
-	std::string moduleFileName = cmdLine.get_argument(1);
+	std::string moduleFileName  = cmdLine.get_argument(1);
     std::string outputDirectory = cmdLine.get_argument(2);
-    std::string outputFilename = cmdLine.get_argument(3);
-
+    std::string outputFilename  = cmdLine.get_argument(3);
     
     // Check it time-stamp is greater to not do anything..
     struct stat stat_module , stat_output1, stat_output2 ;
@@ -127,9 +125,21 @@ int main( int argC , const char *argV[])
         fprintf( stderr, "=====================================================================\n" );
     }
     
-	samson::DataCreator module_creator( moduleFileName, outputDirectory , outputFilename , verbose  );		// A data creator object to generate the code
-	module_creator.print();
-	
+    // A data creator object to generate the code
+    au::ErrorManager error;
+    
+	samson::ModuleInformation * module_information = samson::ModuleInformation::parse( moduleFileName , &error );     
+
+    if( error.isActivated() )
+    {
+        std::cerr << "Error parsing file " << moduleFileName << "\n";
+        std::cerr << error.getMessage();
+    }
+    
+	// Print all the files
+    module_information->print( outputDirectory , outputFilename );
+    delete module_information;
+    
 	return 0;
 }
 

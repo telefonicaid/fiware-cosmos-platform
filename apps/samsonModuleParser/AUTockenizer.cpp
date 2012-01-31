@@ -18,8 +18,10 @@
 namespace samson
 {
 	
-	AUTockenizer::AUTockenizer( std::string txt )
+	AUTockenizer::AUTockenizer( std::string _fileName , std::string txt )
 	{
+        fileName = _fileName;
+        
 		reference_pos = 0;
 		// First tokenize everything
 		std::vector<AUToken> previous_items = tockenize(txt);
@@ -329,7 +331,7 @@ namespace samson
 		return o.str();
 	}
 	
-	std::string AUTockenizer::getLiteralInternalwithBlanks( int pos , int pos2)
+	std::string AUTockenizer::getLiteralInternalwithBlanks( int pos , int pos2 )
 	{
 		std::ostringstream o;
 		bool sepFound = false;
@@ -353,12 +355,14 @@ namespace samson
 			}
 		}
 
+        /*
 		if (sepFound == false)
 		{
 			fprintf(stderr, "samsonModuleParser: Error, expected ';' in the lines of a block. Reference line:%d\n", items[reference_pos].line);
 			//fprintf(stderr, "samsonModuleParser: Error, expected ';' in the lines of a block. Reference line:%d, between pos_begin:%d, pos_end:%d\n", items[reference_pos].line, pos, pos2);
             LM_X(1,("Error at AUTockenizer"));
 		}
+         */
 		return o.str();
 	}
 

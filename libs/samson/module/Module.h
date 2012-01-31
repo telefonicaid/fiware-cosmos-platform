@@ -54,6 +54,9 @@ namespace samson
             output << "<name><![CDATA[" << name << "]]></name>\n";
             output << "<version><![CDATA[" << version << "]]></version>\n";
             output << "<author><![CDATA[" << author << "]]></author>\n";
+
+            output << "<num_operations>" << operations.size() << "</num_operations>\n";
+            output << "<num_datas>" << datas.size() << "</num_datas>\n";
             
             output << "<operations>\n";
             for ( std::map<std::string, Operation*>::iterator o = operations.begin() ; o != operations.end() ; o++ )

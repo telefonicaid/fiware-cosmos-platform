@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <string>
-
+#include <sstream>
 #include "au/namespace.h"
 
 NAMESPACE_BEGIN(au)
@@ -31,6 +31,21 @@ public:
     void move_up();
     void move_down();
     void new_command();
+  
+    
+    std::string history_string()
+    {
+        std::ostringstream output;
+
+        size_t pos = 0;
+        if ( commands.size() > 10 )
+            pos = commands.size() - 10;
+
+        for ( ; pos < commands.size() ; pos++)
+            output << commands[pos]->getCommand() << "\n";
+        
+        return output.str();
+    }
     
 };
 

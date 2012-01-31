@@ -46,7 +46,7 @@ SET (STATIC_LIBS
      samsonStream
      samsonModule
      samsonWorkerLib
-     pugi
+     tables
      samsonCommon
      au
      xmlmarkup

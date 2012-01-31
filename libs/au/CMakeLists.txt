@@ -38,9 +38,9 @@ CounterCollection.h
 file.h
 time.h
 string.h
+StringVector.h
 xml.h
 Table.h
-Tree.h
 RRT.h
 cpu.h
 ProcessStats.h
@@ -77,9 +77,9 @@ CounterCollection.cpp
 file.cpp
 time.cpp
 string.cpp
+StringVector.cpp
 xml.cpp
 Table.cpp
-Tree.cpp
 RRT.cpp
 cpu.cpp
 ProcessStats.cpp

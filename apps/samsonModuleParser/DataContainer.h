@@ -23,6 +23,8 @@
 #include <sys/stat.h>			// mkdir(.)
 #include <fstream>
 
+#include "au/ErrorManager.h"
+
 namespace samson
 {
 	class DataCreator;
@@ -37,21 +39,20 @@ namespace samson
 		std::string name;					// Name of the element inside the module (example CDR)
 		std::vector <DataType> items;		// Data items it includes
 		bool any_optional;					// To signal when at least there is one optional field
-
-        bool verbose;
         
 		std::set<std::string> includes;		// List of includes necessary for the system
 
 		size_t hashTypeItems;
-			
-		DataContainer( std::string _module, std::string _name , bool  _verbose)
+        
+        // Error management during parsing....
+        au::ErrorManager error;
+        
+		DataContainer( std::string _module, std::string _name )
 		{
 			module = _module;
 			name = _name; 
 			any_optional = false;
 			hashTypeItems = 0;
-            
-            verbose = _verbose;    // No verbose by default
 		}
 		
 		void addItem( DataType item)
@@ -80,13 +81,17 @@ namespace samson
 			
 			if( items.size() == 0)
 			{
+                /*
                 if( verbose ) 
                     std::cout << "File " << name << "_base.h not created since there are no internal fields.\n";
+                 */
 				return ;
 			}
 
+            /*
 			if( verbose ) 
                 std::cout << "Creating file " << name << "_base.h\n";
+             */
 			
 			// Prepare the files and directories
 			std::ostringstream fileName;
@@ -577,14 +582,18 @@ namespace samson
 			{
 				_file.close();
                 
+                /*
                 if( verbose ) 
                     std::cout << "File " << name << ".h is not generated because it already exist\n";
+                 */
 				return;
 			}
 			else
             {
+                /*
                 if( verbose ) 
                     std::cout << "Creating file " << name << ".h\n";
+                 */
             }
 
 			
@@ -629,13 +638,9 @@ namespace samson
 			
 			file << "#endif\n";
 			
-			
 			file.close();			
 			
-			
 		}
-		
-		
 		
 		void printFiles( std::string directory)
 		{

@@ -5,51 +5,34 @@
 * DESCRIPTION			   Creation of Data headers
 *
 */
-#include "DataCreator.h"		// Own interface
+
+#include "au/string.h"
 #include "AUTockenizer.h"		// AUTockenizer
-
-
+#include "DataCreator.h"		// Own interface
 
 namespace samson {
-
-	DataCreator::DataCreator( std::string _moduleFileName ,  std::string _outputDirectory , std::string _outputFileName , bool _verbose  )
+    
+    ModuleInformation* ModuleInformation::parse( std::string module_file , au::ErrorManager* error )
 	{
-        moduleFileName = _moduleFileName;
-		
-        outputDirectory = _outputDirectory;
-		outputFileName = _outputFileName;
-
-		verbose = _verbose;
-
-        if( verbose )
-        {
-            std::cout << "Input module file " << moduleFileName << std::endl;
-            std::cout << "Output module file " << outputFileName << std::endl;
-        }
-		
-		module = NULL;
-		
-		readFile();
-		parse();
-	}
-
-	void DataCreator::readFile( )
-	{
-		// Reset content
-		content.clear();
-		
+        // Create module_information element to be return if no error...
+        ModuleInformation* module_information = new ModuleInformation(); 
+        
+        bool module_section_defined = false; // Flag to detect if module section is defined...
+        
+        // Open file....
+        std::string content;
 		
 		ifstream input;
-		std::string fileName = moduleFileName;
-		input.open( fileName.c_str() );
+		input.open( module_file.c_str() );
 		
 		if( !input.is_open() )
 		{
-			std::cerr << "samsonModuleParser: It was not possible to open the file " << fileName << "\n";
-			exit(0);
-			return;
+            error->set( au::str("%s: Not possible to open file\n" , module_file.c_str() ) );
+            delete module_information;
+			return NULL;
 		}
-		
+        
+		// Read content of the file...
 		ostringstream o;
 		char buffer[1001];
 		while( !input.eof() )
@@ -60,16 +43,10 @@ namespace samson {
 			o << buffer;
 		}
 		input.close();
-		
 		content = o.str();
 		
-	}
-
-
-	void DataCreator::parse()
-	{
-		
-		AUTockenizer *t = new AUTockenizer(content);
+        // Parse content of file
+		AUTockenizer *t = new AUTockenizer( module_file , content );
 		
 		// Parse contents of the items creating elements, datas, formats, operations, etc...
 		int pos = 0;
@@ -77,17 +54,28 @@ namespace samson {
 		{
 			if( t->isSpecial(pos) )
 			{
-
-				fprintf(stderr, "samsonModuleParser: Error parsing data-type since we found an special character instead of a name: str:'%s', line:%d\n", t->items[pos].str.c_str(), t->items[pos].line);
-				exit (1);
+                error->set( 
+                    au::str("%s[%d]: Error parsing file ( found %s )\n" , 
+                            module_file.c_str(),
+                            t->items[pos].line,
+                            t->items[pos].str.c_str()
+                            ) );
+                delete module_information;
+                return NULL;
 			}
 
 			std::string command = t->itemAtPos(pos++).str;
 			
 			if( t->isSpecial(pos) )
 			{
-				fprintf(stderr, "samsonModuleParser: Error parsing data-type since we found an special character instead of a name: str:'%s', line:%d\n", t->items[pos].str.c_str(), t->items[pos].line);
-				exit (1);
+                error->set( 
+                           au::str("%s[%d]: Error parsing file ( found %s )\n" , 
+                                   module_file.c_str(),
+                                   t->items[pos].line,
+                                   t->items[pos].str.c_str()
+                                   ) );
+                delete module_information;
+                return NULL;
 			}
 			
 			std::string name = t->itemAtPos(pos++).str;
@@ -97,31 +85,49 @@ namespace samson {
 			
 			if( command == "Module" )
 			{
-				if( module )
+				if( module_section_defined )
 				{
-					fprintf(stderr, "samsonModuleParser: Error: Duplicated module section at line:%d\n", t->items[pos].line);
-					exit(1);
+                    error->set( 
+                               au::str("%s[%d]: Duplicated module section ( found %s )\n" , 
+                                       module_file.c_str(),
+                                       t->items[pos].line,
+                                       t->items[pos].str.c_str()
+                                       ) );
+                    delete module_information;
+                    return NULL;
 				}
 				
-				module = new ModuleContainer( name );
-				module->parse( t, position_start , position_finish );
-				
-				std::cout << "Defining module " << name << "\n";
+                // Define this flag as true
+                module_section_defined = true;
+                
+                // Get information for module section
+                module_information->module.name = name;
+				module_information->module.parse( t, position_start , position_finish );
 			} 
+            
 			else if ( command == "data" )
 			{
-				if( !module)
+				if( !module_section_defined)
 				{
-					fprintf(stderr, "samsonModuleParser: Error: Module section should be the first one in the definition file, but we have found \"data\". Error at line:%d\n", t->items[pos].line);
-					exit(1);
+                    
+                    error->set( 
+                               au::str("%s[%d]: Module section should be the first one ( found %s )\n" , 
+                                       module_file.c_str(),
+                                       t->items[pos].line,
+                                       t->items[pos].str.c_str()
+                                       ) );
+                    delete module_information;
+                    return NULL;
 				}
 				
+                /*
                 if( verbose )
-                    std::cout << "Processing Data " << name << " in module " << module->name << std::endl;
+                    std::cout << "Processing Data " << name << " in module " << module.name << std::endl;
+                 */
 				
-				DataContainer data_container( module->name , name , verbose );
+				DataContainer data_container( module_information->module.name , name );
 				data_container.parse( t, position_start , position_finish );
-				datas.push_back( data_container );
+				module_information->datas.push_back( data_container );
 				
 			} 
 			else if( 
@@ -135,16 +141,21 @@ namespace samson {
 					)
 			{
 				
-				if( !module)
+				if( ! module_section_defined )
 				{
-					fprintf(stderr, "samsonModuleParser: Error: Module section should be the first one in the definition file, error at line:%d\n", t->items[pos].line);
-					exit(1);
+                    error->set( 
+                               au::str("%s[%d]: Module section should be the first one ( found %s )\n" , 
+                                       module_file.c_str(),
+                                       t->items[pos].line,
+                                       t->items[pos].str.c_str()
+                                       ) );
+                    delete module_information;
+                    return NULL;
 				}
-				
-				std::cout << "Processing " << command << " operation " << name << std::endl;
-				OperationContainer operation_container( module->name , command, name , verbose );
+				                
+				OperationContainer operation_container( module_information->module.name , command, name );
 				operation_container.parse( t, position_start , position_finish );
-				operations.push_back( operation_container );
+				module_information->operations.push_back( operation_container );
 			}
 			else
 			{
@@ -154,25 +165,27 @@ namespace samson {
 		}
 		
 		delete t;
+        
+        return module_information;
 	}
-
 	
-	
-	void DataCreator::printMainHeaderFile()
+	void ModuleInformation::printMainHeaderFile( std::string outputFileName )
 	{
 		
 #pragma mark MODULE .h file
 		
 		std::string data_file_name =  outputFileName + ".h";
 
+        /*
         if( verbose )
             std::cout << "Creating file " << data_file_name << "\n";
+         */
 		
 		std::ofstream output( data_file_name.c_str() );
 		
 		output << "\n\n";
 		
-		output << "/*\n\n\tModule "<< module->title << " (" << module->name << ")\n\n";
+		output << "/*\n\n\tModule " << " (" << module.name << ")\n\n";
 		output << "\tFile: " << data_file_name << "\n";
 		output << "\tNOTE: This file has been generated with the samson_module tool, please do not modify\n\n";
 		output << "*/\n\n";
@@ -181,8 +194,8 @@ namespace samson {
 		
 #pragma mark IFDEF 
 		
-		output << "#ifndef " << module->getDefineUniqueName() << "\n";
-		output << "#define " << module->getDefineUniqueName() << "\n";
+		output << "#ifndef " << module.getDefineUniqueName() << "\n";
+		output << "#define " << module.getDefineUniqueName() << "\n";
 		
 		output << "\n\n";
 		
@@ -203,22 +216,22 @@ namespace samson {
 #pragma mark NAMESPACE
 		
 		output << "namespace samson{\n";
-		output << "namespace " << module->name << "{\n";
+		output << "namespace " << module.name << "{\n";
 
 #pragma mark MODULE
 		
 		output << "\n// Module definition\n\n";	  
-		output << "\tclass "<< module->getClassName() << " : public samson::Module\n";
+		output << "\tclass "<< module.getClassName() << " : public samson::Module\n";
 
 		output << "\t{\n";
 		output << "\tpublic:\n";
 		
-		output << "\t\t" << module->getClassName() << "();\n";
+		output << "\t\t" << module.getClassName() << "();\n";
 		
 		// Help of this function
 		output << "\n\t\tstd::string help(){\n";
 		output << "\t\t\tstd::ostringstream o;\n";
-		for( std::vector<std::string>::iterator iter = module->help.begin() ; iter < module->help.end() ; iter++)
+		for( std::vector<std::string>::iterator iter = module.help.begin() ; iter < module.help.end() ; iter++)
 			output << "\t\t o<<\"" <<(*iter)<< "\";\n";
 		output << "\t\t\treturn o.str();\n";
 
@@ -232,7 +245,7 @@ namespace samson {
 		
 #pragma mark END NAMESPACE
 		
-		output << "} // end of namespace " << module->name << "\n";
+		output << "} // end of namespace " << module.name << "\n";
 		output << "} // end of namespace samson\n\n" ;
 
 		output << "\n\n";
@@ -244,14 +257,16 @@ namespace samson {
 	}
 
 	
-	void DataCreator::printMainFile()
+	void ModuleInformation::printMainFile( std::string outputFileName )
 	{
 		
 		// Print .cpp file for module definition
 		std::string output_filename_cpp =  outputFileName + ".cpp";
-        
+
+        /*
         if( verbose )
             std::cout << "Creating file " << output_filename_cpp << "\n";
+         */
 		
 		std::ofstream output( output_filename_cpp.c_str() );
 		
@@ -285,7 +300,7 @@ namespace samson {
 		output << "extern \"C\" {" << std::endl;
 		output << "\tsamson::Module * moduleCreator( )" << std::endl;
 		output << "\t{" << std::endl;
-		output << "\t\treturn new " << module->getFullClassName() << "();" << std::endl;
+		output << "\t\treturn new " << module.getFullClassName() << "();" << std::endl;
 		output << "\t}" << std::endl;
 		output << "\tstd::string getSamsonVersion()" << std::endl;
 		output << "\t{" << std::endl;
@@ -295,7 +310,7 @@ namespace samson {
 		
 		
 		output << "namespace samson{\n";
-		output << "namespace "<< module->name <<"{\n";
+		output << "namespace "<< module.name <<"{\n";
 
 		
 		output << "\n\n";
@@ -313,8 +328,8 @@ namespace samson {
 			
 		output << "\n\n";
 		
-		output << "\t" << module->getClassName() << "::" << module->getClassName() << "()";
-		output << " : samson::Module(\"" << module->name << "\",\"" << module->version << "\",\"" << module->author << "\")\n";
+		output << "\t" << module.getClassName() << "::" << module.getClassName() << "()";
+		output << " : samson::Module(\"" << module.name << "\",\"" << module.version << "\",\"" << module.author << "\")\n";
 		output << "\t{";
 		
 		output << "\n";
@@ -419,7 +434,7 @@ namespace samson {
 		output << "\n";
 
 		output << "} // end of namespace samson\n";
-		output << "} // end of namespace " << module->name <<"\n";;
+		output << "} // end of namespace " << module.name <<"\n";;
 		
 		
 		// Implementation of the Module constructor
@@ -427,7 +442,7 @@ namespace samson {
 		
 	}
 	
-	void DataCreator::print()
+	void ModuleInformation::print( std::string outputDirectory , std::string outputFileName )
 	{
 		// Generate the data files 
 		for (size_t i = 0 ; i < datas.size() ; i++)
@@ -439,10 +454,10 @@ namespace samson {
 		
 		
 		// Print the header file
-		printMainHeaderFile();
+		printMainHeaderFile( outputFileName );
 		
 		// Print the main .cpp file
-		printMainFile();
+		printMainFile( outputFileName );
 
 	}
 }

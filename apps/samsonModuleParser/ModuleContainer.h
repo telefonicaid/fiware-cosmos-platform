@@ -32,8 +32,9 @@ namespace samson
 		
 	public:
 		
-		std::string title;
-		std::string name;
+		std::string name;    // Short name for this module
+		std::string title;   // Long title for better description
+        
 		std::string author;
 		std::string version;
 		
@@ -42,7 +43,8 @@ namespace samson
 		
 		std::map<std::string,std::string> sets;
 		
-		ModuleContainer( std::string _name );
+        // Constructor
+		ModuleContainer( );
 
 		/** Get a unique name for this module for the _H_ define */
 		

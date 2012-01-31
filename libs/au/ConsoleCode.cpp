@@ -3,6 +3,7 @@
 
 NAMESPACE_BEGIN(au)
 
+/*
 const char* getConsoleCodeName( ConsoleCode code )
 {
     switch (code) {
@@ -29,5 +30,6 @@ const char* getConsoleCodeName( ConsoleCode code )
     
     return "Error";
 }
+ */
 
 NAMESPACE_END

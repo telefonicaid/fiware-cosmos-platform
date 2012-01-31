@@ -13,6 +13,8 @@
 #include <vector>		// std::vector
 #include <string>		// std::string
 
+#include "au/string.h"
+
 namespace samson {
 
 
@@ -20,8 +22,9 @@ namespace samson {
 	{
 
 	public:
-		std::string str;
-		int line;
+        
+		std::string str;      // Content of the file
+		int line;             // Line in the original file
 
 		AUToken( ) { }
 
@@ -37,14 +40,15 @@ namespace samson {
 	{
 		
 	public:
+        
 		std::vector<AUToken> items;			// Parsed elements from the text
 		int reference_pos;
 
+        std::string fileName;               // Used in error messages
 		
-		AUTockenizer( std::string txt );
+		AUTockenizer( std::string _fileName , std::string txt );
 		
 		static std::vector<AUToken> removeSpacesAndReturns( std::vector<AUToken> items );
-
 		static std::vector<AUToken> removeSpacesAndCommentsAndReturns( std::vector<AUToken> items );
 
 		/** 
@@ -88,6 +92,22 @@ namespace samson {
 
 		void getScopeLimits( int* pos , int*begin, int*end );
 		
+        
+        // Error message formated correctly
+        
+        std::string error_message( std::string message  , int pos )
+        {
+            if ( ( pos == -1 ) || ( pos < 0 ) || ( pos >= (int)items.size() ) )
+                return au::str( "%s: %s" , fileName.c_str() , message.c_str() );
+            else
+                return au::str( "%s[%d]: %s ( error at %s )" 
+                               , fileName.c_str() 
+                               , items[pos].line 
+                               , message.c_str() 
+                               , items[pos].str.c_str() 
+                               );
+        }
+        
 	};
 	
 }

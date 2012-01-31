@@ -1,25 +1,16 @@
+
 SET (HEADERS
-    pugi.h
-    pugixml.hpp
+	DelilahQT.h
 )
 
 SET (SOURCES
-    pugi.cpp
-    pugiconfig.hpp
-    pugixml.cpp
+	DelilahQT.cpp
 )
-
 
 # Include directories
 # -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs")
 
-
 # Library declaration
 # -----------------------------------------------------------------
-ADD_LIBRARY(pugi STATIC ${SOURCES} ${HEADERS})
-
-
-
-
-
+ADD_LIBRARY(delilahQtLib ${SOURCES} ${HEADERS})

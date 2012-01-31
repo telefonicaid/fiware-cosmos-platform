@@ -67,6 +67,10 @@ public:
     bool completingSecondWord( std::string first_word );
     bool completingThirdWord( std::string first_word , std::string second_word );
     
+    int completingWord();
+    std::string firstWord();
+    std::string secondWord();
+    
     // Add an alternative for the last word
     void add( std::string command );
     void add( std::string label , std::string command , bool add_space );

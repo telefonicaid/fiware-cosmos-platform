@@ -14,18 +14,19 @@ SET (HEADERS
 )
 
 SET( STATIC_LIBS
-     samsonWorkerLib
-     samsonControllerLib
-     delilahLib
-     engine
+    samsonWorkerLib
+    samsonControllerLib
+    delilahLib
+    delilahQtLib
+    engine
 	samsonModule
 	samsonDataLib
 	samsonStream
 	samsonIsolated
 	samsonNetwork
 	samsonCommon
-	pugi
 	au
+	tables
 	lm
 	pa
 	protobuf

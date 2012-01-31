@@ -35,30 +35,33 @@ namespace samson
 	class DataSet
 	{
 	public:
+        
 		KVFormat key_values;
+        
 		std::string compareKeyFunction;
 		std::string compareValueFunction;
 
-		DataSet (KVFormat _key_values){ key_values = _key_values, compareKeyFunction = "compare"; compareValueFunction = "compare";}
-		DataSet (KVFormat _key_values, std::string _compareKeyFunction, std::string _compareValueFunction)
+		DataSet ( KVFormat _key_values )
+        { 
+            key_values = _key_values;
+            
+            compareKeyFunction = "compare"; 
+            compareValueFunction = "compare";
+        }
+        
+		DataSet ( KVFormat _key_values, std::string _compareKeyFunction, std::string _compareValueFunction )
 		{
 			key_values = _key_values;
-			if (_compareKeyFunction  == "")
-			{
+            
+			if ( _compareKeyFunction  == "" )
 				compareKeyFunction = "compare";
-			}
 			else
-			{
 				compareKeyFunction = _compareKeyFunction;
-			}
+
 			if (_compareValueFunction  == "")
-			{
 				compareValueFunction = "compare";
-			}
 			else
-			{
 				compareValueFunction = _compareValueFunction;
-			}
 		}
 
 	};
@@ -74,12 +77,12 @@ namespace samson
 		
 		bool setup;
 		
-		std::string module;		// Name of the module
-		std::string name;		// Name of the operation
+		std::string module;		            // Name of the module
+		std::string name;		            // Name of the operation
 		
-		
-		std::string type;
-		std::vector <DataSet> inputs;
+		std::string type;                   // Type of operation ( map , reduce , .... )
+        
+		std::vector <DataSet> inputs;       // Inputs and outputs for this operation
 		std::vector <DataSet> outputs;
 		
 		std::string helpLine;				// Help in one line
@@ -87,17 +90,17 @@ namespace samson
 		
 		std::string info;
 
-		std::string code;		// Code for scripts
-		std::string file;		// File where this operation is defined
-		std::vector <std::string> functions; 
+		std::string code;		            // Code for scripts
+        
+		std::string file;		            // File where this operation is defined
+        
+		std::vector <std::string> functions;  
 		
 		bool top;
 		bool dynamic_input_formats;
 		bool destructor;
 		
-        bool verbose;
-        
-		OperationContainer( std::string _module , std::string _type, std::string _name  , bool _verbose )
+		OperationContainer( std::string _module , std::string _type, std::string _name )
 		{
 			module = _module;
 			type = _type;
@@ -107,8 +110,6 @@ namespace samson
 			top =  false;
 			dynamic_input_formats = false;
 			destructor = false;
-            
-            verbose = _verbose;
 		}
 		
         void addInput( DataSet input_dataset )
@@ -147,7 +148,7 @@ namespace samson
         void addOutput( DataSet output_dataset )
         {
             
-            printf("Adding output %s ( %s )\n", name.c_str() , type.c_str() );
+            //printf("Adding output %s ( %s )\n", name.c_str() , type.c_str() );
             
             if( ( type == "parserOut" ) || ( type == "parserOutReduce" ) )
             {
@@ -254,13 +255,17 @@ namespace samson
 					exit(-1);
 				}
 				_file.close();
+                /*
                 if( verbose )
                     std::cout << "File " << name << ".h is not generated because it already exist\n";
+                 */
 				return;
 			}
 
+            /*
             if( verbose )
                 std::cout << "Creating file " << name << ".h" << std::endl;
+             */
 			
 			std::ofstream file( fileName.str().c_str() );
 			

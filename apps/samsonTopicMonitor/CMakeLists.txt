@@ -34,7 +34,6 @@ SET (STATIC_LIBS
      samsonModule
      engine
      au
-     pugi
      samsonCommon
      ${COMMON_SAMSON_LIBS}
 )

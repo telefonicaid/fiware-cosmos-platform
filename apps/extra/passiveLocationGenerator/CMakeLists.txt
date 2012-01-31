@@ -17,7 +17,7 @@ SET( STATIC_LIBS
      samsonIsolated
      samsonNetwork
      samsonCommon
-     pugi
+     tables
      au
      lm
      pa

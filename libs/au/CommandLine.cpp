@@ -158,13 +158,6 @@ void CommandLine::parse( std::string _command )
     }
     
     
-    
-    // List of tockens
-    /*
-     for (size_t i = 0 ; i  < tockens.size() ; i++)
-     std::cout << "T: -" << tockens[i] << "-\n";
-     */
-    
     parse_tockens( tockens );
     
 }	

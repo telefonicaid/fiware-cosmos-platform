@@ -187,8 +187,9 @@ namespace samson {
             
             if( packet->fromId == network->controllerGetIdentifier() )
             {
+                // Not updating any more from controller... it will die soon ;)
 			   //LM_M(("Delilah received a status report from controller"));
-                updateControllerXMLString( packet->message->info() );
+               //updateControllerXMLString( packet->message->info() );
                 return;
             }
                 
@@ -582,50 +583,257 @@ namespace samson {
     }    
     
     // Generic function to get a tabular information scaning the xml document
+
+// --------------------------------------------------------------------------------------------------------------------------------
+// LS_QUEUES
+// --------------------------------------------------------------------------------------------------------------------------------
     
- 
-#pragma mark info interface ------------------------------------------------------------------------------------------------------------
+#define LS_QUEUES_NAME               " name,t=name,left "    
+#define LS_QUEUES_KVS                " block_info/kv_info/kvs,t=#kvs,format=uint64,sum "
+#define LS_QUEUES_SIZE               " block_info/kv_info/size,t=size,format=uint64,sum "
+#define LS_QUEUES_KEY                " block_info/format/key_format,t=key "
+#define LS_QUEUES_VALUE              " block_info/format/value_format,t=value,left "
+#define LS_QUEUES_RATE_KVS           " rate_kvs/rate,t=#kvs/s,format=uint64,sum "
+#define LS_QUEUES_RATE_SIZE          " rate_size/rate,t=Bytes/s,format=uint64,sum "   
+#define LS_QUEUES_STATUS             " status,t=status,left "    
+#define LS_QUEUES_BLOCKS_NUM         " block_info/num_blocks,t=#Blocks,format=uint64,sum "     
+#define LS_QUEUES_BLOCKS_SIZE        " block_info/size,title=size,format=uint64,sum "
+#define LS_QUEUES_BLOCKS_MEMORY      " block_info/size_on_memory,format=uint64,t=on_memory,sum "   
+#define LS_QUEUES_BLOCKS_DISK        " block_info/size_on_disk,format=uint64,t=on_disk,sum "
+#define LS_QUEUES_BLOCKS_LOCKED      " block_info/size_locked,format=uint64,t=locked,sum " 
+#define LS_QUEUES_BLOCKS_TIME_BEGIN  " block_info/min_time_diff,f=time,t=oldest,vector "
+#define LS_QUEUES_BLOCKS_TIME_END    " block_info/max_time_diff,f=time,t=earliest,vector " 
     
-    
+#define LS_QUEUES_FIELDS                  LS_QUEUES_NAME LS_QUEUES_KVS LS_QUEUES_SIZE LS_QUEUES_KEY LS_QUEUES_VALUE
+#define LS_QUEUES_FIELDS_VERBOSE          LS_QUEUES_NAME LS_QUEUES_KVS LS_QUEUES_SIZE LS_QUEUES_RATE_KVS LS_QUEUES_RATE_SIZE LS_QUEUES_STATUS    
+#define LS_QUEUES_FIELDS_VERBOSE_VERBOSE  LS_QUEUES_NAME LS_QUEUES_BLOCKS_NUM LS_QUEUES_BLOCKS_SIZE LS_QUEUES_BLOCKS_MEMORY LS_QUEUES_BLOCKS_DISK LS_QUEUES_BLOCKS_LOCKED LS_QUEUES_BLOCKS_TIME_BEGIN LS_QUEUES_BLOCKS_TIME_END
 
     
+// --------------------------------------------------------------------------------------------------------------------------------    
     
-#define LS_QUEUES_FIELDS "/name,t=name,left /block_info/kv_info/kvs,t=#kvs,format=uint64 /block_info/kv_info/size,t=size,format=uint64 /block_info/format/key_format,t=key /block_info/format/value_format,t=value,left"
+#define LS_ENGINES_FIELDS " uptime,title=up_time,f=time,vector,min_max "                  \
+                          " process_manager/num_running_processes,t=#cores,sum "          \
+                          " process_manager/num_processes,t=#max_cores,sum "              \
+                          " memory_manager/used_memory,t=used_memory,format=uint64,sum "  \
+                          " memory_manager/memory,t=memory,format=uint64,sum "            \
+                          " disk_manager/num_pending_operations,t=disk_ops,f=uint64,sum " \
 
-#define LS_QUEUES_FIELDS_VERBOSE "/name,t=name,left  /block_info/kv_info/kvs,t=#kvs,format=uint64 /block_info/kv_info/size,t=size,format=uint64 /rate_kvs/rate,t=#kvs/s,format=uint64 /rate_size/rate,t=Bytes/s,format=uint64 /status,t=status,left"
+// --------------------------------------------------------------------------------------------------------------------------------    
+
+#define LS_STREAM_OPERATIONS_FIELDS " worker_id,vector,t=Workers "          \
+                                    " name,t=name,left"                     \
+                                    " inputs,t=inputs "                     \
+                                    " outputs,t=outputs "                   \
+                                    " operation,t=operation,left "          \
+
+#define LS_STREAM_OPERATIONS_FIELDS_VERBOSE "name,t=name,left"                     \
+                                            "/input_str,t=input"                   \
+                                            "/running_tasks,t=running_tasks"       \
+                                            "/history_str,t=history "              \
+
+#define LS_STREAM_OPERATIONS_FIELDS_VERBOSE_VERBOSE  "name,t=name,left"            \
+                                                     "/last_review,t=last_review"  \
+
+// --------------------------------------------------------------------------------------------------------------------------------    
     
-#define LS_QUEUES_FIELDS_VERBOSE_VERBOSE "/name,t=name,left /block_info/num_blocks,t=#Blocks,format=uint64 /block_info/size,title=size,format=uint64 /block_info/size_on_memory^/block_info/size,format=per,t=on_memory /block_info/size_on_disk^/block_info/size,format=per,t=on_disk /block_info/size_locked^/block_info/size,format=per,t=locked  /block_info/min_time_diff,f=time,t=oldest /block_info/max_time_diff,f=time,t=earliest /num_divisions,t=#div,uint64 /block_info/num_divisions,t=#div"
     
-#define ENGINE_SHOW_COMMAND "info_command -delilah -worker -controller //engine_system  /uptime,title=up_time,f=time /process_manager/num_running_processes,t=#cores /process_manager/num_processes,t=#max_cores  /memory_manager/used_memory,t=used_memory,format=uint64 /memory_manager/memory,t=memory,format=uint64  /disk_manager/num_pending_operations,t=disk_ops,f=uint64 -small_title"
+#define LS_BLOCKS_FIELDS " id,t=id "                                              \
+                         " size,t=size,format=uint64 "                            \
+                         " state,t=state /tasks_str,t=tasks "                     \
+                         " kv_header/format/key_format,t=key "                    \
+                         " kv_header/format/value_format,t=value,left "           \
+                         " kv_header/kv_info/kvs,t=#kvs,format=uint64 "           \
+                         " kv_header/kv_info/size,t=size,format=uint64 "          
 
-
-#define LS_STREAM_OPERATIONS "info_command -worker //stream_operation /name,t=name,left /inputs,t=inputs /outputs,t=outputs /operation,t=operation,left "
-
-#define LS_STREAM_OPERATIONS_VERBOSE "info_command -worker //stream_operation /name,t=name,left /input_str,t=input /running_tasks,t=running_tasks /history_str,t=history "
-
-#define LS_STREAM_OPERATIONS_VERBOSE_VERBOSE "info_command -worker //stream_operation /name,t=name,left /last_review,t=last_review"
-
-    
-#define LS_BLOCKS "info_command -worker //block_manager/blocks/block /id,t=id /size,t=size,format=uint64 /state,t=state /tasks_str,t=tasks  /kv_header/format/key_format,t=key /kv_header/format/value_format,t=value /kv_header/kv_info/kvs,t=#kvs,format=uint64 /kv_header/kv_info/size,t=size,format=uint64"
-
-#define LS_BLOCKS_VERBOSE "info_command -worker //block_manager/blocks/block /id,t=id /size,t=size,format=uint64 /state,t=state /tasks_str,t=tasks  /lists_str,t=lists,left"
-
+#define LS_BLOCKS_FIELDS_VERBOSE " id,t=id "                           \
+                                 " size,t=size,format=uint64 "         \
+                                 " state,t=state /tasks_str,t=tasks "  \
+                                 " lists_str,t=lists,left "            \
     
     
-    std::string Delilah::info( std::string command )
+    
+    std::string Delilah::info( std::string external_command )
     {
+        // Parse external command
         au::CommandLine cmd;
         cmd.set_flag_boolean("vv");
         cmd.set_flag_boolean("v");
+        cmd.set_flag_boolean("w");
+        cmd.set_flag_boolean("first");
         cmd.set_flag_int("limit" , 0);
-        
-        cmd.parse( command );
-        
+        cmd.set_flag_boolean("show_command");
+        cmd.parse( external_command );
+
+        // Get values for all options
+        int limit = cmd.get_flag_int("limit");
+
+        // Check
         if( cmd.get_num_arguments() == 0)
             return "No command to display information about SAMSON platform.";
         
+        // Command to be executed
+        std::string command;
+        
         std::string main_command = cmd.get_argument(0);
         
+        if( main_command == "ls_queues" )
+        {
+
+            command.append( "print_table queues " );
+
+            if( cmd.get_flag_bool("w") )
+                command.append(" worker_id ");
+            
+            if( cmd.get_flag_bool("vv") )
+                command.append( LS_QUEUES_FIELDS_VERBOSE_VERBOSE );
+            else if( cmd.get_flag_bool("v") )
+                command.append( LS_QUEUES_FIELDS_VERBOSE );
+            else
+                command.append( LS_QUEUES_FIELDS );
+            
+            if( cmd.get_flag_bool("w") )
+                command.append(" -divide worker_id -sort name ");
+            else
+                command.append(" -group name ");
+            
+            
+            if( cmd.get_num_arguments() > 1 )
+                command.append( au::str( " -where name=%s*" , cmd.get_argument(1).c_str() ) );
+
+            // Limit
+            command.append( au::str(" -limit %d " , limit ) );
+            
+        } 
+        else if ( main_command == "ls_engines" )
+        {
+            command.append( "print_table engines " );
+            
+            if( cmd.get_flag_bool("w") )
+                command.append(" worker_id ");
+            
+            command.append( LS_ENGINES_FIELDS );
+            
+            if( cmd.get_flag_bool("w") )
+                command.append(" -divide worker_id ");
+            else
+                command.append(" -group name ");
+            
+            
+            if( cmd.get_num_arguments() > 1 )
+                command.append( au::str( " -where name=%s*" , cmd.get_argument(1).c_str() ) );
+            
+        } 
+        else if ( main_command == "ls_engine_delilah" )
+        {
+            command.append( "print_table engine_delilah " );
+            command.append( LS_ENGINES_FIELDS );
+        }
+        else if( main_command == "ls_stream_operations" )
+        {
+            command.append( "print_table stream_operations " );
+            
+            if( cmd.get_flag_bool("w") )
+                command.append(" worker_id ");
+            
+            if( cmd.get_flag_bool("vv") )
+                command.append( LS_STREAM_OPERATIONS_FIELDS_VERBOSE_VERBOSE );
+            else if( cmd.get_flag_bool("v") )
+                command.append( LS_STREAM_OPERATIONS_FIELDS_VERBOSE );
+            else
+                command.append( LS_STREAM_OPERATIONS_FIELDS );
+            
+            if( cmd.get_flag_bool("w") )
+                command.append(" -divide worker_id -sort name ");
+            else
+                command.append(" -group name ");
+            
+            
+            if( cmd.get_num_arguments() > 1 )
+                command.append( au::str( " -where name=%s*" , cmd.get_argument(1).c_str() ) );
+            
+            // Limit
+            command.append( au::str(" -limit %d " , limit ) );
+            
+        }        
+        else if( main_command == "ls_blocks" )
+        {
+            
+            // In this case we have to select a worker to show
+            
+            if ( cmd.get_num_arguments() < 2 )
+                return au::str( au::red , "usage: ls_blocks worker_id" );
+            
+            command.append( "print_table blocks " );
+            
+            if( cmd.get_flag_bool("v") )
+                command.append( LS_BLOCKS_FIELDS_VERBOSE );
+            else
+                command.append( LS_BLOCKS_FIELDS );
+            
+            // Condition of the worker
+            command.append( au::str(" -where worker_id=%s" , cmd.get_argument(1).c_str() ) );
+            
+        }
+        else if( main_command == "ls_operations" )
+        {
+            command.append( "print_table operations " );
+            
+            if( cmd.get_flag_bool("w") )
+                command.append(" worker_id ");
+            
+            if( cmd.get_flag_bool("v") )
+                command.append( " name type input_description,t=Inputs output_description,t=Outputs ");            
+            else
+                command.append( " name type help,left ");            
+            
+            if( cmd.get_flag_bool("w") )
+                command.append(" -divide worker_id -sort name ");
+            else
+                command.append(" -group name ");
+            
+            if( cmd.get_num_arguments() > 1 )
+                command.append( au::str(" -where name=%s*", cmd.get_argument(1).c_str() ) );
+            
+            if ( cmd.get_flag_bool("first") )
+                command.append(" -first ");
+            
+        }
+        else if( main_command == "ls_modules" )
+        {
+            command.append( "print_table modules " );
+            
+            if( cmd.get_flag_bool("w") )
+                command.append( " worker_id ");
+            
+            // Add fields
+            command.append(" name version,different num_operations,t=#Ops num_datas,t=#Datas author,left ");            
+            
+            if( cmd.get_flag_bool("w") )
+                command.append(" -divide worker_id ");
+            else
+                command.append(" -group name ");
+                       
+            if( cmd.get_num_arguments() > 1 )
+                command.append( au::str(" -where name=%s*", cmd.get_argument(1).c_str() ) );
+        }
+        else if( main_command == "ls_local" )
+            return getLsLocal( ); 
+        else
+        {
+            return au::str("Command %s not implemented" , main_command.c_str() );
+        }
+
+        // Option to show command on screen
+        if( cmd.get_flag_bool("show_command") )
+            return au::str( au::purple , "%s" , command.c_str() );
+        
+        // Limit to the size of console for easy visualitzation
+        std::string result = runDatabaseCommand( command );
+        return au::strToConsole( result );
+        
+        
+        
+/*        
         if( main_command == "ls" )
         {
             std::string filter = "";
@@ -646,38 +854,10 @@ namespace samson {
             command << "info_command -controller //queue" << filter;
             command << " /name,title=Name,l /num_files,t=#files /kv_info/kvs,t=#kvs,f=uint64 /kv_info/size,t=size,f=uint64 /format/key_format,t=key /format/value_format,t=value,left -no_title";
             
-            return infoCommand(command.str());
+            return infoCommand( command.str() );
         }
         
-        if( main_command == "ls_queues" )
-        {
-            std::string filter = "";
-            
-            if( cmd.get_num_arguments() > 1 )
-            {
-                std::string filter_parameter = cmd.get_argument(1);
-                
-                if( filter_parameter.substr( filter_parameter.length()-1 , 1) == "*" )
-                    filter_parameter = filter_parameter.substr( 0 , filter_parameter.length() - 1);
-                
-                filter = au::str("[starts-with(name,'%s')]" , filter_parameter.c_str() );
-            }
-            
-            std::ostringstream command;
 
-            command << "info_command -worker //queues//queue" << filter << " ";
-            
-            if( cmd.get_flag_bool("vv") )
-                command << LS_QUEUES_FIELDS_VERBOSE_VERBOSE;
-            else if( cmd.get_flag_bool("v") )
-                command << LS_QUEUES_FIELDS_VERBOSE;
-            else
-                command << LS_QUEUES_FIELDS;
-            
-            
-            return infoCommand(command.str());
-            
-        }
         
         if( main_command == "ls_stream_activity" )
         {
@@ -725,38 +905,6 @@ namespace samson {
         if( main_command == "ls_operation_rates" )
             return getStringInfo( "//process_manager//rates//simple_rate_collection" , getOperationRatesInfo, i_worker ); 
         
-        if( main_command == "ls_modules" )
-        {
-            
-            std::string command;
-            if( cmd.get_num_arguments() > 1 )
-            {
-                std::string argument =  cmd.get_argument(1);
-                command = au::str("//modules_manager//module[starts-with(name,'%s')]" , argument.c_str() );
-            }
-            else
-                command = "//modules_manager//module";
-            
-            std::string txt = getStringInfo( command , getModuleInfo, i_controller | i_worker | i_delilah ); 
-            return txt;
-            
-        }
-        
-        
-        if( main_command == "ls_operations" )
-        {
-            std::string command;
-            if( cmd.get_num_arguments() > 1 )
-            {
-                std::string argument =  cmd.get_argument(1);
-                command = au::str("/modules_manager//operation[starts-with(name,'%s')]" , argument.c_str() );
-            }
-            else
-                command = "/modules_manager//operation";
-            
-            return getStringInfo( command , getOperationInfo, i_controller ); 
-        }
-        
         if( main_command == "ls_datas" )
         {
             std::string command;
@@ -793,13 +941,10 @@ namespace samson {
             //return getStringInfo("/stream_manager//queue_task", getQueueTaskInfo, i_worker ); 
         }
         
-        if( main_command == "ls_local" )
-        {
-            return getLsLocal( ); 
-        }
-        
         
         return au::str("Command %s unkown" , main_command.c_str() );
+        
+        */
         
     }
 

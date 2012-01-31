@@ -46,6 +46,7 @@ char			 commandFileName[1024];
 bool             monitorization;
 char             command[1024]; 
 
+
 #define LOC "localhost"
 /* ****************************************************************************
 *
@@ -171,7 +172,7 @@ int main(int argC, const char *argV[])
 	networkP->epMgr->controller->send( packetP );
 
 	//
-	// What until the network is ready II
+	// Wait until the network is ready II
 	//
 	while (!networkP->ready(true))
     {
@@ -181,7 +182,6 @@ int main(int argC, const char *argV[])
     
 	std::cout << " OK\n";
 	LM_M(("Connected to controller and all workers"));
-
 
 	// Create a DelilahControler once network is ready
 	samson::DelilahConsole* delilahConsole = new samson::DelilahConsole(networkP);
@@ -195,7 +195,7 @@ int main(int argC, const char *argV[])
 
 
         // Wait until it is ready to get some queries
-        while ( !delilahConsole->readyForQuery() ) 
+        while ( !delilahConsole->allWorkersUpdatedOnce() ) 
             usleep(1000);
         
         size_t id = delilahConsole->runAsyncCommand( command );

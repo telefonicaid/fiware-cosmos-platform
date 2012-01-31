@@ -42,18 +42,19 @@
 #include "NetworkFake.h"
 #include "NetworkCenter.h"
 
+#include "samson/delilahQt/DelilahQt.h"
+
 
 /* ****************************************************************************
  *
  * Option variables
  */
 SAMSON_ARG_VARS;
-char             controller[80];
 int              workers;
 bool             noLog;
 char			 commandFileName[1024];
 bool             thread_mode;
-
+bool             delilah_qt;
 
 
 #define S01 (long int) "samson01:1234"
@@ -65,10 +66,10 @@ PaArgument paArgs[] =
 {
 	SAMSON_ARGS,
 
-	{ "-controller",  controller,       "CONTROLLER",  PaString,  PaOpt,   S01,   PaNL,   PaNL,  "controller IP:port"  },
 	{ "-workers",     &workers,         "WORKERS",     PaInt,     PaOpt,     1,      1,    100,  "number of workers"   },
 	{ "-nolog",       &noLog,           "NO_LOG",      PaBool,    PaOpt,    false,  false,   true,  "no logging"          },
 	{ "-thread_mode", &thread_mode,     "THREAD_MODE", PaBool,    PaOpt,    false,  false,   true,  "thread_mode"          },
+	{ "-qt",          &delilah_qt,     "" ,            PaBool,    PaOpt,    false,  false,   true,  "Delilah Qt"          },
 	{ "-f",           commandFileName,  "FILE_NAME",   PaString,  PaOpt,  _i "",   PaNL,   PaNL,  "File with commands to run"     },
 	PA_END_OF_ARGS
 };
@@ -119,7 +120,7 @@ void deleteNetworkCenter()
 int main(int argC, const char *argV[])
 {
 	paConfig("usage and exit on any warning", (void*) true);
-	paConfig("log to screen",                 (void*) false);
+    paConfig("log to screen",                 (void*) false);
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] (p.PID) FUNC: TEXT");
 	paConfig("screen line format",            (void*) "TYPE: TEXT");
 	paConfig("log to file",                   (void*) true);
@@ -127,7 +128,8 @@ int main(int argC, const char *argV[])
 	paParse(paArgs, argC, (char**) argV, 1, false);// No more pid in the log file name
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
-	
+
+    
 	/*
 	LM_D(("Starting samson demo (logFd == %d)", ::logFd));
 	for (int i = 0 ; i < 256 ; i++)
@@ -171,10 +173,16 @@ int main(int argC, const char *argV[])
 	
 	// Create one controller, one dalilah and N workers
 	samson::SamsonController controller( center->getNetwork(-1) );
+
 	
-	samson::DelilahConsole* delilahConsole = NULL;
+    samson::DelilahConsole* delilahConsole = NULL;
+    samson::DelilahQt* delilahQt = NULL;
     
-    delilahConsole = new samson::DelilahConsole( center->getNetwork(-2) );
+    // Console delilah..
+    if( delilah_qt )
+        delilahQt = new samson::DelilahQt( center->getNetwork(-2) );
+    else            
+        delilahConsole = new samson::DelilahConsole( center->getNetwork(-2) );
 	
 	LM_T(LmtInit, ("SamsonLocal start"));
 	LM_D(("Starting samson demo (logFd == %d)", ::logFd));
@@ -187,7 +195,7 @@ int main(int argC, const char *argV[])
 	
 	// Run the network center in background
 	center->runInBackground();
-
+    
     // Set the command file name
     if( delilahConsole )
     {
@@ -197,7 +205,11 @@ int main(int argC, const char *argV[])
         pthread_t t;
         pthread_create(&t, 0, run_DelilahConsole, delilahConsole);
     }
-        
+
+    // Set the command file name
+    if( delilahQt )
+        delilahQt->run();
+    
 	// Not necessary anymore since engine starts automatically with the init call
 	// engine::Engine::run();
 

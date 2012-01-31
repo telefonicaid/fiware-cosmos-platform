@@ -19,7 +19,7 @@
  * 
  * Example: command arg1 -f input.ttx -g 2 arg2
  * 
- * Depending on how you define flags "f" and "g" this will behavie differently.
+ * Depending on how you define flags "f" and "g" this will parse in a different way
  *
  * You can define flags as "bool", "double", "int" "string" "uint64".
  * The properties of each element are:
@@ -33,6 +33,7 @@
  *   * Use command set_flag_X( ) methods to define flags and types
  *   * Use one of the parse(.) methods to parse the incoming command line
  *   * Use get_flag_X methods to access content *
+ *
  * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
  *
  * ****************************************************************************/
@@ -78,17 +79,19 @@ public:
     
     /**
      Constructor with the provided string or argument list
+     In this case no flags are considered
      */
     
     CommandLine( std::string _command );
-    CommandLine(int argc, const char *argv[]);
-    
+    CommandLine( int argc, const char *argv[] );
     
     /**
      Parse a command line in the classical C-style way
      */
     
     void parse(int args , const char *argv[] );
+    void parse( std::string _command );		
+    
     
     /**
      Defining flags
@@ -102,15 +105,6 @@ public:
     void set_flag_uint64( std::string name , std::string default_value );
     void set_flag_uint64( std::string name , size_t default_value );
     void set_flag_double( std::string name , double default_value );
-    
-    /** 
-     Parse a commnad line. It extracts all "arguments"
-     */
-    
-    
-    void parse( std::string _command );		
-    void clear_values();
-    void parse_tockens( std::vector<std::string> &tockens );
     
     /**
      Acces information about arguments
@@ -137,6 +131,9 @@ public:
     std::string get_flag_string( std::string flag_name );
     size_t get_flag_uint64( std::string flag_name );
     
+private:
+    
+    
     /**
      Functions to transform values
      */
@@ -145,6 +142,11 @@ public:
     size_t getUint64Value	( std::string value );
     double getDoubleValue	(  std::string value );
     bool getBoolValue( std::string value );
+  
+
+    // Internal function to parse content
+    void clear_values();
+    void parse_tockens( std::vector<std::string> &tockens );
     
 };
 

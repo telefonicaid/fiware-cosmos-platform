@@ -1,15 +1,27 @@
 SET (HEADERS
-	TableCollection.h
+	Select.h
+	Table.h
+	Tree.h
+	Collection.h
+	DataBase.h
+    pugi.h
+    pugixml.hpp
+    pugiconfig.hpp
 )
 
 SET (SOURCES
-	TableCollection.cpp
+	Select.cpp
+	Table.cpp
+	Tree.cpp
+	Collection.cpp
+	DataBase.cpp
+    pugi.cpp
+    pugixml.cpp
 )
 
 # Include directories
 # -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs")
-
 
 # Library declaration
 # -----------------------------------------------------------------

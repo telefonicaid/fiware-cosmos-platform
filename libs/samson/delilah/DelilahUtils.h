@@ -20,10 +20,11 @@
 #define _H_Samson_DelilahUtils
 
 #include <string>          // std::string
-#include "pugi/pugi.h"      // pugi::...
+#include "tables/pugi.h"      // pugi::...
 
 namespace samson {
     
+    /*
 	typedef std::string(* node_to_string_function)(const pugi::xml_node&);		
 
     std::string getBLockListInfo( pugi::node node );
@@ -46,7 +47,7 @@ namespace samson {
     std::string getUpdateTimeInfo( const pugi::xml_node& node ); 
     std::string getBlockManagerInfo( const pugi::xml_node& node ); 
     std::string getOperationRatesInfo( const pugi::xml_node& node ); 
-    
+    */
     
 }
 

@@ -8,8 +8,9 @@
 
 #include "au/ConsoleCode.h"
 #include "au/Token.h"
-
 #include "au/namespace.h"
+
+#include "ConsoleEscapeSequence.h"
 
 NAMESPACE_BEGIN(au)
 
@@ -19,17 +20,22 @@ class ConsoleCommandHistory;
 
 class Console
 {
+    // History information ( all commands introduced before )
     ConsoleCommandHistory *command_history;
-    
-    // Flag to quit internal loop
-    bool quit_console;
-    
+        
     // Pending messages to be displayed
     pthread_t t_running;
     std::list< std::string > pending_messages;
     au::Token token_pending_messages;
-    
-    int counter; // Used only for testing
+        
+    // Flag to quit internal loop
+    bool quit_console;
+
+    // Counter used only for testing
+    int counter; 
+
+    // Detector of scape sequences
+    ConsoleEscapeSequence escape_sequence;
     
 public:
     
@@ -49,6 +55,9 @@ public:
     virtual void evalCommand( std::string command );
     virtual void autoComplete( ConsoleAutoComplete* info );
     
+    void addEspaceSequence( std::string sequence );
+    virtual void process_escape_sequence( std::string sequence ){};
+    
     void refresh();
     
     // Make sure all messages are shown
@@ -62,13 +71,13 @@ private:
     void print_command();
     bool isImputReady();
     
-    
     void process_auto_complete( ConsoleAutoComplete * info );
     void process_char( char c );
-    void process_code( ConsoleCode code );
+
+    void internal_process_escape_sequence( std::string sequence );
+    void internal_command( std::string sequence );
     
     void process_background();
-    
     bool isNormalChar( char c );
     
     

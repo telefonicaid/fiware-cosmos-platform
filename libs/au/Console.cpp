@@ -146,83 +146,128 @@ void Console::process_char( char c )
         print_command();
 }
 
-
-void Console::process_code( ConsoleCode code )
+void Console::internal_command( std::string command )
 {
-    switch (code) {
-        case ret:
-        {
-            std::string _command = command_history->current()->getCommand();
-            
-            //Print the command on screen...
-            print_command();
-            printf("\n");
-            
-            // Eval the command....
-            evalCommand( _command );
-            
-            //New command in history
-            command_history->new_command();
-            print_command();
-        }
-            break;
-        case tab:
-        {
-            ConsoleAutoComplete* info = new ConsoleAutoComplete( command_history->current()->getCommandUntilPointer() );
-            autoComplete( info );
-            process_auto_complete( info );
-            delete info;
-            
-        }
-            break;
-        case del:
-            command_history->current()->delete_char();
-            print_command();
-            break;
-        case del_word:
-            command_history->current()->delete_word();
-            print_command();
-            break;
-        case move_forward:
-            command_history->current()->move_cursor(1);
-            print_command();
-            break;
-        case move_backward:
-            command_history->current()->move_cursor(-1);
-            print_command();
-            break;
-        case move_up:
-            command_history->move_up();
-            print_command();
-            break;
-        case move_down:
-            command_history->move_down();
-            print_command();
-            break;
-        case move_home:
-            command_history->current()->move_home();
-            print_command();
-            break;
-        case move_end:
-            command_history->current()->move_end();
-            print_command();
-            break;
-        case del_rest_line:
-            command_history->current()->delete_rest_line();
-            print_command();
-            break;
-        case au:
-            command_history->current()->add("Andreu Urruela (andreu@tid.es,andreu@urruela.com)");
-            print_command();
-            break;
-            
-        default:
-            break;
+    if( command == "tab" )
+    {
+        ConsoleAutoComplete* info = new ConsoleAutoComplete( command_history->current()->getCommandUntilPointer() );
+        autoComplete( info );
+        process_auto_complete( info );
+        delete info;
+        return;
     }
-    /*            
-     printf("[%s]", getConsoleCodeName(code) );
-     fflush(stdout);
-     */
+    
+    if ( command == "return" )
+    {
+        std::string _command = command_history->current()->getCommand();
+        
+        //Print the command on screen...
+        print_command();
+        printf("\n");
+        
+        // Eval the command....
+        evalCommand( _command );
+        
+        //New command in history
+        command_history->new_command();
+        print_command();
+    }
+
+    if ( command == "move_home" )
+    {
+        command_history->current()->move_home();
+        print_command();        
+    }
+    
+    if ( command == "move_end" )
+    {
+        command_history->current()->move_end();
+        print_command();
+    }
+
+    if ( command == "del_rest_line" )
+    {
+        command_history->current()->delete_rest_line();
+        print_command();
+    }
+
+    if ( command == "del" )
+    {
+        command_history->current()->delete_char();
+        print_command();
+    }    
+    
+}
+
+void Console::addEspaceSequence( std::string sequence )
+{
+    escape_sequence.addSequence(sequence);
+}
+
+void Console::internal_process_escape_sequence( std::string sequence )
+{
+    if( sequence == au::str("%c",127) )
+    {
+        // Remove a word
+        command_history->current()->delete_word();
+        print_command();
+        return;
+    }
+
+    if( sequence == "[A" )
+    {
+        // Mode up
+        command_history->move_up();
+        print_command();
+        return;
+        
+    }
+    if( sequence == "[B" )
+    {
+        // Move down
+        command_history->move_down();
+        print_command();
+        return;
+    }
+    if( sequence == "[C" )
+    {
+        // Move forward
+        command_history->current()->move_cursor(1);
+        print_command();
+        return;        
+    }
+    if( sequence == "[D" )
+    {
+        // Move backward
+        command_history->current()->move_cursor(-1);
+        print_command();
+        return;
+    }
+    
+    if ( sequence == "au" )
+    {
+        command_history->current()->add("Andreu Urruela (andreu@tid.es,andreu@urruela.com)");
+        print_command();
+        return;
+    }
+
+    if ( sequence == "h" )
+    {
+        clear_line();
+        
+        // Print history
+        printf("---------------------------------------------\n");
+        printf(" HISTORY\n");
+        printf("---------------------------------------------\n");
+        printf("%s", command_history->history_string().c_str() );
+        printf("---------------------------------------------\n");
+
+        // Print command again
+        print_command();
+        return;
+    }
+    
+    process_escape_sequence( sequence );
 }
 
 void Console::process_background()
@@ -237,7 +282,7 @@ void Console::process_background()
         {
             std::string txt = pending_messages.front();
             pending_messages.pop_front();
-            printf("%s", txt.c_str() );
+            printf("%s",  txt.c_str() );
         }
         
         printf("\n\n");
@@ -261,6 +306,17 @@ bool Console::isNormalChar( char c )
     return false;
 }
 
+std::string getSequenceDescription( std::string sequece )
+{
+    std::ostringstream output;
+    
+    output << "( " << sequece << " ";
+    for ( size_t i = 0 ; i < sequece.length() ; i++ )
+        output << au::str("[%d]" , (int) sequece[i] );
+    output << " )";
+    return output.str();
+}
+
 void Console::runConsole()
 {
     // Init console
@@ -276,8 +332,7 @@ void Console::runConsole()
     print_command();
     
     // Escape sequence... 
-    ConsoleEscapeSequence escape_sequence;
-    bool escaping = false;   // Fag to indicate if we are inside a scape sequence...
+    bool escaping = false;   // Flag to indicate if we are inside a scape sequence...
     
     quit_console = false;
     while( !quit_console )
@@ -296,36 +351,45 @@ void Console::runConsole()
         
         if( escaping )
         {
+            // Add the new character
             escape_sequence.add( c );
+
+            // Detect if it is a valid sequence code
+            SequenceDetectionCode sequence_detection_code = escape_sequence.checkSequence();
             
-            ConsoleCode code = escape_sequence.getCode();
-            
-            
-            if ( code != unfinished )
+            if( sequence_detection_code == sequence_finished )
             {
-                if ( code == unknown )
-                    writeWarningOnConsole( au::str( " Unknown escape sequence (%s)" , escape_sequence.description().c_str() ).c_str() );
-                else
-                    process_code(code);
+                internal_process_escape_sequence( escape_sequence.getCurrentSequence() );
+                escape_sequence.init();
                 escaping = false;
             }
+            
+            if( sequence_detection_code == sequence_non_compatible )
+            {
+                std::string current_sequence = escape_sequence.getCurrentSequence();
+                writeWarningOnConsole( au::str("Unknown escape sequence (%s)",
+                                               getSequenceDescription (current_sequence).c_str()) );
+                escape_sequence.init();
+                escaping = false;
+            }
+            
         }
         else
         {
             if ( isNormalChar(c) )
                 process_char(c);
             else if ( c == '\n' )
-                process_code( ret );
+                internal_command( "return" );
             else if ( c == '\t' )
-                process_code( tab );
+                internal_command( "tab" );
             else if ( c == 127 )
-                process_code( del );
+                internal_command( "del" );
             else if ( c == 11 )
-                process_code( del_rest_line );
+                internal_command( "del_rest_line" );
             else if ( c == 1 )
-                process_code( move_home );
+                internal_command( "move_home" );
             else if ( c == 5 )
-                process_code( move_end );
+                internal_command( "move_end" );
             else if ( c == 7 ) // bell
                 printf("%c",c);
             else if ( c == 27 )

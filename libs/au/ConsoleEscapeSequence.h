@@ -12,67 +12,95 @@
 NAMESPACE_BEGIN(au)
 
 
-class Sequence
+typedef enum
 {
-    std::string sequence;
-    ConsoleCode code;
-    
-public:
-    
-    Sequence(char c , ConsoleCode _code )
-    {
-        // Save sequence
-        sequence = au::str("%c",c);
-        code = _code;
-    }
-    
-    Sequence(char c , char c2, ConsoleCode _code )
-    {
-        // Save sequence
-        sequence = au::str("%c%c",c,c2);
-        code = _code;
-    }
-    
-    Sequence( const char* seq , ConsoleCode _code )
-    {
-        // Save sequence
-        sequence = seq;
-        code = _code;
-    }
-    
-    ConsoleCode getCode( const char* s , int len )
-    {
-        if( (int) sequence.length() < len )
-            return unknown;
-        
-        for (int i =0;i<len;i++)
-            if ( sequence[i] != s[i] )
-                return unknown;
-        
-        if( (int) sequence.length() > len )
-            return unfinished;
-        return code;
-    }
-    
-};
+    sequence_non_compatible,   // This sequence is non compatible with introduced sequence
+    sequence_unfinished,       // Compatible but not finihsed
+    sequence_finished          // Compatible and finished
+} SequenceDetectionCode;
 
 
 class ConsoleEscapeSequence
-{
-    std::vector<Sequence*> sequences; // Supported sequences
-    
-    char sequence[128];
-    int pos;
+{    
+    std::set<std::string> sequences; // Sequences supported
+    std::string current_sequence;    // Current sequence
     
 public:
     
     ConsoleEscapeSequence();
+
+    // Add sequence to be detected
+    void addSequence( std::string sequence )
+    {
+        sequences.insert(sequence);
+    }
+
+    void addSequence( char c )
+    {
+        addSequence(au::str("%c",c));
+    }
+
+    void addSequence( char c , char c2 )
+    {
+        addSequence( au::str("%c%c",c,c2) );
+    }
     
-    void init();
-    void add( char c );
+    // Init the sequence detector
+    void init()
+    {
+        current_sequence == "";
+        current_sequence.clear();
+    }
     
-    ConsoleCode getCode();
-    std::string description();
+    // Add a character
+    void add( char c )
+    {
+        current_sequence += c;
+    }
+
+    std::string getCurrentSequence()
+    {
+        return current_sequence;
+    }
+    
+    SequenceDetectionCode checkSequence( )
+    {
+        // By default is non compatible
+        SequenceDetectionCode return_code = sequence_non_compatible;
+        
+        std::set<std::string>::iterator it_sequences;
+        for (it_sequences = sequences.begin() ;  it_sequences != sequences.end() ; it_sequences++ )
+        {
+            SequenceDetectionCode code = checkSequence( *it_sequences );
+
+            if ( code == sequence_finished )
+                return sequence_finished; // Return directly...
+            
+            if ( code == sequence_unfinished ) 
+                return_code = sequence_unfinished; // Change the global return value
+        }
+        
+        return return_code;
+        
+    }
+
+    
+    private:
+    
+    SequenceDetectionCode checkSequence( std::string sequence )
+    {
+        if( sequence.length() < current_sequence.length() )
+            return sequence_non_compatible;
+        
+        for ( size_t i =0 ; i<current_sequence.length() ; i++ )
+            if ( sequence[i] != current_sequence[i] )
+                return sequence_non_compatible;
+        
+        if( sequence.length() > current_sequence.length() )
+            return sequence_unfinished;
+        
+        return sequence_finished;
+    }    
     
 };
 

@@ -198,6 +198,9 @@ namespace samson {
             output << "<name>" << _name << "</name>\n";
             output << "<type>" << getTypeName() << "</type>\n";
             
+            output << "<input_description>" << inputFormatsString() << "</input_description>";
+            output << "<output_description>" << outputFormatsString() << "</output_description>";
+            
             output << "<input_formats>\n";
             for ( size_t i = 0 ; i < inputFormats.size() ; i++)
                 inputFormats[i].getInfo( output );

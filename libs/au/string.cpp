@@ -256,6 +256,33 @@ std::string str(const char* format, ...)
     return std::string(vmsg);
 }        
 
+std::string str( Color color, const char* format, ...)
+{
+    va_list        args;
+    char           vmsg[2048];
+    
+    /* "Parse" the varible arguments */
+    va_start(args, format);
+    
+    /* Print message to variable */
+    vsnprintf(vmsg, sizeof(vmsg), format, args);
+    //vmsg[2047] = 0;
+    va_end(args);
+
+    switch (color) {
+        case normal:
+            return std::string(vmsg);
+        case red:
+            return std::string("\033[1;31m") + std::string(vmsg) + std::string("\033[0m");
+        case purple:
+            return std::string("\033[1;35m") + std::string(vmsg) + std::string("\033[0m");
+    }
+
+    // Default mode ( just in case )
+    return std::string(vmsg);
+}
+
+
 std::string str( size_t value )
 {
     
@@ -545,12 +572,13 @@ std::string path_from_directory( std::string directory , std::string file )
         return  directory + "/" + file;
     
 }
-
 std::string string_in_color(std::string message , std::string color )
 {
     std::ostringstream output;
     if ( ( color == "red" ) || ( color == "r" ) )
         output << "\033[1;31m"<< message << "\033[0m";
+    else if ((color == "purple") || (color == "p") )
+        output << "\033[1;35m"<< message << "\033[0m";
     else
         output << message;
     

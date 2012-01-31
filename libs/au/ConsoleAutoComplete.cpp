@@ -40,6 +40,27 @@ ConsoleAutoComplete::ConsoleAutoComplete( std::string command )
     
 }
 
+int ConsoleAutoComplete::completingWord()
+{
+    return previous_words.size();
+}
+
+std::string ConsoleAutoComplete::firstWord()
+{
+    if( previous_words.size() < 1 )
+        return "";
+    return previous_words[0];
+}
+
+std::string ConsoleAutoComplete::secondWord()
+{
+    if( previous_words.size() < 2 )
+        return "";
+    return previous_words[1];
+    
+}
+
+
 bool ConsoleAutoComplete::completingSecondWord( std::string first_word )
 {
     if ( previous_words.size() == 1 )

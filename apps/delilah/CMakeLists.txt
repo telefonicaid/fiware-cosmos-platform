@@ -17,8 +17,8 @@ SET (STATIC_LIBS
      samsonModule
      dl
      engine
-     pugi
      au
+	 tables
      samsonCommon	
      ${COMMON_SAMSON_LIBS}
 )

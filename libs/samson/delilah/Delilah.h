@@ -21,7 +21,7 @@
 #include "au/string.h"          // au::Table
 #include "au/CounterCollection.h"           // au::CounterCollection
 
-#include "pugi/pugi.h"          // pugi::...
+#include "tables/pugi.h"          // pugi::...
 
 #include "samson/module/Environment.h"	// samson::Environment
 #include "samson/common/samson.pb.h"			// samson::network::..
@@ -54,7 +54,6 @@ namespace samson {
     
     // Function to process live streaming data
     typedef void (*delilah_process_stream_out_queue)(std::string queue , engine::Buffer* buffer);
-
     
 	class DelilahClient;
 	class DelilahComponent;
@@ -67,7 +66,6 @@ namespace samson {
 	/**
 	   Main class for the samson client element
 	 */
-
     
 	class Delilah : public PacketReceiverInterface, public PacketSenderInterface , public engine::Object, public DelilahBase
 	{

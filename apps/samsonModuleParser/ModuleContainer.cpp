@@ -17,11 +17,9 @@
 namespace samson {
 	
 	
-	ModuleContainer::ModuleContainer( std::string _name )
+	ModuleContainer::ModuleContainer(  )
 	{
-		// Nick name could be sna or sna.cdrs or sna.cdrs.spain.... reverse domain
-		name = _name;
-	}
+ 	}
 	
 #pragma mark DEFINE NAME
 	

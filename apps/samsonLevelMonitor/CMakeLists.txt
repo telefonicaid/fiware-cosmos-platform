@@ -36,7 +36,6 @@ SET (STATIC_LIBS
      samsonModule
      engine
      au
-     pugi
 	 kdchart
      samsonCommon
      ${COMMON_SAMSON_LIBS}

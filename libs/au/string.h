@@ -35,6 +35,12 @@
 
 NAMESPACE_BEGIN(au)
 
+typedef enum 
+{
+    normal,
+    purple,
+    red
+}Color;
 
 std::string tabs(int t);
 
@@ -64,6 +70,11 @@ bool isOneOf( char c , std::string s );
 std::string str(const char* format, ...);
 std::string str( size_t value );
 std::string str_detail( size_t value );
+
+
+// Strings in color
+std::string str( Color color, const char* format, ...);
+
 
 std::string str( size_t value , std::string postfix );
 std::string str_detail( size_t value , std::string postfix );

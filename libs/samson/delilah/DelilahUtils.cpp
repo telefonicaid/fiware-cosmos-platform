@@ -25,6 +25,7 @@
 
 namespace samson {
     
+    /*
     
     std::string getOperationRatesInfo( const pugi::xml_node& node )
     {
@@ -234,13 +235,6 @@ namespace samson {
             //size_t running_info = pugi::getUInt64( node , "running_info" );
             size_t processed_info = pugi::getUInt64( node , "processed_info" );
                         
-            /*
-            output << "[ Progress: ";
-            output << au::str( running_info , "bytes" ) << " / ";
-            output << au::str( processed_info , "bytes" ) << " / ";
-            output << au::str( total_info , "bytes" );
-            output << "]";
-             */
             output << au::percentage_string( processed_info , total_info ); 
         }
         
@@ -480,6 +474,6 @@ namespace samson {
         
         return output.str();
     }
-
+*/
 }
 

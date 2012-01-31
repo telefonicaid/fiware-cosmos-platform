@@ -2,16 +2,14 @@ SET(MODULE_NAME passive_location)
 
 cmake_minimum_required(VERSION 2.6)
 
+ADD_CUSTOM_COMMAND(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
+    COMMAND samsonModuleParser ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/module ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME} Module
+)
+
 SET (SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
 )
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/Module.cpp PROPERTIES GENERATED 1)
-
-ADD_CUSTOM_COMMAND(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
-    COMMAND samsonModuleParser module ${CMAKE_CURRENT_BINARY_DIR} Module.cpp
-)
-
 
 # Take all .cpp file in the compilation
 FILE(GLOB ADDITIONAL_SOURCES ${PROJECT_SOURCE_DIR}/*.cpp)
@@ -21,11 +19,15 @@ FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
 
 # Include directory pointing to current dir and /usr/local/include
 include_directories("${PROJECT_SOURCE_DIR}")
-include_directories("${PROJECT_SOURCE_DIR}/../../libs")
 include_directories("/usr/local/include/")
 include_directories("${CMAKE_INSTALL_PREFIX}/include")
 include_directories("/opt/local/include/")
 include_directories("/opt/mongodb/mongo-cxx-driver-v2.0")
+include_directories("${PROJECT_SOURCE_DIR}/libs")
+include_directories("${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}")
+include_directories("${PROJECT_SOURCE_DIR}/modules/system")
+include_directories("${PROJECT_SOURCE_DIR}/modules/mobility")
+include_directories("${PROJECT_BINARY_DIR}/modules/${MODULE_NAME}")
 
 link_directories("/opt/mongodb/mongo-cxx-driver-v2.0")
 link_directories("/opt/local/lib")

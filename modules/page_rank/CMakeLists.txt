@@ -2,6 +2,11 @@ SET( MODULE_NAME page_rank )
 
 cmake_minimum_required(VERSION 2.6)
 
+ADD_CUSTOM_COMMAND(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
+    COMMAND samsonModuleParser ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/module ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME} Module
+)
+
 SET (SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
 )
@@ -35,7 +40,11 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("/usr/local/include/")
 include_directories("${CMAKE_INSTALL_PREFIX}/include")
-include_directories("${PROJECT_SOURCE_DIR}/../../libs")
+include_directories("${PROJECT_SOURCE_DIR}/libs")
+include_directories("${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}")
+include_directories("${PROJECT_SOURCE_DIR}/modules/system")
+include_directories("${PROJECT_BINARY_DIR}/modules/${MODULE_NAME}")
+
 
 MESSAGE( "----------------------------------------------------------------------------")
 MESSAGE( "Creating module ${MODULE_NAME}" )

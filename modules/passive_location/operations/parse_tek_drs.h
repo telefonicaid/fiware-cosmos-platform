@@ -52,7 +52,7 @@ public:
 
     void run( char *data , size_t length , samson::KVWriter *writer )
     {
-        size_t offset = 0;
+        //size_t offset = 0;
 
         //OLM_M(("length:%lu", length));
 

@@ -46,7 +46,7 @@ MODULES=system \
 	web \
 	twitter
 
-default: release modules man
+default: release man
 
 # ------------------------------------------------
 # Prepare CMAKE
@@ -76,7 +76,7 @@ i: install
 
 install_debug: debug install_man
 	sudo make -C BUILD_DEBUG install
-	make  -C modules
+	#make  -C modules
 	# FIXME Using sudo to install the files is a bit heavy handed
 	sudo mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
 	sudo cp README $(SAMSON_HOME)/share/README.txt
@@ -259,10 +259,10 @@ cleansvn: reset
 cleanhudson:
 	rm -rf /opt/samson
 
-modules: release
+#modules: release
 	make release -C modules
 
-modules_debug: debug
+#modules_debug: debug
 	make -C modules
 
 

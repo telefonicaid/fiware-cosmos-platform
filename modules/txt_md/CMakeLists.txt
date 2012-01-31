@@ -2,17 +2,14 @@ SET( MODULE_NAME txt_md )
 
 cmake_minimum_required(VERSION 2.6)
 
+ADD_CUSTOM_COMMAND(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
+    COMMAND samsonModuleParser ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/module ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME} Module
+)
+
 SET (SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
 )
-
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/Module.cpp PROPERTIES GENERATED 1)
-
-ADD_CUSTOM_COMMAND(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
-    COMMAND samsonModuleParser module ${CMAKE_CURRENT_BINARY_DIR} Module.cpp
-)
-
 
 # Take all .cpp file in the compilation
 FILE( GLOB ADDITIONAL_SOURCES ${PROJECT_SOURCE_DIR}/*.cpp  )
@@ -31,7 +28,11 @@ include_directories("/usr/lib/jvm/java-6-sun-1.6.0.26/include")
 include_directories("/usr/lib/jvm/java-6-sun-1.6.0.26/include/linux")
 include_directories("/usr/lib/jvm/java-1.6.0-sun-1.6.0.22.x86_64/include")
 include_directories("/usr/lib/jvm/java-1.6.0-sun-1.6.0.22.x86_64/include/linux")
-include_directories("${PROJECT_SOURCE_DIR}/../../libs")
+include_directories("${PROJECT_SOURCE_DIR}/libs")
+include_directories("${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}")
+include_directories("${PROJECT_SOURCE_DIR}/modules/system")
+include_directories("${PROJECT_BINARY_DIR}/modules/${MODULE_NAME}")
+
 
 
 link_directories("/opt/hadoop/hadoop-0.21.0/c++/Linux-i386-32/lib")

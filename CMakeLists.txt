@@ -127,3 +127,6 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 else ()
     MESSAGE("cmake: NOT OK")
 endif (error EQUAL 0)
+
+
+ADD_SUBDIRECTORY(modules)

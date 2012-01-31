@@ -6,6 +6,13 @@ SET (SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
 )
 
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/Module.cpp PROPERTIES GENERATED 1)
+
+ADD_CUSTOM_COMMAND(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
+    COMMAND samsonModuleParser module ${CMAKE_CURRENT_BINARY_DIR} Module.cpp
+)
+        
 # Take all .cpp file in the compilation
 FILE( GLOB ADDITIONAL_SOURCES ${PROJECT_SOURCE_DIR}/*.cpp  )
 

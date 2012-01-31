@@ -2,7 +2,6 @@
 use LWP::UserAgent;
 use JSON;
 use Encode;
-use Data::Dumper;
 
 use constant USERNAME => "hookuser";
 use constant PASSWORD => "h00kuser";

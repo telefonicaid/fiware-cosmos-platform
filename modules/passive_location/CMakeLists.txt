@@ -1,6 +1,16 @@
-SET(MODULE_NAME passive_location)
+SET( MODULE_NAME passive_location )
 
 cmake_minimum_required(VERSION 2.6)
+
+# Install directory
+SET (INSTALL_DIR $ENV{SAMSON_HOME})
+if (INSTALL_DIR)
+    MESSAGE("Using $ENV{SAMSON_HOME} as the installation location")
+    SET (CMAKE_INSTALL_PREFIX $ENV{SAMSON_HOME} CACHE INTERNAL "")
+else (NOT INSTALL_DIR)
+    MESSAGE("Default to /opt/samson as the installation location. Set the environment variable SAMSON_HOME to override")
+    SET (CMAKE_INSTALL_PREFIX /opt/samson CACHE INTERNAL "")
+endif (INSTALL_DIR)
 
 # Locate samsonModuleParser
 if (SAMSONMODULEPARSER)
@@ -18,47 +28,68 @@ else (NOT SAMSONMODULEPARSER)
     endif (HAVE_SAMSONMODULEPARSER)
 endif (SAMSONMODULEPARSER)
 
-ADD_CUSTOM_COMMAND(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
-    COMMAND ${SAMSONMODULEPARSER} ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/module ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME} Module
-)
+IF (SVN_BUILD)
+    ADD_CUSTOM_COMMAND(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
+        COMMAND ${SAMSONMODULEPARSER} ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/module ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME} Module
+    )
+ELSE (NOT SVN_BUILD)
+    ADD_CUSTOM_COMMAND(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
+        COMMAND ${SAMSONMODULEPARSER} ${PROJECT_SOURCE_DIR}/module ${PROJECT_SOURCE_DIR} Module
+    )
+ENDIF (SVN_BUILD)
 
 SET (SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
 )
 
 # Take all .cpp file in the compilation
-FILE(GLOB ADDITIONAL_SOURCES ${PROJECT_SOURCE_DIR}/*.cpp)
+FILE( GLOB ADDITIONAL_SOURCES ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/*.cpp  )
 
 # Install headers to be used by other modules
-FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
+FILE( GLOB HEADERS ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/samson/modules/${MODULE_NAME}/*.h  )
+
+# Compiler options for DEBUG or RELEASE (copied from trunk/CMakeList)
+add_definitions(-fPIC)
+if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
+
+  MESSAGE("cmake: DEBUG compilation")
+  add_definitions(-DDEBUG -DDEBUG_$ENV{USER} -DDEBUG_${USER})
+  set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -g -Werror")
+
+else (NOT CMAKE_BUILD_TYPE STREQUAL DEBUG)
+
+    MESSAGE("cmake: RELEASE compilation")
+    add_definitions(-DRELEASE)
+    set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -O2")
+
+endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
 # Include directory pointing to current dir and /usr/local/include
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("/usr/local/include/")
 include_directories("${CMAKE_INSTALL_PREFIX}/include")
-include_directories("/opt/local/include/")
-include_directories("/opt/mongodb/mongo-cxx-driver-v2.0")
-include_directories("${PROJECT_SOURCE_DIR}/libs")
-include_directories("${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}")
-include_directories("${PROJECT_SOURCE_DIR}/modules/system")
-include_directories("${PROJECT_SOURCE_DIR}/modules/mobility")
-include_directories("${PROJECT_BINARY_DIR}/modules/${MODULE_NAME}")
+IF (SVN_BUILD)
+    include_directories("${PROJECT_SOURCE_DIR}/libs")
+    include_directories("${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}")
+    include_directories("${PROJECT_SOURCE_DIR}/modules/system")
+    include_directories("${PROJECT_BINARY_DIR}/modules/${MODULE_NAME}")
+ELSE (NOT SVN_BUILD)
+    include_directories("${CMAKE_INSTALL_PREFIX}")
+    include_directories("${CMAKE_INSTALL_PREFIX}/include/samson")
+ENDIF (SVN_BUILD)
 
-link_directories("/opt/mongodb/mongo-cxx-driver-v2.0")
-link_directories("/opt/local/lib")
 
 MESSAGE( "----------------------------------------------------------------------------")
 MESSAGE( "Creating module ${MODULE_NAME}" )
 MESSAGE( "----------------------------------------------------------------------------")
 
-find_package(Boost COMPONENTS system filesystem REQUIRED)
-
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
-target_link_libraries(${MODULE_NAME}  -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt -lmongoclient)
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
+
 
 #ENABLE_TESTING()
 #ADD_SUBDIRECTORY(testing)     # Test module and ctest stuff

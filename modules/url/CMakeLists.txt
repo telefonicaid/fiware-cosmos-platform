@@ -45,10 +45,10 @@ SET (SOURCES
 )
 
 # Take all .cpp file in the compilation
-FILE( GLOB ADDITIONAL_SOURCES ${PROJECT_SOURCE_DIR}/*.cpp  )
+FILE( GLOB ADDITIONAL_SOURCES ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/*.cpp  )
 
 # Install headers to be used by other modules
-FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
+FILE( GLOB HEADERS ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/samson/modules/${MODULE_NAME}/*.h  )
 
 # Compiler options for DEBUG or RELEASE (copied from trunk/CMakeList)
 add_definitions(-fPIC)
@@ -58,7 +58,8 @@ if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
   add_definitions(-DDEBUG -DDEBUG_$ENV{USER} -DDEBUG_${USER})
   set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -g -Werror")
 
-else ( NOT CMAKE_BUILD_TYPE STREQUAL DEBUG )
+else (NOT CMAKE_BUILD_TYPE STREQUAL DEBUG)
+
     MESSAGE("cmake: RELEASE compilation")
     add_definitions(-DRELEASE)
     set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -O2")
@@ -88,7 +89,6 @@ ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
-
 
 
 #ENABLE_TESTING()

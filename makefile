@@ -110,7 +110,6 @@ endif
 
 install: release install_man
 	sudo make -C BUILD_RELEASE install
-	make release -C modules
 	# FIXME Using sudo to install the files is a bit heavy handed
 	sudo mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
 	sudo cp README $(SAMSON_HOME)/share/README.txt
@@ -247,10 +246,7 @@ reset:
 	sudo rm -f testing/module_test/Module.*
 	sudo rm -f /etc/init/samson.conf
 	sudo rm -f /etc/profile.d/samson.sh
-	if [ "$(SAMSON_HOME)" != "/usr/local" ]; then sudo rm -rf $(SAMSON_HOME); fi
-	sudo rm -rf $(SAMSON_WORKING)
 	sudo rm -rf rpm
-	make reset -C modules
 
 cleansvn: reset
 	for file in `svn status | grep ? | awk '{print $$2}'`; do rm -rf $$file; done

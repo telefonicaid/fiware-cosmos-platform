@@ -2,9 +2,25 @@ SET( MODULE_NAME system )
 
 cmake_minimum_required(VERSION 2.6)
 
+# Try to find samsonModuleParser in the PATH since we're not part of the SAMSON build system
+if (SAMSONMODULEPARSER)
+    MESSAGE ("Using ${SAMSONMODULEPARSER} to parse the module file")
+else (NOT SAMSONMODULEPARSER)
+    FIND_PROGRAM(HAVE_SAMSONMODULEPARSER samsonModuleParser HINTS ${PROJECT_BINARY_DIR}/apps/samsonModuleParser/samsonModuleParser ENV PATH)
+    if (HAVE_SAMSONMODULEPARSER)
+        SET (SAMSONMODULEPARSER ${HAVE_SAMSONMODULEPARSER} CACHE INTERNAL "")
+    else (NOT HAVE_SAMSONMODULEPARSER)
+        MESSAGE("*****************************")
+        MESSAGE("")
+        MESSAGE("samsonModuleParser not found")
+        MESSAGE("")
+        MESSAGE("*****************************")
+    endif (HAVE_SAMSONMODULEPARSER)
+endif (SAMSONMODULEPARSER)
+
 ADD_CUSTOM_COMMAND(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
-    COMMAND samsonModuleParser ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/module ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME} Module
+    COMMAND ${SAMSONMODULEPARSER} ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/module ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME} Module
 )
 
 SET (SOURCES
@@ -48,7 +64,6 @@ MESSAGE( "----------------------------------------------------------------------
 MESSAGE( "Creating module ${MODULE_NAME}" )
 MESSAGE( "----------------------------------------------------------------------------")
 
-MESSAGE ("${MODULE_NAME} ${SOURCES} ${ADDITIONAL_SOURCES}")
 ADD_LIBRARY(${MODULE_NAME} ${SOURCES} ${ADDITIONAL_SOURCES}  )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)

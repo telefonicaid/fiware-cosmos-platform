@@ -41,3 +41,6 @@ TARGET_LINK_LIBRARIES(samsonModuleParser ${LIBS} )
 
 INSTALL(TARGETS               samsonModuleParser
         RUNTIME DESTINATION   bin)
+
+# Build location of samsonModuleParser
+SET (SAMSONMODULEPARSER ${PROJECT_BINARY_DIR}/apps/samsonModuleParser/samsonModuleParser CACHE INTERNAL "")

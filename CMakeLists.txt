@@ -4,6 +4,16 @@
 PROJECT(Samson)
 cmake_minimum_required(VERSION 2.6)
 
+# Install directory
+SET (INSTALL_DIR $ENV{SAMSON_HOME})
+if (INSTALL_DIR)
+    MESSAGE("Using $ENV{SAMSON_HOME} as the installation location")
+    SET (CMAKE_INSTALL_PREFIX $ENV{SAMSON_HOME} CACHE INTERNAL "")
+else (NOT INSTALL_DIR)
+    MESSAGE("Default to /opt/samson as the installation location. Set the environment variable SAMSON_HOME to override")
+    SET (CMAKE_INSTALL_PREFIX /opt/samson CACHE INTERNAL "")
+endif (INSTALL_DIR)
+
 #
 # DEBUG or RELEASE build ?
 #
@@ -93,6 +103,10 @@ else ( HAVE_GTEST )
     MESSAGE("Not using the Google Test library")
 endif (HAVE_GTEST)
 
+# Indicate that this is an SVN build
+# Modules use this variable to determine which files to use
+SET (SVN_BUILD TRUE)
+
 #
 # Architecture 
 #
@@ -127,3 +141,6 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 else ()
     MESSAGE("cmake: NOT OK")
 endif (error EQUAL 0)
+
+
+ADD_SUBDIRECTORY(modules)

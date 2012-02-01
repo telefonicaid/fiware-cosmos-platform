@@ -48,3 +48,6 @@ INSTALL(TARGETS               samsonModuleParser
 
 INSTALL(TARGETS               samsonModuleEditor
         RUNTIME DESTINATION   bin)
+
+# Build location of samsonModuleParser
+SET (SAMSONMODULEPARSER ${PROJECT_BINARY_DIR}/apps/samsonModuleParser/samsonModuleParser CACHE INTERNAL "")

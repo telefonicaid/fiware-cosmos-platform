@@ -18,7 +18,7 @@ fi
 #
 module=$1
 lowercase_module=$(echo $module | tr 'A-Z' 'a-z' | sed 's/_/\-/g')
-version=$2
+version=`echo $2.$3`
 release=$3
 
 
@@ -81,6 +81,6 @@ cp ${SAMSON_HOME}/modules/lib$module.so               debian/opt/samson/modules
 #
 # Create package
 #
-dpkg-deb --build debian samson-${lowercase_module}_$version-${release}_$arch.deb
+dpkg-deb --build debian samson-${lowercase_module}_${version}_${arch}.deb
 mkdir -p ../../package/deb
-mv samson-${lowercase_module}_$version-${release}_$arch.deb ../../package/deb/samson-${lowercase_module}_$version-${release}_$arch.deb
+mv samson-${lowercase_module}_${version}_${arch}.deb ../../package/deb/samson-${lowercase_module}_${version}_${arch}.deb

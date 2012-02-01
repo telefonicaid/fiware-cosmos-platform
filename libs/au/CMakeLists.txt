@@ -96,6 +96,8 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # -----------------------------------------------------------------
 ADD_LIBRARY(au STATIC ${SOURCES} ${HEADERS})
 INSTALL(TARGETS au ARCHIVE DESTINATION lib)
+INSTALL(FILES ${HEADERS} DESTINATION include/samson/au)
+SET (LIBAU ${PROJECT_BINARY_DIR}/libs/au/libau.a CACHE INTERNAL "")
 
 
 # au_test ( for debuggin )

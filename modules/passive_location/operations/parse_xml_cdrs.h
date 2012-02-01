@@ -88,7 +88,7 @@ public:
         record.DRType.value = 0;
         record.callType.value = 0;
 
-        uint32_t LAC;
+        uint32_t LAC = 0;
         uint32_t cellIdTmp = 0;
         uint32_t cellID = 0;
 

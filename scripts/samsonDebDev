@@ -16,7 +16,7 @@ fi
 #
 # Using command line options
 #
-version=$1
+version=`echo $1.$2`
 release=$2
 
 
@@ -64,7 +64,7 @@ cp -r $BUILD_ROOT/scripts/samsonModuleBootstrap                  	debian/opt/sam
 #
 # Create the package
 #
-dpkg-deb --build debian ${package_name}_${version}-${release}_$arch.deb
-dpkg-deb -c  ${package_name}_${version}-${release}_$arch.deb
+dpkg-deb --build debian ${package_name}_${version}_$arch.deb
+dpkg-deb -c  ${package_name}_${version}_$arch.deb
 mkdir -p package/deb	
-mv ${package_name}_${version}-${release}_$arch.deb package/deb
+mv ${package_name}_${version}_$arch.deb package/deb

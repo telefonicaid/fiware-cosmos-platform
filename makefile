@@ -8,7 +8,7 @@ ifndef SAMSON_VERSION
 SAMSON_VERSION=0.6
 endif
 ifndef SAMSON_RELEASE
-SAMSON_RELEASE=1
+SAMSON_RELEASE=$(svn info | grep Revision | awk '{ print $2 }')
 endif
 # Who to install samson as
 ifndef SAMSON_OWNER
@@ -46,7 +46,7 @@ MODULES=system \
 	web \
 	twitter
 
-default: release modules man
+default: release man
 
 # ------------------------------------------------
 # Prepare CMAKE
@@ -76,7 +76,7 @@ i: install
 
 install_debug: debug install_man
 	sudo make -C BUILD_DEBUG install
-	make  -C modules
+	#make  -C modules
 	# FIXME Using sudo to install the files is a bit heavy handed
 	sudo mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
 	sudo cp README $(SAMSON_HOME)/share/README.txt
@@ -108,9 +108,9 @@ endif
 endif
 endif
 
-install: release install_man
+install: prepare_release
 	sudo make -C BUILD_RELEASE install
-	make release -C modules
+	make install_man
 	# FIXME Using sudo to install the files is a bit heavy handed
 	sudo mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
 	sudo cp README $(SAMSON_HOME)/share/README.txt
@@ -247,10 +247,7 @@ reset:
 	sudo rm -f testing/module_test/Module.*
 	sudo rm -f /etc/init/samson.conf
 	sudo rm -f /etc/profile.d/samson.sh
-	if [ "$(SAMSON_HOME)" != "/usr/local" ]; then sudo rm -rf $(SAMSON_HOME); fi
-	sudo rm -rf $(SAMSON_WORKING)
 	sudo rm -rf rpm
-	make reset -C modules
 
 cleansvn: reset
 	for file in `svn status | grep ? | awk '{print $$2}'`; do rm -rf $$file; done
@@ -259,10 +256,10 @@ cleansvn: reset
 cleanhudson:
 	rm -rf /opt/samson
 
-modules: release
+#modules: release
 	make release -C modules
 
-modules_debug: debug
+#modules_debug: debug
 	make -C modules
 
 

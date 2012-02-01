@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class that maps the category IDs to their respective names.
@@ -14,7 +15,7 @@ import java.util.HashMap;
 public class CSCategoryIdToNameMap {
     private static final String DELIMITER = "\t";
     
-    private HashMap<Long, String> map;
+    private Map<Long, String> map;
     
     public CSCategoryIdToNameMap() {
     }

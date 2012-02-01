@@ -10,10 +10,10 @@ import org.apache.hadoop.io.Writable;
  * Class that represents information about categories, users, and the number of
  * visits to URLs of such categories.
  *
- * @author dmicol
+ * @author dmicol, sortega
  */
 public class CategoryInformation implements Writable {
-    protected final static String DELIMITER = "\t";
+    protected static final String DELIMITER = "\t";
     private String userId;
     private String url;
     private long count;
@@ -59,7 +59,7 @@ public class CategoryInformation implements Writable {
     }
 
     public void setCategoryNames(String[] categoryNames) {
-        this.categoryNames = categoryNames;
+        this.categoryNames = categoryNames.clone();
     }
 
     @Override

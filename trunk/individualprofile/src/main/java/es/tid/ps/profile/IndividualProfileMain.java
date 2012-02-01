@@ -22,10 +22,16 @@ import es.tid.ps.profile.userprofile.UserProfile;
 import es.tid.ps.profile.userprofile.UserProfileMapper;
 import es.tid.ps.profile.userprofile.UserProfileReducer;
 
+/**
+ * Application entry point. Configures and chains mapreduce jobs.
+ *
+ * @author dmicol, sortega
+ */
 public class IndividualProfileMain {
     private static final String COM_SCORE_BASE = "/user/hdfs/comscore/";
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args)
+            throws IOException, ClassNotFoundException, InterruptedException {
         Path webLogsPath = new Path(args[0]);
         Path categoriesPath = new Path(args[1]);
         Path profilePath = new Path(args[2]);
@@ -40,8 +46,8 @@ public class IndividualProfileMain {
         }
     }
 
-    private static Job configureCategoryExtractionJob(Path webLogsPath,
-            Path categoriesPath) throws IOException, IllegalStateException {
+    private static Job configureCategoryExtractionJob(
+            Path webLogsPath, Path categoriesPath) throws IOException {
         Configuration conf = new Configuration();
 
         Job job = new Job(conf, "CategoryExtraction");
@@ -75,8 +81,8 @@ public class IndividualProfileMain {
         return job;
     }
 
-    private static Job configureUserProfileJob(Path categoriesPath, Path profilePath)
-            throws IOException, IllegalStateException {
+    private static Job configureUserProfileJob(
+            Path categoriesPath, Path profilePath) throws IOException {
         Job job = new Job(new Configuration(), "UserProfile");
         job.setJarByClass(IndividualProfileMain.class);
         job.setInputFormatClass(SequenceFileInputFormat.class);
@@ -92,5 +98,9 @@ public class IndividualProfileMain {
         FileOutputFormat.setOutputPath(job, profilePath);
 
         return job;
+    }
+
+    private IndividualProfileMain() {
+        // Hide constructor of utility class
     }
 }

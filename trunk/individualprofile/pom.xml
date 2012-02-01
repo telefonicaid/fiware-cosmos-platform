@@ -181,6 +181,7 @@
                                     <ruleset>rulesets/imports.xml</ruleset>
                                     <ruleset>rulesets/codesize.xml</ruleset>
                                     <ruleset>rulesets/junit.xml</ruleset>
+                                    <ruleset>rulesets/unusedcode.xml</ruleset>
                                 </rulesets>
                                 <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
                                 <minimumTokens>100</minimumTokens>

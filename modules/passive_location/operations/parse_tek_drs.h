@@ -29,6 +29,8 @@ class parse_tek_drs : public samson::Parser
     samson::passive_location::Record record;                // Used as value at the output
     samson::passive_location::CompleteTMSI completeTMSI;    // Used as value at the output
     samson::passive_location::IMSIbyTime imsiTime;    // Used as value at the output
+    samson::passive_location::CompleteTMSI oldTMSI;    // Used as value at the output
+    samson::passive_location::CompleteTMSI newTMSI;    // Used as value at the output
 
 public:
 
@@ -41,6 +43,7 @@ public:
     // out passive_location.CompleteTMSI passive_location.Record   # Whem imsi = 0, emitted with key = tmsi
     // out system.UInt passive_location.Record                     # If no cellId or LAC is parsed in the record
     // out passive_location.CompleteTMSI passive_location.IMSIbyTime               # Queue to recover imsi from tmsi
+    // out passive_location.CompleteTMSI passive_location.CompleteTMSI              # Queue to update tmsi
 
     //
     // helpLine: Parse input binary OHDRs from Tektroniks platform (probes). Note that output key is cellid
@@ -54,7 +57,7 @@ public:
     {
         size_t offset = 0;
 
-        //OLM_M(("length:%lu", length));
+        LM_M(("length:%lu", length));
 
         unsigned char *p_blob = (unsigned char *)data;
         unsigned char *p_end_blob = (unsigned char *)data + length;
@@ -71,24 +74,38 @@ public:
 
 
 
-        for (int i = 0; (i < 232); i++)
-        {
-            //OLM_M(("data[%d](0x%0x) = 0x%0x", i, p_blob+i, int(p_blob[i])));
-        }
+//        for (int i = 0; (i < 32); i++)
+//        {
+//            LM_M(("data[%d](0x%0x) = 0x%0x", i, p_blob+i, int(p_blob[i])));
+//        }
 
         while( p_blob < p_end_blob )
         {
+//            for (int i = 0; (i < 16); i++)
+//            {
+//                LM_M(("p_blob[%d](0x%0x) = 0x%0x", i, p_blob+i, int(p_blob[i])));
+//            }
+
             p_init_ohdr = p_blob;
             if (parse_OHDR_header(&p_blob, &sizeOHDR, &numDRs, &typeMsg))
             {
                 p_end_ohdr = p_init_ohdr + sizeOHDR;
+                LM_M(("Parsing DRs in OHDR of size:%d", sizeOHDR));
                 for (int i = 0; ((i < numDRs) && (p_blob < p_end_ohdr)); i++)
                 {
                     init_tek_record(&tek_record);
+                    LM_M(("Parsing DR:%d of numDRs:%d", i, numDRs));
                     if (parse_DR(&p_blob, &sizeDR, &tek_record))
                     {
 
-                        completeTMSI.tmsi.value = tek_record.tmsi;
+                        if (tek_record.last_tmsi != 0)
+                        {
+                            completeTMSI.tmsi.value = tek_record.last_tmsi;
+                        }
+                        else
+                        {
+                            completeTMSI.tmsi.value = tek_record.tmsi;
+                        }
                         completeTMSI.LAC.value = tek_record.LAC;
 
                         user.value = tek_record.imsi;
@@ -102,7 +119,7 @@ public:
                         record.callType.value = tek_record.callType;
                         record.DRType.value = tek_record.typeDR;
 
-                        //LM_M(("Ready to emit typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu tmsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.tmsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
+                        LM_M(("Ready to emit typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu tmsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.tmsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
 
                         // Emit the record at the corresponding output
                         if ((tek_record.cellID == 0) || (tek_record.LAC == 0))
@@ -112,13 +129,13 @@ public:
                         }
                         else if (tek_record.imsi == 0)
                         {
-                            //LM_W(("Emit records without imsi: typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu tmsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.tmsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
+                            LM_W(("Emit records without imsi: typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu tmsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.tmsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
 
                             writer->emit(1, &completeTMSI, &record);
                         }
                         else
                         {
-                            //LM_W(("Emit complete records: typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
+                            LM_W(("Emit complete records: typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
                            writer->emit(0, &user, &record);
                         }
 
@@ -126,8 +143,19 @@ public:
                         {
                             imsiTime.imsi.value = user.value;
                             imsiTime.timestamp.value = tek_record.timestamp;
+                            LM_M(("Emit new TMSI-IMSI association"));
 
                             writer->emit(3, &completeTMSI, &imsiTime);
+                        }
+                        else if ((tek_record.last_tmsi != 0) && (tek_record.tmsi != 0))
+                        {
+                            LM_M(("Ready to emit TMSI update: old:%lu, new:%lu", tek_record.tmsi, tek_record.last_tmsi));
+                            oldTMSI.tmsi.value = tek_record.tmsi;
+                            oldTMSI.LAC.value = tek_record.LAC;
+                            newTMSI.tmsi.value = tek_record.last_tmsi;
+                            newTMSI.LAC.value = tek_record.LAC;
+
+                            writer->emit(4, &oldTMSI, &newTMSI);
                         }
 
                         free(tek_record.CCCause);
@@ -135,10 +163,14 @@ public:
                         free(tek_record.RANAPCause);
                         free(tek_record.ALCAPCause);
                     }
+                    else
+                    {
+                        LM_W(("Alignment failed in DR %d of %d DRs", i, numDRs));
+                    }
                 }
                 if (p_blob != p_end_ohdr)
                 {
-                    LM_W(("Alignment failed in a OHDR of %d DRs", numDRs));
+                    LM_W(("Alignment failed in a OHDR of size:%d, numDRs:%d", sizeOHDR, numDRs));
                 }
             }
             else

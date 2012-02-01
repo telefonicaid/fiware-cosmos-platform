@@ -24,6 +24,8 @@ namespace passive_location{
 	    samson::passive_location::Record record;                // Input value
 	    samson::passive_location::IMSIbyTime imsiTime;                              // Input value of the translation table
 
+	    uint64_t  record_timespan;
+	    time_t now;
 
 	public:
 
@@ -35,6 +37,7 @@ namespace passive_location{
 //  input: passive_location.CompleteTMSI passive_location.Record  
 //  input: passive_location.CompleteTMSI passive_location.IMSIbyTime
 //  output: system.UInt passive_location.Record
+//	output: passive_location.CompleteTMSI passive_location.Record
 //  output: system.UInt passive_location.Record
 //  
 // helpLine: Extract imsi info from tmsi_imsi table, based on previous records
@@ -42,6 +45,12 @@ namespace passive_location{
 
 		void init( samson::KVWriter *writer )
 		{
+	        record_timespan = environment->getSizeT("pl.record_retry.timespan", 0);
+	        LM_M(("pl.record_retry.timespan:%lu", record_timespan));
+	        if ( record_timespan != 0)
+	        {
+	            now = time(NULL);
+	        }
 		}
 
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
@@ -71,7 +80,16 @@ namespace passive_location{
 //                    {
 //                        writer->emit(2, &completeTMSI.tmsi, &record);
 //                    }
-                    writer->emit(1, &completeTMSI.tmsi, &record);
+                    if ((record_timespan == 0) || ((now - record.timestamp.value) < record_timespan))
+                    {
+                        LM_M(("Emit record for reprocessing, TMSI:%lu", completeTMSI.tmsi.value));
+                        writer->emit( 1 , &completeTMSI , &record );
+                    }
+                    else
+                    {
+                        LM_M(("Emit record to forget, TMSI:%lu", completeTMSI.tmsi.value));
+                        writer->emit(2, &completeTMSI.tmsi, &record);
+                    }
                 }
                 return;
             }

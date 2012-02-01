@@ -2,6 +2,22 @@ SET( MODULE_NAME test )
 
 cmake_minimum_required(VERSION 2.6)
 
+# Locate samsonModuleParser
+if (SAMSONMODULEPARSER)
+    MESSAGE ("Using ${SAMSONMODULEPARSER} to parse the module file")
+else (NOT SAMSONMODULEPARSER)
+    FIND_PROGRAM(HAVE_SAMSONMODULEPARSER samsonModuleParser HINTS ${PROJECT_BINARY_DIR}/apps/samsonModuleParser/samsonModuleParser ENV PATH)
+    if (HAVE_SAMSONMODULEPARSER)
+        SET (SAMSONMODULEPARSER ${HAVE_SAMSONMODULEPARSER} CACHE INTERNAL "")
+    else (NOT HAVE_SAMSONMODULEPARSER)
+        MESSAGE("*****************************")
+        MESSAGE("")
+        MESSAGE("samsonModuleParser not found")
+        MESSAGE("")
+        MESSAGE("*****************************")
+    endif (HAVE_SAMSONMODULEPARSER)
+endif (SAMSONMODULEPARSER)
+
 SET (SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
 )
@@ -10,7 +26,7 @@ SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/Module.cpp PROPERTIES GE
 
 ADD_CUSTOM_COMMAND(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
-    COMMAND samsonModuleParser module ${CMAKE_CURRENT_BINARY_DIR} Module.cpp
+    COMMAND ${SAMSONMODULEPARSER} module ${CMAKE_CURRENT_BINARY_DIR} Module.cpp
 )
 
 

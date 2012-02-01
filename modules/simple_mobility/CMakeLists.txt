@@ -2,9 +2,25 @@ SET( MODULE_NAME simple_mobility )
 
 cmake_minimum_required(VERSION 2.6)
 
+# Locate samsonModuleParser
+if (SAMSONMODULEPARSER)
+    MESSAGE ("Using ${SAMSONMODULEPARSER} to parse the module file")
+else (NOT SAMSONMODULEPARSER)
+    FIND_PROGRAM(HAVE_SAMSONMODULEPARSER samsonModuleParser HINTS ${PROJECT_BINARY_DIR}/apps/samsonModuleParser/samsonModuleParser ENV PATH)
+    if (HAVE_SAMSONMODULEPARSER)
+        SET (SAMSONMODULEPARSER ${HAVE_SAMSONMODULEPARSER} CACHE INTERNAL "")
+    else (NOT HAVE_SAMSONMODULEPARSER)
+        MESSAGE("*****************************")
+        MESSAGE("")
+        MESSAGE("samsonModuleParser not found")
+        MESSAGE("")
+        MESSAGE("*****************************")
+    endif (HAVE_SAMSONMODULEPARSER)
+endif (SAMSONMODULEPARSER)
+
 ADD_CUSTOM_COMMAND(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
-    COMMAND samsonModuleParser ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/module ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME} Module
+    COMMAND ${SAMSONMODULEPARSER} ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/module ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME} Module
 )
 
 SET (SOURCES
@@ -42,7 +58,10 @@ include_directories("/usr/local/include/")
 include_directories("${CMAKE_INSTALL_PREFIX}/include")
 include_directories("${PROJECT_SOURCE_DIR}/libs")
 include_directories("${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}")
+include_directories("${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}")
 include_directories("${PROJECT_SOURCE_DIR}/modules/system")
+include_directories("${PROJECT_SOURCE_DIR}/modules/mobility")
+include_directories("${PROJECT_SOURCE_DIR}/modules/level")
 include_directories("${PROJECT_BINARY_DIR}/modules/${MODULE_NAME}")
 
 MESSAGE( "----------------------------------------------------------------------------")
@@ -50,14 +69,30 @@ MESSAGE( "Creating module ${MODULE_NAME}" )
 MESSAGE( "----------------------------------------------------------------------------")
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
-if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
-    find_library(LM_PATH lm PATHS ${PROJECT_BINARY_DIR}/BUILD_DEBUG/libs/logMsg )
-    find_library(AU_PATH au PATHS ${PROJECT_BINARY_DIR}/BUILD_DEBUG/libs/au )
-elseif (CMAKE_BUILD_TYPE STREQUAL RELEASE)
-    find_library(LM_PATH lm PATHS ${PROJECT_BINARY_DIR}/BUILD_RELEASE/libs/logMsg )
-    find_library(AU_PATH au PATHS ${PROJECT_BINARY_DIR}/BUILD_RELEASE/libs/au )
-endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
-TARGET_LINK_LIBRARIES( ${MODULE_NAME} ${LM_PATH} ${AU_PATH} )
+
+if (NOT LIBLM)
+  find_library(LM_PATH lm PATHS ${PROJECT_BINARY_DIR}/libs/logMsg )
+    if (LM_PATH)
+        SET ( LIBLM ${LM_PATH} )
+    else (NOT LM_PATH)
+        MESSAGE("Unable to find the static library liblm.a")
+    endif (LM_PATH)
+else (LIBLM)
+    ADD_DEPENDENCIES (${MODULE_NAME} ${LIBLM})
+endif (NOT LIBLM)
+if (NOT LIBAU)
+    find_library(AU_PATH au PATHS ${PROJECT_BINARY_DIR}/libs/au )
+    if (AU_PATH)
+        SET (LIBAU ${AU_PATH})
+    else (NOT AU_PATH)
+        MESSAGE("Unable to find the static library libau.a")
+    endif (AU_PATH)
+else (LIBAU)
+    ADD_DEPENDENCIES (${MODULE_NAME} ${LIBAU})
+endif (NOT LIBAU)
+
+
+#TARGET_LINK_LIBRARIES( ${MODULE_NAME} ${LIBLM} ${LIBAU} )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})

@@ -2,7 +2,7 @@ SET( MODULE_NAME system )
 
 cmake_minimum_required(VERSION 2.6)
 
-# Try to find samsonModuleParser in the PATH since we're not part of the SAMSON build system
+# Locate samsonModuleParser
 if (SAMSONMODULEPARSER)
     MESSAGE ("Using ${SAMSONMODULEPARSER} to parse the module file")
 else (NOT SAMSONMODULEPARSER)

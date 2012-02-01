@@ -1,4 +1,4 @@
-package es.tid.test.hbase;
+package es.tid.test.profile;
 
 import java.util.Map.Entry;
 import java.util.*;
@@ -19,9 +19,12 @@ public class CategoryMap extends HashMap<String, Double> {
             };
 
     public List<String> getTop(int n) {
+        if (this.isEmpty()) {
+            return Collections.emptyList();
+        }
+        
         PriorityQueue<Entry<String, Double>> heap =
-                new PriorityQueue<Entry<String, Double>>(this.size(), 
-                ENTRY_COMPARATOR);
+                new PriorityQueue<Entry<String, Double>>(this.size(), ENTRY_COMPARATOR);
 
         heap.addAll(this.entrySet());
         

@@ -16,7 +16,7 @@ fi
 #
 # Using command line options
 #
-version=`echo $1.$2`
+version=$1
 release=$2
 
 
@@ -54,7 +54,7 @@ cp -r README                      debian/opt/samson/share/README.txt
 #
 # Create the package
 #
-dpkg-deb --build debian ${package_name}_${version}.deb
-dpkg-deb -c  ${package_name}_${version}.deb
+dpkg-deb --build debian ${package_name}_${version}-${release}.deb
+dpkg-deb -c  ${package_name}_${version}-${release}.deb
 mkdir -p package/deb    
-mv ${package_name}_${version}.deb package/deb
+mv ${package_name}_${version}-${release}.deb package/deb

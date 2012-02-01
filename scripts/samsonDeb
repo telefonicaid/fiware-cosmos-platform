@@ -14,7 +14,7 @@ fi
 #
 # Using command line options
 #
-version=`echo $1.$2`
+version=$1
 release=$2
 
 
@@ -48,7 +48,7 @@ mkdir -p debian/etc/profile.d
 mkdir -p debian/etc/defaults
 
 echo "Package: samson"                                   > debian/DEBIAN/control
-echo "Version: ${version}"                                >> debian/DEBIAN/control
+echo "Version: $version"                                >> debian/DEBIAN/control
 echo "Section: tid"                                     >> debian/DEBIAN/control
 echo "Priority: optional"                               >> debian/DEBIAN/control
 echo "Architecture: $arch"                              >> debian/DEBIAN/control
@@ -108,6 +108,6 @@ cp scripts/samsonInitSetup           debian/opt/samson/bin
 #
 # Create package
 #
-dpkg-deb --build debian samson_${version}_$arch.deb
+dpkg-deb --build debian samson_$version-${release}_$arch.deb
 mkdir -p package/deb	
-mv samson_${version}_$arch.deb package/deb/samson_${version}_$arch.deb
+mv samson_$version-${release}_$arch.deb package/deb/samson_$version-${release}_$arch.deb

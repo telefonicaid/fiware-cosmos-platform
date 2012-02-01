@@ -2,6 +2,16 @@ SET( MODULE_NAME simple_mobility )
 
 cmake_minimum_required(VERSION 2.6)
 
+# Install directory
+SET (INSTALL_DIR $ENV{SAMSON_HOME})
+if (INSTALL_DIR)
+    MESSAGE("Using $ENV{SAMSON_HOME} as the installation location")
+    SET (CMAKE_INSTALL_PREFIX $ENV{SAMSON_HOME} CACHE INTERNAL "")
+else (NOT INSTALL_DIR)
+    MESSAGE("Default to /opt/samson as the installation location. Set the environment variable SAMSON_HOME to override")
+    SET (CMAKE_INSTALL_PREFIX /opt/samson CACHE INTERNAL "")
+endif (INSTALL_DIR)
+
 # Locate samsonModuleParser
 if (SAMSONMODULEPARSER)
     MESSAGE ("Using ${SAMSONMODULEPARSER} to parse the module file")
@@ -18,10 +28,17 @@ else (NOT SAMSONMODULEPARSER)
     endif (HAVE_SAMSONMODULEPARSER)
 endif (SAMSONMODULEPARSER)
 
-ADD_CUSTOM_COMMAND(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
-    COMMAND ${SAMSONMODULEPARSER} ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/module ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME} Module
-)
+IF (SVN_BUILD)
+    ADD_CUSTOM_COMMAND(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
+        COMMAND ${SAMSONMODULEPARSER} ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/module ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME} Module
+    )
+ELSE (NOT SVN_BUILD)
+    ADD_CUSTOM_COMMAND(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
+        COMMAND ${SAMSONMODULEPARSER} ${PROJECT_SOURCE_DIR}/module ${PROJECT_SOURCE_DIR} Module
+    )
+ENDIF (SVN_BUILD)
 
 SET (SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
@@ -41,28 +58,29 @@ if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
   add_definitions(-DDEBUG -DDEBUG_$ENV{USER} -DDEBUG_${USER})
   set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -g -Werror")
 
-elseif (CMAKE_BUILD_TYPE STREQUAL RELEASE)
+else (NOT CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
     MESSAGE("cmake: RELEASE compilation")
     add_definitions(-DRELEASE)
     set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -O2")
 
-else (CMAKE_BUILD_TYPE STREQUAL DEBUG)
-    MESSAGE("cmake: bad value for CMAKE_BUILD_TYPE - please set the variable to either DEBUG or RELEASE")
-    set(error 1)
 endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
 # Include directory pointing to current dir and /usr/local/include
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("/usr/local/include/")
 include_directories("${CMAKE_INSTALL_PREFIX}/include")
-include_directories("${PROJECT_SOURCE_DIR}/libs")
-include_directories("${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}")
-include_directories("${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}")
-include_directories("${PROJECT_SOURCE_DIR}/modules/system")
-include_directories("${PROJECT_SOURCE_DIR}/modules/mobility")
-include_directories("${PROJECT_SOURCE_DIR}/modules/level")
-include_directories("${PROJECT_BINARY_DIR}/modules/${MODULE_NAME}")
+IF (SVN_BUILD)
+    include_directories("${PROJECT_SOURCE_DIR}/libs")
+    include_directories("${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}")
+    include_directories("${PROJECT_SOURCE_DIR}/modules/system")
+    include_directories("${PROJECT_SOURCE_DIR}/modules/mobility")
+    include_directories("${PROJECT_SOURCE_DIR}/modules/level")
+    include_directories("${PROJECT_BINARY_DIR}/modules/${MODULE_NAME}")
+ELSE (NOT SVN_BUILD)
+    include_directories("${CMAKE_INSTALL_PREFIX}")
+    include_directories("${CMAKE_INSTALL_PREFIX}/include/samson")
+ENDIF (SVN_BUILD)
 
 MESSAGE( "----------------------------------------------------------------------------")
 MESSAGE( "Creating module ${MODULE_NAME}" )
@@ -77,19 +95,17 @@ if (NOT LIBLM)
     else (NOT LM_PATH)
         MESSAGE("Unable to find the static library liblm.a")
     endif (LM_PATH)
-else (LIBLM)
-    ADD_DEPENDENCIES (${MODULE_NAME} ${LIBLM})
 endif (NOT LIBLM)
 if (NOT LIBAU)
-    find_library(AU_PATH au PATHS ${PROJECT_BINARY_DIR}/libs/au )
+    find_library(AU_PATH au PATHS ${CMAKE_INSTALL_PREFIX}/libs/au )
     if (AU_PATH)
         SET (LIBAU ${AU_PATH})
     else (NOT AU_PATH)
         MESSAGE("Unable to find the static library libau.a")
     endif (AU_PATH)
-else (LIBAU)
-    ADD_DEPENDENCIES (${MODULE_NAME} ${LIBAU})
 endif (NOT LIBAU)
+ADD_DEPENDENCIES (${MODULE_NAME} ${LIBLM})
+ADD_DEPENDENCIES (${MODULE_NAME} ${LIBAU})
 
 
 #TARGET_LINK_LIBRARIES( ${MODULE_NAME} ${LIBLM} ${LIBAU} )

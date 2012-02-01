@@ -13,7 +13,6 @@ public class CSPatternToCategoryMap {
     private static final String DELIMITER = "\t";
 
     private long minPatternId;
-    private long maxPatternId;
     private int size;
     private long[][] map;
     
@@ -23,9 +22,9 @@ public class CSPatternToCategoryMap {
     public void init(Reader input) throws IOException {
         BufferedReader br = new BufferedReader(input);
         this.minPatternId = Long.parseLong(br.readLine());
-        this.maxPatternId = Long.parseLong(br.readLine());
+        long maxPatternId = Long.parseLong(br.readLine());
         this.size =
-                this.safeLongToInt(this.maxPatternId - this.minPatternId + 1);
+                this.safeLongToInt(maxPatternId - this.minPatternId + 1);
         this.map = new long[this.size][];
         String line;
         while ((line = br.readLine()) != null) {

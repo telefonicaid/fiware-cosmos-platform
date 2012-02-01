@@ -16,7 +16,7 @@ public class CSDictionaryJNIInterface {
      *            the terms in domain file name
      * @return whether the initialization succeeded
      */
-    public native boolean InitFromTermsInDomainFlatFile(int iMode,
+    public native boolean initFromTermsInDomainFlatFile(int iMode,
             String szTermsInDomainFlatFileName);
 
     /**
@@ -30,7 +30,7 @@ public class CSDictionaryJNIInterface {
      *            the file name of the dictionary
      * @return whether the load of the dictionary succeeded
      */
-    public native boolean LoadCSDictionary(int iMode,
+    public native boolean loadCSDictionary(int iMode,
             String szTermsInDomainFlatFileName, String szDictionaryName);
 
     /**
@@ -41,7 +41,7 @@ public class CSDictionaryJNIInterface {
      *            the url to apply the dictionary to
      * @return the pattern ID of the URL
      */
-    public native long ApplyDictionaryUsingUrl(String szURL);
+    public native long applyDictionaryUsingUrl(String szURL);
 
     static {
         System.load("/opt/hadoop/lib/native/Linux-amd64-64/libcsCFD.so.1");

@@ -2,7 +2,7 @@
 // author: dmicol
 //
 
-#include "es_tid_ps_profile_dictionary_CSDictionaryJNIInterface.h"
+#include "es_tid_ps_profile_dictionary_comscore_CSDictionaryJNIInterface.h"
 
 #include <iostream>
 
@@ -17,7 +17,7 @@
 
 #include "Interface.h"
 
-JNIEXPORT jboolean JNICALL Java_es_tid_ps_profile_dictionary_CSDictionaryJNIInterface_InitFromTermsInDomainFlatFile
+JNIEXPORT jboolean JNICALL Java_es_tid_ps_profile_dictionary_comscore_CSDictionaryJNIInterface_initFromTermsInDomainFlatFile
   (JNIEnv *env, jobject obj, jint iMode, jstring szTermsInDomainFlatFileName) {
   bool retVal = false;
   const char *nativeTermsInDomainFlatFileName =
@@ -29,7 +29,7 @@ JNIEXPORT jboolean JNICALL Java_es_tid_ps_profile_dictionary_CSDictionaryJNIInte
   return retVal;
 }
 
-JNIEXPORT jboolean JNICALL Java_es_tid_ps_profile_dictionary_CSDictionaryJNIInterface_LoadCSDictionary
+JNIEXPORT jboolean JNICALL Java_es_tid_ps_profile_dictionary_comscore_CSDictionaryJNIInterface_loadCSDictionary
   (JNIEnv *env, jobject obj, jint iMode,
   jstring szTermsInDomainFlatFileName, jstring szDictionaryName) {
   bool retVal = false;
@@ -46,7 +46,7 @@ JNIEXPORT jboolean JNICALL Java_es_tid_ps_profile_dictionary_CSDictionaryJNIInte
   return retVal;
 }
 
-JNIEXPORT jlong JNICALL Java_es_tid_ps_profile_dictionary_CSDictionaryJNIInterface_ApplyDictionaryUsingUrl
+JNIEXPORT jlong JNICALL Java_es_tid_ps_profile_dictionary_comscore_CSDictionaryJNIInterface_applyDictionaryUsingUrl
   (JNIEnv *env, jobject jobj, jstring szURL) {
   long retVal;
   const char *nativeURL = (*env).GetStringUTFChars(szURL, 0);

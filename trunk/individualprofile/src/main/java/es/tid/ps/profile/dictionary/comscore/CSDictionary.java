@@ -62,7 +62,7 @@ public class CSDictionary implements Dictionary {
         }
 
         this.dictionary = new CSDictionaryJNIInterface();
-        this.dictionary.LoadCSDictionary(1, termsInDomainFlatFileName,
+        this.dictionary.loadCSDictionary(1, termsInDomainFlatFileName,
                 dictionaryFileName);
         this.loadCategoryPatternMapping(categoryPatterMappingFileName);
         this.loadCategoryNames(categoryNamesFileName);
@@ -78,7 +78,7 @@ public class CSDictionary implements Dictionary {
 
         URI uri = URI.create(url);
         String normalizedUrl = uri.getHost() + uri.getPath();
-        long patternId = this.dictionary.ApplyDictionaryUsingUrl(normalizedUrl);
+        long patternId = this.dictionary.applyDictionaryUsingUrl(normalizedUrl);
         if (patternId < 0) {
             return this.processIrrelevantUrl();
         } else if (patternId == 0) {

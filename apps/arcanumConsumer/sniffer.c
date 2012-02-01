@@ -37,7 +37,7 @@
 char*           host       = (char*) "172.17.200.200";
 unsigned short  port       = 1099;
 int             verbose    = 0;
-char*           filePrefix = "arcanumPackets";
+char*           filePrefix = "tektronix-";
 char*           timeFormat = "%Y-%m-%d";
 
 

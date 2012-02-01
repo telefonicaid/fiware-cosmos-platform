@@ -90,6 +90,7 @@ typedef struct Node
 	unsigned short  port;
 	int             listenFd;
 	int             fd;         // only allowing ONE connection ...
+	int             packets;
 } Node;
 
 
@@ -105,13 +106,8 @@ unsigned short  snifferPort = 0;
 Node            tektronix;
 Node            samson;
 Node            sniffer;
-char            buffer[BUFSIZE];
-char            savedBuffer[128 * 1024];
 int             bufSize           = BUFSIZE;
-int             savedMissing      = 0;
-int             savedLen          = 0;
 int             packetsSent       = 0;
-int             packetsForSniffer = 0;
 
 
 
@@ -119,12 +115,15 @@ int             packetsForSniffer = 0;
 *
 * bufPresent - 
 */
-void bufPresent(char* title, char* buf, int bufLen)
+void bufPresent(char* title, char* buf, int bufLen, int verboseLevel)
 {
 	int ix = 0;
 
-	if (verbose < 2)
+	if (verbose < verboseLevel)
 	   return;
+
+	if (bufLen > 0x80)
+		bufLen = 0x80;
 
 	printf("----- %s -----\n", title);
 
@@ -164,7 +163,7 @@ void serverInit(Node* nodeP)
 	if (nodeP->host[0] == 0)
 	{
         sa.sin_addr.s_addr = INADDR_ANY;
-        V3(("Listen socket for '%s' bound to 'ANY' host, port %d", nodeP->name, nodeP->port));
+        V4(("Listen socket for '%s' bound to 'ANY' host, port %d", nodeP->name, nodeP->port));
     }
 	else
 	{
@@ -172,7 +171,7 @@ void serverInit(Node* nodeP)
 		
         heP = gethostbyname(nodeP->host);
         bcopy(heP->h_addr, &sa.sin_addr, heP->h_length);
-        V3(("Listen socket for '%s' bound to host '%s', port %d", nodeP->name, nodeP->host, nodeP->port));
+        V4(("Listen socket for '%s' bound to host '%s', port %d", nodeP->name, nodeP->host, nodeP->port));
 	}
 
 	sa.sin_family      = AF_INET;
@@ -180,7 +179,7 @@ void serverInit(Node* nodeP)
 	
 	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char*) &reuse, sizeof(reuse));
 	
-    V1(("Binding '%s' to port %d", nodeP->name, nodeP->port));
+    V2(("Binding '%s' to port %d", nodeP->name, nodeP->port));
 	if (bind(fd, (struct sockaddr*) &sa, sizeof(struct sockaddr_in)) == -1)
 	{
 		close(fd);
@@ -196,7 +195,7 @@ void serverInit(Node* nodeP)
 	nodeP->listenFd = fd;
 	nodeP->fd       = -1;
 
-	V3(("Opened listen socket on fd %d for connections from '%s', port %d", nodeP->listenFd, nodeP->host, nodeP->port));
+	V4(("Opened listen socket on fd %d for connections from '%s', port %d", nodeP->listenFd, nodeP->host, nodeP->port));
 }
 
 
@@ -207,15 +206,15 @@ void serverInit(Node* nodeP)
 */
 void acceptConnection(Node* nodeP)
 {
-    V3(("Accepting connection on fd %d", nodeP->listenFd));
+    V1(("Accepting connection on fd %d", nodeP->listenFd));
     nodeP->fd = accept(nodeP->listenFd, NULL, 0);
 	if (nodeP->fd == -1)
         X(6, ("accept: %s", strerror(errno)));
 
     if (nodeP == &sniffer)
     {
-        V1(("Resetting sniffer packet count"));
-        packetsForSniffer = 0;
+        V2(("Resetting sniffer packet count"));
+        sniffer.packets = 0;
     }
     // int set = 1;
     // setsockopt(nodeP->fd, SOL_SOCKET, SO_NOSIGPIPE, (void*) &set, sizeof(int));
@@ -252,7 +251,7 @@ void nodeParse(char* nodeInfo, Node* nodeP)
         nodeP->port = atoi(portStart);
     }
 
-	V4(("host: '%s', port: '%d'", nodeP->host, nodeP->port));
+	V5(("host: '%s', port: '%d'", nodeP->host, nodeP->port));
 	free(nodeInfoCopy);
 }
 
@@ -278,7 +277,7 @@ void nodeInit(Node* nodeP, char* name)
 */
 void tmoHandler(void)
 {
-    V2(("Got a TIMEOUT ..."));
+    V3(("Got a TIMEOUT ..."));
 }
 
 
@@ -301,8 +300,9 @@ void filteredTunnel(void)
 */
 void nodeClose(Node* nodeP)
 {
-    close(nodeP->fd);
-    nodeP->fd = -1;
+	V1(("Closing connection to '%s'", nodeP->name));
+	close(nodeP->fd);
+	nodeP->fd = -1;
 }
 
 
@@ -344,13 +344,12 @@ void forward(Node* nodeP, char* buf, int size, int retries)
             E(("Cannot write to node '%s' - loosing packet %d", nodeP->name, packetsSent));
         usleep(1000);
         forward(nodeP, buf, size, ++retries);
-        // nodeClose(nodeP);
         return;
     }
     else if (!FD_ISSET(nodeP->fd, &wFds))
         X(33, ("Cannot write to '%s'. Should REALLY never get here ...", nodeP->name));
 
-    V2(("Buffer size of packet: %d", ntohl(bfr[0])));
+    V2(("Forwarding packet %d (%d for %s) of %d bytes to '%s'", packetsSent, nodeP->packets, nodeP->name, ntohl(bfr[0]) + 4, nodeP->name));
     total = 0;
     while (total < size)
     {
@@ -371,112 +370,72 @@ void forward(Node* nodeP, char* buf, int size, int retries)
         if (retries != 0)
             M(("Tunneled packet %d of %d bytes to '%s'", packetsSent, nb, nodeP->name));
         else
-            V2(("Tunneled %d bytes to '%s'", nb, nodeP->name));
+            V3(("Tunneled %d bytes to '%s'", nb, nodeP->name));
         total += nb;
     }
+
+	nodeP->packets++;
 }
 
 
 
-
-/* ****************************************************************************
-*
-* bufPush - 
-*/ 
-void bufPush(char* buf, int size)
+int bufPush(char* buf, int size)
 {
-    int    packetLen;
+	int*  dataLenP;
+	int   dataLen;
+	int   totalLen;
+	char* initialBuf  = buf;
+	int   nbThisTime  = 0;
+	int   initialSize = size;
 
-    //
-    // Any data leftover from last push?
-    // Add the data from buf to make it a whole packet,
-    // and then forward this 'incomplete' packet first
-    //
-    if (savedLen != 0)
-    {
-        int* dataLenP = (int*) savedBuffer;
-        int  dataLen  = ntohl(*dataLenP);
-		int  totalLen = dataLen + 4;
+	V2(("bufPush: size == %d", size));
 
-		if (size < savedMissing)
+	while (size > 0)
+	{
+		dataLenP = (int*) buf;
+		dataLen  = htonl(*dataLenP);
+		totalLen = dataLen + 4;
+
+		// NOT Enough bytes for an entire packet?
+		if ((size < 4) || (totalLen > size))
 		{
-			V1(("Got a packet not big enough to fill entire saved buffer - adding %d bytes to saved buffer", size));
-			memcpy(&savedBuffer[savedLen], buf, size);
-			savedMissing -= size;
-			savedLen     += size;
-			return;
+			if (size < 4)
+				V2(("Saving packet %d - not even packetLen is known (%d bytes read)", packetsSent, size));
+			else
+				V2(("Saving %d bytes for packet %d of %d bytes", size, packetsSent, totalLen));
+
+			bufPresent("Saving buffer for later", buf, size, 0);
+			memcpy(initialBuf, buf, size);
+			return size;
 		}
 
-		V1(("adding %d bytes to saved packet", savedMissing));
-        memcpy(&savedBuffer[savedLen], buf, savedMissing);
-        int* iP = (int*) savedBuffer;
-        V1(("Restoring a saved packet (adding %d bytes): 0x%x 0x%x 0x%x 0x%x", savedMissing, iP[0], iP[1], iP[2], iP[3]));
-        if (samson.fd != -1)
-            forward(&samson, savedBuffer, totalLen, 0);
-        if (sniffer.fd != -1)
-        {
-            V1(("packet %d (%d for sniffer) has dataLen %d (0x%x)", packetsSent, packetsForSniffer, dataLen, dataLen));
-			bufPresent("saved buffer", savedBuffer, totalLen);
-            forward(&sniffer, savedBuffer, totalLen, 0);
-            ++packetsForSniffer;
-        }
+		if (totalLen > 3000)
+		{
+			bufPresent("Bad packet len", buf, 16, 0);
+			X(1, ("Bad packet len: 0x%x (bigendian: 0x%x)", dataLen, *dataLenP));
+		}
+		
+		++packetsSent;
+		V2(("Forwarding packet %d of %d bytes (%d of %d bytes already sent)", packetsSent, totalLen, nbThisTime, initialSize));
+		if (samson.fd != -1)
+			forward(&samson, buf, totalLen, 0);
+		if (sniffer.fd != -1)
+			forward(&sniffer, buf, totalLen, 0);
 
-        buf    = &buf[savedMissing];
-        size  -= savedMissing;
+		nbThisTime += totalLen;		
+		buf         = &buf[totalLen];
+		size       -= totalLen;
+		V2(("Bytes left: %d", size));
+	}
 
-        savedLen     = 0;
-        savedMissing = 0;
-        ++packetsSent;
-    }
-
-    while (size > 0)
-    {
-		int* packetLenP = (int*) buf;
-        packetLen = ntohl(*packetLenP);
-
-        if (packetLen > 3000)
-           X(1, ("packet len: %d (0x%x) - afraid we're out of sync ...", packetLen, packetLen));
-
-        V2(("parsed a packet of %d data length (bigendian: 0x%08x)", packetLen, *packetLenP));
-        if (size >= packetLen + 4)
-        {
-            ++packetsSent;
-			V1(("Forwarding packet %d of %d bytes (including header of 4 bytes)", packetsSent, packetLen + 4));
-            if (samson.fd != -1)
-                forward(&samson, buf, packetLen + 4, 0);
-            if (sniffer.fd != -1)
-            {
-                forward(&sniffer, buf, packetLen + 4, 0);
-                ++packetsForSniffer;
-            }
-        }
-        else
-        {
-            memcpy(savedBuffer, buf, size);
-            savedLen       = size;
-            savedMissing   = packetLen + 4 - savedLen;
-			V1(("Saved %d bytes (%d missing for a full packet) (0x%x 0x%x 0x%x 0x%x)", savedLen, savedMissing,
-				savedBuffer[0] & 0xFF , savedBuffer[1] & 0xFF, savedBuffer[2] & 0xFF, savedBuffer[3] & 0xFF));
-
-            if (sniffer.fd != -1)
-            {
-                // V1(("Saved packet %d of %d bytes to 'savedBuffer' (packetLen: %d, so %d bytes missing ...)",
-				//	packetsForSniffer, size, packetLen, savedMissing));
-
-                // int* xP = (int*) savedBuffer;
-                // V1(("saved: 0x%x 0x%x 0x%x 0x%x", xP[0], xP[1], xP[2], xP[3]));
-            }
-            return; // read more ...
-        }
-
-        buf = &buf[packetLen + 4];
-        size  -= packetLen + 4;
-    }
+	return 0;
 }
 
 
 
-int nbAccumulated = 0;
+int   nbAccumulated = 0;
+int   nextIndex     = 0;
+char  buffer[BUFSIZE];
 /* ****************************************************************************
 *
 * tunnel - 
@@ -491,29 +450,34 @@ void tunnel(void)
 		return;
 	}
 
-    // memset(buffer, 0, sizeof(buffer));
-	
     //
     // Read as much as we possibly can ...
     //
-    nb = read(tektronix.fd, buffer, sizeof(buffer));
-    if (nb == -1)
+	if (nextIndex != 0)
+	{
+		V2(("%d bytes already read, concatenating to buffer", nextIndex));
+		bufPresent("Adding to buffer", buffer, 16, 1);
+	}
+    nb = read(tektronix.fd, &buffer[nextIndex], sizeof(buffer) - nextIndex);
+
+	if (nb <= 0)
     {
-        E(("Error reading from the TEKTRONIX node: %s", strerror(errno)));
+		if (nb == -1)
+			E(("Error reading from the TEKTRONIX node: %s", strerror(errno)));
+		else
+			E(("The TEKTRONIX node closed the connection"));
+
         nodeClose(&tektronix);
-        return;
-    }
-    else if (nb == 0)
-    {
-        E(("The TEKTRONIX node closed the connection"));
-        nodeClose(&tektronix);
+		nextIndex    = 0;
+		memset(buffer, 0, sizeof(buffer));
         return;
     }
 
-    V1(("Read %d bytes of data from tektronix", nb));
-	bufPresent("buffer from tektronix", buffer, nb);
+    V2(("Read %d bytes of data from tektronix", nb));
+	bufPresent("buffer from tektronix", buffer, nb, 3);
 
-    bufPush(buffer, nb);
+	bufPresent("pushing buffer", buffer, 16, 1);
+    nextIndex = bufPush(buffer, nb + nextIndex);
     nbAccumulated += nb;
 }
 
@@ -529,12 +493,16 @@ void run(void)
 	int             max;
 	fd_set          rFds;
 	struct timeval  timeVal;
+	int             listeners;
+	int             connections;
 
 	while (1)
 	{
         timeVal.tv_sec  = 5;
         timeVal.tv_usec = 0;
-		
+		listeners       = 0;
+		connections     = 0;
+
         max = 0;
         FD_ZERO(&rFds);
 
@@ -546,11 +514,13 @@ void run(void)
         {
             FD_SET(tektronix.fd, &rFds);
             max = MAX(max, tektronix.fd);
+			++connections;
         }
         else if (tektronix.listenFd != -1)
         {
             FD_SET(tektronix.listenFd, &rFds);
             max = MAX(max, tektronix.listenFd);
+			++listeners;
         }
 
 
@@ -561,11 +531,13 @@ void run(void)
         {
             FD_SET(samson.fd, &rFds);
             max = MAX(max, samson.fd);
+			++connections;
         }
         else if (samson.listenFd != -1)
         {
             FD_SET(samson.listenFd, &rFds);
             max = MAX(max, samson.listenFd);
+			++listeners;
         }
 
 
@@ -576,14 +548,16 @@ void run(void)
         {
             FD_SET(sniffer.fd, &rFds);
             max = MAX(max, sniffer.fd);
+			++connections;
         }
         else if (sniffer.listenFd != -1)
         {
             FD_SET(sniffer.listenFd, &rFds);
             max = MAX(max, sniffer.listenFd);
+			++listeners;
         }
 
-
+		V1(("Calling select with %d listeners and %d connections", listeners, connections));
         do
 		{
 			fds = select(max + 1, &rFds, NULL, NULL, &timeVal);

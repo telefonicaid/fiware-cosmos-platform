@@ -11,6 +11,7 @@
 * OR: connects to tektronixTunnel to receive real data and injects that data in samson
 *
 */
+#include <signal.h>             // signal, SIGINT, ...
 #include <stdio.h>              // printf
 #include <stdlib.h>             // exit
 #include <string.h>             // memcpy
@@ -40,9 +41,6 @@
 
 #include "samson/client/SamsonClient.h"         // samson::SamsonClient
 #include "samson/common/samsonVars.h"
-
-#include <signal.h>
-
 
 
 
@@ -103,14 +101,16 @@ int           nbAccumulated     = 0;
 int           packets           = 0;
 
 
-/*********************************************************************************
- *  Handler for SIGINT
- *
- */
+
+/* ********************************************************************************
+*
+* Handler for SIGINT
+*/
 sig_atomic_t signaled_quit = false;
-void captureSIGINT( int s )
+void captureSIGINT(int s)
 {
     signaled_quit = true;
+	lmVerbose     = false;
 }
 
 
@@ -204,6 +204,9 @@ void bufPush(char* buf, int size, samson::SamsonPushBuffer* pushBuffer)
     int    packetLen;
 	char*  initialBuf = buf;
 	int    totalLen   = 0;
+	int    ppackets   = 0;
+
+	LM_VVV(("Pushing a buffer of %d bytes", size));
 
     //
     // Any data leftover from last push?
@@ -224,7 +227,10 @@ void bufPush(char* buf, int size, samson::SamsonPushBuffer* pushBuffer)
             LM_V(("Pushing a border record of %d bytes", savedLen + savedMissing));
 
             if (fake == false)
-                pushBuffer->push(savedBuffer, savedLen + savedMissing, true); // Is the '4' included here ... ?
+            {
+			   LM_VVV(("Pushing buffer of %d bytes to samson", savedLen + savedMissing));
+			   pushBuffer->push(savedBuffer, savedLen + savedMissing, true); // Is the '4' included here ... ?
+			}
             else
                 LM_V(("NOT pushing buffer of %d bytes (dataLen: %d)", savedLen + savedMissing, *iP));
 
@@ -257,22 +263,22 @@ void bufPush(char* buf, int size, samson::SamsonPushBuffer* pushBuffer)
         // and try to process the block
 		if (packetLen > 3000) // For example ...
 		{
-           //LM_X(1, ("Bad packetLen: %d (original: 0x%x, htohl: 0x%x)", packetLen, *((int*) buf), ntohl(*((int*) buf))));
-		    LM_E(("Suspicious packetLen: %d (original: 0x%x, htohl: 0x%x)", packetLen, *((int*) buf), ntohl(*((int*) buf))));
+			packetLen = ntohl(packetLen);
+			if (packetLen > 3000)
+				LM_X(1, ("Bad packetLen: %d (original: 0x%x, htohl: 0x%x)", packetLen, *((int*) buf), ntohl(*((int*) buf))));
 		}
 
+		LM_D(("packetLen: %d", packetLen));
         if (size >= packetLen + 4)
         {
 			totalLen += packetLen + 4;
 
             ++packets;
+            ++ppackets;
             LM_D(("Got package %d (grand total bytes read: %d)", packets, nbAccumulated));
 
-			//
-			//
-			// Don't push here ... push all packets afterwards ...
+			LM_VVV(("Don't push packet %d here ... push all packets afterwards ...", ppackets));
             // pushBuffer->push(buf, packetLen + 4, true);
-			//
 
             buf = &buf[packetLen + 4];
             size  -= (packetLen + 4);
@@ -283,13 +289,19 @@ void bufPush(char* buf, int size, samson::SamsonPushBuffer* pushBuffer)
 			{
                 int* iP = (int*) initialBuf;
 
-			    LM_V(("Pushing a block of %d bytes (packets:%d)", totalLen, packets));
+			    LM_VVV(("Pushing a block of %d packets (%d bytes)", ppackets, totalLen));
 
                 if (fake == false)
-                    pushBuffer->push(initialBuf, totalLen, true);
+				{
+					pushBuffer->push(initialBuf, totalLen, true);
+					totalLen = 0;
+					ppackets = 0;
+				}
                 else
                     LM_V(("NOT pushing buffer of %d bytes (dataLen: %d)", totalLen, *iP));
 			}
+			else
+				LM_W(("totalLen == 0 ..."));
 
             memcpy(savedBuffer, buf, size);
             savedLen       = size;
@@ -302,6 +314,13 @@ void bufPush(char* buf, int size, samson::SamsonPushBuffer* pushBuffer)
             return; // read more ...
         }
     }
+
+	if ((totalLen != 0) && (fake == false))
+	{
+		LM_VVV(("Pushing buffer of %d bytes to samson", totalLen));
+		pushBuffer->push(initialBuf, totalLen, true);
+		totalLen = 0;
+	}
 }
 
 
@@ -314,12 +333,12 @@ void readFromServer(int fd, samson::SamsonPushBuffer* pushBuffer)
 {
 	int nb;
 
-    LM_D(("Reading from server"));
-    LM_M(("readFromServer enters with signaled_quit:%d", signaled_quit));
+    LM_VVV(("Reading from server"));
 	while (signaled_quit == false)
 	{
         // Read as much as we possibly can ...
         nb = read(fd, buffer, sizeof(buffer));
+		LM_VVV(("Read %d bytes from tunnel", nb));
         if (nb > 0)
         {
             nbAccumulated += nb;
@@ -327,6 +346,7 @@ void readFromServer(int fd, samson::SamsonPushBuffer* pushBuffer)
             LM_D(("Read %d bytes of data from tunnel (grand total: %d)", nb, nbAccumulated));
 			bufPresent("Read from Tunnel", buffer, nb);
 
+			LM_VVV(("Calling bufPush with a buffer of %d bytes", nb));
             bufPush(buffer, nb, pushBuffer);
         }
         else
@@ -341,76 +361,7 @@ void readFromServer(int fd, samson::SamsonPushBuffer* pushBuffer)
             savedLen = 0;
         }
     }
-	LM_M(("readFromServer returns with signaled_quit:%d", signaled_quit));
 }
-
-
-#if 0
-/* ****************************************************************************
-*
-* readFromServer - 
-*/
-void readFromServer(int fd, samson::SamsonPushBuffer* pushBuffer)
-{
-	int           nb;
-	unsigned int  tot;
-    unsigned int  dataLen;
-
-	while (1)
-	{
-        //
-        // Read header - 4 bytes that contains the length of the nextcoming data
-        //
-        nb = read(fd, &dataLen, sizeof(dataLen));
-		if (nb == -1)
-			LM_X(1, ("error reading from socket: %s", strerror(errno)));
-		else if (nb == 0)
-		{
-            LM_E(("Reading header: got zero bytes ... closing connection and reconnecting!"));
-            close(fd);
-            fd = connectToServer();
-            continue;
-        }
-
-        if (dataLen > bufSize)
-           LM_X(1, ("next data package too big ... (%d bytes (0x%x)) - change bufSize and recompile!", dataLen, dataLen));
-
-        LM_M(("Got a header. dataLen: %d. Now reading the data ...", dataLen));
-		memset(buf, 0, bufSize + 1);
-
-
-        //
-        // Read data buffer
-        //
-        tot = 0;
-        while (tot < dataLen)
-        {
-            nb = read(fd, &buf[tot], dataLen - tot);
-            if (nb <= 0)
-            {
-                if (nb == -1)
-                    LM_E(("error reading from socket: %s", strerror(errno)));
-                else
-                    LM_E(("Read zero bytes ... closing connection and reconnecting!"));
-                    
-                close(fd);
-                fd = connectToServer();
-                tot = 0;
-                break;
-            }
-
-            tot += nb;
-            LM_M(("Read %d of %d bytes of data", tot, dataLen));
-        }
-
-        if (tot == dataLen)
-        {
-            LM_M(("Read a buffer of %d bytes from %s - injecting it to samson", dataLen, host));
-            pushBuffer->push(buf, dataLen, true);
-        }
-    }
-}
-#endif
 
 
 
@@ -572,10 +523,8 @@ int main(int argC, const char* argV[])
 
     paParse(paArgs, argC, (char**) argV, 1, false);
 
-    if( signal( SIGINT , captureSIGINT ) == SIG_ERR )
-    {
+    if (signal(SIGINT, captureSIGINT) == SIG_ERR)
         LM_W(("SIGINT cannot be handled"));
-    }
     signaled_quit = false;
 
     // Instance of the client to connect to SAMSON system
@@ -602,7 +551,6 @@ int main(int argC, const char* argV[])
     if (timeout > 0)
         LM_V(("timeout: %ds", timeout));
 
-    LM_M(("Here"));
     if (tektronix == true)
         tektronixData(pushBuffer);
     else if (fake == true)

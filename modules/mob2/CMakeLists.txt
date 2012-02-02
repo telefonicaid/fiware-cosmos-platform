@@ -82,12 +82,17 @@ ELSE (NOT SVN_BUILD)
     include_directories("${CMAKE_INSTALL_PREFIX}/include/samson")
 ENDIF (SVN_BUILD)
 
+link_directories("/opt/mongodb/mongo-cxx-driver-v2.0")
+link_directories("/opt/local/lib")
 
 MESSAGE( "----------------------------------------------------------------------------")
 MESSAGE( "Creating module ${MODULE_NAME}" )
 MESSAGE( "----------------------------------------------------------------------------")
 
+find_package(Boost COMPONENTS system filesystem REQUIRED)
+
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
+target_link_libraries(${MODULE_NAME} -lmongoclient -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt  )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})

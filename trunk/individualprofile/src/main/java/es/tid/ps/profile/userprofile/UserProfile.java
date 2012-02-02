@@ -13,13 +13,39 @@ import org.apache.hadoop.io.Writable;
  */
 public class UserProfile implements Writable {
     private String userId;
+    private String date;
     private Map<String, Long> counts;
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public UserProfile() {
+        this.reset();
+    }
+    
+    public void reset() {
+        this.userId = "";
+        this.date = "";
         this.counts = new HashMap<String, Long>();
     }
+    
+    public String getUserId() {
+        return userId;
+    }
+    
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
+    public String getDate() {
+        return this.date;
+    }
+    
+    public void setDate(String date) {
+        this.date = date;
+    }
+    
+    public Map<String, Long> getCategoryCounts() {
+        return this.counts;
+    }
+    
     public void add(CategoryCount categoryCount) {
         Long count = this.counts.get(categoryCount.getCategory());
         if (count == null) {
@@ -45,11 +71,6 @@ public class UserProfile implements Writable {
         return total;
     }
 
-    public long getCount(String categoryName) {
-        Long count = this.counts.get(categoryName);
-        return (count == null) ? 0l : count;
-    }
-
     @Override
     public void write(DataOutput output) throws IOException {
         ArrayList<Map.Entry<String, Long>> entries =
@@ -64,6 +85,7 @@ public class UserProfile implements Writable {
         });
 
         output.writeUTF(this.userId);
+        output.writeUTF(this.date);
         output.writeInt(entries.size());
         for (Map.Entry<String, Long> entry : entries) {
             output.writeUTF(entry.getKey());
@@ -74,6 +96,7 @@ public class UserProfile implements Writable {
     @Override
     public void readFields(DataInput input) throws IOException {
         this.userId = input.readUTF();
+        this.date = input.readUTF();
         this.counts = new HashMap<String, Long>();
         int entries = input.readInt();
         for (int i = 0; i < entries; i++) {

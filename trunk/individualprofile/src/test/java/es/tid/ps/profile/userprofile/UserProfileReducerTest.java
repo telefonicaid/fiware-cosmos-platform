@@ -50,7 +50,7 @@ public class UserProfileReducerTest {
         Pair<Text, UserProfile> result = results.get(0);
         assertEquals(visitor, result.getFirst());
         UserProfile profile = result.getSecond();
-        assertEquals(12, profile.getCount("SPORT"));
-        assertEquals(10, profile.getCount("NEWS"));
+        assertEquals(12, profile.getCount(new CategoryCount("SPORT", 0)));
+        assertEquals(10, profile.getCount(new CategoryCount("NEWS", 0)));
     }
 }

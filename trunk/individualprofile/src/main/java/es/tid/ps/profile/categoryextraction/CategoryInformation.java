@@ -16,16 +16,18 @@ public class CategoryInformation implements Writable {
     protected static final String DELIMITER = "\t";
     private String userId;
     private String url;
+    private String date;
     private long count;
     private String[] categoryNames;
 
     public CategoryInformation() {
     }
 
-    public CategoryInformation(String userId, String url, long count,
-            String[] categoryNames) {
+    public CategoryInformation(String userId, String url, String date,
+            long count, String[] categoryNames) {
         this.userId = userId;
         this.url = url;
+        this.date = date;
         this.count = count;
         this.categoryNames = categoryNames.clone();
     }
@@ -46,6 +48,14 @@ public class CategoryInformation implements Writable {
         this.url = url;
     }
 
+    public String getDate() {
+        return this.date;
+    }
+    
+    public void setDate(String date) {
+        this.date = date;
+    }
+    
     public long getCount() {
         return this.count;
     }
@@ -66,6 +76,7 @@ public class CategoryInformation implements Writable {
     public void readFields(DataInput in) throws IOException {
         this.userId = in.readUTF();
         this.url = in.readUTF();
+        this.date = in.readUTF();
         this.count = in.readLong();
 
         int categories = in.readInt();
@@ -79,6 +90,7 @@ public class CategoryInformation implements Writable {
     public void write(DataOutput out) throws IOException {
         out.writeUTF(this.userId);
         out.writeUTF(this.url);
+        out.writeUTF(this.date);
         out.writeLong(this.count);
         out.writeInt(this.categoryNames.length);
         for (String categoryName : this.categoryNames) {
@@ -103,6 +115,10 @@ public class CategoryInformation implements Writable {
                 other.url)) {
             return false;
         }
+        if ((this.date == null) ? (other.date != null) : !this.date.equals(
+                other.date)) {
+            return false;
+        }
         if (this.count != other.count) {
             return false;
         }
@@ -117,6 +133,7 @@ public class CategoryInformation implements Writable {
         int hash = 5;
         hash = 97 * hash + (this.userId != null ? this.userId.hashCode() : 0);
         hash = 97 * hash + (this.url != null ? this.url.hashCode() : 0);
+        hash = 97 * hash + (this.date != null ? this.date.hashCode() : 0);
         hash = 97 * hash + (int) (this.count ^ (this.count >>> 32));
         hash = 97 * hash + Arrays.deepHashCode(this.categoryNames);
         return hash;

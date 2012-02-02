@@ -1,6 +1,5 @@
 package es.tid.ps.profile.categoryextraction;
 
-import org.apache.hadoop.io.NullWritable;
 import java.util.List;
 import org.junit.Test;
 import org.apache.hadoop.io.LongWritable;
@@ -17,13 +16,13 @@ import static org.junit.Assert.*;
  */
 public class CategoryExtractionMapperTest {
     private CategoryExtractionMapper instance;
-    private MapDriver<LongWritable, Text, CompositeKey, NullWritable> driver;
+    private MapDriver<LongWritable, Text, CompositeKey, UserNavigation> driver;
 
     @Before
     public void setUp() throws Exception {
         instance = new CategoryExtractionMapper();
-        driver = new MapDriver<LongWritable, Text, CompositeKey,
-                NullWritable>(instance);
+        driver = new MapDriver<LongWritable, Text, CompositeKey, UserNavigation>
+                (instance);
     }
 
     @Test
@@ -33,7 +32,7 @@ public class CategoryExtractionMapperTest {
                 + "weather.com\t/mobile/android/factoids/delivery/1130.xml\t"
                 + "null\t30\t10\t2010\t0\t0\t-Java0\t-Java0\t-Java0\t-Java0\t"
                 + "GET\t200";
-        List<Pair<CompositeKey, NullWritable>> output =
+        List<Pair<CompositeKey, UserNavigation>> output =
                 driver.withInput(new LongWritable(0), new Text(input)).run();
 
         assertEquals("Only one pair", 1, output.size());

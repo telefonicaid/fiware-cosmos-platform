@@ -1,9 +1,10 @@
 package es.tid.ps.profile.categoryextraction;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.hadoop.filecache.DistributedCache;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.ps.profile.dictionary.Categorization;
@@ -16,7 +17,7 @@ import es.tid.ps.profile.dictionary.comscore.CSDictionary;
  * @author dmicol, sortega
  */
 public class CategoryExtractionReducer extends Reducer<CompositeKey,
-        NullWritable, CompositeKey, CategoryInformation> {
+        UserNavigation, CompositeKey, CategoryInformation> {
     private static Dictionary dictionary = null;
     private CategoryInformation catInfo;
 
@@ -36,56 +37,68 @@ public class CategoryExtractionReducer extends Reducer<CompositeKey,
     }
 
     @Override
-    protected void reduce(CompositeKey key, Iterable<NullWritable> values,
+    protected void reduce(CompositeKey key, Iterable<UserNavigation> values,
             Context context) throws IOException, InterruptedException {
-        String url = key.getSecondaryKey();
-        Categorization dictionaryResponse = this.categorize(url);
-        long urlInstances = this.countURLInstances(values);
+        Map<String, Long> uniqueUrlCounts = this.getUniqueUrlCounts(values);
+        for (String url : uniqueUrlCounts.keySet()) {
+            long urlInstances = uniqueUrlCounts.get(url);
+            Categorization dictionaryResponse = this.categorize(url);
 
-        switch (dictionaryResponse.result) {
-            case KNOWN_URL:
-                context.getCounter(CategoryExtractionCounter.KNOWN_VISITS).
-                        increment(urlInstances);
-                this.catInfo.setUserId(key.getPrimaryKey());
-                this.catInfo.setUrl(key.getSecondaryKey());
-                this.catInfo.setCount(urlInstances);
-                this.catInfo.setCategoryNames(dictionaryResponse.categories);
-                context.write(key, this.catInfo);
-                return;
+            switch (dictionaryResponse.result) {
+                case KNOWN_URL:
+                    context.getCounter(CategoryExtractionCounter.KNOWN_VISITS).
+                            increment(urlInstances);
+                    this.catInfo.setUserId(key.getPrimaryKey());
+                    this.catInfo.setUrl(url);
+                    this.catInfo.setDate(key.getSecondaryKey());
+                    this.catInfo.setCount(urlInstances);
+                    this.catInfo.setCategoryNames(
+                            dictionaryResponse.categories);
+                    context.write(key, this.catInfo);
+                    break;
 
-            case IRRELEVANT_URL:
-                context.getCounter(CategoryExtractionCounter.IRRELEVANT_VISITS).
-                        increment(urlInstances);
-                return;
+                case IRRELEVANT_URL:
+                    context.getCounter(
+                            CategoryExtractionCounter.IRRELEVANT_VISITS).
+                            increment(urlInstances);
+                    break;
 
-            case UNKNOWN_URL:
-                context.getCounter(CategoryExtractionCounter.UNKNOWN_VISITS).
-                        increment(urlInstances);
-                // TODO: do something smart for URL category extraction.
-                return;
+                case UNKNOWN_URL:
+                    context.getCounter(
+                            CategoryExtractionCounter.UNKNOWN_VISITS).
+                            increment(urlInstances);
+                    // TODO: do something smart for URL category extraction.
+                    break;
 
-            case GENERIC_FAILURE:
-                context.getCounter(
-                        CategoryExtractionCounter.UNPROCESSED_VISITS).
-                        increment(urlInstances);
-                return;
+                case GENERIC_FAILURE:
+                    context.getCounter(
+                            CategoryExtractionCounter.UNPROCESSED_VISITS).
+                            increment(urlInstances);
+                    break;
 
-            default:
-                throw new IllegalStateException("Invalid dictionary response.");
+                default:
+                    throw new IllegalStateException(
+                            "Invalid dictionary response.");
+            }
         }
     }
 
     protected Categorization categorize(String url) {
         return dictionary.categorize(url);
     }
-
-    private long countURLInstances(Iterable<NullWritable> values) {
-        long count = 0l;
-        Iterator<NullWritable> it = values.iterator();
-        while (it.hasNext()) {
-            count++;
-            it.next();
+    
+    private Map<String, Long> getUniqueUrlCounts(
+            Iterable<UserNavigation> values) {
+        Map<String, Long> uniqueUrlCounts = new HashMap<String, Long>();
+        for (UserNavigation nav : values) {
+            Long count;
+            if (uniqueUrlCounts.containsKey(nav.getFullUrl())) {
+                count = uniqueUrlCounts.get(nav.getFullUrl());
+            } else {
+                count = new Long(0L);
+            }
+            uniqueUrlCounts.put(nav.getFullUrl(), count + 1l);
         }
-        return count;
+        return uniqueUrlCounts;
     }
 }

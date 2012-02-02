@@ -39,9 +39,10 @@ public class UserProfileMapperTest {
     public void mapTest() {
         String user = "12345";
         String url = "http://tid.es";
-        CompositeKey key = new CompositeKey(user, url);
-        CategoryInformation categories = new CategoryInformation(user, url, 10,
-                new String [] {"SERVICES", "NEWS"});
+        String date = "02/01/2012";
+        CompositeKey key = new CompositeKey(user, date);
+        CategoryInformation categories = new CategoryInformation(user, url,
+                date, 10, new String [] {"SERVICES", "NEWS"});
         driver.withInput(key, categories)
                 .withOutput(new Text(user), new CategoryCount("SERVICES", 10))
                 .withOutput(new Text(user), new CategoryCount("NEWS", 10))

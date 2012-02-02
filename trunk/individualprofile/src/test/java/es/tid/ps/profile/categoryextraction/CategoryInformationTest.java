@@ -13,15 +13,10 @@
 // </editor-fold>
 package es.tid.ps.profile.categoryextraction;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataInput;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
+import java.io.*;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  * Use case for CategoryInformation
@@ -34,8 +29,8 @@ public class CategoryInformationTest {
     @Before
     public void setUp() {
         instance = new CategoryInformation("XX0001",
-                "http://www.google.com/weather", 128,
-                new String[] {"SPORTS", "LIFESTYLE"});
+                "http://www.google.com/weather", "02/01/2012",
+                128, new String[] {"SPORTS", "LIFESTYLE"});
     }
 
     @Test

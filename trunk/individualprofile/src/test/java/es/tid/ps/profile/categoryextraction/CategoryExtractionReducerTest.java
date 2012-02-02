@@ -15,7 +15,6 @@ package es.tid.ps.profile.categoryextraction;
 
 import java.io.IOException;
 import static java.util.Arrays.asList;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import static org.junit.Assert.assertEquals;
@@ -24,6 +23,7 @@ import org.junit.Test;
 
 import es.tid.ps.profile.dictionary.Categorization;
 import es.tid.ps.profile.dictionary.CategorizationResult;
+import java.util.Calendar;
 
 /**
  * Test case for CategoryExtractionReducer
@@ -32,7 +32,7 @@ import es.tid.ps.profile.dictionary.CategorizationResult;
  */
 public class CategoryExtractionReducerTest {
     private CategoryExtractionReducer instance;
-    private ReduceDriver<CompositeKey, NullWritable, CompositeKey,
+    private ReduceDriver<CompositeKey, UserNavigation, CompositeKey,
             CategoryInformation> driver;
 
     @Before
@@ -63,21 +63,23 @@ public class CategoryExtractionReducerTest {
                 return categorization;
             }
         };
-        driver = new ReduceDriver<CompositeKey, NullWritable, CompositeKey,
+        driver = new ReduceDriver<CompositeKey, UserNavigation, CompositeKey,
                 CategoryInformation>(instance);
     }
 
     @Test
     public void testKnownUrl() throws Exception {
         String visitorId = "CA003B";
-        String fullURL = "http://www.marca.es/basket";
-        CompositeKey key = new CompositeKey(visitorId, fullURL);
+        String fullUrl = "http://www.marca.es/basket";
+        Calendar date = Calendar.getInstance();
+        CompositeKey key = new CompositeKey(visitorId, date.toString());
+        UserNavigation nav = new UserNavigation(visitorId, fullUrl, date);
 
         CategoryInformation expectedCategoryInformation =
-                new CategoryInformation(visitorId, fullURL, 2,
-                        new String[] {"SPORTS", "NEWS"});
+                new CategoryInformation(visitorId, fullUrl, date.toString(),
+                        2, new String[] {"SPORTS", "NEWS"});
 
-        driver.withInput(key, asList(NullWritable.get(), NullWritable.get()))
+        driver.withInput(key, asList(nav, nav))
               .withOutput(key, expectedCategoryInformation)
               .runTest();
         assertEquals(2l, driver.getCounters().findCounter(
@@ -88,10 +90,11 @@ public class CategoryExtractionReducerTest {
     public void testUnknownUrl() throws Exception {
         String visitorId = "CA003C";
         String fullURL = "http://www.mutxamel.org";
-        CompositeKey key = new CompositeKey(visitorId, fullURL);
+        CompositeKey key = new CompositeKey(visitorId, "02/01/2012");
+        UserNavigation nav = new UserNavigation();
+        nav.setFullUrl(fullURL);
 
-        driver.withInput(key, asList(NullWritable.get(), NullWritable.get()))
-              .runTest();
+        driver.withInput(key, asList(nav, nav)).runTest();
         assertEquals(2l, driver.getCounters().findCounter(
                 CategoryExtractionCounter.UNKNOWN_VISITS).getValue());
     }
@@ -99,11 +102,12 @@ public class CategoryExtractionReducerTest {
     @Test
     public void testIrrelevantUrl() throws Exception {
         String visitorId = "CA003D";
-        String fullURL = "http://www.realmadrid.com";
-        CompositeKey key = new CompositeKey(visitorId, fullURL);
+        String fullUrl = "http://www.realmadrid.com";
+        Calendar date = Calendar.getInstance();
+        CompositeKey key = new CompositeKey(visitorId, date.toString());
+        UserNavigation nav = new UserNavigation(visitorId, fullUrl, date);
 
-        driver.withInput(key, asList(NullWritable.get(), NullWritable.get()))
-              .runTest();
+        driver.withInput(key, asList(nav, nav)).runTest();
         assertEquals(2l, driver.getCounters().findCounter(
                 CategoryExtractionCounter.IRRELEVANT_VISITS).getValue());
     }
@@ -111,11 +115,12 @@ public class CategoryExtractionReducerTest {
     @Test
     public void testGenericFailure() throws Exception {
         String visitorId = "CA003E";
-        String fullURL = "";
-        CompositeKey key = new CompositeKey(visitorId, fullURL);
+        String fullUrl = "";
+        Calendar date = Calendar.getInstance();
+        CompositeKey key = new CompositeKey(visitorId, date.toString());
+        UserNavigation nav = new UserNavigation(visitorId, fullUrl, date);
 
-        driver.withInput(key, asList(NullWritable.get(), NullWritable.get()))
-            .runTest();
+        driver.withInput(key, asList(nav, nav)).runTest();
         assertEquals(2l, driver.getCounters().findCounter(
                 CategoryExtractionCounter.UNPROCESSED_VISITS).getValue());
     }

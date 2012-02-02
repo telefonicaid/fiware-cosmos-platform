@@ -5,7 +5,7 @@ ifndef SAMSON_WORKING
 SAMSON_WORKING=/var/samson
 endif
 ifndef SAMSON_VERSION
-SAMSON_VERSION=0.6
+SAMSON_VERSION=0.7
 endif
 ifndef SAMSON_RELEASE
 SAMSON_RELEASE=$(svn info | grep Revision | awk '{ print $2 }')

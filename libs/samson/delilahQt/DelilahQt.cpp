@@ -71,7 +71,7 @@ namespace samson
         
     }
     
-    DelilahQt::DelilahQt( NetworkInterface *network ) : Delilah( network )//, QObject()
+    DelilahQt::DelilahQt( NetworkInterface *network ) : QObject(), Delilah( network )
     {
         
     }
@@ -82,13 +82,15 @@ namespace samson
         int argn = 0;
         QApplication application(argn, NULL);
         QTimer* timer =  new QTimer();
-        timer->setInterval(1000);
+        timer->start(1000);
             
-        DelilahMainWindow mainWindow;
+        DelilahMainWindow* mainWindow = new DelilahMainWindow();
+        mainWindow->show();
 
         connect(timer, SIGNAL(timeout()), this, SLOT(updateData()));
-        connect(this, SIGNAL(enginesTextValueChanged(const QString&)), mainWindow.enginesText, SLOT(setText(const QString&)));
-        connect(this, SIGNAL(queuesTextValueChanged(const QString&)), mainWindow.queuesText, SLOT(setText(const QString&)));
+        connect(timer, SIGNAL(timeout()), mainWindow, SLOT(update()));
+        connect(this, SIGNAL(enginesTextValueChanged(const QString&)), mainWindow->enginesText, SLOT(setText(const QString&)));
+        connect(this, SIGNAL(queuesTextValueChanged(const QString&)), mainWindow->queuesText, SLOT(setText(const QString&)));
         application.exec();
         
     }

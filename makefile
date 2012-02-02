@@ -277,7 +277,6 @@ publish_deb: deb
 man: release
 	 mkdir -p BUILD_RELEASE/man/man1
 	 mkdir -p BUILD_RELEASE/man/man7
-	 help2man --name="samson controller"     --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonController/samsonController       > ./BUILD_RELEASE/man/man1/samsonController.1
 	 help2man --name="samson worker"         --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonWorker/samsonWorker     > ./BUILD_RELEASE/man/man1/samsonWorker.1
 	 help2man --name="samson setup"          --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonSetup/samsonSetup       > ./BUILD_RELEASE/man/man1/samsonSetup.1
 	 help2man --name="samson spawner"        --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonSpawner/samsonSpawner   > ./BUILD_RELEASE/man/man1/samsonSpawner.1

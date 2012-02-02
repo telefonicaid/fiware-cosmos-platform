@@ -76,7 +76,6 @@ i: install
 
 install_debug: prepare_debug 
 	make -C BUILD_DEBUG install
-	#make  -C modules
 	mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
 	cp README $(SAMSON_HOME)/share/README.txt
 	cp modules/moduletemplate/CMakeLists.txt $(SAMSON_HOME)/share/modules/moduletemplate
@@ -169,8 +168,7 @@ pdid: pdi
 di:	debuginstall
 
 debuginstall: debug
-	udo make -C BUILD_DEBUG install
-	make -C modules
+	make -C BUILD_DEBUG install
 
 distribute: install
 	./scripts/samsonDistribute
@@ -217,10 +215,10 @@ cleanhudson:
 	rm -rf /opt/samson
 
 #modules: release
-	make release -C modules
+#	make release -C modules
 
 #modules_debug: debug
-	make -C modules
+#	make -C modules
 
 
 qt:
@@ -240,7 +238,7 @@ clear_ipcs:
 set_ssm_linux:
 	sudo sysctl -w kernel.shmmax=64000000
 
-rpm: release modules man
+rpm: release man
 	rm -rf package/rpm
 	scripts/samsonRpm $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	scripts/samsonModuleDependencies
@@ -257,7 +255,7 @@ publish_rpm: rpm
 # currently the deb scripts require Samson be installed before 
 # the package can be generated. Using SAMSON_HOME we can override
 # the default install location so as to not trash a live installation
-deb: release modules man
+deb: release man
 	rm -rf package/deb
 	scripts/samsonDeb $(SAMSON_VERSION) $(SAMSON_RELEASE)
 	scripts/samsonDebDev $(SAMSON_VERSION) $(SAMSON_RELEASE)

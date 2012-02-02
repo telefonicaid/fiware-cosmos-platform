@@ -103,6 +103,8 @@ else ( HAVE_GTEST )
     MESSAGE("Not using the Google Test library")
 endif (HAVE_GTEST)
 
+SET(SVN_BUILD TRUE)
+
 # Indicate that this is an SVN build
 # Modules use this variable to determine which files to use
 SET (SVN_BUILD TRUE)

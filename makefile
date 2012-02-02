@@ -289,4 +289,9 @@ packages: install man rpm deb
 .PHONY : modules
 .PHONY : man
 
+init_home:
+	mkdir -p $(SAMSON_HOME)
+	mkdir -p $(SAMSON_WORKING)
+	chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_HOME) $(SAMSON_WORKING)
+
 #vim: noexpandtab

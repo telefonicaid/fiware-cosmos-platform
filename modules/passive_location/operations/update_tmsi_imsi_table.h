@@ -62,7 +62,7 @@ public:
             // If we are in 'live mode' (timespan != 0), only reemit recent
             // associations
             stateIMSI.parse(inputs[1].kvs[0]->value);
-            if ((tmps_timespan == 0) || ((now - stateIMSI.timestamp.value) < tmps_timespan))
+            if ((tmps_timespan == 0) || ((now - stateIMSI.timestamp.value) < (int64_t)tmps_timespan))
             {
                 completeTMSI.parse(inputs[1].kvs[0]->key);
                 writer->emit( 0 , &completeTMSI , &stateIMSI );

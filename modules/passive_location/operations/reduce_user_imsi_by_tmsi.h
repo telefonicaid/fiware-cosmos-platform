@@ -80,7 +80,7 @@ namespace passive_location{
 //                    {
 //                        writer->emit(2, &completeTMSI.tmsi, &record);
 //                    }
-                    if ((record_timespan == 0) || ((now - record.timestamp.value) < record_timespan))
+                    if ((record_timespan == 0) || ((now - record.timestamp.value) < (int64_t)record_timespan))
                     {
                         LM_M(("Emit record for reprocessing, TMSI:%lu", completeTMSI.tmsi.value));
                         writer->emit( 1 , &completeTMSI , &record );

@@ -64,7 +64,7 @@ public:
 
             stateIMSI.parse(inputs[1].kvs[0]->value);
 
-            if ((tmps_timespan == 0) || ((now - stateIMSI.timestamp.value) < tmps_timespan))
+            if ((tmps_timespan == 0) || ((now - stateIMSI.timestamp.value) < (int64_t)tmps_timespan))
             {
                 newTMSI.parse(inputs[0].kvs[0]->value);
                 writer->emit( 0 , &newTMSI , &stateIMSI );
@@ -74,7 +74,7 @@ public:
         if (inputs[1].num_kvs > 0)
         {
             stateIMSI.parse(inputs[1].kvs[0]->value);
-            if ((tmps_timespan == 0) || ((now - stateIMSI.timestamp.value) < tmps_timespan))
+            if ((tmps_timespan == 0) || ((now - stateIMSI.timestamp.value) < (int64_t)tmps_timespan))
             {
                 completeTMSI.parse(inputs[1].kvs[0]->key);
                 writer->emit( 0 , &completeTMSI , &stateIMSI );

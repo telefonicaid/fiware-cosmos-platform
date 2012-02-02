@@ -3,7 +3,6 @@ package es.tid.ps.kpicalculation.data;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -25,10 +24,10 @@ import es.tid.ps.kpicalculation.utils.KpiCalculationDateFormatter;
  * @author javierb
  */
 public class WebLogCounter extends WebLog {
-    protected static int HASH_CONST = 163;
+    protected static final int HASH_CONST = 163;
 
     private Iterator<String> iterator;
-    protected Collection<String> mainFields;
+    private Collection<String> mainFields;
 
     public WebLogCounter() {
     }
@@ -68,8 +67,8 @@ public class WebLogCounter extends WebLog {
     }
 
     @Override
-    public void set(String line) throws IllegalArgumentException,
-            SecurityException, IllegalAccessException, NoSuchFieldException {
+    public void set(String line) throws IllegalAccessException,
+            NoSuchFieldException {
         // TODO Auto-generated method stub
         super.set(line);
         if (this.mainFields != null) {
@@ -78,8 +77,8 @@ public class WebLogCounter extends WebLog {
     }
 
     @Override
-    public void set(Text txt) throws IllegalArgumentException,
-            SecurityException, IllegalAccessException, NoSuchFieldException {
+    public void set(Text txt) throws IllegalAccessException,
+            NoSuchFieldException {
         // TODO Auto-generated method stub
         super.set(txt);
         if (this.mainFields != null) {
@@ -88,8 +87,7 @@ public class WebLogCounter extends WebLog {
     }
 
     protected void initMainKey(Collection<String> mainFields)
-            throws IllegalArgumentException, SecurityException,
-            IllegalAccessException, NoSuchFieldException {
+            throws IllegalAccessException, NoSuchFieldException {
         this.mainKey = "";
         this.iterator = mainFields.iterator();
 

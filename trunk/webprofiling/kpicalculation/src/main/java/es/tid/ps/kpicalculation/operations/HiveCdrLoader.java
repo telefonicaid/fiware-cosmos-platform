@@ -22,10 +22,10 @@ import org.apache.hadoop.fs.PathFilter;
  * 
  */
 public class HiveCdrLoader implements ICdrLoader {
-    //
-    private static String TARGET_TABLE = "PAGE_VIEWS";
+    private static final String TARGET_TABLE = "PAGE_VIEWS";
 
-    private static String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
+    private static final String driverName =
+            "org.apache.hadoop.hive.jdbc.HiveDriver";
     private static Logger logger;
 
     private Configuration conf;
@@ -80,11 +80,9 @@ public class HiveCdrLoader implements ICdrLoader {
                     });
 
             for (int i = 0; i < status.length; i++) {
-                System.out.println(status[i].getPath().getName());
                 String sql = MessageFormat.format(
                         "LOAD DATA INPATH \"{0}\" INTO TABLE {1}",
                         status[i].getPath(), TARGET_TABLE);
-                System.out.println(sql);
                 this.stmt.executeQuery(sql);
             }
 

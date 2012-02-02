@@ -305,8 +305,11 @@ public class WebLog implements WritableComparable<WebLog> {
             stt.nextToken();
 
             // User agent used in the navigation
-            this.userAgent = this.browser = this.device = this.operSys = stt
-                    .nextToken();
+            String clientInfo = stt.nextToken();
+            this.userAgent = clientInfo;
+            this.browser = clientInfo;
+            this.device = clientInfo;
+            this.operSys = clientInfo;
 
             // method of the request
             this.method = stt.nextToken();
@@ -319,7 +322,7 @@ public class WebLog implements WritableComparable<WebLog> {
 
             this.initText();
         } catch (Exception ex) {
-            throw new KpiCalculationDataException("The URL was wrong",
+            throw new KpiCalculationDataException("The URL is malformed",
                     KpiCalculationCounter.MALFORMED_URL);
         }
     }
@@ -362,7 +365,8 @@ public class WebLog implements WritableComparable<WebLog> {
             this.method = stt.nextToken();
             this.status = stt.nextToken();
         } catch (NoSuchElementException e) {
-            System.out.println(txt.toString());
+            throw new KpiCalculationDataException("The URL is malformed",
+                    KpiCalculationCounter.MALFORMED_URL);
         }
     }
 
@@ -425,5 +429,25 @@ public class WebLog implements WritableComparable<WebLog> {
             result = this.toString().equals(pv.toString());
         }
         return result;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 97 * hash + (this.mainKey != null ? this.mainKey.hashCode() : 0);
+        hash = 97 * hash + (this.secondaryKey != null ? this.secondaryKey.hashCode() : 0);
+        hash = 97 * hash + (this.visitorId != null ? this.visitorId.hashCode() : 0);
+        hash = 97 * hash + (this.protocol != null ? this.protocol.hashCode() : 0);
+        hash = 97 * hash + (this.fullUrl != null ? this.fullUrl.hashCode() : 0);
+        hash = 97 * hash + (this.urlDomain != null ? this.urlDomain.hashCode() : 0);
+        hash = 97 * hash + (this.urlPath != null ? this.urlPath.hashCode() : 0);
+        hash = 97 * hash + (this.urlQuery != null ? this.urlQuery.hashCode() : 0);
+        hash = 97 * hash + (this.userAgent != null ? this.userAgent.hashCode() : 0);
+        hash = 97 * hash + (this.browser != null ? this.browser.hashCode() : 0);
+        hash = 97 * hash + (this.device != null ? this.device.hashCode() : 0);
+        hash = 97 * hash + (this.operSys != null ? this.operSys.hashCode() : 0);
+        hash = 97 * hash + (this.method != null ? this.method.hashCode() : 0);
+        hash = 97 * hash + (this.status != null ? this.status.hashCode() : 0);
+        return hash;
     }
 }

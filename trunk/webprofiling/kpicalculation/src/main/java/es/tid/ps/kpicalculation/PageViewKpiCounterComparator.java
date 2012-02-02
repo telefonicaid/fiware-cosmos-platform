@@ -1,7 +1,6 @@
 package es.tid.ps.kpicalculation;
 
 import java.io.IOException;
-import java.util.Collection;
 
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.RawComparator;

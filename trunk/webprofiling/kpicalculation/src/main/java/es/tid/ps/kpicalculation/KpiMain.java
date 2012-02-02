@@ -38,8 +38,9 @@ import es.tid.ps.kpicalculation.data.WebLogType;
  * project
  */
 public class KpiMain extends Configured implements Tool {
-    private static String TEMP_PATH = "/user/javierb/temp";
-    private static String OUTPUT_PATH = "/user/javierb/webprofiling/aggregates";
+    private static final String TEMP_PATH = "/user/javierb/temp";
+    private static final String OUTPUT_PATH =
+            "/user/javierb/webprofiling/aggregates";
 
     public static void main(String[] args) throws Exception {
         int res = ToolRunner.run(new Configuration(), new KpiMain(), args);

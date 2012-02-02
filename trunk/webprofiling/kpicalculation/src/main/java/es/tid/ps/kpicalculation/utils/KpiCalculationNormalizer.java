@@ -7,7 +7,6 @@ import org.apache.nutch.net.URLNormalizers;
 import org.apache.nutch.net.urlnormalizer.basic.BasicURLNormalizer;
 import org.apache.nutch.net.urlnormalizer.regex.RegexURLNormalizer;
 import org.apache.nutch.util.NutchConfiguration;
-import org.apache.nutch.util.domain.DomainSuffix;
 
 /**
  * Class used for normalization of url received in webprofiling module. It

@@ -8,7 +8,7 @@ all: libCategories.so
 es/tid/ps/profile/dictionary/comscore/CSDictionaryJNIInterface.class:
 	javac -d . ../java/es/tid/ps/profile/dictionary/comscore/CSDictionaryJNIInterface.java
 
-es_tid_ps_profile_dictionary_comscore/CSDictionaryJNIInterface.h: es/tid/ps/profile/dictionary/comscore/CSDictionaryJNIInterface.class
+es_tid_ps_profile_dictionary_comscore_CSDictionaryJNIInterface.h: es/tid/ps/profile/dictionary/comscore/CSDictionaryJNIInterface.class
 	javah -jni es.tid.ps.profile.dictionary.comscore.CSDictionaryJNIInterface
 
 libCategories.so: es_tid_ps_profile_dictionary_comscore_CSDictionaryJNIInterface.h es_tid_ps_profile_dictionary_comscore_CSDictionaryJNIInterface.cpp

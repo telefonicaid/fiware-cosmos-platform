@@ -1,0 +1,20 @@
+/**
+ * CDR Protocol.
+ *
+ * author: dmicol
+ */
+@namespace("es.tid.ps.data")
+protocol CDRProtocol {
+    enum Type {
+        VOICE,
+        SMS
+    }
+
+    record CDR {
+        string userid_from;
+        string userid_to;
+        string cell;
+        Type type;
+        string length;
+    }
+}

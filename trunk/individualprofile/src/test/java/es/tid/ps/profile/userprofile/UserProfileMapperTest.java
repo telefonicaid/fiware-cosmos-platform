@@ -13,9 +13,8 @@
 // </editor-fold>
 package es.tid.ps.profile.userprofile;
 
-import es.tid.ps.profile.categoryextraction.CompositeKey;
 import es.tid.ps.profile.categoryextraction.CategoryInformation;
-import org.apache.hadoop.io.Text;
+import es.tid.ps.profile.categoryextraction.CompositeKey;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,12 +25,12 @@ import org.junit.Test;
  * @author sortega@tid.es
  */
 public class UserProfileMapperTest {
-    private MapDriver<CompositeKey, CategoryInformation, Text, CategoryCount>
-            driver;
+    private MapDriver<CompositeKey, CategoryInformation, 
+            CompositeKey, CategoryCount> driver;
 
     @Before
     public void setUp() {
-        driver = new MapDriver<CompositeKey, CategoryInformation, Text,
+        driver = new MapDriver<CompositeKey, CategoryInformation, CompositeKey,
                 CategoryCount>(new UserProfileMapper());
     }
 
@@ -39,13 +38,15 @@ public class UserProfileMapperTest {
     public void mapTest() {
         String user = "12345";
         String url = "http://tid.es";
-        String date = "02/01/2012";
+        String date = "2012-02-01";
         CompositeKey key = new CompositeKey(user, date);
         CategoryInformation categories = new CategoryInformation(user, url,
                 date, 10, new String [] {"SERVICES", "NEWS"});
         driver.withInput(key, categories)
-                .withOutput(new Text(user), new CategoryCount("SERVICES", 10))
-                .withOutput(new Text(user), new CategoryCount("NEWS", 10))
+                .withOutput(new CompositeKey(user, date), 
+                            new CategoryCount("SERVICES", 10))
+                .withOutput(new CompositeKey(user, date), 
+                            new CategoryCount("NEWS", 10))
                 .runTest();
     }
 }

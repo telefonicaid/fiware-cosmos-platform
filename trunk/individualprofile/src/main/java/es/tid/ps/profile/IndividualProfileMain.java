@@ -5,6 +5,7 @@ import java.net.URI;
 
 import com.hadoop.mapreduce.LzoTextInputFormat;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -13,9 +14,11 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
 import es.tid.ps.profile.categoryextraction.*;
+import es.tid.ps.profile.export.mongodb.ExporterJob;
 import es.tid.ps.profile.userprofile.CategoryCount;
 import es.tid.ps.profile.userprofile.UserProfile;
 import es.tid.ps.profile.userprofile.UserProfileMapper;
@@ -26,30 +29,46 @@ import es.tid.ps.profile.userprofile.UserProfileReducer;
  *
  * @author dmicol, sortega
  */
-public class IndividualProfileMain {
+public class IndividualProfileMain extends Configured implements Tool {
     private static final String COM_SCORE_BASE = "/user/hdfs/comscore/";
 
-    public static void main(String[] args)
+    @Override
+    public int run(String[] args)
             throws IOException, ClassNotFoundException, InterruptedException {
+        if (args.length != 4) {
+            System.err.println("Mandatory parameters: weblogs_path "
+                    + "categories_path profile_path mongo_url");
+            return 1;
+        }
+
         Path webLogsPath = new Path(args[0]);
         Path categoriesPath = new Path(args[1]);
         Path profilePath = new Path(args[2]);
+        String mongoUrl = args[3];
 
         Job ceJob = configureCategoryExtractionJob(webLogsPath, categoriesPath);
         if (!ceJob.waitForCompletion(true)) {
-            System.exit(1);
+            return 1;
         }
         Job upJob = configureUserProfileJob(categoriesPath, profilePath);
         if (!upJob.waitForCompletion(true)) {
-            System.exit(1);
+            return 1;
         }
+
+        ExporterJob exJob = new ExporterJob(this.getConf());
+        exJob.configure(profilePath, mongoUrl);
+        if (!exJob.waitForCompletion(true)) {
+            return 1;
+        }
+        
+        return 0;
     }
 
-    private static Job configureCategoryExtractionJob(
+    private Job configureCategoryExtractionJob(
             Path webLogsPath, Path categoriesPath) throws IOException {
-        Configuration conf = new Configuration();
+        Configuration baseConf = this.getConf();
 
-        Job job = new Job(conf, "CategoryExtraction");
+        Job job = new Job(baseConf, "CategoryExtraction");
         job.setJarByClass(IndividualProfileMain.class);
         job.setInputFormatClass(LzoTextInputFormat.class);
         job.setMapOutputKeyClass(CompositeKey.class);
@@ -64,7 +83,7 @@ public class IndividualProfileMain {
         FileOutputFormat.setOutputPath(job, categoriesPath);
 
         // Distribution of dictionary files by the distributed cache
-        DistributedCache.createSymlink(conf);
+        DistributedCache.createSymlink(baseConf);
         DistributedCache.addCacheFile(
                 URI.create(COM_SCORE_BASE + "cs_terms_in_domain.bcp"),
                 job.getConfiguration());
@@ -80,16 +99,16 @@ public class IndividualProfileMain {
         return job;
     }
 
-    private static Job configureUserProfileJob(
+    private Job configureUserProfileJob(
             Path categoriesPath, Path profilePath) throws IOException {
-        Job job = new Job(new Configuration(), "UserProfile");
+        Job job = new Job(this.getConf(), "UserProfile");
         job.setJarByClass(IndividualProfileMain.class);
         job.setInputFormatClass(SequenceFileInputFormat.class);
-        job.setMapOutputKeyClass(Text.class);
+        job.setMapOutputKeyClass(CompositeKey.class);
         job.setMapOutputValueClass(CategoryCount.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(UserProfile.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
+        job.setOutputFormatClass(SequenceFileOutputFormat.class);
         job.setMapperClass(UserProfileMapper.class);
         job.setReducerClass(UserProfileReducer.class);
 
@@ -99,7 +118,9 @@ public class IndividualProfileMain {
         return job;
     }
 
-    private IndividualProfileMain() {
-        // Hide constructor of utility class
+    public static void main(String[] args) throws Exception {
+        int res = ToolRunner.run(new Configuration(), 
+                                 new IndividualProfileMain(), args);
+        System.exit(res);
     }
 }

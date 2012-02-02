@@ -13,6 +13,7 @@
 // </editor-fold>
 package es.tid.ps.profile.userprofile;
 
+import es.tid.ps.profile.categoryextraction.CompositeKey;
 import static java.util.Arrays.asList;
 import java.util.List;
 import org.apache.hadoop.io.*;
@@ -29,26 +30,27 @@ import static org.junit.Assert.*;
  */
 public class UserProfileReducerTest {
 
-    private ReduceDriver<Text, CategoryCount, Text, UserProfile> driver;
+    private ReduceDriver<CompositeKey, CategoryCount, Text, UserProfile> driver;
 
     @Before
     public void setUp() {
-        driver = new ReduceDriver<Text, CategoryCount, Text, UserProfile>(
-                new UserProfileReducer());
+        this.driver = new ReduceDriver<CompositeKey, CategoryCount, 
+                Text, UserProfile>(new UserProfileReducer());
     }
 
     @Test
     public void testReduce() throws Exception {
-        Text visitor = new Text("12345");
+        String visitorId = "12345";
 
-        List<Pair<Text, UserProfile>> results = driver.withInput(visitor,
+        List<Pair<Text, UserProfile>> results = driver.withInput(
+                new CompositeKey(visitorId, "2012-02-01"),
                 asList(new CategoryCount("SPORT", 10),
                        new CategoryCount("NEWS", 10),
                        new CategoryCount("SPORT", 2))).run();
 
         assertEquals("One result", 1, results.size());
         Pair<Text, UserProfile> result = results.get(0);
-        assertEquals(visitor, result.getFirst());
+        assertEquals(visitorId, result.getFirst().toString());
         UserProfile profile = result.getSecond();
         assertEquals(12, profile.getCount(new CategoryCount("SPORT", 0)));
         assertEquals(10, profile.getCount(new CategoryCount("NEWS", 0)));

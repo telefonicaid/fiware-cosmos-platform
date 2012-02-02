@@ -20,14 +20,14 @@ public class UserProfile implements Writable {
         this.reset();
     }
     
-    public void reset() {
+    public final void reset() {
         this.userId = "";
         this.date = "";
         this.counts = new HashMap<String, Long>();
     }
     
     public String getUserId() {
-        return userId;
+        return this.userId;
     }
     
     public void setUserId(String userId) {

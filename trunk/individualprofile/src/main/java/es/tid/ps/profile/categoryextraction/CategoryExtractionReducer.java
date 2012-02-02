@@ -64,10 +64,10 @@ public class CategoryExtractionReducer extends Reducer<CompositeKey,
                     break;
 
                 case UNKNOWN_URL:
+                    // TODO: do something smart for URL category extraction.
                     context.getCounter(
                             CategoryExtractionCounter.UNKNOWN_VISITS).
                             increment(urlInstances);
-                    // TODO: do something smart for URL category extraction.
                     break;
 
                 case GENERIC_FAILURE:
@@ -97,7 +97,7 @@ public class CategoryExtractionReducer extends Reducer<CompositeKey,
             } else {
                 count = new Long(0L);
             }
-            uniqueUrlCounts.put(nav.getFullUrl(), count + 1l);
+            uniqueUrlCounts.put(nav.getFullUrl(), count + 1L);
         }
         return uniqueUrlCounts;
     }

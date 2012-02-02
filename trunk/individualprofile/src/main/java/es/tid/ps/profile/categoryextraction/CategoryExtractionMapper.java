@@ -7,7 +7,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 /**
- * Enum with the list of counters to use in the CategoryExtraction mapreduces.
+ * Maps from <line_no, log_line> to <[visitorId, date], user_navigation>
  *
  * @author dmicol
  **/

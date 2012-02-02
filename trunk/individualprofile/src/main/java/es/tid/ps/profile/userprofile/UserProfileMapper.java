@@ -1,38 +1,33 @@
 package es.tid.ps.profile.userprofile;
 
-import java.io.IOException;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Mapper;
-
 import es.tid.ps.profile.categoryextraction.CategoryInformation;
 import es.tid.ps.profile.categoryextraction.CompositeKey;
+import java.io.IOException;
+import org.apache.hadoop.mapreduce.Mapper;
 
 /**
- * Maps <[user, url], categoryInfo> to <userId, [category, count]>
+ * Maps <[userId, date], categoryInfo> to <[userId, date], [category, count]>
  *
  * @author sortega@tid.es
  */
 public class UserProfileMapper extends Mapper<CompositeKey, CategoryInformation,
-        Text, CategoryCount> {
-    private Text userId;
+                                              CompositeKey, CategoryCount> {
     private CategoryCount categoryCount;
 
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
-        this.userId = new Text();
         this.categoryCount = new CategoryCount();
     }
 
     @Override
-    protected void map(CompositeKey key, CategoryInformation categoryInfo,
+    protected void map(CompositeKey userDateKey, CategoryInformation categoryInfo,
             Context context)
             throws IOException, InterruptedException {
-        this.userId.set(categoryInfo.getUserId());
         for (String category : categoryInfo.getCategoryNames()) {
             this.categoryCount.setCategory(category);
             this.categoryCount.setCount(categoryInfo.getCount());
-            context.write(this.userId, this.categoryCount);
+            context.write(userDateKey, this.categoryCount);
         }
     }
 }

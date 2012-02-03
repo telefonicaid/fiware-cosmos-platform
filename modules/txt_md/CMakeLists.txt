@@ -52,6 +52,10 @@ FILE( GLOB HEADERS ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/samson/modules/$
 
 # Compiler options for DEBUG or RELEASE (copied from trunk/CMakeList)
 add_definitions(-fPIC)
+
+# To avoid problems with mongo
+add_definitions(-Wno-strict-aliasing)
+
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
   MESSAGE("cmake: DEBUG compilation")

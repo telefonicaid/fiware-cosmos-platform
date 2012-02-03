@@ -207,7 +207,7 @@ reset:
 	rm -f /etc/profile.d/samson.sh
 	rm -rf rpm
 
-cleansvn: reset
+cleansvn: 
 	for file in `svn status | grep ? | awk '{print $$2}'`; do rm -rf $$file; done
 
 # Remove /opt/samson to guarantee a clean build
@@ -279,7 +279,7 @@ man: release
 	 mkdir -p BUILD_RELEASE/man/man7
 	 help2man --name="samson worker"         --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonWorker/samsonWorker     > ./BUILD_RELEASE/man/man1/samsonWorker.1
 	 help2man --name="samson setup"          --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonSetup/samsonSetup       > ./BUILD_RELEASE/man/man1/samsonSetup.1
-	 help2man --name="samson spawner"        --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonSpawner/samsonSpawner   > ./BUILD_RELEASE/man/man1/samsonSpawner.1
+	 #help2man --name="samson spawner"        --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonSpawner/samsonSpawner   > ./BUILD_RELEASE/man/man1/samsonSpawner.1
 	 help2man --name="samson platform interaction shell" --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/delilah/delilah                > ./BUILD_RELEASE/man/man1/delilah.1
 	 cp man/samson-*.7 ./BUILD_RELEASE/man/man7
 

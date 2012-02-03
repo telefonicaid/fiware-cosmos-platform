@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
  *
@@ -16,7 +17,7 @@ public class ProfileDAOTest {
 
     @Before
     public void setUp() throws Exception {
-        MongoService mongo = new MongoService("localhost", "individualprofile");
+        MongoService mongo = Mockito.mock(MongoService.class);
         this.instance = new ProfileDAO();
         this.instance.setMongo(mongo);
     }

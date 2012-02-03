@@ -55,8 +55,8 @@ public class ProfileDAO {
     private CategoryMap toCategoryMap(DBObject resultCategories,
                                       CategoryMap categoryMap) {
         for (String categoryName : resultCategories.keySet()) {
-            Long count = (Long) resultCategories.get(categoryName);
-            categoryMap.put(categoryName, count);
+            Number count = (Number) resultCategories.get(categoryName);
+            categoryMap.put(categoryName, count.longValue());
         }
         return categoryMap;
     }

@@ -13,6 +13,7 @@
             }
 
             $(document).ready(function() {
+                $('#categories').html("--");
                 $("#submit").click(do_lookup);
             });
         </script>

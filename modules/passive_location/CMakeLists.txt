@@ -41,6 +41,7 @@ ELSE (NOT SVN_BUILD)
 ENDIF (SVN_BUILD)
 
 SET (SOURCES
+    tektronix_data.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
 )
 
@@ -52,6 +53,10 @@ FILE( GLOB HEADERS ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/samson/modules/$
 
 # Compiler options for DEBUG or RELEASE (copied from trunk/CMakeList)
 add_definitions(-fPIC)
+
+# To avoid problems with mongo
+add_definitions(-Wno-strict-aliasing)
+
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
   MESSAGE("cmake: DEBUG compilation")
@@ -99,3 +104,5 @@ INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 
 #ENABLE_TESTING()
 #ADD_SUBDIRECTORY(testing)     # Test module and ctest stuff
+
+#ADD_SUBDIRECTORY(tektronix_file_decoder)

@@ -68,6 +68,7 @@ parser parse_tek_drs
 	out system.UInt passive_location.Record                     # If no cellId or LAC is parsed in the record
 	out passive_location.CompleteTMSI passive_location.IMSIbyTime               # Queue to recover imsi from tmsi
 	out passive_location.CompleteTMSI passive_location.CompleteTMSI               # Queue to update tmsi
+	out system.String system.UInt                               # Queue for general info
 
 	helpLine "Parse input binary OHDRs from Tektroniks platform (probes). Note that output key is imsi"
 }
@@ -259,6 +260,8 @@ script init_stream_operations
 		alias [xml.txt]     02.in_xml_cdrs;
 		alias [tek.txt]     02.in_tek_cdrs;
 		
+		alias [info]        020.info;
+		
 		alias [tmsi_imsi]   021.tmsi_imsi;
 		alias [new_tmsi]    022.new_tmsi;
 		alias [tmsi_table]   023.tmsi_table;
@@ -298,7 +301,7 @@ script init_stream_operations
 		add_stream_operation  [parse_user]        passive_location.parse_user_info                [users.txt]       [users_imsi] [users_imei];
 
 		add_stream_operation  [parser_xml]        passive_location.parse_xml_cdrs                 [xml.txt]              [records] [records_imsi0] [records_cellid0] [tmsi_imsi];
-		add_stream_operation  [parser_tek]        passive_location.parse_tek_drs                  [tek.txt]             [records],[records].bkup_tek  [records_imsi0],[records_imsi0].bkup [records_cellid0],[records_cellid0].bkup [tmsi_imsi],[tmsi_imsi].bkup [new_tmsi],[new_tmsi].bkup;
+		add_stream_operation  [parser_tek]        passive_location.parse_tek_drs                  [tek.txt]             [records],[records].bkup_tek  [records_imsi0],[records_imsi0].bkup [records_cellid0],[records_cellid0].bkup [tmsi_imsi],[tmsi_imsi].bkup [new_tmsi],[new_tmsi].bkup [info];
 
 		add_stream_operation  [update_tmsi]        passive_location.update_tmsi_imsi_table                  [tmsi_imsi] [tmsi_table]            [tmsi_table];
 		#set_stream_operation_property   [update_tmsi]  pl.tmps_age.timespan         86400;  # Keeping only mappings younger than 1 day (24 * 3600)

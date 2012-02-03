@@ -46,7 +46,7 @@ namespace passive_location{
 		void init( samson::KVWriter *writer )
 		{
 	        record_timespan = environment->getSizeT("pl.record_retry.timespan", 0);
-	        LM_M(("pl.record_retry.timespan:%lu", record_timespan));
+	        //LM_M(("pl.record_retry.timespan:%lu", record_timespan));
 	        if ( record_timespan != 0)
 	        {
 	            now = time(NULL);
@@ -82,12 +82,12 @@ namespace passive_location{
 //                    }
                     if ((record_timespan == 0) || ((now - record.timestamp.value) < (int64_t)record_timespan))
                     {
-                        LM_M(("Emit record for reprocessing, TMSI:%lu", completeTMSI.tmsi.value));
+                        //LM_M(("Emit record for reprocessing, TMSI:%lu", completeTMSI.tmsi.value));
                         writer->emit( 1 , &completeTMSI , &record );
                     }
                     else
                     {
-                        LM_M(("Emit record to forget, TMSI:%lu", completeTMSI.tmsi.value));
+                        //LM_M(("Emit record to forget, TMSI:%lu", completeTMSI.tmsi.value));
                         writer->emit(2, &completeTMSI.tmsi, &record);
                     }
                 }

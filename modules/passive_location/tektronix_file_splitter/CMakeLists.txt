@@ -1,5 +1,5 @@
 SET (SOURCES
-    parse_tektronix_file_standalone.cpp
+    tektronix_file_splitter.cpp
     ../tektronix_data.cpp
 )
 
@@ -19,9 +19,9 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # Executable declaration
 # ------------------------------------------------------------
 
-ADD_EXECUTABLE(parse_tektronix_file_standalone ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(parse_tektronix_file_standalone ${STATIC_LIBS} )
+ADD_EXECUTABLE(tektronix_file_splitter ${SOURCES} ${HEADERS} )
+TARGET_LINK_LIBRARIES(tektronix_file_splitter ${STATIC_LIBS} )
 
-#INSTALL(TARGETS               parse_tektronix_file_standalone
+#INSTALL(TARGETS               tektronix_file_splitter
         #RUNTIME DESTINATION   bin)
 

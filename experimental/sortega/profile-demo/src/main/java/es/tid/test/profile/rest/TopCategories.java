@@ -12,7 +12,10 @@ import org.springframework.stereotype.Component;
 
 import es.tid.test.profile.ProfileDAO;
 import es.tid.test.profile.StringUtil;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -32,17 +35,19 @@ public class TopCategories {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public String getTop(@PathParam("username") String userName,
+    public List getTop(@PathParam("username") String userName,
                          @PathParam("n") int n) {
         if (n < 1) {
             throw new NotFoundException();
         }
-        CategoryMap categoryMap = profile.getLastCategoryMap(userName);
-        final List<String> topN = categoryMap.getTop(n);
-        if (topN.isEmpty()) {
-            return "[]";
-        } else {
-            return "[\"" + StringUtil.join("\", \"", topN) + "\"]";
+        final CategoryMap categoryMap = profile.getLastCategoryMap(userName);
+        List topN = new LinkedList();
+        for (final String category: categoryMap.getTop(n)) {
+            topN.add(new HashMap() {{
+                put("category", category);
+                put("count", categoryMap.get(category));
+            }});
         }
+        return topN;
     }
 }

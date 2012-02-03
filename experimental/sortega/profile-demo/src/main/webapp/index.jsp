@@ -2,13 +2,25 @@
 <html>
     <head>
         <title>API demo</title>
+        <style>
+            .category {
+                margin-right: 1em;
+            }
+        </style>
+
         <script type="text/javascript" src="js/lib/jquery-1.7.1.min.js"></script>
         <script type="text/javascript">
             function do_lookup() {
                 $.getJSON(
                     'api/' + $('#client').val() + '/top/' + $('#n').val(),
                     function(data) {
-                        $('#categories').html(data.toString());
+                        $('#categories').html("");
+                        $.each(data, function(i, val) {
+                            var div = $("<div/>");
+                            div.append($('<span class="category"/>').text(val.category))
+                               .append($('<span class="count"/>').text(val.count));
+                            $('#categories').append(div);
+                        })
                     });
             }
 

@@ -1,0 +1,13 @@
+/**
+ * Web Navigation Protocol.
+ *
+ * author: dmicol
+ */
+@namespace("es.tid.ps.base.data")
+protocol WebNavigationProtocol {
+  record WebLog {
+    string userid;
+    string url;
+    string timestamp;
+ }
+}

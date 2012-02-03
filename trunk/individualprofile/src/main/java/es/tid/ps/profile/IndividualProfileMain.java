@@ -89,12 +89,12 @@ public class IndividualProfileMain extends Configured implements Tool {
                 URI.create(COM_SCORE_BASE + "cs_terms_in_domain.bcp"),
                 job.getConfiguration());
         DistributedCache.addCacheFile(
-                URI.create(COM_SCORE_BASE + "cs_mmxi_143.bcp.gz"),
+                URI.create(COM_SCORE_BASE + "cs_mmxi.bcp.gz"),
                 job.getConfiguration());
         DistributedCache.addCacheFile(URI.create(COM_SCORE_BASE
                 + "patterns_to_categories.txt"), job.getConfiguration());
         DistributedCache.addCacheFile(
-                URI.create(COM_SCORE_BASE + "cat_subcat_lookup_143m.txt"),
+                URI.create(COM_SCORE_BASE + "cat_subcat_lookup.txt"),
                 job.getConfiguration());
 
         return job;

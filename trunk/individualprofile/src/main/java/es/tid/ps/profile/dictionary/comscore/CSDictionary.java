@@ -20,11 +20,11 @@ public class CSDictionary implements Dictionary {
     private static final String TERMS_IN_DOMAIN_FILENAME =
             "cs_terms_in_domain.bcp";
     private static final String DICTIONARY_FILENAME =
-            "cs_mmxi_143.bcp.gz";
+            "cs_mmxi.bcp.gz";
     private static final String CATEGORY_PATTERN_MAPPING_FILENAME =
             "patterns_to_categories.txt";
     private static final String CATEGORY_NAMES_FILENAME =
-            "cat_subcat_lookup_143m.txt";
+            "cat_subcat_lookup.txt";
     
     private boolean isInitialized;
     private final List<Path> dictionayFiles;

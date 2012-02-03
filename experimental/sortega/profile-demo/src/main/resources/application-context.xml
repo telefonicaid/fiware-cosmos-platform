@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+    <context:component-scan base-package="es.tid.test.profile"/>
+
+    <bean id="config" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:config.properties"/>
+    </bean>
+
+    <bean id="mongoService" class="es.tid.test.profile.MongoService">
+        <constructor-arg index="0" value="${db.hostname}"/>
+        <constructor-arg index="1" value="${db.name}"/>
+    </bean>
+</beans>

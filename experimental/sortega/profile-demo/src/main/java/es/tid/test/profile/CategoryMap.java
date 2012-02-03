@@ -7,13 +7,13 @@ import java.util.*;
  *
  * @author sortega
  */
-public class CategoryMap extends HashMap<String, Double> {
+public class CategoryMap extends HashMap<String, Long> {
 
-    private static final Comparator<Entry<String, Double>> ENTRY_COMPARATOR =
-            new Comparator<Entry<String, Double>>() {
+    private static final Comparator<Entry<String, Long>> ENTRY_COMPARATOR =
+            new Comparator<Entry<String, Long>>() {
                 @Override
-                public int compare(Entry<String, Double> left, 
-                                   Entry<String, Double> right) {
+                public int compare(Entry<String, Long> left,
+                                   Entry<String, Long> right) {
                     return right.getValue().compareTo(left.getValue());
                 }
             };
@@ -22,12 +22,12 @@ public class CategoryMap extends HashMap<String, Double> {
         if (this.isEmpty()) {
             return Collections.emptyList();
         }
-        
-        PriorityQueue<Entry<String, Double>> heap =
-                new PriorityQueue<Entry<String, Double>>(this.size(), ENTRY_COMPARATOR);
+
+        PriorityQueue<Entry<String, Long>> heap =
+                new PriorityQueue<Entry<String, Long>>(this.size(), ENTRY_COMPARATOR);
 
         heap.addAll(this.entrySet());
-        
+
         List<String> topN = new ArrayList<String>(n);
         for (int i = 0; i < n && !heap.isEmpty(); i++) {
             topN.add(heap.remove().getKey());

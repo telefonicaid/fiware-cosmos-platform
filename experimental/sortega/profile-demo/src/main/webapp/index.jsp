@@ -6,7 +6,7 @@
         <script type="text/javascript">
             function do_lookup() {
                 $.getJSON(
-                    "api/?user=" + $('#client').val() + "&n=" + $('#n').val(),
+                    'api/' + $('#client').val() + '/top/' + $('#n').val(),
                     function(data) {
                         $('#categories').html(data.toString());
                     });
@@ -24,6 +24,7 @@
         <input name="n" id="n" type="number" value="3" min="1" /> <br/>
         <label for="client">Client</label>
         <select id="client" name="client">
+            <option value="ffee16f05e42f3dc">ffee16f05e42f3dc</option>
             <option value="b9980e15c439fe91">b9980e15c439fe91</option>
             <option value="b8ce2743ea776de0">b8ce2743ea776de0</option>
             <option value="b8cf82e1c98c52f7">b8cf82e1c98c52f7</option>

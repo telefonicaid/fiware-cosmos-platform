@@ -3,28 +3,40 @@ package es.tid.test.profile;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import javax.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author sortega
  */
+@Component
 public class ProfileDAO {
-
+    private static final String PROFILE_COLLECTION = "profile";
     private static final DBObject CATEGORIES_COL =
-                                  new BasicDBObject("categories", true);
+            new BasicDBObject("categories", true);
     private static final DBObject DATE_COL =
-                                  new BasicDBObject("date", -1);
-    private final DBCollection profiles;
+            new BasicDBObject("date", -1);
+    @Autowired(required = true)
+    private MongoService mongo;
+    private DBCollection profiles;
 
-    public ProfileDAO(DBCollection profiles) {
-        this.profiles = profiles;
+    @PostConstruct
+    public void init() {
+        this.profiles = this.mongo.getDb().getCollection(PROFILE_COLLECTION);
+    }
+
+    public void setMongo(MongoService mongo) {
+        this.mongo = mongo;
     }
 
     /**
      * Get the latest category map for a given user.
      *
-     * @param userId  Unique user id.
-     * @return        CategoryMap or null.
+     * @param userId Unique user id.
+     *
+     * @return CategoryMap or null.
      */
     public CategoryMap getLastCategoryMap(String userId) {
 
@@ -33,7 +45,8 @@ public class ProfileDAO {
                 DATE_COL).limit(1)) {
 
             CategoryMap categoryMap = new CategoryMap();
-            return toCategoryMap((DBObject) result.get("categories"), categoryMap);
+            return toCategoryMap((DBObject) result.get("categories"),
+                                 categoryMap);
         }
 
         return new CategoryMap();
@@ -43,7 +56,7 @@ public class ProfileDAO {
                                       CategoryMap categoryMap) {
         for (String categoryName : resultCategories.keySet()) {
             Long count = (Long) resultCategories.get(categoryName);
-            categoryMap.put(categoryName, count.doubleValue());
+            categoryMap.put(categoryName, count);
         }
         return categoryMap;
     }

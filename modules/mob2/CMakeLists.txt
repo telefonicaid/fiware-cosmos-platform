@@ -50,6 +50,9 @@ FILE( GLOB ADDITIONAL_SOURCES ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/*.cpp
 # Install headers to be used by other modules
 FILE( GLOB HEADERS ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/samson/modules/${MODULE_NAME}/*.h  )
 
+# To avoid problems with mongo
+add_definitions(-Wno-strict-aliasing)
+
 # Compiler options for DEBUG or RELEASE (copied from trunk/CMakeList)
 add_definitions(-fPIC)
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)

@@ -1198,7 +1198,7 @@ script script_extract_POIs
 	  rm $1.clients_repbts -f;
 	 	  
       # Parse CDR's
-      cdr.parse_mob_cdrs $1.cdrstxt $1.cdrs_mob -create -clear
+      cdr.parse_mob_cdrs $1.cdrstxt $1.cdrs_mob -create -clear;
 
       # Parse clients sample
       cdr.parse_clients $1.userstxt $1.users -create -clear;

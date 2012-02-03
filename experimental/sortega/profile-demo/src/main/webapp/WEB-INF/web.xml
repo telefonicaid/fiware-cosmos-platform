@@ -6,7 +6,7 @@
         <servlet-class>es.tid.test.profile.APIServlet</servlet-class>
         <init-param>
             <param-name>db.hostname</param-name>
-            <param-value>localhost</param-value>
+            <param-value>pshdp04</param-value>
         </init-param>
         <init-param>
             <param-name>db.name</param-name>

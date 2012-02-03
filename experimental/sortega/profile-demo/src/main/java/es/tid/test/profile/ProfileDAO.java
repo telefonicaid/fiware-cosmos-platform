@@ -22,7 +22,7 @@ public class ProfileDAO {
 
     /**
      * Get the latest category map for a given user.
-     * 
+     *
      * @param userId  Unique user id.
      * @return        CategoryMap or null.
      */
@@ -35,15 +35,15 @@ public class ProfileDAO {
             CategoryMap categoryMap = new CategoryMap();
             return toCategoryMap((DBObject) result.get("categories"), categoryMap);
         }
-        
+
         return new CategoryMap();
     }
 
     private CategoryMap toCategoryMap(DBObject resultCategories,
                                       CategoryMap categoryMap) {
         for (String categoryName : resultCategories.keySet()) {
-            categoryMap.put(categoryName, (Double) resultCategories.get(
-                    categoryName));
+            Long count = (Long) resultCategories.get(categoryName);
+            categoryMap.put(categoryName, count.doubleValue());
         }
         return categoryMap;
     }

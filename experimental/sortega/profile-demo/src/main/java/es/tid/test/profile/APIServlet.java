@@ -64,6 +64,8 @@ public class APIServlet extends HttpServlet {
             } else {
                 out.format("[\"%s\"]", StringUtil.join("\", \"", topN));
             }
+
+            System.err.format("Top %d for user %s: %s\n", n, userId, topN);
         } finally {
             out.close();
         }

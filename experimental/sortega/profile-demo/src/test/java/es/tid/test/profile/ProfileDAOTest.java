@@ -3,14 +3,17 @@ package es.tid.test.profile;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.Mongo;
-import org.junit.*;
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  *
- * @author sebastian
+ * @author sortega
  */
+@Ignore
 public class ProfileDAOTest {
     private DBCollection profileCollection;
     private ProfileDAO instance;
@@ -21,7 +24,7 @@ public class ProfileDAOTest {
         Mongo mongo = new Mongo();
         DB db = mongo.getDB("individualprofile");
         this.profileCollection = db.getCollection("profile");
-        this.instance = new ProfileDAO(profileCollection);        
+        this.instance = new ProfileDAO(profileCollection);
     }
 
     @Test

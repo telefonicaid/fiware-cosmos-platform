@@ -3,18 +3,18 @@
  *
  * author: dmicol
  */
-@namespace("es.tid.ps.data")
+@namespace("es.tid.ps.base.data")
 protocol CDRProtocol {
-    enum Type {
-        VOICE,
-        SMS
-    }
+  enum Kind {
+    VOICE,
+    SMS
+  }
 
-    record CDR {
-        string userid_from;
-        string userid_to;
-        string cell;
-        Type type;
-        string length;
-    }
+  record CDR {
+      string userid_from;
+      string userid_to;
+      string cell;
+      Kind kind;
+      string length;
+  }
 }

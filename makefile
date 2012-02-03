@@ -8,7 +8,7 @@ ifndef SAMSON_VERSION
 SAMSON_VERSION=0.7
 endif
 ifndef SAMSON_RELEASE
-SAMSON_RELEASE=$(svn info | grep Revision | awk '{ print $2 }')
+SAMSON_RELEASE=$(shell svnversion . | sed 's/M//')
 endif
 # Who to install samson as
 ifndef SAMSON_OWNER

@@ -26,7 +26,6 @@ import es.tid.ps.kpicalculation.utils.KpiCalculationDateFormatter;
 public class WebLogCounter extends WebLog {
     protected static final int HASH_CONST = 163;
 
-    private Iterator<String> iterator;
     private Collection<String> mainFields;
 
     public WebLogCounter() {
@@ -89,10 +88,10 @@ public class WebLogCounter extends WebLog {
     protected void initMainKey(Collection<String> mainFields)
             throws IllegalAccessException, NoSuchFieldException {
         this.mainKey = "";
-        this.iterator = mainFields.iterator();
+        Iterator<String> iterator = mainFields.iterator();
 
-        while (this.iterator.hasNext()) {
-            String attribute = this.iterator.next();
+        while (iterator.hasNext()) {
+            String attribute = iterator.next();
             if (attribute.equals("date")) {
                 this.mainKey += KpiCalculationDateFormatter
                         .getFormattedDate(this.date);
@@ -100,7 +99,7 @@ public class WebLogCounter extends WebLog {
                 this.mainKey += (String) this.getClass().getField(attribute)
                         .get(this);
             }
-            if (this.iterator.hasNext()) {
+            if (iterator.hasNext()) {
                 this.mainKey += "\t";
             }
         }

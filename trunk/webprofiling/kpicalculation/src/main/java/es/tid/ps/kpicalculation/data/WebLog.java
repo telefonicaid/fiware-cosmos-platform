@@ -23,7 +23,7 @@ import es.tid.ps.kpicalculation.utils.KpiCalculationNormalizer;
  * @author javierb
  */
 public class WebLog implements WritableComparable<WebLog> {
-    protected final static String DELIMITER = "\t";
+    protected static final String DELIMITER = "\t";
 
     public String mainKey;
     public String secondaryKey;
@@ -294,8 +294,7 @@ public class WebLog implements WritableComparable<WebLog> {
 
             // Date and time are obteined from the full date received in the cdr
             // line
-            String date = stt.nextToken();
-            this.date = KpiCalculationDateFormatter.getValue(date);
+            this.date = KpiCalculationDateFormatter.getValue(stt.nextToken());
 
             // Http status code
             this.status = stt.nextToken();

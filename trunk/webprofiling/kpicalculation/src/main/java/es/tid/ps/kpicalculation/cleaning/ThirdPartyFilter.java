@@ -17,7 +17,7 @@ public class ThirdPartyFilter extends AbstractKpiCalculationFilter {
     private static final String REGULAR_EXPRESSION = "([^\\s]+{0}[^\\s]*)";
 
     public ThirdPartyFilter(Configuration conf) {
-        super(conf, CONFIG_PARAMETER, REGULAR_EXPRESSION);
+        this.init(conf, CONFIG_PARAMETER, REGULAR_EXPRESSION);
     }
 
     /**

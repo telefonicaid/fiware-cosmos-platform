@@ -8,5 +8,5 @@ package es.tid.ps.kpicalculation.operations;
  * 
  */
 public interface ICdrLoader {
-    public int load(String folder);
+    int load(String folder);
 }

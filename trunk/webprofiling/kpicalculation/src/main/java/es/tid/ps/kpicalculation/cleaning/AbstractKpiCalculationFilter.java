@@ -16,9 +16,9 @@ public abstract class AbstractKpiCalculationFilter implements
 
     protected Pattern pattern;
     protected Matcher matcher;
-
-    public AbstractKpiCalculationFilter(Configuration conf,
-            String configParameter, String regularExpression) {
+            
+    protected void init(Configuration conf, String configParameter,
+            String regularExpression) {
         String forbiddenPattern = setPattern(regularExpression,
                 conf.get(configParameter));
         this.pattern = Pattern.compile(forbiddenPattern,

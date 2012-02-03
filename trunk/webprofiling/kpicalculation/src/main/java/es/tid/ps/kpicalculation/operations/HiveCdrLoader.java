@@ -24,7 +24,7 @@ import org.apache.hadoop.fs.PathFilter;
 public class HiveCdrLoader implements ICdrLoader {
     private static final String TARGET_TABLE = "PAGE_VIEWS";
 
-    private static final String driverName =
+    private static final String DRIVER_NAME =
             "org.apache.hadoop.hive.jdbc.HiveDriver";
     private static Logger logger;
 
@@ -43,7 +43,7 @@ public class HiveCdrLoader implements ICdrLoader {
         this.conf = configuration;
 
         try {
-            Class.forName(driverName);
+            Class.forName(DRIVER_NAME);
             Connection con = DriverManager.getConnection(
                     "jdbc:hive://pshdp02:10000", "", "");
             this.stmt = con.createStatement();
@@ -73,8 +73,9 @@ public class HiveCdrLoader implements ICdrLoader {
                     new PathFilter() {
                         @Override
                         public boolean accept(Path arg0) {
-                            if (arg0.getName().startsWith("part-m-"))
+                            if (arg0.getName().startsWith("part-m-")) {
                                 return true;
+                            }
                             return false;
                         }
                     });

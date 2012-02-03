@@ -17,7 +17,7 @@ import org.apache.nutch.util.NutchConfiguration;
  * 
  * @author javierb
  */
-public class KpiCalculationNormalizer {
+public abstract class KpiCalculationNormalizer {
     private static BasicURLNormalizer basicNorm;
     private static RegexURLNormalizer regexNorm;
 

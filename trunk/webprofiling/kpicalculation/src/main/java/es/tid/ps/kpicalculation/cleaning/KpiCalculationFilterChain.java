@@ -19,8 +19,9 @@ import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
  * 
  */
 public class KpiCalculationFilterChain {
+    private static final String COLLECTION_ID = "kpifilters";
+
     private List<IKpiCalculationFilter> handlers;
-    private static String COLLECTION_ID = "kpifilters";
 
     public KpiCalculationFilterChain(Configuration conf)
             throws KpiCalculationFilterException {

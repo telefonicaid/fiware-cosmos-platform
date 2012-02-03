@@ -21,6 +21,9 @@ import es.tid.ps.kpicalculation.sql.AggregateCalculatorQueries;
  * 
  */
 public class AggregateCalculator implements IAggregateCalculator {
+    private static final String AGGREGATE_PROCESSED_MSG =
+            "Aggregate processed...";
+    
     private Statement stmt;
 
     private static String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
@@ -58,71 +61,71 @@ public class AggregateCalculator implements IAggregateCalculator {
         try {
             logger.info("Calculating aggregate of page views by protocol, visitor and device...");
             this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_VIS_DEV);
-            logger.info("Aggregate processed...");
+            logger.info(AGGREGATE_PROCESSED_MSG);
 
             logger.info("Calculating aggregate of page views by protocol and visitor ...");
             this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_VIS);
-            logger.info("Aggregate processed...");
+            logger.info(AGGREGATE_PROCESSED_MSG);
 
             logger.info("Calculating aggregate of page views by protocol and device...");
             this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_DEV);
-            logger.info("Aggregate processed...");
+            logger.info(AGGREGATE_PROCESSED_MSG);
 
             logger.info("Calculating aggregate of page views by protocol and method...");
             this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_METHOD);
-            logger.info("Aggregate processed...");
+            logger.info(AGGREGATE_PROCESSED_MSG);
 
             logger.info("Calculating aggregate of page views by protocol ...");
             this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROTOCOL);
-            logger.info("Aggregate processed...");
+            logger.info(AGGREGATE_PROCESSED_MSG);
 
             logger.info("Calculating aggregate of visitors by protocol ...");
             this.stmt.executeQuery(AggregateCalculatorQueries.VISITORS_BY_PROTOCOL);
-            logger.info("Aggregate processed...");
+            logger.info(AGGREGATE_PROCESSED_MSG);
 
             // Browing aggregate KPI's
             logger.info("Calculating aggregate of page views by protocol, url and visitor ...");
             this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_URL_VIS);
-            logger.info("Aggregate processed...");
+            logger.info(AGGREGATE_PROCESSED_MSG);
 
             logger.info("Calculating aggregate of page views by protocol and url ...");
             this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_URL);
-            logger.info("Aggregate processed...");
+            logger.info(AGGREGATE_PROCESSED_MSG);
 
             logger.info("Calculating aggregate of visitors by protocol and url ...");
             this.stmt.executeQuery(AggregateCalculatorQueries.VISITORS_BY_PROT_URL);
-            logger.info("Aggregate processed...");
+            logger.info(AGGREGATE_PROCESSED_MSG);
 
             logger.info("Calculating aggregate of page views by protocol, domain and visitor ...");
             this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_DOM_VIS);
-            logger.info("Aggregate processed...");
+            logger.info(AGGREGATE_PROCESSED_MSG);
 
             logger.info("Calculating aggregate of page views by protocol and domain ...");
             this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_DOM);
-            logger.info("Aggregate processed...");
+            logger.info(AGGREGATE_PROCESSED_MSG);
 
             logger.info("Calculating aggregate of visitors by protocol and domain ...");
             this.stmt.executeQuery(AggregateCalculatorQueries.VISITORS_BY_PROT_DOM);
-            logger.info("Aggregate processed...");
+            logger.info(AGGREGATE_PROCESSED_MSG);
 
             // Content aggregate KPI's
 
             logger.info("Calculating aggreagate of page views by category and visitor ...");
             this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_CAT_VIS);
-            logger.info("Aggregate processed...");
+            logger.info(AGGREGATE_PROCESSED_MSG);
 
             logger.info("Calculating aggreagate of page views by category ...");
             this.stmt.executeQuery(AggregateCalculatorQueries.PAGES_VIEWS_BY_PROT_CAT);
-            logger.info("Aggregate processed...");
+            logger.info(AGGREGATE_PROCESSED_MSG);
 
             logger.info("Calculating aggregate of visitors by category ...");
             this.stmt.executeQuery(AggregateCalculatorQueries.VISITORS_BY_CATEGORY);
-            logger.info("Aggregate processed...");
+            logger.info(AGGREGATE_PROCESSED_MSG);
 
             // Queries aggregate KPI's
             logger.info("Calculating aggregate of searches by protocol, query key, visitor and searcher...");
             this.stmt.executeQuery(AggregateCalculatorQueries.SEARCHES_BY_PROT_QKEY_VIS_SEARCHER);
-            logger.info("Aggregate processed...");
+            logger.info(AGGREGATE_PROCESSED_MSG);
 
             logger.info("Calculating aggregate of searches by protocol, query key and searcher...");
             this.stmt.executeQuery(AggregateCalculatorQueries.SEARCHES_BY_PROT_QKEY_VIS);

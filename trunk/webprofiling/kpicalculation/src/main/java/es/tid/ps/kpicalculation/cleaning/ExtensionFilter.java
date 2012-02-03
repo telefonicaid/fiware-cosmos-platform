@@ -20,7 +20,7 @@ public class ExtensionFilter extends AbstractKpiCalculationFilter {
     private static final String REGULAR_EXPRESSION = "([^\\s]+(\\.(?i){0})$)";
 
     public ExtensionFilter(Configuration conf) {
-        super(conf, CONFIG_PARAMETER, REGULAR_EXPRESSION);
+        this.init(conf, CONFIG_PARAMETER, REGULAR_EXPRESSION);
     }
 
     /**

@@ -17,6 +17,7 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import es.tid.ps.base.mapreduce.BinaryKey;
 import es.tid.ps.profile.categoryextraction.*;
 import es.tid.ps.profile.export.mongodb.ExporterJob;
 import es.tid.ps.profile.userprofile.CategoryCount;
@@ -71,9 +72,9 @@ public class IndividualProfileMain extends Configured implements Tool {
         Job job = new Job(baseConf, "CategoryExtraction");
         job.setJarByClass(IndividualProfileMain.class);
         job.setInputFormatClass(LzoTextInputFormat.class);
-        job.setMapOutputKeyClass(CompositeKey.class);
+        job.setMapOutputKeyClass(BinaryKey.class);
         job.setMapOutputValueClass(UserNavigation.class);
-        job.setOutputKeyClass(CompositeKey.class);
+        job.setOutputKeyClass(BinaryKey.class);
         job.setOutputValueClass(CategoryInformation.class);
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
         job.setMapperClass(CategoryExtractionMapper.class);
@@ -104,7 +105,7 @@ public class IndividualProfileMain extends Configured implements Tool {
         Job job = new Job(this.getConf(), "UserProfile");
         job.setJarByClass(IndividualProfileMain.class);
         job.setInputFormatClass(SequenceFileInputFormat.class);
-        job.setMapOutputKeyClass(CompositeKey.class);
+        job.setMapOutputKeyClass(BinaryKey.class);
         job.setMapOutputValueClass(CategoryCount.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(UserProfile.class);

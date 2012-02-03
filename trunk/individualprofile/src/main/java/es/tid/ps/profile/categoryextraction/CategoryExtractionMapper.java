@@ -6,21 +6,23 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
+import es.tid.ps.base.mapreduce.BinaryKey;
+
 /**
  * Maps from <line_no, log_line> to <[visitorId, date], user_navigation>
  *
  * @author dmicol
  **/
 public class CategoryExtractionMapper extends
-        Mapper<LongWritable, Text, CompositeKey, UserNavigation> {
+        Mapper<LongWritable, Text, BinaryKey, UserNavigation> {
     private UserNavigation webLog;
-    private CompositeKey cKey;
+    private BinaryKey cKey;
 
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
         this.webLog = new UserNavigation();
-        this.cKey = new CompositeKey();
+        this.cKey = new BinaryKey();
     }
 
     @Override

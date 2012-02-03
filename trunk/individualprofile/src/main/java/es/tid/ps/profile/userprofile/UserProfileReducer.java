@@ -1,9 +1,10 @@
 package es.tid.ps.profile.userprofile;
 
-import es.tid.ps.profile.categoryextraction.CompositeKey;
 import java.io.IOException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+
+import es.tid.ps.base.mapreduce.BinaryKey;
 
 /**
  * Aggregates category counts into a user profile.
@@ -11,7 +12,7 @@ import org.apache.hadoop.mapreduce.Reducer;
  *
  * @author sortega@tid.es
  */
-public class UserProfileReducer extends Reducer<CompositeKey, CategoryCount, 
+public class UserProfileReducer extends Reducer<BinaryKey, CategoryCount, 
                                                 Text, UserProfile> {
     private UserProfile profile;
     private Text userId;
@@ -24,7 +25,7 @@ public class UserProfileReducer extends Reducer<CompositeKey, CategoryCount,
     }
 
     @Override
-    protected void reduce(CompositeKey userDateKey, Iterable<CategoryCount> counts,
+    protected void reduce(BinaryKey userDateKey, Iterable<CategoryCount> counts,
             Context context) throws IOException, InterruptedException {
         this.profile.reset();
         this.profile.setUserId(userDateKey.getPrimaryKey());

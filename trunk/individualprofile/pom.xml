@@ -24,10 +24,9 @@
             <version>${org.apache.hadoop}-cdh3u2</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.mongodb</groupId>
-            <artifactId>mongo-hadoop-core</artifactId>
+            <artifactId>mongo-hadoop</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
@@ -35,7 +34,6 @@
             <artifactId>hadoop-gpl-compression</artifactId>
             <version>0.1.0</version>
         </dependency>
-        
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-mrunit</artifactId>
@@ -47,6 +45,11 @@
             <artifactId>junit</artifactId>
             <version>4.10</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>es.tid.ps</groupId>
+            <artifactId>base</artifactId>
+            <version>0.0.1</version>
         </dependency>
     </dependencies>
     
@@ -246,9 +249,6 @@
         <repository>
             <id>apache-repository</id>
             <url>https://repository.apache.org/content/repositories/releases</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
         </repository>
         <repository>
             <id>ps2-nexus</id>
@@ -259,7 +259,10 @@
         </repository>
         <repository>
             <id>ps2-nexus-releases</id>
-            <url>http://ps2-ci/nexus/content/repositories/releases/</url>
+            <url>http://ps2-ci/nexus/content/repositories/releases</url>
+            <snapshots>
+              <enabled>true</enabled>
+            </snapshots>
         </repository>
         <repository>
             <id>releases</id>

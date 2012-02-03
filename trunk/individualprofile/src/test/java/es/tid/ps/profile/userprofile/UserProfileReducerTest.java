@@ -13,15 +13,16 @@
 // </editor-fold>
 package es.tid.ps.profile.userprofile;
 
-import es.tid.ps.profile.categoryextraction.CompositeKey;
 import static java.util.Arrays.asList;
 import java.util.List;
-import org.apache.hadoop.io.*;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import es.tid.ps.base.mapreduce.BinaryKey;
 
 /**
  * Test case for UserProfileReducer
@@ -29,12 +30,11 @@ import static org.junit.Assert.*;
  * @author sortega@tid.es
  */
 public class UserProfileReducerTest {
-
-    private ReduceDriver<CompositeKey, CategoryCount, Text, UserProfile> driver;
+    private ReduceDriver<BinaryKey, CategoryCount, Text, UserProfile> driver;
 
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<CompositeKey, CategoryCount, 
+        this.driver = new ReduceDriver<BinaryKey, CategoryCount, 
                 Text, UserProfile>(new UserProfileReducer());
     }
 
@@ -43,7 +43,7 @@ public class UserProfileReducerTest {
         String visitorId = "12345";
 
         List<Pair<Text, UserProfile>> results = driver.withInput(
-                new CompositeKey(visitorId, "2012-02-01"),
+                new BinaryKey(visitorId, "2012-02-01"),
                 asList(new CategoryCount("SPORT", 10),
                        new CategoryCount("NEWS", 10),
                        new CategoryCount("SPORT", 2))).run();

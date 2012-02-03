@@ -7,6 +7,7 @@ import java.util.Map;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.ps.base.mapreduce.BinaryKey;
 import es.tid.ps.profile.dictionary.Categorization;
 import es.tid.ps.profile.dictionary.Dictionary;
 import es.tid.ps.profile.dictionary.comscore.CSDictionary;
@@ -16,8 +17,8 @@ import es.tid.ps.profile.dictionary.comscore.CSDictionary;
  *
  * @author dmicol, sortega
  */
-public class CategoryExtractionReducer extends Reducer<CompositeKey,
-        UserNavigation, CompositeKey, CategoryInformation> {
+public class CategoryExtractionReducer extends Reducer<BinaryKey,
+        UserNavigation, BinaryKey, CategoryInformation> {
     private static Dictionary dictionary = null;
     private CategoryInformation catInfo;
 
@@ -37,7 +38,7 @@ public class CategoryExtractionReducer extends Reducer<CompositeKey,
     }
 
     @Override
-    protected void reduce(CompositeKey key, Iterable<UserNavigation> values,
+    protected void reduce(BinaryKey key, Iterable<UserNavigation> values,
             Context context) throws IOException, InterruptedException {
         Map<String, Long> uniqueUrlCounts = this.getUniqueUrlCounts(values);
         for (String url : uniqueUrlCounts.keySet()) {

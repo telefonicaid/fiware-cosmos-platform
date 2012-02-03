@@ -1,11 +1,6 @@
 package es.tid.ps.profile.export.mongodb;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.mongodb.hadoop.io.BSONWritable;
-import com.mongodb.util.JSON;
-import es.tid.ps.profile.userprofile.CategoryCount;
-import es.tid.ps.profile.userprofile.UserProfile;
 import static java.util.Arrays.*;
 import java.util.List;
 import org.apache.hadoop.io.Text;
@@ -15,6 +10,9 @@ import org.bson.BSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+import es.tid.ps.profile.userprofile.CategoryCount;
+import es.tid.ps.profile.userprofile.UserProfile;
 
 /**
  *

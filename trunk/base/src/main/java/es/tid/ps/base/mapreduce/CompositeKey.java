@@ -20,7 +20,7 @@ public abstract class CompositeKey implements WritableComparable<CompositeKey> {
         this.capacity = 0;
         this.keys = null;
     }
-    
+
     public CompositeKey(int capacity) {
         if (capacity < 1) {
             throw new IllegalArgumentException("Invalid capacity.");
@@ -28,14 +28,14 @@ public abstract class CompositeKey implements WritableComparable<CompositeKey> {
         this.capacity = capacity;
         this.keys = new LinkedList<String>();
     }
-    
+
     public void set(int index, String key) {
         if (this.keys.size() == this.capacity) {
             throw new IllegalStateException("Capacity exceeded.");
         }
         this.keys.add(key);
     }
-    
+
     public String get(int index) {
         return this.keys.get(index);
     }

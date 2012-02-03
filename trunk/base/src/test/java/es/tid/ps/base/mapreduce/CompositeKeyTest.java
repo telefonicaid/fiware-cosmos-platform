@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 /**
+ * Test case for CompositeKey
  *
  * @author dmicol
  */
@@ -29,25 +30,25 @@ public class CompositeKeyTest {
         assertEquals(t1.hashCode(), t2.hashCode());
         assertFalse(t1.equals(t3));
         assertEquals(t1.hashCode(), t3.hashCode());
-        
+
         assertFalse(b1.equals(t1));
         assertFalse(t1.equals(b1));
     }
-    
+
     @Test
     public void shouldBeOrderedByPrimaryKey() {
         CompositeKey a = new BinaryKey("keya", "3");
         CompositeKey b = new BinaryKey("keyb", "1");
-        
+
         assertEquals(-1, a.compareTo(b));
         assertEquals( 1, b.compareTo(a));
         assertEquals( 0, a.compareTo(a));
     }
-    
+
     @Test
     public void shouldBeOrderedBySecondaryKey() {
         CompositeKey a = new BinaryKey("keya", "3");
-        CompositeKey a2 = new BinaryKey("keya", "2");        
+        CompositeKey a2 = new BinaryKey("keya", "2");
         assertEquals(1, a.compareTo(a2));
     }
 }

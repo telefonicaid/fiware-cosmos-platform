@@ -45,7 +45,7 @@ public class CategoryExtractionReducer extends Reducer<BinaryKey,
             long urlInstances = uniqueUrlCounts.get(url);
             Categorization dictionaryResponse = this.categorize(url);
 
-            switch (dictionaryResponse.result) {
+            switch (dictionaryResponse.getResult()) {
                 case KNOWN_URL:
                     context.getCounter(CategoryExtractionCounter.KNOWN_VISITS).
                             increment(urlInstances);
@@ -54,7 +54,7 @@ public class CategoryExtractionReducer extends Reducer<BinaryKey,
                     this.catInfo.setDate(key.getSecondaryKey());
                     this.catInfo.setCount(urlInstances);
                     this.catInfo.setCategoryNames(
-                            dictionaryResponse.categories);
+                            dictionaryResponse.getCategories());
                     context.write(key, this.catInfo);
                     break;
 

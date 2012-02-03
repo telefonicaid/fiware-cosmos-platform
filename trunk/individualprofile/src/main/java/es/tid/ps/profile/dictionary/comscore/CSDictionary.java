@@ -96,7 +96,7 @@ public class CSDictionary implements Dictionary {
         try {
             categoryIds = this.patternToCategoryMap.getCategories(patternId);
         } catch (IllegalArgumentException ex) {
-            categorization.result = CategorizationResult.GENERIC_FAILURE;
+            categorization.setResult(CategorizationResult.GENERIC_FAILURE);
             return categorization;
         }
 
@@ -105,20 +105,20 @@ public class CSDictionary implements Dictionary {
             categoryNames[i] = this.categoryIdToNameMap.getCategoryName(
                     categoryIds[i]);
         }
-        categorization.result = CategorizationResult.KNOWN_URL;
-        categorization.categories = categoryNames;
+        categorization.setResult(CategorizationResult.KNOWN_URL);
+        categorization.setCategories(categoryNames);
         return categorization;
     }
 
     private Categorization processUknownUrl() {
         Categorization categorization = new Categorization();
-        categorization.result = CategorizationResult.UNKNOWN_URL;
+        categorization.setResult(CategorizationResult.UNKNOWN_URL);
         return categorization;
     }
 
     private Categorization processIrrelevantUrl() {
         Categorization categorization = new Categorization();
-        categorization.result = CategorizationResult.IRRELEVANT_URL;
+        categorization.setResult(CategorizationResult.IRRELEVANT_URL);
         return categorization;
     }
     

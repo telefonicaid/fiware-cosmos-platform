@@ -48,16 +48,17 @@ public class CategoryExtractionReducerTest {
             protected Categorization categorize(String url) {
                 Categorization categorization = new Categorization();
                 if (url.equals("http://www.marca.es/basket")) {
-                    categorization.result = CategorizationResult.KNOWN_URL;
-                    categorization.categories =
-                            new String[] { "SPORTS", "NEWS" };
+                    categorization.setResult(CategorizationResult.KNOWN_URL);
+                    categorization.setCategories(
+                            new String[] { "SPORTS", "NEWS" });
                 } else if (url.equals("http://www.mutxamel.org")) {
-                    categorization.result = CategorizationResult.UNKNOWN_URL;
+                    categorization.setResult(CategorizationResult.UNKNOWN_URL);
                 } else if (url.equals("http://www.realmadrid.com")) {
-                    categorization.result = CategorizationResult.IRRELEVANT_URL;
+                    categorization.setResult(
+                            CategorizationResult.IRRELEVANT_URL);
                 } else if (url.isEmpty()) {
-                    categorization.result =
-                            CategorizationResult.GENERIC_FAILURE;
+                    categorization.setResult(
+                            CategorizationResult.GENERIC_FAILURE);
                 } else {
                     assert false;
                 }

@@ -37,9 +37,8 @@ public class IndividualProfileMain extends Configured implements Tool {
     public int run(String[] args)
             throws IOException, ClassNotFoundException, InterruptedException {
         if (args.length != 4) {
-            System.err.println("Mandatory parameters: weblogs_path "
-                    + "categories_path profile_path mongo_url");
-            return 1;
+            throw new IllegalArgumentException("Mandatory parameters: "
+                    + "weblogs_path categories_path profile_path mongo_url");
         }
 
         Path webLogsPath = new Path(args[0]);
@@ -55,7 +54,6 @@ public class IndividualProfileMain extends Configured implements Tool {
         if (!upJob.waitForCompletion(true)) {
             return 1;
         }
-
         ExporterJob exJob = new ExporterJob(this.getConf());
         exJob.configure(profilePath, mongoUrl);
         if (!exJob.waitForCompletion(true)) {
@@ -119,9 +117,14 @@ public class IndividualProfileMain extends Configured implements Tool {
         return job;
     }
 
-    public static void main(String[] args) throws Exception {
-        int res = ToolRunner.run(new Configuration(), 
-                                 new IndividualProfileMain(), args);
-        System.exit(res);
+    public static void main(String[] args) {
+        try {
+            int res = ToolRunner.run(new Configuration(), 
+                                    new IndividualProfileMain(), args);
+            System.exit(res);
+        } catch (Exception ex) {
+            ex.printStackTrace(System.err);
+            System.exit(1);
+        }
     }
 }

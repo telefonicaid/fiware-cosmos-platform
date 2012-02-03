@@ -6,6 +6,25 @@ package es.tid.ps.profile.dictionary;
  * @author dmicol
  */
 public class Categorization {
-    public CategorizationResult result;
-    public String[] categories;
+    private CategorizationResult result;
+    private String[] categories;
+    
+    public Categorization() {
+    }
+    
+    public CategorizationResult getResult() {
+        return this.result;
+    }
+    
+    public void setResult(CategorizationResult result) {
+        this.result = result;
+    }
+    
+    public String[] getCategories() {
+        return this.categories;
+    }
+    
+    public void setCategories(String[] categories) {
+        this.categories = categories.clone();
+    }
 }

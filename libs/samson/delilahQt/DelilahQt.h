@@ -19,20 +19,6 @@
 namespace samson {
 	
 	/**
-	 Widget class for the DelilahQT GUI
-	 */
-    class DelilahMainWindow : public QWidget
-    {
-        Q_OBJECT
-        
-        QBoxLayout* layout;
-    public:
-        QLabel* enginesText;
-        QLabel* queuesText;
-        DelilahMainWindow(QWidget* parent = 0);
-    };
-    
-	/**
 	 Main class for the DelilahQT program
 	 */
 	

@@ -1,14 +1,17 @@
 
 SET (HEADERS
 	DelilahQt.h
+	DelilahMainWindow.h
 )
 
 SET (SOURCES
 	DelilahQt.cpp
+	DelilahMainWindow.cpp
 )
 
 SET (HEADERS_FOR_MOC
 	DelilahQt.h
+	DelilahMainWindow.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)

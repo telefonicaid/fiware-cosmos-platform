@@ -1,12 +1,13 @@
 /* ****************************************************************************
  *
- * FILE                     DelilahQt.h
+ * FILE                     DelilahQt.cpp
  *
  * DESCRIPTION			   QT terminal for delilah
  *
  */
 
 #include "DelilahQt.h" // Own interface
+#include "DelilahMainWindow.h"
 
 #include <QTimer>
 #include <QtGui>
@@ -15,20 +16,6 @@
 
 namespace samson
 {	
-    DelilahMainWindow::DelilahMainWindow(QWidget *parent ) : QWidget(parent)
-    {
-        layout = new QBoxLayout(QBoxLayout::TopToBottom, this);
-
-        queuesText = new QLabel(this);
-        enginesText = new QLabel(this);
-        
-        layout->addWidget(queuesText);
-        layout->addWidget(enginesText);
-        
-        queuesText->show();
-        enginesText->show();
-    }
-    
     void DelilahQt::updateData()
     {
         {
@@ -90,6 +77,7 @@ namespace samson
         connect(timer, SIGNAL(timeout()), this, SLOT(updateData()));
         connect(timer, SIGNAL(timeout()), mainWindow, SLOT(update()));
         connect(this, SIGNAL(enginesTextValueChanged(const QString&)), mainWindow->enginesText, SLOT(setText(const QString&)));
+        connect(this, SIGNAL(queuesTextValueChanged(const QString&)), mainWindow->queuesText, SLOT(setText(const QString&)));
         connect(this, SIGNAL(queuesTextValueChanged(const QString&)), mainWindow->queuesText, SLOT(setText(const QString&)));
         application.exec();
         

@@ -35,6 +35,7 @@ namespace mobility{
 input: system.UInt32 mobility.CellRecord  
 input: system.UInt32 mobility.Cell  
 output: system.UInt mobility.Record
+output: system.UInt32 mobility.CellRecord
 
 helpLine: Add lat-lon information to Records. Note that key at the input is cellid,key at the output user-id
 #endif // de INFO_COMMENT

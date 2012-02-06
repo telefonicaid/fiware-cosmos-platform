@@ -40,10 +40,10 @@ output: system.UInt cdr.gstCdr
 
 helpLine: Parse txt-file of Gasset CDRS in  different formats.
 extendedHelp: 		Parse txt-file of CDRS in  different formats.
-		This is a generic parse for different formats. Please, specify with the -format <format>
-		Use the -old_date to swich the format to old CDRs dates (01/01/2010)
-		Suported formats:
-		TEMM:   --> 33F43061B47A63|6691159047|33F43061B47A63|0446691557000|2|20100101|01:57:39|4|NOROAMI
+	This is a generic parse for different formats. Please, specify with the -format <format>
+	Use the -old_date to swich the format to old CDRs dates (01/01/2010)
+	Suported formats:
+	TEMM:   --> 33F43061B47A63|6691159047|33F43061B47A63|0446691557000|2|20100101|01:57:39|4|NOROAMI
 
 #endif // de INFO_COMMENT
 

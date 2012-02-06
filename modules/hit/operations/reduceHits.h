@@ -40,10 +40,10 @@ namespace hit{
 // If interface changes and you do not recreate this file, you will have to update this information (and of course, the module file)
 // Please, do not remove this comments, as it will be used to check consistency on module declaration
 //
-//  input: system.String system.UInt
-//  input: system.String hit.Hit
-//  output: system.String hit.Hit
-//  output: system.String hit.Hit
+//  in  system.String system.UInt
+//  in  system.String hit.Hit
+//  out  system.String hit.Hit
+//  out  system.String hit.Hit
 //  
 // helpLine: Simple accumulator in stream mode
 //  END_INFO_MODULE

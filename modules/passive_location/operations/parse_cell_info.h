@@ -28,11 +28,11 @@ namespace passive_location{
 	public:
 
 
-#ifdef INFO_COMMENT //Just to include a comment without conflicting anything
+// INFO_MODULE 
 // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 // output: system.UInt32 passive_location.Cell
 // helpLine: Parse input txt file containing cell information( latitude & longitude ). key is cellID composed of ((LAC leftdesp 16) | cellID)
-#endif // de INFO_COMMENT
+// END_INFO_MODULE
 
 	   void init( samson::KVWriter *writer )
 	   {

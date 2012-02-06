@@ -28,17 +28,17 @@ class parse_xml_cdrs : public samson::Parser
 public:
 
 
-#ifdef INFO_COMMENT //Just to include a comment without conflicting anything
-    // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
-
-    //out system.UInt passive_location.Record                     # Emitted with key = imsi
-    //out passive_location.CompleteTMSI passive_location.Record   # Whem imsi = 0, emitted with key = tmsi
-    //out system.UInt passive_location.Record                     # If no cellId or LAC is parsed in the record
-    //out passive_location.CompleteTMSI passive_location.IMSIbyTime               # Queue to recover imsi from tmsi
-
-
-    helpLine: Parse input cdrs from Arkanum platform. Note that output key is imsi at the output
-#endif // de INFO_COMMENT
+//  INFO_MODULE
+//    If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
+//
+//    out system.UInt passive_location.Record                     # Emitted with key = imsi
+//    out passive_location.CompleteTMSI passive_location.Record   # Whem imsi = 0, emitted with key = tmsi
+//    out system.UInt passive_location.Record                     # If no cellId or LAC is parsed in the record
+//    out passive_location.CompleteTMSI passive_location.IMSIbyTime               # Queue to recover imsi from tmsi
+//
+//
+//    helpLine: Parse input cdrs from Arkanum platform. Note that output key is imsi at the output
+//  END_INFO_MODULE
 
     void init( samson::KVWriter *writer )
     {

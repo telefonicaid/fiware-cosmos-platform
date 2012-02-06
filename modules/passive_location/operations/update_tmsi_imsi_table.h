@@ -36,7 +36,6 @@ public:
     // Please, do not remove this comments, as it will be used to check consistency on module declaration
     //
     //  input: passive_location.CompleteTMSI passive_location.IMSIbyTime
-    //  input: passive_location.CompleteTMSI passive_location.CompleteTMSI
     //  input: passive_location.CompleteTMSI passive_location.IMSIbyTime
     //  output: passive_location.CompleteTMSI passive_location.IMSIbyTime
     //

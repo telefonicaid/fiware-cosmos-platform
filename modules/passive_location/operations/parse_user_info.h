@@ -31,6 +31,7 @@ public:
     // Please, do not remove this comments, as it will be used to check consistency on module declaration
     //
     //  output: system.UInt passive_location.User
+    //  output: system.UInt passive_location.User
     //
     // helpLine: Parse input txt file containing user info to extract msisdn from imsi. key is imsi
     //  END_INFO_MODULE

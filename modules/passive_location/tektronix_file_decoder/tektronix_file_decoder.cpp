@@ -1,28 +1,33 @@
 #include <stdint.h>  // uint32_t, uint16_t...
 #include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
 
-
 #include "../tektronix_data.h"
 
 int main( int argc, const char *argv[])
 {
+
+    bool txt = cmd.get_flag_bool("txt");
+    bool newFile = true;
+
     char *inputFile;
     char *outputFile;
 
     struct stat pstat;
     int inputFd = -1;
+    int outputFd = -1;
     FILE *outputTxtFile = NULL;
     size_t length;
     char *data;
-    ssize_t n_read;
+    size_t n_read;
+    size_t n_write;
 
+
+    size_t offset = 0;
 
     unsigned char *p_blob;
     unsigned char *p_end_blob;
@@ -75,13 +80,13 @@ int main( int argc, const char *argv[])
     length = pstat.st_size;
     if ((data = (char *)malloc(length)) == NULL)
     {
-        fprintf(stderr, "Error, not enough memory for data length:%lu\n", (long unsigned int)length);
+        fprintf(stderr, "Error, not enough memory for data length:%lu\n", length);
         exit(-3);
     }
     n_read = read(inputFd, data, length);
     if (n_read != (size_t)pstat.st_size)
     {
-        fprintf(stderr, "Error, read:%lu bytes, asked:%lu\n", (long unsigned int)n_read, (long unsigned int)length);
+        fprintf(stderr, "Error, read:%lu bytes, asked:%lu\n", n_read, length);
     }
     close(inputFd);
 
@@ -117,9 +122,9 @@ int main( int argc, const char *argv[])
 
                         localtime_r( &time, &st_time);
 
-                        strftime(timestampStr, MAX_TIME_LENGTH, "%Y%m%d%H%M%S", &st_time);
+                        strftime(timestampStr, MAX_TIME_LENGTH, "%Y%m%d%H%M%s", &st_time);
 
-                        fprintf(outputTxtFile, "%d|%d|%llu|%llu|%llu|%llu|%d|%d|%s|%d|%d|%d|%d|%d|%d\n", tek_record.typeDR, tek_record.callType, (long long unsigned int)tek_record.imsi, (long long unsigned int)tek_record.tmsi, (long long unsigned int)tek_record.last_tmsi, (long long unsigned int)tek_record.imei, tek_record.LAC, tek_record.cellID, timestampStr, tek_record.DTAPCause, tek_record.BSSMAPCause, tek_record.ALCAPCause, tek_record.CCCause, tek_record.MMCause, tek_record.RANAPCause);
+                        fprintf(outputTxtFile, "%d|%d|%lu|%lu|%lu|%lu|%d|%d|%s|%d|%d|%d|%d|%d|%d\n", tek_record.typeDR, tek_record.callType, tek_record.imsi, tek_record.tmsi, tek_record.last_tmsi, tek_record.imei, tek_record.LAC, tek_record.cellID, timestampStr, tek_record.DTAPCause, tek_record.BSSMAPCause, tek_record.ALCAPCause, tek_record.CCCause, tek_record.MMCause, tek_record.RANAPCause);
                     }
                 }
                 else

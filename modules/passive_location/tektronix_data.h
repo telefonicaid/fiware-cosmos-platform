@@ -17,10 +17,10 @@ struct struct_tek_record
     uint32_t callNumber;
     int DTAPCause;
     int BSSMAPCause;
-    char *CCCause;
-    char *MMCause;
-    char *RANAPCause;
-    char *ALCAPCause;
+    int ALCAPCause;
+    int CCCause;
+    int MMCause;
+    int RANAPCause;
 };
 
 void init_tek_record(struct struct_tek_record *tek_record);

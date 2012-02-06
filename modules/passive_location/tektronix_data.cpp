@@ -24,10 +24,10 @@ void init_tek_record(struct struct_tek_record *tek_record)
     tek_record->callNumber = 0;
     tek_record->DTAPCause = 0;
     tek_record->BSSMAPCause = 0;
-    tek_record->CCCause = NULL;
-    tek_record->MMCause = NULL;
-    tek_record->RANAPCause = NULL;
-    tek_record->ALCAPCause = NULL;
+    tek_record->ALCAPCause = 0;
+    tek_record->CCCause = 0;
+    tek_record->MMCause = 0;
+    tek_record->RANAPCause = 0;
 }
 
 bool parse_OHDR_header(unsigned char **p_ohdr, uint32_t *sizeOHDR, int *numDRs, int *typeMsg)
@@ -116,7 +116,8 @@ init_tek_record(tek_record);
     int bit_SF_cellID = -1;
     int bit_SF_callType = -1;
     int bit_SF_DTAPCause = -1;
-    int bit_SF_MSSMAPCause = -1;
+    int bit_SF_BSSMAPCause = -1;
+    int bit_SF_ALCAPCause = -1;
     int bit_VF_imsi = -1;
     int bit_VF_imei = -1;
     int bit_VF_first_tmsi = -1;
@@ -125,7 +126,6 @@ init_tek_record(tek_record);
     int bit_VF_CCCause = -1;
     int bit_VF_MMCause = -1;
     int bit_VF_RANAPCause = -1;
-    int bit_VF_ALCAPCause = -1;
 
     int varSize = 0;
 
@@ -153,7 +153,7 @@ init_tek_record(tek_record);
         bit_SF_probeId = 0;
         bit_SF_lac = 4;
         bit_SF_cellID = 5;
-        bit_SF_MSSMAPCause = 6;
+        bit_SF_BSSMAPCause = 6;
         bit_SF_DTAPCause = 7;
         bit_SF_callType = 10;
 
@@ -189,11 +189,11 @@ init_tek_record(tek_record);
         bit_SF_callType = 3;
         bit_SF_lac = 5;
         bit_SF_cellID = 7;
+        bit_SF_ALCAPCause = 4;
 
         bit_VF_imsi = 0;
         bit_VF_first_tmsi = 1;
         bit_VF_last_tmsi = 2;
-        bit_VF_ALCAPCause = 4;
         bit_VF_RANAPCause = 5;
         bit_VF_CCCause = 6;
         bit_VF_MMCause = 7;
@@ -290,10 +290,15 @@ init_tek_record(tek_record);
                         tek_record->DTAPCause = ntohs(*((uint16_t *)(p_ini_SFElements)));
                         //LM_M(("DTAPCause:0x%0x", tek_record->DTAPCause));
                     }
-                    else if (j == bit_SF_MSSMAPCause)
+                    else if (j == bit_SF_BSSMAPCause)
                     {
                         tek_record->BSSMAPCause = ntohs(*((uint16_t *)(p_ini_SFElements)));
                         //LM_M(("BSSMAPCause:0x%0x", tek_record->BSSMAPCause));
+                    }
+                    else if (j == bit_SF_ALCAPCause)
+                    {
+                        tek_record->ALCAPCause = ntohs(*((uint16_t *)(p_ini_SFElements)));
+                        //LM_M(("ALCAPCause:0x%0x", tek_record->ALCAPCause));
                     }
 
                     p_ini_SFElements += sizeof(uint16_t);
@@ -356,24 +361,29 @@ init_tek_record(tek_record);
                     }
                     else if (j == bit_VF_CCCause)
                     {
-                        tek_record->CCCause = strdup(bufferVarSize);
+                        int bufferInt = atol(bufferVarSize);
+                        tek_record->CCCause = bufferInt;
+                        //tek_record->CCCause = strdup(bufferVarSize);
+                        //fprintf(stdout, "CCCause varSize:%d\n", varSize);
                         //LM_M(("CCCause:%s", tek_record->CCCause));
                     }
                     else if (j == bit_VF_MMCause)
                     {
-                        tek_record->MMCause = strdup(bufferVarSize);
+                        int bufferInt = atol(bufferVarSize);
+                        tek_record->MMCause = bufferInt;
+                        //tek_record->MMCause = strdup(bufferVarSize);
+                        //fprintf(stdout, "MMCause varSize:%d\n", varSize);
                         //LM_M(("MMCause:%s", tek_record->MMCause));
                     }
                     else if (j == bit_VF_RANAPCause)
                     {
-                        tek_record->RANAPCause = strdup(bufferVarSize);
+                        int bufferInt = atol(bufferVarSize);
+                        tek_record->RANAPCause = bufferInt;
+                        //tek_record->RANAPCause = strdup(bufferVarSize);
+                        //fprintf(stdout, "RANAPCause varSize:%d\n", varSize);
                         //LM_M(("RANAPCause:%s", tek_record->RANAPCause));
                     }
-                    else if (j == bit_VF_ALCAPCause)
-                    {
-                        tek_record->ALCAPCause = strdup(bufferVarSize);
-                        //LM_M(("ALCAPCause:%s", tek_record->ALCAPCause));
-                    }
+
                     free(bufferVarSize);
                 }
             }

@@ -345,7 +345,7 @@ namespace samson
 		std::ostringstream o;
 		bool sepFound = true;
 
-		int prevLine;
+		int prevLine = 0;
 
 		for (int i = pos ; i <= pos2 ; i++)
 		{

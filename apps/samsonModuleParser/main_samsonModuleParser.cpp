@@ -9,8 +9,8 @@
 #include <samson/module/samsonVersion.h>   /* SAMSON_VERSION                             */
 #include <samson/module/Data.h>            /* DataInstance                               */
 #include "au/CommandLine.h"			/* AUCommandLine                              */
-#include "DataContainer.h"
 #include "DataCreator.h"
+#include "DataContainer.h"
 #include "parseArgs/parseArgs.h"          // parseArgs
 #include "parseArgs/paUsage.h"            // paUsage
 #include <sys/stat.h>           // stat()

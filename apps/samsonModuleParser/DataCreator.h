@@ -7,8 +7,8 @@
  * ***************************************************************************/
 
 
-#ifndef _H_MODULE_INFORMATION
-#define _H_MODULE_INFORMATION
+#ifndef _H_DATACREATOR_H
+#define _H_DATACREATOR_H
 
 #include <string>
 #include <cstdlib>

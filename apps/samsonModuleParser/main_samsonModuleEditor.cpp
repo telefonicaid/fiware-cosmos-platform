@@ -28,7 +28,6 @@
 #include "au/CommandLine.h"			/* AUCommandLine                              */
 #include "DataContainer.h"
 #include "DataCreator.h"
-#include "DataCreator.h"
 
 /* ****************************************************************************
  *

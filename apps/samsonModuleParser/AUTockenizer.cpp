@@ -208,6 +208,13 @@ namespace samson
 			}
 		}
 		
+        if ( txt.size() > pos )
+        {
+            item.str = txt.substr(pos, txt.size() - pos );
+            item.line = nline;
+            items.push_back(item);
+            //fprintf(stdout, "item:'%s', line:%d, pos:%lu\n", item.str.c_str(), item.line, i);
+        }
 		
 		return items;
 	}
@@ -252,7 +259,8 @@ namespace samson
 		{
 			fprintf(stderr,"samsonModuleParser: Error accessing a wrong position(%d) inside the AUTockenizer element (items.size():%d) (coming from reference:'%s', line:%d)\n", pos, int(items.size()), items[reference_pos].str.c_str(), items[reference_pos].line);
             
-            LM_X(1,("Error at AUTockenizer"));
+            fprintf(stderr,"Error at AUTockenizer\n");
+            exit(-1);
 		}
 
 		//fprintf(stdout, "returning items[%d].str:'%s'\n", pos, items[pos].str.c_str());
@@ -293,7 +301,8 @@ namespace samson
 		if( !isOpenSet(pos) )
 		{
 			fprintf(stderr, "samsonModuleParser: Error in format while parsing the document at line:%d\n", itemAtPos(pos).line);
-            LM_X(1,("Error at AUTockenizer"));
+            fprintf(stderr,"Error at AUTockenizer\n");
+            exit(-1);
 		}
 		reference_pos = pos;
 		pos++;
@@ -334,15 +343,27 @@ namespace samson
 	std::string AUTockenizer::getLiteralInternalwithBlanks( int pos , int pos2 )
 	{
 		std::ostringstream o;
-		bool sepFound = false;
+		bool sepFound = true;
+
+		int prevLine;
 
 		for (int i = pos ; i <= pos2 ; i++)
 		{
+            if ((i != pos) && (itemAtPos(i).line != prevLine))
+            {
+                if (sepFound == false)
+                {
+                    fprintf(stderr, "samsonModuleParser: Error, expected ';' in the lines of a block. Reference line:%d, between item:'%s', and item:'%s'\n", items[i-1].line, itemAtPos(i-1).str.c_str(), itemAtPos(i).str.c_str());
+                    fprintf(stderr,"Error at AUTockenizer\n");
+                    exit(-1);
+                }
+            }
+
 			if (itemAtPos(i).str == ";")
 			{
 				o << "\n";
 				sepFound = true;
-				//fprintf(stderr, "Find sepFound with '%s'(pos:%d)\n", itemAtPos(i).str.c_str(), i);
+				//fprintf(stdout, "Find sepFound with '%s'(pos:%d)\n", itemAtPos(i).str.c_str(), i);
 			}
 			else
 			{
@@ -350,19 +371,13 @@ namespace samson
 				if ((itemAtPos(i).str != " ") && (itemAtPos(i).str != "\t") && (itemAtPos(i).str != "\n"))
 				{
 					sepFound = false;
-					//fprintf(stderr, "Deleting sepFound with '%s'(pos:%d)\n", itemAtPos(i).str.c_str(), i);
+					//fprintf(stdout, "Deleting sepFound with '%s'(pos:%d)\n", itemAtPos(i).str.c_str(), i);
 				}
 			}
+
+			prevLine = itemAtPos(i).line;
 		}
 
-        /*
-		if (sepFound == false)
-		{
-			fprintf(stderr, "samsonModuleParser: Error, expected ';' in the lines of a block. Reference line:%d\n", items[reference_pos].line);
-			//fprintf(stderr, "samsonModuleParser: Error, expected ';' in the lines of a block. Reference line:%d, between pos_begin:%d, pos_end:%d\n", items[reference_pos].line, pos, pos2);
-            LM_X(1,("Error at AUTockenizer"));
-		}
-         */
 		return o.str();
 	}
 
@@ -416,7 +431,8 @@ namespace samson
 		{
 			fprintf(stderr,"samsonModuleParser: Error getting the limits in scope of a {  } while parsing the document, from reference:'%s' line:%d\n", items[reference_pos].str.c_str(), items[reference_pos].line);
 			fprintf(stderr,"\t\tgetScopeLimits called from non OpenSet position:'%s'\n", itemAtPos(*pos).str.c_str());
-            LM_X(1,("Error at AUTockenizer"));
+            fprintf(stderr,"Error at AUTockenizer\n");
+            exit(-1);
 		}
 
 		*begin = *pos + 1;

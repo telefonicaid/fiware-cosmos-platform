@@ -92,7 +92,7 @@ public class IndividualProfileMain extends Configured implements Tool {
         DistributedCache.addCacheFile(URI.create(COM_SCORE_BASE
                 + "patterns_to_categories.txt"), job.getConfiguration());
         DistributedCache.addCacheFile(
-                URI.create(COM_SCORE_BASE + "cat_subcat_lookup.txt"),
+                URI.create(COM_SCORE_BASE + "cat_subcat_map.txt"),
                 job.getConfiguration());
 
         return job;

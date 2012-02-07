@@ -24,7 +24,7 @@ public class CSDictionary implements Dictionary {
     private static final String CATEGORY_PATTERN_MAPPING_FILENAME =
             "patterns_to_categories.txt";
     private static final String CATEGORY_NAMES_FILENAME =
-            "cat_subcat_lookup.txt";
+            "cat_subcat_map.txt";
     
     private boolean isInitialized;
     private final List<Path> dictionayFiles;

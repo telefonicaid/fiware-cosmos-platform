@@ -3,8 +3,6 @@ package es.tid.ps.base.mapreduce;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
@@ -13,31 +11,18 @@ import org.apache.hadoop.io.WritableComparable;
  * @author dmicol
  */
 public abstract class CompositeKey implements WritableComparable<CompositeKey> {
-    private int capacity;
-    private List<String> keys;
-
-    public CompositeKey() {
-        this.capacity = 0;
-        this.keys = null;
-    }
-
+    private String[] keys;
+    
     public CompositeKey(int capacity) {
-        if (capacity < 1) {
-            throw new IllegalArgumentException("Invalid capacity.");
-        }
-        this.capacity = capacity;
-        this.keys = new LinkedList<String>();
+        this.keys = new String[capacity];
     }
-
+    
     public void set(int index, String key) {
-        if (this.keys.size() == this.capacity) {
-            throw new IllegalStateException("Capacity exceeded.");
-        }
-        this.keys.add(key);
+        this.keys[index] = key;
     }
 
     public String get(int index) {
-        return this.keys.get(index);
+        return this.keys[index];
     }
 
     /*
@@ -47,8 +32,8 @@ public abstract class CompositeKey implements WritableComparable<CompositeKey> {
      */
     @Override
     public void write(DataOutput out) throws IOException {
-        out.writeInt(this.capacity);
-        for (String key : keys) {
+        out.writeInt(this.keys.length);
+        for (String key : this.keys) {
             out.writeUTF(key);
         }
     }
@@ -60,10 +45,10 @@ public abstract class CompositeKey implements WritableComparable<CompositeKey> {
      */
     @Override
     public void readFields(DataInput in) throws IOException {
-        this.capacity = in.readInt();
-        this.keys = new LinkedList<String>();
-        for (int i = 0; i < this.capacity; i++) {
-            this.keys.add(in.readUTF());
+        int capacity = in.readInt();
+        this.keys = new String[capacity];
+        for (int i = 0; i < capacity; i++) {
+            this.keys[i] = in.readUTF();
         }
     }
 
@@ -92,11 +77,11 @@ public abstract class CompositeKey implements WritableComparable<CompositeKey> {
             return false;
         }
         CompositeKey tp = (CompositeKey) o;
-        if (tp.capacity != this.capacity) {
+        if (tp.keys.length != this.keys.length) {
             return false;
         }
-        for (int i = 0; i < this.capacity; i++) {
-            if (!tp.keys.get(i).equals(this.keys.get(i))) {
+        for (int i = 0; i < this.keys.length; i++) {
+            if (!tp.keys[i].equals(this.keys[i])) {
                 return false;
             }
         }
@@ -111,7 +96,7 @@ public abstract class CompositeKey implements WritableComparable<CompositeKey> {
     @Override
     public String toString() {
         String str = "";
-        for (String key : keys) {
+        for (String key : this.keys) {
             if (!str.isEmpty()) {
                 str += "\t";
             }
@@ -128,16 +113,16 @@ public abstract class CompositeKey implements WritableComparable<CompositeKey> {
     @Override
     public int compareTo(CompositeKey tp) {
         int i = 0;
-        while (i < tp.capacity && i < this.capacity) {
-            int cmp = this.keys.get(i).compareTo(tp.keys.get(i));
+        while (i < tp.keys.length && i < this.keys.length) {
+            int cmp = this.keys[i].compareTo(tp.keys[i]);
             if (cmp != 0) {
                 return cmp;
             }
             i++;
         }
-        if (this.capacity < tp.capacity) {
+        if (this.keys.length < tp.keys.length) {
             return -1;
-        } else if (this.capacity > tp.capacity) {
+        } else if (this.keys.length > tp.keys.length) {
             return 1;
         } else {
             return 0;

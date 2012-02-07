@@ -1,0 +1,15 @@
+html,body
+{
+    height:100%;
+}
+
+label, form, input, select, textarea, button
+{
+	color: #0086c3;
+}
+
+textarea
+{
+	resize: none;
+	color: #0086c3;
+}

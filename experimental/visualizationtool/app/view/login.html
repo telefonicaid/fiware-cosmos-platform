@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	
+	<meta charset="utf-8" />
+    <title>Visualization Tool Demo</title>
+    
+    <!-- stylesheets -->
+ 	<link rel="stylesheet" href="../../resources/css/layout.css" type="text/css">
+ 
+ 	<!-- favicon -->
+    <link rel="shortcut icon" href="../../resources/images/chart_bars.png"/>
+    
+    <!-- javascript -->
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="../../app/js/login.js"></script>
+	
+	<!-- JQuery form validation plugin-->
+	<script src="../../app/js/jquery-validation/jquery.js" type="text/javascript"></script>
+	<script src="../../app/js/jquery-validation/jquery.validate.js" type="text/javascript"></script>
+	
+	<!-- javascript -->
+	<script type="text/javascript" >
+
+		$.validator.setDefaults(
+		{
+			//Function to log in a user
+			submitHandler: function(form)
+			{
+			//	form.submit();
+				
+				if( $(form).attr("id") == "registerForm" )
+				{				
+					if (alert('You are logged in'))
+					location.href = "../../index.html";	
+					else location.href = "../../index.html";
+				}
+				
+				else
+				{
+					if (alert('An email will be sent to the address entered below'))
+					location.href = "../../index.html";	
+					else location.href = "../../index.html";
+				}
+			}
+		});
+	
+	</script>
+	
+</head>
+
+<body >
+
+	<header style="text-align: right; background-color: #0086c3; height: 35px; padding-left: 5px; padding-right: 5px;">
+        <img align="left" src="../../resources/images/footer_Telefonica.png" alt="footerTelefonica"/>       
+    	<label style="color: #ffffff; font-size: 25px; font-weight: bold; padding-right: 420px">Visualization Tool Demo</label>
+    	<label><a style="color: #ffffff; font-size: 12px" href="../../app/view/login.html">Log in</a></label>
+   		<label style="color: #ffffff; font-size: 12px">|</label>
+   		<label><a style="color: #ffffff; font-size: 12px" href="../../app/view/registration.html">Register</a></label>
+    </header>
+
+	<nav style="height:10px; border: solid; border-color: #ffffff; border-left-width: 0; border-right-width: 0; background-color: #0086c3"></nav>
+		  
+    <div style="width:100%; height: 90%">
+	  <div style="height:97%; width:18%; float:left; padding-bottom: 10px; padding-top: 10px; padding-left: 10px;">
+	      <b style="font-size: 24px">Main Menu</b><br/>
+	      	  <hr style="color: #0086c3"/>
+		      <h1 style="font-size: 20px">Data Sets</h1>
+	            <ul>
+	            	<li id="createLi" style="color: #0086c3"><a href="../../app/view/creation.html">Create Visualization</a></li>
+	            	<li id="existingLi" style="color: #0086c3"><a href="../../app/view/datasets.html">Existing Data Sets</a></li>
+	            </ul>	        
+	        <h1 style="font-size: 20px">Visualizations</h1>
+	            <ul>
+	                <li id="columnLi" style="color: #0086c3"><a href="../../app/view/charts/area.html">Area Chart</a></li>
+	                <li id="columnLi" style="color: #0086c3"><a href="../../app/view/charts/bar.html">Bar Chart</a></li>
+	                <li id="columnLi" style="color: #0086c3"><a href="../../app/view/charts/column.html">Column Chart</a></li>
+	                <li id="lineLi" style="color: #0086c3"><a href="../../app/view/charts/line.html">Line Chart</a></li>
+	                <li id="pieLi" style="color: #0086c3 ; padding-bottom: 5px"><a href="../../app/view/charts/pie.html">Pie Chart</a></li>
+	            </ul>
+	        <h1 style="font-size: 20px">My Profile</h1>
+	            <ul>
+	                <li id="columnLi" style="color: #0086c3"><a href="#">Profile Details</a></li>
+	                <li id="columnLi" style="color: #0086c3; padding-bottom: 5px"><a href="#">My Graphics</a></li>
+	            </ul>
+	  </div>  
+	  
+	  <div style="height: 100%; width: 80%; float: right">
+			<div style="height: 5%; color: #0086c3">
+	      		<b id="htitle" style="font-size:24px">Log in</b>
+	  		</div>
+	  		<div style="color:#0086c3; border:solid; border-color:#0086c3; height: 90.5%; padding-top: 10px; padding-bottom: 10px; padding-left: 10px; padding-right: 10px">
+				<div style="position: relative; float: left; display: block; width: 20%; height: 100%" align="center">
+			<!--		<div style="height: 33%">
+						<img src="../../resources/images/area.png" alt="areaSpline" style="padding-left: 20px; padding-right: 20px" vspace="50%"/>
+  					</div>				
+  					<div style="height: 34%">
+  						<img src="../../resources/images/line.fast.png" alt="line" style="padding-left: 20px; padding-right: 20px;" vspace="50%"/>
+  					</div>
+  					<div style="height: 33%">
+  						<img src="../../resources/images/pie.png" alt="3pie" style="padding-left: 20px; padding-right: 20px" vspace="50%"> 					
+					</div>-->
+				</div>
+				
+				<div style="position: relative; float: left; display: block; width: 58%; height: 100%;" align="center">
+					<div id="contentLogin" style="height:280px; width: 500px; border: solid; border-color: #0086c3; position:relative;">      		
+			         		<br/><br/>
+			         		<label style="font-weight: bold; font-size: 20px; padding-right: 20px">Log in</label><br/><br/>
+			         		<form id="registerForm" style="text-align: left; padding-left: 100px">
+			         			<table>
+								<tr>
+								<td>Email Address:</td>
+								<td>
+								<input id="email" name="email" type="email" autocomplete="off"/>
+								</td>
+								</tr>
+								<tr style="padding-top: 10px">
+								<td style="padding-top: 10px">Password:</td>
+								<td>
+								<input id="password" name="password" type="password" autocomplete="off"/>
+								</td>
+								</tr>
+								<tr>
+								<td style="padding-top: 20px"></td>
+								<td style="padding-top: 20px">
+								<input class="submit" type="submit" value="Submit"/>
+								</td>
+								</tr>
+								</table>
+							</form>
+							
+							<hgroup id="agroup">
+								<a style="font-size: 11px" href="../../app/view/registration.html">Register</a>
+								<a style="font-size: 11px">|</a>
+								<a id="aforgot" style="font-size: 11px; cursor:pointer"><u>Forgot your password?</u></a>
+							</hgroup>
+					</div>	
+					
+					<div id="contentPassword" style="display:none; height:280px; width: 500px; border: solid; border-color: #0086c3; position:relative;"> 
+						<br/><br/>
+			         	<label style="font-weight: bold; font-size: 20px">Forgot Password</label><br/><br/>
+						<form id="passwordForm" style="text-align: left; padding-left: 90px">
+		         			<table>
+							<label style="font-size: 12px">To set a new password, your email address must be verified.</label><br/><br/>
+							<tr>
+							<td>Email Address:</td>
+							<td>
+							<input id="email" name="email" type="email" autocomplete="off"/>
+							</td>
+							</tr>
+							<tr><td> </td>
+							<td>
+							<br/><br/>
+							<input id="sendbtn" class="submit" type="submit" value="Send Email"></input>
+							<input id="cancelbtn" type="button" value="Cancel"></input>
+							</td>
+							</tr>
+							</table>
+						</form>
+					</div> 								   
+				</div>
+								
+				<div style="position: relative; float: left; display: block; width: 20%; height: 100%;" align="center">
+				<!--	<div style="height: 33%">
+						<img src="../../resources/images/area.spline.png" alt="areaSpline" style="padding-left: 20px; padding-right: 20px" vspace="50%"/>
+  					</div>				
+  					<div style="height: 34%">
+  						<img src="../../resources/images/line.png" alt="line" style="padding-left: 20px; padding-right: 20px;" vspace="50%"/>
+  					</div>
+  					<div style="height: 33%">
+  						<img src="../../resources/images/3d_pie.png" alt="3pie" style="padding-left: 20px; padding-right: 20px" vspace="50%"> 					
+					</div>	-->				
+				</div>
+	  		</div>	
+	  </div>	 
+  	  	
+  	  <div style="background-color:#0086c3; color: #ffffff; clear:both; height: 25px">
+		  &copy; Copyright TID Tools Team 2012
+	  <img align="right" vspace="0px" src="../../resources/images/footer_02.png" alt="footerO2"/>
+	 </div>
+	</div> 	  
+
+</body>
+
+</html> 

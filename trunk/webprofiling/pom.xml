@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>es.tid.ps</groupId>
     <artifactId>webprofiling</artifactId>
-    <version>>${env.ProductVersion}${env.SVN_REVISION}</version>
+    <version>${env.ProductVersion}${env.SVN_REVISION}</version>
     <packaging>pom</packaging>
     <name>webprofiling</name>
     <description>Group of projects in where develop the PS webprofiling modules over Hadoop</description>

@@ -37,8 +37,7 @@ namespace samson {
 		size_t size;		// General output buffer size
 		
 		int num_outputs;	// Number of global outputs ( channels of output )
-		int num_workers;	// Number of servers where information is divided
-		
+        
 		// Minibuffer to serialize
 		char *miniBuffer;
 		size_t miniBufferSize;

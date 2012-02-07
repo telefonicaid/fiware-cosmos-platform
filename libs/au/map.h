@@ -33,6 +33,8 @@
 
 #include "au/namespace.h"
 
+// Usefull define for full iteration over a map structure
+
 NAMESPACE_BEGIN(au)
 
 /**
@@ -46,8 +48,7 @@ public:
     
     // Iterator definition
     typename std::map<K, V* >::iterator iter;
-    
-    
+
     // Insert a pair of elements ( easy method )
     // If a previous element was inserted with the same key, it is automatically deleted
     void insertInMap( K& key , V* value)
@@ -56,7 +57,7 @@ public:
         if( tmp )
             delete tmp;
         
-        insert( std::pair<K,V*>( key, value) );
+        std::map<K, V*,_Compare >::insert( std::pair<K,V*>( key, value) );
     }
 
     // Insert a pair of elements ( easy method )
@@ -74,7 +75,7 @@ public:
     
     V* findInMap( K& key ) 
     {
-        typename std::map<K, V*,_Compare >::iterator iter = find(key);
+        typename std::map<K, V*,_Compare >::iterator iter = std::map<K, V*,_Compare >::find(key);
         
         if( iter == std::map<K,V*,_Compare>::end() )
             return NULL;
@@ -198,6 +199,8 @@ public:
     
     
 };
+
+
 
 NAMESPACE_END
 

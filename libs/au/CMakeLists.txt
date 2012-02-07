@@ -1,9 +1,4 @@
 SET (HEADERS
-Object.h
-ObjectDictionary.h
-ObjectVector.h
-ObjectPool.h
-
 namespace.h
 
 utils.h
@@ -30,6 +25,7 @@ map.h
 simple_map.h
 list.h
 set.h
+vector.h
 ListMap.h
 varint.h
 Cronometer.h
@@ -47,11 +43,6 @@ ProcessStats.h
 )
 
 SET (SOURCES
-
-Object.cpp
-ObjectDictionary.cpp
-ObjectVector.cpp
-ObjectPool.cpp
 
 utils.cpp
 
@@ -110,9 +101,5 @@ ADD_EXECUTABLE(au_sleep_test au_sleep_test_main.cpp )
 TARGET_LINK_LIBRARIES(au_sleep_test ${LIBS} au lm pa )
 INSTALL(TARGETS au_sleep_test        RUNTIME DESTINATION   bin)
 
-# Unit testing
-ADD_EXECUTABLE( ut_au_object ut_au_object.cpp )
-TARGET_LINK_LIBRARIES( ut_au_object ${LIBS} au lm pa )
-INSTALL(TARGETS  ut_au_object RUNTIME DESTINATION   bin)
 
 

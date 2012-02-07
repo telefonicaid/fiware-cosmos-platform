@@ -269,7 +269,7 @@ std::string DataBase::runCommand( std::string command )
         std::string table_name = cmdLine.get_argument(1);
         Table* table = tables.findInMap( table_name );
         if( !table )
-            return au::str("Unkown table %s" , table_name.c_str() );
+            return au::str("Unknown table %s" , table_name.c_str() );
         
         Table* result = table->getColumnDescriptionTable();
         if( save != "no_save" )
@@ -295,7 +295,7 @@ std::string DataBase::runCommand( std::string command )
         std::string table_name = cmdLine.get_argument(1);
         Table* table = tables.findInMap( table_name );
         if( !table )
-            return au::str("Unkown table %s" , table_name.c_str() );
+            return au::str("Unknown table %s" , table_name.c_str() );
         
 
         SelectTableInformation select;
@@ -365,7 +365,7 @@ std::string DataBase::runCommand( std::string command )
         std::string table_name = cmdLine.get_argument(1);
         Table* table = tables.findInMap( table_name );
         if( !table )
-            return au::str( au::red, "Unkown table %s" , table_name.c_str() );
+            return au::str( au::red, "Unknown table %s" , table_name.c_str() );
         
         SelectTableInformation select;
         
@@ -399,7 +399,7 @@ std::string DataBase::runCommand( std::string command )
         std::string tree_name = cmdLine.get_argument(1);
         TreeItem* tree = trees.findInMap( tree_name );
         if( !tree )
-            return au::string_in_color( au::str("Unkown tree %s" , tree_name.c_str() ) , "red" );
+            return au::string_in_color( au::str("Unknown tree %s" , tree_name.c_str() ) , "red" );
         
         if( cmdLine.get_num_arguments() > 2 )
         {
@@ -426,7 +426,7 @@ std::string DataBase::runCommand( std::string command )
         std::string collection_name = cmdLine.get_argument(1);
         Collection* collection = collections.findInMap( collection_name );
         if( !collection )
-            return au::string_in_color( au::str("Unkown collection %s" , collection_name.c_str() ) , "red" );
+            return au::string_in_color( au::str("Unknown collection %s" , collection_name.c_str() ) , "red" );
 
         return collection->str( collection_name );
     }
@@ -455,7 +455,7 @@ std::string DataBase::runCommand( std::string command )
         
         TreeItem* tree = trees.findInMap( tree_name );
         if( !tree )
-            return au::string_in_color( au::str("Unkown tree %s" , tree_name.c_str() ) , "red" );
+            return au::string_in_color( au::str("Unknown tree %s" , tree_name.c_str() ) , "red" );
         
         std::string path = cmdLine.get_argument(2);
         Table* result = tree->getTableFromPath( path );
@@ -484,7 +484,7 @@ std::string DataBase::runCommand( std::string command )
         
         TreeItem* tree = trees.findInMap( tree_name );
         if( !tree )
-            return au::string_in_color( au::str("Unkown tree %s" , tree_name.c_str() ) , "red" );
+            return au::string_in_color( au::str("Unknown tree %s" , tree_name.c_str() ) , "red" );
         
         TreeCollection *result = tree->getTreesFromPath( path );
 
@@ -511,7 +511,7 @@ std::string DataBase::runCommand( std::string command )
         
         Collection* collection = collections.findInMap( collection_name );
         if( !collection )
-            return au::string_in_color( au::str("Unkown collection %s" , collection_name.c_str() ) , "red" );
+            return au::string_in_color( au::str("Unknown collection %s" , collection_name.c_str() ) , "red" );
         
         
         CollectionItem filter;

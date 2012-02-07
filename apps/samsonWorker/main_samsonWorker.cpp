@@ -23,11 +23,8 @@
 
 #include "samson/common/samsonVersion.h"
 #include "samson/common/samsonVars.h"
-#include "samson/common/platformProcesses.h"
 #include "samson/common/SamsonSetup.h"
-#include "samson/network/Network2.h"
-#include "samson/network/Endpoint2.h"
-#include "samson/network/EndpointManager.h"
+#include "samson/network/WorkerNetwork.h"
 #include "samson/worker/SamsonWorker.h"
 #include "samson/isolated/SharedMemoryManager.h"
 #include "samson/stream/BlockManager.h"
@@ -42,8 +39,8 @@
 SAMSON_ARG_VARS;
 
 bool     noLog;
-bool     local;
-
+int      port;
+int      web_port;
 
 
 /* ****************************************************************************
@@ -53,10 +50,9 @@ bool     local;
 PaArgument paArgs[] =
 {
 	SAMSON_ARGS,
-
-	{ "-nolog",   &noLog,    "SS_WORKER_NO_LOG",   PaBool,    PaOpt,  false,  false,   true,  "no logging"                    },
-	{ "-local",   &local,    "SS_WORKER_LOCAL",    PaBool,    PaOpt,  false,  false,   true,  "local execution"               },
-
+	{ "-port",      &port,      "",  PaInt,  PaOpt, SAMSON_WORKER_PORT,     1,  9999, "Port to receive new connections"   },
+	{ "-web_port",  &web_port,  "",  PaInt,  PaOpt, SAMSON_WORKER_WEB_PORT, 1,  9999, "Port to receive new connections"   },
+	{ "-nolog",     &noLog, "SS_WORKER_NO_LOG", PaBool, PaOpt, false,  false,   true,        "no logging"                        },
 	PA_END_OF_ARGS
 };
 
@@ -83,10 +79,6 @@ void exitFunction(void)
     google::protobuf::ShutdownProtobufLibrary();
     
 }
-
-
-
-
 
 /* ****************************************************************************
 *
@@ -147,9 +139,9 @@ int main(int argC, const char *argV[])
 
 	lmAux((char*) "father");
 
-	LM_T(LmtInit, ("Started with arguments:"));
+	LM_V(("Started with arguments:"));
 	for (int ix = 0; ix < argC; ix++)
-		LM_T(LmtInit, ("  %02d: '%s'", ix, argV[ix]));
+		LM_V(("  %02d: '%s'", ix, argV[ix]));
 
 	logFd = lmFirstDiskFileDescriptor();
     
@@ -160,17 +152,14 @@ int main(int argC, const char *argV[])
     if( signal( SIGINT , captureSIGINT ) == SIG_ERR )
         LM_W(("SIGINT cannot be handled"));
     
-	samson::platformProcessesPathInit(samsonWorking);
-
     // Make sure this singlelton is created just once
     au::LockDebugger::shared();
     
-	samson::SamsonSetup::init(samsonHome , samsonWorking);          // Load setup and create default directories
+	samson::SamsonSetup::init(samsonHome , samsonWorking );          // Load setup and create default directories
     samson::SamsonSetup::shared()->createWorkingDirectories();      // Create working directories
     
 	engine::Engine::init();
 	engine::SharedMemoryManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess") , samson::SamsonSetup::shared()->getUInt64("general.shared_memory_size_per_buffer"));
-    
     
 	engine::DiskManager::init(1);
 	engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
@@ -181,20 +170,10 @@ int main(int argC, const char *argV[])
     
 	// Instance of network object and initialization
 	// --------------------------------------------------------------------
-	samson::Network2*        networkP  = new samson::Network2(samson::Endpoint2::Worker);
-
-
-	LM_T(LmtInit, ("Waiting for network connection ..."));
-	networkP->runInBackground();
-
-	while (!networkP->ready())
-		sleep(1);
-
-	LM_T(LmtInit, ("Network Ready"));
+	samson::WorkerNetwork*  networkP  = new samson::WorkerNetwork( port , web_port );
 	
 	// Instance of SamsonWorker object (network contains at least the number of wokers)
 	// -----------------------------------------------------------------------------------
-	
 	worker = new samson::SamsonWorker(networkP);
 
 

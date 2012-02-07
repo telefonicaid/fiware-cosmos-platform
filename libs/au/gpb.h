@@ -27,11 +27,7 @@
 #include "logMsg/logMsg.h"             // LM_*
 #include "logMsg/traceLevels.h"        // Trace Levels
 
-#include "samson/network/Endpoint.h"           // Endpoint
-#include "samson/network/iomMsgAwait.h"        // Own interface
-
 #include <assert.h>
-
 
 #include "au/status.h"  // au::Status
 

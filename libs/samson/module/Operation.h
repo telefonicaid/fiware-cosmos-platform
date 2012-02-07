@@ -62,21 +62,21 @@ namespace samson {
 		 Optional method that can be implemented by user
 		 */
 		
-		virtual void setup( std::string command ){}		
+		//virtual void setup( std::string command ){}		
 		
 		/**
 		 Optional method that can be implemented bu custom operation. It is suppoused to be called once at the begin of the operation.\n
 		 Perfect place to alloc memory space if necessary
 		 */
 		
-		virtual void init(){};		//Called once before running any operation
+		//virtual void init(){};		//Called once before running any operation
 		
 		/**
 		 Optional method that can be implemented bu custom operation. It is suppoused to be called once at the end of the operation.\n
 		 Perfect place to release memory space if necessary
 		 */
 		
-		virtual void finish(){};	//Called once after all operations are executed
+		//virtual void finish(){};	//Called once after all operations are executed
 
 	};
 	

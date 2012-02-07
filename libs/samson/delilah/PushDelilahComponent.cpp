@@ -103,7 +103,7 @@ namespace samson
     }
 
     // Receive packets
-    void PushDelilahComponent::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+    void PushDelilahComponent::receive( Packet* packet )
     {
         // At the moment we do not receive anything
         if( packet->msgCode != Message::PushBlockResponse )
@@ -172,7 +172,7 @@ namespace samson
             
             Packet* packet = new Packet( Message::PushBlock );
             packet->buffer = buffer;    // Set the buffer of data
-            packet->message->set_delilah_id( id );
+            packet->message->set_delilah_component_id( id );
 
             network::PushBlock* pb =  packet->message->mutable_push_block();
 
@@ -183,8 +183,15 @@ namespace samson
             
             pb->set_size( buffer->getSize() - sizeof(KVHeader) );
             
-            int worker = delilah->getNextWorker();
-            delilah->network->sendToWorker( worker, packet);
+            // Get the next worker_id to send data...
+            size_t worker_id = delilah->getNextWorkerId();
+            
+            // Information about destination
+            packet->to.node_type = WorkerNode;
+            packet->to.id = worker_id;
+            
+            // Send packet
+            delilah->network->send( packet );
             
             if( !dataSource->isFinish() )
             {

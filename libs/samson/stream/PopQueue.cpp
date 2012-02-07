@@ -23,12 +23,13 @@ namespace samson {
     namespace stream {
         
         
-        PopQueue::PopQueue(const network::PopQueue& _pq , size_t _delilahId, int _fromId  )
+        PopQueue::PopQueue( const network::PopQueue& _pq , size_t _delilah_id, size_t _delilah_component_id  )
         {
             pq = new network::PopQueue();
             pq->CopyFrom( _pq );
-            delilahId = _delilahId;
-            fromId = _fromId;
+            
+            delilah_id = _delilah_id;
+            delilah_component_id = _delilah_component_id;
 
             // Init the finish flag
             finished =  false;
@@ -79,7 +80,7 @@ namespace samson {
             samson::Packet *packet = new Packet( Message::PopQueueResponse );
             
             // Set delialh id
-            packet->message->set_delilah_id( delilahId );
+            packet->message->set_delilah_component_id( delilah_component_id );
 
             
             // Set the finish flag to true
@@ -91,11 +92,13 @@ namespace samson {
                 network::Error *_error = pqr->mutable_error();
                 _error->set_message(error.getMessage());
             }
-            
-            engine::Notification *notification = new engine::Notification( notification_samson_worker_send_packet , packet );
-            notification->environment.set("toId", fromId );
+
+            // Direction of this packet
+            packet->to.node_type = DelilahNode;
+            packet->to.id = delilah_id;
             
             // Send a notification
+            engine::Notification *notification = new engine::Notification( notification_samson_worker_send_packet , packet );
             engine::Engine::shared()->notify( notification );
             
         }

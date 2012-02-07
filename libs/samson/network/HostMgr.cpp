@@ -18,6 +18,8 @@
 #include "logMsg/logMsg.h"             // LM_*
 #include "logMsg/traceLevels.h"        // Trace Levels
 
+#include "samson/network/misc.h"
+
 #include "Host.h"               // Host
 #include "HostMgr.h"            // Own interface
 #include <stdlib.h>             // free
@@ -33,14 +35,10 @@ namespace samson
 *
 * HostMgr
 */
-HostMgr::HostMgr(unsigned int size)
+HostMgr::HostMgr()
 {
-	LM_T(LmtHost, ("Creating Host Manager of size %d", size));
-	this->size = size;
+	LM_T(LmtHost, ("Creating Host Manager"));
 
-	hostV = (Host**) calloc(size, sizeof(Host*));
-	if (hostV == NULL)
-		LM_X(1, ("error allocating room for %d delilah hosts", size));
 
 	localIps();
 	list("localhost inserted", true);
@@ -54,17 +52,7 @@ HostMgr::HostMgr(unsigned int size)
 */
 HostMgr::~HostMgr()
 {
-	unsigned int  ix;
-
-	for (ix = 0; ix < size; ix++)
-	{
-		if (hostV[ix] == NULL)
-			continue;
-
-		remove(hostV[ix]->name);
-	}
-	
-	free(hostV);
+    hostV.clearVector();
 }
 
 
@@ -155,16 +143,7 @@ void HostMgr::localIps(void)
 */
 int HostMgr::hosts(void)
 {
-	unsigned int  ix;
-	int           hostNo = 0;
-
-	for (ix = 0; ix < size; ix++)
-	{
-		if (hostV[ix] != NULL)
-			++hostNo;
-	}
-
-	return hostNo;
+    return hostV.size();
 }
 
 
@@ -175,34 +154,9 @@ int HostMgr::hosts(void)
 */
 Host* HostMgr::insert(Host* hostP)
 {
-	unsigned int  ix;
-
-	for (ix = 0; ix < size; ix++)
-	{
-		if (hostV[ix] == NULL)
-		{
-			hostV[ix] = hostP;
-			list("Host Added", true);
-			return hostV[ix];
-		}
-	}
-
-	LM_RE(NULL, ("Please realloc host vector (%d hosts not enough) ...", size));
-}
-
-
-
-/* ****************************************************************************
-*
-* ip2string - convert integer ip address to string
-*/
-static void ip2string(int ip, char* ipString, int ipStringLen)
-{
-	snprintf(ipString, ipStringLen, "%d.%d.%d.%d",
-			 ip & 0xFF,
-			 (ip & 0xFF00) >> 8,
-			 (ip & 0xFF0000) >> 16,
-			 (ip & 0xFF000000) >> 24);
+    hostV.push_back(hostP);
+    list("Host Added", true);
+	return hostP;
 }
 
 
@@ -436,40 +390,16 @@ void HostMgr::aliasAdd(Host* host, const char* alias)
 */
 bool HostMgr::remove(const char* name)
 {
-	Host*          hostP;
-	unsigned int   ix;
-
-	LM_T(LmtHost, ("removing '%s'", name));
-	hostP = lookup(name);
-	if (hostP == NULL)
-		LM_RE(false, ("Host '%s' not in list"));
-
-	for (ix = 0; ix < size; ix++)
-	{
-		if (hostV[ix] != hostP)
-			continue;
-
-		if (hostP->name != NULL)
-			free(hostP->name);
-
-		if (hostP->ip != NULL)
-			free(hostP->ip);
-
-		for (unsigned int aIx = 0; aIx < sizeof(hostP->alias) / sizeof(hostP->alias[0]); aIx++)
-		{
-			if (hostP->alias[aIx] == NULL)
-				continue;
-
-			free(hostP->alias[aIx]);
-		}
-
-		free(hostP);
-		hostV[ix] = NULL;
-
-		return true;
-	}
-
-	LM_RE(false, ("host pointer returned from lookup not found ... internal bug!"));
+    Host* host = lookup(name);
+    
+    if( host )
+    {
+        hostV.removeFromVector( host );
+        delete host;
+        return true;
+    }
+    
+    return false;
 }
 
 
@@ -480,34 +410,15 @@ bool HostMgr::remove(const char* name)
 */
 Host* HostMgr::lookup(const char* name)
 {
-	unsigned int ix;
-
 	LM_T(LmtHost, ("looking up '%s'", name));
  
 	if (name == NULL)
 		LM_RE(NULL, ("Cannot lookup a NULL hostname!"));
 
-	for (ix = 0; ix < size; ix++)
-	{
-		if (hostV[ix] == NULL)
-			continue;
-
-		if ((hostV[ix]->name != NULL) && (strcmp(hostV[ix]->name, name) == 0))
-			return hostV[ix];
-
-		if ((hostV[ix]->ip != NULL) && (strcmp(hostV[ix]->ip, name) == 0))
-			return hostV[ix];
-
-		for (unsigned int aIx = 0; aIx < sizeof(hostV[ix]->alias) / sizeof(hostV[ix]->alias[0]); aIx++)
-		{
-			if (hostV[ix]->alias[aIx] == NULL)
-				continue;
-
-			if (strcmp(hostV[ix]->alias[aIx], name) == 0)
-				return hostV[ix];
-		}
-	}
-	
+    for( size_t i = 0 ; i < hostV.size() ; i++ )
+        if ( hostV[i]->match(name) )
+            return hostV[i];
+    
 	if (strstr(name, ".") != NULL)
 	{
 		char* newName;
@@ -540,31 +451,7 @@ Host* HostMgr::lookup(const char* name)
 *
 * lookup - 
 */
-bool HostMgr::match(Host* host, const char* ip)
-{
-	if (ip == NULL)
-		return NULL;
 
-	if (ip[0] == 0)
-		return NULL;
-
-	if ((host->name != NULL) && (strcmp(host->name, ip) == 0))
-		return true;
-
-	if ((host->ip != NULL) && (strcmp(host->ip, ip) == 0))
-		return true;
-
-	for (unsigned int aIx = 0; aIx < sizeof(host->alias) / sizeof(host->alias[0]); aIx++)
-	{
-		if (host->alias[aIx] == NULL)
-			continue;
-
-		if (strcmp(host->alias[aIx], ip) == 0)
-			return true;
-	}
-
-	return false;
-}
 
 
 
@@ -574,24 +461,17 @@ bool HostMgr::match(Host* host, const char* ip)
 */
 void HostMgr::list(const char* why, bool forced)
 {
-	unsigned int  ix;
-	int           tLevel = LmtHostList1;
-
-	if (forced)
-	   tLevel = LmtHostList2;
+	int           tLevel = LmtHost;
 
 	LM_T(tLevel, ("------------ Host List: %s ------------", why));
-	for (ix = 0; ix < size; ix++)
+    for ( size_t i = 0 ; i < hostV.size() ; i++ )
     {
+		Host* hostP = hostV[i];
+        
 		char  line[512];
-		Host* hostP;
 
-        if (hostV[ix] == NULL)
-            continue;
-
-		hostP = hostV[ix];
 		memset(line, 0, sizeof(line));
-		snprintf(line, sizeof(line), "%02d: %-20s %-20s", ix, hostP->name, hostP->ip);
+		snprintf(line, sizeof(line), "%-20s %-20s", hostP->name, hostP->ip);
 
 		for (unsigned int aIx = 0; aIx < sizeof(hostP->alias) / sizeof(hostP->alias[0]); aIx++)
 		{

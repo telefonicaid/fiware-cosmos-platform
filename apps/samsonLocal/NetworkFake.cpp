@@ -5,95 +5,50 @@
 
 namespace samson {
 
-	NetworkFake::NetworkFake( int _worker_id , NetworkFakeCenter *_center )	// -1 controller -2 dalila
+	NetworkFake::NetworkFake( NodeIdentifier _node_identifier , NetworkFakeCenter *_center )	// -1 controller -2 dalila
 	{
-		worker_id = _worker_id;
+        node_identifier = _node_identifier;
 		center = _center;
         receiver = NULL;
 	}
 	
-	void NetworkFake::initAsSamsonController(void)
-	{
-		// Nothing to do
-	}
-	
-	// Set the receiver element
-	void NetworkFake::setPacketReceiver(PacketReceiverInterface* _receiver)
-	{
-		receiver = _receiver;
-	}
-	
-	bool NetworkFake::ready()
-	{
-		return true;
-	}
-	
-	// Get identifiers of known elements
-	int NetworkFake::controllerGetIdentifier()
-	{
-        assert(false);
-        LM_X(1,("Not accessing controller any-mode"));
-		return -1;
-	}
-
-	int NetworkFake::workerGetIdentifier(int i)
-	{
-		return i;
-	}
-
-	int NetworkFake::getMyidentifier()
-	{
-		return worker_id;
-	}
-	
-	int NetworkFake::getWorkerFromIdentifier( int identifier )
-	{
-		return identifier;
-	}
 	
 	
-	int NetworkFake::getNumWorkers()
-	{
-		return center->num_workers;
-	}
 
 	// Send a packet (return a unique id to inform the notifier later)
-	size_t NetworkFake::send(PacketSenderInterface* sender, int endpointId, Packet* packetP)
+    Status NetworkFake::send( Packet* packet )
 	{
-        samson::Message::MessageCode code = packetP->msgCode;
+        // Inform about where it comes from
+        packet->from = node_identifier;
         
 		// Add packet in the list of the center
-        center->addPacket( new NetworkFakeCenterPacket(code, packetP , getMyidentifier(), endpointId, sender) );
+        center->addPacket( packet );
 
-		return 0;
+		return OK;
 	}
-    
-    void NetworkFake::delilahSend(PacketSenderInterface* packetSender, Packet* packetP)
-    {
-        // send to the only delilah we have here
-        send( packetSender , -2 , packetP );
-    }
 
-	 void NetworkFake::run()
-	{
-		// Nothing to do here
-	}
-	
 	 void NetworkFake::quit()
 	{
 		// Nothing to do here
 	}
-
-    void NetworkFake::getInfo( std::ostringstream& output )
+    
+    std::vector<size_t> NetworkFake::getWorkerIds()
     {
-        au::xml_open(output,"network");
-        au::xml_open(output,"description");
-        
-        output << "This is network fake... it is always working ;)";
-
-        au::xml_close(output,"description");
-        au::xml_close(output,"network");
+        std::vector<size_t> ids;
+        for ( size_t i = 0 ; i < center->workers_network_interface.size() ; i ++ )
+            ids.push_back( center->workers_network_interface[i]->node_identifier.id  );
+        return ids;
     }
+    
+    std::vector<size_t> NetworkFake::getDelilahIds()
+    {
+        std::vector<size_t> ids;
+        if ( node_identifier.node_type == WorkerNode )
+            ids.push_back(0); // Only worker has delilahs in the list of elements
+        
+        return ids;
+    }
+
     
     
 }

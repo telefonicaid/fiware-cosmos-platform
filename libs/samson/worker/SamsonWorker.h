@@ -16,8 +16,6 @@
 
 #include "engine/EngineElement.h"               // samson::EngineElement
 
-#include "samson/network/NetworkNode.h"     // samson::NetworkNode
-
 #include "samson/stream/StreamManager.h"        // samson::stream::StreamManager
 #include "samson/stream/QueueTaskManager.h"     // samson::stream::QueueTaskManager
 
@@ -29,6 +27,8 @@
 #include "samson/data/SimpleDataManager.h"          // samson::SimpleDataManager
 
 #include "samson/common/NotificationMessages.h"
+
+#include "samson/network/NetworkInterface.h"
 
 namespace samson {
 	
@@ -50,8 +50,7 @@ namespace samson {
     };
     
 	class SamsonWorker : 
-        public PacketReceiverInterface, 
-        public PacketSenderInterface, 
+        public NetworkInterfaceReceiver, 
         public engine::Object
 	{
 		
@@ -74,8 +73,11 @@ namespace samson {
         
 	public:
 
-		// PacketReceiverInterface
+		// NetworkInterfaceReceiver
+        // ----------------------------------------------------------------
 		void receive( Packet* packet );
+        std::string getRESTInformation( ::std::string in );
+        void reset_worker( size_t worker_id );
 		
         // Notification from the engine about finished tasks
         void notify( engine::Notification* notification );
@@ -85,11 +87,6 @@ namespace samson {
         
         // Log activity
         void logActivity( std::string log);
-        
-	private:
-		
-		virtual void notificationSent(size_t id, bool success) {}
-		
 
 	};
 	

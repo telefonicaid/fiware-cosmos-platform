@@ -12,16 +12,16 @@
 
 #include "engine/Notification.h"            // engine::Notification
 
-
 #include "samson/common/SamsonSetup.h"                  // samson::SamsonSetup
 #include "samson/common/Macros.h"                     // EXIT, ...
 #include "samson/common/SamsonSetup.h"				// samson::SamsonSetup
 #include "samson/common/Info.h"                     // samson::Info
 
+#include "samson/module/samsonVersion.h"  // SAMSON_VERSION
+
 #include "samson/network/Message.h"                    // Message
 #include "samson/network/Packet.h"                     // samson::Packet
-#include "samson/network/Network.h"                    // NetworkInterface
-#include "samson/network/Endpoint.h"                   // Endpoint
+#include "samson/network/NetworkInterface.h"                    // NetworkInterface
 #include "samson/worker/SamsonWorker.h"               // Own interfce
 
 #include "engine/MemoryManager.h"				// samson::SharedMemory
@@ -72,28 +72,19 @@ namespace samson {
     SamsonWorker::SamsonWorker( NetworkInterface* _network )
     {
         network = _network;
-        network->setNodeName("SamsonWorker");
         
         // Init the stream manager
         streamManager = new stream::StreamManager(this);
         
         // Get initial time
         gettimeofday(&init_time, NULL);
-        
-        // Description for the PacketReceiver
-        packetReceiverDescription = "samsonWorker";
-        
-        // Set me as the packet receiver interface
-        network->setPacketReceiver(this);
-        
-        srand((unsigned int) time(NULL));
                 
-        // Add samsonWorker as lister to send traces to delilahs
-        listen(notification_samson_worker_send_trace );
-        
-        // add to listen messages to send a packet to a worker
-        listen( notification_send_to_worker );
-        
+        // Set me as the packet receiver interface
+        network->setReceiver(this);
+
+        // Random initialization
+        srand( time(NULL));
+                
         // Listen this notification to send packets
         listen( notification_samson_worker_send_packet );
         
@@ -125,6 +116,14 @@ namespace samson {
     }
     
     
+    void SamsonWorker::reset_worker( size_t worker_id )
+    {
+        // reset BlockManager ans assign the new worker id
+        stream::BlockManager::shared()->resetBlockManager( worker_id );
+        
+    }
+    
+    
 
     
     /* ****************************************************************************
@@ -133,11 +132,54 @@ namespace samson {
      */
     void SamsonWorker::receive( Packet* packet )
     {
-        LM_T(LmtNodeMessages, ("SamsonWorker received %s from endpoint %d" , packet->str().c_str(), packet->fromId));
+        LM_T(LmtNetworkNodeMessages, ("SamsonWorker received %s " , packet->str().c_str()));
         
         //int fromId = packet->fromId;
         
         Message::MessageCode msgCode = packet->msgCode;
+        
+        
+        // --------------------------------------------------------------------
+        // NetworkNotification messages
+        // --------------------------------------------------------------------
+        
+        if ( msgCode == Message::NetworkNotification )
+        {
+            if( packet->message->has_network_notification() )
+            {
+                
+                if( packet->message->network_notification().has_connected_worker_id() )
+                {
+                    size_t worker_id = packet->message->network_notification().connected_worker_id();
+                    LM_M(( "Connected worker %lu\n", worker_id ));
+                }
+                
+                if( packet->message->network_notification().has_disconnected_worker_id() )
+                {
+                    size_t worker_id = packet->message->network_notification().disconnected_worker_id();
+                    LM_M(( "Disconnected worker %lu\n", worker_id ));
+                }
+                
+                if( packet->message->network_notification().has_connected_delilah_id() )
+                {
+                    size_t worker_id = packet->message->network_notification().connected_delilah_id();
+                    LM_M(( "Connected delilah %lu\n", worker_id ));
+                }
+                
+                if( packet->message->network_notification().has_disconnected_delilah_id() )
+                {
+                    size_t worker_id = packet->message->network_notification().disconnected_delilah_id();
+                    LM_M(( "Disconnected delilah %lu\n", worker_id ));
+                }
+
+            }
+            
+            return;
+        }        
+        
+        // --------------------------------------------------------------------
+        // push messages
+        // --------------------------------------------------------------------
         
         if( msgCode == Message::PushBlock )
         {
@@ -172,16 +214,18 @@ namespace samson {
             
             // Send a message back if delilah_id is > 0
             
-            if( packet->message->delilah_id() > 0)
+            if( packet->message->delilah_component_id() > 0)
             {
                 Packet *p = new Packet( Message::PushBlockResponse );
                 network::PushBlockResponse *pbr = p->message->mutable_push_block_response();
                 pbr->mutable_request()->CopyFrom( packet->message->push_block() );
                 
-                p->message->set_delilah_id( packet->message->delilah_id()  );
+                p->message->set_delilah_component_id( packet->message->delilah_component_id()  );
                 
-                network->send( packet->fromId , p );
+                // Direction of the message ( answer to who send you the message )
+                p->to = packet->from;
                 
+                network->send( p );
             }
             return;
         }
@@ -189,8 +233,10 @@ namespace samson {
         if( msgCode == Message::PopQueue )
         {
             
-            size_t delilah_id = packet->message->delilah_id();
-            streamManager->addPopQueue( packet->message->pop_queue() , delilah_id , packet->fromId );
+            size_t delilah_id = packet->from.id;
+            size_t delilah_component_id = packet->message->delilah_component_id();
+            
+            streamManager->addPopQueue( packet->message->pop_queue() , delilah_id , delilah_component_id  );
             
             return;
         }
@@ -203,7 +249,10 @@ namespace samson {
                 return;
             }
             
-            stream::WorkerCommand *workerCommand = new stream::WorkerCommand(  packet->fromId , packet->message->delilah_id() , packet->message->worker_command() );
+            size_t delilah_id = packet->from.id;
+            size_t delilah_component_id = packet->message->delilah_component_id();
+            
+            stream::WorkerCommand *workerCommand = new stream::WorkerCommand(  delilah_id , delilah_component_id , packet->message->worker_command() );
             streamManager->addWorkerCommand( workerCommand );
             return;
         }
@@ -217,20 +266,36 @@ namespace samson {
     {
         if ( notification->isName(notification_update_status))
         {
-            Packet* p  = new Packet(Message::StatusReport);
-            
-            // This message is not critical - to be thrown away if worker not connected
-            p->disposable = true;
-            
-            // Include generic information about this worker
+            // Create a xml version of monitorization ( common to all delilahs )
             std::ostringstream info_str;
             getInfo( info_str );
-            p->message->set_info(info_str.str() );
             
-            // Send this message to all delilahs connnected
-            network->delilahSend( this , p );
+            // Get vector of connected delilahs
+            std::vector<size_t> delilahs = network->getDelilahIds();
 
+            // Send this message to all delilahs
+            for ( size_t i = 0 ; i < delilahs.size() ; i++ )
+            {
+                Packet* p  = new Packet( Message::StatusReport );
+                
+                // This message is not critical - to be thrown away if worker not connected
+                p->disposable = true;
+                
+                // Include generic information about this worker
+                p->message->set_info(info_str.str() );
+                
+                // Packet direction
+                p->to.node_type = DelilahNode;
+                p->to.id = delilahs[i];
+                
+                // Send this message to all delilahs connected
+                network->send( p );
+            }
+
+            // TRACE TO SHOW EVOLUTION OF WORKERS STATUS ON SCREEN
+            /*
             // Collect some information an print status...
+            
             int num_processes = engine::ProcessManager::shared()->public_num_proccesses;
             int max_processes = engine::ProcessManager::shared()->public_max_proccesses;
 
@@ -246,46 +311,8 @@ namespace samson {
                   , au::str( disk_read_rate , "Bs" ).c_str()
                   , au::str( disk_write_rate , "Bs" ).c_str()
                   ));
+             */
             
-        }
-        else if ( notification->isName(notification_send_to_worker) )
-        {
-            Packet *packet = (Packet *)notification->extractObject();
-            if( packet )
-            {
-                // No packet could mean that other samsonWorker ( in samsonLocal mode has send the packet )
-                
-                int outputWorker = notification->environment.getInt("outputWorker", -1);
-                
-                // If outputWorker is not present, send to myself
-                if ( outputWorker == -1 )
-                    outputWorker = network->getWorkerId();
-                
-                if ( (outputWorker >= network->getNumWorkers() ) )
-                {
-                    LM_W(("Notification to send a packet to a worker. Deleting packet..."));
-                    delete packet;
-                    return;
-                }
-                
-                // Send packet to the indicated worker
-                network->sendToWorker( outputWorker , packet);
-            }
-            
-        }
-        else if ( notification->isName(notification_samson_worker_send_trace))
-        {
-            if ( !notification->containsObject() )
-            {
-                //LM_W(("SamsonWorker: Send trace without an object"));
-                return;
-            }
-            else
-            {
-                //LM_M(("SamsonWorking sending a trace to all delilahs..."));
-                Packet *p = (Packet*) notification->extractObject();
-                network->delilahSend( this , p );
-            }
         }
         else if( notification->isName( notification_samson_worker_send_packet ) )
         {
@@ -297,19 +324,40 @@ namespace samson {
             else
             {
                 Packet *packet = (Packet *) notification->extractObject();
-                
-                int endpointId = notification->environment.getInt( "toId" , -1 );
-                if( endpointId == -1 )
-                {
-                    LM_W(("No endpoint specified. Ignoring notification..."));
-                    delete packet;
-                }
-                else
-                    network->send( endpointId , packet);
+                network->send( packet );
             }
         }
         else
             LM_X(1, ("SamsonWorker received an unexpected notification %s", notification->getDescription().c_str()));
+    }
+    
+    std::string SamsonWorker::getRESTInformation( ::std::string in )
+    {
+        std::ostringstream output;
+        output << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>";
+        output << "<!-- SAMSON Rest interface -->";
+        
+        output << "<samson>\n";
+        
+        // Get the path components
+        std::vector<std::string> path_components = au::split( in , '/' );
+
+        if ( ( path_components.size() < 2 ) || (path_components[0] != "samson") )
+            return "Error. Only /samson/path requests are valid\n";
+        
+        if( path_components[1] == "version" )
+            output << au::str("SAMSON v %s\n" , SAMSON_VERSION );
+        else if( path_components[1] == "cluster" )
+        {
+            network->getInfo( output , "cluster" );
+        }
+        else
+            output << au::str("Unkown path component '%s'\n" , path_components[1].c_str() );
+
+        output << "</samson>\n";
+        
+        return output.str();
+        
     }
     
     void SamsonWorker::logActivity( std::string log)
@@ -340,7 +388,7 @@ namespace samson {
         streamManager->getInfo(output);
         
         // Network
-        network->getInfo( output );
+        network->getInfo( output , "main" );
         
         
         // Activity log

@@ -23,83 +23,34 @@ namespace Message
 */
 #define CODE(c1, c2, c3, c4) ((c4 << 24) + (c3 << 16) + (c2 << 8) + c1)
 	
-
-
 /* ****************************************************************************
 *
 * MessageCode
 */
 typedef enum MessageCode
 {
-	Alarm							= CODE('A', 'l', 'm', ' '),
-	Hello							= CODE('H', 'e', 'l', ' '),
-	ProcessVector					= CODE('P', 'V', 'c', ' '),
-	WorkerVector					= CODE('W', 'V', 'c', ' '),
+	Hello							= CODE('H', 'e', 'l', 'l'), 
+
+    NetworkNotification             = CODE('N', 'o', 't', 'i'),
+    
     StatusReport					= CODE('S', 'R', 'p', ' '),
-	WorkerTask						= CODE('W', 'T', 'a', ' '),
-	WorkerTaskKill					= CODE('W', 'T', 'k', ' '),
-	WorkerDataExchange				= CODE('D', 'a', 't', ' '),
-	WorkerDataExchangeClose			= CODE('D', 'e', 'c', ' '),
-	WorkerTaskFinish				= CODE('D', 'T', 'f', ' '),
-	WorkerTaskConfirmation			= CODE('W', 'T', 'C', ' '),
-	Command							= CODE('C', 'o', 'm', ' '),
-	CommandResponse					= CODE('C', 'R', 'e', ' '),
-	UploadDataInit					= CODE('U', 'D', 'a', ' '),
-	UploadDataInitResponse			= CODE('U', 'D', 'b', ' '),
-	UploadDataFile					= CODE('U', 'D', 'c', ' '),
-	UploadDataFileResponse			= CODE('U', 'D', 'd', ' '),
-	UploadDataFinish				= CODE('U', 'D', 'e', ' '),
-	UploadDataFinishResponse		= CODE('U', 'D', 'f', ' '),
-	DownloadDataInit         		= CODE('D', 'D', 'a', ' '),
-	DownloadDataInitResponse		= CODE('D', 'D', 'b', ' '),
-	DownloadDataFile				= CODE('D', 'D', 'c', ' '),
-	DownloadDataFileResponse	    = CODE('D', 'D', 'd', ' '),
-	DownloadDataFinish			    = CODE('D', 'D', 'e', ' '),
-	DownloadDataFinishResponse	    = CODE('D', 'D', 'f', ' '),
-	Die								= CODE('D', 'i', 'e', ' '),
-	IDie							= CODE('I', 'D', 'i', ' '),
-	WorkerSpawn                     = CODE('W', 'S', 'p', ' '),
-	ControllerSpawn                 = CODE('C', 'S', 'p', ' '),
-	ProcessSpawn                    = CODE('S', 'p', 'w', ' '),
-	ThroughputTest                  = CODE('T', 'p', 'u', ' '),
-	LogLine                         = CODE('L', 'o', 'g', ' '),
-	ConfigGet                       = CODE('C', 'f', 'G', ' '),
-	ConfigSet                       = CODE('C', 'f', 'S', ' '),
-	LogSendingOn                    = CODE('L', 'O', 'n', ' '),
-	LogSendingOff                   = CODE('L', 'O', 'f', ' '),
-	ConfigChange                    = CODE('C', 'f', 'C', ' '),
-	WorkerConfigGet                 = CODE('W', 'C', 'G', ' '),
-	EntireLogFile                   = CODE('E', 'L', 'F', ' '),
-	EntireOldLogFile                = CODE('O', 'L', 'F', ' '),
-	Reset                           = CODE('R', 's', 't', ' '),
-	ProcessVectorGet                = CODE('P', 'V', 'G', ' '),
+    
     Trace                           = CODE('T', 'r', 'a', ' '),
-	ProcessList                     = CODE('P', 'r', 'L', ' '),
-    PopQueue                        = CODE('P', 'Q', 'r', ' '),
-    PopQueueResponse                = CODE('P', 'Q', 'R', ' '),
-    StreamOutQueue                  = CODE('S', 'O', 'Q', ' '),
-    PushBlock                       = CODE('P', 'B', 'l', ' '),
-    PushBlockResponse               = CODE('P', 'B', 'r', ' '),
+
     WorkerCommand                   = CODE('W', 'C', '-', ' '),
     WorkerCommandResponse           = CODE('W', 'C', 'R', ' '),
-	Id                              = CODE('I', 'd', ' ', ' '),
-	Ping                            = CODE('P', 'i', 'n', ' '),
+
+    PushBlock                       = CODE('P', 'B', 'l', ' '),
+    PushBlockResponse               = CODE('P', 'B', 'r', ' '),
+    PopQueue                        = CODE('P', 'Q', 'r', ' '),
+    PopQueueResponse                = CODE('P', 'Q', 'R', ' '),
+    
+    StreamOutQueue                  = CODE('S', 'O', 'Q', ' '),
+    
+	Message							= CODE('M', 'e', 's', 'g'),
+    
     Unknown                         = CODE('U', 'n', 'k', ' ')
 } MessageCode;
-
-
-
-/* ****************************************************************************
-*
-* MessageType
-*/
-typedef enum MessageType
-{
-	Msg = CODE('M', 'S', 'G', ' '),
-	Evt = CODE('E', 'V', 'T', ' '),
-	Ack = CODE('A', 'C', 'K', ' '),
-	Nak = CODE('N', 'A', 'K', ' ')
-} MessageType;
 
 
 
@@ -109,64 +60,31 @@ typedef enum MessageType
 */
 typedef struct Header
 {
+	size_t magic;
 	MessageCode    code;
-	MessageType    type;
-	unsigned int   dataLen;
-	unsigned int   gbufLen;
-	unsigned int   kvDataLen;
-	unsigned int   magic;
+	size_t gbufLen;
+	size_t kvDataLen;
+    
+    bool check()
+    {
+        if( magic != 4050769273219470657 )
+            return false;
+        
+        if( gbufLen > 10000000 )
+            return false;
+        
+        if( kvDataLen > ( 200 * 1024 * 1024 ) )
+            return false;
+        
+        return true;
+    }
+    
+    void setMagicNumber()
+    {
+        magic = 4050769273219470657;
+    }
+    
 } Header;
-
-
-
-/* ****************************************************************************
-*
-* HelloData
-*/
-typedef struct HelloData
-{
-	char                name[32];
-	char                ip[32];
-	char                alias[32];
-	int                 type;
-	int                 id;
-	int                 workers;
-	int                 port;
-	int                 coreNo;
-} HelloData;
-
-
-
-/* ****************************************************************************
-*
-* ConfigData
-*/
-typedef struct ConfigData
-{
-	char   name[32];
-	char   alias[32];
-	char   host[32];
-	bool   verbose;
-	bool   debug;
-	bool   reads;
-	bool   writes;
-	bool   toDo;
-	char   traceLevels[256];
-} ConfigData;
-
-
-
-/* ****************************************************************************
-*
-* SpawnData - 
-*/
-typedef struct SpawnData
-{
-	char            name[32];
-	int             argCount;
-	char            args[256];
-} SpawnData;
-
 
 
 /* ****************************************************************************
@@ -174,14 +92,6 @@ typedef struct SpawnData
 * messageCode - 
 */
 extern char* messageCode(MessageCode code);
-
-
-
-/* ****************************************************************************
-*
-* messageType - 
-*/
-extern char* messageType(MessageType type);
 
 }
 }

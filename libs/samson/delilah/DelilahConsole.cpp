@@ -188,6 +188,16 @@ namespace samson
             
             return;
         }
+
+        // Options for the cluter command
+        if (info->completingSecondWord("cluster") )
+        {
+            info->add("info");
+            info->add("add");
+            info->add("remove");
+            info->add("connect");
+            info->add("connections");
+        }
         
         if (info->completingSecondWord("help") )
         {
@@ -460,6 +470,12 @@ namespace samson
             return 0;
         }
         
+        if ( mainCommand == "cluster" )
+        {
+            // Print network status
+            writeOnConsole( network->cluster_command( command ) );
+            return 0;
+        }
         
         if( mainCommand == "set_database_mode" )
         {
@@ -513,9 +529,10 @@ namespace samson
                 output << "\n";
                 output << au::lineInConsole('-') << "\n";
                 output << "\n";
-                output << "Type help all [-category category_name] to get help for all available commands\n";
-                output << "\tCurrent categories: " << delilah_command_catalogue.getCategories().str() << "\n";
-                output << "Type help <command> to get more concrete information for a command\n";
+                output << "\tType help all [-category category_name] to get help for all available commands\n";
+                output << "\t\tCurrent categories: " << delilah_command_catalogue.getCategories().str() << "\n";
+                output << "\n";
+                output << "\tType help <command> to get more concrete information for a command\n";
                 output << "\n";
                 output << au::lineInConsole('-') << "\n";
                 output << "\n";
@@ -658,7 +675,7 @@ namespace samson
                 
                 DelilahComponent *component = components.findInMap( id );
                 if( !component )
-                    writeErrorOnConsole( au::str("Unkown process with id %d", id ) );
+                    writeErrorOnConsole( au::str("Unknown process with id %d", id ) );
                 else
                 {
                     std::ostringstream output;
@@ -824,6 +841,10 @@ namespace samson
         // WorkerCommands
         std::string main_command = commandLine.get_argument(0);
         
+        if( main_command == "reload_modules" )
+        {
+            return sendWorkerCommand( command , NULL );
+        }
         
         if( main_command == "run_stream_operation" )
         {
@@ -973,11 +994,12 @@ namespace samson
         return 0;
     }
     
-    int DelilahConsole::_receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+    int DelilahConsole::_receive( Packet* packet )
     {
         std::ostringstream  txt;
         
-        switch (msgCode) {
+        switch ( packet->msgCode ) 
+        {
                 
             case Message::Trace:
             {
@@ -1016,49 +1038,6 @@ namespace samson
                 
             }
                 break;
-                
-            case Message::CommandResponse:
-            {
-                // No more messages of this type. All managed by DelilahCommandComponent
-                /*				
-                 if( packet->message->command_response().has_new_job_id() )
-                 {
-                 std::ostringstream message;
-                 message << "Job scheduled [" << packet->message->command_response().new_job_id() << "] ";
-                 message << " ( " << packet->message->command_response().command().command() << ")";
-                 writeWarningOnConsole( message.str() );
-                 return 0;
-                 }
-                 
-                 if( packet->message->command_response().has_finish_job_id() )
-                 {
-                 std::ostringstream message;
-                 message << "Job finished  [" << packet->message->command_response().finish_job_id() << "] ";
-                 message << " ( " << packet->message->command_response().command().command() << ")";
-                 message << " ["<< au::time_string( packet->message->command_response().ellapsed_seconds() ) << "] ";
-                 writeWarningOnConsole( message.str() );
-                 return 0;
-                 }
-                 
-                 if( packet->message->command_response().has_error_job_id() )
-                 {
-                 std::ostringstream message;
-                 message << "Job finished with error [" << packet->message->command_response().error_job_id() << "] ";
-                 message << " ( " << packet->message->command_response().command().command() << ")\n\n";
-                 
-                 if( packet->message->command_response().has_error_message() )
-                 message <<  packet->message->command_response().error_message();
-                 writeErrorOnConsole( message.str() );
-                 return 0;
-                 }
-                 
-                 if( packet->message->command_response().has_error_message() )
-                 writeErrorOnConsole( packet->message->command_response().error_message()  );
-                 */                
-            }
-                break;
-                
-                
                 
             default:
                 txt << "Unknwn packet received\n";

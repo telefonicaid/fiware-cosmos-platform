@@ -8,7 +8,6 @@
 * DESCRIPTION				Definition of the packet to be exchanged in the samson-ecosystem
 *
 */
-#include "easyzlib.h"                    // zlib utility library
 
 #include "logMsg/logMsg.h"               // LM_TODO()
 
@@ -23,46 +22,155 @@
 #include "engine/Buffer.h"               // engine::Buffer
 #include "Message.h"                     // samson::MessageType 
 
-
 namespace samson
 {
 	/** 
 	 Unique packet type sent over the network between controller, samson and delilah
 	 */
+    
+    // Type of elements in the cluster
+    typedef enum 
+    {
+        DelilahNode,
+        WorkerNode,
+        UnknownNode
+    } ClusterNodeType;
+    
+    const char* ClusterNodeType2str( ClusterNodeType type );
+    
+    
+    class NodeIdentifier
+    {
+        public:
+        
+        ClusterNodeType node_type;
+        size_t id;
+        
+        NodeIdentifier()
+        {
+            node_type = UnknownNode;
+            id = (size_t)-1;
+        }
+                
+        NodeIdentifier( network::NodeIdentifier pb_node_identifier  )
+        {
+            switch ( pb_node_identifier.node_type() ) 
+            {
+                case network::NodeIdentifier_NodeType_Delilah:
+                    node_type = DelilahNode;
+                    break;
+                case network::NodeIdentifier_NodeType_Worker:
+                    node_type = WorkerNode;
+                    break;
+                case network::NodeIdentifier_NodeType_Unknown:
+                    node_type = UnknownNode;
+                    break;
+            }
+            
+            id = pb_node_identifier.id();
+        }
 
+        void fill( network::NodeIdentifier* pb_node_identifier )
+        {
+            switch ( node_type ) 
+            {
+                case DelilahNode:
+                    pb_node_identifier->set_node_type( network::NodeIdentifier_NodeType_Delilah );
+                    break;
+                case WorkerNode:
+                    pb_node_identifier->set_node_type( network::NodeIdentifier_NodeType_Worker );
+                    break;
+                case UnknownNode:
+                    pb_node_identifier->set_node_type( network::NodeIdentifier_NodeType_Unknown );
+                    break;
+            }            
+            pb_node_identifier->set_id(id);
+        }
+        
+        NodeIdentifier ( ClusterNodeType _node_type , size_t _id )
+        {
+            node_type = _node_type;
+            id = _id;
+        }
+
+        bool operator==(const NodeIdentifier&  other)
+        {
+            if ( node_type != other.node_type )
+                return false;
+            if ( id != other.id )
+                return false;
+            
+            return true;
+        }
+        
+        std::string str()
+        {
+            if( id == (size_t) -1 )
+                return au::str("%s:Unknown" , ClusterNodeType2str( node_type ) );
+                
+            return au::str("%s:%lu" , ClusterNodeType2str( node_type ) , id );
+        }
+
+        std::string getCodeName()
+        {
+            return au::str("%s_%lu" , ClusterNodeType2str( node_type ) , id );
+        }
+        
+        bool isDelilahOrUnknown()
+        {
+            switch (node_type) 
+            {
+                case DelilahNode: 
+                case UnknownNode: 
+                    return true;
+                case WorkerNode: 
+                    return false;
+            }
+            
+            LM_X(1, ("Unknown error"));
+            return false;
+        }
+        
+        
+        
+        
+    };
+    
 	class Packet : public engine::Object
 	{
+        
 	public:
-		int                   fromId;     // Identifier of the sender of this packet
-		Message::MessageType  msgType;    // Message type (sent in the header of the network interface)
+
+        NodeIdentifier from;      // Identifier of the sender
+        NodeIdentifier to;        // Identifier of the receiver
+
 		Message::MessageCode  msgCode;    // Message code (sent in the header of the network interface)
+        
+		network::Message*     message;    // Message with necessary fields (codified using Google Protocol Buffers)
+        
+		engine::Buffer*       buffer;     // Data for key-values
+        
 		void*                 dataP;      // Raw data, mostly used for signaling
 		int                   dataLen;    // Length of raw data
-		network::Message*     message;    // Message with necessary fields (codified using Google Protocol Buffers)
-		engine::Buffer*       buffer;     // Data for key-values
+
 		bool                  disposable; // Message to be disposed if connection not OK
 
-		Packet(Message::MessageType type, Message::MessageCode code, void* _dataP = NULL, int _dataLen = 0)
-		{
-			msgType    = type;
-			msgCode    = code;
-			dataP      = _dataP;
-			dataLen    = _dataLen;
-			buffer     = NULL;
-			message    = new network::Message();
-			fromId     = -9;
-			disposable = false;
-		};
 
+		Packet()
+		{
+			msgCode    = Message::Unknown;
+			buffer     = NULL;
+			dataP      = NULL;
+			message    = new network::Message();
+			disposable = false;
+		};        
+        
 		Packet(Message::MessageCode _msgCode)
 		{
 			msgCode    = _msgCode;
-			msgType    = Message::Evt;
 			buffer     = NULL;
-			dataLen    = 0;
 			dataP      = NULL;
 			message    = new network::Message();
-			fromId     = -9;
 			disposable = false;
 		};
 
@@ -70,8 +178,6 @@ namespace samson
 		{
 			// Copy the message type
 			msgCode    = p->msgCode;
-			msgType    = p->msgType;
-			fromId     = p->fromId;
 			dataLen    = 0;
 			dataP      = NULL;
 			disposable = p->disposable;
@@ -103,7 +209,7 @@ namespace samson
         std::string str()
         {
             std::ostringstream output;
-            output << "Packet " << messageCode( msgCode ) << " " << strMessage( message );
+            output << "Packet " << messageCode( msgCode );
             if ( buffer )
                 output << "[ Buffer " << au::str(  buffer->getSize() ) << "/" << au::str(  buffer->getMaxSize() ) << " ]" ;
             else
@@ -124,6 +230,14 @@ namespace samson
             
             return total;
         }
+      
+        static Packet* messagePacket( std::string message )
+        {
+            Packet * packet = new Packet( Message::Message );
+            packet->message->set_message(message);
+            return packet;
+        }
+        
         
 	};
 }

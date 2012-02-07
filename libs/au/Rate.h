@@ -179,7 +179,7 @@ NAMESPACE_BEGIN(rate)
 class Rate
 {
    size_t total_size;   // Total number of bytes
-   size_t total_num;       // Total number of hits
+   size_t total_num;    // Total number of hits
    
    double rate;         // Aprox Rate in bytes/sec
    double rate_hits;    // Aprox Rate of hits/sec

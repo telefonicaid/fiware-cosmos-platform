@@ -19,6 +19,7 @@ SET (HEADERS
     QueueTasks.h
 	WorkerCommand.h
 	StreamOutput.h
+	DistributionInformation.h
 )
 
 
@@ -42,6 +43,7 @@ SET (SOURCES
     QueueTasks.cpp
 	WorkerCommand.cpp
 	StreamOutput.cpp
+	DistributionInformation.cpp
 )
 
 

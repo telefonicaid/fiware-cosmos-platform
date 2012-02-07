@@ -55,7 +55,7 @@ namespace samson
             // Nothing since error is shown by the delilah
         }
         else
-            message << "Completed " << num_finish_worker << " / " << num_workers << " workers";
+            message << "Completed " << num_finish_worker << " / " << workers.size() << " workers";
         
         return message.str();
     }
@@ -80,10 +80,11 @@ namespace samson
         }
                 
         // Send to all the workers a message to pop a queue
-        num_workers = delilah->network->getNumWorkers();
+        workers = delilah->network->getWorkerIds();
+        
         num_finish_worker = 0;
         
-        for ( int w = 0 ; w < num_workers ; w++ )
+        for ( size_t w = 0 ; w < workers.size() ; w++ )
         {
             Packet *p = new Packet( Message::PopQueue );
             
@@ -91,16 +92,21 @@ namespace samson
             
             pq->set_queue( queue );                     // Set the name of the queue
             
-            p->message->set_delilah_id(id);             // Identifier of the component at this delilah
+            p->message->set_delilah_component_id(id);             // Identifier of the component at this delilah
             
-            delilah->network->sendToWorker( w, p);
+            // Information about direction
+            p->to.node_type = WorkerNode;
+            p->to.id = workers[w];
+
+            // Send message
+            delilah->network->send( p );
         }
         
     }
     
-    void PopDelilahComponent::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+    void PopDelilahComponent::receive( Packet* packet )
     {
-        if( msgCode != Message::PopQueueResponse )
+        if( packet->msgCode != Message::PopQueueResponse )
         {
             delete packet;
             return;
@@ -111,13 +117,11 @@ namespace samson
             
             num_write_operations++;
          
-            int worker_id = delilah->network->getWorkerFromIdentifier( fromId );
+            size_t worker_id = packet->from.id;
             int num_output = counter_per_worker.getCounterFor( worker_id );
             
             std::string _fileName = au::str("%s/worker_%06d_file_%06d" , fileName.c_str() , worker_id, num_output );
 
-            
-            
             engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( packet->buffer , _fileName , getEngineId() );
             engine::DiskManager::shared()->add( operation );                
             
@@ -127,8 +131,8 @@ namespace samson
         if( packet->message->pop_queue_response().finish() )
             num_finish_worker++;
         
-        if( num_workers > 0 )
-            setProgress( (double) num_finish_worker /  (double) num_workers );
+        if( workers.size() > 0 )
+            setProgress( (double) num_finish_worker /  (double) workers.size() );
         
         // Check errors
         if( packet->message->pop_queue_response().has_error() )
@@ -156,7 +160,7 @@ namespace samson
         if ( error.isActivated() )
             setComponentFinished();
         
-        if( ( num_finish_worker == num_workers ) && (num_write_operations==0) )
+        if( ( num_finish_worker == workers.size() ) && (num_write_operations==0) )
         {
             // Finish operation
             setComponentFinished();

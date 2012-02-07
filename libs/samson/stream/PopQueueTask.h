@@ -35,8 +35,9 @@ namespace samson {
             friend class StreamManager;
             
             size_t pop_queue_id;    // Id of the pop queue
-            size_t delilahId;       // Identifier of the operation at delilah side
-            int fromId ;            // Identifier of delilah to send packets back
+            
+            size_t delilah_id;             // Delilah identifier
+            size_t delilah_component_id;   // Delilah component identifier
             
             // Limits of operation for this pop queue
             KVRange range;

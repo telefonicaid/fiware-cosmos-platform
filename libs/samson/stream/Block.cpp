@@ -48,6 +48,7 @@ namespace samson {
         Block::Block( engine::Buffer *_buffer )
         {
             // Get a new unique id from the block manager
+            worker_id = BlockManager::shared()->getWorkerId();
             id = BlockManager::shared()->getNextBlockId();
             
             // Buffer of data
@@ -75,9 +76,10 @@ namespace samson {
             
         }
         
-        Block::Block( size_t _id , size_t _size , KVHeader* _header )
+        Block::Block( size_t _worker_id , size_t _id , size_t _size , KVHeader* _header )
         {
             // Get a new unique id from the block manager
+            worker_id = _worker_id;
             id = _id;
             
             // Buffer of data
@@ -180,7 +182,7 @@ namespace samson {
         
         std::string Block::getFileName()
         {
-            return SamsonSetup::shared()->blockFileName(id);
+            return SamsonSetup::shared()->blockFileName( worker_id , id );
         }
 
 

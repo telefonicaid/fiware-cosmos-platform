@@ -32,8 +32,8 @@ namespace samson {
             
             range = _range;
             
-            delilahId   = pq->delilahId;
-            fromId      = pq->fromId;
+            delilah_id   = pq->delilah_id;
+            delilah_component_id   = pq->delilah_component_id;
             
             environment.set("system.pop_queue_task","yes");
             
@@ -56,17 +56,19 @@ namespace samson {
             packet->buffer = buffer;
             
             // Set delialh id
-            packet->message->set_delilah_id( delilahId );
+            packet->message->set_delilah_component_id( delilah_component_id );
             
             // Set the finish flag to true
             network::PopQueueResponse* pqr =  packet->message->mutable_pop_queue_response();
             pqr->set_finish(false); // Not a final message
             
-            
-            engine::Notification *notification = new engine::Notification( notification_samson_worker_send_packet , packet );
-            notification->environment.set("toId", fromId );
+
+            // Direction of the packet
+            packet->to.node_type = DelilahNode;
+            packet->to.id = delilah_id;
             
             // Send a notification
+            engine::Notification *notification = new engine::Notification( notification_samson_worker_send_packet , packet );
             engine::Engine::shared()->notify( notification );            
         }
         
@@ -119,7 +121,7 @@ namespace samson {
             packet->buffer = buffer;
             
             // Set no delialh id ( this is always a top level message )
-            packet->message->set_delilah_id( 0 );
+            packet->message->set_delilah_component_id( 0 );
             
             // Set the finish flag to true
             network::StreamOutQueue* network_stream_output_queue =  packet->message->mutable_stream_output_queue();

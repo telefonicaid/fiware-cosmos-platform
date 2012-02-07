@@ -27,16 +27,15 @@ namespace samson {
 	{
 		std::string command;
 		engine::Buffer *buffer;
-        
-        int num_workers;
+
+        std::vector<size_t> workers;   // Ids of the workers involved in this command
         int num_confirmed_workers;
-        
         
 	public:
 		
 		WorkerCommandDelilahComponent( std::string _command , engine::Buffer *buffer );
 		
-		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
+		void receive( Packet* packet );
         
 		void run();
 		

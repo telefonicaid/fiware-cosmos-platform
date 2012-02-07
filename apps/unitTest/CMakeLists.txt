@@ -1,10 +1,6 @@
 SET (SOURCES
     main_UnitTest.cpp
 
-    #samson/network
-    network/endpointManager_test.cpp
-    network/network2_test.cpp
-
     #engine
     engine/readFile_test.cpp
     engine/object_test.cpp

@@ -230,7 +230,7 @@ public:
                         if( !check_data( key_values.keyFormat ) )
                         {
                             writeWarningOnConsole( 
-                                                  au::str( "Operation %s: unkown datatype %s at input %d" 
+                                                  au::str( "Operation %s: Unknown datatype %s at input %d" 
                                                           , operation.c_str()
                                                           , key_values.keyFormat.c_str(),
                                                           i
@@ -242,7 +242,7 @@ public:
                         if( !check_data( key_values.valueFormat ) )
                         {
                             writeWarningOnConsole( 
-                                                  au::str( "Operation %s: unkown datatype %s at input %d" 
+                                                  au::str( "Operation %s: Unknown datatype %s at input %d" 
                                                           , operation.c_str()
                                                           , key_values.valueFormat.c_str(),
                                                           i
@@ -261,7 +261,7 @@ public:
                         if( !check_data( key_values.keyFormat ) )
                         {
                             writeWarningOnConsole( 
-                                                  au::str( "Operation %s: unkown datatype %s at output %d" 
+                                                  au::str( "Operation %s: Unknown datatype %s at output %d" 
                                                           , operation.c_str()
                                                           , key_values.keyFormat.c_str(),
                                                           i
@@ -273,7 +273,7 @@ public:
                         if( !check_data( key_values.valueFormat ) )
                         {
                             writeWarningOnConsole( 
-                                                  au::str( "Operation %s: unkown datatype %s at output %d" 
+                                                  au::str( "Operation %s: Unknown datatype %s at output %d" 
                                                           , operation.c_str()
                                                           , key_values.valueFormat.c_str(),
                                                           i

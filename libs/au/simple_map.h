@@ -48,13 +48,13 @@ public:
     void insertInMap( K& key , V& value)
     {
         removeInMap( key );
-        insert( std::pair<K,V>( key, value) );
+        std::map<K, V >::insert( std::pair<K,V>( key, value) );
     }
     
     
     bool isInMap( K& key ) 
     {
-        typename std::map<K, V >::iterator iter = find(key);
+        typename std::map<K, V >::iterator iter = std::map<K, V >::find(key);
         return( iter != std::map<K,V>::end() );
     }
     
@@ -65,7 +65,7 @@ public:
     
     V findInMap( K& key ) 
     {
-        typename std::map<K, V >::iterator iter = find(key);
+        typename std::map<K, V >::iterator iter = std::map<K, V >::find(key);
         typename std::map<K, V >::iterator iter_end = std::map<K, V >::end();
         
         if ( iter == iter_end )

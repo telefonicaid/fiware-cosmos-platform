@@ -68,9 +68,10 @@ namespace samson {
         Block* BlockList::createBlockFromFile( std::string fileName )
         {
             //std::string fileName =  SamsonSetup::shared()->blockFileName( id );
+            size_t worker_id;
             size_t id;
             
-            if( !SamsonSetup::shared()->blockIdFromFileName( fileName , &id ) )
+            if( !SamsonSetup::shared()->blockIdFromFileName( fileName ,&worker_id , &id ) )
                 return NULL;
             
             FILE *file = fopen( fileName.c_str() , "r" );
@@ -98,7 +99,7 @@ namespace samson {
             
             
             // Add block as always
-            Block *block = new Block( id , fileSize , &header );
+            Block *block = new Block( worker_id , id , fileSize , &header );
 
             // Insert this block in my list
             blocks.push_back( block );

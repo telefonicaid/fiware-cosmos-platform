@@ -25,7 +25,8 @@ namespace samson {
         
 #pragma mark ProcessItemKVGenerator
         
-        StreamProcessBase::StreamProcessBase( size_t _task_id , StreamOperationBase* _streamOperation ) : ProcessIsolated( _streamOperation->operation , ProcessIsolated::key_value )
+        StreamProcessBase::StreamProcessBase( size_t _task_id , StreamOperationBase* _streamOperation ) 
+             : ProcessIsolated( _streamOperation->operation , ProcessIsolated::key_value )
         {
             
             // Get the task_id
@@ -48,8 +49,8 @@ namespace samson {
                   (int) streamOperation->input_queues.size() , (int) streamOperation->output_queues.size() , streamOperation->num_workers ));
             */
             
-            // Set number of workers in the stream operation
-            setNumWorkers( _streamOperation->num_workers );
+            // Set information about information is distributed
+            setDistributionInformation( _streamOperation->distribution_information );
                 
         }
 
@@ -68,16 +69,19 @@ namespace samson {
         
         void StreamProcessBase::sendBufferToQueue( engine::Buffer *buffer , int outputWorker , std::string queue_name  )
         {
-	  if( queue_name == "null")
-	    return;
-
+            if( queue_name == "null")
+                return;
+            
+            if ( ( outputWorker < 0 ) || ( outputWorker > (int)distribution_information.workers.size() ) )
+                LM_X(1, ("Non valid worker %d (%lu)" , outputWorker , distribution_information.workers.size() ) );
+            
             Packet* packet = new Packet( Message::PushBlock );
             packet->buffer = buffer;    // Set the buffer of data
-            packet->message->set_delilah_id( 0 );
+            packet->message->set_delilah_component_id( 0 );
             
             network::PushBlock* pb =  packet->message->mutable_push_block();
             pb->set_size( buffer->getSize() );
-
+            
             
             std::vector<std::string> queue_names = au::split( queue_name , ',' );
             for ( size_t i = 0 ; i < queue_names.size() ; i++)
@@ -86,10 +90,12 @@ namespace samson {
             }
             
             
-            // Send the packet using the "notification_send_to_worker"
-            engine::Notification *notification = new engine::Notification( notification_send_to_worker , packet );
-            notification->environment.setInt("outputWorker", outputWorker );
-            engine::Engine::shared()->notify( notification );
+            // Direction to send packet
+            packet->to.node_type = WorkerNode;
+            packet->to.id = distribution_information.workers[ outputWorker ];
+            
+            // Send packet
+            distribution_information.network->send( packet );
             
             
         }

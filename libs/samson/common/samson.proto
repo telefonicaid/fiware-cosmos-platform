@@ -17,67 +17,6 @@ message Environment
 	repeated EnvironmentVariable variable=1;	// List of enrivonment variables
 }
 
-message KVInfo
-{
-	required uint64 size=1;		// Size in bytes
-	required uint64 kvs=2;		// Number of kvs
-}
-
-message File
-{
-	required string name=1;		// Name of file
-	required int32 worker=2;	// Worker where this file has been created
-	optional KVInfo info=3;		// Information about this file
-}
-
-message Queue
-{
-	required string name		 = 1;
-	required KVFormat format	 = 2;
-	optional KVInfo info 		 = 3;
-}
-
-message StringVector
-{
-	repeated string value = 1;
-}
-
-
-message FullQueue
-{
-	required Queue queue	=1;		// Queue basic info
-	repeated File file	=2;		// List of files	
-}
-
-message QueueFile
-{
-	required string queue=1;	// Name of the queue
-	required File file=2;		// File with all the info
-}
-
-
-message KVFormat
-{
-	required string keyFormat=1;	// Format for the key
-	required string ValueFormat=2;	// Format for the value
-}
-
-
-message Operation
-{
-	required string name		= 1;		// Name of the operation
-	required string type 		= 2;		// String describing the type ( map, reduce, etc...)
-	required string help   		= 3;		// Some help for this opertion
-	required string help_line 	= 4;		// Some help for this opertion ( just one line )
-	repeated KVFormat input   	= 5;		// KV types for inputs
-	repeated KVFormat output  	= 6;		// KV types for output
-}
-
-message Data
-{
-	required string name = 1;	// Name of this data type
-	required string help = 2;	// Some string showing help for this data type
-}
 
 message Error
 {
@@ -97,316 +36,94 @@ message Trace
 	required string stre	=7;	
 }
 
-
-message ActiveTask
-{
-	repeated string fileName=1;	// List of files for this task
-}
-
-// Lists of elements
-
-message QueueList
-{
-	repeated FullQueue queue = 1;     // List of queues with its files
-	repeated ActiveTask tasks = 2;    // List of active tasks ( files associated with this tasks can not be removed at workers )
-	repeated uint64 load_id = 3;	  // Ids of active load operations ( not remove incomming files )
-
-}
-
-message DataList
-{
-	repeated Data data	= 1;
-}
-
-message OperationList
-{
-	repeated Operation operation = 1;
-}
-
-
-
 // ////////////////////////////////////////////////////////////////////////////
 //
-// Message with a task from the controller workers
+// Hello message
 //
 
-message WorkerTask
+message NodeIdentifier
 {
-	required uint64 job_id		  = 10;	// Id of the top level ( controller ) job
-	required uint64 task_id		  = 1;	// Id of the top level ( controller ) task
+    enum NodeType
+    {
+        Delilah    = 1;    
+        Worker     = 2;    
+		Unknown    = 3;
+    }	
 
-	required string operation 	  = 2;	// Name of the operation to run
-
-	repeated FullQueue input_queue	  = 4;  // Full information about input queues ( including only files of interes )
-	repeated FullQueue output_queue   = 5;  // Full information about output queues ( including all file )
-
-	optional int32 servers		  = 6;	// Number of servers ( all the workers )
-
-	optional uint32 worker		  = 11;	// Worker id ( only used in generator operations )
-	optional uint32 num_workers	  = 12;	// Nuber of workers involved in the generator operation
-
-
-	optional Environment environment  = 8;	// Environment operations for this task
+	required NodeType  node_type = 1;
+	required uint64    id        = 2;
 }
 
-// ////////////////////////////////////////////////////////////////////////////
-//
-// Message to kill a particular task
-//
-
-message WorkerTaskKill
+message ClusterNode
 {
-	required uint64 task_id = 1;  // Id of the task that is killed
+	required string ip  = 1;    // IP adress of this worker
+	required int32 port = 2;    // Port ( SAMSON PORT by default )
+    required uint64 id  = 3;    // Identifier of this node in this cluster
 }
 
-
-// ////////////////////////////////////////////////////////////////////////////
-//
-// Update of a task from a worker to the controller
-//
-
-message WorkerTaskConfirmation
+message ClusterInformation
 {
-	enum WorkerTaskConfirmationType
-	{
-		update=1;	// Update information ( new files, remove files, progress ,etc...9
-		finish=2;	// Notify that the task has finish at this worker
-		complete=3;	// Notify the the task has been completed at this worker ( files saved to disk )
-		error=4;	// Notify that there has been an error, the task has been removed from this worker
-	}
+	required uint64 id          = 1;   // Identifier of the cluster
+	required uint64 version     = 2;   // Version of this cluster
 
-	
-	required int64 task_id				= 1;		// Id of the controller task 
-	required WorkerTaskConfirmationType type 	= 2;		// Type of message
-	
-	repeated QueueFile add_file			= 3;		// File created with this operation that should be added to the queue
-	repeated QueueFile remove_file			= 4;		// File created with this operation that should be removed to the queue
+	repeated ClusterNode nodes  = 3;   // Vector of nodes involved in the cluster
 
-	optional int32 num_items      	  		= 5;		// Number of items for this task in this worker
-	optional int32 num_finished_items 		= 6;   		// Number of finish items for this task in this worker
-
-	optional string error_message 			= 7;    	// Message to debug the error ( only present if type == error )
-
-	optional KVInfo progressRunning			= 8;		// Amount of information that starts to be executed
-	optional KVInfo progressProcessed		= 9;		// Amount of information that has been processed
-
+	optional uint64 assigned_id = 4;   // Id assigned to a worker in a particular node ( only in some messages )
 }
 
-// ////////////////////////////////////////////////////////////////////////////
-//
-// Command from Delilah to controller
-//
-
-message Command
+message Hello
 {
-	required string  command		        = 1;    // String to send a txt command
-	optional Environment environment    	= 3;	// Initial environment variables for the new job
+	required NodeIdentifier      node_identifier         = 1; // My node identifier
+	required ClusterInformation  cluster_information     = 2; // Cluster information
+
+	required bool answer_hello_required = 3;       // It is necessary to answer back with a hello
+
+	optional bool reset_cluster_information = 4;   // Falg to reset a worker instance
+}	
+
+// ////////////////////////////////////////////////////////////////////////
+// Notifications from Network Interface
+// ////////////////////////////////////////////////////////////////////////
+
+message NetworkNotification
+{
+	// Inform about connected or disconnected worker
+	optional uint64 connected_worker_id                    = 1;
+	optional uint64 disconnected_worker_id                 = 2;
+
+	// Inform about connected or disconnected delilahs
+	optional uint64 connected_delilah_id                   = 3;
+	optional uint64 disconnected_delilah_id                = 4;;
 }
 
-// ////////////////////////////////////////////////////////////////////////////
-//
-// Response message from Controller to Delilah
-//
+// ////////////////////////////////////////////////////////////////////////
 
-message CommandResponse
-{
-	required Command command= 1;		        // Copy of the original command message
-
-	optional bool finish_command = 16;			// Flag to indicate that this command is finished at the controller side
-
-	optional Error error = 2; 					// Optional field to report an error in this command
-
-
-	// Auxiliar information
-	optional int32 ellapsed_seconds = 15;	    // Ellapsed time of this process
-	optional string message = 20;	  			// Optional message used to show something on delilah
-
-
-	// Old method to report the current queues ( still used at workers )
-	optional QueueList     queue_list		         = 103;
-
-}
-
-
-// ////////////////////////////////////////////////////////////////////////////
-//
-// Message to exchange information between workers
-//
-message WorkerDataExchange
-{
-	required int64 task_id	 = 1;	// Identifier of the controller task
-	required Queue queue     = 2;  	// Name of the queue where we store information
-	required bool txt 	 = 3;	// Flag to indicate that this is a txt buffer, so go to disk directly whiout buffering or merging
-	required int32 worker	 = 4;	// Identifier of the worker that generated this buffer
-	required int32 hg_set	 = 5;	// identifier of the hash-group set
-	required bool finish	 = 6;	// Identifier if this is the last buffer from this hash-group
-}
-
-// ////////////////////////////////////////////////////////////////////////////
-//
-// Message to notify that no more data will be generated for this task
-//
-
-message WorkerDataExchangeClose
-{
-	required int64   task_id   = 1;  // Identifier of the controller task
-}
-
-// ////////////////////////////////////////////////////////////////////////////
-//
-// Message to Upload and Download data from Delilah to a Worker and response
-//
-
-/*
-
-To upload files to samson, take this steps:
-
---> delilah sends a message to controller (UploadDataInit) informing about the number of files to upload
---> controller answers informing about the name of the files using (UploadDataInitResponse)
---> delilah connects with each working uploading data using ( UploadDataFile )
---> workers answer to delilah using ( UploadDataFile )
---> Finally, delilah send a message to the controller ( UploadDataFinish )
---> Controller confirm this message with ( UploadDataFinishResponse )
-
-*/
-
-// Message from delilah to init an upload operation
-message UploadDataInit
-{
-	required string queue=1;	// Name of the queue ( to check at controller )
-}
-
-// Answer message from the controller
-message UploadDataInitResponse
-{
-	required UploadDataInit query=1;	// Original query
-	required uint64 load_id=3;		// Id of the operation ( at the controller )
-
-	optional Error error=100;		// Possible error in this operation
-}
-
-// Message from delilah to worker to upload a particular file
-
-message UploadDataFile
-{
-	required uint64 load_id=1;	// If of the operation ( at the controller )
-
-	// Information about uploaded file
-        required uint64 file_id=2;      // Id of the file ( multiple files for the same process)
-	required uint64 file_size=3;	// Information about the size of the buffer ( to monitorize uploaded size at delilah )
-	required string file_ext=4;	// Extension of the file ( used to determine the type of file )
-}
-
-// Answer from the worker
-message UploadDataFileResponse
-{
-	required UploadDataFile query=1;	// Original query
-
-	required File file=2;			// Generated file
-	optional Error error=100;       	// Possible error in this operation
-}
-
-// Message from delilah to controller to confirm upload process
-message UploadDataFinish
-{
-	required uint64 load_id=3;	// Id of the operation ( at the controller )
-
-	required string queue=4;	// Queue to upload files
-	repeated File files=5;		// Uploaded files
-
-	optional Error error = 100;	// Optional place to report errors to the controller
-		       	       		// If an error is reported, upload operation is canceled and files are automatically removed at workers
-}
-
-// Answer from the controller
-message UploadDataFinishResponse
-{
-	required UploadDataFinish query=1;		// Original message send from delilah
-
-	optional Error error=100; 			// Optional error message in the last steps of the upload process
-}
-
-
-// ////////////////////////////////////////////////////////////////////////////
-//
-// Messages for download data
-//
-
-
-message DownloadDataInit
-{
-	required string queue		=1;	// Queue we want to download
-}
-
-message DownloadDataInitResponse
-{
-	required DownloadDataInit query=1;		// Original query
-
-	optional uint64 load_id=2;				// Id of the operation at the controller ( not required since if there is an error, we do not have load_id )
-
-	optional FullQueue queue=3;				// Information of this queue ( this include all the files ) ( optional because maybe there is an error )
-
-	optional Error error=100;				// Optional error field for problems like queue does not exist
-}
-
-
-message DownloadDataFile
-{
-        required uint64 file_id=2;      // Id of the file ( multiple files for the same process)
-        required uint64 load_id=3;      // Id of the operation ( at the controller )
-	required File file=4;
-}
-
-message DownloadDataFileResponse
-{
-	required DownloadDataFile query=1;	// Original query
-
-	optional Error error = 100;		// Optional flag to reports error in this operations
-}
-
-message DownloadDataFinish
-{
-        required uint64 file_id=2;      // Id of the file ( multiple files for the same process)
-        required uint64 load_id=3;      // If of the operation ( at the controller )
-
-	optional Error error = 100;	// Optinal field to reports errors	
-}
-
-message DownloadDataFinishResponse
-{
-	required DownloadDataFinish query=1;	// Original query of this message
-
-	optional Error error = 100;			// Optional flag to reports errors
-}
-
-
-//
 // Messages used in the isolated process protocol
-//
 
+// ////////////////////////////////////////////////////////////////////////
 
 
 message MessageProcessPlatform
 {
 	enum Code
 	{
-		code_begin		  = 1;    // Begin code
-                code_end           	  = 2;    // End code
+		code_begin		      = 1;    // Begin code
+        code_end           	  = 2;    // End code
 		code_operation	  	  = 3;	  // Run a particular operation
-		code_trace		  = 4;	  // A trace is send to the controller
+		code_trace		      = 4;	  // A trace is send to the controller
 		code_user_error	  	  = 5;	  // Error reported by user
 		code_progress		  = 6;	  // Report progress of a particular task
-        }
+    }
 
+	// Operation code
     required Code code = 1;
 
     // Optional parameters
-
-    optional int32 operation	   = 2;  // Indicator of the operation
-    optional Trace trace	  = 3;	// Optional trace 
-    optional double progress	  = 4;	// Optional progress report
-    optional string progress_status = 6;   // Optinal string describing the internal status of this task
-    optional string error	  = 5;	// Error reported by user
+    optional int32 operation	     = 2;  // Indicator of the operation
+    optional Trace trace	         = 3;	// Optional trace 
+    optional double progress	     = 4;	// Optional progress report
+    optional string progress_status  = 6;   // Optinal string describing the internal status of this task
+    optional string error	         = 5;	// Error reported by user
 
 }
 
@@ -460,6 +177,11 @@ message PopQueueResponse
 }
 
 
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Streaming data output SAMSON cluster
+//
+
 message StreamOutQueue
 {
 	optional string queue  = 1;  // Name of the queue we are getting data 	
@@ -490,63 +212,39 @@ message WorkerCommandResponse
 //
 message Message
 {
-	enum Sender
-	{
-		Worker     = 0x57;
-		Controller = 0x43;
-		Delilah    = 0x44;
-	};
 
-	// ////////////////////////////////////////////////////////////////////////////
-	//
-	// Message Data ( only one of these structures per message )
-	//
+	// Process identification inside delilah ( multiple push / pop / etc operations ... )
+	optional uint64  delilah_component_id = 1;	
 
-	optional Command                command                   = 103;  // Command message
-	optional CommandResponse        command_response          = 104;  // Command response message
+	// Push data to a worker ( push message and response )
+	optional PushBlock push_block = 2;	
+	optional PushBlockResponse push_block_response = 3;	
 
-	optional WorkerTask             worker_task	          = 105;  // Work task message
-	optional WorkerTaskConfirmation worker_task_confirmation  = 106;  // Work task confirmation message
+	// Pop data from a worker ( push message and response )
+	optional PopQueue pop_queue	= 4;	
+	optional PopQueueResponse pop_queue_response = 5;	
 
-	optional WorkerTaskKill         worker_task_kill          = 202;  // Work task killed from controller
+	// Streaming data from SAMSON to a delilah
+	optional StreamOutQueue	stream_output_queue = 6;
 
-	optional WorkerDataExchange  	data                      = 107;  // Exchange of data packets between nodes     
-	optional WorkerDataExchangeClose data_close		  = 108;  // Message to finish data transmission between workers
+	// Worker command ( message and reponse )
+	optional WorkerCommand worker_command = 7;
+	optional WorkerCommandResponse worker_command_response =8;
 
-	// Upload and Download messages
-	
-	optional UploadDataInit			upload_data_init		= 111;
-	optional UploadDataInitResponse		upload_data_init_response	= 112;
-	optional UploadDataFile			upload_data_file		= 113;
-	optional UploadDataFileResponse		upload_data_file_response	= 114;
-	optional UploadDataFinish		upload_data_finish		= 115;
-	optional UploadDataFinishResponse	upload_data_finish_response	= 116;
+	// General traces at delilah ( display on screen )
+	optional Trace trace = 9;
 
-	optional DownloadDataInit		download_data_init		= 117;
-	optional DownloadDataInitResponse	download_data_init_response	= 118;
-	optional DownloadDataFile		download_data_file		= 119;
-	optional DownloadDataFileResponse	download_data_file_response	= 120;
-	optional DownloadDataFinish		download_data_finish		= 121;
-	optional DownloadDataFinishResponse	download_data_finish_response	= 122;
+	// XML report of status from all workers
+	optional string info = 10;
 
+	// Hello message ( used in the handshare between workers and delilahs )
+	optional Hello hello = 11;
 
-	optional PushBlock			push_block			= 123;	// Push a block into a queue ( stream processing )
-	optional PushBlockResponse		push_block_response		= 124;	// Response from a block push
+	// String Message ( used in the message Packet );
+	optional string message = 12;
 
-	optional PopQueue			pop_queue			= 125;	// Pop content of a queue
-	optional PopQueueResponse		pop_queue_response		= 126;	// Response message from the worker
-
-	optional StreamOutQueue			stream_output_queue 	= 310;	// Streaming content of queue out of SAMSON platform
-
-	optional WorkerCommand			worker_command			= 200;
-	optional WorkerCommandResponse		worker_command_response		= 201;
-
-	optional Trace trace = 171;	      				// optional trace to all delilahs;
-
-	optional string info = 172;					// General information in XML form
-
-	// Common information	
-	optional uint64  delilah_id = 300;				// Used in commands , upload and download process with delilah
+	// NetworkNotification message ( used to inform delilah and worker about changes in the network setup )	
+	optional NetworkNotification network_notification = 13;
 
 }
 

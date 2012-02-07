@@ -68,14 +68,14 @@ namespace samson {
             
         };
         
-        
-        WorkerCommand::WorkerCommand( int _fromId , size_t _delilah_id ,  const network::WorkerCommand& _command )
+        WorkerCommand::WorkerCommand( size_t _delilah_id , size_t _delilah_component_id ,  const network::WorkerCommand& _command )
         {
             streamManager = NULL;
             
             //Identifiers to notify when finished
-            fromId = _fromId;
             delilah_id = _delilah_id;
+            delilah_component_id = _delilah_component_id;
+            
             notify_finish = true;
             
             // Copy the original message
@@ -380,7 +380,7 @@ namespace samson {
                 return;
             }  
 
-            error->set( au::str("Unkown command %s" , main_command.c_str()  ) );
+            error->set( au::str("Unknown command %s" , main_command.c_str()  ) );
 
         }
 
@@ -430,7 +430,7 @@ namespace samson {
                 bool flag_new = cmd.get_flag_bool("new");
                 bool flag_remove = cmd.get_flag_bool("remove");
                 
-                streamManager->connect_to_queue( fromId , queue , flag_new , flag_remove );
+                streamManager->connect_to_queue( delilah_id , queue , flag_new , flag_remove );
                 
                 finishWorkerTask();
                 return;
@@ -446,7 +446,7 @@ namespace samson {
                 }
                 std::string queue = cmd.get_argument(1);
                 
-                streamManager->disconnect_from_queue( fromId , queue );
+                streamManager->disconnect_from_queue( delilah_id , queue );
                 
                 finishWorkerTask();
                 return;
@@ -723,10 +723,14 @@ namespace samson {
                 }
                 
                 // Set delilah id
-                p->message->set_delilah_id( delilah_id );
+                p->message->set_delilah_component_id( delilah_component_id );
+                
+                // Direction of this packets
+                p->to.node_type = DelilahNode;
+                p->to.id = delilah_id;
                 
                 // Send the packet
-                streamManager->worker->network->send( fromId , p );
+                streamManager->worker->network->send( p );
             }
             
             // Set the finished flag
@@ -744,7 +748,13 @@ namespace samson {
             
             std::string operation_name = cmd.get_argument(pos_argument++);
 
-            StreamOperationBase *operation  = new StreamOperationBase( operation_name , streamManager->worker->network->getNumWorkers()  );
+            // Disitribution informaiton for this stream operation
+            DistributionInformation distribution_information;
+            distribution_information.workers = streamManager->worker->network->getWorkerIds();
+            distribution_information.network = streamManager->worker->network;
+            
+            StreamOperationBase *operation  
+              = new StreamOperationBase( operation_name , distribution_information );
             
             for (int i = 0 ; i < op->getNumInputs() ; i++)
                 operation->input_queues.push_back( cmd.get_argument( pos_argument++ ) );

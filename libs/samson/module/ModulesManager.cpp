@@ -30,31 +30,6 @@
 
 namespace samson
 {
-	/**
-	 Utility function to fill data
-	 */
-	
-	
-	void fillKVFormat( network::KVFormat* format , KVFormat f )
-	{
-		format->set_keyformat( f.keyFormat );
-		format->set_valueformat( f.valueFormat );
-	}
-	
-	void fillKVInfo( network::KVInfo* info , KVInfo i )
-	{
-		info->set_size( i.size );
-		info->set_kvs( i.kvs );
-	}
-	
-	void fillFullKVInfo( network::KVInfo* info , FullKVInfo i )
-	{
-		info->set_size( i.size );
-		info->set_kvs( i.kvs );
-	}
-	
-	
-#pragma mark ----
 	
 	static ModulesManager *modulesManager=NULL;
 	
@@ -249,50 +224,6 @@ namespace samson
 		copyFrom( container	);
 	}
 	
-	void ModulesManager::fill( network::OperationList *ol , std::string command  )
-	{
-        au::TokenTaker tt( &token , "ModulesManager::fill");
-        
-		au::CommandLine cmdLine;
-		cmdLine.set_flag_string("begin" , "");
-		cmdLine.set_flag_string("end" , "");
-		cmdLine.parse(command);
-		
-		std::string begin = cmdLine.get_flag_string("begin");
-		std::string end = cmdLine.get_flag_string("end");
-		
-		
-		
-		{
-			for (std::map<std::string , Operation*>::iterator j = operations.begin() ; j != operations.end() ; j++ )
-			{
-				Operation * op = j->second;
-				
-				if( filterName( op->getName() , begin , end ) )
-				{
-					
-					network::Operation *o = ol->add_operation();
-					o->set_name( j->first );
-                    o->set_type( op->getTypeName() );
-					o->set_help( op->help() );
-					o->set_help_line( op->helpLine() );
-					
-					// Format
-					std::vector<KVFormat> input_formats = op->getInputFormats();
-					std::vector<KVFormat> output_formats = op->getOutputFormats();
-					
-					for (size_t i = 0 ; i < input_formats.size() ; i++)
-						fillKVFormat( o->add_input() , input_formats[i] );
-					
-					for (size_t i = 0 ; i < output_formats.size() ; i++)
-						fillKVFormat( o->add_output() , output_formats[i] );
-				}
-				
-			}
-		}
-		
-	}
-	
     
     void ModulesManager::getInfo( std::ostringstream& output)
     {
@@ -303,35 +234,6 @@ namespace samson
         au::xml_close(output , "modules_manager" );
     }
     
-	void ModulesManager::fill( network::DataList *dl, std::string command  )
-	{
-        au::TokenTaker tt( &token , "ModulesManager::fill");
-        
-		au::CommandLine cmdLine;
-		cmdLine.set_flag_string("begin" , "");
-		cmdLine.set_flag_string("end" , "");
-		cmdLine.parse(command);
-		
-		std::string begin = cmdLine.get_flag_string("begin");
-		std::string end = cmdLine.get_flag_string("end");
-		
-		
-		
-		{
-			for (std::map<std::string , Data*>::iterator j = datas.begin() ; j != datas.end() ; j++ )
-			{
-				
-				if( filterName( j->first , begin ,end ) )
-				{
-					Data * data = j->second;
-					network::Data *d = dl->add_data();
-					d->set_name( j->first );
-					d->set_help( data->help() );
-				}
-				
-			}
-		}
-		
-	}
+
 	
 }

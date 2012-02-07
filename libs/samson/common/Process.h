@@ -27,15 +27,6 @@ namespace samson
 {
 
 
-
-/* ****************************************************************************
-*
-* Forward class declarations
-*/
-class Endpoint;
-
-
-
 /* ****************************************************************************
 *
 * ProcessType
@@ -82,7 +73,6 @@ typedef struct Process
 	struct timeval           startTime;           // For Spawner
 	pid_t                    pid;                 // For Spawner
 
-	samson::Endpoint*        endpoint;            // For ...
 	Starter*                 starterP;            // For Supervisor only
 	struct samson::Process*  spawnerP;            // For Supervisor only
 

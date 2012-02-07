@@ -36,23 +36,19 @@
 #define CREATE_TABLE_BLOCKS \
 "table_from_tree  workers /*//block_manager/blocks/block -save blocks"
 
+#define CREATE_TABLE_QUEUE_TASKS \
+"table_from_tree workers /*/stream_manager/queue_tasks/queue_tasks/queue_task -save tasks"
+
 namespace samson {    
     
-    DelilahBase::DelilahBase(int _num_workers) 
+    DelilahBase::DelilahBase() 
     {
-        // Keep the number of workers
-        num_workers = _num_workers;
         
-        for (int w=0;w<num_workers;w++)
-            worker.push_back( new XMLStringHolder() );
     }
 
     DelilahBase::~DelilahBase()
     {
-        for (int w=0;w< num_workers;w++)
-            delete worker[w];
-        
-        worker.clear(); // Clear the vector
+        workers.clearMap();
     }
 
     
@@ -87,26 +83,26 @@ namespace samson {
     }
     
     
-    void DelilahBase::updateWorkerXMLString( int w, std::string txt )
+    void DelilahBase::updateWorkerXMLString( size_t worker_id , std::string txt )
     {
-        if( ( w < 0 ) || ( w >= num_workers))
-        {
-            LM_W(("Wrong worker id at updateWorkerXMLString (%d)",w));
-            return;
-        }
-        au::tables::TreeItem* tree = worker[w]->update( txt );
+        // Find the xml holder
+        XMLStringHolder* xmlStringHolder = workers.findOrCreate( worker_id );
+        
+        au::tables::TreeItem* tree = xmlStringHolder->update( txt );
 
         // Set the main name of this tree
-        tree->setValue( au::str("worker_%d",w) );
+        tree->setValue( au::str("worker_%lu",worker_id) );
 
         // Add some markers
         tree->add("tag_name", "worker_id");
-        tree->add("tag_value", au::str("%d",w));
+        tree->add("tag_value", au::str("%lu",worker_id));
 
         // Replace node int he workers tree
         database.replaceNodeInTree( "workers" , tree );
         
         // Run basic commands to get the table
+        
+        /*
         database.runCommand( CREATE_TABLE_QUEUES );
         database.runCommand( CREATE_TABLE_OPERATIONS );
         database.runCommand( CREATE_TABLE_MODULES );
@@ -114,6 +110,8 @@ namespace samson {
         database.runCommand( CREATE_TABLE_ENGINE_DELILAH );
         database.runCommand( CREATE_TABLE_STREAM_OPERATIONS );
         database.runCommand( CREATE_TABLE_BLOCKS );
+        database.runCommand( CREATE_TABLE_QUEUE_TASKS );
+         */
     }
 
     void DelilahBase::updateDelilahXMLString( std::string txt )
@@ -134,6 +132,8 @@ namespace samson {
         database.autoComplete( info );
     }
     
+    
+    
     std::string DelilahBase::updateTimeString()
     {
         std::ostringstream output;
@@ -141,9 +141,14 @@ namespace samson {
         output << "Update times from SAMSON elements\n";
         output << "-------------------------------------------------\n\n";
         
-        for (int i = 0 ; i < num_workers ; i++ )
-            output << "Worker " << au::str("%2d",i) << "  updated " << au::time_string( worker[i]->getTime() ) << "\n";
-
+        
+        au::map<size_t, XMLStringHolder >::iterator it_workers;
+        for (it_workers = workers.begin() ; it_workers != workers.end() ; it_workers++ )
+        {
+            output << "Worker " << au::str("%lu", it_workers->first);
+            output << " updated " << au::time_string( it_workers->second->getTime() ) << "\n";
+        }
+        
         output << "-------------------------------------------------\n";
         
         return output.str();
@@ -154,11 +159,18 @@ namespace samson {
         // Get the 
         size_t time = 0;
 
-        for (int w = 0 ; w < num_workers ; w++ )
+        std::vector<size_t> worker_ids = network->getWorkerIds();
+
+        for( size_t i = 0 ; i < worker_ids.size() ; i++ )
         {
-            size_t _time = worker[w]->getTime();
-            if (_time > time )
-                time = _time;
+            XMLStringHolder * holder = workers.findInMap( worker_ids[i] );
+
+            if( holder )
+            {
+                size_t _time = holder->getTime();
+                if (_time > time )
+                    time = _time;
+            }
         }
         
         return (int) time;

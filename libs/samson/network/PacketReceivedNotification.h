@@ -2,33 +2,34 @@
 #define _H_PACKET_RECEIVER_NOTIFICATION
 
 #include "engine/EngineElement.h"// samson::EngineElement
-#include "samson/network/Network.h"		// samson::DataReceiverInterface
+#include "samson/network/NetworkInterface.h"
 #include "samson/network/Packet.h"			// samson::Packet
 
 namespace samson
 {
 
 /**
- PacketReceived
  
+ PacketReceived
  Process a packet received from the network library
+ 
  */
     
     class PacketReceivedNotification : public engine::EngineElement
     {
         
-        PacketReceiverInterface* receiver;
+        NetworkInterfaceReceiver* receiver;
         Packet *packet;
         
     public:
         
-        PacketReceivedNotification( PacketReceiverInterface* _receiver , Packet *_packet )
+        PacketReceivedNotification( NetworkInterfaceReceiver* _receiver , Packet *_packet )
         {
             receiver = _receiver;
             packet = _packet; 
             
             std::ostringstream txt;
-            txt << "PacketReceivedNotification ( Receiver: " << receiver->packetReceiverDescription;
+            txt << "PacketReceivedNotification ";
             txt << " Packet: " << messageCode( packet->msgCode ) << ")";
             description = txt.str();
             

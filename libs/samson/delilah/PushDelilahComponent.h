@@ -60,6 +60,7 @@ namespace samson {
 		
 		
 		PushDelilahComponent( DataSource * _dataSource , std::string _queue  );		
+        
         void addQueue( std::string  _queue );
 		~PushDelilahComponent();
 		
@@ -67,7 +68,7 @@ namespace samson {
         void run();
         
         // Function to receive packets
-		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
+		void receive( Packet* packet );
 
 		// Function to get the status
 		std::string getStatus();		

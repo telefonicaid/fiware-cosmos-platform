@@ -152,7 +152,10 @@ namespace samson {
             stream_operation->command =  command;
             stream_operation->name = name;
             stream_operation->operation = operation;
-            stream_operation->num_workers = streamManager->worker->network->getNumWorkers();
+            
+            // Distribution information
+            stream_operation->distribution_information.workers = streamManager->worker->network->getWorkerIds();
+            stream_operation->distribution_information.network = streamManager->worker->network;
             
             // Get the inputs and output queues
             int num_inputs  = op->getNumInputs();

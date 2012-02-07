@@ -217,7 +217,7 @@ public:
     
     void takeSample()
     {
-        push( value );
+        ValueCollection<T>::push( value );
     }
     
 };

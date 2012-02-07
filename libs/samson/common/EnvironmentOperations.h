@@ -10,16 +10,7 @@
 namespace samson {
 
 	void copyEnviroment( Environment* from , network::Environment * to );
-	
 	void copyEnviroment( const network::Environment & from , Environment* to  );
-    
-    void copy( KVInfo * from , network::KVInfo* to);
-    
-    void copy( FullKVInfo * from , network::KVInfo* to);
- 
-    
-    // Get a debug string for generic messages
-    std::string strMessage( network::Message *message );
     
 }
 

@@ -13,6 +13,8 @@ namespace samson {
         
     public:
         
+        virtual ~DataSource(){}
+        
 		virtual bool isFinish()=0;
 		virtual int fill( engine::Buffer *b )=0;
         virtual size_t getTotalSize()=0;

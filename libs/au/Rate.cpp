@@ -144,6 +144,7 @@ void Rate::setTimeLength( double t )
 
 void Rate::push( size_t size )
 {
+    // update the previous values ( forgetting factor... )
     update_values();
     
     // Add to rates

@@ -1,69 +1,47 @@
-SET (HEADERS
-	Message.h
-	Network.h
-	NetworkInterface.h
-	Packet.h
-	Endpoint.h
-	iomInit.h
-	iomServerOpen.h
-	iomConnect.h
-	iomAccept.h
-	iomMsgSend.h
-	iomMsgRead.h
-	iomMsgAwait.h
-	Alarm.h
-	Misc.h
-	easyzlib.h
+SET (HEADERS	
 	HostMgr.h
 	Host.h
+
+	NetworkManager.h
+	NetworkConnection.h
+	SocketConnection.h
+	NetworkListener.h
+
+	NetworkInterface.h
+	CommonNetwork.h
+	WorkerNetwork.h
+	DelilahNetwork.h
+	misc.h
+
 	PacketReceivedNotification.h
+	Packet.h
+	Message.h
 
-	Network2.h
-	EndpointManager.h
-	Endpoint2.h
-	ListenerEndpoint.h
-	UnhelloedEndpoint.h
-	WebListenerEndpoint.h
-	WebWorkerEndpoint.h
-	WorkerEndpoint.h
-	ControllerEndpoint.h
-	SpawnerEndpoint.h
-	DelilahEndpoint.h
-	StarterEndpoint.h
+	ClusterInformation.h
 
-	NetworkNode.h
 )
 
 SET (SOURCES
-	Message.cpp
-	Network.cpp
-	NetworkInterface.cpp
-	Endpoint.cpp
-	iomInit.cpp
-	iomServerOpen.cpp
-	iomConnect.cpp
-	iomAccept.cpp
-	iomMsgSend.cpp
-	iomMsgRead.cpp
-	iomMsgAwait.cpp
-	Alarm.cpp
-	Misc.cpp
-	easyzlib.c
 	HostMgr.cpp
-	PacketReceivedNotification.cpp
+	Host.cpp
 
-	Network2.cpp
-	EndpointManager.cpp
-	Endpoint2.cpp
-	ListenerEndpoint.cpp
-	UnhelloedEndpoint.cpp
-	WebListenerEndpoint.cpp
-	WebWorkerEndpoint.cpp
-	WorkerEndpoint.cpp
-	ControllerEndpoint.cpp
-	SpawnerEndpoint.cpp
-	DelilahEndpoint.cpp
-	StarterEndpoint.cpp
+	NetworkManager.cpp
+	NetworkConnection.cpp
+	SocketConnection.cpp
+	NetworkListener.cpp
+
+	NetworkInterface.cpp
+	CommonNetwork.cpp
+	WorkerNetwork.cpp
+	DelilahNetwork.cpp
+	misc.cpp
+
+	PacketReceivedNotification.cpp
+	Packet.cpp
+	Message.cpp
+
+	ClusterInformation.cpp
+
 )
 
 # Include directories

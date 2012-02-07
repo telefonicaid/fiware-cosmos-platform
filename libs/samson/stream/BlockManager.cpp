@@ -22,7 +22,8 @@ namespace samson {
         
         BlockManager::BlockManager()
         {
-            id = 1; // Start blocks by 1
+            id = 1;                       // Start blocks by 1
+            worker_id = 0;                // When a different if is assigned from cluster, this should be updated with setWorkerId()
  
             num_writing_operations=0;     // Number of writing operations ( low priority blocks )
             num_reading_operations=0;     // Number of reading operations ( high priority blocks )

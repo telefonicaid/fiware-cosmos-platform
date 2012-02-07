@@ -53,6 +53,8 @@ const char* status(Status s)
 	case Timeout:              return "Timeout";
 	case ConnectionClosed:     return "Connection Closed";
 	case PThreadError:         return "Thread Error";
+    case WrongPacketHeader:    return "Wrong Packet Header";        
+    case ErrorParsingGoogleProtocolBuffers: return "Error parsing Google Protocol Buffer message";
 	}
 
 	return "Unknown Status";

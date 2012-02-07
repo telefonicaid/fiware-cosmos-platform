@@ -23,6 +23,7 @@
 #include <vector>       // std::vector
 #include <pthread.h>        /* pthread*/
 
+#include "samson/common/ports.h"
 
 #include "au/Cronometer.h"          // au::Cro
 #include "au/Token.h"               // au::Token
@@ -128,8 +129,6 @@ namespace  samson {
             au::TokenTaker tt(&token);
             return getBufferList(queue)->pop();
         }
-        
-        
 
     private:
         
@@ -137,7 +136,6 @@ namespace  samson {
         {
             return buffer_lists.findOrCreate(name);
         }
-
         
     };
     
@@ -148,6 +146,8 @@ namespace  samson {
         
     public:
 
+        virtual ~SamsonClientBlockInterface(){}
+        
         virtual size_t getBufferSize()=0;
         
         virtual size_t getTXTBufferSize()=0;
@@ -253,7 +253,6 @@ namespace  samson {
 
 				// Write the content to the output
 				nb = write(1, data, header->info.size);
-				if (nb);
 				return;
             }
             
@@ -338,7 +337,7 @@ namespace  samson {
         void setMemory ( size_t _memory );
         
         // Init the connection with a SAMSON cluster
-        bool init( std::string controller );
+        bool init( std::string controller , int port = SAMSON_WORKER_PORT);
         
         // Push content to a particular queue
         size_t push( std::string queue , char *data , size_t length );

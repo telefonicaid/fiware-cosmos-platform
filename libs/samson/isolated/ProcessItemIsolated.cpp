@@ -22,7 +22,6 @@
 #include "samson/common/NotificationMessages.h"     // notification_samson_worker_send_trace
 #include "samson/common/MemoryTags.h"                 // MemoryInput , MemoryOutputNetwork, ...
 
-#include "samson/network/iomMsgAwait.h"            // iomMsgAwait
 #include "samson/network/Packet.h"                     // samson::Packet
 
 
@@ -317,47 +316,8 @@ namespace samson
                 
             case samson::network::MessageProcessPlatform_Code_code_trace:
             {
-                
-                /**
-                 Send the trace to all delilahs
-                 */
-                
-                Packet * p = new Packet( Message::Trace );
-#ifdef __LP64__
-                p->message->set_delilah_id( 0xFFFFFFFFFFFFFFFF );
-                p->message->mutable_trace()->CopyFrom( message->trace() );
-                p->message->set_delilah_id( 0xFFFFFFFFFFFFFFFF );
-#else
-                p->message->set_delilah_id( 0xFFFFFFFF );
-                p->message->mutable_trace()->CopyFrom( message->trace() );
-                p->message->set_delilah_id( 0xFFFFFFFF );
-#endif
-                engine::Engine::shared()->notify( new engine::Notification( notification_samson_worker_send_trace , p ) );
-                //LM_M(("Notifying a trace to the engine"));
-                
-                // Old trace system, tracing here... to be removed
-                /*
-                 if (lmOk(message->trace().type(), message->trace().tlev() ) == LmsOk)
-                 {
-                 std::string _text = message->trace().text();
-                 std::string file = message->trace().file();
-                 std::string fname = message->trace().fname();
-                 std::string stre = message->trace().stre();
-                 
-                 LM_T( LmtIsolated , ("Isolated process %s: Message with trace %s ",getStatus().c_str() , _text.c_str() ));
-                 
-                 lmOut(
-                 (char*)_text.c_str(),   
-                 (char) message->trace().type() , 
-                 file.c_str(), 
-                 message->trace().lineno() , 
-                 fname.c_str(), 
-                 message->trace().tlev() , 
-                 stre.c_str() 
-                 );
-                 }
-                 */
-                
+                samson::network::Trace trace = message->trace();
+                sendTrace( trace );
                 
                 // Send the continue
                 samson::network::MessagePlatformProcess * response = new samson::network::MessagePlatformProcess();

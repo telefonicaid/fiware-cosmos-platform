@@ -50,6 +50,7 @@ namespace samson {
             friend class Queue;
             friend class StreamOutQueueTask;
             
+            size_t worker_id;               // Identifier of the worker in the cluster
             size_t id;                      // Identifier of the block ( in this node )
             
             engine::Buffer *buffer;         // Buffer of data if content of this block is on memory
@@ -77,7 +78,7 @@ namespace samson {
             
             // Constructor only visible in a BlockList
             Block( engine::Buffer *buffer  );
-            Block( size_t _id , size_t _size , KVHeader* _header );
+            Block( size_t _worker_id , size_t _id , size_t _size , KVHeader* _header );
             
         public:
             

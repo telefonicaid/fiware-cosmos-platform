@@ -21,8 +21,7 @@
 
 #include "samson/network/Message.h"            // Message::MessageCode, ...
 #include "samson/network/Packet.h"				// samson::Packet
-#include "samson/network/Network.h"			// NetworkInterface
-#include "samson/network/Endpoint.h"			// Endpoint
+#include "samson/network/NetworkInterface.h"			// NetworkInterface
 
 #include "samson/module/ModulesManager.h"       // samson::ModulesManager
 
@@ -50,15 +49,11 @@ namespace samson {
      *
      * Delilah::Delilah
      */
-    Delilah::Delilah( NetworkInterface* _network ) : DelilahBase( _network->getNumWorkers() ) , token("Delilah_token")
+    Delilah::Delilah( NetworkInterface* _network ) : DelilahBase( ) , token("Delilah_token")
     {
-		
-        // Description for the PacketReceiver
-        packetReceiverDescription = "delilah";
         
         network = _network;		// Keep a pointer to our network interface element
-        network->setPacketReceiver(this);
-        network->setNodeName("Delilah");
+        network->setReceiver(this);
 		
         id = 2;	// we start with process 2 because 0 is no process & 1 is global_update messages
 		
@@ -87,18 +82,18 @@ namespace samson {
     }
 
     
-    int Delilah::getNextWorker()
+    size_t Delilah::getNextWorkerId()
     {
-        int num_workers = network->getNumWorkers();
-        
+        std::vector<size_t> workers = network->getWorkerIds();
+                
         if( next_worker == -1 )
-            next_worker = rand()%num_workers;
+            next_worker = rand()%workers.size();
         
         next_worker++;
-        if( next_worker == num_workers )
+        if( next_worker == (int)workers.size() )
             next_worker = 0;
         
-        return next_worker;
+        return workers[ next_worker ];
     }
     
     void Delilah::notify( engine::Notification* notification )
@@ -106,16 +101,13 @@ namespace samson {
         
         if( notification->isName( notification_network_diconnected ) )
         {
-            int id = notification->environment.getInt("id",-1);
-            
-            if( network->getWorkerFromIdentifier(id) != -1 )
-                showWarningMessage(au::str("Worker %d got disconnected" , network->getWorkerFromIdentifier(id) ));
-            else
-                showWarningMessage(au::str("Some unknown network element got disconnected" , network->getWorkerFromIdentifier(id) ));
-            
+            std::string type = notification->environment.get("type","unknown");
+            size_t id        = notification->environment.getSizeT("id",-1);
+
+            // At the moment only a warning
+            showWarningMessage(au::str("Disconnected (%s %lu )" , type.c_str() , id ));
             return;
         }
-        
         
         if( notification->isName(notification_disk_operation_request_response) )
         {
@@ -146,44 +138,54 @@ namespace samson {
      */
     void Delilah::receive( Packet* packet )
     {
-        LM_T(LmtNodeMessages, ("Delilah received %s" , packet->str().c_str()));
-        
-        int fromId = packet->fromId;
+        LM_T(LmtNetworkNodeMessages, ("Delilah received %s" , packet->str().c_str()));
+
+        // Message received
         Message::MessageCode msgCode = packet->msgCode;
         
         DelilahComponent *component = NULL;
-        
+
+        // Show messages ( usually from Network bellow )
+        if( msgCode == Message::Message )
         {
-            au::TokenTaker tk( &token );
-            
-            size_t sender_id = packet->message->delilah_id();
-            component = components.findInMap( sender_id );
-            
-            //LM_M(("Received with sender_id %lu (component %p)", sender_id , component));
-            
-            if ( component )
+            showWarningMessage( packet->message->message() );
+            return;
+        }
+
+        // --------------------------------------------------------------------
+        // NetworkNotification messages
+        // --------------------------------------------------------------------
+        
+        if ( msgCode == Message::NetworkNotification )
+        {
+            if( packet->message->has_network_notification() )
             {
-                component->receive( fromId, msgCode, packet );
-                return; // If process by component, not process anywhere else
+                
+                if( packet->message->network_notification().has_connected_worker_id() )
+                {
+                    size_t worker_id = packet->message->network_notification().connected_worker_id();
+                    showWarningMessage( au::str("Connected worker %lu\n", worker_id) );
+                }
+
+                if( packet->message->network_notification().has_disconnected_worker_id() )
+                {
+                    size_t worker_id = packet->message->network_notification().disconnected_worker_id();
+                    showWarningMessage( au::str("Disconnected worker %lu\n", worker_id) );
+                }
+                
             }
             
+            return;
         }
         
-        // StatusResponses are processed here
+        
+        // --------------------------------------------------------------------
+        // StatusReport messages
+        // --------------------------------------------------------------------
         
         if( msgCode == Message::StatusReport )
         {
-            // Goyo. Trying to protect against info reports after quitting delilah (SAMSON-314)
-            // Not sure about other notifications
-            DelilahConsole * delilah_console = (DelilahConsole *) this;
-
-            if (delilah_console->isQuitting())
-            {
-                LM_T(LmtNodeMessages, ("With ( msgCode == Message::StatusReport ) delilah_console->isQuitting"));
-                //return;
-            }
-            
-            int worker_id = network->getWorkerFromIdentifier( packet->fromId );
+            int worker_id = packet->from.id;
             if( worker_id != -1 )
             {
 			   //LM_M(("Delilah received a status report... worker id: %d", worker_id));
@@ -233,11 +235,26 @@ namespace samson {
             
         }
         
+        {
+            au::TokenTaker tk( &token );
+            
+            size_t delilah_component_id = packet->message->delilah_component_id();
+            component = components.findInMap( delilah_component_id );
+            
+            //LM_M(("Received with sender_id %lu (component %p)", sender_id , component));
+            
+            if ( component )
+            {
+                component->receive( packet );
+                return; // If process by component, not process anywhere else
+            }
+            
+        }
         
         
         
         // Forward the reception of this message to the client
-        _receive( fromId , msgCode , packet );
+        _receive( packet );
         
     }
 	
@@ -500,8 +517,9 @@ namespace samson {
     
     
     
-    int Delilah::_receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+    int Delilah::_receive( Packet* packet )
     {
+        LM_W(("Unused packet %s" , packet->str().c_str()));
         
         if( packet->buffer )
             engine::MemoryManager::shared()->destroyBuffer( packet->buffer );
@@ -523,7 +541,7 @@ namespace samson {
         ModulesManager::shared()->getInfo( output );
         
         // Network
-        network->getInfo( output );
+        network->getInfo( output , "main" );
         
     }    
     
@@ -594,7 +612,14 @@ namespace samson {
                                  " size,t=size,format=uint64 "         \
                                  " state,t=state /tasks_str,t=tasks "  \
                                  " lists_str,t=lists,left "            \
+
+// --------------------------------------------------------------------------------------------------------------------------------    
     
+#define PS_STREAM_FIELDS " id,t=id "                     \
+                         " state,t=state "               \
+                         " operation,t=operation,left "  \
+                         " input_0,t=input_0 "           \
+                         " input_1,t=input_1 "           \
     
     
     std::string Delilah::info( std::string external_command )
@@ -649,6 +674,23 @@ namespace samson {
             command.append( au::str(" -limit %d " , limit ) );
             
         } 
+        else if ( main_command == "ps_stream" )
+        {
+            command.append( "print_table tasks " );
+            
+            if( cmd.get_flag_bool("w") )
+                command.append(" worker_id ");
+            
+            command.append( PS_STREAM_FIELDS );
+            
+            command.append(" -divide worker_id ");
+            
+            // Limit
+            command.append( au::str(" -limit %d " , limit ) );            
+            
+            
+            
+        }
         else if ( main_command == "ls_engines" )
         {
             command.append( "print_table engines " );
@@ -887,7 +929,7 @@ namespace samson {
         }
         
         
-        return au::str("Command %s unkown" , main_command.c_str() );
+        return au::str("Command %s Unknown" , main_command.c_str() );
         
         */
         

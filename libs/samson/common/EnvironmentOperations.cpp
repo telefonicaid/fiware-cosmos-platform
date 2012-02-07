@@ -29,60 +29,7 @@ namespace samson {
 			to->set( name , value );
 		}
 	}
-    
-    void copy( KVInfo * from , network::KVInfo* to)
-    {
-        to->set_kvs(from->kvs);
-        to->set_size(from->size);
-    }
-    
-    void copy( FullKVInfo * from , network::KVInfo* to)
-    {
-        to->set_kvs(from->kvs);
-        to->set_size(from->size);
-    }
-    
-    // Get a debug string for generic messages
-    std::string strMessage( network::Message *message )
-    {
-        std::ostringstream output;
-        
-        if( message->has_command() )
-            output << "[ Command: " << message->command().command() << " ]";
-        
-        if ( message->has_worker_task_confirmation() )
-        {
-            output << "[ WTC: ";
-            switch (message->worker_task_confirmation().type()) {
-                case network::WorkerTaskConfirmation_WorkerTaskConfirmationType_finish:
-                    output << "Finish";
-                    break;
-                case network::WorkerTaskConfirmation_WorkerTaskConfirmationType_complete:
-                    output << "Complete";
-                    break;
-                case network::WorkerTaskConfirmation_WorkerTaskConfirmationType_error:
-                    output << "Error";
-                    break;
-                case network::WorkerTaskConfirmation_WorkerTaskConfirmationType_update:
-                {
-                    output << "Update ";
-                    output << message->worker_task_confirmation().add_file_size() << " new files";
-                }
-                    break;
-                    
-            }
-            output << "]";
-            
-        }
-        
-        if ( message->has_worker_task() )
-        {
-            output << "[WT " << message->worker_task().operation()   << "]";
-        }
-        
-        
-        return output.str();
-    }
+
     
     
 }

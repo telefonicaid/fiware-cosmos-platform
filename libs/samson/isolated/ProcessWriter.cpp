@@ -38,9 +38,6 @@ namespace samson {
 		// Number of outputs
 		num_outputs = processIsolated->num_outputs;
 		
-		// Number of servers
-		num_workers = processIsolated->num_workers;
-		
         // Hash code for the outputs
         keyValueHash = new KeyValueHash[ num_outputs ];
 
@@ -87,7 +84,8 @@ namespace samson {
 		
 		// Outputs structures placed at the begining of the buffer
 		channel = (OutputChannel*) buffer;
-		
+        
+		size_t num_workers = processIsolated->distribution_information.workers.size();
 		if( size < sizeof(OutputChannel) * num_outputs * num_workers )
 			LM_X(1,("Wrong size for a ProcessWriter operation"));
 		
@@ -184,6 +182,7 @@ namespace samson {
 		int hg = key->hash(KVFILE_NUM_HASHGROUPS); 
 		
 		// Detect the server to sent
+        size_t num_workers = processIsolated->distribution_information.workers.size();
 		int server = key->partition(num_workers);
 		
 		// Get a pointer to the current node
@@ -268,7 +267,8 @@ namespace samson {
 	void ProcessWriter::clear()
 	{
 		// Init all the outputs
-		for (int c = 0 ; c < (num_outputs*num_workers) ; c++)
+        size_t num_workers = processIsolated->distribution_information.workers.size();
+		for (size_t c = 0 ; c < (num_outputs*num_workers) ; c++)
 			channel[c].init();
 		new_node = 0;
 	}

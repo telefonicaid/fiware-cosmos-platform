@@ -32,9 +32,8 @@
 #include "samson/common/Macros.h"             // EXIT, ...
 #include "samson/common/traces.h"				// TRACE_DALILAH
 
-#include "samson/network/Network.h"			// NetworkInterface
+#include "samson/network/NetworkInterface.h"			// NetworkInterface
 #include "samson/network/Message.h"            // Message::MessageCode
-#include "samson/network/Endpoint.h"			// Endpoint
 
 #include "DelilahBase.h"                    // Monitorization information for delilah
 
@@ -65,7 +64,7 @@ namespace samson {
 	   Main class for the samson client element
 	 */
     
-	class Delilah : public PacketReceiverInterface, public PacketSenderInterface , public engine::Object, public DelilahBase
+	class Delilah : public NetworkInterfaceReceiver  , public engine::Object, public DelilahBase
 	{
 		// Id counter of the command - messages sent to controller ( commands / upload/ download )
 		size_t id;												
@@ -93,8 +92,6 @@ namespace samson {
 	public:
 		
 		Environment environment;								// Environment properties to be sent in the next job
-
-		NetworkInterface* network;								// Network interface
 		bool              finish;								// Global flag used by all threads to detect to stop
 
 
@@ -139,7 +136,7 @@ namespace samson {
 		 */
 		
 		// Function to be implemented by sub-classes to process packets ( not handled by this class )
-		virtual int _receive(int fromId, Message::MessageCode msgCode, Packet* packet);
+		virtual int _receive( Packet* packet );
 
         // Notification form a delilah component
         virtual void delilahComponentStartNotification( DelilahComponent *component){};
@@ -162,7 +159,8 @@ namespace samson {
 		std::string getListOfLoads();
         std::string getListOfComponents();
         
-        int getNextWorker();
+        // Get next worker_id to send data...
+        size_t getNextWorkerId();
         
 	protected:
 		

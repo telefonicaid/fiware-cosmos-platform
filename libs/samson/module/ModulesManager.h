@@ -53,21 +53,10 @@ namespace samson {
 		// Reload modules from default directories
 		void reloadModules();
 
-		// Fill Information for network messages
-		void fill( network::OperationList *ol , std::string command  );
-		void fill( network::DataList *dl, std::string command  );
-        
         // get xml information
         void getInfo( std::ostringstream& output);
         
 	};
-	
-	
-	// Utility functions
-	void fillKVFormat( network::KVFormat* format , KVFormat f );
-	void fillKVInfo( network::KVInfo* info , KVInfo i );
-	void fillFullKVInfo( network::KVInfo* info , FullKVInfo i );
-	
 	
 }
 

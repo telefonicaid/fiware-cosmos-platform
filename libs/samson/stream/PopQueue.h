@@ -50,8 +50,8 @@ namespace samson {
             
             network::PopQueue *pq;  // Message from delilah containing information about the pop operation
             
-            size_t delilahId;       // Identifier of the operation at delilah side
-            int fromId ;            // Identifier of delilah to send packets back
+            size_t delilah_id;             // Identifier of delilah asking for this
+            size_t delilah_component_id;  // Identifier of the compnent inside this delilah
             
             std::set<size_t> running_tasks;             // Tasks that are currently running
             
@@ -61,7 +61,7 @@ namespace samson {
 
             au::ErrorManager error;
             
-            PopQueue( const network::PopQueue& _pq , size_t _delilahId, int _fromId  );
+            PopQueue( const network::PopQueue& _pq , size_t _delilah_id, size_t _delilah_component_id  );
             ~PopQueue();
             
             void addTask( size_t id );

@@ -11,7 +11,6 @@ SET (HEADERS
 	MessagesOperations.h
 	daemonize.h
 	EnvironmentOperations.h
-	platformProcesses.h
 	Process.h
 	samsonConfig.h
 	coding.h
@@ -28,7 +27,6 @@ SET (SOURCES
 	MessagesOperations.cpp
 	daemonize.cpp
 	EnvironmentOperations.cpp
-	platformProcesses.cpp
 	coding.cpp
 	KVInputVector.cpp
 	status.cpp

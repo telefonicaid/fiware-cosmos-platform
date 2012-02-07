@@ -18,51 +18,25 @@
 
 namespace samson {
 	
-	
-	class NetworkFakeCenterPacket
-	{
-	public:
-
-		Message::MessageCode msgCode;
-		Packet *packet; 
-		int from;
-		int to;
-		PacketSenderInterface* sender;
-		
-		NetworkFakeCenterPacket(Message::MessageCode _msgCode, Packet *_packet, int _from , int _to , PacketSenderInterface* _sender )
-		{
-			msgCode = _msgCode;
-			from = _from;
-			to = _to;
-			packet = _packet;	// Copy the packet
-			sender = _sender;
-		}
-		
-		~NetworkFakeCenterPacket()
-		{
-            // If the packet has been finally sent, this should be NULL
-			// Remove the packet since it is responsability of the delegate
-            
-			if( packet)
-				delete packet;
-		}
-								 
-	};
-	
 	/**
 	 Center of operation of the NetworkFakeCenter
 	 */
 	
 	class NetworkFakeCenter
 	{
+        
 	public:
 		
-		std::map<int,NetworkFake*> network; 
-		std::map<int,FakeEndpoint*> endpoint; 
 
-		au::Token token;			// Lock to protect the pending packet list
+        // Lock to protect the pending packet list
+        au::Token token;			
+
+        // List of network interfaces
+        NetworkFake* delilah_network_interface;
+        std::vector<NetworkFake*> workers_network_interface;
 		
-		std::vector<NetworkFakeCenterPacket*> pendingPackets;
+        // List of pending packets
+		std::vector<Packet*> pendingPackets; 
 		
 		int num_workers;
 		
@@ -72,58 +46,70 @@ namespace samson {
 			
 			for (int i = 0 ; i < num_workers ; i++)
 			{
+                NodeIdentifier node_identifier( WorkerNode , 10 + i );
+                
 				// Create a fake Network interface element
-				network.insert( std::pair<int,NetworkFake*>( i , new NetworkFake(i , this) ) );
+				workers_network_interface.push_back( new NetworkFake( node_identifier , this) );
 				
-				// Create the right endpoint
-				endpoint.insert( std::pair<int,FakeEndpoint*>( i , new FakeEndpoint("worker" , i ) ) );
 			}
-
-			network.insert( std::pair<int,NetworkFake*>( -1 , new NetworkFake(-1 , this) ) );
-			endpoint.insert( std::pair<int,FakeEndpoint*>( -1 , new FakeEndpoint("controller" , -1 ) ) );
-
-			network.insert( std::pair<int,NetworkFake*>( -2 , new NetworkFake(-2 , this) ) );
-			endpoint.insert( std::pair<int,FakeEndpoint*>( -2 , new FakeEndpoint("dalilah" , -2 ) ) );
+            
+            // Delilah client
+            NodeIdentifier delilah_node_identifier( DelilahNode , 0 );
+            delilah_network_interface =  new NetworkFake( delilah_node_identifier , this );
 			
 		}
 		
 		~NetworkFakeCenter()
 		{
 			// Clear everything
-			
-			for( std::map<int,NetworkFake*>::iterator n = network.begin() ; n != network.end() ; n++ )
-				delete n->second;
-			network.clear();
+            for ( size_t i = 0 ; i < workers_network_interface.size() ; i ++ )
+                delete workers_network_interface[i];
+            workers_network_interface.clear();
+            
+            delete delilah_network_interface;
 
-			for( std::map<int,FakeEndpoint*>::iterator e = endpoint.begin() ; e != endpoint.end() ; e++ )
-				delete e->second;
-			endpoint.clear();
-			
 			// Just in case there are pending packets
 			for ( size_t i = 0 ; i < pendingPackets.size() ; i++ )
 				delete pendingPackets[i];
-
 			pendingPackets.clear();
 			
 		}
-		
-		NetworkFake* getNetwork( int worker_id )
-		{
-			std::map<int,NetworkFake*>::iterator i =  network.find( worker_id );
-			if( i == network.end() )
-			  LM_X(1,("Error in NetworkFake::getNetwork for worker %d", worker_id));
-			return i->second;
-		}
-		
-		FakeEndpoint* getEndpoint( int worker_id )
-		{
-			std::map<int,FakeEndpoint*>::iterator i =  endpoint.find( worker_id );
-			if( i == endpoint.end() )
-			  LM_X(1,("Error in NetworkFake::getEndpoint for endpoint %d",worker_id));
 
-			return i->second;
+		NetworkFake* getNetworkForDelilah( )
+        {
+            return delilah_network_interface;
+        }
+        
+		NetworkFake* getNetworkForWorker( int i )
+        {
+            if( (i<0)||(i>=(int)workers_network_interface.size() ) )
+                LM_X(1, ("Error in NetworkFake"));
+            return workers_network_interface[i];
+        }
+        
+		NetworkFake* getNetwork( NodeIdentifier node_identifier )
+		{
+            if( node_identifier.node_type == DelilahNode )
+            {
+                if ( node_identifier.id != 0 )
+                    LM_X(1,("Error in fake network"));
+                
+                return delilah_network_interface;
+            }
+            
+            if( node_identifier.node_type == WorkerNode )
+            {
+                for ( size_t i = 0 ; i < workers_network_interface.size() ; i++ )
+                    if( node_identifier == workers_network_interface[i]->node_identifier )
+                        return workers_network_interface[i];
+                
+                     LM_X(1,("Error in fake network"));
+                return NULL;
+            }
+            
+            LM_X(1,("Error in fake network"));
+            return NULL;
 		}
-		
 		void runInBackground();
 		
 		void run()
@@ -131,7 +117,7 @@ namespace samson {
 			while( true )
 			{
 				// Send packets to the rigth directions
-                std::vector<NetworkFakeCenterPacket*> sendingPackets;
+                std::vector<Packet*> sendingPackets;
                 
                 {
                     // Protect retaining the token
@@ -145,12 +131,10 @@ namespace samson {
 				if( sendingPackets.size() > 0 )
 				{
 					
-					for (std::vector<NetworkFakeCenterPacket*>::iterator p = sendingPackets.begin() ; p < sendingPackets.end() ; p++)
+					for (std::vector<Packet*>::iterator p = sendingPackets.begin() ; p < sendingPackets.end() ; p++)
 					{
-						NetworkFakeCenterPacket* pp = *p;
-						processPendingPacket(pp);
-                        pp->packet = NULL;
-						delete pp;
+						Packet* packet = *p;
+						processPendingPacket( packet );
 					}
 				}
 				else
@@ -161,7 +145,7 @@ namespace samson {
 			}
 		}
 		
-		void addPacket(NetworkFakeCenterPacket *p)
+		void addPacket( Packet *p)
 		{
             au::TokenTaker tt( &token );
 
@@ -174,16 +158,10 @@ namespace samson {
 		}
 		
 		
-		void processPendingPacket( NetworkFakeCenterPacket *p )
+		void processPendingPacket( Packet *packet )
 		{
-			// We look the endpoint worker id and use that to send the packet
-			// NetworkFake* network = getNetwork(p->to);
-			// network->receiver->receive( ... );
-
-			NetworkFake* network = getNetwork( p->to );
-			p->packet->fromId = p->from;
-			p->packet->msgCode = p->msgCode;
-			network->receiver->_receive( p->packet );			
+			NetworkFake* network = getNetwork( packet->to );
+			network->receiver->schedule_receive( packet );			
 		}
 	};
 }

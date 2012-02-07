@@ -13,12 +13,18 @@
 #include <string>                       // std::string
 #include <vector>                       // std::vector
 
+#include "au/map.h"                   
 #include "au/Token.h"                   // au::Token
-#include "tables/DataBase.h"
 #include "au/Cronometer.h"              // au::Cronometer
 #include "au/ConsoleAutoComplete.h"
 
-#include "DelilahUtils.h"               // 
+#include "tables/DataBase.h"
+
+#include "samson/network/NetworkInterface.h"
+
+#include "DelilahUtils.h"               
+
+
 
 #include "tables/pugi.h"                  // pugi::... node_to_string_function
 
@@ -73,11 +79,9 @@ namespace samson {
     
     class DelilahBase
     {
-        // XML information
-        int num_workers;
 
         // XML data holders for workers and this delilah
-        std::vector<XMLStringHolder*> worker;
+        au::map<size_t, XMLStringHolder > workers;
         
         // XML data holders for this delilah
         XMLStringHolder* delilah;
@@ -88,19 +92,22 @@ namespace samson {
         au::tables::DataBase database;
         
     public:
+
+        // Network interface
+		NetworkInterface* network;								
         
-        DelilahBase( int num_workers );
+        DelilahBase( );
         ~DelilahBase();
         
         // Update internal monitorization from all elements
         void updateDelilahXMLString( std::string txt );
-        void updateWorkerXMLString( int w, std::string txt );
+        void updateWorkerXMLString( size_t worker_id , std::string txt );
 
         // Own funciton to get xml content
         virtual void getInfo( std::ostringstream& output )=0; 
         
         // Get the max time since the last monitorization update
-        int getUpdateSeconds();
+        int getUpdateSeconds( );
 
         // Simple queries to get a list of operations, queues, etc...
         std::vector<std::string> getOperationNames( );        
@@ -116,16 +123,6 @@ namespace samson {
 
         // Autocomplete for database mode
         void autoCompleteForDatabaseCommand( au::ConsoleAutoComplete* info );
-        
-        // Check if at least monitorization information has been received once from all workers
-        bool allWorkersUpdatedOnce()
-        {
-            for ( size_t w = 0 ; w < worker.size() ; w++ )
-                if( worker[w]->getNumUpdated() == 0 )
-                    return false;
-
-            return true;
-        }
         
     };
 }

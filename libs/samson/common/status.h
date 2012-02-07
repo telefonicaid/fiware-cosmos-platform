@@ -52,7 +52,10 @@ typedef enum Status
 	WriteError,
 	Timeout,
 	ConnectionClosed,
-	PThreadError
+	PThreadError,
+    WrongPacketHeader,
+    
+    ErrorParsingGoogleProtocolBuffers
 } Status;
 
 

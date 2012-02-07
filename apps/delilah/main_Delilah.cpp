@@ -24,22 +24,25 @@
 
 #include "samson/module/ModulesManager.h"       // samson::ModulesManager
 
+#include "samson/common/ports.h"
+#include "samson/common/status.h"
 #include "samson/common/samsonVersion.h"
 #include "samson/common/SamsonSetup.h"
 
-#include "samson/network/Network2.h"
-#include "samson/network/EndpointManager.h"
+#include "samson/network/DelilahNetwork.h"
 #include "samson/network/Packet.h"
-
 
 #include "samson/delilah/DelilahConsole.h"
 
+#include "samson/common/status.h"
 
 /* ****************************************************************************
 *
 * Option variables
 */
-char             controller[80];
+char             target_host[80];
+int              target_port;
+
 int				 memory_gb;
 int				 load_buffer_size_mb;
 char			 commandFileName[1024];
@@ -54,7 +57,8 @@ char             command[1024];
 */
 PaArgument paArgs[] =
 {
-	{ "-controller",       controller,           "CONTROLLER",       PaString, PaOpt, _i LOC, PaNL, PaNL, "controller IP:port"         },
+	{ "",                  target_host,           "",       PaString, PaOpt, _i LOC, PaNL, PaNL, "SAMSON server hostname "         },
+	{ "",                 &target_port,           "",       PaInt, PaOpt, SAMSON_WORKER_PORT, 1, 99999, "SAMSON server port"         },
 	{ "-memory",           &memory_gb,           "MEMORY",           PaInt,    PaOpt,      1,    1,  100, "memory in GBytes"           },
 	{ "-load_buffer_size", &load_buffer_size_mb, "LOAD_BUFFER_SIZE", PaInt,    PaOpt,     64,   64, 2048, "load buffer size in MBytes" },
 	{ "-f",                 commandFileName,     "FILE_NAME",        PaString, PaOpt,  _i "", PaNL, PaNL, "File with commands to run"  },
@@ -117,6 +121,9 @@ int main(int argC, const char *argV[])
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 	
+    // Random initialization
+    srand( time(NULL));
+    
     // Make sure this singleton is created just once
     au::LockDebugger::shared();
 
@@ -143,49 +150,41 @@ int main(int argC, const char *argV[])
 	samson::ModulesManager::init();         // Init the modules manager
 	
 	// Initialize the network element for delilah
-	samson::Network2*        networkP  = new samson::Network2( samson::Endpoint2::Delilah, controller );
-
-	networkP->runInBackground();
-
-	std::cerr << "\nConnecting to SAMSOM controller " << controller << " ...";
-    std::cerr.flush();
+    LM_M(("Creating network element"));
+	samson::DelilahNetwork * networkP  = new samson::DelilahNetwork( );
     
-	//
-	// What until the network is ready
-	//
-	while (!networkP->ready())
-		usleep(1000);
-	std::cerr << " OK\n";
-	LM_M(("\nConnecting to SAMSON controller %s ... OK", controller));
-
-	std::cerr << "Connecting to all workers ...";
-    std::cerr.flush();
-    
-	//
-	// Ask the Controller for the platform process list
-	//
-	// First, give controller some time for the interchange of Hello messages
-	//
-    
-	LM_TODO(("I should probably go through NetworkInterface here ..."));
-	samson::Packet*  packetP  = new samson::Packet(samson::Message::Msg, samson::Message::ProcessVector);
-	networkP->epMgr->controller->send( packetP );
-
-	//
-	// Wait until the network is ready II
-	//
-	while (!networkP->ready(true))
-    {
-		LM_M(("Awaiting ready II"));
-		usleep(1000);
-    }
-    
-	std::cout << " OK\n";
-	LM_M(("Connected to controller and all workers"));
-
 	// Create a DelilahControler once network is ready
 	samson::DelilahConsole* delilahConsole = new samson::DelilahConsole(networkP);
-	
+
+    // Add main delilah connection with specified worker
+    samson::Status s = networkP->addMainDelilahConnection( target_host , target_port );        
+    
+    if( s != samson::OK )
+        LM_X(1, ("Not possible to open connection with %s:%d (%s)" , target_host , target_port , samson::status(s) ));
+    
+    
+    // Only wait if there is a command or file
+    if ( ( strcmp( command , "" ) != 0 ) && ( strcmp( commandFileName,"") != 0 ) )
+    {
+        std::cerr << "\nConnecting to SAMSOM cluster at " << target_host << " ...";
+        std::cerr.flush();
+        
+        //
+        // Wait until the network is ready II
+        //
+        while ( ! networkP->ready() )
+        {
+            LM_M(("Awaiting fully connected...."));
+            usleep(1000);
+        }
+        
+        std::cout << " OK\n";
+        LM_M(("Connected to controller and all workers"));
+        
+    }	
+    
+    
+    
     // Special mode for file-based commands
     // ----------------------------------------------------------------
     
@@ -194,9 +193,10 @@ int main(int argC, const char *argV[])
         // Running a single command
 
 
+        // TODO... spetial wait in delilah to make sure I got all monitor information
         // Wait until it is ready to get some queries
-        while ( !delilahConsole->allWorkersUpdatedOnce() ) 
-            usleep(1000);
+        //while ( !delilahConsole->allWorkersUpdatedOnce() ) 
+        //    usleep(1000);
         
         size_t id = delilahConsole->runAsyncCommand( command );
         std::cerr << au::str("Processing: '%s' [ id generated %lu ]\n", command , id);
@@ -297,5 +297,6 @@ int main(int argC, const char *argV[])
 		exit(0);
 	}
 
+    LM_M(("Running delilah console..."));
     delilahConsole->run();
 }

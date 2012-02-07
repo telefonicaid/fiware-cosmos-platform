@@ -10,8 +10,6 @@
 #include "au/map.h"         // au::map
 #include "au/Environment.h" // au::Environment
 
-#define SAMSON_CONTROLLER_DEFAULT_PORT		1234
-#define SAMSON_WORKER_DEFAULT_PORT			1235
 
 NAMESPACE_BEGIN(au)
     class ErrorManager;
@@ -146,11 +144,14 @@ namespace samson {
         std::string modulesDirectory();
         std::string blocksDirectory();
         
-        std::string blockFileName( size_t id );
-        bool blockIdFromFileName( std::string fileName , size_t *id );
+        std::string blockFileName( size_t worker_id , size_t id );
+        bool blockIdFromFileName( std::string fileName , size_t* worker_id , size_t *id );
 
         std::string streamManagerLogFileName();
         std::string streamManagerAuxiliarLogFileName();
+
+        
+        std::string clusterInformationFileName();
         
         
         // Create working directories

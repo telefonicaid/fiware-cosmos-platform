@@ -41,8 +41,8 @@ namespace samson {
         std::string queue;                  // Name of the queue we are recovering
         std::string fileName;               // Name of the file to create
         
-        int num_workers;                    // Number of workers ( where we have send the request )
-        int num_finish_worker;              // Number of workers that have confirmed that everything has been sent
+        std::vector<size_t> workers;        // Workers involved in the operation
+        size_t num_finish_worker;              // Number of workers that have confirmed that everything has been sent
         
         int num_write_operations;           // Number of pending local write operations
         
@@ -57,7 +57,7 @@ namespace samson {
         void run();
         
         // Function to receive packets
-		void receive(int fromId, Message::MessageCode msgCode, Packet* packet);
+		void receive( Packet* packet );
  
 		// Function to get the status
 		std::string getStatus();

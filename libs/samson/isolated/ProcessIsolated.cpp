@@ -10,12 +10,14 @@
 #include "SharedMemoryManager.h"
 
 
+#include "samson/network/NetworkInterface.h"
+#include "samson/network/Packet.h"
+
 namespace samson
 {
     ProcessIsolated::ProcessIsolated( std::string description, ProcessBaseType _type ) : ProcessItemIsolated( description )
     {
         num_outputs = 0;        // Outputs are defined calling "addOutput" with the rigth output format
-        num_workers = 0;        // setNumWorkers function is used to specify this. If still "0" when running, an error is triggered
         
         type = _type;
         
@@ -160,6 +162,7 @@ namespace samson
 		OutputChannel *channel = (OutputChannel*) buffer;
 		
 		// Buffer starts next
+        size_t num_workers = distribution_information.workers.size();
 		NodeBuffer* node = (NodeBuffer*) ( buffer + sizeof(OutputChannel) * num_outputs * num_workers );
 		//size_t num_nodes = ( size - (sizeof(OutputChannel)* num_outputs* num_servers )) / sizeof( NodeBuffer );
 		
@@ -170,7 +173,7 @@ namespace samson
 		for (int o = 0 ; o < num_outputs ; o++)
 		{
 			
-			for (int s = 0 ; s < num_workers ; s++)
+			for (size_t s = 0 ; s < num_workers ; s++)
 			{				
                 
 				OutputChannel * _channel = &channel[ o * num_workers + s ];	
@@ -317,14 +320,43 @@ namespace samson
             addOutput( op->getOutputFormat(i) );
     }
    
-    void ProcessIsolated::setNumWorkers( int _num_workers )
+    void ProcessIsolated::setDistributionInformation( DistributionInformation _distribution_information  )
     {
-        num_workers = _num_workers;
+        distribution_information = _distribution_information;
     }
     
     void ProcessIsolated::setProcessBaseMode(ProcessBaseType _type)
     {
         type = _type;
     }
+    
+    
+    void ProcessIsolated::sendTrace( samson::network::Trace& trace )
+    {
+        std::vector<size_t> delilahs = distribution_information.network->getDelilahIds();
+        
+        for ( size_t i = 0 ; i < delilahs.size() ; i++ )
+        {
+            
+            Packet * p = new Packet( Message::Trace );
+            
+            p->message->mutable_trace()->CopyFrom( trace );
+            p->message->set_delilah_component_id( (size_t)-1 );
+            
+            
+            // Direction of this paket
+            p->to.node_type = DelilahNode;
+            p->to.id = delilahs[i];
+            
+            // Send packet
+            distribution_information.network->send( p );
+            
+        }
+        
+        
+        
+        
+    }
+    
     
 }

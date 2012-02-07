@@ -10,8 +10,6 @@ namespace samson {
 
 	bool filterName( const std::string& name , const std::string& begin , const std::string& end);
 	
-    void copy( KVFormat *from , network::KVFormat *to );
-	
 }
 
 #endif

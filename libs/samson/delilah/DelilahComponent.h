@@ -47,7 +47,7 @@ namespace samson {
 		virtual ~DelilahComponent(){};	// Virtual destructor necessary in this class since subclasses are deleted using parent pointers
 		
 		void setId( Delilah * _delilah ,  size_t _id );
-		virtual void receive(int fromId, Message::MessageCode msgCode, Packet* packet)=0;
+		virtual void receive( Packet* packet )=0;
 
 		// General function to give a long description status ( used when typing ps X )
 		virtual std::string getStatus()=0;
@@ -98,8 +98,9 @@ namespace samson {
 		std::string getStatus();
         void notify( engine::Notification* notification );
 
-		void receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+		void receive( Packet* packet )
         {
+            LM_W(("Received a packet in a RepeatDelilahComponent... nothing was expected"));
         }
         
         void run();

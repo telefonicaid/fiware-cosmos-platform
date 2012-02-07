@@ -68,6 +68,8 @@ namespace samson {
         void sendMessageProcessPlatform( samson::network::MessageProcessPlatform *message );
 
 		
+        virtual void sendTrace( samson::network::Trace& trace )=0;
+        
 	public:		
 
 		// Internal function to be executed by a separate process or thread

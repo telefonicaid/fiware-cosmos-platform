@@ -29,7 +29,6 @@
 #include "samson/isolated/ProcessItemIsolated.h"    // isolated_process_as_tread to put background process in thread mode
 #include "samson/isolated/SharedMemoryManager.h"    // samson::SharedMemoryManager
 
-#include "samson/network/Endpoint.h"			// samson::EndPoint
 #include "samson/network/NetworkInterface.h"
 
 #include "samson/worker/SamsonWorker.h"		// samson::SamsonWorker
@@ -173,16 +172,17 @@ int main(int argC, const char *argV[])
     
     // Console delilah..
     if( delilah_qt )
-        delilahQt = new samson::DelilahQt( networkCenter->getNetwork(-2) );
+        delilahQt = new samson::DelilahQt( networkCenter->getNetworkForDelilah() );
     else            
-        delilahConsole = new samson::DelilahConsole( networkCenter->getNetwork(-2) );
+        delilahConsole = new samson::DelilahConsole( networkCenter->getNetworkForDelilah() );
+
 	
-	LM_T(LmtInit, ("SamsonLocal start"));
+	LM_V(("SamsonLocal start"));
 	LM_D(("Starting samson demo (logFd == %d)", ::logFd));
 
 	for (int i = 0 ; i < workers ; i ++ )
 	{
-		samson::SamsonWorker *w = new samson::SamsonWorker( networkCenter->getNetwork(i) );
+		samson::SamsonWorker *w = new samson::SamsonWorker( networkCenter->getNetworkForWorker(i) );
 		_workers.push_back(w);
 	}
 	

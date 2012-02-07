@@ -14,11 +14,18 @@
 #include "logMsg/traceLevels.h"        // LmtNetworkInterface, ...
 
 #include "au/Lock.h"                   // au::Lock
+#include "au/string.h"
+#include "au/Token.h"     
+#include "au/TokenTaker.h"
+#include "au/ErrorManager.h"
 
 //#include "engine/DiskStatistics.h"      // engine::DiskStatistics
 
-#include "samson/network/Message.h"    // samson::Message::MessageCode
-#include "samson/network/Endpoint.h"   // samson::Endpoint::Type
+#include "samson/common/SamsonSetup.h"
+#include "samson/common/status.h"
+
+#include "samson/network/Message.h"               // samson::Message::MessageCode
+#include "samson/network/ClusterInformation.h"    // samson::Endpoint::Type
 
 NAMESPACE_BEGIN(engine)
     class DiskStatistics;
@@ -26,197 +33,123 @@ NAMESPACE_BEGIN(engine)
 
 namespace samson {
     
-    
     /* ****************************************************************************
      *
      * Forward declarations
      */
+    
     class Packet;
-	
-    
     
     /* ****************************************************************************
      *
-     * DataReceiverInterface - 
+     * NetworkInterfaceReceiver - 
      */
-    class DataReceiverInterface
-    {
-    public:
-        virtual int   receive(int fromId, int nb, Message::Header* headerP, void* dataP) = 0;
-        virtual void  init(ProcessVector* procVec) = 0;
-        virtual      ~DataReceiverInterface() {};
-    };
     
-    
-    
-    /* ****************************************************************************
-     *
-     * TimeoutReceiverInterface - 
-     */
-    class TimeoutReceiverInterface
-    {
-    public:
-        virtual int   timeoutFunction() = 0;
-        virtual      ~TimeoutReceiverInterface() {};
-    };
-    
-    
-    
-    /* ****************************************************************************
-     *
-     * EndpointUpdateReceiverInterface - 
-     */
-    class EndpointUpdateReceiverInterface
-    {
-    public:
-        virtual int endpointUpdate(Endpoint* ep, Endpoint::UpdateReason, const char* reason, void* info = NULL) = 0;
-        virtual     ~EndpointUpdateReceiverInterface() {};
-    };
-    
-    
-    
-    /* ****************************************************************************
-     *
-     * ReadyReceiverInterface - 
-     */
-    class ReadyReceiverInterface
-    {
-    public:
-        virtual int  ready(const char* info) = 0;
-        virtual     ~ReadyReceiverInterface() {};
-    };
-    
-    
-    
-    /* ****************************************************************************
-     *
-     * PacketReceiverInterface - 
-     */
-    class PacketReceiverInterface
+    class NetworkInterfaceReceiver
     {
         
-        // Method implemented to really receive the packet
+    public:
+        
         // This method  is only called by PacketReceivedNotification
         friend class PacketReceivedNotification;
-        virtual void receive(Packet* packet) = 0;
         
-    public:
+        // Method implemented to really receive the packet
+        // Note: Packet also included notification about connections and disconnections of workers and delilahs
+        virtual void receive( Packet* packet ) = 0;
         
-        std::string packetReceiverDescription;
+        // Virtual destructor for correct memory deallocation
+        virtual ~NetworkInterfaceReceiver() { };
+                
+        // Synchronous interface to reset a worker with a new worker_id... everything should be reset at this worker
+        virtual void reset_worker( size_t worker_id ){};
         
-        // Convenient way to run the receive methods using Engine system
-        void _receive(Packet* packet);
-        
-        // Method to recover the status of this element in JSON format
-        // In the controllor case, this is exposed to a simple port similar to a telnet service
-        virtual std::string getJSONStatus(std::string in)
+        // Synchronous interface to get informtion for the REST interface
+        virtual ::std::string getRESTInformation( ::std::string in )
         {
             return "Not implemented\n";
         }
         
-        virtual ~PacketReceiverInterface() {};
-    };
-	
-	
-	
-    /* ****************************************************************************
-     *
-     * PacketSenderInterface - packet sender that needs receive notification
-     */
-    class PacketSenderInterface
-    {
-    public:
-        // Notification that the packet has been sent
-        virtual void notificationSent(size_t id, bool success) = 0;
+        // Convenient way to run the receive methods using Engine system
+        void schedule_receive( Packet* packet );
+
         
-        virtual ~PacketSenderInterface() {};
     };
 	
     
+    
+    class NetworkInterfaceBase
+    {
+        
+    public:
+        
+        NetworkInterfaceReceiver* network_interface_receiver;       // Received to get packages
+        engine::DiskStatistics *statistics;             // Statistics information
+
+        void  setReceiver(NetworkInterfaceReceiver* receiver)
+        {
+            network_interface_receiver = receiver;            
+        }
+        
+    };
     
     /* ****************************************************************************
      *
      * NetworkInterface - interface of the interconnection element (Network and NetworkSimulator)
      */
-    class  NetworkInterface
+    
+    class  NetworkInterface : public NetworkInterfaceBase
     {
-        const char* node_name;              // Name of this node for debugging (set with setNodeName)
         
     public:
         
-        engine::DiskStatistics *statistics;          // Statistics
-        
-        
-        void setNodeName(const char* _node_name)
-        {
-            node_name = _node_name;
-        }
-        
+ 
         NetworkInterface();
         virtual ~NetworkInterface();
-        
-        // Inform about everything ready to start
-        virtual bool ready() = 0;
-        virtual bool ready(bool connectedToAllWorkers) { return false; };
-        
-        // Set the receiver element (this should be notified about the package)
-        virtual void setPacketReceiver(PacketReceiverInterface* receiver) = 0;
-        
-        // Get identifiers of known elements
-        //        virtual int controllerGetIdentifier()  = 0;    // Get the identifier of the controller
-        virtual int workerGetIdentifier(int i) = 0;              // Get the identifier of the i-th worker
-        virtual int getMyidentifier()          = 0;              // Get my identifier
-        virtual int getNumWorkers()            = 0;              // Get the number of workers
-        virtual int getNumEndpoints() { return 0; }              // Get the number of endpoints
-        
-        // Get information about network element
-        virtual size_t getOutputBuffersSize() { return 0; };
-        
-        virtual void jobInfo(int endpointId, int* messages, long long* dataLen)
+
+        // Send packet to an element in the samson cluster ( delilah or worker )
+        virtual Status send( Packet* packet )
         {
-            *messages = 0;
-            *dataLen  = 0;
+            LM_X(1, ("NetworkInterface mothod not implemented"));
+            return Error;
         }
         
         // Get information about network state
-        virtual void getInfo( std::ostringstream& output )=0;
-        
-        // Get the "worker cardinal" from the idenfitier
-        // This method should return a value between 0 and (num_workers - 1) or -1 if the identifier provided is not related to any worker
-        virtual int getWorkerFromIdentifier(int identifier) = 0;
-        
-        // Main run loop control to the network interface
-        // this call is a blocking call. It only returns if "quit" is called from another thread
-        virtual void run() = 0;
-        
-        // Suspend the network interface, close everything and return the "run" call
-        virtual void quit(void) = 0;
-        
-        // Handy function to get my workerID
-        int getWorkerId(void)
+        virtual void getInfo( ::std::ostringstream& output , std::string command )
         {
-            return getWorkerFromIdentifier(getMyidentifier());
+            LM_X(1, ("NetworkInterface mothod not implemented"));
+        }
+    
+        // Suspend the network elements implemented behind NetworkInterface
+        // Close everything and return the "run" call
+        virtual void quit(void)
+        {
+            LM_X(1, ("NetworkInterface mothod not implemented"));
+        }
+      
+        // Basic information about the cluster ( list of workers and delilahs )
+        virtual std::vector<size_t> getWorkerIds()
+        {
+            LM_X(1, ("NetworkInterface mothod not implemented"));
+            return std::vector<size_t>();
+        }
+
+        virtual std::vector<size_t> getDelilahIds()
+        {
+            LM_X(1, ("NetworkInterface mothod not implemented"));
+            return std::vector<size_t>();
         }
         
-        // Run the "run" method in a background thread and return control to the current thread
-        void runInBackground();
+        virtual std::string cluster_command( std::string command )
+        {
+            LM_X(1, ("NetworkInterface mothod not implemented"));
+            return "";
+        }
         
-        virtual bool isConnected(unsigned int identifier) { return true; };
-        virtual void delilahSend(PacketSenderInterface* packetSender, Packet* packetP) = 0;
         
-        // New API to send packets    
-        void send(int endpoint, Packet* p);
-        void sendToWorker(int workerId, Packet* p);
-        //void sendToController(Packet* p);
-        
-    private:
-        
-        // Send a packet (return a unique id to inform the notifier later)
-        virtual size_t send(PacketSenderInterface* sender, int endpointId, Packet* packetP) = 0;
     };
     
-    void getInfoEngineSystem( std::ostringstream &output , NetworkInterface* network );
-    
+    // Old stuff to be reviewd
+    void getInfoEngineSystem( ::std::ostringstream &output , NetworkInterface* network );
     
     
 }

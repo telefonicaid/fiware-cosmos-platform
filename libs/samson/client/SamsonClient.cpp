@@ -26,14 +26,14 @@
 #include "engine/ProcessManager.h"              // engine::ProcessManager
 #include "engine/Notification.h"                // engine::Notification
 
+
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
 #include "samson/common/samsonDirectories.h"    
 #include "samson/common/NotificationMessages.h" // notification_review_timeOut_SamsonPushBuffer
 
 #include "samson/module/ModulesManager.h"       // samson::ModulesManager
 
-#include "samson/network/Network2.h"
-#include "samson/network/EndpointManager.h"
+#include "samson/network/DelilahNetwork.h"
 #include "samson/network/Packet.h"
 
 #include "samson/delilah/Delilah.h"             // samson::Delilah
@@ -119,8 +119,7 @@ namespace samson {
     
 #pragma mark
     
-    samson::EndpointManager* epMgr     = NULL;
-    samson::Network2*        networkP  = NULL;
+    samson::DelilahNetwork* networkP  = NULL;
     samson::Delilah* delilah = NULL;    
     
     BufferContainer buffer_container;   // Container for live data
@@ -142,7 +141,7 @@ namespace samson {
         memory = _memory;
     }
     
-    bool SamsonClient::init( std::string controller )
+    bool SamsonClient::init( std::string worker_host , int port )
     {
                 
         
@@ -178,39 +177,24 @@ namespace samson {
         samson::ModulesManager::init();         // Init the modules manager
         
         // Initialize the network element for delilah
-        networkP  = new samson::Network2( samson::Endpoint2::Delilah, controller.c_str() );
-        
-        // Init the network connection in background
-        networkP->runInBackground();
+        networkP  = new samson::DelilahNetwork( );
         
         //
         // What until the network is ready
         //
         //std::cout << "\nConnecting to SAMSOM controller " << controller << " ...";
-        while (!networkP->ready())
+        while ( !networkP->ready() )
             usleep(1000);
-        //std::cout << " OK\n";
-        
-        //
-        // Ask the Controller for the platform process list
-        //
-        // First, give controller some time for the interchange of Hello messages
-        //
-        samson::Packet*  packetP  = new samson::Packet(samson::Message::Msg, samson::Message::ProcessVector);
-        
-        LM_TODO(("I should probably go through NetworkInterface here ..."));
-        networkP->epMgr->controller->send( packetP );
-        
-        //
-        // What until the network is ready II
-        //
-        //std::cout << "Connecting to all workers ...";
-        while (!networkP->ready(true))
-            sleep(1);
-        //std::cout << " OK\n";
         
         // Create a DelilahControler once network is ready
         delilah = new Delilah( networkP );
+        
+        // Init network connection
+        Status s = networkP->addMainDelilahConnection( worker_host , port );
+
+        if( s != OK )
+            LM_X(1, ("Not possible to open connection with %s:%d (%s)" , worker_host.c_str() , port , status(s) ));
+        
         
         // Set the funciton to process live stream data
         delilah->op_delilah_process_stream_out_queue = delialh_client_delilah_process_stream_out_queue;

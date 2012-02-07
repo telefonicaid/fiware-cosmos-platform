@@ -28,16 +28,15 @@ namespace samson {
 	
 	void WorkerCommandDelilahComponent::run()
 	{
-        num_workers = delilah->network->getNumWorkers();
+        workers = delilah->network->getWorkerIds();
         num_confirmed_workers = 0;
         
-        
-        for ( int worker = 0 ; worker < num_workers ; worker++ )
+        for ( size_t w = 0 ; w < workers.size() ; w++ )
         {
             Packet*           p = new Packet( Message::WorkerCommand );
             network::WorkerCommand* c = p->message->mutable_worker_command();
             c->set_command( command );
-            p->message->set_delilah_id( id );
+            p->message->set_delilah_component_id( id );
             
             Environment e;
             e.copyFrom( &delilah->environment );
@@ -73,16 +72,20 @@ namespace samson {
             // Set the buffer data ( if any )
             p->buffer = buffer;
             
-            delilah->network->sendToWorker( worker , p );            
-            
+            // Information about destination....
+            p->to.node_type = WorkerNode;
+            p->to.id = workers[w];
+
+            // Send message
+            delilah->network->send( p );                        
             
         }
 		
 	}	    
     
-	void WorkerCommandDelilahComponent::receive(int fromId, Message::MessageCode msgCode, Packet* packet)
+	void WorkerCommandDelilahComponent::receive( Packet* packet )
 	{
-		if( msgCode == Message::WorkerCommandResponse )
+		if( packet->msgCode == Message::WorkerCommandResponse )
             num_confirmed_workers++;
 
         // If error is returned, worker_command is automatically canceled
@@ -92,7 +95,7 @@ namespace samson {
             return;
         }
         
-        if( num_confirmed_workers == num_workers )
+        if( num_confirmed_workers == (int)workers.size() )
         {
             //LM_M(("setComponentFinished() fromId(%d) num_confirmed_workers(%d)", fromId, num_confirmed_workers));
             setComponentFinished();
@@ -107,7 +110,7 @@ namespace samson {
 	std::string WorkerCommandDelilahComponent::getStatus()
 	{
 		std::ostringstream o;
-		o << "Confirmed " << num_confirmed_workers << " / " << num_workers << " workers";
+		o << "Confirmed " << num_confirmed_workers << " / " << workers.size() << " workers";
 		return o.str();
 	}
 	

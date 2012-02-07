@@ -1,5 +1,5 @@
-#ifndef PORTS_H
-#define PORTS_H
+#ifndef SAMSON_PORTS_H
+#define SAMSON_PORTS_H
 
 /* ****************************************************************************
 *
@@ -17,6 +17,10 @@
 *
 * Common ports for the Samson platform
 */
+
+#define SAMSON_WORKER_PORT     1234
+#define SAMSON_WORKER_WEB_PORT 9898
+
 #define LOG_MESSAGE_PORT  1232
 #define SPAWNER_PORT      1233
 #define CONTROLLER_PORT   1234

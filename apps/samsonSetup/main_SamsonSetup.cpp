@@ -12,6 +12,7 @@
 #include "au/Console.h"                         // au::Console
 
 #include "samson/common/SamsonSetup.h"			// samson::SamsonSetup
+#include "samson/common/ports.h"
 #include "samson/common/coding.h"				// samson::FormatHeader
 #include "samson/common/samsonVars.h"           // SAMSON_ARG_VARS SAMSON_ARGS
 #include "samson/module/KVFormat.h"             // samson::KVFormat
@@ -28,6 +29,7 @@
 
 SAMSON_ARG_VARS;
 bool check;
+int port;
 
 /* ****************************************************************************
  *
@@ -37,9 +39,7 @@ bool check;
 PaArgument paArgs[] =
 {
 	SAMSON_ARGS,
-    
-	{ "-check",   &check,    "",     PaBool,    PaOpt,  false,  false,   true,  "Check if setup file is correct" },
-    
+	{ "-check",   &check,       "",     PaBool,    PaOpt,  false,  false,   true,  "Check if setup file is correct" },    
 	PA_END_OF_ARGS
 };
 
@@ -268,7 +268,7 @@ int main(int argC, const char *argV[])
     
 
     // SamsonSetup init
-	samson::SamsonSetup::init( samsonHome , samsonWorking  );
+	samson::SamsonSetup::init( samsonHome , samsonWorking );
     samson::SamsonSetup::shared()->createWorkingDirectories();      // Create working directories
     
     if( check )

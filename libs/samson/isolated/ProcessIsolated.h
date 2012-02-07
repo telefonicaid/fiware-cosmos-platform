@@ -14,6 +14,7 @@
 
 #include "samson/isolated/ProcessItemIsolated.h"	// samson:ProcessItemIsolated
 
+#include "samson/stream/DistributionInformation.h"
 
 #define WORKER_TASK_ITEM_CODE_FLUSH_BUFFER          1
 #define WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH	2
@@ -26,6 +27,8 @@ namespace samson {
     class Operation;
     class KVWriter;
     class TXTWriter;
+    class NetworkInterface;
+    
     
     /*
      Base class for the elements that decides what to do with the output buffers of a ProcessIsolated
@@ -78,7 +81,9 @@ namespace samson {
     public:
         
         int num_outputs;    // Number of outputs
-        int num_workers;    // Number of workers in the cluster
+
+        // Informaiton about how to distribute information across the cluster
+        DistributionInformation distribution_information;
         
         // Auxiliar information to give correct format to output buffers
         std::vector<KVFormat> outputFormats;
@@ -136,10 +141,14 @@ namespace samson {
         void addOutputsForOperation( Operation *op );
 
         // Function to set the number of workers ( necessary )
-        void setNumWorkers( int _num_workers );
+        void setDistributionInformation( DistributionInformation _distribution_information  );
 
         // Chage the type of usage
 		void setProcessBaseMode(ProcessBaseType _type);
+      
+        // Send traces using distribution information
+        void sendTrace( samson::network::Trace& trace );
+        
         
     };
     

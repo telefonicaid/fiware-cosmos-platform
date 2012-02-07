@@ -2,7 +2,7 @@
 #define _H_BLOCK_MANAGER
 
 #include "Block.h"                      // samson::stream::Block
-#include "au/set.h"                     // au::set
+#include "au/list.h"
 
 #include "samson/common/Info.h"         // samson::Info
 
@@ -23,11 +23,12 @@ namespace samson {
         class BlockManager : public engine::Object 
         {
             
-            std::list<Block*> blocks;       // List of blocks in the system ( ordered by priority )
+            au::list<Block> blocks;       // List of blocks in the system ( ordered by priority )
             
             BlockManager();                 // Private constructor for singleton implementation
             ~BlockManager();
-            
+
+            size_t worker_id;               // Identifier of the worker in the cluster
             size_t id;                      // Next id to give to a block
 
             int num_writing_operations;     // Number of writing operations ( low priority blocks )
@@ -47,10 +48,27 @@ namespace samson {
         public:
 
             // Auxiliar function to rise the next block identifier to not colide with previous blocks
-            void setMinimumNextId( size_t min_id);
+            void setMinimumNextId( size_t min_id );
+            
+            // Update the worker id
+            void resetBlockManager( size_t _worker_id )
+            {
+                worker_id = _worker_id;
+                
+                // Remover all blocks
+                blocks.clearList();
+                
+                // Remove all files...
+                LM_TODO(("Remove all files at BlockManager"));
+            }
             
             // Function to get a new id for a block
             size_t getNextBlockId();
+            
+            size_t getWorkerId()
+            {
+                return worker_id;
+            }
             
             // Add a block to the block manager
             // It is assumed block is NOT inside the list "blocks"

@@ -300,10 +300,10 @@ namespace samson {
             }
         }
         
-        void StreamManager::addPopQueue(const network::PopQueue& pq , size_t delilahId, int fromId )
+        void StreamManager::addPopQueue(const network::PopQueue& pq , size_t delilah_id, size_t delilah_component )
         {
             // Create a new pop queue
-            PopQueue *popQueue = new PopQueue( pq , delilahId, fromId );
+            PopQueue *popQueue = new PopQueue( pq , delilah_id , delilah_component );
 
             // Get a new id
             popQueue->id = id_pop_queue++;

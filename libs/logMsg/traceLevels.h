@@ -19,113 +19,21 @@
 */
 typedef enum TraceLevels
 {
-	LmtMsg              = 15,
-	LmtEndpointList1    = 16,
-	LmtEndpointList2    = 17,
-	LmtHostList1        = 18,
-	LmtHostList2        = 19,
-	LmtProcessList1     = 20,
-	LmtProcessList2     = 21,
-
-	LmtStarterListShow  = 22,
-	LmtSpawnerListShow,
-	LmtSpawnerList,
-	LmtProcessList,
-	LmtStarterList,
-	LmtProcessVector,
-
-	LmtInit            = 30,
-	LmtConfigFile,
-	LmtDie,
-	LmtHello,
-	LmtTimeout,
-	LmtMsgTreat,
-	LmtHost,
-
-	LmtWorker          = 40,
-	LmtWorkers,
-	
-	LmtEndpoint        = 50,
-	LmtEndpoints,
-	LmtEndpointUpdate,
-	LmtEndpointSlots,
-	LmtEndpointAdd,
-	LmtTemporalEndpoint,
-	LmtIdIx,
-	LmtUnhelloed,
-
-	LmtStarter          = 70,
-	LmtSpawner,
-	LmtProcess,
-	LmtSetup,
-
-	LmtSpawnerConnect    = 80,
-	LmtProcessConnect,
-	LmtProcessStart,
-	LmtProcessKill,
-	LmtGetnameinfo,
-	LmtLoopback,
-
-	LmtEndpointLookup       = 90,
-	LmtStarterLookup,
-	LmtProcessLookup,
-	LmtSpawnerLookup,
-
-	LmtOpen               = 100,
-	LmtConnect,
-	LmtAccept,
-	LmtRead,
-	LmtWrite,
-	LmtSelect,
-	LmtReconnect,
-
-	LmtFds                  = 110,
-	LmtNetworkReady,
-	LmtAlarm,
-	LmtThreads,
-	LmtSenderThread,
-	LmtThreadedMsgTreat,
-	LmtMsgLoopBack,
-	LmtControllerConnect,
-	LmtPacketReceive,
-
-	LmtNetworkInterface          = 120,
-	LmtSem,
-	LmtDelilah,
-	LmtDelilahId,
-	LmtLogServer,
-	LmtSpawn,
-
-	LmtProcessListTab            = 130,
-	LmtQtTimer,
-
-	LmtCheck                     = 140,
 	LmtFile,
-	LmtTask,
-	LmtJob,
-	LmtSend,
-	LmtReceive,                 
+    
+    LmtSocketConnection       = 10,  // 
+    LmtNetworkListener        = 11,  // 
+    
+    LmtNetworkConnection      = 15,  // 
+    
+    LmtNetworkNodeMessages    = 20,  // Worker & Delilah messages
+    LmtNetworkInterface       = 22,  // Network interface 
 
-	LmtPopupMenu                = 150,
-	LmtQueue,
-	LmtSource,
-	LmtResult,
-	LmtConnection,
-	LmtQueueMgr,
-	LmtSourceMgr,
-	LmtResultMgr,
-
-	LmtMouseEvent             = 160,
-	LmtUser,
-
-	LmtSceneItemChain         = 170,
-	LmtMove,
-	LmtWait,
-
-	LmtFree                   = 180,
-
+    LmtHost                   = 30,  // Host & HostManager    
+    
 	LmtEngine                 = 200, // SamsonEngine
 	LmtEngineNotification,
+    
 	LmtDisk,                         // disk library	
 	LmtMemory,                       // memory library	
 	LmtProcessManager,
@@ -133,12 +41,8 @@ typedef enum TraceLevels
 
 	LmtModuleManager,                // Module Manager component
 	LmtOperations,                   // Operations organization (map & reduce level)
-	LmtReset,
-	LmtMe,
-	LmtStructPadding,
-	LmtIsolated,
-	
-    LmtNodeMessages          = 220, 
+    
+	LmtIsolated,                     // Isolated mechanism
     
 	LmtUser01 = 250,
 	LmtUser02 = 251,

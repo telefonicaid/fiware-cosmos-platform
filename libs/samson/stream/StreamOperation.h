@@ -35,6 +35,7 @@
 
 #include "samson/stream/BlockListContainer.h"       // BlockListContainer ( parent class )
 #include "samson/stream/BlockList.h"                // BlockList
+#include "samson/stream/DistributionInformation.h"
 
 #include "samson/data/SimpleDataManager.h"          // samson::SimpleDataManager
 
@@ -68,7 +69,7 @@ namespace samson {
             std::vector<std::string> input_queues;      // Input queues 
             std::vector<std::string> output_queues;     // Output queues
 
-            int num_workers;                            // number of workers
+            DistributionInformation distribution_information; // Information about how to distribute information
             
             au::Environment environment;                // Environment properties ( used to save and restore everything )
             
@@ -77,11 +78,11 @@ namespace samson {
             }
             
             // Only used when running run_stream_operation
-            StreamOperationBase( std::string _operation , int _num_workers )
+            StreamOperationBase( std::string _operation , DistributionInformation _distribution_information )
             {
                 name = "manual";
                 operation = _operation;
-                num_workers = _num_workers;
+                distribution_information = _distribution_information;
             }
             
             StreamOperationBase( StreamOperationBase* other )
@@ -92,7 +93,7 @@ namespace samson {
                 input_queues.insert( input_queues.begin() , other->input_queues.begin() , other->input_queues.end() );
                 output_queues.insert( output_queues.begin() , other->output_queues.begin() , other->output_queues.end() );
                 
-                num_workers = other->num_workers;
+                distribution_information = other->distribution_information;
                 
                 // Copy environment properties
                 environment.copyFrom( &other->environment );
@@ -112,7 +113,8 @@ namespace samson {
             std::string command;            // Original command that originated this StreamOperation
             
         public:
-            
+
+            virtual ~StreamOperation(){}
 
             // Total input history
             BlockInfo history_block_info;   // Historical information

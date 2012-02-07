@@ -16,6 +16,7 @@ SET (LIBS
     samsonDataLib
     engine
     au
+	tables
     pa
     lm
     protobuf

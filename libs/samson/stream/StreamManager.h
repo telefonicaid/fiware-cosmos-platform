@@ -119,7 +119,7 @@ namespace samson {
             void notifyFinishTask( SystemQueueTask *task );
             
             // Add a pop queue operation
-            void addPopQueue(const network::PopQueue& pq , size_t delilahId, int fromId );
+            void addPopQueue(const network::PopQueue& pq , size_t delilah_id, size_t delilah_component );
             
             // Get information for monitoring
             void getInfo( std::ostringstream& output);

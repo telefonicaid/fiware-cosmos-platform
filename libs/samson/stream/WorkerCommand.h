@@ -49,8 +49,10 @@ namespace samson {
         {
             bool notify_finish;                                         // Flag to mark if it is necessary to notify when finish
             network::WorkerCommand *originalWorkerCommand;              // Copy of the original message
-            int fromId;                                                 // Element to be notified
-            size_t delilah_id;                                          // Identifier job identifier ( if any )
+
+            // Identifiers
+            size_t delilah_id;                                          // Delilah identifier of this task   
+            size_t delilah_component_id;                                // Identifier inside delilah
             
             // Pointer to the stream manager
             StreamManager * streamManager;
@@ -60,7 +62,6 @@ namespace samson {
             
             // Command to run
             std::string command;
-            
             
             // Environment properties
             Environment enviroment;
@@ -76,7 +77,7 @@ namespace samson {
             
         public:
             
-            WorkerCommand( int _fromId , size_t _delilah_id ,  const network::WorkerCommand& _command );
+            WorkerCommand( size_t _delilah_id , size_t _delilah_component_id , const network::WorkerCommand& _command );
             WorkerCommand( std::string _command );
             ~WorkerCommand();
             

@@ -6,7 +6,7 @@
     <parent>
         <artifactId>webprofiling</artifactId>
         <groupId>es.tid.ps</groupId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${env.ProductVersion}${env.SVN_REVISION}</version>
     </parent>
     <artifactId>kpicalculation</artifactId>
     <name>kpicalculation</name>

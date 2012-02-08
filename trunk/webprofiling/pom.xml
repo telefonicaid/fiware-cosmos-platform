@@ -333,19 +333,10 @@
 
     <profiles>
         <profile>
-            <id>jenkins</id>
-        </profile>
-
-        <profile>
             <id>maven-2</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
-
-            <properties>      
-        	    <env.SVN_REVISION>Build</env.SVN_REVISION>
-        	    <env.ProductVersion>Local</env.ProductVersion>   
-            </properties>
 
             <build>
                 <pluginManagement>

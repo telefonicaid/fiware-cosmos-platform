@@ -1,0 +1,76 @@
+ .container
+{
+    text-align: center;
+}
+
+.container ul
+{
+    display: inline-table;
+    text-align: center;
+}
+
+.container li
+{
+	background-color: yellow;
+    display: block;
+    float: left;
+    height: 100px;
+    line-height: 100px;
+    list-style-type: none;
+    margin: 5px;
+    text-align: center;
+    width: 100px;
+    color: #0086c3;
+}
+
+header
+{
+	height: 35px;
+	vertical-align: middle;
+	padding-left: 5px;
+	padding-right: 5px;
+	background-color: #0086c3;
+}
+
+h1
+{
+	color: #0086c3;
+}
+
+div
+{
+	background-color: #ffffff;
+	border-color: #0086c3;
+	display: inline-table;
+	padding-bottom: 10px;
+	padding-top: 10px;
+	padding-right: 5px;
+	padding-left: 5px;
+}
+
+h3
+{
+	color: #ffffff;
+	font-size: 28px;
+	height: 10px;
+}
+
+hgroup
+{
+	padding-right: 5px;
+	padding-bottom: 1px;
+}
+
+td, input, textarea, select, label, button
+{
+	color: #0086c3;
+}
+
+#contentLogin
+{
+	display: table;
+}
+
+.hidden { visibility: hidden; }
+.unhidden { visibility: visible; }
+

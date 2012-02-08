@@ -1,6 +1,6 @@
 package es.tid.ps.profile.categoryextraction;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,6 +18,10 @@ public class CategoryInformationFactory {
         categoryInformation.setUrl(url);
         categoryInformation.setDate(date);
         categoryInformation.setCount(count);
-        categoryInformation.setCategoryNames((List<CharSequence>) Arrays.asList(categoryNames));
+        List<CharSequence> names = new ArrayList<CharSequence>();
+        for (CharSequence name : categoryNames) {
+            names.add(name.toString());
+        }
+        categoryInformation.setCategoryNames(names);
     }
 }

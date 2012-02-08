@@ -19,6 +19,7 @@ import es.tid.ps.profile.dictionary.CategorizationResult;
 import org.apache.avro.mapred.AvroKey;
 import org.apache.avro.mapred.AvroValue;
 import org.apache.avro.mapred.AvroWrapper;
+import org.apache.avro.mapred.Pair;
 import org.apache.avro.mapreduce.AvroSerialization;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
@@ -41,7 +42,7 @@ import static org.junit.Assert.assertEquals;
 public class CategoryExtractionReducerTest {
     private CategoryExtractionReducer instance;
     private ReduceDriver<AvroKey<BinaryKey>, AvroValue<UserNavigation>,
-                AvroWrapper<CategoryInformation>, NullWritable> driver;
+                AvroWrapper<Pair<BinaryKey, CategoryInformation>>, NullWritable> driver;
 
     @Before
     public void setUp() throws Exception {
@@ -74,7 +75,7 @@ public class CategoryExtractionReducerTest {
         };
 
         this.driver = new ReduceDriver<AvroKey<BinaryKey>, AvroValue<UserNavigation>,
-                AvroWrapper<CategoryInformation>, NullWritable>();
+                AvroWrapper<Pair<BinaryKey, CategoryInformation>>, NullWritable>();
         addAvroSerializer(this.driver.getConfiguration());
         this.driver.setReducer(instance);
     }
@@ -85,7 +86,8 @@ public class CategoryExtractionReducerTest {
             serializations.add(AvroSerialization.class.getName());
             conf.setStrings("io.serializations", serializations.toArray(new String[0]));
         }
-        conf.set("avro.map.output.schema", CategoryInformation.SCHEMA$.toString());
+        conf.set("avro.map.output.schema", new
+                Pair<BinaryKey, CategoryInformation>(new BinaryKey(), new CategoryInformation()).getSchema().toString());
     }
 
     @Test
@@ -103,7 +105,9 @@ public class CategoryExtractionReducerTest {
 
         driver.withInput(new AvroKey<BinaryKey>(key),
                 asList(new AvroValue<UserNavigation>(nav), new AvroValue<UserNavigation>(nav)))
-              .withOutput(new AvroWrapper<CategoryInformation>(expectedCategoryInformation), NullWritable.get())
+              .withOutput(new AvroWrapper<Pair<BinaryKey, CategoryInformation>>(
+                      new Pair<BinaryKey, CategoryInformation>(key, expectedCategoryInformation)),
+                      NullWritable.get())
               .runTest();
         assertEquals(2l, driver.getCounters().findCounter(
                 CategoryExtractionCounter.KNOWN_VISITS).getValue());

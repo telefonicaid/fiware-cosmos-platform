@@ -4,14 +4,13 @@ import es.tid.ps.base.mapreduce.BinaryKey;
 import es.tid.ps.profile.dictionary.Categorization;
 import es.tid.ps.profile.dictionary.Dictionary;
 import es.tid.ps.profile.dictionary.comscore.CSDictionary;
+import org.apache.avro.mapred.Pair;
 import org.apache.avro.mapreduce.AvroReducer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /*
@@ -20,7 +19,7 @@ import java.util.Map;
  * @author dmicol, sortega
  */
 public class CategoryExtractionReducer extends AvroReducer<BinaryKey,
-        UserNavigation, CategoryInformation> {
+        UserNavigation, Pair<BinaryKey, CategoryInformation>> {
     private static Dictionary dictionary = null;
     private CategoryInformation catInfo;
 
@@ -50,13 +49,9 @@ public class CategoryExtractionReducer extends AvroReducer<BinaryKey,
                 case KNOWN_URL:
                     context.getCounter(CategoryExtractionCounter.KNOWN_VISITS).
                             increment(urlInstances);
-                    this.catInfo.setUserId(key.getPrimaryKey());
-                    this.catInfo.setUrl(url);
-                    this.catInfo.setDate(key.getSecondaryKey());
-                    this.catInfo.setCount(urlInstances);
-                    this.catInfo.setCategoryNames(
-                            (List<CharSequence>) Arrays.asList(dictionaryResponse.getCategories()));
-                    write(context, this.catInfo);
+                    CategoryInformationFactory.set(this.catInfo,
+                            key.getPrimaryKey(), url, key.getSecondaryKey(), urlInstances, dictionaryResponse.getCategories());
+                    write(context, new Pair<BinaryKey, CategoryInformation>(key, this.catInfo));
                     break;
 
                 case IRRELEVANT_URL:

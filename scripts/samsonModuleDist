@@ -5,10 +5,11 @@
 
 usage()
 {
-  echo "Missing an argument"
   echo "Usage: $0 [-y] [-r] -m <modulename>"
-  echo " -y	Don't ask if you want to perform the operation"
-  echo " -r	Reload the module within the cluster"
+  echo " -h	          This help"
+  echo " -y	          Execute without prompting"
+  echo " -r	 	  Reload the module within the cluster"
+  echo " -m <modulename>  The name of the module to distribute"
   exit 1
 }
 
@@ -16,16 +17,13 @@ if [ $# -lt 1 ]; then
   usage
 fi
 
-if [ -z "$SAMSON_CLUSTER" ]; then
-  echo "Define SAMSON_CLUSTER with the list of machine names to distribute to:"
-  echo " e.g. export SAMSON_CLUSTER=\"node1 node2 node3\""
-  exit 2
-fi
-
 hostname=$(uname -n)
 
-while getopts "m:rq" opt; do
+while getopts "m:rhq" opt; do
   case $opt in
+    h)
+      usage
+      ;;
     r)
       RELOAD=y
       ;;
@@ -41,6 +39,12 @@ while getopts "m:rq" opt; do
       ;;
   esac
 done
+
+if [ -z "$SAMSON_CLUSTER" ]; then
+  echo "Define SAMSON_CLUSTER with the list of machine names to distribute to:"
+  echo " e.g. export SAMSON_CLUSTER=\"node1 node2 node3\""
+  exit 2
+fi
 
 # Check to see that the module exists before distributing it
 if [ ! -z "${SAMSON_HOME}" ]; then

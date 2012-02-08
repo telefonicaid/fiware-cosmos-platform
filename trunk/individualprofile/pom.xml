@@ -1,21 +1,32 @@
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+<profiles>
+    <profile>
+        <id>default</id>
+
+        <properties>
+            <copyright.year>2011</copyright.year>
+            <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+            <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+            <org.apache.hadoop>0.20.2</org.apache.hadoop>
+            <org.apache.hadoop.hive>0.7.1</org.apache.hadoop.hive>
+            <jvm.version>1.6</jvm.version>
+        
+        	<env.SVN_REVISION>Build</env.SVN_REVISION>
+        	<env.ProductVersion>Local</env.ProductVersion>   
+
+        </properties>
+        <activation>
+            <activeByDefault>true</activeByDefault>
+        </activation>
+    </profile>
+</profiles>
 
     <groupId>es.tid.ps</groupId>
     <artifactId>individualprofile</artifactId>
     <version>${env.ProductVersion}${env.SVN_REVISION}</version>
     <packaging>jar</packaging>
-
-    <properties>
-        <copyright.year>2011</copyright.year>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <org.apache.hadoop>0.20.2</org.apache.hadoop>
-        <org.apache.hadoop.hive>0.7.1</org.apache.hadoop.hive>
-        <jvm.version>1.6</jvm.version>
-    </properties>
     
     <dependencies>
         <dependency>

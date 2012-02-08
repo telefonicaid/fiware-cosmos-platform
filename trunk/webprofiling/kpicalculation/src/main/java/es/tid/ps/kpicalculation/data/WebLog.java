@@ -4,7 +4,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
@@ -273,8 +272,8 @@ public class WebLog implements WritableComparable<WebLog> {
      * @param line
      *            string to parse
      */
-    public void set(String line) throws IllegalArgumentException,
-            SecurityException, IllegalAccessException, NoSuchFieldException {
+    public void set(String line) throws IllegalAccessException,
+            NoSuchFieldException {
         try {
             StringTokenizer stt = new StringTokenizer(line, DELIMITER);
 
@@ -337,8 +336,8 @@ public class WebLog implements WritableComparable<WebLog> {
      * @param line
      *            string to parse
      */
-    public void set(Text txt) throws IllegalArgumentException,
-            SecurityException, IllegalAccessException, NoSuchFieldException {
+    public void set(Text txt) throws IllegalAccessException,
+            NoSuchFieldException {
         this.text = txt;
 
         StringTokenizer stt = new StringTokenizer(txt.toString(), DELIMITER);

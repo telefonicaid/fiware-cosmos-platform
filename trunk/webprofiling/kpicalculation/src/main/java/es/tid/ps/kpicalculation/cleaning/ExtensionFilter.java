@@ -29,7 +29,7 @@ public class ExtensionFilter extends AbstractKpiCalculationFilter {
      * @see es.tid.ps.kpicalculation.cleaning.IKpiCalculationFilter#filter(String)
      */
     @Override
-    public void filter(String s) throws KpiCalculationFilterException {
+    public void filter(String s) {
         try {
             URI uri = new URI(s);
             this.matcher = this.pattern.matcher(uri.getPath());

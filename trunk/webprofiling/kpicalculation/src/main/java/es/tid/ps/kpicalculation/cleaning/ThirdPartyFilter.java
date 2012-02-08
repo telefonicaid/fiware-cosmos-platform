@@ -26,7 +26,7 @@ public class ThirdPartyFilter extends AbstractKpiCalculationFilter {
      * @see es.tid.ps.kpicalculation.cleaning.IKpiCalculationFilter#filter(String)
      */
     @Override
-    public void filter(String s) throws KpiCalculationFilterException {
+    public void filter(String s) {
         this.matcher = this.pattern.matcher(s);
         if (this.matcher.matches()) {
             throw new KpiCalculationFilterException(

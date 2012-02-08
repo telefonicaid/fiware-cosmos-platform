@@ -67,21 +67,21 @@ public class WebLogCounterGroup extends WebLogCounter {
     }
 
     @Override
-    public void set(String line) throws IllegalArgumentException,
-            SecurityException, IllegalAccessException, NoSuchFieldException {
+    public void set(String line) throws IllegalAccessException,
+            NoSuchFieldException {
         super.set(line);
         initSecondaryKey();
     }
 
     @Override
-    public void set(Text txt) throws IllegalArgumentException,
-            SecurityException, IllegalAccessException, NoSuchFieldException {
+    public void set(Text txt) throws IllegalAccessException,
+            NoSuchFieldException {
         super.set(txt);
         initSecondaryKey();
     }
 
-    protected void initSecondaryKey() throws IllegalArgumentException,
-            SecurityException, IllegalAccessException, NoSuchFieldException {
+    protected void initSecondaryKey() throws IllegalAccessException,
+            NoSuchFieldException {
         this.secondaryKey = (String) this.getClass()
                 .getField(this.secondaryFields).get(this);
     }

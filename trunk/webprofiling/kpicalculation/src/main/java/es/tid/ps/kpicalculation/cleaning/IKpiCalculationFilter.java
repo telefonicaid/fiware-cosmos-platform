@@ -18,5 +18,5 @@ public interface IKpiCalculationFilter {
      *            url the filter will be applied to.
      * 
      */
-    void filter(String url) throws KpiCalculationFilterException;
+    void filter(String url);
 }

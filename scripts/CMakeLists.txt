@@ -4,6 +4,7 @@ SET (FILES
 	samsonModuleBootstrap
 	samsonPrepareServer
     samsonRun
+    samsonModuleDist
 )
 
 # Instalation header files

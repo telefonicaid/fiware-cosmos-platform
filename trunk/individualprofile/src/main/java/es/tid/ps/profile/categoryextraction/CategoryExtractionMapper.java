@@ -1,7 +1,8 @@
 package es.tid.ps.profile.categoryextraction;
 
 import java.io.IOException;
-import java.util.Calendar;
+import org.apache.avro.mapred.AvroKey;
+import org.apache.avro.mapred.AvroValue;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -14,7 +15,8 @@ import es.tid.ps.base.mapreduce.BinaryKey;
  * @author dmicol
  **/
 public class CategoryExtractionMapper extends
-        Mapper<LongWritable, Text, BinaryKey, UserNavigation> {
+        Mapper<LongWritable, Text, AvroKey<BinaryKey>,
+                AvroValue<UserNavigation>> {
     private UserNavigation webLog;
     private BinaryKey cKey;
 
@@ -28,13 +30,10 @@ public class CategoryExtractionMapper extends
     @Override
     public void map(LongWritable key, Text value, Context context) {
         try {
-            this.webLog.parse(value.toString());
-            this.cKey.setPrimaryKey(this.webLog.getVisitorId());
-            this.cKey.setSecondaryKey(
-                    this.webLog.getDate().get(Calendar.YEAR) + "-" +
-                    this.webLog.getDate().get(Calendar.MONTH) + "-" +
-                    this.webLog.getDate().get(Calendar.DATE));
-            context.write(this.cKey, this.webLog);
+            UserNavigationFactory.set(this.webLog, value.toString());
+            this.cKey.setPrimaryKey(this.webLog.getVisitorId().toString());
+            this.cKey.setSecondaryKey(this.webLog.getDate().toString());
+            context.write(new AvroKey(this.cKey), new AvroValue(this.webLog));
         } catch (Exception ex) {
             context.getCounter(CategoryExtractionCounter.WRONG_FILTERING_FIELDS)
                     .increment(1L);

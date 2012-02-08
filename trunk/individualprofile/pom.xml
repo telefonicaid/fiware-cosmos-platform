@@ -47,9 +47,21 @@
             <version>0.1.0</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro-mapreduce</artifactId>
+            <version>0.1</version>
+        </dependency>
+
+        <!--dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-mrunit</artifactId>
-            <version>${org.apache.hadoop}-cdh3u0</version>
+            <version>${org.apache.hadoop}-cdh3u2</version>
+            <scope>test</scope>
+        </dependency-->
+        <dependency>
+            <groupId>org.apache.mrunit</groupId>
+            <artifactId>mrunit</artifactId>
+            <version>0.5.0-incubating</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -96,6 +108,7 @@
                     </archive>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>

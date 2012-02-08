@@ -1,0 +1,13 @@
+/**
+ * User Navigation Protocol.
+ *
+ * author: dmicol
+ */
+@namespace("es.tid.ps.profile.categoryextraction")
+protocol UserNavigationProtocol {
+  record UserNavigation {
+    string visitorId;
+    string fullUrl;
+    string date;
+ }
+}

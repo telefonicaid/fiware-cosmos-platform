@@ -13,12 +13,11 @@
 // </editor-fold>
 package es.tid.ps.profile.userprofile;
 
+import es.tid.ps.base.mapreduce.BinaryKey;
+import es.tid.ps.profile.categoryextraction.CategoryInformation;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Before;
 import org.junit.Test;
-
-import es.tid.ps.base.mapreduce.BinaryKey;
-import es.tid.ps.profile.categoryextraction.CategoryInformation;
 
 /**
  * Test case for UserProfileMapper

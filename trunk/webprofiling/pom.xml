@@ -514,10 +514,7 @@
                 </file>
             </activation>
 
-            <properties>      
-        	    <env.SVN_REVISION>Build</env.SVN_REVISION>
-        	    <env.ProductVersion>Local</env.ProductVersion>   
-            </properties>
+            
 
 
             <build>

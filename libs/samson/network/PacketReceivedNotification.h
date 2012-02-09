@@ -27,6 +27,10 @@ namespace samson
         {
             receiver = _receiver;
             packet = _packet; 
+
+            if( ! _receiver )
+                LM_X(1, ("No receiver in PacketReceivedNotification"));
+                             
             
             std::ostringstream txt;
             txt << "PacketReceivedNotification ";

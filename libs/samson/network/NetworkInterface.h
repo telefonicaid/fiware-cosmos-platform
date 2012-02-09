@@ -116,14 +116,14 @@ namespace samson {
         // Get information about network state
         virtual void getInfo( ::std::ostringstream& output , std::string command )
         {
-            LM_X(1, ("NetworkInterface mothod not implemented"));
+            LM_W(("NetworkInterface mothod not implemented"));
         }
     
         // Suspend the network elements implemented behind NetworkInterface
         // Close everything and return the "run" call
         virtual void quit(void)
         {
-            LM_X(1, ("NetworkInterface mothod not implemented"));
+            LM_W(("NetworkInterface mothod not implemented"));
         }
       
         // Basic information about the cluster ( list of workers and delilahs )
@@ -141,7 +141,7 @@ namespace samson {
         
         virtual std::string cluster_command( std::string command )
         {
-            LM_X(1, ("NetworkInterface mothod not implemented"));
+            LM_W(("NetworkInterface mothod not implemented"));
             return "";
         }
         

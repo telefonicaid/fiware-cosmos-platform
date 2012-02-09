@@ -9,11 +9,7 @@ namespace samson {
 	{
         node_identifier = _node_identifier;
 		center = _center;
-        receiver = NULL;
 	}
-	
-	
-	
 
 	// Send a packet (return a unique id to inform the notifier later)
     Status NetworkFake::send( Packet* packet )

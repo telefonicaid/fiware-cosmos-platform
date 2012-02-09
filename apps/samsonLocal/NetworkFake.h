@@ -24,8 +24,6 @@ namespace samson {
         // My identification
         NodeIdentifier node_identifier;
 		
-        NetworkInterfaceReceiver *receiver;
-		
 		NetworkFake( NodeIdentifier node_identifier , NetworkFakeCenter *_center );
 		
 		// Send a packet (return a unique id to inform the notifier later)

@@ -139,8 +139,7 @@ namespace samson {
         
         // Common interface to receive packets
         packet->from = connection->getNodeIdentifier();
-        network_interface_receiver->receive( packet );
-        
+        network_interface_receiver->schedule_receive( packet );
         
     }
     

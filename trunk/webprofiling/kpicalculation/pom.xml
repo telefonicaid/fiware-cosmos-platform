@@ -3,7 +3,6 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
     xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
-
     <properties>
         <copyright.year>2012</copyright.year>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -12,12 +11,10 @@
         <org.apache.hadoop.hive>0.7.1</org.apache.hadoop.hive>
         <jvm.version>1.6</jvm.version>
         <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
-    </properties>
-   
+    </properties> 
     <profiles>
         <profile>
             <id>local</id>
-
             <properties>      
         	    <env.SVN_REVISION>Build</env.SVN_REVISION>
         	    <env.ProductVersion>Local</env.ProductVersion>   
@@ -30,17 +27,14 @@
             <id>jenkins</id>
         </profile>
     </profiles>
-
     <parent>
         <artifactId>webprofiling</artifactId>
         <groupId>es.tid.ps</groupId>
         <version>${env.ProductVersion}${env.SVN_REVISION}</version>
     </parent>
-
     <artifactId>kpicalculation</artifactId>
     <name>kpicalculation</name>
     <url>http://maven.apache.org</url>
-
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -51,7 +45,6 @@
     </dependencies>
     <build>
         <plugins>
-        
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -83,5 +76,4 @@
             </resource>
         </resources>
     </build>
-
 </project>

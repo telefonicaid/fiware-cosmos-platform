@@ -1,42 +1,34 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-<properties>
-    <copyright.year>2012</copyright.year>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <org.apache.hadoop>0.20.2</org.apache.hadoop>
-    <org.apache.hadoop.hive>0.7.1</org.apache.hadoop.hive>
-    <jvm.version>1.6</jvm.version>
-    <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
-</properties>
-
-<profiles>
-    <profile>
-        <id>local</id>
-
-        <properties>      
-        	<env.SVN_REVISION>Build</env.SVN_REVISION>
-        	<env.ProductVersion>Local</env.ProductVersion>   
-        </properties>
-
-        <activation>
-            <activeByDefault>true</activeByDefault>
-        </activation>
-    </profile>
-    <profile>
-        <id>jenkins</id>
-
-
-    </profile>
-</profiles>
-
+    <properties>
+        <copyright.year>2012</copyright.year>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <org.apache.hadoop>0.20.2</org.apache.hadoop>
+        <org.apache.hadoop.hive>0.7.1</org.apache.hadoop.hive>
+        <jvm.version>1.6</jvm.version>
+        <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
+    </properties>
+    <profiles>
+        <profile>
+            <id>local</id>
+            <properties>      
+            	<env.SVN_REVISION>Build</env.SVN_REVISION>
+            	<env.ProductVersion>Local</env.ProductVersion>   
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <id>jenkins</id>
+        </profile>
+    </profiles>
     <groupId>es.tid.ps</groupId>
     <artifactId>individualprofile</artifactId>
     <version>${env.ProductVersion}${env.SVN_REVISION}</version>
-    <packaging>jar</packaging>
-    
+    <packaging>jar</packaging> 
     <dependencies>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -72,7 +64,6 @@
             <version>0.0.1</version>
         </dependency>
     </dependencies>
-    
     <build>
         <pluginManagement>
             <plugins>
@@ -83,7 +74,6 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-        
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -94,7 +84,6 @@
                     <source>1.6</source>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -107,7 +96,6 @@
                     </archive>
                 </configuration>
             </plugin>
-            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -149,14 +137,12 @@
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
                 <artifactId>maven-site-plugin</artifactId>
                 <configuration>
                     <locales>es</locales>
                     <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
                     <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
-
                     <reportPlugins>
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
@@ -167,31 +153,26 @@
                                 <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
                             </configuration>
                         </plugin>                  
-            
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-javadoc-plugin</artifactId>
                             <version>2.8</version>
                         </plugin>
-            
                         <plugin>
                             <groupId>org.codehaus.sonar-plugins</groupId>
                             <artifactId>maven-report</artifactId>
                             <version>0.1</version>
                         </plugin>
-            
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-surefire-report-plugin</artifactId>
                             <version>2.11</version>
                         </plugin>
-                                
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-jxr-plugin</artifactId>
                             <version>2.3</version>
                         </plugin>
-            
                         <plugin>
                             <groupId>org.codehaus.mojo</groupId>
                             <artifactId>cobertura-maven-plugin
@@ -212,7 +193,6 @@
                                 </formats>
                             </configuration>
                         </plugin>
-
                         <plugin>
                             <groupId>org.codehaus.mojo</groupId>
                             <artifactId>versions-maven-plugin</artifactId>
@@ -222,7 +202,6 @@
                                 <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
                             </configuration>
                         </plugin>
-
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-pmd-plugin</artifactId>
@@ -245,7 +224,6 @@
                                 </excludes>
                             </configuration>
                         </plugin>
-            
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-checkstyle-plugin</artifactId>
@@ -254,10 +232,8 @@
                     </reportPlugins>
                 </configuration>
             </plugin>        
-            
         </plugins>
     </build>
-    
     <repositories>
         <repository>
             <id>cdh-repository</id>
@@ -290,7 +266,6 @@
             <url>https://oss.sonatype.org/content/repositories/releases</url>
         </repository>
     </repositories>
-    
     <distributionManagement>
         <repository>
             <id>${repoMavenId}</id>

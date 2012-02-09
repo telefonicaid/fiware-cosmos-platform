@@ -171,13 +171,21 @@ debuginstall: debug
 	make -C BUILD_DEBUG install
 
 distribute: install
-	./scripts/samsonDistribute
+ifndef SAMSON_CLUSTER
+	echo "The environment variable SAMSON_CLUSTER is not defined, unable to distribute"
+	exit 1
+endif
+	./scripts/samsonDist
 
 d:	distribute
 
 dd:	debugdistribute
 
 debugdistribute: debuginstall
+ifndef SAMSON_CLUSTER
+	echo "The environment variable SAMSON_CLUSTER is not defined, unable to distribute"
+	exit 1
+endif
 	./scripts/samsonDist
 
 testdistribute: install

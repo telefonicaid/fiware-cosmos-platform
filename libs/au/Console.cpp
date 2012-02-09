@@ -419,7 +419,8 @@ void Console::runConsole()
 
 void Console::quitConsole()
 {
-    quit_console = true;
+   command_history->save_history();
+   quit_console = true;
 }
 
 /* ask about Console quit status */

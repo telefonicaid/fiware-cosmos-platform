@@ -14,7 +14,7 @@ public abstract class UserNavigationFactory {
                            Calendar date) {
         nav.setVisitorId(visitorId);
         nav.setFullUrl(fullUrl);
-        //nav.setDate(date.toString());
+        nav.setDate(date.toString());
     }
 
     public static void set(UserNavigation nav, String line) {
@@ -25,6 +25,6 @@ public abstract class UserNavigationFactory {
         date.set(Integer.parseInt(fields[8]),
                 Integer.parseInt(fields[7]),
                 Integer.parseInt(fields[6]));
-        //nav.setDate(date.toString());
+        nav.setDate(date.toString());
     }
 }

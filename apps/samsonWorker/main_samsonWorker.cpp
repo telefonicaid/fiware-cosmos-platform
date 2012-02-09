@@ -24,6 +24,7 @@
 #include "samson/common/samsonVersion.h"
 #include "samson/common/samsonVars.h"
 #include "samson/common/SamsonSetup.h"
+#include "samson/common/daemonize.h"
 #include "samson/network/WorkerNetwork.h"
 #include "samson/worker/SamsonWorker.h"
 #include "samson/isolated/SharedMemoryManager.h"
@@ -38,6 +39,7 @@
 */
 SAMSON_ARG_VARS;
 
+bool     fg;
 bool     noLog;
 int      port;
 int      web_port;
@@ -50,9 +52,10 @@ int      web_port;
 PaArgument paArgs[] =
 {
 	SAMSON_ARGS,
-	{ "-port",      &port,      "",  PaInt,  PaOpt, SAMSON_WORKER_PORT,     1,  9999, "Port to receive new connections"   },
-	{ "-web_port",  &web_port,  "",  PaInt,  PaOpt, SAMSON_WORKER_WEB_PORT, 1,  9999, "Port to receive new connections"   },
-	{ "-nolog",     &noLog, "SS_WORKER_NO_LOG", PaBool, PaOpt, false,  false,   true,        "no logging"                        },
+    { "-fg",        &fg,        "SS_SPAWNER_FOREGROUND",   PaBool,    PaOpt,    false,    false,   true,  "don't start as daemon"  },
+	{ "-port",      &port,      "",  PaInt,  PaOpt, SAMSON_WORKER_PORT,     1,  9999,  "Port to receive new connections"   },
+	{ "-web_port",  &web_port,  "",  PaInt,  PaOpt, SAMSON_WORKER_WEB_PORT, 1,  9999,  "Port to receive new connections"   },
+	{ "-nolog",     &noLog,     "SS_WORKER_NO_LOG", PaBool, PaOpt, false,  false,   true,  "no logging" },
 	PA_END_OF_ARGS
 };
 
@@ -176,6 +179,8 @@ int main(int argC, const char *argV[])
 	// -----------------------------------------------------------------------------------
 	worker = new samson::SamsonWorker(networkP);
 
+    if (fg == false)
+        daemonize();    
 
     // Clean up function ( here to make sure, this cleanup function is called before Engine clean up function )
 	atexit(exitFunction);

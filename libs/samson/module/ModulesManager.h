@@ -13,6 +13,7 @@
 
 #include "samson/common/samson.pb.h"			// samson::network::...
 #include "samson/common/coding.h"				// ss:KVInfo
+#include "samson/common/status.h"
 
 #include "samson/module/KVFormat.h"     // samson::KVFormat
 #include "samson/module/Module.h"		// samson::Module
@@ -47,7 +48,11 @@ namespace samson {
 		void addModule( std::string path );
 		void addModule(  Module *container );
 		void addModules();
-		
+
+    public:
+        
+        static Status loadModule( std::string path , Module** module , std::string* version_string );
+        
 	public:
 		
 		// Reload modules from default directories

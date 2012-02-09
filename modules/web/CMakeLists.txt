@@ -87,6 +87,18 @@ MESSAGE( "----------------------------------------------------------------------
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
 
+if (NOT LIBLM)
+    find_library(LM_PATH lm PATHS ${PROJECT_BINARY_DIR}/libs/logMsg)
+    if (LM_PATH)
+        SET (LIBLM ${LM_PATH})
+    else (NOT LM_PATH)
+        MESSAGE("Unable to find the static library liblm.a")
+    endif (LM_PATH)
+    TARGET_LINK_LIBRARIES( ${MODULE_NAME} ${LIBLM} )
+else (LIBLM)
+    TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm )
+endif (NOT LIBLM)
+
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 

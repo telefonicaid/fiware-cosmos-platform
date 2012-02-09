@@ -148,6 +148,46 @@ namespace samson
 	typedef Module*(*moduleFactory)();
 	typedef std::string(*getVersionFunction)();
 
+    
+    Status ModulesManager::loadModule( std::string path , Module** module , std::string* version_string )
+	{
+        LM_T(LmtModuleManager,("Adding module at path %s", path.c_str() ));
+		
+		void *hndl = dlopen(path.c_str(), RTLD_NOW);
+		if(hndl == NULL)
+        {
+            LM_W(("Not possible to dlopen for file '%s' with dlerror():'%s'", path.c_str(), dlerror() ));
+			return Error;
+		}
+        
+		void *mkr = dlsym(hndl, "moduleCreator");		
+		if(mkr == NULL)
+        {
+            LM_W(("Not possible to dlsym for file '%s' with dlerror():'%s'", path.c_str(), dlerror() ));
+			dlclose(hndl);
+			return Error;
+		}
+        
+		void *getVersionPointer = dlsym(hndl, "getSamsonVersion");
+		if(getVersionPointer == NULL)
+        {
+            LM_W(("Not possible to dlsym for file '%s' with dlerror():'%s'", path.c_str(), dlerror() ));
+			dlclose(hndl);
+			return Error;
+		}
+		
+        moduleFactory f = (moduleFactory)mkr;
+        getVersionFunction fv = (getVersionFunction)getVersionPointer;
+
+        // Get module and get version
+        *module = f();
+        *version_string = fv();
+
+        return OK;
+	}
+    
+    
+    
 	void ModulesManager::addModule( std::string path )
 	{
         LM_T(LmtModuleManager,("Adding module at path %s", path.c_str() ));

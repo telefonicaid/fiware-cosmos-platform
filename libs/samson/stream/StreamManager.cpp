@@ -573,7 +573,8 @@ namespace samson {
 
             if( !file )
             {
-                LM_W(("Not possible to recover state for stream manager since it is not possible to open %s. If this is first time running SAMSON, this is ok." , fileName.c_str() ));
+                LM_W(("Not possible to recover state for stream manager from %s", fileName.c_str()));
+                LM_W(("If this is first time running SAMSON, this is ok." ));
                 return;
             }
             

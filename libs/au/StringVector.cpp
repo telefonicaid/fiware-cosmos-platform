@@ -34,7 +34,26 @@ namespace au {
         push_back(value3);
         push_back(value4);
     }
-    
+
+    StringVector::StringVector( std::string value , std::string value2 , std::string value3 , std::string value4 , std::string value5 )
+    {
+        push_back(value);
+        push_back(value2);
+        push_back(value3);
+        push_back(value4);
+        push_back(value5);
+    }
+
+    StringVector::StringVector( std::string value , std::string value2 , std::string value3 , std::string value4 , std::string value5 , std::string value6  )
+    {
+        push_back(value);
+        push_back(value2);
+        push_back(value3);
+        push_back(value4);
+        push_back(value5);
+        push_back(value6);
+    }
+
     StringVector::StringVector( std::set<std::string>& values )
     {
         std::set<std::string>::iterator it_values;

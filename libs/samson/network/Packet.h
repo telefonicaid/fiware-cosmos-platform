@@ -54,6 +54,7 @@ namespace samson
                 
         NodeIdentifier( network::NodeIdentifier pb_node_identifier  )
         {
+           
             switch ( pb_node_identifier.node_type() ) 
             {
                 case network::NodeIdentifier_NodeType_Delilah:
@@ -65,6 +66,11 @@ namespace samson
                 case network::NodeIdentifier_NodeType_Unknown:
                     node_type = UnknownNode;
                     break;
+                    
+                default:
+                    node_type = UnknownNode;
+                    break;
+
             }
             
             id = pb_node_identifier.id();

@@ -1,5 +1,5 @@
 SET (SOURCES
-    main_samsonData.cpp
+    main_samsonModuleCat.cpp
 )
 
 SET (HEADERS
@@ -8,15 +8,16 @@ SET (HEADERS
 SET( STATIC_LIBS
      samsonNetwork
      engine
-     samsonCommon
-     samsonDataLib
+     samsonModule
      delilahLib
+     samsonCommon
      protobuf
      pthread
      au
+	 tables
      dl
      lm
-     pa
+	 pa
      ${COMMON_SAMSON_LIBS}
 )
 
@@ -25,13 +26,12 @@ SET( STATIC_LIBS
 
 include_directories("${PROJECT_SOURCE_DIR}/libs")
 
-
 # Executable declaration
 # ------------------------------------------------------------
 
-ADD_EXECUTABLE(samsonData ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(samsonData ${STATIC_LIBS})
+ADD_EXECUTABLE(samsonModuleCat ${SOURCES} ${HEADERS} )
+TARGET_LINK_LIBRARIES(samsonModuleCat ${STATIC_LIBS})
 
-INSTALL(TARGETS               samsonData
+INSTALL(TARGETS               samsonModuleCat
         RUNTIME DESTINATION   bin)
 

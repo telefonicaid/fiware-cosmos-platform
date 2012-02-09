@@ -30,6 +30,8 @@ public:
     StringVector( std::string value , std::string value2 );
     StringVector( std::string value , std::string value2 , std::string value3 );
     StringVector( std::string value , std::string value2 , std::string value3 , std::string value4 );
+    StringVector( std::string value , std::string value2 , std::string value3 , std::string value4 , std::string value5  );
+    StringVector( std::string value , std::string value2 , std::string value3 , std::string value4 , std::string value5 , std::string value6);
     StringVector( std::set<std::string>& values );
 
     

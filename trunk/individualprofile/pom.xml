@@ -58,9 +58,21 @@
             <version>0.1.0</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro-mapreduce</artifactId>
+            <version>0.1</version>
+        </dependency>
+
+        <!--dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-mrunit</artifactId>
-            <version>${org.apache.hadoop}-cdh3u0</version>
+            <version>${org.apache.hadoop}-cdh3u2</version>
+            <scope>test</scope>
+        </dependency-->
+        <dependency>
+            <groupId>org.apache.mrunit</groupId>
+            <artifactId>mrunit</artifactId>
+            <version>0.5.0-incubating</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -109,6 +121,32 @@
                         </manifest>
                     </archive>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro-maven-plugin</artifactId>
+                <version>1.6.1</version>
+                <executions>
+                    <execution>
+                        <id>schemas</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>schema</goal>
+                            <goal>protocol</goal>
+                            <goal>idl-protocol</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/mapred/tether/**</exclude>
+                            </excludes>
+                            <sourceDirectory>${project.basedir}/src/main/avro/</sourceDirectory>
+			                <outputDirectory>${project.basedir}/target/generated-sources/java/</outputDirectory>
+                            <testSourceDirectory>${project.basedir}/src/test/avro/</testSourceDirectory>
+                            <testOutputDirectory>${project.basedir}/target/generated-sources/java/</testOutputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             
             <plugin>

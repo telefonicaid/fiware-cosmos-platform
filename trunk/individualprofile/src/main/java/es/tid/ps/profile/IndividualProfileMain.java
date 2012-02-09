@@ -71,12 +71,12 @@ public class IndividualProfileMain extends Configured implements Tool {
         job.setJarByClass(IndividualProfileMain.class);
         job.setInputFormatClass(LzoTextInputFormat.class);
         job.setMapOutputKeyClass(BinaryKey.class);
-        job.setMapOutputValueClass(UserNavigation.class);
+        job.setMapOutputValueClass(UserNavigationFactory.class);
         job.setOutputKeyClass(BinaryKey.class);
         job.setOutputValueClass(CategoryInformation.class);
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
         job.setMapperClass(CategoryExtractionMapper.class);
-        job.setReducerClass(CategoryExtractionReducer.class);
+        //job.setReducerClass(CategoryExtractionReducer.class);
 
         FileInputFormat.addInputPath(job, webLogsPath);
         FileOutputFormat.setOutputPath(job, categoriesPath);

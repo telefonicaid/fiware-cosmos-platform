@@ -1,0 +1,15 @@
+/**
+ * Category Information Protocol.
+ *
+ * author: sortega
+ */
+@namespace("es.tid.ps.profile.categoryextraction")
+protocol CategoryInformationProtocol {
+  record CategoryInformation {
+    string userId;
+    string url;
+    string date;
+    long count;
+    array<string> categoryNames;
+  }
+}

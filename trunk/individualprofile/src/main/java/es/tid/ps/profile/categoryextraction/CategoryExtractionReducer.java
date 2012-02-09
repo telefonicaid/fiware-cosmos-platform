@@ -1,45 +1,45 @@
 package es.tid.ps.profile.categoryextraction;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.hadoop.filecache.DistributedCache;
-import org.apache.hadoop.mapreduce.Reducer;
-
 import es.tid.ps.base.mapreduce.BinaryKey;
 import es.tid.ps.profile.dictionary.Categorization;
 import es.tid.ps.profile.dictionary.Dictionary;
 import es.tid.ps.profile.dictionary.comscore.CSDictionary;
+import org.apache.avro.mapred.Pair;
+import org.apache.avro.mapreduce.AvroReducer;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.filecache.DistributedCache;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /*
  * Enum with the list of counters to use in the CategoryExtraction mapreduces.
  *
  * @author dmicol, sortega
  */
-public class CategoryExtractionReducer extends Reducer<BinaryKey,
-        UserNavigation, BinaryKey, CategoryInformation> {
+public class CategoryExtractionReducer extends AvroReducer<BinaryKey,
+        UserNavigation, Pair<BinaryKey, CategoryInformation>> {
     private static Dictionary dictionary = null;
     private CategoryInformation catInfo;
 
     @Override
-    public void setup(Context context) throws IOException {
-        this.setupDictionary(context);
+    protected void setup(Context context) throws IOException, InterruptedException {
+        this.setupDictionary(context.getConfiguration());
         this.catInfo = new CategoryInformation();
     }
 
-    protected void setupDictionary(Context context) throws IOException {
+    protected void setupDictionary(Configuration conf) throws IOException {
         if (dictionary == null) {
             dictionary = new CSDictionary(
-                    DistributedCache.getLocalCacheFiles(
-                    context.getConfiguration()));
+                    DistributedCache.getLocalCacheFiles(conf));
             dictionary.init();
         }
     }
 
     @Override
-    protected void reduce(BinaryKey key, Iterable<UserNavigation> values,
-            Context context) throws IOException, InterruptedException {
+    protected void doReduce(BinaryKey key, Iterable<UserNavigation> values, Context context)
+            throws IOException, InterruptedException {
         Map<String, Long> uniqueUrlCounts = this.getUniqueUrlCounts(values);
         for (String url : uniqueUrlCounts.keySet()) {
             long urlInstances = uniqueUrlCounts.get(url);
@@ -49,13 +49,9 @@ public class CategoryExtractionReducer extends Reducer<BinaryKey,
                 case KNOWN_URL:
                     context.getCounter(CategoryExtractionCounter.KNOWN_VISITS).
                             increment(urlInstances);
-                    this.catInfo.setUserId(key.getPrimaryKey());
-                    this.catInfo.setUrl(url);
-                    this.catInfo.setDate(key.getSecondaryKey());
-                    this.catInfo.setCount(urlInstances);
-                    this.catInfo.setCategoryNames(
-                            dictionaryResponse.getCategories());
-                    context.write(key, this.catInfo);
+                    CategoryInformationFactory.set(this.catInfo,
+                            key.getPrimaryKey(), url, key.getSecondaryKey(), urlInstances, dictionaryResponse.getCategories());
+                    write(context, new Pair<BinaryKey, CategoryInformation>(key, this.catInfo));
                     break;
 
                 case IRRELEVANT_URL:
@@ -93,12 +89,12 @@ public class CategoryExtractionReducer extends Reducer<BinaryKey,
         Map<String, Long> uniqueUrlCounts = new HashMap<String, Long>();
         for (UserNavigation nav : values) {
             Long count;
-            if (uniqueUrlCounts.containsKey(nav.getFullUrl())) {
-                count = uniqueUrlCounts.get(nav.getFullUrl());
+            if (uniqueUrlCounts.containsKey(nav.getFullUrl().toString())) {
+                count = uniqueUrlCounts.get(nav.getFullUrl().toString());
             } else {
-                count = new Long(0L);
+                count = 0L;
             }
-            uniqueUrlCounts.put(nav.getFullUrl(), count + 1L);
+            uniqueUrlCounts.put(nav.getFullUrl().toString(), count + 1L);
         }
         return uniqueUrlCounts;
     }

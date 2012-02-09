@@ -13,12 +13,12 @@
 // </editor-fold>
 package es.tid.ps.profile.userprofile;
 
+import es.tid.ps.base.mapreduce.BinaryKey;
+import es.tid.ps.profile.categoryextraction.CategoryInformation;
+import es.tid.ps.profile.categoryextraction.CategoryInformationFactory;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Before;
 import org.junit.Test;
-
-import es.tid.ps.base.mapreduce.BinaryKey;
-import es.tid.ps.profile.categoryextraction.CategoryInformation;
 
 /**
  * Test case for UserProfileMapper
@@ -41,7 +41,8 @@ public class UserProfileMapperTest {
         String url = "http://tid.es";
         String date = "2012-02-01";
         BinaryKey key = new BinaryKey(user, date);
-        CategoryInformation categories = new CategoryInformation(user, url,
+        CategoryInformation categories = new CategoryInformation();
+        CategoryInformationFactory.set(categories, user, url,
                 date, 10, new String [] {"SERVICES", "NEWS"});
         driver.withInput(key, categories)
                 .withOutput(new BinaryKey(user, date), 

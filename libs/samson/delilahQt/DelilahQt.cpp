@@ -30,9 +30,13 @@ namespace samson
             else
             {
                 std::stringstream tmp;
-                tmp << "Table queues with " << table->getNumRows() << " rows";
+                for (unsigned int i = 0; i< table->getNumRows(); i++)
+                {
+                    tmp << "Queue: " << table->getValue(i,"name") << " - Size on Memory: " << table->getValue(i,"block_list/block_info/size_on_memory") << std::endl;
+                }
                 str = QString(tmp.str().c_str());
-                //std::cout << "Table queues with " << table->getNumRows() << " rows" << std::endl;
+                //str = QString(table->str().c_str());
+                std::cout << "Table queues: " << table->str() << std::endl;
                 emit queuesTextValueChanged(str);
             }
         }
@@ -52,6 +56,7 @@ namespace samson
                 tmp << "Table engines with " << table->getNumRows() << " rows";
                 str = QString(tmp.str().c_str());
                 //std::cout << "Table engines with " << table->getNumRows() << " rows" << std::endl;
+                //std::cout << "Table engines: " << table->str() << std::endl;
                 emit enginesTextValueChanged(str);
             }
         }            
@@ -71,13 +76,12 @@ namespace samson
         QTimer* timer =  new QTimer();
         timer->start(1000);
             
-        DelilahMainWindow* mainWindow = new DelilahMainWindow();
+        DelilahMainWindow* mainWindow = new DelilahMainWindow;
         mainWindow->show();
 
         connect(timer, SIGNAL(timeout()), this, SLOT(updateData()));
         connect(timer, SIGNAL(timeout()), mainWindow, SLOT(update()));
         connect(this, SIGNAL(enginesTextValueChanged(const QString&)), mainWindow->enginesText, SLOT(setText(const QString&)));
-        connect(this, SIGNAL(queuesTextValueChanged(const QString&)), mainWindow->queuesText, SLOT(setText(const QString&)));
         connect(this, SIGNAL(queuesTextValueChanged(const QString&)), mainWindow->queuesText, SLOT(setText(const QString&)));
         application.exec();
         

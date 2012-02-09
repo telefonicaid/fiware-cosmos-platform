@@ -24,14 +24,20 @@ namespace samson {
     {
         Q_OBJECT
         
-        QBoxLayout* layout;
+        QBoxLayout* mainLayout;
+        QBoxLayout* queuesLayout;
+        QBoxLayout* enginesLayout;
     public:
+        DelilahMainWindow();
+        QWidget* tab1;
         QLabel* enginesText;
         QLabel* queuesText;
-        DelilahMainWindow();
         QAction *aboutAction;
         QAction *exitAction;
         QMenu *fileMenu;
+        QTabWidget* tabs;
+        QGroupBox* queuesBox;
+        QGroupBox* enginesBox;
         
     private slots:
         void about();

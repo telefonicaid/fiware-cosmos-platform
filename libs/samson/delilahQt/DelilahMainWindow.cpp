@@ -17,16 +17,31 @@ namespace samson
 {	
     DelilahMainWindow::DelilahMainWindow()
     {
-        layout = new QBoxLayout(QBoxLayout::TopToBottom, this);
-
-        queuesText = new QLabel(this);
-        enginesText = new QLabel(this);
+        tabs = new QTabWidget(this);
+        setCentralWidget(tabs);
         
-        layout->addWidget(queuesText);
-        layout->addWidget(enginesText);
+        tab1 = new QWidget();
+
+        mainLayout = new QBoxLayout(QBoxLayout::TopToBottom, tab1);
+        queuesLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+        enginesLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+        queuesBox = new QGroupBox("Queues", tab1);
+        enginesBox = new QGroupBox("Engine",tab1);
+        mainLayout->addWidget(queuesBox);
+        mainLayout->addWidget(enginesBox);
+
+        queuesText = new QLabel();
+        queuesLayout->addWidget(queuesText);
+        queuesLayout->addStretch();
+        enginesText = new QLabel();
+        enginesLayout->addWidget(enginesText);
+        enginesLayout->addStretch();
+        queuesBox->setLayout(queuesLayout);
+        enginesBox->setLayout(enginesLayout);
         
         queuesText->show();
         enginesText->show();
+        tabs->addTab(tab1, tr("Engine"));
         
         exitAction = new QAction(tr("E&xit"), this);
         aboutAction = new QAction(tr("A&bout"), this);

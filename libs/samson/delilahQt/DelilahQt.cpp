@@ -36,7 +36,7 @@ namespace samson
                 }
                 str = QString(tmp.str().c_str());
                 //str = QString(table->str().c_str());
-                std::cout << "Table queues: " << table->str() << std::endl;
+                //std::cout << "Table queues: " << table->str() << std::endl;
                 emit queuesTextValueChanged(str);
             }
         }

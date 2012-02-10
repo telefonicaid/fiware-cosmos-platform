@@ -11,6 +11,7 @@
 #include "au/Descriptors.h"                         // au::Descriptors
 #include "au/TokenTaker.h"                          // au::TokenTake
 #include "au/xml.h"         // au::xml...
+#include "au/ThreadManager.h"
 
 #include "engine/Notification.h"                    // engine::Notification
 #include "engine/ProcessManager.h"                  // engine::Process
@@ -27,11 +28,65 @@ ProcessManager* ProcessManager::processManager=NULL;
 
 void ProcessManager::init( int _num_processes)
 {
+    LM_V(("ProcessManager init with %d processes" ,  _num_processes ));
+    
     if( processManager )
         LM_X(1,("Please, init processManager only once"));
     processManager = new ProcessManager( _num_processes );
     
 }
+
+void ProcessManager::destroy( )
+{
+    LM_V(("ProcessManager destroy"));
+    
+    if( !processManager )
+        LM_X(1, ("Destroying process manager without initializing"));
+
+    // Wait for unfinished threads...
+    processManager->quitAndWait();
+    
+    delete processManager;
+    processManager = NULL;
+}
+
+void ProcessManager::quitAndWait()
+{
+    au::Cronometer cronometer;
+    size_t secs = 0;
+    
+    // Set flag to indicate backgroun process we are quitting...
+    quitting = true;
+    
+    while( true )
+    {
+        size_t num_running_items = token_getNumRunningProcessItem();
+        
+        if( ( !thread_running ) && ( num_running_items == 0 ) )
+            break;
+
+        // Some sleep
+        usleep(100000);
+        
+        // Notify something every second
+        size_t _secs = cronometer.diffTimeInSeconds();
+        if( secs > _secs )
+        {
+            secs = _secs;
+            if ( thread_running )
+                LM_M(("Waiting for the main thread of ProcessManager to finish..."));
+            else
+                LM_M(("Waiting for %lu background processes to finish (ProcessManager) " ,num_running_items ));
+        }
+    }
+        
+    items.clearSet();				// List of items to be executed ( all priorities  )
+    halted_items.clearSet();		// Set of items currently being executed but halted
+    
+}
+
+
+
 
 void* run_check_background_processes(void *p)
 {
@@ -40,6 +95,8 @@ void* run_check_background_processes(void *p)
     
     ProcessManager* pm = (ProcessManager*) p;
     pm->check_background_processes();
+    
+    pm->thread_running = false;
     return  NULL;
     
 }
@@ -52,9 +109,7 @@ ProcessManager* ProcessManager::shared()
     return processManager;
 }
 
-ProcessManager::ProcessManager( int _num_processes ) : 
-          engine::EngineService("ProcessManager") 
-          ,token("engine::ProcessManager")
+ProcessManager::ProcessManager( int _num_processes ) : token("engine::ProcessManager")
 {
     // By default only one process at a time
     num_processes = _num_processes;  
@@ -64,8 +119,7 @@ ProcessManager::ProcessManager( int _num_processes ) :
             
     // Run thread in background to check new processes
     thread_running = true;
-    pthread_create(&t_scheduler, NULL, run_check_background_processes, this);
-
+    au::ThreadManager::shared()->addThread("ProcessManager",&t_scheduler, NULL, run_check_background_processes, this);
     
     public_max_proccesses = num_processes;
     public_num_proccesses = 0;
@@ -177,6 +231,10 @@ void ProcessManager::check_background_processes()
         // Get the next process item to process
         ProcessItem * item = token_getNextProcessItem();
         
+        // Finish this thread when quitting background process
+        if( quitting )
+            return;
+        
         if( item )
         {
             // Run o re-run this item
@@ -229,29 +287,6 @@ void ProcessManager::getInfo( std::ostringstream& output)
     token_getInfo( output );    
 }
 
-void ProcessManager::quitEngineService()
-{
-    
-    // Set flag to indicate backgroun process we are quitting...
-    quitting = true;
-
-    LM_V(("ProcessManager: Waiting main thread to finish"));
-    while( thread_running )
-        usleep(100000);
-    LM_V(("ProcessManager: main thread finished"));
-    
-    items.clearSet();				// List of items to be executed ( all priorities  )
-    halted_items.clearSet();		// Set of items currently being executed but halted
-    
-    while( running_items.size() > 0 )
-    {
-        LM_V(("ProcessManager: Waiting %d process to finish" , (int)running_items.size() ));
-        sleep(1);
-    }
-    
-    LM_V(("ProcessManager: Finish complete" , (int)running_items.size() ));
-    
-}
 
 ProcessItem* ProcessManager::token_finishProcessItem( ProcessItem* item )
 {
@@ -275,6 +310,12 @@ void ProcessManager::token_haltProcessItem( ProcessItem* item )
     halted_items.insert(item);
 }
 
+
+size_t ProcessManager::token_getNumRunningProcessItem()
+{
+    au::TokenTaker tt( &token );
+    return running_items.size();
+}
 
 ProcessItem* ProcessManager::token_getNextProcessItem()
 {

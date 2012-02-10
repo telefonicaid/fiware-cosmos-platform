@@ -15,6 +15,7 @@
 #include "au/CommandLine.h"				// au::CommandLine
 #include "au/string.h"					// au::Format
 #include "au/Descriptors.h"             // au::Descriptors
+#include "au/ThreadManager.h"
 
 #include "tables/Tree.h"                    // au::tables::TreeItem
 
@@ -561,6 +562,12 @@ namespace samson
         if ( commandLine.isArgumentValue(0, "quit", "") )
         {
             Console::quitConsole();	// Quit the console
+            return 0;
+        }
+
+        if ( commandLine.isArgumentValue(0, "threads", "") )
+        {
+            writeOnConsole( au::ThreadManager::shared()->str() );
             return 0;
         }
         

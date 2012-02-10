@@ -46,10 +46,14 @@ namespace samson
 	}
     
     
-    void destroyModulesManager()
+    void ModulesManager::destroy()
     {
+		if(!modulesManager)
+			LM_X(1,("Destroting a non initializedModules Manager"));
+        
         LM_V(("Destroying ModulesManager"));
         delete modulesManager;
+        
         modulesManager = NULL;
     }
 	
@@ -60,8 +64,6 @@ namespace samson
         
         LM_V(("Init ModulesManager"));
 		modulesManager = new ModulesManager();
-        
-        atexit( destroyModulesManager );
 	}
     
 	ModulesManager* ModulesManager::shared()

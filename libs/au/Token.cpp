@@ -8,6 +8,8 @@
 
 #include "au/Token.h"				// Own interface
 
+#include <assert.h>
+
 //#define DEBUG_AU_TOKEN
 
 NAMESPACE_BEGIN(au)
@@ -45,7 +47,7 @@ void Token::retain(  )
     if( ans )
     {
         LM_E(("Error %d getting mutex (EINVAL:%d, EFAULT:%d, EDEADLK:%d", ans, EINVAL, EFAULT, EDEADLK));
-        // Goyo. The segmentation fault when quitting delilah seems to be related (at least) to a corruption in name (SAMSON-314)
+        assert(false);
         if ((name != NULL) & (name != (char *)0xffffffff))
         {
             LM_E(("Token %s: pthread_mutex_lock returned error %d (%p)", name, ans, this));

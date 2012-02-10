@@ -47,7 +47,7 @@ class Notification;
  Main engine platform
  */
 
-class Engine : public EngineService
+class Engine
 {
     // Common engine instance
     static Engine* engine;
@@ -59,7 +59,13 @@ class Engine : public EngineService
     au::Token token;                                // General mutex to protect global variable engine and block the main thread if necessary
     
     pthread_t t;                                    // Thread to run the engine in background ( if necessary )
-    bool flag_finish_threads;                       // Flag used to indicate to threads that engine will finish
+    
+public:
+    
+    bool quitting;                                  // Flag used to indicate to threads that engine will finish
+    bool running_thread;                            // Flag to indicate that background thread is running
+
+private:    
     
     size_t counter;                                 // Counter of EngineElement processed
     
@@ -73,6 +79,7 @@ public:
     
     ~Engine();
     
+    static void destroy();
     static void init();
     static Engine* shared();
     
@@ -115,9 +122,6 @@ public:
     // Get an object by its registry names
     Object* getObjectByName( const char *name );
     
-public:
-    
-    void quitEngineService();
 
 private:
     

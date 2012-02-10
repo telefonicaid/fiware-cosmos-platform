@@ -15,6 +15,7 @@
 
 #include "au/string.h"
 #include "au/LockDebugger.h"            // au::LockDebugger
+#include "au/ThreadManager.h"
 
 
 #include "engine/MemoryManager.h"
@@ -127,30 +128,24 @@ int main(int argC, const char *argV[])
     // Make sure this singleton is created just once
     au::LockDebugger::shared();
 
-	samson::SamsonSetup::init("","");			// Load the main setup file
+    // Init samson setup with default values
+	samson::SamsonSetup::init("","");			
 	
-	// Setup parameters from command line ( this is delilah so memory and load buffer size are configurable from command line )
+	// Setup parameters from command line 
     size_t _memory = (size_t) memory_gb * (size_t) (1024*1024*1024);
-    std::stringstream memory;
-    memory << _memory;
-
     size_t _load_buffer_size = (size_t) load_buffer_size_mb * (size_t) (1024*1024);
-    std::stringstream load_buffer_size;
-    load_buffer_size << _load_buffer_size;
-    
-	samson::SamsonSetup::shared()->setValueForParameter("general.memory", memory.str() );
-    samson::SamsonSetup::shared()->setValueForParameter("load.buffer_size",  load_buffer_size.str() );
+	samson::SamsonSetup::shared()->setValueForParameter("general.memory", au::str("%lu",_memory));
+    samson::SamsonSetup::shared()->setValueForParameter("load.buffer_size",  au::str("%lu",_load_buffer_size) );
 
-
+    // Engine and its associated elements
 	engine::Engine::init();
+	engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
 	engine::DiskManager::init(1);
 	engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
-	engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
-    
+
 	samson::ModulesManager::init();         // Init the modules manager
 	
 	// Initialize the network element for delilah
-    LM_M(("Creating network element"));
 	samson::DelilahNetwork * networkP  = new samson::DelilahNetwork( );
     
 	// Create a DelilahControler once network is ready
@@ -161,7 +156,6 @@ int main(int argC, const char *argV[])
     
     if( s != samson::OK )
         LM_X(1, ("Not possible to open connection with %s:%d (%s)" , target_host , target_port , samson::status(s) ));
-    
     
     // Only wait if there is a command or file
     if ( ( strcmp( command , "" ) != 0 ) && ( strcmp( commandFileName,"") != 0 ) )
@@ -183,9 +177,8 @@ int main(int argC, const char *argV[])
         
     }	
     
-    
-    
-    // Special mode for file-based commands
+    // ----------------------------------------------------------------
+    // Special mode with one command line command
     // ----------------------------------------------------------------
     
     if ( strcmp( command , "" ) != 0 )
@@ -234,6 +227,10 @@ int main(int argC, const char *argV[])
         exit(0);
     }
     
+    // ----------------------------------------------------------------
+    // Special mode for file-based commands
+    // ----------------------------------------------------------------
+
 	if ( strcmp( commandFileName,"") != 0 )
 	{
         if( !delilahConsole )
@@ -299,4 +296,29 @@ int main(int argC, const char *argV[])
 
     LM_M(("Running delilah console..."));
     delilahConsole->run();
+
+    // ------------------------------------------------------------------------
+    // Close everything
+    // ------------------------------------------------------------------------
+    
+    samson::ModulesManager::destroy();
+    
+	engine::ProcessManager::destroy();
+	engine::DiskManager::destroy();
+	engine::MemoryManager::destroy();
+    engine::Engine::destroy();
+    
+	samson::SamsonSetup::destroy();
+    
+    
+    // Check background threads
+    au::StringVector background_threads = au::ThreadManager::shared()->getThreadNames();
+    if( background_threads.size() > 0 )
+    {
+        LM_W(("Still %lu background threads running (%s)" , background_threads.size() , background_threads.str().c_str() ));
+        std::cerr << au::ThreadManager::shared()->str();
+    }
+    else
+        LM_M(("Finish correctly with 0 background processes"));
+    
 }

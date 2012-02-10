@@ -11,13 +11,6 @@ namespace samson {
     
     void CommonNetwork::notify( engine::Notification* notification )
     {
-        // Print current status
-        
-        if( node_identifier.node_type == WorkerNode )
-        {
-            std::cerr << str() << "\n";
-            std::cerr << cluster_information.str() << "\n";
-        }
 
         // Check disconnected elements to be removed ( if possible no threads or pending packets )
         // -------------------------------------------------------------------------------------
@@ -273,14 +266,14 @@ namespace samson {
     void CommonNetwork::report_delilah_connected( size_t id )
     {
         Packet * packet = new Packet( Message::NetworkNotification );
-        packet->message->mutable_network_notification()->set_connected_worker_id(id);
+        packet->message->mutable_network_notification()->set_connected_delilah_id(id);
         network_interface_receiver->receive( packet );
     }
     
     void CommonNetwork::report_delilah_disconnected( size_t id )
     {
         Packet * packet = new Packet( Message::NetworkNotification );
-        packet->message->mutable_network_notification()->set_disconnected_worker_id(id);
+        packet->message->mutable_network_notification()->set_disconnected_delilah_id(id);
         network_interface_receiver->receive( packet );
     }
     

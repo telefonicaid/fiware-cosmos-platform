@@ -12,6 +12,7 @@
 #include "au/ErrorManager.h"                       // au::ErrorManager
 #include "au/Token.h"                       // au::Token
 #include "au/xml.h"         // au::xml...
+#include "au/ThreadManager.h"
 
 
 #include "Notification.h"                           // engine::Notification
@@ -37,14 +38,18 @@ Engine *Engine::engine = NULL;
 
 void* runEngineBakground(void* e )
 {    
+    Engine::shared()->running_thread = true;
     Engine::shared()->run();
+    Engine::shared()->running_thread = false;
+    
     return NULL;
 }
 
-Engine::Engine() :  EngineService("Engine") , token("EngineToken")
+Engine::Engine() : token("EngineToken")
 {
-    running_element = NULL;                         // Initially, no running element
-    flag_finish_threads = false;                    // Put this to "true" when destroying Engine
+    running_element = NULL;         // Initially, no running element
+    quitting = false;               // Put this to "true" when destroying Engine
+    running_thread = false;         // No running thread at the moment
 }
 
 Engine::~Engine()
@@ -63,16 +68,10 @@ Engine* Engine::shared()
     return engine;
 }
 
-void Engine::quitEngineService()
-{
-    LM_V(("Quiting Engine..."));
-    flag_finish_threads = true;   // Flag to indicate main thread should finish
-    pthread_join(t, NULL);
-    LM_V(("Quiting Engine... DONE"));
-}
-
 void Engine::init()
 {
+    LM_V(("Engine init"));
+    
     if ( engine )
     {
         LM_W(("Init engine twice... just ignoring"));
@@ -87,10 +86,33 @@ void Engine::init()
     engine->elements.push_back( element );
     
     LM_T( LmtEngine , ("Running engine in background...") );
-    pthread_create(&engine->t, 0, runEngineBakground, NULL);
+    au::ThreadManager::shared()->addThread("Engine", &engine->t, 0, runEngineBakground, NULL );
+}
+
+void Engine::destroy()
+{
+    LM_V(("Engine destroy"));
     
-    // Function to remove this engine and all EngineServices like MemoryMamager, DiskManager, ProcessManager etc...
-    atexit( destroy_engine_services );
+    if (!engine)
+    {
+        LM_W(("Not possible to destroy Engine since it was not initialized"));
+        return;
+    }
+
+    // Set this falg as true
+    engine->quitting = true;
+    
+    // Wait for the main thread
+    au::CronometerNotifier cronometer_notifier(2); // Notify every 2 seconds on screen that we are waiting...
+    while( engine->running_thread )
+    {
+        usleep(100000);
+        if( cronometer_notifier.touch() )
+            LM_M(("Waiting engine main thread to finish"));
+    }
+    
+    delete engine;
+    engine = NULL;
 }
 
 void sleep_select( double time )
@@ -142,7 +164,7 @@ void Engine::run()
         counter++;  
         
         // Finish this thread if necessary
-        if( flag_finish_threads )
+        if( quitting )
             return; 
         
         // Check if there are elements in the list

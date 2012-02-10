@@ -43,14 +43,14 @@ class ProcessItem;
 class DiskOperation;
 class Notification;
 
-class DiskManager : engine::EngineService
+class DiskManager
 {
     //singleton instance
     static DiskManager *diskManager;
 
     friend class DiskOperation;
     
-    // File manager ( conatins all the open files )
+    // File manager ( containing all the open files )
     ReadFileManager fileManager;
     
     // Disk Operations
@@ -58,7 +58,7 @@ class DiskManager : engine::EngineService
 
     bool quitting;                                  // Flag to indicate background processes to quit
     int num_disk_operations;						// Number of paralell disk operations allowed
-    int num_disk_manager_workers;
+    int num_disk_manager_workers;                   // Number of parallel workers for Disk operations
     
     au::list<DiskOperation> pending_operations;		// List of pending operations
     std::set<DiskOperation*> running_operations;	// Running operations
@@ -70,6 +70,7 @@ public:
     DiskStatistics diskStatistics;                  // Statistics
     
     static void init( int _num_disk_operations );
+    static void destroy( );
     static DiskManager* shared();
    
     ~DiskManager();
@@ -91,8 +92,6 @@ public:
     void getInfo( std::ostringstream& output);
     
     void setNumOperations( int _num_disk_operations );
-
-    void quitEngineService();
     
 private:
     
@@ -110,6 +109,9 @@ private:
     
     int get_num_disk_manager_workers();
     void createThreads();
+  
+    // Quit all threads and wait them
+    void quitAndWait();
     
 };
 

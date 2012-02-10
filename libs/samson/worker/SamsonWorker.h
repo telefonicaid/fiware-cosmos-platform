@@ -13,6 +13,7 @@
 
 #include "logMsg/logMsg.h"				// 
 
+#include "au/Console.h"
 
 #include "engine/EngineElement.h"               // samson::EngineElement
 
@@ -51,7 +52,8 @@ namespace samson {
     
 	class SamsonWorker : 
         public NetworkInterfaceReceiver, 
-        public engine::Object
+        public engine::Object,
+        public au::Console
 	{
 		
 		// Initial time stamp 
@@ -87,7 +89,12 @@ namespace samson {
         
         // Log activity
         void logActivity( std::string log);
+        
+        // au::Console ( debug mode with fg )
+        void evalCommand( std::string command );
+        std::string getPrompt();
 
+        
 	};
 	
 }

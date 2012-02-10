@@ -236,8 +236,11 @@ namespace samson
 		return samsonSetup;
 	}
 	
-    void destroy_SamsonSetup()
+    void SamsonSetup::destroy()
     {
+        if( !samsonSetup )
+            LM_X(1, ("SamsonSetup not initialized at destructor"));
+        
         LM_V(("Destroying SamsonSetup"));
         delete samsonSetup;
         samsonSetup=NULL;
@@ -255,8 +258,6 @@ namespace samson
         LM_V(("Init SamsonSetup"));
         
 		samsonSetup = new SamsonSetup( samson_home , samson_working );
-        
-        atexit( destroy_SamsonSetup );
 	}
 
 	

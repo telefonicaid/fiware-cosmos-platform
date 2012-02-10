@@ -1714,9 +1714,10 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 		if ((fds[i].type == Stdout) && (fds[i].onlyErrorAndVerbose == true))
 		{
 			if ((type == 'T')
-			||  (type == 'D')
-			||  (type == 'H')
-			||  (type == 't'))
+                ||  (type == 'D')
+                ||  (type == 'H')
+                ||  (type == 'M')
+                ||  (type == 't'))
 				continue;
 		}
 

@@ -50,7 +50,7 @@ class MemoryRequest;
  
  */
 
-class MemoryManager : engine::EngineService
+class MemoryManager
 {
     static MemoryManager* memoryManager;            // Singleton Instance pointer
     au::Token token;                                // Token to protect this instance and memoryRequests
@@ -74,6 +74,7 @@ public:
     
 public:
     
+    static void destroy( );
     static void init( size_t _memory );
     static MemoryManager *shared();
     

@@ -470,18 +470,18 @@ int paConfig(const char* item, void* value)
 		paLogToFile = (bool) val;
 	else if (strcmp(item, "log to screen") == 0)
 	{
-		if ((bool) val == true)
+		if (strcmp((char*) value, "only errors") == 0)
+		{
+			paLogToScreen         = true;
+			paLogScreenOnlyErrors = true;
+		}
+		else if ((bool) val == true)
 		{
 			paLogToScreen  = true;
 			paMsgsToStdout = true;
 		}
 		else if ((bool) val == false)
 			paLogToScreen = false;
-		else if (strcmp((char*) value, "only errors") == 0)
-		{
-			paLogToScreen         = true;
-			paLogScreenOnlyErrors = true;
-		}
 	}
 	else if (strcmp(item, "log to stderr") == 0)
 		paLogScreenToStderr = (bool) val;

@@ -9,6 +9,7 @@
 #include "au/CommandLine.h"                // CommandLine
 #include "au/string.h"						// au::Format
 #include "au/time.h"                        // au::todayString
+#include "au/ThreadManager.h"
 
 #include "engine/Notification.h"            // engine::Notification
 
@@ -104,15 +105,6 @@ namespace samson {
         }
         
         
-        /*
-        // Send a "hello" command message just to notify the controller about me
-        Packet *p = new Packet( Message::Command );
-        network::Command *command = p->message->mutable_command();
-        command->set_command("hello");
-        network->sendToController(p);
-        */
-         
-        
     }
     
     
@@ -122,9 +114,6 @@ namespace samson {
         stream::BlockManager::shared()->resetBlockManager( worker_id );
         
     }
-    
-    
-
     
     /* ****************************************************************************
      *
@@ -401,6 +390,24 @@ namespace samson {
         au::xml_close(output, "activity");
     }
     
+    void SamsonWorker::evalCommand( std::string command )
+    {
+        if ( command == "quit" )
+        {
+            quitConsole();
+        }
+
+        if ( command == "threads" )
+            writeOnConsole( au::ThreadManager::shared()->str() );
+        
+        // More command to check what is going on inside a worker
+        
+    }
+
+    std::string SamsonWorker::getPrompt()
+    {
+        return "SamsonWorker> ";
+    }
     
     
 }

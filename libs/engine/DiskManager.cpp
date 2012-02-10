@@ -7,6 +7,7 @@
 
 #include "au/xml.h"         // au::xml...
 #include "au/TokenTaker.h"         // au::TokenTaker...
+#include "au/ThreadManager.h"
 
 #include "engine/Engine.h"							// engine::Engine
 #include "engine/EngineElement.h"					// engine::EngineElement
@@ -27,11 +28,32 @@ DiskManager* DiskManager::diskManager = NULL;
 
 void DiskManager::init( int _num_disk_operations )
 {
+    LM_V(("DiskManager init with %d max background operations" , _num_disk_operations ));
+    
     if( diskManager )
-        LM_E(("Please, init diskManager only once"));
+        LM_X(1 ,("Please, init diskManager only once"));
     
     diskManager = new DiskManager ( _num_disk_operations );
 }
+
+void DiskManager::destroy( )
+{
+    LM_V(("DiskManager destroy"));
+
+    if( !diskManager )
+    {
+        LM_W(("Please init diskManager before destroying it"));
+        return;
+    }
+
+    
+    diskManager->quitAndWait();
+    
+    delete diskManager;
+    diskManager = NULL;
+    
+}
+
 
 DiskManager* DiskManager::shared()
 {
@@ -49,7 +71,39 @@ void* run_disk_manager_worker( void* p )
     return NULL;
 }
 
-DiskManager::DiskManager( int _num_disk_operations ) : engine::EngineService("DiskManager"), token("engine::DiskManager")
+void DiskManager::quitAndWait()
+{
+    au::Cronometer cronometer;
+    size_t secs = 0;
+    
+    // Set flag to indicate backgroun process we are quitting...
+    quitting = true;
+    
+    while( true )
+    {
+        size_t num_running_items = get_num_disk_manager_workers();
+        
+        if( num_running_items == 0 )
+            break;
+        
+        // Some sleep
+        usleep(100000);
+        
+        // Notify something every second
+        size_t _secs = cronometer.diffTimeInSeconds();
+        if( secs > _secs )
+        {
+            secs = _secs;
+            LM_M(("Waiting for %lu background processes to finish (DiskManager) " ,num_running_items ));
+        }
+    }
+
+    // Remove pending elements
+    pending_operations.clearList();
+    
+}
+
+DiskManager::DiskManager( int _num_disk_operations ) : token("engine::DiskManager")
 {
     // Number of parallel disk operations
     num_disk_operations = _num_disk_operations;
@@ -74,7 +128,7 @@ void DiskManager::createThreads()
         add_worker();
         
         pthread_t t;
-        pthread_create(&t, NULL, run_disk_manager_worker, this);
+        au::ThreadManager::shared()->addThread("DiskManager_worker",&t, NULL, run_disk_manager_worker, this);
     }
 
 }
@@ -82,16 +136,6 @@ void DiskManager::createThreads()
 DiskManager::~DiskManager()
 {
 }
-
-void DiskManager::quitEngineService()
-{
-    LM_V(("Waiting for background threads of the disk manager"));
-    quitting = true;
-    while( get_num_disk_manager_workers() > 0 )
-        usleep(100000);
-    LM_V(("Done .... Waiting for background threads of the disk manager"));
-}
-
 
 void DiskManager::add( DiskOperation *operation )
 {
@@ -171,7 +215,6 @@ void DiskManager::add_worker(  )
 {
     // Mutex protection
     au::TokenTaker tt(&token);
-    
     num_disk_manager_workers ++;
 }
 
@@ -179,13 +222,14 @@ void DiskManager::add_worker(  )
 // Check if we can run more disk operations
 void DiskManager::run_worker()
 {
+    
     while( true )
     {
+        
+        
         // Check if I should quit
         if( check_quit_worker() )
-        {
             return;
-        }
         
         DiskOperation* operation = getNextDiskOperation();
         if (operation)
@@ -201,14 +245,15 @@ bool DiskManager::check_quit_worker(  )
 {
     // Mutex protection
     au::TokenTaker tt(&token);
-    
+
+    // If quitting the disk manager.. just quit.
     if (quitting)
     {
         num_disk_manager_workers--;
         return true;
     }
 
-    if( num_disk_manager_workers > num_disk_operations)
+    if( num_disk_manager_workers > num_disk_operations )
     {
         num_disk_manager_workers--;
         return true;

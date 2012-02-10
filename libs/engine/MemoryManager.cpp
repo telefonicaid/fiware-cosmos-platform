@@ -33,8 +33,21 @@ NAMESPACE_BEGIN(engine)
 //Initialise singleton instance pointer
 MemoryManager* MemoryManager::memoryManager = NULL;
 
+
+void MemoryManager::destroy( )
+{
+    LM_V(("MemoryManager destroy"));
+    
+    if ( !memoryManager )
+        LM_E(("Please, init Memory manager first"));
+    
+    delete memoryManager;
+    memoryManager = NULL;
+}
+
 void MemoryManager::init( size_t _memory )
 {
+    LM_V(("MemoryManager init with %s" , au::str( _memory ).c_str() ));
     if ( memoryManager )
         LM_E(("Please, init Memory manager only once"));
     
@@ -53,7 +66,7 @@ MemoryManager* MemoryManager::shared()
 
 #pragma mark ------------------------------------------------------------------------
 
-MemoryManager::MemoryManager( size_t _memory ) : engine::EngineService("MemoryManager") , token("Memory Manager")
+MemoryManager::MemoryManager( size_t _memory ) : token("Memory Manager")
 {
     // Total available memory
     memory = _memory;

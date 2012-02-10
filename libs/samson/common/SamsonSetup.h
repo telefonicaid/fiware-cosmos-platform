@@ -127,6 +127,7 @@ namespace samson {
 	public:
 
 		static void init( std::string samson_home , std::string samson_working );
+		static void destroy();
 		static SamsonSetup *shared();
 		
         

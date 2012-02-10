@@ -28,40 +28,6 @@ class ProcessItem;
 class DiskOperation;
 class Notification;
 
-/**
- Main engine platform
- */
-
-
-class EngineService
-{
-    
-    std::string name;
-    
-public:
-    
-    EngineService( std::string _name );
-    
-    virtual ~EngineService()
-    {
-        // Just make sure destructor is virtual
-    }
-    
-    std::string getEngineServiceName()
-    {
-        return name;
-    }
-    
-    virtual void quitEngineService()
-    {
-        // function to quit background threads safely
-    }
-    
-};
-
-// Function to destroy all engine services when exit ( See engin::Engine::init() )
-void destroy_engine_services();
-
 NAMESPACE_END
 
 #endif

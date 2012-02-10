@@ -40,6 +40,8 @@ Table.h
 RRT.h
 cpu.h
 ProcessStats.h
+
+ThreadManager.h
 )
 
 SET (SOURCES
@@ -74,6 +76,8 @@ Table.cpp
 RRT.cpp
 cpu.cpp
 ProcessStats.cpp
+
+ThreadManager.cpp
 )
 
 

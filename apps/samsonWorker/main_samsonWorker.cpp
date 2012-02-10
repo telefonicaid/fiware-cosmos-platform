@@ -15,6 +15,7 @@
 
 
 #include "au/LockDebugger.h"            // au::LockDebugger
+#include "au/ThreadManager.h"
 
 #include "engine/MemoryManager.h"
 #include "engine/Engine.h"
@@ -72,19 +73,6 @@ samson::SamsonWorker* worker            = NULL;
 
 /* ****************************************************************************
 *
-* exitFunction - 
-*/
-void exitFunction(void)
-{
-	if (worker)
-		delete worker;
-
-    google::protobuf::ShutdownProtobufLibrary();
-    
-}
-
-/* ****************************************************************************
-*
 * man texts -
 */
 static const char* manSynopsis         = " [OPTION]";
@@ -123,7 +111,11 @@ int main(int argC, const char *argV[])
 {
 	paConfig("builtin prefix",                (void*) "SS_WORKER_");
 	paConfig("usage and exit on any warning", (void*) true);
+
+    // Andreu: samsonWorker is not a console in foregroung (debug) mode ( to ask to status with comamnds )
 	paConfig("log to screen",                 (void*) "only errors");
+	//paConfig("log to screen",                 (void*) (void*) false);
+    
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
 	paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT");
 	paConfig("log to file",                   (void*) true);
@@ -179,14 +171,47 @@ int main(int argC, const char *argV[])
 	// -----------------------------------------------------------------------------------
 	worker = new samson::SamsonWorker(networkP);
 
-    if (fg == false)
-        daemonize();    
+    LM_M(("Worker Running"));
 
-    // Clean up function ( here to make sure, this cleanup function is called before Engine clean up function )
-	atexit(exitFunction);
+    if (fg == false)
+    {
+        std::cout << "OK. samsonWorker is now working in background.\n";
+        daemonize();
+        while (true)
+            sleep(10);
+
+    }
     
-    LM_M(("Running"));
+    worker->runConsole();
+ 
+    LM_M(("Finish worker running"));
     
-    while( true )
-        sleep(10);
+	if (worker)
+		delete worker;
+    
+    google::protobuf::ShutdownProtobufLibrary();
+    
+    // ------------------------------------------------------------------------
+    // Close everything
+    // ------------------------------------------------------------------------
+    
+    samson::ModulesManager::destroy();
+    
+	engine::ProcessManager::destroy();
+	engine::DiskManager::destroy();
+	engine::MemoryManager::destroy();
+    engine::Engine::destroy();
+    
+	samson::SamsonSetup::destroy();
+    
+    
+    // Check background threads
+    au::StringVector background_threads = au::ThreadManager::shared()->getThreadNames();
+    if( background_threads.size() > 0 )
+    {
+        LM_W(("Still %lu background threads running (%s)" , background_threads.size() , background_threads.str().c_str() ));
+        std::cerr << au::ThreadManager::shared()->str();
+    }
+    else
+        LM_M(("Finish correctly with 0 background processes"));
 }

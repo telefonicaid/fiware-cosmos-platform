@@ -46,7 +46,7 @@ class Notification;
  Class to manage background jobs
  */
 
-class ProcessManager  :  engine::Object , engine::EngineService
+class ProcessManager  :  engine::Object
 {
     static ProcessManager* processManager;  //Singleton Instance pointer
     
@@ -66,6 +66,9 @@ class ProcessManager  :  engine::Object , engine::EngineService
     au::map<std::string,au::SimpleRateCollection> rates;    // Information about rates
     
     pthread_t t_scheduler; // Thread continuously checking for new process to be executed
+
+public:
+    
     bool thread_running;   // Flag to indicate that the background thread is running
     bool quitting;         // Flag to indicate that we are quitting
     
@@ -78,6 +81,7 @@ public:
     
     ~ProcessManager();
     
+    static void destroy( );
     static void init( int _num_processes );
     static ProcessManager* shared();
     
@@ -107,12 +111,8 @@ public:
     // Get information for monitoring
     void getInfo( std::ostringstream& output);
     
-private:
+public:
     
-    // Remove pending stuff and wait for the running
-    void quitEngineService();
-
-    public:
     // Only public to be executed from a separate thread
     // Check background process in order to see if new threads have to be created
     void check_background_processes();                    
@@ -128,7 +128,12 @@ private:
     ProcessItem* token_cancelProcessItem( ProcessItem* item );
     void token_haltProcessItem( ProcessItem* item );
     void token_getInfo( std::ostringstream& output);
+    size_t token_getNumRunningProcessItem();
     
+    
+private:
+    
+    void quitAndWait();
     
     
     

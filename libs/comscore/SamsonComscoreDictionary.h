@@ -93,246 +93,35 @@ namespace samson
             
         public:
             
-            SamsonComscoreDictionary()
-            {
-                
-            }
+            SamsonComscoreDictionary();
             
-            void push( OriginalDictionaryEntry& original_dictionary_entry )
-            {
-                DictionaryEntry entry;
-                entry.id = original_dictionary_entry.id;
-                entry.domain             = string_collection.add( original_dictionary_entry.domain.c_str() );
-                entry.pre_domain_pattern = string_collection.add( original_dictionary_entry.pre_domain_pattern.c_str() );
-                entry.path_pattern       = string_collection.add( original_dictionary_entry.path_pattern.c_str() );
-                
-                dictionary_entries.add( entry );
-            }
+            // Get categories for a provided url
+            std::vector<uint> getCategories( const char* url );
             
-            void push_pattern_to_category( Id2Id entry )
-            {
-                pattern_to_category.add( entry );
-            }
+            // Get description name for a particular category
+            const char* getCategoryName( uint id );
+
+            // Methods to add elements during construction of SamsonComscoreDictionary
+            void push( OriginalDictionaryEntry& original_dictionary_entry );
+            void push_pattern_to_category( Id2Id entry );
+            void push_category(uint id , std::string category );
+
+            // Read and write content to file
+            void write( const char* file_name );            
+            void read( const char* file_name );            
+
+        private:
             
-            void push_category(uint id , std::string category )
-            {
-                Id2Id entry;
-                entry.first = id;
-                entry.second = string_collection.add( category.c_str() );
-                
-                categories.add( entry );
-                
-            }
+            // Methods to find pattern of a provided URL
+            bool find_pattern_range( const char* core_domain , uint *begin , uint* end );            
+            uint find_one_pattern( const char* core_domain );
+            uint find_one_pattern( const char* core_domain , uint begin , uint end );            
+            bool findURLPattern( const char* _url , uint* pattern );
             
-            void write( const char* file_name )
-            {
-                
-                FILE* file =fopen( file_name , "w" );
-                if( !file )
-                    LM_X(1, ("Not possible to open file %s to write a SamsonComscoreDictionary" , file_name ));
-                
-                // Prepare & write header
-                header.size_string_collection = string_collection.getSize();
-                header.size_struct_collection_dictionary_entries = dictionary_entries.getSize();
-                header.size_struct_collection_pattern_to_category = pattern_to_category.getSize();
-                header.size_struct_collection_categories = categories.getSize();
-                
-                if ( fwrite(&header, sizeof(Header), 1, file) != 1 )
-                    LM_X(1, ("Error writin to file %s to create a SamsonComscoreDictionary" , file_name ));
-                
-                
-                LM_M(("Writing file %s with ( String %s ) ( Dictionary %s ) ( Pattern2Category %s ) ( Category2Description %s )" 
-                      , file_name
-                      , au::str( header.size_string_collection ).c_str()
-                      , au::str( header.size_struct_collection_dictionary_entries ).c_str()
-                      , au::str( header.size_struct_collection_pattern_to_category ).c_str()
-                      , au::str( header.size_struct_collection_categories ).c_str()
-                      ));
-                
-                
-                // Write String collection
-                string_collection.write(file);
-                
-                // Write dictionary_entries
-                dictionary_entries.write(file);
-                
-                // Write pattern_to_category
-                pattern_to_category.write(file);
-                
-                // Write category description mapping
-                categories.write(file);
-                
-            }
-            
-            
-            void read( const char* file_name )
-            {
-                FILE* file =fopen( file_name , "r" );
-                if( !file )
-                    LM_X(1, ("Not possible to open file %s to recover SamsonComscoreDictionary" , file_name ));
-                
-                
-                if( fread(&header, sizeof( Header ), 1, file ) != 1 )
-                    LM_X(1, ("Error reading %s while recovering SamsonComscoreDictionary" , file_name));
-                
-                // Recover string collection
-                string_collection.read(file, header.size_string_collection );
-                
-                // Recover dictionary_entries
-                dictionary_entries.read( file , header.size_struct_collection_dictionary_entries );
-                
-                // Recover pattern to category
-                pattern_to_category.read( file , header.size_struct_collection_pattern_to_category );
-                
-                
-                // Recover cateories
-                categories.read( file , header.size_struct_collection_categories );
-                
-                fclose( file );
-                
-                LM_M(("Read file %s with ( String %s ) ( Dictionary %s ) ( Pattern2Category %s ) ( Category2Description %s )" 
-                      , file_name
-                      , au::str( header.size_string_collection ).c_str()
-                      , au::str( header.size_struct_collection_dictionary_entries ).c_str()
-                      , au::str( header.size_struct_collection_pattern_to_category ).c_str()
-                      , au::str( header.size_struct_collection_categories ).c_str()
-                      ));
-                
-            }
-            
-            
-            bool find_pattern_range( const char* core_domain , uint *begin , uint* end )
-            {
-                uint pos = find_one_pattern( core_domain );
-                
-                if ( pos == (uint) -1 )
-                    return false;
-                else
-                {
-                    *begin = pos;
-                    *end = pos;
-                    
-                    // Move limits while same core domain
-                    while( (*begin>1) && (strcmp(core_domain, &string_collection.v[dictionary_entries.v[*begin-1].domain] ) == 0) )
-                        *begin = *begin-1;
-                    while( 
-                          (*end<(uint)dictionary_entries.size-2) 
-                          && 
-                          (strcmp(core_domain, &string_collection.v[dictionary_entries.v[*end+1].domain] ) == 0) 
-                          )
-                        *end = *end+1;
-                    
-                    return true;
-                    
-                }
-            }
-            
-            uint find_one_pattern( const char* core_domain )
-            {
-                uint begin = 0;
-                uint end = dictionary_entries.size;
-                
-                if ( strcmp(core_domain, get_domain_for_pattern(begin) ) == 0 )
-                    return begin;
-                if ( strcmp(core_domain, get_domain_for_pattern(end) ) == 0 )
-                    return end;
-                
-                return find_one_pattern(core_domain , begin , end );
-                
-            }
-            
-            
-            const char* get_domain_for_pattern( uint pos )
-            {
-                uint string_pos = dictionary_entries.v[pos].domain;
-                const char*res = string_collection.get(string_pos);
-                return res;
-            }
-            
-            const char* get_pre_domain_for_pattern( uint pos )
-            {
-                uint string_pos = dictionary_entries.v[pos].pre_domain_pattern;
-                const char*res = string_collection.get(string_pos);
-                return res;
-            }
-            
-            const char* get_path_for_pattern( uint pos )
-            {
-                uint string_pos = dictionary_entries.v[pos].path_pattern;
-                const char*res = string_collection.get(string_pos);
-                return res;
-            }
-            
-            uint find_one_pattern( const char* core_domain , uint begin , uint end )
-            {
-                // Last interval
-                if( end == begin+1 )
-                    return (uint)-1;
-                
-                uint mid_point = (begin + end) / 2;
-                
-                int c = strcmp(core_domain, get_domain_for_pattern(mid_point) );
-                
-                if( c == 0)
-                    return mid_point;
-                
-                if( c < 0 )
-                    return find_one_pattern( core_domain , begin , mid_point );
-                else
-                    return find_one_pattern( core_domain , mid_point , end );
-            }
-            
-            
-            bool findURLPattern( const char* _url , uint* pattern )
-            {
-                
-                URL url( _url );
-                
-                // Find position of the rules...
-                uint begin_pattern;
-                uint end_pattern;
-                
-                // Find pattern range to evaluate
-                if( find_pattern_range( url.core_domain.c_str() , &begin_pattern , &end_pattern ) )
-                {
-                    
-                    //LM_M(("Domain %s has patterns in the range %d , %d" , url.core_domain.c_str() , begin_pattern, end_pattern ));
-                    
-                    for ( uint p = begin_pattern ; p <= end_pattern ; p++ )
-                    {
-                        
-                        const char * pre_domain_pattern = get_pre_domain_for_pattern( p );
-                        const char * path_pattern = get_path_for_pattern( p );
-                        
-                        if( match( pre_domain_pattern , url.pre_domain.c_str() ) )
-                            if( match( path_pattern , url.path.c_str() ) )
-                            {
-                                *pattern = dictionary_entries.v[ p ].id;
-                                return true;
-                            }
-                    }
-                }
-                return false;
-            }
-            
-            std::vector<uint> getCategories( const char* url )
-            {
-                
-                uint pattern;
-                if( findURLPattern( url , &pattern ) )
-                    return pattern_to_category.find( pattern );
-                else
-                    return std::vector<uint>(); // Empty vector
-            }
-            
-            const char* getCategoryName( uint id )
-            {
-                std::vector<uint> s = categories.find( id );
-                if( s.size() != 1 )
-                    return "Unknown";
-                else
-                    return string_collection.get(s[0]);
-            }
+            // Handy function to access pattern of a pattern
+            const char* get_domain_for_pattern( uint pos );
+            const char* get_pre_domain_for_pattern( uint pos );
+            const char* get_path_for_pattern( uint pos );
             
         };
         

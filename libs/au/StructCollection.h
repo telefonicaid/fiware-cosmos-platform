@@ -11,9 +11,9 @@ namespace au {
         
     public:
         
-        C* v;
-        size_t size;
-        size_t max_size;
+        C* v;               // Global vector with all structs
+        size_t size;        // Current number of instances
+        size_t max_size;    // Alloc-size of the vector of structs
         
         StructCollection()
         {
@@ -74,11 +74,10 @@ namespace au {
             max_size = _size;
             
             // Read content from file
-            fread( v , _size , 1 , file);
+            size_t s = fread( v , _size , 1 , file);
+            if( s != 1 )
+                LM_W(("Error reading StructColleciton"));
         }
-        
-        
-        
         
     };
 

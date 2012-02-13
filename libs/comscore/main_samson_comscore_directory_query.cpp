@@ -73,15 +73,12 @@ int main(int argC, const char *argV[])
     
 	paConfig("builtin prefix",                (void*) "SS_WORKER_");
 	paConfig("usage and exit on any warning", (void*) true);
-    
 	paConfig("log to screen",                 (void*) true);
-    
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
 	paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT");
 	paConfig("log to file",                   (void*) true);
     
 	paParse(paArgs, argC, (char**) argV, 1, false);
-    
     
     const char* dictionary_file_name = "/var/comscore/samson_comscore_dictionary.bin";
     
@@ -89,22 +86,16 @@ int main(int argC, const char *argV[])
     samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary;
     samson_comscore_dictionary.read(dictionary_file_name);
     
-    
-    samson_comscore_dictionary.getCategories("seat.es");
 
     char nativeURL[1024];
     while( true )
     {
-        
         printf("Enter URL> ");
         fflush(stdout);
-        scanf("%s" , nativeURL );
-        
-        
-        //samson_comscore_dictionary.findURLPattern("a.b.seat.es/path/y");
-        // Apply
-        // -------------------------------------------------
-        
+        if ( scanf("%s" , nativeURL ) == 0 )
+            LM_W(("Error reading url"));
+
+        // Get categories for this URL
         std::vector<uint> categories = samson_comscore_dictionary.getCategories( nativeURL );
         
         if( categories.size() == 0 )
@@ -114,21 +105,11 @@ int main(int argC, const char *argV[])
         }
         
         for( size_t i = 0 ; i < categories.size() ; i++ )
-            std::cout << nativeURL << " -> : " << categories[i] << " " << samson_comscore_dictionary.getCategoryName( categories[i] ) << "\n";
-        
-/*
- //std::vector<size_t> categories = map_pattern_category.getCategoriesFromPatterm( lPatternID );
-        
         {
-            std::cout << "URL: " << nativeURL << " fits in pattern " << lPatternID << "\n";
-            
-            for ( size_t i = 0 ; i < categories.size() ; i++ )
-            {
-                std::string description = map_categrory_description.getDescriptionForCategory( categories[i] );
-                std::cout << "\tCategory: " << description << "\n";
-            }
+            std::string description = samson_comscore_dictionary.getCategoryName( categories[i] );
+            std::cout << nativeURL << " -> : " << categories[i] << " " << description << "\n";
         }
- */       
+        
     }
     
     

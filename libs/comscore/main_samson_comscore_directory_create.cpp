@@ -13,7 +13,7 @@
 #include "logMsg/traceLevels.h"
 
 #include <signal.h>
-
+#include <algorithm>
 
 #include "au/LockDebugger.h"            // au::LockDebugger
 #include "au/ThreadManager.h"

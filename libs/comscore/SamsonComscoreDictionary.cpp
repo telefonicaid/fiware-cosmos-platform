@@ -1,6 +1,6 @@
 
 #include "SamsonComscoreDictionary.h" // Own interface
-
+#include <algorithm>
 
 bool match( const char* s1 , const char* s2 )
 {

@@ -46,7 +46,7 @@ MODULES=system \
 	web \
 	twitter
 
-default: release man
+default: release
 
 # ------------------------------------------------
 # Prepare CMAKE

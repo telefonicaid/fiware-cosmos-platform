@@ -15,6 +15,8 @@
 #include <QObject>
 #include <QtGui>
 
+#include "TableViewer.h"
+
 namespace samson {
 	
 	/**
@@ -25,19 +27,23 @@ namespace samson {
         Q_OBJECT
         
         QBoxLayout* mainLayout;
-        QBoxLayout* queuesLayout;
-        QBoxLayout* enginesLayout;
-    public:
-        DelilahMainWindow();
+        /*QBoxLayout* queuesLayout;
+        QBoxLayout* enginesLayout;*/
+
+        QTabWidget* tabs;
         QWidget* tab1;
-        QLabel* enginesText;
-        QLabel* queuesText;
         QAction *aboutAction;
         QAction *exitAction;
         QMenu *fileMenu;
-        QTabWidget* tabs;
+
+    public:
+    
+        DelilahMainWindow();
+        TableViewer* tableViewer;
+        /*QLabel* enginesText;
+        QLabel* queuesText;
         QGroupBox* queuesBox;
-        QGroupBox* enginesBox;
+        QGroupBox* enginesBox;*/
         
     private slots:
         void about();

@@ -8,6 +8,7 @@
 
 #include "DelilahQt.h" // Own interface
 #include "DelilahMainWindow.h"
+#include "TableViewer.h"
 
 #include <QTimer>
 #include <QtGui>
@@ -81,8 +82,8 @@ namespace samson
 
         connect(timer, SIGNAL(timeout()), this, SLOT(updateData()));
         connect(timer, SIGNAL(timeout()), mainWindow, SLOT(update()));
-        connect(this, SIGNAL(enginesTextValueChanged(const QString&)), mainWindow->enginesText, SLOT(setText(const QString&)));
-        connect(this, SIGNAL(queuesTextValueChanged(const QString&)), mainWindow->queuesText, SLOT(setText(const QString&)));
+        //connect(this, SIGNAL(enginesTextValueChanged(const QString&)), mainWindow->enginesText, SLOT(setText(const QString&)));
+        //connect(this, SIGNAL(queuesTextValueChanged(const QString&)), mainWindow->queuesText, SLOT(setText(const QString&)));
         application.exec();
         
     }

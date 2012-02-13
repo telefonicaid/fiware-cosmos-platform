@@ -2,16 +2,19 @@
 SET (HEADERS
 	DelilahQt.h
 	DelilahMainWindow.h
+	TableViewer.h
 )
 
 SET (SOURCES
 	DelilahQt.cpp
 	DelilahMainWindow.cpp
+	TableViewer.cpp
 )
 
 SET (HEADERS_FOR_MOC
 	DelilahQt.h
 	DelilahMainWindow.h
+	TableViewer.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)

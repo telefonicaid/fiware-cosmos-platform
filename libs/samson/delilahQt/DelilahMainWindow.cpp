@@ -23,14 +23,14 @@ namespace samson
         tab1 = new QWidget();
 
         mainLayout = new QBoxLayout(QBoxLayout::TopToBottom, tab1);
-        queuesLayout = new QBoxLayout(QBoxLayout::TopToBottom);
+        /*queuesLayout = new QBoxLayout(QBoxLayout::TopToBottom);
         enginesLayout = new QBoxLayout(QBoxLayout::TopToBottom);
         queuesBox = new QGroupBox("Queues", tab1);
         enginesBox = new QGroupBox("Engine",tab1);
         mainLayout->addWidget(queuesBox);
-        mainLayout->addWidget(enginesBox);
+        mainLayout->addWidget(enginesBox);*/
 
-        queuesText = new QLabel();
+        /*queuesText = new QLabel();
         queuesLayout->addWidget(queuesText);
         queuesLayout->addStretch();
         enginesText = new QLabel();
@@ -41,6 +41,10 @@ namespace samson
         
         queuesText->show();
         enginesText->show();
+        */
+        tableViewer = new TableViewer(tab1, "Engine");
+        mainLayout->addWidget(tableViewer);
+                
         tabs->addTab(tab1, tr("Engine"));
         
         exitAction = new QAction(tr("E&xit"), this);

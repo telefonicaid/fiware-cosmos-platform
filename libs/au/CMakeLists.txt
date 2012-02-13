@@ -42,6 +42,9 @@ cpu.h
 ProcessStats.h
 
 ThreadManager.h
+
+StringCollection.h
+StructCollection.h
 )
 
 SET (SOURCES
@@ -78,6 +81,9 @@ cpu.cpp
 ProcessStats.cpp
 
 ThreadManager.cpp
+
+StringCollection.cpp
+StructCollection.cpp
 )
 
 

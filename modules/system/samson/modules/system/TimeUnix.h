@@ -61,6 +61,11 @@ public:
 		 value =  time(NULL);
 	  }
 
+	  void setFromDayMonthYear( int dat , int month , int year )
+	  {
+		 value = 8787;
+	  }
+
 
 	void operator= (int _value) {
 		value = _value;

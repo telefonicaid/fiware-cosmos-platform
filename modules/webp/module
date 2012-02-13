@@ -1,0 +1,38 @@
+
+Module webp
+{
+	title	"Web Profiling"
+	author	"Andreu Urruela & Gregorio Escalad"
+	version "0.1"
+}
+
+
+data Category
+{
+	system.UInt id;
+	system.String name;
+}
+
+data Log
+{
+	system.String user;
+	system.String url;
+	system.TimeUnix time;
+
+	vector webp.Category categories;
+}
+
+parser parse_web_logs
+{
+    out system.String webp.Log
+    out system.String system.Void
+	
+	help
+    {
+       "Parse web logs"
+	   "Output: [ user Log ]"
+    }
+}
+
+
+

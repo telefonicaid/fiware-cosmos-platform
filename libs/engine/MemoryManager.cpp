@@ -148,7 +148,7 @@ void MemoryManager::add( MemoryRequest *request )
     au::TokenTaker tk( &token );
     
     if( request->size > memory )
-        LM_X(-1,("Error managing memory: excessive memory request"));
+        LM_X(-1,("Error managing memory: excessive memory request %s ( total memory %s)" , au::str(request->size).c_str()  , au::str(memory).c_str()  ));
     
     LM_T( LmtMemory , ("Adding memory request for %s" , au::str( request->size , "B" ).c_str() ));
     

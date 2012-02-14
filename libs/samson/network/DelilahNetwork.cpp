@@ -116,29 +116,7 @@ namespace samson {
                         );
     }    
     
-    // Receive a packet from a connection
-    void DelilahNetwork::receive( NetworkConnection* connection, Packet* packet )
-    {
-        
-        if( packet->msgCode == Message::Hello )
-        {
-            processHello(connection, packet);
-            return;
-        }
 
-        if( connection->getNodeIdentifier().node_type == UnknownNode )
-            LM_X(1, ("Packet %s received from a non-identified node %s %s"
-                     , packet->str().c_str()
-                     , connection->getNodeIdentifier().str().c_str()
-                     , connection->getName().c_str()
-                     ));
-        
-        
-        // Common interface to receive packets
-        packet->from = connection->getNodeIdentifier();
-        network_interface_receiver->schedule_receive( packet );
-        
-    }
 
     
     void DelilahNetwork::processHello( NetworkConnection* connection, Packet* packet )

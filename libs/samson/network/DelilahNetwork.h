@@ -24,7 +24,6 @@ public:
     
     // NetworkManager interface
     // ------------------------------------------------------------
-    void receive( NetworkConnection* connection, Packet* packet );
     void processHello( NetworkConnection* connection, Packet* packet );
     
     // NetworkInterface

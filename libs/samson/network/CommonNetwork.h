@@ -47,6 +47,16 @@ namespace samson {
         // Engine notification interface
         // ----------------------------------------------------------------
         void notify( engine::Notification* notification );
+
+        //NetworkManager
+        // ----------------------------------------------------------------
+        void receive( NetworkConnection* connection, Packet* packet );
+        virtual void processHello(NetworkConnection* connection , Packet* packet)
+        {
+            LM_W(("processHello not implemented"));
+        }
+
+
         
         // NetworkInterface common methods
         // ----------------------------------------------------------------

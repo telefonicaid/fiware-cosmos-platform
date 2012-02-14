@@ -73,6 +73,15 @@ namespace samson {
         
         // No operation to deal with live data from queues by default ( used in samsonClient library )
         op_delilah_process_stream_out_queue = NULL;
+        
+        // Notification to update state
+        listen( notification_update_status );
+        {
+            int update_period = samson::SamsonSetup::shared()->getInt("general.update_status_period" );
+            engine::Notification *notification = new engine::Notification(notification_update_status);
+            engine::Engine::shared()->notify( notification, update_period );
+        }        
+        
     }
     
     
@@ -115,7 +124,37 @@ namespace samson {
             return;
         }        
         
-        LM_X(1,("Delilah received an unexpected notification"));
+        if ( notification->isName(notification_update_status))
+        {
+            // Create a xml version of monitorization ( common to all delilahs )
+            std::ostringstream info_str;
+            getInfo( info_str );
+            
+            // Get vector of all workers
+            std::vector<size_t> workers = network->getWorkerIds();
+            
+            // Send this message to all delilahs
+            for ( size_t i = 0 ; i < workers.size() ; i++ )
+            {
+                Packet* p  = new Packet( Message::StatusReport );
+                
+                // This message is not critical - to be thrown away if worker not connected
+                p->disposable = true;
+                
+                // Include generic information about this worker
+                p->message->set_info(info_str.str() );
+                
+                // Packet direction
+                p->to.node_type = WorkerNode;
+                p->to.id = workers[i];
+                
+                // Send this message to all delilahs connected
+                network->send( p );
+            }
+            return;
+        }        
+        
+        LM_X(1,("Delilah received an unexpected notification %s" , notification->getName() ));
         
     }
     

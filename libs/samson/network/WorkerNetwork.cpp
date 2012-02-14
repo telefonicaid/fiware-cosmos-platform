@@ -123,26 +123,6 @@ namespace samson {
         
     }    
     
-    void WorkerNetwork::receive( NetworkConnection* connection, Packet* packet )
-    {
-        
-        // Process Hello message ( protocol of hand shake )
-        if( packet->msgCode == Message::Hello )
-        {
-            processHello( connection , packet );
-            return;
-        }
-        
-        // If it is not a consolidated worker... it is an error...
-        if ( connection->getNodeIdentifier().node_type == UnknownNode )
-            LM_X(1, ("Error in SAMSON Protocol: Message received from a non-identified node ( delilah or worker )"));
-        
-        // Common interface to receive packets
-        packet->from = connection->getNodeIdentifier();
-        network_interface_receiver->schedule_receive( packet );
-        
-    }
-    
     void WorkerNetwork::processHello( NetworkConnection* connection, Packet* packet )
     {
         
@@ -293,7 +273,95 @@ namespace samson {
         
     }
     
-    
+    std::string WorkerNetwork::cluster_command( std::string command )
+    {
+        au::CommandLine cmdLine;
+        cmdLine.parse(command);
+        
+        if ( cmdLine.get_num_arguments() == 0 )
+            return "";
+        
+        if ( cmdLine.get_num_arguments() == 1 )
+        {
+            return "Type cluster info connections";
+        }
+        
+        std::string main_command = cmdLine.get_argument(1);
+        
+        if ( main_command == "info" )
+        {
+            std::ostringstream output;
+            
+            output << "Command (" << command << ")";
+            
+            if ( cluster_information.getId() == 0 )
+                output << "Not connected to any cluster";
+            else
+            {
+                au::tables::Table * table = new au::tables::Table( au::StringVector( "Worker" , "Host" , "Status" ) );
+                
+                au::vector<ClusterNode> nodes = cluster_information.getNodesToConnect(node_identifier);
+                
+                for ( size_t i = 0 ; i < nodes.size() ; i++ )
+                {
+                    au::StringVector values;
+                    values.push_back( au::str("%lu" , nodes[i]->id ) );
+                    values.push_back( au::str("%s:%d" , nodes[i]->host.c_str() , nodes[i]->port ) );
+                    
+                    NodeIdentifier ni = nodes[i]->getNodeIdentifier();
+                    std::string connection_name = ni.getCodeName();
+                    
+                    // Find this connection...
+                    NetworkConnection* connection = connections.findInMap( connection_name );
+                    
+                    if (!connection )
+                        values.push_back("Not connected");
+                    else
+                    {
+                        if ( connection->isDisconnected() )
+                            values.push_back("Disconnected");
+                        else
+                            values.push_back("Connected");
+                    }
+                    
+                    
+                    table->addRow( values );
+                    
+                }
+                
+                std::string title = au::str("Cluster %lu ( version %lu )" 
+                                            , cluster_information.getId()
+                                            , cluster_information.getVersion()
+                                            );
+                
+                output << "Me: " << node_identifier.str() << "\n";
+                
+                output << table->str( title );
+                nodes.clearVector();
+                delete table;
+            }
+            
+            return output.str();
+        }
+        
+        if ( main_command == "connections" )
+        {
+            std::ostringstream output;
+            
+            if ( cluster_information.getId() == 0 )
+                output << "Not connected to any cluster";
+            else
+            {
+                au::tables::Table * table = getConnectionsTable();
+                output << table->str("Connections");
+                delete table;
+            }
+            
+            return output.str();
+        }
+        
+        return au::str("Unknown cluster command %s", main_command.c_str() );
+    }
  
     
 

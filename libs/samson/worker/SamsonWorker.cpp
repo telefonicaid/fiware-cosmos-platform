@@ -166,6 +166,18 @@ namespace samson {
             return;
         }        
         
+        
+        // --------------------------------------------------------------------
+        // StatusReport
+        // --------------------------------------------------------------------
+        
+        if( msgCode == Message::StatusReport )
+        {
+            LM_M(("Recieved status report message from %s" , packet->from.str().c_str() ));
+            return;
+        }
+        
+        
         // --------------------------------------------------------------------
         // push messages
         // --------------------------------------------------------------------
@@ -261,6 +273,7 @@ namespace samson {
             
             // Get vector of connected delilahs
             std::vector<size_t> delilahs = network->getDelilahIds();
+            std::vector<size_t> workers  = network->getWorkerIds();
 
             // Send this message to all delilahs
             for ( size_t i = 0 ; i < delilahs.size() ; i++ )
@@ -271,7 +284,7 @@ namespace samson {
                 p->disposable = true;
                 
                 // Include generic information about this worker
-                p->message->set_info(info_str.str() );
+                p->message->set_info( info_str.str() );
                 
                 // Packet direction
                 p->to.node_type = DelilahNode;
@@ -280,27 +293,25 @@ namespace samson {
                 // Send this message to all delilahs connected
                 network->send( p );
             }
-
-            // TRACE TO SHOW EVOLUTION OF WORKERS STATUS ON SCREEN
-            /*
-            // Collect some information an print status...
             
-            int num_processes = engine::ProcessManager::shared()->public_num_proccesses;
-            int max_processes = engine::ProcessManager::shared()->public_max_proccesses;
-
-            size_t used_memory = engine::MemoryManager::shared()->public_used_memory;
-            size_t max_memory = engine::MemoryManager::shared()->public_max_memory;
-
-            size_t disk_read_rate = (size_t) engine::DiskManager::shared()->diskStatistics.item_read.rate.getRate();
-            size_t disk_write_rate = (size_t) engine::DiskManager::shared()->diskStatistics.item_write.rate.getRate();
-            
-            LM_M(("Status [ P %s M %s D_in %s D_out %s ]"
-                  , au::percentage_string( num_processes, max_processes ).c_str()
-                  , au::percentage_string(used_memory, max_memory).c_str()
-                  , au::str( disk_read_rate , "Bs" ).c_str()
-                  , au::str( disk_write_rate , "Bs" ).c_str()
-                  ));
-             */
+            // Send this message to all workers ( even me ;) )
+            for ( size_t i = 0 ; i < workers.size() ; i++ )
+            {
+                Packet* p  = new Packet( Message::StatusReport );
+                
+                // This message is not critical - to be thrown away if worker not connected
+                p->disposable = true;
+                
+                // Include generic information about this worker
+                p->message->set_info( info_str.str() );
+                
+                // Packet direction
+                p->to.node_type = WorkerNode;
+                p->to.id = workers[i];
+                
+                // Send this message to all delilahs connected
+                network->send( p );
+            }
             
         }
         else if( notification->isName( notification_samson_worker_send_packet ) )
@@ -392,13 +403,22 @@ namespace samson {
     
     void SamsonWorker::evalCommand( std::string command )
     {
-        if ( command == "quit" )
-        {
-            quitConsole();
-        }
+        au::CommandLine cmdLine;
+        cmdLine.parse(command);
 
-        if ( command == "threads" )
+        if( cmdLine.get_num_arguments() == 0 )
+            return;
+        
+        std::string main_command = cmdLine.get_argument(0);
+        
+        if ( main_command == "quit" )
+            quitConsole();
+
+        if ( main_command == "threads" )
             writeOnConsole( au::ThreadManager::shared()->str() );
+        
+        if ( main_command == "cluster" )
+            writeOnConsole( network->cluster_command(command) );
         
         // More command to check what is going on inside a worker
         

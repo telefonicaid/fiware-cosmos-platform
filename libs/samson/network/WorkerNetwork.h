@@ -38,11 +38,11 @@ namespace samson {
         
         // NetworkManager interface
         // ------------------------------------------------------------
-        void receive( NetworkConnection* connection, Packet* packet );
         void processHello( NetworkConnection* connection, Packet* packet );
         
         // NetworkInterface
         // ------------------------------------------------------------
+        std::string cluster_command( std::string command );
         
         
         // Suspend the network elements implemented behind NetworkInterface

@@ -1,0 +1,15 @@
+<form method="post" action="/wizard/attribute/">{% csrf_token %}
+    {{ attribute_formset.management_form }}
+    <table>
+        {% for form in attribute_formset %}
+        {{ form }}
+        {% endfor %}
+    </table>
+       {{ label_formset.management_form }}
+    <table>
+        {% for form in label_formset %}
+        {{ form }}
+        {% endfor %}
+    </table>
+    <p><input type="submit" value="Send message" /></p>
+</form>

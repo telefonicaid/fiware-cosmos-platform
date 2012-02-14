@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>ingestion</title>
+		<!-- Date: 2012-02-08 -->
+	</head>
+	<body>
+		<form action="/wizard/ingestion/" method="post">{% csrf_token %}
+		    {{ form.non_field_errors }}
+		    <div class="fieldWrapper">
+		        {{ form.subject.errors }}
+		        <label for="id_identifier">Service Name:</label>
+		        {{ form.identifier }}
+		    </div>
+		    <div class="fieldWrapper">
+		        {{ form.message.errors }}
+		        <label for="id_type">Streaming</label>
+		        {{ form.type }}
+		    </div>
+		    <h1>Label</h1>
+			<fieldset class="module aligned ">
+		        <div class="form-row header">
+	                <div>
+                        <label for="id_header" class="required">Header:</label>
+                        <input id="id_header" type="text" class="vTextField" name="header" maxlength="200">
+	                </div>
+		        </div>
+		        <div class="form-row options">
+	                <div>
+                        <label for="id_options" class="required">Options:</label>
+                        <input type="text" name="options" id="id_options">
+	                </div>
+		        </div>
+			</fieldset>
+		    <p><input type="submit" value="Send message" /></p>
+		</form>
+	</body>
+</html>

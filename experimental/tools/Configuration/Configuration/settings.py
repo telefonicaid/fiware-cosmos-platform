@@ -12,7 +12,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django_mongodb_engine', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'PSDefTest21',                      # Or path to database file if using sqlite3.
+        'NAME': 'PST',                      # Or path to database file if using sqlite3.
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': 'localhost', # psmongo1                     # Set to empty string for localhost. Not used with sqlite3.
@@ -33,7 +33,7 @@ TIME_ZONE = 'America/Chicago'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 
-SITE_ID = u'4f3a4c8fe858e111d000001d'
+SITE_ID = u'4f3ab630e858e1189d00001d'
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
@@ -121,7 +121,6 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'django_mongodb_engine',
-    'djangotoolbox',
     'wizard',
 )
 

@@ -12,28 +12,23 @@
 		    <div class="fieldWrapper">
 		        {{ form.subject.errors }}
 		        <label for="id_identifier">Service Name:</label>
-		        {{ form.identifier }}
+		        {{ form.name }}
 		    </div>
 		    <div class="fieldWrapper">
 		        {{ form.message.errors }}
-		        <label for="id_type">Streaming</label>
-		        {{ form.type }}
+		        <label for="id_type">Ingestion Mode</label>
+		        {{ form.mode }}
 		    </div>
-		    <h1>Label</h1>
-			<fieldset class="module aligned ">
-		        <div class="form-row header">
-	                <div>
-                        <label for="id_header" class="required">Header:</label>
-                        <input id="id_header" type="text" class="vTextField" name="header" maxlength="200">
-	                </div>
-		        </div>
-		        <div class="form-row options">
-	                <div>
-                        <label for="id_options" class="required">Options:</label>
-                        <input type="text" name="options" id="id_options">
-	                </div>
-		        </div>
-			</fieldset>
+		    <div class="fieldWrapper">
+		        {{ form.message.errors }}
+		        <label for="id_type">Ingestion Address</label>
+		        {{ form.path }}
+		    </div>
+		    <div class="fieldWrapper">
+		        {{ form.message.errors }}
+		        <label for="id_type">Ingestion Size</label>
+		        {{ form.size }}
+		    </div>		    
 		    <p><input type="submit" value="Send message" /></p>
 		</form>
 	</body>

@@ -19,14 +19,20 @@ class LabelField(ListField):
             
 # Create your models here.
 class Template(models.Model):
-    name = models.CharField(max_length=200)
-    attributes = LabelField(EmbeddedModelField('Attribute'))
+    template = models.CharField(max_length=200)
+    attribute_values = ListField(EmbeddedModelField('Label'))
+    def __unicode__(self):
+        return u'%s' % (self.template)
 
 class Attribute(models.Model):
     identifier = models.CharField(max_length=200)
-    type = models.CharField(max_length=20)
+    #type = models.CharField(max_length=20)
+    def __unicode__(self):
+        return u'%s' % (self.identifier)
     label = EmbeddedModelField('Label')
 
 class Label(models.Model):
     header = models.CharField(max_length=200)
     options = LabelField()
+    def __unicode__(self):
+        return u'%s' % (self.header)

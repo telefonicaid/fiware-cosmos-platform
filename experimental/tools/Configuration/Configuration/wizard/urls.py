@@ -11,8 +11,6 @@ admin.autodiscover()
 urlpatterns = patterns('wizard.views',
 
     # dataSetInputs Views
-    url(r'^$', 'ingestion'),
-    # dataSetInputs Views
     url(r'^ingestion/$', 'ingestion'),
     
     # Wizard

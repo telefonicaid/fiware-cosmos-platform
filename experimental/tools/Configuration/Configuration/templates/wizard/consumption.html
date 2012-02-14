@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>consumption</title>
+		<!-- Date: 2012-02-08 -->
+	</head>
+	<body>
+		<form action="/wizard/consumption/" method="post">{% csrf_token %}
+		    <div class="fieldWrapper">
+		        {{ form.message.errors }}
+		        <label for="id_type">Output Address</label>
+		        {{ form.path }}
+		    </div>
+		    <div class="fieldWrapper">
+		        {{ form.message.errors }}
+		        <label for="id_type">Consumption Mode</label>
+		        {{ form.mode }}
+		    </div>
+		    <p><input type="submit" value="Send message" /></p>
+		</form>
+	</body>
+</html>

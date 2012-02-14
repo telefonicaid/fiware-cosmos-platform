@@ -50,7 +50,7 @@ FILE( GLOB ADDITIONAL_SOURCES ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/*.cpp
 MESSAGE("Addding ${ADDITIONAL_SOURCES}")
 
 # Install headers to be used by other modules
-FILE( GLOB HEADERS ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/samson/modules/${MODULE_NAME}/*.h  )
+FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
 
 # Compiler options for DEBUG or RELEASE (copied from trunk/CMakeList)
 add_definitions(-fPIC)

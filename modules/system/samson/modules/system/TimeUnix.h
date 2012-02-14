@@ -61,11 +61,6 @@ public:
 		 value =  time(NULL);
 	  }
 
-	  void setFromDayMonthYear( int dat , int month , int year )
-	  {
-		 value = 8787;
-	  }
-
 
 	void operator= (int _value) {
 		value = _value;
@@ -457,6 +452,22 @@ public:
 		{
 			value = (time_t) seconds;
 		}
+	}
+
+	/* Function to compute the time_t for a specified day, month , year, */
+	/* taking as reference noon (12:00:00)                               */
+
+	void setFromDayMonthYear (int day, int month, int year)
+	{
+		struct tm tm;
+		tm.tm_year = year - YEAR0;
+		tm.tm_mon = month;
+		tm.tm_mday = day;
+		tm.tm_hour = 12;
+		tm.tm_min = 0;
+		tm.tm_sec = 0;
+
+		getTimeUTCFromCalendar(&tm);
 	}
 
 

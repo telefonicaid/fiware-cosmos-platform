@@ -23,9 +23,9 @@ INSTALL(TARGETS samson_comscore ARCHIVE DESTINATION lib)
 
 
 SET( STATIC_LIBS
-     au
      tables
      samson_comscore
+     au
      lm
      pa
      dl

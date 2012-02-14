@@ -1,6 +1,10 @@
 
-#include "SamsonComscoreDictionary.h" // Own interface
+
 #include <algorithm>
+
+#include "au/StringCollection.h"
+
+#include "SamsonComscoreDictionary.h" // Own interface
 
 bool match( const char* s1 , const char* s2 )
 {

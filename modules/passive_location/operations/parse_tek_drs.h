@@ -123,8 +123,11 @@ public:
                         record.imei.value = tek_record.imei;
                         record.timestamp.value = tek_record.timestamp;
                         // We compose location id with ((LAC << 16) | cell_id), in a uint32_t field
+			// Test, following Arturo's advice
                         uint32_t cellIdTmp = tek_record.LAC;
-                        record.cellId.value = (cellIdTmp << 16) | tek_record.cellID;
+                        uint32_t cellIdTruncTmp = (tek_record.cellID)%10000;
+                        record.cellId.value = (cellIdTmp << 16) | cellIdTruncTmp;
+                        //record.cellId.value = (cellIdTmp << 16) | tek_record.cellID;
                         record.callType.value = tek_record.callType;
                         record.DRType.value = tek_record.typeDR;
 

@@ -460,8 +460,10 @@ public:
 	void setFromDayMonthYear (int day, int month, int year)
 	{
 		struct tm tm;
+		/* tm_year since 1900 */
 		tm.tm_year = year - YEAR0;
-		tm.tm_mon = month;
+		/* tm_mon range [0-11]. Januray is 0 */
+		tm.tm_mon = month - 1;
 		tm.tm_mday = day;
 		tm.tm_hour = 12;
 		tm.tm_min = 0;

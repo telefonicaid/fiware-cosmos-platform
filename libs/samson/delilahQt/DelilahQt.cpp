@@ -17,32 +17,62 @@
 
 namespace samson
 {	
-    void DelilahQt::updateData()
+    void DelilahQt::setData()
     {
         {
-            au::tables::Table* table = database.getTable("queues");
+            std::vector<std::string> names;
+            std::vector<std::string> values;
+            au::tables::Table* table = database.getTable("engines");
             QString str;
-            if( !table )
+            if( !table || table->getNumRows() < 2 )
             {
-                str = QString("No table queues");
+                names.push_back(std::string("No queues data"));
+                values.push_back(std::string("--"));
+                
                 //std::cout << "No table queues" << std::endl;
-                emit queuesTextValueChanged(str);
             }
             else
             {
                 std::stringstream tmp;
-                for (unsigned int i = 0; i< table->getNumRows(); i++)
+                for(unsigned int i = 0; i< table->getNumColumns(); i++)
                 {
-                    tmp << "Queue: " << table->getValue(i,"name") << " - Size on Memory: " << table->getValue(i,"block_list/block_info/size_on_memory") << std::endl;
+                    names.push_back(table->getValue(0, i));
+                    for (unsigned int j = 1; j< table->getNumRows(); j++)
+                    {
+                        values.push_back( table->getValue(j, i));
+                    }
+                    //str = QString(tmp.str().c_str());
+                    //emit queuesTextValueChanged(str);
                 }
-                str = QString(tmp.str().c_str());
-                //str = QString(table->str().c_str());
-                //std::cout << "Table queues: " << table->str() << std::endl;
-                emit queuesTextValueChanged(str);
             }
+            mainWindow->tableViewer->setData(names, values);
         }
             
+    }
+
+    void DelilahQt::updateData()
+    {
         {
+            std::vector<std::string> values;
+            au::tables::Table* table = database.getTable("engines");
+            QString str;
+            if( table && table->getNumColumns() >= 2)
+            {
+                std::stringstream tmp;
+                for(unsigned int i = 1; i< table->getNumRows(); i++)
+                {
+                   for (unsigned int j = 0; j < table->getNumColumns(); j++)
+                   {
+                       values.push_back( table->getValue(i, j));
+                    }
+                   std::cout << "Copiados valores" << std::endl;
+                 //std::cout << "Table queues: " << table->str() << std::endl;
+                   //emit queuesTextValueChanged(str);
+               }
+               mainWindow->tableViewer->updateData(values);
+            }
+
+        /*{
             au::tables::Table* table = database.getTable("engines");
             QString str;
             if( !table )
@@ -60,11 +90,14 @@ namespace samson
                 //std::cout << "Table engines: " << table->str() << std::endl;
                 emit enginesTextValueChanged(str);
             }
-        }            
+          }
+            */
+        }   
+                 
         
     }
     
-    DelilahQt::DelilahQt( NetworkInterface *network ) : QObject(), Delilah( network )
+    DelilahQt::DelilahQt( NetworkInterface *network ) : Delilah( network )
     {
         
     }
@@ -77,7 +110,10 @@ namespace samson
         QTimer* timer =  new QTimer();
         timer->start(1000);
             
-        DelilahMainWindow* mainWindow = new DelilahMainWindow;
+        mainWindow = new DelilahMainWindow;
+        
+        setData();
+        //mainWindow->tableViewer->setData(names, values);
         mainWindow->show();
 
         connect(timer, SIGNAL(timeout()), this, SLOT(updateData()));

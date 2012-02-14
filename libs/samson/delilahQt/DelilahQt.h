@@ -13,6 +13,8 @@
 #include "logMsg/logMsg.h"				
 #include "samson/delilah/Delilah.h"			// samson::Delilah
 
+#include "DelilahMainWindow.h"
+
 #include <QObject>
 #include <QtGui>
 
@@ -37,7 +39,11 @@ namespace samson {
         void queuesTextValueChanged(const QString& s);
 
     public slots:
+        void setData();
         void updateData();
+        
+    private:
+        DelilahMainWindow* mainWindow;
 
         
     };

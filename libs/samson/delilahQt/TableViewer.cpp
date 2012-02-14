@@ -7,6 +7,7 @@
 */
 
 #include "TableViewer.h"
+#include <iostream>
 
 namespace samson{
 

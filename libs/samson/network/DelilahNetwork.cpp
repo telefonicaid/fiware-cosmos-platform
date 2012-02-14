@@ -375,9 +375,6 @@ namespace samson {
         {
             std::ostringstream output;
             
-            if ( cluster_information.getId() == 0 )
-                output << "Not connected to any cluster";
-            else
             {
                 au::tables::Table * table = getConnectionsTable();
                 output << table->str("Connections");

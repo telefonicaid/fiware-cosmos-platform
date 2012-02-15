@@ -127,7 +127,16 @@ class WebProfilingForm(forms.Form):
             return render_to_response('forms/error2.html')
 
 
-class ConfigurationWizard(FormWizard):        
+class ConfigurationWizard(FormWizard): 
+    def get_template(self,step):
+        stp = step
+        if stp == 0:
+            return ['forms/wizard_%s.html' % step, 'wizard/preProcessing.html']  
+        elif stp == 1:
+            return ['forms/wizard_%s.html' % step, 'wizard/preProcessing.html']
+        elif stp == 2:
+            return ['forms/wizard_%s.html' % step, 'wizard/webProfiling.html']
+        
     def done(self, request, form_list):
         for form in form_list:
             form.validate_form(form)

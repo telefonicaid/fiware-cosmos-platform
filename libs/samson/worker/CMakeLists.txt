@@ -1,9 +1,13 @@
 
 SET (HEADERS
+	WorkerCommandManager.h
+	WorkerCommand.h
 	SamsonWorker.h
 )
 
 SET (SOURCES
+	WorkerCommandManager.cpp
+	WorkerCommand.cpp
 	SamsonWorker.cpp
 )
 

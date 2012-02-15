@@ -50,7 +50,35 @@ namespace samson {
             
             au::xml_close(output , "queue_task" );
         }
-        
+
+        void QueueTask::fill( samson::network::CollectionRecord* record , VisualitzationOptions options )
+        {
+            
+            // Get block information for this queue
+            BlockInfo blockInfo;
+            update( blockInfo );
+            
+            add( record , "id" , id , "left,different" );
+            add( record , "creation" , creation_cronometer.diffTime() , "f=time,different" );
+            add( record , "running " , cronometer.getSeconds() , "f=time,different" );
+            
+            if( ProcessItem::isRunning() )
+                add( record , "state" , "running" , "left,different" );
+            else
+                add( record , "state" , queue_task_state , "left,different" );
+            
+            add( record , "operation" , operation_name , "left,different" );
+            
+            add( record , "inputs_0" , getBlockList("input_0")->strShortDescription()  , "different");
+            add( record , "inputs_1" , getBlockList("input_1")->strShortDescription()  , "different");
+            
+            if( options == verbose )
+            {
+                // NO more informaiton for verbose
+            }
+            
+            
+        }          
         
         
     }

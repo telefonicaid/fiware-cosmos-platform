@@ -24,7 +24,10 @@
 #include "engine/Object.h"                  // engine::Object
 #include "engine/Buffer.h"                  // engine::Buffer
 
+
 #include "samson/common/samson.pb.h"        // network::...
+#include "samson/common/status.h" 
+
 #include "samson/common/NotificationMessages.h"
 #include "samson/module/Environment.h"      // samson::Environment
 #include "samson/common/EnvironmentOperations.h"
@@ -72,8 +75,12 @@ namespace samson {
             // Map of stream operaitons
             au::map <std::string , StreamOperation> stream_operations;
 
+        public:
+            
             // Manager of the tasks associated with the queues
             QueueTaskManager queueTaskManager;      
+
+        private:
             
             // Pop queue operations
             size_t id_pop_queue;                        // Identifier to the new pop queue operations
@@ -82,15 +89,9 @@ namespace samson {
             // Pointer to the controller to send messages
             ::samson::SamsonWorker* worker;         
 
-            // Manager of the current "stream-tasks" running on this worker
-            au::map< size_t , WorkerCommand > workerCommands; 
-            
-            // StreamOutConnection ( connection to receive data from queues in stream mode )
+            // StreamOutConnection ( connection to receive data from queues in stream mode from delilahs )
             au::map< int , StreamOutConnection > stream_out_connections;
             
-            // Internal counter to WorkerTasks
-            size_t worker_task_id;
-
             
             //Save state stuff
             bool currently_saving;              // Flag indicating if we are currently writing state to disk
@@ -99,14 +100,12 @@ namespace samson {
             
             StreamManager( ::samson::SamsonWorker* worker );
 
+            // ------------------------------------------------------------
+            // Operations over queues
+            // ------------------------------------------------------------
+            
             // Add a block to a particular queue ( ususally from the network interface )
             void addBlocks( std::string queue_name ,  BlockList *bl );
-            
-            // set list of automatic operations( from controller )
-            void add( StreamOperation* operation );
-            
-            // Add a worker command to this stream manager
-            void addWorkerCommand( WorkerCommand *workerCommand );
             
             // Remove a particular queue or state
             void remove_queue( std::string queue_name );
@@ -114,27 +113,32 @@ namespace samson {
             // Copy contents of a queue to another queue
             void cp_queue( std::string from_queue_name , std::string to_queue_name );
             
-            // Notify finish task
-            void notifyFinishTask( QueueTask *task );
-            void notifyFinishTask( SystemQueueTask *task );
+            // ------------------------------------------------------------
+            // pop queue operations
+            // ------------------------------------------------------------
             
             // Add a pop queue operation
             void addPopQueue(const network::PopQueue& pq , size_t delilah_id, size_t delilah_component );
+            
+            // Connect and disconnect to a queue
+            void connect_to_queue( int fromId , std::string queue , bool flag_new , bool flag_remove );
+            void disconnect_from_queue( int fromId , std::string queue );
+
+            // ------------------------------------------------------------
+            // Operations over stream operations
+            // ------------------------------------------------------------
+            
+            void add( StreamOperation* operation );
+            Status remove_stream_operation( std::string name );
+            Status set_stream_operation_property( std::string name , std::string property, std::string value );
+            StreamOperation* getStreamOperation( std::string name );
             
             // Get information for monitoring
             void getInfo( std::ostringstream& output);
             
             // Engine notification function
             void notify( engine::Notification* notification );
-
-            Queue* getQueue( std::string name );
-
-            StreamOperation* getStreamOperation( std::string name );
             
-            // Connect and disconnect to a queue
-            void connect_to_queue( int fromId , std::string queue , bool flag_new , bool flag_remove );
-            void disconnect_from_queue( int fromId , std::string queue );
-
             // Reset all the content of this stream manager
             void reset();
             
@@ -143,7 +147,16 @@ namespace samson {
             {
                 return queueTaskManager.getNewId();
             }
+            
+            // Notify finish task
+            void notifyFinishTask( QueueTask *task );
+            void notifyFinishTask( SystemQueueTask *task );
 
+            // Get collections from a command ( ls_queue , .... )
+            samson::network::Collection* getCollection( std::string command );
+            
+            // Get a pointer to a particular queue
+            Queue* getQueue( std::string name );
             
         private:
             

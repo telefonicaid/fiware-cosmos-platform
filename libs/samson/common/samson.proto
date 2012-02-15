@@ -208,6 +208,30 @@ message WorkerCommandResponse
 
 // ////////////////////////////////////////////////////////////////////////////
 //
+// Collection messages
+//
+
+message CollectionItem
+{
+	optional string name   = 1; // Name of this item
+	optional string value  = 2; // Vaue of this property
+	optional string format = 3; // Optional format for this field
+}
+
+message CollectionRecord
+{
+	 repeated CollectionItem item = 1; // Items in this collection
+}
+
+message Collection
+{
+     required string name = 1 ;
+	 repeated CollectionRecord record = 2; 
+}
+
+
+// ////////////////////////////////////////////////////////////////////////////
+//
 // General message
 //
 message Message
@@ -246,5 +270,7 @@ message Message
 	// NetworkNotification message ( used to inform delilah and worker about changes in the network setup )	
 	optional NetworkNotification network_notification = 13;
 
+	// Collections .. used in some messages to report status ( ls_queues, ps_stream , etc... )
+	repeated Collection collection = 14; 
 }
 

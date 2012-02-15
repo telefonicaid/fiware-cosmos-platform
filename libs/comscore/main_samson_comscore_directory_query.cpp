@@ -21,6 +21,7 @@
 #include "comscore/common.h"
 #include "comscore/SamsonComscoreDictionary.h"
 
+typedef  samson::comscore::uint uint;
 
 /* ****************************************************************************
  *

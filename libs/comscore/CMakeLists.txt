@@ -20,7 +20,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # -----------------------------------------------------------------
 ADD_LIBRARY(samson_comscore STATIC ${SOURCES} ${HEADERS})
 INSTALL(TARGETS samson_comscore ARCHIVE DESTINATION lib)
-
+INSTALL(FILES ${HEADERS} DESTINATION include/comscore)
 
 SET( STATIC_LIBS
      tables

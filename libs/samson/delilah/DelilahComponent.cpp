@@ -28,6 +28,8 @@ namespace samson {
         concept = "Unknown";
         progress = 0;
         
+        hidden = false;
+        
 	}
 	
 	void DelilahComponent::setId( Delilah * _delilah ,  size_t _id )
@@ -53,38 +55,30 @@ namespace samson {
         return "";
     }
 
-    std::string DelilahComponent::getDescription()
+    std::string DelilahComponent::getStatusDescription()
     {
         std::ostringstream output;
 
-        output << "[ " << id << " ]";
-        // Andreu: Not really necessary to show the type of operation anymore
-        // output << " " << getCodeName();
-        
         if( error.isActivated() )
-            output << " [ ERROR    ] ";
+            output << "ERROR";
         else
         {
-            
             if( component_finished )
-                output << " [ FINISHED ] ";
+                output << "FINISHED";
             else
             {
-                output << " [ RUNNING  ] ";
-                output << "[ " << au::percentage_string( progress ) << " ] ";
-                output << "[ " << cronometer.str() << " ] ";
+                output << "RUNNING ";
+                output << "[ Progress: " << au::percentage_string( progress ) << " ] ";
+                output << "[ Time: " << cronometer.str() << " ]";
             }
         }
-        
-        output << concept;
         return output.str();
-        
     }
     
     std::string DelilahComponent::getIdAndConcept()
     {
         std::ostringstream output;
-        output << "[ " << id << " ] " << concept;
+        output << "[ " << id << " ] " << "'" << concept << "'";
         return output.str();        
     }
 
@@ -100,10 +94,9 @@ namespace samson {
         if( component_finished )
             return;
         
+        component_finished = true;
         cronometer.stop();
         
-        //LM_M(("setComponentFinished for id:%lu", id));
-        component_finished = true;
         delilah->delilahComponentFinishNotification( this );
     }
     
@@ -111,16 +104,12 @@ namespace samson {
     {
         // Only mark as finished once
         if( component_finished )
-        {
-            //LM_M(("setComponentFinishedWithError for id:%lu with error message:'%s'; Component already finished", id, error_message.c_str()));
             return;
-        }
         
-        //LM_M(("setComponentFinishedWithError for id:%lu with error message:'%s'", id, error_message.c_str()));
         component_finished = true;
+        cronometer.stop();
         
         error.set( error_message );
-        
         delilah->delilahComponentFinishNotification( this );
     }
     

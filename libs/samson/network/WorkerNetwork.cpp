@@ -137,6 +137,7 @@ namespace samson {
         ClusterInformation new_cluster_information( packet->message->hello().cluster_information() );
         NodeIdentifier new_node_identifier( packet->message->hello().node_identifier() );
 
+        
         // -----------------------------------------------------------------------------------------------
         // General update of cluster information
         // -----------------------------------------------------------------------------------------------

@@ -9,9 +9,9 @@
 *
 */
 
-#include <iostream>				// std::cout
+#include <iostream>				                // std::cout
 
-#include "logMsg/logMsg.h"				// 
+#include "logMsg/logMsg.h"				        // 
 
 #include "au/Console.h"
 
@@ -22,14 +22,13 @@
 
 #include "samson/common/traces.h"				// Trace levels
 #include "samson/common/Macros.h"				// exit(.)
-#include "samson/common/samsonDirectories.h"  // SAMSON_WORKER_DEFAULT_PORT
+#include "samson/common/samsonDirectories.h"    // SAMSON_WORKER_DEFAULT_PORT
 #include "samson/common/samson.pb.h"			// samson::network::
-
-#include "samson/data/SimpleDataManager.h"          // samson::SimpleDataManager
-
 #include "samson/common/NotificationMessages.h"
 
 #include "samson/network/NetworkInterface.h"
+
+#include "samson/worker/WorkerCommandManager.h"
 
 namespace samson {
 	
@@ -70,6 +69,8 @@ namespace samson {
         NetworkInterface *network;                      // Network interface to communicate with the rest of the system
 				
         stream::StreamManager* streamManager;           // Manager of all the stream-processing queues in the system
+
+        WorkerCommandManager* workerCommandManager;      // Manager of the "Worker commands"
         
         std::list < WorkerLog > activityLog;            // Activity log for this worker
         

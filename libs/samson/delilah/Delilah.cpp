@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <sys/stat.h>					// stat(.)
 #include <dirent.h>						// DIR directory header	
+#include <fnmatch.h>
 
 #include "logMsg/logMsg.h"             // lmInit, LM_*
 
@@ -9,6 +10,7 @@
 #include "au/Cronometer.h"      // au::Cronometer
 #include "au/TokenTaker.h"                          // au::TokenTake
 
+#include "tables/Table.h"
 
 #include "engine/Buffer.h"      // engine::Buffer
 #include "engine/Notification.h"    // engine::Notificaiton
@@ -39,6 +41,7 @@
 #include "samson/delilah/Delilah.h"             // Own interfce
 #include "samson/delilah/DelilahConsole.h"      // samson::DelilahConsole
 
+#define notification_delilah_automatic_update "notification_delilah_automatic_update"
 
 samson::Delilah* global_delilah = NULL;
 
@@ -74,12 +77,23 @@ namespace samson {
         // No operation to deal with live data from queues by default ( used in samsonClient library )
         op_delilah_process_stream_out_queue = NULL;
         
+        // Bu default is is not updated automatically
+        automatic_update =  false;
+        
         // Notification to update state
         listen( notification_update_status );
         {
             int update_period = samson::SamsonSetup::shared()->getInt("general.update_status_period" );
             engine::Notification *notification = new engine::Notification(notification_update_status);
             engine::Engine::shared()->notify( notification, update_period );
+        }        
+
+        // Notification to update local data bases ( queues, operations, etc...) when required
+        listen( notification_delilah_automatic_update );
+        {
+            // Notification every second but only used if some flags are tru
+            engine::Notification *notification = new engine::Notification(notification_delilah_automatic_update);
+            engine::Engine::shared()->notify( notification, 2 ); // automatic update every 2 seconds
         }        
         
     }
@@ -154,6 +168,20 @@ namespace samson {
             return;
         }        
         
+        if ( notification->isName( notification_delilah_automatic_update ) )
+        {
+            // Add a hidden command to update something
+            if( automatic_update )
+            {
+                // Update local list of queus automatically
+                sendWorkerCommand("ls_queues -update -hidden -save" , NULL);
+                
+                
+            }
+            
+            return;
+        }
+        
         LM_X(1,("Delilah received an unexpected notification %s" , notification->getName() ));
         
     }
@@ -204,6 +232,10 @@ namespace samson {
                 {
                     size_t worker_id = packet->message->network_notification().connected_worker_id();
                     showWarningMessage( au::str("Connected worker %lu\n", worker_id) );
+                    
+                    // Update operations every time a worker is connected
+                    //sendWorkerCommand( au::str("ls_operations -hidden -save -worker %lu",worker_id), NULL);
+                    
                 }
 
                 if( packet->message->network_notification().has_disconnected_worker_id() )
@@ -465,25 +497,15 @@ namespace samson {
 	
     std::string Delilah::getListOfComponents()
     {
-		std::stringstream output;
-		bool present = false;
-		output << "-----------------------------------------------------------------\n";
-		output << "List of delilah processes\n";
-		output << "-----------------------------------------------------------------\n";
-		output << "\n";
+        au::tables::Table table( au::StringVector( "id" ,"type" , "status" , "concept" ) , au::StringVector( "" ,"left" , "left" , "concept" ) );
+		
 		std::map<size_t,DelilahComponent*>::iterator iter;
 		for (iter = components.begin() ; iter != components.end() ; iter++)
 		{
-            output << iter->second->getDescription() << "\n";
-            present = true;
+            DelilahComponent* component = iter->second;
+            table.addRow( au::StringVector( component->getIdStr() ,  component->getTypeName() ,  component->getStatusDescription() , component->concept ) );
 		}
-		
-		if( !present )
-			output << "\tNo processes here.\n";
-		output << "\n";
-		output << "-----------------------------------------------------------------\n";
-		
-		return output.str();    
+		return table.str( "List of delilah processes" );
     }
     
     size_t Delilah::sendWorkerCommand( std::string command , engine::Buffer *buffer )
@@ -842,8 +864,6 @@ namespace samson {
             if( cmd.get_num_arguments() > 1 )
                 command.append( au::str(" -where name=%s*", cmd.get_argument(1).c_str() ) );
         }
-        else if( main_command == "ls_local" )
-            return getLsLocal( ); 
         else
         {
             return au::str("Command %s not implemented" , main_command.c_str() );
@@ -974,10 +994,10 @@ namespace samson {
         
     }
 
-    std::string Delilah::getLsLocal()
+    std::string Delilah::getLsLocal( std::string pattern )
     {
-        std::ostringstream output;
-        
+        au::tables::Table* table = new au::tables::Table( au::StringVector( "Name" , "Type" , "Description" ) , au::StringVector( "left" , "left" , "left" ) );
+                                                         
         // first off, we need to create a pointer to a directory
         DIR *pdir = opendir ("."); // "." will refer to the current directory
         struct dirent *pent = NULL;
@@ -995,10 +1015,14 @@ namespace samson {
                         struct stat buf2;
                         stat( pent->d_name , &buf2 );
                         
+                        if ( ::fnmatch( pattern.c_str() , pent->d_name , 0 ) != 0 )
+                            continue;
+                        
                         if( S_ISREG(buf2.st_mode) )
                         {
                             size_t size = buf2.st_size;
-                            output << "\t FILE      " << std::setw(20) << std::left <<  pent->d_name << " " << au::str(size,"bytes") << "\n";
+                            
+                            table->addRow( au::StringVector( pent->d_name, "FILE" , au::str(size,"bytes")   ) );
                         }
                         if( S_ISDIR(buf2.st_mode) )
                         {
@@ -1006,9 +1030,11 @@ namespace samson {
                             SamsonDataSet dataSet( pent->d_name );
                             
                             if( dataSet.error.isActivated() )
-                                output << "\t DIR       " << std::setw(20) << std::left << pent->d_name << "\n";
+                            {
+                                table->addRow( au::StringVector( pent->d_name, "DIR" , ""   ) );
+                            }
                             else
-                                output << "\t DATA-SET  " << std::setw(20) << std::left << pent->d_name << " " << dataSet.str() << "\n";
+                                table->addRow( au::StringVector( pent->d_name, "SAMSON Dataset" , dataSet.str()   ) );
                             
                         }
                         
@@ -1019,8 +1045,7 @@ namespace samson {
             closedir (pdir);						
         }
         
-        
-        return output.str();
+        return table->str(au::str("Local files ( %s )" , pattern.c_str()));
     }
     
 }

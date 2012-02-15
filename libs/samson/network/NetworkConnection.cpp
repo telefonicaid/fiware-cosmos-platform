@@ -49,9 +49,6 @@ namespace samson {
         running_t_read = false;
         running_t_write = false;
 
-        // Init flag
-        complete_hello_received = true;
-        
     }
 
     NetworkConnection::~NetworkConnection()
@@ -108,6 +105,7 @@ namespace samson {
     {
         while (1)
         {
+                        
             // Quit if this connection is closed
             if( socket_connection->isDisconnected() )
                 return;

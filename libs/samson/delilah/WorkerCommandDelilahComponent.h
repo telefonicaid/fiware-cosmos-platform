@@ -8,6 +8,7 @@
 #include <cstring>
 #include "samson/network/Message.h"		// Message::MessageCode 
 #include "samson/network/Packet.h"			// samson::Packet
+#include "samson/common/samson.pb.h"	
 
 
 namespace engine {
@@ -28,19 +29,29 @@ namespace samson {
 		std::string command;
 		engine::Buffer *buffer;
 
-        std::vector<size_t> workers;   // Ids of the workers involved in this command
-        int num_confirmed_workers;
+        std::set<size_t> workers;             // Ids of the workers involved in this command
+        std::set<size_t> confirmed_workers;   // Ids of the workers confirmed finish of this operation
+        
+        // Collections reported by workers
+        au::map<std::string, network::Collection > collections;
+        
+        size_t worker_id; // if != -1 --> worker to sent this command
+        bool save_in_database;
+        std::string group_field;
         
 	public:
 		
 		WorkerCommandDelilahComponent( std::string _command , engine::Buffer *buffer );
 		
 		void receive( Packet* packet );
-        
 		void run();
 		
 		std::string getStatus();
-		
+        
+    private:
+    
+        void print_content( network::Collection * collection );
+        
 	};
     
 	

@@ -897,7 +897,7 @@ namespace samson
         {
             return sendWorkerCommand( command , NULL );
         }
-        
+
         if( main_command == "run_stream_update_state" )
         {
             return sendWorkerCommand( command , NULL );
@@ -988,16 +988,53 @@ namespace samson
                 writeWarningOnConsole("OK");
             return 0;
         }
+
+        if( mainCommand == "automatic_update" )
+        {
+            automatic_update = true;
+            writeOnConsole("OK\n");
+            return 0;
+        }
         
-        // Information commands
+        if( mainCommand == "cancel_automatic_update" )
+        {
+            automatic_update = true;
+            writeOnConsole("OK\n");
+        }
+        
+        // New way to get information ( Worker Command )
+        if(
+           ( mainCommand == "ls_queues" )     ||
+           ( mainCommand == "ls_operations" ) ||
+           ( mainCommand == "ls_datas" )      ||
+           ( mainCommand == "ls_modules" )    ||
+           ( mainCommand == "ps_stream" )
+           )
+            return sendWorkerCommand( command , NULL );
+       
+        if( mainCommand == "ls_local" )
+        {
+            std::string pattern ="*";
+            if( commandLine.get_num_arguments() > 1 )
+                pattern = commandLine.get_argument(1);
+            
+            writeOnConsole( getLsLocal( pattern ) ); 
+            return 0;
+        }
+        
+        
+        // Old information mechanism...
+        /*
         if( ( main_command.substr(0,2) == "ls" ) || ( main_command.substr(0,2) == "ps" ) )
         {
             std::string text = info( command );
             writeOnConsole( text );
             return 0;
         }
+         */
         
-        writeWarningOnConsole( au::str("Unknown command %s" , main_command.c_str() ) );
+        writeErrorOnConsole( au::str("Unknown command '%s'\n" , main_command.c_str() ) );
+        
         return 0;
     }
     
@@ -1059,6 +1096,9 @@ namespace samson
     
     void DelilahConsole::delilahComponentStartNotification( DelilahComponent *component )
     {
+        if ( component->hidden )
+            return; // No notification for hidden processes
+        
         std::ostringstream o;
         o << "Local process started: " << component->getIdAndConcept() << "\n";
         
@@ -1070,17 +1110,20 @@ namespace samson
     
     void DelilahConsole::delilahComponentFinishNotification( DelilahComponent *component )
     {
-        std::ostringstream o;
-        o << "Local process finished: " << component->getIdAndConcept() << "\n";
+        if ( component->hidden )
+            return; // No notification for hidden processes
         
-        // Include error if any
-        if( component->error.isActivated() )
-            o << "\n" << component->error.getMessage() << "\n";
-        
-        if( component->error.isActivated() )
-            writeErrorOnConsole(o.str());        
+        if( !component->error.isActivated() )
+            writeWarningOnConsole( au::str( "Local process finished: %s\n" , component->getIdAndConcept().c_str() ) );
         else
-            writeWarningOnConsole(o.str());        
+        {
+            writeErrorOnConsole( au::str( "Local process finished with error: %s\nERROR: %s\n" 
+                                           , component->getIdAndConcept().c_str()
+                                           , component->error.getMessage().c_str()
+                                           ) 
+                                  );
+        }
+        
     }
     
     

@@ -66,9 +66,18 @@ Table* TableRow::getTable()
 
 #pragma mark Table
 
+Table::Table( StringVector _columns , StringVector _formats )
+{
+    columns.copyFrom( _columns );
+    formats.copyFrom( _formats );
+}
+
+
 Table::Table( StringVector _columns )
 {
     columns.copyFrom( _columns );
+    for( size_t i = 0 ; i < columns.size() ; i++ )
+        formats.push_back(""); // No format
 }
 
 Table::Table( Table* table )
@@ -128,6 +137,14 @@ std::string Table::getColumn( size_t pos )
     return columns[pos];
 }
 
+std::string Table::getFormatForColumn( size_t pos )
+{
+    if( pos >= formats.size() )
+        return "";
+    
+    return formats[pos];
+}
+
 void Table::addRow( StringVector string_vector )
 {
     addRow( new TableRow( columns , string_vector ) );
@@ -158,6 +175,23 @@ std::string Table::str( std::string title )
     
     return result;
 }
+
+std::string Table::strSortedAndGrouped( std::string title , std::string field)
+{
+    // Select all the columns
+    SelectTableInformation* select = new SelectTableInformation( this );
+    select->title = title;
+    
+    select->group_columns.push_back(field);
+    select->sort_columns.push_back(field);
+    
+    std::string result =  str( select );
+    delete select;
+    
+    return result;
+    
+}
+
 
 Table* Table::selectTable( SelectTableInformation *select_table_information )
 {    
@@ -348,12 +382,13 @@ size_t Table::getNumColumns()
 Table* Table::getColumnDescriptionTable()
 {
     // Example to play with
-    Table *tmp = new Table( StringVector("Record" ) );
+    Table *tmp = new Table( StringVector("Record" , "Format" ) );
     
     for( size_t c = 0 ; c < columns.size() ; c++ )
     {
         std::string title = columns[c];
-        tmp->addRow( StringVector( title ) );
+        std::string format = formats[c];
+        tmp->addRow( StringVector( title , format ) );
     }
     
     return tmp;

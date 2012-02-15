@@ -52,12 +52,14 @@ public:
 class Table
 {
     StringVector columns;                 // List of column names
+    StringVector formats;                 // List of default format for each column
     std::vector<TableRow* > rows;         // List of rows
     
     friend class DataBase;
     
 public:
     
+    Table( StringVector _columns , StringVector formats );
     Table( StringVector _columns );
     Table( Table* table );
 
@@ -71,11 +73,14 @@ public:
 
     size_t getColumn( std::string title );
     std::string getColumn( size_t pos );
+    std::string getFormatForColumn( size_t pos );
     
     std::string str( );
     std::string str( std::string title );
     std::string str( SelectTableInformation *select_table_information );
- 
+
+    std::string strSortedAndGrouped( std::string title , std::string field);    
+    
     Table* selectTable( SelectTableInformation *select_table_information );
     
     size_t getNumRows();
@@ -89,9 +94,6 @@ public:
 
     StringVector getValuesFromColumn( std::string name );
     StringVector getValuesFromColumn( std::string name , SelectCondition* condition );
-    
-    
-    
     
 private:
     

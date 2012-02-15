@@ -39,7 +39,9 @@ namespace samson {
 		size_t id;                      // Identifier of this component
 		Delilah *delilah;               // Pointer to delilah to notify finish or show messages
         std::string concept;            // Concept of this component to print list of components
+
         double progress;
+        bool hidden;       // Flag to not show information on screen about this
 
         au::ErrorManager error;         // Manager of the error in this operation
         
@@ -59,7 +61,7 @@ namespace samson {
         std::string getTypeName();
 
         // One line description to show in lists
-        std::string getDescription();
+        std::string getStatusDescription();
         std::string getIdAndConcept();
         
         
@@ -68,6 +70,13 @@ namespace samson {
         {
             std::ostringstream output;
             output << "[" << id << "]";
+            return output.str();
+        }
+        
+        std::string getIdStr()
+        {
+            std::ostringstream output;
+            output << id;
             return output.str();
         }
         

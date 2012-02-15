@@ -13,7 +13,8 @@
 *
 */
 
-
+#include <string>
+#include "au/CommandLine.h"
 
 namespace samson
 {
@@ -66,6 +67,20 @@ typedef enum Status
 */
 extern const char* status(Status s);
 
+    
+    // Visualization options
+    
+    typedef enum 
+    { 
+        normal,
+        verbose,
+        verbose2,
+        verbose3,
+        all
+    } VisualitzationOptions;
+    
+    VisualitzationOptions getVisualitzationOptions( std::string command );
+    
 }
 
 

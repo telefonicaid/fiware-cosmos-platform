@@ -38,12 +38,12 @@
 #include "samson/stream/Block.h"            // samson::stream::Block
 #include "samson/stream/BlockList.h"            // samson::stream::BlockList
 #include "samson/stream/BlockManager.h"     // samson::stream::BlockManager
-#include "samson/stream/WorkerCommand.h"           // samson::stream::WorkerCommand
 
 #include "samson/module/ModulesManager.h"   // samson::ModulesManager
 
 #include "samson/network/NetworkInterface.h"    // samson::NetworkInterface
 
+#include "samson/worker/WorkerCommand.h"           // samson::stream::WorkerCommand
 
 namespace samson {
     
@@ -76,6 +76,9 @@ namespace samson {
         
         // Init the stream manager
         streamManager = new stream::StreamManager(this);
+
+        // Init worker command manager
+        workerCommandManager = new WorkerCommandManager(this);
         
         // Get initial time
         gettimeofday(&init_time, NULL);
@@ -173,7 +176,7 @@ namespace samson {
         
         if( msgCode == Message::StatusReport )
         {
-            LM_M(("Recieved status report message from %s" , packet->from.str().c_str() ));
+            //LM_M(("Recieved status report message from %s" , packet->from.str().c_str() ));
             return;
         }
         
@@ -253,8 +256,8 @@ namespace samson {
             size_t delilah_id = packet->from.id;
             size_t delilah_component_id = packet->message->delilah_component_id();
             
-            stream::WorkerCommand *workerCommand = new stream::WorkerCommand(  delilah_id , delilah_component_id , packet->message->worker_command() );
-            streamManager->addWorkerCommand( workerCommand );
+            WorkerCommand *workerCommand = new WorkerCommand(  delilah_id , delilah_component_id , packet->message->worker_command() );
+            workerCommandManager->addWorkerCommand( workerCommand );
             return;
         }
         
@@ -386,6 +389,10 @@ namespace samson {
         
         // Queues manager information
         streamManager->getInfo(output);
+
+        
+        // WorkerCommandManager
+        workerCommandManager->getInfo(output);
         
         // Network
         network->getInfo( output , "main" );

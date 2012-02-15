@@ -70,6 +70,10 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("/usr/local/include/")
 include_directories("${CMAKE_INSTALL_PREFIX}/include")
+
+link_directories("${CMAKE_INSTALL_PREFIX}/lib")
+
+
 IF (SVN_BUILD)
     include_directories("${PROJECT_SOURCE_DIR}/libs")
     include_directories("${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}")

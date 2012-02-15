@@ -106,10 +106,7 @@ namespace samson {
 
         friend class NetworkManager;
         std::string name;         //Name in NetworkManager
-        
-        // Flag to identify that we have received a hello with no answer required
-        bool complete_hello_received;
-        
+
     public:
 
         // Constructor & Destructor

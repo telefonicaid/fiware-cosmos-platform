@@ -3,7 +3,7 @@ Module webp
 {
 	title	"Web Profiling"
 	author	"Andreu Urruela & Gregorio Escalad"
-	version "0.1"
+	version "0.2"
 }
 
 

@@ -48,6 +48,8 @@ namespace webp{
 
 		void parseLine( char * line , samson::KVWriter *writer )
 		{
+		   return;
+
 		   split_in_words( line, fields, '\t');
 
 		   if( fields.size() < 9 )
@@ -65,7 +67,7 @@ namespace webp{
 		   log.url.value = fields[3];
 		   log.time.setFromDayMonthYear( day , month , year );
 
-		   LM_M(("Detected log user:%s, time:%s, url:%s", log.user.value.c_str(), log.url.value.c_str(), log.time.str().c_str()));
+		   //LM_M(("Detected log user:%s, time:%s, url:%s", log.user.value.c_str(), log.url.value.c_str(), log.time.str().c_str()));
 
 		   // Find categories for this url
 		   log.categoriesSetLength(0); // Remove categories from previous entries

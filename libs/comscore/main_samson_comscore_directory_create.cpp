@@ -59,6 +59,8 @@ std::vector<samson::comscore::OriginalDictionaryEntry> original_dictionary_entri
 // Vector of relations pattern to category
 std::vector<samson::comscore::Id2Id> original_pattern_to_category;
 
+typedef  samson::comscore::uint uint;
+
 // Map of category names
 std::map< uint , std::string > categories;
 

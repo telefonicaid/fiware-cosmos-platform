@@ -289,7 +289,7 @@ namespace samson {
             
         }
         
-        void add( std::string name , std::string category , std::string short_description="" , std::string usage = "" )
+        void add( std::string name , std::string category , std::string short_description = "" , std::string usage = "" )
         {
             commands.push_back( DelilahCommand(name , category , short_description , usage ) );            
         }

@@ -449,7 +449,7 @@ void Console::writeErrorOnConsole( std::string message )
 
 void Console::writeOnConsole( std::string message )
 {
-    Console::write( message );
+    write( message );
 }
 
 
@@ -464,7 +464,7 @@ void Console::write( std::string message )
     }
     
     clear_line();
-    printf("%s\n", message.c_str() );
+    printf("%s", message.c_str() );
     print_command();
     fflush( stdout );
 }

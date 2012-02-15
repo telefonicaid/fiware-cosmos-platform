@@ -13,8 +13,9 @@
 #define notification_samson_worker_send_packet          "notification_samson_worker_send_packet"
 
 
-// Notification to review worker_task ( in Stream manager )
-#define notification_review_stream_manager                "notification_review_stream_manager"
+#define notification_review_worker_command_manager       "notification_review_worker_command_manager"
+
+// Notification to review stream manager
 #define notification_review_stream_manager_fast           "notification_review_stream_manager_fast"
 #define notification_review_stream_manager_save_state     "notification_review_stream_manager_save_state"
 

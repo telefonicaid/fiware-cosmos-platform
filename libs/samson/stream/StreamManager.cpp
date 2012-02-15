@@ -6,7 +6,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <sys/stat.h>
-
+#include <fnmatch.h>
 #include "au/time.h"            // au::todayString()
 #include "au/file.h"            
 
@@ -32,7 +32,6 @@
 #include "samson/stream/QueueTasks.h"            // samson::stream::ParserQueueTask
 #include "samson/stream/BlockList.h"                // BlockList
 #include "samson/stream/Queue.h"
-#include "samson/stream/WorkerCommand.h"
 #include "samson/stream/SystemQueueTask.h"
 #include "samson/stream/PopQueueTask.h"
 #include "samson/stream/StreamOperation.h"
@@ -53,15 +52,7 @@ namespace samson {
         {
             worker = _worker;
             
-            // Init counter for worker task
-            worker_task_id = 1;
             
-            
-            // Schedule a periodic notification ( every 10 seconds )
-            {
-                engine::Notification *notification = new engine::Notification(notification_review_stream_manager);
-                engine::Engine::shared()->notify( notification, 10 );
-            }
             {
                 engine::Notification *notification = new engine::Notification(notification_review_stream_manager_fast);
                 engine::Engine::shared()->notify( notification, 1 );
@@ -82,7 +73,6 @@ namespace samson {
             currently_saving = false;
 
             // Engine listening commands
-            listen( notification_review_stream_manager );
             listen( notification_review_stream_manager_fast );
             listen( notification_review_stream_manager_save_state );
             listen( notification_samson_worker_check_finish_tasks );
@@ -98,7 +88,6 @@ namespace samson {
         
         void StreamManager::notify( engine::Notification* notification )
         {
-            
             
             if( notification->isName( notification_network_diconnected ) )
             {
@@ -126,21 +115,6 @@ namespace samson {
                 return;
             }
                 
-            
-            if ( notification->isName(notification_review_stream_manager) )
-            {
-                // Remove finished worker tasks elements
-                workerCommands.removeInMapIfFinished();
-                
-                // Review all WorkerCommand is necessary
-                au::map< size_t , WorkerCommand >::iterator it_workerCommands; 
-                for( it_workerCommands = workerCommands.begin() ; it_workerCommands != workerCommands.end() ; it_workerCommands++ )
-                    it_workerCommands->second->run();   // Excute if necessary
-
-                
-                return;
-            }
-            
             if ( notification->isName(notification_review_stream_manager_save_state) )
             {
                 
@@ -220,17 +194,6 @@ namespace samson {
             reviewStreamOperations();
         }
         
-        void StreamManager::addWorkerCommand( WorkerCommand *workerCommand )
-        {
-            // Set the internal pointer to stream manager
-            workerCommand->setStreamManager( this );
-            
-            size_t id = worker_task_id++;
-            workerCommands.insertInMap( id , workerCommand );
-            
-            // First run of this worker command
-            workerCommand->run();
-        }
         
         void StreamManager::remove_queue( std::string queue_name )
         {
@@ -354,9 +317,6 @@ namespace samson {
             queueTaskManager.getInfo( output );
             output << "</queue_tasks>\n";
 
-            // WorkerCommands
-            au::xml_iterate_map(output, "worker_commands", workerCommands );
-            
             
             //Stream operation
             au::xml_iterate_map( output , "stream_operations" , stream_operations );
@@ -737,6 +697,74 @@ namespace samson {
             }
             
             stream_out_connection->remove_queue( queue );
+        }
+        
+        
+        Status StreamManager::remove_stream_operation( std::string name )
+        {
+            // Remove a particular stream operation
+            stream::StreamOperation * operation = stream_operations.extractFromMap( name );
+            if( operation )
+            {
+                delete operation;
+                return OK;
+            }
+            else
+                return Error;
+        }
+
+        Status StreamManager::set_stream_operation_property( std::string name , std::string property, std::string value )
+        {
+            stream::StreamOperation * operation = stream_operations.findInMap( name );
+            
+            // Check if queue exist
+            if( !operation  )
+                return Error;
+            else
+            {
+                operation->environment.set( property , value );
+                return OK;
+            }
+            
+        }
+        
+        samson::network::Collection* StreamManager::getCollection( std::string command )
+        {
+            // Parse command
+            au::CommandLine cmdLine;
+            cmdLine.set_flag_string("group", ""); // Possible parameers
+            cmdLine.set_flag_boolean("save");
+            cmdLine.parse(command);
+
+            VisualitzationOptions options = getVisualitzationOptions( command );
+            
+            if( cmdLine.get_num_arguments() == 0 )
+                return NULL;
+            
+            std::string main_command = cmdLine.get_argument(0);
+            
+            if ( main_command == "ls_queues" )
+            {
+                std::string pattern ="*";
+                if( cmdLine.get_num_arguments() >= 2)
+                    pattern = cmdLine.get_argument(1);
+                
+                samson::network::Collection* collection = new samson::network::Collection();
+                collection->set_name("queues");
+                au::map< std::string , Queue >::iterator it_queue;
+                for( it_queue = queues.begin() ; it_queue != queues.end() ; it_queue++ )
+                {
+                    std::string name = it_queue->second->name;
+                    if( ::fnmatch( pattern.c_str() , name.c_str() , FNM_PATHNAME ) == 0 )                        
+                        it_queue->second->fill( collection->add_record() , options );
+                }
+                return collection;
+            }
+            
+            if ( main_command == "ps_stream" )
+                return queueTaskManager.getCollection( command );
+            
+            return NULL;
         }
         
         

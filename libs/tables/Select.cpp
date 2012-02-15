@@ -211,6 +211,9 @@ std::string SelectTableColumn::transform( StringVector& values )
             if( values.size() == 1 )
                 return values[0];
             
+            if( values.size() > 5 )
+                return au::str("[ %lu different values ]", values.size());
+            
             std::ostringstream output;
             output << "[ ";
             for ( size_t i = 0 ; i < values.size() ; i++ )
@@ -239,9 +242,7 @@ std::string SelectTableColumn::transform( StringVector& values )
         }
     
         case sum:
-        {
             return str_sum(values);
-        }
     }    
     
     return "<Error>";
@@ -292,12 +293,8 @@ std::string SelectTableColumn::str_sum( StringVector& values )
             total += strtof( values[i].c_str() , (char **)NULL);
         return simple_transform( au::str("%f",total) );
     }
-    
 
-    for ( size_t i = 1 ; i < values.size() ; i++ )
-        if ( values[i] != values[i-1] )
-            return "?";
-    return values[0];
+    return "<!sum>";
 }
 
 
@@ -308,7 +305,7 @@ SelectTableInformation::SelectTableInformation( Table * table )
 {
     // All fields
     for ( size_t i = 0 ; i < table->getNumColumns() ; i++ )
-        columns.push_back( SelectTableColumn( table->getColumn(i) ) );
+        columns.push_back( SelectTableColumn( table->getColumn(i) + "," + table->getFormatForColumn(i)  ) );
     limit = 0;        
 
 }

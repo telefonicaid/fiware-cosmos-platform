@@ -62,6 +62,9 @@ namespace samson {
         // get xml information
         void getInfo( std::ostringstream& output);
         
+        // Get collection for queries
+        samson::network::Collection* getCollection( std::string command );
+        
 	};
 	
 }

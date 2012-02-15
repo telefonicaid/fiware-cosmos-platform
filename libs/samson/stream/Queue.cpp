@@ -1,6 +1,7 @@
 
 
 #include "samson/common/coding.h"           // KVFILE_NUM_HASHGROUPS
+#include "samson/common/MessagesOperations.h"
 #include "samson/common/SamsonSetup.h"      // samson::SamsonSetup
 
 
@@ -111,8 +112,8 @@ namespace samson {
         {
             
             BlockInfo block_info = list->getBlockInfo();
-            simpleRate_kvs.push( block_info.info.kvs );
-            simpleRate_size.push( block_info.info.size );
+            rate_kvs.push( block_info.info.kvs );
+            rate_size.push( block_info.info.size );
             
             au::list< Block >::iterator b;
             for (b = list->blocks.begin() ; b != list->blocks.end() ; b++ )
@@ -172,8 +173,8 @@ namespace samson {
             au::xml_simple( output , "environment" , environment.getEnvironmentDescription() );
             
             // Information about simple rate
-            au::xml_single_element( output , "rate_kvs" , &simpleRate_kvs );
-            au::xml_single_element( output , "rate_size" , &simpleRate_size );
+            au::xml_single_element( output , "rate_kvs" , &rate_kvs );
+            au::xml_single_element( output , "rate_size" , &rate_size );
             
             
             au::xml_close(output, "queue");
@@ -444,6 +445,44 @@ namespace samson {
             
         }
         
+
+        
+        void Queue::fill( samson::network::CollectionRecord* record , VisualitzationOptions options )
+        {
+            
+            // Get block information for this queue
+            BlockInfo blockInfo;
+            update( blockInfo );
+            
+            add( record , "name" , name , "left,different" );
+            add( record , "#kvs" , blockInfo.info.kvs , "f=uint64,sum" );
+            add( record , "size" , blockInfo.info.size , "f=uint64,sum" );
+            
+            if( options == normal )
+            {
+                add( record , "key" , format.keyFormat  , "different");
+                add( record , "value" , format.valueFormat , "different" );
+            }
+            
+            if( options == verbose )
+            {
+                add( record , "#kvs/s"  , rate_kvs.getRate() , "f=uint64,sum" );
+                add( record , "Bytes/s" , rate_size.getRate() , "f=uint64,sum" );
+            }
+            
+            if( options == verbose2 )
+            {
+                add( record , "#Blocs"  , blockInfo.num_blocks , "f=uint64,sum" );
+                add( record , "Size"  , blockInfo.size , "f=uint64,sum" );
+                add( record , "on Memory"  , blockInfo.size_on_memory , "f=uint64,sum" );
+                add( record , "on Disk"  , blockInfo.size_on_disk , "f=uint64,sum" );
+                add( record , "Locked"  , blockInfo.size_locked , "f=uint64,sum" );
+                
+                add( record , "Time from"  , blockInfo.min_time , "f=time,different" );
+                add( record , "Time to"  , blockInfo.max_time , "f=time,different" );
+            }
+            
+        }
         
     }
 }

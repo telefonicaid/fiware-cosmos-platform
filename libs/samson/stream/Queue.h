@@ -68,8 +68,8 @@ namespace samson {
             int num_divisions;
             
             // Monitoring of the input rate
-            au::SimpleRate simpleRate_kvs;
-            au::SimpleRate simpleRate_size;
+            au::rate::Rate rate_kvs;
+            au::rate::Rate rate_size;
             
         public:
             
@@ -119,6 +119,15 @@ namespace samson {
                 if( num_divisions < _num_divisions )
                     num_divisions = _num_divisions;
             }
+            
+            KVFormat getFormat()
+            {
+                return format;
+            }
+
+            
+            // Query function
+            void fill( samson::network::CollectionRecord* record , VisualitzationOptions options );
             
         private:
 

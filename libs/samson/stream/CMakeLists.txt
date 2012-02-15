@@ -17,7 +17,6 @@ SET (HEADERS
 	BlockBreakQueueTask.h
     PopQueue.h
     QueueTasks.h
-	WorkerCommand.h
 	StreamOutput.h
 	DistributionInformation.h
 )
@@ -41,7 +40,6 @@ SET (SOURCES
 	BlockBreakQueueTask.cpp
     PopQueue.cpp
     QueueTasks.cpp
-	WorkerCommand.cpp
 	StreamOutput.cpp
 	DistributionInformation.cpp
 )

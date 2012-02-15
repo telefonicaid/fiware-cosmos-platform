@@ -207,6 +207,12 @@ public:
 
     void update_values();
     
+    void getInfo( std::ostringstream &output )
+    {
+        au::xml_simple(output , "size" , getTotalSize() );
+        au::xml_simple(output , "rate" , getRate() );
+    }        
+    
 private:
     
     double transformRate( double value );

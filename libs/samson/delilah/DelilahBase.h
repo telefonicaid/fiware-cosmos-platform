@@ -86,7 +86,7 @@ namespace samson {
         // XML data holders for this delilah
         XMLStringHolder* delilah;
     
-    protected:
+    public:
         
         // Data base used to keep all monitorization information
         au::tables::DataBase database;

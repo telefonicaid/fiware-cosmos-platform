@@ -9,6 +9,8 @@
 
 #include "engine/ProcessItem.h"                     // engine::ProcessItem
 
+#include "samson/common/MessagesOperations.h"
+
 #include "samson/stream/QueueTaskBase.h"            // parent class samson::stream::QueueTaskBase
 #include "samson/stream/BlockList.h"                // stream::BlockList
 #include "samson/stream/StreamProcessBase.h"        // parent class public StreamProcessBase
@@ -24,6 +26,8 @@ namespace samson {
         // Base class for all the stream tasks ( parser , map , reduce , parseOut )
         class QueueTask : public StreamProcessBase , public QueueTaskBase
         {
+            
+            au::Cronometer creation_cronometer; // Creationg cronometer
             
         public:
 
@@ -47,7 +51,7 @@ namespace samson {
                 setProcessItemWorkingSize( block_info.size );
             }
             
-            
+            void fill( samson::network::CollectionRecord* record , VisualitzationOptions options );          
             
         };
         

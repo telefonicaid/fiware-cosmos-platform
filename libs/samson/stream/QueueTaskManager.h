@@ -7,6 +7,8 @@
 
 #include "engine/Object.h"  // engine::Object
 
+#include "samson/common/samson.pb.h"
+
 #include <string>           // std::string
 
 namespace samson {
@@ -56,6 +58,9 @@ namespace samson {
             void reset();
             
             bool hasEnougthTasks(); 
+
+            // Get a collection for monitoring
+            samson::network::Collection* getCollection( std::string command );
             
         };
         

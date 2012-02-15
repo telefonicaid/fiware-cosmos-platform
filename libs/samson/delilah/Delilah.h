@@ -98,6 +98,8 @@ namespace samson {
         // Identifier of the next worker to send data
 		int next_worker;
 		
+        bool automatic_update;
+        
 	public:
 		
 		Delilah( NetworkInterface *_network );
@@ -168,7 +170,7 @@ namespace samson {
         void clearAllComponents();  // Force all of them to be removed
         
         // Get a list of local directory
-        std::string getLsLocal();
+        std::string getLsLocal( std::string pattern );
         
         // Generate XML monitorization data
         void getInfo( std::ostringstream& output ); 

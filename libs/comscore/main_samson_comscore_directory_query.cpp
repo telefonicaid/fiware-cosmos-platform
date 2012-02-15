@@ -34,8 +34,12 @@ typedef  samson::comscore::uint uint;
  *
  * parse arguments
  */
+
+int number;
+
 PaArgument paArgs[] =
 {
+	{ "",         &number,           "",       PaInt,  PaOpt,      0,    0,  10000000, "Number of test over a static url"     },
 	PA_END_OF_ARGS
 };
 
@@ -70,6 +74,30 @@ int main(int argC, const char *argV[])
     // Load dictionary
     samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary;
     samson_comscore_dictionary.read(dictionary_file_name);
+    
+    
+    if( number > 0 )
+    {
+        au::Cronometer cronometer;
+        
+        for ( int j = 0 ; j < number ; j++ )
+        {
+            
+            // Get categories for this URL
+            std::vector<uint> categories = samson_comscore_dictionary.getCategories( "arg.seat.es/path" );
+            
+            for( size_t i = 0 ; i < categories.size() ; i++ )
+                std::string description = samson_comscore_dictionary.getCategoryName( categories[i] );
+    
+            if( (j%10000) == 0 )
+                LM_M(("Tested %d times in %s",j , au::time_string(cronometer.diffTimeInSeconds()).c_str() ));
+            
+        }
+        
+        LM_M(("Tested %d times in %s",number , au::time_string(cronometer.diffTimeInSeconds()).c_str() ));
+        
+        return 0;
+    }
     
 
     char nativeURL[1024];

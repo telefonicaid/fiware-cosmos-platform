@@ -41,7 +41,7 @@ namespace samson {
         
 #pragma mark StreamOutConnection
         
-        StreamOutConnection::StreamOutConnection( StreamManager *_streamManager , int _fromId  )
+        StreamOutConnection::StreamOutConnection( StreamManager *_streamManager , size_t _fromId  )
         {
             streamManager = _streamManager;         // Pointer to the stream manager
             fromId = _fromId;

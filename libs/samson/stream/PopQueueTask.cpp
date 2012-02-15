@@ -102,7 +102,7 @@ namespace samson {
         
 #pragma marg StreamOutQueueTask
             
-        StreamOutQueueTask::StreamOutQueueTask( size_t _id , int _fromId, std::string _queue )
+        StreamOutQueueTask::StreamOutQueueTask( size_t _id , size_t _fromId, std::string _queue )
             : SystemQueueTask( _id , au::str("StreamOut queue ( %s )" , _queue.c_str() ) )
         {
             fromId  = _fromId;
@@ -117,6 +117,9 @@ namespace samson {
             // Send the packet using notification mecanism
             samson::Packet *packet = new Packet( Message::StreamOutQueue );
             
+            // Send to the rigth delilah
+            packet->to = NodeIdentifier( DelilahNode , fromId );
+            
             // Set the buffer to be sent to this delilah
             packet->buffer = buffer;
             
@@ -128,7 +131,6 @@ namespace samson {
             network_stream_output_queue->set_queue( queue );
             
             engine::Notification *notification = new engine::Notification( notification_samson_worker_send_packet , packet );
-            notification->environment.set("toId", fromId );
             
             // Send a notification
             engine::Engine::shared()->notify( notification );            

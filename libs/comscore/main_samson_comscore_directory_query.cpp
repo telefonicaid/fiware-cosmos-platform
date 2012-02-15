@@ -84,7 +84,7 @@ int main(int argC, const char *argV[])
         {
             
             // Get categories for this URL
-            std::vector<uint> categories = samson_comscore_dictionary.getCategories( "arg.seat.es/path" );
+            std::vector<uint> categories = samson_comscore_dictionary.getCategories( "yahoo.com" );
             
             for( size_t i = 0 ; i < categories.size() ; i++ )
                 std::string description = samson_comscore_dictionary.getCategoryName( categories[i] );

@@ -30,6 +30,18 @@ public:
     // ------------------------------------------------------------
     bool ready()
     {
+        if ( cluster_information.getId() == 0 )
+            return false;
+
+        // Check all workers connected...
+        std::vector<size_t> workers = cluster_information.getWorkerIds();
+
+        for ( size_t i = 0 ; i < workers.size() ; i++ )
+        {            
+            std::string name = NodeIdentifier( WorkerNode , workers[i] ).getCodeName();
+            if( !connections.findInMap( name ) )
+                return false;
+        }
         return true;
     }
     

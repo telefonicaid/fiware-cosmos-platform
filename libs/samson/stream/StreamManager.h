@@ -90,7 +90,7 @@ namespace samson {
             ::samson::SamsonWorker* worker;         
 
             // StreamOutConnection ( connection to receive data from queues in stream mode from delilahs )
-            au::map< int , StreamOutConnection > stream_out_connections;
+            au::map< size_t , StreamOutConnection > stream_out_connections;
             
             
             //Save state stuff
@@ -121,8 +121,8 @@ namespace samson {
             void addPopQueue(const network::PopQueue& pq , size_t delilah_id, size_t delilah_component );
             
             // Connect and disconnect to a queue
-            void connect_to_queue( int fromId , std::string queue , bool flag_new , bool flag_remove );
-            void disconnect_from_queue( int fromId , std::string queue );
+            void connect_to_queue( size_t fromId , std::string queue , bool flag_new , bool flag_remove );
+            void disconnect_from_queue( size_t fromId , std::string queue );
 
             // ------------------------------------------------------------
             // Operations over stream operations

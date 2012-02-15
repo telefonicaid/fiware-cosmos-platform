@@ -84,8 +84,8 @@ namespace samson {
         
         class StreamOutConnection
         {
-            int fromId;                                                         // Identifier of this element ( network library )
-            au::map<std::string,StreamOutQueue> stream_out_queues;        // List of queues you are connected to
+            size_t fromId;                                                       // Identifier of this element ( network library )
+            au::map<std::string,StreamOutQueue> stream_out_queues;               // List of queues you are connected to
             
             std::set< StreamOutQueueTask* > running_stream_out_queue_tasks;      // List of running tasks
             
@@ -96,7 +96,7 @@ namespace samson {
             
         public:
             
-            StreamOutConnection( StreamManager *_streamManager , int _fromId  );
+            StreamOutConnection( StreamManager *_streamManager , size_t _fromId  );
             ~StreamOutConnection();
             
             // Push content if this queue if really connected

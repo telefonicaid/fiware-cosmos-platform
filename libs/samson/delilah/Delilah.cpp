@@ -233,8 +233,8 @@ namespace samson {
                     size_t worker_id = packet->message->network_notification().connected_worker_id();
                     showWarningMessage( au::str("Connected worker %lu\n", worker_id) );
                     
-                    // Update operations every time a worker is connected
-                    //sendWorkerCommand( au::str("ls_operations -hidden -save -worker %lu",worker_id), NULL);
+                    //Update operations every time a worker is connected
+                    sendWorkerCommand( au::str("ls_operations -hidden -save"), NULL);
                     
                 }
 

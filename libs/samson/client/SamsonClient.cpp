@@ -144,7 +144,6 @@ namespace samson {
     bool SamsonClient::init( std::string worker_host , int port )
     {
                 
-        
         // Init the setup system 
         LM_TODO(("Add the possibility to set particular directories for this..."));
         
@@ -178,26 +177,24 @@ namespace samson {
         
         // Initialize the network element for delilah
         networkP  = new samson::DelilahNetwork( );
-        
-        //
-        // What until the network is ready
-        //
-        //std::cout << "\nConnecting to SAMSOM controller " << controller << " ...";
-        while ( !networkP->ready() )
-            usleep(1000);
-        
+
         // Create a DelilahControler once network is ready
         delilah = new Delilah( networkP );
-        
+
         // Init network connection
         Status s = networkP->addMainDelilahConnection( worker_host , port );
-
+        
         if( s != OK )
             LM_X(1, ("Not possible to open connection with %s:%d (%s)" , worker_host.c_str() , port , status(s) ));
         
-        
         // Set the funciton to process live stream data
         delilah->op_delilah_process_stream_out_queue = delialh_client_delilah_process_stream_out_queue;
+        
+        // What until the network is ready
+        LM_V(("Waiting network connections to the cluster..."));
+        while ( !networkP->ready() )
+            usleep(1000);
+        LM_V(("Connected to all workers"));
         
         return true;
         

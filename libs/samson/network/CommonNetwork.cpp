@@ -200,6 +200,7 @@ namespace samson {
 
     Status CommonNetwork::send( Packet* packet )
     {
+        //LM_M(("Sending packet %s to %s" ,  packet->str().c_str() , packet->to.str().c_str() ));
         
         if ( packet->to == node_identifier )
         {

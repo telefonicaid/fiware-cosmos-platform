@@ -108,7 +108,7 @@ namespace samson {
                     it_queues->second->review();
 
                 // Review StreamOutConnections
-                au::map< int , StreamOutConnection >::iterator it;
+                au::map< size_t , StreamOutConnection >::iterator it;
                 for( it =  stream_out_connections.begin() ; it != stream_out_connections.end() ; it++ )
                     it->second->scheduleNextTasks();    // It returns NULL when no more operations are scheduled
                 
@@ -167,7 +167,7 @@ namespace samson {
         void StreamManager::addBlocks( std::string queue_name ,  BlockList *list )
         {
             // Review stream_out_queues...
-            au::map< int , StreamOutConnection >::iterator it_connections;
+            au::map< size_t , StreamOutConnection >::iterator it_connections;
             for( it_connections = stream_out_connections.begin() ; it_connections != stream_out_connections.end() ; it_connections++)
                 it_connections->second->push( queue_name , list );
 
@@ -670,8 +670,10 @@ namespace samson {
             
         }
 
-        void StreamManager::connect_to_queue( int fromId , std::string queue , bool flag_new , bool flag_remove )
+        void StreamManager::connect_to_queue( size_t fromId , std::string queue , bool flag_new , bool flag_remove )
         {
+            LM_M(("Connecting to queue %s delilah %lu", queue.c_str() , fromId));
+            
             StreamOutConnection* stream_out_connection = stream_out_connections.findInMap( fromId );
             if( !stream_out_connection)
             {
@@ -687,7 +689,7 @@ namespace samson {
             
         }
         
-        void StreamManager::disconnect_from_queue( int fromId , std::string queue )
+        void StreamManager::disconnect_from_queue( size_t fromId , std::string queue )
         {
             StreamOutConnection* stream_out_connection = stream_out_connections.findInMap( fromId );
             if( !stream_out_connection)

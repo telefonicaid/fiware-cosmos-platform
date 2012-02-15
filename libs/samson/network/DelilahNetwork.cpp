@@ -151,10 +151,6 @@ namespace samson {
                 // Create a new "1" node cluster with this worker
                 cluster_information.init_new_cluster(host, port);
                 
-                // Recolocation of connection ( it is alwasy worker_0 )
-                connection->setNodeIdentifier( NodeIdentifier(WorkerNode,0) );
-                move_connection( MAIN_DELILAH_CONNECTION_NAME , "worker_0" );
-                report_worker_connected(0);
                 
                 // Send special Hello Packet
                 // ---------------------------------------------------------------
@@ -173,6 +169,13 @@ namespace samson {
                                 , cluster_information.getId()
                                 )
                         );
+
+                // Recolocation of connection ( it is alwasy worker_0 )
+                connection->setNodeIdentifier( NodeIdentifier(WorkerNode,0) );
+                move_connection( MAIN_DELILAH_CONNECTION_NAME , "worker_0" );
+                
+                // Notify delilah about the new connection
+                report_worker_connected(0);
                 
                 return;
                 
@@ -190,10 +193,19 @@ namespace samson {
                                 )
                         );
                 
+
+                // Send hello back if necessary
+                if( packet->message->hello().answer_hello_required() )
+                    connection->push( helloMessage( connection ) );
+
                 // Relocation of this connection to the rigth place
                 connection->setNodeIdentifier( new_node_identifier );
                 move_connection( MAIN_DELILAH_CONNECTION_NAME , connection->getNodeIdentifier().getCodeName() );
+                
                 report_worker_connected( new_node_identifier.id );
+                
+                return;
+                
             }
             
         }
@@ -223,11 +235,6 @@ namespace samson {
             // Add this node to the cluster
             size_t assigned_id = cluster_information.add_node(host, port);
             
-            // Recolocation of connection 
-            connection->setNodeIdentifier(  NodeIdentifier(WorkerNode,assigned_id) );
-            move_connection( SECONDARY_DELILAH_CONNECTION_NAME , connection->getNodeIdentifier().getCodeName() );
-            report_worker_connected( assigned_id );
-            
             
             // Send Hello Packet "Identifier"
             // ---------------------------------------------------------------
@@ -245,6 +252,12 @@ namespace samson {
                     packet->to = NodeIdentifier( WorkerNode , ids[i] );
                     send(packet);
                 }
+
+            // Recolocation of connection 
+            connection->setNodeIdentifier(  NodeIdentifier(WorkerNode,assigned_id) );
+            move_connection( SECONDARY_DELILAH_CONNECTION_NAME , connection->getNodeIdentifier().getCodeName() );
+            
+            report_worker_connected( assigned_id );
             return;
         }        
         

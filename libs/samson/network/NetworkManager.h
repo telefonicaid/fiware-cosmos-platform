@@ -29,12 +29,11 @@ namespace samson {
     protected:
         
         // All managed connection
-        au::Token token;
         au::map<std::string , NetworkConnection> connections;
         
     public:
         
-        NetworkManager() : token( "NetworkManager" )
+        NetworkManager()
         {
         }
         

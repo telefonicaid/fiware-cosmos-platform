@@ -128,16 +128,16 @@ int main( int argC , const char *argV[] )
 
     
     // Connect to a particular queue
-    LM_V(("Connecting to queue %s" , queue_name ));
     client.connect_to_queue( queue_name , flag_new , flag_remove );
+
+    LM_V(("Connected to queue %s" , queue_name ));
 
     while( true )
     {
-        
         samson::SamsonClientBlockInterface *block = client.getNextBlock( queue_name );
-        
         if( block )
         {
+            
             if( show_header )
                 block->print_header();
             else
@@ -150,12 +150,9 @@ int main( int argC , const char *argV[] )
         
     }
     
-    
     // Wait until all operations are complete
     LM_V(("Waiting for all the push operations to complete..."));
-    
     client.waitUntilFinish();
-    
     LM_V(("Finish correctly\n"));
     
 	

@@ -131,7 +131,7 @@ class ConfigurationWizard(FormWizard):
     def get_template(self,step):
         stp = step
         if stp == 0:
-            return ['forms/wizard_%s.html' % step, 'wizard/preProcessing.html']  
+            return ['forms/wizard_%s.html' % step, 'wizard/ingestion.html']  
         elif stp == 1:
             return ['forms/wizard_%s.html' % step, 'wizard/preProcessing.html']
         elif stp == 2:

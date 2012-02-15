@@ -1,13 +1,21 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
-"http://www.w3.org/TR/html4/strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<title>ingestion</title>
-		<!-- Date: 2012-02-08 -->
-	</head>
-	<body>
-		<form action="/wizard/ingestion/" method="post">{% csrf_token %}
+{% extends "admin/change_form.html" %}
+
+{% load i18n %}
+
+{% block content %}
+<div id="content-main">
+    <form {% if form.form.is_multipart %}enctype="multipart/form-data" {% endif %}method="post" action="" id="{{ opts.module_name }}_form">{% csrf_token %}
+        <div>
+            {% if form.form.errors %}
+            <p class="errornote">
+                {% blocktrans count form.form.errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}
+            </p>
+            <ul class="errorlist">
+                {% for error in form.form.non_field_errors %}
+                <li>{{ error }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+            
 		    {{ form.non_field_errors }}
 		    <div class="fieldWrapper">
 		        {{ form.subject.errors }}
@@ -29,7 +37,16 @@
 		        <label for="id_type">Ingestion Size</label>
 		        {{ form.size }}
 		    </div>		    
-		    <p><input type="submit" value="Send message" /></p>
-		</form>
-	</body>
-</html>
+			
+            <input type="hidden" name="{{ step_field }}" value="{{ step0 }}" />
+            {{ previous_fields|safe }}
+
+            <div class="submit-row">
+                <input type="submit" value="{% ifequal step step_count %}Finish{% else %}Next &raquo;{% endifequal %}" class="default" name="_save" />
+            </div>
+
+            <script type="text/javascript">document.getElementById("{{ form.first_field.auto_id }}").focus();</script>
+        </div>
+    </form>
+</div>
+{% endblock %}

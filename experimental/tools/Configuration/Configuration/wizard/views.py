@@ -1,5 +1,5 @@
 # Create your views here.
-from Configuration.wizard.forms import IngestionForm, ConsumptionForm
+from Configuration.wizard.forms import IngestionForm, PreProcessingForm
 from Configuration.wizard.models import Template, Label
 from django.shortcuts import render_to_response
 from django.views.decorators.csrf import csrf_protect
@@ -43,9 +43,9 @@ def ingestion(request):
     },context_instance=RequestContext(request))
     
 @csrf_protect
-def consumption(request):
+def preProcessing(request):
     if request.method == 'POST': # If the form has been submitted...
-        form = ConsumptionForm(request.POST) # A form bound to the POST data
+        form = PreProcessingForm(request.POST) # A form bound to the POST data
         if form.is_valid(): # All validation rules pass
             # Process the data in form.cleaned_data
             # ...
@@ -53,25 +53,25 @@ def consumption(request):
             #commit = 'true';
             #form.save(commit)
             lbl1 = Label()
-            lbl1.header = "ConsumptionMode"
-            if form['mode'].value() == "Data Exploitation":
-                options = "1,0"
-            else:
-                options = "0,1"                   
-            lbl1.options = options
+            lbl1.header = "Extension Filter"
+            lbl1.options = form['extension'].value()
             
             lbl2 = Label()
-            lbl2.header = "ConsumptionPath"
-            lbl2.options = form['path'].value()
+            lbl2.header = "Third Party Filter"
+            lbl2.options = form['thirdParty'].value()
+            
+            lbl3 = Label()
+            lbl3.header = "Personal Info Filter"
+            lbl3.options = form['personalInfo'].value()
             
             tpl = Template()
-            tpl.template = "ConsumptionTemplate"
-            tpl.attribute_values = [lbl1,lbl2]
+            tpl.template = "PreprocessingTemplate"
+            tpl.attribute_values = [lbl1,lbl2,lbl3]
             tpl.save()
             return render_to_response('forms/finish.html')#HttpResponseRedirect('/forms/finish.html') # Redirect after POST
-    else:
-        form = ConsumptionForm() # An unbound form
+        else:
+            form = PreProcessingForm() # An unbound form
 
-    return render_to_response('wizard/consumption.html', {
+    return render_to_response('wizard/preProcessing.html', {
         'form': form, 
     },context_instance=RequestContext(request))

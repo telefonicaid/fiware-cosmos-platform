@@ -35,4 +35,4 @@ class Label(models.Model):
     header = models.CharField(max_length=200)
     options = LabelField()
     def __unicode__(self):
-        return u'%s' % (self.header)
+        return u'%s, %s' % (self.header, self.options)

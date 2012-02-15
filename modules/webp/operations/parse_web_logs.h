@@ -7,6 +7,8 @@
 #define _H_SAMSON_webp_parse_web_logs
 
 
+#include "au/Cronometer.h"
+
 #include <samson/module/samson.h>
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/SimpleParser.h>
@@ -23,6 +25,9 @@ namespace webp{
 
 	   std::vector<char*> fields;
 	   samson::webp::Log log;
+
+	   au::Cronometer cronometer;
+	   size_t num;
 
 	   samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary;
 
@@ -44,11 +49,12 @@ namespace webp{
 		void init( samson::KVWriter *writer )
 		{
 		   samson_comscore_dictionary.read( "/var/comscore/samson_comscore_dictionary.bin" );
+		   num = 0;
 		}
 
 		void parseLine( char * line , samson::KVWriter *writer )
 		{
-		   return;
+		   //return;
 
 		   split_in_words( line, fields, '\t');
 
@@ -56,31 +62,48 @@ namespace webp{
 			  return; // Wrong format
 
 		   //printf("User %s\n" , fields[0]);
-		   //printf("Url %s\n" , fields[3]);
+		   //printf("Url %s\n" , fields[2]);
 		   //printf("Time %s/%s/%s\n" , fields[6] , fields[7] , fields[8] );
 
 		   int day   = atoi(  fields[6] );
 		   int month = atoi(  fields[6] );
 		   int year  = atoi(  fields[6] );
 
+
+           // Full URL without http://
+		   const char* url = fields[2];
+		   
+		   if( strncmp( url , "http://" , 7  ) == 0 )
+			  url+= 7;
+		   if( strncmp( url , "https://" , 8 ) == 0 )
+			  url+= 8;
+
 		   log.user.value = fields[0];
-		   log.url.value = fields[3];
+		   log.url.value = url;
 		   log.time.setFromDayMonthYear( day , month , year );
+
 
 		   //LM_M(("Detected log user:%s, time:%s, url:%s", log.user.value.c_str(), log.url.value.c_str(), log.time.str().c_str()));
 
 		   // Find categories for this url
 		   log.categoriesSetLength(0); // Remove categories from previous entries
 
-		   std::vector<uint> categories = samson_comscore_dictionary.getCategories( fields[3] );
-		   
-		   for ( size_t i = 0 ; i < categories.size() ; i++ )
+		   std::vector<uint> categories = samson_comscore_dictionary.getCategories( url );		   
+
+/*		   
+		   num++;
+		   if( (num%10000) == 0 )
+			  printf("Processed %lu urls in %s\n" , num , au::time_string( cronometer.diffTimeInSeconds() ).c_str() );
+*/
+
+           for ( size_t i = 0 ; i < categories.size() ; i++ )
 		   {
 			  webp::Category *category = log.categoriesAdd();
 
 			  category->id.value = categories[i];
 			  category->name.value = samson_comscore_dictionary.getCategoryName( categories[i] );
 		   }
+
 
 		   writer->emit( 0 , &log.user , &log );
 

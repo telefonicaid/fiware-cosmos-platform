@@ -18,22 +18,6 @@
 #include "au/LockDebugger.h"            // au::LockDebugger
 #include "au/ThreadManager.h"
 
-#include "engine/MemoryManager.h"
-#include "engine/Engine.h"
-#include "engine/DiskManager.h"
-#include "engine/ProcessManager.h"
-
-#include "samson/common/samsonVersion.h"
-#include "samson/common/samsonVars.h"
-#include "samson/common/SamsonSetup.h"
-#include "samson/common/daemonize.h"
-#include "samson/network/WorkerNetwork.h"
-#include "samson/worker/SamsonWorker.h"
-#include "samson/isolated/SharedMemoryManager.h"
-#include "samson/stream/BlockManager.h"
-#include "samson/module/ModulesManager.h"
-
-
 #include "comscore/common.h"
 #include "comscore/SamsonComscoreDictionary.h"
 

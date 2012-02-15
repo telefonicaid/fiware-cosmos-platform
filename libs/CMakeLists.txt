@@ -3,6 +3,7 @@ ADD_SUBDIRECTORY(logMsg)
 ADD_SUBDIRECTORY(parseArgs)
 ADD_SUBDIRECTORY(au)
 ADD_SUBDIRECTORY(tables)
+ADD_SUBDIRECTORY(comscore)
 ADD_SUBDIRECTORY(engine)
 
 #ADD_SUBDIRECTORY(ui)          # ui library is a QT framefork for flow design ( auth KEn Znagelin )
@@ -10,4 +11,3 @@ ADD_SUBDIRECTORY(engine)
 
 # SAMSON  libraries
 ADD_SUBDIRECTORY(samson)
-ADD_SUBDIRECTORY(comscore)

@@ -26,6 +26,11 @@
 		        <label for="id_type">Consumption Mode</label>
 		        {{ form.mode }}
 		    </div>
+		    <div class="fieldWrapper">
+		        {{ form.subject.errors }}
+		        <label for="id_type">Consumption Path</label>
+		        {{ form.consumption_path }}
+		    </div>
 			
             <input type="hidden" name="{{ step_field }}" value="{{ step0 }}" />
             {{ previous_fields|safe }}

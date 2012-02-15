@@ -117,7 +117,7 @@ class WebProfilingForm(forms.Form):
     attributes_fields = forms.MultipleChoiceField(   required=False, 
                                                     widget=CheckboxSelectMultiple,
                                                     choices=ATTRIBUTE_FIELDS_CHOICES)
-    consumptionPath = forms.CharField(max_length=200)
+    consumption_path = forms.CharField(max_length=200)
     def validate_form(self,form):
         if self.is_valid(): # All validation rules pass
             lbl1 = Label()
@@ -135,7 +135,7 @@ class WebProfilingForm(forms.Form):
             lbl3 = Label(header = "Attributes Fields")
             for option in self['attributes_fields'].value():
                 lbl3.options[option] = 1
-                
+             
             tpl = Template()
             tpl.template = "WebProfilingTemplate"
             tpl.attribute_values = [lbl1,lbl2,lbl3]

@@ -20,6 +20,6 @@ urlpatterns = patterns('',
     url(r'^wizard/ingestion/$', 'wizard.views.ingestion'),
     url(r'^wizard/preProcessing/$', 'wizard.views.preProcessing'),
     #url(r'^wizard/configuration/$', 'wizard.views.configuration'),
-    url(r'^wizard/configuration/$', ConfigurationWizard([IngestionForm,PreProcessingForm,WebProfilingForm])),
+    url(r'^wizard/configuration/$', ConfigurationWizard([IngestionForm,PreProcessingForm, WebProfilingForm ])),
     #url(r'^wizard/', include('Configuration.urls'))
 )

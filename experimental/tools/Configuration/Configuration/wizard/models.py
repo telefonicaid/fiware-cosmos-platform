@@ -1,6 +1,5 @@
 from django.db import models
-from djangotoolbox.fields import ListField
-from djangotoolbox.fields import EmbeddedModelField
+from djangotoolbox.fields import ListField, EmbeddedModelField, DictField
 from django import forms
 
 # Create your models here.
@@ -33,6 +32,7 @@ class Attribute(models.Model):
 
 class Label(models.Model):
     header = models.CharField(max_length=200)
-    options = LabelField()
+    options = DictField() #LabelField()
     def __unicode__(self):
         return u'%s, %s' % (self.header, self.options)
+    

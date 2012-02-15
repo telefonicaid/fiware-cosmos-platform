@@ -42,8 +42,8 @@ namespace samson
         queuesText->show();
         enginesText->show();
         */
-        tableViewer = new TableViewer(tab1, "Engine");
-        mainLayout->addWidget(tableViewer);
+        queueViewer1 = new QueueViewer(tab1);
+        mainLayout->addWidget(queueViewer1);
                 
         tabs->addTab(tab1, tr("Engine"));
         
@@ -55,6 +55,8 @@ namespace samson
         
         QObject::connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
         connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
+        
+        resize(800,600); 
     }
     
     void DelilahMainWindow::about()

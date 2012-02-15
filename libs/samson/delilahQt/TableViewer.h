@@ -39,7 +39,7 @@ class TableViewer: public QWidget
         QGroupBox* groupBox;
         std::vector<QLabel*> nameLabels;
         std::vector<QLabel*> valueLabels;
-        QGridLayout* layout;
+        QVBoxLayout* layout;
         
     
 };

@@ -15,7 +15,8 @@
 #include <QObject>
 #include <QtGui>
 
-#include "TableViewer.h"
+#include "QueueViewer.h"
+
 
 namespace samson {
 	
@@ -39,7 +40,7 @@ namespace samson {
     public:
     
         DelilahMainWindow();
-        TableViewer* tableViewer;
+        QueueViewer* queueViewer1;
         /*QLabel* enginesText;
         QLabel* queuesText;
         QGroupBox* queuesBox;

@@ -3,18 +3,21 @@ SET (HEADERS
 	DelilahQt.h
 	DelilahMainWindow.h
 	TableViewer.h
+	QueueViewer.h
 )
 
 SET (SOURCES
 	DelilahQt.cpp
 	DelilahMainWindow.cpp
 	TableViewer.cpp
+	QueueViewer.cpp
 )
 
 SET (HEADERS_FOR_MOC
 	DelilahQt.h
 	DelilahMainWindow.h
 	TableViewer.h
+	QueueViewer.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)

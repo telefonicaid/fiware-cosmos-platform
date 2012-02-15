@@ -39,7 +39,7 @@ namespace samson {
         void queuesTextValueChanged(const QString& s);
 
     public slots:
-        void setData();
+        //void setData();
         void updateData();
         
     private:

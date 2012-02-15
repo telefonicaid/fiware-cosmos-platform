@@ -8,7 +8,6 @@
 
 #include "DelilahQt.h" // Own interface
 #include "DelilahMainWindow.h"
-#include "TableViewer.h"
 
 #include <QTimer>
 #include <QtGui>
@@ -17,62 +16,54 @@
 
 namespace samson
 {	
-    void DelilahQt::setData()
+    void DelilahQt::updateData()
     {
+        au::tables::Table* table = database.getTable("queues");
+        QString str;
+        if( table != NULL )
         {
-            std::vector<std::string> names;
-            std::vector<std::string> values;
-            au::tables::Table* table = database.getTable("engines");
-            QString str;
-            if( !table || table->getNumRows() < 2 )
-            {
-                names.push_back(std::string("No queues data"));
-                values.push_back(std::string("--"));
-                
-                //std::cout << "No table queues" << std::endl;
-            }
-            else
-            {
-                std::stringstream tmp;
-                for(unsigned int i = 0; i< table->getNumColumns(); i++)
-                {
-                    names.push_back(table->getValue(0, i));
-                    for (unsigned int j = 1; j< table->getNumRows(); j++)
-                    {
-                        values.push_back( table->getValue(j, i));
-                    }
-                    //str = QString(tmp.str().c_str());
-                    //emit queuesTextValueChanged(str);
-                }
-            }
-            mainWindow->tableViewer->setData(names, values);
+            QueueViewer::QueueData data;
+
+            data.name = table->getValue(0, "name");
+            data.kvs = table->getValue(0, "block_info/kv_info/kvs");
+            data.kvsize = table->getValue(0, "block_info/kv_info/size");
+            data.size = table->getValue(0, "block_info/size");
+            data.size_locked = table->getValue(0, "block_info/size_locked");
+            data.size_on_disk = table->getValue(0, "block_info/size_on_disk");
+            data.size_on_memory = table->getValue(0, "block_info/size_on_memory");
+                   
+            data.kvs_rate = table->getValue(0, "rate_kvs/rate");
+            data.kvs_rate_size = table->getValue(0, "rate_kvs/size");
+            data.rate = table->getValue(0, "rate_size/rate");
+            data.rate_size = table->getValue(0, "rate_size/size");
+
+            mainWindow->queueViewer1->setData(data);
         }
             
     }
 
-    void DelilahQt::updateData()
+/*    void DelilahQt::updateData()
     {
         {
             std::vector<std::string> values;
-            au::tables::Table* table = database.getTable("engines");
+            au::tables::Table* table = database.getTable("queues");
             QString str;
-            if( table && table->getNumColumns() >= 2)
+            if( table)
             {
                 std::stringstream tmp;
-                for(unsigned int i = 1; i< table->getNumRows(); i++)
+                for(unsigned int i = 0; i< table->getNumRows(); i++)
                 {
-                   for (unsigned int j = 0; j < table->getNumColumns(); j++)
-                   {
-                       values.push_back( table->getValue(i, j));
-                    }
-                   std::cout << "Copiados valores" << std::endl;
+                   //for (unsigned int j = 0; j < table->getNumColumns(); j++)
+                   //{
+                       values.push_back( table->getValue(0, i));
+                    //}
                  //std::cout << "Table queues: " << table->str() << std::endl;
                    //emit queuesTextValueChanged(str);
                }
                mainWindow->tableViewer->updateData(values);
             }
 
-        /*{
+        {
             au::tables::Table* table = database.getTable("engines");
             QString str;
             if( !table )
@@ -91,12 +82,12 @@ namespace samson
                 emit enginesTextValueChanged(str);
             }
           }
-            */
+            
         }   
                  
         
     }
-    
+  */  
     DelilahQt::DelilahQt( NetworkInterface *network ) : Delilah( network )
     {
         // Ask continuously workers about queues to monitor them
@@ -109,12 +100,14 @@ namespace samson
         
         int argn = 0;
         QApplication application(argn, NULL);
+        application.setStyle(new QPlastiqueStyle);
+        
         QTimer* timer =  new QTimer();
         timer->start(1000);
             
         mainWindow = new DelilahMainWindow;
         
-        setData();
+        //updateData();
         //mainWindow->tableViewer->setData(names, values);
         mainWindow->show();
 

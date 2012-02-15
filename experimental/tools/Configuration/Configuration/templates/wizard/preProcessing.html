@@ -20,16 +20,19 @@
 		        {{ form.message.errors }}
 		        <label for="id_type">Extension Filter</label>
 		        {{ form.extension }}
+		        {{ form.extension_values }}
 		    </div>
 		    <div class="fieldWrapper">
 		        {{ form.message.errors }}
 		        <label for="id_type">Third Party Filter</label>
 		        {{ form.thirdParty }}
+		        {{ form.thirdParty_values }}
 		    </div>
 		    <div class="fieldWrapper">
 		        {{ form.message.errors }}
 		        <label for="id_type">Personal Info Filter</label>
 		        {{ form.personalInfo }}
+		        {{ form.personalInfo_values }}
 		    </div>		    
 			
             <input type="hidden" name="{{ step_field }}" value="{{ step0 }}" />

@@ -35,4 +35,3 @@ class Label(models.Model):
     options = DictField() #LabelField()
     def __unicode__(self):
         return u'%s, %s' % (self.header, self.options)
-    

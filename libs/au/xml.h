@@ -47,6 +47,14 @@ void xml_simple( std::ostringstream& output , std::string name , T value )
 }
 
 template< typename T>
+std::string xml_simple( std::string name ,T value )
+{
+    std::ostringstream output;
+    xml_simple(output, name, value);
+    return output.str();
+}
+
+template< typename T>
 void xml_single_element( std::ostringstream& output , std::string name , T* obj )
 {
     xml_open( output , name );

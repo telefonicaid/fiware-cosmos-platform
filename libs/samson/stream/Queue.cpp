@@ -458,19 +458,19 @@ namespace samson {
             add( record , "#kvs" , blockInfo.info.kvs , "f=uint64,sum" );
             add( record , "size" , blockInfo.info.size , "f=uint64,sum" );
             
-            if( options == normal )
+            if( ( options == normal ) || (options == all ) )
             {
                 add( record , "key" , format.keyFormat  , "different");
                 add( record , "value" , format.valueFormat , "different" );
             }
             
-            if( options == verbose )
+            if( ( options == verbose ) || (options == all ) )
             {
                 add( record , "#kvs/s"  , rate_kvs.getRate() , "f=uint64,sum" );
                 add( record , "Bytes/s" , rate_size.getRate() , "f=uint64,sum" );
             }
             
-            if( options == verbose2 )
+            if( ( options == verbose2 ) || (options == all ) )
             {
                 add( record , "#Blocs"  , blockInfo.num_blocks , "f=uint64,sum" );
                 add( record , "Size"  , blockInfo.size , "f=uint64,sum" );

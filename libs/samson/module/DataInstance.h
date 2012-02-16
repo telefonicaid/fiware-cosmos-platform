@@ -41,6 +41,12 @@ namespace samson {
         virtual bool checkType(const char *type) = 0;
         virtual DataInstance * getDataInstanceFromPath(const int *dataPathIntP) = 0;
 
+        virtual void set( const char* str )
+        {
+            // Set value from a char* ( used to lookup by key )
+            printf("Setting value frmom %s\n" , str);
+        }
+        
         // Hash type check to avoid errors
         virtual size_t getHashType() = 0;
         virtual bool checkHashType(size_t valType) = 0;

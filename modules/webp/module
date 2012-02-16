@@ -22,6 +22,19 @@ data Log
 	vector webp.Category categories;
 }
 
+data CategoryHits
+{
+	webp.Category category;
+	system.UInt hits;
+	system.Double current;
+}
+
+data User
+{
+	system.String id;
+	vector webp.CategoryHits category_hits;
+}
+
 parser parse_web_logs
 {
     out system.String webp.Log
@@ -34,5 +47,46 @@ parser parse_web_logs
     }
 }
 
+reduce update_user
+{
+	in  system.String webp.Log
+	in  system.String webp.User
+	out system.String webp.User
+
+	helpLine "Update profile for this user"
+}
 
 
+script init_stream_operations
+{
+    code
+    {
+        # Queues;
+        alias [input]         in.01.input;
+        alias [logs]          tmp.01.logs;
+        alias [errors]        tmp.02.errors;
+		alias [users]         state.01.users;
+
+        # Operations;
+        alias [parse_input]    01.parse;
+        alias [update_state]   02.update;
+
+        # Definitions;
+        add_stream_operation  [parse_input]   webp.parse_web_logs [input]           [logs]  [errors];
+        add_stream_operation  [update_state]  webp.update_user    [logs] [users]    [users];
+
+    }
+
+    helpLine "Init stream operations"
+}
+
+script demo
+{
+    code
+    {
+        remove_all_stream;
+        init_stream demo webp.init_stream_operations;
+    }
+
+    helpLine "Demo about web hit"
+}

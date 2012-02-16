@@ -66,10 +66,10 @@ const char* status(Status s)
         cmdLine.set_flag_boolean("v");
         cmdLine.set_flag_boolean("vv");
         cmdLine.set_flag_boolean("vvvv");
-        cmdLine.set_flag_boolean("all");
+        cmdLine.set_flag_boolean("a");
         cmdLine.parse(command);
         
-        if( cmdLine.get_flag_bool("all") )
+        if( cmdLine.get_flag_bool("a") )
             return all;
         if( cmdLine.get_flag_bool("vvv") )
             return verbose3;

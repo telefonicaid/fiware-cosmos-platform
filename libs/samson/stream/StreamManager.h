@@ -158,6 +158,10 @@ namespace samson {
             // Get a pointer to a particular queue
             Queue* getQueue( std::string name );
             
+            
+            // Get value for a particular state
+            std::string getState( std::string queue_name , const char * key );
+            
         private:
             
             void reviewStreamOperations();

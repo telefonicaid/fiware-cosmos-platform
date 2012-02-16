@@ -405,8 +405,6 @@ namespace samson {
         // Main command
         std::string main_command = cmd.get_argument(0);
 
-        LM_M(("WorkerCommand %s" , command.c_str() ));
-
         // Query commands
         if(
            ( main_command == "ls_queues" ) ||

@@ -182,7 +182,7 @@ namespace samson {
             if( automatic_update )
             {
                 // Update local list of queus automatically
-                sendWorkerCommand("ls_queues -update -hidden -save" , NULL);
+                sendWorkerCommand("ls_queues -a -hidden -save" , NULL);
                 
                 
             }

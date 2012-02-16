@@ -91,7 +91,6 @@ namespace samson {
             
             if( s == OK )
             {
-                LM_M(("Readed line '%s' -- "  , line));
                 
                 au::CommandLine cmdLine;
                 cmdLine.parse( line );
@@ -99,7 +98,6 @@ namespace samson {
                 if ( ( cmdLine.get_num_arguments() >= 2 ) && ( cmdLine.get_argument(0) == "GET" ) )
                 {
                     std::string content = network_interface_receiver->getRESTInformation( cmdLine.get_argument(1) );
-                    LM_M(("Answer %s" , content.c_str() ));
                     socket_connection->writeLine( content.c_str() );
                 }
                 else

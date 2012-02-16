@@ -337,8 +337,8 @@ namespace samson {
     std::string SamsonWorker::getRESTInformation( ::std::string in )
     {
         std::ostringstream output;
-        output << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>";
-        output << "<!-- SAMSON Rest interface -->";
+        output << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n";
+        output << "<!-- SAMSON Rest interface -->\n";
         
         output << "<samson>\n";
         
@@ -346,18 +346,24 @@ namespace samson {
         std::vector<std::string> path_components = au::split( in , '/' );
 
         if ( ( path_components.size() < 2 ) || (path_components[0] != "samson") )
-            return "Error. Only /samson/path requests are valid\n";
+            au::xml_simple(output, "message", "Error. Only /samson/path requests are valid" );
         
         if( path_components[1] == "version" )
-            output << au::str("SAMSON v %s\n" , SAMSON_VERSION );
-        else if( path_components[1] == "cluster" )
+            au::xml_simple(output, "message", au::str("SAMSON v %s" , SAMSON_VERSION ) );
+        if( path_components[1] == "state" )
         {
-            network->getInfo( output , "cluster" );
+            if( path_components.size() < 4 )
+                au::xml_simple(output, "message", au::str("Error: format /samson/state/queue/key" ) );
+            else
+                output<< streamManager->getState( path_components[2] , path_components[3].c_str() );
+            
         }
+        else if( path_components[1] == "cluster" )
+            network->getInfo( output , "cluster" );
         else
-            output << au::str("Unkown path component '%s'\n" , path_components[1].c_str() );
+            au::xml_simple(output, "message", au::str("Error: Unkown path component '%s'\n" , path_components[1].c_str() ) );
 
-        output << "</samson>\n";
+        output << "\n</samson>\n";
         
         return output.str();
         

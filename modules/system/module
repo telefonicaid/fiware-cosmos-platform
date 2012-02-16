@@ -2,7 +2,7 @@ Module system
 {
 	title	"System default elements"
 	author	"Andreu Urruela"
-	version "0.1"
+	version "0.2"
 }
 
 # System defaults ( to be implemented in the rigth file )

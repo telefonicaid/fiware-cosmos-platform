@@ -783,6 +783,95 @@ namespace samson {
             //workerCommands.clearMap();
 
         }
+        
+        std::string StreamManager::getState( std::string queue_name , const char * key )
+        {
+            Queue* queue = queues.findInMap(queue_name);
+            if (!queue)
+                return au::xml_simple(  "error" , au::str("Queue %s not found" , queue_name.c_str() ));
+            
+            // Data instances
+            KVFormat format = queue->getFormat();
+            
+            
+            Data* key_data = ModulesManager::shared()->getData( format.keyFormat );
+            Data* value_data = ModulesManager::shared()->getData( format.valueFormat );
+            DataInstance* reference_key_data_instance  = (DataInstance*)key_data->getInstance();
+            DataInstance* key_data_instance            = (DataInstance*)key_data->getInstance();
+            DataInstance* value_data_instance          = (DataInstance*)value_data->getInstance();
+            
+            // Get all the information from the reference key
+            reference_key_data_instance->set( key );
+            
+            char tmp_buffer[1024];
+            int reference_key_size = reference_key_data_instance->serialize( tmp_buffer );
+            
+            // Get hashgroup
+            int hg = reference_key_data_instance->hash( KVFILE_NUM_HASHGROUPS );
+            KVRange kv_range( hg , hg+1 );
+            
+            // Look up this key
+            BlockList list;
+            list.copyFrom( queue->list , kv_range );
+            
+            if ( queue->list->blocks.size() == 0 )
+                return au::xml_simple(  "error" , au::str("No data in queue %s" , queue_name.c_str() ));
+
+            if ( list.blocks.size() == 0 )
+                return au::xml_simple(  "error" , au::str("No data in queue %s" , queue_name.c_str() ));
+            else
+            {
+                Block* block = *list.blocks.begin();
+                
+                if( !block->isContentOnMemory() )
+                {
+                    delete reference_key_data_instance;
+                    delete key_data_instance;
+                    delete value_data_instance;
+                    return au::xml_simple(  "error" , au::str("Block not in memory for queue %s" , queue_name.c_str() ) );
+                }
+                
+                char *data = block->getData() + KVFILE_TOTAL_HEADER_SIZE; // We skip the kvs/size vector
+                
+                size_t offset = 0;
+                size_t num_kvs = block->getHeader().info.kvs;
+                
+                for ( size_t i = 0 ; i < num_kvs ; i++ )
+                {
+                    int key_size   = key_data_instance->parse(data+offset);
+                    int value_size = value_data_instance->parse(data+offset+key_size);
+                    
+                    if( reference_key_size == key_size )
+                    {
+                        char * s1 = data+offset;
+                        char * s2 = tmp_buffer;
+                        
+                        if( memcmp(s1, s2, key_size) == 0 )
+                        {
+                            std::ostringstream output;
+                            au::xml_simple( output , "key" , key_data_instance->str() );
+                            au::xml_simple( output , "value" , value_data_instance->str() );
+
+                            delete reference_key_data_instance;
+                            delete key_data_instance;
+                            delete value_data_instance;
+
+                            return output.str();
+                        }
+                    }
+
+                    // Move to the next one
+                    offset += key_size + value_size;
+                }
+                
+                delete reference_key_data_instance;
+                delete key_data_instance;
+                delete value_data_instance;
+                return au::xml_simple(  "error" , au::str("No entry in queue %s for key %s" , queue_name.c_str() , key ) );
+            }
+            
+        }
+
 
         
 

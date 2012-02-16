@@ -32,6 +32,6 @@ class Attribute(models.Model):
 
 class Label(models.Model):
     header = models.CharField(max_length=200)
-    options = DictField() #LabelField()
+    options = DictField() 
     def __unicode__(self):
         return u'%s, %s' % (self.header, self.options)

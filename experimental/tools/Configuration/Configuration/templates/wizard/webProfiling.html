@@ -16,11 +16,6 @@
             </ul>
             {% endif %}
             
-			<div class="fieldWrapper">
-		        {{ form.message.errors }}
-		        <label for="id_type">Output Address</label>
-		        {{ form.path }}
-		    </div>
 		    <div class="fieldWrapper">
 		        {{ form.message.errors }}
 		        <label for="id_type">Consumption Mode</label>
@@ -31,6 +26,18 @@
 		        <label for="id_type">Consumption Path</label>
 		        {{ form.consumption_path }}
 		    </div>
+		    
+			<div class="fieldWrapper">
+		        {{ form.message.errors }}
+		        <label for="id_type">Grouping Fields</label>
+		        {{ form.grouping_fields }}
+		    </div>
+		    
+			<div class="fieldWrapper">
+		        {{ form.message.errors }}
+		        <label for="id_type">Attributes Fields</label>
+		        {{ form.attributes_fields }}
+		    </div>		   
 			
             <input type="hidden" name="{{ step_field }}" value="{{ step0 }}" />
             {{ previous_fields|safe }}

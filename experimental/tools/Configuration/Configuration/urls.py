@@ -17,6 +17,6 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     
     # Include Wizard views
-    url(r'^wizard/configuration/$', ConfigurationWizard([IngestionForm, PreProcessingForm, WebProfilingForm ])),
-    #url(r'^wizard/', include('Configuration.urls'))
+    url(r'^wizard/configuration/$', ConfigurationWizard([IngestionForm ])),    
+    url(r'^wizard/ingestion/$', 'wizard.views.ingestion'),
 )

@@ -32,8 +32,12 @@
 		        {{ form.message.errors }}
 		        <label for="id_type">Personal Info Filter</label>
 		        {{ form.personalInfo }}
+		    </div>
+		    <div class="fieldWrapper">
+		        {{ form.message.errors }}
+		        <label for="id_type">Personal Info Values</label>
 		        {{ form.personalInfo_values }}
-		    </div>		    
+		    </div>		    		    
 			
             <input type="hidden" name="{{ step_field }}" value="{{ step0 }}" />
             {{ previous_fields|safe }}

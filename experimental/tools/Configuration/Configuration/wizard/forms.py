@@ -1,10 +1,10 @@
 from django import forms
-from django.forms.fields import ChoiceField, MultipleChoiceField
+from django.forms.fields import ChoiceField
 from django.forms.widgets import RadioSelect,CheckboxSelectMultiple, Select
 from django.contrib.formtools.wizard import FormWizard
 from django.shortcuts import render_to_response
 from Configuration.wizard.models import Template, Label
-from djangotoolbox.fields import ListField, EmbeddedModelField, DictField
+from django.db import models
 
 # Form used to configure Ingestion data
 # It also has a validate_form that is called to 
@@ -18,6 +18,9 @@ class IngestionForm(forms.Form):
     mode = ChoiceField(widget=RadioSelect, choices=INGESTION_MODE_CHOICES)
     path = forms.CharField(max_length=200)
     size = forms.IntegerField()
+    def default_values(self,label):
+        self.cleaned_data['path']
+        
     def validate_form(self,form):
         if self.is_valid(): # All validation rules pass
             # Create IngestionMode
@@ -31,10 +34,10 @@ class IngestionForm(forms.Form):
             lbl1.options['IngestionMode'] = dict  
             lbl1.options["IngestionAddress"] = self['path'].value()
             lbl1.options["IngestionSize"] = self['size'].value()
-            tpl = Template(template = "IngestionTemplate",attribute_values = [lbl1])
+            tpl = Template(template = "IngestionTemplate", attribute_values = [lbl1])
             tpl.save()
         else:
-            return render_to_response('forms/ingestionForm.html')        
+            return render_to_response('forms/error.html')        
 
 # Form used to configure Filters data
 # It also has a validate_form that is called to 
@@ -58,7 +61,7 @@ class PreProcessingForm(forms.Form):
     thirdParty = ChoiceField(initial='0',widget=RadioSelect, choices=FILTERS_CHOICES)
     thirdParty_values = forms.MultipleChoiceField(choices=THIRD_PARTY_VALUES)
     personalInfo = ChoiceField(initial='0',widget=RadioSelect, choices=FILTERS_CHOICES)
-    personal_values = forms.MultipleChoiceField(choices=PERSONAL_INFO_VALUES)
+    personalInfo_values = forms.MultipleChoiceField(choices=PERSONAL_INFO_VALUES)
     def validate_form(self,form):
         if self.is_valid(): # All validation rules pass
             lbl1 = Label(header = "Extension Filter", 
@@ -70,13 +73,13 @@ class PreProcessingForm(forms.Form):
                                                                   "Values" : self['thirdParty_values'].value() } )
         
             lbl3 = Label(header = "Personal Info Filter",
-                          options= {"Enabled": self["personalInfo"].value(),
-                                                                    "Values" :  self['personal_values'].value() } )
+                          options= {"Enabled": self["personalInfo_values"].value(),
+                                                                    "Values" :  self['personalInfo_values'].value() } )
             
             tpl = Template(template = "PreProcessingTemplate", attribute_values = [lbl1,lbl2,lbl3])
             tpl.save()
         else:
-            return render_to_response('forms/preProcessingForm.html')
+            return render_to_response('forms/error.html')
         
 # Form used to configure Ingestion data
 # It also has a validate_form that is called to 
@@ -126,23 +129,23 @@ class WebProfilingForm(forms.Form):
             for option in self['attributes_fields'].value():
                 lbl3.options[option] = 1
                 
-            lbl4 = Label(options = {"Consumption Path" : self["consumptionPath"].value() })
+            lbl4 = Label(options = {"Consumption Path" : self["consumption_path"].value() })
             
             tpl = Template( template = "WebProfilingTemplate", attribute_values = [lbl1,lbl2,lbl3,lbl4])
             tpl.save()
         else:
-            return render_to_response('forms/error2.html')
+            return render_to_response('forms/error.html')
 
 
 class ConfigurationWizard(FormWizard): 
-    def get_template(self,step):
-        stp = step
-        if stp == 0:
-            return ['forms/wizard_%s.html' % step, 'wizard/ingestion.html']
-        elif stp == 1:
-            return ['forms/wizard_%s.html' % step, 'wizard/preProcessing.html']
-        elif stp == 2:
-            return ['forms/wizard_%s.html' % step, 'wizard/webProfiling.html']
+#    def get_template(self,step):
+#        stp = step
+#        if stp == 0:
+#            return ['forms/wizard_%s.html' % step, 'wizard/ingestion.html']
+#        elif stp == 1:
+#            return ['forms/wizard_%s.html' % step, 'wizard/preProcessing.html']
+#        elif stp == 2:
+#            return ['forms/wizard_%s.html' % step, 'wizard/webProfiling.html']
         
     def done(self, request, form_list):
         for form in form_list:

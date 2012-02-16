@@ -23,15 +23,7 @@ class Template(models.Model):
     def __unicode__(self):
         return u'%s' % (self.template)
 
-class Attribute(models.Model):
-    identifier = models.CharField(max_length=200)
-    #type = models.CharField(max_length=20)
-    def __unicode__(self):
-        return u'%s' % (self.identifier)
-    label = EmbeddedModelField('Label')
-
 class Label(models.Model):
-    header = models.CharField(max_length=200)
-    options = DictField() 
+    attribute = DictField() 
     def __unicode__(self):
-        return u'%s, %s' % (self.header, self.options)
+        return u'%s' % (self.attribute)

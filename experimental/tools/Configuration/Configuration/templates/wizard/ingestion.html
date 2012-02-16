@@ -1,8 +1,7 @@
 {% extends "admin/change_form.html" %}
 
-{% block title %}
-	<title> Ingestion Form</title>
-{% endblock %}
+{% load i18n %}
+
 {% block content %}
 <div id="content-main">
     <form {% if form.form.is_multipart %}enctype="multipart/form-data" {% endif %}method="post" action="" id="{{ opts.module_name }}_form">{% csrf_token %}

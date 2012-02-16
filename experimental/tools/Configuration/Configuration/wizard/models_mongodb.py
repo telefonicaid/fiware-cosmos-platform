@@ -19,7 +19,7 @@ class LabelField(models.Model):
         return models.Field.formfield(self, StringListField,**kwargs)
     
 class Label(models.Model):
-    header = models.CharField(max_length=200)
+    attribute = models.CharField(max_length=200)
     options = ListField()
     
 class Attribute(models.Model):

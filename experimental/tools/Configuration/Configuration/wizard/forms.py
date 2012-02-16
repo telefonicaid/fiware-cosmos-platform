@@ -5,6 +5,7 @@ from django.contrib.formtools.wizard import FormWizard
 from django.shortcuts import render_to_response
 from Configuration.wizard.models import Template, Label
 from django.db import models
+from djangotoolbox.fields import ListField
 
 # Form used to configure Ingestion data
 # It also has a validate_form that is called to 
@@ -30,11 +31,13 @@ class IngestionForm(forms.Form):
                     dict[choice[0]] = 1
                 else:
                     dict[choice[0]] = 0
-            lbl1 = Label()  
-            lbl1.options['IngestionMode'] = dict  
-            lbl1.options["IngestionAddress"] = self['path'].value()
-            lbl1.options["IngestionSize"] = self['size'].value()
-            tpl = Template(template = "IngestionTemplate", attribute_values = [lbl1])
+            lbl1 = Label()
+            lbl1.attribute['IngestionMode'] = dict  
+            lbl2 = Label()
+            lbl2.attribute["IngestionAddress"] = self['path'].value()
+            lbl3 = Label()
+            lbl3.attribute["IngestionSize"] = self['size'].value()
+            tpl = Template( template = "IngestionTemplate", attribute_values = [lbl1,lbl2,lbl3] )
             tpl.save()
         else:
             return render_to_response('forms/error.html')        
@@ -64,17 +67,18 @@ class PreProcessingForm(forms.Form):
     personalInfo_values = forms.MultipleChoiceField(choices=PERSONAL_INFO_VALUES)
     def validate_form(self,form):
         if self.is_valid(): # All validation rules pass
-            lbl1 = Label(header = "Extension Filter", 
-                         options= {"Enabled": self["extension"].value(),
-                                                                 "Values" : self['extension_values'].value()  } )
+            lbl1 = Label()
             
-            lbl2 = Label(header = "Third Party Filter", 
-                         options= {"Enabled": self["thirdParty"].value(),
-                                                                  "Values" : self['thirdParty_values'].value() } )
+            lbl1.attribute["Extension Filter"] = {"Enabled": self["extension"].value(), 
+                                                         "Values" : self['extension_values'].value()  }
+            
+            lbl2 = Label()
+            lbl2.attribute["Third Party Filter"] = {"Enabled": self["thirdParty"].value(),
+                                                                  "Values" : self['thirdParty_values'].value() }
         
-            lbl3 = Label(header = "Personal Info Filter",
-                          options= {"Enabled": self["personalInfo_values"].value(),
-                                                                    "Values" :  self['personalInfo_values'].value() } )
+            lbl3 = Label()
+            lbl3.attribute["Personal Info Filter"] = {"Enabled": self["personalInfo_values"].value(),
+                                                                    "Values" :  self['personalInfo_values'].value() } 
             
             tpl = Template(template = "PreProcessingTemplate", attribute_values = [lbl1,lbl2,lbl3])
             tpl.save()
@@ -119,17 +123,23 @@ class WebProfilingForm(forms.Form):
                     dict[choice[0]] = 1
                 else:
                     dict[choice[0]] = 0
-            lbl1 = Label()  
-            lbl1.options['ConsumptionMode'] = dict 
+                    
+            lbl1 = Label()
+            lbl1.attribute['ConsumptionMode'] = dict 
             
-            lbl2 = Label(header = "Grouping Fields")
-            lbl2.options[self.cleaned_data['grouping_fields']] = 1
+            dict1 = {}
+            dict1[self.cleaned_data['grouping_fields']] = 1
+            lbl2 = Label()
+            lbl2.attribute["Grouping Fields"] = dict1 
             
-            lbl3 = Label(header = "Attributes Fields")
+            dict2 = {}
             for option in self['attributes_fields'].value():
-                lbl3.options[option] = 1
+                dict2[option] = 1
+            lbl3 = Label()
+            lbl3.attribute["Attributes Fields"] = dict2
                 
-            lbl4 = Label(options = {"Consumption Path" : self["consumption_path"].value() })
+            lbl4 = Label()
+            lbl4.attribute["Consumption Path"] = self["consumption_path"].value()
             
             tpl = Template( template = "WebProfilingTemplate", attribute_values = [lbl1,lbl2,lbl3,lbl4])
             tpl.save()
@@ -138,14 +148,14 @@ class WebProfilingForm(forms.Form):
 
 
 class ConfigurationWizard(FormWizard): 
-#    def get_template(self,step):
-#        stp = step
-#        if stp == 0:
-#            return ['forms/wizard_%s.html' % step, 'wizard/ingestion.html']
-#        elif stp == 1:
-#            return ['forms/wizard_%s.html' % step, 'wizard/preProcessing.html']
-#        elif stp == 2:
-#            return ['forms/wizard_%s.html' % step, 'wizard/webProfiling.html']
+    def get_template(self,step):
+        stp = step
+        if stp == 0:
+            return ['forms/wizard_%s.html' % step, 'wizard/ingestion.html']
+        elif stp == 1:
+            return ['forms/wizard_%s.html' % step, 'wizard/preProcessing.html']
+        elif stp == 2:
+            return ['forms/wizard_%s.html' % step, 'wizard/webProfiling.html']
         
     def done(self, request, form_list):
         for form in form_list:

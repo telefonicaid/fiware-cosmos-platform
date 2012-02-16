@@ -291,6 +291,17 @@ man: release
 	 help2man --name="samson platform interaction shell" --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/delilah/delilah                > ./BUILD_RELEASE/man/man1/delilah.1
 	 cp man/samson-*.7 ./BUILD_RELEASE/man/man7
 
+uninstall:
+	if [ -f BUILD_RELEASE/install_manifest.txt ]; then \
+	  xargs rm -f  < BUILD_RELEASE/install_manifest.txt; \
+	fi
+
+uninstall_debug:
+	if [ -f BUILD_DEBUG/install_manifest.txt ]; then \
+	  xargs rm -f  < BUILD_DEBUG/install_manifest.txt; \
+	fi
+	
+
 packages: install man rpm deb
 
 .PHONY : modules

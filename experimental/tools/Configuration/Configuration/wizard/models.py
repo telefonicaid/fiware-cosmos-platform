@@ -31,3 +31,5 @@ class Label(models.Model):
 class Configuration(models.Model):
     name = models.CharField(max_length=200)
     templates = ListField(models.CharField(max_length=100))
+    def __unicode__(self):
+        return u'%s' % (self.name)

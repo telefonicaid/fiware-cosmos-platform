@@ -1,0 +1,44 @@
+{% extends "admin/change_form.html" %}
+
+{% if templates %}
+{% block content %}
+<div id="content-main">
+	<div class="results">
+		<table cellspacing="0" id="result_list">
+			<thead>
+					<tr>
+						<th scope="col" class="action-checkbox-column">
+							<input type="checkbox" id="action-toggle" />
+						</th>
+						<th scope="col">
+							<a href="?ot=asc&amp;o=1">Identifier</a>
+						</th>
+						<th scope="col">Label id</th>
+						{% for template in config.templates %}
+							<th> Templates </th>
+						</tr>
+						{% endfor %}						
+				</tr>
+			</thead>
+			<tbody>
+				{% for config in configs %}
+					<tr class="row">
+						<td class="action-checkbox">
+							<input type="checkbox" class="action-select" value="3" name="_selected_action" />
+						</td>
+						<th>
+							<a href="{{ config.id }}/">{{ config.name }}</a>							
+						</th>
+						{% for template in config.templates %}
+							<th>
+								<a href="{{ template.id }}/">{{ template.id }}</a>
+							</th>
+						</tr>
+						{% endfor %}
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+{% endblock %}
+{% endif %}

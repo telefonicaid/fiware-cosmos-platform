@@ -4,9 +4,12 @@ from django.forms.widgets import RadioSelect,CheckboxSelectMultiple, Select
 from django.contrib.formtools.wizard import FormWizard
 from django.shortcuts import render_to_response
 from Configuration.wizard.models import Template, Label, Configuration
-from django.db import models
 from djangotoolbox.fields import ListField
+from django.http import HttpResponseRedirect
 
+class ConfigurationForm(forms.Form):
+    name = forms.CharField(max_length=100)
+    
 # Form used to configure Ingestion data
 # It also has a validate_form that is called to 
 # wrapper IngestionForm values into IngestionTemplate Model
@@ -19,29 +22,34 @@ class IngestionForm(forms.Form):
     mode = ChoiceField(widget=RadioSelect, choices=INGESTION_MODE_CHOICES)
     path = forms.CharField(max_length=200)
     size = forms.IntegerField()
-    def default_values(self,label):
-        self.cleaned_data['path']
-        
-    def validate_form(self,form):
+    
+    # Create Template Model from Ingestion Form data
+    def create_template_model(self):
+        # Create Template
+        dict = {}
+        for choice in INGESTION_MODE_CHOICES:
+            if self['mode'].value() == "Streaming":
+                dict[choice[0]] = 1
+            else:
+                dict[choice[0]] = 0
+        lbl1 = Label()
+        lbl1.attribute['IngestionMode'] = dict  
+        lbl2 = Label()
+        lbl2.attribute["IngestionAddress"] = self['path'].value()
+        lbl3 = Label()
+        lbl3.attribute["IngestionSize"] = self['size'].value()
+        tpl = Template( template = "IngestionTemplate", attribute_values = [lbl1,lbl2,lbl3] )
+        return tpl
+
+    # Saves Ingestion Form, really saves Template Model
+    # return pk
+    def save_form(self,form):
         if self.is_valid(): # All validation rules pass
-            # Create IngestionMode
-            dict = {}
-            for choice in INGESTION_MODE_CHOICES:
-                if self['mode'].value() == "Streaming":
-                    dict[choice[0]] = 1
-                else:
-                    dict[choice[0]] = 0
-            lbl1 = Label()
-            lbl1.attribute['IngestionMode'] = dict  
-            lbl2 = Label()
-            lbl2.attribute["IngestionAddress"] = self['path'].value()
-            lbl3 = Label()
-            lbl3.attribute["IngestionSize"] = self['size'].value()
-            tpl = Template( template = "IngestionTemplate", attribute_values = [lbl1,lbl2,lbl3] )
-            tpl.save()
-            return tpl.id
+            template = self.create_template_model() 
+            template.save()
+            return template.id
         else:
-            return render_to_response('forms/error.html')        
+            return render_to_response('forms/error.html')
 
 # Form used to configure Filters data
 # It also has a validate_form that is called to 
@@ -66,24 +74,33 @@ class PreProcessingForm(forms.Form):
     thirdParty_values = forms.MultipleChoiceField(choices=THIRD_PARTY_VALUES)
     personalInfo = ChoiceField(initial='0',widget=RadioSelect, choices=FILTERS_CHOICES)
     personalInfo_values = forms.MultipleChoiceField(choices=PERSONAL_INFO_VALUES)
-    def validate_form(self,form):
-        if self.is_valid(): # All validation rules pass
-            lbl1 = Label()
-            
-            lbl1.attribute["Extension Filter"] = {"Enabled": self["extension"].value(), 
-                                                         "Values" : self['extension_values'].value()  }
-            
-            lbl2 = Label()
-            lbl2.attribute["Third Party Filter"] = {"Enabled": self["thirdParty"].value(),
-                                                                  "Values" : self['thirdParty_values'].value() }
+    
+    # Creates Template model from PreProcessing Form data
+    # return Model
+    def create_template_model(self):
+        lbl1 = Label()
         
-            lbl3 = Label()
-            lbl3.attribute["Personal Info Filter"] = {"Enabled": self["personalInfo_values"].value(),
-                                                                    "Values" :  self['personalInfo_values'].value() } 
-            
-            tpl = Template(template = "PreProcessingTemplate", attribute_values = [lbl1,lbl2,lbl3])
-            tpl.save()
-            return tpl.id
+        lbl1.attribute["Extension Filter"] = {"Enabled": self["extension"].value(), 
+                                                     "Values" : self['extension_values'].value()  }
+        
+        lbl2 = Label()
+        lbl2.attribute["Third Party Filter"] = {"Enabled": self["thirdParty"].value(),
+                                                              "Values" : self['thirdParty_values'].value() }
+    
+        lbl3 = Label()
+        lbl3.attribute["Personal Info Filter"] = {"Enabled": self["personalInfo_values"].value(),
+                                                                "Values" :  self['personalInfo_values'].value() } 
+        
+        tpl = Template(template = "PreProcessingTemplate", attribute_values = [lbl1,lbl2,lbl3])
+        return tpl
+    
+    # Saves PreProcessing Form, really saves Template Model
+    # return pk
+    def save_form(self,form):
+        if self.is_valid(): # All validation rules pass
+            template = self.create_template_model() 
+            template.save()
+            return template.id
         else:
             return render_to_response('forms/error.html')
         
@@ -117,8 +134,10 @@ class WebProfilingForm(forms.Form):
                                                     widget=CheckboxSelectMultiple,
                                                     choices=ATTRIBUTE_FIELDS_CHOICES)
     consumption_path = forms.CharField(max_length=200)
-    def validate_form(self,form):
-        if self.is_valid(): # All validation rules pass
+    
+    # Creates Template model from WebProfiling Form data
+    # return Model
+    def create_template_model(self):
             dict = {}
             for choice in CONSUMPTION_MODE_CHOICES:
                 if self['mode'].value() == "highAvailability":
@@ -144,13 +163,19 @@ class WebProfilingForm(forms.Form):
             lbl4.attribute["Consumption Path"] = self["consumption_path"].value()
             
             tpl = Template( template = "WebProfilingTemplate", attribute_values = [lbl1,lbl2,lbl3,lbl4])
-            tpl.save()
-            return tpl.id
+            return tpl
+        
+    # Saves WebProfiling Form, really saves Template Model
+    # return pk
+    def save_form(self,form):
+        if self.is_valid(): # All validation rules pass
+            template = self.create_template_model() 
+            template.save()
+            return template.id
         else:
             return render_to_response('forms/error.html')
 
-
-class ConfigurationWizard(FormWizard): 
+class WizardForm(FormWizard): 
     def get_template(self,step):
         stp = step
         if stp == 0:
@@ -162,9 +187,11 @@ class ConfigurationWizard(FormWizard):
         
     def done(self, request, form_list):
         config = Configuration()
+        listField = []
         for form in form_list:
-            config.templates = [form.validate_form(form)]
+            listField.append(form.save_form(form))
+        config.templates = listField
         config.name = form_list[0].cleaned_data['name']
         config.save()
-        return render_to_response('forms/finish.html')
+        return HttpResponseRedirect('configuration/')
         

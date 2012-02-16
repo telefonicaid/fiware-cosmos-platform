@@ -44,7 +44,6 @@ namespace samson {
         virtual void set( const char* str )
         {
             // Set value from a char* ( used to lookup by key )
-            printf("Setting value frmom %s\n" , str);
         }
         
         // Hash type check to avoid errors

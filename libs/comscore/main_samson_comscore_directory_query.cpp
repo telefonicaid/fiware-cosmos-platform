@@ -75,6 +75,9 @@ int main(int argC, const char *argV[])
     samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary;
     samson_comscore_dictionary.read(dictionary_file_name);
     
+
+	const char * url_to_test = "yahoo.com";
+	//const char * url_to_test = "m.yahoo.com/aux/yservices/1.0/image/fwpEyWUNOZdh7HgM46ViCA--/resource:/brand/yahoouk/web/1.0.17/image/A/icon/everything/featured/featured_mail";
     
     if( number > 0 )
     {
@@ -84,7 +87,7 @@ int main(int argC, const char *argV[])
         {
             
             // Get categories for this URL
-            std::vector<uint> categories = samson_comscore_dictionary.getCategories( "yahoo.com" );
+            std::vector<uint> categories = samson_comscore_dictionary.getCategories( url_to_test );
             
             for( size_t i = 0 ; i < categories.size() ; i++ )
                 std::string description = samson_comscore_dictionary.getCategoryName( categories[i] );

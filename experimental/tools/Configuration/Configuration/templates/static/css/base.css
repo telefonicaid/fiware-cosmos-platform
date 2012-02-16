@@ -1,0 +1,100 @@
+/*
+    DJANGO Admin styles
+*/
+
+.label-form
+{
+	display: block;
+ 	float: left;
+ 	min-width: 140px;
+ 	height: 25px;
+ 	padding-top: 7px;
+}
+
+.label-form-radio
+{
+ 	display: block;
+   	float: left;
+   	min-width: 160px;
+   	height: 25px;
+ 	padding-top: 5px;
+}
+
+.button
+{
+   	width: 70px;
+   	height: 30px;
+   	font-family: "Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana,Arial,sans-serif;
+    color: #333;
+    font-size: 12px;
+}
+
+#main-header
+{
+   	background-color: #0086c3;
+   	vertical-align: top;
+   	text-align: center;
+   	padding-top: 1px;
+   	padding-bottom: 1px;
+}
+
+#site-name
+{
+   	color: #ffffff;
+   	vertical-align: top;
+}
+
+.h-label
+{
+   	font-size: 12px;
+   	font-weight: normal;
+}
+
+#a-ingestion
+{
+   	font-weight: bold;
+   	cursor: pointer;
+}
+
+body
+{
+    font-family: "Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana,Arial,sans-serif;
+    color: #333;
+    font-size: 12px;
+    border: solid;
+   	border-color: #ddd #aaa #aaa #ddd;
+}
+
+#content-main
+{
+   	border: solid;
+   	border-color: #ddd #aaa #aaa #ddd;
+   	width: 50%;
+   	margin: 0 auto;
+   	vertical-align: middle;
+   	padding-left: 10px;
+   	padding-right: 10px;
+   	padding-bottom: 5px;
+}
+
+.field-div
+{
+   	border: solid;
+   	border-color: #eee;
+   	padding-bottom: 10px;
+   	padding-left: 10px;
+   	padding-right: 10px;
+   	padding-top: 10px;
+}
+
+#buttons-div
+{
+   	border: solid;
+   	border-color: #eee;
+   	padding-bottom: 10px;
+   	padding-left: 10px;
+   	padding-right: 10px;
+   	padding-top: 10px;
+   	border: 1px solid #bbb;
+   	border-color: #ddd #aaa #aaa #ddd;
+}

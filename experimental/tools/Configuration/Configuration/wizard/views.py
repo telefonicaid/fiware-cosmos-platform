@@ -57,9 +57,7 @@ def ingestion_detail(request,pk):
                 elif key == 'IngestionAddress':
                     path = label.attribute[key]
                 
-        default_values = {'path' : path, 'size' : size, 'name' : 'def', 'mode' : {'initial' : select_mode } }
-        
-        form = IngestionForm(default_values)
+        form = IngestionForm(initial = {'path' : path, 'size' : size, 'name' : 'def', 'mode' :select_mode})
         return render_to_response('wizard/ingestion.html', {
                                                     'form': form, 
                                                     },context_instance=RequestContext(request))   
@@ -79,26 +77,22 @@ def preprocessing_detail(request,pk):
                     extension_values = extension_options['Values']
                 elif key == 'Third Party Filter':
                     thirdparty_options = label.attribute[key]
-                    thirdparty__enabled = extension_options['Enabled'] 
-                    thirdparty__values = extension_options['Values']
+                    thirdparty__enabled = thirdparty_options['Enabled'] 
+                    thirdparty__values = thirdparty_options['Values']
                 elif key == 'Personal Info Filter':
                     personalInfo_options = label.attribute[key]
-                    personalInfo_enabled = extension_options['Enabled'] 
-                    personalInfo_values = extension_options['Values']
+                    personalInfo_enabled = personalInfo_options['Enabled'] 
+                    personalInfo_values = personalInfo_options['Values']
                 
-        form = PreProcessingForm()
+        form = PreProcessingForm(initial = {'extension' : extension_enabled, 'extension_values' :extension_values, 
+                                            'thirdParty' : thirdparty__enabled, 'thirdParty_values' : thirdparty__values,
+                                            'personalInfo' : personalInfo_enabled, 'personalInfo_values' :personalInfo_values})
         return render_to_response('wizard/preProcessing.html', {
                                                     'form': form, 
                                                     },context_instance=RequestContext(request))   
     else:
         return 'error.html'
     
-KPIS_CHOICES=(('Visitors per Domain','Visitors per Domain'),
-              ('Visitors per Device','Visitors per Device'),
-              ('Visitors per Protocol','Visitors per Protocol'))
-GROUPING_FIELDS_CHOICES=(('1','Enabled'),('0','Disabled'))
-ATTRIBUTE_FIELDS_CHOICES=(('visitorId','visitorId'),('protocol','protocol'),('fullUrl','fullUrl'),('status','status'),('urlDomain','urlDomain'))
-CONSUMPTION_MODE_CHOICES=(('highAvailability','High Availability'),('dataExploitation','Data Exploitation'))
 @csrf_protect
 def webprofiling_detail(request,pk):
     template = Template.objects.get(id=pk)
@@ -114,13 +108,14 @@ def webprofiling_detail(request,pk):
                 elif key == 'Grouping Fields':
                     grp_fields = label.attribute[key]
                 elif key == 'Attributes Fields':
-                    atr_fields = label.attribute[key]
+                    attr_fields = label.attribute[key]
                 elif key == 'Consumption Path':
                     path = label.attribute[key]
                 
-        #default_values = {'path' : path, 'size' : size, 'name' : 'def', 'mode' : {'initial' : select_mode } }
+        form = WebProfilingForm({'mode' : select_mode, 'consumption_path' :path, 
+                                'grouping_fields' : grp_fields, 
+                                'attributes_fields' : attr_fields})
         
-        form = WebProfilingForm()
         return render_to_response('wizard/webProfiling.html', {
                                                     'form': form, 
                                                     },context_instance=RequestContext(request))   

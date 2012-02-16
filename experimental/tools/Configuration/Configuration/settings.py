@@ -12,7 +12,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django_mongodb_engine', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'PSTT',                      # Or path to database file if using sqlite3.
+        'NAME': 'PSTTT',                      # Or path to database file if using sqlite3.
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': 'localhost', # psmongo1                     # Set to empty string for localhost. Not used with sqlite3.
@@ -33,7 +33,7 @@ TIME_ZONE = 'America/Chicago'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 
-SITE_ID = u'4f3bf355e858e1378800001d'
+SITE_ID = u'4f3cd43e367cfd0cdc00001d'
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.

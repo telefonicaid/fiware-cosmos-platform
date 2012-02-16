@@ -18,6 +18,11 @@ urlpatterns = patterns('',
     
     # Include Wizard views
     url(r'^wizard/configuration/$', ConfigurationWizard([IngestionForm, PreProcessingForm, WebProfilingForm ])),    
-    url(r'^wizard/ingestion/(?P<pk>[a-z\d]+)/$', 'wizard.views.detail'),
+    #url(r'^wizard/configuration/(?P<pk>[a-z\d]+)/$', 'wizard.views.detail'),
+    url(r'^wizard/ingestion/(?P<pk>[a-z\d]+)/$', 'wizard.views.ingestion_detail'),
     url(r'^wizard/ingestion/?$', 'wizard.views.ingestion'),
+    url(r'^wizard/preprocessing/(?P<pk>[a-z\d]+)/$', 'wizard.views.preprocessing_detail'),
+    url(r'^wizard/preprocessing/?$', 'wizard.views.preprocessing'),
+    url(r'^wizard/webprofiling/(?P<pk>[a-z\d]+)/$', 'wizard.views.webprofiling_detail'),
+    url(r'^wizard/webprofiling/?$', 'wizard.views.webprofiling'),
 )

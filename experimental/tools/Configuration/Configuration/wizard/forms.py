@@ -3,7 +3,7 @@ from django.forms.fields import ChoiceField
 from django.forms.widgets import RadioSelect,CheckboxSelectMultiple, Select
 from django.contrib.formtools.wizard import FormWizard
 from django.shortcuts import render_to_response
-from Configuration.wizard.models import Template, Label
+from Configuration.wizard.models import Template, Label, Configuration
 from django.db import models
 from djangotoolbox.fields import ListField
 
@@ -39,6 +39,7 @@ class IngestionForm(forms.Form):
             lbl3.attribute["IngestionSize"] = self['size'].value()
             tpl = Template( template = "IngestionTemplate", attribute_values = [lbl1,lbl2,lbl3] )
             tpl.save()
+            return tpl.id
         else:
             return render_to_response('forms/error.html')        
 
@@ -82,6 +83,7 @@ class PreProcessingForm(forms.Form):
             
             tpl = Template(template = "PreProcessingTemplate", attribute_values = [lbl1,lbl2,lbl3])
             tpl.save()
+            return tpl.id
         else:
             return render_to_response('forms/error.html')
         
@@ -143,6 +145,7 @@ class WebProfilingForm(forms.Form):
             
             tpl = Template( template = "WebProfilingTemplate", attribute_values = [lbl1,lbl2,lbl3,lbl4])
             tpl.save()
+            return tpl.id
         else:
             return render_to_response('forms/error.html')
 
@@ -158,7 +161,10 @@ class ConfigurationWizard(FormWizard):
             return ['forms/wizard_%s.html' % step, 'wizard/webProfiling.html']
         
     def done(self, request, form_list):
+        config = Configuration()
         for form in form_list:
-            form.validate_form(form)
+            config.templates = [form.validate_form(form)]
+        config.name = form_list[0].cleaned_data['name']
+        config.save()
         return render_to_response('forms/finish.html')
         

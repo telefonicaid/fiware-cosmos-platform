@@ -27,3 +27,7 @@ class Label(models.Model):
     attribute = DictField() 
     def __unicode__(self):
         return u'%s' % (self.attribute)
+    
+class Configuration(models.Model):
+    name = models.CharField(max_length=200)
+    templates = ListField(models.CharField(max_length=100))

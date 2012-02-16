@@ -107,10 +107,18 @@ namespace samson {
     
     size_t Delilah::getNextWorkerId()
     {
+        
         std::vector<size_t> workers = network->getWorkerIds();
                 
         if( next_worker == -1 )
-            next_worker = rand()%workers.size();
+        {
+            int max = workers.size();
+            int r = rand();
+            next_worker = r%max;
+            
+            LM_V(("Next worker %d ( r %d max %d)" , next_worker , r , max ));
+            
+        }
         
         next_worker++;
         if( next_worker == (int)workers.size() )

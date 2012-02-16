@@ -108,7 +108,8 @@ int main( int argC , const char *argV[] )
     paParse(paArgs, argC, (char**) argV, 1, false);
     logFd = lmFirstDiskFileDescriptor();
     
-
+    // Random initialization
+    srand( time(NULL) );
 
     // Instance of the client to connect to SAMSON system
     samson::SamsonClient client;
@@ -128,8 +129,8 @@ int main( int argC , const char *argV[] )
 
     
     // Connect to a particular queue
+    LM_V(("Connecting to queue %s" , queue_name ));
     client.connect_to_queue( queue_name , flag_new , flag_remove );
-
     LM_V(("Connected to queue %s" , queue_name ));
 
     while( true )

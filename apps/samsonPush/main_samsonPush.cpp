@@ -107,6 +107,8 @@ int main( int argC , const char *argV[] )
     paParse(paArgs, argC, (char**) argV, 1, false);
     logFd = lmFirstDiskFileDescriptor();
 
+    // Random initialization
+    srand( time(NULL) );
 
 	// Check queue is specified
 	if( strcmp( queue_name , "null") == 0 )

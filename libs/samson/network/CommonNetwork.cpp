@@ -157,6 +157,7 @@ namespace samson {
         // Create network connection with this socket
         NetworkConnection* network_connection = new NetworkConnection( name , socket_connection , this );
         
+        // Set identifier since we know this worker id
         network_connection->setNodeIdentifier( node_identifier );
         
         // Insert in the map of connections
@@ -164,6 +165,9 @@ namespace samson {
         
         // Start the read and write threads for this connection
         network_connection->initReadWriteThreads();
+
+        // Sent hello packages rigth now to make sure if identity us
+        network_connection->push( helloMessage( network_connection ) );
         
         // Notify about this connection
         report_worker_connected( worker_id );
@@ -216,7 +220,7 @@ namespace samson {
         
         if( !connection )
         {
-            LM_W(("Packet destroyed since connection %s is not available" , name.c_str() ));
+            //LM_W(("Packet %s destroyed since connection %s is not available" , packet->str().c_str(), name.c_str() ));
             if( packet->buffer )
                 engine::MemoryManager::shared()->destroyBuffer(packet->buffer);
             delete packet;

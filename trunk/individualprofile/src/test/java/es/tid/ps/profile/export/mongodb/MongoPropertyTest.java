@@ -1,12 +1,15 @@
 package es.tid.ps.profile.export.mongodb;
 
-import java.io.*;
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Test case for MongoProperty
@@ -15,7 +18,7 @@ import com.mongodb.DBObject;
  */
 public class MongoPropertyTest {
     private MongoProperty instance;
-    
+
     @Before
     public void setUp() {
         instance = new MongoProperty("prop", "value");
@@ -24,11 +27,11 @@ public class MongoPropertyTest {
     @Test
     public void shouldMergeWithDocument() throws Exception {
         DBObject keyDocument = new BasicDBObject();
-        instance.appendAsKey(keyDocument);        
+        instance.appendAsKey(keyDocument);
         assertEquals("value", keyDocument.get("prop"));
 
         DBObject valueDocument = new BasicDBObject();
-        instance.appendAsValue(valueDocument);        
+        instance.appendAsValue(valueDocument);
         assertEquals("value", valueDocument.get("prop"));
     }
 
@@ -46,7 +49,7 @@ public class MongoPropertyTest {
         assertEquals("prop", copy.getProperty());
         assertEquals("value", copy.getValue());
     }
-    
+
     @Test
     public void sortByValue() throws Exception {
         MongoProperty lower = new MongoProperty("prop", "valua");

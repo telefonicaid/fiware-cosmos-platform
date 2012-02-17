@@ -14,15 +14,22 @@
 package es.tid.ps.profile.categoryextraction;
 
 import java.io.IOException;
-import java.util.Calendar;
 import static java.util.Arrays.asList;
+import java.util.Calendar;
+import java.util.List;
+
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
+import org.apache.hadoop.mrunit.types.Pair;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.ps.base.mapreduce.BinaryKey;
+import es.tid.ps.profile.data.ProfileProtocol.CategoryInformation;
+import es.tid.ps.profile.data.ProfileProtocol.UserNavigation;
+import es.tid.ps.profile.data.UserNavigationUtil;
 import es.tid.ps.profile.dictionary.Categorization;
 import es.tid.ps.profile.dictionary.CategorizationResult;
 
@@ -33,12 +40,12 @@ import es.tid.ps.profile.dictionary.CategorizationResult;
  */
 public class CategoryExtractionReducerTest {
     private CategoryExtractionReducer instance;
-    private ReduceDriver<BinaryKey, UserNavigation, BinaryKey,
-            CategoryInformation> driver;
+    private ReduceDriver<BinaryKey, ProtobufWritable<UserNavigation>, BinaryKey,
+            ProtobufWritable<CategoryInformation>> driver;
 
     @Before
     public void setUp() {
-        instance = new CategoryExtractionReducer() {
+        this.instance = new CategoryExtractionReducer() {
             @Override
             protected void setupDictionary(Context context) throws IOException {
                 // Avoid loading the real dictionary
@@ -50,7 +57,7 @@ public class CategoryExtractionReducerTest {
                 if (url.equals("http://www.marca.es/basket")) {
                     categorization.setResult(CategorizationResult.KNOWN_URL);
                     categorization.setCategories(
-                            new String[] { "SPORTS", "NEWS" });
+                            new String[]{"SPORTS", "NEWS"});
                 } else if (url.equals("http://www.mutxamel.org")) {
                     categorization.setResult(CategorizationResult.UNKNOWN_URL);
                 } else if (url.equals("http://www.realmadrid.com")) {
@@ -65,8 +72,8 @@ public class CategoryExtractionReducerTest {
                 return categorization;
             }
         };
-        driver = new ReduceDriver<BinaryKey, UserNavigation, BinaryKey,
-                CategoryInformation>(instance);
+        this.driver = new ReduceDriver<BinaryKey, ProtobufWritable<UserNavigation>,
+                BinaryKey, ProtobufWritable<CategoryInformation>>(this.instance);
     }
 
     @Test
@@ -75,54 +82,84 @@ public class CategoryExtractionReducerTest {
         String fullUrl = "http://www.marca.es/basket";
         Calendar date = Calendar.getInstance();
         BinaryKey key = new BinaryKey(visitorId, date.toString());
-        UserNavigation nav = new UserNavigation(visitorId, fullUrl, date);
+        UserNavigation nav =
+                UserNavigationUtil.create(visitorId, fullUrl, date.toString());
+        ProtobufWritable<UserNavigation> wrapper =
+                ProtobufWritable.newInstance(UserNavigation.class);
+        wrapper.setConverter(UserNavigation.class);
+        wrapper.set(nav);
 
-        CategoryInformation expectedCategoryInformation =
-                new CategoryInformation(visitorId, fullUrl, date.toString(),
-                        2, new String[] {"SPORTS", "NEWS"});
+        List<Pair<BinaryKey, ProtobufWritable<CategoryInformation>>> results =
+                driver.withInput(key, asList(wrapper, wrapper)).run();
 
-        driver.withInput(key, asList(nav, nav))
-              .withOutput(key, expectedCategoryInformation)
-              .runTest();
+        assertEquals(1, results.size());
+        final Pair<BinaryKey, ProtobufWritable<CategoryInformation>> result =
+                results.get(0);
+        assertEquals(key, result.getFirst());
+
+        CategoryInformation expectedCategoryInformation = CategoryInformation.
+                newBuilder().setUserId(visitorId).setUrl(fullUrl).setDate(date.
+                toString()).setCount(2L).addAllCategories(asList("SPORTS",
+                                                                 "NEWS")).build();
+
+        ProtobufWritable<CategoryInformation> wrappedCategoryInfo =
+                result.getSecond();
+        wrappedCategoryInfo.setConverter(CategoryInformation.class);
+        assertEquals(expectedCategoryInformation, wrappedCategoryInfo.get());
         assertEquals(2l, driver.getCounters().findCounter(
                 CategoryExtractionCounter.KNOWN_VISITS).getValue());
     }
-    
+
     @Test
     public void testUnknownUrl() throws Exception {
         String visitorId = "CA003C";
-        String fullURL = "http://www.mutxamel.org";
-        BinaryKey key = new BinaryKey(visitorId, "02/01/2012");
-        UserNavigation nav = new UserNavigation();
-        nav.setFullUrl(fullURL);
+        String fullUrl = "http://www.mutxamel.org";
+        String date = "02/01/2012";
+        BinaryKey key = new BinaryKey(visitorId, date);
+        UserNavigation nav =
+                UserNavigationUtil.create(visitorId, fullUrl, date.toString());
+        ProtobufWritable<UserNavigation> wrapper =
+                ProtobufWritable.newInstance(UserNavigation.class);
+        wrapper.set(nav);
 
-        driver.withInput(key, asList(nav, nav)).runTest();
+        driver.withInput(key, asList(wrapper, wrapper))
+                .runTest();
         assertEquals(2l, driver.getCounters().findCounter(
                 CategoryExtractionCounter.UNKNOWN_VISITS).getValue());
     }
-        
+
     @Test
     public void testIrrelevantUrl() throws Exception {
         String visitorId = "CA003D";
         String fullUrl = "http://www.realmadrid.com";
         Calendar date = Calendar.getInstance();
         BinaryKey key = new BinaryKey(visitorId, date.toString());
-        UserNavigation nav = new UserNavigation(visitorId, fullUrl, date);
+        UserNavigation nav =
+                UserNavigationUtil.create(visitorId, fullUrl, date.toString());
+        ProtobufWritable<UserNavigation> wrapper =
+                ProtobufWritable.newInstance(UserNavigation.class);
+        wrapper.set(nav);
 
-        driver.withInput(key, asList(nav, nav)).runTest();
+        driver.withInput(key, asList(wrapper, wrapper))
+                .runTest();
         assertEquals(2l, driver.getCounters().findCounter(
                 CategoryExtractionCounter.IRRELEVANT_VISITS).getValue());
     }
-            
+
     @Test
     public void testGenericFailure() throws Exception {
         String visitorId = "CA003E";
         String fullUrl = "";
         Calendar date = Calendar.getInstance();
         BinaryKey key = new BinaryKey(visitorId, date.toString());
-        UserNavigation nav = new UserNavigation(visitorId, fullUrl, date);
+        UserNavigation nav =
+                UserNavigationUtil.create(visitorId, fullUrl, date.toString());
+        ProtobufWritable<UserNavigation> wrapper =
+                ProtobufWritable.newInstance(UserNavigation.class);
+        wrapper.set(nav);
 
-        driver.withInput(key, asList(nav, nav)).runTest();
+        driver.withInput(key, asList(wrapper, wrapper))
+                .runTest();
         assertEquals(2l, driver.getCounters().findCounter(
                 CategoryExtractionCounter.UNPROCESSED_VISITS).getValue());
     }

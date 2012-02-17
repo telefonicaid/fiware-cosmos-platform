@@ -12,7 +12,7 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 
-import es.tid.ps.profile.userprofile.UserProfile;
+import es.tid.ps.profile.data.ProfileProtocol.UserProfile;
 
 /**
  * Export user profiles to mongodb

@@ -34,9 +34,9 @@ class QueueViewer: public QWidget
             std::string  size_on_memory; //block_info/size_on_memory
                    
             std::string kvs_rate; //rate_kvs/rate
-            std::string kvs_rate_size; //rate_kvs/size
+            //std::string kvs_rate_size; //rate_kvs/size
             std::string rate; //rate_size/rate
-            std::string rate_size; //rate_size/size
+            //std::string rate_size; //rate_size/size
         } QueueData;
         
         QueueData data;
@@ -45,20 +45,25 @@ class QueueViewer: public QWidget
         void setTitle(std::string title);
 
     private:
+        //QScrollArea* scrollArea;
         QGroupBox* groupBox;
-        QVBoxLayout* layout;
+        QHBoxLayout* layout;
         
         QLabel* name;
         QLabel* kvs;
-        QLabel* kvssize;
+        QLCDNumber* kvsDigits; 
+        //QLabel* kvssize;
         QLabel* size;
-        QLabel* size_locked;
-        QLabel* size_on_disk;
-        QLabel* size_on_memory;
-        QLabel* kvs_rate;
-        QLabel* kvs_rate_size;
+        QLCDNumber* sizeDigits; 
+        //QLabel* size_locked;
+        //QLabel* size_on_disk;
+        //QLabel* size_on_memory;
+        //QLabel* kvs_rate;
+        //QLabel* kvs_rate_size;
         QLabel* rate;
-        QLabel* rate_size;
+        QLCDNumber* rateDigits;
+        QPushButton* detailsButton;
+        //QLabel* rate_size;
         
 };
 

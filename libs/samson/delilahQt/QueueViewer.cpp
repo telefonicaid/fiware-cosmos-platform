@@ -13,22 +13,27 @@ namespace samson{
 
 QueueViewer::QueueViewer(QWidget* parent, std::string title): QWidget(parent)
 {
-    QVBoxLayout* layout;
+    //QVBoxLayout* layout;
+    
     groupBox = new QGroupBox(this);
-    QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    groupBox->setSizePolicy(sizePolicy);
-        
-    name = new QLabel("Name: ", groupBox);
+    QSizePolicy expandingPolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    groupBox->setSizePolicy(expandingPolicy);
+   /* scrollArea = new QScrollArea;
+    scrollArea->setBackgroundRole(QPalette::Dark);
+    scrollArea->setWidget(groupBox);   
+    */
+    name = new QLabel("Empty Queue: ", groupBox);
     kvs = new QLabel("KVs: ", groupBox);
-    kvssize = new QLabel("KVs Size: ", groupBox);
+    kvsDigits = new QLCDNumber(groupBox);
+    //kvssize = new QLabel("KVs Size: ", groupBox);
     size = new QLabel("Size: ", groupBox);
-    size_locked = new QLabel("Size Locked: ", groupBox);
-    size_on_disk = new QLabel("Size (on disk): ", groupBox);
-    size_on_memory = new QLabel("Size (on memory): ", groupBox);
-    kvs_rate = new QLabel("KVs Rate: ", groupBox);
-    kvs_rate_size = new QLabel("KVs Rate Size: ", groupBox);
-    rate = new QLabel("Rate: ", groupBox);
-    rate_size = new QLabel("Rate Size: ", groupBox);
+    //size_locked = new QLabel("Size Locked: ", groupBox);
+    //size_on_disk = new QLabel("Size (on disk): ", groupBox);
+    //size_on_memory = new QLabel("Size (on memory): ", groupBox);
+    //kvs_rate = new QLabel("KVs Rate: ", groupBox);
+    //kvs_rate_size = new QLabel("KVs Rate Size: ", groupBox);
+    rate = new QLabel("Mb/s: ", groupBox);
+    //rate_size = new QLabel("Rate Size: ", groupBox);
 
     if (data.name.empty())
     {
@@ -39,7 +44,7 @@ QueueViewer::QueueViewer(QWidget* parent, std::string title): QWidget(parent)
         setTitle(data.name);
     }
     
-    layout = new QVBoxLayout(this);
+    layout = new QHBoxLayout(this);
     layout->addWidget(name);
     layout->addWidget(kvs);
     layout->addWidget(kvssize);
@@ -48,9 +53,9 @@ QueueViewer::QueueViewer(QWidget* parent, std::string title): QWidget(parent)
     layout->addWidget(size_on_disk);
     layout->addWidget(size_on_memory);
     layout->addWidget(kvs_rate);
-    layout->addWidget(kvs_rate_size);
+    //layout->addWidget(kvs_rate_size);
     layout->addWidget(rate);
-    layout->addWidget(rate_size);
+    //layout->addWidget(rate_size);
 
     groupBox->setLayout(layout);
     
@@ -68,13 +73,15 @@ void QueueViewer::setData(QueueData newData)
         size_on_disk->setText(QString("Size (on disk): ") + QString(data.size_on_disk.c_str()));
         size_on_memory->setText(QString("Size (on memory): ") + QString(data.size_on_memory.c_str()));
         kvs_rate->setText(QString("KVs Rate: ") + QString(data.kvs_rate.c_str()));
-        kvs_rate_size->setText(QString("KVs Rate Size: ") + QString(data.kvs_rate_size.c_str()));
+        //kvs_rate_size->setText(QString("KVs Rate Size: ") + QString(data.kvs_rate_size.c_str()));
         rate->setText(QString("Rate: ") + QString(data.rate.c_str()));
-        rate_size->setText(QString("Rate Size: ") + QString(data.rate_size.c_str()));
+        //rate_size->setText(QString("Rate Size: ") + QString(data.rate_size.c_str()));
         
         setTitle(data.name);
-        //groupBox->resize(minimumSizeHint());        
+        groupBox->adjustSize(); 
+        adjustSize();       
         groupBox->show();
+        //groupBox->resize(minimumSizeHint());        
 }
 
 void QueueViewer::setTitle(std::string title)

@@ -18,24 +18,45 @@ namespace samson
 {	
     void DelilahQt::updateData()
     {
+    //std::cout << "UdateData() " << std::endl; 
         au::tables::Table* table = database.getTable("queues");
         QString str;
-        if( table != NULL )
+        if( table )
         {
             QueueViewer::QueueData data;
 
             data.name = table->getValue(0, "name");
-            data.kvs = table->getValue(0, "block_info/kv_info/kvs");
-            data.kvsize = table->getValue(0, "block_info/kv_info/size");
-            data.size = table->getValue(0, "block_info/size");
-            data.size_locked = table->getValue(0, "block_info/size_locked");
-            data.size_on_disk = table->getValue(0, "block_info/size_on_disk");
-            data.size_on_memory = table->getValue(0, "block_info/size_on_memory");
+            data.kvs = table->getValue(0, "#kvs");
+            data.kvsize = table->getValue(0, "size");
+            data.size = table->getValue(0, "Size");
+            data.size_locked = table->getValue(0, "Locked");
+            data.size_on_disk = table->getValue(0, "on Disk");
+            data.size_on_memory = table->getValue(0, "on Memory");
                    
-            data.kvs_rate = table->getValue(0, "rate_kvs/rate");
-            data.kvs_rate_size = table->getValue(0, "rate_kvs/size");
-            data.rate = table->getValue(0, "rate_size/rate");
-            data.rate_size = table->getValue(0, "rate_size/size");
+            data.kvs_rate = table->getValue(0, "#kvs/s");
+            //data.kvs_rate_size = table->getValue(0, "bytes/s");
+            data.rate = table->getValue(0, "Bytes/s");
+            //data.rate_size = table->getValue(0, "rate_size/size");
+
+            mainWindow->queueViewer1->setData(data);
+        }
+        else
+        {
+            //Table empty. Default values
+            QueueViewer::QueueData data;
+
+            data.name = "No queue";
+            data.kvs = "--";
+            data.kvsize = "--";
+            data.size = "--";
+            data.size_locked = "--";
+            data.size_on_disk = "--";
+            data.size_on_memory = "--";
+                   
+            data.kvs_rate = "--";
+            //data.kvs_rate_size = "--";
+            data.rate = "--";
+            //data.rate_size = "--";
 
             mainWindow->queueViewer1->setData(data);
         }

@@ -45,7 +45,7 @@ namespace samson
         queueViewer1 = new QueueViewer(tab1);
         mainLayout->addWidget(queueViewer1);
                 
-        tabs->addTab(tab1, tr("Engine"));
+        tabs->addTab(tab1, tr("Queues"));
         
         exitAction = new QAction(tr("E&xit"), this);
         aboutAction = new QAction(tr("A&bout"), this);

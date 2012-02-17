@@ -1,18 +1,15 @@
 package es.tid.ps.profile.categoryextraction;
 
-import java.util.List;
-
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
-import org.apache.hadoop.mrunit.types.Pair;
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.ps.base.mapreduce.BinaryKey;
 import es.tid.ps.profile.data.ProfileProtocol.UserNavigation;
+import es.tid.ps.profile.data.UserNavigationUtil;
 
 /**
  * Test case for CategoryExtractionMapper
@@ -38,9 +35,11 @@ public class CategoryExtractionMapperTest {
                 + "weather.com\t/mobile/android/factoids/delivery/1130.xml\t"
                 + "null\t30\t10\t2010\t0\t0\t-Java0\t-Java0\t-Java0\t-Java0\t"
                 + "GET\t200";
-        List<Pair<BinaryKey, ProtobufWritable<UserNavigation>>> output =
-                driver.withInput(new LongWritable(0), new Text(input)).run();
-
-        assertEquals("Only one pair", 1, output.size());
+        driver.withInput(new LongWritable(0), new Text(input))
+                .withOutput(new BinaryKey("cfae4f24cb42c12d", "2010-10-30"),
+                UserNavigationUtil.createAndWrap("cfae4f24cb42c12d",
+                "http://xml.weather.com/mobile/android/factoids/delivery",
+                "2010-10-30"))
+                .runTest();
     }
 }

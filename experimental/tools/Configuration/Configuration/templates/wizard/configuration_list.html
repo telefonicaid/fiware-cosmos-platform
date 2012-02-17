@@ -39,6 +39,12 @@
 				{% endfor %}
 			</tbody>
 		</table>
+        <div class="submit-row">
+            <input type="submit" value="Create New Configuration" class="default" name="_save" onClick="location.href='add/'"/>
+        </div>
+
+        <script type="text/javascript">document.getElementById("{{ form.first_field.auto_id }}").focus();</script>	
 	</div>
+
 {% endblock %}
 {% endif %}

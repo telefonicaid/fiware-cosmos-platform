@@ -9,12 +9,23 @@ from django.http import HttpResponseRedirect
 @csrf_protect
 def configuration_detail(request,pk):
     config = Configuration.objects.get(id=pk)
+    queryset = Template.objects.filter(id__in=config.templates)
     if request.method == 'GET':
-        form = ConfigurationForm(initial={'name' : config.name, 'templates' : config.templates })
-            
+        form = ConfigurationForm(config.templates,initial={'name' : config.name})
+#            initial={'name' : config.name}
         return render_to_response('wizard/configuration.html', {
-                                                    'form': form
+                                                    'form': form, 'config' : config
                                                     },context_instance=RequestContext(request))   
+    elif request.method == 'POST': # If the form has been submitted...
+        form = ConfigurationForm(request.POST) # A form bound to the POST data
+        if form.is_valid():
+#            config_form = form.create_template_model()
+#            template.attribute_values = template_form.attribute_values
+#            template.save()
+            return HttpResponseRedirect('../')
+        else:
+            form = IngestionForm(request.POST)
+            
 @csrf_protect
 def ingestion_detail(request,pk):
     template = Template.objects.get(id=pk)

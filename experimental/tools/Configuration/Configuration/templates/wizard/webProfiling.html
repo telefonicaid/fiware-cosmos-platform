@@ -1,5 +1,6 @@
 {% extends "admin/base.html" %}
 
+
 {% load i18n %}
 
 {% block content %}
@@ -48,12 +49,20 @@
 		    
             <input type="hidden" name="{{ step_field }}" value="{{ step0 }}" />
             {{ previous_fields|safe }}
-			
-			 <div id="buttons-div" align="right">
-             	<input type="reset" value="Cancel" class="button" name="_cancel"/>
-             	<input type="button" value="&laquo; Back" class="button"/>
-                <input type="submit" value="{% ifequal step step_count %}Finish{% else %}Next &raquo;{% endifequal %}" class="button" name="_save"/>               
-            </div>
+
+			{% if step %}
+	            <div id="buttons-div" class="submit-row" align="right">
+	             	<input type="button" value="&laquo; Back" class="button" disabled="disabled"/>
+	            	<input type="submit" value="Next &raquo;" class="button" name="_save"/>
+	             	<input type="reset" value="Cancel" class="button" name="_cancel"/>
+	                <input type="submit" value="{% ifequal step step_count %}Finish{% else %}Next &raquo;{% endifequal %}" class="button" name="_save" disabled="disabled"/>               
+	            </div>
+			{% else %}
+	            <div id="buttons-div" class="submit-row" align="right">
+	             	<input type="reset" value="Cancel" class="button" name="_cancel"/>
+	                <input type="submit" value="{% ifequal step step_count %}Save{% else %}Next &raquo;{% endifequal %}" class="button" name="_save"/>               
+	            </div>			
+			{%endif%}
 
             <script type="text/javascript">document.getElementById("{{ form.first_field.auto_id }}").focus();</script>
         </div>

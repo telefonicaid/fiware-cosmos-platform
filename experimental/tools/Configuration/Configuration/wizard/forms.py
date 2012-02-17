@@ -7,8 +7,32 @@ from Configuration.wizard.models import Template, Label, Configuration
 from djangotoolbox.fields import ListField
 from django.http import HttpResponseRedirect
 
+
 class ConfigurationForm(forms.Form):
     name = forms.CharField(max_length=100)
+    
+    def __init__(self, templates,*args, **kwargs):
+        super(ConfigurationForm, self).__init__(*args, **kwargs)
+        if templates:
+            self.fields['templates'] = forms.ModelMultipleChoiceField(queryset=Template.objects.filter(id__in=templates))
+        else:
+            self.fields['templates'] = forms.ModelMultipleChoiceField(queryset=Template.objects.all())
+        
+    # Creates Template model from PreProcessing Form data
+    # return Model
+    def create_config_model(self):
+        cfg = Configuration( name = self.cleaned_data['name'])
+        return cfg.id
+    
+    # Saves Ingestion Form, really saves Template Model
+    # return pk
+    def save_form(self,form):
+        if self.is_valid(): # All validation rules pass
+            config = self.create_template_model() 
+            config.save()
+            return config.id
+        else:
+            return render_to_response('forms/error.html')    
     
 # Form used to configure Ingestion data
 # It also has a validate_form that is called to 
@@ -23,7 +47,7 @@ class IngestionForm(forms.Form):
     path = forms.CharField(max_length=200)
     size = forms.IntegerField()
     
-    # Create Template Model from Ingestion Form data
+    # Creates Template Model from Ingestion Form data
     def create_template_model(self):
         # Create Template
         dict = {}
@@ -193,5 +217,5 @@ class WizardForm(FormWizard):
         config.templates = listField
         config.name = form_list[0].cleaned_data['name']
         config.save()
-        return HttpResponseRedirect('configuration/')
+        return HttpResponseRedirect('../')
         

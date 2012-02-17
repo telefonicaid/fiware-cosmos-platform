@@ -23,7 +23,7 @@
 		    {{ form.non_field_errors }}
 		    <div class="field-div">
 		        {{ form.subject.errors }}
-		        <label class="label-form" for="id_identifier">Service Name</label>
+		        <label class="label-form" for="id_identifier">Configuration Name</label>
 		        {{ form.name }}
 		    </div><br/><br/>
 		    <h2 class="h-label">{{ "Ingestion Properties" }}</h2>
@@ -50,10 +50,9 @@
 
 			{% if step %}
 	            <div id="buttons-div" class="submit-row" align="right">
-	             	<input type="button" value="&laquo; Back" class="button" disabled="disabled"/>
-	            	<input type="submit" value="Next &raquo;" class="button" name="_save"/>
 	             	<input type="reset" value="Cancel" class="button" name="_cancel"/>
-	                <input type="submit" value="{% ifequal step step_count %}Finish{% else %}Next &raquo;{% endifequal %}" class="button" name="_save" disabled="disabled"/>               
+	             	<input type="button" value="&laquo; Back" class="button" disabled="disabled"/>
+	                <input type="submit" value="{% ifequal step step_count %}Finish{% else %}Next &raquo;{% endifequal %}" class="button" name="_save"/>               
 	            </div>
 			{% else %}
 	            <div id="buttons-div" class="submit-row" align="right">

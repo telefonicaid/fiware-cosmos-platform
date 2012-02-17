@@ -280,45 +280,23 @@ namespace samson {
             queueTasks.clearList();
             systemQueueTasks.clearList();   
         }
-
-        samson::network::Collection* QueueTaskManager::getCollection( std::string command )
+        
+        samson::network::Collection* QueueTaskManager::getCollection( VisualitzationOptions options ,  std::string pattern  )
         {
-            // Parse command
-            au::CommandLine cmdLine;
-            cmdLine.set_flag_string("group", ""); // Possible parameers
-            cmdLine.set_flag_boolean("save");
-            cmdLine.parse(command);
+            samson::network::Collection* collection = new samson::network::Collection();
+            collection->set_name("ps_stream");
             
-            VisualitzationOptions options = getVisualitzationOptions( command );
+            au::map< size_t , QueueTask >::iterator it_runningTasks;
+            for( it_runningTasks = runningTasks.begin() ; it_runningTasks != runningTasks.end() ; it_runningTasks++ )
+                if( name_match( pattern.c_str() , it_runningTasks->first ) )
+                    it_runningTasks->second->fill( collection->add_record() , options );
             
-            if( cmdLine.get_num_arguments() == 0 )
-                return NULL;
+            au::list< QueueTask >::iterator it_queueTasks;
+            for( it_queueTasks = queueTasks.begin() ; it_queueTasks != queueTasks.end() ; it_queueTasks++ )
+                if( name_match( pattern.c_str() , (*it_queueTasks)->getId() ) )
+                    (*it_queueTasks)->fill( collection->add_record() , options );
             
-            std::string main_command = cmdLine.get_argument(0);
- 
-            std::string pattern ="*";
-            if( cmdLine.get_num_arguments() >= 2)
-                pattern = cmdLine.get_argument(1);
-            
-            if ( main_command == "ps_stream" )
-            {
-                samson::network::Collection* collection = new samson::network::Collection();
-                collection->set_name("ps_stream");
-
-                au::map< size_t , QueueTask >::iterator it_runningTasks;
-                for( it_runningTasks = runningTasks.begin() ; it_runningTasks != runningTasks.end() ; it_runningTasks++ )
-                    if( name_match( pattern.c_str() , it_runningTasks->first ) )
-                        it_runningTasks->second->fill( collection->add_record() , options );
-
-                au::list< QueueTask >::iterator it_queueTasks;
-                for( it_queueTasks = queueTasks.begin() ; it_queueTasks != queueTasks.end() ; it_queueTasks++ )
-                    if( name_match( pattern.c_str() , (*it_queueTasks)->getId() ) )
-                        (*it_queueTasks)->fill( collection->add_record() , options );
-
-                return collection;                
-            }
-            
-            return NULL;
+            return collection;                
         }
 
         

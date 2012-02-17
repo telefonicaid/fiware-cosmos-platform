@@ -730,43 +730,26 @@ namespace samson {
             
         }
         
-        samson::network::Collection* StreamManager::getCollection( std::string command )
+        bool match_queue( std::string pattern , std::string name )
         {
-            // Parse command
-            au::CommandLine cmdLine;
-            cmdLine.set_flag_string("group", ""); // Possible parameers
-            cmdLine.set_flag_boolean("save");
-            cmdLine.parse(command);
-
-            VisualitzationOptions options = getVisualitzationOptions( command );
+            if( pattern == "*" )
+                return true;
             
-            if( cmdLine.get_num_arguments() == 0 )
-                return NULL;
-            
-            std::string main_command = cmdLine.get_argument(0);
-            
-            if ( main_command == "ls_queues" )
+            return( ::fnmatch( pattern.c_str() , name.c_str() , FNM_PATHNAME ) == 0 );
+        }
+        
+        samson::network::Collection* StreamManager::getCollection(VisualitzationOptions options ,  std::string pattern )
+        {
+            samson::network::Collection* collection = new samson::network::Collection();
+            collection->set_name("queues");
+            au::map< std::string , Queue >::iterator it_queue;
+            for( it_queue = queues.begin() ; it_queue != queues.end() ; it_queue++ )
             {
-                std::string pattern ="*";
-                if( cmdLine.get_num_arguments() >= 2)
-                    pattern = cmdLine.get_argument(1);
-                
-                samson::network::Collection* collection = new samson::network::Collection();
-                collection->set_name("queues");
-                au::map< std::string , Queue >::iterator it_queue;
-                for( it_queue = queues.begin() ; it_queue != queues.end() ; it_queue++ )
-                {
-                    std::string name = it_queue->second->name;
-                    if( ::fnmatch( pattern.c_str() , name.c_str() , FNM_PATHNAME ) == 0 )                        
-                        it_queue->second->fill( collection->add_record() , options );
-                }
-                return collection;
+                std::string name = it_queue->second->name;
+                if( match_queue( pattern , name ) )
+                   it_queue->second->fill( collection->add_record() , options );
             }
-            
-            if ( main_command == "ps_stream" )
-                return queueTaskManager.getCollection( command );
-            
-            return NULL;
+            return collection;
         }
         
         

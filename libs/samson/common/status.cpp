@@ -60,25 +60,4 @@ const char* status(Status s)
 	return "Unknown Status";
 }
 
-    VisualitzationOptions getVisualitzationOptions( std::string command )
-    {
-        au::CommandLine cmdLine;
-        cmdLine.set_flag_boolean("v");
-        cmdLine.set_flag_boolean("vv");
-        cmdLine.set_flag_boolean("vvvv");
-        cmdLine.set_flag_boolean("a");
-        cmdLine.parse(command);
-        
-        if( cmdLine.get_flag_bool("a") )
-            return all;
-        if( cmdLine.get_flag_bool("vvv") )
-            return verbose3;
-        if( cmdLine.get_flag_bool("vv") )
-            return verbose2;
-        if( cmdLine.get_flag_bool("v") )
-            return verbose;
-        
-        return normal;
-    }
-    
 }

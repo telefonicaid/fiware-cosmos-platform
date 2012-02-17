@@ -63,7 +63,9 @@ namespace samson {
         void getInfo( std::ostringstream& output);
         
         // Get collection for queries
-        samson::network::Collection* getCollection( std::string command );
+        samson::network::Collection* getModulesCollection(VisualitzationOptions options ,  std::string pattern );
+        samson::network::Collection* getDatasCollection(VisualitzationOptions options ,  std::string pattern );
+        samson::network::Collection* getOperationsCollection(VisualitzationOptions options ,  std::string pattern );
         
 	};
 	

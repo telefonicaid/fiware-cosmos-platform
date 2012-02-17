@@ -146,9 +146,11 @@ namespace samson {
         for( int i = 0 ; i < packet->message->collection_size() ; i++ )
         {
             std::string name = packet->message->collection(i).name();
+            std::string title = packet->message->collection(i).title();
             
             network::Collection* collection = collections.findOrCreate(name);
             collection->set_name(name);
+            collection->set_title(title);
             
             for( int j = 0 ; j < packet->message->collection(i).record_size() ; j++ )
             {
@@ -179,6 +181,8 @@ namespace samson {
     
     void WorkerCommandDelilahComponent::print_content( network::Collection * collection )
     {
+        std::string title = collection->title();
+        
         if( collection->record_size() == 0 )
         {
             delilah->showWarningMessage("No records\n");
@@ -210,9 +214,9 @@ namespace samson {
         {
             // Print the generated table
             if ( group_field != "" )
-                delilah->showMessage( table->strSortedAndGrouped( command , group_field ) );
+                delilah->showMessage( table->strSortedAndGrouped( title , group_field ) );
             else
-                delilah->showMessage( table->str( command ) );
+                delilah->showMessage( table->str( title ) );
         }
         
         if( save_in_database )

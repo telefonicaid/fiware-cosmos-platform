@@ -453,6 +453,16 @@ namespace samson {
             // Get block information for this queue
             BlockInfo blockInfo;
             update( blockInfo );
+
+            
+            // Last component of name
+            /*
+            std::string last_component_name = name;
+            size_t pos = name.find_last_of("/");
+            if( pos != std::string::npos )
+                last_component_name = name.substr( pos+1 );
+             */
+            
             
             add( record , "name" , name , "left,different" );
             add( record , "#kvs" , blockInfo.info.kvs , "f=uint64,sum" );

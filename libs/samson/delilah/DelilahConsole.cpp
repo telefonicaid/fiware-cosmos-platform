@@ -1004,10 +1004,11 @@ namespace samson
         
         // New way to get information ( Worker Command )
         if(
-           ( mainCommand == "ls_queues" )     ||
-           ( mainCommand == "ls_operations" ) ||
-           ( mainCommand == "ls_datas" )      ||
-           ( mainCommand == "ls_modules" )    ||
+           ( mainCommand == "ls_queues" )         ||
+           ( mainCommand == "show_stream_block" ) ||
+           ( mainCommand == "ls_operations" )     ||
+           ( mainCommand == "ls_datas" )          ||
+           ( mainCommand == "ls_modules" )        ||
            ( mainCommand == "ps_stream" )
            )
             return sendWorkerCommand( command , NULL );

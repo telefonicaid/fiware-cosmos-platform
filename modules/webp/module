@@ -57,23 +57,27 @@ reduce update_user
 }
 
 
-script init_stream_operations
+script web_profiling
 {
     code
     {
-        # Queues;
-        alias [input]         in.01.input;
-        alias [logs]          tmp.01.logs;
-        alias [errors]        tmp.02.errors;
-		alias [users]         state.01.users;
+        # Input queues
+        alias [input]          in:input;
+
+		# Internal queues
+        alias [logs]           tmp:logs;
+        alias [errors]         tmp:errors;
+
+		# State queues
+		alias [users]           state:users;
 
         # Operations;
-        alias [parse_input]    01.parse;
-        alias [update_state]   02.update;
+        alias [parse_input]     parse;
+        alias [update_state]    update;
 
         # Definitions;
-        add_stream_operation  [parse_input]   webp.parse_web_logs [input]           [logs]  [errors];
-        add_stream_operation  [update_state]  webp.update_user    [logs] [users]    [users];
+        add_stream_operation   [parse_input]   webp.parse_web_logs [input]           [logs]  [errors];
+        add_stream_operation   [update_state]  webp.update_user    [logs] [users]    [users];
 
     }
 
@@ -85,8 +89,8 @@ script demo
     code
     {
         remove_all_stream;
-        init_stream demo webp.init_stream_operations;
+        init_stream demo webp.web_profiling;
     }
 
-    helpLine "Demo about web hit"
+    helpLine "Demo about web profiling"
 }

@@ -133,6 +133,10 @@ namespace samson {
                 "      -w            Get information for each worker\n"
                 );
 
+            add( "show_stream_block" ,"data" , "Show data activity in a particular stream block",
+                "show_stream_block path\n"
+                );
+            
             add( "push" , "data" ,
                 "Push content of a local file/directory to a queue",
                 "push <local_file_or_dir> <queue>");

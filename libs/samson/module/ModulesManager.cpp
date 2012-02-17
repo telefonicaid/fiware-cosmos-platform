@@ -276,133 +276,107 @@ namespace samson
         au::xml_close(output , "modules_manager" );
     }
     
-    samson::network::Collection* ModulesManager::getCollection( std::string command )
+    samson::network::Collection* ModulesManager::getModulesCollection(VisualitzationOptions options ,  std::string pattern )
     {
-        // Parse command
-        au::CommandLine cmdLine;
-        cmdLine.parse(command);
-        
-        // options not necessary for this command
-        VisualitzationOptions options = getVisualitzationOptions( command );
-        
-        if( cmdLine.get_num_arguments() == 0 )
-            return NULL;
-        
-        std::string main_command = cmdLine.get_argument(0);
-        
-        if ( main_command == "ls_modules" )
+        samson::network::Collection* collection = new samson::network::Collection();
+        collection->set_name("modules");
+        au::map< std::string , Module >::iterator it;
+        for( it = modules.begin() ; it != modules.end() ; it++ )
         {
-            std::string pattern ="*";
-            if( cmdLine.get_num_arguments() >= 2)
-                pattern = cmdLine.get_argument(1);
-            
-            samson::network::Collection* collection = new samson::network::Collection();
-            collection->set_name("modules");
-            au::map< std::string , Module >::iterator it;
-            for( it = modules.begin() ; it != modules.end() ; it++ )
+            std::string name = it->second->name;
+            if( ::fnmatch( pattern.c_str() , name.c_str() , FNM_PATHNAME ) == 0 )
             {
-                std::string name = it->second->name;
+                Module * module = it->second;
+                
+                network::CollectionRecord* record = collection->add_record();
+                
+                ::samson::add( record , "name"    , module->name    , "left" );
+                ::samson::add( record , "version" , module->version , "different" );
+                ::samson::add( record , "#operations" , module->operations.size() );
+                ::samson::add( record , "#datas"      , module->datas.size() );
+                ::samson::add( record , "author"  , module->author  , "left" );
+                
+            }
+        }
+        return collection;
+        
+    }
+    samson::network::Collection* ModulesManager::getDatasCollection(VisualitzationOptions options ,  std::string pattern )
+    {
+        samson::network::Collection* collection = new samson::network::Collection();
+        collection->set_name("datas");
+        
+        au::map< std::string , Module >::iterator it;
+        for( it = modules.begin() ; it != modules.end() ; it++ )
+        {
+            Module * module = it->second;
+            
+            std::map<std::string, Data*>::iterator it_datas;
+            for( 
+                it_datas = module->datas.begin() ; 
+                it_datas != module->datas.end()  ; 
+                it_datas++)
+            {
+                
+                std::string name = it_datas->first;
+                Data * data = it_datas->second;
+                
                 if( ::fnmatch( pattern.c_str() , name.c_str() , FNM_PATHNAME ) == 0 )
                 {
-                    Module * module = it->second;
                     
                     network::CollectionRecord* record = collection->add_record();
                     
-                    ::samson::add( record , "name"    , module->name    , "left" );
-                    ::samson::add( record , "version" , module->version , "different" );
-                    ::samson::add( record , "#operations" , module->operations.size() );
-                    ::samson::add( record , "#datas"      , module->datas.size() );
-                    ::samson::add( record , "author"  , module->author  , "left" );
-                    
+                    ::samson::add( record , "name" , data->_name    , "" );
+                    ::samson::add( record , "help" , data->help()   , "left" );
                 }
+                
             }
-            return collection;
         }
+        return collection;
         
-        if ( main_command == "ls_operations" )
-        {
-            std::string pattern ="*";
-            if( cmdLine.get_num_arguments() >= 2)
-                pattern = cmdLine.get_argument(1);
-            
-            samson::network::Collection* collection = new samson::network::Collection();
-            collection->set_name("operations");
-            
-            au::map< std::string , Module >::iterator it;
-            for( it = modules.begin() ; it != modules.end() ; it++ )
-            {
-                Module * module = it->second;
-                
-                std::map<std::string, Operation*>::iterator it_operation;
-                for( 
-                    it_operation = module->operations.begin() ; 
-                    it_operation != module->operations.end()  ; 
-                    it_operation++)
-                {
-                    
-                    std::string name = it_operation->first;
-                    Operation * operation = it_operation->second;
-                    
-                    if( ::fnmatch( pattern.c_str() , name.c_str() , FNM_PATHNAME ) == 0 )
-                    {
-                        
-                        network::CollectionRecord* record = collection->add_record();
-                        
-                        ::samson::add( record , "name" , operation->_name         , "left" );
-                        ::samson::add( record , "type" , operation->getTypeName() , "" );
-                        
-                        //::samson::add( record , "help" , operation->helpLine()    , "" );
-                        if( options == verbose )
-                        {
-                            ::samson::add( record , "inputs"  , operation->inputFormatsString()  , "" );
-                            ::samson::add( record , "outputs" , operation->outputFormatsString()  , "" );
-                        }
-                    }
-                    
-                }
-            }
-            return collection;
-        }        
-
-        if ( main_command == "ls_datas" )
-        {
-            std::string pattern ="*";
-            if( cmdLine.get_num_arguments() >= 2)
-                pattern = cmdLine.get_argument(1);
-            
-            samson::network::Collection* collection = new samson::network::Collection();
-            collection->set_name("datas");
-            
-            au::map< std::string , Module >::iterator it;
-            for( it = modules.begin() ; it != modules.end() ; it++ )
-            {
-                Module * module = it->second;
-                
-                std::map<std::string, Data*>::iterator it_datas;
-                for( 
-                    it_datas = module->datas.begin() ; 
-                    it_datas != module->datas.end()  ; 
-                    it_datas++)
-                {
-                    
-                    std::string name = it_datas->first;
-                    Data * data = it_datas->second;
-                    
-                    if( ::fnmatch( pattern.c_str() , name.c_str() , FNM_PATHNAME ) == 0 )
-                    {
-                        
-                        network::CollectionRecord* record = collection->add_record();
-                        
-                        ::samson::add( record , "name" , data->_name    , "" );
-                        ::samson::add( record , "help" , data->help()   , "left" );
-                    }
-                    
-                }
-            }
-            return collection;
-        }           
-        
-        return NULL;
     }
+
+    samson::network::Collection* ModulesManager::getOperationsCollection(VisualitzationOptions options ,  std::string pattern )
+    {
+        
+        samson::network::Collection* collection = new samson::network::Collection();
+        collection->set_name("operations");
+        
+        au::map< std::string , Module >::iterator it;
+        for( it = modules.begin() ; it != modules.end() ; it++ )
+        {
+            Module * module = it->second;
+            
+            std::map<std::string, Operation*>::iterator it_operation;
+            for( 
+                it_operation = module->operations.begin() ; 
+                it_operation != module->operations.end()  ; 
+                it_operation++)
+            {
+                
+                std::string name = it_operation->first;
+                Operation * operation = it_operation->second;
+                
+                if( ::fnmatch( pattern.c_str() , name.c_str() , FNM_PATHNAME ) == 0 )
+                {
+                    
+                    network::CollectionRecord* record = collection->add_record();
+                    
+                    ::samson::add( record , "name" , operation->_name         , "left" );
+                    ::samson::add( record , "type" , operation->getTypeName() , "" );
+                    
+                    //::samson::add( record , "help" , operation->helpLine()    , "" );
+                    if( options == verbose )
+                    {
+                        ::samson::add( record , "inputs"  , operation->inputFormatsString()  , "" );
+                        ::samson::add( record , "outputs" , operation->outputFormatsString()  , "" );
+                    }
+                }
+                
+            }
+        }
+        return collection;        
+    }
+
 	
 }

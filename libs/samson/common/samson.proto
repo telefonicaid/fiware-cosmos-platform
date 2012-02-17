@@ -225,8 +225,9 @@ message CollectionRecord
 
 message Collection
 {
-     required string name = 1 ;
-	 repeated CollectionRecord record = 2; 
+     required string name = 1;
+	 required string title = 2;
+	 repeated CollectionRecord record = 3; 
 }
 
 

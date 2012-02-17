@@ -79,7 +79,6 @@ extern const char* status(Status s);
         all
     } VisualitzationOptions;
     
-    VisualitzationOptions getVisualitzationOptions( std::string command );
     
 }
 

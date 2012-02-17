@@ -136,6 +136,8 @@ namespace samson {
     void WorkerCommand::runCommand( std::string command , au::ErrorManager* error )
     {
         
+        //LM_M(("WC Running command '%s'" , command.c_str() ));
+        
         if( ignoreCommand( command ) )
             return;
         
@@ -163,13 +165,6 @@ namespace samson {
         
         std::string main_command = cmd.get_argument(0);
 
-        
-        if ( main_command == "ls_queues" )
-        {
-            
-            
-        }
-        
         if( main_command == "init_stream" )
         {
             if( cmd.get_num_arguments() < 2 )
@@ -183,7 +178,7 @@ namespace samson {
             if( cmd.get_num_arguments() == 3 )
             {
                 prefix.append( cmd.get_argument(1) );
-                prefix.append(".");
+                prefix.append("/");
                 
                 operation_name  = cmd.get_argument(2);
             }
@@ -400,32 +395,135 @@ namespace samson {
         cmd.set_flag_boolean("f");
         cmd.set_flag_boolean("new");
         cmd.set_flag_boolean("remove");
+        cmd.set_flag_string("group", ""); // Possible parameers
+        cmd.set_flag_boolean("save");
+        cmd.set_flag_boolean("v");
+        cmd.set_flag_boolean("vv");
+        cmd.set_flag_boolean("vvvv");
+        cmd.set_flag_boolean("a");
+        
         cmd.parse( command );
+
+        // Get visualitzation option ( if any )
+        VisualitzationOptions visualitzation_options = normal;
+        if( cmd.get_flag_bool("v") )
+            visualitzation_options = verbose;
+        if( cmd.get_flag_bool("vv") )
+            visualitzation_options = verbose2;
+        if( cmd.get_flag_bool("vvv") )
+            visualitzation_options = verbose3;
+        if( cmd.get_flag_bool("a") )
+            visualitzation_options = all;
+        
+
+        if( cmd.get_num_arguments() == 0 )
+        {
+            finishWorkerTaskWithError("No command provided");
+            return;
+        }
         
         // Main command
         std::string main_command = cmd.get_argument(0);
-
+        
+        // Get pattern with the second argument if necessary
+        std::string pattern ="*";
+        if( cmd.get_num_arguments() >= 2)
+            pattern = cmd.get_argument(1);
+        
         // Query commands
-        if(
-           ( main_command == "ls_queues" ) ||
-           ( main_command == "ps_stream" )
-           )
+        if( main_command == "ls_queues" )
         {
-            collections.push_back( streamManager->getCollection( command ) );
+            network::Collection * c = streamManager->getCollection( visualitzation_options,pattern );
+            c->set_title( command  );
+            collections.push_back( c );
             finishWorkerTask();
             return;
         }
+        
+        if( main_command == "ps_stream")
+        {
+            // Add the ps stream
+            network::Collection * c = streamManager->queueTaskManager.getCollection( visualitzation_options , pattern );
+            c->set_title( command  );
+            collections.push_back( c);
+            finishWorkerTask();
+            return ;
+        }
+        
+        if ( main_command == "ls_modules" )
+        {
+            network::Collection * c = ModulesManager::shared()->getModulesCollection( visualitzation_options , pattern ) ;
+            c->set_title( command  );
+            collections.push_back( c );
+            finishWorkerTask();
+            return;
+        }
+        if ( main_command == "ls_operations" )
+        {
+            network::Collection * c = ModulesManager::shared()->getOperationsCollection( visualitzation_options , pattern ) ;
+            c->set_title( command  );
+            collections.push_back( c);
+            finishWorkerTask();
+            return;
+        }
+        if ( main_command == "ls_datas" )
+        {
+            network::Collection * c = ModulesManager::shared()->getDatasCollection( visualitzation_options , pattern );
+            c->set_title( command  );
+            collections.push_back( c );
+            finishWorkerTask();
+            return;
+        }
+        
+        if( main_command == "show_stream_block" )
+        {
+            
+            std::string pattern_inputs;
+            std::string pattern_states;
+            std::string pattern_outputs;
+            
+            std::string path;
+            
+            if ( cmd.get_num_arguments() >= 2 )
+            {
+                 path = cmd.get_argument(1);
+                
+                if( path.substr( path.length() - 1 ) != "/" )
+                    path.append("/");
+                
+                pattern_inputs += path;
+                pattern_states += path;
+                pattern_outputs += path;
+            }
+            else
+                path = "<root>";
 
-        if(
-           ( main_command == "ls_modules" )    ||
-           ( main_command == "ls_operations" ) ||
-           ( main_command == "ls_datas" )
-           )
-        {
-            collections.push_back( ModulesManager::shared()->getCollection( command ) );
+            pattern_inputs += "in:*";
+            pattern_states += "state:*";
+            pattern_outputs += "out:*";
+            
+            // Inputs
+            network::Collection *c_inputs = streamManager->getCollection( verbose , pattern_inputs );
+            c_inputs->set_title( au::str("Inputs for %s", path.c_str()) );
+            c_inputs->set_name("inputs");
+            collections.push_back( c_inputs );
+            
+            // States
+            network::Collection *c_states = streamManager->getCollection( normal , pattern_states );
+            c_states->set_title( au::str("States for %s", path.c_str()) );
+            c_states->set_name("states");
+            collections.push_back( c_states );
+            
+            // Outputs
+            network::Collection *c_outputs = streamManager->getCollection( verbose , pattern_outputs );
+            c_outputs->set_title( au::str("Outputs for %s", path.c_str()) );
+            c_outputs->set_name("outputs");
+            collections.push_back( c_outputs );
+
             finishWorkerTask();
             return;
         }
+        
         
         if( main_command == "wait" )
         {
@@ -476,14 +574,14 @@ namespace samson {
         
         if( main_command == "run_stream_operation" )
         {
-            
             // Flag used in automatic update operation to lock input blocks and remove after operation
             bool clear_inputs =  cmd.get_flag_bool("clear_inputs"); 
             
-            //size_t min_size = SamsonSetup::shared()->getUInt64("stream.min_operation_input_size");          // Minimum size to run an operation
-            size_t max_size = SamsonSetup::shared()->getUInt64("stream.max_operation_input_size");          // Minimum size to run an operation
+            // Minimum size to run an operation
+            size_t max_size = SamsonSetup::shared()->getUInt64("stream.max_operation_input_size");          
             
-            stream::BlockIdList block_ids;      // Collection of block ids for the already processed blocks ( only used in clear_inputs is not activated )
+            // Collection of block ids for the already processed blocks ( only used in clear_inputs is not activated )
+            stream::BlockIdList block_ids;      
             
             //LM_M(("Worker command %s --> operation_size %lu" , command.c_str() , operation_size ));
             
@@ -598,6 +696,13 @@ namespace samson {
                     // Get the input queue
                     std::string input_queue_name = operation->input_queues[0];
                     stream::Queue *queue = streamManager->getQueue( input_queue_name );
+                    
+                    // Change max size to make sure we distribute work over all cores...
+                    BlockInfo block_info;
+                    queue->update(block_info);
+                    size_t tmp_max_size = block_info.size / SamsonSetup::shared()->getInt("general.num_processess");
+                    if( tmp_max_size < max_size )
+                        max_size = tmp_max_size;
                     
                     
                     stream::BlockList inputBlockList;

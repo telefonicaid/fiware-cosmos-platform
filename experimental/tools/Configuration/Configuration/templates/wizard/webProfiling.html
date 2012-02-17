@@ -1,12 +1,13 @@
+{% extends "admin/base.html" %}
 
 {% load i18n %}
 
 {% block content %}
 <div id="content-main">
 	<h1>{{ "BDP Configuration" }}</h1>
-	<a id="a-ingestion">{{ "1. Ingestion" }}</a> &rsaquo;&rsaquo;&rsaquo;
+	<a>{{ "1. Ingestion" }}</a> &rsaquo;&rsaquo;&rsaquo;
     <a>{{ "2. Pre-processing" }}</a> &rsaquo;&rsaquo;&rsaquo;
-	<a>{{ "3. Processing and Consumption" }}</a><br/><br/>
+	<a id="a-ingestion">{{ "3. Processing and Consumption" }}</a><br/><br/><br/><br/>
     <form {% if form.form.is_multipart %}enctype="multipart/form-data" {% endif %}method="post" action="" id="{{ opts.module_name }}_form">{% csrf_token %}
         <div>
             {% if form.form.errors %}
@@ -18,35 +19,39 @@
                 <li>{{ error }}</li>{% endfor %}
             </ul>
             {% endif %}
-            
-		    <div class="fieldWrapper">
-		        {{ form.message.errors }}
-		        <label for="id_type">Consumption Mode</label>
-		        {{ form.mode }}
-		    </div> 
-		    <div class="fieldWrapper">
-		        {{ form.message.errors }}
-		        <label for="id_type">Grouping Fields</label>
-		        {{ form.grouping_fields }}		       
-		    </div>
-		    <div class="fieldWrapper">
-		        {{ form.message.errors }}
-		        <label for="id_type">Attributes Fields</label>
-		        {{ form.attributes_fields }}
-		    </div>	
-		    <div class="fieldWrapper">
+            <br/>
+            <div class="field-div">
 		        {{ form.subject.errors }}
-		        <label for="id_type">Consumption Path</label>
+		        <label class="label-form" for="id_type">Consumption Path</label>
 		        {{ form.consumption_path }}
-		    </div>
-			
+		    </div><br/><br/><br/>
+		    <div class="consumption-div">
+			    <div class="consumption-div-left">
+				    <h2 class="h-label">{{ "Available Attributes" }}</h2>
+				    <div class="cons-div">
+				        {{ form.message.errors }}
+				        <label for="id_type">Attributes Fields</label>
+			        	 {{ form.attributes_fields }}		       
+				    </div>
+				</div>
+				<div class="consumption-div-right">
+				    <h2 class="h-label">{{ "Attributes Configuration" }}</h2>
+				    <div class="cons-div">
+				        {{ form.message.errors }}
+				        <label for="id_type">Grouping Fields</label>
+			        	 {{ form.grouping_fields }}<br/><br/><br/><br/>	
+			        	<label for="id_type">Consumption Mode</label>
+			        	 {{ form.mode }}
+				    </div>
+			    </div><br/><br/>
+		    </div><br/>
+		    
             <input type="hidden" name="{{ step_field }}" value="{{ step0 }}" />
             {{ previous_fields|safe }}
-
-            <div id="buttons-div" class="submit-row" align="right">
-                <input type="button" value="&laquo; Back" class="button"/>
-            	<input type="submit" value="Next &raquo;" class="button" name="_save" disabled="disabled"/>
+			
+			 <div id="buttons-div" align="right">
              	<input type="reset" value="Cancel" class="button" name="_cancel"/>
+             	<input type="button" value="&laquo; Back" class="button"/>
                 <input type="submit" value="{% ifequal step step_count %}Finish{% else %}Next &raquo;{% endifequal %}" class="button" name="_save"/>               
             </div>
 

@@ -6,10 +6,13 @@
 	<h1>{{ "BDP Configuration" }}</h1>
 	<a id="a-ingestion">{{ "1. Ingestion" }}</a> &rsaquo;&rsaquo;&rsaquo;
     <a>{{ "2. Pre-processing" }}</a> &rsaquo;&rsaquo;&rsaquo;
-	<a>{{ "3. Processing and Consumption" }}</a><br/><br/>
+	<a>{{ "3. Processing and Consumption" }}</a><br/><br/><br/>
     <form {% if form.form.is_multipart %}enctype="multipart/form-data" {% endif %}method="post" action="" id="{{ opts.module_name }}_form">{% csrf_token %}
         <div class="submit-row">
             {% if form.form.errors %}
+            <p class="errornote">
+                {% blocktrans count form.form.errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}
+            </p>
             <ul class="errorlist">
                 {% for error in form.form.non_field_errors %}
                 <li>{{ error }}</li>{% endfor %}
@@ -22,34 +25,33 @@
 		        {{ form.subject.errors }}
 		        <label class="label-form" for="id_identifier">Service Name</label>
 		        {{ form.name }}
-		    </div><br/>
+		    </div><br/><br/>
 		    <h2 class="h-label">{{ "Ingestion Properties" }}</h2>
 		    <div class="field-div">
 			    <div class="fieldWrapper">
 			        {{ form.message.errors }}
 			        <label class="label-form-radio" for="id_type">Ingestion Mode</label>
 			        {{ form.mode }}
-			    </div>
+			    </div><br/><br/>
 			    <div class="fieldWrapper">
 			        {{ form.message.errors }}
 			        <label class="label-form" for="id_type">Ingestion Address</label>
 			        {{ form.path }}
-			    </div><br/>
+			    </div><br/><br/>
 			    <div class="fieldWrapper">
 			        {{ form.message.errors }}
 			        <label class="label-form" for="id_type">Ingestion Size</label>
 			        {{ form.size }}
 			    </div>	
-			  </div><br/>      
+			  </div><br/><br/>      
 			
             <input type="hidden" name="{{ step_field }}" value="{{ step0 }}" />
             {{ previous_fields|safe }}
 
             <div id="buttons-div" class="submit-row" align="right">
-             	<input type="button" value="&laquo; Back" class="button" disabled="disabled"/>
-            	<input type="submit" value="Next &raquo;" class="button" name="_save"/>
              	<input type="reset" value="Cancel" class="button" name="_cancel"/>
-                <input type="submit" value="{% ifequal step step_count %}Finish{% else %}Next &raquo;{% endifequal %}" class="button" name="_save" disabled="disabled"/>               
+             	<input type="button" value="&laquo; Back" class="button" disabled="disabled"/>
+                <input type="submit" value="{% ifequal step step_count %}Finish{% else %}Next &raquo;{% endifequal %}" class="button" name="_save"/>               
             </div>
 
             <script type="text/javascript">document.getElementById("{{ form.first_field.auto_id }}").focus();</script>

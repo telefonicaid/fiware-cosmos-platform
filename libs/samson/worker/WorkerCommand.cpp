@@ -400,6 +400,8 @@ namespace samson {
         cmd.set_flag_boolean("v");
         cmd.set_flag_boolean("vv");
         cmd.set_flag_boolean("vvvv");
+        cmd.set_flag_boolean("in");
+        cmd.set_flag_boolean("out");
         cmd.set_flag_boolean("a");
         
         cmd.parse( command );
@@ -414,6 +416,10 @@ namespace samson {
             visualitzation_options = verbose3;
         if( cmd.get_flag_bool("a") )
             visualitzation_options = all;
+        if( cmd.get_flag_bool("in") )
+            visualitzation_options = in;
+        if( cmd.get_flag_bool("out") )
+            visualitzation_options = out;
         
 
         if( cmd.get_num_arguments() == 0 )

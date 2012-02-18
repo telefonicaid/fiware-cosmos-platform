@@ -16,7 +16,6 @@
 #include "engine/DiskOperation.h"
 #include "engine/DiskManager.h"
 
-#include "samson/common/Info.h"     // samson::Info
 #include "samson/common/EnvironmentOperations.h"    // copyEnviroment
 #include "samson/common/SamsonSetup.h" 
 

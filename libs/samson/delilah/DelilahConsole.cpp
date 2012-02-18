@@ -25,7 +25,6 @@
 #include "tables/pugi.h"                  // pugi::Pugi
 #include "tables/pugixml.hpp"             // pugi:...
 
-#include "samson/common/Info.h"                     // samson::Info
 #include "samson/common/EnvironmentOperations.h"	// Environment operations (CopyFrom)
 #include "samson/common/NotificationMessages.h"
 

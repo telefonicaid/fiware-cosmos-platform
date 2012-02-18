@@ -262,6 +262,10 @@ namespace samson {
         
         void StreamOperation::add( QueueTask* task )
         {
+            // Take some statistics about this operation
+            input_rate.push( task->getBlockList("input_0")->getBlockInfo().info );
+            
+            
             // Set the environment property to make sure, it is removed when finished
             task->environment.set("system.stream_operation" , name );
             
@@ -454,7 +458,26 @@ namespace samson {
                 ::samson::add( record , "running_tasks" , running_tasks.size()        , "f=uint64,sum" );
             }
             
-            if( ( options == verbose2 ) || (options == all ) )
+            if( ( options == in ) || (options == all ) )
+            {
+                ::samson::add( record , "#Ops", history_num_operations , "f=uint64,sum" );
+                
+                ::samson::add( record , "In: size"  , input_rate.get_total_size() , "f=uint64,sum" );
+                ::samson::add( record , "In: #kvs"  , input_rate.get_total_kvs() , "f=uint64,sum" );
+                ::samson::add( record , "In: B/s"    , input_rate.get_rate_size() , "f=uint64,sum" );
+                ::samson::add( record , "In: #kvs/s" , input_rate.get_rate_kvs() , "f=uint64,sum" );
+            }
+
+            if( ( options == out ) || (options == all ) )
+            {
+                ::samson::add( record , "Out: size"  , output_rate.get_total_size() , "f=uint64,sum" );
+                ::samson::add( record , "Out: #kvs"  , output_rate.get_total_kvs() , "f=uint64,sum" );
+                ::samson::add( record , "Out: B/s"    , output_rate.get_rate_size() , "f=uint64,sum" );
+                ::samson::add( record , "Out: #kvs/s" , output_rate.get_rate_kvs() , "f=uint64,sum" );
+            }
+            
+            
+            if( ( options == verbose3 ) || (options == all ) )
             {
                 ::samson::add( record , "last_review" , last_review + " " + getStatus() );
             }

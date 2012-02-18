@@ -25,14 +25,14 @@
 #include "engine/Object.h"                  // engine::Object
 #include "engine/Buffer.h"                  // engine::Buffer
 
+#include "samson/common/Rate.h"
 #include "samson/common/samson.pb.h"        // network::...
 #include "samson/common/NotificationMessages.h"
-#include "samson/module/Environment.h"      // samson::Environment
 #include "samson/common/EnvironmentOperations.h"
 
+#include "samson/module/Environment.h"      // samson::Environment
+
 #include "samson/stream/QueueTaskManager.h" // samson::stream::QueueTaskManager
-
-
 #include "samson/stream/BlockListContainer.h"       // BlockListContainer ( parent class )
 #include "samson/stream/BlockList.h"                // BlockList
 #include "samson/stream/DistributionInformation.h"
@@ -108,9 +108,12 @@ namespace samson {
         protected:
             
             StreamManager *streamManager;   // Pointer to the stream manager to check ready
+
             std::string last_review;        // Comment from the last review
-            
             std::string command;            // Original command that originated this StreamOperation
+            
+            ::samson::Rate input_rate;   // Input and Output rate for first channel
+            ::samson::Rate output_rate;
             
         public:
 

@@ -100,8 +100,6 @@ namespace samson {
             // Default number of divisions
             num_divisions = 1;
          
-            rate_kvs.setTimeLength( 60 );
-            rate_size.setTimeLength( 60 );
             
         }
         
@@ -115,9 +113,8 @@ namespace samson {
         {
             
             BlockInfo block_info = list->getBlockInfo();
-            rate_kvs.push( block_info.info.kvs );
-            rate_size.push( block_info.info.size );
-            
+            rate.push( block_info.info.kvs   , block_info.info.size );
+                        
             au::list< Block >::iterator b;
             for (b = list->blocks.begin() ; b != list->blocks.end() ; b++ )
                 push( *b );
@@ -176,8 +173,8 @@ namespace samson {
             au::xml_simple( output , "environment" , environment.getEnvironmentDescription() );
             
             // Information about simple rate
-            au::xml_single_element( output , "rate_kvs" , &rate_kvs );
-            au::xml_single_element( output , "rate_size" , &rate_size );
+            //au::xml_single_element( output , "rate_kvs" , &rate_kvs );
+            //au::xml_single_element( output , "rate_size" , &rate_size );
             
             
             au::xml_close(output, "queue");
@@ -480,11 +477,11 @@ namespace samson {
             if( ( options == verbose ) || (options == all ) )
             {
 
-                add( record , "Total #kvs"  , (size_t)rate_kvs.getTotalSize() , "f=uint64,sum" );
-                add( record , "Total size"  , (size_t)rate_size.getTotalSize() , "f=uint64,sum" );
+                add( record , "Total #kvs"  , (size_t)rate.get_total_kvs() , "f=uint64,sum" );
+                add( record , "Total size"  , (size_t)rate.get_total_size() , "f=uint64,sum" );
                 
-                add( record , "#kvs/s"  , (size_t)rate_kvs.getRate() , "f=uint64,sum" );
-                add( record , "Bytes/s" , (size_t)rate_size.getRate() , "f=uint64,sum" );
+                add( record , "#kvs/s"  , (size_t) rate.get_rate_kvs() , "f=uint64,sum" );
+                add( record , "Bytes/s" , (size_t) rate.get_rate_size() , "f=uint64,sum" );
             }
             
             if( ( options == verbose2 ) || (options == all ) )

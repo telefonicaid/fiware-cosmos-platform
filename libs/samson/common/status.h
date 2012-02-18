@@ -73,6 +73,8 @@ extern const char* status(Status s);
     typedef enum 
     { 
         normal,
+        in,
+        out,
         verbose,
         verbose2,
         verbose3,

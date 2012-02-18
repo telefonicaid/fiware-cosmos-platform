@@ -6,8 +6,9 @@
 
 #include "au/list.h"                    // au::list
 #include "au/Environment.h"             // au::Environment
-#include "au/Rate.h"                    // au::SimpleRate
+#include "au/Rate.h"                    // au::Rate
 
+#include "samson/common/Rate.h"         // samson::Rate
 #include "samson/common/coding.h"       // KVFullInfo
 #include "samson/common/samson.pb.h"    // samson::network::...
 
@@ -68,8 +69,7 @@ namespace samson {
             int num_divisions;
             
             // Monitoring of the input rate
-            au::rate::Rate rate_kvs;
-            au::rate::Rate rate_size;
+            ::samson::Rate rate; // samson::Rate for kvs and size monitoring
             
         public:
             

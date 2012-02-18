@@ -16,7 +16,6 @@
 #include "samson/common/SamsonSetup.h"                  // samson::SamsonSetup
 #include "samson/common/Macros.h"                     // EXIT, ...
 #include "samson/common/SamsonSetup.h"				// samson::SamsonSetup
-#include "samson/common/Info.h"                     // samson::Info
 
 #include "samson/module/samsonVersion.h"  // SAMSON_VERSION
 

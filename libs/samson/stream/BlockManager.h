@@ -4,7 +4,6 @@
 #include "Block.h"                      // samson::stream::Block
 #include "au/list.h"
 
-#include "samson/common/Info.h"         // samson::Info
 
 #include "engine/Object.h"  // engien::EngineListener
 #include "engine/Object.h"              // engine::Object

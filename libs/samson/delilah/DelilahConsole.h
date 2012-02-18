@@ -461,16 +461,16 @@ namespace samson {
 		// Show a message on screen
 		void showMessage( std::string message)
 		{
-			writeOnConsole( message );
+			writeOnConsole( au::strToConsole( message ) );
 		}
 		void showWarningMessage( std::string message)
         {
-			writeWarningOnConsole( message );
+			writeWarningOnConsole( au::strToConsole( message ) );
         }
         
 		void showErrorMessage( std::string message)
         {
-			writeErrorOnConsole( message );
+			writeErrorOnConsole( au::strToConsole( message ) );
         };
 
 		

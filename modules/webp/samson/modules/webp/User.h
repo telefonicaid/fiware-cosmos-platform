@@ -23,7 +23,8 @@ namespace webp{
 	   void init( std::string _id )
 	   {
 		  id.value = _id;
-		  category_hitsSetLength(0);		  
+		  category_hitsSetLength(0);
+		  last_log.init();
 	   }
 
 	   void add_hit( Category* category )

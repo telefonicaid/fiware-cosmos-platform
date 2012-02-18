@@ -16,6 +16,18 @@ namespace webp{
 
 	class Log : public Log_base
 	{
+
+	public:
+
+	   void init( )
+	   {
+		  user.value = "";
+		  url.value = "";
+		  time.value = 0;
+
+		  categoriesSetLength(0);
+
+	   } 
 	};
 
 

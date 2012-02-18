@@ -33,6 +33,7 @@ data User
 {
 	system.String id;
 	vector webp.CategoryHits category_hits;
+	webp.Log last_log;
 }
 
 parser parse_web_logs

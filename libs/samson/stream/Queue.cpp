@@ -479,6 +479,10 @@ namespace samson {
             
             if( ( options == verbose ) || (options == all ) )
             {
+
+                add( record , "Total #kvs"  , (size_t)rate_kvs.getTotalSize() , "f=uint64,sum" );
+                add( record , "Total size"  , (size_t)rate_size.getTotalSize() , "f=uint64,sum" );
+                
                 add( record , "#kvs/s"  , (size_t)rate_kvs.getRate() , "f=uint64,sum" );
                 add( record , "Bytes/s" , (size_t)rate_size.getRate() , "f=uint64,sum" );
             }

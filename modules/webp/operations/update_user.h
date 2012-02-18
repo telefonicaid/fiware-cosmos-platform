@@ -72,6 +72,13 @@ namespace webp{
 				 user.add_hit( &log.categories[c] );
 			  }
 
+			  if( i == ( inputs[0].num_kvs - 1 ) )
+			  {
+				 // Take the last log
+				 user.last_log.copyFrom( &log );
+
+			  }
+
 		   }
 
 // Always emit state at the output

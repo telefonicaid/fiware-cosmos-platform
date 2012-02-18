@@ -348,9 +348,9 @@ namespace samson {
         if ( ( path_components.size() < 2 ) || (path_components[0] != "samson") )
             au::xml_simple(output, "message", "Error. Only /samson/path requests are valid" );
         
-        if( path_components[1] == "version" )
-            au::xml_simple(output, "message", au::str("SAMSON v %s" , SAMSON_VERSION ) );
-        if( path_components[1] == "state" )
+        else if( path_components[1] == "version" )
+            au::xml_simple(output, "version", au::str("SAMSON v %s" , SAMSON_VERSION ) );
+        else if( path_components[1] == "state" )
         {
             if( path_components.size() < 4 )
                 au::xml_simple(output, "message", au::str("Error: format /samson/state/queue/key" ) );

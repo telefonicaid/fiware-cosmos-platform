@@ -476,20 +476,19 @@ namespace samson {
             
             if( ( options == verbose ) || (options == all ) )
             {
-                add( record , "#kvs/s"  , rate_kvs.getRate() , "f=uint64,sum" );
-                add( record , "Bytes/s" , rate_size.getRate() , "f=uint64,sum" );
+                add( record , "#kvs/s"  , (size_t)rate_kvs.getRate() , "f=uint64,sum" );
+                add( record , "Bytes/s" , (size_t)rate_size.getRate() , "f=uint64,sum" );
             }
             
             if( ( options == verbose2 ) || (options == all ) )
             {
-                add( record , "#Blocs"  , blockInfo.num_blocks , "f=uint64,sum" );
-                add( record , "Size"  , blockInfo.size , "f=uint64,sum" );
+                add( record , "#Blocs"     , blockInfo.num_blocks , "f=uint64,sum" );
+                add( record , "Size"       , blockInfo.size , "f=uint64,sum" );
                 add( record , "on Memory"  , blockInfo.size_on_memory , "f=uint64,sum" );
-                add( record , "on Disk"  , blockInfo.size_on_disk , "f=uint64,sum" );
-                add( record , "Locked"  , blockInfo.size_locked , "f=uint64,sum" );
-                
-                add( record , "Time from"  , blockInfo.min_time , "f=time,different" );
-                add( record , "Time to"  , blockInfo.max_time , "f=time,different" );
+                add( record , "on Disk"    , blockInfo.size_on_disk , "f=uint64,sum" );
+                add( record , "Locked"     , blockInfo.size_locked , "f=uint64,sum" );
+                add( record , "Time from"  , (size_t)blockInfo.min_time , "f=time,different" );
+                add( record , "Time to"    , (size_t)blockInfo.max_time , "f=time,different" );
             }
             
         }

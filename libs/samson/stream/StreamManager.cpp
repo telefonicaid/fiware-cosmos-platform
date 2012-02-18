@@ -752,6 +752,23 @@ namespace samson {
             return collection;
         }
         
+        samson::network::Collection* StreamManager::getCollectionForStreamOperations(
+                                                VisualitzationOptions options 
+                                                ,  std::string pattern )
+        {
+            samson::network::Collection* collection = new samson::network::Collection();
+            collection->set_name("stream_operations");
+            au::map< std::string , StreamOperation >::iterator it;
+            for( it = stream_operations.begin() ; it != stream_operations.end() ; it++ )
+            {
+                std::string name = it->second->name;
+                if( match_queue( pattern , name ) )
+                    it->second->fill( collection->add_record() , options );
+            }
+            return collection;
+            
+        }
+
         
         void StreamManager::reset()
         {

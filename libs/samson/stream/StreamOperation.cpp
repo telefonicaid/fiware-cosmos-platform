@@ -2,6 +2,7 @@
 
 #include "samson/module/ModulesManager.h"   
 #include "samson/common/SamsonSetup.h"
+#include "samson/common/MessagesOperations.h"
 #include "samson/worker/SamsonWorker.h"
 
 #include "StreamManager.h"                 
@@ -36,6 +37,8 @@ namespace samson {
             return 1;
             
         }        
+        
+#pragma StreamOperation
         
         StreamOperation::StreamOperation(  )
         {
@@ -425,7 +428,38 @@ namespace samson {
                                                         input_queues[0].c_str() 
                                                         ));
         }
-        
+        void StreamOperation::fill( samson::network::CollectionRecord* record , VisualitzationOptions options )
+        {
+            
+            // Common fields
+            ::samson::add( record , "name"      , name      , "left,different" );
+            ::samson::add( record , "operation" , operation , "different" );
+            
+            if( ( options == normal ) || (options == all ) )
+            {
+                std::ostringstream inputs,outputs;
+                for ( size_t i = 0 ; i < input_queues.size() ; i++)
+                    inputs << input_queues[i] << " ";
+                for ( size_t i = 0 ; i < output_queues.size() ; i++)
+                    outputs << output_queues[i] << " ";
+                
+                ::samson::add( record , "inputs"    , inputs.str()    , "different" );
+                ::samson::add( record , "outputs"   , outputs.str()   , "different" );
+            }
+            
+            if( ( options == verbose ) || (options == all ) )
+            {
+                BlockInfo input_block_info = getUniqueBlockInfo();
+                ::samson::add( record , "inputs"        , input_block_info.strShort() , "different" );
+                ::samson::add( record , "running_tasks" , running_tasks.size()        , "f=uint64,sum" );
+            }
+            
+            if( ( options == verbose2 ) || (options == all ) )
+            {
+                ::samson::add( record , "last_review" , last_review + " " + getStatus() );
+            }
+            
+        }        
         
         
 #pragma mark StreamOperationUpdateState::
@@ -804,6 +838,10 @@ namespace samson {
                                                         ));
             
         }
+        
+        
+
+        
         
         
         

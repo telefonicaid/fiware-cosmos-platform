@@ -176,6 +176,10 @@ namespace samson {
                 return environment.getInt("system.max_tasks" , 0 );
             }
             
+            // Option to create collections
+            void fill( samson::network::CollectionRecord* record , VisualitzationOptions options );
+            
+            
         private:
             
             // ------------------------------------------------------------------------------------

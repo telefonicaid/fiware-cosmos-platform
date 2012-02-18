@@ -154,6 +154,9 @@ namespace samson {
 
             // Get collections from a command ( ls_queue , .... )
             samson::network::Collection* getCollection(VisualitzationOptions options ,  std::string pattern );
+
+            samson::network::Collection* getCollectionForStreamOperations(VisualitzationOptions options ,  std::string pattern );
+            
             
             // Get a pointer to a particular queue
             Queue* getQueue( std::string name );

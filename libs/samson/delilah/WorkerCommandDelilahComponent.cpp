@@ -49,6 +49,12 @@ namespace samson {
         // Get the workers involved in this operation
         au::Uint64Vector _workers( delilah->network->getWorkerIds() );
         
+        if( _workers.size() == 0 )
+        {
+            setComponentFinishedWithError("Not connected to any cluster");
+            return;
+        }
+        
         // All the workers or just one of them is assigned to this worker command
         if( worker_id != (size_t)-1 )
         {

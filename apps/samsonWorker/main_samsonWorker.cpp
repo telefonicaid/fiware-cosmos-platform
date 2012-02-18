@@ -76,11 +76,11 @@ samson::SamsonWorker* worker            = NULL;
 * man texts -
 */
 static const char* manSynopsis         = " [OPTION]";
-static const char* manShortDescription = "samsonWorker is the main process in a SAMSON system.\n\n";
+static const char* manShortDescription = "samsond is the main process in a SAMSON system.\n\n";
 static const char* manDescription      =
     "\n"
-    "samsonWorker is the main process in a SAMSON system. All the nodes in the cluster has its own samsonWorker process\n"
-    "samosonWorker is connected to a central process called samsonController"
+    "samsond is the main process in a SAMSON system. All the nodes in the cluster has its own samsonWorker process\n"
+    "All samsond processes are responsible for processing a segment of available data"
     "All clients of the platform ( delila's ) are connected to all samsonWorkers in the system"
     "See samson documentation to get more information about how to get a SAMSON system up and running"
     "\n";

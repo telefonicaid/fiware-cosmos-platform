@@ -99,6 +99,9 @@ namespace samson {
             
             // Default number of divisions
             num_divisions = 1;
+         
+            rate_kvs.setTimeLength( 60 );
+            rate_size.setTimeLength( 60 );
             
         }
         

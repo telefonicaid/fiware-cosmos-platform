@@ -1,11 +1,13 @@
 package es.tid.ps.mobility.jobs;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import es.tid.ps.mobility.data.MxProtocol.NodeBtsDay;
-import es.tid.ps.mobility.data.MxProtocol.NodeMxCounter;
 import java.io.IOException;
+
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Mapper;
+
+import es.tid.ps.mobility.data.MxProtocol.NodeBtsDay;
+import es.tid.ps.mobility.data.MxProtocol.NodeMxCounter;
 
 /**
  *

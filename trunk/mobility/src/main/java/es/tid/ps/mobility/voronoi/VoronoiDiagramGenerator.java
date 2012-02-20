@@ -41,12 +41,7 @@
  */
 package es.tid.ps.mobility.voronoi;
 
-import java.awt.Canvas;
-import java.awt.Color;
-import java.awt.Graphics;
-
 public class VoronoiDiagramGenerator {
-
     float borderMinX, borderMaxX, borderMinY, borderMaxY;
     int siteidx;
     float xmin, xmax, ymin, ymax, deltax, deltay;
@@ -72,8 +67,6 @@ public class VoronoiDiagramGenerator {
     GraphEdge allEdges;
     GraphEdge iteratorEdges;
     Boolean VorSim;
-    Graphics g;
-    Canvas c;
     int w;
     int h;
     double lasty;
@@ -87,17 +80,12 @@ public class VoronoiDiagramGenerator {
         minDistanceBetweenSites = 0;
 
         VorSim = false;
-        g = null;
-        c = null;
         w = h = 0;
         lasty = 0;
     }
 
-    public void VorSim(boolean vorsim, Graphics vorg, int vorw, int vorh,
-            Canvas Can) {
+    public void VorSim(boolean vorsim, int vorw, int vorh) {
         VorSim = vorsim;
-        c = Can;
-        g = vorg;
         w = vorw;
         h = vorh;
     }
@@ -520,16 +508,6 @@ public class VoronoiDiagramGenerator {
 
     void line(float x1, float y1, float x2, float y2) {
         pushGraphEdge(x1, y1, x2, y2);
-        if (VorSim) {
-            g.setColor(Color.red);
-            g.drawLine((int) x1, (int) y1, (int) x2, (int) y2);
-            c.repaint();
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException ee) {
-                ;
-            }
-        }
     }
 
     void clip_line(Edge e) {
@@ -776,133 +754,13 @@ public class VoronoiDiagramGenerator {
         return (v);
     }
 
-    void out_triple(Site s1, Site s2, Site s3) {
-
-        if (VorSim) {
-            double P1X = s1.coord.x;
-            double P1Y = s1.coord.y;
-            double P2X = s2.coord.x;
-            double P2Y = s2.coord.y;
-            double P3X = s3.coord.x;
-            double P3Y = s3.coord.y;
-
-            double l1a = P2X - P1X;
-            double l1b = P2Y - P1Y;
-            double l1c = (P1Y * P1Y - P2Y * P2Y + P1X * P1X - P2X * P2X) * 0.5000;
-            double l2a = P2X - P3X;
-            double l2b = P2Y - P3Y;
-            double l2c = (P3Y * P3Y - P2Y * P2Y + P3X * P3X - P2X * P2X) * 0.5000;
-
-            if (l1a * l2b == l1b * l2a) {
-                return;
-            }
-            double x = (l1c * l2b - l1b * l2c) / (l1b * l2a - l1a * l2b);
-            double y = (l1a * l2c - l1c * l2a) / (l1b * l2a - l1a * l2b);
-
-            double d = Math.sqrt(Math.pow(s1.coord.x - x, 2)
-                    + Math.pow(s1.coord.y - y, 2));
-
-            g.setColor(Color.red);
-            g.fillOval((int) P1X - (int) (w / 2), (int) P1Y - (int) (h / 2), w,
-                    h);
-            g.fillOval((int) P2X - (int) (w / 2), (int) P2Y - (int) (h / 2), w,
-                    h);
-            g.fillOval((int) P3X - (int) (w / 2), (int) P3Y - (int) (h / 2), w,
-                    h);
-            g.setColor(Color.blue);
-            g.drawOval((int) (x - d), (int) (y - d), (int) (2 * d),
-                    (int) (2 * d));
-            c.repaint();
-            try {
-                Thread.sleep(300);
-            } catch (InterruptedException ee) {
-                ;
-            }
-            g.setColor(Color.lightGray);
-            g.drawOval((int) (x - d), (int) (y - d), (int) (2 * d),
-                    (int) (2 * d));
-            g.setColor(Color.black);
-            g.fillOval((int) P1X - (int) (w / 2), (int) P1Y - (int) (h / 2), w,
-                    h);
-            g.fillOval((int) P2X - (int) (w / 2), (int) P2Y - (int) (h / 2), w,
-                    h);
-            g.fillOval((int) P3X - (int) (w / 2), (int) P3Y - (int) (h / 2), w,
-                    h);
-            c.repaint();
-        }
-    }
-    int beachline_bake[] = null;
-
-    void out_beachline() {
-        if (VorSim) {
-            if (beachline_bake == null) {
-                beachline_bake = new int[(int) (borderMaxX - borderMinX)];
-                for (int x = (int) borderMinX; x < (int) borderMaxX; x++) {
-                    beachline_bake[x] = 0;
-                }
-            }
-            for (int x = (int) borderMinX; x < (int) borderMaxX; x++) {
-                g.setColor(Color.lightGray);
-                g.fillOval(x, beachline_bake[x], 1, 1);
-
-                Site s = sites[siteidx - 1];
-                float y0 = s.coord.y;
-                Halfedge he = ELleftend;
-                int y = (int) 0;
-                do {
-                    Site v = rightreg(he);
-                    float x1 = v.coord.x;
-                    float y1 = v.coord.y;
-                    int y2 = (int) ((y0 * y0 - (x1 - x) * (x1 - x) - y1 * y1) / (2 * y0 - 2 * y1));
-                    if (y2 > y) {
-                        y = y2;
-                    }
-                    he = he.ELright;
-                } while (he.ELright != null);
-                if (y != 0) {
-                    g.setColor(Color.red);
-                    g.fillOval(x, y, 1, 1);
-                    c.repaint();
-                    beachline_bake[x] = y;
-                }
-            }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ee) {
-                ;
-            }
-        }
-    }
-
     void out_site(Site s1) {
-
         if (VorSim) {
             if (s1 == null) {
                 return;
             }
             double P1X = s1.coord.x;
             double P1Y = s1.coord.y;
-            g.setColor(Color.lightGray);
-            g.drawLine((int) borderMinX, (int) lasty, (int) borderMaxX,
-                    (int) lasty);
-            g.setColor(Color.black);
-            g.drawLine((int) borderMinX, (int) P1Y, (int) borderMaxX,
-                    (int) P1Y);
-            g.setColor(Color.red);
-            g.fillOval((int) P1X - (int) (w / 2), (int) P1Y - (int) (h / 2), w,
-                    h);
-            c.repaint();
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ee) {
-                ;
-            }
-            g.setColor(Color.black);
-            g.drawLine((int) borderMinX, (int) P1Y, (int) borderMaxX,
-                    (int) P1Y);
-            g.fillOval((int) P1X - (int) (w / 2), (int) P1Y - (int) (h / 2), w,
-                    h);
-            c.repaint();
             lasty = P1Y;
         }
     }
@@ -974,7 +832,6 @@ public class VoronoiDiagramGenerator {
                     // push the HE into the ordered linked list of vertices
                     PQinsert(bisector, p, dist(p, newsite));
                 }
-                out_beachline();
                 newsite = nextone();
             } else if (!PQempty()) /*
              * intersection is smallest - this is a vector event
@@ -993,10 +850,6 @@ public class VoronoiDiagramGenerator {
                 bot = leftreg(lbnd);
                 // get the Site to the right of the right HE which it bisects
                 top = rightreg(rbnd);
-
-                // output the triple of sites, stating that a circle goes
-                // through them
-                out_triple(bot, top, rightreg(lbnd));
 
                 v = lbnd.vertex; // get the vertex that caused this event
                 makevertex(v); // set the vertex number - couldn't do this
@@ -1061,7 +914,6 @@ public class VoronoiDiagramGenerator {
             e = lbnd.ELedge;
             clip_line(e);
         }
-        endsim();
         return true;
     }
 
@@ -1087,41 +939,5 @@ public class VoronoiDiagramGenerator {
         voronoi_bd();
 
         return true;
-    }
-
-    void endsim() {
-        if (VorSim) {
-            g.setColor(Color.lightGray);
-            g.drawLine((int) borderMinX, (int) lasty, (int) borderMaxX,
-                    (int) lasty);
-            if (beachline_bake != null) {
-                for (int x = (int) borderMinX; x < (int) borderMaxX; x++) {
-                    g.setColor(Color.lightGray);
-                    g.fillOval(x, beachline_bake[x], 1, 1);
-
-                }
-            }
-            c.repaint();
-        }
-
-    }
-
-    void DrawVor(Graphics g) {
-        float minX, maxX, minY, maxY;
-        minX = 0;
-        minY = 0;
-        maxX = 750;
-        maxY = 550;
-
-        generateVoronoi(minX, maxX, minY, maxY);
-
-        resetIterator();
-        GraphEdge temp = null;
-        g.setColor(Color.red);
-        while ((temp = getNext()) != null) {
-            g.drawLine((int) temp.x1, (int) temp.y1, (int) temp.x2,
-                    (int) temp.y2);
-        }
-        return;
     }
 }

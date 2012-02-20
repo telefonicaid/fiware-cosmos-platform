@@ -10,7 +10,7 @@ import org.apache.hadoop.mapreduce.Mapper;
  *
  * @author dmicol
  */
-public class NobmxGetSample10000Mapper extends Mapper<IntWritable,
+public class MobmxGetSample10000Mapper extends Mapper<IntWritable,
         ProtobufWritable<MxCdr>, IntWritable, ProtobufWritable<MxCdr>> {
     @Override
     public void map(IntWritable key, ProtobufWritable<MxCdr> value,

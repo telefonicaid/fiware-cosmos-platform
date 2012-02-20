@@ -37,7 +37,7 @@ public class MobmxRepbtsAggbybtsTest {
                 .withInput(NodeBtsDayUtil.createAndWrap(node, bts, workday, 101),
                            asList(new IntWritable(4), new IntWritable(5)))
                 .withOutput(new LongWritable(node),
-                            NodeBtsDayUtil.createAndWrap(node, bts, workday, 10))
+                            NodeBtsDayUtil.createAndWrap(node, bts, workday, 9))
                 .runTest();
     }
 }

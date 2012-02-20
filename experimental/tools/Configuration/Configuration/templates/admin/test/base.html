@@ -1,0 +1,265 @@
+{% load url from future %}<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ LANGUAGE_CODE|default:"en-us" }}" xml:lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
+<head>
+<!-- Header -->
+<div id="main-header">
+   	<h1 id="site-name">{{ "Big Data - Django Wizard" }}</h1>
+</div><br/>
+
+{% block extrastyle %}
+<style type="text/css"> 
+	
+	#main-header
+    {
+    	background-color: #0086c3;
+    	vertical-align: top;
+    	text-align: center;
+    	padding-top: 1px;
+    	padding-bottom: 1px;
+    }
+    #site-name
+    {
+    	color: #ffffff;
+    	vertical-align: top;
+    } 
+	
+	
+  	.label-form
+  	{
+  		display: block;
+    	float: left;
+    	min-width: 140px;
+    	height: 25px;
+    	padding-top: 7px;
+  	}
+  	.label-form-radio
+  	{
+  		display: block;
+    	float: left;
+    	min-width: 160px;
+    	height: 25px;
+    	padding-top: 5px;
+  	}
+  	.button
+    {
+    	width: 70px;
+    	height: 30px;
+    	font-family: "Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana,Arial,sans-serif;
+	    color: #333;
+	    font-size: 12px;
+    }
+    .h-label
+    {
+    	font-size: 12px;
+    	font-weight: normal;
+    }
+    #a-ingestion
+    {
+    	font-weight: bold;
+    	cursor: pointer;
+    }
+    body
+    {
+	    font-family: "Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana,Arial,sans-serif;
+	    color: #333;
+	    font-size: 12px;
+	    border: solid;
+    	border-color: #ddd #aaa #aaa #ddd;
+	}
+    #content-main
+    {
+    	border: solid;
+    	border-color: #ddd #aaa #aaa #ddd;
+    	width: 50%;
+    	margin: 0 auto;
+    	vertical-align: middle;
+    	padding-left: 10px;
+    	padding-right: 10px;
+    	padding-bottom: 5px;
+    	height: 525px;
+    }
+    .field-div
+    {
+    	border: solid;
+    	border-color: #eee;
+    	padding-bottom: 10px;
+    	padding-left: 10px;
+    	padding-right: 10px;
+    	padding-top: 10px;
+    }
+    #buttons-div
+    {
+    	height: 30px;
+    	border-color: #eee;
+    	padding-bottom: 10px;
+    	padding-left: 10px;
+    	padding-right: 10px;
+    	padding-top: 10px;
+    	border: 1px solid #bbb;
+    	border-color: #ddd #aaa #aaa #ddd;
+    	vertical-align: middle;
+    }
+    .pre-div
+    {	
+    	border: solid;
+    	border-color: #eee;
+    	padding-bottom: 10px;
+    	padding-left: 10px;
+    	padding-right: 10px;
+    	padding-top: 10px;
+    	height: 65px;
+    }
+	.pre-div-right
+    {	  
+		float: right;
+		width: 50%;
+		height: 100%;
+	}
+	.pre-div-left
+    {	  
+		float: left;
+		width: 50%;
+		height: 100%;
+	}
+	.label-form-2
+	{	  
+		display: block;
+    	float: left;
+    	min-width: 140px;
+    	height: 25px;
+	}
+	
+	
+	.consumption-div-right
+    {
+		float: right;
+		width: 48%;
+		height: 100%;
+		min-height: 260px;
+	}
+	.consumption-div-left
+    {
+		float: left;
+		width: 48%;
+		height: 100%;
+		min-height: 260px;
+	}
+	.consumption-div
+	{
+    	padding-bottom: 10px;
+    	padding-top: 10px;
+    	height: 200px;
+	}
+	
+	.cons-div
+	{
+		border: solid;
+    	border-color: #eee;
+    	padding-bottom: 10px;
+    	padding-left: 10px;
+    	padding-right: 10px;
+    	padding-top: 10px;
+    	height: 150px;
+	}
+	
+	.button-configuration
+    {
+    	min-width: 120px;
+    	height: 30px;
+    	font-family: "Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana,Arial,sans-serif;
+	    color: #333;
+	    font-size: 12px;
+    }
+	
+	
+	.list_table
+    {
+		border: 1;
+		width: 100%;   
+		border-color: #eee;		
+    }
+  }
+  </style>
+{% endblock %}
+
+<!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="{% block stylesheet_ie %}{% load adminmedia %}{% admin_media_prefix %}css/ie.css{% endblock %}" /><![endif]-->
+{% if LANGUAGE_BIDI %}<link rel="stylesheet" type="text/css" href="{% block stylesheet_rtl %}{% admin_media_prefix %}css/rtl.css{% endblock %}" />{% endif %}
+<script type="text/javascript">window.__admin_media_prefix__ = "{% filter escapejs %}{% admin_media_prefix %}{% endfilter %}";</script>
+{% block extrahead %}{% endblock %}
+{% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
+</head>
+{% load i18n %}
+
+<body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}">
+
+<!-- Container -->
+<div id="container">
+
+    {% if not is_popup %}
+    <!-- Header -->
+    <div id="header">
+        <div id="branding">
+        {% block branding %}{% endblock %}
+        </div>
+        {% if user.is_active and user.is_staff %}
+        <div id="user-tools">
+            {% trans 'Welcome,' %}
+            <strong>{% filter force_escape %}{% firstof user.first_name user.username %}{% endfilter %}</strong>.
+            {% block userlinks %}
+                {% url 'django-admindocs-docroot' as docsroot %}
+                {% if docsroot %}
+                    <a href="{{ docsroot }}">{% trans 'Documentation' %}</a> /
+                {% endif %}
+                {% url 'admin:password_change' as password_change_url %}
+                {% if password_change_url %}
+                    <a href="{{ password_change_url }}">
+                {% else %}
+                    <a href="{{ root_path }}password_change/">
+                {% endif %}
+                {% trans 'Change password' %}</a> /
+                {% url 'admin:logout' as logout_url %}
+                {% if logout_url %}
+                    <a href="{{ logout_url }}">
+                {% else %}
+                    <a href="{{ root_path }}logout/">
+                {% endif %}
+                {% trans 'Log out' %}</a>
+            {% endblock %}
+        </div>
+        {% endif %}
+        {% block nav-global %}{% endblock %}
+    </div>
+    <!-- END Header -->
+    {% endif %}
+
+        {% if messages %}
+        <ul class="messagelist">{% for message in messages %}
+          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+	{% endfor %}</ul>
+        {% endif %}
+
+    <!-- Content -->
+    <div id="content" class="{% block coltype %}colM{% endblock %}">
+        {% block pretitle %}{% endblock %}
+        {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
+        {% block content %}
+        {% block object-tools %}{% endblock %}
+        {{ content }}
+        {% endblock %}
+        {% block sidebar %}{% endblock %}
+        <br class="clear" />
+    </div>
+    <!-- END Content -->
+
+    {% block footer %}
+<!--  	<div id="footer" class="footer">
+    	<div class="child-footer">&copy; Copyright Telefónica I+D,  2012</div>
+    	<img src="{{ MEDIA_URL }}images/footer_Telefonica.png" alt="" />
+    	<img src="{{ MEDIA_URL }}footer_Telefonica.png" alt="" />
+    </div>-->
+    {% endblock %}
+</div>
+<!-- END Container -->
+
+</body>
+</html>

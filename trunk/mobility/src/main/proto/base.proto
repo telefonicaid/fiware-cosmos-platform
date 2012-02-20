@@ -1,0 +1,17 @@
+package base;
+
+option java_package = "es.tid.ps.mobility.data";
+option java_outer_classname = "BaseProtocol";
+
+message Date {
+    required uint32 year = 1;
+    required uint32 month = 2;
+    required uint32 day = 3;
+    required uint32 week_day = 4;
+}
+
+message Time {
+    required uint32 hour = 1;
+    required uint32 minute = 2;
+    required uint32 seconds = 3;
+}

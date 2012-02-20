@@ -1,0 +1,13 @@
+package mx;
+
+import "base.proto";
+
+option java_package = "es.tid.ps.mobility.data";
+option java_outer_classname = "MxProtocol";
+
+message MxCdr {
+    required uint32 phone = 1;
+    required uint32 cell = 2;
+    required base.Date date = 3;
+    required base.Time time = 4;
+}

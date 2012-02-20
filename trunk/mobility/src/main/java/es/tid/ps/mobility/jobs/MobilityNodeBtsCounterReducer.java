@@ -3,7 +3,7 @@ package es.tid.ps.mobility.jobs;
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -14,14 +14,14 @@ import es.tid.ps.mobility.data.MxProtocol.NodeBts;
  * @author sortega
  */
 public class MobilityNodeBtsCounterReducer extends Reducer<
-        ProtobufWritable<NodeBts>, NullWritable, IntWritable,
+        ProtobufWritable<NodeBts>, NullWritable, LongWritable,
         ProtobufWritable<BtsCounter>> {
-    private IntWritable phone;
+    private LongWritable phone;
     private ProtobufWritable<BtsCounter> btsCounter;
 
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
-        this.phone = new IntWritable();
+        this.phone = new LongWritable();
         this.btsCounter = new ProtobufWritable<BtsCounter>();
         this.btsCounter.setConverter(BtsCounter.class);
     }

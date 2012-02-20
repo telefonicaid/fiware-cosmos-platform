@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.ps.mobility.data.MxProtocol.NodeBtsDay;
@@ -15,13 +16,13 @@ import es.tid.ps.mobility.data.NodeBtsDayUtil;
  * @author sortega
  */
 public class MobmxRepbtsAggbybts extends Reducer<ProtobufWritable<NodeBtsDay>,
-        IntWritable, IntWritable, ProtobufWritable<NodeBtsDay>> {
-    private IntWritable outKey;
+        IntWritable, LongWritable, ProtobufWritable<NodeBtsDay>> {
+    private LongWritable outKey;
 
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        this.outKey = new IntWritable();
+        this.outKey = new LongWritable();
     }
 
     @Override

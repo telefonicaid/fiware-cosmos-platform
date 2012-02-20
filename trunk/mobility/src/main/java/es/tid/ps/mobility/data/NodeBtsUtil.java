@@ -9,7 +9,7 @@ import es.tid.ps.mobility.data.MxProtocol.NodeBts;
  * @author sortega
  */
 public abstract class NodeBtsUtil {
-    public static NodeBts create(int phone, int bts, int wday, int range) {
+    public static NodeBts create(long phone, int bts, int wday, int range) {
         return NodeBts.newBuilder()
                 .setPhone(phone)
                 .setBts(bts)
@@ -18,7 +18,7 @@ public abstract class NodeBtsUtil {
                 .build();
     }
 
-    public static ProtobufWritable<NodeBts> createAndWrap(int phone, int bts,
+    public static ProtobufWritable<NodeBts> createAndWrap(long phone, int bts,
             int wday, int range) {
         ProtobufWritable<NodeBts> wrapper =
                 ProtobufWritable.newInstance(NodeBts.class);

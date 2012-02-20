@@ -6,15 +6,15 @@ option java_package = "es.tid.ps.mobility.data";
 option java_outer_classname = "MxProtocol";
 
 message MxCdr {
-    required uint32 phone = 1;
-    required uint32 cell = 2;
+    required uint64 phone = 1;
+    required uint64 cell = 2;
     required base.Date date = 3;
     required base.Time time = 4;
 }
 
 message MxCell {
-    required uint32 cell = 1;
-    required uint32 bts = 2;
+    required uint64 cell = 1;
+    required uint64 bts = 2;
     required uint32 mun = 3;
     required uint32 state = 4;
     required double posx = 5;
@@ -22,7 +22,7 @@ message MxCell {
 }
 
 message NodeBts {
-    required uint32 phone = 1;
+    required uint64 phone = 1;
     required uint32 bts = 2;
     required uint32 wday = 3;
     required uint32 range = 4;
@@ -36,7 +36,7 @@ message BtsCounter {
 }
 
 message NodeBtsDay {
-    required uint32 node = 1;
+    required uint64 node = 1;
     required uint32 bts = 2;
     required uint32 workday = 3;
     required uint32 count = 4;

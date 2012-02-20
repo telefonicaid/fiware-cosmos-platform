@@ -3,7 +3,7 @@ package es.tid.ps.mobility.jobs;
 import static java.util.Arrays.asList;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
@@ -21,14 +21,14 @@ import es.tid.ps.mobility.data.NodeBtsUtil;
 public class MobilityNodeBtsCounterReducerTest {
     private MobilityNodeBtsCounterReducer instance;
     private ReduceDriver<
-        ProtobufWritable<NodeBts>, NullWritable, IntWritable,
+        ProtobufWritable<NodeBts>, NullWritable, LongWritable,
         ProtobufWritable<BtsCounter>> driver;
 
     @Before
     public void setUp() {
         this.instance = new MobilityNodeBtsCounterReducer();
         this.driver = new ReduceDriver<ProtobufWritable<NodeBts>, NullWritable,
-                IntWritable, ProtobufWritable<BtsCounter>>(this.instance);
+                LongWritable, ProtobufWritable<BtsCounter>>(this.instance);
     }
 
 
@@ -41,7 +41,7 @@ public class MobilityNodeBtsCounterReducerTest {
         this.driver
                 .withInput(NodeBtsUtil.createAndWrap(phone, 1, 2, 3),
                            asList(NullWritable.get(), NullWritable.get()))
-                .withOutput(new IntWritable(phone), expectedBtsCounter)
+                .withOutput(new LongWritable(phone), expectedBtsCounter)
                 .runTest();
 
     }

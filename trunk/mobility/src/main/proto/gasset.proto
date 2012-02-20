@@ -15,3 +15,12 @@ message GstCdr {
     required uint32 cellId = 7;
     required uint32 mobScope = 8;
 }
+
+message GstCell {
+    required uint32 cellId = 1;
+	required uint32 btsId = 2;
+	required uint32 lacId = 3;
+	required uint32 stateId = 4;
+	required double posx = 5;
+	required double posy = 6;
+}

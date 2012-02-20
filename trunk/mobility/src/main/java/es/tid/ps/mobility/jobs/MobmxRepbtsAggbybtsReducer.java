@@ -34,14 +34,15 @@ public class MobmxRepbtsAggbybtsReducer extends
         this.outKey.set(inKey.get().getNode());
 
 	int totalCallCount = 0;
-        for(IntWritable callCount : callCounts) {
+        for (IntWritable callCount : callCounts) {
             totalCallCount += callCount.get();
         }
 
-        context.write(outKey, NodeBtsDayUtil.createAndWrap(
+        ProtobufWritable<NodeBtsDay> nodeBtsDay = NodeBtsDayUtil.createAndWrap(
                 inKey.get().getNode(),
                 inKey.get().getBts(),
                 inKey.get().getWorkday(),
-                totalCallCount));
+                totalCallCount);
+        context.write(this.outKey, nodeBtsDay);
     }
 }

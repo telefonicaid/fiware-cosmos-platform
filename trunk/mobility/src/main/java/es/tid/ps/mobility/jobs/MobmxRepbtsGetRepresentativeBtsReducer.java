@@ -8,6 +8,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import es.tid.ps.mobility.data.BtsCounterUtil;
 import es.tid.ps.mobility.data.MxProtocol.BtsCounter;
 import es.tid.ps.mobility.data.MxProtocol.TwoInt;
+import es.tid.ps.mobility.data.TwoIntUtil;
 
 /**
  *
@@ -27,18 +28,11 @@ public class MobmxRepbtsGetRepresentativeBtsReducer extends Reducer<IntWritable,
             BtsCounter counter = value.get();
             if (counter.getCount() >= MOB_CONF_MIN_PERC_REP_BTS
                     && counter.getRange() >= MOB_CONF_MIN_NUMBER_CALLS_BTS) {
-                TwoInt nodeBts = TwoInt.newBuilder()
-                        .setNum1(key.get())
-                        .setNum2(counter.getBts())
-                        .build();
                 ProtobufWritable<TwoInt> nodeBtsWrapper =
-                                ProtobufWritable.newInstance(TwoInt.class);
-                nodeBtsWrapper.set(nodeBts);
-
+                        TwoIntUtil.createAndWrap(key.get(), counter.getBts());
                 ProtobufWritable<BtsCounter> output =
                         BtsCounterUtil.createAndWrap(counter.getBts(), 0, 0,
                                                      counter.getCount());
-
                 context.write(nodeBtsWrapper, output);
             }
         }

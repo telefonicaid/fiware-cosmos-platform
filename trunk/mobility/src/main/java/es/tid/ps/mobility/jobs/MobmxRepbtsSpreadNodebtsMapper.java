@@ -8,6 +8,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.ps.mobility.data.MxProtocol.NodeBtsDay;
 import es.tid.ps.mobility.data.MxProtocol.NodeMxCounter;
+import es.tid.ps.mobility.data.NodeBtsDayUtil;
 
 /**
  *
@@ -21,15 +22,8 @@ public class MobmxRepbtsSpreadNodebtsMapper extends Mapper<IntWritable,
             Context context) throws IOException, InterruptedException {
         NodeMxCounter counter = value.get();
         for (int i = 0; i < counter.getBtsLength(); i++) {
-            NodeBtsDay node = NodeBtsDay.newBuilder()
-                    .setNode(key.get())
-                    .setBts(counter.getBts(i).getBts())
-                    .setWorkday(0)
-                    .setCount(0)
-                    .build();
-            ProtobufWritable<NodeBtsDay> nodeWrapper =
-                    ProtobufWritable.newInstance(NodeBtsDay.class);
-            nodeWrapper.set(node);
+            ProtobufWritable<NodeBtsDay> nodeWrapper = NodeBtsDayUtil.
+                    createAndWrap(key.get(),counter.getBts(i).getBts(), 0, 0);
             context.write(nodeWrapper, new IntWritable(
                     counter.getBts(i).getCount()));
         }

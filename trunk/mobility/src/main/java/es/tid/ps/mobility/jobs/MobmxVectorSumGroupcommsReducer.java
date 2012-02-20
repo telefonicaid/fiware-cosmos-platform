@@ -10,6 +10,7 @@ import es.tid.ps.mobility.data.BtsCounterUtil;
 import es.tid.ps.mobility.data.MxProtocol.BtsCounter;
 import es.tid.ps.mobility.data.MxProtocol.NodeBts;
 import es.tid.ps.mobility.data.MxProtocol.TwoInt;
+import es.tid.ps.mobility.data.TwoIntUtil;
 
 /**
  *
@@ -28,19 +29,12 @@ public class MobmxVectorSumGroupcommsReducer extends
         }
 
         NodeBts inNodeBts = key.get();
-        TwoInt nodeBts = TwoInt.newBuilder()
-                .setNum1(inNodeBts.getPhone())
-                .setNum2(inNodeBts.getBts())
-                .build();
-        ProtobufWritable<TwoInt> nodeBtsWrapper =
-                ProtobufWritable.newInstance(TwoInt.class);
-        nodeBtsWrapper.set(nodeBts);
-
+        ProtobufWritable<TwoInt> nodeBtsWrapper = TwoIntUtil.createAndWrap(
+                inNodeBts.getPhone(), inNodeBts.getBts());
         ProtobufWritable<BtsCounter> counterWrapper =
                 BtsCounterUtil.createAndWrap(
                         inNodeBts.getBts(), inNodeBts.getWday(),
                         inNodeBts.getRange(), numberOfCommunications);
-
         context.write(nodeBtsWrapper, counterWrapper);
     }
 }

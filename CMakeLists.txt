@@ -65,9 +65,6 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 #
 # Common include
 #
-include_directories("/usr/include")
-include_directories("/usr/local/include")
-include_directories("/opt/local/include")
 
 #
 # Library directories

@@ -67,11 +67,6 @@ else (NOT CMAKE_BUILD_TYPE STREQUAL DEBUG)
 endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
 # Include directory pointing to current dir and /usr/local/include
-include_directories("${PROJECT_SOURCE_DIR}")
-include_directories("/usr/local/include/")
-include_directories("${CMAKE_INSTALL_PREFIX}/include")
-
-link_directories("${CMAKE_INSTALL_PREFIX}/lib")
 
 
 IF (SVN_BUILD)
@@ -80,10 +75,12 @@ IF (SVN_BUILD)
     include_directories("${PROJECT_SOURCE_DIR}/modules/system")
     include_directories("${PROJECT_BINARY_DIR}/modules/${MODULE_NAME}")
 ELSE (NOT SVN_BUILD)
+    include_directories("${PROJECT_SOURCE_DIR}")
     include_directories("${CMAKE_INSTALL_PREFIX}")
-    include_directories("${CMAKE_INSTALL_PREFIX}/include/samson")
+    include_directories("${CMAKE_INSTALL_PREFIX}/include")
 ENDIF (SVN_BUILD)
 
+link_directories("${CMAKE_INSTALL_PREFIX}/lib")
 
 MESSAGE( "----------------------------------------------------------------------------")
 MESSAGE( "Creating module ${MODULE_NAME}" )

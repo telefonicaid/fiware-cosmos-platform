@@ -76,14 +76,13 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
 # Indicate where to finc the header files needed to build the module
 # For modules that are not built with the rest of Samson edit the "ELSE" section only
-include_directories("${PROJECT_SOURCE_DIR}")
-include_directories("${CMAKE_INSTALL_PREFIX}/include")
 IF (SVN_BUILD)
     include_directories("${PROJECT_SOURCE_DIR}/libs")
     include_directories("${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}")
     include_directories("${PROJECT_SOURCE_DIR}/modules/system")
     include_directories("${PROJECT_BINARY_DIR}/modules/${MODULE_NAME}")
 ELSE (NOT SVN_BUILD)
+    include_directories("${PROJECT_SOURCE_DIR}")
     include_directories("${CMAKE_INSTALL_PREFIX}")
     include_directories("${CMAKE_INSTALL_PREFIX}/include/samson")
 ENDIF (SVN_BUILD)

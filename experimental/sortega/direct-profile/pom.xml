@@ -10,7 +10,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <org.apache.hadoop>0.20.2</org.apache.hadoop>
-        <org.apache.hadoop.hive>0.7.1</org.apache.hadoop.hive>
         <jvm.version>1.6</jvm.version>
         <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
     </properties>
@@ -42,6 +41,12 @@
             <artifactId>hbase</artifactId>
             <version>0.90.3-cdh3u1</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <artifactId>hadoop-core</artifactId>
+            <groupId>org.apache.hadoop</groupId>
+            <type>jar</type>
+            <version>${org.apache.hadoop}-cdh3u1</version>
         </dependency>
 
         <!-- test dependencies -->
@@ -88,7 +93,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>es.tid.ps.profile.IndividualProfileMain</mainClass>
+                            <mainClass>es.tid.ps.profile.DirectProfileExport</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -122,7 +127,7 @@
                     <transformers>
                         <transformer
                             implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>es.tid.ps.profile.IndividualProfileMain</mainClass>
+                            <mainClass>es.tid.ps.profile.DirectProfileExport</mainClass>
                         </transformer>
                     </transformers>
                 </configuration>

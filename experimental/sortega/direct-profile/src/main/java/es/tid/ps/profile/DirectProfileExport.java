@@ -38,6 +38,7 @@ public class DirectProfileExport {
 
     private final String inputFilename;
     private final Dictionary dictionary;
+    private int count;
     private int knownCount;
     private int unknownCount;
     private int irrelevantCount;
@@ -57,6 +58,10 @@ public class DirectProfileExport {
 
         String line;
         while((line = input.readLine()) != null) {
+            if (count % 1000 == 0) {
+                System.out.format("%d logs imported\n", count);
+            }
+            count++;
             UserNavigation un = UserNavigation.parse(line);
             Categorization dictResponse = dictionary.categorize(un.getUrl());
 
@@ -84,20 +89,20 @@ public class DirectProfileExport {
         }
     }
 
-    public static int main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException {
         if (args.length != 1) {
             System.err.println("Usage: <command> input_file");
-            return 1;
+            System.exit(1);
         }
 
         try {
             new DirectProfileExport(args[0]).export();
         } catch (FileNotFoundException ex) {
             System.err.println("File not found: " + args[0]);
-            return 1;
+            System.exit(1);
         }
 
-        return 0;
+        System.exit(0);
     }
 
     private void initHBase() throws IOException {

@@ -8,11 +8,11 @@
 		<table class="list_table" cellspacing="0" id="result_list" border="1" width="100%">
 			<thead>
 					<tr>
-						<th scope="col" class="action-checkbox-column">
+						<th scope="col" class="action-checkbox-column" style="vertical-align: middle; text-align: center;">
 							<input type="checkbox" id="action-toggle" />
 						</th>
-						<th scope="col" height="35px">Identifier</th>
-						<th scope="col">Label id</th>
+						<th scope="col" height="35px" style="vertical-align: middle;">Identifier</th>
+						<th scope="col" style="vertical-align: middle;">Label id</th>
 					</tr>
 			</thead>
 			<tbody>
@@ -30,11 +30,12 @@
 					</tr>
 				{% endfor %}
 			</tbody>
-		</table>
+		</table></br>
 		
-		<p class="paginator">Total templates ...</p>
+		Total templates: {{ templates|length }}
+		</br></br>
         <div id="buttons-div" class="submit-row" align="right">
-             <input type="submit" value="Create New {{ type.templateType }}" class="default" name="_save" onClick="location.href='add/'"/>
+             <input type="submit" value="Create New {{ type.templateType }}" class="button-configuration" name="_save" onClick="location.href='add/'"/>
         </div>
 
         <script type="text/javascript">document.getElementById("{{ form.first_field.auto_id }}").focus();</script>

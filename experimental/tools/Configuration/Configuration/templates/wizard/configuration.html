@@ -17,18 +17,18 @@
             </ul>
             {% endif %}
             
-		    <div class="fieldWrapper">
+		    <div class="field-div" style="">
 		        {{ form.message.errors }}
 		        <label class="label-form" for="id_type">Configuration Name</label>
 		        {{ form.name }}
-		    </div><br/>
+		    </div><br/><br/>
 		    <table class="list_table" cellspacing="0" id="result_list" border="1" width="100%">
 				<thead>
 						<tr>
-							<th scope="col" class="action-checkbox-column">
+							<th scope="col" class="action-checkbox-column" style="vertical-align: middle; text-align: center;">
 								<input type="checkbox" id="action-toggle" />
 							</th>
-							<th scope="col" height="35px">Identifier</th>						
+							<th scope="col" height="35px" style="vertical-align: middle;">Identifier</th>						
 					</tr>
 				</thead>
 				<tbody>
@@ -48,7 +48,8 @@
             <input type="hidden" name="{{ step_field }}" value="{{ step0 }}" />
             {{ previous_fields|safe }}
 
-            <p class="paginator">Total ...</p></bh>
+            Total templates: {{ config.templates|length }}
+			</br></br>
 	        <div id="buttons-div" class="submit-row" align="right">
 	            <input type="submit" value="Finish" class="button" name="_save" onClick="location.href='add/'"/>
 	        </div>

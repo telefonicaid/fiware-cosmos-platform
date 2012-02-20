@@ -28,12 +28,15 @@
 						<th height="25px">
 							<a href="{{ config.id }}/">{{ config.name }}</a>							
 						</th>
-						{% for template in config.templates %}
+						<th>
+							<a>{{ "..." }}</a>
+						</th>
+				<!--  		{% for template in config.templates %}
 							<th>
 								<a href="{{ template.id }}/">{{ template.id }}</a>
 							</th>
 						</tr>
-						{% endfor %}
+						{% endfor %}-->
 					</tr>
 				{% endfor %}
 			</tbody>

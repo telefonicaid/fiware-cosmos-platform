@@ -25,9 +25,6 @@ namespace samson {
 		
 		typedef enum 
 		{
-			command,                // Command send to controller
-			load,
-			updater,
             push,
             pop,
             worker_command,          // Command send to each worker

@@ -78,7 +78,7 @@ PaArgument paArgs[] =
     { "-queue",      queueName,    "SS_PLP_QUEUE_NAME",     PaString,  PaOpt,           PaND,    PaNL,   PaNL,  "name of the queue"          },
     { "-timeout",    &timeout,     "SS_PLP_TIMEOUT",        PaInt,     PaOpt,              0,       0,   3600,  "timeout"                    },
     { "-rate",       &rate,        "SS_PLP_RATE",           PaDouble,  PaOpt,         _i 1.0,    PaNL,   PaNL,  "rate"                       },
-    { "-controller", controller,   "SS_PLP_CONTROLLER",     PaString,  PaOpt, _i "localhost",    PaNL,   PaNL,  "controller IP"              },
+    { "-node",       controller,   "",                      PaString,  PaOpt, _i "localhost",    PaNL,   PaNL,  "SAMSON node"                },
     { "-file",       file,         "SS_PLP_FILE",           PaString,  PaOpt, _i "generator",    PaNL,   PaNL,  "file"                       },
 
     PA_END_OF_ARGS

@@ -25,7 +25,6 @@ SET( STATIC_LIBS
     delilahQtLib
     engine
 	samsonModule
-	samsonDataLib
 	samsonStream
 	samsonIsolated
 	samsonNetwork

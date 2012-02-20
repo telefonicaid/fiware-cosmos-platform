@@ -1,5 +1,4 @@
 
-#include "UploadDelilahComponent.h"			// Own interface
 #include "engine/MemoryManager.h"					// samson::MemoryManager
 #include "engine/Buffer.h"							// samson::Buffer
 #include "samson/network/Packet.h"							// samson::Packet
@@ -9,7 +8,7 @@
 #include "DelilahClient.h"					// samson::DelilahClient
 #include "samson/common/SamsonSetup.h"					// samson::SamsonSetup
 
-#include "TXTFileSet.h"
+#include "TXTFileSet.h"  // Own interface
 
 namespace samson
 {

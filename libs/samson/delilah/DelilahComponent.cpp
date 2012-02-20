@@ -42,13 +42,10 @@ namespace samson {
     std::string DelilahComponent::getTypeName()
     {
         switch (type) {
-            case command:               return "[ Command   ]";
-            case load:                  return "[ Load      ]";
-            case updater:               return "[ Updater   ]";
-            case push:                  return "[ Push      ]";
-            case pop:                   return "[ Pop       ]";
-            case worker_command:        return "[ W Comamnd ]";
-            case repeat:                return "[ Repeat    ]";
+            case push:                  return "[ Push    ]";
+            case pop:                   return "[ Pop     ]";
+            case worker_command:        return "[ Comamnd ]";
+            case repeat:                return "[ Repeat  ]";
         }
         
         LM_X(1, ("Impossible error"));

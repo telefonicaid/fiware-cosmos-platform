@@ -37,7 +37,6 @@
 #include "samson/stream/BlockList.h"                // BlockList
 #include "samson/stream/DistributionInformation.h"
 
-#include "samson/data/SimpleDataManager.h"          // samson::SimpleDataManager
 
 #include "BlockInfo.h"                              // struct BlockInfo
 

@@ -39,13 +39,13 @@ static const char* manShortDescription =
 "samsonPush is a easy-to-use client to send data to a particular queue in a SAMSON system. Just push data into the standard input\n";
 
 static const char* manSynopsis =
-"[-help] [-controller str_controller] [-timeout int_t] [-buffer_size int_size] [-breaker_sequence str_pattern] [-lines bool] queue\n";
+"[-help] [-node str_samson_node] [-timeout int_t] [-buffer_size int_size] [-breaker_sequence str_pattern] [-lines bool] queue\n";
 
 int default_buffer_size = 64*1024*1024 - sizeof(samson::KVHeader);
 
 PaArgument paArgs[] =
-{
-	{ "-controller",  controller,            "",  PaString,  PaOpt, _i "localhost",                PaNL,        PaNL,  "controller IP:port"                 },
+{   
+	{ "-node",        controller,            "",    PaString,  PaOpt, _i "localhost"  , PaNL, PaNL,       "SMASON node to connect with "         },
 	{ "-buffer_size", &buffer_size,          "",  PaInt,     PaOpt,       default_buffer_size,         1,   default_buffer_size,  "Buffer size in bytes"    },
 	{ "-mr",          &max_rate,             "",  PaInt,     PaOpt,       10000000,      100,  100000000,  "Max rate in bytes/s"                            },
 	{ "-breaker_sequence", breaker_sequence, "",  PaString,  PaOpt,        _i "\n",   PaNL,         PaNL,  "Breaker sequence ( by default \\n )"            },

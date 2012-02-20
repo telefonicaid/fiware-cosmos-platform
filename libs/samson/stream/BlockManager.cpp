@@ -6,6 +6,7 @@
 #include "engine/Notification.h"       // engine::Notification
 
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
+#include "logMsg/traceLevels.h"
 
 #include "BlockList.h"          // BlockList
 #include "BlockManager.h"       // Own interface

@@ -3,6 +3,7 @@ SET (HEADERS
     NotificationMessages.h
 	samson.pb.h
 	status.h
+	Visualitzation.h
 	ports.h
 	samsonDirectories.h
 	samsonLogMsg.h
@@ -11,7 +12,6 @@ SET (HEADERS
 	MessagesOperations.h
 	daemonize.h
 	EnvironmentOperations.h
-	Process.h
 	samsonConfig.h
 	coding.h
 	MemoryTags.h
@@ -30,6 +30,7 @@ SET (SOURCES
 	coding.cpp
 	KVInputVector.cpp
 	status.cpp
+	Visualitzation.cpp 
 )
 
 # Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''

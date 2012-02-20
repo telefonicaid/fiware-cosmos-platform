@@ -449,7 +449,7 @@ namespace samson {
         
         void Queue::fill( samson::network::CollectionRecord* record , VisualitzationOptions options )
         {
-            
+              
             // Get block information for this queue
             BlockInfo blockInfo;
             update( blockInfo );
@@ -462,11 +462,21 @@ namespace samson {
             if( pos != std::string::npos )
                 last_component_name = name.substr( pos+1 );
              */
+
+            // Spetial case for properties...
+            if( ( options == properties ) || (options == all ) )
+            {
+                add( record , "name" , name , "left,different" );
+                add( record , "properties" , environment.getEnvironmentDescription() , "left,different" );
+                return;
+            }
             
             
             add( record , "name" , name , "left,different" );
             add( record , "#kvs" , blockInfo.info.kvs , "f=uint64,sum" );
             add( record , "size" , blockInfo.info.size , "f=uint64,sum" );
+
+            
             
             if( ( options == normal ) || (options == all ) )
             {
@@ -474,7 +484,7 @@ namespace samson {
                 add( record , "value" , format.valueFormat , "different" );
             }
             
-            if( ( options == verbose ) || (options == all ) )
+            if( ( options == rates ) || (options == all ) )
             {
 
                 add( record , "Total #kvs"  , (size_t)rate.get_total_kvs() , "f=uint64,sum" );
@@ -484,7 +494,7 @@ namespace samson {
                 add( record , "Bytes/s" , (size_t) rate.get_rate_size() , "f=uint64,sum" );
             }
             
-            if( ( options == verbose2 ) || (options == all ) )
+            if( ( options == blocks ) || (options == all ) )
             {
                 add( record , "#Blocs"     , blockInfo.num_blocks , "f=uint64,sum" );
                 add( record , "Size"       , blockInfo.size , "f=uint64,sum" );

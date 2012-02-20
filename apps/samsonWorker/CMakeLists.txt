@@ -13,7 +13,6 @@ SET (LIBS
     samsonStream
     samsonIsolated
     samsonCommon
-    samsonDataLib
     engine
     au
 	tables

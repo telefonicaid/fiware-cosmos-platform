@@ -14,7 +14,7 @@
 
 #include <samson/module/Environment.h>		// samson::Environment
 #include <samson/module/Tracer.h>              // samson::Tracer
-#include <samson/module/OperationController.h>	// samson::OperationController
+#include <samson/module/OperationController.h>
 
 namespace samson {
 

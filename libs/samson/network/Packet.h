@@ -25,7 +25,7 @@
 namespace samson
 {
 	/** 
-	 Unique packet type sent over the network between controller, samson and delilah
+	 Unique packet type sent over the network between workers and delilahs
 	 */
     
     // Type of elements in the cluster

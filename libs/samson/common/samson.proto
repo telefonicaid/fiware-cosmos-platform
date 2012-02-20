@@ -28,12 +28,12 @@ message Trace
 {
 	
 	required string text	=1; 
-	required int32  type	=2;
-	required string file	=3;
-	required int32 lineNo	=4;
-	required string fName	=5;
-	required int32 tLev	=6;
-	required string stre	=7;	
+	optional int32  type	=2;
+	optional string file	=3;
+	optional int32 lineNo	=4;
+	optional string fName	=5;
+	optional int32 tLev	=6;
+	optional string stre	=7;	
 }
 
 // ////////////////////////////////////////////////////////////////////////////

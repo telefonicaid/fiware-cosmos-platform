@@ -1,4 +1,5 @@
 
+#include "samson/common/MessagesOperations.h"
 
 #include "samson/network/misc.h"
 
@@ -49,6 +50,10 @@ namespace samson {
         running_t_read = false;
         running_t_write = false;
 
+        // Time window for rate estimation
+        rate_in.setTimeLength(60);
+        rate_out.setTimeLength(60);
+        
     }
 
     NetworkConnection::~NetworkConnection()
@@ -93,7 +98,10 @@ namespace samson {
             
             // Read a packet
             Packet * packet = new Packet();
-            Status s = socket_connection->readPacket( packet );
+
+            size_t total_read = 0;
+            Status s = socket_connection->readPacket( packet , &total_read );
+            rate_in.push(total_read);
             
             if( s == OK )
                 network_manager->receive( this , packet );
@@ -115,7 +123,9 @@ namespace samson {
             
             if ( packetP != NULL )
             {
-                Status s = socket_connection->writePacket( packetP );
+                size_t total_write = 0;
+                Status s = socket_connection->writePacket( packetP , &total_write );
+                rate_out.push(total_write);
 
                 if( s == OK )
                     packet_queue.pop();
@@ -131,6 +141,27 @@ namespace samson {
         
         LM_X(1,("Internal error")); // No possible to get this line
     }
+    
+    void NetworkConnection::fill( network::CollectionRecord * record, Visualization* visualization )
+    {
+
+        ::samson::add( record , "name"    , name , "different,left" );
+
+        if( socket_connection->isDisconnected() )
+            ::samson::add( record , "status" , "disconnected" , "different,left" );
+        else
+            ::samson::add( record , "status" , "connected" , "different,left" );
+        
+        ::samson::add( record , "host"    , socket_connection->getHostAndPort() , "different" );
+        
+        ::samson::add( record , "In (B)"    , rate_in.getTotalSize() , "f=uint64,sum" );
+        ::samson::add( record , "Out (B)"    , rate_out.getTotalSize() , "f=uint64,sum" );
+
+        ::samson::add( record , "In (B/s)"   , (size_t)rate_in.getRate() , "f=uint64,sum" );
+        ::samson::add( record , "Out (B/s)"   , (size_t)rate_out.getRate() , "f=uint64,sum" );
+        
+    }
+
     
     
 }

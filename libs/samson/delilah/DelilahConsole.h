@@ -30,7 +30,6 @@
 #include "DelilahClient.h"                  // ss:DelilahClient
 
 #include "samson/delilah/Delilah.h"			// samson::Delilah
-#include "samson/delilah/DelilahUtils.h"    // getXXXInfo()
 
 namespace samson {
 	
@@ -71,22 +70,25 @@ namespace samson {
         DelilahCommandCatalogue()
         {
             
-            // GENERAL
+            // DELILAH
             // ------------------------------------------------------------------
             
-            add( "help","general","Get some help about SAMSON platform",
+            add( "help","delilah","Get some help about SAMSON platform",
                 "help                        Get general help\n"
                 "help all [-category cat]    Get all available commands ( optional category )\n" 
                 "help command                Get help for a particular command\n"
                 );
-
-            // DELILAH
-            // ------------------------------------------------------------------
-            
             
             add( "trace" , "delilah", 
                 "Activate or disactivate showing traces from running operations",
                 "trace <on> <off>"
+                );
+
+            add( "send_trace" , "delilah", 
+                "Send a trace to all conneceted delilah using a random worker as a sender\n",
+                "send_trace [-worker X] \"Message to be sent\""
+                "      -worker X     Use only this worker as broadcaster\n"
+                "      message       Use only this worker as broadcaster\n"
                 );
             
             add( "repeat" , "delilah",
@@ -107,8 +109,6 @@ namespace samson {
                 "      id        It gets more help about a particular process\n" 
                 );                
             
-            
-            
             add( "set" , "delilah" ,
                 "Set environment variable in delilah",
                 "set <var> <value>"
@@ -123,29 +123,27 @@ namespace samson {
                 "set_database_mode on/off"
                 );
             
+            
+            add("ls_local", "local", 
+                "Show a list of current directory with relevant information about local data-sets");
+            
+            add("rm_local", "local",
+                "Remove a local directory and all its contents"); 
+            
+            add( "ls_engines"  , "stream",
+                "Show a status information of the engine (lower level system in SAMSON) in all workers ");
 
             // DATA MANIPULATION
             // ------------------------------------------------------------------
             
             add( "ls_queues" , "data" , "Show a list of all data queues in the system",
-                "ls_queues <-v> <-vv> <-w> "
-                "      -v -vv        Get more information from queues\n"
-                "      -w            Get information for each worker\n"
+                "ls_queues [-rates] [-blocks] [-properties] [-group group_field]"
+                "      -rates        Information about total size and current rate\n"
+                "      -blocks       Detailes information about blocks\n"
+                "      -properties   Get properties assigned to queues\n"
+                "      -group X      Group results by a particular field"
                 );
 
-            add( "show_stream_block" ,"data" , "Show data activity in a particular stream block",
-                "show_stream_block path\n"
-                );
-            
-            add( "push" , "data" ,
-                "Push content of a local file/directory to a queue",
-                "push <local_file_or_dir> <queue>");
-            
-            add( "pop" , "data"  ,
-                "Pop content of a queue to a local directory. Also working for binary queues. Use samsonCat to check content",
-                "push <local_file_or_dir> <queue>");
-
-            
             add( "rm_queue" , "data" , 
                 "Remove a queue" 
                 "Usage: rm_queue queue"
@@ -161,31 +159,16 @@ namespace samson {
                 "set_queue_property <queue> <property> <value>"
                 );
             
-            add( "connect_to_queue" , "data"  
-                , "Connect to a particular queue to receive live data from SAMSON"
-                , "connect_to_queue queue" );
-            
-            add( "disconnect_from_queue" , "data" ,
-                "Disconnects from a particular queue to not receive live data from SAMSON",
-                "disconnect_from_queue queue"
+            add( "show_stream_block" ,"data" , "Show data activity in a particular stream block",
+                "show_stream_block path\n"
                 );
-            
-            
-            // LOCAL
-            // ------------------------------------------------------------------
-            
-            add("ls_local", "local", 
-                "Show a list of current directory with relevant information about local data-sets");
-            
-            add("rm_local", "local",
-                "Remove a local directory and all its contents"); 
             
             // MODULES
             // ------------------------------------------------------------------
 
 
             add( "ls_modules" , "modules",
-                "Show a list of modules installed at controller, workers and delilah",
+                "Show a list of modules installed in SAMSON node workers",
                 "ls_module <name>\n");
 
             add(  "ls_operations","modules", 
@@ -198,7 +181,7 @@ namespace samson {
                 );
             
             add( "reload_modules" , "modules", 
-                "Reload modules at controller and workers");
+                "Reload modules in all workers");
             
             
             // STREAM
@@ -222,17 +205,17 @@ namespace samson {
  
             add( "ls_stream_operations"  , "stream" , 
                 "Show a list of stream operations defined( added with add_stream_operation)",
-                "ls_stream_operations <-v> <-vv>\n"
-                "      -v -vv       options for more verbose output\n" );
-
+                "ls_stream_operations [-in] [-out] [-running]\n"
+                "      -in        Information about data accepted to these operations\n"
+                "      -out       Information about data emmitted\n"
+                "      -running   Currently running operations and status\n"
+                );
 
             add( "ps_stream" , "stream" ,
                 "Get a list of current stream tasks currently running in all workers"
                 );
 
  
-            add( "ls_engines"  , "stream",
-                "Show a status information of the engine (lower level system in SAMSON) in all workers ");
             
             add( "init_stream" , "stream" ,
                 "Execute a initialization script to setup some automatic stream operations",
@@ -250,9 +233,36 @@ namespace samson {
                 "           [-clear_inputs]  : Flag used to remove content from input queues when running this operation\n"
                 );
    
+            
+            
+            // PUSH&POP
+            // ------------------------------------------------------------------
+            
+            add( "push" , "push&pop" ,
+                "Push content of a local file/directory to a queue",
+                "push <local_file_or_dir> <queue>");
+            
+            add( "pop" , "push&pop"  ,
+                "Pop content of a queue to a local directory. Also working for binary queues. Use samsonCat to check content",
+                "push <local_file_or_dir> <queue>");
+            
+
+            add( "connect_to_queue" , "push&pop"  
+                , "Connect to a particular queue to receive live data from SAMSON"
+                , "connect_to_queue queue" );
+            
+            add( "disconnect_from_queue" , "push&pop" ,
+                "Disconnects from a particular queue to not receive live data from SAMSON",
+                "disconnect_from_queue queue"
+                );
+            
+            
             // CLUSTER
             // ------------------------------------------------------------------
 
+            add( "ls_connections" , "cluster" ,
+                "Show status of all connections in the cluster");
+            
             add( "cluster" , "cluster" ,
                 "Command for cluster related operation",
                 "cluster info/connect/add/remove/reset [...options...]\n"

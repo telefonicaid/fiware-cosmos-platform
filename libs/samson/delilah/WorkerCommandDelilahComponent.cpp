@@ -70,7 +70,9 @@ namespace samson {
         else
             workers.insert( _workers.begin() , _workers.end() );
         
-        for ( size_t w = 0 ; w < _workers.size() ; w++ )
+        // Send to all involved workers
+        std::set<size_t>::iterator it_workers;
+        for ( it_workers = workers.begin() ; it_workers != workers.end() ; it_workers ++ )
         {
             Packet*           p = new Packet( Message::WorkerCommand );
             network::WorkerCommand* c = p->message->mutable_worker_command();
@@ -113,7 +115,7 @@ namespace samson {
             
             // Information about destination....
             p->to.node_type = WorkerNode;
-            p->to.id = _workers[w];
+            p->to.id = *it_workers;
 
             // Send message
             delilah->network->send( p );                        
@@ -134,7 +136,7 @@ namespace samson {
             
             if( workers.find( worker_id ) == workers.end() )
             {
-                error.set( au::str("WorkerCommandResponse received from worker %lu not involved in this operation" ) );
+                setComponentFinishedWithError( au::str("WorkerCommandResponse received from worker %lu not involved in this operation" ) );
                 return;
             }
             confirmed_workers.insert( worker_id );

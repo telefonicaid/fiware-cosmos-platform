@@ -66,7 +66,7 @@ namespace samson {
     
 	class Delilah : public NetworkInterfaceReceiver  , public engine::Object, public DelilahBase
 	{
-		// Id counter of the command - messages sent to controller ( commands / upload/ download )
+		// Id counter of all internal DelilahComponents
 		size_t id;												
 		
 		// Private token to protect the local list of components
@@ -105,7 +105,6 @@ namespace samson {
 		Delilah( NetworkInterface *_network );
 		~Delilah();
         
-		void initController(std::string controller);
 		void quit();
 
         // Notification system
@@ -158,7 +157,6 @@ namespace samson {
         }
 		
 		// Get info about the list of loads
-		std::string getListOfLoads();
         std::string getListOfComponents();
         
         // Get next worker_id to send data...
@@ -175,9 +173,6 @@ namespace samson {
         // Generate XML monitorization data
         void getInfo( std::ostringstream& output ); 
 
-        // General information string for delilah products
-        std::string info( std::string );
-        
         bool checkXMLInfoUpdate();
         
 	protected:		

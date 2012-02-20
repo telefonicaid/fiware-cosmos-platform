@@ -27,15 +27,11 @@
 #include "samson/module/ModulesManager.h"       // samson::ModulesManager
 
 #include "samson/network/Packet.h"				// samson::Packet
-#include "UploadDelilahComponent.h"           // samson::DelilahLoadDataProcess
-#include "DownloadDelilahComponent.h"         // samson::DelilahLoadDataProcess
 #include "PushDelilahComponent.h"               // samson::PushDelilahComponent
 #include "PopDelilahComponent.h"                // samson::PopDelilahComponent
-#include "CommandDelilahComponent.h"            // samson::CommandDelilahComponent
 #include "WorkerCommandDelilahComponent.h"      // samson::WorkerCommandDelilahComponent
 
 
-#include "samson/delilah/DelilahUtils.h"        // node_to_string_function
 #include "samson/delilah/SamsonDataSet.h"       // samson::SamsonDataSet
 #include "samson/delilah/Delilah.h"             // Own interfce
 #include "samson/delilah/DelilahConsole.h"      // samson::DelilahConsole
@@ -256,7 +252,6 @@ namespace samson {
             return;
         }
         
-        
         // --------------------------------------------------------------------
         // StatusReport messages
         // --------------------------------------------------------------------
@@ -278,6 +273,9 @@ namespace samson {
             return;
         }
         
+        // --------------------------------------------------------------------
+        // Streaming out content of a queue
+        // --------------------------------------------------------------------
         
         if( msgCode == Message::StreamOutQueue )
         {
@@ -328,8 +326,6 @@ namespace samson {
             }
             
         }
-        
-        
         
         // Forward the reception of this message to the client
         _receive( packet );
@@ -474,34 +470,6 @@ namespace samson {
         
 	}
 	
-    
-    
-	std::string Delilah::getListOfLoads()
-	{
-		std::stringstream output;
-		bool present = false;
-		output << "-----------------------------------------------------------------\n";
-		output << "Upload and download processes....\n";
-		output << "-----------------------------------------------------------------\n";
-		output << "\n";
-		std::map<size_t,DelilahComponent*>::iterator iter;
-		for (iter = components.begin() ; iter != components.end() ; iter++)
-		{
-			if ( iter->second->type == DelilahComponent::load )
-			{
-				output << iter->second->getStatus() << "\n";
-				present = true;
-			}
-		}
-		
-		if( !present )
-			output << "\tNo upload or download process.\n";
-		output << "\n";
-		output << "-----------------------------------------------------------------\n";
-		
-		return output.str();
-	}
-	
     std::string Delilah::getListOfComponents()
     {
         au::tables::Table table( au::StringVector( "id" ,"type" , "status" , "concept" ) , au::StringVector( "" ,"left" , "left" , "concept" ) );
@@ -524,7 +492,7 @@ namespace samson {
 		// Get the id of this operation
 		size_t tmp_id = addComponent( c );
 		
-		// Send the packet to the controller
+		// Send the packet to necessary workers
 		c->run();
 		
 		return tmp_id;
@@ -613,394 +581,6 @@ namespace samson {
         
     }    
     
-    // Generic function to get a tabular information scaning the xml document
-
-// --------------------------------------------------------------------------------------------------------------------------------
-// LS_QUEUES
-// --------------------------------------------------------------------------------------------------------------------------------
-    
-#define LS_QUEUES_NAME               " name,t=name,left "    
-#define LS_QUEUES_KVS                " block_info/kv_info/kvs,t=#kvs,format=uint64,sum "
-#define LS_QUEUES_SIZE               " block_info/kv_info/size,t=size,format=uint64,sum "
-#define LS_QUEUES_KEY                " block_info/format/key_format,t=key "
-#define LS_QUEUES_VALUE              " block_info/format/value_format,t=value,left "
-#define LS_QUEUES_RATE_KVS           " rate_kvs/rate,t=#kvs/s,format=uint64,sum "
-#define LS_QUEUES_RATE_SIZE          " rate_size/rate,t=Bytes/s,format=uint64,sum "   
-#define LS_QUEUES_STATUS             " status,t=status,left "    
-#define LS_QUEUES_BLOCKS_NUM         " block_info/num_blocks,t=#Blocks,format=uint64,sum "     
-#define LS_QUEUES_BLOCKS_SIZE        " block_info/size,title=size,format=uint64,sum "
-#define LS_QUEUES_BLOCKS_MEMORY      " block_info/size_on_memory,format=uint64,t=on_memory,sum "   
-#define LS_QUEUES_BLOCKS_DISK        " block_info/size_on_disk,format=uint64,t=on_disk,sum "
-#define LS_QUEUES_BLOCKS_LOCKED      " block_info/size_locked,format=uint64,t=locked,sum " 
-#define LS_QUEUES_BLOCKS_TIME_BEGIN  " block_info/min_time_diff,f=time,t=oldest,vector "
-#define LS_QUEUES_BLOCKS_TIME_END    " block_info/max_time_diff,f=time,t=earliest,vector " 
-    
-#define LS_QUEUES_FIELDS                  LS_QUEUES_NAME LS_QUEUES_KVS LS_QUEUES_SIZE LS_QUEUES_KEY LS_QUEUES_VALUE
-#define LS_QUEUES_FIELDS_VERBOSE          LS_QUEUES_NAME LS_QUEUES_KVS LS_QUEUES_SIZE LS_QUEUES_RATE_KVS LS_QUEUES_RATE_SIZE LS_QUEUES_STATUS    
-#define LS_QUEUES_FIELDS_VERBOSE_VERBOSE  LS_QUEUES_NAME LS_QUEUES_BLOCKS_NUM LS_QUEUES_BLOCKS_SIZE LS_QUEUES_BLOCKS_MEMORY LS_QUEUES_BLOCKS_DISK LS_QUEUES_BLOCKS_LOCKED LS_QUEUES_BLOCKS_TIME_BEGIN LS_QUEUES_BLOCKS_TIME_END
-
-    
-// --------------------------------------------------------------------------------------------------------------------------------    
-    
-#define LS_ENGINES_FIELDS " uptime,title=up_time,f=time,vector,min_max "                  \
-                          " process_manager/num_running_processes,t=#cores,sum "          \
-                          " process_manager/num_processes,t=#max_cores,sum "              \
-                          " memory_manager/used_memory,t=used_memory,format=uint64,sum "  \
-                          " memory_manager/memory,t=memory,format=uint64,sum "            \
-                          " disk_manager/num_pending_operations,t=disk_ops,f=uint64,sum " \
-
-// --------------------------------------------------------------------------------------------------------------------------------    
-
-#define LS_STREAM_OPERATIONS_FIELDS " worker_id,vector,t=Workers "          \
-                                    " name,t=name,left"                     \
-                                    " inputs,t=inputs "                     \
-                                    " outputs,t=outputs "                   \
-                                    " operation,t=operation,left "          \
-
-#define LS_STREAM_OPERATIONS_FIELDS_VERBOSE "name,t=name,left"                     \
-                                            "/input_str,t=input"                   \
-                                            "/running_tasks,t=running_tasks"       \
-                                            "/history_str,t=history "              \
-
-#define LS_STREAM_OPERATIONS_FIELDS_VERBOSE_VERBOSE  "name,t=name,left"            \
-                                                     "/last_review,t=last_review"  \
-
-// --------------------------------------------------------------------------------------------------------------------------------    
-    
-    
-#define LS_BLOCKS_FIELDS " id,t=id "                                              \
-                         " size,t=size,format=uint64 "                            \
-                         " state,t=state /tasks_str,t=tasks "                     \
-                         " kv_header/format/key_format,t=key "                    \
-                         " kv_header/format/value_format,t=value,left "           \
-                         " kv_header/kv_info/kvs,t=#kvs,format=uint64 "           \
-                         " kv_header/kv_info/size,t=size,format=uint64 "          
-
-#define LS_BLOCKS_FIELDS_VERBOSE " id,t=id "                           \
-                                 " size,t=size,format=uint64 "         \
-                                 " state,t=state /tasks_str,t=tasks "  \
-                                 " lists_str,t=lists,left "            \
-
-// --------------------------------------------------------------------------------------------------------------------------------    
-    
-#define PS_STREAM_FIELDS " id,t=id "                     \
-                         " state,t=state "               \
-                         " operation,t=operation,left "  \
-                         " input_0,t=input_0 "           \
-                         " input_1,t=input_1 "           \
-    
-    
-    std::string Delilah::info( std::string external_command )
-    {
-        // Parse external command
-        au::CommandLine cmd;
-        cmd.set_flag_boolean("vv");
-        cmd.set_flag_boolean("v");
-        cmd.set_flag_boolean("w");
-        cmd.set_flag_boolean("first");
-        cmd.set_flag_int("limit" , 0);
-        cmd.set_flag_boolean("show_command");
-        cmd.parse( external_command );
-
-        // Get values for all options
-        int limit = cmd.get_flag_int("limit");
-
-        // Check
-        if( cmd.get_num_arguments() == 0)
-            return "No command to display information about SAMSON platform.";
-        
-        // Command to be executed
-        std::string command;
-        
-        std::string main_command = cmd.get_argument(0);
-        
-        if( main_command == "ls_queues" )
-        {
-
-            command.append( "print_table queues " );
-
-            if( cmd.get_flag_bool("w") )
-                command.append(" worker_id ");
-            
-            if( cmd.get_flag_bool("vv") )
-                command.append( LS_QUEUES_FIELDS_VERBOSE_VERBOSE );
-            else if( cmd.get_flag_bool("v") )
-                command.append( LS_QUEUES_FIELDS_VERBOSE );
-            else
-                command.append( LS_QUEUES_FIELDS );
-            
-            if( cmd.get_flag_bool("w") )
-                command.append(" -divide worker_id -sort name ");
-            else
-                command.append(" -group name ");
-            
-            
-            if( cmd.get_num_arguments() > 1 )
-                command.append( au::str( " -where name=%s*" , cmd.get_argument(1).c_str() ) );
-
-            // Limit
-            command.append( au::str(" -limit %d " , limit ) );
-            
-        } 
-        else if ( main_command == "ps_stream" )
-        {
-            command.append( "print_table tasks " );
-            
-            if( cmd.get_flag_bool("w") )
-                command.append(" worker_id ");
-            
-            command.append( PS_STREAM_FIELDS );
-            
-            command.append(" -divide worker_id ");
-            
-            // Limit
-            command.append( au::str(" -limit %d " , limit ) );            
-            
-            
-            
-        }
-        else if ( main_command == "ls_engines" )
-        {
-            command.append( "print_table engines " );
-            
-            if( cmd.get_flag_bool("w") )
-                command.append(" worker_id ");
-            
-            command.append( LS_ENGINES_FIELDS );
-            
-            if( cmd.get_flag_bool("w") )
-                command.append(" -divide worker_id ");
-            else
-                command.append(" -group name ");
-            
-            
-            if( cmd.get_num_arguments() > 1 )
-                command.append( au::str( " -where name=%s*" , cmd.get_argument(1).c_str() ) );
-            
-        } 
-        else if ( main_command == "ls_engine_delilah" )
-        {
-            command.append( "print_table engine_delilah " );
-            command.append( LS_ENGINES_FIELDS );
-        }
-        else if( main_command == "ls_stream_operations" )
-        {
-            command.append( "print_table stream_operations " );
-            
-            if( cmd.get_flag_bool("w") )
-                command.append(" worker_id ");
-            
-            if( cmd.get_flag_bool("vv") )
-                command.append( LS_STREAM_OPERATIONS_FIELDS_VERBOSE_VERBOSE );
-            else if( cmd.get_flag_bool("v") )
-                command.append( LS_STREAM_OPERATIONS_FIELDS_VERBOSE );
-            else
-                command.append( LS_STREAM_OPERATIONS_FIELDS );
-            
-            if( cmd.get_flag_bool("w") )
-                command.append(" -divide worker_id -sort name ");
-            else
-                command.append(" -group name ");
-            
-            
-            if( cmd.get_num_arguments() > 1 )
-                command.append( au::str( " -where name=%s*" , cmd.get_argument(1).c_str() ) );
-            
-            // Limit
-            command.append( au::str(" -limit %d " , limit ) );
-            
-        }        
-        else if( main_command == "ls_blocks" )
-        {
-            
-            // In this case we have to select a worker to show
-            
-            if ( cmd.get_num_arguments() < 2 )
-                return au::str( au::red , "usage: ls_blocks worker_id" );
-            
-            command.append( "print_table blocks " );
-            
-            if( cmd.get_flag_bool("v") )
-                command.append( LS_BLOCKS_FIELDS_VERBOSE );
-            else
-                command.append( LS_BLOCKS_FIELDS );
-            
-            // Condition of the worker
-            command.append( au::str(" -where worker_id=%s" , cmd.get_argument(1).c_str() ) );
-            
-        }
-        else if( main_command == "ls_operations" )
-        {
-            command.append( "print_table operations " );
-            
-            if( cmd.get_flag_bool("w") )
-                command.append(" worker_id ");
-            
-            if( cmd.get_flag_bool("v") )
-                command.append( " name type input_description,t=Inputs output_description,t=Outputs ");            
-            else
-                command.append( " name type help,left ");            
-            
-            if( cmd.get_flag_bool("w") )
-                command.append(" -divide worker_id -sort name ");
-            else
-                command.append(" -group name ");
-            
-            if( cmd.get_num_arguments() > 1 )
-                command.append( au::str(" -where name=%s*", cmd.get_argument(1).c_str() ) );
-            
-            if ( cmd.get_flag_bool("first") )
-                command.append(" -first ");
-            
-        }
-        else if( main_command == "ls_modules" )
-        {
-            command.append( "print_table modules " );
-            
-            if( cmd.get_flag_bool("w") )
-                command.append( " worker_id ");
-            
-            // Add fields
-            command.append(" name version,different num_operations,t=#Ops num_datas,t=#Datas author,left ");            
-            
-            if( cmd.get_flag_bool("w") )
-                command.append(" -divide worker_id ");
-            else
-                command.append(" -group name ");
-                       
-            if( cmd.get_num_arguments() > 1 )
-                command.append( au::str(" -where name=%s*", cmd.get_argument(1).c_str() ) );
-        }
-        else
-        {
-            return au::str("Command %s not implemented" , main_command.c_str() );
-        }
-
-        // Option to show command on screen
-        if( cmd.get_flag_bool("show_command") )
-            return au::str( au::purple , "%s" , command.c_str() );
-        
-        // Limit to the size of console for easy visualitzation
-        std::string result = runDatabaseCommand( command );
-        return au::strToConsole( result );
-        
-        
-        
-/*        
-        if( main_command == "ls" )
-        {
-            std::string filter = "";
-            
-            if( cmd.get_num_arguments() > 1 )
-            {
-                std::string filter_parameter = cmd.get_argument(1);
-                
-                if( filter_parameter.substr( filter_parameter.length()-1 , 1) == "*" )
-                    filter_parameter = filter_parameter.substr( 0 , filter_parameter.length() - 1);
-                
-                filter = au::str("[starts-with(name,'%s')]" , filter_parameter.c_str() );
-            }
-            
-            
-            std::ostringstream command;
-            
-            command << "info_command -controller //queue" << filter;
-            command << " /name,title=Name,l /num_files,t=#files /kv_info/kvs,t=#kvs,f=uint64 /kv_info/size,t=size,f=uint64 /format/key_format,t=key /format/value_format,t=value,left -no_title";
-            
-            return infoCommand( command.str() );
-        }
-        
-
-        
-        if( main_command == "ls_stream_activity" )
-        {
-            return infoCommand( "info_command //activity/log -worker /time,t=time /txt,t=log,left" );
-        }
-        
-        
-        if( main_command == "ls_stream_operations" )
-        {
-            if( cmd.get_flag_bool("vv")  )
-                return infoCommand(LS_STREAM_OPERATIONS_VERBOSE_VERBOSE);
-            else if( cmd.get_flag_bool("v")  )
-                return infoCommand(LS_STREAM_OPERATIONS_VERBOSE);
-            else
-                return infoCommand(LS_STREAM_OPERATIONS);
-            
-        }
-        
-        if( main_command == "ls_blocks" )
-        {
-            std::string command;
-            
-            if( cmd.get_flag_bool("v")  )
-                command.append( LS_BLOCKS_VERBOSE );
-            else
-                command.append( LS_BLOCKS );
-            
-            int limit = cmd.get_flag_int("limit");
-
-            if( limit > 0)
-                command.append( au::str(" -limit %d " , limit) );
-            
-            return infoCommand( command );
-            
-        }
-        
-        if( main_command == "engine_show" )
-            return infoCommand(ENGINE_SHOW_COMMAND);
-        
-        
-        if( main_command == "ls_block_manager" )
-            return getStringInfo( "//block_manager" , getBlockManagerInfo, i_worker ); 
-        
-        
-        if( main_command == "ls_operation_rates" )
-            return getStringInfo( "//process_manager//rates//simple_rate_collection" , getOperationRatesInfo, i_worker ); 
-        
-        if( main_command == "ls_datas" )
-        {
-            std::string command;
-            if( cmd.get_num_arguments() > 1 )
-            {
-                std::string argument =  cmd.get_argument(1);
-                command = au::str("/modules_manager//data[starts-with(name,'%s')]" , argument.c_str() );
-            }
-            else
-                command = "/modules_manager//data";
-            
-            return getStringInfo( command , getDataInfo, i_controller ); 
-        }
-        
-        if( main_command == "ps_network" )
-            return getStringInfo("/network", getNetworkInfo, i_controller | i_worker | i_delilah ); 
-        
-        if( main_command == "ps_jobs" )
-            return getStringInfo("/job_manager//job", getJobInfo,i_controller  ); 
-        
-        if( main_command == "ps_tasks" )
-        {
-            
-            std::string txt = getStringInfo("/controller_task_manager//controller_task", getTaskInfo, i_controller  ); 
-            std::string txt2 = getStringInfo("/worker_task_manager//worker_task", getWorkerTaskInfo, i_worker  ); 
-            return  txt + txt2;
-        }
-        
-        if( main_command == "ps_stream" )
-        {
-            std::string info_command ="info_command //queue_task  -worker /id,t=id /state,t=state /operation,t=operation,left /input_0,t=input_0 /input_1,t=input_1";
-            return infoCommand( info_command );
-            
-            //return getStringInfo("/stream_manager//queue_task", getQueueTaskInfo, i_worker ); 
-        }
-        
-        
-        return au::str("Command %s Unknown" , main_command.c_str() );
-        
-        */
-        
-    }
-
     std::string Delilah::getLsLocal( std::string pattern )
     {
         au::tables::Table* table = new au::tables::Table( au::StringVector( "Name" , "Type" , "Description" ) , au::StringVector( "left" , "left" , "left" ) );

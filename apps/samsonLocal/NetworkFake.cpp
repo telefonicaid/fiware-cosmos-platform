@@ -5,7 +5,7 @@
 
 namespace samson {
 
-	NetworkFake::NetworkFake( NodeIdentifier _node_identifier , NetworkFakeCenter *_center )	// -1 controller -2 dalila
+	NetworkFake::NetworkFake( NodeIdentifier _node_identifier , NetworkFakeCenter *_center )	
 	{
         node_identifier = _node_identifier;
 		center = _center;

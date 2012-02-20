@@ -139,7 +139,6 @@ namespace samson {
         // Get names fo files
         std::string setupFileName();                         // Get the Steup file
         std::string sharedMemoryLogFileName();
-        std::string controllerLogFileName();
         std::string dataDirectory(  );     
         std::string dataFile( std::string filename );        // Get the name of a particular data file ( batch processing )
         std::string modulesDirectory();

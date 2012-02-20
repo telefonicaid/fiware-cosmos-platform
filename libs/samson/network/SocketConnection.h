@@ -34,8 +34,8 @@ namespace samson {
         bool isDisconnected();        // Check if we are still connected
 
         // Read and write packet routines
-        Status readPacket( Packet * packetP );
-        Status writePacket( Packet * packetP );
+        Status readPacket( Packet * packetP , size_t *size);
+        Status writePacket( Packet * packetP , size_t *size );
         
         // Read line 
         Status readLine( char* line, size_t max_size , int max_seconds );
@@ -67,6 +67,14 @@ namespace samson {
             return port;
         }
         
+        std::string getHostAndPort()
+        {
+            if( port != -1 )
+                return au::str("%s:%d" , host.c_str() , port );
+            else
+                return au::str("%s" , host.c_str() );
+
+        }
         
         // Connect to another element in the SAMSON network
         static Status newSocketConnection( std::string host , int port , SocketConnection** socket_connection );

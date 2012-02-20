@@ -101,10 +101,12 @@ namespace samson {
         return OK;
     }
     
-    Status SocketConnection::writePacket( Packet * packetP )
+    Status SocketConnection::writePacket( Packet * packetP , size_t *size )
     {
         Status           s;
         Message::Header  header;
+
+        *size =0;
         
         LM_T(LmtSocketConnection, ("SocketConnection %s: Sending Paket '%s' " , str().c_str() , packetP->str().c_str() ));
         
@@ -125,6 +127,7 @@ namespace samson {
         // Sending header
         //
         s = partWrite( &header, sizeof(header), "header");
+        *size += sizeof(header);
         
         if (s != OK)
         {
@@ -151,10 +154,13 @@ namespace samson {
             if (packetP->message->SerializeToArray(outputVec, header.gbufLen) == false)
                 LM_X(1, ("SerializeToArray failed"));
             
-            s = partWrite( outputVec, packetP->message->ByteSize(), "Google Protocol Buffer" );
+            size_t size_message = packetP->message->ByteSize();
+            s = partWrite( outputVec, size_message, "Google Protocol Buffer" );
             free(outputVec);
             if (s != OK)
                 LM_RE(s, ("partWrite:GoogleProtocolBuffer(): %s", status(s)));
+            *size += size_message;
+
         }
         
         if (packetP && (packetP->buffer != 0))
@@ -162,6 +168,7 @@ namespace samson {
             s = partWrite( packetP->buffer->getData(), packetP->buffer->getSize(), "KV data" );
             if (s != OK)
                 LM_RE(s, ("partWrite returned %d and not the expected %d", s, packetP->buffer->getSize()));
+            *size += packetP->buffer->getSize();
         }
         
         if (packetP != NULL)
@@ -303,13 +310,13 @@ namespace samson {
     
     
     
-    Status SocketConnection::readPacket( Packet * packetP )
+    Status SocketConnection::readPacket( Packet * packetP , size_t *size )
     {
         Status s;
         Message::Header  header;
-        
 
         LM_T(LmtSocketConnection, ("SocketConnection %s: Reading packet" , str().c_str() ));
+        *size = 0;
         
         s = partRead(&header, sizeof(Message::Header), "Header" , 300 );  // Timeout 300 secs for next packet
         if (s != OK)
@@ -317,6 +324,7 @@ namespace samson {
             close();
             return s;
         }
+        *size += sizeof(Message::Header);
         
         // Check header
         if ( !header.check() )
@@ -338,7 +346,8 @@ namespace samson {
                 free(dataP);
                 return s;
             }
-            
+            *size += header.gbufLen;
+
             LM_T(LmtSocketConnection, ("Read %d bytes of GOOGLE DATA from '%s'", header.gbufLen, host.c_str() ));
             
             // Decode the google protocol buffer message
@@ -375,9 +384,9 @@ namespace samson {
                 return s;
             }
             LM_T(LmtSocketConnection, ("Read %d bytes of KV DATA from '%s'", header.kvDataLen, host.c_str()));
+            *size += header.kvDataLen;
             
             packetP->buffer->setSize( header.kvDataLen );
-            
         }
         
         return OK;

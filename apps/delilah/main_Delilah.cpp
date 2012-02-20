@@ -173,7 +173,7 @@ int main(int argC, const char *argV[])
         }
         
         std::cout << " OK\n";
-        LM_M(("Connected to controller and all workers"));
+        LM_M(("Connected to all workers"));
         
     }	
     

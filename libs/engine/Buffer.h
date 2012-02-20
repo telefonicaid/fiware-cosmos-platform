@@ -8,7 +8,7 @@
  *
  * DESCRIPTION
  *
- * Buffer is a memory region allocated and controller by MemoryManager
+ * Buffer is a memory region allocated and controlled by MemoryManager
  * It can be requested and used by any element in the application
  * It can only be destroyed calling "destroyBuffer" at MemoryMamager
  * It comes with some usufull function to interact with its contect

@@ -18,7 +18,6 @@ namespace samson {
 	{
 	public:
 		
-		// Pointer to the controller
 		NetworkFakeCenter *center;
         
         // My identification

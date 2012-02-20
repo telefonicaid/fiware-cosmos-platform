@@ -7,10 +7,13 @@
 
 #include "au/Token.h"
 #include "au/TokenTaker.h"
+#include "au/Rate.h"
+
+#include "samson/common/status.h"
+#include "samson/common/Visualitzation.h"
 
 #include "samson/network/SocketConnection.h"
 #include "samson/network/Packet.h"
-#include "samson/common/status.h"
 
 namespace samson {
     
@@ -21,6 +24,7 @@ namespace samson {
     {
         au::Token            token;
         au::list<Packet>     queue;
+        
         
     public:
         
@@ -107,6 +111,10 @@ namespace samson {
         friend class NetworkManager;
         std::string name;         //Name in NetworkManager
 
+        // Information about rate
+        au::rate::Rate rate_in;
+        au::rate::Rate rate_out;
+        
     public:
 
         // Constructor & Destructor
@@ -209,6 +217,8 @@ namespace samson {
             output << "[ " << node_identifier.str() << " ] ";
             return output.str();
         }
+        
+        void fill( network::CollectionRecord * record, Visualization* visualization);
         
     };
     

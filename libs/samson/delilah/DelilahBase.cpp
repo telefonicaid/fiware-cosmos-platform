@@ -68,14 +68,15 @@ namespace samson {
         return values;
     }
     
-    std::vector<std::string> DelilahBase::getDataSetsNames()
+    
+    std::vector<std::string> DelilahBase::getQueueNames()
     {
-        // To be eliminated when controller disapear...
-        //return pugi::values( doc , "//controller//queue/name" );
-        return std::vector<std::string>();
+        au::StringVector values = database.getValuesFromColumn("queues", "name");
+        values.unique();
+        return values;
     }
 
-    std::vector<std::string> DelilahBase::getQueueNames()
+    std::vector<std::string> DelilahBase::getQueueNames( KVFormat format )
     {
         au::StringVector values = database.getValuesFromColumn("queues", "name");
         values.unique();

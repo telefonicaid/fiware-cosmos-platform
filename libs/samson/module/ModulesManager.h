@@ -19,6 +19,8 @@
 #include "samson/module/Module.h"		// samson::Module
 #include "samson/module/Factory.h"      // au::Factory
 
+#include "samson/common/Visualitzation.h"
+
 namespace samson {
 
 	class Data;

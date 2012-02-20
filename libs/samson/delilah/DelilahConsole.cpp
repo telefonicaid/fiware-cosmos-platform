@@ -38,8 +38,6 @@
 #include "samson/delilah/SamsonDataSet.h"
 #include "samson/delilah/Delilah.h"					// samson::Delailh
 #include "samson/delilah/DelilahConsole.h"			// Own interface
-#include "UploadDelilahComponent.h"                 // samson::DelilahLoadDataProcess
-#include "DownloadDelilahComponent.h"               // samson::DelilahLoadDataProcess
 #include "PushDelilahComponent.h"                   // samson::PushDelilahComponent
 #include "PushDelilahComponent.h"                   // PushDataComponent
 
@@ -123,17 +121,6 @@ namespace samson
         }
     }        
     
-    void autoCompleteDataSets( au::ConsoleAutoComplete* info  )
-    {
-        if( global_delilah ) 
-        {
-            std::vector<std::string> queue_names = global_delilah->getDataSetsNames();
-            
-            for ( size_t i = 0 ;  i < queue_names.size() ; i++)
-                info->add( queue_names[i] );
-        }
-    }        
-    
     void autoCompleteQueueWithFormat(au::ConsoleAutoComplete* info  ,  std::string key_format , std::string value_format )
     {
         /*
@@ -189,6 +176,22 @@ namespace samson
             return;
         }
 
+        // Options for ls_queues
+        if (info->completingSecondWord("ls_queues") )
+        {
+            info->add("-rates");
+            info->add("-properties");
+            info->add("-blocks");
+        }
+
+        if (info->completingSecondWord("ls_stream_operations") )
+        {
+            info->add("-running");
+            info->add("-in");
+            info->add("-out");
+        }
+        
+        
         // Options for the cluter command
         if (info->completingSecondWord("cluster") )
         {
@@ -280,31 +283,7 @@ namespace samson
         if (info->completingSecondWord("set_database_mode") )
             info->add("on"); // It can only be on
         
-        
-        // Upload
-        // ------------------------------------------------------------------------
-        
-        if ( info->completingSecondWord("upload") )
-        {
-            info->auto_complete_files("");
-            return;
-        }
-        if (info->completingThirdWord( "upload" , "*" ) )
-        {
-            autoCompleteDataSets( info );
-            return;
-        }
-        
-        // Download operation
-        // ------------------------------------------------------------------------
-        
-        if ( info->completingSecondWord("download") )
-        {
-            autoCompleteDataSets( info );
-            return;
-        }
-        
-        
+       
         // Push operation
         // ------------------------------------------------------------------------
         if ( info->completingSecondWord("push") )
@@ -634,29 +613,28 @@ namespace samson
             if ( commandLine.get_num_arguments() == 1)
             {
                 if( trace_on )
-                    writeOnConsole( "Traces are activated" );
+                    writeOnConsole( "Traces are activated\n" );
                 else
-                    writeOnConsole( "Traces are NOT activated" );
+                    writeOnConsole( "Traces are NOT activated\n" );
                 return 0;
             }
             
             if( commandLine.get_argument(1) == "on" )
             {
                 trace_on = true;
-                writeOnConsole( "Traces are now activated" );
+                writeOnConsole( "Traces are now activated\n" );
                 return 0;
             }
             if( commandLine.get_argument(1) == "off" )
             {
                 trace_on = false;
-                writeOnConsole( "Traces are now NOT activated" );
+                writeOnConsole( "Traces are now NOT activated\n" );
                 return 0;
             }
             
-            writeErrorOnConsole("Usage: trace on/off");
+            writeErrorOnConsole("Usage: trace on/off\n");
             return 0;
         }
-        
         
         if ( mainCommand == "clear_components" )
         {
@@ -847,122 +825,45 @@ namespace samson
         // WorkerCommands
         std::string main_command = commandLine.get_argument(0);
         
-        if( main_command == "reload_modules" )
-        {
-            return sendWorkerCommand( command , NULL );
-        }
-        
-        if( main_command == "run_stream_operation" )
-        {
-            return sendWorkerCommand( command , NULL );
-        }
-        
-        if( main_command == "init_stream" )
-        {
-            return sendWorkerCommand( command , NULL );
-        }
-        
-        if( main_command == "add_stream_operation" )
-        {
-            return sendWorkerCommand( command , NULL );
-        }
-        
-        if( main_command == "rm_stream_operation" )
-        {
-            return sendWorkerCommand( command , NULL );
-        }
-        
-        if( main_command == "set_stream_operation_property" )
-        {
-            return sendWorkerCommand( command , NULL );
-        }
-        
-        if( main_command == "remove_all_stream" )
-        {
-            return sendWorkerCommand( command , NULL );
-        }
-        
-        if( main_command == "connect_to_queue" )
-        {
-            return sendWorkerCommand( command , NULL );
-        }
-        
-        if( main_command == "disconnect_form_queue" )
-        {
-            return sendWorkerCommand( command , NULL );
-        }
-        
-        if( main_command == "wait" )
-        {
-            return sendWorkerCommand( command , NULL );
-        }
-
-        if( main_command == "run_stream_update_state" )
-        {
-            return sendWorkerCommand( command , NULL );
-        }
-        
-        // Command to remove queues 
+       
+        // Some checks for some operations
         if( main_command == "rm_queue" )
-        {
             if( commandLine.get_num_arguments() < 2 )
             {
                 writeErrorOnConsole( au::str("Usage: rm_queue queue" ) );
                 return 0;
             }
-            else
-                return sendWorkerCommand( command , NULL );
-        }
         
         // Command to remove queues 
         if( main_command == "set_queue_property" )
-        {
             if( commandLine.get_num_arguments() < 4 )
             {
                 writeErrorOnConsole( au::str("Usage: set_queue_propert queue property value" ) );
                 return 0;
             }
-            else
-                return sendWorkerCommand( command , NULL );
-        }
         
         // Command to remove queues 
         if( main_command == "cp_queue" )
-        {
             if( commandLine.get_num_arguments() < 3 )
             {
                 writeErrorOnConsole( au::str("Usage: cp_queue form_queue to_queue" ) );
                 return 0;
             }
-            else
-                return sendWorkerCommand( command , NULL );
-        }
-        
-        
         
         // Command to play / pause statess
         if( main_command == "pause_queue" )
-        {
             if( commandLine.get_num_arguments() < 2 )
             {
                 writeErrorOnConsole( au::str("Usage: pause_queue queue" ) );
                 return 0;
             }
-            else
-                return sendWorkerCommand( command , NULL );
-            
-        }
         
         if( main_command == "play_queue" )
-        {
             if( commandLine.get_num_arguments() < 2 )
             {
                 writeErrorOnConsole( au::str("Usage: play_queue queue" ) );
                 return 0;
             }
-            else
-                return sendWorkerCommand( command , NULL );
-        }
         
         if( mainCommand == "times" )
         {
@@ -1001,18 +902,6 @@ namespace samson
             writeOnConsole("OK\n");
         }
         
-        // New way to get information ( Worker Command )
-        if(
-           ( mainCommand == "ls_queues" )             ||
-           ( mainCommand == "ls_stream_operations" )  ||
-           ( mainCommand == "show_stream_block" )     ||
-           ( mainCommand == "ls_operations" )         ||
-           ( mainCommand == "ls_datas" )              ||
-           ( mainCommand == "ls_modules" )            ||
-           ( mainCommand == "ps_stream" )
-           )
-            return sendWorkerCommand( command , NULL );
-       
         if( mainCommand == "ls_local" )
         {
             std::string pattern ="*";
@@ -1022,20 +911,9 @@ namespace samson
             writeOnConsole( getLsLocal( pattern ) ); 
             return 0;
         }
-        
-        
-        // Old information mechanism...
-        /*
-        if( ( main_command.substr(0,2) == "ls" ) || ( main_command.substr(0,2) == "ps" ) )
-        {
-            std::string text = info( command );
-            writeOnConsole( text );
-            return 0;
-        }
-         */
-        
-        writeErrorOnConsole( au::str("Unknown command '%s'\n" , main_command.c_str() ) );
-        
+
+        // By default, it is considered a worker command
+        return sendWorkerCommand( command , NULL );
         return 0;
     }
     
@@ -1056,9 +934,11 @@ namespace samson
                 //writeOnConsole( au::str("Trace: %s", _text.c_str() ) );
                 if( trace_on )
                 {
+                    // Show on screen...
+                    writeWarningOnConsole( au::str("TRACE[%s]: %s\n" , packet->from.str().c_str(), _text.c_str() ) );
                     
+                    /*
                     lmFdRegister(1, DEF1, "DEF", "stdout", NULL);
-                    
                     
                     //if (lmOk(packet->message->trace().type(), packet->message->trace().tlev() ) == LmsOk)
                     {
@@ -1077,7 +957,7 @@ namespace samson
                     //std::cerr << "TRACE: " << file << " ( " << fname << " ): " << _text << "\n";  
                     
                     lmFdUnregister(1);
-                    
+                    */
                     //return 0;    
                 }
                 

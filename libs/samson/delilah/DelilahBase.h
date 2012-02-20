@@ -22,19 +22,10 @@
 
 #include "samson/network/NetworkInterface.h"
 
-#include "DelilahUtils.h"               
-
-
 
 #include "tables/pugi.h"                  // pugi::... node_to_string_function
 
 namespace samson {
-    
-    const int i_controller  = 1;    
-    const int i_worker      = 1<<1;    
-    const int i_delilah     = 1<<2;    
-    const int i_no_title    = 1<<3;    
-    
     
     /*
      Class to hold monitorization data for delilah components ( delilah / monitorization )
@@ -112,8 +103,9 @@ namespace samson {
         // Simple queries to get a list of operations, queues, etc...
         std::vector<std::string> getOperationNames( );        
         std::vector<std::string> getOperationNames( std::string type );        
+        
         std::vector<std::string> getQueueNames();
-        std::vector<std::string> getDataSetsNames();
+        std::vector<std::string> getQueueNames( KVFormat );
 
         // String with information about updates
         std::string updateTimeString();

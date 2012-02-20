@@ -294,7 +294,7 @@ namespace samson
         add( "general.num_processess" , "16" , "Number of cores" );                                                     // Number of cores 2
         add( "general.max_file_size" , "1000000000" , "Max size for generated files" );                                 // Max file size 100 Mb
         add( "general.shared_memory_size_per_buffer" , "268435456" , "Size of the shared memory segments" );            // Shared memory suze 64Mb
-        add( "general.update_status_period", "2" , "Period for the automatic update from workers/controller to delilah" );        
+        add( "general.update_status_period", "2" , "Period for the automatic update from workers to all delilah" );        
 
 		add( "general.max_parallel_outputs" , "2" , "Max number of parallel outputs");
 
@@ -309,9 +309,6 @@ namespace samson
 
         // Worker Parameters
         add("worker.period_check_finish_tasks", "5", "Period to review finished tasks in samsonWorker, to be clean from memory" );
-
-        // Controller
-        add("controller.max_worker_disconnected_time", "120" , "Maximum acceptable time for a worker to be disconnected." );
         
         // Stream processing
         add("stream.min_operation_input_size" , "100000000" , "Minimum input data ( in bytes ) to run an automatic stream processing task");
@@ -354,10 +351,6 @@ namespace samson
         return _samson_working + "/log/shared_memory_ids.data";
     }
     
-    std::string SamsonSetup::controllerLogFileName()
-    {
-        return _samson_working + "/log/log_controller";
-    }
     std::string SamsonSetup::modulesDirectory()
     {
         return _samson_home + "/modules";

@@ -10,8 +10,8 @@ SET (HEADERS_INSTALL
 	KVWriter.h
 	Module.h
 	Tracer.h
-	OperationController.h
 	Operation.h
+	OperationController.h
 	Environment.h
 	samsonModuleHeader.h
 	samsonTypes.h

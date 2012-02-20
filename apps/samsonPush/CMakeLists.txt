@@ -11,7 +11,6 @@ SET( STATIC_LIBS
      delilahLib
      engine
      samsonModule
-     samsonDataLib
      samsonStream
      samsonIsolated
      samsonNetwork

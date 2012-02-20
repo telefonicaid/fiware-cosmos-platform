@@ -2,16 +2,13 @@
 SET (HEADERS
 	DelilahBase.h
 	Delilah.h
-	DelilahUtils.h
 	DelilahConsole.h
 	DelilahClient.h
 	DelilahComponent.h
-	CommandDelilahComponent.h
 	WorkerCommandDelilahComponent.h
 	PushDelilahComponent.h
 	PopDelilahComponent.h
-	DownloadDelilahComponent.h
-	UploadDelilahComponent.h
+	RepeatDelilahComponent.h
 	TXTFileSet.h
 	SamsonDataSet.h
 	SamsonFile.h
@@ -20,15 +17,12 @@ SET (HEADERS
 SET (SOURCES
 	Delilah.cpp
 	DelilahBase.cpp
-	DelilahUtils.cpp
 	DelilahConsole.cpp
 	DelilahComponent.cpp
-	CommandDelilahComponent.cpp
 	WorkerCommandDelilahComponent.cpp
 	PushDelilahComponent.cpp
 	PopDelilahComponent.cpp
-	DownloadDelilahComponent.cpp
-	UploadDelilahComponent.cpp
+	RepeatDelilahComponent.cpp
 	TXTFileSet.cpp
 	SamsonDataSet.cpp
 	SamsonFile.cpp

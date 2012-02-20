@@ -403,6 +403,10 @@ namespace samson {
         cmd.set_flag_boolean("in");
         cmd.set_flag_boolean("out");
         cmd.set_flag_boolean("a");
+        cmd.set_flag_boolean("properties");
+        cmd.set_flag_boolean("rates");
+        cmd.set_flag_boolean("block");
+        cmd.set_flag_boolean("running");
         
         cmd.parse( command );
 
@@ -420,8 +424,15 @@ namespace samson {
             visualitzation_options = in;
         if( cmd.get_flag_bool("out") )
             visualitzation_options = out;
+        if( cmd.get_flag_bool("properties") )
+           visualitzation_options = properties;
+        if( cmd.get_flag_bool("rates") )
+            visualitzation_options = rates;
+        if( cmd.get_flag_bool("blocks") )
+            visualitzation_options = blocks;
+        if( cmd.get_flag_bool("running") )
+            visualitzation_options = running;
         
-
         if( cmd.get_num_arguments() == 0 )
         {
             finishWorkerTaskWithError("No command provided");
@@ -435,6 +446,12 @@ namespace samson {
         std::string pattern ="*";
         if( cmd.get_num_arguments() >= 2)
             pattern = cmd.get_argument(1);
+        
+        // More general way of visualization
+        Visualization visualitzation;
+        visualitzation.options = visualitzation_options;
+        visualitzation.pattern = pattern; 
+        
         
         // Query commands
         if( main_command == "ls_queues" )
@@ -489,6 +506,19 @@ namespace samson {
             finishWorkerTask();
             return;
         }
+        
+        if( main_command == "ls_connections" )
+        {
+            network::Collection * c = samsonWorker->network->getConnectionsCollection(&visualitzation);
+            if( c )
+            {
+                c->set_title( command );
+                collections.push_back( c );
+            }
+            finishWorkerTask();
+            return;
+        }
+        
         
         if( main_command == "show_stream_block" )
         {
@@ -549,6 +579,40 @@ namespace samson {
             else
                 finishWorkerTask();
             
+            return;
+        }
+        
+        if( main_command == "send_trace")
+        {
+            std::string message = "No message";
+            if( cmd.get_num_arguments() >= 2)
+                message = cmd.get_argument(1);
+
+            // Full message
+            std::string full_message = au::str("[Delilah %lu] %s" , delilah_id , message.c_str() );
+            
+            // Send message to all delilahs
+            std::vector<size_t> delilahs = samsonWorker->network->getDelilahIds();
+            LM_W(("Sending trace %s to %lu delilahs" , full_message.c_str() , delilahs.size() ));
+            for ( size_t i = 0 ; i < delilahs.size() ; i++ )
+            {
+                Packet * p = new Packet( Message::Trace );
+                
+                p->message->mutable_trace()->set_text( full_message );
+
+                p->message->set_delilah_component_id( (size_t)-1 ); // This message do not belong to the operation executing it
+                
+                // Direction of this paket
+                p->to.node_type = DelilahNode;
+                p->to.id = delilahs[i];
+                
+                LM_W(("Sending trace %s to delilah %lu" , full_message.c_str() , delilahs[i] ));
+                
+                // Send packet
+                samsonWorker->network->send( p );
+            }            
+            
+            finishWorkerTask();
             return;
         }
         

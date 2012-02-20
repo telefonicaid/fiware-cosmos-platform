@@ -1,4 +1,6 @@
 
+#include "samson/common/MessagesOperations.h"
+
 #include "samson/network/NetworkConnection.h"
 #include "samson/network/NetworkListener.h"
 #include "samson/network/SocketConnection.h"
@@ -255,6 +257,25 @@ namespace samson {
         
     }
 
+    network::Collection* CommonNetwork::getConnectionsCollection( Visualization* visualization )
+    {
+        network::Collection* collection = new network::Collection();
+        collection->set_name("connections");
+        
+        au::map<std::string , NetworkConnection>::iterator it_connections;
+        
+        for ( it_connections =connections.begin() ; it_connections != connections.end() ; it_connections++ )
+        {
+            network::CollectionRecord* record = collection->add_record();            
+            it_connections->second->fill( record , visualization );
+            
+        }
+
+        
+        
+        return collection;
+    }
+    
     void CommonNetwork::getInfo( ::std::ostringstream& output , std::string command )
     {
         if( command == "main" )

@@ -337,7 +337,7 @@ namespace  samson {
         void setMemory ( size_t _memory );
         
         // Init the connection with a SAMSON cluster
-        bool init( std::string controller , int port = SAMSON_WORKER_PORT);
+        bool init( std::string samson_node , int port = SAMSON_WORKER_PORT);
         
         // Push content to a particular queue
         size_t push( std::string queue , char *data , size_t length );

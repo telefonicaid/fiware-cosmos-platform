@@ -68,19 +68,6 @@ typedef enum Status
 extern const char* status(Status s);
 
     
-    // Visualization options
-    
-    typedef enum 
-    { 
-        normal,
-        in,
-        out,
-        verbose,
-        verbose2,
-        verbose3,
-        all
-    } VisualitzationOptions;
-    
     
 }
 

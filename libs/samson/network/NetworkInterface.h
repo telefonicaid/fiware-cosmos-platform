@@ -23,6 +23,7 @@
 
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/status.h"
+#include "samson/common/Visualitzation.h"
 
 #include "samson/network/Message.h"               // samson::Message::MessageCode
 #include "samson/network/ClusterInformation.h"    // samson::Endpoint::Type
@@ -143,6 +144,11 @@ namespace samson {
         {
             LM_W(("NetworkInterface mothod not implemented"));
             return "";
+        }
+        
+        virtual network::Collection* getConnectionsCollection( Visualization* visualization )
+        {
+            return NULL;
         }
         
         

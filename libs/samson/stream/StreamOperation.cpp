@@ -451,11 +451,12 @@ namespace samson {
                 ::samson::add( record , "outputs"   , outputs.str()   , "different" );
             }
             
-            if( ( options == verbose ) || (options == all ) )
+            if( ( options == running ) || (options == all ) )
             {
                 BlockInfo input_block_info = getUniqueBlockInfo();
                 ::samson::add( record , "inputs"        , input_block_info.strShort() , "different" );
                 ::samson::add( record , "running_tasks" , running_tasks.size()        , "f=uint64,sum" );
+                ::samson::add( record , "last_review" , last_review + " " + getStatus() );
             }
             
             if( ( options == in ) || (options == all ) )
@@ -474,12 +475,6 @@ namespace samson {
                 ::samson::add( record , "Out: #kvs"  , output_rate.get_total_kvs() , "f=uint64,sum" );
                 ::samson::add( record , "Out: B/s"    , output_rate.get_rate_size() , "f=uint64,sum" );
                 ::samson::add( record , "Out: #kvs/s" , output_rate.get_rate_kvs() , "f=uint64,sum" );
-            }
-            
-            
-            if( ( options == verbose3 ) || (options == all ) )
-            {
-                ::samson::add( record , "last_review" , last_review + " " + getStatus() );
             }
             
         }        

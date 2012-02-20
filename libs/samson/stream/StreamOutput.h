@@ -34,7 +34,6 @@
 #include "samson/stream/QueueTaskManager.h" // samson::stream::QueueTaskManager
 
 
-#include "samson/data/SimpleDataManager.h"          // samson::SimpleDataManager
 
 
 namespace samson {

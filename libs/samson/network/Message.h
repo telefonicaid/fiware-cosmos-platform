@@ -1,14 +1,13 @@
 #ifndef SAMSON_MESSAGE_H
 #define SAMSON_MESSAGE_H
 
+#include <cstring>
+
 /* ****************************************************************************
 *
 * FILE                     Message.h - message definitions for all Samson IPC
 *
 */
-#include "samson/common/Process.h"            // Process
-
-
 
 namespace samson
 {

@@ -64,6 +64,7 @@ namespace samson {
         std::vector<size_t> getWorkerIds();
         std::vector<size_t> getDelilahIds();
         void getInfo( ::std::ostringstream& output , std::string command );
+        virtual network::Collection* getConnectionsCollection( Visualization* visualization );
         
         // Add output worker connections
         // ----------------------------------------------------------------

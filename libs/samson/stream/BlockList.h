@@ -25,8 +25,6 @@
 #include "samson/common/coding.h"           // FullKVInfo
 #include "samson/common/samson.pb.h"        // network::
 
-#include "samson/data/SimpleDataManager.h"  // samson::SimpleDataManager
-
 #include "samson/stream/BlockInfo.h"        // BlockInfo
 
 

@@ -20,3 +20,17 @@ message MxCell {
 	required double posx = 5;
 	required double posy = 6;
 }
+
+message NodeBts {
+    required uint32 phone = 1;
+    required uint32 bts = 2;
+    required uint32 wday = 3;
+    required uint32 range = 4;
+}
+
+message BtsCounter {
+    required uint32 bts = 1;
+    required uint32 wday = 2;
+    required uint32 range = 3;
+    required uint32 count = 4;
+}

@@ -5,7 +5,7 @@ ifndef SAMSON_WORKING
 SAMSON_WORKING=/var/samson
 endif
 ifndef SAMSON_VERSION
-SAMSON_VERSION=0.7
+SAMSON_VERSION=0.6.1
 endif
 ifndef SAMSON_RELEASE
 SAMSON_RELEASE=$(shell svnversion . | sed 's/M//')

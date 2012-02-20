@@ -61,7 +61,7 @@ namespace samson
     
     void DelilahMainWindow::about()
     {
-        QMessageBox::about( this, tr("Samson"), tr("Samson version 0.7") );
+        QMessageBox::about( this, tr("Samson"), tr("Samson version 0.6.1") );
     }
     
 }

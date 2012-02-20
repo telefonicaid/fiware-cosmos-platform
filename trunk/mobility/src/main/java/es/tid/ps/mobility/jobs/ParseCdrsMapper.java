@@ -1,5 +1,6 @@
 package es.tid.ps.mobility.jobs;
 
+import es.tid.ps.mobility.parser.CdrParser;
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;

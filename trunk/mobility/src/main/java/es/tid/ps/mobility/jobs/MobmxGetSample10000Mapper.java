@@ -13,7 +13,7 @@ import es.tid.ps.mobility.data.MxProtocol.MxCdr;
  *
  * @author dmicol
  */
-public class NobmxGetSample10000Mapper extends Mapper<IntWritable,
+public class MobmxGetSample10000Mapper extends Mapper<IntWritable,
         ProtobufWritable<MxCdr>, LongWritable, ProtobufWritable<MxCdr>> {
     @Override
     public void map(IntWritable key, ProtobufWritable<MxCdr> value,

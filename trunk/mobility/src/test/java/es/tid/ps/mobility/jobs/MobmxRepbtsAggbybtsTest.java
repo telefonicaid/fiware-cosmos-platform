@@ -24,7 +24,7 @@ public class MobmxRepbtsAggbybtsTest {
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<NodeBtsDay>,
                 IntWritable, LongWritable, ProtobufWritable<NodeBtsDay>>(
-                new MobmxRepbtsAggbybts());
+                new MobmxRepbtsAggbybtsReducer());
     }
 
     @Test

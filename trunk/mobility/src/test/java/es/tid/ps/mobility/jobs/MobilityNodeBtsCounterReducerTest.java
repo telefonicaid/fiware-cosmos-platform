@@ -19,14 +19,14 @@ import es.tid.ps.mobility.data.NodeBtsUtil;
  * @author sortega
  */
 public class MobilityNodeBtsCounterReducerTest {
-    private MobilityNodeBtsCounterReducer instance;
+    private MobmxNodeBtsCounterReducer instance;
     private ReduceDriver<
         ProtobufWritable<NodeBts>, NullWritable, LongWritable,
         ProtobufWritable<BtsCounter>> driver;
 
     @Before
     public void setUp() {
-        this.instance = new MobilityNodeBtsCounterReducer();
+        this.instance = new MobmxNodeBtsCounterReducer();
         this.driver = new ReduceDriver<ProtobufWritable<NodeBts>, NullWritable,
                 LongWritable, ProtobufWritable<BtsCounter>>(this.instance);
     }

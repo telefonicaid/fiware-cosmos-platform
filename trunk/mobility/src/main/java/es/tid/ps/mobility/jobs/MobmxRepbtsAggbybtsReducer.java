@@ -13,10 +13,11 @@ import es.tid.ps.mobility.data.NodeBtsDayUtil;
 /**
  * Count NodeBtsDay
  *
- * @author sortega
+ * @author sortega, dmicol
  */
-public class MobmxRepbtsAggbybts extends Reducer<ProtobufWritable<NodeBtsDay>,
-        IntWritable, LongWritable, ProtobufWritable<NodeBtsDay>> {
+public class MobmxRepbtsAggbybtsReducer extends
+        Reducer<ProtobufWritable<NodeBtsDay>, IntWritable, LongWritable,
+        ProtobufWritable<NodeBtsDay>> {
     private LongWritable outKey;
 
     @Override
@@ -29,7 +30,6 @@ public class MobmxRepbtsAggbybts extends Reducer<ProtobufWritable<NodeBtsDay>,
     protected void reduce(ProtobufWritable<NodeBtsDay> inKey,
             Iterable<IntWritable> callCounts, Context context)
             throws IOException, InterruptedException {
-
         inKey.setConverter(NodeBtsDay.class);
         this.outKey.set(inKey.get().getNode());
 

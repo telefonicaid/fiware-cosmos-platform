@@ -32,11 +32,13 @@ IF (SVN_BUILD)
     ADD_CUSTOM_COMMAND(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
         COMMAND ${SAMSONMODULEPARSER} ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/module ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME} Module
+        MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/module
     )
 ELSE (NOT SVN_BUILD)
     ADD_CUSTOM_COMMAND(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
         COMMAND ${SAMSONMODULEPARSER} ${PROJECT_SOURCE_DIR}/module ${PROJECT_SOURCE_DIR} Module
+      	MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/module
     )
 ENDIF (SVN_BUILD)
 
@@ -67,8 +69,6 @@ else (NOT CMAKE_BUILD_TYPE STREQUAL DEBUG)
 endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
 # Include directory pointing to current dir and /usr/local/include
-
-
 IF (SVN_BUILD)
     include_directories("${PROJECT_SOURCE_DIR}/libs")
     include_directories("${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}")
@@ -78,6 +78,8 @@ ELSE (NOT SVN_BUILD)
     include_directories("${PROJECT_SOURCE_DIR}")
     include_directories("${CMAKE_INSTALL_PREFIX}")
     include_directories("${CMAKE_INSTALL_PREFIX}/include")
+    include_directories("${CMAKE_INSTALL_PREFIX}/include/samson")
+    link_directories("${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF (SVN_BUILD)
 
 link_directories("${CMAKE_INSTALL_PREFIX}/lib")
@@ -87,18 +89,7 @@ MESSAGE( "Creating module ${MODULE_NAME}" )
 MESSAGE( "----------------------------------------------------------------------------")
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
-
-if (NOT LIBLM)
-    find_library(LM_PATH lm PATHS ${PROJECT_BINARY_DIR}/libs/logMsg)
-    if (LM_PATH)
-        SET (LIBLM ${LM_PATH})
-    else (NOT LM_PATH)
-        MESSAGE("Unable to find the static library liblm.a")
-    endif (LM_PATH)
-    TARGET_LINK_LIBRARIES( ${MODULE_NAME} ${LIBLM} )
-else (LIBLM)
-    TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm )
-endif (NOT LIBLM)
+TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm )
 
 # Link agains samson_comscore library
 TARGET_LINK_LIBRARIES( ${MODULE_NAME} samson_comscore )

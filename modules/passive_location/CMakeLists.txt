@@ -32,11 +32,13 @@ IF (SVN_BUILD)
     ADD_CUSTOM_COMMAND(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
         COMMAND ${SAMSONMODULEPARSER} ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/module ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME} Module
+        MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/module
     )
 ELSE (NOT SVN_BUILD)
     ADD_CUSTOM_COMMAND(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
         COMMAND ${SAMSONMODULEPARSER} ${PROJECT_SOURCE_DIR}/module ${PROJECT_SOURCE_DIR} Module
+      	MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/module
     )
 ENDIF (SVN_BUILD)
 
@@ -82,6 +84,7 @@ ELSE (NOT SVN_BUILD)
     include_directories("${PROJECT_SOURCE_DIR}")
     include_directories("${CMAKE_INSTALL_PREFIX}")
     include_directories("${CMAKE_INSTALL_PREFIX}/include")
+    include_directories("${CMAKE_INSTALL_PREFIX}/include/samson")
 ENDIF (SVN_BUILD)
 include_directories("/opt/mongodb/mongo-cxx-driver-v2.0")
 

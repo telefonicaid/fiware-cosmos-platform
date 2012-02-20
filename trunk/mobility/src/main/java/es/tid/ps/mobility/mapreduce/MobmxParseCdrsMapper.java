@@ -1,6 +1,6 @@
 package es.tid.ps.mobility.mapreduce;
 
-import es.tid.ps.mobility.parser.CdrParser;
+import es.tid.ps.mobility.parsing.CdrParser;
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;

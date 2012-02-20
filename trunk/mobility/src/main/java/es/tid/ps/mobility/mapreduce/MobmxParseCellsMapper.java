@@ -10,7 +10,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.ps.mobility.data.MxProtocol.MxCdr;
 import es.tid.ps.mobility.data.MxProtocol.MxCell;
-import es.tid.ps.mobility.parser.CellParser;
+import es.tid.ps.mobility.parsing.CellParser;
 
 /**
  *

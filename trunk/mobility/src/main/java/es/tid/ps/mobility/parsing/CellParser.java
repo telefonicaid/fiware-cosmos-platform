@@ -1,4 +1,4 @@
-package es.tid.ps.mobility.parser;
+package es.tid.ps.mobility.parsing;
 
 import es.tid.ps.mobility.data.MxProtocol.MxCell;
 

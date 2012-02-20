@@ -15,7 +15,7 @@ import es.tid.ps.mobility.data.MxProtocol.MxCdr;
  *
  * @author sortega
  */
-public class ParseCdrsMapper extends Mapper<IntWritable, Text, LongWritable,
+public class MobmxParseCdrsMapper extends Mapper<IntWritable, Text, LongWritable,
         ProtobufWritable<MxCdr>> {
 
     @Override

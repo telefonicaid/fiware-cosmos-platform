@@ -6,6 +6,7 @@ import org.junit.Test;
 import es.tid.ps.mobility.data.BaseProtocol.Date;
 import es.tid.ps.mobility.data.BaseProtocol.Time;
 import es.tid.ps.mobility.data.MxCdrUtil;
+import es.tid.ps.mobility.parser.CdrParser;
 
 /**
  *

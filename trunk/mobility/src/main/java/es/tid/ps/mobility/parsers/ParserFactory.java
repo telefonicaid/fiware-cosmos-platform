@@ -14,8 +14,8 @@ public class ParserFactory {
 
     private static final Logger LOG = Logger.getLogger(ParserFactory.class);
 
-    private static final String PARSER_DEFAULT_CLASS_NAME = "es.tid.analytics.mobility.core.parsers.ParserDefault";
-    private static final String PARSER_ALPHA_CLASS_NAME = "es.tid.analytics.mobility.core.parsers.ParserAlphanumeric";
+    private static final String PARSER_DEFAULT_CLASS_NAME = "es.tid.ps.mobility.parsers.ParserDefault";
+    private static final String PARSER_ALPHA_CLASS_NAME = "es.tid.ps.mobility.parsers.ParserAlphanumeric";
 
     public static final String PARSER_DEFAULT = "DEFAULT";
     public static final String PARSER_ALPHA = "ALPHA";

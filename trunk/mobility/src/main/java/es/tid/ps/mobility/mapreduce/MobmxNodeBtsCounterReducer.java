@@ -1,4 +1,4 @@
-package es.tid.ps.mobility.jobs;
+package es.tid.ps.mobility.mapreduce;
 
 import java.io.IOException;
 

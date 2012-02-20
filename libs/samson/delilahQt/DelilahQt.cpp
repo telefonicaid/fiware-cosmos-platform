@@ -28,7 +28,7 @@ namespace samson
             {
                QueueViewer::QueueData data;
                 data.name = table->getValue(i, "name");
-                data.kvs = table->getValue(i, "#kvs");
+                data.kvs  = table->getValue(i, "#kvs");
                 data.size = table->getValue(i, "size");
                 data.rate = table->getValue(i, "Bytes/s");
                 queuesData.push_back(data);

@@ -63,6 +63,8 @@ namespace samson
         // Cool stuff
         addEspaceSequence( "samson" );
         addEspaceSequence( "d" );  // Data base mode...
+        
+        automatic_update = false;
     }
     
     DelilahConsole::~DelilahConsole()

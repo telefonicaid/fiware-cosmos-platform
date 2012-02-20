@@ -464,7 +464,7 @@ namespace samson {
              */
 
             // Spetial case for properties...
-            if( ( options == properties ) || (options == all ) )
+            if( options == properties )
             {
                 add( record , "name" , name , "left,different" );
                 add( record , "properties" , environment.getEnvironmentDescription() , "left,different" );

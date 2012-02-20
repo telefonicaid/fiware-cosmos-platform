@@ -1,7 +1,8 @@
 package es.tid.ps.mobility.jobs;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import java.io.IOException;
+
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 

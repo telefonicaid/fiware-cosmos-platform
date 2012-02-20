@@ -13,22 +13,25 @@ import es.tid.ps.mobility.data.MxProtocol.NodeBts;
 /**
  * @author sortega
  */
-public class MobilityNodeBtsCounterReducer extends Reducer<
-        ProtobufWritable<NodeBts>, NullWritable, IntWritable,
-        ProtobufWritable<BtsCounter>> {
+public class MobmxNodeBtsCounterReducer
+        extends Reducer<ProtobufWritable<NodeBts>, NullWritable,
+                        IntWritable, ProtobufWritable<BtsCounter>> {
     private IntWritable phone;
     private ProtobufWritable<BtsCounter> btsCounter;
 
     @Override
-    protected void setup(Context context) throws IOException, InterruptedException {
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
         this.phone = new IntWritable();
         this.btsCounter = new ProtobufWritable<BtsCounter>();
         this.btsCounter.setConverter(BtsCounter.class);
     }
 
     @Override
-    protected void reduce(ProtobufWritable<NodeBts> nodeBts, Iterable<NullWritable> values,
-                          Context context) throws IOException, InterruptedException {
+    protected void reduce(ProtobufWritable<NodeBts> nodeBts,
+                          Iterable<NullWritable> values,
+                          Context context) throws IOException,
+                                                  InterruptedException {
         int count = 0;
         for (NullWritable unused : values) {
             count++;
@@ -36,12 +39,12 @@ public class MobilityNodeBtsCounterReducer extends Reducer<
 
         nodeBts.setConverter(NodeBts.class);
         this.phone.set(nodeBts.get().getPhone());
-        btsCounter.set(BtsCounter.newBuilder()
+        this.btsCounter.set(BtsCounter.newBuilder()
                 .setBts(nodeBts.get().getBts())
                 .setWday(nodeBts.get().getWday())
                 .setRange(nodeBts.get().getRange())
                 .setCount(count)
                 .build());
-        context.write(phone, btsCounter);
+        context.write(this.phone, this.btsCounter);
     }
 }

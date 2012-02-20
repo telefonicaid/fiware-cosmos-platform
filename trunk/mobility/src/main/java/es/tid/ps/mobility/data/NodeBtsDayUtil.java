@@ -8,7 +8,7 @@ import es.tid.ps.mobility.data.MxProtocol.NodeBtsDay;
  *
  * @author sortega
  */
-public abstract class NodeBtsDayUtil {
+public abstract class NodeBtsDayUtil implements ProtobufUtil {
     public static NodeBtsDay create(long node, int bts, int workday, int count) {
         return NodeBtsDay.newBuilder()
                 .setNode(node)

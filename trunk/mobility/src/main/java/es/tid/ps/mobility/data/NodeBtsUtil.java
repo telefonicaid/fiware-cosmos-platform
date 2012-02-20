@@ -8,7 +8,7 @@ import es.tid.ps.mobility.data.MxProtocol.NodeBts;
  *
  * @author sortega
  */
-public abstract class NodeBtsUtil {
+public abstract class NodeBtsUtil implements ProtobufUtil {
     public static NodeBts create(long phone, int bts, int wday, int range) {
         return NodeBts.newBuilder()
                 .setPhone(phone)

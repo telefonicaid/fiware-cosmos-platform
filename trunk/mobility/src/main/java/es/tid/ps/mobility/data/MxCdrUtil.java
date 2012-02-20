@@ -10,7 +10,7 @@ import es.tid.ps.mobility.data.MxProtocol.MxCdr;
  *
  * @author dmicol
  */
-public abstract class MxCdrUtil {
+public abstract class MxCdrUtil  implements ProtobufUtil {
     public static MxCdr create(long phone, long cell, Date date, Time time) {
         return MxCdr.newBuilder()
                 .setPhone(phone)

@@ -14,11 +14,11 @@ message MxCdr {
 
 message MxCell {
     required uint32 cell = 1;
-	required uint32 bts = 2;
-	required uint32 mun = 3;
-	required uint32 state = 4;
-	required double posx = 5;
-	required double posy = 6;
+    required uint32 bts = 2;
+    required uint32 mun = 3;
+    required uint32 state = 4;
+    required double posx = 5;
+    required double posy = 6;
 }
 
 message NodeBts {
@@ -33,4 +33,17 @@ message BtsCounter {
     required uint32 wday = 2;
     required uint32 range = 3;
     required uint32 count = 4;
+}
+
+message NodeBtsDay {
+    required uint32 node = 1;
+    required uint32 bts = 2;
+    required uint32 workday = 3;
+    required uint32 count = 4;
+}
+
+message NodeMxCounter {
+    repeated BtsCounter bts = 1;
+    required uint32 btsLength = 2;
+    required uint32 btsMaxLength = 3;
 }

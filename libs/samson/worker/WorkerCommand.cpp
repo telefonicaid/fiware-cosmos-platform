@@ -590,27 +590,9 @@ namespace samson {
 
             // Full message
             std::string full_message = au::str("[Delilah %lu] %s" , delilah_id , message.c_str() );
-            
-            // Send message to all delilahs
-            std::vector<size_t> delilahs = samsonWorker->network->getDelilahIds();
-            LM_W(("Sending trace %s to %lu delilahs" , full_message.c_str() , delilahs.size() ));
-            for ( size_t i = 0 ; i < delilahs.size() ; i++ )
-            {
-                Packet * p = new Packet( Message::Trace );
-                
-                p->message->mutable_trace()->set_text( full_message );
 
-                p->message->set_delilah_component_id( (size_t)-1 ); // This message do not belong to the operation executing it
-                
-                // Direction of this paket
-                p->to.node_type = DelilahNode;
-                p->to.id = delilahs[i];
-                
-                LM_W(("Sending trace %s to delilah %lu" , full_message.c_str() , delilahs[i] ));
-                
-                // Send packet
-                samsonWorker->network->send( p );
-            }            
+            // Send a trace to all delilahs
+            samsonWorker->sendTrace( full_message );
             
             finishWorkerTask();
             return;

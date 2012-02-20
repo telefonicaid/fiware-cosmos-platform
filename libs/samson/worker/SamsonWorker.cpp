@@ -91,6 +91,9 @@ namespace samson {
         // Listen this notification to send packets
         listen( notification_samson_worker_send_packet );
         
+        // Listen this notification to send traces
+        listen( notification_samson_worker_send_trace );
+        
         // Notification to update state
         listen( notification_update_status );
         {
@@ -329,6 +332,11 @@ namespace samson {
                 network->send( packet );
             }
         }
+        else if ( notification->isName( notification_samson_worker_send_trace ) )
+        {
+            std::string message = notification->environment.get("message","No message" );
+            sendTrace(message);
+        }
         else
             LM_X(1, ("SamsonWorker received an unexpected notification %s", notification->getDescription().c_str()));
     }
@@ -439,6 +447,29 @@ namespace samson {
     std::string SamsonWorker::getPrompt()
     {
         return "SamsonWorker> ";
+    }
+    
+    void SamsonWorker::sendTrace( std::string message )
+    {
+        // Send message to all delilahs
+        std::vector<size_t> delilahs = network->getDelilahIds();
+        
+        for ( size_t i = 0 ; i < delilahs.size() ; i++ )
+        {
+            Packet * p = new Packet( Message::Trace );
+            
+            p->message->mutable_trace()->set_text( message );
+            
+            p->message->set_delilah_component_id( (size_t)-1 ); // This message do not belong to the operation executing it
+            
+            // Direction of this paket
+            p->to.node_type = DelilahNode;
+            p->to.id = delilahs[i];
+            
+            // Send packet
+            network->send( p );
+        }            
+        
     }
     
     

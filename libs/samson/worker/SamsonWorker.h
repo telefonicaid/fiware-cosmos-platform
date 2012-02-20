@@ -95,6 +95,9 @@ namespace samson {
         void evalCommand( std::string command );
         std::string getPrompt();
 
+        // Send a trace to all delilahs
+        void sendTrace( std::string message );
+
         
 	};
 	

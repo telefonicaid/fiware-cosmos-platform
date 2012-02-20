@@ -1,9 +1,10 @@
 
+#include "engine/Engine.h"
+#include "engine/Notification.h"
 
 #include "samson/common/coding.h"           // KVFILE_NUM_HASHGROUPS
 #include "samson/common/MessagesOperations.h"
 #include "samson/common/SamsonSetup.h"      // samson::SamsonSetup
-
 
 #include "StreamManager.h"          // samson::stream::StreamManager
 #include "BlockBreakQueueTask.h"    // samson::stream::BlockBreakQueueTask
@@ -129,7 +130,21 @@ namespace samson {
             {
                 if( format != block->header->getKVFormat() )
                 {
-                    LM_W(("Trying to push a block with format %s to queue %s with format %s. Block rejected", block->header->getKVFormat().str().c_str() , name.c_str() , format.str().c_str() ));
+                    std::string message 
+                    = au::str("Rejecting %s block. Not inserted in queue %s ( Wrong format  %s != %s )"
+                              , au::str( block->size , "B").c_str()
+                              , name.c_str() 
+                              , block->header->getKVFormat().str().c_str() 
+                              , format.str().c_str()
+                              );
+                    
+                    LM_W(( message.c_str() ));
+                    
+                    // Send a trace to all delilahs
+                    engine::Notification* notification = new engine::Notification(notification_samson_worker_send_trace);
+                    notification->environment.set("message",message);
+                    engine::Engine::shared()->notify( notification );
+                    
                     return;
                 }
             }

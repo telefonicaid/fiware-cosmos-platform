@@ -12,6 +12,8 @@
 
 #define notification_samson_worker_send_packet          "notification_samson_worker_send_packet"
 
+#define notification_samson_worker_send_trace           "notification_samson_worker_send_trace"
+
 
 #define notification_review_worker_command_manager       "notification_review_worker_command_manager"
 

@@ -63,14 +63,14 @@ script web_profiling
     code
     {
         # Input queues
-        alias [input]          in:input;
+        alias [input]          input;
 
 		# Internal queues
-        alias [logs]           tmp:logs;
-        alias [errors]         tmp:errors;
+        alias [logs]           logs;
+        alias [errors]         errors;
 
 		# State queues
-		alias [users]           state:users;
+		alias [users]           users;
 
         # Operations;
         alias [parse_input]     parse;
@@ -90,7 +90,7 @@ script demo
     code
     {
         remove_all_stream;
-        init_stream demo webp.web_profiling;
+        init_stream webp.web_profiling;
     }
 
     helpLine "Demo about web profiling"

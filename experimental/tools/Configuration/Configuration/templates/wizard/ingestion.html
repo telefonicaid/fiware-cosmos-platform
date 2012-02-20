@@ -3,10 +3,10 @@
 
 {% block content %}
 <div id="content-main">
-	<h1>{{ "BDP Configuration" }}</h1>
+	<h1 class="h-title">{{ "BDP Configuration" }}</h1>
 	<a id="a-ingestion">{{ "1. Ingestion" }}</a> &rsaquo;&rsaquo;&rsaquo;
     <a>{{ "2. Pre-processing" }}</a> &rsaquo;&rsaquo;&rsaquo;
-	<a>{{ "3. Processing and Consumption" }}</a><br/><br/><br/>
+	<a>{{ "3. Processing and Consumption" }}</a><br/><br/>
     <form {% if form.form.is_multipart %}enctype="multipart/form-data" {% endif %}method="post" action="" id="{{ opts.module_name }}_form">{% csrf_token %}
         <div class="submit-row">
             {% if form.form.errors %}
@@ -37,7 +37,7 @@
 			        {{ form.message.errors }}
 			        <label class="label-form" for="id_type">Ingestion Address</label>
 			        {{ form.path }}
-			    </div><br/><br/>
+			    </div><br/><br/><br/>
 			    <div class="fieldWrapper">
 			        {{ form.message.errors }}
 			        <label class="label-form" for="id_type">Ingestion Size</label>

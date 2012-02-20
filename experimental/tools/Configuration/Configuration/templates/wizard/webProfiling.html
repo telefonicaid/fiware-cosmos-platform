@@ -5,10 +5,10 @@
 
 {% block content %}
 <div id="content-main">
-	<h1>{{ "BDP Configuration" }}</h1>
+	<h1 class="h-title">{{ "BDP Configuration" }}</h1>
 	<a>{{ "1. Ingestion" }}</a> &rsaquo;&rsaquo;&rsaquo;
     <a>{{ "2. Pre-processing" }}</a> &rsaquo;&rsaquo;&rsaquo;
-	<a id="a-ingestion">{{ "3. Processing and Consumption" }}</a><br/><br/><br/><br/>
+	<a id="a-ingestion">{{ "3. Processing and Consumption" }}</a><br/>
     <form {% if form.form.is_multipart %}enctype="multipart/form-data" {% endif %}method="post" action="" id="{{ opts.module_name }}_form">{% csrf_token %}
         <div>
             {% if form.form.errors %}
@@ -21,11 +21,7 @@
             </ul>
             {% endif %}
             <br/>
-            <div class="field-div">
-		        {{ form.subject.errors }}
-		        <label class="label-form" for="id_type">Consumption Path</label>
-		        {{ form.consumption_path }}
-		    </div><br/><br/><br/>
+            <h2 class="h-label">{{ "Attributes" }}</h2>
 		    <div class="consumption-div">
 			    <div class="consumption-div-left">
 				    <h2 class="h-label">{{ "Available Attributes" }}</h2>
@@ -40,11 +36,17 @@
 				    <div class="cons-div">
 				        {{ form.message.errors }}
 				        <label for="id_type">Grouping Fields</label>
-			        	 {{ form.grouping_fields }}<br/><br/><br/><br/>	
+			        	 {{ form.grouping_fields }}<br/><br/><br/><br/>
 			        	<label for="id_type">Consumption Mode</label>
 			        	 {{ form.mode }}
 				    </div>
-			    </div><br/><br/>
+			    </div>
+		    </div>
+		    <h2 class="h-label">{{ "Consumption" }}</h2>
+		    <div class="field-div">
+		        {{ form.subject.errors }}
+		        <label class="label-form" for="id_type">Consumption Path</label>
+		        {{ form.consumption_path }}
 		    </div><br/>
 		    
             <input type="hidden" name="{{ step_field }}" value="{{ step0 }}" />
@@ -52,9 +54,8 @@
 
 			{% if step %}
 	            <div id="buttons-div" class="submit-row" align="right">
-	             	<input type="button" value="&laquo; Back" class="button" disabled="disabled"/>
-	            	<input type="submit" value="Next &raquo;" class="button" name="_save"/>
 	             	<input type="reset" value="Cancel" class="button" name="_cancel"/>
+	             	<input type="button" value="&laquo; Back" class="button" disabled="disabled"/>
 	                <input type="submit" value="{% ifequal step step_count %}Finish{% else %}Next &raquo;{% endifequal %}" class="button" name="_save" disabled="disabled"/>               
 	            </div>
 			{% else %}

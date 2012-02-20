@@ -1,0 +1,28 @@
+package gasset;
+
+option java_package = "es.tid.ps.mobility.data";
+option java_outer_classname = "GassetProtocol";
+
+message Date {
+    required uint32 year = 1;
+    required uint32 month = 2;
+    required uint32 day = 3;
+    required uint32 week_day = 4;
+}
+
+message Time {
+    required uint32 hour = 1;
+    required uint32 minute = 2;
+    required uint32 seconds = 3;
+}
+
+message GstCdr {
+    required uint32 phone = 1;
+    required Date date = 2;
+    required Time time = 3;
+    required uint32 duration = 4;
+    required uint32 type = 5;
+    required uint32 dir = 6;
+    required uint32 cellId = 7;
+    required uint32 mobScope = 8;
+}

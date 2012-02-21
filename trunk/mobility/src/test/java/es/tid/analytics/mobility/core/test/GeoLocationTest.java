@@ -41,14 +41,14 @@ public class GeoLocationTest {
 
 	@Test
 	public void testGetWeekDay() {
-		assertEquals((byte) 2, (byte) geoLocation.getWeekDay());
+		assertEquals((byte) 2, (byte) geoLocation.getWeekday());
 	}
 
 	@Test
 	public void testSetWeekDay() {
 		geoLocationExpected = new GeoLocation((long) 1, (byte) 3, (byte) 3);
 
-		geoLocation.setWeekDay((byte) 3);
+		geoLocation.setWeekday((byte) 3);
 
 		assertEquals(geoLocationExpected, geoLocation);
 	}

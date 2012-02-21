@@ -9,24 +9,24 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class GLEvent implements WritableComparable<GLEvent> {
-    private long idNode;
-    private long idLocation;
+    private long userId;
+    private long placeId;
     private Date date;
 
-    public long getIdNode() {
-        return idNode;
+    public long getUserId() {
+        return userId;
     }
 
-    public void setIdNode(final long idNode) {
-        this.idNode = idNode;
+    public void setUserId(final long idNode) {
+        this.userId = idNode;
     }
 
-    public long getIdLocation() {
-        return idLocation;
+    public long getPlaceId() {
+        return placeId;
     }
 
-    public void setIdLocation(final long idLocation) {
-        this.idLocation = idLocation;
+    public void setPlaceId(final long idLocation) {
+        this.placeId = idLocation;
     }
 
     public Date getDate() {
@@ -41,8 +41,8 @@ public class GLEvent implements WritableComparable<GLEvent> {
     }
 
     public GLEvent(final long idNode, final long idLocation, final Date date) {
-        this.idNode = idNode;
-        this.idLocation = idLocation;
+        this.userId = idNode;
+        this.placeId = idLocation;
         this.date = date;
 
     }
@@ -101,8 +101,8 @@ public class GLEvent implements WritableComparable<GLEvent> {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((date == null) ? 0 : date.hashCode());
-        result = prime * result + (int) (idLocation ^ (idLocation >>> 32));
-        result = prime * result + (int) (idNode ^ (idNode >>> 32));
+        result = prime * result + (int) (placeId ^ (placeId >>> 32));
+        result = prime * result + (int) (userId ^ (userId >>> 32));
         return result;
     }
 
@@ -125,10 +125,10 @@ public class GLEvent implements WritableComparable<GLEvent> {
         } else if (!date.equals(other.date)) {
             return false;
         }
-        if (idLocation != other.idLocation) {
+        if (placeId != other.placeId) {
             return false;
         }
-        if (idNode != other.idNode) {
+        if (userId != other.userId) {
             return false;
         }
         return true;
@@ -136,28 +136,28 @@ public class GLEvent implements WritableComparable<GLEvent> {
 
     @Override
     public void write(final DataOutput dataOutput) throws IOException {
-        dataOutput.writeLong(this.idNode);
-        dataOutput.writeLong(this.idLocation);
+        dataOutput.writeLong(this.userId);
+        dataOutput.writeLong(this.placeId);
         dataOutput.writeLong(this.date.getTime());
     }
 
     @Override
     public void readFields(final DataInput dataInput) throws IOException {
-        this.idNode = dataInput.readLong();
-        this.idLocation = dataInput.readLong();
+        this.userId = dataInput.readLong();
+        this.placeId = dataInput.readLong();
         this.date = new Date(dataInput.readLong());
     }
 
     @Override
     public int compareTo(final GLEvent event) {
-        if (event.getIdNode() > this.getIdNode()) {
+        if (event.getUserId() > this.getUserId()) {
             return 1;
-        } else if (event.getIdNode() < this.getIdNode()) {
+        } else if (event.getUserId() < this.getUserId()) {
             return -1;
         } else {
-            if (event.getIdLocation() > this.getIdLocation()) {
+            if (event.getPlaceId() > this.getPlaceId()) {
                 return 1;
-            } else if (event.getIdLocation() < this.getIdLocation()) {
+            } else if (event.getPlaceId() < this.getPlaceId()) {
                 return -1;
             } else {
                 return event.getDate().compareTo(this.getDate());
@@ -167,6 +167,6 @@ public class GLEvent implements WritableComparable<GLEvent> {
 
     @Override
     public String toString() {
-        return "GLEvent{" + "idNode=" + idNode + ", idLocation=" + idLocation + ", date=" + date + '}';
+        return "GLEvent{" + "idNode=" + userId + ", idLocation=" + placeId + ", date=" + date + '}';
     }
 }

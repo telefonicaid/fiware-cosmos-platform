@@ -16,7 +16,7 @@ public class Client {
 	private static final int TAMNODECOMMVECTOR = 96;
 	private static final int TAMPOICOMMVECTOR = 96;
 
-	private long idNode;
+	private long userId;
 	private GeoLocationContainer geoLocations;
 	private List<Integer> noInfoGeolocations;
 	private List<Long> represGeoLocations;
@@ -41,16 +41,16 @@ public class Client {
 			glEvent = iteratorGLEvent.next();
 			final GeoLocation geoLocation = new GeoLocation();
 
-			if (glEvent.getIdLocation() != 0) {
-				geoLocation.setIdPlace(glEvent.getIdLocation());
-				geoLocation.setWeekDay(glEvent.getWeekDay());
+			if (glEvent.getPlaceId() != 0) {
+				geoLocation.setIdPlace(glEvent.getPlaceId());
+				geoLocation.setWeekday(glEvent.getWeekDay());
 				geoLocation.setHour(glEvent.getHour());
 				geoLocations.incrementGeoLocation(geoLocation);
 			} else {
 				position = Utils.getPosListNoInfoGeolocations(
 						glEvent.getWeekDay(), glEvent.getHour());
 				if (position != -1) {
-					if (noInfoGeolocations.size() == 0) {
+					if (noInfoGeolocations.isEmpty()) {
 						initNoInfoGeolocations(TAMNOINFOGEOLOCATION);
 					}
 					value = noInfoGeolocations.get(position);
@@ -126,7 +126,7 @@ public class Client {
 			final GeoLocation geo = iterator.next();
 
 			comunicationsPos = Utils.getPosVectorComunications(
-					geo.getWeekDay(), geo.getHour());
+					geo.getWeekday(), geo.getHour());
 			// LOG.debug("geo.getWeekDay()=" + geo.getWeekDay() +
 			// ", geo.getHour()=" + geo.getHour());
 			this.nodeCommVector.set(comunicationsPos,
@@ -134,7 +134,7 @@ public class Client {
 							+ this.geoLocations.getGeolocation(geo));
 		}
 
-		if (noInfoGeolocations.size() != 0) {
+		if (!noInfoGeolocations.isEmpty()) {
 			// Add info of no InfoGeoLocation
 			for (int position = 0; position < TAMNOINFOGEOLOCATION; position++) {
 
@@ -160,7 +160,7 @@ public class Client {
 		int pos;
 
 		// Calculate representative geolocations
-		if (getRepresGeoLocations().size() == 0) {
+		if (getRepresGeoLocations().isEmpty()) {
 			this.calculateRepresGeoLocations();
 		}
 		// Calculate events vector for representative locations
@@ -183,7 +183,7 @@ public class Client {
 				for (byte hour = 0; hour < 24; hour++) {
 					locat.cleanGeoLocation();
 					locat.setIdPlace(locId);
-					locat.setWeekDay(weekday);
+					locat.setWeekday(weekday);
 					locat.setHour(hour);
 
 					if (this.geoLocations.containsGeolocation(locat)) {
@@ -201,12 +201,12 @@ public class Client {
 		}
 	}
 
-	public long getIdNode() {
-		return idNode;
+	public long getUserId() {
+		return userId;
 	}
 
-	public void setIdNode(final long idNode) {
-		this.idNode = idNode;
+	public void setUserId(final long idNode) {
+		this.userId = idNode;
 	}
 
 	public GeoLocationContainer getGeoLocations() {
@@ -277,7 +277,7 @@ public class Client {
 		int result = 1;
 		result = prime * result
 				+ ((geoLocations == null) ? 0 : geoLocations.hashCode());
-		result = prime * result + (int) (idNode ^ (idNode >>> 32));
+		result = prime * result + (int) (userId ^ (userId >>> 32));
 		result = prime
 				* result
 				+ ((noInfoGeolocations == null) ? 0 : noInfoGeolocations
@@ -311,7 +311,7 @@ public class Client {
 		} else if (!geoLocations.equals(other.geoLocations)) {
 			return false;
 		}
-		if (idNode != other.idNode) {
+		if (userId != other.userId) {
 			return false;
 		}
 		if (noInfoGeolocations == null) {
@@ -347,7 +347,7 @@ public class Client {
 
 	@Override
 	public String toString() {
-		return "Client [idNode=" + idNode + ", geoLocations=" + geoLocations
+		return "Client [idNode=" + userId + ", geoLocations=" + geoLocations
 				+ ", noInfoGeolocations=" + noInfoGeolocations
 				+ ", numNoInfoGeolocations=" + nuemElementsNoInfoGeolocations()
 				+ ", represGeoLocations=" + represGeoLocations

@@ -20,7 +20,7 @@ public class IndividualMobilityReduce extends
 		// Initialize client object
 		Client client = new Client();
 
-		client.setIdNode(key.get());
+		client.setUserId(key.get());
 		client.calculateGeoLocations(values.iterator());
 		client.calculateNodeCommVector();
 		client.calculatePoiCommVector();

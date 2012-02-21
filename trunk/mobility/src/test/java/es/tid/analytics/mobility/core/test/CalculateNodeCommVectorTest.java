@@ -59,31 +59,31 @@ public class CalculateNodeCommVectorTest {
 		GeoLocation loc = new GeoLocation();
 
 		loc.setIdPlace(1);
-		loc.setWeekDay((byte) 0);
+		loc.setWeekday((byte) 0);
 		loc.setHour((byte) 0);
 		client.getGeoLocations().putGeoLocation(loc, 1);
 
 		loc = new GeoLocation();
 		loc.setIdPlace(2);
-		loc.setWeekDay((byte) 1);
+		loc.setWeekday((byte) 1);
 		loc.setHour((byte) 12);
 		client.getGeoLocations().putGeoLocation(loc, 1);
 
 		loc = new GeoLocation();
 		loc.setIdPlace(2);
-		loc.setWeekDay((byte) 2);
+		loc.setWeekday((byte) 2);
 		loc.setHour((byte) 23);
 		client.getGeoLocations().putGeoLocation(loc, 1);
 
 		loc = new GeoLocation();
 		loc.setIdPlace(5);
-		loc.setWeekDay((byte) 2);
+		loc.setWeekday((byte) 2);
 		loc.setHour((byte) 23);
 		client.getGeoLocations().putGeoLocation(loc, 4);
 
 		loc = new GeoLocation();
 		loc.setIdPlace(2);
-		loc.setWeekDay((byte) 3);
+		loc.setWeekday((byte) 3);
 		loc.setHour((byte) 0);
 		client.getGeoLocations().putGeoLocation(loc, 1);
 

@@ -53,16 +53,16 @@ public class IndividualMobilityMap extends
 		final Cdr cdr = cdrParser.parseCdrsLine(value.toString());
 
 		this.outputKey.set(cdr.getNode());
-		this.event.setIdNode(cdr.getNode());
+		this.event.setUserId(cdr.getNode());
 		this.event.setDate(cdr.getDate());
 
 		if (this.cellsCataloge != null
 				&& this.cellsCataloge.containsCell(cdr.getIdCell())) {
 			final Cell currentCell = this.cellsCataloge
 					.getCell(cdr.getIdCell());
-			this.event.setIdLocation(currentCell.getGeoLocationLevel2());
+			this.event.setPlaceId(currentCell.getGeoLocationLevel2());
 		} else {
-			this.event.setIdLocation(0);
+			this.event.setPlaceId(0);
 		}
 
 		context.write(this.outputKey, this.event);

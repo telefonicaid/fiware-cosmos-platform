@@ -2,36 +2,36 @@ package es.tid.analytics.mobility.core.data;
 
 public class GeoLocation implements Comparable<GeoLocation> {
 
-	private long idPlace;
-	private byte weekDay;
+	private long placeId;
+	private byte weekday;
 	private byte hour;
 
 	public GeoLocation() {
-		idPlace = -1;
-		weekDay = -1;
+		placeId = -1;
+		weekday = -1;
 		hour = -1;
 	}
 
 	public GeoLocation(final long idPl, final byte w, final byte h) {
-		this.idPlace = idPl;
-		this.weekDay = w;
+		this.placeId = idPl;
+		this.weekday = w;
 		this.hour = h;
 	}
 
 	public final long getIdPlace() {
-		return idPlace;
+		return placeId;
 	}
 
 	public final void setIdPlace(final long idPl) {
-		this.idPlace = idPl;
+		this.placeId = idPl;
 	}
 
-	public final byte getWeekDay() {
-		return weekDay;
+	public final byte getWeekday() {
+		return weekday;
 	}
 
-	public final void setWeekDay(final byte w) {
-		this.weekDay = w;
+	public final void setWeekday(final byte w) {
+		this.weekday = w;
 	}
 
 	public byte getHour() {
@@ -43,8 +43,8 @@ public class GeoLocation implements Comparable<GeoLocation> {
 	}
 
 	public final void cleanGeoLocation() {
-		this.idPlace = -1;
-		this.weekDay = -1;
+		this.placeId = -1;
+		this.weekday = -1;
 		this.hour = -1;
 
 	}
@@ -55,9 +55,9 @@ public class GeoLocation implements Comparable<GeoLocation> {
 			throw new NullPointerException();
 		}
 		int comp;
-		comp = (int) (this.idPlace - geolocationCompare.idPlace);
+		comp = (int) (this.placeId - geolocationCompare.placeId);
 		if (comp == 0) {
-			comp = this.weekDay - geolocationCompare.weekDay;
+			comp = this.weekday - geolocationCompare.weekday;
 			if (comp == 0) {
 				comp = this.hour - geolocationCompare.hour;
 			}
@@ -70,8 +70,8 @@ public class GeoLocation implements Comparable<GeoLocation> {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + hour;
-		result = prime * result + (int) (idPlace ^ (idPlace >>> 32));
-		result = prime * result + weekDay;
+		result = prime * result + (int) (placeId ^ (placeId >>> 32));
+		result = prime * result + weekday;
 		return result;
 	}
 
@@ -90,10 +90,10 @@ public class GeoLocation implements Comparable<GeoLocation> {
 		if (hour != other.hour) {
 			return false;
 		}
-		if (idPlace != other.idPlace) {
+		if (placeId != other.placeId) {
 			return false;
 		}
-		if (weekDay != other.weekDay) {
+		if (weekday != other.weekday) {
 			return false;
 		}
 		return true;
@@ -101,7 +101,7 @@ public class GeoLocation implements Comparable<GeoLocation> {
 
 	@Override
 	public String toString() {
-		return "GeoLocation [idPlace=" + idPlace + ", weekDay=" + weekDay
+		return "GeoLocation [idPlace=" + placeId + ", weekDay=" + weekday
 				+ ", hour=" + hour + "]";
 	}
 

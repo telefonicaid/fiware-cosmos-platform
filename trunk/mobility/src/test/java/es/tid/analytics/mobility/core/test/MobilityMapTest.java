@@ -74,8 +74,8 @@ public class MobilityMapTest {
         final GLEvent glEvent = new GLEvent();
         final Date testDate = new Date(1262622067000L);
 
-        glEvent.setIdNode(2221435146L);
-        glEvent.setIdLocation(213094);
+        glEvent.setUserId(2221435146L);
+        glEvent.setPlaceId(213094);
         glEvent.setDate(testDate);
         return glEvent;
     }

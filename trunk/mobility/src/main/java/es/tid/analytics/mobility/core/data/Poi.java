@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class Poi {
 
     private int poiId;
-    private long geoLocationId;
+    private long placeId;
     private int labelLvl0;
     private int labelLvl1;
     private boolean reliable;
@@ -23,12 +23,12 @@ public class Poi {
         this.poiId = poiId;
     }
 
-    public long getGeoLocationId() {
-        return geoLocationId;
+    public long getPlaceId() {
+        return placeId;
     }
 
     public void setGeoLocationId(final long geoLocationId) {
-        this.geoLocationId = geoLocationId;
+        this.placeId = geoLocationId;
     }
 
     public int getLabelLvl0() {
@@ -68,7 +68,7 @@ public class Poi {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((commVector == null) ? 0 : commVector.hashCode());
-        result = prime * result + (int) (geoLocationId ^ (geoLocationId >>> 32));
+        result = prime * result + (int) (placeId ^ (placeId >>> 32));
         result = prime * result + labelLvl0;
         result = prime * result + labelLvl1;
         result = prime * result + poiId;
@@ -95,7 +95,7 @@ public class Poi {
         } else if (!commVector.equals(other.commVector)) {
             return false;
         }
-        if (geoLocationId != other.geoLocationId) {
+        if (placeId != other.placeId) {
             return false;
         }
         if (labelLvl0 != other.labelLvl0) {
@@ -115,7 +115,7 @@ public class Poi {
 
     @Override
     public String toString() {
-        return "Poi [poiId=" + poiId + ", geoLocationId=" + geoLocationId + ", labelLvl0=" + labelLvl0 + ", labelLvl1=" + labelLvl1 + ", reliable=" +
+        return "Poi [poiId=" + poiId + ", geoLocationId=" + placeId + ", labelLvl0=" + labelLvl0 + ", labelLvl1=" + labelLvl1 + ", reliable=" +
                 reliable + ", commVector=" + commVector + "]";
     }
 }

@@ -833,7 +833,7 @@ namespace samson
         if( main_command == "rm_queue" )
             if( commandLine.get_num_arguments() < 2 )
             {
-                writeErrorOnConsole( au::str("Usage: rm_queue queue" ) );
+                writeErrorOnConsole( au::str("Usage: rm_queue queue\n" ) );
                 return 0;
             }
         
@@ -841,9 +841,17 @@ namespace samson
         if( main_command == "set_queue_property" )
             if( commandLine.get_num_arguments() < 4 )
             {
-                writeErrorOnConsole( au::str("Usage: set_queue_propert queue property value" ) );
+                writeErrorOnConsole( au::str("Usage: set_queue_propert queue property value\n" ) );
                 return 0;
             }
+
+        if( main_command == "unset_queue_property" )
+            if( commandLine.get_num_arguments() < 3 )
+            {
+                writeErrorOnConsole( au::str("Usage: unset_queue_propert queue property\n" ) );
+                return 0;
+            }
+        
         
         // Command to remove queues 
         if( main_command == "cp_queue" )
@@ -857,7 +865,7 @@ namespace samson
         if( main_command == "pause_queue" )
             if( commandLine.get_num_arguments() < 2 )
             {
-                writeErrorOnConsole( au::str("Usage: pause_queue queue" ) );
+                writeErrorOnConsole( au::str("Usage: pause_queue queue\n" ) );
                 return 0;
             }
         

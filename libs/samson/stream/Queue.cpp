@@ -205,6 +205,11 @@ namespace samson {
         {
             environment.set( property , value );
         }
+
+        void Queue::unsetProperty( std::string property )
+        {
+            environment.unset( property );
+        }
         
         void Queue::replaceAndUnlock( BlockList *from , BlockList *to )
         {

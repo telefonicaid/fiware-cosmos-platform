@@ -91,6 +91,7 @@ namespace samson {
             
             // Set a property
             void setProperty( std::string property , std::string value );
+            void unsetProperty( std::string property );
             
             // Operations with block list
             void replaceAndUnlock( BlockList *from , BlockList *to );

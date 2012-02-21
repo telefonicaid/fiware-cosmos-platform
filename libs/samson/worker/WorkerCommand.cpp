@@ -313,6 +313,22 @@ namespace samson {
             }
             return;
         }            
+
+        if ( cmd.get_argument(0) == "unset_queue_property" )
+        {
+            if( cmd.get_num_arguments() < 3 )
+                error->set( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
+            else
+            {
+                std::string queue_name = prefix + cmd.get_argument(1);
+                std::string property   = cmd.get_argument(2);
+                
+                stream::Queue *queue = samsonWorker->streamManager->getQueue( queue_name );
+                queue->unsetProperty( property );
+            }
+            return;
+        }            
+        
         
         if( ( main_command == "add_stream_operation" ) || ( main_command == "aso"  ) )
         {

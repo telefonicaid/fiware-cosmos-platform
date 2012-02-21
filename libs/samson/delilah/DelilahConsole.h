@@ -156,7 +156,12 @@ namespace samson {
             
             add( "set_queue_property" , "data" ,
                 "Specify the value of property <property> for queue <queue>",
-                "set_queue_property <queue> <property> <value>"
+                "set_queue_property [queue] [property] [value]"
+                );
+
+            add( "unset_queue_property" , "data" ,
+                "Remove a previously defined property property for a queue",
+                "unset_queue_property [queue] [property]"
                 );
             
             add( "show_stream_block" ,"data" , "Show data activity in a particular stream block",
@@ -388,7 +393,7 @@ namespace samson {
                     return output.str();
                 }
             
-            return au::str( au::red , "Unknown command %s" , name.c_str() );
+            return au::str( au::red , "Unknown command %s\n" , name.c_str() );
         }
         
         

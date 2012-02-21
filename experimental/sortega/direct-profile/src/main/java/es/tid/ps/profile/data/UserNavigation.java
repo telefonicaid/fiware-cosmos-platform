@@ -38,7 +38,7 @@ public class UserNavigation {
         String[] fields = line.split(DELIMITER);
         UserNavigation instance = new UserNavigation();
         instance.setVisitorId(fields[0]);
-        instance.setUrl(fields[1]);
+        instance.setUrl(fields[2]);
         instance.setDate(String.format("%s-%s-%s", fields[8], fields[7], fields[6]));
         return instance;
     }

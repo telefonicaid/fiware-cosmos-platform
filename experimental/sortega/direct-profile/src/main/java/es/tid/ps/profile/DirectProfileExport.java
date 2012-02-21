@@ -58,8 +58,12 @@ public class DirectProfileExport {
 
         String line;
         while((line = input.readLine()) != null) {
-            if (count % 1000 == 0) {
+            if (count % 100000 == 0) {
                 System.out.format("%d logs imported\n", count);
+                System.out.format("known: %d\n", knownCount);
+                System.out.format("irrelevant: %d\n", irrelevantCount);
+                System.out.format("unknown: %d\n", unknownCount);
+                System.out.format("unprocessed: %d\n", unprocessedCount);
             }
             count++;
             UserNavigation un = UserNavigation.parse(line);
@@ -119,20 +123,19 @@ public class DirectProfileExport {
         NavigableMap<byte[], NavigableMap<byte[], byte[]>> currentRow =
                 getRequest.getNoVersionMap();
 
-
         Put insertRequest = new Put(rowId);
         for (String category : categories) {
             final byte[] categoryName = Bytes.toBytes(category);
-            final NavigableMap<byte[], byte[]> count = currentRow.get(categoryName);
-            long oldCount;
-            if (count != null) {
-                oldCount = Bytes.toLong(count.firstKey());
-            } else {
-                oldCount = 0;
+            long oldCount = 0;
+            if (currentRow != null) {
+                final NavigableMap<byte[], byte[]> count = currentRow.get(categoryName);
+                if (count != null) {
+                    oldCount = Bytes.toLong(count.firstKey());
+                }
             }
-
             insertRequest.add(CATEGORY_FAMILY, categoryName,
                     Bytes.toBytes(oldCount + 1));
         }
+        this.profileTable.put(insertRequest);
     }
 }

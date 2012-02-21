@@ -11,6 +11,7 @@
         <org.apache.hadoop.hive>0.7.1</org.apache.hadoop.hive>
         <jvm.version>1.6</jvm.version>
         <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
+        <protoc.path>/usr/local/bin/protoc</protoc.path>
     </properties>
 
     <profiles>
@@ -141,7 +142,7 @@
                 <artifactId>maven-protoc-plugin</artifactId>
                 <version>0.1.10</version>
                 <configuration>
-                    <protocExecutable>/usr/local/bin/protoc</protocExecutable>
+                    <protocExecutable>${protoc.path}</protocExecutable>
                     <checkStaleness>true</checkStaleness>
                 </configuration>
                 <executions>

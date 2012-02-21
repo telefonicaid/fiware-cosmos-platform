@@ -57,6 +57,10 @@ prepare_release:
 	mkdir BUILD_RELEASE || true
 	cd BUILD_RELEASE; cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
 
+prepare_strict:
+	mkdir BUILD_STRICT || true
+	cd BUILD_STRICT; cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DSTRICT=True -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
+
 prepare_debug:
 	mkdir BUILD_DEBUG || true
 	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
@@ -119,6 +123,15 @@ clean:
 
 release: prepare_release
 	make -C BUILD_RELEASE #-j 7
+
+# ------------------------------------------------
+# RELEASE Version
+# ------------------------------------------------
+
+
+strict: strict_compilation
+strict_compilation: prepare_strict
+	make -C BUILD_STRICT #-j 7
 
 # ------------------------------------------------
 # DEBUG Version

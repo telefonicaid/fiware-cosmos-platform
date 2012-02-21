@@ -45,9 +45,14 @@ if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
 elseif (CMAKE_BUILD_TYPE STREQUAL RELEASE)
 
-    MESSAGE("cmake: RELEASE compilation")
     add_definitions(-DRELEASE)
-    set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -O2")
+    if (STRICT)
+        MESSAGE("cmake: strict compilation")
+        set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -Wextra -O2")
+    else (NOT STRICT)
+        MESSAGE("cmake: RELEASE compilation")
+        set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -O2")
+    endif (STRICT)
 
 else (CMAKE_BUILD_TYPE STREQUAL DEBUG)
     MESSAGE("cmake: bad value for CMAKE_BUILD_TYPE - please set the variable to either DEBUG or RELEASE")

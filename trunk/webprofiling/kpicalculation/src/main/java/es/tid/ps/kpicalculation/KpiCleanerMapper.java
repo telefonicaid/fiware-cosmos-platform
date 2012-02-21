@@ -9,11 +9,15 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+
 import es.tid.ps.kpicalculation.cleaning.KpiCalculationFilterChain;
 import es.tid.ps.kpicalculation.cleaning.KpiCalculationFilterException;
 import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
 import es.tid.ps.kpicalculation.data.KpiCalculationDataException;
-import es.tid.ps.kpicalculation.data.WebLog;
+import es.tid.ps.kpicalculation.data.KpiCalculationProtocol;
+import es.tid.ps.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
+import es.tid.ps.kpicalculation.utils.WebProfilingUtil;
 
 /**
  * This class receives lines of information of CDR´s files that will be used in
@@ -41,14 +45,14 @@ import es.tid.ps.kpicalculation.data.WebLog;
  * 
  * @author javierb@tid.es
  */
-public class KpiCleanerMapper extends
-        Mapper<LongWritable, Text, NullWritable, WebLog> {
+public class KpiCleanerMapper
+        extends
+        Mapper<LongWritable, Text, NullWritable, ProtobufWritable<WebProfilingLog>> {
     @Resource
     private KpiCalculationFilterChain filter;
 
-    private WebLog view;
-
     private NullWritable nullw;
+    private ProtobufWritable<WebProfilingLog> wpWritable;
 
     /**
      * Method that prepares the filters to be applied. The classes implementing
@@ -63,7 +67,8 @@ public class KpiCleanerMapper extends
             InterruptedException {
         context.getConfiguration().addResource("kpi-filtering.xml");
         this.filter = new KpiCalculationFilterChain(context.getConfiguration());
-        this.view = new WebLog();
+        this.wpWritable = new ProtobufWritable<WebProfilingLog>();
+        this.wpWritable.setConverter(WebProfilingLog.class);
         this.nullw = NullWritable.get();
     }
 
@@ -79,10 +84,12 @@ public class KpiCleanerMapper extends
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
         try {
-            this.view.set(value.toString());
-            this.filter.filter(this.view.getFullUrl());
+            WebProfilingLog webLog = WebProfilingUtil.getInstance(value
+                    .toString());
+            this.filter.filter(webLog.getFullUrl());
+            this.wpWritable.set(webLog);
             context.getCounter(KpiCalculationCounter.LINE_STORED).increment(1L);
-            context.write(this.nullw, this.view);
+            context.write(this.nullw, this.wpWritable);
         } catch (KpiCalculationFilterException e) {
             context.getCounter(e.getCounter()).increment(1L);
         } catch (KpiCalculationDataException e) {

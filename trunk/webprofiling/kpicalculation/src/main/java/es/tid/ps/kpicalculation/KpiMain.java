@@ -21,10 +21,14 @@ import org.apache.hadoop.util.ToolRunner;
 
 import com.hadoop.compression.lzo.LzopCodec;
 import com.hadoop.mapreduce.LzoTextInputFormat;
+import com.twitter.elephantbird.mapreduce.input.LzoProtobufB64LineInputFormat;
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import com.twitter.elephantbird.mapreduce.output.LzoProtobufB64LineOutputFormat;
 
+import es.tid.ps.base.mapreduce.BinaryKey;
 import es.tid.ps.kpicalculation.data.JobDetails;
-import es.tid.ps.kpicalculation.data.WebLogFactory;
-import es.tid.ps.kpicalculation.data.WebLogType;
+import es.tid.ps.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
+import es.tid.ps.kpicalculation.data.SingleKey;
 
 /**
  * This class performs the webprofiling processing of the data received from
@@ -38,9 +42,6 @@ import es.tid.ps.kpicalculation.data.WebLogType;
  * project
  */
 public class KpiMain extends Configured implements Tool {
-    private static final String TEMP_PATH = "/user/javierb/temp";
-    private static final String OUTPUT_PATH =
-            "/user/javierb/webprofiling/aggregates";
 
     public static void main(String[] args) throws Exception {
         int res = ToolRunner.run(new Configuration(), new KpiMain(), args);
@@ -48,11 +49,18 @@ public class KpiMain extends Configured implements Tool {
     }
 
     public int run(String[] args) throws Exception {
+        if (args.length != 2) {
+            System.out
+                    .println("ERROR: Wrong Arguments. Use the following format:");
+            System.out
+                    .println("hadoop jar kpicalculation-LocalBuild.jar inputPath outputPath");
+            System.exit(1);
+        }
+
         Path inputPath = new Path(args[0]);
-        Path outputPath = new Path(args[1]);
-        Date date = new Date();
-        Path tmpPath = new Path(TEMP_PATH + "/tmp."
-                + Long.toString(new Date().getTime()));
+        Path outputPath = new Path(args[1] + "/aggregates");
+        String timeFolder = "data." + Long.toString(new Date().getTime());
+        Path tmpPath = new Path(args[1] + "/cleaned/" + timeFolder);
 
         // Normalization and filtering
         Configuration conf = getConf();
@@ -65,17 +73,16 @@ public class KpiMain extends Configured implements Tool {
         wpCleanerJob.setJarByClass(KpiMain.class);
         wpCleanerJob.setMapperClass(KpiCleanerMapper.class);
         wpCleanerJob.setInputFormatClass(LzoTextInputFormat.class);
-        wpCleanerJob.setOutputKeyClass(Text.class);
-        wpCleanerJob.setMapOutputValueClass(Text.class);
+        wpCleanerJob.setOutputKeyClass(NullWritable.class);
+        wpCleanerJob.setOutputValueClass(ProtobufWritable.class);
         wpCleanerJob.setMapOutputKeyClass(NullWritable.class);
-        wpCleanerJob.setOutputValueClass(Text.class);
-        wpCleanerJob.setOutputFormatClass(TextOutputFormat.class);
+        wpCleanerJob.setMapOutputValueClass(ProtobufWritable.class);
+        wpCleanerJob.setOutputFormatClass(LzoProtobufB64LineOutputFormat
+                .getOutputFormatClass(WebProfilingLog.class,
+                        wpCleanerJob.getConfiguration()));
 
         // Input and Output configuration
         FileInputFormat.addInputPath(wpCleanerJob, inputPath);
-        FileOutputFormat.setCompressOutput(wpCleanerJob, true);
-        FileOutputFormat
-                .setOutputCompressorClass(wpCleanerJob, LzopCodec.class);
         FileOutputFormat.setOutputPath(wpCleanerJob, tmpPath);
 
         if (!wpCleanerJob.waitForCompletion(true)) {
@@ -85,35 +92,29 @@ public class KpiMain extends Configured implements Tool {
         // Definition of kpis to calculate
         List<JobDetails> list = new ArrayList<JobDetails>();
 
-        list.add(new JobDetails("PAGE_VIEWS_PROT", "protocol,dateView"));
+        list.add(new JobDetails("PAGE_VIEWS_PROT", "protocol,date"));
         list.add(new JobDetails("PAGE_VIEWS_PROT_VIS_DEV",
-                "visitorId,protocol,device,dateView"));
+                "visitorId,protocol,device,date"));
         list.add(new JobDetails("PAGE_VIEWS_PROT_VIS",
-                "visitorId,protocol,dateView"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_DEV",
-                "device,protocol,dateView"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_MET",
-                "method,protocol,dateView"));
-        //list.add(new JobDetails("PAGE_VIEWS_PROT", "protocol,dateView"));
+                "visitorId,protocol,date"));
+        list.add(new JobDetails("PAGE_VIEWS_PROT_DEV", "device,protocol,date"));
+        list.add(new JobDetails("PAGE_VIEWS_PROT_MET", "method,protocol,date"));
         list.add(new JobDetails("PAGE_VIEWS_PROT_URL_VIS",
-                "visitorId,urlDomain,urlPath,protocol,dateView"));
+                "visitorId,urlDomain,urlPath,protocol,date"));
         list.add(new JobDetails("PAGE_VIEWS_PROT_DOM_VIS",
-                "visitorId,urlDomain,protocol,dateView"));
+                "visitorId,urlDomain,protocol,date"));
         list.add(new JobDetails("PAGE_VIEWS_PROT_DOM",
-                "urlDomain,protocol,dateView"));
-
+                "urlDomain,protocol,date"));
         list.add(new JobDetails("VISITORS_PROT_URL",
-                "urlDomain,urlPath,protocol,dateView", "visitorId"));
-        list.add(new JobDetails("VISITORS_PROT", "protocol,dateView",
-                "visitorId"));
+                "urlDomain,urlPath,protocol,date", "visitorId"));
+        list.add(new JobDetails("VISITORS_PROT", "protocol,date", "visitorId"));
 
         Iterator<JobDetails> it = list.iterator();
 
         while (it.hasNext()) {
             JobDetails jDet = it.next();
-            outputPath = new Path(OUTPUT_PATH).suffix("/" + jDet.getName()
-                    + "/" + date.getYear() + "/" + date.getMonth() + "/"
-                    + date.getDay());
+            Path kpiOutputPath = outputPath.suffix("/" + jDet.getName() + "/"
+                    + timeFolder);
             Job aggregationJob = new Job(conf, "Aggregation Job ..."
                     + jDet.getName());
 
@@ -123,15 +124,7 @@ public class KpiMain extends Configured implements Tool {
             if (jDet.getGroup() != null) {
                 aggregationJob.getConfiguration().setStrings(
                         "kpi.aggregation.group", jDet.getGroup());
-                aggregationJob.getConfiguration().setStrings(
-                        "kpi.aggregation.type",
-                        WebLogType.WEB_LOG_COUNTER_GROUP.toString());
-                aggregationJob.setMapOutputKeyClass(WebLogFactory.getWebLog(
-                        aggregationJob.getConfiguration().getStringCollection(
-                                "kpi.aggregation.fields"),
-                        aggregationJob.getConfiguration().get(
-                                "kpi.aggregation.group"),
-                        WebLogType.WEB_LOG_COUNTER_GROUP).getClass());
+                aggregationJob.setMapOutputKeyClass(BinaryKey.class);
                 aggregationJob.setCombinerClass(KpiCounterByCombiner.class);
                 aggregationJob.setReducerClass(KpiCounterByReducer.class);
                 aggregationJob
@@ -139,15 +132,7 @@ public class KpiMain extends Configured implements Tool {
                 aggregationJob
                         .setGroupingComparatorClass(PageViewKpiCounterGroupedComparator.class);
             } else {
-                aggregationJob.getConfiguration().setStrings(
-                        "kpi.aggregation.type",
-                        WebLogType.WEB_LOG_COUNTER.toString());
-                aggregationJob.setMapOutputKeyClass(WebLogFactory.getWebLog(
-                        aggregationJob.getConfiguration().getStringCollection(
-                                "kpi.aggregation.fields"),
-                        aggregationJob.getConfiguration().get(
-                                "kpi.aggregation.group"),
-                        WebLogType.WEB_LOG_COUNTER).getClass());
+                aggregationJob.setMapOutputKeyClass(SingleKey.class);
                 aggregationJob.setCombinerClass(KpiCounterCombiner.class);
                 aggregationJob.setReducerClass(KpiCounterReducer.class);
                 aggregationJob
@@ -159,8 +144,9 @@ public class KpiMain extends Configured implements Tool {
             aggregationJob.setJarByClass(KpiMain.class);
             aggregationJob.setMapperClass(KpiGenericMapper.class);
             aggregationJob.setPartitionerClass(KpiPartitioner.class);
-
-            aggregationJob.setInputFormatClass(LzoTextInputFormat.class);
+            aggregationJob.setInputFormatClass(LzoProtobufB64LineInputFormat
+                    .getInputFormatClass(WebProfilingLog.class,
+                            aggregationJob.getConfiguration()));
             aggregationJob.setMapOutputValueClass(IntWritable.class);
             aggregationJob.setOutputKeyClass(Text.class);
             aggregationJob.setOutputValueClass(IntWritable.class);
@@ -168,23 +154,16 @@ public class KpiMain extends Configured implements Tool {
 
             // Input and Output configuration
             FileInputFormat.addInputPath(aggregationJob, tmpPath);
-            // FileOutputFormat.setCompressOutput(aggregationJob, true);
-            // FileOutputFormat.setOutputCompressorClass(aggregationJob,
-            // LzopCodec.class);
-            FileOutputFormat.setOutputPath(aggregationJob, outputPath);
+            FileOutputFormat.setCompressOutput(aggregationJob, true);
+            FileOutputFormat.setOutputCompressorClass(aggregationJob,
+                    LzopCodec.class);
+            FileOutputFormat.setOutputPath(aggregationJob, kpiOutputPath);
 
             if (!aggregationJob.waitForCompletion(true)) {
                 return 1;
             }
         }
 
-        /*
-         * // Data load into hive ICdrLoader loader = new HiveCdrLoader(conf);
-         * loader.load(TEMP_PATH);
-         * 
-         * // Calculation of aggregate data IAggregateCalculator agg = new
-         * HiveAggregateCalculator(); agg.process();
-         */
         return 0;
     }
 }

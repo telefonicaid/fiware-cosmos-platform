@@ -33,7 +33,6 @@ public abstract class KpiCalculationNormalizer {
         Configuration conf = NutchConfiguration.create();
         basicNorm.setConf(conf);
         regexNorm = new RegexURLNormalizer(conf);
-       
     }
 
     /**

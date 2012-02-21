@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -172,15 +171,26 @@
     <repositories>
         <repository>
             <id>cdh-repository</id>
-            <url> https://repository.cloudera.com/content/repositories/releases/</url>
+            <url>https://repository.cloudera.com/artifactory/libs-release-local</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
+        </repository>
+         <repository>
+            <id>apache-repository</id>
+            <url>https://repository.apache.org/content/repositories/releases</url>
         </repository>
         <repository>
             <id>google-maven-repository</id>
             <name>Google Maven Repository</name>
             <url>http://google-maven-repository.googlecode.com/svn/repository/</url>
+        </repository>
+         <repository>
+            <id>ps2-nexus</id>
+            <url>http://ps2-ci/nexus/content/groups/public-snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
         <repository>
             <id>thirdparty</id>
@@ -191,7 +201,22 @@
             <name>Releases</name>
             <url>https://oss.sonatype.org/content/repositories/releases</url>
         </repository>
+         <repository>
+            <id>ps2-nexus-releases</id>
+            <url>http://ps2-ci/nexus/content/repositories/releases</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+       
+        
     </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>dtrott</id>
+            <url>http://maven.davidtrott.com/repository</url>
+        </pluginRepository>
+    </pluginRepositories>
     <developers>
         <developer>
             <id>dmicol</id>
@@ -253,10 +278,24 @@
             <artifactId>hadoop-gpl-compression</artifactId>
             <version>0.1.0</version>
         </dependency>
+         <!-- test dependencies -->
         <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-mrunit</artifactId>
-            <version>${org.apache.hadoop}-cdh3u0</version>
+            <groupId>org.apache.mrunit</groupId>
+            <artifactId>mrunit</artifactId>
+            <version>0.8.0-incubating</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-all</artifactId>
+            <version>1.1</version>
+            <scope>test</scope>
         </dependency>
         <!-- <dependency> <groupId>org.apache.hadoop.hive</groupId> <artifactId>hive-jdbc</artifactId> 
             <version>${org.apache.hadoop.hive}-cdh3u1</version> </dependency> <dependency> 
@@ -289,10 +328,60 @@
             <artifactId>urlnormalizer-regex</artifactId>
             <version>1.3</version>
         </dependency>
+           <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+ 		<dependency>
+            <groupId>org.apache.hadoop</groupId>
+    		<artifactId>libthrift</artifactId>
+            <version>0.5.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>elephant-bird</artifactId>
+            <version>2.1.7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.thrift</groupId>
+                    <artifactId>libthrift</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>cascading</groupId>
+                    <artifactId>cascading-hadoop</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google</groupId>
+                    <artifactId>protobuf-java</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.hadoop</groupId>
+                    <artifactId>hadoop-lzo</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>yamlbeans</groupId>
+                    <artifactId>yamlbeans</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>es.tid.ps</groupId>
+            <artifactId>base</artifactId>
+            <version>0.0.1</version>
+        </dependency>
     </dependencies>
+
+
     <!-- Pendiente de la maquina de integración -->
     <distributionManagement>
+
         <!-- Repositorio para hacer el deploy de las releases -->
+
         <repository>
             <id>${repoMavenId}</id>
             <name>${repoMavenName}</name>
@@ -311,9 +400,12 @@
             <url>${repoSiteUrl}/${project.groupId}/models </url>
         </site>
     </distributionManagement>
+
     <modules>
         <module>kpicalculation</module>
+
     </modules>
+
     <properties>
         <copyright.year>2011</copyright.year>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -323,12 +415,14 @@
         <jvm.version>1.6</jvm.version>
         <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
     </properties>
+
     <profiles>
         <profile>
             <id>maven-2</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
+
             <build>
                 <pluginManagement>
                     <plugins>
@@ -340,6 +434,23 @@
                     </plugins>
                 </pluginManagement>
                 <plugins>
+                	<plugin>
+                <groupId>com.google.protobuf.tools</groupId>
+                <artifactId>maven-protoc-plugin</artifactId>
+                <version>0.1.10</version>
+                <configuration>
+                    <protocExecutable>C:\\protoc-2.3.0\\protoc.exe</protocExecutable>
+                    <checkStaleness>true</checkStaleness>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
                     <plugin>
                         <artifactId>maven-site-plugin</artifactId>
                         <configuration>
@@ -358,8 +469,11 @@
                         <artifactId>maven-report</artifactId>
                         <version>0.1</version>
                     </plugin>
+
+
+
                     <!-- Plugin para generar los referencias cruzadas del 
-                        código -->
+                        cÃ³digo -->
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>jxr-maven-plugin</artifactId>
@@ -373,7 +487,7 @@
                         <version>2.0-beta-1</version>
                     </plugin>
                     <!-- Plugin para generar los reports de calidad de cÃ³digo. 
-                        Faltaría definir las métricas a aplicar -->
+                        FaltarÃ­a definir las mÃ©tricas a aplicar -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-pmd-plugin</artifactId>
@@ -399,6 +513,7 @@
                         <artifactId>jdepend-maven-plugin</artifactId>
                         <version>2.0-beta-2</version>
                     </plugin>
+
                     <!-- Plugin para generar los informes del JUNIT -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -410,7 +525,7 @@
                         <artifactId>maven-project-info-reports-plugin</artifactId>
                         <version>2.1.2</version>
                     </plugin>
-                    <!-- Plugin para analizar las tags en el código, por 
+                    <!-- Plugin para analizar las tags en el cÃ³digo, por 
                         ejemplo para generar un informe con todos los TODO -->
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
@@ -438,7 +553,7 @@
                             </reportSet>
                         </reportSets>
                     </plugin>
-                    <!-- Plugin para generar informes de calidad del código -->
+                    <!-- Plugin para generar informes de calidad del cÃ³digo -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-checkstyle-plugin</artifactId>
@@ -490,6 +605,7 @@
                 </plugins>
             </reporting>
         </profile>
+
         <profile>
             <id>maven-3</id>
             <activation>
@@ -499,6 +615,10 @@
                     <exists>${basedir}</exists>
                 </file>
             </activation>
+
+            
+
+
             <build>
                 <pluginManagement>
                     <plugins>
@@ -516,6 +636,7 @@
                             <locales>es</locales>
                             <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
                             <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
+
                             <reportPlugins>
                                 <plugin>
                                     <groupId>org.apache.maven.plugins</groupId>
@@ -552,7 +673,7 @@
                                     <version>2.2</version>
                                 </plugin>
                                 <!-- Plugin para generar los reports de calidad 
-                                    de código. FaltarÃ­a definir las mÃ©tricas a aplicar -->
+                                    de cÃ³digo. FaltarÃ­a definir las mÃ©tricas a aplicar -->
                                 <plugin>
                                     <groupId>org.apache.maven.plugins</groupId>
                                     <artifactId>maven-pmd-plugin</artifactId>
@@ -591,7 +712,7 @@
                                     <version>2.7.2</version>
                                 </plugin>
                                 <!-- Plugin para analizar las tags en el 
-                                    código, por ejemplo para generar un informe con todos los TODO -->
+                                    cÃ³digo, por ejemplo para generar un informe con todos los TODO -->
                                 <plugin>
                                     <groupId>org.codehaus.mojo</groupId>
                                     <artifactId>taglist-maven-plugin</artifactId>
@@ -619,7 +740,7 @@
                                     </reportSets>
                                 </plugin>
                                 <!-- Plugin para generar informes de calidad 
-                                    del código -->
+                                    del cÃ³digo -->
                                 <plugin>
                                     <groupId>org.apache.maven.plugins</groupId>
                                     <artifactId>maven-checkstyle-plugin</artifactId>
@@ -641,6 +762,7 @@
                             </reportPlugins>
                         </configuration>
                     </plugin>
+
                 </plugins>
             </build>
         </profile>

@@ -6,7 +6,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.ps.kpicalculation.data.WebLog;
+import es.tid.ps.base.mapreduce.BinaryKey;
 
 /**
  * This class makes the reduce phase in the kpi aggregates grouped by field
@@ -27,7 +27,7 @@ import es.tid.ps.kpicalculation.data.WebLog;
  * @author javierb
  */
 public class KpiCounterByReducer extends
-        Reducer<WebLog, IntWritable, Text, IntWritable> {
+        Reducer<BinaryKey, IntWritable, Text, IntWritable> {
     private static final String USE_HASHCODE = "kpi.aggregation.hashmap";
     private String currentKey;
     private int currentHashCode;
@@ -64,14 +64,14 @@ public class KpiCounterByReducer extends
      *            contains the context of the job run
      */
     @Override
-    protected void reduce(WebLog key, Iterable<IntWritable> values,
+    protected void reduce(BinaryKey key, Iterable<IntWritable> values,
             Context context) throws IOException, InterruptedException {
-        if (!key.mainKey.equals(this.currentKey)) {
+        if (!key.getPrimaryKey().equals(this.currentKey)) {
             if (!this.currentKey.isEmpty()) {
                 this.setValues();
                 context.write(this.text, this.counter);
             }
-            this.currentKey = key.mainKey;
+            this.currentKey = key.getPrimaryKey();
             this.currentHashCode = key.hashCode();
             this.currentValue = 1;
         } else {

@@ -48,9 +48,6 @@ public class VoronoiDiagramGenerator {
     int nvertices;
     int nedges;
     int nsites;
-    Hfreelist hfl;
-    Efreelist efl;
-    Sfreelist sfl;
     Site[] sites;
     Site bottomsite;
     int sqrt_nsites;
@@ -113,8 +110,6 @@ public class VoronoiDiagramGenerator {
     void dVoronoiDiagramGenerator() {
         cleanupSites();
         cleanupEdges();
-        sfl = null;
-        efl = null;
     }
 
     int scomp(Site p1, Site p2) {
@@ -252,10 +247,6 @@ public class VoronoiDiagramGenerator {
      * dVoronoiDiagramGenerator();
      *
      * nsites = list.n; minDistanceBetweenSites = 3;
-     *
-     * nvertices = 0; sfl = new Sfreelist();
-     *
-     * nedges = 0; efl = new Efreelist();
      *
      * float sn = (float) nsites + 4; sqrt_nsites = (int) Math.sqrt(sn);
      *

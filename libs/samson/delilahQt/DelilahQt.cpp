@@ -18,15 +18,17 @@ namespace samson
 {	
     void DelilahQt::updateData()
     {
+        au::tables::Table* table2 = database.getTable("engines");
+        if( table2 ) std::cout << "Engines read" << std::endl;
         au::tables::Table* table = database.getTable("queues");
         QString str;
-        std::vector<QueueViewer::QueueData> queuesData;
+        std::vector<QueueData> queuesData;
         if( table )
         {
             //Send all queues in the table to the DelilahMainWindow for processing
             for(unsigned int i = 0; i< table->getNumRows(); i++)
             {
-               QueueViewer::QueueData data;
+                QueueData data;
                 data.name = table->getValue(i, "name");
                 data.kvs  = table->getValue(i, "#kvs");
                 data.size = table->getValue(i, "size");
@@ -65,7 +67,7 @@ namespace samson
         //connect(this, SIGNAL(enginesTextValueChanged(const QString&)), mainWindow->enginesText, SLOT(setText(const QString&)));
         //connect(this, SIGNAL(queuesTextValueChanged(const QString&)), mainWindow->queuesText, SLOT(setText(const QString&)));
         application.exec();
-        
+       
     }
     
 }

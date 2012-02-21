@@ -62,7 +62,7 @@ namespace samson {
         QGroupBox* inputBox;
         QGroupBox* outputBox;
         QGroupBox* totalBox;
-        void updateData(std::vector<QueueViewer::QueueData>& queuesData);
+        void updateData(std::vector<QueueData>& queuesData);
         
     private slots:
         void about();

@@ -8,6 +8,8 @@
 
 #include "DelilahMainWindow.h" // Own interface
 
+#include "au/string.h"
+
 #include <QTimer>
 #include <QtGui>
 
@@ -49,20 +51,19 @@ namespace samson
         
         noInputLabel = new QLabel("No input Queues", inputBox);
         noOutputLabel = new QLabel("No output Queues", outputBox);
-        noTotalLabel = new QLabel("No Queues", totalBox);
         
         inputLayout = new QGridLayout(inputBox);
-        inputLayout->addWidget(noInputLabel, 0, 1);
+        inputLayout->addWidget(noInputLabel, 0, 0);
         inputBox->setLayout(inputLayout);
         
         outputLayout = new QGridLayout(outputBox);
-        outputLayout->addWidget(noOutputLabel, 0, 1);
+        outputLayout->addWidget(noOutputLabel, 0, 0);
         outputBox->setLayout(outputLayout);
 
         totalLayout = new QGridLayout(totalBox);
-        totalLayout->addWidget(noTotalLabel, 0 , 1);
-        totalQueues = new QueueViewer("Totals", totalBox);
-        totalLayout->addWidget(totalQueues);
+        totalQueues = new QueueViewer("Total", totalBox);
+        totalQueues ->setHiddenButton(true);
+        totalQueues->setLayout(totalLayout, 0);
         totalBox->setLayout(totalLayout);
                 
         QObject::connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
@@ -76,12 +77,20 @@ namespace samson
         QMessageBox::about( this, tr("Samson"), tr("Samson version 0.6.1") );
     }
     
-    void DelilahMainWindow::updateData(std::vector<QueueViewer::QueueData>& queuesData)
+    void DelilahMainWindow::updateData(std::vector<QueueData>& queuesData)
     {
+        bool any_change = false;
+        size_t totalKvs = 0;
+        size_t totalSize = 0;
+        size_t totalRate = 0;
         //For each queue, check if it has already a widget defined. otherwise create it
         for(unsigned int i = 0; i < queuesData.size(); i++)
         {
-            //bool found = false;
+            //Increment totals
+            totalKvs += atol(queuesData[i].kvs.c_str());
+            totalSize += atol(queuesData[i].size.c_str());
+            totalRate += atol(queuesData[i].rate.c_str());
+
             //check if the queue belongs to the input or output queues list
             bool is_input = (fnmatch("in:*", queuesData[i].name.c_str(),0) == 0);
             std::vector<QueueViewer*>* queuesList;
@@ -102,15 +111,24 @@ namespace samson
             }
 
             QueueViewer* queueTmp = find_queue(*queuesList, queuesData[i].name);
-            
-           if( queueTmp != NULL)
+            bool current_queue_changed = false;
+            if( queueTmp != NULL)
             {
-                //queue already has a widget. Just update
-                queueTmp->setData(queuesData[i]);
+                //Check if the data has actually changed
+                current_queue_changed = !(queuesData[i] == queueTmp->data);
+                if(current_queue_changed)
+                {
+                    any_change = true;
+                    //queue already has a widget. Just update
+                    queueTmp->setData(queuesData[i]);
+                    //TODO: update data in queue tab
+                }
             }
             else
             {
                 //new queue. Create widget
+                current_queue_changed = true;
+                any_change = true;
                 queueTmp = new QueueViewer(queuesData[i].name, groupBoxTmp);
                 queueTmp->setData(queuesData[i]);
                 queuesList->push_back(queueTmp);
@@ -125,35 +143,41 @@ namespace samson
                 //queueTmp->show();
                 
             }
-       }
-        //Hide or show emptiness labels
-        if (in_queues.size() != 0)
-        {
-            noInputLabel->hide();
         }
-        else
+        
+        if(any_change)
         {
-            noInputLabel->show();
-        }
-        if (out_queues.size() != 0)
-        {
-            noOutputLabel->hide();
-        }
-        else
-        {
-            noOutputLabel->show();
-        }
+            //Update Totals
+           QueueData totalData = totalQueues->data;
+            
+            totalData.kvs = au::str("%lu", totalKvs);
+            totalData.size = au::str("%lu", totalSize);
+            totalData.rate = au::str("%lu", totalRate);
+            
+            totalQueues->setData(totalData);
+            totalQueues->update();
+            
+            //Hide or show emptiness labels
+            if (in_queues.size() != 0)
+            {
+                noInputLabel->hide();
+            }
+            else
+            {
+                noInputLabel->show();
+            }
 
-        if (in_queues.size() != 0 || out_queues.size() != 0)
-        {
-            totalQueues->show();
-            noTotalLabel->hide();
+            if (out_queues.size() != 0)
+            {
+                noOutputLabel->hide();
+            }
+            else
+            {
+                noOutputLabel->show();
+            }
+
         }
-        else
-        {
-            totalQueues->hide();
-            noTotalLabel->show();
-        }
+            
         //ajustar layout o update el groupbox
      /*   inputBox->update();
         outputBox->update();

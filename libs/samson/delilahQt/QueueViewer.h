@@ -15,6 +15,24 @@
 namespace samson {
 	
 
+class  QueueData 
+{
+    public:
+        std::string name;
+        std::string kvs; //block_info/kv_info/kvs
+        //std::string kvsize; //block_info/kv_info/size
+        std::string  size; //block_info/size
+        //std::string  size_locked; //block_info/size_locked
+        //std::string  size_on_disk; //block_info/size_on_disk
+        //std::string  size_on_memory; //block_info/size_on_memory
+        //std::string kvs_rate; //rate_kvs/rate
+        //std::string kvs_rate_size; //rate_kvs/size
+        std::string rate; //rate_size/rate
+        //std::string rate_size; //rate_size/size
+
+        QueueData();
+        bool operator==(const QueueData &other) const;
+};
 
         
 class QueueViewer: public QWidget
@@ -25,21 +43,6 @@ class QueueViewer: public QWidget
         QueueViewer(std::string _title, QWidget* parent = 0);
         std::string title;
 
-        typedef struct {
-            std::string name;
-            std::string kvs; //block_info/kv_info/kvs
-            //std::string kvsize; //block_info/kv_info/size
-            std::string  size; //block_info/size
-            //std::string  size_locked; //block_info/size_locked
-            //std::string  size_on_disk; //block_info/size_on_disk
-            //std::string  size_on_memory; //block_info/size_on_memory
-                   
-            //std::string kvs_rate; //rate_kvs/rate
-            //std::string kvs_rate_size; //rate_kvs/size
-            std::string rate; //rate_size/rate
-            //std::string rate_size; //rate_size/size
-        } QueueData;
-        
         QueueData data;
         
         void setData(QueueData newData);

@@ -15,11 +15,29 @@
 
 namespace samson{
 
+QueueData::QueueData()
+{
+    name = "";
+    kvs = "";
+    size = "";
+    rate = "";
+}
+bool QueueData::operator==(const QueueData &other) const 
+{
+    if(name != other.name) return false;
+    if(kvs != other.kvs) return false;
+    if(size != other.size) return false;
+    if(rate != other.rate) return false;
+    return true;
+}
+
+
 QueueViewer::QueueViewer(std::string _title, QWidget* parent): QWidget(parent)
 {
     //QVBoxLayout* layout;
     
     title = _title;
+    data.name = _title;
     
     //groupBox = new QGroupBox(this);
     //QSizePolicy expandingPolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -28,26 +46,30 @@ QueueViewer::QueueViewer(std::string _title, QWidget* parent): QWidget(parent)
     scrollArea->setBackgroundRole(QPalette::Dark);
     scrollArea->setWidget(groupBox);   
     */
-    QFont fontTmp;
-    name = new QLabel("Empty Queue: ", this);
+    QFont bigFont;
+    QFont boldFont;
+    name = new QLabel("", this);
+    boldFont = name->font();
+    boldFont.setBold(true);
+    name->setFont(boldFont);
     kvs = new QLabel("KVs: ", this);
     kvsDigits = new QLabel(this);
-    fontTmp = kvsDigits->font();
-    fontTmp.setFamily("Helvetica"); 
-    fontTmp.setPointSize(fontTmp.pointSize()*1.5f);
-    kvsDigits->setFont(fontTmp);
+    bigFont = kvsDigits->font();
+    bigFont.setFamily("Helvetica"); 
+    bigFont.setPointSize(bigFont.pointSize()*1.5f);
+    kvsDigits->setFont(bigFont);
     kvsDigits->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     kvsDigits->setLineWidth(2);
     //kvssize = new QLabel("KVs Size: ", groupBox);
     size = new QLabel("Size: ", this);
     sizeDigits = new QLabel(this);
-    sizeDigits->setFont(fontTmp);
+    sizeDigits->setFont(bigFont);
     sizeDigits->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     sizeDigits->setLineWidth(2);
 
     rate = new QLabel("Rate: ", this);
     rateDigits = new QLabel(this);
-    rateDigits->setFont(fontTmp);
+    rateDigits->setFont(bigFont);
     rateDigits->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     rateDigits->setLineWidth(2);
     
@@ -95,13 +117,13 @@ void QueueViewer::setData(QueueData newData)
         name->setText(QString(data.name.c_str() + QString(": ")));
         kvsDigits->setText(QString(data.kvs.c_str()));
         //kvssize->setText(QString("KVs Size: ") + QString(data.kvsize.c_str()));
-        sizeDigits->setText(QString(au::str(atol(data.size.c_str())).c_str()));
+        sizeDigits->setText(QString(au::str(strtoul(data.size.c_str(), NULL, 0)).c_str()));
         //size_locked->setText(QString("Size Locked: ") + QString(data.size_locked.c_str()));
         //size_on_disk->setText(QString("Size (on disk): ") + QString(data.size_on_disk.c_str()));
         //size_on_memory->setText(QString("Size (on memory): ") + QString(data.size_on_memory.c_str()));
         //kvs_rate->setText(QString("KVs Rate: ") + QString(data.kvs_rate.c_str()));
         //kvs_rate_size->setText(QString("KVs Rate Size: ") + QString(data.kvs_rate_size.c_str()));
-        rateDigits->setText(QString((au::str(atol(data.rate.c_str()))/* + std::string("b/s")*/).c_str()));
+        rateDigits->setText(QString((au::str(strtoul(data.rate.c_str(), NULL, 0))/* + std::string("b/s")*/).c_str()));
         //rate_size->setText(QString("Rate Size: ") + QString(data.rate_size.c_str()));
 }
 

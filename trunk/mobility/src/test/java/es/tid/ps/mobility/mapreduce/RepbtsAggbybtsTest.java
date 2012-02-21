@@ -1,4 +1,4 @@
-package es.tid.ps.mobility.jobs;
+package es.tid.ps.mobility.mapreduce;
 
 import static java.util.Arrays.asList;
 
@@ -9,14 +9,14 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.ps.mobility.data.MxProtocol.NodeBtsDay;
+import es.tid.ps.mobility.data.MobProtocol.NodeBtsDay;
 import es.tid.ps.mobility.data.NodeBtsDayUtil;
 
 /**
  *
  * @author sortega
  */
-public class MobmxRepbtsAggbybtsTest {
+public class RepbtsAggbybtsTest {
     private ReduceDriver<ProtobufWritable<NodeBtsDay>,
         IntWritable, LongWritable, ProtobufWritable<NodeBtsDay>> driver;
 
@@ -24,7 +24,7 @@ public class MobmxRepbtsAggbybtsTest {
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<NodeBtsDay>,
                 IntWritable, LongWritable, ProtobufWritable<NodeBtsDay>>(
-                new MobmxRepbtsAggbybtsReducer());
+                new RepbtsAggbybtsReducer());
     }
 
     @Test

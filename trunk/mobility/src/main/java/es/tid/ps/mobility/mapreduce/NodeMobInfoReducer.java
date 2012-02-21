@@ -1,18 +1,19 @@
 package es.tid.ps.mobility.mapreduce;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import java.io.IOException;
+
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.ps.mobility.data.MxProtocol.BtsCounter;
-import es.tid.ps.mobility.data.MxProtocol.NodeMxCounter;
+import es.tid.ps.mobility.data.MobProtocol.BtsCounter;
+import es.tid.ps.mobility.data.MobProtocol.NodeMxCounter;
 
 /**
  *
  * @author dmicol
  */
-public class MobmxNodeMobInfoReducer extends Reducer<IntWritable,
+public class NodeMobInfoReducer extends Reducer<IntWritable,
         ProtobufWritable<BtsCounter>, IntWritable,
         ProtobufWritable<NodeMxCounter>> {
     @Override

@@ -1,6 +1,6 @@
 package es.tid.ps.mobility.parsing;
 
-import es.tid.ps.mobility.data.MxProtocol.MxCell;
+import es.tid.ps.mobility.data.MobProtocol.Cell;
 
 /**
  *
@@ -13,12 +13,12 @@ public class CellParser extends PipeDelimitedParser {
     }
 
     @Override
-    public MxCell parse() {
-        return MxCell.newBuilder()
-            .setCell(parseCell())
-            .setBts(parseInt())
-            .setMun(parseInt())
-            .setState(parseInt())
+    public Cell parse() {
+        return Cell.newBuilder()
+            .setCellId(parseCellId())
+            .setPlaceId(parseLong())
+            .setGeoloc1(parseInt())
+            .setGeoloc2(parseInt())
             .setPosx(parseInt())
             .setPosy(parseInt())
             .build();

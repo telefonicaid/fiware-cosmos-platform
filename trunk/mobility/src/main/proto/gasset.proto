@@ -6,7 +6,7 @@ option java_package = "es.tid.ps.mobility.data";
 option java_outer_classname = "GassetProtocol";
 
 message GstCdr {
-    required uint64 phone = 1;
+    required uint64 userId = 1;
     required base.Date date = 2;
     required base.Time time = 3;
     required uint32 duration = 4;
@@ -17,8 +17,8 @@ message GstCdr {
 }
 
 message GstCell {
-    required uint64 cell = 1;
-    required uint32 bts = 2;
+    required uint64 cellId = 1;
+    required uint32 placeId = 2;
     required uint32 lac = 3;
     required uint32 state = 4;
     required double posx = 5;

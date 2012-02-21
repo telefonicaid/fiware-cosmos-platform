@@ -7,22 +7,22 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.ps.mobility.data.MxProtocol.BtsCounter;
-import es.tid.ps.mobility.data.MxProtocol.NodeBts;
+import es.tid.ps.mobility.data.MobProtocol.BtsCounter;
+import es.tid.ps.mobility.data.MobProtocol.NodeBts;
 
 /**
  * @author sortega
  */
-public class MobmxNodeBtsCounterReducer
+public class NodeBtsCounterReducer
         extends Reducer<ProtobufWritable<NodeBts>, NullWritable,
                         LongWritable, ProtobufWritable<BtsCounter>> {
-    private LongWritable phone;
+    private LongWritable userId;
     private ProtobufWritable<BtsCounter> btsCounter;
 
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        this.phone = new LongWritable();
+        this.userId = new LongWritable();
         this.btsCounter = new ProtobufWritable<BtsCounter>();
         this.btsCounter.setConverter(BtsCounter.class);
     }
@@ -38,13 +38,13 @@ public class MobmxNodeBtsCounterReducer
         }
 
         nodeBts.setConverter(NodeBts.class);
-        this.phone.set(nodeBts.get().getPhone());
+        this.userId.set(nodeBts.get().getUserId());
         this.btsCounter.set(BtsCounter.newBuilder()
-                .setBts(nodeBts.get().getBts())
-                .setWday(nodeBts.get().getWday())
+                .setPlaceId(nodeBts.get().getPlaceId())
+                .setWeekday(nodeBts.get().getWeekday())
                 .setRange(nodeBts.get().getRange())
                 .setCount(count)
                 .build());
-        context.write(this.phone, this.btsCounter);
+        context.write(this.userId, this.btsCounter);
     }
 }

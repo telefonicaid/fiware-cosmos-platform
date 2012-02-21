@@ -27,7 +27,11 @@ public abstract class PipeDelimitedParser extends StringTokenizer {
         return Integer.parseInt(nextToken(), 10);
     }
 
-    protected long parseCell() throws NumberFormatException {
+    protected long parseLong() {
+        return Long.parseLong(nextToken(), 10);
+    }
+
+    protected long parseCellId() throws NumberFormatException {
         String str = nextToken();
         if (str.length() > MAX_CELL_DIGITS) {
             // Take the least significant hex digits
@@ -36,7 +40,7 @@ public abstract class PipeDelimitedParser extends StringTokenizer {
         return Long.parseLong(str, 16);
     }
 
-    protected long parsePhone() {
+    protected long parseUserId() {
         String str = nextToken();
         if (str.length() > MAX_CLIENT_LENGTH) {
             str = str.substring(str.length() - MAX_CLIENT_LENGTH);
@@ -49,8 +53,12 @@ public abstract class PipeDelimitedParser extends StringTokenizer {
         final int day = Integer.parseInt(date.substring(0, 2), 10);
         final int month = Integer.parseInt(date.substring(3, 5), 10);
         final int year = Integer.parseInt(date.substring(8, 10), 10);
-        return BaseProtocol.Date.newBuilder().setDay(day).setMonth(month).setYear(year).
-                setWeekDay(dayOfWeek(day, month, year)).build();
+        return BaseProtocol.Date.newBuilder()
+                .setDay(day)
+                .setMonth(month)
+                .setYear(year)
+                .setWeekday(dayOfWeek(day, month, year))
+                .build();
     }
 
     protected BaseProtocol.Time parseTime() {

@@ -2,27 +2,28 @@ package es.tid.ps.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
-import es.tid.ps.mobility.data.MxProtocol.BtsCounter;
+import es.tid.ps.mobility.data.MobProtocol.BtsCounter;
 
 /**
  *
  * @author sortega
  */
 public abstract class BtsCounterUtil implements ProtobufUtil {
-    public static BtsCounter create(int bts, int wday, int range, int count) {
+    public static BtsCounter create(long placeId, int weekday, int range,
+            int count) {
         return BtsCounter.newBuilder()
-                .setBts(bts)
-                .setWday(wday)
+                .setPlaceId(placeId)
+                .setWeekday(weekday)
                 .setRange(range)
                 .setCount(count)
                 .build();
     }
 
-    public static ProtobufWritable<BtsCounter> createAndWrap(int bts, int wday,
-            int range, int count) {
+    public static ProtobufWritable<BtsCounter> createAndWrap(long placeId,
+            int weekday, int range, int count) {
         ProtobufWritable<BtsCounter> wrapper =
                 ProtobufWritable.newInstance(BtsCounter.class);
-        wrapper.set(create(bts, wday, range, count));
+        wrapper.set(create(placeId, weekday, range, count));
         return wrapper;
     }
 }

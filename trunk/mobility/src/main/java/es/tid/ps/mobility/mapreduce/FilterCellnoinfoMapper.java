@@ -6,14 +6,14 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import es.tid.ps.mobility.data.MxProtocol.MxCdr;
+import es.tid.ps.mobility.data.MobProtocol.Cdr;
 
 /**
  *
  * @author dmicol
  */
-public class MobmxFilterCellnoinfoMapper extends Mapper<LongWritable,
-        ProtobufWritable<MxCdr>, LongWritable, ProtobufWritable<MxCdr>> {
+public class FilterCellnoinfoMapper extends Mapper<LongWritable,
+        ProtobufWritable<Cdr>, LongWritable, ProtobufWritable<Cdr>> {
     public enum OutputKey {
         INVALID,
         CELL,
@@ -22,7 +22,7 @@ public class MobmxFilterCellnoinfoMapper extends Mapper<LongWritable,
 
     private OutputKey outputKey;
 
-    public MobmxFilterCellnoinfoMapper() {
+    public FilterCellnoinfoMapper() {
         this.outputKey = OutputKey.INVALID;
     }
 
@@ -31,15 +31,15 @@ public class MobmxFilterCellnoinfoMapper extends Mapper<LongWritable,
     }
 
     @Override
-    public void map(LongWritable key, ProtobufWritable<MxCdr> value,
+    public void map(LongWritable key, ProtobufWritable<Cdr> value,
             Context context) throws IOException, InterruptedException {
-        final MxCdr cdr = value.get();
-        if (cdr.getCell() != 0) {
-            context.write(new LongWritable(cdr.getCell()), value);
+        final Cdr cdr = value.get();
+        if (cdr.getCellId() != 0) {
+            context.write(new LongWritable(cdr.getCellId()), value);
         } else {
             switch (this.outputKey) {
                 case CELL:
-                    context.write(new LongWritable(cdr.getCell()), value);
+                    context.write(new LongWritable(cdr.getCellId()), value);
                     break;
                 case NODE:
                     context.write(key, value);

@@ -8,23 +8,23 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import es.tid.ps.mobility.data.MxProtocol.MxCdr;
-import es.tid.ps.mobility.data.MxProtocol.MxCell;
+import es.tid.ps.mobility.data.MobProtocol.Cdr;
+import es.tid.ps.mobility.data.MobProtocol.Cell;
 import es.tid.ps.mobility.parsing.CellParser;
 
 /**
  *
  * @author sortega
  */
-public class MobmxParseCellsMapper extends Mapper<IntWritable, Text, LongWritable,
-        ProtobufWritable<MxCdr>> {
+public class ParseCellsMapper extends Mapper<IntWritable, Text, LongWritable,
+        ProtobufWritable<Cdr>> {
 
     @Override
     protected void map(IntWritable lineno, Text line, Context context)
             throws IOException, InterruptedException {
-        final MxCell cell = new CellParser(line.toString()).parse();
-        ProtobufWritable wrappedCdr = ProtobufWritable.newInstance(MxCell.class);
+        final Cell cell = new CellParser(line.toString()).parse();
+        ProtobufWritable wrappedCdr = ProtobufWritable.newInstance(Cell.class);
         wrappedCdr.set(cell);
-        context.write(new LongWritable(cell.getCell()), wrappedCdr);
+        context.write(new LongWritable(cell.getCellId()), wrappedCdr);
     }
 }

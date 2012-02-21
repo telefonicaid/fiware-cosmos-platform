@@ -1,6 +1,6 @@
 package es.tid.ps.mobility.parsing;
 
-import es.tid.ps.mobility.data.MxProtocol.MxCdr;
+import es.tid.ps.mobility.data.MobProtocol.Cdr;
 
 /**
  *
@@ -13,13 +13,13 @@ public class CdrParser extends PipeDelimitedParser {
 
     //LINE --> "33F430521676F4|2221436242|33F430521676F4|0442224173253|2|01/01/2010|02:00:01|2891|RMITERR"
     @Override
-    public MxCdr parse() {
-        MxCdr.Builder cdr = MxCdr.newBuilder();
+    public Cdr parse() {
+        Cdr.Builder cdr = Cdr.newBuilder();
 
-        cdr.setCell(parseCell()); // Cell 1
-        cdr.setPhone(parsePhone()); // Phone 1
-        if (cdr.getCell() == 0) { // Cell 2
-            cdr.setCell(parseCell());
+        cdr.setCellId(parseCellId()); // Cell 1
+        cdr.setUserId(parseUserId()); // Phone 1
+        if (cdr.getCellId() == 0) { // Cell 2
+            cdr.setCellId(parseCellId());
         } else {
             skipField();
         }

@@ -1,4 +1,4 @@
-package es.tid.ps.mobility.jobs;
+package es.tid.ps.mobility.mapreduce;
 
 import static java.util.Arrays.asList;
 
@@ -10,8 +10,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.ps.mobility.data.BtsCounterUtil;
-import es.tid.ps.mobility.data.MxProtocol.BtsCounter;
-import es.tid.ps.mobility.data.MxProtocol.NodeBts;
+import es.tid.ps.mobility.data.MobProtocol.BtsCounter;
+import es.tid.ps.mobility.data.MobProtocol.NodeBts;
 import es.tid.ps.mobility.data.NodeBtsUtil;
 
 /**
@@ -19,14 +19,14 @@ import es.tid.ps.mobility.data.NodeBtsUtil;
  * @author sortega
  */
 public class MobilityNodeBtsCounterReducerTest {
-    private MobmxNodeBtsCounterReducer instance;
+    private NodeBtsCounterReducer instance;
     private ReduceDriver<
         ProtobufWritable<NodeBts>, NullWritable, LongWritable,
         ProtobufWritable<BtsCounter>> driver;
 
     @Before
     public void setUp() {
-        this.instance = new MobmxNodeBtsCounterReducer();
+        this.instance = new NodeBtsCounterReducer();
         this.driver = new ReduceDriver<ProtobufWritable<NodeBts>, NullWritable,
                 LongWritable, ProtobufWritable<BtsCounter>>(this.instance);
     }

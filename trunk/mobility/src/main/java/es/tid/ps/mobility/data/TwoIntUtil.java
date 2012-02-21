@@ -2,7 +2,7 @@ package es.tid.ps.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
-import es.tid.ps.mobility.data.MxProtocol.TwoInt;
+import es.tid.ps.mobility.data.MobProtocol.TwoInt;
 
 /**
  *

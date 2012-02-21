@@ -6,15 +6,15 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import es.tid.ps.mobility.data.MxProtocol.NodeBtsDay;
-import es.tid.ps.mobility.data.MxProtocol.NodeMxCounter;
+import es.tid.ps.mobility.data.MobProtocol.NodeBtsDay;
+import es.tid.ps.mobility.data.MobProtocol.NodeMxCounter;
 import es.tid.ps.mobility.data.NodeBtsDayUtil;
 
 /**
  *
  * @author dmicol
  */
-public class MobmxRepbtsSpreadNodebtsMapper extends Mapper<IntWritable,
+public class RepbtsSpreadNodebtsMapper extends Mapper<IntWritable,
         ProtobufWritable<NodeMxCounter>, ProtobufWritable<NodeBtsDay>,
         IntWritable> {
     @Override
@@ -23,7 +23,7 @@ public class MobmxRepbtsSpreadNodebtsMapper extends Mapper<IntWritable,
         final NodeMxCounter counter = value.get();
         for (int i = 0; i < counter.getBtsLength(); i++) {
             ProtobufWritable<NodeBtsDay> nodeWrapper = NodeBtsDayUtil.
-                    createAndWrap(key.get(),counter.getBts(i).getBts(), 0, 0);
+                    createAndWrap(key.get(),counter.getBts(i).getPlaceId(), 0, 0);
             context.write(nodeWrapper, new IntWritable(
                     counter.getBts(i).getCount()));
         }

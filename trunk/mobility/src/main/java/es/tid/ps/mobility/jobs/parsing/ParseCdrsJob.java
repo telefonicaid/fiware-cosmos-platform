@@ -14,7 +14,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.ps.mobility.MobilityMain;
-import es.tid.ps.mobility.mapreduce.MobmxParseCdrsMapper;
+import es.tid.ps.mobility.mapreduce.ParseCdrsMapper;
 
 /**
  *
@@ -22,7 +22,7 @@ import es.tid.ps.mobility.mapreduce.MobmxParseCdrsMapper;
  */
 public class ParseCdrsJob extends Job {
     private static final String JOB_NAME = "ParseData";
-    
+
     public ParseCdrsJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 
@@ -33,9 +33,9 @@ public class ParseCdrsJob extends Job {
         this.setOutputKeyClass(LongWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setMapperClass(MobmxParseCdrsMapper.class);
+        this.setMapperClass(ParseCdrsMapper.class);
     }
-    
+
     public void configure(Path inputCdrsPath, Path parsedCrdsPath)
             throws IOException {
         FileInputFormat.addInputPath(this, inputCdrsPath);

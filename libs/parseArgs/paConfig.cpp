@@ -309,7 +309,7 @@ static void paConfigInit(void)
 	if (paLogFilePath)
 		paLogFilePath         = strdup(paLogFilePath);
 	else
-		paLogFilePath         = strdup("/tmp");
+		paLogFilePath         = strdup("/var/log/samson/");
 
 
 	if (paLogFileLineFormat)

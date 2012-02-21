@@ -22,7 +22,7 @@ public class MobmxParseCellsMapper extends Mapper<IntWritable, Text, LongWritabl
     @Override
     protected void map(IntWritable lineno, Text line, Context context)
             throws IOException, InterruptedException {
-        MxCell cell = new CellParser(line.toString()).parse();
+        final MxCell cell = new CellParser(line.toString()).parse();
         ProtobufWritable wrappedCdr = ProtobufWritable.newInstance(MxCell.class);
         wrappedCdr.set(cell);
         context.write(new LongWritable(cell.getCell()), wrappedCdr);

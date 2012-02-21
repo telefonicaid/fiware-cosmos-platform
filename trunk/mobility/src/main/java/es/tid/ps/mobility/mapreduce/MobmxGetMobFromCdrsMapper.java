@@ -20,14 +20,14 @@ public class MobmxGetMobFromCdrsMapper extends Mapper<IntWritable,
     @Override
     public void map(IntWritable key, ProtobufWritable<GstCdr> value,
             Context context) throws IOException, InterruptedException {
-        GstCdr gstCdr = value.get();
-
-        Date date = gstCdr.getDate();
+        final GstCdr gstCdr = value.get();
+        final Date date = gstCdr.getDate();
         Date.Builder dateBuilder = date.toBuilder();
         dateBuilder.setWeekDay((date.getWeekDay() + 1) % 7);
+        Date modifiedDate = dateBuilder.build();
 
         ProtobufWritable<MxCdr> mxCdr = MxCdrUtil.createAndWrap(key.get(),
-                gstCdr.getCellId(), date, gstCdr.getTime());
+                gstCdr.getCellId(), modifiedDate, gstCdr.getTime());
         context.write(key, mxCdr);
     }
 }

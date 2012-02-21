@@ -28,7 +28,7 @@ public class MobmxVectorSumGroupcommsReducer extends
             numberOfCommunications += value.get();
         }
 
-        NodeBts inNodeBts = key.get();
+        final NodeBts inNodeBts = key.get();
         ProtobufWritable<TwoInt> nodeBtsWrapper = TwoIntUtil.createAndWrap(
                 inNodeBts.getPhone(), inNodeBts.getBts());
         ProtobufWritable<BtsCounter> counterWrapper =

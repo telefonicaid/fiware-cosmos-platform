@@ -20,7 +20,7 @@ public class MobmxRepbtsSpreadNodebtsMapper extends Mapper<IntWritable,
     @Override
     public void map(IntWritable key, ProtobufWritable<NodeMxCounter> value,
             Context context) throws IOException, InterruptedException {
-        NodeMxCounter counter = value.get();
+        final NodeMxCounter counter = value.get();
         for (int i = 0; i < counter.getBtsLength(); i++) {
             ProtobufWritable<NodeBtsDay> nodeWrapper = NodeBtsDayUtil.
                     createAndWrap(key.get(),counter.getBts(i).getBts(), 0, 0);

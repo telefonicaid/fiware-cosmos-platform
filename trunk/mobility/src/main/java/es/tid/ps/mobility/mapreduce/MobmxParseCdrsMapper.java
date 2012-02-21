@@ -21,7 +21,7 @@ public class MobmxParseCdrsMapper extends Mapper<IntWritable, Text, LongWritable
     @Override
     protected void map(IntWritable lineno, Text line, Context context)
             throws IOException, InterruptedException {
-        MxCdr cdr = new CdrParser(line.toString()).parse();
+        final MxCdr cdr = new CdrParser(line.toString()).parse();
         ProtobufWritable wrappedCdr = ProtobufWritable.newInstance(MxCdr.class);
         wrappedCdr.set(cdr);
         context.write(new LongWritable(cdr.getPhone()), wrappedCdr);

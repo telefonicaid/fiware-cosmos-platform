@@ -25,7 +25,7 @@ public class MobmxRepbtsGetRepresentativeBtsReducer extends Reducer<IntWritable,
             Iterable<ProtobufWritable<BtsCounter>> values, Context context)
             throws IOException, InterruptedException {
         for (ProtobufWritable<BtsCounter> value : values) {
-            BtsCounter counter = value.get();
+            final BtsCounter counter = value.get();
             if (counter.getCount() >= MOB_CONF_MIN_PERC_REP_BTS
                     && counter.getRange() >= MOB_CONF_MIN_NUMBER_CALLS_BTS) {
                 ProtobufWritable<TwoInt> nodeBtsWrapper =

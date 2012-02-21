@@ -33,7 +33,7 @@ public class MobmxFilterCellnoinfoMapper extends Mapper<LongWritable,
     @Override
     public void map(LongWritable key, ProtobufWritable<MxCdr> value,
             Context context) throws IOException, InterruptedException {
-        MxCdr cdr = value.get();
+        final MxCdr cdr = value.get();
         if (cdr.getCell() != 0) {
             context.write(new LongWritable(cdr.getCell()), value);
         } else {

@@ -18,7 +18,7 @@ public class MobmxGetSample10000Mapper extends Mapper<IntWritable,
     @Override
     public void map(IntWritable key, ProtobufWritable<MxCdr> value,
             Context context) throws IOException, InterruptedException {
-        MxCdr cdr = value.get();
+        final MxCdr cdr = value.get();
         // TODO: do not use hard-coded numbers.
         int nod = (key.get() % 100000) / 1000;
         if (nod == 92) {

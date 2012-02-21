@@ -375,7 +375,26 @@ namespace samson {
                 error->set( au::str("Error in set_stream_operation_property %s" , status(s)  ));
             
             return;
-        }  
+        } 
+        
+        if( main_command == "unset_stream_operation_property" )
+        {
+            if( cmd.get_num_arguments() < 3 )
+            {
+                error->set( "Usage: unset_stream_operation_property name property" );
+                return;
+            }
+            
+            std::string name            = prefix + cmd.get_argument( 1 );
+            std::string property        = cmd.get_argument( 2 );
+            
+            Status s = streamManager->unset_stream_operation_property( name , property );
+            
+            if( s!= OK )
+                error->set( au::str("Error in unset_stream_operation_property %s" , status(s)  ));
+            
+            return;
+        } 
         
         error->set( au::str("Unknown command %s" , main_command.c_str()  ) );
         

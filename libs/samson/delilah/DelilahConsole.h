@@ -212,7 +212,10 @@ namespace samson {
             add( "set_stream_operation_property"    , "stream" ,  
                 "Set value of an enviroment property associated to a stream operation ( defined with add_stream_operation )",
                 "set_stream_operation_property stream_operation_name variable_name value");
- 
+
+            add( "unset_stream_operation_property"    , "stream" ,  
+                "Unset value of an enviroment property associated to a stream operation ( defined with add_stream_operation )",
+                "unset_stream_operation_property stream_operation_name variable_name");
 
             add( "ps_stream" , "stream" ,
                 "Get a list of current stream tasks currently running in all workers"

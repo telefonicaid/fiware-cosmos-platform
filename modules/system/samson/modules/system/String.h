@@ -387,7 +387,6 @@ public:
 
 	void set( const char* str )
 	{
-	   printf("Seeting system.String with call se %s\n" , str);
 	   value = str;
 	}
 

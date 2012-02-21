@@ -130,6 +130,7 @@ namespace samson {
             void add( StreamOperation* operation );
             Status remove_stream_operation( std::string name );
             Status set_stream_operation_property( std::string name , std::string property, std::string value );
+            Status unset_stream_operation_property( std::string name , std::string property );
             StreamOperation* getStreamOperation( std::string name );
             
             // Get information for monitoring

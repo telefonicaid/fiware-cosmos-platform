@@ -728,6 +728,20 @@ namespace samson {
             }
             
         }
+
+        Status StreamManager::unset_stream_operation_property( std::string name , std::string property )
+        {
+            stream::StreamOperation * operation = stream_operations.findInMap( name );
+            
+            // Check if queue exist
+            if( !operation  )
+                return Error;
+            else
+            {
+                operation->environment.unset( property );
+                return OK;
+            }
+        }
         
         samson::network::Collection* StreamManager::getCollection(VisualitzationOptions options ,  std::string pattern )
         {

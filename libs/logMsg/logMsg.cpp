@@ -1623,7 +1623,7 @@ LmStatus lmPathRegister(const char* path, const char* format, const char* timeFo
 		//}
 		//else
 		{
-			snprintf(fileName, sizeof(fileName), "%s/%sLog", path, &progName[0]);
+			snprintf(fileName, sizeof(fileName), "%s/%sLog.%d", path, &progName[0], (int) getpid());
 		}
 	}
 	else
@@ -1637,7 +1637,7 @@ LmStatus lmPathRegister(const char* path, const char* format, const char* timeFo
 		rename(fileName, newName);
 	}
 		
-	fd = open(fileName, O_RDWR | O_TRUNC | O_CREAT, 0777);
+	fd = open(fileName, O_RDWR | O_TRUNC | O_CREAT, 0664);
 	if (fd == -1)
 	{
 		char str[256];
@@ -1646,7 +1646,7 @@ LmStatus lmPathRegister(const char* path, const char* format, const char* timeFo
 		return LmsOpen;
 	}
 	
-	chmod(fileName, 0777);
+	chmod(fileName, 0664);
 
 	s = lmFdRegister(fd, format, timeFormat, fileName/* info */, &index);
 	if (s != LmsOk)

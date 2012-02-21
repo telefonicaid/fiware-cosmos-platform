@@ -136,8 +136,13 @@ std::string Environment::getEnvironmentDescription()
 {
     std::ostringstream output;
     output << "(";
-    for( std::map<std::string,std::string>::iterator i = environment.begin() ; i != environment.end() ; i++ )	
-        output << i->first << "=" << i->second << ",";
+    for( std::map<std::string,std::string>::iterator i = environment.begin() ; i != environment.end() ; )	
+    {
+        output << i->first << "=" << i->second;
+        i++;
+        if ( i!= environment.end() )
+            output << ",";
+    }
     output << ")";
     
     return output.str();

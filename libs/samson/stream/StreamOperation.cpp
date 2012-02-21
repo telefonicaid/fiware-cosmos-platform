@@ -48,15 +48,10 @@ namespace samson {
             environment.set("max_latency" , "60" );
             environment.set("priority", "1" );
             
-            
-            // Additional information
-            history_num_operations = 0;
-            history_core_seconds = 0;
-            
-            //num_blocks = 0;
-            //temporal_size = 0;
-            //info.clear();
-            //temporal_core_seconds = 0;
+            // Init all counters
+            in_num_operations = 0;
+            out_num_operations = 0;
+            out_core_seconds = 0;
             
         }
         
@@ -241,17 +236,6 @@ namespace samson {
 
             // Information about history
             au::xml_simple(output, "history_block_info", history_block_info.str() );
-            au::xml_simple(output, "history_num_operations", history_num_operations);
-            au::xml_simple(output, "history_core_seconds", history_core_seconds );
-            
-            // Agregated history string
-            {
-                std::ostringstream output_history_str;
-                output_history_str << au::str( history_num_operations , "ops" ) << " " << history_block_info.strShort();
-                output_history_str << " ( " << history_core_seconds << " cs )";
-                
-                au::xml_simple(output, "history_str", output_history_str.str() );
-            }
             
             au::xml_simple( output , "input_str" , input_block_info.strShort() );
             
@@ -264,7 +248,7 @@ namespace samson {
         {
             // Take some statistics about this operation
             input_rate.push( task->getBlockList("input_0")->getBlockInfo().info );
-            
+            in_num_operations++;
             
             // Set the environment property to make sure, it is removed when finished
             task->environment.set("system.stream_operation" , name );
@@ -283,13 +267,11 @@ namespace samson {
             environment.appendInt("system.core_seconds" , core_seconds );
             
             // History counter about operations and core-seconds
-            history_num_operations++;
-            history_core_seconds += core_seconds;
-            
-            // Temporal updates
-            BlockList *blockList = task->getBlockList("input_0");
-            BlockInfo _info = blockList->getBlockInfo();
-            
+            out_num_operations++;
+            out_core_seconds += core_seconds;
+
+            // Count output data ( still not here becase data is districted on the go... )
+            LM_TODO(("Take statistics about output data when finish stream operation"));
         }
         
         Operation* StreamOperation::getOperation()
@@ -439,6 +421,12 @@ namespace samson {
             ::samson::add( record , "name"      , name      , "left,different" );
             ::samson::add( record , "operation" , operation , "different" );
             
+            if( ( options == properties ) || (options == all ) )
+            {
+                ::samson::add( record , "properties"    , environment.getEnvironmentDescription() , "different" );
+            }
+            
+            
             if( ( options == normal ) || (options == all ) )
             {
                 std::ostringstream inputs,outputs;
@@ -456,12 +444,12 @@ namespace samson {
                 BlockInfo input_block_info = getUniqueBlockInfo();
                 ::samson::add( record , "inputs"        , input_block_info.strShort() , "different" );
                 ::samson::add( record , "running_tasks" , running_tasks.size()        , "f=uint64,sum" );
-                ::samson::add( record , "last_review" , last_review + " " + getStatus() );
+                ::samson::add( record , "last_review" , last_review + " " + getStatus() , "left,different" );
             }
             
             if( ( options == in ) || (options == all ) )
             {
-                ::samson::add( record , "#Ops", history_num_operations , "f=uint64,sum" );
+                ::samson::add( record , "#Ops", in_num_operations , "f=uint64,sum" );
                 
                 ::samson::add( record , "In: size"  , input_rate.get_total_size() , "f=uint64,sum" );
                 ::samson::add( record , "In: #kvs"  , input_rate.get_total_kvs() , "f=uint64,sum" );
@@ -471,6 +459,9 @@ namespace samson {
 
             if( ( options == out ) || (options == all ) )
             {
+                ::samson::add( record , "#Ops", out_num_operations , "f=uint64,sum" );
+                ::samson::add( record , "CoreSeconds", out_core_seconds , "f=uint64,sum" );
+                
                 ::samson::add( record , "Out: size"  , output_rate.get_total_size() , "f=uint64,sum" );
                 ::samson::add( record , "Out: #kvs"  , output_rate.get_total_kvs() , "f=uint64,sum" );
                 ::samson::add( record , "Out: B/s"    , output_rate.get_rate_size() , "f=uint64,sum" );

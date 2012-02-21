@@ -65,12 +65,11 @@ namespace samson {
             std::string name;                           // Name of the operation
             std::string operation;                      // Operation name used in this stream operation
             
-            std::vector<std::string> input_queues;      // Input queues 
+            std::vector<std::string> input_queues;      // Input queues
             std::vector<std::string> output_queues;     // Output queues
 
-            DistributionInformation distribution_information; // Information about how to distribute information
-            
-            au::Environment environment;                // Environment properties ( used to save and restore everything )
+            DistributionInformation distribution_information;    // Information about how to distribute information
+            au::Environment environment;                         // Environment properties ( used to save and restore everything )
             
             StreamOperationBase()
             {
@@ -108,11 +107,16 @@ namespace samson {
             
             StreamManager *streamManager;   // Pointer to the stream manager to check ready
 
-            std::string last_review;        // Comment from the last review
             std::string command;            // Original command that originated this StreamOperation
+            std::string last_review;        // Comment from the last review
             
-            ::samson::Rate input_rate;   // Input and Output rate for first channel
+            ::samson::Rate input_rate;      // Input and Output rate for first channel
             ::samson::Rate output_rate;
+
+            size_t in_num_operations;       // Input and outut number of operations
+            size_t out_num_operations;
+            
+            size_t out_core_seconds;        // Core seconds spent at this stream operation
             
         public:
 
@@ -121,8 +125,6 @@ namespace samson {
             // Total input history
             BlockInfo history_block_info;   // Historical information
             
-            int history_num_operations;     // Number of operations performed so far
-            int history_core_seconds;       // Total core seconds used in this stream operation
             
             //FullKVInfo info;
             //size_t temporal_size;

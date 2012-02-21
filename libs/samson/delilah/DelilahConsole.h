@@ -191,9 +191,10 @@ namespace samson {
             add( "ls_stream_operations"  , "stream" , 
                 "Show a list of stream operations defined( added with add_stream_operation)",
                 "ls_stream_operations [-in] [-out] [-running]\n"
-                "      -in        Information about data accepted to these operations\n"
-                "      -out       Information about data emmitted\n"
-                "      -running   Currently running operations and status\n"
+                "      -in          Information about data accepted to these operations\n"
+                "      -out         Information about data emmitted\n"
+                "      -running     Currently running operations and status\n"
+                "      -properties  Show properties assiciated to each stream operation\n"
                 );
             
             add( "add_stream_operation" , "stream"    ,   

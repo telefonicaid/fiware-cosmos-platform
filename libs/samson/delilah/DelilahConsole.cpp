@@ -188,6 +188,7 @@ namespace samson
 
         if (info->completingSecondWord("ls_stream_operations") )
         {
+            info->add("-properties");
             info->add("-running");
             info->add("-in");
             info->add("-out");

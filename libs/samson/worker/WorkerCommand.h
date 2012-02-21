@@ -21,6 +21,7 @@
 
 #include "engine/Object.h"                  // engine::Object
 
+#include "samson/common/Visualitzation.h"
 #include "samson/common/samson.pb.h"        // network::...
 #include "samson/module/Environment.h"      // samson::Environment
 #include "samson/module/ModulesManager.h"   // samson::ModulesManager
@@ -81,6 +82,8 @@ namespace samson {
         // Collections added in the response message
         au::vector< samson::network::Collection > collections;
         
+        friend class WorkerCommandManager;
+        
     public:
         
         WorkerCommand( size_t _delilah_id , size_t _delilah_component_id , const network::WorkerCommand& _command );
@@ -94,8 +97,12 @@ namespace samson {
         void run();
         
         void notify( engine::Notification* notification );
-        
+
+        // XML report
         void getInfo( std::ostringstream& output);
+
+        // Fill a collection record
+        void fill( samson::network::CollectionRecord* record , Visualization* visualization );
         
     private:
         

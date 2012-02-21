@@ -729,14 +729,6 @@ namespace samson {
             
         }
         
-        bool match_queue( std::string pattern , std::string name )
-        {
-            if( pattern == "*" )
-                return true;
-            
-            return( ::fnmatch( pattern.c_str() , name.c_str() , FNM_PATHNAME ) == 0 );
-        }
-        
         samson::network::Collection* StreamManager::getCollection(VisualitzationOptions options ,  std::string pattern )
         {
             samson::network::Collection* collection = new samson::network::Collection();
@@ -745,7 +737,7 @@ namespace samson {
             for( it_queue = queues.begin() ; it_queue != queues.end() ; it_queue++ )
             {
                 std::string name = it_queue->second->name;
-                if( match_queue( pattern , name ) )
+                if( match( pattern , name ) )
                    it_queue->second->fill( collection->add_record() , options );
             }
             return collection;
@@ -761,7 +753,7 @@ namespace samson {
             for( it = stream_operations.begin() ; it != stream_operations.end() ; it++ )
             {
                 std::string name = it->second->name;
-                if( match_queue( pattern , name ) )
+                if( match( pattern , name ) )
                     it->second->fill( collection->add_record() , options );
             }
             return collection;

@@ -13,6 +13,10 @@
  */
 
 #include "au/map.h"
+
+#include "samson/common/samson.pb.h"
+#include "samson/common/Visualitzation.h"
+
 #include "engine/Object.h"
 
 namespace samson {
@@ -43,12 +47,15 @@ namespace samson {
         // Add a worker command to this stream manager
         void addWorkerCommand( WorkerCommand *workerCommand );
         
-        
         // Notification system from engine
         void notify( engine::Notification* notification );
 
         // XML report 
         void getInfo( std::ostringstream& output);
+
+        // Get Collection of worker_commands ( for ls_worker_commands )
+        samson::network::Collection* getCollectionOfWorkerCommands( Visualization * visualization );
+        
         
     };
     

@@ -19,7 +19,8 @@ namespace samson {
         // Init identifier for the command
         worker_task_id = 1;
         
-        // Schedule a periodic notification ( every 10 seconds )
+        // Schedule a periodic notification ( every 5 seconds )
+        listen(notification_review_worker_command_manager);
         {
             engine::Notification *notification = new engine::Notification(notification_review_worker_command_manager);
             engine::Engine::shared()->notify( notification, 5 );
@@ -59,6 +60,21 @@ namespace samson {
         
     }
 
+    samson::network::Collection* WorkerCommandManager::getCollectionOfWorkerCommands( Visualization * visualization )
+    {
+        samson::network::Collection* collection = new samson::network::Collection();
+        collection->set_name("worker_commands");
+        
+        au::map< size_t , WorkerCommand >::iterator it;
+        for( it = workerCommands.begin() ; it != workerCommands.end() ; it++ )
+        {
+            std::string command = it->second->command;
+            if( match( visualization->pattern , command ) )
+                it->second->fill( collection->add_record() , visualization );
+        }
+        return collection;
+        
+    }    
     // Get information for monitoring
     void WorkerCommandManager::getInfo( std::ostringstream& output)
     {

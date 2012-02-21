@@ -405,7 +405,7 @@ namespace samson {
         cmd.set_flag_boolean("a");
         cmd.set_flag_boolean("properties");
         cmd.set_flag_boolean("rates");
-        cmd.set_flag_boolean("block");
+        cmd.set_flag_boolean("blocks");
         cmd.set_flag_boolean("running");
         
         cmd.parse( command );
@@ -519,6 +519,14 @@ namespace samson {
             return;
         }
         
+        if( main_command == "ls_worker_commands" )
+        {
+            network::Collection * c = samsonWorker->workerCommandManager->getCollectionOfWorkerCommands(&visualitzation);
+            c->set_title( command  );
+            collections.push_back( c );
+            finishWorkerTask();
+            return;
+        }
         
         if( main_command == "show_stream_block" )
         {
@@ -971,5 +979,21 @@ namespace samson {
         
         au::xml_close(output ,  "worker_command" );
     }
+    
+    void WorkerCommand::fill( samson::network::CollectionRecord* record , Visualization* visualization )
+    {
+        add( record , "id"      , au::str("Delilah %lu (%lu)", delilah_id , delilah_component_id) , "left,different" );
+
+        if( finished )
+            add( record , "status" , "finished" , "left,different" );
+        else if ( num_pending_processes > 0 )
+            add( record , "status" , au::str("Waiting %lu ops", num_pending_processes) , "f=uint64,sum" );
+        else
+            add( record , "status" , "running" , "left,different" );
+
+        add( record , "command" , command , "left,different" );
+        add( record , "error"   , error.getMessage() , "left,different" );
+    }
+
     
 }

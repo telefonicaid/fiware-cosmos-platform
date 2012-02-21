@@ -187,6 +187,15 @@ namespace samson {
             // STREAM
             // ------------------------------------------------------------------
                 
+            
+            add( "ls_stream_operations"  , "stream" , 
+                "Show a list of stream operations defined( added with add_stream_operation)",
+                "ls_stream_operations [-in] [-out] [-running]\n"
+                "      -in        Information about data accepted to these operations\n"
+                "      -out       Information about data emmitted\n"
+                "      -running   Currently running operations and status\n"
+                );
+            
             add( "add_stream_operation" , "stream"    ,   
                 "Add an operation to automatically process data from input queues to output queues",
                 "add_stream_operation name operation input-queues  output-queues <-forward>n"
@@ -203,20 +212,12 @@ namespace samson {
                 "Set value of an enviroment property associated to a stream operation ( defined with add_stream_operation )",
                 "set_stream_operation_property stream_operation_name variable_name value");
  
-            add( "ls_stream_operations"  , "stream" , 
-                "Show a list of stream operations defined( added with add_stream_operation)",
-                "ls_stream_operations [-in] [-out] [-running]\n"
-                "      -in        Information about data accepted to these operations\n"
-                "      -out       Information about data emmitted\n"
-                "      -running   Currently running operations and status\n"
-                );
 
             add( "ps_stream" , "stream" ,
                 "Get a list of current stream tasks currently running in all workers"
                 );
 
  
-            
             add( "init_stream" , "stream" ,
                 "Execute a initialization script to setup some automatic stream operations",
                 "init_stream [prefix] <script_name>\n"
@@ -233,7 +234,11 @@ namespace samson {
                 "           [-clear_inputs]  : Flag used to remove content from input queues when running this operation\n"
                 );
    
-            
+            add( "ls_worker_commands"  , "stream" , 
+                "Show a list of commands being executed in each node of the cluster",
+                "ls_worker_commands <command pattern>\n"
+                );
+
             
             // PUSH&POP
             // ------------------------------------------------------------------

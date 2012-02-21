@@ -52,6 +52,9 @@ namespace samson
         
     };
 
+    // Simplified match 
+    bool match( std::string pattern , std::string name );
+
 }
 
 

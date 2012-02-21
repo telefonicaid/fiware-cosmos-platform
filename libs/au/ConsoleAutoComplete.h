@@ -15,7 +15,7 @@ class ConsoleAutoCompleteAlternative
     
 public:
     
-    std::string label;  // Label to show on screen
+    std::string label;     // Label to show on screen
     std::string command;   // Text to be compared with the current last word
     
     bool add_space_if_unique;

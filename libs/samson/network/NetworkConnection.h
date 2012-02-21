@@ -219,7 +219,16 @@ namespace samson {
         }
         
         void fill( network::CollectionRecord * record, Visualization* visualization);
-        
+      
+        size_t get_rate_in()
+        {
+            return rate_in.getRate();
+        }
+
+        size_t get_rate_out()
+        {
+            return rate_out.getRate();
+        }
     };
     
 }

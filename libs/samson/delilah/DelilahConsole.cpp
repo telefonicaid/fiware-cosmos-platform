@@ -16,8 +16,10 @@
 #include "au/string.h"					// au::Format
 #include "au/Descriptors.h"             // au::Descriptors
 #include "au/ThreadManager.h"
+#include "au/StringVector.h"
 
 #include "tables/Tree.h"                    // au::tables::TreeItem
+#include "tables/Table.h"
 
 #include "engine/MemoryManager.h"                   // samson::MemoryManager
 #include "engine/Notification.h"                   // samson::Notification
@@ -426,22 +428,22 @@ namespace samson
             {
                 if( commandLine.get_num_arguments() < 2 )
                 {
-                    writeErrorOnConsole("Usage: set_database_mode on/off");
+                    writeErrorOnConsole("Usage: set_database_mode on/off\n");
                     return 0;
                 }
                 
                 if( commandLine.get_argument(1) == "on" )
                 {
                     database_mode = true;  
-                    writeWarningOnConsole("Database mode activated");
+                    writeWarningOnConsole("Database mode activated\n");
                 }
                 else if( commandLine.get_argument(1) == "off" )
                 {
                     database_mode = false;  
-                    writeWarningOnConsole("Database mode deactivated");
+                    writeWarningOnConsole("Database mode deactivated\n");
                 }
                 else
-                    writeErrorOnConsole("Usage: set_database_mode on/off");
+                    writeErrorOnConsole("Usage: set_database_mode on/off\n");
                 
                 return 0;
             }
@@ -454,7 +456,7 @@ namespace samson
         
         if ( mainCommand == "cluster" )
         {
-            // Print network status
+            // Interact with the network layer
             writeOnConsole( network->cluster_command( command ) );
             return 0;
         }
@@ -463,22 +465,22 @@ namespace samson
         {
             if( commandLine.get_num_arguments() < 2 )
             {
-                writeErrorOnConsole("Usage: set_database_mode on/off");
+                writeErrorOnConsole("Usage: set_database_mode on/off\n");
                 return 0;
             }
             
             if( commandLine.get_argument(1) == "on" )
             {
                 database_mode = true;  
-                writeWarningOnConsole("Database mode activated");
+                writeWarningOnConsole("Database mode activated\n");
             }
             else if( commandLine.get_argument(1) == "off" )
             {
                 database_mode = false;  
-                writeWarningOnConsole("Database mode deactivated");
+                writeWarningOnConsole("Database mode deactivated\n");
             }
             else
-                writeErrorOnConsole("Usage: set_database_mode on/off");
+                writeErrorOnConsole("Usage: set_database_mode on/off\n");
             
             return 0;
         }
@@ -558,13 +560,17 @@ namespace samson
             if ( commandLine.get_num_arguments() == 1)
             {
                 // Only set, we show all the defined parameters
-                std::ostringstream output;
-                output << "Environent variables:\n";
-                output << "------------------------------------\n";
-                output << environment.toString();
-                output << "\n";
-                output << "\n";
-                writeOnConsole( output.str() );
+                au::tables::Table table( au::StringVector("Property" , "Value") );
+
+                std::map<std::string,std::string>::iterator it_environment;	
+                for( it_environment = environment.environment.begin() 
+                    ; it_environment != environment.environment.end() 
+                    ; it_environment++ )
+                {
+                    table.addRow( au::StringVector( it_environment->first , it_environment->second ) );
+                }
+                
+                writeOnConsole( table.str( "Environent variables") );
                 return 0;
 			}
 			
@@ -658,7 +664,7 @@ namespace samson
             
             if( commandLine.get_num_arguments() > 1 )
             {
-                size_t id = atoi( commandLine.get_argument(1).c_str() );
+                size_t id = atoll( commandLine.get_argument(1).c_str() );
                 
                 DelilahComponent *component = components.findInMap( id );
                 if( !component )
@@ -666,15 +672,24 @@ namespace samson
                 else
                 {
                     std::ostringstream output;
-                    output << "------------------------------------------------\n";
-                    output << " Process " << id << " " << component->cronometer.str() << "\n";
-                    output << "------------------------------------------------\n";
+                    output << "================================================\n";
+                    output << " Process " << id << " ";
+                    
+                    if( component->isComponentFinished() )
+                        output << "FINISHED";
+                        else
+                            output << " RUNNING " << component->cronometer.str();
                     output << "\n";
+                    
+                    output << "================================================\n";
+
                     if( component->error.isActivated() )
+                    {
                         output << "ERROR: " << component->error.getMessage() << "\n";
-                    output << "\n";
+                        output << "================================================\n";
+                    }
                     output << component->getStatus();
-                    output << "\n";
+                    
                     writeOnConsole(output.str());
                     
                 }
@@ -726,7 +741,7 @@ namespace samson
         {
             if( commandLine.get_num_arguments() < 3 )
             {
-                writeErrorOnConsole("Usage: push file <file2> .... <fileN> queue1,queue2,queue3 ");
+                writeErrorOnConsole("Usage: push file <file2> .... <fileN> queue1,queue2,queue3\n");
                 return 0;
             }
             

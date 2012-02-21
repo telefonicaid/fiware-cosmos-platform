@@ -212,6 +212,14 @@ namespace samson {
                 "rm_stream_operation name <-f>"
                 "      -f      Option avoids complaints when the operation does not exist");
 
+            add( "run_stream_operation" , "stream" ,
+                "Run a particular operation over queues manually",
+                "run_stream_operation <op_name> [queues...] [-clear_inputs]\n"
+                "\n"
+                "           <op_name>        : Name of the operation. See 'help ls_operations' for more info\n"
+                "           [queues]         : Name of the queues involved in this operation (inputs and outputs)\n"
+                "           [-clear_inputs]  : Flag used to remove content from input queues when running this operation\n"
+                );
                 
  
             add( "set_stream_operation_property"    , "stream" ,  
@@ -226,6 +234,10 @@ namespace samson {
                 "Get a list of current stream tasks currently running in all workers"
                 );
 
+            
+            add( "ls_workers" , "stream" ,
+                "Get a list of current workers with current memory/ disk / process status"
+                );
  
             add( "init_stream" , "stream" ,
                 "Execute a initialization script to setup some automatic stream operations",
@@ -234,14 +246,6 @@ namespace samson {
                 "          <script_name>    Name of the script (i.e. module.script)\n"
                 );
 
-            add( "run_stream_operation" , "stream" ,
-                "Run a particular operation over queues",
-                "run_stream_operation <op_name> [queues...] [-clear_inputs]\n"
-                "\n"
-                "           <op_name>        : Name of the operation. See 'help ls_operations' for more info\n"
-                "           [queues]         : Name of the queues involved in this operation (inputs and outputs)\n"
-                "           [-clear_inputs]  : Flag used to remove content from input queues when running this operation\n"
-                );
    
             add( "ls_worker_commands"  , "stream" , 
                 "Show a list of commands being executed in each node of the cluster",

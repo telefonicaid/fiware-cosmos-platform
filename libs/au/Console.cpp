@@ -282,10 +282,13 @@ void Console::process_background()
         {
             std::string txt = pending_messages.front();
             pending_messages.pop_front();
+            
+            if( txt.substr(txt.length()-1) != "\n" )
+                txt.append("\n");
+            
             printf("%s",  txt.c_str() );
         }
         
-        printf("\n\n");
         print_command();
         fflush(stdout);
         

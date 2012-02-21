@@ -65,6 +65,8 @@ namespace samson {
         std::vector<size_t> getDelilahIds();
         void getInfo( ::std::ostringstream& output , std::string command );
         virtual network::Collection* getConnectionsCollection( Visualization* visualization );
+        size_t get_rate_in();
+        size_t get_rate_out();
         
         // Add output worker connections
         // ----------------------------------------------------------------
@@ -73,6 +75,7 @@ namespace samson {
         // Monitorization
         std::string str();
         
+
     protected:
         
         // Hello message for this connection

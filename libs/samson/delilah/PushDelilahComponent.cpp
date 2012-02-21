@@ -39,7 +39,9 @@ namespace samson
         // Set this to false ( true will be the end of processing data )
         finish_process = false;
 		
-        setConcept( au::str("Pushing %s to queue/s %s" , au::str( dataSource->getTotalSize() , "bytes").c_str() , _queue.c_str() ) );
+        setConcept( 
+           au::str("Pushing %s to queue/s %s" , au::str( totalSize , "bytes").c_str() , _queue.c_str() ) 
+                   );
 	}	
     
     std::string PushDelilahComponent::getShortDescription()
@@ -213,9 +215,28 @@ namespace samson
     
     std::string PushDelilahComponent::getStatus()
     {
+        
         std::ostringstream output;
-        output << " ( Processed " << au::percentage_string(processedSize, totalSize) << " )\n"; 
-        output << " ( Uploaded  " << au::percentage_string(uploadedSize, totalSize) << " )\n"; 
+
+        au::tables::Table table( au::StringVector("Concept" , "Size" , "Percentadge" ) );
+
+        au::StringVector values;
+
+        {
+            values.push_back("Pushed");
+            values.push_back(au::str( processedSize , "B" ));
+            values.push_back(au::percentage_string(processedSize, totalSize));              
+            table.addRow(values);
+        }
+
+        {
+            values.push_back("Confirmed Pushed");
+            values.push_back(au::str( uploadedSize , "B" ));
+            values.push_back(au::percentage_string(uploadedSize, totalSize));              
+            table.addRow(values);
+        }
+        
+        output << table.str(concept);                        
         return output.str();
     }
     

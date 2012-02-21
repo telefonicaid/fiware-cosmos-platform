@@ -517,6 +517,16 @@ namespace samson {
             return ;
         }
         
+        if( main_command == "ls_workers" )
+        {
+            // Add the ps stream
+            network::Collection * c = samsonWorker->getWorkerCollection( &visualitzation );
+            c->set_title( command  );
+            collections.push_back( c);
+            finishWorkerTask();
+            return ;
+        }
+        
         if ( main_command == "ls_modules" )
         {
             network::Collection * c = ModulesManager::shared()->getModulesCollection( visualitzation_options , pattern ) ;

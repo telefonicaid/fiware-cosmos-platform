@@ -26,6 +26,7 @@
 #include "au/Token.h"                 // au::Token
 #include "au/ListMap.h"              // au::ListMap
 #include "au/namespace.h"
+#include "au/Rate.h"
 
 #include "engine/Object.h"     // engine::EngineNotification
 #include "engine/MemoryManager.h"          // engine::MemoryManager
@@ -67,7 +68,8 @@ class DiskManager
     
 public:
 
-    DiskStatistics diskStatistics;                  // Statistics
+    au::rate::Rate rate_in;
+    au::rate::Rate rate_out;
     
     static void init( int _num_disk_operations );
     static void destroy( );
@@ -93,6 +95,9 @@ public:
     
     void setNumOperations( int _num_disk_operations );
     
+    size_t get_rate_in();
+    size_t get_rate_out();
+    
 private:
     
     // Notification that a disk operation has finished
@@ -112,6 +117,9 @@ private:
   
     // Quit all threads and wait them
     void quitAndWait();
+    
+    
+    
     
 };
 

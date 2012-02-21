@@ -170,7 +170,14 @@ void DiskManager::finishDiskOperation( DiskOperation *operation )
     au::TokenTaker tt(&token);
     
     running_operations.erase( operation );
-    diskStatistics.add( operation->getType() , operation->getSize() );
+    
+    
+    if( operation->getType() == DiskOperation::read )
+        rate_in.push( operation->getSize() );
+    if( operation->getType() == DiskOperation::write )
+        rate_out.push( operation->getSize() );
+    if( operation->getType() == DiskOperation::append )
+        rate_out.push( operation->getSize() );
     
     LM_T( LmtDisk , ("DiskManager::finishDiskOperation erased and ready to send notification on file:%s", 
                      operation->fileName.c_str() 
@@ -284,6 +291,18 @@ void DiskManager::setNumOperations( int _num_disk_operations )
     
 }
 
+size_t DiskManager::get_rate_in()
+{
+    // Mutex protection
+    au::TokenTaker tt(&token);
+    return rate_in.getRate();
+}
+
+size_t DiskManager::get_rate_out()
+{    // Mutex protection
+    au::TokenTaker tt(&token);
+    return rate_out.getRate();
+}
 
 
 void DiskManager::getInfo( std::ostringstream& output)
@@ -305,10 +324,6 @@ void DiskManager::getInfo( std::ostringstream& output)
     for ( std::list<DiskOperation*>::iterator i = pending_operations.begin() ; i != pending_operations.end() ; i++)
         (*i)->getInfo(output);
     output << "</queued>\n";
-    
-    output << "<statistics>\n";
-    diskStatistics.getInfo( output );
-    output << "</statistics>\n";
     
     output << "</disk_manager>\n";
     

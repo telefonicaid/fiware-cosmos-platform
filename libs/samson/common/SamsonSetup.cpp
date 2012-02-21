@@ -133,7 +133,7 @@ namespace samson
                     if( item )
                         item->setValue(value);
                     else
-                        LM_W(("Parameter %s found in setup file %s not included since it is not defined." , name.c_str() , fileName.c_str() ));
+                        LM_W(("Unknown parameter %s found in setup file %s" , name.c_str() , fileName.c_str() ));
                     
 				}
 			}

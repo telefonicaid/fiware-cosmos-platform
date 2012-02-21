@@ -16,6 +16,7 @@
 #include "samson/common/SamsonSetup.h"                  // samson::SamsonSetup
 #include "samson/common/Macros.h"                     // EXIT, ...
 #include "samson/common/SamsonSetup.h"				// samson::SamsonSetup
+#include "samson/common/MessagesOperations.h"
 
 #include "samson/module/samsonVersion.h"  // SAMSON_VERSION
 
@@ -472,5 +473,33 @@ namespace samson {
         
     }
     
+    network::Collection* SamsonWorker::getWorkerCollection( Visualization* visualization )
+    {
+        network::Collection* collection = new network::Collection();
+        collection->set_name("workers");
+        
+        network::CollectionRecord* record = collection->add_record();            
+
+        // Common type to joint queries ls_workers -group type
+        ::samson::add( record , "Type" , "worker" , "different" );
+        
+        ::samson::add( record , "Mem used" , engine::MemoryManager::shared()->getUsedMemory() , "f=uint64,sum" );
+        ::samson::add( record , "Mem total" , engine::MemoryManager::shared()->getMemory() , "f=uint64,sum" );
+
+        ::samson::add( record , "Cores used" , engine::ProcessManager::shared()->getNumUsedCores() , "f=uint64,sum" );
+        ::samson::add( record , "Cores total" , engine::ProcessManager::shared()->getNumCores() , "f=uint64,sum" );
+        
+        ::samson::add( record , "#Disk ops" , engine::DiskManager::shared()->getNumOperations() , "f=uint64,sum" );
+
+        ::samson::add( record , "Disk in B/s" , engine::DiskManager::shared()->get_rate_in() , "f=uint64,sum" );
+        ::samson::add( record , "Disk out B/s" , engine::DiskManager::shared()->get_rate_out() , "f=uint64,sum" );
+
+        ::samson::add( record , "Net in B/s" , network->get_rate_in() , "f=uint64,sum" );
+        ::samson::add( record , "Net out B/s" , network->get_rate_out() , "f=uint64,sum" );
+        
+        
+        return collection;
+    }
+
     
 }

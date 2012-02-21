@@ -336,6 +336,28 @@ namespace samson {
         network_interface_receiver->receive( packet );
     }
     
+    size_t CommonNetwork::get_rate_in()
+    {
+        size_t total = 0;
+
+        au::map<std::string , NetworkConnection>::iterator it_connections;
+        for (it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
+            total += it_connections->second->get_rate_in();
+        
+        return total;
+    }
     
+    size_t CommonNetwork::get_rate_out()
+    {
+        size_t total = 0;
+        
+        au::map<std::string , NetworkConnection>::iterator it_connections;
+        for (it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
+            total += it_connections->second->get_rate_out();
+        
+        return total;
+    }
+
+
     
 }

@@ -98,6 +98,10 @@ namespace samson {
         // Send a trace to all delilahs
         void sendTrace( std::string message );
 
+        // Get a collection with a single record with information for this worker...
+        network::Collection* getWorkerCollection( Visualization* visualization );
+
+        
         
 	};
 	

@@ -153,7 +153,17 @@ void ConsoleAutoComplete::auto_complete_files( std::string file_selector )
         if( S_ISREG(info.st_mode) )
         {
             if ( check_string_ends_with( path , file_selector ) )
-                add( fileName , base + fileName , true );
+            {
+                // Final string to show
+                size_t size = info.st_size;
+
+                
+                add(
+                    au::str("%s (%s)" ,fileName.c_str() , au::str( size ,"B" ).c_str() ) 
+                    , base + fileName 
+                    , true 
+                    );
+            }
         }
         else if ( S_ISDIR(info.st_mode) )
         {

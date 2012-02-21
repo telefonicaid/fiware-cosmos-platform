@@ -151,6 +151,15 @@ namespace samson {
             return NULL;
         }
         
+        virtual size_t get_rate_in()
+        {
+            return 0;
+        }
+        virtual size_t get_rate_out()
+        {
+            return 0;
+        }
+
         
     };
     

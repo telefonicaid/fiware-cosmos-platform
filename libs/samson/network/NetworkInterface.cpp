@@ -13,8 +13,6 @@
 #include "PacketReceivedNotification.h" // samson::PacketReceivedNotification
 #include "NetworkInterface.h"           // Own interface
 
-#include "engine/DiskStatistics.h"      // engine::DiskStatistics
-
 #include "engine/ProcessManager.h"      // engine::ProcessManager
 #include "engine/MemoryManager.h"       // engine::MemoryManager    
 #include "engine/DiskManager.h"         // engine::DiskManager    
@@ -32,7 +30,6 @@ namespace samson
 
     NetworkInterface::NetworkInterface()
     {
-        statistics = new engine::DiskStatistics(); 
     }
 
     /* ****************************************************************************
@@ -43,7 +40,6 @@ namespace samson
     
     NetworkInterface::~NetworkInterface()
     {
-        delete statistics;
     }
     
 

@@ -19,8 +19,6 @@
 #include "au/TokenTaker.h"
 #include "au/ErrorManager.h"
 
-//#include "engine/DiskStatistics.h"      // engine::DiskStatistics
-
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/status.h"
 #include "samson/common/Visualitzation.h"
@@ -28,9 +26,6 @@
 #include "samson/network/Message.h"               // samson::Message::MessageCode
 #include "samson/network/ClusterInformation.h"    // samson::Endpoint::Type
 
-NAMESPACE_BEGIN(engine)
-    class DiskStatistics;
-}
 
 namespace samson {
     
@@ -84,7 +79,6 @@ namespace samson {
     public:
         
         NetworkInterfaceReceiver* network_interface_receiver;       // Received to get packages
-        engine::DiskStatistics *statistics;             // Statistics information
 
         void  setReceiver(NetworkInterfaceReceiver* receiver)
         {

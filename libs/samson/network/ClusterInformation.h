@@ -22,8 +22,6 @@
 #include "au/TokenTaker.h"
 #include "au/ErrorManager.h"
 
-//#include "engine/DiskStatistics.h"      // engine::DiskStatistics
-
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/samson.pb.h"
 

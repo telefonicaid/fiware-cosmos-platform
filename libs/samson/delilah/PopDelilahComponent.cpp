@@ -8,6 +8,7 @@
 
 #include "engine/Buffer.h"							// engine::Buffer
 #include "engine/Notification.h"                    // engine::Notificaiton
+#include "engine/DiskOperation.h"
 
 #include "samson/network/Packet.h"							// samson::Packet
 #include "samson/network/Message.h"						// samson::Message

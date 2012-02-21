@@ -24,7 +24,6 @@
 #include "engine/Object.h"                  // engine::Object
 #include "engine/Buffer.h"                  // engine::Buffer
 
-
 #include "samson/common/samson.pb.h"        // network::...
 #include "samson/common/status.h" 
 
@@ -33,9 +32,6 @@
 #include "samson/common/EnvironmentOperations.h"
 
 #include "samson/stream/QueueTaskManager.h" // samson::stream::QueueTaskManager
-
-
-
 
 namespace samson {
     

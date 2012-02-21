@@ -14,6 +14,7 @@
 
 #include "engine/Buffer.h"      // engine::Buffer
 #include "engine/Notification.h"    // engine::Notificaiton
+#include "engine/DiskOperation.h"
 
 #include "samson/common/Macros.h"             // EXIT, ...
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup

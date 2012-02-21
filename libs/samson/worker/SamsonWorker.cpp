@@ -379,11 +379,13 @@ namespace samson {
     
     void SamsonWorker::logActivity( std::string log)
     {
-        activityLog.push_back( WorkerLog(log) );
+        sendTrace( log );
         
+        
+        // Keep the last 100 elements
+        activityLog.push_back( WorkerLog(log) );
         while( activityLog.size() > 100 )
             activityLog.pop_front();
-        
     }
     
     // Get information for monitoring

@@ -16,7 +16,6 @@ ReadFile.h
 ReadFileManager.h
 DiskManager.h
 DiskOperation.h
-DiskStatistics.h
 OperationsContainer.h	
 )
 
@@ -37,7 +36,6 @@ ReadFile.cpp
 ReadFileManager.cpp
 DiskManager.cpp
 DiskOperation.cpp
-DiskStatistics.cpp
 OperationsContainer.cpp
 )
 

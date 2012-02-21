@@ -30,7 +30,6 @@
 #include "engine/Engine.h"     // engine::Engine
 #include "engine/Object.h"     // engine::EngineNotification
 #include "engine/MemoryManager.h"          // engine::MemoryManager
-#include "engine/DiskStatistics.h"         // engine::DiskStatistics
 #include "engine/Object.h"                  // engine::Object
 
 #define notification_process_request_response                   "notification_process_request_response"
@@ -61,9 +60,6 @@ class ProcessManager  :  engine::Object
 
     // Private constructor to be a singleton
     ProcessManager( int _num_processes);
-    
-    // Statistics about operations
-    au::map<std::string,au::SimpleRateCollection> rates;    // Information about rates
     
     pthread_t t_scheduler; // Thread continuously checking for new process to be executed
 

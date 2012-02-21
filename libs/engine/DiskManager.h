@@ -30,7 +30,6 @@
 
 #include "engine/Object.h"     // engine::EngineNotification
 #include "engine/MemoryManager.h"          // engine::MemoryManager
-#include "engine/DiskStatistics.h"         // engine::DiskStatistics
 #include "engine/Engine.h"
 
 #include "engine/ReadFileManager.h"        // engine::ReadFileManager

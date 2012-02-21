@@ -176,17 +176,6 @@ void ProcessManager::finishProcessItem( ProcessItem *item )
     if( item2 != item )
         LM_X(1, ("Major error in Process Manager"));
     
-    // Statistics
-    if ( ( item->operation_name != "unknown" ) && ( item->working_size > 0 ) )
-    {
-        std::string name = item->operation_name;
-        size_t working_size = item->working_size;
-        int time_in_seconds = item->cronometer.getSeconds();
-        
-        LM_T(LmtProcessManager, ("Reported finish to task '%s' in %d seconds with size %lu", name.c_str() , time_in_seconds , working_size ));
-        au::SimpleRateCollection * simple_rate = rates.findOrCreate( name , name );
-        simple_rate->push( working_size , time_in_seconds );
-    }
         
     // Notify this using the notification Mechanism
     Notification * notification = new Notification( notification_process_request_response , item , item->listeners );
@@ -400,10 +389,7 @@ void ProcessManager::token_getInfo( std::ostringstream& output)
     au::xml_iterate_list(output, "queued", items);
     au::xml_iterate_list(output, "running", running_items);
     au::xml_iterate_list(output, "halted", halted_items);
-    
-    // List of rates
-    au::xml_iterate_map( output , "rates", rates );
-    
+        
     // General information
     au::xml_simple( output , "num_processes" ,  num_processes );
     au::xml_simple( output , "num_running_processes" ,  running_items.size() );

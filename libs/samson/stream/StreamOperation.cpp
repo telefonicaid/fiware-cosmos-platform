@@ -407,7 +407,7 @@ namespace samson {
             streamManager->queueTaskManager.add( tmp );
             
             // Log activity    
-            streamManager->worker->logActivity( au::str("[ %s:%lu ] Processing %s from queue %s" , 
+            streamManager->worker->logActivity( au::str("[ Stream Operation %s:%lu ] Processing %s from queue %s" , 
                                                         name.c_str() , 
                                                         id,
                                                         tmp->getBlockList("input_0")->strShortDescription().c_str(),
@@ -839,7 +839,7 @@ namespace samson {
             streamManager->queueTaskManager.add( tmp );
             
             // Log activity    
-            streamManager->worker->logActivity( au::str("[ %s:%lu ] Processing %s from queue %s" , 
+            streamManager->worker->logActivity( au::str("[ Stream Operation %s:%lu ] Processing %s from queue %s" , 
                                                         name.c_str() , 
                                                         id,
                                                         tmp->getBlockList("input_0")->strShortDescription().c_str(),

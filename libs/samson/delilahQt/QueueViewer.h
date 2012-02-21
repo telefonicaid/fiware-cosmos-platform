@@ -45,25 +45,26 @@ class QueueViewer: public QWidget
         void setData(QueueData newData);
         void setTitle(std::string title);
         void setHiddenButton(bool hidden);
+        void setLayout(QGridLayout* layout, int row);
 
     private:
         //QScrollArea* scrollArea;
         //QGroupBox* groupBox;
-        QHBoxLayout* layout;
+        //QHBoxLayout* layout;
         
         QLabel* name;
         QLabel* kvs;
-        QLCDNumber* kvsDigits; 
+        QLabel* kvsDigits; 
         //QLabel* kvssize;
         QLabel* size;
-        QLCDNumber* sizeDigits; 
+        QLabel* sizeDigits; 
         //QLabel* size_locked;
         //QLabel* size_on_disk;
         //QLabel* size_on_memory;
         //QLabel* kvs_rate;
         //QLabel* kvs_rate_size;
         QLabel* rate;
-        QLCDNumber* rateDigits;
+        QLabel* rateDigits;
         QPushButton* detailsButton;
         //QLabel* rate_size;
         

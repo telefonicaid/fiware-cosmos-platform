@@ -41,9 +41,9 @@ namespace samson {
         QLabel* noInputLabel;
         QLabel* noOutputLabel;
         QLabel* noTotalLabel;
-        QVBoxLayout* inputLayout;
-        QVBoxLayout* outputLayout;
-        QVBoxLayout* totalLayout;
+        QGridLayout* inputLayout;
+        QGridLayout* outputLayout;
+        QGridLayout* totalLayout;
         
         //std::vector<QueueViewer::QueueData> queuesData;
         //std::vector<std::string> current_queues;

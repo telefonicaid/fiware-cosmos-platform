@@ -51,16 +51,16 @@ namespace samson
         noOutputLabel = new QLabel("No output Queues", outputBox);
         noTotalLabel = new QLabel("No Queues", totalBox);
         
-        inputLayout = new QVBoxLayout(inputBox);
-        inputLayout->addWidget(noInputLabel);
+        inputLayout = new QGridLayout(inputBox);
+        inputLayout->addWidget(noInputLabel, 0, 1);
         inputBox->setLayout(inputLayout);
         
-        outputLayout = new QVBoxLayout(outputBox);
-        outputLayout->addWidget(noOutputLabel);
+        outputLayout = new QGridLayout(outputBox);
+        outputLayout->addWidget(noOutputLabel, 0, 1);
         outputBox->setLayout(outputLayout);
 
-        totalLayout = new QVBoxLayout(totalBox);
-        totalLayout->addWidget(noTotalLabel);
+        totalLayout = new QGridLayout(totalBox);
+        totalLayout->addWidget(noTotalLabel, 0 , 1);
         totalQueues = new QueueViewer("Totals", totalBox);
         totalLayout->addWidget(totalQueues);
         totalBox->setLayout(totalLayout);
@@ -68,7 +68,7 @@ namespace samson
         QObject::connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
         connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
         
-        setMinimumSize(800,600); 
+        setMinimumSize(600,600); 
     }
     
     void DelilahMainWindow::about()
@@ -86,7 +86,7 @@ namespace samson
             bool is_input = (fnmatch("in:*", queuesData[i].name.c_str(),0) == 0);
             std::vector<QueueViewer*>* queuesList;
             QGroupBox* groupBoxTmp;
-            QVBoxLayout* layoutTmp;
+            QGridLayout* layoutTmp;
             if (is_input)
             {
                 queuesList = &in_queues;
@@ -114,7 +114,9 @@ namespace samson
                 queueTmp = new QueueViewer(queuesData[i].name, groupBoxTmp);
                 queueTmp->setData(queuesData[i]);
                 queuesList->push_back(queueTmp);
-                layoutTmp->addWidget(queueTmp);
+                queueTmp->setLayout(layoutTmp, queuesList->size()-1);
+                //layoutTmp->addWidget(queueTmp);
+                
                 groupBoxTmp->adjustSize();
                /* in_queues.push_back(queueTmp);
                 inputLayout->addWidget(queueTmp);
@@ -153,7 +155,7 @@ namespace samson
             noTotalLabel->show();
         }
         //ajustar layout o update el groupbox
-        inputBox->update();
+     /*   inputBox->update();
         outputBox->update();
         totalBox->update();
         inputLayout->update();
@@ -161,6 +163,7 @@ namespace samson
         totalLayout->update();
 
         mainLayout->update();
+        */
         
     }
     

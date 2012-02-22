@@ -26,9 +26,9 @@ import es.tid.ps.mobility.data.MobProtocol;
 import es.tid.ps.mobility.data.MobProtocol.Cdr;
 import es.tid.ps.mobility.data.MobProtocol.GLEvent;
 
-public class IndividualMobilityMap extends Mapper<LongWritable, Text, LongWritable, ProtobufWritable<GLEvent>> {
+public class IndividualMobilityMapper extends Mapper<LongWritable, Text, LongWritable, ProtobufWritable<GLEvent>> {
 
-    private static final Logger LOG = Logger.getLogger(IndividualMobilityMap.class);
+    private static final Logger LOG = Logger.getLogger(IndividualMobilityMapper.class);
     public static final String HDFS_CELL_CATALOGUE_PATH = "/data/cell.dat";
     private static final String CELL_PARSER = "DEFAULT";
     private static final String CDRS_PARSER = "DEFAULT";
@@ -37,7 +37,7 @@ public class IndividualMobilityMap extends Mapper<LongWritable, Text, LongWritab
     private LongWritable outputKey = new LongWritable();
     private ProtobufWritable<GLEvent> outputValue;
 
-    public IndividualMobilityMap() {
+    public IndividualMobilityMapper() {
     }
 
     @Override

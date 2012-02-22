@@ -11,7 +11,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import es.tid.ps.mobility.data.Client;
 import es.tid.ps.mobility.data.MobProtocol.GLEvent;
 
-public class IndividualMobilityReduce extends
+public class IndividualMobilityReducer extends
 		Reducer<LongWritable, ProtobufWritable<GLEvent>, LongWritable, Client> {
 
 	int cont = 0;

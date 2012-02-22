@@ -27,8 +27,8 @@ public class IndividualMobilityDriver extends Configured implements Tool {
         final Job job = new Job(conf, "Mob2Productivization execution");
 
         job.setJarByClass(IndividualMobilityDriver.class);
-        job.setMapperClass(IndividualMobilityMap.class);
-        job.setReducerClass(IndividualMobilityReduce.class);
+        job.setMapperClass(IndividualMobilityMapper.class);
+        job.setReducerClass(IndividualMobilityReducer.class);
 
         job.setOutputKeyClass(LongWritable.class);
         job.setOutputValueClass(GLEvent.class);

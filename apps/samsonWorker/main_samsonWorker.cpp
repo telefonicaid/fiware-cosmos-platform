@@ -8,6 +8,7 @@
 *
 */
 #include "parseArgs/parseArgs.h"
+#include "parseArgs/paIsSet.h"
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 
@@ -129,7 +130,8 @@ int main(int argC, const char *argV[])
 	paConfig("man copyright",                 (void*) manCopyright);
 	paConfig("man version",                   (void*) manVersion);
 
-    paParse(paArgs, argC, (char**) argV, 1, true);
+    const char* extra = paIsSetSoGet(argC, (char**) argV, "-port");
+    paParse(paArgs, argC, (char**) argV, 1, false, extra);
 
     lmAux((char*) "father");
 

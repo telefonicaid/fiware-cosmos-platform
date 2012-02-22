@@ -269,10 +269,10 @@ LmxFp lmxFp           = NULL;
 *
 * lmProgName - 
 */
-char* lmProgName(char* pn, int levels, bool pid)
+char* lmProgName(char* pn, int levels, bool pid, const char* extra)
 {
 	char*        start;
-	static char  pName[128];
+	static char  pName[512];
 
 	if (pn == NULL)
 		return NULL;
@@ -301,6 +301,11 @@ char* lmProgName(char* pn, int levels, bool pid)
 		sprintf(pid, "%d", (int) getpid());
 		strncat(pName, pid, sizeof(pName) - 1);		
 	}
+
+    if (extra != NULL)
+        strncat(pName, extra, sizeof(pName) - 1);
+
+    printf("pName: %s\n", pName);
 
 	return pName;
 }

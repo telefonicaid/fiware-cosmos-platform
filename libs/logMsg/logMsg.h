@@ -1078,7 +1078,7 @@ extern const char* lmStrerror(LmStatus s);
 *
 * lmProgName - 
 */
-extern char* lmProgName(char* pn, int levels, bool pid);
+extern char* lmProgName(char* pn, int levels, bool pid, const char* extra = NULL);
 
 
 

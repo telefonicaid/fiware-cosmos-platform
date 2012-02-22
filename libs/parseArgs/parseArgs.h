@@ -227,7 +227,8 @@ extern int paParse
         int          argC,
         char*        argV[],
         int          levels,
-        bool         pid
+        bool         pid,
+        const char*  extra = (const char*) 0
 );
 
 

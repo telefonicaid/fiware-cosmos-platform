@@ -47,6 +47,7 @@ int paLmSdGet(void)
 *
 * paLogSetup - 
 */
+extern char* paExtraLogSuffix;
 int paLogSetup(void)
 {
 	LmStatus    s;

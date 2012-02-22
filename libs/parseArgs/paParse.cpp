@@ -47,9 +47,10 @@
 *
 * variables for user of this library
 */
-char*        rcFileName;             /* needed for messages (and by lmLib) */
-char         paCommandLine[1024];    /* entire command line                */
+char*        rcFileName;               /* needed for messages (and by lmLib) */
+char         paCommandLine[1024];      /* entire command line                */
 char         paResultString[60000];
+char*        paExtraLogSuffix = NULL;  /* To append to log file path         */
 
 
 
@@ -261,7 +262,7 @@ static int paArgInit(PaArgument* paList)
 *
 * paProgNameSet - 
 */
-static char* paProgNameSet(char* pn, int levels, bool pid)
+static char* paProgNameSet(char* pn, int levels, bool pid, const char* extra = NULL)
 {
 	char*        start;
 	static char  pName[128];
@@ -294,6 +295,9 @@ static char* paProgNameSet(char* pn, int levels, bool pid)
 		strncat(pName, pid, sizeof(pName) - 1);
 	}
 
+    if (extra != NULL)
+        strncat(pName, extra, sizeof(pName) - 1);
+
 	return pName;
 }
 
@@ -322,13 +326,17 @@ int paParse
 	int          argC,
 	char*        argV[],
 	int          level,
-	bool         pid
+	bool         pid,
+    const char*  extra
 )
 {
 	char*  progNameCopy;
 	int    ix;
 	int    s;
 	FILE*  fP;
+
+    if (extra != NULL)
+        paExtraLogSuffix = strdup(extra);
 
 	memset(paResultString, 0, sizeof(paResultString));
 
@@ -353,21 +361,13 @@ int paParse
 
 
 
-
-
-
-
-
-
-	// 362
-
 	/* *************************** */
 	/* Setting up the program name */
 	/*                             */
 	if (paProgName == NULL) /* hasn't been set with paConfig */
 	{
 		progNameCopy = strdup(argV[0]);
-		progName     = strdup(paProgNameSet(argV[0], level, pid));
+		progName     = strdup(paProgNameSet(argV[0], level, pid, extra));
 		paProgName   = strdup(progName);
 	}
 	else

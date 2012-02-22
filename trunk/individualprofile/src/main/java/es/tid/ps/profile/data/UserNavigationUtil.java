@@ -13,6 +13,9 @@ import es.tid.ps.profile.data.ProfileProtocol.UserNavigation;
  */
 public abstract class UserNavigationUtil {
     private static final String DELIMITER = "\t";
+    
+    private UserNavigationUtil() {
+    }
 
     public static UserNavigation create(String visitorId, String fullUrl,
             String date) {

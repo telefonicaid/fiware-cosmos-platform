@@ -1,4 +1,4 @@
-package es.tid.analytics.mobility.core.test;
+package es.tid.ps.mobility.parsing;
 
 import es.tid.analytics.mobility.core.parsers.ParserAlphanumeric;
 import static org.junit.Assert.assertEquals;

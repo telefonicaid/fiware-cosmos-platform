@@ -1,4 +1,4 @@
-package es.tid.analytics.mobility.core.test;
+package es.tid.ps.mobility.parsing;
 
 import java.util.ArrayList;
 import java.util.List;

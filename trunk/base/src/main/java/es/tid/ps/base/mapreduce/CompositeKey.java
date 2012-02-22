@@ -13,15 +13,15 @@ import org.apache.hadoop.io.WritableComparable;
 public abstract class CompositeKey implements WritableComparable<CompositeKey> {
     private String[] keys;
     
-    public CompositeKey(int capacity) {
+    protected CompositeKey(int capacity) {
         this.keys = new String[capacity];
     }
     
-    public void set(int index, String key) {
+    protected void set(int index, String key) {
         this.keys[index] = key;
     }
 
-    public String get(int index) {
+    protected String get(int index) {
         return this.keys[index];
     }
 

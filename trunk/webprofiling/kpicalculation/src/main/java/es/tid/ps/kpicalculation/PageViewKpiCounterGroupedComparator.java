@@ -7,6 +7,8 @@ import org.apache.hadoop.io.RawComparator;
 
 import es.tid.ps.base.mapreduce.BinaryKey;
 import es.tid.ps.base.mapreduce.CompositeKey;
+import es.tid.ps.kpicalculation.data.KpiCalculationComparationException;
+import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
 
 /**
  * Class used in the compare and sort phases of process for grouped aggregation
@@ -44,7 +46,8 @@ public class PageViewKpiCounterGroupedComparator implements
             o2.readFields(buffer);
             return compare(o1, o2);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new KpiCalculationComparationException(e.getMessage(), e,
+                    KpiCalculationCounter.COMPARATION_ERROR);
         }
     }
 

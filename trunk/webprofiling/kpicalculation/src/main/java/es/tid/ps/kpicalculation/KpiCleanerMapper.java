@@ -15,7 +15,6 @@ import es.tid.ps.kpicalculation.cleaning.KpiCalculationFilterChain;
 import es.tid.ps.kpicalculation.cleaning.KpiCalculationFilterException;
 import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
 import es.tid.ps.kpicalculation.data.KpiCalculationDataException;
-import es.tid.ps.kpicalculation.data.KpiCalculationProtocol;
 import es.tid.ps.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
 import es.tid.ps.kpicalculation.utils.WebProfilingUtil;
 

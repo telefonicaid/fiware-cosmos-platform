@@ -1,10 +1,13 @@
 package es.tid.ps.kpicalculation;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -43,17 +46,18 @@ import es.tid.ps.kpicalculation.data.SingleKey;
  */
 public class KpiMain extends Configured implements Tool {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws IOException,
+            ClassNotFoundException, InterruptedException, Exception {
         int res = ToolRunner.run(new Configuration(), new KpiMain(), args);
         System.exit(res);
     }
 
-    public int run(String[] args) throws Exception {
+    public int run(String[] args) throws IOException, ClassNotFoundException,
+            InterruptedException {
+        Logger logger = Logger.getLogger("KpiMain");
         if (args.length != 2) {
-            System.out
-                    .println("ERROR: Wrong Arguments. Use the following format:");
-            System.out
-                    .println("hadoop jar kpicalculation-LocalBuild.jar inputPath outputPath");
+            logger.setLevel(Level.ALL);
+            logger.severe("Wrong Arguments. Example: hadoop jar kpicalculation-LocalBuild.jar inputPath outputPath");
             System.exit(1);
         }
 
@@ -62,52 +66,18 @@ public class KpiMain extends Configured implements Tool {
         String timeFolder = "data." + Long.toString(new Date().getTime());
         Path tmpPath = new Path(args[1] + "/cleaned/" + timeFolder);
 
-        // Normalization and filtering
         Configuration conf = getConf();
         conf.set("kpicalculation.temp.path", tmpPath.toString());
         conf.addResource("kpi-filtering.xml");
 
-        // Job configuration
-        Job wpCleanerJob = new Job(conf, "Web Profiling ...");
-        wpCleanerJob.setNumReduceTasks(0);
-        wpCleanerJob.setJarByClass(KpiMain.class);
-        wpCleanerJob.setMapperClass(KpiCleanerMapper.class);
-        wpCleanerJob.setInputFormatClass(LzoTextInputFormat.class);
-        wpCleanerJob.setOutputKeyClass(NullWritable.class);
-        wpCleanerJob.setOutputValueClass(ProtobufWritable.class);
-        wpCleanerJob.setMapOutputKeyClass(NullWritable.class);
-        wpCleanerJob.setMapOutputValueClass(ProtobufWritable.class);
-        wpCleanerJob.setOutputFormatClass(LzoProtobufB64LineOutputFormat
-                .getOutputFormatClass(WebProfilingLog.class,
-                        wpCleanerJob.getConfiguration()));
-
-        // Input and Output configuration
-        FileInputFormat.addInputPath(wpCleanerJob, inputPath);
-        FileOutputFormat.setOutputPath(wpCleanerJob, tmpPath);
-
-        if (!wpCleanerJob.waitForCompletion(true)) {
+        // Process that filters and formats input logs
+        Job job = cleanWebNavigationLogs(conf, inputPath, tmpPath);
+        if (!job.waitForCompletion(true)) {
             return 1;
         }
 
         // Definition of kpis to calculate
-        List<JobDetails> list = new ArrayList<JobDetails>();
-
-        list.add(new JobDetails("PAGE_VIEWS_PROT", "protocol,date"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_VIS_DEV",
-                "visitorId,protocol,device,date"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_VIS",
-                "visitorId,protocol,date"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_DEV", "device,protocol,date"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_MET", "method,protocol,date"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_URL_VIS",
-                "visitorId,urlDomain,urlPath,protocol,date"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_DOM_VIS",
-                "visitorId,urlDomain,protocol,date"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_DOM",
-                "urlDomain,protocol,date"));
-        list.add(new JobDetails("VISITORS_PROT_URL",
-                "urlDomain,urlPath,protocol,date", "visitorId"));
-        list.add(new JobDetails("VISITORS_PROT", "protocol,date", "visitorId"));
+        List<JobDetails> list = getKpiList();
 
         Iterator<JobDetails> it = list.iterator();
 
@@ -154,9 +124,6 @@ public class KpiMain extends Configured implements Tool {
 
             // Input and Output configuration
             FileInputFormat.addInputPath(aggregationJob, tmpPath);
-            FileOutputFormat.setCompressOutput(aggregationJob, true);
-            FileOutputFormat.setOutputCompressorClass(aggregationJob,
-                    LzopCodec.class);
             FileOutputFormat.setOutputPath(aggregationJob, kpiOutputPath);
 
             if (!aggregationJob.waitForCompletion(true)) {
@@ -165,5 +132,55 @@ public class KpiMain extends Configured implements Tool {
         }
 
         return 0;
+    }
+
+    private List<JobDetails> getKpiList() {
+        List<JobDetails> list = new ArrayList<JobDetails>();
+
+        list.add(new JobDetails("PAGE_VIEWS_PROT", "protocol,date"));
+        list.add(new JobDetails("PAGE_VIEWS_PROT_VIS_DEV",
+                "visitorId,protocol,device,date"));
+        list.add(new JobDetails("PAGE_VIEWS_PROT_VIS",
+                "visitorId,protocol,date"));
+        list.add(new JobDetails("PAGE_VIEWS_PROT_DEV", "device,protocol,date"));
+        list.add(new JobDetails("PAGE_VIEWS_PROT_MET", "method,protocol,date"));
+        list.add(new JobDetails("PAGE_VIEWS_PROT_URL_VIS",
+                "visitorId,urlDomain,urlPath,protocol,date"));
+        list.add(new JobDetails("PAGE_VIEWS_PROT_DOM_VIS",
+                "visitorId,urlDomain,protocol,date"));
+        list.add(new JobDetails("PAGE_VIEWS_PROT_DOM",
+                "urlDomain,protocol,date"));
+        list.add(new JobDetails("VISITORS_PROT_URL",
+                "urlDomain,urlPath,protocol,date", "visitorId"));
+        list.add(new JobDetails("VISITORS_PROT", "protocol,date", "visitorId"));
+
+        return list;
+    }
+
+    private Job cleanWebNavigationLogs(Configuration conf, Path input,
+            Path output) throws IOException, InterruptedException,
+            ClassNotFoundException {
+        // Normalization and filtering
+
+        // Job configuration
+        Job wpCleanerJob = new Job(conf, "Web Profiling ...");
+        wpCleanerJob.setNumReduceTasks(0);
+        wpCleanerJob.setJarByClass(KpiMain.class);
+        wpCleanerJob.setMapperClass(KpiCleanerMapper.class);
+        wpCleanerJob.setInputFormatClass(LzoTextInputFormat.class);
+        wpCleanerJob.setOutputKeyClass(NullWritable.class);
+        wpCleanerJob.setOutputValueClass(ProtobufWritable.class);
+        wpCleanerJob.setMapOutputKeyClass(NullWritable.class);
+        wpCleanerJob.setMapOutputValueClass(ProtobufWritable.class);
+        wpCleanerJob.setOutputFormatClass(LzoProtobufB64LineOutputFormat
+                .getOutputFormatClass(WebProfilingLog.class,
+                        wpCleanerJob.getConfiguration()));
+
+        // Input and Output configuration
+        FileInputFormat.addInputPath(wpCleanerJob, input);
+        FileOutputFormat.setOutputPath(wpCleanerJob, output);
+
+        return wpCleanerJob;
+
     }
 }

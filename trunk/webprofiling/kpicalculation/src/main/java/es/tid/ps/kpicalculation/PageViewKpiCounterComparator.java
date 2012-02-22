@@ -6,6 +6,8 @@ import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.RawComparator;
 
 import es.tid.ps.base.mapreduce.CompositeKey;
+import es.tid.ps.kpicalculation.data.KpiCalculationComparationException;
+import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
 import es.tid.ps.kpicalculation.data.SingleKey;
 
 /**
@@ -44,7 +46,8 @@ public class PageViewKpiCounterComparator implements
             o2.readFields(buffer);
             return compare(o1, o2);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new KpiCalculationComparationException(e.getMessage(), e,
+                    KpiCalculationCounter.COMPARATION_ERROR);
         }
     }
 

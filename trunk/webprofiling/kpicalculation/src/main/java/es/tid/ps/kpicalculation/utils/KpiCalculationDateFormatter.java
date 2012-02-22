@@ -12,7 +12,7 @@ import java.util.Locale;
  * 
  * @author javierb
  */
-public abstract class KpiCalculationDateFormatter {
+public final class KpiCalculationDateFormatter {
 	private static SimpleDateFormat inputFormat;
 	private static SimpleDateFormat dateFormat;
 	private static SimpleDateFormat timeFormat;

@@ -14,7 +14,7 @@ import es.tid.ps.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
  * 
  * @author javierb
  */
-public abstract class WebProfilingUtil {
+public final class WebProfilingUtil {
     private static final String DELIMITER = "\t";
 
     private static WebProfilingLog.Builder builder;

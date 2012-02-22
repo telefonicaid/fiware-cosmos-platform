@@ -71,7 +71,7 @@ void sysctl_value(char *param_name, long int *param_value)
 #ifdef OSX
 void sysctl_value(char *param_name, long int *param_value)
 {
-    long len = sizeof(&(param_value));
+    size_t len = sizeof(&(param_value));
 
     if (sysctlbyname(param_name, param_value, &len, 0, 0) )
     {  

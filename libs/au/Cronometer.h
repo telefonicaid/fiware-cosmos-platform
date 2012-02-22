@@ -109,7 +109,7 @@ public:
         double t = c.diffTime();
         if(  t > max_time )
         {
-            LM_W(("Excesive time ( %.4f > %.4f secs ) for '%s' "
+            LM_W(("Excessive time ( %.4f > %.4f secs ) for '%s' "
                   ,t
                   ,max_time
                   ,title.c_str()

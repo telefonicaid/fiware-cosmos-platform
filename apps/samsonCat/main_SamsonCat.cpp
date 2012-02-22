@@ -105,7 +105,7 @@ int main(int argC, const char *argV[])
             exit(0);
         }
         
-        samsonFile.printContent( show_limit );
+        samsonFile.printContent( show_limit , std::cerr );
         
     }
     else if( S_ISDIR( filestatus.st_mode ) )
@@ -119,17 +119,17 @@ int main(int argC, const char *argV[])
         if( show_header )
         {
             std::cout << "Total: " << samsonDataSet.info.strDetailed() << "\n"; 
-            samsonDataSet.printHeaders();
+            samsonDataSet.printHeaders( std::cerr);
             exit(0);
         }
         
         if( show_hg )
         {
-            samsonDataSet.printHashGroups();
+            samsonDataSet.printHashGroups( std::cerr);
             exit(0);
         }
         
-        samsonDataSet.printContent( show_limit );
+        samsonDataSet.printContent( show_limit , std::cerr );
         
     } 
     else

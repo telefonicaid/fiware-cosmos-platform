@@ -412,7 +412,8 @@ namespace samson
 		commandLine.set_flag_int("threads",4);              // Specify number of threads ( not used )
         commandLine.set_flag_boolean("force");              // Force to remove directory if exist before in pop operations
         commandLine.set_flag_boolean("clear");              // Used in the ps command
-        commandLine.set_flag_int("limit", 1000);
+        commandLine.set_flag_boolean("header");             // Used in the show_local_queue command
+        commandLine.set_flag_int("limit", 10);
 		commandLine.set_flag_string("category", "");
 		commandLine.parse( command );
         
@@ -877,7 +878,7 @@ namespace samson
         {
             if( commandLine.get_num_arguments() < 3 )
             {
-                writeErrorOnConsole("Usage: pop queue fileName");
+                writeErrorOnConsole("Usage: pop queue fileName\n");
                 return 0;
             }
             
@@ -990,6 +991,76 @@ namespace samson
             return 0;
         }
 
+        if ( mainCommand == "show_local_queue" )
+        {
+            if( commandLine.get_num_arguments() < 2 )
+            {
+                writeErrorOnConsole("Usage:show_local_queue <local_dir>\n");
+                return 0;
+            }
+
+            const char *file_name = commandLine.get_argument(1).c_str();
+            int limit = commandLine.get_flag_int("limit" );
+            
+            std::ostringstream output;
+            
+            struct stat filestatus;
+            stat( file_name , &filestatus );
+            
+            if ( S_ISREG( filestatus.st_mode ) )
+            {
+                // Open a single file
+                samson::SamsonFile samsonFile( file_name );
+                
+                if( samsonFile.hasError() )
+                {
+                    writeErrorOnConsole( au::str("%s", samsonFile.getErrorMessage().c_str() ) );
+                    return 0;
+                }
+                
+                if( commandLine.get_flag_bool("header") )
+                {
+                    std::ostringstream output;
+                    output << samsonFile.header.str() << " " << " [ " << samsonFile.header.info.kvs << " kvs in " << samsonFile.header.info.size << "bytes\n";  
+                    writeOnConsole(output.str());
+                    return 0;
+                }
+                
+                samsonFile.printContent( limit , output );
+                
+            }
+            else if( S_ISDIR( filestatus.st_mode ) )
+            {
+                samson::SamsonDataSet samsonDataSet( file_name );
+                
+                if( samsonDataSet.error.isActivated() )
+                {
+                    writeErrorOnConsole( au::str("%s", samsonDataSet.error.getMessage().c_str() ) );
+                    return 0;
+                }
+                
+                if( commandLine.get_flag_bool("header") )
+                {
+                    std::cout << "Total: " << samsonDataSet.info.strDetailed() << "\n"; 
+                    samsonDataSet.printHeaders(output);
+                    exit(0);
+                }
+                
+                samsonDataSet.printContent( limit , output );
+                
+            } 
+            else
+            {
+                writeErrorOnConsole( au::str("%s is not a file or a directory\n",file_name) );
+                return 0;
+            }
+
+            // Write result of this operation
+            writeOnConsole( output.str() );
+            return 0;
+            
+        }
+        
         // By default, it is considered a worker command
         return sendWorkerCommand( command , NULL );
         return 0;

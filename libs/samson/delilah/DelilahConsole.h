@@ -291,6 +291,14 @@ namespace samson {
                 );
             
             
+            add( "show_local_queue" , "push&pop"  ,
+                "Show contents of a queue downloaded using pop. Modules should be installed locally",
+                "show_local_queue <local_dir> [-header] [-limit X]"
+                "          <local_dir>    Name of local directory where queue has been saved\n"
+                "          [-header]      Show only headers\n"
+                "          [-limit X]     Limit the number of key-values to show ( 10 by default )\n"
+                );
+            
             // CLUSTER
             // ------------------------------------------------------------------
 

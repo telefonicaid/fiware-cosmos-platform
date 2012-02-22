@@ -92,29 +92,29 @@ namespace samson {
     }
     
     
-    void SamsonDataSet::printHashGroups()
+    void SamsonDataSet::printHashGroups(  std::ostream &output )
     {
         au::map< std::string , SamsonFile >::iterator file;
         for ( file = files.begin() ; file != files.end() ; file++)
-            std::cout << file->first << ": " << file->second->getHashGroups() << std::endl;
+            output << file->first << ": " << file->second->getHashGroups() << std::endl;
     }
     
-    void SamsonDataSet::printHeaders()
+    void SamsonDataSet::printHeaders(  std::ostream &output )
     {
         au::map< std::string , SamsonFile >::iterator file;
         for ( file = files.begin() ; file != files.end() ; file++)
-            std::cout << file->first << ": " << file->second->header.str() << std::endl;
+            output << file->first << ": " << file->second->header.str() << std::endl;
     }
     
     
-    void SamsonDataSet::printContent( size_t limit )
+    void SamsonDataSet::printContent( size_t limit ,  std::ostream &output )
     {
         size_t records = 0;
         
         au::map< std::string , SamsonFile >::iterator file;
         for ( file = files.begin() ; file != files.end() ; file++)
         {
-            records += file->second->printContent( (limit==0)?0:(limit - records ) );
+            records += file->second->printContent( (limit==0)?0:(limit - records ) , output );
 
 			if( limit > 0 )
 			   if( records >= limit )

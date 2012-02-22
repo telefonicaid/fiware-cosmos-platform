@@ -23,9 +23,9 @@ namespace samson {
         SamsonDataSet( std::string directory );
         ~SamsonDataSet();
 
-        void printHashGroups();
-        void printHeaders();
-        void printContent( size_t limit );
+        void printHashGroups( std::ostream &output);
+        void printHeaders( std::ostream &output);
+        void printContent( size_t limit , std::ostream &output );
         
         
         std::string str();

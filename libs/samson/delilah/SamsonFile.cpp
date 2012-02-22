@@ -141,7 +141,7 @@ namespace samson {
         return output.str();
     }
     
-    size_t SamsonFile::printContent( size_t limit )
+    size_t SamsonFile::printContent( size_t limit , std::ostream &output )
     {
         // Number of records displayed    
         size_t records = 0 ;
@@ -175,17 +175,15 @@ namespace samson {
         
         if(!keyData )
         {
-            std::cerr << "Data format " << format.keyFormat << " not supported\n";
-            exit(0);
+            output << "Data format " << format.keyFormat << " not supported\n";
+            return records;
         }
         
         if(!valueData )
         {
-            std::cerr << "Data format " << format.valueFormat << " not supported\n";
-            exit(0);
+            output << "Data format " << format.valueFormat << " not supported\n";
+            return records;
         }
-        
-        
         
         samson::DataInstance *key = (samson::DataInstance *)keyData->getInstance();
         samson::DataInstance *value = (samson::DataInstance *)valueData->getInstance();
@@ -214,7 +212,7 @@ namespace samson {
                     offset += key->parse(data+offset);
                     offset += value->parse(data+offset);
                     
-                    std::cout << key->str() << " " << value->str() << std::endl;
+                    output << key->str() << " " << value->str() << std::endl;
                     
                     records++;
                     if( limit > 0)
@@ -224,7 +222,10 @@ namespace samson {
                 }
                 
                 if( offset != size)
-                    LM_X(1 , ("Wrong file format"));
+                {
+                    output << "Wrong file format\n";
+                    return records;
+                }
                 
                 free( data );
             }

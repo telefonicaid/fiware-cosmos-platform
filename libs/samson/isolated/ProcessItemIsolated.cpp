@@ -606,6 +606,12 @@ namespace samson
 	// Function used inside runIsolated to send a code to the main process
 	void ProcessItemIsolated::trace( LogLineData *logData )
 	{
+        // This is the old trace mechanism.
+        // It was desactivated in samson 0.6.1
+        // A new system based on blocks should be provided
+        
+        /*
+         
         LM_T(LmtIsolated,("Background process: Sending trace %s", logData->text ));
         
         samson::network::MessageProcessPlatform *message = new samson::network::MessageProcessPlatform();
@@ -624,6 +630,7 @@ namespace samson
         sendMessageProcessPlatform( message );
         
         delete message;        
+         */
 	}	
 	
 	void ProcessItemIsolated::reportProgress( double p )

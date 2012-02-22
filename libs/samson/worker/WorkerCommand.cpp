@@ -645,7 +645,7 @@ namespace samson {
             std::string full_message = au::str("[Delilah %lu] %s" , delilah_id , message.c_str() );
 
             // Send a trace to all delilahs
-            samsonWorker->sendTrace( full_message );
+            samsonWorker->sendTrace( "message" , "delilah" , full_message );
             
             finishWorkerTask();
             return;

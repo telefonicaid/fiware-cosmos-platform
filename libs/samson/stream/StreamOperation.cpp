@@ -255,6 +255,17 @@ namespace samson {
             
             // Add the task to the list of running task
             running_tasks.insert( task );
+
+            std::string message = au::str("[ %s ] [ task %lu ] Starts processing %s from queue %s" , 
+                                          name.c_str() , 
+                                          task->getId(),
+                                          task->getBlockList("input_0")->strShortDescription().c_str(),
+                                          input_queues[0].c_str() 
+                                          );
+            streamManager->worker->sendTrace( "message" , "stream" , message );
+            
+            // Schedule tmp task into QueueTaskManager
+            streamManager->queueTaskManager.add( task );
             
         }
         
@@ -272,6 +283,35 @@ namespace samson {
 
             // Count output data ( still not here becase data is districted on the go... )
             LM_TODO(("Take statistics about output data when finish stream operation"));
+            
+
+            
+            // Inform about this operation
+            {
+                std::string  message = au::str("[ %s ] [ task %lu ] Finishing after running %s ( defined %s )" , 
+                                               name.c_str() , 
+                                               task->getId() ,
+                                               au::time_string( task->cronometer.getSeconds() ).c_str(),
+                                               au::time_string( task->creation_cronometer.diffTimeInSeconds() ).c_str()
+                                               );
+                streamManager->worker->sendTrace( "message" , "stream" , message );
+            }
+
+            {
+                std::string message;
+                if( task->error.isActivated() )
+                    message = au::str("[ %s ] [ task %lu ] Finished with error %s" , 
+                                      name.c_str() , 
+                                      task->getId() , 
+                                      task->error.getMessage().c_str()
+                                      );
+                else
+                    message = au::str("[ %s ] [ task %lu ] Finished" , 
+                                      name.c_str() , 
+                                      task->getId()
+                                      );
+                streamManager->worker->sendTrace( "message" , "stream" , message );
+            }
         }
         
         Operation* StreamOperation::getOperation()
@@ -400,20 +440,11 @@ namespace samson {
             // Set working size for correct monitoring of data
             tmp->setWorkingSize();
             
-            // Update information about this operation
+            // Schedule this task into task manager
             add( tmp );
             
-            // Schedule tmp task into QueueTaskManager
-            streamManager->queueTaskManager.add( tmp );
-            
-            // Log activity    
-            streamManager->worker->logActivity( au::str("[ Stream Operation %s:%lu ] Processing %s from queue %s" , 
-                                                        name.c_str() , 
-                                                        id,
-                                                        tmp->getBlockList("input_0")->strShortDescription().c_str(),
-                                                        input_queues[0].c_str() 
-                                                        ));
         }
+        
         void StreamOperation::fill( samson::network::CollectionRecord* record , VisualitzationOptions options )
         {
             
@@ -638,11 +669,9 @@ namespace samson {
             // Set the working size to get statistics at ProcessManager
             task->setWorkingSize();
             
-            // Update information about this operation
+            // Add this task...
             add( task );
             
-            // Schedule tmp task into QueueTaskManager
-            streamManager->queueTaskManager.add( task );
             
         }
 
@@ -832,19 +861,8 @@ namespace samson {
             // Set working size for correct monitoring of data
             tmp->setWorkingSize();
             
-            // Update information about this operation
+            // Add this task
             add( tmp );
-            
-            // Schedule tmp task into QueueTaskManager
-            streamManager->queueTaskManager.add( tmp );
-            
-            // Log activity    
-            streamManager->worker->logActivity( au::str("[ Stream Operation %s:%lu ] Processing %s from queue %s" , 
-                                                        name.c_str() , 
-                                                        id,
-                                                        tmp->getBlockList("input_0")->strShortDescription().c_str(),
-                                                        input_queues[0].c_str() 
-                                                        ));
             
         }
         

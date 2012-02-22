@@ -48,22 +48,6 @@
 namespace samson {
     
     
-    WorkerLog::WorkerLog( std::string _txt )
-    {
-        txt = _txt;
-        time = au::todayString();
-    }
-    
-    void WorkerLog::getInfo( std::ostringstream & output )
-    {
-        au::xml_open(output , "log" );
-        au::xml_simple( output , "txt" , txt );
-        au::xml_simple( output , "time" , time );
-        au::xml_close(output , "log" );
-        
-    }
-    
-    
 #pragma mark
     
     /* ****************************************************************************
@@ -335,8 +319,11 @@ namespace samson {
         }
         else if ( notification->isName( notification_samson_worker_send_trace ) )
         {
-            std::string message = notification->environment.get("message","No message" );
-            sendTrace(message);
+            std::string message = notification->environment.get("message","No message comming with trace-notification" );
+            std::string context = notification->environment.get("context","?" );
+            std::string type    = notification->environment.get("type","message" );
+            
+            sendTrace( type , context , message );
         }
         else
             LM_X(1, ("SamsonWorker received an unexpected notification %s", notification->getDescription().c_str()));
@@ -377,16 +364,6 @@ namespace samson {
         
     }
     
-    void SamsonWorker::logActivity( std::string log)
-    {
-        sendTrace( log );
-        
-        
-        // Keep the last 100 elements
-        activityLog.push_back( WorkerLog(log) );
-        while( activityLog.size() > 100 )
-            activityLog.pop_front();
-    }
     
     // Get information for monitoring
     void SamsonWorker::getInfo( std::ostringstream& output)
@@ -413,15 +390,6 @@ namespace samson {
         // Network
         network->getInfo( output , "main" );
         
-        
-        // Activity log
-        au::xml_open(output, "activity");
-        
-        std::list < WorkerLog >::iterator it_activityLog;
-        for ( it_activityLog = activityLog.begin() ; it_activityLog != activityLog.end() ; it_activityLog++)
-            it_activityLog->getInfo( output );
-        
-        au::xml_close(output, "activity");
     }
     
     void SamsonWorker::evalCommand( std::string command )
@@ -452,7 +420,7 @@ namespace samson {
         return "SamsonWorker> ";
     }
     
-    void SamsonWorker::sendTrace( std::string message )
+    void SamsonWorker::sendTrace( std::string type , std::string context , std::string message  )
     {
         // Send message to all delilahs
         std::vector<size_t> delilahs = network->getDelilahIds();
@@ -461,8 +429,11 @@ namespace samson {
         {
             Packet * p = new Packet( Message::Trace );
             
-            p->message->mutable_trace()->set_text( message );
-            
+            network::Trace * trace = p->message->mutable_trace();
+            trace->set_type(type);
+            trace->set_context(context);
+            trace->set_text( message );
+                        
             p->message->set_delilah_component_id( (size_t)-1 ); // This message do not belong to the operation executing it
             
             // Direction of this paket

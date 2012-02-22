@@ -35,20 +35,6 @@ namespace samson {
     class NetworkInterface;
     class Info;
     
-    class WorkerLog
-    {
-        
-    public:
-        
-        WorkerLog( std::string _txt );
-        
-        std::string time; 
-        std::string txt;
-        
-        void getInfo( std::ostringstream & output );
-        
-    };
-    
 	class SamsonWorker : 
         public NetworkInterfaceReceiver, 
         public engine::Object,
@@ -72,7 +58,6 @@ namespace samson {
 
         WorkerCommandManager* workerCommandManager;      // Manager of the "Worker commands"
         
-        std::list < WorkerLog > activityLog;            // Activity log for this worker
         
 	public:
 
@@ -88,15 +73,13 @@ namespace samson {
         // Get information for monitoring
         void getInfo( std::ostringstream& output);
         
-        // Log activity
-        void logActivity( std::string log);
         
         // au::Console ( debug mode with fg )
         void evalCommand( std::string command );
         std::string getPrompt();
 
         // Send a trace to all delilahs
-        void sendTrace( std::string message );
+        void sendTrace( std::string type , std::string context , std::string message );
 
         // Get a collection with a single record with information for this worker...
         network::Collection* getWorkerCollection( Visualization* visualization );

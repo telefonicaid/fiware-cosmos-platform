@@ -27,13 +27,10 @@ message Error
 message Trace
 {
 	
-	required string text	=1; 
-	optional int32  type	=2;
-	optional string file	=3;
-	optional int32 lineNo	=4;
-	optional string fName	=5;
-	optional int32 tLev	=6;
-	optional string stre	=7;	
+	required string text     = 1; 
+	optional string type     = 2; // message , error , warning
+	optional string context  = 3; // Context where this was generated ( streaming , delilah , etc... ) 
+
 }
 
 // ////////////////////////////////////////////////////////////////////////////

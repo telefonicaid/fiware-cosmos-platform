@@ -27,9 +27,9 @@ namespace samson {
         class QueueTask : public StreamProcessBase , public QueueTaskBase
         {
             
-            au::Cronometer creation_cronometer; // Creationg cronometer
-            
         public:
+            
+            au::Cronometer creation_cronometer; // Creationg cronometer
 
             // Constructor
             QueueTask( size_t _id , StreamOperationBase* streamOperation  );

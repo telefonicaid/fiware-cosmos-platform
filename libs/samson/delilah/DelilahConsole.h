@@ -84,6 +84,11 @@ namespace samson {
                 "trace <on> <off>"
                 );
 
+            add( "show_traces" , "delilah", 
+                "Show the last traces received from SAMSON cluster"
+                );
+            
+            
             add( "send_trace" , "delilah", 
                 "Send a trace to all conneceted delilah using a random worker as a sender\n",
                 "send_trace [-worker X] \"Message to be sent\""
@@ -293,27 +298,6 @@ namespace samson {
                 );
             
             
-            
-/* 
- 
- { "ls_block_manager"        ,   "Get information about the block-manager for each worker\n" 
- "Type 'help stream_processing' for more information\n"
- },
- 
- { "ls_blocks"               ,   "Get a complete list of blocks managed at each worker"
- },
- 
- 
- { "ls_operation_rates"      ,   "Get a list of statistics about operations in the platform\n"},
- 
- 
- { "ls_stream_activity"      ,   "Show a list of the last activity logs about automatic stream processing\n\n"
- "Type 'help stream_processing' for more information\n"
- },
- 
- */
-            
-            
             add_description("ls_modules" ,
                             "Usage: ls_modules [name]\n"
                             "\t[name] Optional name (or first part of the name) of a module to filter output\n");
@@ -413,6 +397,85 @@ namespace samson {
         
     };    
     
+    
+    // Class used to store traces received from SAMSON
+    
+    class Trace
+    {
+        
+    public:
+        
+        NodeIdentifier node;
+        
+        std::string type;
+        std::string context;
+        std::string text;
+        
+        Trace(  NodeIdentifier _node , std::string _type , std::string _context , std::string _text )
+        {
+            node = _node;
+            type = _type;
+            context = _context;
+            text = _text;
+        }
+        
+    };
+    
+    
+    class TraceCollection
+    {
+        
+        au::list<Trace> traces;
+        size_t max_num_elements;
+        
+    public:
+        
+        TraceCollection()
+        {
+            max_num_elements = 100;
+        }
+        
+        void add( NodeIdentifier node , std::string type , std::string context , std::string text )
+        {
+            traces.push_back( new Trace( node , type , context , text ) );
+            
+            while( traces.size() > max_num_elements )
+            {
+                Trace *trace = traces.front();
+                delete trace;
+                traces.pop_front();
+            }
+        }
+        
+        std::string str()
+        {
+            au::tables::Table table( 
+                                    au::StringVector( "From" , "Type" , "Context" , "Message" ),
+                                    au::StringVector( "left" , "" , "" , "left" )
+                                    );
+            
+            au::list<Trace>::iterator it_traces;
+            for (it_traces = traces.begin() ; it_traces != traces.end() ; it_traces ++ )
+            {
+                Trace * trace = (*it_traces);
+                au::StringVector values;
+                values.push_back( trace->node.str() );
+                values.push_back( trace->type );
+                values.push_back( trace->context );
+                values.push_back( trace->text );
+                
+                table.addRow( values );
+            }
+                
+            
+            return table.str("Traces");
+            
+            
+                                    
+        }
+        
+    };
+    
 	/**
 	 Main class for the DelilahConsole program
 	 */
@@ -423,9 +486,9 @@ namespace samson {
         std::string commandFileName;
         bool database_mode; // Flag to indicate that we are running commands over table collection
         
-        
         DelilahCommandCatalogue delilah_command_catalogue;
         
+        TraceCollection trace_colleciton; // Collection of traces for monitoring
 	public:
 		
         

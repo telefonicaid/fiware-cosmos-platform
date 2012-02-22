@@ -645,6 +645,13 @@ namespace samson
             return 0;
         }
         
+        if( mainCommand == "show_traces" )
+        {
+            std::string txt = trace_colleciton.str();
+            writeOnConsole( au::strToConsole( txt ) );
+            return 0;
+        }
+        
         if ( mainCommand == "clear_components" )
         {
             // Clear completed upload and download process
@@ -697,10 +704,8 @@ namespace samson
                 return 0;
             }
             
-            std::ostringstream output;
-            output << getListOfComponents();
-            writeOnConsole(output.str());
-            
+            std::string txt = getListOfComponents();
+            writeOnConsole( au::strToConsole( txt ) );
             return 0;
             
         }
@@ -945,54 +950,35 @@ namespace samson
     
     int DelilahConsole::_receive( Packet* packet )
     {
-        std::ostringstream  txt;
-        
         switch ( packet->msgCode ) 
         {
                 
             case Message::Trace:
             {
-                std::string _text   = packet->message->trace().text();
-                std::string file    = packet->message->trace().file();
-                std::string fname   = packet->message->trace().fname();
-                std::string stre    = packet->message->trace().stre();
+                std::string _text     = packet->message->trace().text();
+                std::string _type     = packet->message->trace().type();
+                std::string _context  = packet->message->trace().context();
                 
-                //writeOnConsole( au::str("Trace: %s", _text.c_str() ) );
+                // Add to the local collection of traces
+                trace_colleciton.add( packet->from, _type, _context, _text);                
+                
                 if( trace_on )
                 {
                     // Show on screen...
-                    writeWarningOnConsole( au::str("TRACE[%s]: %s\n" , packet->from.str().c_str(), _text.c_str() ) );
-                    
-                    /*
-                    lmFdRegister(1, DEF1, "DEF", "stdout", NULL);
-                    
-                    //if (lmOk(packet->message->trace().type(), packet->message->trace().tlev() ) == LmsOk)
-                    {
-                        
-                        lmOut(
-                              (char*)_text.c_str(),   
-                              (char) packet->message->trace().type() , 
-                              file.c_str(), 
-                              packet->message->trace().lineno() , 
-                              fname.c_str(), 
-                              packet->message->trace().tlev() , 
-                              stre.c_str() 
-                              );
-                    }
-                    
-                    //std::cerr << "TRACE: " << file << " ( " << fname << " ): " << _text << "\n";  
-                    
-                    lmFdUnregister(1);
-                    */
-                    //return 0;    
+                    writeWarningOnConsole( 
+                        au::str("TRACE[%s]: %s %s %s\n" 
+                                , packet->from.str().c_str()
+                                , _type.c_str() 
+                                , _context.c_str() 
+                                , _text.c_str() 
+                                )
+                                          );
                 }
                 
             }
                 break;
                 
             default:
-                txt << "Unknwn packet received\n";
-                
                 LM_X(1, ("Unknown packet received at delilahConsole"));
                 break;
         }

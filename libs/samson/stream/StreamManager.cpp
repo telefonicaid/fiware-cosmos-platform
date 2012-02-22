@@ -850,6 +850,8 @@ namespace samson {
                     int key_size   = key_data_instance->parse(data+offset);
                     int value_size = value_data_instance->parse(data+offset+key_size);
                     
+                    //int c = key_data_instance->serial_compare( data , tmp_buffer );
+                    
                     if( reference_key_size == key_size )
                     {
                         

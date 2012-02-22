@@ -118,7 +118,7 @@ int main(int argC, const char *argV[])
     paConfig("man copyright",                 (void*) manCopyright);
     paConfig("man version",                   (void*) manVersion);
 
-	paParse(paArgs, argC, (char**) argV, 1, false);
+	paParse(paArgs, argC, (char**) argV, 1, true);
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 	

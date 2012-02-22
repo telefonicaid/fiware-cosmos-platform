@@ -129,22 +129,21 @@ int main(int argC, const char *argV[])
 	paConfig("man copyright",                 (void*) manCopyright);
 	paConfig("man version",                   (void*) manVersion);
 
-    
-	paParse(paArgs, argC, (char**) argV, 1, false);
+    paParse(paArgs, argC, (char**) argV, 1, true);
 
-	lmAux((char*) "father");
+    lmAux((char*) "father");
 
-	LM_V(("Started with arguments:"));
-	for (int ix = 0; ix < argC; ix++)
-		LM_V(("  %02d: '%s'", ix, argV[ix]));
+    LM_V(("Started with arguments:"));
+    for (int ix = 0; ix < argC; ix++)
+        LM_V(("  %02d: '%s'", ix, argV[ix]));
 
 	logFd = lmFirstDiskFileDescriptor();
     
     // Capturing SIGPIPE
-    if( signal( SIGPIPE , captureSIGPIPE ) == SIG_ERR )
+    if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR)
         LM_W(("SIGPIPE cannot be handled"));
 
-    if( signal( SIGINT , captureSIGINT ) == SIG_ERR )
+    if (signal(SIGINT, captureSIGINT) == SIG_ERR)
         LM_W(("SIGINT cannot be handled"));
     
     // Make sure this singlelton is created just once

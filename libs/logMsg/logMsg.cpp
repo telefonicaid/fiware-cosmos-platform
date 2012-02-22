@@ -1616,18 +1616,17 @@ LmStatus lmPathRegister(const char* path, const char* format, const char* timeFo
 	STRING_CHECK(format, F_LEN);
 	
 	if (isdir((char*) path) == true)
-	{
-		//if (!strcmp(progName, "delilah"))
-		//{
-		//	snprintf(fileName, sizeof(fileName), "%s/%sLog.%d", path, &progName[0], getpid());
-		//}
-		//else
-		{
-			snprintf(fileName, sizeof(fileName), "%s/%sLog.%d", path, &progName[0], (int) getpid());
-		}
-	}
-	else
-		strncpy(fileName, path, sizeof(fileName));
+        snprintf(fileName, sizeof(fileName), "%s/%sLog", path, &progName[0]);
+    else
+    {
+        if (access(fileName, X_OK) == -1)
+        {
+            printf("Sorry, directory '%s' doesn't exist (errno == %d)\n", path, errno);
+            exit(1);
+        }
+
+        strncpy(fileName, path, sizeof(fileName));
+    }
 
 	if (access(fileName, F_OK) == 0)
 	{
@@ -1641,6 +1640,9 @@ LmStatus lmPathRegister(const char* path, const char* format, const char* timeFo
 	if (fd == -1)
 	{
 		char str[256];
+
+        printf("Error opening '%s': %s\n", fileName, strerror(errno));
+
 		snprintf(str, sizeof(str), "open(%s)", fileName);
 		perror(str);
 		return LmsOpen;

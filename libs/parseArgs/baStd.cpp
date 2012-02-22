@@ -8,22 +8,111 @@
 
 /* ****************************************************************************
 *
+* IntType - 
+*/
+typedef enum IntType
+{
+    Bin,
+    Oct,
+    Dec,
+    Hex
+} IntType;
+
+
+
+/* ****************************************************************************
+*
 * baStoi - string to integer
 */
-long long baStoi(char* string)
+long baStoi(char* string, int* baseP, char* errorText)
 {
-	if (strncmp(string, "0x", 2) == 0)
-		return strtoull(&string[2], NULL, 16);
-	else if (strncmp(string, "H'", 2) == 0)
-		return strtoull(&string[2], NULL, 16);
-	else if (strncmp(string, "H", 1) == 0)
-		return strtoull(&string[1], NULL, 16);
-	else if (strncmp(string, "0", 1) == 0)
-		return strtoull(&string[1], NULL, 8);
-	else if (strncmp(string, "B", 1) == 0)
-		return strtoull(&string[1], NULL, 2);
+    char                last;
+    long                multiplicator = 1;
+    int                 sign          = 1;
+    long                value;
+    IntType             type;
+    int                 base;
+    char*               validchars = (char*) "Q";
 
-	return (long long) atoi(string);
+    if ((string == NULL) || (string[0] == 0))
+        return 0;
+
+    if (*string == '-')
+    {
+        ++string;
+        sign = -1;
+    }
+
+    last = string[strlen(string) - 1]; 
+    if (last == 'k')
+        multiplicator = 1024;
+    else if (last == 'M')
+        multiplicator = 1024 * 1024;
+    else if (last == 'G')
+        multiplicator = 1024 * 1024 * 1024;
+    else if (last == 'T')
+        multiplicator = (long) 1024 * 1024 * 1024 * 1024;
+    else if (last == 'P')
+        multiplicator = (long) 1024 * 1024 * 1024 * 1024 * 1024;
+
+    if (multiplicator != 1)
+        string[strlen(string) - 1] = 0;
+
+	if (strncmp(string, "0x", 2) == 0)
+    {
+        type        = Hex;
+        base        = 16;
+        string      = &string[2];
+        validchars  = (char*) "0123456789abcdfeABCDEF";
+    }
+	else if (strncmp(string, "H'", 2) == 0)
+    {
+        type        = Hex;
+        base        = 16;
+        string      = &string[2];
+        validchars  = (char*) "0123456789abcdfeABCDEF";
+    }
+    else if (strncmp(string, "H", 1) == 0)
+	{
+        type        = Hex;
+        base        = 16;
+        string      = &string[1];
+        validchars  = (char*) "0123456789abcdfeABCDEF";
+    }
+	else if (strncmp(string, "0", 1) == 0)
+	{
+        type        = Oct;
+        base        = 8;
+        string      = &string[1];
+        validchars  = (char*) "01234567";
+    }
+	else if (strncmp(string, "B", 1) == 0)
+	{
+        type        = Bin;
+        base        = 2;
+        string      = &string[1];
+        validchars  = (char*) "01";
+    }
+    else
+    {
+        type        = Dec;
+        base        = 10;
+        validchars  = (char*) "0123456789";
+    }
+
+    if (baseP)
+        *baseP = base;
+
+    if (strspn(string, validchars) != strlen(string))
+    {
+        if (errorText)
+            sprintf(errorText, "bad string in integer conversion: '%s'", string);
+        return -1;
+    }
+
+    value = strtoull(string, NULL, base);
+
+    return sign * multiplicator * value;
 }
 
 

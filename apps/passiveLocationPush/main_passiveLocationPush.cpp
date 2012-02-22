@@ -487,32 +487,6 @@ void fakeData(samson::SamsonPushBuffer* pushBuffer)
 */
 int main(int argC, const char* argV[])
 {
-#if 0
-    au::CommandLine cmd;
-
-    cmd.set_flag_int("timeOut" , 0);         // 0 value for timeOut means no timeout
-    cmd.set_flag_double("rate" , 1.0);
-    cmd.set_flag_string("controller", "localhost");
-    cmd.set_flag_string("file", "generator");
-
-    cmd.parse(argc, argv);
-
-    if (cmd.get_num_arguments() < 2)
-    {
-        fprintf(stderr,"Usage %s queue [ -controller controller_ip]  [ -rate rate_in_megabytes_per_second ]  [ -timeOut timeout_in_seconds ] [-file input_file]\n" , argv[0]);
-        exit(0);
-    }
-
-
-    std::string queue_name = cmd.get_argument(1);
-    std::string controller = cmd.get_flag_string("controller");
-    std::string file = cmd.get_flag_string("file");
-
-    int timeOut = cmd.get_flag_int("timeOut");
-    double rate = cmd.get_flag_double("rate");
-#endif
-
-
     paConfig("builtin prefix",                (void*) "SS_PLP_");
     paConfig("usage and exit on any warning", (void*) true);
     paConfig("log to screen",                 (void*) "only errors");

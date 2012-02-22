@@ -54,7 +54,7 @@
 *
 * baStoi - string to integer
 */
-extern long long baStoi(char* string);
+extern long baStoi(char* string, int* baseP = (int*) 0, char* errorText = (char*) 0);
 
 
 

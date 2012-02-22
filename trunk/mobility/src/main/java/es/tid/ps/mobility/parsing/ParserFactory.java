@@ -5,39 +5,36 @@ import org.apache.log4j.Logger;
 import java.util.HashMap;
 
 /**
- * User: masp20
- * Date: 25-ene-2012
- * Time: 12:36:11
+ * User: masp20 Date: 25-ene-2012 Time: 12:36:11
  */
-
 public class ParserFactory {
-
     private static final Logger LOG = Logger.getLogger(ParserFactory.class);
-
-    private static final String PARSER_DEFAULT_CLASS_NAME = "es.tid.analytics.mobility.core.parsers.ParserDefault";
-    private static final String PARSER_ALPHA_CLASS_NAME = "es.tid.analytics.mobility.core.parsers.ParserAlphanumeric";
-
+    private static final String PARSER_DEFAULT_CLASS_NAME =
+            es.tid.ps.mobility.parsing.ParserDefault.class.getName();
+    private static final String PARSER_ALPHA_CLASS_NAME =
+            es.tid.ps.mobility.parsing.ParserAlphanumeric.class.getName();
     public static final String PARSER_DEFAULT = "DEFAULT";
     public static final String PARSER_ALPHA = "ALPHA";
-
     public static final int GEO_LOCATION_LEVEL = 1;
-
-    public static final HashMap<String, String> PARSER_CONTAINER = new HashMap<String, String>();
-
+    public static final HashMap<String, String> PARSER_CONTAINER =
+            new HashMap<String, String>();
 
     public ParserFactory() {
         ParserFactory.loadParsers();
     }
 
     private static void loadParsers() {
-        ParserFactory.PARSER_CONTAINER.put(ParserFactory.PARSER_DEFAULT, ParserFactory.PARSER_DEFAULT_CLASS_NAME);
-        ParserFactory.PARSER_CONTAINER.put(ParserFactory.PARSER_ALPHA, ParserFactory.PARSER_ALPHA_CLASS_NAME);
+        ParserFactory.PARSER_CONTAINER.put(ParserFactory.PARSER_DEFAULT,
+                                           ParserFactory.PARSER_DEFAULT_CLASS_NAME);
+        ParserFactory.PARSER_CONTAINER.put(ParserFactory.PARSER_ALPHA,
+                                           ParserFactory.PARSER_ALPHA_CLASS_NAME);
     }
 
     public ParserCell createNewDefaultCellParser() {
         ParserCell parser = null;
         try {
-            parser = (ParserCell) Class.forName(ParserFactory.PARSER_DEFAULT_CLASS_NAME).newInstance();
+            parser = (ParserCell) Class.forName(
+                    ParserFactory.PARSER_DEFAULT_CLASS_NAME).newInstance();
         } catch (InstantiationException ie) {
             LOG.error("ERROR al instanciar el parser", ie);
         } catch (IllegalAccessException iae) {
@@ -52,7 +49,8 @@ public class ParserFactory {
     public ParserCdr createNewDefaultCdrParser() {
         ParserCdr parser = null;
         try {
-            parser = (ParserCdr) Class.forName(ParserFactory.PARSER_DEFAULT_CLASS_NAME).newInstance();
+            parser = (ParserCdr) Class.forName(
+                    ParserFactory.PARSER_DEFAULT_CLASS_NAME).newInstance();
         } catch (InstantiationException ie) {
             LOG.error("ERROR al instanciar el parser", ie);
         } catch (IllegalAccessException iae) {
@@ -97,5 +95,4 @@ public class ParserFactory {
 
         return parser;
     }
-
 }

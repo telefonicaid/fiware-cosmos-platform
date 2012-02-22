@@ -995,6 +995,10 @@ namespace samson {
             operation->input_queues.push_back( cmd.get_argument( pos_argument++ ) );
         for (int i = 0 ; i < op->getNumOutputs() ; i++)
             operation->output_queues.push_back( cmd.get_argument( pos_argument++ ) );
+     
+        // Reasign the name for better description
+        operation->name = au::str("run_%s_delilah_%lu_%lu" , op->getName().c_str() , delilah_id , delilah_component_id );
+        
         
         return operation;
     }

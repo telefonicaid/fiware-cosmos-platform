@@ -142,6 +142,14 @@ map map_error
 	helpLine	"Map to produce an error while running to test fault-issolation" 
 }
 
+map map_traces
+{
+	in system.String system.UInt
+	out system.String system.UInt
+
+	helpLine	"Map that produce traces"
+}
+
 generator generator_list
 {
 	out system.UInt example.ExampleData

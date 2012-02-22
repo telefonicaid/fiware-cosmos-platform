@@ -559,7 +559,7 @@ namespace samson {
     
     int Delilah::_receive( Packet* packet )
     {
-        LM_W(("Unused packet %s" , packet->str().c_str()));
+        LM_V(("Unused packet %s" , packet->str().c_str()));
         
         if( packet->buffer )
             engine::MemoryManager::shared()->destroyBuffer( packet->buffer );

@@ -130,6 +130,10 @@ namespace samson {
 	
 	void ProcessWriter::emit( int output , DataInstance *key , DataInstance *value )
 	{
+        // Spetial case for logging...
+        if( output == -1 )
+            output = num_outputs-1; // Last channel
+        
         // Check if DataInstances used for key and value are correct
         
         if( key->getHashType() != keyValueHash[output].key_hash )

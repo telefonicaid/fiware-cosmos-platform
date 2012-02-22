@@ -63,6 +63,13 @@ namespace samson {
 
         void StreamProcessBase::processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )
         {
+            // Spetial case for logging
+            if( output == (int) streamOperation->output_queues.size() )
+            {
+                sendBufferToQueue( buffer , outputWorker , au::str("log_%s", streamOperation->name.c_str() ) );
+                return;
+            }
+            
             //LM_M(("[%s] Processing buffer %s" , streamOperation->operation.c_str(), au::str(buffer->getSize()).c_str() ));
             sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues[output] );
         }

@@ -29,9 +29,6 @@ namespace samson
 
         mainLayout = new QBoxLayout(QBoxLayout::TopToBottom, queuesTab);
  
-        //queueViewer1 = new QueueViewer(queuesTab);
-        //mainLayout->addWidget(queueViewer1);
-                
         tabs->addTab(queuesTab, tr("Queues"));
         
         exitAction = new QAction(tr("E&xit"), this);
@@ -89,7 +86,7 @@ namespace samson
             //Increment totals
             totalKvs += atol(queuesData[i].kvs.c_str());
             totalSize += atol(queuesData[i].size.c_str());
-            totalRate += atol(queuesData[i].rate.c_str());
+            totalRate += atol(queuesData[i].bytes_s.c_str());
 
             //check if the queue belongs to the input or output queues list
             bool is_input = (fnmatch("in:*", queuesData[i].name.c_str(),0) == 0);
@@ -110,10 +107,11 @@ namespace samson
 
             }
 
-            QueueViewer* queueTmp = find_queue(*queuesList, queuesData[i].name);
+            QueueViewer* queueTmp = findQueue(*queuesList, queuesData[i].name);
             bool current_queue_changed = false;
             if( queueTmp != NULL)
             {
+            
                 //Check if the data has actually changed
                 current_queue_changed = !(queuesData[i] == queueTmp->data);
                 if(current_queue_changed)
@@ -121,7 +119,12 @@ namespace samson
                     any_change = true;
                     //queue already has a widget. Just update
                     queueTmp->setData(queuesData[i]);
-                    //TODO: update data in queue tab
+                    //update data in queue tab
+                    ExtQueueViewer* tabbedQueue = findQueueTab(queueTmp->title);
+                    if (tabbedQueue)
+                    {
+                        tabbedQueue->setData(queuesData[i]);
+                    }
                 }
             }
             else
@@ -133,6 +136,7 @@ namespace samson
                 queueTmp->setData(queuesData[i]);
                 queuesList->push_back(queueTmp);
                 queueTmp->setLayout(layoutTmp, queuesList->size()-1);
+                connect(queueTmp, SIGNAL(detailsClicked()), this, SLOT(onQueueDetailsClicked()));
                 //layoutTmp->addWidget(queueTmp);
                 
                 groupBoxTmp->adjustSize();
@@ -152,7 +156,7 @@ namespace samson
             
             totalData.kvs = au::str("%lu", totalKvs);
             totalData.size = au::str("%lu", totalSize);
-            totalData.rate = au::str("%lu", totalRate);
+            totalData.bytes_s = au::str("%lu", totalRate);
             
             totalQueues->setData(totalData);
             totalQueues->update();
@@ -178,20 +182,9 @@ namespace samson
 
         }
             
-        //ajustar layout o update el groupbox
-     /*   inputBox->update();
-        outputBox->update();
-        totalBox->update();
-        inputLayout->update();
-        outputLayout->update();
-        totalLayout->update();
-
-        mainLayout->update();
-        */
-        
     }
     
-    QueueViewer* DelilahMainWindow::find_queue(std::vector<QueueViewer*>& list, std::string name)
+    QueueViewer* DelilahMainWindow::findQueue(std::vector<QueueViewer*>& list, std::string name)
     {
         bool found = false;
         QueueViewer* queueTmp = NULL;
@@ -207,4 +200,48 @@ namespace samson
         return queueTmp;
         
     }
+    
+    ExtQueueViewer* DelilahMainWindow::findQueueTab(std::string name)
+    {
+        bool found = false;
+        ExtQueueViewer* queueTmp = NULL;
+        for(unsigned int i = 0; i< tabbedQueues.size() && !found; i++)
+        {
+            if (tabbedQueues[i]->title == name)
+            {
+                found = true;
+                queueTmp = tabbedQueues[i];
+            }
+        }
+        
+        return queueTmp;
+        
+    }    
+    
+    void DelilahMainWindow::onQueueDetailsClicked()
+    {
+        //Get the queue button that triggered the slot
+        QueueViewer* queue = (QueueViewer*) sender();
+        //Check if the queue already has a tab
+        ExtQueueViewer* tabbedQueue = findQueueTab(queue->title);
+        if(tabbedQueue)
+        {
+            tabs->setCurrentWidget(tabbedQueue);
+        }
+        else
+        {
+            //There is not an existing tab for the queue. Create one.
+            tabbedQueue =  new ExtQueueViewer(queue->title, this);
+            tabs->addTab(tabbedQueue, QString(queue->title.c_str()));
+            tabbedQueues.push_back(tabbedQueue);
+            emit requestUpdate();
+            tabbedQueue->setData(queue->data);
+            tabs->setCurrentWidget(tabbedQueue);
+        }
+    }
+    
+/*    ExtQueueData DelilahMainWindow::getQueueData(std::string name, ExtQueueViewer* queue)
+    {
+    }
+  */  
 }

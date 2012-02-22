@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "QueueViewer.h"
-
+#include "ExtQueueViewer.h"
 
 namespace samson {
 	
@@ -51,6 +51,8 @@ namespace samson {
         std::vector<QueueViewer*> out_queues;
         QueueViewer* totalQueues;
         
+        std::vector<ExtQueueViewer*> tabbedQueues;
+        
     public:
     
         DelilahMainWindow();
@@ -66,10 +68,15 @@ namespace samson {
         
     private slots:
         void about();
+        void onQueueDetailsClicked();
 
-    
+    signals:
+        void requestUpdate();
+        
     private:
-        QueueViewer* find_queue(std::vector<QueueViewer*>& list, std::string name);
+        QueueViewer* findQueue(std::vector<QueueViewer*>& list, std::string name);
+        ExtQueueViewer* findQueueTab(std::string name);
+        QueueData getQueueData(std::string name, ExtQueueViewer* queue);
     };
 }    
     

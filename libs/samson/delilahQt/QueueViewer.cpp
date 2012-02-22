@@ -15,23 +15,6 @@
 
 namespace samson{
 
-QueueData::QueueData()
-{
-    name = "";
-    kvs = "";
-    size = "";
-    rate = "";
-}
-bool QueueData::operator==(const QueueData &other) const 
-{
-    if(name != other.name) return false;
-    if(kvs != other.kvs) return false;
-    if(size != other.size) return false;
-    if(rate != other.rate) return false;
-    return true;
-}
-
-
 QueueViewer::QueueViewer(std::string _title, QWidget* parent): QWidget(parent)
 {
     //QVBoxLayout* layout;
@@ -60,7 +43,6 @@ QueueViewer::QueueViewer(std::string _title, QWidget* parent): QWidget(parent)
     kvsDigits->setFont(bigFont);
     kvsDigits->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     kvsDigits->setLineWidth(2);
-    //kvssize = new QLabel("KVs Size: ", groupBox);
     size = new QLabel("Size: ", this);
     sizeDigits = new QLabel(this);
     sizeDigits->setFont(bigFont);
@@ -74,7 +56,7 @@ QueueViewer::QueueViewer(std::string _title, QWidget* parent): QWidget(parent)
     rateDigits->setLineWidth(2);
     
     detailsButton = new QPushButton("details >>",this);
-    //rate_size = new QLabel("Rate Size: ", groupBox);
+    connect(detailsButton, SIGNAL(clicked()), this, SLOT(onDetailsClicked()));
 
     if (data.name.empty())
     {
@@ -85,30 +67,6 @@ QueueViewer::QueueViewer(std::string _title, QWidget* parent): QWidget(parent)
         setTitle(data.name);
     }
     
-    //layout = new QHBoxLayout(this);
-    /*layout->addWidget(name);
-    layout->addStretch();
-    layout->addWidget(kvs);
-    layout->addWidget(kvsDigits);
-    layout->addStretch();
-    //layout->addWidget(kvssize);
-    layout->addWidget(size);
-    layout->addWidget(sizeDigits);
-    layout->addStretch();
-    //layout->addWidget(size_locked);
-    //layout->addWidget(size_on_disk);
-    //layout->addWidget(size_on_memory);
-    //layout->addWidget(kvs_rate);
-    //layout->addWidget(kvs_rate_size);
-    layout->addWidget(rate);
-    layout->addWidget(rateDigits);
-    layout->addStretch();
-    layout->addWidget(detailsButton);    //layout->addWidget(rate_size);
-*/
-    //groupBox->setLayout(layout);
-    
-
-    //resize(minimumSizeHint()); 
 }
 
 void QueueViewer::setData(QueueData newData)
@@ -123,7 +81,7 @@ void QueueViewer::setData(QueueData newData)
         //size_on_memory->setText(QString("Size (on memory): ") + QString(data.size_on_memory.c_str()));
         //kvs_rate->setText(QString("KVs Rate: ") + QString(data.kvs_rate.c_str()));
         //kvs_rate_size->setText(QString("KVs Rate Size: ") + QString(data.kvs_rate_size.c_str()));
-        rateDigits->setText(QString((au::str(strtoul(data.rate.c_str(), NULL, 0))/* + std::string("b/s")*/).c_str()));
+        rateDigits->setText(QString((au::str(strtoul(data.bytes_s.c_str(), NULL, 0))/* + std::string("b/s")*/).c_str()));
         //rate_size->setText(QString("Rate Size: ") + QString(data.rate_size.c_str()));
 }
 
@@ -162,5 +120,9 @@ void QueueViewer::setLayout(QGridLayout* layout, int row)
     layout->addWidget(detailsButton, row, 11);
 }
 
+void QueueViewer::onDetailsClicked()
+{
+    emit detailsClicked();
+}
 
 } //namespace

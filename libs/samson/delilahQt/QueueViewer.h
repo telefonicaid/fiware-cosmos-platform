@@ -12,10 +12,12 @@
 #include <vector>
 #include <string>
 
+#include "ExtQueueViewer.h"
+
 namespace samson {
 	
 
-class  QueueData 
+/*class  QueueData 
 {
     public:
         std::string name;
@@ -33,7 +35,7 @@ class  QueueData
         QueueData();
         bool operator==(const QueueData &other) const;
 };
-
+*/
         
 class QueueViewer: public QWidget
 {
@@ -50,6 +52,11 @@ class QueueViewer: public QWidget
         void setHiddenButton(bool hidden);
         void setLayout(QGridLayout* layout, int row);
 
+        QPushButton* detailsButton;
+    signals:
+        void detailsClicked();
+    public slots:
+        void onDetailsClicked();
     private:
         //QScrollArea* scrollArea;
         //QGroupBox* groupBox;
@@ -68,7 +75,6 @@ class QueueViewer: public QWidget
         //QLabel* kvs_rate_size;
         QLabel* rate;
         QLabel* rateDigits;
-        QPushButton* detailsButton;
         //QLabel* rate_size;
         
 };

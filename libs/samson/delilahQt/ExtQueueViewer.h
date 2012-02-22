@@ -15,7 +15,7 @@
 namespace samson {
 	
 
-class  ExtQueueData 
+class  QueueData 
 {
     public:
         std::string name;
@@ -25,9 +25,10 @@ class  ExtQueueData
         std::string key;
         std::string value;
         //Rate
-        std::string rate_kvs;
-        std::string rate_size;
-        std::string rate_kvs_s;
+        std::string total_kvs;
+        std::string total_size;
+        std::string kvs_s;
+        std::string bytes_s;
         std::string blocks;
         std::string rate_size;
         std::string on_memory;
@@ -36,7 +37,7 @@ class  ExtQueueData
         std::string time_from;
         std::string time_to;
 
-        bool operator==(const ExtQueueData &other) const;
+        bool operator==(const QueueData &other) const;
 };
 
         
@@ -48,9 +49,9 @@ class ExtQueueViewer: public QWidget
         ExtQueueViewer(std::string _title, QWidget* parent = 0);
         std::string title;
 
-        ExtQueueData data;
+        QueueData data;
         
-        void setData(ExtQueueData newData);
+        void setData(QueueData newData);
         void setTitle(std::string title);
         void setHiddenButton(bool hidden);
         //void setLayout(QGridLayout* layout, int row);

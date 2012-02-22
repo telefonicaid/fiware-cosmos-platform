@@ -15,14 +15,13 @@ import org.apache.log4j.Logger;
 
 import es.tid.ps.mobility.data.MobProtocol.GLEvent;
 
-
-
 public class IndividualMobilityDriver extends Configured implements Tool {
+    private static final Logger LOG = Logger.getLogger(
+            IndividualMobilityDriver.class);
 
-    private static final Logger LOG = Logger.getLogger(IndividualMobilityDriver.class);
-
-    public int run(final String[] args) throws IOException, ClassNotFoundException, InterruptedException {
-
+    public int run(final String[] args) throws IOException,
+                                               ClassNotFoundException,
+                                               InterruptedException {
         final Configuration conf = getConf();
         final Job job = new Job(conf, "Mob2Productivization execution");
 
@@ -40,15 +39,14 @@ public class IndividualMobilityDriver extends Configured implements Tool {
     }
 
     public static void main(final String[] args) {
-        int res = -1;
-
         try {
-            res = ToolRunner.run(new Configuration(), new IndividualMobilityDriver(), args);
+            int res = ToolRunner.run(new Configuration(),
+                                     new IndividualMobilityDriver(),
+                                     args);
+            System.exit(res);
         } catch (Exception e) {
             LOG.debug("ERROR ", e);
+            System.exit(1);
         }
-
-        System.exit(res);
     }
-
 }

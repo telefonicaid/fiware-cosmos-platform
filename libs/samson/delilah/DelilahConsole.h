@@ -87,12 +87,23 @@ namespace samson {
             add( "show_traces" , "delilah", 
                 "Show the last traces received from SAMSON cluster"
                 );
+
+            add( "open_traces_file" , "delilah", 
+                "Open a local file to store all received traces",
+                "open_traces_file [file_name]"
+                );
+            
+            add( "close_traces_file" , "delilah", 
+                "Close local file opened to store with command 'open_traces_file'"
+                );
             
             
             add( "send_trace" , "delilah", 
                 "Send a trace to all conneceted delilah using a random worker as a sender\n",
-                "send_trace [-worker X] \"Message to be sent\""
+                "send_trace [-worker X] [-error] [-warning] \"Message to be sent\""
                 "      -worker X     Use only this worker as broadcaster\n"
+                "      -error        Mark this trace as an error for correct visualitzation\n"
+                "      -warning      Mark this trace as a warning for correct visualitzation\n"
                 "      message       Use only this worker as broadcaster\n"
                 );
             
@@ -488,7 +499,10 @@ namespace samson {
         
         DelilahCommandCatalogue delilah_command_catalogue;
         
-        TraceCollection trace_colleciton; // Collection of traces for monitoring
+        TraceCollection trace_colleciton;    // Collection of traces for monitoring
+        std::string trace_file_name;         // Name of the traces file ( if any )
+        FILE *trace_file;                    // FILE to store traces if defined with save_traces
+        
 	public:
 		
         

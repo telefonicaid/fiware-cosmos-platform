@@ -179,8 +179,7 @@ namespace samson {
             {
                 // Update local list of queus automatically
                 sendWorkerCommand("ls_queues -a -hidden -save" , NULL);
-                
-                
+                sendWorkerCommand("ls_workers -a -hidden -save" , NULL);
             }
             
             return;
@@ -479,6 +478,10 @@ namespace samson {
 		for (iter = components.begin() ; iter != components.end() ; iter++)
 		{
             DelilahComponent* component = iter->second;
+            
+            if( component->hidden )
+                continue;
+            
             table.addRow( au::StringVector( component->getIdStr() ,  component->getTypeName() ,  component->getStatusDescription() , component->concept ) );
 		}
 		return table.str( "List of delilah processes" );

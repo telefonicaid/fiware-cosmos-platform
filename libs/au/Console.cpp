@@ -282,7 +282,8 @@ void Console::process_background()
         {
             std::string txt = pending_messages.front();
             pending_messages.pop_front();
-            
+
+            // Add a return if necessary
             if( txt.substr(txt.length()-1) != "\n" )
                 txt.append("\n");
             
@@ -436,6 +437,10 @@ bool Console::isQuitting()
 /* Methods to write things on screen */
 void Console::writeWarningOnConsole( std::string message )
 {
+    // Remove last return if any
+    if( message.substr(message.length()-1) == "\n" )
+        message.erase(message.length()-1);
+
     std::ostringstream output;
     output << "\033[1;35m"<< message << "\033[0m";
     write( output.str() );
@@ -444,9 +449,14 @@ void Console::writeWarningOnConsole( std::string message )
 
 void Console::writeErrorOnConsole( std::string message )
 {
+    // Remove last return if any
+    if( message.substr(message.length()-1) == "\n" )
+        message.erase(message.length()-1);
+    
     std::ostringstream output;
     output << "\033[1;31m"<< message << "\033[0m";
-    write( output.str() );
+    std::string txt = output.str();
+    write( txt );
 }
 
 
@@ -454,7 +464,6 @@ void Console::writeOnConsole( std::string message )
 {
     write( message );
 }
-
 
 void Console::write( std::string message )
 {

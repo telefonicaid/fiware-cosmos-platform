@@ -67,6 +67,9 @@ namespace samson
         addEspaceSequence( "d" );  // Data base mode...
         
         automatic_update = false;
+
+        // By default no save traces
+        trace_file = NULL;
     }
     
     DelilahConsole::~DelilahConsole()
@@ -652,6 +655,50 @@ namespace samson
             return 0;
         }
         
+        if ( mainCommand == "open_traces_file" )
+        {
+            if( commandLine.get_num_arguments() < 2 )
+            {
+                writeErrorOnConsole("USAGE: open_traces_file local_file ");
+                return 0;
+            }
+            
+            if( trace_file )
+            {
+                writeErrorOnConsole(
+                au::str("Please close previous traces file (%s) with command 'close_traces_file'\n",trace_file_name.c_str())
+                                    );
+                return 0;
+            }
+            
+            trace_file_name = commandLine.get_argument(1);
+            trace_file = fopen(trace_file_name.c_str(), "w");
+            if ( !trace_file )
+            {
+                writeErrorOnConsole( au::str("Error opening file '%s' to store traces (%s)\n"
+                                             ,trace_file_name.c_str()
+                                             , strerror(errno) )
+                                    );
+                return 0;
+            }
+
+            writeOnConsole(au::str("Saving traces to file '%s'\n" , trace_file_name.c_str()));
+            return 0;
+        }
+        
+        if ( mainCommand == "close_traces_file" )
+        {
+            if( !trace_file )
+            {
+                writeErrorOnConsole("There is no opened trace file. Open one with command 'open_traces_file'\n");
+                return 0;
+            }
+            
+            fclose(trace_file);
+            writeOnConsole("Stop saving traces to file '%s'.\nRemeber you can open a new traces file with command 'open_traces_file\n'");
+            return 0;
+        }
+        
         if ( mainCommand == "clear_components" )
         {
             // Clear completed upload and download process
@@ -961,18 +1008,33 @@ namespace samson
                 
                 // Add to the local collection of traces
                 trace_colleciton.add( packet->from, _type, _context, _text);                
+
+                // Write to disk if required
+                if( trace_file )
+                {
+                    std::string trace_message =  au::str("%s %s %s %s\n" 
+                                                         , packet->from.str().c_str()
+                                                         , _type.c_str() 
+                                                         , _context.c_str() 
+                                                         , _text.c_str() 
+                                                         );
+                    fwrite(trace_message.c_str(), trace_message.length(), 1, trace_file);
+                }
                 
                 if( trace_on )
                 {
-                    // Show on screen...
-                    writeWarningOnConsole( 
-                        au::str("TRACE[%s]: %s %s %s\n" 
-                                , packet->from.str().c_str()
-                                , _type.c_str() 
-                                , _context.c_str() 
-                                , _text.c_str() 
-                                )
-                                          );
+                    std::string trace_message =  au::str("TRACE[%s]: %s %s\n" 
+                                                         , packet->from.str().c_str()
+                                                         , _context.c_str() 
+                                                         , _text.c_str() 
+                                                         );
+
+                    if( _type == "error" )
+                        writeErrorOnConsole( trace_message );
+                    else if( _type == "warning" )
+                        writeWarningOnConsole( trace_message );
+                    else
+                        writeOnConsole( trace_message );
                 }
                 
             }

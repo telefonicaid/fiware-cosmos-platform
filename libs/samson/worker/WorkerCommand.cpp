@@ -427,6 +427,8 @@ namespace samson {
         // Parse command
         au::CommandLine cmd;
         cmd.set_flag_boolean("clear_inputs");
+        cmd.set_flag_boolean("error");
+        cmd.set_flag_boolean("warning");
         cmd.set_flag_boolean("f");
         cmd.set_flag_boolean("new");
         cmd.set_flag_boolean("remove");
@@ -645,7 +647,13 @@ namespace samson {
             std::string full_message = au::str("[Delilah %lu] %s" , delilah_id , message.c_str() );
 
             // Send a trace to all delilahs
-            samsonWorker->sendTrace( "message" , "delilah" , full_message );
+            if( cmd.get_flag_bool("error") )
+                samsonWorker->sendTrace( "error" , "delilah" , full_message );
+            else if( cmd.get_flag_bool("warning") )
+                samsonWorker->sendTrace( "warning" , "delilah" , full_message );
+            else
+                samsonWorker->sendTrace( "message" , "delilah" , full_message );
+            
             
             finishWorkerTask();
             return;

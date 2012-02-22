@@ -1,23 +1,17 @@
 package es.tid.ps.mobility.parsing;
 
 import java.util.Calendar;
-import es.tid.analytics.mobility.core.data.Cell;
-import es.tid.analytics.mobility.core.parsers.ParserCdr;
-import es.tid.analytics.mobility.core.parsers.ParserCell;
-import es.tid.analytics.mobility.core.parsers.ParserFactory;
+
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
-//import java.util.Date;
-
-import es.tid.ps.mobility.data.MobProtocol.Cdr;
 import es.tid.ps.mobility.data.BaseProtocol.Date;
 import es.tid.ps.mobility.data.BaseProtocol.Time;
+import es.tid.ps.mobility.data.Cell;
+import es.tid.ps.mobility.data.MobProtocol.Cdr;
 
 /**
- * User: masp20
- * Date: 26-ene-2012
- * Time: 16:58:30
+ * @author masp20
  */
 public class ParserTest {
 
@@ -80,12 +74,12 @@ public class ParserTest {
         final Cdr.Builder testCdr = Cdr.newBuilder();
         final Date.Builder testDate = Date.newBuilder();
         final Time.Builder testTime = Time.newBuilder();
-        
+
         testDate.setDay(4);
         testDate.setMonth(1);
         testDate.setYear(2010);
         testDate.setWeekday(2);
-        
+
         testTime.setHour(17);
         testTime.setMinute(21);
         testTime.setSeconds(07);
@@ -106,12 +100,12 @@ public class ParserTest {
         final Cdr.Builder testCdr = Cdr.newBuilder();
         final Date.Builder testDate = Date.newBuilder();
         final Time.Builder testTime = Time.newBuilder();
-        
+
         testDate.setDay(4);
         testDate.setMonth(1);
         testDate.setYear(2010);
         testDate.setWeekday(Calendar.MONDAY);
-        
+
         testTime.setHour(17);
         testTime.setMinute(21);
         testTime.setSeconds(07);
@@ -133,12 +127,12 @@ public class ParserTest {
         final Cdr.Builder testCdr = Cdr.newBuilder();
         final Date.Builder testDate = Date.newBuilder();
         final Time.Builder testTime = Time.newBuilder();
-        
+
         testDate.setDay(4);
         testDate.setMonth(1);
         testDate.setYear(2010);
         testDate.setWeekday(Calendar.MONDAY);
-        
+
         testTime.setHour(17);
         testTime.setMinute(21);
         testTime.setSeconds(07);

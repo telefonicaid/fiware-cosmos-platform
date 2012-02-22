@@ -1,13 +1,14 @@
 package es.tid.ps.mobility.parsing;
 
-import es.tid.analytics.mobility.core.data.Client;
-import es.tid.analytics.mobility.core.data.GeoLocation;
-import es.tid.analytics.mobility.core.data.GeoLocationContainer;
+import java.util.ArrayList;
+
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
+import es.tid.ps.mobility.data.Client;
+import es.tid.ps.mobility.data.GeoLocation;
+import es.tid.ps.mobility.data.GeoLocationContainer;
 
 public class GeoLocationRepresTest {
 

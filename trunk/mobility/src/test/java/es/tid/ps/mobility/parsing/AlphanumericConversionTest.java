@@ -1,6 +1,5 @@
 package es.tid.ps.mobility.parsing;
 
-import es.tid.analytics.mobility.core.parsers.ParserAlphanumeric;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import org.junit.Test;

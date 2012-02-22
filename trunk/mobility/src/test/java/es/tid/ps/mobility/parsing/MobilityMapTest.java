@@ -16,11 +16,10 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import es.tid.analytics.mobility.core.IndividualMobilityMap;
-import es.tid.ps.mobility.data.BaseProtocol;
 import es.tid.ps.mobility.data.BaseProtocol.Date;
 import es.tid.ps.mobility.data.BaseProtocol.Time;
 import es.tid.ps.mobility.data.MobProtocol.GLEvent;
+import es.tid.ps.mobility.mapreduce.IndividualMobilityMapper;
 
 /**
  * User: masp20
@@ -30,31 +29,20 @@ import es.tid.ps.mobility.data.MobProtocol.GLEvent;
 public class MobilityMapTest {
 
     private MapDriver<LongWritable, Text, LongWritable, ProtobufWritable<GLEvent>> driver;
-    private static final String CDRS_LINE = "1376352479|2221435146|1376352479|0442221472843|2|LDN|20100104|17:21:07|22|118-TELEFONIA MOVIL|118-TELEFONIA MOVIL|??|??|11115006528440|NOROAMI";
+    private static final String CDRS_LINE = "1376352479|2221435146|1376352479|"
+            + "0442221472843|2|LDN|20100104|17:21:07|22|118-TELEFONIA MOVIL|"
+            + "118-TELEFONIA MOVIL|??|??|11115006528440|NOROAMI";
 
 
     @Before
     public void setUp() {
-        final Mapper<LongWritable, Text, LongWritable, ProtobufWritable<GLEvent>> mapper = new IndividualMobilityMap();
-        this.driver = new MapDriver<LongWritable, Text, LongWritable, ProtobufWritable<GLEvent>>(mapper);
+        final Mapper<LongWritable, Text, LongWritable,
+                ProtobufWritable<GLEvent>> mapper = new IndividualMobilityMapper();
+        this.driver = new MapDriver<LongWritable, Text, LongWritable,
+                ProtobufWritable<GLEvent>>(mapper);
     }
 
-//    @Test
-//    public void testEmpty() {
-//        List<Pair<LongWritable, GLEvent>> out = null;
-//
-//        try {
-//            out = this.driver.withInput(new LongWritable(0), new Text("")).run();
-//        } catch (IOException ioe) {
-//            fail();
-//        }
-//
-//        final List<Pair<Text, Text>> expected = new ArrayList<Pair<Text, Text>>();
-//
-//        assertListEquals(expected, out);
-//    }
-
-    @Test @Ignore
+    @Test @Ignore // FIXME
     public void testCDRLine() {
         //TODO : don't work properly without cellCatalogue
         List<Pair<LongWritable, ProtobufWritable<GLEvent>>> out = null;
@@ -68,7 +56,8 @@ public class MobilityMapTest {
         final LongWritable nodeId = new LongWritable(2221435146L);
         final GLEvent glEvent = createEvent();
 
-        final List<Pair<LongWritable, GLEvent>> expected = new ArrayList<Pair<LongWritable, GLEvent>>();
+        final List<Pair<LongWritable, GLEvent>> expected =
+                new ArrayList<Pair<LongWritable, GLEvent>>();
         expected.add(new Pair<LongWritable, GLEvent>(nodeId, glEvent));
 
         assertListEquals(expected, out);
@@ -78,7 +67,7 @@ public class MobilityMapTest {
         final GLEvent.Builder glEvent = GLEvent.newBuilder();
         final Date.Builder testDate = Date.newBuilder();
         final Time.Builder testTime = Time.newBuilder();
-        
+
         testDate.setDay(4);
         testDate.setMonth(1);
         testDate.setYear(2010);

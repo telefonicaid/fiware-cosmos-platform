@@ -1,58 +1,43 @@
 package es.tid.ps.mobility.parsing;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
-import es.tid.analytics.mobility.core.data.GeoLocation;
-import es.tid.analytics.mobility.core.data.GeoLocationContainer;
+import es.tid.ps.mobility.data.GeoLocation;
+import es.tid.ps.mobility.data.GeoLocationContainer;
 
 public class GeoLocationContainerTest {
+    @Test
+    public void testGeoLocationContainer() {
+        GeoLocation geoLocation = new GeoLocation(666, (byte) 34, (byte) 5);
+        GeoLocationContainer geoLocationsActual = new GeoLocationContainer();
+        GeoLocationContainer geoLocationsExpected = new GeoLocationContainer();
 
-	@Before
-	public void setUp() throws Exception {
-	}
+        geoLocationsExpected.putGeoLocation(geoLocation, Integer.valueOf(1));
+        geoLocationsActual.incrementGeoLocation(geoLocation);
 
-	@After
-	public void tearDown() throws Exception {
-	}
+        assertEquals(geoLocationsExpected, geoLocationsActual);
+    }
 
-	@Test
-	public void testGeoLocationContainer() {
-		GeoLocation geoLocation = new GeoLocation(666, (byte) 34, (byte) 5);
-		GeoLocationContainer geoLocationsActual = new GeoLocationContainer();
-		GeoLocationContainer geoLocationsExpected = new GeoLocationContainer();
-//		Map<GeoLocation, Integer> geoLocationsExpected = new TreeMap<GeoLocation, Integer>();
+    @Test
+    public void testGeoLocationContainerNull() {
+        GeoLocation geoLocation = null;
+        GeoLocationContainer geoLocationsActual = new GeoLocationContainer();
+        GeoLocationContainer geoLocationsExpected = new GeoLocationContainer();
 
-		geoLocationsExpected.putGeoLocation(geoLocation, Integer.valueOf(1));
-		geoLocationsActual.incrementGeoLocation(geoLocation);
-		
-		assertEquals(geoLocationsExpected, geoLocationsActual);
-	}
+        try {
 
-	@Test
-	public void testGeoLocationContainerNull() {
-		GeoLocation geoLocation = null;
-		GeoLocationContainer geoLocationsActual = new GeoLocationContainer();
-		GeoLocationContainer geoLocationsExpected = new GeoLocationContainer();
-//		Map<GeoLocation, Integer> geoLocationsExpected = new TreeMap<GeoLocation, Integer>();
+            geoLocationsActual.incrementGeoLocation(geoLocation);
+            Assert.fail("Se debe lanzar una excepcion");
+        } catch (Exception unused) {
+            geoLocation = new GeoLocation(666, (byte) 34, (byte) 5);
+            geoLocationsActual.incrementGeoLocation(geoLocation);
+            geoLocationsExpected.putGeoLocation(geoLocation, Integer.valueOf(1));
+            assertEquals(geoLocationsExpected,
+                    geoLocationsActual);
 
-		try {
+        }
 
-			geoLocationsActual.incrementGeoLocation(geoLocation);
-			Assert.fail("Se debe lanzar una excepcion");
-		} catch (Exception e) {
-			geoLocation = new GeoLocation(666, (byte) 34, (byte) 5);
-			geoLocationsActual.incrementGeoLocation(geoLocation);
-			geoLocationsExpected.putGeoLocation(geoLocation, Integer.valueOf(1));
-			assertEquals(geoLocationsExpected,
-					geoLocationsActual);
-
-		}
-
-	}
-
+    }
 }

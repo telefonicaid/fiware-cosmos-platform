@@ -1,17 +1,16 @@
 package es.tid.ps.mobility.parsing;
 
-import es.tid.analytics.mobility.core.data.Cell;
-import es.tid.analytics.mobility.core.data.CellCatalogue;
+import java.util.Iterator;
+
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Iterator;
+import es.tid.ps.mobility.data.Cell;
+import es.tid.ps.mobility.data.CellCatalogue;
 
 /**
- * User: masp20
- * Date: 06-feb-2012
- * Time: 11:17:23
+ * @author masp20
  */
 public class CellCatalogueTest {
     private CellCatalogue cellCatalogue;

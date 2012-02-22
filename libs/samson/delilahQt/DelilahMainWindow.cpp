@@ -20,16 +20,36 @@
 
 namespace samson
 {	
+
+    ConfigurableTabWidget::ConfigurableTabWidget(QWidget * parent ):QTabWidget(parent)
+    {
+    }
+    
+    void ConfigurableTabWidget::enableClosing(int index, bool enable)
+    {
+        if(enable)
+        {
+            tabBar()->tabButton(index, QTabBar::RightSide)->show();
+        }
+        else
+        {
+            tabBar()->tabButton(index, QTabBar::RightSide)->hide();
+        }
+    }
+    
     DelilahMainWindow::DelilahMainWindow()
     {
-        tabs = new QTabWidget(this);
+        tabs = new ConfigurableTabWidget(this);
+        tabs->setTabsClosable(true);
+        connect(tabs, SIGNAL(tabCloseRequested(int)), this, SLOT(tabClosed(int)));
         setCentralWidget(tabs);
         
         queuesTab = new QWidget();
 
         mainLayout = new QBoxLayout(QBoxLayout::TopToBottom, queuesTab);
  
-        tabs->addTab(queuesTab, tr("Queues"));
+        int tabposition = tabs->addTab(queuesTab, tr("Queues"));
+        tabs->enableClosing(tabposition, false);
         
         exitAction = new QAction(tr("E&xit"), this);
         aboutAction = new QAction(tr("A&bout"), this);
@@ -240,8 +260,24 @@ namespace samson
         }
     }
     
-/*    ExtQueueData DelilahMainWindow::getQueueData(std::string name, ExtQueueViewer* queue)
+    void DelilahMainWindow::tabClosed(int index)
     {
+        ExtQueueViewer* removedQueue = dynamic_cast<ExtQueueViewer*>(tabs->widget(index));
+        if(removedQueue)
+        {
+            //Find the queue in the list and remove it
+            bool found;
+            for (std::vector<ExtQueueViewer*>::iterator queuesIter = tabbedQueues.begin();
+            queuesIter < tabbedQueues.end() && !found; queuesIter++)
+            {
+                if((*queuesIter)->title == removedQueue->title)
+                {
+                    found = true;
+                    tabbedQueues.erase(queuesIter);
+                    delete *queuesIter;
+                }
+            }
+            tabs->removeTab(index);
+        }
     }
-  */  
 }

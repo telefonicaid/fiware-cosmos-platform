@@ -20,6 +20,13 @@
 #include "ExtQueueViewer.h"
 
 namespace samson {
+    //A QTabWidget where you can decide which tabs have close buttons
+    class ConfigurableTabWidget: public QTabWidget
+    {
+        public:
+            ConfigurableTabWidget(QWidget * parent = 0 );
+            void enableClosing(int index, bool enable);
+    };
 	
 	/**
 	 Widget class for the DelilahQT GUI
@@ -32,7 +39,7 @@ namespace samson {
         /*QBoxLayout* queuesLayout;
         QBoxLayout* enginesLayout;*/
 
-        QTabWidget* tabs;
+        ConfigurableTabWidget* tabs;
         QWidget* queuesTab;
         QAction *aboutAction;
         QAction *exitAction;
@@ -66,9 +73,10 @@ namespace samson {
         QGroupBox* totalBox;
         void updateData(std::vector<QueueData>& queuesData);
         
-    private slots:
+    public slots:
         void about();
         void onQueueDetailsClicked();
+        void tabClosed(int index);
 
     signals:
         void requestUpdate();
@@ -76,7 +84,7 @@ namespace samson {
     private:
         QueueViewer* findQueue(std::vector<QueueViewer*>& list, std::string name);
         ExtQueueViewer* findQueueTab(std::string name);
-        QueueData getQueueData(std::string name, ExtQueueViewer* queue);
+        //QueueData getQueueData(std::string name, ExtQueueViewer* queue);
     };
 }    
     

@@ -18,8 +18,8 @@ namespace samson
 {	
     void DelilahQt::updateData()
     {
-        au::tables::Table* table2 = database.getTable("engines");
-        if( table2 ) std::cout << "Engines read" << std::endl;
+        //au::tables::Table* table2 = database.getTable("workers");
+        //if( table2 ) std::cout << "Engines read" << std::endl;
         au::tables::Table* table = database.getTable("queues");
         QString str;
         std::vector<QueueData> queuesData;

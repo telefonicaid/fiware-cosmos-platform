@@ -64,7 +64,7 @@ else (NOT CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
     MESSAGE("cmake: RELEASE compilation")
     add_definitions(-DRELEASE)
-    set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -O2 -L${CMAKE_INSTALL_PREFIX}/lib")
+    set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -O2 -Wno-unused-but-set-variable  -L${CMAKE_INSTALL_PREFIX}/lib")
 
 endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 

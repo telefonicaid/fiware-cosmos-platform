@@ -66,13 +66,13 @@ if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
   MESSAGE("cmake: DEBUG compilation")
   add_definitions(-DDEBUG -DDEBUG_$ENV{USER} -DDEBUG_${USER})
-  set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -g -Werror")
+  set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -g -Werror -Wno-unused-but-set-variable")
 
 else (NOT CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
     MESSAGE("cmake: RELEASE compilation")
     add_definitions(-DRELEASE)
-    set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -O2")
+    set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -O2 -Wno-unused-but-set-variable ")
 
 endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 

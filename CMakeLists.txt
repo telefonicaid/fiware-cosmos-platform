@@ -51,7 +51,7 @@ elseif (CMAKE_BUILD_TYPE STREQUAL RELEASE)
         set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -Wextra -O2")
     else (NOT STRICT)
         MESSAGE("cmake: RELEASE compilation")
-        set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -O2")
+        set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -O2 -Wno-unused-but-set-variable")
     endif (STRICT)
 
 else (CMAKE_BUILD_TYPE STREQUAL DEBUG)

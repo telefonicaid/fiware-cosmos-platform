@@ -21,26 +21,12 @@ message Cell {
     required double posy = 6;
 }
 
-message UTMPoint {
-    required double posx = 1;
-    required double posy = 2;
-}
-
-message GMTPoint {
-    required double lat = 1;
-    required double lon = 2;
-}
-
 message Bts {
     required uint64 placeId = 1;
     required double posx = 2;
     required double posy = 3;
-    required double lat = 4;
-    required double lon = 5;
-    required double area = 6;
-    repeated UTMPoint utm_polygon = 7;
-    repeated GMTPoint gmt_polygon = 8;
-    repeated uint64 adj_bts = 9;
+    required double area = 4;
+    repeated uint64 adj_bts = 5;
 }
 
 message NodeBts {

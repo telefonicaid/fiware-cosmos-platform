@@ -19,6 +19,9 @@ public abstract class WebProfilingUtil {
 
     private static WebProfilingLog.Builder builder;
 
+    private WebProfilingUtil() {
+    }
+
     public static WebProfilingLog getInstance(String line) {
         if (builder == null) {
             init();
@@ -68,7 +71,7 @@ public abstract class WebProfilingUtil {
             }
             return builder.build();
         } catch (Exception ex) {
-            throw new KpiCalculationDataException("The URL is malformed",
+            throw new KpiCalculationDataException("The URL is malformed", ex,
                     KpiCalculationCounter.MALFORMED_URL);
         }
     }

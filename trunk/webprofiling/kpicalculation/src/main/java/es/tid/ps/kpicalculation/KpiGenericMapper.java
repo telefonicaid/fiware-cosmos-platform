@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
@@ -54,7 +55,7 @@ public class KpiGenericMapper
     private static final String GROUP_FIELD_PARAMETER = "kpi.aggregation.group";
 
     private CompositeKey key;
-    private ArrayList<FieldDescriptor> descriptors;
+    private List<FieldDescriptor> descriptors;
     private FieldDescriptor secondaryDescriptor;
 
     /**

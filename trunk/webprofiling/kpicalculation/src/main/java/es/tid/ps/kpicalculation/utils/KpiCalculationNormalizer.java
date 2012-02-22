@@ -21,6 +21,8 @@ public abstract class KpiCalculationNormalizer {
     private static BasicURLNormalizer basicNorm;
     private static RegexURLNormalizer regexNorm;
 
+    private KpiCalculationNormalizer() {
+    }
     /**
      * Method that initializes the normalizers
      */

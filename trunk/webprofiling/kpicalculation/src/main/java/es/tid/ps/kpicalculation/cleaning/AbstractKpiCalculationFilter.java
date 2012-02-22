@@ -14,9 +14,9 @@ public abstract class AbstractKpiCalculationFilter implements
         IKpiCalculationFilter {
     private static final String FILTER_PARAMETER_DELIMITER = "\n";
 
-    protected Pattern pattern;
-    protected Matcher matcher;
-            
+    private Pattern pattern;
+    private Matcher matcher;
+    
     protected void init(Configuration conf, String configParameter,
             String regularExpression) {
         String forbiddenPattern = setPattern(regularExpression,
@@ -49,5 +49,21 @@ public abstract class AbstractKpiCalculationFilter implements
         }
         filters.setCharAt(filters.length() - 1, ')');
         return MessageFormat.format(regExp, filters.toString());
+    }
+
+    protected Pattern getPattern() {
+        return pattern;
+    }
+
+    protected void setPattern(Pattern pattern) {
+        this.pattern = pattern;
+    }
+
+    protected Matcher getMatcher() {
+        return matcher;
+    }
+
+    protected void setMatcher(Matcher matcher) {
+        this.matcher = matcher;
     }
 }

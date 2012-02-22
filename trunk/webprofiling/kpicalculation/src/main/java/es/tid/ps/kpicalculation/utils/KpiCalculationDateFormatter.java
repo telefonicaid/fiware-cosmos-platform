@@ -19,6 +19,9 @@ public abstract class KpiCalculationDateFormatter {
 
 	private static Calendar calendar;
 
+	private KpiCalculationDateFormatter() {
+	}
+	
 	/**
 	 * Method that initializes the formatters
 	 */

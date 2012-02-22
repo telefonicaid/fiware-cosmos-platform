@@ -27,8 +27,8 @@ public class ThirdPartyFilter extends AbstractKpiCalculationFilter {
      */
     @Override
     public void filter(String s) {
-        this.matcher = this.pattern.matcher(s);
-        if (this.matcher.matches()) {
+        this.setMatcher(this.getPattern().matcher(s));
+        if (this.getMatcher().matches()) {
             throw new KpiCalculationFilterException(
                     "The URL provided belongs to third party domain",
                     KpiCalculationCounter.LINE_FILTERED_3RDPARTY);

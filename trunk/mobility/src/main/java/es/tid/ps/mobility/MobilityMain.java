@@ -7,9 +7,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import es.tid.ps.mobility.jobs.mapreduce.FilterCellnoinfoJob;
 import es.tid.ps.mobility.jobs.mapreduce.GetSample10000Job;
 import es.tid.ps.mobility.jobs.parsing.ParseCdrsJob;
 import es.tid.ps.mobility.jobs.parsing.ParseCellsJob;
+import es.tid.ps.mobility.mapreduce.FilterCellnoinfoMapper;
 
 /**
  *
@@ -24,6 +26,10 @@ public class MobilityMain extends Configured implements Tool {
             WORKING_DIRECTORY + "/cells_mob";
     private static final String CDRS_SAMPLE_PATH =
             WORKING_DIRECTORY + "/cdrs_sample";
+    private static final String CDRS_INFO_SMP_PATH =
+            WORKING_DIRECTORY + "/cdrs_info_smp";
+    private static final String CDRS_NO_INFO_SMP_PATH =
+            WORKING_DIRECTORY + "/cdrs_no_info_smp";
     
     @Override
     public int run(String[] args)
@@ -73,7 +79,28 @@ public class MobilityMain extends Configured implements Tool {
         if (!getSample10000Job.waitForCompletion(true)) {
             return false;
         }
-       
+        
+        // TODO: verify that the keys map to the output files correctly.
+        this.getConf().setStrings(CDRS_MOB_PATH, "outputKey", 
+                FilterCellnoinfoMapper.OutputKey.CELL.toString());
+        FilterCellnoinfoJob filterCellnoinfoJob = new FilterCellnoinfoJob(
+                this.getConf());
+        filterCellnoinfoJob.configure(new Path(CDRS_SAMPLE_PATH),
+                                      new Path(CDRS_INFO_SMP_PATH));
+        if (!filterCellnoinfoJob.waitForCompletion(true)) {
+            return false;
+        }
+
+        // TODO: verify that the keys map to the output files correctly.
+        this.getConf().setStrings(CDRS_MOB_PATH, "outputKey", 
+                FilterCellnoinfoMapper.OutputKey.NODE.toString());
+        filterCellnoinfoJob = new FilterCellnoinfoJob(this.getConf());
+        filterCellnoinfoJob.configure(new Path(CDRS_SAMPLE_PATH),
+                                      new Path(CDRS_NO_INFO_SMP_PATH));
+        if (!filterCellnoinfoJob.waitForCompletion(true)) {
+            return false;
+        }
+        
         return true;
     }
     

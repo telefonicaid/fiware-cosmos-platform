@@ -26,13 +26,12 @@ public class FilterCellnoinfoMapper extends Mapper<LongWritable,
         this.outputKey = OutputKey.INVALID;
     }
 
-    public void setOutputKey(OutputKey key) {
-        this.outputKey = key;
-    }
-
     @Override
     public void map(LongWritable key, ProtobufWritable<Cdr> value,
             Context context) throws IOException, InterruptedException {
+        this.outputKey = OutputKey.valueOf(context.getConfiguration().
+                get("outputKey"));
+
         final Cdr cdr = value.get();
         if (cdr.getCellId() != 0) {
             context.write(new LongWritable(cdr.getCellId()), value);

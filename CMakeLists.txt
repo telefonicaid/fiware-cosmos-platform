@@ -31,16 +31,17 @@ execute_process(COMMAND            echo $USER
 add_definitions(-DLM_ON)
 add_definitions(-fPIC)
 
+
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
   MESSAGE("cmake: DEBUG compilation")
   add_definitions(-DDEBUG -DDEBUG_$ENV{USER} -DDEBUG_${USER})
   if (COVERAGE)
     MESSAGE("cmake: Coverage compilation")
-    set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -g -Werror -Wno-unused-but-set-variable -fprofile-arcs -ftest-coverage")
+    set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -g -Werror -fprofile-arcs -ftest-coverage")
     set (CMAKE_EXE_LINKER_FLAGS "-fprofile-arcs -ftest-coverage")
   else (NOT COVERAGE)
-    set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -g -Werror -Wno-unused-but-set-variable")
+    set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -g -Werror")
   endif (COVERAGE)
 
 elseif (CMAKE_BUILD_TYPE STREQUAL RELEASE)
@@ -48,16 +49,23 @@ elseif (CMAKE_BUILD_TYPE STREQUAL RELEASE)
     add_definitions(-DRELEASE)
     if (STRICT)
         MESSAGE("cmake: strict compilation")
-        set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -Wextra -O2 -Wno-unused-but-set-variable")
+        set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -Wextra -O2")
     else (NOT STRICT)
         MESSAGE("cmake: RELEASE compilation")
-        set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -O2 -Wno-unused-but-set-variable")
+        set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -O2")
     endif (STRICT)
 
 else (CMAKE_BUILD_TYPE STREQUAL DEBUG)
     MESSAGE("cmake: bad value for CMAKE_BUILD_TYPE - please set the variable to either DEBUG or RELEASE")
     set(error 1)
 endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
+
+# option -Wno-unused-but-set-variable ( currently not supported in MAC OS )
+# --------------------------------------------------------------------------
+if( NOT APPLE )
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
+endif ( NOT APPLE )
+
 
 #
 # Enabling testing in debug mode

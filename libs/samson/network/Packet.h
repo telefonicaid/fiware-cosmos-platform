@@ -11,9 +11,9 @@
 
 #include "logMsg/logMsg.h"               // LM_TODO()
 
+#include "au/utils.h"
+
 #include "samson/common/samson.pb.h"     // google protocol buffers
-
-
 #include "samson/common/EnvironmentOperations.h"        // str( network::Message* )
 
 #include "engine/MemoryManager.h"        // MemoryManager
@@ -119,7 +119,14 @@ namespace samson
 
         std::string getCodeName()
         {
-            return au::str("%s_%lu" , ClusterNodeType2str( node_type ) , id );
+            if( node_type == DelilahNode )
+            {
+                std::string code_id = au::code64_str(id);
+                return au::str("%s_%s" , ClusterNodeType2str( node_type ) ,  code_id.c_str() );
+            }
+            else
+                return au::str("%s_%lu" , ClusterNodeType2str( node_type ) , id );
+                
         }
         
         bool isDelilahOrUnknown()

@@ -1,6 +1,8 @@
 #ifndef _H_AU_UTILS
 #define _H_AU_UTILS
 
+#include <cstring>
+#include <string>
 #include "au/namespace.h"
 
 NAMESPACE_BEGIN(au)
@@ -22,6 +24,11 @@ void replaceIfHiger(T &t,T2 v)
 int getColumns();
 void clear_line();
 
+
+// Random 64 bit number
+size_t code64_rand();
+bool code64_is_valid( size_t v );
+std::string code64_str( size_t );
 
 NAMESPACE_END
 

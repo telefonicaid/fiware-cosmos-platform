@@ -1,4 +1,5 @@
 
+#include "au/utils.h"
 
 #include "samson/network/NetworkConnection.h"
 
@@ -12,7 +13,6 @@ namespace samson {
         // Init counter for temporal network connection names
         // ----------------------------------------------------------------------------
         tmp_counter = 0;
-        delilah_counter = 0;
         
         // Load cluster information from file
         // ----------------------------------------------------------------------------
@@ -129,7 +129,11 @@ namespace samson {
         // -----------------------------------------------------------------------------------------------
         
         if( !packet->message->has_hello() )
-            LM_X(1, ("Error in SAMSON Protocol: Non Hello information in a hello packet"));
+        {
+            LM_W(("Error in SAMSON Protocol: Non Hello information in a hello packet"));
+            connection->close();
+            return;
+        }
         
         // Information included in the hello message
         ClusterInformation new_cluster_information( packet->message->hello().cluster_information() );
@@ -208,9 +212,27 @@ namespace samson {
             if( new_node_identifier.node_type == DelilahNode )
             {
                 // New delilah connection
-                int id_delilah = delilah_counter++;
-                connection->setNodeIdentifier( NodeIdentifier(DelilahNode, id_delilah ) );
-                move_connection( connection_name ,  au::str("delilah_%d" , id_delilah ) );
+                connection->setNodeIdentifier( new_node_identifier );
+
+                // Check it is a valid id
+                size_t new_delilah_id = new_node_identifier.id;
+                if( !au::code64_is_valid(new_delilah_id) )
+                {
+                    connection->close();
+                    return;
+                }
+                
+                // Check there is not another delilah with the same id... 
+                std::string future_conection_name = connection->getNodeIdentifier().getCodeName();
+                if( connections.findInMap( future_conection_name ) != NULL )
+                {
+                    connection->close();
+                    return;
+                }
+                
+                
+                // Move the connection to the rigth place
+                move_connection( connection_name ,  future_conection_name );
             }
             else if ( new_node_identifier.node_type == WorkerNode )
             {

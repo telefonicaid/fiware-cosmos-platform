@@ -1,5 +1,6 @@
 
 #include "au/StringVector.h"
+#include "au/utils.h"
 #include "tables/Table.h"
 
 #include "samson/common/ports.h"
@@ -29,8 +30,8 @@ namespace samson {
     
     DelilahNetwork::DelilahNetwork(  )
     {
-        // I am a delilah ( no information about my id )
-        node_identifier = NodeIdentifier( DelilahNode , -1 );
+        // I am a delilah ( random id auto-asigned )
+        node_identifier = NodeIdentifier( DelilahNode , au::code64_rand() );
         
     }
     

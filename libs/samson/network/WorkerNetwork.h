@@ -20,9 +20,6 @@ namespace samson {
         
         // Counter to asign new names
         size_t tmp_counter;
-
-        // Counter to assign delilah connections
-        size_t delilah_counter;
         
         // Worker listtener for new worker / delilah connections
         NetworkListener * worker_listener;

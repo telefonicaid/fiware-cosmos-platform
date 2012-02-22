@@ -14,6 +14,9 @@
     </properties>
 
     <profiles>
+	    <profile>
+            <id>jenkins</id>
+        </profile>
         <profile>
             <id>local</id>
             <properties>
@@ -23,9 +26,6 @@
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
-        </profile>
-        <profile>
-            <id>jenkins</id>
         </profile>
     </profiles>
 

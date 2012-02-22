@@ -1,12 +1,14 @@
 package es.tid.analytics.mobility.core.parsers;
 
-import org.apache.log4j.Logger;
-
-import es.tid.analytics.mobility.core.data.Cdr;
-import es.tid.analytics.mobility.core.data.Cell;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+
+import org.apache.log4j.Logger;
+
+import es.tid.analytics.mobility.core.data.Cell;
+import es.tid.ps.mobility.data.BaseProtocol.Date;
+import es.tid.ps.mobility.data.BaseProtocol.Time;
+import es.tid.ps.mobility.data.MobProtocol.Cdr;
 
 /**
  * User: masp20
@@ -80,16 +82,27 @@ public class ParserDefault implements ParserCell, ParserCdr {
 
     @Override
     public Cdr parseCdrsLine(final String line) {
-        final Cdr cdr = new Cdr();
+        Cdr.Builder cdr = Cdr.newBuilder();
+        Date.Builder date = Date.newBuilder();
+        Time.Builder time = Time.newBuilder();
         try {
             final String[] lineParsed = line.split("[|]");
             if (lineParsed != null && lineParsed.length == CDR_FIELD_MAX) {
-                cdr.setNode(Long.parseLong(lineParsed[1]));
+                cdr.setUserId(Long.parseLong(lineParsed[1]));
                 final long locationIni = Long.parseLong(lineParsed[0]);
                 final long locationFin = Long.parseLong(lineParsed[2]);
-                cdr.setIdCell(locationIni > 0 ? locationIni : locationFin);
+                cdr.setCellId(locationIni > 0 ? locationIni : locationFin);
                 final String dateString = lineParsed[6] + "-" + lineParsed[7];
-                cdr.setDate(DATE_FORMAT.parse(dateString));
+                java.util.Date dateAux = DATE_FORMAT.parse(dateString);
+                date.setDay(dateAux.getDate());
+                date.setMonth(dateAux.getMonth()+1);
+                date.setYear(dateAux.getYear()+1900);
+                date.setWeekday(dateAux.getDay()+1);
+                cdr.setDate(date.build());
+                time.setHour(dateAux.getHours()%24);
+                time.setMinute(dateAux.getMinutes());
+                time.setSeconds(dateAux.getSeconds());
+                cdr.setTime(time.build());
             } else {
                 LOG.debug("Line rejected: " + line);
             }
@@ -100,7 +113,7 @@ public class ParserDefault implements ParserCell, ParserCdr {
             LOG.debug("Line rejected: " + line);
             return null;
         }
-        return cdr;
+        return cdr.build();
     }
 
 }

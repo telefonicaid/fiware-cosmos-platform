@@ -1,9 +1,9 @@
 package es.tid.analytics.mobility.core;
 
-import es.tid.analytics.mobility.core.data.Cdr;
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+//import es.tid.analytics.mobility.core.data.Cdr;
 import es.tid.analytics.mobility.core.data.Cell;
 import es.tid.analytics.mobility.core.data.CellCatalogue;
-import es.tid.analytics.mobility.core.data.GLEvent;
 import es.tid.analytics.mobility.core.parsers.ParserCdr;
 import es.tid.analytics.mobility.core.parsers.ParserCell;
 import es.tid.analytics.mobility.core.parsers.ParserFactory;
@@ -22,106 +22,104 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class IndividualMobilityMap extends
-		Mapper<LongWritable, Text, LongWritable, GLEvent> {
+import es.tid.ps.mobility.data.MobProtocol;
+import es.tid.ps.mobility.data.MobProtocol.Cdr;
+import es.tid.ps.mobility.data.MobProtocol.GLEvent;
 
-	private static final Logger LOG = Logger.getLogger(IndividualMobilityMap.class);
+public class IndividualMobilityMap extends Mapper<LongWritable, Text, LongWritable, ProtobufWritable<GLEvent>> {
 
-	public static final String HDFS_CELL_CATALOGUE_PATH = "/data/cell.dat";
-	private static final String CELL_PARSER = "DEFAULT";
-	private static final String CDRS_PARSER = "DEFAULT";
+    private static final Logger LOG = Logger.getLogger(IndividualMobilityMap.class);
+    public static final String HDFS_CELL_CATALOGUE_PATH = "/data/cell.dat";
+    private static final String CELL_PARSER = "DEFAULT";
+    private static final String CDRS_PARSER = "DEFAULT";
+    private CellCatalogue cellsCataloge;
+    private static boolean loadCatalogue;
+    private LongWritable outputKey = new LongWritable();
+    private ProtobufWritable<GLEvent> outputValue;
 
-	private CellCatalogue cellsCataloge;
-	private static boolean loadCatalogue;
-	private LongWritable outputKey = new LongWritable();
-	private GLEvent event = new GLEvent();
+    public IndividualMobilityMap() {
+    }
 
-	public IndividualMobilityMap() {
-	}
+    @Override
+    protected void setup(final Context context) throws IOException,
+            InterruptedException {
+        loadCellCatalogue(context, HDFS_CELL_CATALOGUE_PATH);
+        this.outputValue = ProtobufWritable.newInstance(GLEvent.class);
+    }
 
-	@Override
-	protected void setup(final Context context) throws IOException,
-			InterruptedException {
-		loadCellCatalogue(context, HDFS_CELL_CATALOGUE_PATH);
-	}
+    @Override
+    protected void map(final LongWritable key, final Text value,
+            final Context context) throws IOException, InterruptedException {
+        final ParserCdr cdrParser = new ParserFactory().createNewCdrParser(CDRS_PARSER);
+        Cdr cdr = cdrParser.parseCdrsLine(value.toString());
 
-	@Override
-	protected void map(final LongWritable key, final Text value,
-			final Context context) throws IOException, InterruptedException {
-		final ParserCdr cdrParser = new ParserFactory()
-				.createNewCdrParser(CDRS_PARSER);
-		final Cdr cdr = cdrParser.parseCdrsLine(value.toString());
+        this.outputKey.set(cdr.getUserId());
+        GLEvent.Builder glEvent = GLEvent.newBuilder();
+        glEvent.setUserId(cdr.getUserId());
+        glEvent.setDate(cdr.getDate());
+        glEvent.setTime(cdr.getTime());
+        
+        if (this.cellsCataloge != null
+                && this.cellsCataloge.containsCell(cdr.getCellId())) {
+            final Cell currentCell = this.cellsCataloge.getCell(cdr.getCellId());
+            glEvent.setPlaceId(currentCell.getGeoLocationLevel2());
+        } else {
+            glEvent.setPlaceId(0);
+        }
 
-		this.outputKey.set(cdr.getNode());
-		this.event.setUserId(cdr.getNode());
-		this.event.setDate(cdr.getDate());
+        outputValue.set(glEvent.build());
+        context.write(this.outputKey, this.outputValue);
+    }
 
-		if (this.cellsCataloge != null
-				&& this.cellsCataloge.containsCell(cdr.getIdCell())) {
-			final Cell currentCell = this.cellsCataloge
-					.getCell(cdr.getIdCell());
-			this.event.setPlaceId(currentCell.getGeoLocationLevel2());
-		} else {
-			this.event.setPlaceId(0);
-		}
+    private void loadCellCatalogue(final Context context,
+            final String hdfsFileLocation) {
+        loadCellCatalogue(context.getConfiguration(), hdfsFileLocation);
+    }
 
-		context.write(this.outputKey, this.event);
-	}
+    private void loadCellCatalogue(final Configuration conf,
+            final String hdfsFileLocation) {
+        final FSDataInputStream in;
+        final BufferedReader br;
 
-	private void loadCellCatalogue(final Context context,
-			final String hdfsFileLocation) {
-		loadCellCatalogue(context.getConfiguration(), hdfsFileLocation);
-	}
+        LOG.debug("Load Cell Catalogue from HDFS");
 
-	private void loadCellCatalogue(final Configuration conf,
-			final String hdfsFileLocation) {
-		final FSDataInputStream in;
-		final BufferedReader br;
+        this.cellsCataloge = CellCatalogue.getInstance();
+        if (loadCatalogue) {
+            return;
+        }
 
-		LOG.debug("Load Cell Catalogue from HDFS");
+        try {
 
-		this.cellsCataloge = CellCatalogue.getInstance();
-		if (loadCatalogue) {
-			return;
-		}
+            final FileSystem fs = FileSystem.get(conf);
+            final Path path = new Path(hdfsFileLocation);
 
-		try {
+            in = fs.open(path);
+            br = new BufferedReader(new InputStreamReader(in));
+        } catch (FileNotFoundException fnfe) {
+            LOG.error("Read from distributed cache: file not found");
+            return;
+        } catch (IOException ioe) {
+            LOG.error("Read from distributed cache: IO exception");
+            return;
+        }
 
-			final FileSystem fs = FileSystem.get(conf);
-			final Path path = new Path(hdfsFileLocation);
+        try {
 
-			in = fs.open(path);
-			br = new BufferedReader(new InputStreamReader(in));
-		} catch (FileNotFoundException fnfe) {
-			fnfe.printStackTrace();
-			LOG.error("Read from distributed cache: file not found");
-			return;
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-			LOG.error("Read from distributed cache: IO exception");
-			return;
-		}
+            final ParserCell cellParser = new ParserFactory().createNewCellParser(CELL_PARSER);
 
-		try {
+            String line;
+            while ((line = br.readLine()) != null) {
+                final Cell cell = cellParser.parseCellLine(line);
+                this.cellsCataloge.addCell(cell);
+            }
 
-			final ParserCell cellParser = new ParserFactory()
-					.createNewCellParser(CELL_PARSER);
+            loadCatalogue = true;
 
-			String line;
-			while ((line = br.readLine()) != null) {
-				final Cell cell = cellParser.parseCellLine(line);
-				this.cellsCataloge.addCell(cell);
-			}
-
-			loadCatalogue = true;
-
-			in.close();
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-			LOG.debug("read from distributed cache: read length and instances");
-		} catch (NullPointerException npe) {
-			npe.printStackTrace();
-			LOG.debug("read from distributed cache: read length and instances");
-		}
-	}
+            in.close();
+        } catch (IOException ioe) {
+            LOG.debug("read from distributed cache: read length and instances");
+        } catch (NullPointerException npe) {
+            LOG.debug("read from distributed cache: read length and instances");
+        }
+    }
 }

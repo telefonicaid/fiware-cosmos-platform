@@ -1,20 +1,20 @@
 package es.tid.analytics.mobility.core.test;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.junit.After;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.analytics.mobility.core.data.Client;
-import es.tid.analytics.mobility.core.data.GLEvent;
 import es.tid.analytics.mobility.core.data.GeoLocation;
 import es.tid.analytics.mobility.core.data.GeoLocationContainer;
 import es.tid.analytics.mobility.core.data.Utils;
+import es.tid.ps.mobility.data.BaseProtocol.Date;
+import es.tid.ps.mobility.data.BaseProtocol.Time;
+import es.tid.ps.mobility.data.MobProtocol.GLEvent;
 
 public class ClientTest {
 
@@ -33,16 +33,30 @@ public class ClientTest {
 		List<GLEvent> listGLEvent = new ArrayList<GLEvent>();
 		List<Integer> noInfoGeolocationsExpected = new ArrayList<Integer>();
 		List<Integer> noInfoGeolocationsActual = null;
-		GLEvent glEvent = new GLEvent(0, 0,
-				new Date((2012 - 1900), 1, 4, 23, 5));
-
+                GLEvent.Builder glEvent = GLEvent.newBuilder();
+                glEvent.setUserId(0);
+                glEvent.setPlaceId(0);
+                Date.Builder date = Date.newBuilder();
+                date.setYear(2012);
+                date.setMonth(2);
+                date.setDay(4);
+                date.setWeekday(7);
+                glEvent.setDate(date);
+                //GLEvent glEvent = new GLEvent(0, 0,
+		//		new Date((2012 - 1900), 1, 4, 23, 5));
+                Time.Builder time = Time.newBuilder();
+                time.setHour(23);
+                time.setMinute(5);
+                time.setSeconds(0);
+                glEvent.setTime(time);
+       
 		for (int position = 0; position < 168; position++) {
 			noInfoGeolocationsExpected.add(position, new Integer(0));
 		}
 
 		noInfoGeolocationsExpected.set(167, new Integer(1));
 
-		listGLEvent.add(glEvent);
+		listGLEvent.add(glEvent.build());
 		client.calculateGeoLocations(listGLEvent.iterator());
 		noInfoGeolocationsActual = client.getNoInfoGeolocations();
 
@@ -57,9 +71,23 @@ public class ClientTest {
 		List<GLEvent> listGLEvent = new ArrayList<GLEvent>();
 		GeoLocationContainer geoLocationsExpected = new GeoLocationContainer();
 
-		GLEvent glEvent = new GLEvent(0, 333, new Date((2012 - 1900), 1, 4, 23,
-				5));
-		listGLEvent.add(glEvent);
+		GLEvent.Builder glEvent = GLEvent.newBuilder();
+                glEvent.setUserId(0);
+                glEvent.setPlaceId(333);
+                //GLEvent glEvent = new GLEvent(0, 333, new Date((2012 - 1900), 1, 4, 23,
+		//		5));
+                Date.Builder date = Date.newBuilder();
+                date.setYear(2012);
+                date.setMonth(2);
+                date.setDay(4);
+                date.setWeekday(7);
+                glEvent.setDate(date);
+                Time.Builder time = Time.newBuilder();
+                time.setHour(23);
+                time.setMinute(5);
+                time.setSeconds(0);
+                glEvent.setTime(time);
+		listGLEvent.add(glEvent.build());
 
 		client.calculateGeoLocations(listGLEvent.iterator());
 		GeoLocationContainer geoLocationsActual = client.getGeoLocations();

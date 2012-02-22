@@ -1,7 +1,10 @@
 package es.tid.analytics.mobility.core.test;
 
-import es.tid.analytics.mobility.core.IndividualMobilityMap;
-import es.tid.analytics.mobility.core.data.GLEvent;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -10,13 +13,14 @@ import static org.apache.hadoop.mrunit.testutil.ExtendedAssert.assertListEquals;
 import org.apache.hadoop.mrunit.types.Pair;
 import static org.junit.Assert.fail;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import org.junit.Ignore;
+import es.tid.analytics.mobility.core.IndividualMobilityMap;
+import es.tid.ps.mobility.data.BaseProtocol;
+import es.tid.ps.mobility.data.BaseProtocol.Date;
+import es.tid.ps.mobility.data.BaseProtocol.Time;
+import es.tid.ps.mobility.data.MobProtocol.GLEvent;
 
 /**
  * User: masp20
@@ -25,14 +29,14 @@ import org.junit.Ignore;
  */
 public class MobilityMapTest {
 
-    private MapDriver<LongWritable, Text, LongWritable, GLEvent> driver;
+    private MapDriver<LongWritable, Text, LongWritable, ProtobufWritable<GLEvent>> driver;
     private static final String CDRS_LINE = "1376352479|2221435146|1376352479|0442221472843|2|LDN|20100104|17:21:07|22|118-TELEFONIA MOVIL|118-TELEFONIA MOVIL|??|??|11115006528440|NOROAMI";
 
 
     @Before
     public void setUp() {
-        final Mapper<LongWritable, Text, LongWritable, GLEvent> mapper = new IndividualMobilityMap();
-        this.driver = new MapDriver<LongWritable, Text, LongWritable, GLEvent>(mapper);
+        final Mapper<LongWritable, Text, LongWritable, ProtobufWritable<GLEvent>> mapper = new IndividualMobilityMap();
+        this.driver = new MapDriver<LongWritable, Text, LongWritable, ProtobufWritable<GLEvent>>(mapper);
     }
 
 //    @Test
@@ -53,7 +57,7 @@ public class MobilityMapTest {
     @Test @Ignore
     public void testCDRLine() {
         //TODO : don't work properly without cellCatalogue
-        List<Pair<LongWritable, GLEvent>> out = null;
+        List<Pair<LongWritable, ProtobufWritable<GLEvent>>> out = null;
 
         try {
             out = this.driver.withInput(new LongWritable(0), new Text(CDRS_LINE)).run();
@@ -71,13 +75,23 @@ public class MobilityMapTest {
     }
 
     private GLEvent createEvent() {
-        final GLEvent glEvent = new GLEvent();
-        final Date testDate = new Date(1262622067000L);
+        final GLEvent.Builder glEvent = GLEvent.newBuilder();
+        final Date.Builder testDate = Date.newBuilder();
+        final Time.Builder testTime = Time.newBuilder();
+        
+        testDate.setDay(4);
+        testDate.setMonth(1);
+        testDate.setYear(2010);
+        testDate.setWeekday(2);
+        testTime.setHour(17);
+        testTime.setMinute(21);
+        testTime.setSeconds(7);
 
         glEvent.setUserId(2221435146L);
         glEvent.setPlaceId(213094);
         glEvent.setDate(testDate);
-        return glEvent;
+        glEvent.setTime(testTime);
+        return glEvent.build();
     }
 
 }

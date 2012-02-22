@@ -1,6 +1,6 @@
 package es.tid.analytics.mobility.core.test;
 
-import es.tid.analytics.mobility.core.data.Cdr;
+import java.util.Calendar;
 import es.tid.analytics.mobility.core.data.Cell;
 import es.tid.analytics.mobility.core.parsers.ParserCdr;
 import es.tid.analytics.mobility.core.parsers.ParserCell;
@@ -8,7 +8,11 @@ import es.tid.analytics.mobility.core.parsers.ParserFactory;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
-import java.util.Date;
+//import java.util.Date;
+
+import es.tid.ps.mobility.data.MobProtocol.Cdr;
+import es.tid.ps.mobility.data.BaseProtocol.Date;
+import es.tid.ps.mobility.data.BaseProtocol.Time;
 
 /**
  * User: masp20
@@ -73,47 +77,81 @@ public class ParserTest {
 
     @Test
     public void testDefaultParserCDRCorrect() {
-        final Cdr testCdr = new Cdr();
-        final Date testDate = new Date(1262622067000L);
+        final Cdr.Builder testCdr = Cdr.newBuilder();
+        final Date.Builder testDate = Date.newBuilder();
+        final Time.Builder testTime = Time.newBuilder();
+        
+        testDate.setDay(4);
+        testDate.setMonth(1);
+        testDate.setYear(2010);
+        testDate.setWeekday(2);
+        
+        testTime.setHour(17);
+        testTime.setMinute(21);
+        testTime.setSeconds(07);
 
-        testCdr.setNode(2221435146L);
-        testCdr.setIdCell(1377205526L);
+        testCdr.setUserId(2221435146L);
+        testCdr.setCellId(1377205526L);
         testCdr.setDate(testDate);
+        testCdr.setTime(testTime);
 
         final ParserCdr parserCdr = new ParserFactory().createNewDefaultCdrParser();
         final Cdr cdr = parserCdr.parseCdrsLine("1377205526|2221435146|1377205526|0442221472843|2|LDN|20100104|17:21:07|22|118-TELEFONIA MOVIL|118-TELEFONIA MOVIL|??|??|11115006528440|NOROAMI");
 
-        assertEquals("Incorrect Cdr obtained", testCdr, cdr);
+        assertEquals("Incorrect Cdr obtained", testCdr.build(), cdr);
     }
 
     @Test
     public void testParserCDRCorrect() {
-        final Cdr testCdr = new Cdr();
-        final Date testDate = new Date(1262622067000L);
+        final Cdr.Builder testCdr = Cdr.newBuilder();
+        final Date.Builder testDate = Date.newBuilder();
+        final Time.Builder testTime = Time.newBuilder();
+        
+        testDate.setDay(4);
+        testDate.setMonth(1);
+        testDate.setYear(2010);
+        testDate.setWeekday(Calendar.MONDAY);
+        
+        testTime.setHour(17);
+        testTime.setMinute(21);
+        testTime.setSeconds(07);
 
-        testCdr.setNode(2221435146L);
-        testCdr.setIdCell(1377205526L);
+        testCdr.setUserId(2221435146L);
+        testCdr.setCellId(1377205526L);
         testCdr.setDate(testDate);
+        testCdr.setTime(testTime);
+
 
         final ParserCdr parserCdr = new ParserFactory().createNewCdrParser(ParserFactory.PARSER_DEFAULT);
         final Cdr cdr = parserCdr.parseCdrsLine("1377205526|2221435146|1377205526|0442221472843|2|LDN|20100104|17:21:07|22|118-TELEFONIA MOVIL|118-TELEFONIA MOVIL|??|??|11115006528440|NOROAMI");
 
-        assertEquals("Incorrect Cdr obtained", testCdr, cdr);
+        assertEquals("Incorrect Cdr obtained", testCdr.build(), cdr);
     }
 
     @Test
     public void testParserAlphaCDRCorrect() {
-        final Cdr testCdr = new Cdr();
-        final Date testDate = new Date(1262622067000L);
+        final Cdr.Builder testCdr = Cdr.newBuilder();
+        final Date.Builder testDate = Date.newBuilder();
+        final Time.Builder testTime = Time.newBuilder();
+        
+        testDate.setDay(4);
+        testDate.setMonth(1);
+        testDate.setYear(2010);
+        testDate.setWeekday(Calendar.MONDAY);
+        
+        testTime.setHour(17);
+        testTime.setMinute(21);
+        testTime.setSeconds(07);
 
-        testCdr.setNode(2221435146L);
-        testCdr.setIdCell(29783884378L);
+        testCdr.setUserId(2221435146L);
+        testCdr.setCellId(29783884378L);
         testCdr.setDate(testDate);
+        testCdr.setTime(testTime);
 
         final ParserCdr parserCdr = new ParserFactory().createNewCdrParser(ParserFactory.PARSER_ALPHA);
         final Cdr cdr = parserCdr.parseCdrsLine("ALHUEU1|2221435146|ALHUEU1|0442221472843|2|LDN|20100104|17:21:07|22|118-TELEFONIA MOVIL|118-TELEFONIA MOVIL|??|??|11115006528440|NOROAMI");
 
-        assertEquals("Incorrect Cdr obtained", testCdr, cdr);
+        assertEquals("Incorrect Cdr obtained", testCdr.build(), cdr);
     }
 
     @Test(expected = NullPointerException.class)

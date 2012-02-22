@@ -1,6 +1,7 @@
 package es.tid.analytics.mobility.core;
 
-import es.tid.analytics.mobility.core.data.GLEvent;
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
@@ -12,7 +13,9 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import java.io.IOException;
+import es.tid.ps.mobility.data.MobProtocol.GLEvent;
+
+
 
 public class IndividualMobilityDriver extends Configured implements Tool {
 

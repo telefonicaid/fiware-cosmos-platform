@@ -1,7 +1,7 @@
 package es.tid.analytics.mobility.core.parsers;
 
-import es.tid.analytics.mobility.core.data.Cdr;
-
+//import es.tid.analytics.mobility.core.data.Cdr;
+import es.tid.ps.mobility.data.MobProtocol.Cdr;
 
 /**
  * User: masp20

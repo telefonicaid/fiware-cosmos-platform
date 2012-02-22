@@ -1,5 +1,6 @@
 package es.tid.analytics.mobility.core.data;
 
+import es.tid.ps.mobility.data.MobProtocol.GLEvent;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -43,12 +44,12 @@ public class Client {
 
 			if (glEvent.getPlaceId() != 0) {
 				geoLocation.setIdPlace(glEvent.getPlaceId());
-				geoLocation.setWeekday(glEvent.getWeekDay());
-				geoLocation.setHour(glEvent.getHour());
+				geoLocation.setWeekday((byte)glEvent.getDate().getWeekday());
+				geoLocation.setHour((byte)glEvent.getTime().getHour());
 				geoLocations.incrementGeoLocation(geoLocation);
 			} else {
 				position = Utils.getPosListNoInfoGeolocations(
-						glEvent.getWeekDay(), glEvent.getHour());
+						(byte)glEvent.getDate().getWeekday(), (byte)glEvent.getTime().getHour());
 				if (position != -1) {
 					if (noInfoGeolocations.isEmpty()) {
 						initNoInfoGeolocations(TAMNOINFOGEOLOCATION);

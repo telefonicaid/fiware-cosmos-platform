@@ -52,3 +52,10 @@ message TwoInt {
     required uint64 num1 = 1;
     required uint64 num2 = 2;
 }
+
+message GLEvent {
+    required uint64 userId = 1;
+    required uint64 placeId = 2;
+    required base.Date date = 3;
+    required base.Time time = 4;
+}

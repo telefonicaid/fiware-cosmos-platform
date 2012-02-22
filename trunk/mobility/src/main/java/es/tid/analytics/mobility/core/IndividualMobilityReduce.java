@@ -1,31 +1,38 @@
 package es.tid.analytics.mobility.core;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.analytics.mobility.core.data.Client;
-import es.tid.analytics.mobility.core.data.GLEvent;
+import es.tid.ps.mobility.data.MobProtocol.GLEvent;
 
 public class IndividualMobilityReduce extends
-		Reducer<LongWritable, GLEvent, LongWritable, Client> {
+		Reducer<LongWritable, ProtobufWritable<GLEvent>, LongWritable, Client> {
 
 	int cont = 0;
 
 	@Override
 	protected void reduce(final LongWritable key,
-			final Iterable<GLEvent> values, final Context context)
+			final Iterable<ProtobufWritable<GLEvent>> values, final Context context)
 			throws IOException, InterruptedException {
 		// Initialize client object
 		Client client = new Client();
 
 		client.setUserId(key.get());
-		client.calculateGeoLocations(values.iterator());
+                List<GLEvent> glEvents = new ArrayList<GLEvent>();
+                for (ProtobufWritable<GLEvent> wrapper : values) {
+                    wrapper.setConverter(GLEvent.class);
+                    glEvents.add(wrapper.get());
+                }
+		client.calculateGeoLocations(glEvents.iterator());
 		client.calculateNodeCommVector();
 		client.calculatePoiCommVector();
 
 		context.write(key, client);
-
 	}
 }

@@ -281,6 +281,8 @@ void paExtendedUsage(PaArgument* paList)
 		char  out[256];
 		char  out2[256];
 
+        printf("processing '%s' for extended usage\n", aP->name);
+
 		/* 1. Option Name */
 		memset(name, 0, sizeof(name));
 		if (PA_IS_OPTION(aP) && (aP->sort == PaOpt))

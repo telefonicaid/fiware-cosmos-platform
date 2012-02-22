@@ -1,4 +1,4 @@
-package es.tid.analytics.mobility.core;
+package es.tid.ps.mobility.mapreduce;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,7 +8,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.analytics.mobility.core.data.Client;
+import es.tid.ps.mobility.data.Client;
 import es.tid.ps.mobility.data.MobProtocol.GLEvent;
 
 public class IndividualMobilityReduce extends

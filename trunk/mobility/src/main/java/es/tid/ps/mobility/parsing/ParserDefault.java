@@ -1,11 +1,11 @@
-package es.tid.analytics.mobility.core.parsers;
+package es.tid.ps.mobility.parsing;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import org.apache.log4j.Logger;
 
-import es.tid.analytics.mobility.core.data.Cell;
+import es.tid.ps.mobility.data.Cell;
 import es.tid.ps.mobility.data.BaseProtocol.Date;
 import es.tid.ps.mobility.data.BaseProtocol.Time;
 import es.tid.ps.mobility.data.MobProtocol.Cdr;

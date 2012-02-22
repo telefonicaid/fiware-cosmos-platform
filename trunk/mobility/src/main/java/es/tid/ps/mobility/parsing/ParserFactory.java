@@ -1,4 +1,4 @@
-package es.tid.analytics.mobility.core.parsers;
+package es.tid.ps.mobility.parsing;
 
 import org.apache.log4j.Logger;
 

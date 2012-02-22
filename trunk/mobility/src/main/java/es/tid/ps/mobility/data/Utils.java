@@ -1,4 +1,4 @@
-package es.tid.analytics.mobility.core.data;
+package es.tid.ps.mobility.data;
 
 import java.util.ArrayList;
 import java.util.Calendar;

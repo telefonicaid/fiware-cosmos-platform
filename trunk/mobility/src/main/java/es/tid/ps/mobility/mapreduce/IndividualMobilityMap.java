@@ -1,12 +1,12 @@
-package es.tid.analytics.mobility.core;
+package es.tid.ps.mobility.mapreduce;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 //import es.tid.analytics.mobility.core.data.Cdr;
-import es.tid.analytics.mobility.core.data.Cell;
-import es.tid.analytics.mobility.core.data.CellCatalogue;
-import es.tid.analytics.mobility.core.parsers.ParserCdr;
-import es.tid.analytics.mobility.core.parsers.ParserCell;
-import es.tid.analytics.mobility.core.parsers.ParserFactory;
+import es.tid.ps.mobility.data.Cell;
+import es.tid.ps.mobility.data.CellCatalogue;
+import es.tid.ps.mobility.parsing.ParserCdr;
+import es.tid.ps.mobility.parsing.ParserCell;
+import es.tid.ps.mobility.parsing.ParserFactory;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;

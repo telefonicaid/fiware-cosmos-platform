@@ -1,4 +1,4 @@
-package es.tid.analytics.mobility.core;
+package es.tid.ps.mobility.mapreduce;
 
 import java.io.IOException;
 

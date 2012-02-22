@@ -40,7 +40,8 @@ namespace samson {
         virtual const char *getType() = 0;
         virtual bool checkType(const char *type) = 0;
         virtual DataInstance * getDataInstanceFromPath(const int *dataPathIntP) = 0;
-
+        virtual int serial_compare( char* data1 , char* data2 )=0;
+        
         virtual void set( const char* str )
         {
             // Set value from a char* ( used to lookup by key )

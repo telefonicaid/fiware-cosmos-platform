@@ -44,6 +44,7 @@ MODULES=system \
 	wiki \
 	simple_mobility \
 	web \
+	webp \
 	twitter
 
 default: release

@@ -321,7 +321,13 @@ namespace samson
 			file <<"\t\tsize_t offset_2=0;\n";
 			file <<"\t\treturn compare( data1 , data2 , &offset_1 , &offset_2 );\n";
 			file <<"\t}\n\n";
-			
+
+			// Virtual Global compare function
+			file <<"\tint serial_compare( char* data1 , char* data2 )\n";
+			file <<"\t{\n";
+            file <<"\t\treturn compare( data1, data2 );\n";
+			file <<"\t}\n\n";
+            
 			//Optional functions
 			for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
 			{

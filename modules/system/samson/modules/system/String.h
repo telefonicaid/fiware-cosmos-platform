@@ -136,6 +136,10 @@ public:
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
+    int serial_compare( char* data1 , char* data2 )
+    {
+       return compare( data1, data2 );
+    }
 
 	int *getDataPath(const std::string &dataPathString){
 		return(getDataPathStatic(dataPathString));

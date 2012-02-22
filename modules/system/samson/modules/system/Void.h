@@ -48,6 +48,11 @@ public:
 		return 0; // No unnecessary movement for sorting
 	}
 
+    int serial_compare( char* data1 , char* data2 )
+    {
+       return compare( data1, data2 );
+    }
+
 	inline static int compare( KV* kv1 , KV*kv2 )
 	{
 		size_t offset_1=0;

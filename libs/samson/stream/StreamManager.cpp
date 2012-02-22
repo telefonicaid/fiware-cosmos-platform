@@ -793,7 +793,7 @@ namespace samson {
         {
             Queue* queue = queues.findInMap(queue_name);
             if (!queue)
-                return au::xml_simple(  "error" , au::str("Queue %s not found" , queue_name.c_str() ));
+                return au::xml_simple( "error" , au::str("Queue %s not found" , queue_name.c_str() ));
             
             // Data instances
             KVFormat format = queue->getFormat();
@@ -801,7 +801,9 @@ namespace samson {
             
             Data* key_data = ModulesManager::shared()->getData( format.keyFormat );
             Data* value_data = ModulesManager::shared()->getData( format.valueFormat );
+            
             DataInstance* reference_key_data_instance  = (DataInstance*)key_data->getInstance();
+            
             DataInstance* key_data_instance            = (DataInstance*)key_data->getInstance();
             DataInstance* value_data_instance          = (DataInstance*)value_data->getInstance();
             
@@ -815,12 +817,13 @@ namespace samson {
             int hg = reference_key_data_instance->hash( KVFILE_NUM_HASHGROUPS );
             KVRange kv_range( hg , hg+1 );
             
-            // Look up this key
-            BlockList list;
-            list.copyFrom( queue->list , kv_range );
             
             if ( queue->list->blocks.size() == 0 )
                 return au::xml_simple(  "error" , au::str("No data in queue %s" , queue_name.c_str() ));
+
+            // Look up this key
+            BlockList list;
+            list.copyFrom( queue->list , kv_range );
 
             if ( list.blocks.size() == 0 )
                 return au::xml_simple(  "error" , au::str("No data in queue %s" , queue_name.c_str() ));
@@ -836,6 +839,7 @@ namespace samson {
                     return au::xml_simple(  "error" , au::str("Block not in memory for queue %s" , queue_name.c_str() ) );
                 }
                 
+                //KVInfo* info = (KVInfo*)( block->getData() + sizeof(KVHeader)); 
                 char *data = block->getData() + KVFILE_TOTAL_HEADER_SIZE; // We skip the kvs/size vector
                 
                 size_t offset = 0;
@@ -848,6 +852,7 @@ namespace samson {
                     
                     if( reference_key_size == key_size )
                     {
+                        
                         char * s1 = data+offset;
                         char * s2 = tmp_buffer;
                         

@@ -58,6 +58,11 @@ namespace samson {
 	  return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 	
+    int serial_compare( char* data1 , char* data2 )
+    {
+       return compare( data1, data2 );
+    }
+
 	void copyFrom( FixedLengthDataInstance<T> *other ){
 	  value = other->value;
 	};

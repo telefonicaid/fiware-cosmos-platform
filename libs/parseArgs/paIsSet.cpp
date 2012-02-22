@@ -37,5 +37,5 @@ const char* paIsSetSoGet(int argC, char* argV[], const char* option)
 			return argV[i + 1];
 	}
 
-	return (const char*)false;	
+	return NULL;	
 }

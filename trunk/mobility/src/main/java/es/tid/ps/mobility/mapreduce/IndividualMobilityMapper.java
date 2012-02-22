@@ -1,7 +1,7 @@
 package es.tid.ps.mobility.mapreduce;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-//import es.tid.analytics.mobility.core.data.Cdr;
+
 import es.tid.ps.mobility.data.Cell;
 import es.tid.ps.mobility.data.CellCatalogue;
 import es.tid.ps.mobility.parsing.ParserCdr;
@@ -22,12 +22,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import es.tid.ps.mobility.data.MobProtocol;
 import es.tid.ps.mobility.data.MobProtocol.Cdr;
 import es.tid.ps.mobility.data.MobProtocol.GLEvent;
 
-public class IndividualMobilityMapper extends Mapper<LongWritable, Text, LongWritable, ProtobufWritable<GLEvent>> {
-
+public class IndividualMobilityMapper extends Mapper<LongWritable, Text,
+        LongWritable, ProtobufWritable<GLEvent>> {
     private static final Logger LOG = Logger.getLogger(IndividualMobilityMapper.class);
     public static final String HDFS_CELL_CATALOGUE_PATH = "/data/cell.dat";
     private static final String CELL_PARSER = "DEFAULT";
@@ -42,15 +41,17 @@ public class IndividualMobilityMapper extends Mapper<LongWritable, Text, LongWri
 
     @Override
     protected void setup(final Context context) throws IOException,
-            InterruptedException {
+                                                       InterruptedException {
         loadCellCatalogue(context, HDFS_CELL_CATALOGUE_PATH);
         this.outputValue = ProtobufWritable.newInstance(GLEvent.class);
     }
 
     @Override
     protected void map(final LongWritable key, final Text value,
-            final Context context) throws IOException, InterruptedException {
-        final ParserCdr cdrParser = new ParserFactory().createNewCdrParser(CDRS_PARSER);
+                       final Context context) throws IOException,
+                                                     InterruptedException {
+        final ParserCdr cdrParser =new ParserFactory().createNewCdrParser(
+                CDRS_PARSER);
         Cdr cdr = cdrParser.parseCdrsLine(value.toString());
 
         this.outputKey.set(cdr.getUserId());
@@ -58,10 +59,11 @@ public class IndividualMobilityMapper extends Mapper<LongWritable, Text, LongWri
         glEvent.setUserId(cdr.getUserId());
         glEvent.setDate(cdr.getDate());
         glEvent.setTime(cdr.getTime());
-        
+
         if (this.cellsCataloge != null
                 && this.cellsCataloge.containsCell(cdr.getCellId())) {
-            final Cell currentCell = this.cellsCataloge.getCell(cdr.getCellId());
+            final Cell currentCell = this.cellsCataloge.getCell(
+                    cdr.getCellId());
             glEvent.setPlaceId(currentCell.getGeoLocationLevel2());
         } else {
             glEvent.setPlaceId(0);
@@ -72,12 +74,12 @@ public class IndividualMobilityMapper extends Mapper<LongWritable, Text, LongWri
     }
 
     private void loadCellCatalogue(final Context context,
-            final String hdfsFileLocation) {
+                                   final String hdfsFileLocation) {
         loadCellCatalogue(context.getConfiguration(), hdfsFileLocation);
     }
 
     private void loadCellCatalogue(final Configuration conf,
-            final String hdfsFileLocation) {
+                                   final String hdfsFileLocation) {
         final FSDataInputStream in;
         final BufferedReader br;
 
@@ -89,7 +91,6 @@ public class IndividualMobilityMapper extends Mapper<LongWritable, Text, LongWri
         }
 
         try {
-
             final FileSystem fs = FileSystem.get(conf);
             final Path path = new Path(hdfsFileLocation);
 
@@ -104,8 +105,8 @@ public class IndividualMobilityMapper extends Mapper<LongWritable, Text, LongWri
         }
 
         try {
-
-            final ParserCell cellParser = new ParserFactory().createNewCellParser(CELL_PARSER);
+            final ParserCell cellParser = new ParserFactory().
+                    createNewCellParser(CELL_PARSER);
 
             String line;
             while ((line = br.readLine()) != null) {

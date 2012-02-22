@@ -71,7 +71,7 @@ public:
 
     // Add initial connections to "connect to a cluster" or "add a node to the connected cluster"
     // ------------------------------------------------------------
-    Status addMainDelilahConnection( std::string host , int port );
+    Status addMainDelilahConnection( std::string host , int port ,std::string user , std::string password );
     
 private:    
     

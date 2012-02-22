@@ -188,6 +188,10 @@ namespace samson {
         
         // Copy identification information
         node_identifier.fill( pb_hello->mutable_node_identifier() );
+
+        // Copy user and password
+        pb_hello->set_user( user );
+        pb_hello->set_password( password );
         
         if( !target )
             pb_hello->set_answer_hello_required(false);

@@ -73,9 +73,13 @@ message Hello
 	required NodeIdentifier      node_identifier         = 1; // My node identifier
 	required ClusterInformation  cluster_information     = 2; // Cluster information
 
-	required bool answer_hello_required = 3;       // It is necessary to answer back with a hello
+	optional string user     = 3;
+	optional string password = 4;
 
-	optional bool reset_cluster_information = 4;   // Falg to reset a worker instance
+
+	required bool answer_hello_required = 5;       // It is necessary to answer back with a hello
+
+	optional bool reset_cluster_information = 6;   // Falg to reset a worker instance
 }	
 
 // ////////////////////////////////////////////////////////////////////////

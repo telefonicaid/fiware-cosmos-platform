@@ -90,6 +90,10 @@ namespace samson {
     {
         // Identifier of the node ( if available )
         NodeIdentifier node_identifier;
+
+		// User and password for this connection
+		std::string user;
+		std::string password;
         
         // Socket Connection
         SocketConnection* socket_connection;
@@ -187,12 +191,17 @@ namespace samson {
             return socket_connection->getPort();
         }
         
-        
         void setNodeIdentifier( NodeIdentifier _node_identifier )
         {
             node_identifier = _node_identifier;
         }
 
+        void setUserAndPassword( std::string _user , std::string _password )
+        {
+            user = _user;
+            password = _password;
+        }
+        
         NodeIdentifier getNodeIdentifier()
         {
             return node_identifier;

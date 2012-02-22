@@ -28,6 +28,10 @@ namespace samson {
         
         // Cluster information for this node ( worker or delilah )
         ClusterInformation cluster_information;
+
+        // Information for the hello message
+        std::string user;
+        std::string password;
         
     public:
         

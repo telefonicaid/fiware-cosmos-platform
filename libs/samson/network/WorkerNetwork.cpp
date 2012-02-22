@@ -9,6 +9,9 @@ namespace samson {
 
     WorkerNetwork::WorkerNetwork( int port , int web_port )
     {
+        // Workers are allways connected as user samson
+        // ----------------------------------------------------------------------------
+        user = "samson"; 
         
         // Init counter for temporal network connection names
         // ----------------------------------------------------------------------------
@@ -139,6 +142,7 @@ namespace samson {
         ClusterInformation new_cluster_information( packet->message->hello().cluster_information() );
         NodeIdentifier new_node_identifier( packet->message->hello().node_identifier() );
 
+        connection->setUserAndPassword( packet->message->hello().user(), packet->message->hello().password() );
         
         // -----------------------------------------------------------------------------------------------
         // General update of cluster information

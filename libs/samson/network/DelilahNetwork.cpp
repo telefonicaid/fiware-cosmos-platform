@@ -36,9 +36,8 @@ namespace samson {
     }
     
     // Add new connection agains any worker in the cluster
-    Status DelilahNetwork::addMainDelilahConnection( std::string _host , int _port )
+    Status DelilahNetwork::addMainDelilahConnection( std::string _host , int _port , std::string _user , std::string _password )
     {
-
         // Check previous connection....
         std::string connection_name = MAIN_DELILAH_CONNECTION_NAME;
         if( connections.findInMap(connection_name) != NULL )
@@ -50,6 +49,8 @@ namespace samson {
         
         host = _host;
         port = _port;
+        user = _user;
+        password = _password;
         
         SocketConnection* socket_connection;
         Status s = SocketConnection::newSocketConnection(host , port , &socket_connection );        
@@ -388,7 +389,7 @@ namespace samson {
             
             resetNetworkManager();
             cluster_information.clearClusterInformation();
-            Status s = addMainDelilahConnection( host , port );
+            Status s = addMainDelilahConnection( host , port , "anonymous" , "anonymous" );
 
             if ( s == OK)
                 return au::str("Connecting with  %s:%d" , host.c_str() , port );

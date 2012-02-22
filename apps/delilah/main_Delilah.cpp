@@ -42,6 +42,8 @@
 * Option variables
 */
 char             target_host[80];
+char             user[80];
+char             password[80];
 int              target_port;
 
 int				 memory_gb;
@@ -60,10 +62,12 @@ PaArgument paArgs[] =
 {
 	{ "",                  target_host,           "",       PaString, PaOpt, _i LOC, PaNL, PaNL, "SAMSON server hostname "         },
 	{ "",                 &target_port,           "",       PaInt, PaOpt, SAMSON_WORKER_PORT, 1, 99999, "SAMSON server port"         },
-	{ "-memory",           &memory_gb,           "MEMORY",           PaInt,    PaOpt,      1,    1,  100, "memory in GBytes"           },
-	{ "-load_buffer_size", &load_buffer_size_mb, "LOAD_BUFFER_SIZE", PaInt,    PaOpt,     64,   64, 2048, "load buffer size in MBytes" },
-	{ "-f",                 commandFileName,     "FILE_NAME",        PaString, PaOpt,  _i "", PaNL, PaNL, "File with commands to run"  },
-	{ "-command",           command,             "MONITORIZATION_COMMAND", PaString, PaOpt,  _i "", PaNL, PaNL, "Single command to be executed"  },
+	{ "-user",             user,                  "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "User to connect to SAMSON cluster"  },
+	{ "-password",         password,              "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "Password to connect to SAMSON cluster"  },
+	{ "-memory",           &memory_gb,            "MEMORY",           PaInt,    PaOpt,      1,    1,  100, "memory in GBytes"           },
+	{ "-load_buffer_size", &load_buffer_size_mb,  "LOAD_BUFFER_SIZE", PaInt,    PaOpt,     64,   64, 2048, "load buffer size in MBytes" },
+	{ "-f",                 commandFileName,      "FILE_NAME",        PaString, PaOpt,  _i "", PaNL, PaNL, "File with commands to run"  },
+	{ "-command",           command,              "MONITORIZATION_COMMAND", PaString, PaOpt,  _i "", PaNL, PaNL, "Single command to be executed"  },
 
 	PA_END_OF_ARGS
 };
@@ -152,7 +156,7 @@ int main(int argC, const char *argV[])
 	samson::DelilahConsole* delilahConsole = new samson::DelilahConsole(networkP);
 
     // Add main delilah connection with specified worker
-    samson::Status s = networkP->addMainDelilahConnection( target_host , target_port );        
+    samson::Status s = networkP->addMainDelilahConnection( target_host , target_port , user , password );        
     
     if( s != samson::OK )
         LM_X(1, ("Not possible to open connection with %s:%d (%s)" , target_host , target_port , samson::status(s) ));

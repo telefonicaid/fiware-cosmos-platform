@@ -182,7 +182,7 @@ namespace samson {
         delilah = new Delilah( networkP );
 
         // Init network connection
-        Status s = networkP->addMainDelilahConnection( worker_host , port );
+        Status s = networkP->addMainDelilahConnection( worker_host , port , "anonymous" , "anonymous" );
         
         if( s != OK )
             LM_X(1, ("Not possible to open connection with %s:%d (%s)" , worker_host.c_str() , port , status(s) ));

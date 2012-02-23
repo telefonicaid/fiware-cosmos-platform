@@ -6,9 +6,9 @@ import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.RawComparator;
 
 import es.tid.ps.base.mapreduce.CompositeKey;
+import es.tid.ps.base.mapreduce.SingleKey;
 import es.tid.ps.kpicalculation.data.KpiCalculationComparationException;
 import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
-import es.tid.ps.kpicalculation.data.SingleKey;
 
 /**
  * Class used in the compare and sort phases of process for simple aggregation

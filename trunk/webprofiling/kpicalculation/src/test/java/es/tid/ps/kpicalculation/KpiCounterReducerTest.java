@@ -14,7 +14,7 @@ import org.apache.hadoop.mrunit.types.Pair;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.ps.kpicalculation.data.SingleKey;
+import es.tid.ps.base.mapreduce.SingleKey;
 
 /**
  * Test cases for the KpiCounterReducer class.
@@ -37,7 +37,7 @@ public class KpiCounterReducerTest extends TestCase {
     @Test
     public void testCounterReducer() throws Exception {
         SingleKey key = new SingleKey();
-        ((SingleKey) key).setPrimaryKey("http\ttid.es");
+        key.setKey("http\ttid.es");
 
         List<IntWritable> values = new ArrayList<IntWritable>();
         values.add(new IntWritable(1));

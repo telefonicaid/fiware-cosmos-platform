@@ -22,16 +22,15 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import com.hadoop.compression.lzo.LzopCodec;
 import com.hadoop.mapreduce.LzoTextInputFormat;
 import com.twitter.elephantbird.mapreduce.input.LzoProtobufB64LineInputFormat;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import com.twitter.elephantbird.mapreduce.output.LzoProtobufB64LineOutputFormat;
 
 import es.tid.ps.base.mapreduce.BinaryKey;
+import es.tid.ps.base.mapreduce.SingleKey;
 import es.tid.ps.kpicalculation.data.JobDetails;
 import es.tid.ps.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
-import es.tid.ps.kpicalculation.data.SingleKey;
 
 /**
  * This class performs the webprofiling processing of the data received from
@@ -45,22 +44,28 @@ import es.tid.ps.kpicalculation.data.SingleKey;
  * project
  */
 public class KpiMain extends Configured implements Tool {
+    private static final Logger logger = Logger.getLogger("KpiMain");
 
-    public static void main(String[] args) throws IOException,
-            ClassNotFoundException, InterruptedException, Exception {
-        int res = ToolRunner.run(new Configuration(), new KpiMain(), args);
-        System.exit(res);
-    }
-
-    public int run(String[] args) throws IOException, ClassNotFoundException,
-            InterruptedException {
-        Logger logger = Logger.getLogger("KpiMain");
+    public static void main(String[] args) {
         if (args.length != 2) {
             logger.setLevel(Level.ALL);
             logger.severe("Wrong Arguments. Example: hadoop jar kpicalculation-LocalBuild.jar inputPath outputPath");
             System.exit(1);
         }
 
+        try {
+            int res = ToolRunner.run(new Configuration(), new KpiMain(), args);
+            System.exit(res);
+        } catch (Exception e) {
+            logger.setLevel(Level.ALL);
+            logger.log(Level.SEVERE, "Execution failed: {0}", e.getMessage());
+            System.exit(1);
+        }
+    }
+
+    @Override
+    public int run(String[] args) throws IOException, ClassNotFoundException,
+            InterruptedException {
         Path inputPath = new Path(args[0]);
         Path outputPath = new Path(args[1] + "/aggregates");
         String timeFolder = "data." + Long.toString(new Date().getTime());

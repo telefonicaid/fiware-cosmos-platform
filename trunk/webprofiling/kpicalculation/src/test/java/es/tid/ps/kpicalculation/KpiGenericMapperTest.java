@@ -17,8 +17,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
 import es.tid.ps.base.mapreduce.BinaryKey;
 import es.tid.ps.base.mapreduce.CompositeKey;
-
-import es.tid.ps.kpicalculation.data.SingleKey;
+import es.tid.ps.base.mapreduce.SingleKey;
 import es.tid.ps.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
 
 import junit.framework.TestCase;

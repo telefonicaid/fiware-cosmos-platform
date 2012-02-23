@@ -17,9 +17,9 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
 import es.tid.ps.base.mapreduce.BinaryKey;
 import es.tid.ps.base.mapreduce.CompositeKey;
+import es.tid.ps.base.mapreduce.SingleKey;
 import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
 import es.tid.ps.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
-import es.tid.ps.kpicalculation.data.SingleKey;
 
 /**
  * This class receives lines of a information of CDR´s files that have passed

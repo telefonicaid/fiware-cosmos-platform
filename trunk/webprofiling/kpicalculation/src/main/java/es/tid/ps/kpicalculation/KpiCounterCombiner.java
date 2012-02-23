@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.ps.kpicalculation.data.SingleKey;
+import es.tid.ps.base.mapreduce.SingleKey;
 
 /**
  * This class makes the combining phase in the simple kpi aggregates calculation

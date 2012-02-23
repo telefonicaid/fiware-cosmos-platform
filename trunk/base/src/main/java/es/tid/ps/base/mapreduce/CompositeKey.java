@@ -17,11 +17,11 @@ public abstract class CompositeKey implements WritableComparable<CompositeKey> {
         this.keys = new String[capacity];
     }
     
-    protected void set(int index, String key) {
+    public void set(int index, String key) {
         this.keys[index] = key;
     }
 
-    protected String get(int index) {
+    public String get(int index) {
         return this.keys[index];
     }
 

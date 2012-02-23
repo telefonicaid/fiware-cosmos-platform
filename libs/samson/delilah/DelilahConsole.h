@@ -190,15 +190,15 @@ namespace samson {
 
             add( "ls_modules" , "modules",
                 "Show a list of modules installed in SAMSON node workers",
-                "ls_module <name>\n");
+                "ls_module [module_name_pattern]. i.e ls_modules web*\n");
 
             add(  "ls_operations","modules", 
                 "Shows a list of available operations",
-                "ls_operations <op_name>");
+                "ls_operations [operation_name_pattern]. i.e ls_operations web*");
             
             add( "ls_datas" , "modules" ,
-                "Shows a list of available data-types."
-                "ls_operations <data_name>"
+                "Shows a list of available data-types.",
+                "ls_datas [data_name_pattern]. i.e ls_datas web*"
                 );
             
             add( "reload_modules" , "modules", 
@@ -316,13 +316,6 @@ namespace samson {
                 "           remove id            : Remove one of the involved workers. The worker id should be provided ( see cluster info )\n"
                 "           get_my_id            : Get this delilah identifier ( see ls_connections )\n"
                 );
-            
-            
-            add_description("ls_modules" ,
-                            "Usage: ls_modules [name]\n"
-                            "\t[name] Optional name (or first part of the name) of a module to filter output\n");
-            
-            
         }
         
         void add( std::string name , std::string category , std::string short_description = "" , std::string usage = "" )

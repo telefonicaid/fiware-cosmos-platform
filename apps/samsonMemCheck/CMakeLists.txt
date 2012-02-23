@@ -12,8 +12,8 @@ SET( STATIC_LIBS
      samsonCommon
      protobuf
      pthread
-     au
 	 tables
+     au
      dl
      lm
 	 pa

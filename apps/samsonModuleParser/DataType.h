@@ -111,6 +111,12 @@ namespace samson {
 		
 		string getCompareCommand( string pre_line );
 
+        string getSetFromStringCommandIndividual( string pre_line, string _name );
+        string getSetFromStringCommandVector( string pre_line, string _name );
+
+        string getSetFromStringCommand(string pre_line);
+        string checkSetFromStringNamed(string pre_line);
+
 		string getGetDataPath(string pre_line, int index);
 		string getGetType(string pre_line, int index);
 		string getGetTypeFromStr(string pre_line, int index);

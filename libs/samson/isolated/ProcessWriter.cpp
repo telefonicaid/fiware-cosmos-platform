@@ -46,6 +46,7 @@ namespace samson {
         
         if( num_outputs != (int)processIsolated->outputFormats.size() )
         {
+            LM_E(("Not possible to get the hash-code of the data instances used at the output since output formats are not defined"));
             processIsolated->setUserError("Not possible to get the hash-code of the data instances used at the output since output formats are not defined");
             return;
         }

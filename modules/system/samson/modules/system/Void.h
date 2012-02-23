@@ -66,6 +66,13 @@ public:
 		return 0;
 	}
 
+	void setFromString(const char *_data)
+	{
+		;
+	}
+
+
+
 	int *getDataPath(const std::string &dataPathString){
 		return(getDataPathStatic(dataPathString));
 	}

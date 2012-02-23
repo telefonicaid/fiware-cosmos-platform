@@ -27,6 +27,11 @@ public:
 		return abs((int) 1000*value) % max_num_partitions;
 	}
 
+	void setFromString(const char *_data)
+	{
+		value = strtod((const char *)_data, (char **) NULL);
+	}
+
 	int *getDataPath(const std::string &dataPathString){
 		return(getDataPathStatic(dataPathString));
 	}

@@ -808,7 +808,7 @@ namespace samson {
             DataInstance* value_data_instance          = (DataInstance*)value_data->getInstance();
             
             // Get all the information from the reference key
-            reference_key_data_instance->set( key );
+            reference_key_data_instance->setFromString( key );
             
             char tmp_buffer[1024];
             int reference_key_size = reference_key_data_instance->serialize( tmp_buffer );

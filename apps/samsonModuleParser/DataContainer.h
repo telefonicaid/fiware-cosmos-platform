@@ -348,6 +348,49 @@ namespace samson
 				}
 			}
 			
+            //setFromString() Function to translate char * parameter in REST queries to internal data type
+            file << "\tvoid setFromString(const char *_value_data){\n" ;
+	    file << "\t\tchar *p_data_decoded = NULL;\n";
+	    file << "\t\tchar *p_value_data = NULL;\n";
+	    file << "\t\tbool inputStringDecoded = false;\n";
+	    file << "\t\tif (strstr(_value_data, \"%20\") != NULL)\n";
+	    file << "\t\t{\n";
+	    file << "\t\t\tinputStringDecoded = true;\n";
+	    file << "\t\t\tp_data_decoded = strdup(_value_data);\n";
+	    file << "\t\t\tchar *p_next_data = p_data_decoded;\n";
+	    file << "\t\t\tchar *p_blank;\n";
+	    file << "\t\t\twhile ((p_blank = strstr(p_next_data, \"%20\")) != NULL)\n";
+	    file << "\t\t\t{\n";
+	    file << "\t\t\t\t*p_blank++ = ' ';\n";
+	    file << "\t\t\t\tstrcpy(p_blank, p_blank+strlen(\"%02\")-1);\n";
+	    file << "\t\t\t\tp_next_data = p_blank;\n";
+	    file << "\t\t\t}\n";
+	    file << "\t\t\tp_value_data = p_data_decoded;\n";
+	    file << "\t\t}\n";
+	    file << "\t\telse\n";
+	    file << "\t\t{\n";
+	    file << "\t\t\tp_value_data = (char *)_value_data;\n";
+	    file << "\t\t}\n\n";
+	    file << "\t\tbool oneFieldNamed = false;\n";
+	    file << "\t\t{\n";
+	    file << "\t\t\tconst char *p_item = NULL;\n";
+            for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
+            {
+                file << (*field).checkSetFromStringNamed("\t\t\t");
+            }
+	    file << "\t\t}\n\n";
+            for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
+            {
+                file << (*field).getSetFromStringCommand("\t\t");
+            }
+	    file << "\t\tif (inputStringDecoded)\n";
+	    file << "\t\t{\n";
+	    file << "\t\t\tfree(p_data_decoded);\n";
+	    file << "\t\t}\n";
+            file << "\t}\n\n";
+
+
+
 			//Functions to translate and access data instances from name string.
 			// External API from string to int*
 			// This piece of code is the same for every data type

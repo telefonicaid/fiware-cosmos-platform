@@ -8,3 +8,4 @@ aptitude -y remove samson samson-cdr samson-dev samson-docs samson-example samso
 apt-get clean
 # delete /var/samson since it does not get deleted when the packages are removed
 rm -rf /var/samson
+rm -rf /var/log/samson

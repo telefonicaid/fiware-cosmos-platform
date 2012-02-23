@@ -14,6 +14,8 @@
 #endif /* de DEBUG_FILES */
 #undef DEBUG_FILES
 
+#include "logMsg/logMsg.h"
+
 
 namespace samson{
 namespace system{
@@ -76,6 +78,11 @@ public:
 		return 0; //If everything is equal
 	}
 
+    int serial_compare( char* data1 , char* data2 )
+    {
+       return compare( data1, data2 );
+    }
+
 	inline static int compare( char* data1 , char* data2 )
 	{
 		size_t offset_1=0;
@@ -83,10 +90,21 @@ public:
 		return compare( data1 , data2 , &offset_1 , &offset_2 );
 	}
 
-    int serial_compare( char* data1 , char* data2 )
-    {
-       return compare( data1, data2 );
-    }
+	void setFromString(const char *_data)
+	{
+		if (strncmp(_data, "0x", strlen("0x")) == 0)
+		{
+			value = strtoul((const char *)_data, (char **) NULL, 16);
+		}
+		else
+		{
+			value = strtoul((const char *)_data, (char **) NULL, 10);
+		}
+
+		LM_M(("UInt.setFromString, _data:'%s', value:%lu", _data, value));
+	}
+
+
 	int *getDataPath(const std::string &dataPathString){
 		return(getDataPathStatic(dataPathString));
 	}

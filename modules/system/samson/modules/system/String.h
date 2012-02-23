@@ -173,6 +173,65 @@ public:
 		return  (dataPathIntP);
 	}
 
+	void setFromString(const char *_data)
+	{
+	    char *p_data_decoded = NULL;
+	    bool inputStringDecoded=false;
+
+	    if (strstr(_data, "%20") != NULL)
+	    {
+		inputStringDecoded = true;
+
+		p_data_decoded = strdup(_data);
+		char *p_next_data = p_data_decoded;
+		char *p_blank;
+
+
+	    while ((p_blank = strstr(p_next_data, "%20")) != NULL)
+	    {
+		*p_blank++ = ' ';
+		strcpy(p_blank, p_blank+strlen("%02")-1);
+		p_next_data = p_blank;
+	    }
+	    }
+	    else
+	    {
+	    	p_data_decoded = (char *)_data;
+	    }
+
+	    char *p_item;
+	    int length;
+
+	    p_item = p_data_decoded;
+
+	    if (*p_item == '\"')
+	    {
+	        p_item++;
+	        char *p_next_item = p_item;
+	        char *p_end;
+	        length = strlen(p_item);
+	        while ((p_end = strchr(p_next_item, '\"')) != NULL)
+	        {
+			if (*(p_end-1) != '\\')
+			{
+				length = p_end - p_item;
+				break;
+			}
+			p_next_item = p_end+1;
+	        }
+	    }
+	    else
+	    {
+	        p_item = (char *)_data;
+	        length = strlen(p_item);
+	    }
+	    value = std::string(p_item, length) ;
+	    if (inputStringDecoded)
+	    {
+		    free(p_data_decoded);
+	    }
+	}
+
 	static int getDataPath(const char * dataPathCharP, int *dataPathIntP){
 		if (*dataPathCharP == 0)
 		{

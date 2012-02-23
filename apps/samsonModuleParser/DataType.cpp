@@ -619,12 +619,14 @@ namespace samson
 		string pre_line_local;
 
 		o << pre_line << "{// toString of vector " << name << "\n";
+		o << pre_line << "\to << \"[\" ;\n";
 		o << pre_line << "\tfor(int i = 0 ; i < " << name << "_length ; i++)\n";
         o << pre_line << "\t{\n";
 		pre_line_local = pre_line + "\t";
 		o << getToStringCommandIndividual(pre_line_local, name+"[i]");
 		o << pre_line << "\t\t o << \" \";\n";
         o << pre_line << "\t}\n";
+		o << pre_line << "\to << \"]\" ;\n";
 
 		o << pre_line << "}\n";
 		return o.str();
@@ -656,6 +658,92 @@ namespace samson
 		
 	}
 	
+
+	// getSetFromString Command
+
+    string DataType::getSetFromStringCommandIndividual( string pre_line, string _name )
+    {
+        ostringstream o;
+        o << pre_line << "\t" << _name << ".setFromString(p_item);\n";
+        return o.str();
+    }
+
+    string DataType::getSetFromStringCommandVector( string pre_line, string _name )
+    {
+        ostringstream o;
+        string pre_line_local;
+
+
+
+        o << pre_line << "\tconst char *p_item = p_item_vector;" << "\n";
+        o << pre_line << "\tif ((p_item_vector=strchr(p_item_vector, '[')) != NULL){p_item_vector++;}else{p_item_vector=p_item;}" << "\n";
+        o << pre_line << "\tconst char *p_item_prev = p_item_vector;" << "\n";
+        o << pre_line << "\tint n_items = 0;" << "\n";
+        o << pre_line << "\twhile ((*p_item_prev != ']') && (*p_item_prev != '\\0'))" << "\n";
+        o << pre_line << "\t{" << "\n";
+        pre_line_local = pre_line + "\t";
+        o << pre_line << "\t\t" << "if ((p_item=strchr(p_item_prev, ' ')) != NULL) { n_items++; p_item_prev = p_item+1;}else if ((p_item=strchr(p_item_prev, ',')) != NULL) { n_items++; p_item_prev = p_item+1; while (*p_item_prev == ' '){p_item_prev++;}} else if ((p_item=strchr(p_item_prev, ']')) != NULL)  { n_items++; break;} else { break;} "<< "\n";
+        o << pre_line << "\t}" << "\n";
+	o << pre_line << "\t"<<name<<"SetLength(n_items);\n";
+        o << pre_line << "\tp_item = p_item_vector;" << "\n";
+        o << pre_line << "\tfor (int i = 0 ; i < (int)"<<name<<"_length ; i++)\n";
+        o << pre_line << "\t{" << "\n";
+        pre_line_local = pre_line + "\t";
+        o << getSetFromStringCommandIndividual( pre_line_local, name + "[i]" ) << "\n";
+        o << pre_line << "\t\t" << "if ((p_item=strchr(p_item_vector, ' ')) != NULL) { p_item++; }else{ if ((p_item=strchr(p_item_vector, ',')) != NULL) { p_item++; if (*p_item == ' '){p_item++;}} else { p_item = p_item_vector; }}"<< "\n";
+        o << pre_line << "\t\tp_item_vector = p_item;" << "\n";
+        o << pre_line << "\t}" << "\n";
+
+        return o.str();
+    }
+
+    string DataType::getSetFromStringCommand(string pre_line)
+    {
+        ostringstream o;
+
+	if (strcmp(name.c_str(), NAME_FILLEDOPTIONALFIELDS) == 0)
+	{
+		return "";
+	}
+
+        if ( isVector() )
+        {
+            o << pre_line << "{ //Setting vector "<<name<<"\n";
+
+            o << pre_line << "\t" << "const char *p_item_vector;" << "\n";
+            o << pre_line << "\t" << "if ((p_item_vector=strstr(p_value_data, \"" << name << ":[\")) != NULL) { p_item_vector += strlen(\"" << name << ":[\");} else if (oneFieldNamed == true) { p_item_vector = \"\";} else {p_item_vector = p_value_data;}"<< "\n";
+
+            o << getSetFromStringCommandVector(pre_line, name) << "\n";
+            o << pre_line << "}\n";
+        }
+        else
+        {
+            o << pre_line << "{ //Setting "<<name<<"\n";
+            o << pre_line << "\t" << "const char *p_item;" << "\n";
+            o << pre_line << "\t" << "if ((p_item=strstr(p_value_data, \"" << name << ":\")) != NULL) { p_item += strlen(\"" << name << ":\");} else if (oneFieldNamed == true) { p_item = \"\";} else {p_item = p_value_data;}"<< "\n";
+
+            o << getSetFromStringCommandIndividual(pre_line, name) << "\n";
+            o << pre_line << "}\n";
+
+        }
+
+        return o.str();
+    }
+
+    string DataType::checkSetFromStringNamed(string pre_line)
+    {
+        ostringstream o;
+
+	if (strcmp(name.c_str(), NAME_FILLEDOPTIONALFIELDS) == 0)
+	{
+		return "";
+	}
+
+        o << pre_line << "\t" << "if ((p_item=strstr(p_value_data, \"" << name << ":\")) != NULL) { oneFieldNamed = true;}"<< "\n";
+
+        return o.str();
+    }
+
 	// getDataPath Command
 
 	string DataType::getGetDataPath(string pre_line, int index)

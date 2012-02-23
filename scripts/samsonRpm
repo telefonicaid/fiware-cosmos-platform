@@ -154,6 +154,7 @@ mkdir -p $PACKAGE_DIR/opt/samson/include/samson/module
 mkdir -p $PACKAGE_DIR/opt/samson/include/samson/modules/system
 mkdir -p $PACKAGE_DIR/opt/samson/man/{man1,man7}
 mkdir -p $PACKAGE_DIR/opt/samson/share/modules
+mkdir -p $PACKAGE_DIR/var/log/samson
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonCat/samsonCat                   $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonController/samsonController     $PACKAGE_DIR/opt/samson/bin
 cp $BUILD_ROOT/BUILD_RELEASE/apps/samsonData/samsonData                 $PACKAGE_DIR/opt/samson/bin

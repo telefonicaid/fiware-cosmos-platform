@@ -26,6 +26,26 @@ public:
 		return abs(value)%max_num_partitions;
 	}
 
+	void setFromString(const char *_data)
+	{
+		if (strncmp(_data, "0x", strlen("0x")) == 0)
+		{
+			value = strtoul(_data, (char **) NULL, 16);
+		}
+		else
+		{
+			value = strtoul(_data, (char **) NULL, 10);
+		}
+
+	}
+
+        std::string str(){
+                std::ostringstream o;
+                o << (int)value << " ";
+                return o.str();
+        }
+
+
 	int toInt()
 	{
 		return (value);

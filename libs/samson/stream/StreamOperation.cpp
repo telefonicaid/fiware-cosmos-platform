@@ -159,6 +159,8 @@ namespace samson {
             int num_inputs  = op->getNumInputs();
             int num_outputs = op->getNumOutputs();
             
+            LM_M(("Operation (%s) with %d inputs and %d outputs", name.c_str(), num_inputs, num_outputs));
+
             for (int i = 0 ; i < num_inputs ; i++ )
             {
                 std::string queue_name = prefix + cmd.get_argument( 3 + i );
@@ -343,9 +345,15 @@ namespace samson {
                 return false;
             
             if( op->getNumInputs() != (int)input_queues.size() )
+            {
+                LM_E(("op->getNumInputs(%d) != input_queues.size(%d)", op->getNumInputs() , (int)input_queues.size()));
                 return false;
+            }
             if( op->getNumOutputs() != (int)output_queues.size() )
+            {
+                LM_E(("op->getNumOutputs(%d) != output_queues.size(%d)", op->getNumOutputs() , (int)output_queues.size()));
                 return false;
+            }
             
             return true;
         }

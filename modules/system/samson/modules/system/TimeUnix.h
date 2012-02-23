@@ -55,6 +55,11 @@ class TimeUnix : public FixedLengthDataInstance<time_t>{
 	}
 
 public:
+	  void setFromString(const char *_data)
+	  {
+	  	value = strtoul((const char*)_data, (char **)NULL, 10);
+	}
+
 
 	  void setCurrentTime()
 	  {

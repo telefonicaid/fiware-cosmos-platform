@@ -176,6 +176,15 @@ namespace samson {
 
             return offset;
         }
+
+	void setFromString(const char *_value_data)
+	{
+		typename std::list<T*>::iterator it_elements;
+		for (it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
+		{
+			(*it_elements)->setFromString(_value_data);
+		}
+	}
         
         void clear()
         {

@@ -46,6 +46,7 @@ mkdir -p debian/opt/samson/share
 mkdir -p debian/etc/init.d
 mkdir -p debian/etc/profile.d
 mkdir -p debian/etc/defaults
+mkdir -p debian/var/log/samson
 
 echo "Package: samson"                                   > debian/DEBIAN/control
 echo "Version: $version"                                >> debian/DEBIAN/control

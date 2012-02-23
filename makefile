@@ -116,6 +116,11 @@ install_man: man
 clean:
 	make -C BUILD_DEBUG clean
 	make -C BUILD_RELEASE clean	
+	for module in $(MODULES); do \
+		cd modules/$$module; \
+		make reset; \
+		cd ../..; \
+	done
 
 # ------------------------------------------------
 # RELEASE Version

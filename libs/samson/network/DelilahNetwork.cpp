@@ -447,7 +447,10 @@ namespace samson {
             }
             else
                 // Do not close here... it will be closed from the other end
-                output << au::str("Not possible to notify worker %lu (%s), since we are not connected.\n" , id , connection_name.c_str() );
+                output << au::str("Not possible to notify worker %lu (%s), since we are not connected to it.\n" 
+                                  , id 
+                                  , connection_name.c_str() 
+                                  );
             
             // Update all workers
             std::vector<size_t> ids = getWorkerIds();
@@ -458,7 +461,10 @@ namespace samson {
                 send( packet );
             }
             
-            output << au::str("OK. Worker %lu eliminated from cluster %lu. Now it has %lu nodes\n" , id , cluster_information.getNumNodes() );
+            output << au::str("OK. Worker %lu eliminated from cluster. Now it has %lu nodes\n" , 
+                              id , 
+                              cluster_information.getNumNodes() 
+                              );
             return output.str();
             
         }

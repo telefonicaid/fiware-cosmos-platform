@@ -20,12 +20,13 @@ namespace samson
     {
         //au::tables::Table* table2 = database.getTable("workers");
         //if( table2 ) std::cout << "Engines read" << std::endl;
-        au::tables::Table* table = database.getTable("queues");
         QString str;
         std::vector<QueueData> queuesData;
+        std::vector<WorkerData> workersData;
+        au::tables::Table* table = database.getTable("queues");
         if( table )
         {
-            //Send all queues in the table to the DelilahMainWindow for processing
+            //Store all queues in the table to send to DelilahMainWindow for processing
             for(unsigned int i = 0; i< table->getNumRows(); i++)
             {
                 QueueData data;
@@ -49,7 +50,29 @@ namespace samson
                 
             }
         }
-        mainWindow->updateData(queuesData);
+        
+        table = database.getTable("workers");
+        if( table )
+        {
+            //Store all queues in the table to send to DelilahMainWindow for processing
+            for(unsigned int i = 0; i< table->getNumRows(); i++)
+            {
+                WorkerData data;
+                data.worker_id = table->getValue(i, "name");
+                data.type = table->getValue(i, "name");
+                data.mem_used = table->getValue(i, "name");
+                data.mem_total = table->getValue(i, "name");
+                data.cores_used = table->getValue(i, "name");
+                data.cores_total = table->getValue(i, "name");
+                data.disk_ops = table->getValue(i, "name");
+                data.disk_in_rate = table->getValue(i, "name");
+                data.disk_out_rate = table->getValue(i, "name");
+                data.net_in = table->getValue(i, "name");
+                data.net_out = table->getValue(i, "name");
+                workersData.push_back(data);
+            }
+        }
+        mainWindow->updateData(queuesData, workersData);
     }
 
     DelilahQt::DelilahQt( NetworkInterface *network ) : Delilah( network )

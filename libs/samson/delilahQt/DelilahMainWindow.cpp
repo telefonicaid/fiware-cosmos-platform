@@ -44,13 +44,17 @@ namespace samson
         connect(tabs, SIGNAL(tabCloseRequested(int)), this, SLOT(tabClosed(int)));
         setCentralWidget(tabs);
         
-        queuesTab = new QWidget();
-
+        queuesTab = new QWidget;
+        workersTab = new WorkerContainer;
+        
         mainLayout = new QBoxLayout(QBoxLayout::TopToBottom, queuesTab);
  
         int tabposition = tabs->addTab(queuesTab, tr("Queues"));
         tabs->enableClosing(tabposition, false);
         
+        tabposition = tabs->addTab(workersTab, tr("Workers"));
+        tabs->enableClosing(tabposition, false);
+
         exitAction = new QAction(tr("E&xit"), this);
         aboutAction = new QAction(tr("A&bout"), this);
         fileMenu = menuBar()->addMenu(tr("&File"));
@@ -94,7 +98,7 @@ namespace samson
         QMessageBox::about( this, tr("Samson"), tr("Samson version 0.6.1") );
     }
     
-    void DelilahMainWindow::updateData(std::vector<QueueData>& queuesData)
+    void DelilahMainWindow::updateData(std::vector<QueueData>& queuesData, std::vector<WorkerData>& workersData)
     {
         bool any_change = false;
         size_t totalKvs = 0;
@@ -172,7 +176,7 @@ namespace samson
         if(any_change)
         {
             //Update Totals
-           QueueData totalData = totalQueues->data;
+            QueueData totalData = totalQueues->data;
             
             totalData.kvs = au::str("%lu", totalKvs);
             totalData.size = au::str("%lu", totalSize);
@@ -201,6 +205,9 @@ namespace samson
             }
 
         }
+        
+        //Update worker changes
+        workersTab->setData(workersData);
             
     }
     

@@ -4,6 +4,8 @@ SET (HEADERS
 	DelilahMainWindow.h
 	QueueViewer.h
 	ExtQueueViewer.h
+	WorkerViewer.h
+	WorkerContainer.h
 )
 
 SET (SOURCES
@@ -12,6 +14,8 @@ SET (SOURCES
 	TableViewer.cpp
 	QueueViewer.cpp
 	ExtQueueViewer.cpp
+	WorkerViewer.cpp
+	WorkerContainer.cpp
 )
 
 SET (HEADERS_FOR_MOC
@@ -20,6 +24,8 @@ SET (HEADERS_FOR_MOC
 	TableViewer.h
 	QueueViewer.h
 	ExtQueueViewer.h
+	WorkerViewer.h
+	WorkerContainer.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)

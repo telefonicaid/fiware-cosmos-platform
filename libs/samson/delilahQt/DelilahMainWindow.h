@@ -18,6 +18,7 @@
 
 #include "QueueViewer.h"
 #include "ExtQueueViewer.h"
+#include "WorkerContainer.h"
 
 namespace samson {
     //A QTabWidget where you can decide which tabs have close buttons
@@ -34,13 +35,12 @@ namespace samson {
     class DelilahMainWindow : public QMainWindow
     {
         Q_OBJECT
-        
+
         QBoxLayout* mainLayout;
-        /*QBoxLayout* queuesLayout;
-        QBoxLayout* enginesLayout;*/
 
         ConfigurableTabWidget* tabs;
         QWidget* queuesTab;
+        WorkerContainer* workersTab;
         QAction *aboutAction;
         QAction *exitAction;
         QMenu *fileMenu;
@@ -71,7 +71,7 @@ namespace samson {
         QGroupBox* inputBox;
         QGroupBox* outputBox;
         QGroupBox* totalBox;
-        void updateData(std::vector<QueueData>& queuesData);
+        void updateData(std::vector<QueueData>& queuesData, std::vector<WorkerData>& workersData);
         
     public slots:
         void about();

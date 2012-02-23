@@ -1,0 +1,14 @@
+
+option java_package = "es.tid.bdp.profile.data";
+option java_outer_classname = "ProfileProtocol";
+
+
+message Cdr {
+    required string tfnoTemm = 1;
+    required string tfnoOther = 2;
+    required string sentido = 3;
+    required string date = 4;
+    required string opSrc = 5;
+    required string opDest = 6;
+    required string idTermination = 7;
+}

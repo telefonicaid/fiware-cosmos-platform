@@ -1,19 +1,11 @@
 package es.tid.ps.kpicalculation.cleaning;
 
-import static org.junit.Assert.*;
-
-import java.util.regex.Pattern;
-
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.ps.kpicalculation.KpiCleanerMapper;
 import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
 
 public class ExtensionFilterTest extends TestCase {
@@ -53,15 +45,9 @@ public class ExtensionFilterTest extends TestCase {
      * .
      */
     @Test
-    public void testFilterAllowedExtension() {
+    public void testFilterAllowedExtension() throws Exception {
         String input = "http://www.tid.es/music.mp3";
 
-        try {
-            filter.filter(input);
-        } catch (IllegalStateException ex) {
-            fail("An allowed extension has been filtered");
-        }
-
+        filter.filter(input);
     }
-
 }

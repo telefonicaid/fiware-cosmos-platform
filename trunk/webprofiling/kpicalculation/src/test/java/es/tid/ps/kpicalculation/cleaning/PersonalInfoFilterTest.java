@@ -3,12 +3,10 @@
  */
 package es.tid.ps.kpicalculation.cleaning;
 
-import static org.junit.Assert.*;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
@@ -57,15 +55,8 @@ public class PersonalInfoFilterTest extends TestCase {
      * .
      */
     @Test
-    public void testFilterAllowedDomain() {
+    public void testFilterAllowedDomain() throws Exception {
         String input = "http://www.tid.es/music.mp3";
-
-        try {
-            filter.filter(input);
-        } catch (IllegalStateException ex) {
-            fail("An allowed domain has been filtered");
-        }
-
+        filter.filter(input);
     }
-
 }

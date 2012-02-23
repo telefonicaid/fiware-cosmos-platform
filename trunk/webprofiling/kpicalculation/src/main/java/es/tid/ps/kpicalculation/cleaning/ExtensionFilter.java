@@ -32,8 +32,8 @@ public class ExtensionFilter extends AbstractKpiCalculationFilter {
     public void filter(String s) {
         try {
             URI uri = new URI(s);
-            this.matcher = this.pattern.matcher(uri.getPath());
-            if (this.matcher.matches()) {
+            this.setMatcher(this.getPattern().matcher(uri.getPath()));
+            if (this.getMatcher().matches()) {
                 throw new KpiCalculationFilterException(
                         "The URL provided has a forbidden extension",
                         KpiCalculationCounter.LINE_FILTERED_EXTENSION);

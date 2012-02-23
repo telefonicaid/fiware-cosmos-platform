@@ -4,16 +4,15 @@
 {% block content %}
 <div id="content-main">
 	<h1>{{ "BDP Configuration List" }}</h1></br></br>
-
 	<div class="results">
 		<table class="list_table" cellspacing="0" id="result_list" border="1" width="100%">
 			<thead>
 					<tr>
-						<th scope="col" class="action-checkbox-column">
+						<th scope="col" class="action-checkbox-column" style="vertical-align: middle; text-align: center;">
 							<input type="checkbox" id="action-toggle" />
 						</th>
-						<th scope="col" height="35px">Identifier</th>
-						<th scope="col">Label id</th>
+						<th scope="col" height="35px" style="vertical-align: middle;">Identifier</th>
+						<th scope="col" style="vertical-align: middle;">Label id</th>
 						{% for template in config.templates %}
 							<th> Templates </th>
 						</tr>
@@ -29,20 +28,21 @@
 						<th height="25px">
 							<a href="{{ config.id }}/">{{ config.name }}</a>							
 						</th>
-						{% for template in config.templates %}
+						<th>
+							<a>{{ "..." }}</a>
+						</th>
+				<!--  		{% for template in config.templates %}
 							<th>
 								<a href="{{ template.id }}/">{{ template.id }}</a>
 							</th>
 						</tr>
-						{% endfor %}
+						{% endfor %}-->
 					</tr>
 				{% endfor %}
 			</tbody>
-		</table></br>		
-		{% if configs|length >= 10 %}
-   			You have lots of messages today!
-		{% endif %}
-		<p class="paginator">Total templates ...</p>
+		</table></br>	
+    	Total templates: {{ configs|length }}
+		</br></br>
         <div id="buttons-div" class="submit-row" align="right">
             <input type="submit" value="Create New Configuration" class="button-configuration" name="_save" onClick="location.href='add/'"/>
         </div>

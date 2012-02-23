@@ -7,7 +7,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.ps.kpicalculation.data.WebLog;
+import es.tid.ps.base.mapreduce.SingleKey;
 
 /**
  * This class makes the reduce phase in the simple kpi aggregates calculation of
@@ -23,11 +23,9 @@ import es.tid.ps.kpicalculation.data.WebLog;
  * @author javierb
  */
 public class KpiCounterReducer extends
-        Reducer<WebLog, IntWritable, Text, IntWritable> {
-    private static final String USE_HASHCODE = "kpi.aggregation.hashmap";
+        Reducer<SingleKey, IntWritable, Text, IntWritable> {
     private IntWritable counter;
     private Text text;
-    private boolean useHashCode;
 
     /**
      * Method that creates the objects that will be used during the reduce
@@ -38,8 +36,6 @@ public class KpiCounterReducer extends
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
-        this.useHashCode = context.getConfiguration().getBoolean(USE_HASHCODE,
-                false);
         this.counter = new IntWritable();
         this.text = new Text();
     }
@@ -53,7 +49,7 @@ public class KpiCounterReducer extends
      *            contains the context of the job run
      */
     @Override
-    protected void reduce(WebLog key, Iterable<IntWritable> values,
+    protected void reduce(SingleKey key, Iterable<IntWritable> values,
             Context context) throws IOException, InterruptedException {
         int count = 0;
 
@@ -62,11 +58,7 @@ public class KpiCounterReducer extends
             count += it.next().get();
         }
         this.counter.set(count);
-        if (this.useHashCode) {
-            this.text.set(key.hashCode() + "\t" + key.mainKey);
-        } else {
-            this.text.set(key.mainKey);
-        }
+        this.text.set(key.toString());
         context.write(this.text, this.counter);
     }
 }

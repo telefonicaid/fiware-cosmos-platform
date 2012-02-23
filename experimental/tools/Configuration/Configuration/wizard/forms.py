@@ -9,7 +9,7 @@ from django.http import HttpResponseRedirect
 
 
 class ConfigurationForm(forms.Form):
-    name = forms.CharField(max_length=100)
+    name = forms.CharField( widget=forms.TextInput(attrs={'max_length':100, 'readonly':'readonly'}))
     
     def __init__(self, templates,*args, **kwargs):
         super(ConfigurationForm, self).__init__(*args, **kwargs)

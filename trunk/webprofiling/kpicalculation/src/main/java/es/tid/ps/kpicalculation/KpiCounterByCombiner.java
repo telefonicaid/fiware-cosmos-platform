@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.ps.kpicalculation.data.WebLog;
+import es.tid.ps.base.mapreduce.BinaryKey;
 
 /**
  * This class performs the combining phase in the kpi aggregates grouped by
@@ -15,12 +15,12 @@ import es.tid.ps.kpicalculation.data.WebLog;
  * 
  * Due to only unique keys will be taken into account during the reduction
  * phase, the local reduction of the data will consist on emit only the key with
- * a value of 1, independently of its existing the number of values. 
+ * a value of 1, independently of its existing the number of values.
  * 
  * @author javierb
  */
 public class KpiCounterByCombiner extends
-        Reducer<WebLog, IntWritable, WebLog, IntWritable> {
+        Reducer<BinaryKey, IntWritable, BinaryKey, IntWritable> {
     private static final IntWritable ONE = new IntWritable(1);
 
     /**
@@ -32,7 +32,7 @@ public class KpiCounterByCombiner extends
      *            contains the context of the job run
      */
     @Override
-    protected void reduce(WebLog key, Iterable<IntWritable> values,
+    protected void reduce(BinaryKey key, Iterable<IntWritable> values,
             Context context) throws IOException, InterruptedException {
         context.write(key, ONE);
     }

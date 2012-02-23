@@ -1,14 +1,11 @@
 package es.tid.ps.kpicalculation;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Mapper;
 import static org.apache.hadoop.mrunit.testutil.ExtendedAssert.assertListEquals;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.types.Pair;
@@ -16,9 +13,12 @@ import org.apache.hadoop.mrunit.types.Pair;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+
 import es.tid.ps.kpicalculation.KpiCleanerMapper;
-import es.tid.ps.kpicalculation.data.WebLog;
-import es.tid.ps.kpicalculation.data.WebLogFactory;
+import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
+import es.tid.ps.kpicalculation.data.KpiCalculationProtocol;
+import es.tid.ps.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
 
 import junit.framework.TestCase;
 
@@ -29,105 +29,127 @@ import junit.framework.TestCase;
  */
 public class KpiCleanerMapperTest extends TestCase {
 
-    private Mapper<LongWritable, Text, NullWritable, WebLog> mapper;
-    private MapDriver<LongWritable, Text, NullWritable, WebLog> driver;
-    private WebLog outputPage;
-    
-    
+    private KpiCleanerMapper mapper;
+    private MapDriver<LongWritable, Text, NullWritable, ProtobufWritable<KpiCalculationProtocol.WebProfilingLog>> driver;
+
+    private ProtobufWritable<KpiCalculationProtocol.WebProfilingLog> outputPage;
+    private WebProfilingLog.Builder builder;
+
     @Before
     protected void setUp() {
+
         this.mapper = new KpiCleanerMapper();
-        this.driver = new MapDriver<LongWritable, Text, NullWritable, WebLog>(
-                this.mapper);
+        this.driver = new MapDriver<LongWritable, Text, NullWritable, 
+                ProtobufWritable<KpiCalculationProtocol.WebProfilingLog>>(this.mapper);
         this.driver.getConfiguration().addResource("kpi-filtering.xml");
-        
-        this.outputPage = new WebLog();
-        this.outputPage.visitorId = "16737b1873ef03ad";
-        this.outputPage.protocol = "http";
-        this.outputPage.fullUrl = "http://0.0.tid.es/";
-        this.outputPage.urlDomain = "0.0.tid.es";
-        this.outputPage.urlPath = "/";
-        this.outputPage.urlQuery = "null";
-        this.outputPage.date = new GregorianCalendar();
-        this.outputPage.date.set(2010, 12, 1, 0, 0);
-        this.outputPage.browser = "-Microsoft-CryptoAPI/6.1";
-        this.outputPage.device = "-Microsoft-CryptoAPI/6.1";
-        this.outputPage.userAgent = "-Microsoft-CryptoAPI/6.1";
-        this.outputPage.operSys = "-Microsoft-CryptoAPI/6.1";
-        this.outputPage.method = "GET";
-        this.outputPage.status = "304";
+
+        this.builder = WebProfilingLog.newBuilder();
+        this.builder.setVisitorId("16737b1873ef03ad");
+        this.builder.setProtocol("http");
+        this.builder.setFullUrl("http://www.0.0.tid.es/index.html");
+        this.builder.setUrlDomain("tid.es");
+        this.builder.setUrlPath("/index.html");
+        this.builder.setUrlQuery("null");
+        this.builder.setDate("01\t12\t2010");
+        this.builder.setMimeType("application/pkix-crl");
+        this.builder.setBrowser("-Microsoft-CryptoAPI/6.1");
+        this.builder.setDevice("-Microsoft-CryptoAPI/6.1");
+        this.builder.setUserAgent("-Microsoft-CryptoAPI/6.1");
+        this.builder.setOperSys("-Microsoft-CryptoAPI/6.1");
+        this.builder.setMethod("GET");
+        this.builder.setStatus("305");
+
+        this.outputPage = ProtobufWritable.newInstance(WebProfilingLog.class);
+        this.outputPage.setConverter(WebProfilingLog.class);
+        this.outputPage.set(this.builder.build());
+
     }
 
     @Test
-    public void testAllowedExtension() {
-        List<Pair<NullWritable, WebLog>> out = null;
-        String input = "16737b1873ef03ad\thttp://www.0.0.tid.es/index.html\t" +
-                "1Dec2010000001\t304\tapplication/pkix-crl\t-Microsoft-CryptoAPI/6.1\tGET";
-       
+    public void testAllowedExtension() throws Exception {
+        List<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>> out = null;
+        String input = "16737b1873ef03ad\thttp://www.0.0.tid.es/index.html\t"
+                + "1Dec2010000001\t305\tapplication/pkix-crl\t-Microsoft-CryptoAPI/6.1\tGET";
 
-        try {
-            
-            out = this.driver.withInput(new LongWritable(0), new Text(input))
-                    .run();
-        } catch (IOException ioe) {
-            fail();
+        out = this.driver.withInput(new LongWritable(0), new Text(input)).run();
+
+        List<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>> expected = 
+                new ArrayList<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>>();
+        expected.add(new Pair<NullWritable, ProtobufWritable<WebProfilingLog>>(
+                NullWritable.get(), this.outputPage));
+
+        assertEquals(expected.size(), out.size());
+
+        // assertListEquals doesn´t work due to the converter is returned as
+        // null.
+        for (int i = 0; i < expected.size(); i++) {
+            ProtobufWritable<WebProfilingLog> value = out.get(i).getSecond();
+            value.setConverter(WebProfilingLog.class);
+            assertEquals(value, this.outputPage);
         }
-       
-        List<Pair<NullWritable, WebLog>> expected = new ArrayList<Pair<NullWritable, WebLog>>();
-        expected.add(new Pair<NullWritable, WebLog>(NullWritable.get(), outputPage));
+    }
 
+    @Test
+    public void testForbiddenExtension() throws Exception {
+        List<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>> out = null;
+        String line = "16737b1873ef03ad\thttp://www.tid.co.uk/foto.jpg\t"
+                + "1Dec2010000001\t304\tapplication/pkix-crl\t-Microsoft-CryptoAPI/6.1\tGET";
+
+        out = this.driver.withInput(new LongWritable(0), new Text(line)).run();
+
+        List<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>> expected = 
+                new ArrayList<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>>();
+
+        assertEquals(
+                1,
+                this.driver
+                        .getCounters()
+                        .findCounter(
+                                KpiCalculationCounter.LINE_FILTERED_EXTENSION)
+                        .getValue());
         assertListEquals(expected, out);
     }
 
     @Test
-    public void testForbiddenExtension() {
-        List<Pair<NullWritable, WebLog>> out = null;
-        String line = "16737b1873ef03ad\thttp://www.tid.co.uk/foto.jpg\t" +
-                "1Dec2010000001\t304\tapplication/pkix-crl\t-Microsoft-CryptoAPI/6.1\tGET";
-        try {
-            out = this.driver.withInput(new LongWritable(0), new Text(line))
-                    .run();
-        } catch (IOException ioe) {
-            fail();
-        }
-        List<Pair<NullWritable, WebLog>> expected = new ArrayList<Pair<NullWritable, WebLog>>();
+    public void testThirdPartyDomain() throws Exception {
+        List<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>> out = null;
+        String line = "16737b1873ef03ad\thttp://sexsearch.com/asfad\t"
+                + "1Dec2010000001\t304\tapplication/pkix-crl\t-Microsoft-CryptoAPI/6.1\tGET";
 
+        out = this.driver.withInput(new LongWritable(0), new Text(line)).run();
+
+        List<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>> expected = 
+                new ArrayList<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>>();
+
+        assertEquals(
+                1,
+                this.driver
+                        .getCounters()
+                        .findCounter(
+                                KpiCalculationCounter.LINE_FILTERED_3RDPARTY)
+                        .getValue());
         assertListEquals(expected, out);
     }
 
     @Test
-    public void testThirdPartyDomain() {
-        List<Pair<NullWritable, WebLog>> out = null;
-        String line = "16737b1873ef03ad\thttp://sexsearch.com/asfad\t" +
-                "1Dec2010000001\t304\tapplication/pkix-crl\t-Microsoft-CryptoAPI/6.1\tGET";
+    public void testPersonalInfoDomain() throws Exception {
+        List<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>> out = null;
+        String line = "16737b1873ef03ad\thttp://pornhub.com/t1/video\t"
+                + "1Dec2010000001\t304\tapplication/pkix-crl\t-Microsoft-CryptoAPI/6.1\tGET";
 
-        try {
-            out = this.driver.withInput(new LongWritable(0), new Text(line))
-                    .run();
-        } catch (IOException ioe) {
-            fail();
-        }
+        out = this.driver.withInput(new LongWritable(0), new Text(line)).run();
 
-        List<Pair<NullWritable, WebLog>> expected = new ArrayList<Pair<NullWritable, WebLog>>();
+        List<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>> expected = 
+                new ArrayList<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>>();
+
+        assertEquals(
+                1,
+                this.driver
+                        .getCounters()
+                        .findCounter(
+                                KpiCalculationCounter.LINE_FILTERED_PERSONAL_INFO)
+                        .getValue());
         assertListEquals(expected, out);
     }
 
-    @Test
-    public void testPersonalInfoDomain() {
-        List<Pair<NullWritable, WebLog>> out = null;
-        String line = "16737b1873ef03ad\thttp://pornhub.com/t1/video\t" +
-                "1Dec2010000001\t304\tapplication/pkix-crl\t-Microsoft-CryptoAPI/6.1\tGET";
-
-        try {
-            out = this.driver.withInput(new LongWritable(0), new Text(line))
-                    .run();
-        } catch (IOException ioe) {
-            fail();
-        }
-
-        List<Pair<NullWritable, WebLog>> expected = new ArrayList<Pair<NullWritable, WebLog>>();
-        assertListEquals(expected, out);
-    }
-    
-  
 }

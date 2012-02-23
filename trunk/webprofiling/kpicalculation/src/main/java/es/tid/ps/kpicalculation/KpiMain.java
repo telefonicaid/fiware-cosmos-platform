@@ -1,10 +1,13 @@
 package es.tid.ps.kpicalculation;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -19,12 +22,15 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import com.hadoop.compression.lzo.LzopCodec;
 import com.hadoop.mapreduce.LzoTextInputFormat;
+import com.twitter.elephantbird.mapreduce.input.LzoProtobufB64LineInputFormat;
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import com.twitter.elephantbird.mapreduce.output.LzoProtobufB64LineOutputFormat;
 
+import es.tid.ps.base.mapreduce.BinaryKey;
+import es.tid.ps.base.mapreduce.SingleKey;
 import es.tid.ps.kpicalculation.data.JobDetails;
-import es.tid.ps.kpicalculation.data.WebLogFactory;
-import es.tid.ps.kpicalculation.data.WebLogType;
+import es.tid.ps.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
 
 /**
  * This class performs the webprofiling processing of the data received from
@@ -38,82 +44,52 @@ import es.tid.ps.kpicalculation.data.WebLogType;
  * project
  */
 public class KpiMain extends Configured implements Tool {
-    private static final String TEMP_PATH = "/user/javierb/temp";
-    private static final String OUTPUT_PATH =
-            "/user/javierb/webprofiling/aggregates";
+    private static final Logger logger = Logger.getLogger("KpiMain");
 
-    public static void main(String[] args) throws Exception {
-        int res = ToolRunner.run(new Configuration(), new KpiMain(), args);
-        System.exit(res);
+    public static void main(String[] args) {
+        if (args.length != 2) {
+            logger.setLevel(Level.ALL);
+            logger.severe("Wrong Arguments. Example: hadoop jar kpicalculation-LocalBuild.jar inputPath outputPath");
+            System.exit(1);
+        }
+
+        try {
+            int res = ToolRunner.run(new Configuration(), new KpiMain(), args);
+            System.exit(res);
+        } catch (Exception e) {
+            logger.setLevel(Level.ALL);
+            logger.log(Level.SEVERE, "Execution failed: {0}", e.getMessage());
+            System.exit(1);
+        }
     }
 
-    public int run(String[] args) throws Exception {
+    @Override
+    public int run(String[] args) throws IOException, ClassNotFoundException,
+            InterruptedException {
         Path inputPath = new Path(args[0]);
-        Path outputPath = new Path(args[1]);
-        Date date = new Date();
-        Path tmpPath = new Path(TEMP_PATH + "/tmp."
-                + Long.toString(new Date().getTime()));
+        Path outputPath = new Path(args[1] + "/aggregates");
+        String timeFolder = "data." + Long.toString(new Date().getTime());
+        Path tmpPath = new Path(args[1] + "/cleaned/" + timeFolder);
 
-        // Normalization and filtering
         Configuration conf = getConf();
         conf.set("kpicalculation.temp.path", tmpPath.toString());
         conf.addResource("kpi-filtering.xml");
 
-        // Job configuration
-        Job wpCleanerJob = new Job(conf, "Web Profiling ...");
-        wpCleanerJob.setNumReduceTasks(0);
-        wpCleanerJob.setJarByClass(KpiMain.class);
-        wpCleanerJob.setMapperClass(KpiCleanerMapper.class);
-        wpCleanerJob.setInputFormatClass(LzoTextInputFormat.class);
-        wpCleanerJob.setOutputKeyClass(Text.class);
-        wpCleanerJob.setMapOutputValueClass(Text.class);
-        wpCleanerJob.setMapOutputKeyClass(NullWritable.class);
-        wpCleanerJob.setOutputValueClass(Text.class);
-        wpCleanerJob.setOutputFormatClass(TextOutputFormat.class);
-
-        // Input and Output configuration
-        FileInputFormat.addInputPath(wpCleanerJob, inputPath);
-        FileOutputFormat.setCompressOutput(wpCleanerJob, true);
-        FileOutputFormat
-                .setOutputCompressorClass(wpCleanerJob, LzopCodec.class);
-        FileOutputFormat.setOutputPath(wpCleanerJob, tmpPath);
-
-        if (!wpCleanerJob.waitForCompletion(true)) {
+        // Process that filters and formats input logs
+        Job job = cleanWebNavigationLogs(conf, inputPath, tmpPath);
+        if (!job.waitForCompletion(true)) {
             return 1;
         }
 
         // Definition of kpis to calculate
-        List<JobDetails> list = new ArrayList<JobDetails>();
-
-        list.add(new JobDetails("PAGE_VIEWS_PROT", "protocol,dateView"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_VIS_DEV",
-                "visitorId,protocol,device,dateView"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_VIS",
-                "visitorId,protocol,dateView"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_DEV",
-                "device,protocol,dateView"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_MET",
-                "method,protocol,dateView"));
-        //list.add(new JobDetails("PAGE_VIEWS_PROT", "protocol,dateView"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_URL_VIS",
-                "visitorId,urlDomain,urlPath,protocol,dateView"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_DOM_VIS",
-                "visitorId,urlDomain,protocol,dateView"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_DOM",
-                "urlDomain,protocol,dateView"));
-
-        list.add(new JobDetails("VISITORS_PROT_URL",
-                "urlDomain,urlPath,protocol,dateView", "visitorId"));
-        list.add(new JobDetails("VISITORS_PROT", "protocol,dateView",
-                "visitorId"));
+        List<JobDetails> list = getKpiList();
 
         Iterator<JobDetails> it = list.iterator();
 
         while (it.hasNext()) {
             JobDetails jDet = it.next();
-            outputPath = new Path(OUTPUT_PATH).suffix("/" + jDet.getName()
-                    + "/" + date.getYear() + "/" + date.getMonth() + "/"
-                    + date.getDay());
+            Path kpiOutputPath = outputPath.suffix("/" + jDet.getName() + "/"
+                    + timeFolder);
             Job aggregationJob = new Job(conf, "Aggregation Job ..."
                     + jDet.getName());
 
@@ -123,15 +99,7 @@ public class KpiMain extends Configured implements Tool {
             if (jDet.getGroup() != null) {
                 aggregationJob.getConfiguration().setStrings(
                         "kpi.aggregation.group", jDet.getGroup());
-                aggregationJob.getConfiguration().setStrings(
-                        "kpi.aggregation.type",
-                        WebLogType.WEB_LOG_COUNTER_GROUP.toString());
-                aggregationJob.setMapOutputKeyClass(WebLogFactory.getWebLog(
-                        aggregationJob.getConfiguration().getStringCollection(
-                                "kpi.aggregation.fields"),
-                        aggregationJob.getConfiguration().get(
-                                "kpi.aggregation.group"),
-                        WebLogType.WEB_LOG_COUNTER_GROUP).getClass());
+                aggregationJob.setMapOutputKeyClass(BinaryKey.class);
                 aggregationJob.setCombinerClass(KpiCounterByCombiner.class);
                 aggregationJob.setReducerClass(KpiCounterByReducer.class);
                 aggregationJob
@@ -139,15 +107,7 @@ public class KpiMain extends Configured implements Tool {
                 aggregationJob
                         .setGroupingComparatorClass(PageViewKpiCounterGroupedComparator.class);
             } else {
-                aggregationJob.getConfiguration().setStrings(
-                        "kpi.aggregation.type",
-                        WebLogType.WEB_LOG_COUNTER.toString());
-                aggregationJob.setMapOutputKeyClass(WebLogFactory.getWebLog(
-                        aggregationJob.getConfiguration().getStringCollection(
-                                "kpi.aggregation.fields"),
-                        aggregationJob.getConfiguration().get(
-                                "kpi.aggregation.group"),
-                        WebLogType.WEB_LOG_COUNTER).getClass());
+                aggregationJob.setMapOutputKeyClass(SingleKey.class);
                 aggregationJob.setCombinerClass(KpiCounterCombiner.class);
                 aggregationJob.setReducerClass(KpiCounterReducer.class);
                 aggregationJob
@@ -159,8 +119,9 @@ public class KpiMain extends Configured implements Tool {
             aggregationJob.setJarByClass(KpiMain.class);
             aggregationJob.setMapperClass(KpiGenericMapper.class);
             aggregationJob.setPartitionerClass(KpiPartitioner.class);
-
-            aggregationJob.setInputFormatClass(LzoTextInputFormat.class);
+            aggregationJob.setInputFormatClass(LzoProtobufB64LineInputFormat
+                    .getInputFormatClass(WebProfilingLog.class,
+                            aggregationJob.getConfiguration()));
             aggregationJob.setMapOutputValueClass(IntWritable.class);
             aggregationJob.setOutputKeyClass(Text.class);
             aggregationJob.setOutputValueClass(IntWritable.class);
@@ -168,23 +129,63 @@ public class KpiMain extends Configured implements Tool {
 
             // Input and Output configuration
             FileInputFormat.addInputPath(aggregationJob, tmpPath);
-            // FileOutputFormat.setCompressOutput(aggregationJob, true);
-            // FileOutputFormat.setOutputCompressorClass(aggregationJob,
-            // LzopCodec.class);
-            FileOutputFormat.setOutputPath(aggregationJob, outputPath);
+            FileOutputFormat.setOutputPath(aggregationJob, kpiOutputPath);
 
             if (!aggregationJob.waitForCompletion(true)) {
                 return 1;
             }
         }
 
-        /*
-         * // Data load into hive ICdrLoader loader = new HiveCdrLoader(conf);
-         * loader.load(TEMP_PATH);
-         * 
-         * // Calculation of aggregate data IAggregateCalculator agg = new
-         * HiveAggregateCalculator(); agg.process();
-         */
         return 0;
+    }
+
+    private List<JobDetails> getKpiList() {
+        List<JobDetails> list = new ArrayList<JobDetails>();
+
+        list.add(new JobDetails("PAGE_VIEWS_PROT", "protocol,date"));
+        list.add(new JobDetails("PAGE_VIEWS_PROT_VIS_DEV",
+                "visitorId,protocol,device,date"));
+        list.add(new JobDetails("PAGE_VIEWS_PROT_VIS",
+                "visitorId,protocol,date"));
+        list.add(new JobDetails("PAGE_VIEWS_PROT_DEV", "device,protocol,date"));
+        list.add(new JobDetails("PAGE_VIEWS_PROT_MET", "method,protocol,date"));
+        list.add(new JobDetails("PAGE_VIEWS_PROT_URL_VIS",
+                "visitorId,urlDomain,urlPath,protocol,date"));
+        list.add(new JobDetails("PAGE_VIEWS_PROT_DOM_VIS",
+                "visitorId,urlDomain,protocol,date"));
+        list.add(new JobDetails("PAGE_VIEWS_PROT_DOM",
+                "urlDomain,protocol,date"));
+        list.add(new JobDetails("VISITORS_PROT_URL",
+                "urlDomain,urlPath,protocol,date", "visitorId"));
+        list.add(new JobDetails("VISITORS_PROT", "protocol,date", "visitorId"));
+
+        return list;
+    }
+
+    private Job cleanWebNavigationLogs(Configuration conf, Path input,
+            Path output) throws IOException, InterruptedException,
+            ClassNotFoundException {
+        // Normalization and filtering
+
+        // Job configuration
+        Job wpCleanerJob = new Job(conf, "Web Profiling ...");
+        wpCleanerJob.setNumReduceTasks(0);
+        wpCleanerJob.setJarByClass(KpiMain.class);
+        wpCleanerJob.setMapperClass(KpiCleanerMapper.class);
+        wpCleanerJob.setInputFormatClass(LzoTextInputFormat.class);
+        wpCleanerJob.setOutputKeyClass(NullWritable.class);
+        wpCleanerJob.setOutputValueClass(ProtobufWritable.class);
+        wpCleanerJob.setMapOutputKeyClass(NullWritable.class);
+        wpCleanerJob.setMapOutputValueClass(ProtobufWritable.class);
+        wpCleanerJob.setOutputFormatClass(LzoProtobufB64LineOutputFormat
+                .getOutputFormatClass(WebProfilingLog.class,
+                        wpCleanerJob.getConfiguration()));
+
+        // Input and Output configuration
+        FileInputFormat.addInputPath(wpCleanerJob, input);
+        FileOutputFormat.setOutputPath(wpCleanerJob, output);
+
+        return wpCleanerJob;
+
     }
 }

@@ -9,7 +9,10 @@ import es.tid.ps.profile.data.ProfileProtocol.CategoryCount;
  *
  * @author sortega
  */
-public class CategoryCountUtil {
+public abstract class CategoryCountUtil {
+    private CategoryCountUtil() {
+    }
+    
     public static CategoryCount create(String name, long count) {
         return ProfileProtocol.CategoryCount
                 .newBuilder()

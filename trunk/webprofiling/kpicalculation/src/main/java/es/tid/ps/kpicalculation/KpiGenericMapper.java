@@ -1,16 +1,25 @@
 package es.tid.ps.kpicalculation;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+
+import es.tid.ps.base.mapreduce.BinaryKey;
+import es.tid.ps.base.mapreduce.CompositeKey;
+import es.tid.ps.base.mapreduce.SingleKey;
 import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
-import es.tid.ps.kpicalculation.data.WebLog;
-import es.tid.ps.kpicalculation.data.WebLogFactory;
-import es.tid.ps.kpicalculation.data.WebLogType;
+import es.tid.ps.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
 
 /**
  * This class receives lines of a information of CDR´s files that have passed
@@ -38,14 +47,16 @@ import es.tid.ps.kpicalculation.data.WebLogType;
  * 
  * @author javierb@tid.es
  */
-public class KpiGenericMapper extends
-        Mapper<LongWritable, Text, WebLog, IntWritable> {
+public class KpiGenericMapper
+        extends
+        Mapper<LongWritable, ProtobufWritable<WebProfilingLog>, CompositeKey, IntWritable> {
     private static final IntWritable ONE = new IntWritable(1);
     private static final String MAIN_FIELDS_PARAMETER = "kpi.aggregation.fields";
     private static final String GROUP_FIELD_PARAMETER = "kpi.aggregation.group";
-    private static final String TYPE_PARAMETER = "kpi.aggregation.type";
 
-    private WebLog view;
+    private CompositeKey key;
+    private List<FieldDescriptor> descriptors;
+    private FieldDescriptor secondaryDescriptor;
 
     /**
      * Method that sets the configuration parameters to be used in order to emit
@@ -57,10 +68,12 @@ public class KpiGenericMapper extends
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
-        this.view = WebLogFactory.getWebLog(context.getConfiguration()
-                .getStringCollection(MAIN_FIELDS_PARAMETER), context
-                .getConfiguration().get(GROUP_FIELD_PARAMETER), WebLogType
-                .valueOf(context.getConfiguration().get(TYPE_PARAMETER)));
+        initDescriptors(context.getConfiguration());
+        if (this.secondaryDescriptor == null) {
+            this.key = new SingleKey();
+        } else {
+            this.key = new BinaryKey();
+        }
     }
 
     /**
@@ -72,15 +85,52 @@ public class KpiGenericMapper extends
      *            has the method "write()" to output the key,value pair
      */
     @Override
-    protected void map(LongWritable key, Text value, Context context)
+    protected void map(LongWritable key,
+            ProtobufWritable<WebProfilingLog> value, Context context)
             throws IOException, InterruptedException {
         try {
-            this.view.set(value);
+            value.setConverter(WebProfilingLog.class);
+            WebProfilingLog log = value.get();
+            this.key.set(0, getPrimaryKeyValue(log));
+            if (this.secondaryDescriptor != null) {
+                this.key.set(1, getSecondaryKeyValue(log));
+            }
             context.getCounter(KpiCalculationCounter.LINE_STORED).increment(1L);
-            context.write(this.view, ONE);
+            context.write(this.key, ONE);
         } catch (Exception e) {
             context.getCounter(KpiCalculationCounter.WRONG_FILTERING_FIELDS)
                     .increment(1L);
         }
+    }
+
+    private void initDescriptors(Configuration config) {
+        this.descriptors = new ArrayList<FieldDescriptor>();
+        Descriptor d = WebProfilingLog.getDescriptor();
+        Collection<String> primaryKeys = config
+                .getStringCollection(MAIN_FIELDS_PARAMETER);
+
+        Iterator<String> it = primaryKeys.iterator();
+        while (it.hasNext()) {
+            String str = it.next();
+            this.descriptors.add(d.findFieldByName(str));
+        }
+        this.secondaryDescriptor = d.findFieldByName(config
+                .get(GROUP_FIELD_PARAMETER));
+    }
+
+    private String getPrimaryKeyValue(WebProfilingLog log) {
+        String result = "";
+        Iterator<FieldDescriptor> it = descriptors.iterator();
+        while (it.hasNext()) {
+            result += (String) log.getField(it.next()).toString();
+            if (it.hasNext()) {
+                result += "\t";
+            }
+        }
+        return result;
+    }
+
+    private String getSecondaryKeyValue(WebProfilingLog log) {
+        return (String) log.getField(this.secondaryDescriptor).toString();
     }
 }

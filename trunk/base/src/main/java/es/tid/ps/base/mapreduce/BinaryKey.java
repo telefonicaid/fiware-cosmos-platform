@@ -8,8 +8,10 @@ package es.tid.ps.base.mapreduce;
 public class BinaryKey extends CompositeKey {
     private static final int CAPACITY = 2;
 
-    private static final int PRIMARY_KEY_INDEX = 0;
-    private static final int SECONDARY_KEY_INDEX = 1;
+    private enum KeyIndex {
+        PRIMARY,
+        SECONDARY
+    }
     
     public BinaryKey() {
         super(CAPACITY);
@@ -17,23 +19,23 @@ public class BinaryKey extends CompositeKey {
     
     public BinaryKey(String k1, String k2) {
         super(CAPACITY);
-        this.set(PRIMARY_KEY_INDEX, k1);
-        this.set(SECONDARY_KEY_INDEX, k2);
+        this.set(KeyIndex.PRIMARY.ordinal(), k1);
+        this.set(KeyIndex.SECONDARY.ordinal(), k2);
     }
     
     public String getPrimaryKey() {
-        return this.get(PRIMARY_KEY_INDEX);
+        return this.get(KeyIndex.PRIMARY.ordinal());
     }
     
     public void setPrimaryKey(String key) {
-        this.set(PRIMARY_KEY_INDEX, key);
+        this.set(KeyIndex.PRIMARY.ordinal(), key);
     }
 
     public String getSecondaryKey() {
-        return this.get(SECONDARY_KEY_INDEX);
+        return this.get(KeyIndex.SECONDARY.ordinal());
     }
     
     public void setSecondaryKey(String key) {
-        this.set(SECONDARY_KEY_INDEX, key);
+        this.set(KeyIndex.SECONDARY.ordinal(), key);
     }
 }

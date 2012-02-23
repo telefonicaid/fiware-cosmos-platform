@@ -422,11 +422,14 @@ namespace samson {
     
     void SamsonWorker::sendTrace( std::string type , std::string context , std::string message  )
     {
+        
+        
         // Send message to all delilahs
         std::vector<size_t> delilahs = network->getDelilahIds();
         
         for ( size_t i = 0 ; i < delilahs.size() ; i++ )
         {
+            
             Packet * p = new Packet( Message::Trace );
             
             network::Trace * trace = p->message->mutable_trace();

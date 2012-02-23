@@ -623,6 +623,7 @@ namespace samson
         
         if ( mainCommand == "trace")
         {
+            
             if ( commandLine.get_num_arguments() == 1)
             {
                 if( trace_on )
@@ -1070,12 +1071,14 @@ namespace samson
     {
         switch ( packet->msgCode ) 
         {
-                
             case Message::Trace:
             {
+                
                 std::string _text     = packet->message->trace().text();
                 std::string _type     = packet->message->trace().type();
                 std::string _context  = packet->message->trace().context();
+
+                LM_W(("Trace %s", _text.c_str() ));
                 
                 // Add to the local collection of traces
                 trace_colleciton.add( packet->from, _type, _context, _text);                

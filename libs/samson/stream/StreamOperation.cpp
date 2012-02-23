@@ -159,8 +159,6 @@ namespace samson {
             int num_inputs  = op->getNumInputs();
             int num_outputs = op->getNumOutputs();
             
-            LM_M(("Operation (%s) with %d inputs and %d outputs", name.c_str(), num_inputs, num_outputs));
-
             for (int i = 0 ; i < num_inputs ; i++ )
             {
                 std::string queue_name = prefix + cmd.get_argument( 3 + i );

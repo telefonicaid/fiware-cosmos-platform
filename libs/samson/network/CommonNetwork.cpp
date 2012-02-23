@@ -104,17 +104,29 @@ namespace samson {
     std::vector<size_t> CommonNetwork::getDelilahIds()
     {
         // Return all connections with pattern delilah_X
-        std::string prefix = "delilah_";
-        
         std::vector<size_t> ids;
         
         au::map<std::string , NetworkConnection>::iterator it_connections;
         for ( it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
         {
-            std::string name = it_connections->first;
+            NodeIdentifier _node_identifier = it_connections->second->getNodeIdentifier();
             
-            if( name.substr(0,prefix.size()) == prefix )
-                ids.push_back( atoll( name.substr(  prefix.size() ).c_str() ) );
+            if( _node_identifier.node_type  == DelilahNode )
+            {
+                size_t id = _node_identifier.id;
+                
+                if( it_connections->first == _node_identifier.getCodeName() )
+                {
+                    // Add this id to the list
+                    ids.push_back(id);
+                }
+                else
+                    LM_W(("Delilah %lu (%s) connected using wrong connection name %s",
+                          _node_identifier.id,
+                          _node_identifier.getCodeName().c_str(),
+                          it_connections->first.c_str()
+                          ));
+            }
         }
         
         return ids;
@@ -210,7 +222,7 @@ namespace samson {
 
     Status CommonNetwork::send( Packet* packet )
     {
-        //LM_M(("Sending packet %s to %s" ,  packet->str().c_str() , packet->to.str().c_str() ));
+        //LM_W(("Sending packet %s to %s" ,  packet->str().c_str() , packet->to.str().c_str() ));
         
         if ( packet->to == node_identifier )
         {
@@ -226,7 +238,7 @@ namespace samson {
         
         if( !connection )
         {
-            //LM_W(("Packet %s destroyed since connection %s is not available" , packet->str().c_str(), name.c_str() ));
+            LM_W(("Packet %s destroyed since connection %s is not available" , packet->str().c_str(), name.c_str() ));
             if( packet->buffer )
                 engine::MemoryManager::shared()->destroyBuffer(packet->buffer);
             delete packet;

@@ -44,12 +44,12 @@ import es.tid.ps.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
  * project
  */
 public class KpiMain extends Configured implements Tool {
-    private static final Logger logger = Logger.getLogger("KpiMain");
+    private static final Logger LOGGER = Logger.getLogger("KpiMain");
 
     public static void main(String[] args) {
         if (args.length != 2) {
-            logger.setLevel(Level.ALL);
-            logger.severe("Wrong Arguments. Example: hadoop jar kpicalculation-LocalBuild.jar inputPath outputPath");
+            LOGGER.setLevel(Level.ALL);
+            LOGGER.severe("Wrong Arguments. Example: hadoop jar kpicalculation-LocalBuild.jar inputPath outputPath");
             System.exit(1);
         }
 
@@ -57,8 +57,8 @@ public class KpiMain extends Configured implements Tool {
             int res = ToolRunner.run(new Configuration(), new KpiMain(), args);
             System.exit(res);
         } catch (Exception e) {
-            logger.setLevel(Level.ALL);
-            logger.log(Level.SEVERE, "Execution failed: {0}", e.getMessage());
+            LOGGER.setLevel(Level.ALL);
+            LOGGER.log(Level.SEVERE, "Execution failed: {0}", e.getMessage());
             System.exit(1);
         }
     }

@@ -54,19 +54,29 @@ FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
 
 # Compiler options for DEBUG or RELEASE (copied from trunk/CMakeList)
 add_definitions(-fPIC)
+
+#Baseline compiler flags
+set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror")
+
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
-  MESSAGE("cmake: DEBUG compilation")
-  add_definitions(-DDEBUG -DDEBUG_$ENV{USER} -DDEBUG_${USER})
-  set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -g -Werror -L${CMAKE_INSTALL_PREFIX}/lib")
+    MESSAGE("cmake: DEBUG compilation")
+    add_definitions(-DDEBUG -DDEBUG_$ENV{USER} -DDEBUG_${USER})
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 else (NOT CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
     MESSAGE("cmake: RELEASE compilation")
     add_definitions(-DRELEASE)
-    set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -O2 -Wno-unused-but-set-variable  -L${CMAKE_INSTALL_PREFIX}/lib")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 
 endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
+
+# -Wunused-but-set-variable is available from gcc 4.6.0 but can be set in 4.5.x
+# OS X comes with gcc 4.2.1 (10.7) and does not accept this flag
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # Include directory pointing to current dir and /usr/local/include
 include_directories("${PROJECT_SOURCE_DIR}")

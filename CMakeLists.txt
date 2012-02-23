@@ -31,41 +31,35 @@ execute_process(COMMAND            echo $USER
 add_definitions(-DLM_ON)
 add_definitions(-fPIC)
 
+# Baseline compiler flags, any change here will affect all build types
+set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror")
 
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
-  MESSAGE("cmake: DEBUG compilation")
-  add_definitions(-DDEBUG -DDEBUG_$ENV{USER} -DDEBUG_${USER})
-  if (COVERAGE)
-    MESSAGE("cmake: Coverage compilation")
-    set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -g -Werror -fprofile-arcs -ftest-coverage")
-    set (CMAKE_EXE_LINKER_FLAGS "-fprofile-arcs -ftest-coverage")
-  else (NOT COVERAGE)
-    set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -g -Werror")
-  endif (COVERAGE)
+    MESSAGE("cmake: DEBUG compilation")
+    add_definitions(-DDEBUG -DDEBUG_$ENV{USER} -DDEBUG_${USER})
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+    if (COVERAGE)
+        MESSAGE("cmake: Coverage compilation")
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+        set (CMAKE_EXE_LINKER_FLAGS "-fprofile-arcs -ftest-coverage")
+    endif (COVERAGE)
 
 elseif (CMAKE_BUILD_TYPE STREQUAL RELEASE)
 
-    add_definitions(-DRELEASE)
-    if (STRICT)
-        MESSAGE("cmake: strict compilation")
-        set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -Wextra -O2")
-    else (NOT STRICT)
-        MESSAGE("cmake: RELEASE compilation")
-        set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -O2")
-    endif (STRICT)
+    MESSAGE("cmake: RELEASE compilation")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 
 else (CMAKE_BUILD_TYPE STREQUAL DEBUG)
     MESSAGE("cmake: bad value for CMAKE_BUILD_TYPE - please set the variable to either DEBUG or RELEASE")
     set(error 1)
 endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
-# option -Wno-unused-but-set-variable ( currently not supported in MAC OS )
-# --------------------------------------------------------------------------
-if( NOT APPLE )
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
-endif ( NOT APPLE )
-
+# -Wunused-but-set-variable is available from gcc 4.6.0 but can be set in 4.5.x
+# OS X comes with gcc 4.2.1 (10.7) and does not accept this flag
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 #
 # Enabling testing in debug mode
@@ -155,4 +149,4 @@ else ()
 endif (error EQUAL 0)
 
 
-#ADD_SUBDIRECTORY(modules)
+ADD_SUBDIRECTORY(modules)

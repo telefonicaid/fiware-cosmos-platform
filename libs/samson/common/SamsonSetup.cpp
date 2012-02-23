@@ -10,6 +10,9 @@
 #include "au/CommandLine.h"		// au::CommandLine
 #include "au/ErrorManager.h"           // au::ErrorManager
 
+#include "au/StringVector.h"
+#include "tables/Table.h"
+
 #include "status.h"                         // Status codes
 
 #include "samsonVars.h"                     // HOME AND WORKING DIRECTORIES
@@ -78,6 +81,84 @@ namespace samson
         return path;
     }
     
+    SetupItem::SetupItem( std::string _name , std::string _default_value , std::string _description , SamsonItemType _type )
+    {
+        name = _name;
+        default_value = _default_value;
+        value = _default_value;
+        
+        description = _description;
+        type = _type;
+        
+        if( !check_valid( _default_value ) )
+            LM_W(("Default value %s not valid for setup item %s" , _default_value.c_str() , _name.c_str() ));
+        
+    }
+    
+    bool SetupItem::setValue( std::string _value )
+    {
+        if( ! check_valid(_value) )
+            return false;
+        
+        value = _value;
+        return true;
+    }
+    
+    bool SetupItem::check_valid( std::string _value )
+    {
+        if( type == SetupItem_string )
+            return true;
+        
+        if ( type == SetupItem_uint64 )
+        {
+            size_t p  = _value.find_first_not_of("0123456789");
+            if( p == std::string::npos )
+                return true;
+            else
+            {
+                //LM_W(("'%s' not a number since %lu is not a number char",_value.c_str(),p ));
+                return false;
+            }
+        }
+        
+        // Unknown type
+        return false;
+    }
+    
+    std::string SetupItem::getValue()
+    {
+        return value;
+    }
+    
+    std::string SetupItem::getDefaultValue()
+    {
+        return default_value;
+    }
+    
+    std::string SetupItem::getSetValue()
+    {
+        return value;
+    }
+    
+    std::string SetupItem::getDescription()
+    {
+        return description;
+    }
+    
+    std::string SetupItem::getConcept()
+    {
+        return name.substr(0, name.find(".",0 ) );
+    }
+    
+    void SetupItem::resetToDefaultValue()
+    {
+        value = default_value;
+    }
+    
+    void SetupItem::clearCustumValue()
+    {
+        value = default_value;
+    }
     
 #pragma mark SetupItemCollection
     
@@ -161,7 +242,7 @@ namespace samson
     
     bool SetupItemCollection::setValueForParameter( std::string name ,std::string value )
     {
-        SetupItem*item = items.findInMap(name);
+        SetupItem* item = items.findInMap(name);
         
         if( !item )
         {
@@ -182,47 +263,27 @@ namespace samson
     
     std::string SetupItemCollection::str()
     {
-        std::ostringstream output;
-        output << "Samson setup parameters:\n";
-        output << "---------------------------------------------------------------------------------------------------\n";
-
-        output << std::left;
         
-        // Heder
-        output << "\n";
-        output << std::setw(40) << "Parameter" << " ";
-        output << std::setw(20) << "Default value" << " ";
-        output << std::setw(20) << "Value in setup.txt" << " ";
-        output << std::setw(20) << "Help" << " ";
-        output << "\n";
-        
-        output << "---------------------------------------------------------------------------------------------------\n";
-        output << "\n";
-
+        au::tables::Table table(
+                au::StringVector( "Parameter" , "Current value" , "Default" , "Description" ),
+                au::StringVector( "left" , "" , "left" , "left" ) 
+                                );
+                                std::ostringstream output;
         
         au::map< std::string , SetupItem >::iterator i;
-
-        std::string previous_concept;
-        
         for (i = items.begin() ; i != items.end() ; i++)
         {
-            std::string name = i->first;  
-            std::string concept = name.substr(0, name.find(".",0 ) );
-            if( concept != previous_concept )
-                output << "\n";
-            previous_concept = concept;
             
-            output << std::setw(40) << i->first << " ";
-            output << std::setw(20) << i->second->getDefaultValue() << " ";
-            output << std::setw(20) << i->second->getSetValue() << " ";
-            output << std::setw(20) << i->second->getDescription() << " ";
-            output << "\n";
+            au::StringVector values;
+            values.push_back( i->first );
+            values.push_back(i->second->getDefaultValue() );
+            values.push_back( i->second->getSetValue() );
+            values.push_back( i->second->getDescription() );
+            
+            table.addRow( values );
         }
-        
-        return output.str();
+        return table.str( "Samson setup parameters");
     }
-    
-    
     
 #pragma mark SamsonSetup
     

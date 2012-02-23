@@ -86,6 +86,7 @@ public:
             info->add("save");
             info->add("edit");
             info->add("use_desktop_values");
+            info->add("use_default_values");
         }
         
         // Options for ls_queues
@@ -168,7 +169,7 @@ public:
             return;
         }
         
-        if( main_command == "use_desktop_values" )
+        if( main_command == "use_default_values" )
         {
             samson::SamsonSetup::shared()->clearCustumValues();            
             writeOnConsole("OK");
@@ -290,7 +291,7 @@ int main(int argC, const char *argV[])
 	paConfig("man version",                   (void*) manVersion);
     
 	paParse(paArgs, argC, (char**) argV, 1, false);
-
+    
     // SamsonSetup init
 	samson::SamsonSetup::init( samsonHome , samsonWorking );
     samson::SamsonSetup::shared()->createWorkingDirectories();      // Create working directories

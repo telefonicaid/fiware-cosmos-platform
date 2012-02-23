@@ -432,6 +432,9 @@ bool Console::isQuitting()
 /* Methods to write things on screen */
 void Console::writeWarningOnConsole( std::string message )
 {
+    if( message.substr(message.length()-1) != "\n")
+        message.append("\n");
+
 
     std::ostringstream output;
     output << "\033[1;35m"<< message << "\033[0m";
@@ -441,6 +444,9 @@ void Console::writeWarningOnConsole( std::string message )
 
 void Console::writeErrorOnConsole( std::string message )
 {    
+    if( message.substr(message.length()-1) != "\n")
+        message.append("\n");
+
     std::ostringstream output;
     output << "\033[1;31m"<< message << "\033[0m";
     std::string txt = output.str();
@@ -450,6 +456,9 @@ void Console::writeErrorOnConsole( std::string message )
 
 void Console::writeOnConsole( std::string message )
 {
+    if( message.substr(message.length()-1) != "\n")
+        message.append("\n");
+    
     write( message );
 }
 

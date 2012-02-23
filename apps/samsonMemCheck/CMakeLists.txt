@@ -13,6 +13,7 @@ SET( STATIC_LIBS
      protobuf
      pthread
      au
+	 tables
      dl
      lm
 	 pa

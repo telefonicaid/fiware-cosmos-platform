@@ -36,95 +36,23 @@ namespace samson
         std::string default_value;
 
         std::string value;
-        bool value_available;
 
         std::string description;
         SamsonItemType type;
         
     public:
         
-        SetupItem( std::string _name , std::string _default_value , std::string _description , SamsonItemType _type )
-        {
-            name = _name;
-            default_value = _default_value;
-            value_available =  false;
-            
-            description = _description;
-            type = _type;
-            
-            if( !check_valid( _default_value ) )
-                LM_W(("Default value %s not valid for setup item %s" , _default_value.c_str() , _name.c_str() ));
-            
-        }
-
-        bool setValue( std::string _value )
-        {
-            if( ! check_valid(value) )
-                return false;
-            
-            value = _value;
-            value_available = true;
-            return true;
-        }
-        
-        bool check_valid( std::string _value )
-        {
-            if( type == SetupItem_string )
-                return true;
-            
-            if ( type == SetupItem_uint64 )
-            {
-                if( _value.find_first_not_of("0123456789") == std::string::npos )
-                    return true;
-                else
-                    return false;
-            }
-
-            // Unknown type
-            return false;
-        }
-        
-        std::string getValue()
-        {
-            if( value_available )
-                return value;
-            else
-                return default_value;
-        }
-
-        std::string getDefaultValue()
-        {
-            return default_value;
-        }
-        
-        std::string getSetValue()
-        {
-            if( value_available )
-                return value;
-            else
-                return "";
-        }
-        
-        std::string getDescription()
-        {
-            return description;
-        }
-        
-        std::string getConcept()
-        {
-            return name.substr(0, name.find(".",0 ) );
-        }
-        
-        void resetToDefaultValue()
-        {
-            value_available =  false;
-        }
-        
-        void clearCustumValue()
-        {
-            value = default_value;
-            value_available = false;
-        }
+        SetupItem( std::string _name , std::string _default_value , std::string _description , SamsonItemType _type );
+ 
+        bool setValue( std::string _value );
+        bool check_valid( std::string _value );        
+        std::string getValue();
+        std::string getDefaultValue();
+        std::string getSetValue();
+        std::string getDescription();
+        std::string getConcept();
+        void resetToDefaultValue();
+        void clearCustumValue();
         
     };
     

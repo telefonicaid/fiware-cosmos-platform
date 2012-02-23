@@ -98,6 +98,8 @@ MESSAGE( "----------------------------------------------------------------------
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
 
+TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm )
+
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 

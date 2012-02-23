@@ -1,4 +1,4 @@
-ADD_SUBDIRECTORY(samsonLocal)
+#ADD_SUBDIRECTORY(samsonLocal)
 
 ADD_SUBDIRECTORY(samsonSetup)
 ADD_SUBDIRECTORY(samsonWorker)

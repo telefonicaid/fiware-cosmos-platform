@@ -373,6 +373,11 @@ namespace samson {
         
         return total;
     }
+    
+    NodeIdentifier CommonNetwork::getMynodeIdentifier()
+    {
+        return node_identifier;
+    }
 
 
     

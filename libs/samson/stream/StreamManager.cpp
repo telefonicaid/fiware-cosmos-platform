@@ -212,8 +212,9 @@ namespace samson {
         {
             Queue *fromQueue = getQueue( from_queue_name );
             Queue *toQueue = getQueue( to_queue_name );
+
+            toQueue->push( fromQueue->list );
             
-            toQueue->list->copyFrom( fromQueue->list );
             
         }
         

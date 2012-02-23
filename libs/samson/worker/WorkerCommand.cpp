@@ -1,6 +1,7 @@
 
 #include <algorithm>
 
+#include "au/utils.h"
 #include "au/ErrorManager.h"
 #include "au/string.h"
 
@@ -644,7 +645,10 @@ namespace samson {
                 message = cmd.get_argument(1);
 
             // Full message
-            std::string full_message = au::str("[Delilah %lu] %s" , delilah_id , message.c_str() );
+            std::string full_message = au::str("[Message from Delilah_%s] %s" 
+                                               , au::code64_str( delilah_id ).c_str() 
+                                               , message.c_str() 
+                                               );
 
             
             // Send a trace to all delilahs

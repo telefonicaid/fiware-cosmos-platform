@@ -70,6 +70,16 @@ namespace samson
 
         // By default no save traces
         trace_file = NULL;
+        
+        // Inform about random id for this delilah
+        NodeIdentifier node_identifier = network->getMynodeIdentifier();
+        
+        if( node_identifier.node_type != DelilahNode )
+            LM_X(1, ("Internal error"));
+        
+        writeWarningOnConsole(au::str("Random delilah id generated [%s]" , au::code64_str(node_identifier.id).c_str()));
+        
+        
     }
     
     DelilahConsole::~DelilahConsole()
@@ -208,6 +218,7 @@ namespace samson
             info->add("remove");
             info->add("connect");
             info->add("connections");
+            info->add("get_my_id");
         }
         
         if (info->completingSecondWord("help") )
@@ -1097,12 +1108,16 @@ namespace samson
                 
                 if( trace_on )
                 {
-                    std::string trace_message =  au::str("TRACE[%s]: %s %s\n" 
-                                                         , packet->from.str().c_str()
-                                                         , _context.c_str() 
-                                                         , _text.c_str() 
-                                                         );
+                    
+                    au::tables::Table table( au::StringVector("Concept" , "Value" ) , au::StringVector("","left") );
+                    
+                    table.addRow( au::StringVector( "From" , packet->from.str() ) );
+                    table.addRow( au::StringVector( "Type" , _type ) );
+                    table.addRow( au::StringVector( "Context" , _context ) );
+                    table.addRow( au::StringVector( "Message" , _text ) );
 
+                    std::string trace_message =table.str("TRACE");
+                                            
                     if( _type == "error" )
                         writeErrorOnConsole( trace_message );
                     else if( _type == "warning" )

@@ -71,6 +71,7 @@ namespace samson {
         virtual network::Collection* getConnectionsCollection( Visualization* visualization );
         size_t get_rate_in();
         size_t get_rate_out();
+        NodeIdentifier getMynodeIdentifier();
         
         // Add output worker connections
         // ----------------------------------------------------------------

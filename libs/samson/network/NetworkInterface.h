@@ -153,6 +153,12 @@ namespace samson {
         {
             return 0;
         }
+        
+        virtual NodeIdentifier getMynodeIdentifier()
+        {
+            return NodeIdentifier( UnknownNode , -1 );
+            
+        }
 
         
     };

@@ -32,7 +32,6 @@ namespace samson {
     {
         // I am a delilah ( random id auto-asigned )
         node_identifier = NodeIdentifier( DelilahNode , au::code64_rand() );
-        
     }
     
     // Add new connection agains any worker in the cluster
@@ -185,6 +184,7 @@ namespace samson {
             else
             {
                 cluster_information.update( &new_cluster_information );
+
                 
                 message(
                         au::str("Connecting to cluster %lu with %lu nodes at %s:%d"
@@ -375,6 +375,12 @@ namespace samson {
             }
                 
             return output.str();
+        }
+        
+        if( main_command == "get_my_id" )
+        {
+            // Inform about this delilah identifier
+            return au::str("Delilah id: %s\n", au::code64_str(node_identifier.id).c_str() );
         }
         
         if ( main_command == "connect" )

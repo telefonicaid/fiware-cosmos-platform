@@ -143,6 +143,7 @@ namespace samson {
                     // Send a trace to all delilahs
                     engine::Notification* notification = new engine::Notification(notification_samson_worker_send_trace);
                     notification->environment.set("message",message);
+                    notification->environment.set("context","queues");
                     engine::Engine::shared()->notify( notification );
                     
                     return;

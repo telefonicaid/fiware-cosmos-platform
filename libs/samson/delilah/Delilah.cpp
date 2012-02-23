@@ -87,9 +87,10 @@ namespace samson {
         // Notification to update local data bases ( queues, operations, etc...) when required
         listen( notification_delilah_automatic_update );
         {
+            size_t period = SamsonSetup::shared()->getUInt64("delilah.automatic_update_period");
             // Notification every second but only used if some flags are tru
             engine::Notification *notification = new engine::Notification(notification_delilah_automatic_update);
-            engine::Engine::shared()->notify( notification, 2 ); // automatic update every 2 seconds
+            engine::Engine::shared()->notify( notification, period );
         }        
         
     }

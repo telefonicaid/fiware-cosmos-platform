@@ -86,7 +86,7 @@ namespace samson
        items.clearMap();
     }
 
-    void  SetupItemCollection::add( std::string _name , std::string _default_value , std::string _description )
+    void  SetupItemCollection::add( std::string _name , std::string _default_value , std::string _description , SamsonItemType type )
     {
         if( items.findInMap(_name) != NULL )
         {
@@ -94,7 +94,7 @@ namespace samson
             return;
         }
         
-        items.insertInMap( _name , new SetupItem( _name , _default_value , _description) );
+        items.insertInMap( _name , new SetupItem( _name , _default_value , _description , type ) );
         
     }
     
@@ -159,17 +159,17 @@ namespace samson
     }
     
     
-    void SetupItemCollection::setValueForParameter( std::string name ,std::string value )
+    bool SetupItemCollection::setValueForParameter( std::string name ,std::string value )
     {
         SetupItem*item = items.findInMap(name);
         
         if( !item )
         {
             LM_W(("Parameter %s not defined in the setup. This is not acceptable", name.c_str()));
-            return;
+            return false;
         }
         
-        item->setValue( value );
+        return item->setValue( value );
     }
     
     void SetupItemCollection::resetToDefaultValues()
@@ -290,45 +290,30 @@ namespace samson
         _samson_working = cannonical_path( samson_working );
         
         // General Platform parameters
-        add( "general.memory" , "10000000000" , "Global available memory " );                                           // Memory 2G
-        add( "general.num_processess" , "16" , "Number of cores" );                                                     // Number of cores 2
-        add( "general.max_file_size" , "1000000000" , "Max size for generated files" );                                 // Max file size 100 Mb
-        add( "general.shared_memory_size_per_buffer" , "268435456" , "Size of the shared memory segments" );            // Shared memory suze 64Mb
-        add( "general.update_status_period", "2" , "Period for the automatic update from workers to all delilah" );        
+        add( "general.memory" , "10000000000" , "Global available memory " , SetupItem_uint64 );                                          
+        add( "general.num_processess" , "16" , "Number of cores" , SetupItem_uint64);                                                     
 
-		add( "general.max_parallel_outputs" , "2" , "Max number of parallel outputs");
+        add( "general.shared_memory_size_per_buffer" , "268435456" , "Size of the shared memory segments", SetupItem_uint64 );
+        
+        add( "general.update_status_period", "2" , "Period for the automatic update from workers to all delilah" , SetupItem_uint64);        
 
         // Isolation Process
-		add( "isolated.timeout" , "300" , "Timeout for all 3rd partty operations" );                                    // Max time isolated
+		add( "isolated.timeout" , "300" , "Timeout for all 3rd partty operations" , SetupItem_uint64);
 
+        // Worker
+        add("worker.period_check_finish_tasks", "5", "Period to review finished tasks in samsonWorker, to be clean from memory", SetupItem_uint64 );        
+        
         // Upload & Download operations
-		add( "load.buffer_size" , "67108864" , "Size of the data block for load operations" );                          // Load in blocks of 64 Mbytes
+		add( "load.buffer_size" , "67108864" , "Size of the data block for load operations" , SetupItem_uint64);                         
         
         // Delilah Client
-        add("delilah.automatic_update_period" , "2" , "Period for the automatic update of information from the samson cluster" );      
-
-        // Worker Parameters
-        add("worker.period_check_finish_tasks", "5", "Period to review finished tasks in samsonWorker, to be clean from memory" );
+        add("delilah.automatic_update_period" , "2" , "Period for the automatic update of information from the samson cluster" , SetupItem_uint64);      
         
         // Stream processing
-        add("stream.min_operation_input_size" , "100000000" , "Minimum input data ( in bytes ) to run an automatic stream processing task");
-        add("stream.max_operation_input_size" , "400000000" , "Maximum input data ( in bytes ) to run an automatic stream processing task");
-        add("stream.max_state_division_size"  , "100000000" , "Maximum size for a division for a particular queue. If higher, queues automatically breaks apart");
+        add("stream.max_operation_input_size" , "400000000" , "Maximum input data ( in bytes ) to run an automatic stream processing task", SetupItem_uint64);
      
         // load setup file
         load( setupFileName() );
-
-        /*
-        // Check everything looks ok
-        au::ErrorManager errorManager;
-        check(&errorManager);
-        
-        if( errorManager.isActivated() ) 
-        {
-            LM_X(1, ("Error checking setup: %s" , errorManager.getMessage().c_str() ));
-        }        
-        */
-        
 	}
 
     std::string SamsonSetup::setupFileName()
@@ -420,6 +405,17 @@ namespace samson
     {
         return getValueForParameter( name );
     }
+
+    std::string SamsonSetup::get_default( std::string name )
+    {
+        SetupItem*item = items.findInMap(name);
+        
+        if( !item )
+            return "";
+        
+        return item->getDefaultValue();
+    }
+    
     
     size_t SamsonSetup::getUInt64( std::string name )
     {
@@ -451,40 +447,11 @@ namespace samson
             LM_X(1,("Error creating directory %s" , _samson_working.c_str() ));
     }
     
-    void SamsonSetup::check( au::ErrorManager *error )
-	{
-        
-        size_t memory = getUInt64("general.memory");
-        int num_processes = getInt("general.num_processess");
-        size_t shared_memory_size_per_buffer = getUInt64("general.shared_memory_size_per_buffer");
-        size_t max_file_size = getUInt64("general.max_file_size");
-        
-        int num_paralell_outputs = getInt("general.max_parallel_outputs");
-        
-		int max_num_paralell_outputs =  ( memory - num_processes*shared_memory_size_per_buffer ) / ( 2 * max_file_size);
-		if( num_paralell_outputs > max_num_paralell_outputs )
-		{
-            char line[1024];
-#ifdef __LP64__
-            sprintf(line, "Num of maximum paralell outputs is too high to the current memory setup. Review num_paralell_outputs in setup.txt file. Current value %d Max value %d (memory(%lu) - num_processes(%d)*shared_memory_size_per_buffer(%lu) ) / (2*max_file_size(%lu))", num_paralell_outputs , max_num_paralell_outputs, memory, num_processes, shared_memory_size_per_buffer, max_file_size  );
-#else
-            sprintf(line, "Num of maximum paralell outputs is too high to the current memory setup. Review num_paralell_outputs in setup.txt file. Current value %d Max value %d (memory(%d) - num_processes(%d)*shared_memory_size_per_buffer(%d) ) / (2*max_file_size(%d))", num_paralell_outputs , max_num_paralell_outputs, memory, num_processes, shared_memory_size_per_buffer, max_file_size);
-#endif            
-            error->set( line );
-		}
-		
-		if ( num_paralell_outputs < 2 )
-            error->set(  au::str("Num  of paralell outputs is lower than 2. Please review property 'general.max_parallel_outputs'" ) );
-        
-	}
-
- 	
-    
     void SamsonSetup::edit()
     {
         // Edit all the inputs
         
-        // First concept
+        // previous concept
         std::string concept = "Z";
         
         au::map< std::string , SetupItem >::iterator i;
@@ -515,29 +482,32 @@ namespace samson
             char *l = fgets(line, 1024, stdin);
 
 			if( l == NULL )
-			{
-			   LM_W(("Invalid entry..."));
-	     	  }
-            
+			   LM_X(1,("Invalid entry..."));
             // Remove the "\n";
             line[ strlen(line)-1 ] = '\0'; 
             
             if( strcmp(line, "") == 0 )
-            {
                 std::cout << "Using current value " << i->second->getValue() << "\n";
-            } 
             else if ( strcmp(line, "d") == 0 )
             {
                 std::cout << "Using deafult value " << i->second->getDefaultValue() << "\n";
                 i->second->setValue( i->second->getDefaultValue() );
             } else
             {
-                std::cout << "Using new value " << line << "\n";
-                i->second->setValue( line );
+                std::string value = line;
+                
+                if( !i->second->check_valid( value ) )
+                {
+                    std::cout << "Value '%s' is not valid for " << i->first << "\n";
+                    i--;
+                }
+                else
+                {
+                    std::cout << "Using new value " << line << "\n";
+                    i->second->setValue( line );
+                }
             }
-            
         }
-        
     }
     
     int SamsonSetup::save()
@@ -586,5 +556,19 @@ namespace samson
         return 0;
     }
     
+    void SamsonSetup::clearCustumValues()
+    {
+        au::map< std::string , SetupItem >::iterator it_items;
+        for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
+            it_items->second->clearCustumValue();
+        
+    }
+
+    
+    std::vector<std::string> SamsonSetup::getItemNames()
+    {
+        return items.getKeysVector();
+    }
+
     
 }

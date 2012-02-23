@@ -196,6 +196,16 @@ public:
         for (iter = std::map<K,V*,_Compare>::begin() ; iter != std::map<K,V*,_Compare>::end() ; iter++)
             childrens.insert( iter->first );
     }
+
+    std::vector<K> getKeysVector( )
+    {
+        std::vector<K> v;
+        
+        typename std::map<K, V*,_Compare >::iterator iter;
+        for (iter = std::map<K,V*,_Compare>::begin() ; iter != std::map<K,V*,_Compare>::end() ; iter++)
+            v.push_back( iter->first );
+        return v;
+    }
     
     
 };

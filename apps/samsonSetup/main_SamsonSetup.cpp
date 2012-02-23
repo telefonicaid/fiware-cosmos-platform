@@ -10,6 +10,7 @@
 
 #include "au/CommandLine.h"                     // au::CommandLine
 #include "au/Console.h"                         // au::Console
+#include "au/ConsoleAutoComplete.h"
 
 #include "samson/common/SamsonSetup.h"			// samson::SamsonSetup
 #include "samson/common/ports.h"
@@ -28,7 +29,7 @@
  */
 
 SAMSON_ARG_VARS;
-bool check;
+bool show;
 int port;
 
 /* ****************************************************************************
@@ -39,7 +40,7 @@ int port;
 PaArgument paArgs[] =
 {
 	SAMSON_ARGS,
-	{ "-check",   &check,       "",     PaBool,    PaOpt,  false,  false,   true,  "Check if setup file is correct" },    
+	{ "-show",   &show,       "",     PaBool,    PaOpt,  false,  false,   true,  "Show current options" },    
 	PA_END_OF_ARGS
 };
 
@@ -57,9 +58,9 @@ std::string getHelpMessage()
     output << " show                     Show all setup outputs\n";
     output << " set property value       Set a particular value\n";
     output << " save                     Save modified values\n";
-    output << " check                    Check if current values are coherent\n";
     output << " edit                     Edit all property values\n";
-    output << " set_desktop              Set typical values for desktop (2GB RAM & 2 cores)\n";
+    output << " use_desktop_values       Set typical values for desktop (2GB RAM & 2 cores)\n";
+    output << " use_default_values       Set default values for a server (10GB RAM & 16 cores)\n";
     output << " quit                     Quit samsonSetup tool\n";
 
     return output.str();
@@ -74,6 +75,35 @@ public:
     std::string getPrompt()
     {
         return "SamsonConfig > ";
+    }
+    
+    void autoComplete( au::ConsoleAutoComplete* info )
+    {
+        if ( info->completingFirstWord() )
+        {
+            info->add("show");
+            info->add("set");
+            info->add("save");
+            info->add("edit");
+            info->add("use_desktop_values");
+        }
+        
+        // Options for ls_queues
+        if (info->completingSecondWord("set") )
+        {
+            std::vector<std::string> names = samson::SamsonSetup::shared()->getItemNames();
+            info->add( names );
+        }
+
+        if (info->completingThirdWord("set" , "*") )
+        {
+            std::string parameter = info->secondWord();
+            std::string current_value = samson::SamsonSetup::shared()->get( parameter );
+            std::string default_value = samson::SamsonSetup::shared()->get_default( parameter );
+            
+            info->setHelpMessage( au::str("Current value %s ( default %s )" , current_value.c_str() , default_value.c_str() ) );
+        }
+        
     }
     
     //!< function to process a command instroduced by user	
@@ -108,15 +138,19 @@ public:
                 return;
             }
             
-            samson::SamsonSetup::shared()->setValueForParameter( property , value );
-            modified = true;
-            writeWarningOnConsole(au::str("Property '%s' set to '%s'", property.c_str() , value.c_str() ));
+            if( samson::SamsonSetup::shared()->setValueForParameter( property , value ) )
+            {
+                modified = true;
+                writeWarningOnConsole(au::str("Property '%s' set to '%s'", property.c_str() , value.c_str() ));
+            }
+            else
+                writeWarningOnConsole(au::str("'%s' is not valid for property" , value.c_str() , property.c_str() ));
             
             return;
 
         }
 
-        if( main_command == "set_desktop" )
+        if( main_command == "use_desktop_values" )
         {
             samson::SamsonSetup::shared()->resetToDefaultValues();
             samson::SamsonSetup::shared()->setValueForParameter( "general.memory" , "2000000000" );
@@ -131,6 +165,14 @@ public:
 
             modified = true;
 
+            return;
+        }
+        
+        if( main_command == "use_desktop_values" )
+        {
+            samson::SamsonSetup::shared()->clearCustumValues();            
+            writeOnConsole("OK");
+            modified=true;
             return;
         }
         
@@ -156,23 +198,6 @@ public:
         }
         
 
-        if( main_command == "check" )
-        {
-            writeWarningOnConsole( "Checking setup..." );
-            
-            // Check everything looks ok
-            au::ErrorManager errorManager;
-            samson::SamsonSetup::shared()->check(&errorManager);
-            
-            if( errorManager.isActivated() )
-                writeErrorOnConsole(errorManager.getMessage());
-            else
-                writeWarningOnConsole("OK\n");
-            
-            return;
-        }
-        
-        
         if( main_command == "quit" )
         {
             if( modified )
@@ -227,9 +252,9 @@ public:
 static const char* manSynopsis         = " [OPTION]";
 static const char* manShortDescription = "samsonSetup is a tool to define setup parameters in a SAMSON system.\n\n";
 static const char* manDescription      =
-"samsonSetup [-check] : Samson configuration tool.\n"
+"samsonSetup [-show] : Samson configuration tool.\n"
 "\n"
-"\t -check : Verify current setup\n"
+"\t -show : Show all current options\n"
 "\n"
 "\t samsonSetup is an interactive tool to specify all the setup values in a Samson deployment\n"
 "\t Just type help inside samsonSetup to get a list of valid commands\n"
@@ -265,25 +290,14 @@ int main(int argC, const char *argV[])
 	paConfig("man version",                   (void*) manVersion);
     
 	paParse(paArgs, argC, (char**) argV, 1, false);
-    
 
     // SamsonSetup init
 	samson::SamsonSetup::init( samsonHome , samsonWorking );
     samson::SamsonSetup::shared()->createWorkingDirectories();      // Create working directories
     
-    if( check )
+    if( show )
     {
-        std::cout << "Checking setup file ( " << samson::SamsonSetup::shared()->setupFileName() << " ) ...";
-        
-        // Check everything looks ok
-        au::ErrorManager errorManager;
-        samson::SamsonSetup::shared()->check(&errorManager);
-        
-        if( errorManager.isActivated() ) 
-            std::cout << "Error checking setup: " << errorManager.getMessage();
-        else
-            std::cout << "OK!\n";
-        
+        std::cout << samson::SamsonSetup::shared()->str();
         return 0;
     }
     

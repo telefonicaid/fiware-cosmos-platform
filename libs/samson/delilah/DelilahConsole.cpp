@@ -461,7 +461,7 @@ namespace samson
         if ( mainCommand == "cluster" )
         {
             // Interact with the network layer
-            writeOnConsole( network->cluster_command( command ) );
+            writeOnConsole( network->cluster_command( command ) + "\n" );
             return 0;
         }
         

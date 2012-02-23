@@ -7,7 +7,10 @@
 #include <stdlib.h>         // atoll
 #include <sys/stat.h>		// mkdir
 
+#include "logMsg/logMsg.h"
+
 #include "au/map.h"         // au::map
+#include "au/StringVector.h"
 #include "au/Environment.h" // au::Environment
 
 
@@ -15,11 +18,20 @@ NAMESPACE_BEGIN(au)
     class ErrorManager;
 }
 
-namespace samson {
+namespace samson 
+{
+    
+    typedef enum 
+    {
+        SetupItem_uint64,
+        SetupItem_string
+    } SamsonItemType;
 	
     
     class SetupItem
     {
+        
+        
         std::string name;
         std::string default_value;
 
@@ -27,23 +39,49 @@ namespace samson {
         bool value_available;
 
         std::string description;
+        SamsonItemType type;
         
     public:
         
-        SetupItem( std::string _name , std::string _default_value , std::string _description )
+        SetupItem( std::string _name , std::string _default_value , std::string _description , SamsonItemType _type )
         {
             name = _name;
             default_value = _default_value;
             value_available =  false;
             
             description = _description;
+            type = _type;
+            
+            if( !check_valid( _default_value ) )
+                LM_W(("Default value %s not valid for setup item %s" , _default_value.c_str() , _name.c_str() ));
+            
         }
 
-        void setValue( std::string _value )
+        bool setValue( std::string _value )
         {
-
+            if( ! check_valid(value) )
+                return false;
+            
             value = _value;
             value_available = true;
+            return true;
+        }
+        
+        bool check_valid( std::string _value )
+        {
+            if( type == SetupItem_string )
+                return true;
+            
+            if ( type == SetupItem_uint64 )
+            {
+                if( _value.find_first_not_of("0123456789") == std::string::npos )
+                    return true;
+                else
+                    return false;
+            }
+
+            // Unknown type
+            return false;
         }
         
         std::string getValue()
@@ -82,6 +120,12 @@ namespace samson {
             value_available =  false;
         }
         
+        void clearCustumValue()
+        {
+            value = default_value;
+            value_available = false;
+        }
+        
     };
     
     
@@ -91,11 +135,12 @@ namespace samson {
         
         au::map< std::string , SetupItem > items;
         
-    public:
-        ~SetupItemCollection();
-      
         // Add a new parameter to consider
-        void  add( std::string _name , std::string _default_value , std::string _description );
+        void  add( std::string _name , std::string _default_value , std::string _description , SamsonItemType type );
+        
+    public:
+        
+        ~SetupItemCollection();
 
         // Load a particular file to include all setup parameters
         void load( std::string file );
@@ -104,7 +149,7 @@ namespace samson {
         std::string getValueForParameter( std::string name );
     
         // Set manualy a particular parameter ( special case )
-        void setValueForParameter( std::string name ,std::string value );
+        bool setValueForParameter( std::string name ,std::string value );
     
         // Check if a particular property if defined
         bool isParameterDefined( std::string name );
@@ -136,6 +181,9 @@ namespace samson {
         size_t getUInt64( std::string name );
         int getInt( std::string name );
 
+        std::string get_default( std::string name );
+        
+        
         // Get names fo files
         std::string setupFileName();                         // Get the Steup file
         std::string sharedMemoryLogFileName();
@@ -153,16 +201,15 @@ namespace samson {
         
         std::string clusterInformationFileName();
         
+        std::vector<std::string> getItemNames();
+        
         
         // Create working directories
         void createWorkingDirectories();
-
-	public:
 		
-		// Check if everything is ok. Exit if not
-		void check( au::ErrorManager *error );
-
-		
+        // Clear values specified manually
+        void clearCustumValues();
+        
         void edit();
         int save();
         

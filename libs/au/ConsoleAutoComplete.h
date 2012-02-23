@@ -73,6 +73,7 @@ public:
     
     // Add an alternative for the last word
     void add( std::string command );
+    void add( std::vector<std::string> commands );
     void add( std::string label , std::string command , bool add_space );
     void add( ConsoleAutoCompleteAlternative alternative );
     

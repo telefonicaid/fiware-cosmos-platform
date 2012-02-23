@@ -102,6 +102,12 @@ void ConsoleAutoComplete::add( std::string command )
     add( ConsoleAutoCompleteAlternative( command ) );
 }
 
+void ConsoleAutoComplete::add( std::vector<std::string> commands )
+{
+    for ( size_t i = 0 ; i <  commands.size() ; i++ )
+        add( commands[i] );
+}
+
 void ConsoleAutoComplete::add( std::string label , std::string command , bool add_space )
 {
     add( ConsoleAutoCompleteAlternative( label, command , add_space ) );

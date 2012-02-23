@@ -290,11 +290,11 @@ namespace samson
                 
                 network::CollectionRecord* record = collection->add_record();
                 
-                ::samson::add( record , "name"    , module->name    , "left" );
-                ::samson::add( record , "version" , module->version , "different" );
-                ::samson::add( record , "#operations" , module->operations.size() );
-                ::samson::add( record , "#datas"      , module->datas.size() );
-                ::samson::add( record , "author"  , module->author  , "left" );
+                ::samson::add( record , "name"        , module->name              , "left,different" );
+                ::samson::add( record , "version"     , module->version           , "different" );
+                ::samson::add( record , "#operations" , module->operations.size() , "f=uint64,sum" );
+                ::samson::add( record , "#datas"      , module->datas.size()      , "f=uint64,sum" );
+                ::samson::add( record , "author"      , module->author            , "left,different" );
                 
             }
         }

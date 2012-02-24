@@ -17,11 +17,12 @@ namespace samson{
 
 WorkerContainer::WorkerContainer(QWidget* parent): QWidget(parent)
 {
-    mainLayout = new QVBoxLayout();
+    mainLayout = new QVBoxLayout(this);
 }
 
 void WorkerContainer::setData(std::vector<WorkerData>& workersData)
 {
+  //std::cout << "WorkerContainer::setData()" << std::endl;
     for (unsigned int i = 0; i<workersData.size(); i++)
     {
         WorkerViewer* workerTmp = findWorker(workersData[i].worker_id);
@@ -33,11 +34,12 @@ void WorkerContainer::setData(std::vector<WorkerData>& workersData)
         }
         else
         {
-            //create new widget
-            workerTmp =  new WorkerViewer(workersData[i].worker_id);
+           //create new widget
+            workerTmp =  new WorkerViewer(workersData[i].worker_id, this);
             workerViewers.push_back(workerTmp);
             mainLayout->addWidget(workerTmp);
-            mainLayout->activate();
+            //mainLayout->activate();
+            update();
         }
     }
 }

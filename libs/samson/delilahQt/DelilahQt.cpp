@@ -58,17 +58,17 @@ namespace samson
             for(unsigned int i = 0; i< table->getNumRows(); i++)
             {
                 WorkerData data;
-                data.worker_id = table->getValue(i, "name");
-                data.type = table->getValue(i, "name");
-                data.mem_used = table->getValue(i, "name");
-                data.mem_total = table->getValue(i, "name");
-                data.cores_used = table->getValue(i, "name");
-                data.cores_total = table->getValue(i, "name");
-                data.disk_ops = table->getValue(i, "name");
-                data.disk_in_rate = table->getValue(i, "name");
-                data.disk_out_rate = table->getValue(i, "name");
-                data.net_in = table->getValue(i, "name");
-                data.net_out = table->getValue(i, "name");
+                data.worker_id = table->getValue(i, "worker_id");
+                data.type = table->getValue(i, "Type");
+                data.mem_used = table->getValue(i, "Mem used");
+                data.mem_total = table->getValue(i, "Mem total");
+                data.cores_used = table->getValue(i, "Cores used");
+                data.cores_total = table->getValue(i, "Cores total");
+                data.disk_ops = table->getValue(i, "#Disk ops");
+                data.disk_in_rate = table->getValue(i, "Disk in B/s");
+                data.disk_out_rate = table->getValue(i, "Disk out B/s");
+                data.net_in = table->getValue(i, "Net in B/s");
+                data.net_out = table->getValue(i, "Net out B/s");
                 workersData.push_back(data);
             }
         }

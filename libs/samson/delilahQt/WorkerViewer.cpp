@@ -45,7 +45,7 @@ WorkerViewer::WorkerViewer(std::string _title, QWidget* parent): QWidget(parent)
     data.worker_id = _title;
     
     groupBox = new QGroupBox(QString(("Worker " + worker_id).c_str()), this);
-    mainLayout = new QGridLayout;
+    mainLayout = new QGridLayout(groupBox);
     line1Layout = new QHBoxLayout;
     line2Layout = new QHBoxLayout;
     line3Layout = new QHBoxLayout;
@@ -119,6 +119,8 @@ WorkerViewer::WorkerViewer(std::string _title, QWidget* parent): QWidget(parent)
 
 void WorkerViewer::setData(WorkerData newData)
 {
+    if(data == newData) return;
+    
     data = newData;
     worker_idValue->setText(QString(data.worker_id.c_str()));
     type->setText(QString(data.type.c_str()));

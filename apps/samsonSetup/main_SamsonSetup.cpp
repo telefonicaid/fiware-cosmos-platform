@@ -74,7 +74,7 @@ public:
     
     std::string getPrompt()
     {
-        return "SamsonConfig > ";
+        return "samsonSetup > ";
     }
     
     void autoComplete( au::ConsoleAutoComplete* info )

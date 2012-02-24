@@ -65,7 +65,6 @@ namespace samson {
         // ----------------------------------------------------------------
 		void receive( Packet* packet );
         std::string getRESTInformation( ::std::string in );
-        void reset_worker( size_t worker_id );
 		
         // Notification from the engine about finished tasks
         void notify( engine::Notification* notification );

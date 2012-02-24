@@ -55,10 +55,7 @@ namespace samson {
         
         // Virtual destructor for correct memory deallocation
         virtual ~NetworkInterfaceReceiver() { };
-                
-        // Synchronous interface to reset a worker with a new worker_id... everything should be reset at this worker
-        virtual void reset_worker( size_t worker_id ){};
-        
+                        
         // Synchronous interface to get informtion for the REST interface
         virtual ::std::string getRESTInformation( ::std::string in )
         {

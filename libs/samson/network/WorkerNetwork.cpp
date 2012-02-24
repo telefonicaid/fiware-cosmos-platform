@@ -159,8 +159,17 @@ namespace samson {
                 node_identifier = NodeIdentifier( WorkerNode , assigned_id );
                 update_cluster_information( &new_cluster_information  , assigned_id );
                 
-                // Reset this worker with this new worker_id
-                network_interface_receiver->reset_worker(assigned_id);
+                // Notify worker to reset everyting 
+                // ------------------------------------------------------------
+                Packet *packet = new Packet( Message::WorkerCommand );
+                network::WorkerCommand * worker_command = packet->message->mutable_worker_command();
+                worker_command->set_command("remove_all_stream");
+                packet->message->set_delilah_component_id(-1);
+                packet->from = NodeIdentifier( DelilahNode , 0 );
+                packet->to = node_identifier;
+                network_interface_receiver->receive(  packet );
+                // ------------------------------------------------------------
+                
             }
             else
             {

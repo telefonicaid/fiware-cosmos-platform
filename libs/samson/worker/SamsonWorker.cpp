@@ -97,14 +97,7 @@ namespace samson {
         
     }
     
-    
-    void SamsonWorker::reset_worker( size_t worker_id )
-    {
-        // reset BlockManager ans assign the new worker id
-        stream::BlockManager::shared()->resetBlockManager( worker_id );
         
-    }
-    
     /* ****************************************************************************
      *
      * SamsonWorker::receive -

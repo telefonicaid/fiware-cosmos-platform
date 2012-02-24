@@ -3,6 +3,7 @@ ADD_SUBDIRECTORY(samsonLocal)
 ADD_SUBDIRECTORY(samsonSetup)
 ADD_SUBDIRECTORY(samsonWorker)
 ADD_SUBDIRECTORY(delilah)
+ADD_SUBDIRECTORY(delilah_graph)
 ADD_SUBDIRECTORY(samsonModuleParser)
 
 ADD_SUBDIRECTORY(samsonCat)

@@ -15,27 +15,6 @@
 #include "ExtQueueViewer.h"
 
 namespace samson {
-	
-
-/*class  QueueData 
-{
-    public:
-        std::string name;
-        std::string kvs; //block_info/kv_info/kvs
-        //std::string kvsize; //block_info/kv_info/size
-        std::string  size; //block_info/size
-        //std::string  size_locked; //block_info/size_locked
-        //std::string  size_on_disk; //block_info/size_on_disk
-        //std::string  size_on_memory; //block_info/size_on_memory
-        //std::string kvs_rate; //rate_kvs/rate
-        //std::string kvs_rate_size; //rate_kvs/size
-        std::string rate; //rate_size/rate
-        //std::string rate_size; //rate_size/size
-
-        QueueData();
-        bool operator==(const QueueData &other) const;
-};
-*/
         
 class QueueViewer: public QWidget
 {
@@ -65,6 +44,8 @@ class QueueViewer: public QWidget
         QLabel* name;
         QLabel* kvs;
         QLabel* kvsDigits; 
+        QLabel* kvs_s;
+        QLabel* kvs_sDigits; 
         //QLabel* kvssize;
         QLabel* size;
         QLabel* sizeDigits; 

@@ -62,10 +62,12 @@ class WorkerViewer: public QWidget
         QLabel* worker_idValue;
         QLabel* typeLabel;
         QLabel* type;
-        QLabel* mem_usedLabel;
-        QLabel* mem_used;
+        QLabel* memLabel;
+        QLabel* mem;
+        QProgressBar* memBar;
         QLabel* coresLabel;
         QLabel* cores;
+        QProgressBar* coresBar;
         QLabel* disk_opsLabel;
         QLabel* disk_ops;
         QLabel* disk_in_rateLabel;

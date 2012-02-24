@@ -43,6 +43,7 @@ QueueViewer::QueueViewer(std::string _title, QWidget* parent): QWidget(parent)
     kvsDigits->setFont(bigFont);
     kvsDigits->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     kvsDigits->setLineWidth(2);
+    
     size = new QLabel("Size: ", this);
     sizeDigits = new QLabel(this);
     sizeDigits->setFont(bigFont);
@@ -55,6 +56,12 @@ QueueViewer::QueueViewer(std::string _title, QWidget* parent): QWidget(parent)
     rateDigits->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     rateDigits->setLineWidth(2);
     
+    kvs_s = new QLabel("Kvs/s", this);
+    kvs_sDigits = new QLabel(this);
+    kvs_sDigits->setFont(bigFont);
+    kvs_sDigits->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    kvs_sDigits->setLineWidth(2);
+
     detailsButton = new QPushButton("details >>",this);
     connect(detailsButton, SIGNAL(clicked()), this, SLOT(onDetailsClicked()));
 
@@ -73,16 +80,10 @@ void QueueViewer::setData(QueueData newData)
 {
         data = newData;
         name->setText(QString(data.name.c_str() + QString(": ")));
-        kvsDigits->setText(QString(data.kvs.c_str()));
-        //kvssize->setText(QString("KVs Size: ") + QString(data.kvsize.c_str()));
+        kvsDigits->setText(QString(au::str(strtoul(data.kvs.c_str(), NULL, 0)).c_str()));
+        kvs_sDigits->setText(QString(au::str(strtoul(data.kvs_s.c_str(), NULL, 0)).c_str()));
         sizeDigits->setText(QString(au::str(strtoul(data.size.c_str(), NULL, 0)).c_str()));
-        //size_locked->setText(QString("Size Locked: ") + QString(data.size_locked.c_str()));
-        //size_on_disk->setText(QString("Size (on disk): ") + QString(data.size_on_disk.c_str()));
-        //size_on_memory->setText(QString("Size (on memory): ") + QString(data.size_on_memory.c_str()));
-        //kvs_rate->setText(QString("KVs Rate: ") + QString(data.kvs_rate.c_str()));
-        //kvs_rate_size->setText(QString("KVs Rate Size: ") + QString(data.kvs_rate_size.c_str()));
-        rateDigits->setText(QString((au::str(strtoul(data.bytes_s.c_str(), NULL, 0))/* + std::string("b/s")*/).c_str()));
-        //rate_size->setText(QString("Rate Size: ") + QString(data.rate_size.c_str()));
+        rateDigits->setText(QString((au::str(strtoul(data.bytes_s.c_str(), NULL, 0))).c_str()));
 }
 
 void QueueViewer::setTitle(std::string title)
@@ -117,7 +118,10 @@ void QueueViewer::setLayout(QGridLayout* layout, int row)
     layout->addWidget(rate, row, 8, Qt::AlignRight);
     layout->addWidget(rateDigits, row, 9);
     layout->setColumnMinimumWidth(10,15);
-    layout->addWidget(detailsButton, row, 11);
+    layout->addWidget(kvs_s, row, 11, Qt::AlignRight);
+    layout->addWidget(kvs_sDigits, row, 12);
+    layout->setColumnMinimumWidth(13,15);
+    layout->addWidget(detailsButton, row, 14);
 }
 
 void QueueViewer::onDetailsClicked()

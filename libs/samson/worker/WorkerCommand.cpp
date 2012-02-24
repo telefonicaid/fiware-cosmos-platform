@@ -1002,7 +1002,7 @@ namespace samson {
             operation->output_queues.push_back( cmd.get_argument( pos_argument++ ) );
      
         // Reasign the name for better description
-        operation->name = au::str("run_%s_delilah_%lu_%lu" , op->getName().c_str() , delilah_id , delilah_component_id );
+        operation->name = au::str("run_%s_delilah_%s_%lu" , op->getName().c_str() , au::code64_str(delilah_id).c_str() , delilah_component_id );
         
         
         return operation;

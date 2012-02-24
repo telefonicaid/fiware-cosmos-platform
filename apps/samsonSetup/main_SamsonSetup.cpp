@@ -58,7 +58,6 @@ std::string getHelpMessage()
     output << " show                     Show all setup outputs\n";
     output << " set property value       Set a particular value\n";
     output << " save                     Save modified values\n";
-    output << " edit                     Edit all property values\n";
     output << " use_desktop_values       Set typical values for desktop (2GB RAM & 2 cores)\n";
     output << " use_default_values       Set default values for a server (10GB RAM & 16 cores)\n";
     output << " quit                     Quit samsonSetup tool\n";
@@ -84,7 +83,6 @@ public:
             info->add("show");
             info->add("set");
             info->add("save");
-            info->add("edit");
             info->add("use_desktop_values");
             info->add("use_default_values");
         }
@@ -228,12 +226,6 @@ public:
             return;
         }
         
-        if ( main_command == "edit" )
-        {
-            modified = true;
-            samson::SamsonSetup::shared()->edit();  // Enter in edit mode from command line
-            return;
-        }
         
         writeErrorOnConsole(au::str("Unknown command '%s'" , main_command.c_str() ));
         writeWarningOnConsole("Type help to get a list of valid commands ");

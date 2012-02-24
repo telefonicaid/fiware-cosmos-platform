@@ -508,68 +508,7 @@ namespace samson
             LM_X(1,("Error creating directory %s" , _samson_working.c_str() ));
     }
     
-    void SamsonSetup::edit()
-    {
-        // Edit all the inputs
-        
-        // previous concept
-        std::string concept = "Z";
-        
-        au::map< std::string , SetupItem >::iterator i;
-        for ( i = items.begin() ; i != items.end() ; i++)
-        {
-            
-            std::string tmp_concept = i->second->getConcept();
-            
-            if( tmp_concept != concept )
-            {
-                std::cout << "\n";
-                std::cout << "----------------------------------------------------------------------------------------\n";
-                std::cout << "Seting up parameters for " << tmp_concept << "\n";
-                std::cout << "----------------------------------------------------------------------------------------\n";
-                std::cout << "\n";
-                concept = tmp_concept;
-            }
 
-            std::cout << "\n";
-            std::cout << "Parameter       : " << i->first << "\n";
-            std::cout << "Definition      : " << i->second->getDescription()<< "\n";
-            std::cout << "Default value   : " << i->second->getDefaultValue()<< "\n";;
-            std::cout << "SetupFile value : " << i->second->getSetValue()<< "\n";;
-            std::cout << "Current value   : " << i->second->getValue()<< "\n";;
-            std::cout << "\n";
-            std::cout << "Press (enter) to use current value, (d) to use default value or a new value: ";
-            char line[1024];
-            char *l = fgets(line, 1024, stdin);
-
-			if( l == NULL )
-			   LM_X(1,("Invalid entry..."));
-            // Remove the "\n";
-            line[ strlen(line)-1 ] = '\0'; 
-            
-            if( strcmp(line, "") == 0 )
-                std::cout << "Using current value " << i->second->getValue() << "\n";
-            else if ( strcmp(line, "d") == 0 )
-            {
-                std::cout << "Using deafult value " << i->second->getDefaultValue() << "\n";
-                i->second->setValue( i->second->getDefaultValue() );
-            } else
-            {
-                std::string value = line;
-                
-                if( !i->second->check_valid( value ) )
-                {
-                    std::cout << "Value '%s' is not valid for " << i->first << "\n";
-                    i--;
-                }
-                else
-                {
-                    std::cout << "Using new value " << line << "\n";
-                    i->second->setValue( line );
-                }
-            }
-        }
-    }
     
     int SamsonSetup::save()
     {

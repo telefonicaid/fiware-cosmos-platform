@@ -138,7 +138,6 @@ namespace samson
         // Clear values specified manually
         void clearCustumValues();
         
-        void edit();
         int save();
         
 	};

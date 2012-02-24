@@ -472,8 +472,8 @@ void fakeData(samson::SamsonPushBuffer* pushBuffer)
         {
             int sleep_seconds = theoretical_seconds - elapsed_seconds;
             std::cerr << "Sleeping " << sleep_seconds << " seconds... num messages " << au::str(num_messages) << 
-               " size " << au::str(total_size , "bytes") << " time " << au::time_string(elapsed_seconds) <<
-               " theoretical time " << au::time_string(theoretical_seconds)<<"\n";
+               " size " << au::str(total_size , "bytes") << " time " << au::str_time(elapsed_seconds) <<
+               " theoretical time " << au::str_time(theoretical_seconds)<<"\n";
             sleep(sleep_seconds);
         }
     }

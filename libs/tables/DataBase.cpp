@@ -11,55 +11,6 @@ NAMESPACE_BEGIN(tables)
 
 DataBase::DataBase() : token("DataBase")
 {
-    /*
-     
-    // Example to play with
-    Table *tmp = new Table( StringVector("name" , "telephone" , "city") );
-    tmp->addRow( StringVector("Andreu","7720167","Barcelona") );
-    tmp->addRow( StringVector("Pepe","7720167","Madrid") );
-    tmp->addRow( StringVector("Juan","847329847","Merida") );
-    tmp->addRow( StringVector("Maria","847329847","Merida") );
-    addTable( "prova" , tmp );
-    
-    
-    // Example of tree
-    TreeItem *tmp2 = new TreeItem("root");
-    TreeItem * server1 = tmp2->add("server");
-    server1->add("id" , "1");
-    server1->add("name" , "server1");
-    server1->add("time" , "231");
-    
-    TreeItem * server2 = tmp2->add("server");
-    server2->add("id" , "2");
-    server2->add("name" , "server2");
-    server2->add("time" , "54");
-    
-    TreeItem * server3 = tmp2->add("worker");
-    server3->add("name" , "worker1");
-    server3->add("time" , "54");
-    
-    addTree( "prova" , tmp2 );
-
-    
-    // Exampe of colleciton to play
-    Collection* c = new Collection();
-    {
-        CollectionItem *ci = new CollectionItem();
-        ci->add("name", "Andreu");
-        ci->add("surname", "Urruela");
-        c->add(ci);
-    }
-    {
-        CollectionItem *ci = new CollectionItem();
-        ci->add("name", "Pepe");
-        ci->add("surname", "Gotera");
-        ci->add("tel", "872398472");
-        c->add(ci);
-    }
- 
-    addCollection( "example", c );
-    
-     */
 }
 
 // Add a table to the collection

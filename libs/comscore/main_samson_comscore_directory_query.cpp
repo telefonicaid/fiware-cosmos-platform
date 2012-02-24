@@ -93,11 +93,11 @@ int main(int argC, const char *argV[])
                 std::string description = samson_comscore_dictionary.getCategoryName( categories[i] );
     
             if( (j%10000) == 0 )
-                LM_M(("Tested %d times in %s",j , au::time_string(cronometer.diffTimeInSeconds()).c_str() ));
+                LM_M(("Tested %d times in %s",j , au::str_time(cronometer.diffTimeInSeconds()).c_str() ));
             
         }
         
-        LM_M(("Tested %d times in %s",number , au::time_string(cronometer.diffTimeInSeconds()).c_str() ));
+        LM_M(("Tested %d times in %s",number , au::str_time(cronometer.diffTimeInSeconds()).c_str() ));
         
         return 0;
     }

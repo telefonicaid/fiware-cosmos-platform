@@ -181,8 +181,8 @@ void ExtQueueViewer::setData(QueueData newData)
         on_memory->setText(QString(au::str(strtoul(data.on_memory.c_str(), NULL, 0)).c_str()));
         on_disk->setText(QString(au::str(strtoul(data.on_disk.c_str(), NULL, 0)).c_str()));
         locked->setText(QString(au::str(strtoul(data.locked.c_str(), NULL, 0)).c_str()));
-        time_from->setText(QString(au::time_string(strtoul(data.time_from.c_str(), NULL, 0)).c_str()));
-        time_to->setText(QString(au::time_string(strtoul(data.time_to.c_str(), NULL, 0)).c_str()));
+        time_from->setText(QString(au::str_time(strtoul(data.time_from.c_str(), NULL, 0)).c_str()));
+        time_to->setText(QString(au::str_time(strtoul(data.time_to.c_str(), NULL, 0)).c_str()));
 }
 
 } //namespace

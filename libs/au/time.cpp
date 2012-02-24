@@ -7,7 +7,8 @@
 #include <string>
 #include <math.h>
 
-#include "au/time.h"		// Own interface
+#include "au/time.h"		
+#include "au/string.h"		
 
 
 NAMESPACE_BEGIN(au)
@@ -24,17 +25,6 @@ std::string todayString()
     return str_time( time(NULL) );
 }
 
-std::string str_time( time_t t )
-{
-    
-    struct tm timeinfo;
-    char buffer_time[1024];
-    
-    localtime_r ( &t , &timeinfo );
-    strftime (buffer_time,1024,"%d/%m/%Y (%X)",&timeinfo);
-    
-    return std::string( buffer_time );
-}
 
 double timeval_to_secs( timeval t )
 {

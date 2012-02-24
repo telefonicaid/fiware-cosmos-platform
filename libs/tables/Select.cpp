@@ -144,6 +144,8 @@ void SelectTableColumn::processModifier( std::string modifier )
             format = format_percentadge;
         if( str_format == "time" )
             format = format_time;
+        if( str_format == "timestamp" )
+            format = format_timestamp;
         return;
     }
     
@@ -177,8 +179,9 @@ std::string SelectTableColumn::simple_transform( std::string value )
         case format_string:       return value;
         case format_uint64:       return au::str( strtoll( value.c_str() , (char **)NULL, 10) );
         case format_double:       return au::str( "%0.2f", strtof( value.c_str() , (char **)NULL ));
-        case format_time:         return au::time_string( strtoll( value.c_str() , (char **)NULL, 10) );
-        case format_percentadge:  return au::percentage_string( atof( value.c_str() ) );
+        case format_time:         return au::str_time( strtoll( value.c_str() , (char **)NULL, 10) );
+        case format_timestamp:    return au::str_timestamp( strtoll( value.c_str() , (char **)NULL, 10) );
+        case format_percentadge:  return au::str_percentage( atof( value.c_str() ) );
     }
     
     return "<ERROR>";

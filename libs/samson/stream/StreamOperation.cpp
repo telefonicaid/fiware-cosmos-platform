@@ -291,8 +291,8 @@ namespace samson {
                 std::string  message = au::str("[ %s ] [ task %lu ] Finishing after running %s ( defined %s )" , 
                                                name.c_str() , 
                                                task->getId() ,
-                                               au::time_string( task->cronometer.getSeconds() ).c_str(),
-                                               au::time_string( task->creation_cronometer.diffTimeInSeconds() ).c_str()
+                                               au::str_time( task->cronometer.getSeconds() ).c_str(),
+                                               au::str_time( task->creation_cronometer.diffTimeInSeconds() ).c_str()
                                                );
                 streamManager->worker->sendTrace( "message" , "stream" , message );
             }

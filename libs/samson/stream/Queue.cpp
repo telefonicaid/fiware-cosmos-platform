@@ -466,8 +466,6 @@ namespace samson {
             
         }
         
-
-        
         void Queue::fill( samson::network::CollectionRecord* record , VisualitzationOptions options )
         {
               
@@ -522,8 +520,8 @@ namespace samson {
                 add( record , "on Memory"  , blockInfo.size_on_memory , "f=uint64,sum" );
                 add( record , "on Disk"    , blockInfo.size_on_disk , "f=uint64,sum" );
                 add( record , "Locked"     , blockInfo.size_locked , "f=uint64,sum" );
-                add( record , "Time from"  , (size_t)blockInfo.min_time , "f=time,different" );
-                add( record , "Time to"    , (size_t)blockInfo.max_time , "f=time,different" );
+                add( record , "Time from"  , blockInfo.min_time , "f=timestamp,different" );
+                add( record , "Time to"    , blockInfo.max_time , "f=timestamp,different" );
             }
             
         }

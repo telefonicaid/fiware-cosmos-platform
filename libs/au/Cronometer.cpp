@@ -81,7 +81,7 @@ bool Cronometer::check( double time )
 
 std::string Cronometer::str()
 {
-    return time_string(diffTimeInSeconds());
+   return str_time( diffTimeInSeconds() );
 }
 
 #pragma mark CronometerSystem    
@@ -113,7 +113,7 @@ void CronometerSystem::reset()
 // Get a string with the time ellapsed since last reset or creation
 std::string CronometerSystem::str()
 {
-    return time_string( getSeconds() );
+   return str_time( (size_t) getSeconds() );
 }
 
 int CronometerSystem::getSeconds()

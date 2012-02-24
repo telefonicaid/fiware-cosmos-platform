@@ -98,9 +98,9 @@ namespace samson {
             return au::str( "%s [ %s | %s on memory / %s on disk / %s locked ] %s " 
                            , au::str( num_blocks , "Blocs").c_str() 
                            , au::str( size , "bytes").c_str()
-                           , au::percentage_string( size_on_memory , size).c_str()
-                           , au::percentage_string( size_on_disk , size).c_str()
-                           , au::percentage_string( size_locked , size).c_str()
+                           , au::str_percentage( size_on_memory , size).c_str()
+                           , au::str_percentage( size_on_disk , size).c_str()
+                           , au::str_percentage( size_locked , size).c_str()
                            , info.str().c_str()
                            );
         }

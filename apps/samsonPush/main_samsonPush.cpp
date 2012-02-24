@@ -198,7 +198,7 @@ int main( int argC , const char *argV[] )
             LM_V(("Memory used %s / %s ( %s )", 
                   au::str( used_memory , "B" ).c_str() , 
                   au::str( memory , "B" ).c_str() , 
-                  au::percentage_string( memory_usage ).c_str() 
+                  au::str_percentage( memory_usage ).c_str() 
                   ));
         }
        

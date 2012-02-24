@@ -42,26 +42,34 @@ typedef enum
     red
 }Color;
 
-std::string tabs(int t);
 
-std::string percentage_string( double value , double total );
-std::string percentage_string( double p );
-std::string int_string(int value, int digits);
-std::string time_string( size_t seconds );
+// String with some tabs
+std::string str_tabs(int t);
+
+// String with time information
+std::string str_time( size_t seconds );
+std::string str_timestamp( time_t t );
+
+// String with percentdge information
+std::string str_percentage( double value , double total );
+std::string str_percentage( double p );
+
+// Progress bar
+std::string str_progress_bar( double p , int len );
+std::string str_progress_bar( double p , int len, char c , char c2 );
+std::string str_double_progress_bar( double p1 , double p2 , char c1 ,char c2 , char c3, int len );
 
 
-std::string time_string_ellapsed( struct timeval *init_time );	
+// Tokenize and split a string
+std::vector<std::string> simpleTockenize( std::string txt );
+std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
+std::vector<std::string> split(const std::string &s, char delim);  
 
-std::string progress_bar( double p , int len );
-std::string progress_bar( double p , int len, char c , char c2 );
-std::string double_progress_bar( double p1 , double p2 , char c1 ,char c2 , char c3, int len );
 
-
+// Old functions to be reviews
 std::string getRoot( std::string& path );
 std::string getRest( std::string& path );
 
-// Tokenize a string
-std::vector<std::string> simpleTockenize( std::string txt );
 
 // Check is char is one of the possible values
 bool isOneOf( char c , std::string s );
@@ -75,19 +83,13 @@ std::string str_detail( size_t value );
 // Strings in color
 std::string str( Color color, const char* format, ...);
 
-
+// String with size_t content 
 std::string str( size_t value , std::string postfix );
 std::string str_detail( size_t value , std::string postfix );
 
-std::string str_rate( size_t value , size_t time );
-std::string str_rate( size_t value , size_t time , std::string postLabel );
-
 // Indent a string text
-std::string indent( std::string txt );
-std::string indent( std::string txt , int num_spaces );
-
-std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
-std::vector<std::string> split(const std::string &s, char delim);  
+std::string str_indent( std::string txt );
+std::string str_indent( std::string txt , int num_spaces );
 
 // Get the width of the terminal
 int getTerminalWidth();
@@ -99,7 +101,6 @@ std::string strToConsole( std::string& txt );
 
 // Get a line with the size of console
 std::string lineInConsole( char c );
-
 
 // Backward search of sequences
 const char *laststrstr(const char *source , const char *target );

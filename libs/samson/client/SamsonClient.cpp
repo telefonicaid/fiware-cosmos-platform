@@ -215,7 +215,7 @@ namespace samson {
         double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
         while( memory_usage >= 0.8 )
         {
-            LM_W(("Memory usage %s. Waiting until this goes below 80%..." , au::percentage_string( memory_usage ).c_str() )); 
+            LM_W(("Memory usage %s. Waiting until this goes below 80%..." , au::str_percentage( memory_usage ).c_str() )); 
             getInfoAboutPushConnections(true);
             sleep(1);
             memory_usage = engine::MemoryManager::shared()->getMemoryUsage();

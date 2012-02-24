@@ -146,7 +146,7 @@ namespace samson {
         for (it_workers = workers.begin() ; it_workers != workers.end() ; it_workers++ )
         {
             output << "Worker " << au::str("%lu", it_workers->first);
-            output << " updated " << au::time_string( it_workers->second->getTime() ) << "\n";
+            output << " updated " << au::str_time( it_workers->second->getTime() ) << "\n";
         }
         
         output << "-------------------------------------------------\n";

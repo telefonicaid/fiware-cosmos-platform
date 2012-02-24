@@ -316,7 +316,13 @@ std::string DataSetFilterColumn::getFormatedValue( std::string value )
     else if ( format == "time" )
     {
         size_t _value = strtoll( value.c_str() , (char **)NULL, 10);
-        return au::time_string( _value );
+        return au::str_time( _value );
+    }
+    else if ( format == "timestamp" )
+    {
+        size_t _value = strtoll( value.c_str() , (char **)NULL, 10);
+        return au::str_timestamp( _value );
+        
     }
     else if ( format == "double2" )
     {
@@ -326,7 +332,7 @@ std::string DataSetFilterColumn::getFormatedValue( std::string value )
     else if ( ( format == "percentadge" ) || ( format == "per" ) )
     {
         double p = atof( value.c_str() );
-        return au::percentage_string(p);
+        return au::str_percentage(p);
     }
     
     return "Unknown format: " + format;

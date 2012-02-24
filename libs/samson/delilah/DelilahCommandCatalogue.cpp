@@ -328,7 +328,7 @@ namespace samson
                     output << "USAGE:        " << commands[i].usage << "\n";
                 
                 output << "\n";
-                output << au::indent( commands[i].description );
+                output << au::str_indent( commands[i].description );
                 output << "\n";
                 output << au::lineInConsole('-') << "\n";
                 

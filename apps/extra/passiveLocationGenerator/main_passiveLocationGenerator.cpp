@@ -122,7 +122,7 @@ int main( int argc , const char *argv[] )
 	   if( ellapsed_seconds < theoretical_seconds )
 	   {
 		  int sleep_seconds = theoretical_seconds - ellapsed_seconds;
-		  std::cerr << "Sleeping " << sleep_seconds << " seconds... We have generate " << au::str(num_messages) << " messages with size " << au::str( total_size , "bytes") << " time " << au::time_string(ellapsed_seconds) << " theoretical time " << au::time_string(theoretical_seconds)<<"\n";
+		  std::cerr << "Sleeping " << sleep_seconds << " seconds... We have generate " << au::str(num_messages) << " messages with size " << au::str( total_size , "bytes") << " time " << au::str_time(ellapsed_seconds) << " theoretical time " << au::str_time(theoretical_seconds)<<"\n";
 		  sleep( sleep_seconds );
 	   }
 	   

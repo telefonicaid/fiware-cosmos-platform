@@ -13,7 +13,7 @@
 
 NAMESPACE_BEGIN(au)
 
-std::string tabs(int t)
+std::string str_tabs(int t)
 {
     std::ostringstream output;
     for ( int i = 0 ; i < t ; i ++)
@@ -21,34 +21,36 @@ std::string tabs(int t)
     return output.str();
 }
 
-std::string percentage_string( double p )
+std::string str_percentage( double p )
 {
     char line[2000];
     sprintf(line, "%05.1f%%",p*100);
     return std::string(line);
 }
 
-std::string percentage_string( double value , double total )
+std::string str_percentage( double value , double total )
 {
     if ( total == 0)
-        return percentage_string( 0 );
+        return str_percentage( 0 );
     else
-        return percentage_string( value / total);
+        return str_percentage( value / total);
 }
 
 
-std::string int_string(int value, int digits)
+std::string str_timestamp( time_t t )
 {
     
-    char line[100];
-    char format[100];
+    struct tm timeinfo;
+    char buffer_time[1024];
     
-    sprintf(format, "%%%dd",digits);
-    sprintf(line, format,value ); 
-    return std::string(line);
+    localtime_r ( &t , &timeinfo );
+    strftime (buffer_time,1024,"%d/%m/%Y (%X)",&timeinfo);
+    
+    return std::string( buffer_time );
 }
 
-std::string time_string( size_t seconds )
+
+std::string str_time( size_t seconds )
 {
     
     int days = 0;
@@ -72,7 +74,7 @@ std::string time_string( size_t seconds )
     
 }
 
-std::string progress_bar( double p , int len )
+std::string str_progress_bar( double p , int len )
 {
     std::ostringstream output;
     
@@ -94,7 +96,7 @@ std::string progress_bar( double p , int len )
     return  output.str();
 }
 
-std::string progress_bar( double p , int len , char c , char c2 )
+std::string str_progress_bar( double p , int len , char c , char c2 )
 {
     std::ostringstream output;
     
@@ -116,7 +118,7 @@ std::string progress_bar( double p , int len , char c , char c2 )
     return  output.str();
 }    
 
-std::string double_progress_bar( double p1 , double p2 , char c1 ,char c2 , char c3, int len )
+std::string str_double_progress_bar( double p1 , double p2 , char c1 ,char c2 , char c3, int len )
 {
     std::ostringstream output;
     
@@ -198,7 +200,7 @@ std::string getRest( std::string& path )
 }    
 
 
-std::string indent( std::string txt )
+std::string str_indent( std::string txt )
 {
     // Replace all "returns" by "return and tab"
     find_and_replace( txt , "\n" , "\n\t" );
@@ -208,7 +210,7 @@ std::string indent( std::string txt )
     return txt;
 }
 
-std::string indent( std::string txt , int num_spaces )
+std::string str_indent( std::string txt , int num_spaces )
 {
     std::string sep;
     for (int i = 0 ; i < num_spaces ; i++ )
@@ -517,26 +519,6 @@ const char *laststrstr(const char *source , size_t source_length , const char *t
     return (sp < source) ? NULL : sp ;
 }
 
-std::string str_rate( size_t value , size_t time ,  std::string postLabel   )
-{
-    if( time == 0)
-    {
-        if( value == 0)
-            return au::str( 0 , postLabel );
-        else
-            return "[Inf]" + postLabel;
-    }
-    
-    double _rate = (double) value / (double) time;
-    return au::str( (size_t) _rate , postLabel );
-    
-}
-
-std::string str_rate( size_t value , size_t time  )
-{
-    return str_rate(value, time , "");
-    
-}
 
 int getCommonChars( std::string& txt , std::string& txt2 )
 {

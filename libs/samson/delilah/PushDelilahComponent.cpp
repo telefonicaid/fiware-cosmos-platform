@@ -225,14 +225,14 @@ namespace samson
         {
             values.push_back("Pushed");
             values.push_back(au::str( processedSize , "B" ));
-            values.push_back(au::percentage_string(processedSize, totalSize));              
+            values.push_back(au::str_percentage(processedSize, totalSize));              
             table.addRow(values);
         }
 
         {
             values.push_back("Confirmed Pushed");
             values.push_back(au::str( uploadedSize , "B" ));
-            values.push_back(au::percentage_string(uploadedSize, totalSize));              
+            values.push_back(au::str_percentage(uploadedSize, totalSize));              
             table.addRow(values);
         }
         

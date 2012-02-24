@@ -94,7 +94,7 @@ namespace samson
         
         int t = getUpdateSeconds();
         if ( t > 10 )
-            return au::str("[%s] Delilah>", au::time_string(t).c_str() );
+            return au::str("[%s] Delilah>", au::str_time(t).c_str() );
         else
             return  "Delilah>";
     }
@@ -533,11 +533,11 @@ namespace samson
                 output << " SAMSON v " << SAMSON_VERSION << "\n";
                 output << au::lineInConsole('=') << "\n";
                 output << "\n";
-                output << au::indent( general_description ) << "\n";
+                output << au::str_indent( general_description ) << "\n";
                 output << "\n";
-                output << au::indent( au::str("Auths: %s", auths ) ) << "\n";
+                output << au::str_indent( au::str("Auths: %s", auths ) ) << "\n";
                 output << "\n";
-                output << au::indent( au::str("Telefonica I+D 2010" ) ) << "\n";
+                output << au::str_indent( au::str("Telefonica I+D 2010" ) ) << "\n";
                 output << "\n";
                 output << au::lineInConsole('-') << "\n";
                 output << "\n";

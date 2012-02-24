@@ -384,7 +384,7 @@ namespace samson {
                 double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
                 if ( memory_usage >= 1.0 )
                 {
-                    LM_W(("Not schedulling new stream-tasks since memory usage is %s ( criteria >= 1.0 )", au::percentage_string( memory_usage ).c_str() ));
+                    LM_W(("Not schedulling new stream-tasks since memory usage is %s ( criteria >= 1.0 )", au::str_percentage( memory_usage ).c_str() ));
                     return;
                 }
                 

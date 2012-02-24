@@ -78,6 +78,7 @@ class SelectTableColumn
         format_string,
         format_uint64,
         format_time,
+        format_timestamp,
         format_double,
         format_percentadge,
     } SelectTableColumnFormat;

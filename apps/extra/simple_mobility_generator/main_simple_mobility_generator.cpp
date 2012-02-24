@@ -205,7 +205,7 @@ int main( int argC , const char*argV[] )
             LM_V(("Generated %s lines ( %s bytes ) in %s. Rate: %s / %s." 
                   ,au::str(total_num).c_str() 
                   ,au::str(total_size).c_str()
-                  ,au::time_string( total_seconds ).c_str()
+                  ,au::str_time( total_seconds ).c_str()
                   ,au::str( (double)total_num/(double)total_seconds ,"Lines/s" ).c_str() 
                   ,au::str( (double)total_size/(double)total_seconds,"Bps").c_str()  
                   ));

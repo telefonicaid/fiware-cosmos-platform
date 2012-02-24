@@ -130,10 +130,12 @@ namespace samson {
         buffer_container.push( queue , buffer );
     }
     
-    SamsonClient::SamsonClient()
+    SamsonClient::SamsonClient( std::string _connection_type )
     {
         memory = 1024*1024*1024;
         load_buffer_size =  64*1024*1024;
+        
+        connection_type = _connection_type;
     }
  
     void SamsonClient::setMemory ( size_t _memory )
@@ -141,7 +143,7 @@ namespace samson {
         memory = _memory;
     }
     
-    bool SamsonClient::init( std::string worker_host , int port )
+    bool SamsonClient::init( std::string worker_host , int port  )
     {
                 
         // Init the setup system 
@@ -176,7 +178,7 @@ namespace samson {
         samson::ModulesManager::init();         // Init the modules manager
         
         // Initialize the network element for delilah
-        networkP  = new samson::DelilahNetwork( );
+        networkP  = new samson::DelilahNetwork( connection_type );
 
         // Create a DelilahControler once network is ready
         delilah = new Delilah( networkP );

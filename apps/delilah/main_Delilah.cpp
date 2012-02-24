@@ -150,7 +150,7 @@ int main(int argC, const char *argV[])
 	samson::ModulesManager::init();         // Init the modules manager
 	
 	// Initialize the network element for delilah
-	samson::DelilahNetwork * networkP  = new samson::DelilahNetwork( );
+	samson::DelilahNetwork * networkP  = new samson::DelilahNetwork( "console" );
     
 	// Create a DelilahControler once network is ready
 	samson::DelilahConsole* delilahConsole = new samson::DelilahConsole(networkP);

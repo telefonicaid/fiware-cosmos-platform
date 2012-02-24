@@ -112,7 +112,7 @@ int main( int argC , const char *argV[] )
     srand( time(NULL) );
 
     // Instance of the client to connect to SAMSON system
-    samson::SamsonClient client;
+    samson::SamsonClient client("pop");
     
     // Set 1G RAM for uploading content
     client.setMemory( 1024*1024*1024 );

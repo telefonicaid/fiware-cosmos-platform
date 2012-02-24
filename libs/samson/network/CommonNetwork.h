@@ -32,6 +32,7 @@ namespace samson {
         // Information for the hello message
         std::string user;
         std::string password;
+        std::string connection_type;
         
     public:
         

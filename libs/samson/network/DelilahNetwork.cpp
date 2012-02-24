@@ -28,14 +28,22 @@ namespace samson {
         return true;
     }
     
-    DelilahNetwork::DelilahNetwork(  )
+    DelilahNetwork::DelilahNetwork( std::string _connection_type )
     {
         // I am a delilah ( random id auto-asigned )
         node_identifier = NodeIdentifier( DelilahNode , au::code64_rand() );
+        
+        // Save connection type string  to be send in all hello messages
+        connection_type = _connection_type;
     }
     
     // Add new connection agains any worker in the cluster
-    Status DelilahNetwork::addMainDelilahConnection( std::string _host , int _port , std::string _user , std::string _password )
+    Status DelilahNetwork::addMainDelilahConnection( 
+                                                    std::string _host 
+                                                    , int _port 
+                                                    , std::string _user 
+                                                    , std::string _password
+                                                    )
     {
         // Check previous connection....
         std::string connection_name = MAIN_DELILAH_CONNECTION_NAME;

@@ -94,6 +94,7 @@ namespace samson {
 		// User and password for this connection
 		std::string user;
 		std::string password;
+		std::string connection_type;
         
         // Socket Connection
         SocketConnection* socket_connection;
@@ -200,6 +201,11 @@ namespace samson {
         {
             user = _user;
             password = _password;
+        }
+        
+        void setConnectionType( std::string _connection_type )
+        {
+            connection_type = _connection_type;
         }
         
         NodeIdentifier getNodeIdentifier()

@@ -115,7 +115,7 @@ int main( int argC , const char *argV[] )
 	   LM_X(1,("Please, specify a queue to push data to"));
     
     // Instance of the client to connect to SAMSON system
-    samson::SamsonClient client;
+    samson::SamsonClient client("push");
     
     // Set 1G RAM for uploading content
     size_t total_memory = push_memory*1024*1024;

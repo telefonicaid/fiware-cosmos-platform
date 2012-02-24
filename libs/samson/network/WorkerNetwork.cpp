@@ -12,6 +12,7 @@ namespace samson {
         // Workers are allways connected as user samson
         // ----------------------------------------------------------------------------
         user = "samson"; 
+        connection_type = "worker";
         
         // Init counter for temporal network connection names
         // ----------------------------------------------------------------------------
@@ -143,6 +144,7 @@ namespace samson {
         NodeIdentifier new_node_identifier( packet->message->hello().node_identifier() );
 
         connection->setUserAndPassword( packet->message->hello().user(), packet->message->hello().password() );
+        connection->setConnectionType( packet->message->hello().connection_type() );
         
         // -----------------------------------------------------------------------------------------------
         // General update of cluster information

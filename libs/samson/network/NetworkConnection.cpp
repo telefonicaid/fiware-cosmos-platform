@@ -146,8 +146,8 @@ namespace samson {
     {
 
         ::samson::add( record , "name"    , name , "different,left" );
-
         ::samson::add( record , "user"    , user , "different,left" );
+        ::samson::add( record , "connection"    , connection_type , "different,left" );
 
         if( socket_connection->isDisconnected() )
             ::samson::add( record , "status" , "disconnected" , "different,left" );

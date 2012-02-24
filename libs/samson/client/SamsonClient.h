@@ -326,12 +326,14 @@ namespace  samson {
         
         std::vector<size_t> delilah_ids;        // Delilah operation to wait for...
         
+        std::string connection_type;            // String to describe connection with SAMSON (pop, push, console, ...)
+        
 	public:
 
         au::rate::Rate rate;                    // Statistics about rate
         
         // Default constructor
-        SamsonClient();
+        SamsonClient( std::string connection_type );
 
         // Set memory ( only useful before init )
         void setMemory ( size_t _memory );

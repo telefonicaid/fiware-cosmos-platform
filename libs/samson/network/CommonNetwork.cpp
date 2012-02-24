@@ -205,6 +205,9 @@ namespace samson {
         pb_hello->set_user( user );
         pb_hello->set_password( password );
         
+        // Copy connection type
+        pb_hello->set_connection_type(connection_type);
+        
         if( !target )
             pb_hello->set_answer_hello_required(false);
         else

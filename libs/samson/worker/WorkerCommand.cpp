@@ -285,7 +285,7 @@ namespace samson {
             return;
         }
         
-        if ( cmd.get_argument(0) == "cp_queue" )
+        if ( cmd.get_argument(0) == "push_queue" )
         {
             if( cmd.get_num_arguments() < 3 )
                 error->set( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
@@ -293,7 +293,7 @@ namespace samson {
             {
                 std::string from_queue_name = prefix + cmd.get_argument(1);
                 std::string to_queue_name   = prefix + cmd.get_argument(2);
-                samsonWorker->streamManager->cp_queue(  from_queue_name , to_queue_name );
+                samsonWorker->streamManager->push_queue(  from_queue_name , to_queue_name );
             }
             
             return;

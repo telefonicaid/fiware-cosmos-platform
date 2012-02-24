@@ -208,7 +208,7 @@ namespace samson {
         }
         
         
-        void StreamManager::cp_queue( std::string from_queue_name , std::string to_queue_name )
+        void StreamManager::push_queue( std::string from_queue_name , std::string to_queue_name )
         {
             Queue *fromQueue = getQueue( from_queue_name );
             Queue *toQueue = getQueue( to_queue_name );

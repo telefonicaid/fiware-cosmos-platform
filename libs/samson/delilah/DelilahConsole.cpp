@@ -966,10 +966,10 @@ namespace samson
         
         
         // Command to remove queues 
-        if( main_command == "cp_queue" )
+        if( main_command == "push_queue" )
             if( commandLine.get_num_arguments() < 3 )
             {
-                writeErrorOnConsole( au::str("Usage: cp_queue form_queue to_queue" ) );
+                writeErrorOnConsole( au::str("Usage: push_queue form_queue to_queue" ) );
                 return 0;
             }
         

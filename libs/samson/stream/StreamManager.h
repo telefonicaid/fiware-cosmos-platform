@@ -106,7 +106,7 @@ namespace samson {
             void remove_queue( std::string queue_name );
 
             // Copy contents of a queue to another queue
-            void cp_queue( std::string from_queue_name , std::string to_queue_name );
+            void push_queue( std::string from_queue_name , std::string to_queue_name );
             
             // ------------------------------------------------------------
             // pop queue operations

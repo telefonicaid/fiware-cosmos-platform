@@ -101,12 +101,7 @@ namespace samson
             "Remove a queue" 
             "Usage: rm_queue queue"
             );
-        
-        add( "cp_queue" , "data", 
-            "Copy contents of queue <from_queue> to queue <to_queue>",
-            "cp_queue  <from_queue> <to_queue>"
-            );
-        
+                
         add( "set_queue_property" , "data" ,
             "Specify the value of property <property> for queue <queue>",
             "set_queue_property [queue] [property] [value]"
@@ -235,6 +230,12 @@ namespace samson
             "          [-header]      Show only headers\n"
             "          [-limit X]     Limit the number of key-values to show ( 10 by default )\n"
             );
+        
+        add( "push_queue" , "push&pop", 
+            "Push content of a queue to another queue/s",
+            "push_queue  <from_queue> <to_queue>"
+            );
+        
         
         // CLUSTER
         // ------------------------------------------------------------------

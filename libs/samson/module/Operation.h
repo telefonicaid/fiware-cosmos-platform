@@ -17,8 +17,9 @@
 #include <samson/module/OperationController.h>
 
 namespace samson {
-
 	
+#define TRACE_CHANNEL -1   // Handy definition to emit traces at the output
+    
 	// Function used to "sort" when data type is used as key ( only in reduce operations )
 	typedef int(* OperationInputCompareFunction)(KV *kv1 , KV*kv2);		
 	

@@ -35,6 +35,10 @@ namespace samson {
         
         virtual std::vector<size_t> getDelilahIds();
         
+        virtual NodeIdentifier getMynodeIdentifier()
+        {
+            return node_identifier;
+        }
         
 	};
 	

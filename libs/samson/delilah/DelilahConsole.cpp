@@ -209,6 +209,19 @@ namespace samson
             info->add("-out");
         }
         
+        if (info->completingSecondWord("stop_repeat") )
+        {
+            // Add all ps repeat tasks...
+            au::map<size_t , DelilahComponent>::iterator it_components;			
+            for( it_components = components.begin() ; it_components != components.end() ; it_components++ )
+            {
+                DelilahComponent * component = it_components->second;
+                if( component->type == DelilahComponent::repeat )
+                    info->add(  au::str("%lu",component->id ) );
+            }
+
+            
+        }
         
         // Options for the cluter command
         if (info->completingSecondWord("cluster") )
@@ -1161,10 +1174,10 @@ namespace samson
     {
         if ( component->hidden )
             return; // No notification for hidden processes
+
         
         std::ostringstream o;
         o << "Local process started: " << component->getIdAndConcept() << "\n";
-        
         if( component->error.isActivated() )
             writeErrorOnConsole(o.str());        
         else

@@ -12,6 +12,8 @@ SET (HEADERS
 	TXTFileSet.h
 	SamsonDataSet.h
 	SamsonFile.h
+	DelilahCommandCatalogue.h
+	TraceCollection.h
 )
 
 SET (SOURCES
@@ -26,7 +28,8 @@ SET (SOURCES
 	TXTFileSet.cpp
 	SamsonDataSet.cpp
 	SamsonFile.cpp
-
+	DelilahCommandCatalogue.cpp
+	TraceCollection.cpp
 )
 	
 	

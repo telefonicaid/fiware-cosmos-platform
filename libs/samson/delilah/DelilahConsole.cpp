@@ -782,10 +782,29 @@ namespace samson
         
         if( mainCommand == "repeat" )
         {
+            if( commandLine.get_num_arguments() < 2 )
+            {
+                writeErrorOnConsole("Usage: repeat command [ops]");
+                return 0;
+            }
+            
+            std::string repeat_command = commandLine.get_argument(1);
+            if( !delilah_command_catalogue.isValidCommand( repeat_command ) )
+            {
+                writeErrorOnConsole( 
+                    au::str("Not possible to repeat '%s' since it is not a valid command", repeat_command.c_str())
+                                    );
+                return 0;
+            }
+            
             size_t pos = command.find("repeat");
             if( pos != std::string::npos )
             {
                 std::string repeat_command = command.substr( pos+6 , std::string::npos );
+
+                // Check the main command exist
+                std::string main_command_to_repeat = commandLine.get_argument(1);
+                
                 
                 RepeatDelilahComponent* component =  new RepeatDelilahComponent( repeat_command , 2 );
                 size_t id = addComponent( component );

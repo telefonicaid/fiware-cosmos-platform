@@ -42,8 +42,8 @@
 * Option variables
 */
 char             target_host[80];
-char             user[80];
-char             password[80];
+char             user[1024];
+char             password[1024];
 int              target_port;
 
 int				 memory_gb;

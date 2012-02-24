@@ -30,7 +30,8 @@ size_t timeOut;
 
 char controller[1024];
 char queue_name[1024];
-
+char user[1024];
+char password[1024];
 bool show_header;
 bool flag_new;
 bool flag_remove;
@@ -39,6 +40,8 @@ int limit;
 PaArgument paArgs[] =
 {
 	{ "-node",        controller,      "",    PaString,  PaOpt, _i "localhost"  , PaNL, PaNL,       "SMASON node to connect with "         },
+    { "-user",             user,                  "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "User to connect to SAMSON cluster"  },
+	{ "-password",         password,              "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "Password to connect to SAMSON cluster"  },
 	{ "-header",      &show_header,    "SHOW_HEADER",   PaBool,    PaOpt,  false, false,  true,     "Show only header of blocks"   },
 	{ "-remove",      &flag_remove,    "",              PaBool,    PaOpt,  false, false,  true,     "Remove downloaded stuff"   },
 	{ "-new",         &flag_new,       "",              PaBool,    PaOpt,  false, false,  true,     "Get only new data"   },
@@ -120,7 +123,7 @@ int main( int argC , const char *argV[] )
     LM_V(("Connecting to %s ..." , controller));
     
     // Init connection
-    if( !client.init( controller ) )
+    if( !client.init( controller , SAMSON_WORKER_PORT , user , password ) )
     {
         fprintf(stderr, "Error connecting with samson cluster: %s\n" , client.getErrorMessage().c_str() );
         exit(0);

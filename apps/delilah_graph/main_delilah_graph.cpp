@@ -43,8 +43,8 @@
 * Option variables
 */
 char             target_host[80];
-char             user[80];
-char             password[80];
+char             user[1024];
+char             password[1024];
 int              target_port;
 
 int				 memory_gb;
@@ -151,7 +151,7 @@ int main(int argC, const char *argV[])
 	samson::ModulesManager::init();         // Init the modules manager
 	
 	// Initialize the network element for delilah
-	samson::DelilahNetwork * networkP  = new samson::DelilahNetwork( "console" );
+	samson::DelilahNetwork * networkP  = new samson::DelilahNetwork( "graph" );
     
 	// Create a DelilahQt once network is ready
     samson::DelilahQt* delilahQt = new samson::DelilahQt( networkP );

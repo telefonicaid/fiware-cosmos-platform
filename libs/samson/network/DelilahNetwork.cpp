@@ -308,6 +308,8 @@ namespace samson {
     {
         
         au::CommandLine cmdLine;
+        cmdLine.set_flag_string("user", "anynimous");
+        cmdLine.set_flag_string("password", "anynimous");
         cmdLine.parse(command);
         
         if ( cmdLine.get_num_arguments() == 0 )
@@ -403,7 +405,11 @@ namespace samson {
             
             resetNetworkManager();
             cluster_information.clearClusterInformation();
-            Status s = addMainDelilahConnection( host , port , "anonymous" , "anonymous" );
+            
+            std::string user = cmdLine.get_flag_string("user");
+            std::string password = cmdLine.get_flag_string("password");
+            
+            Status s = addMainDelilahConnection( host , port , user , password );
 
             if ( s == OK)
                 return au::str("Connecting with  %s:%d" , host.c_str() , port );

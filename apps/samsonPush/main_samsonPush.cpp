@@ -28,6 +28,8 @@
 
 
 size_t buffer_size;
+char user[1024];
+char password[1024];
 char breaker_sequence[1024];
 char controller[1024];
 char queue_name[1024];
@@ -46,6 +48,8 @@ int default_buffer_size = 64*1024*1024 - sizeof(samson::KVHeader);
 PaArgument paArgs[] =
 {   
 	{ "-node",        controller,            "",    PaString,  PaOpt, _i "localhost"  , PaNL, PaNL,       "SMASON node to connect with "         },
+	{ "-user",             user,                  "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "User to connect to SAMSON cluster"  },
+	{ "-password",         password,              "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "Password to connect to SAMSON cluster"  },
 	{ "-buffer_size", &buffer_size,          "",  PaInt,     PaOpt,       default_buffer_size,         1,   default_buffer_size,  "Buffer size in bytes"    },
 	{ "-mr",          &max_rate,             "",  PaInt,     PaOpt,       10000000,      100,  100000000,  "Max rate in bytes/s"                            },
 	{ "-breaker_sequence", breaker_sequence, "",  PaString,  PaOpt,        _i "\n",   PaNL,         PaNL,  "Breaker sequence ( by default \\n )"            },
@@ -125,7 +129,7 @@ int main( int argC , const char *argV[] )
     LM_V(("Connecting to %s ..." , controller));
     
     // Init connection
-    if( !client.init( controller ) )
+    if( !client.init( controller , SAMSON_WORKER_PORT , user , password ) )
     {
         fprintf(stderr, "Error connecting with samson cluster: %s\n" , client.getErrorMessage().c_str() );
         exit(0);

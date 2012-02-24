@@ -247,12 +247,12 @@ namespace samson
             "Command for cluster related operation",
             "cluster info/connect/add/remove/reset/get_my_id [...options...]\n"
             "\n"
-            "           info                 : Show current cluster definition and connection status\n"
-            "           connections          : Show more information about current connections\n"
-            "           connect host [port]  : Connect to another SAMSON cluster instance.\n"
-            "           add host [port]      : Add a node to this cluster. A samsond clear instance should be running there \n"
-            "           remove id            : Remove one of the involved workers. The worker id should be provided ( see cluster info )\n"
-            "           get_my_id            : Get this delilah identifier ( see ls_connections )\n"
+            "           info                                         : Show current cluster definition and connection status\n"
+            "           connections                                  : Show more information about current connections\n"
+            "           connect host [port] [-user X] [-password X]  : Connect to another SAMSON cluster instance.\n"
+            "           add host [port]                              : Add a node to this cluster. A samsond clear instance should be running there \n"
+            "           remove id                                    : Remove one of the involved workers. The worker id should be provided ( see cluster info )\n"
+            "           get_my_id                                    : Get this delilah identifier ( see ls_connections )\n"
             );
     }
     

@@ -143,7 +143,7 @@ namespace samson {
         memory = _memory;
     }
     
-    bool SamsonClient::init( std::string worker_host , int port  )
+    bool SamsonClient::init( std::string worker_host , int port  , std::string user , std::string password )
     {
                 
         // Init the setup system 
@@ -184,7 +184,7 @@ namespace samson {
         delilah = new Delilah( networkP );
 
         // Init network connection
-        Status s = networkP->addMainDelilahConnection( worker_host , port , "anonymous" , "anonymous" );
+        Status s = networkP->addMainDelilahConnection( worker_host , port , user , password );
         
         if( s != OK )
             LM_X(1, ("Not possible to open connection with %s:%d (%s)" , worker_host.c_str() , port , status(s) ));

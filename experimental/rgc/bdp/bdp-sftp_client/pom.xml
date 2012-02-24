@@ -9,7 +9,81 @@
 	</parent>
 	<artifactId>bdp-sftp_client</artifactId>
 	<name>Big Data Platform - Sftp client</name>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>rpm-maven-plugin</artifactId>
+				<version>2.1-alpha-1</version>
+				<executions>
+					<execution>
+						<id>package</id>
+						<phase>package</phase>
+						<goals>
+							<goal>rpm</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<copyright>${copyright.year}, XXXXXXX</copyright>
+					<distribution></distribution>
+					<group>Application/Collectors</group>
+					<packager>XXXXXXX</packager>
+					<prefix>/usr/local/bdp/sftpclient</prefix>
+					<changelogFile>src/changelog</changelogFile>
+					<needarch>noarch</needarch>
+					<targetOS>Linux</targetOS>
+					<defineStatements>
+						<defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
+					</defineStatements>
+					<mappings>
+						<mapping>
+							<directory>/usr/local/bdp/sftpclient/run</directory>
+							<filemode>750</filemode>
+							<username>hdfs</username>
+							<groupname>hadoop</groupname>
+							<sources>
+								<source>
+									<location>src/main/scripts/bdp_sftp_client.sh</location>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>
+							<directory>/usr/local/bdp/sftpclient/lib</directory>
+							<filemode>750</filemode>
+							<username>hdfs</username>
+							<groupname>hadoop</groupname>
+							<sources>
+								<source>
+									<location>target/${project.artifactId}-${project.version}.jar</location>
+								</source>
+							</sources>
+							<dependency>
+								<includes>
+									<include>com.jcraft:jsch</include>
+								</includes>
+							</dependency>
+						</mapping>
+						<mapping>
+							<directory>/usr/local/bdp/sftpclient/actions</directory>
+							<filemode>750</filemode>
+							<username>dumper</username>
+							<groupname>dumpgroup</groupname>
+						</mapping>
+					</mappings>
+					<preinstallScriptlet>
+						<script>echo "installing now"</script>
+					</preinstallScriptlet>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 	<dependencies>
+		<dependency>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>rpm-maven-plugin</artifactId>
+			<version>2.1-alpha-1</version>
+		</dependency>
 		<dependency>
 			<groupId>es.tid.bdp</groupId>
 			<artifactId>bdp-utils</artifactId>
@@ -25,56 +99,6 @@
 			<artifactId>hadoop-core</artifactId>
 			<version>${org.apache.hadoop}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-mrunit</artifactId>
-			<version>${org.apache.hadoop}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.avro</groupId>
-			<artifactId>avro</artifactId>
-			<version>1.6.1</version>
-			<scope>compile</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.protobuf</groupId>
-			<artifactId>protobuf-java</artifactId>
-			<version>2.3.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.twitter</groupId>
-			<artifactId>elephant-bird</artifactId>
-			<version>2.1.7</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.thrift</groupId>
-					<artifactId>libthrift</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>cascading</groupId>
-					<artifactId>cascading-hadoop</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.google</groupId>
-					<artifactId>protobuf-java</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.hadoop</groupId>
-					<artifactId>hadoop-lzo</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.apache.hadoop</groupId>
-					<artifactId>hadoop-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>yamlbeans</groupId>
-					<artifactId>yamlbeans</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
 		<dependency>
 			<groupId>com.hadoop.compression</groupId>
 			<artifactId>hadoop-gpl-compression</artifactId>

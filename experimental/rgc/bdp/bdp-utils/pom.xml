@@ -8,9 +8,7 @@
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>bdp-utils</artifactId>
-
 	<name>Big Data Platform - utils</name>
-
 	<build>
 		<plugins>
 			<plugin>
@@ -19,6 +17,8 @@
 				<version>2.1-alpha-1</version>
 				<executions>
 					<execution>
+						<id>package</id>
+						<phase>package</phase>
 						<goals>
 							<goal>rpm</goal>
 						</goals>
@@ -32,29 +32,21 @@
 					<prefix>/usr/local/bdp/utils</prefix>
 					<changelogFile>src/changelog</changelogFile>
 					<needarch>noarch</needarch>
-					<vendor>Linux</vendor>
 					<targetOS>Linux</targetOS>
-					<targetVendor>w</targetVendor>
 					<defineStatements>
 						<defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
 					</defineStatements>
 					<mappings>
 						<mapping>
-							<directory>/usr/local/bdp/utils/bin</directory>
-							<filemode>440</filemode>
-							<username>hdfs</username>
-							<groupname>hadoop</groupname>
-							<sources>
-								<source>
-									<location>target/classes</location>
-								</source>
-							</sources>
-						</mapping>
-						<mapping>
 							<directory>/usr/local/bdp/utils/lib</directory>
 							<filemode>750</filemode>
 							<username>hdfs</username>
 							<groupname>hadoop</groupname>
+							<sources>
+								<source>
+									<location>target/${project.artifactId}-${project.version}.jar</location>
+								</source>
+							</sources>
 							<dependency>
 								<includes>
 									<include>com.google.protobuf:protobuf-java</include>
@@ -93,9 +85,6 @@
 							</tasks>
 							<sourceRoot>${generated.sourceDirectory}</sourceRoot>
 						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
 					</execution>
 				</executions>
 			</plugin>

@@ -6,8 +6,8 @@ SET (HEADERS
 )
 
 SET (STATIC_LIBS
-     delilahLib
      delilahQtLib
+     delilahLib
      pa
      lm
      protobuf
@@ -18,8 +18,8 @@ SET (STATIC_LIBS
      samsonModule
      dl
      engine
-     au
 	 tables
+     au
      samsonCommon	
      QtCore
      ${COMMON_SAMSON_LIBS}

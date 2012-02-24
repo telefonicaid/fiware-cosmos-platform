@@ -31,33 +31,36 @@
 					<packager>XXXXXXX</packager>
 					<prefix>/usr/local/bdp/utils</prefix>
 					<changelogFile>src/changelog</changelogFile>
+					<needarch>noarch</needarch>
+					<vendor>Linux</vendor>
+					<targetOS>Linux</targetOS>
+					<targetVendor>w</targetVendor>
 					<defineStatements>
 						<defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
 					</defineStatements>
 					<mappings>
 						<mapping>
-							<directory>./lib</directory>
+							<directory>/usr/local/bdp/utils/bin</directory>
+							<filemode>440</filemode>
+							<username>hdfs</username>
+							<groupname>hadoop</groupname>
+							<sources>
+								<source>
+									<location>target/classes</location>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>
+							<directory>/usr/local/bdp/utils/lib</directory>
 							<filemode>750</filemode>
 							<username>hdfs</username>
 							<groupname>hadoop</groupname>
 							<dependency>
 								<includes>
 									<include>com.google.protobuf:protobuf-java</include>
-									<include>es.tid.bd:bdp-utilsp</include>
+									<include>com.twitter:elephant-bird</include>
 								</includes>
 							</dependency>
-						</mapping>
-						<mapping>
-							<directory>./conf</directory>
-							<configuration>true</configuration>
-							<filemode>640</filemode>
-							<username>hdfs</username>
-							<groupname>hadoop</groupname>
-							<sources>
-								<source>
-									<location>target/protocbuf</location>
-								</source>
-							</sources>
 						</mapping>
 					</mappings>
 					<preinstallScriptlet>
@@ -85,11 +88,10 @@
 								<exec executable="protoc" failonerror="true">
 									<arg value="--java_out=${generated.sourceDirectory}" />
 									<arg value="-I${project.basedir}/src/protocbuf" />
-									<arg value="--descriptor_set_out=target/protocbuf/Cdrs.desc" />
 									<arg line="${proto.files}" />
 								</exec>
 							</tasks>
-							<sourceRoot>target/generated-sources</sourceRoot>
+							<sourceRoot>${generated.sourceDirectory}</sourceRoot>
 						</configuration>
 						<goals>
 							<goal>run</goal>
@@ -179,6 +181,6 @@
 		</dependency>
 	</dependencies>
 	<properties>
-		<generated.sourceDirectory>target/generated-sources</generated.sourceDirectory>
+		<generated.sourceDirectory>src/main/java</generated.sourceDirectory>
 	</properties>
 </project>

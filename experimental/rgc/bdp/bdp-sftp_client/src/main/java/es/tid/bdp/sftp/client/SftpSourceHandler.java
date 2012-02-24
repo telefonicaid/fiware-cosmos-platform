@@ -64,7 +64,7 @@ public class SftpSourceHandler {
      * @throws FileTransferException
      */
     public void copy(String inputFile, OutputStream outStream)
-            throws IOException, SftpException {
+            throws IOException, SftpException {        
         fsSrc.get(inputFile, outStream);
     }
 }

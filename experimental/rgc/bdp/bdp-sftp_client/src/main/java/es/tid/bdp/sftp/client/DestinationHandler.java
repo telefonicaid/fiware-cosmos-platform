@@ -12,7 +12,7 @@ import org.apache.hadoop.io.SequenceFile.Writer;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
-import es.tid.bdp.sftp.io.ProtoBufCrdsOutStream;
+import es.tid.bdp.sftp.io.ProtoBufOutStream;
 import es.tid.bdp.utils.PropertiesPlaceHolder;
 
 public class DestinationHandler {
@@ -41,7 +41,7 @@ public class DestinationHandler {
      * @throws IOException
      */
     public OutputStream getOutputStream(String path) throws IOException {
-
+System.out.println("dsfgsdfgsdfgs!" + path);
         Path outputFile = new Path(path);
         if (!overwrite && hdfsDst.exists(outputFile)) {
             throw new IllegalArgumentException();
@@ -49,7 +49,7 @@ public class DestinationHandler {
         Writer writer = SequenceFile.createWriter(hdfsDst, confDst, outputFile,
                 NullWritable.class, ProtobufWritable.class);
 
-        return new ProtoBufCrdsOutStream(writer);
+        return new ProtoBufOutStream(writer);
 
     }
 

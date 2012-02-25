@@ -51,15 +51,14 @@ namespace samson {
         std::string trace_file_name;         // Name of the traces file ( if any )
         FILE *trace_file;                    // FILE to store traces if defined with save_traces
         
+        // Counter for the received stream buffers
+        au::CounterCollection<std::string> stream_out_queue_counters;
+
 	public:
 		
         
 		DelilahConsole( NetworkInterface *network );		
 		~DelilahConsole();
-				
-		// Console funciton
-		// --------------------------------------------------------
-		
 		
         // Main run command
         void run();
@@ -103,6 +102,10 @@ namespace samson {
 		// Function to process messages from network elements not handled by Delila class
 		int _receive( Packet* packet );		
 
+        // Process buffers of data received in streaming from SAMSON
+        void process_stream_out_packet( std::string queue , engine::Buffer* buffer );
+        
+        
 		// Notify that an operation hash finish
 		virtual void notifyFinishOperation( size_t id )
 		{

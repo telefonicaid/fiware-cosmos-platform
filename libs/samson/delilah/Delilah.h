@@ -23,6 +23,9 @@
 
 #include "tables/pugi.h"          // pugi::...
 
+#include "engine/Buffer.h"
+#include "engine/MemoryManager.h"
+
 #include "samson/module/Environment.h"	// samson::Environment
 #include "samson/common/samson.pb.h"			// samson::network::..
 
@@ -82,8 +85,6 @@ namespace samson {
         // Flag to indicate if we are shoing traces
         bool trace_on;
 
-        // Counter for the live messages
-        au::CounterCollection<std::string> stream_out_queue_counters;
         
     public:
         
@@ -156,6 +157,13 @@ namespace samson {
         {
         }
 		
+        virtual void process_stream_out_packet( std::string queue , engine::Buffer* buffer )
+        {
+            LM_E(("process_stream_out_packet not implemented"));
+            engine::MemoryManager::shared()->destroyBuffer(buffer);
+        }
+        
+        
 		// Get info about the list of loads
         std::string getListOfComponents();
         

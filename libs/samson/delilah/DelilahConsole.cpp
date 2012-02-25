@@ -1200,5 +1200,35 @@ namespace samson
         
     }
     
+
+    // Process received packets with data
+    
+    void DelilahConsole::process_stream_out_packet( std::string queue , engine::Buffer* buffer )
+    {
+        size_t counter = stream_out_queue_counters.getCounterFor( queue );
+        size_t packet_size = buffer->getSize();
+        
+        if( mkdir( "stream_out_queues" , 0755 ) != 0 )
+        {
+            showErrorMessage("It was not possible to create directory stream_out_queues to store data");
+            showErrorMessage(au::str("Rejecting a %s data from queue %s" 
+                                     , au::str(packet_size,"B").c_str()
+                                     , queue.c_str() ));
+            return;
+        }
+        
+        std::string fileName = au::str( "stream_out_queues/queue_%s_%l05u" , queue.c_str() , counter );
+        
+        showMessage( au::str("Received stream data for queue %s (%s). Stored at file %s" 
+                             , queue.c_str() 
+                             , au::str( packet_size ,"B" ).c_str() 
+                             , fileName.c_str() )
+                    );
+        
+        // Disk operation....
+        engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer ,  fileName , getEngineId()  );
+        engine::DiskManager::shared()->add( operation );        
+    }
+    
     
 }

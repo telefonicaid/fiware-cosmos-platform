@@ -291,33 +291,7 @@ namespace samson {
             if( op_delilah_process_stream_out_queue )
                 op_delilah_process_stream_out_queue( queue , packet->buffer );
             else
-            {
-                
-                size_t counter = stream_out_queue_counters.getCounterFor( queue );
-                size_t packet_size = packet->buffer->getSize();
-                
-                if( mkdir( "stream_out_queues" , 0755 ) != 0 )
-                {
-                    showErrorMessage("It was not possible to create directory stream_out_queues to store data");
-                    showErrorMessage(au::str("Rejecting a %s data from queue %s" 
-                                             , au::str(packet_size,"B").c_str()
-                                             , queue.c_str() ));
-                    return;
-                }
-                
-                std::string fileName = au::str( "stream_out_queues/queue_%s_%l05u" , queue.c_str() , counter );
-                
-                showMessage( au::str("Received stream data for queue %s (%s). Stored at file %s" 
-                                     , queue.c_str() 
-                                     , au::str( packet_size ,"B" ).c_str() 
-                                     , fileName.c_str() )
-                            );
-                
-                // Disk operation....
-                engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( packet->buffer ,  fileName , getEngineId()  );
-                engine::DiskManager::shared()->add( operation );
-                
-            }
+                process_stream_out_packet( queue , packet->buffer );
             
             return;
             

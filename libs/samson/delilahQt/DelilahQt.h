@@ -11,6 +11,7 @@
 
 
 #include "logMsg/logMsg.h"				
+#include "engine/Buffer.h"
 #include "samson/delilah/Delilah.h"			// samson::Delilah
 
 #include "DelilahMainWindow.h"
@@ -45,6 +46,13 @@ namespace samson {
     private:
         DelilahMainWindow* mainWindow;
 
+        
+    public:
+        
+        // Overloaded functions from Delilah
+        virtual void process_stream_out_packet( std::string queue , engine::Buffer* buffer );
+        
+        
         
     };
 

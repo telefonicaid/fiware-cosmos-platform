@@ -366,6 +366,18 @@ namespace samson {
         
         return _nodes;
     }
+
+    au::vector<ClusterNode> ClusterInformation::getNodes( )
+    {
+        au::TokenTaker tt (&token);
+        au::vector<ClusterNode> _nodes;   // Information for all nodes
+                
+        for ( size_t i = 0 ; i < nodes.size() ; i ++)
+            _nodes.push_back( new ClusterNode( nodes[i] ) );
+        
+        return _nodes;
+    }
+    
     
     void ClusterInformation::getInfo( ::std::ostringstream& output )
     {

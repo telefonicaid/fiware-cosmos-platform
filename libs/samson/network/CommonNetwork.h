@@ -81,6 +81,8 @@ namespace samson {
         // Monitorization
         std::string str();
         
+        // Get information to show on screen
+        au::tables::Table* getClusterConnectionsTable();
 
     protected:
         

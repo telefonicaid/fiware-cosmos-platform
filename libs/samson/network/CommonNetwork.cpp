@@ -382,6 +382,77 @@ namespace samson {
         return node_identifier;
     }
 
+    
+    au::tables::Table* CommonNetwork::getClusterConnectionsTable()
+    {
+        au::tables::Table* table = new au::tables::Table( au::StringVector( "Worker" , "Host" , "Status" , "In" , "Out" ) );
+        
+        if ( cluster_information.getId() == 0 )
+            table->setDefaultTitle("Not connected to any cluster");
+        else
+        {
+            
+            au::vector<ClusterNode> nodes = cluster_information.getNodes();
+            
+            for ( size_t i = 0 ; i < nodes.size() ; i++ )
+            {
+                au::StringVector values;
+                values.push_back( au::str("%lu" , nodes[i]->id ) );
+                values.push_back( au::str("%s:%d" , nodes[i]->host.c_str() , nodes[i]->port ) );
+                
+                NodeIdentifier ni = nodes[i]->getNodeIdentifier();
+                std::string connection_name = ni.getCodeName();
+                
+                if( ni == node_identifier )
+                {
+                    values.push_back("me");
+                    values.push_back("-");
+                    values.push_back("-");
+                }
+                else
+                {
+                    // Find this connection...
+                    NetworkConnection* connection = connections.findInMap( connection_name );
+                    
+                    if (!connection )
+                    {
+                        values.push_back("Not connected");
+                        values.push_back("-");
+                        values.push_back("-");
+                    }
+                    else
+                    {
+                        if ( connection->isDisconnected() )
+                        {
+                            values.push_back("Disconnected");
+                            values.push_back("-");
+                            values.push_back("-");
+                        }
+                        else
+                        {
+                            values.push_back("Connected");
+                            values.push_back( au::str( connection->get_rate_in() , "B/s" ) );
+                            values.push_back( au::str( connection->get_rate_out() , "B/s" ) );
+                        }
+                    }
+                    
+                }
+                
+                table->addRow( values );
+                
+            }
+            
+            std::string title = au::str("Cluster %lu ( version %lu )" 
+                                        , cluster_information.getId()
+                                        , cluster_information.getVersion()
+                                        );
+            table->setDefaultTitle( title );
+            nodes.clearVector();
+        }
+        
+        return table;
+        
+    }
 
     
 }

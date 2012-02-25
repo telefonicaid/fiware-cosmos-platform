@@ -447,6 +447,18 @@ StringVector Table::getValuesFromColumn( std::string name , SelectCondition* con
     return values;
 }
 
+void Table::setDefaultTitle( std::string _default_title)
+{
+    default_title = _default_title;
+    
+}
+std::string Table::getDefaultTitle( )
+{
+    return default_title;
+}
+
+
+
 NAMESPACE_END
 NAMESPACE_END
 

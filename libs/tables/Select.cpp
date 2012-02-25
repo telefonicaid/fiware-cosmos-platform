@@ -306,6 +306,10 @@ std::string SelectTableColumn::str_sum( StringVector& values )
 
 SelectTableInformation::SelectTableInformation( Table * table )
 {
+    
+    // Default title
+    title = table->getDefaultTitle();
+    
     // All fields
     for ( size_t i = 0 ; i < table->getNumColumns() ; i++ )
         columns.push_back( SelectTableColumn( table->getColumn(i) + "," + table->getFormatForColumn(i)  ) );

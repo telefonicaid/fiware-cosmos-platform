@@ -55,6 +55,8 @@ class Table
     StringVector formats;                 // List of default format for each column
     std::vector<TableRow* > rows;         // List of rows
     
+    
+    std::string default_title;            // Title shown in no other specified in str()
     friend class DataBase;
     
 public:
@@ -94,6 +96,9 @@ public:
 
     StringVector getValuesFromColumn( std::string name );
     StringVector getValuesFromColumn( std::string name , SelectCondition* condition );
+    
+    void setDefaultTitle( std::string _default_title);
+    std::string getDefaultTitle( );
     
 private:
     

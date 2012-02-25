@@ -119,6 +119,7 @@ namespace samson {
         void save(  au::ErrorManager * error );
         void load( au::ErrorManager * error );
         au::vector<ClusterNode> getNodesToConnect( NodeIdentifier node_identifier );
+        au::vector<ClusterNode> getNodes( );
         std::vector<size_t> getWorkerIds();
         
         

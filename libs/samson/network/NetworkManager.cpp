@@ -44,24 +44,30 @@ namespace samson {
     au::tables::Table * NetworkManager::getConnectionsTable()
     {
         
-        au::tables::Table * table = new au::tables::Table( au::StringVector( "Name" , "Status" ) );
+        au::tables::Table* table = new au::tables::Table( au::StringVector( "Name" , "Host" , "In" , "Out" ) );
         
         au::map<std::string , NetworkConnection>::iterator it_connections;
-
         
         for( it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
         {
             au::StringVector values;
-            values.push_back( it_connections->first );
             
+            values.push_back( it_connections->first ); // Name of the connection
+
             NetworkConnection* connection = it_connections->second;
-            values.push_back( connection->str() );
+            SocketConnection* socket_connection = connection->socket_connection;
+            values.push_back( socket_connection->str_node_name() );
+            values.push_back( au::str( connection->get_rate_in() , "B/s" ) );
+            values.push_back( au::str( connection->get_rate_out() , "B/s" ) );
             
             table->addRow( values );
             
         }
         
+        table->setDefaultTitle("Connections");
+        
         return table;
     }
+    
     
 }

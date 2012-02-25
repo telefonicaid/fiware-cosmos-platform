@@ -324,67 +324,18 @@ namespace samson {
         
         if ( main_command == "info" )
         {
-            std::ostringstream output;
-            
-            if ( cluster_information.getId() == 0 )
-                output << "Not connected to any cluster";
-            else
-            {
-                au::tables::Table * table = new au::tables::Table( au::StringVector( "Worker" , "Host" , "Status" ) );
-                
-                au::vector<ClusterNode> nodes = cluster_information.getNodesToConnect(node_identifier);
-                
-                for ( size_t i = 0 ; i < nodes.size() ; i++ )
-                {
-                    au::StringVector values;
-                    values.push_back( au::str("%lu" , nodes[i]->id ) );
-                    values.push_back( au::str("%s:%d" , nodes[i]->host.c_str() , nodes[i]->port ) );
-
-                    NodeIdentifier ni = nodes[i]->getNodeIdentifier();
-                    std::string connection_name = ni.getCodeName();
-                    
-                    // Find this connection...
-                    NetworkConnection* connection = connections.findInMap( connection_name );
-                    
-                    if (!connection )
-                        values.push_back("Not connected");
-                    else
-                    {
-                        if ( connection->isDisconnected() )
-                            values.push_back("Disconnected");
-                        else
-                            values.push_back("Connected");
-                    }
-                            
-                    
-                    table->addRow( values );
-                    
-                }
-                
-                std::string title = au::str("Cluster %lu ( version %lu )" 
-                                            , cluster_information.getId()
-                                            , cluster_information.getVersion()
-                                            );
-                
-                output << table->str( title );
-                nodes.clearVector();
-                delete table;
-            }
-            
-            return output.str();
+            au::tables::Table * table = getClusterConnectionsTable();
+            std::string res = table->str();
+            delete table;
+            return res;
         }
 
         if ( main_command == "connections" )
         {
-            std::ostringstream output;
-            
-            {
-                au::tables::Table * table = getConnectionsTable();
-                output << table->str("Connections");
-                delete table;
-            }
-                
-            return output.str();
+            au::tables::Table * table = getConnectionsTable();
+            std::string res = table->str();
+            delete table;
+            return res;
         }
         
         if( main_command == "get_my_id" )

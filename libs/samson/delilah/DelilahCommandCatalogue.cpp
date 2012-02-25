@@ -16,26 +16,26 @@ namespace samson
             "help command                Get help for a particular command\n"
             );
         
-        add( "trace" , "delilah", 
-            "Activate or disactivate showing traces from running operations",
-            "trace <on> <off>"
+        add( "alerts" , "delilah", 
+            "Activate or disactivate showing alerts from SAMSON platform on console",
+            "alerts <on> <off>"
             );
         
-        add( "show_traces" , "delilah", 
-            "Show the last traces received from SAMSON cluster"
+        add( "show_alerts" , "delilah", 
+            "Show the last alerts received from SAMSON cluster"
             );
         
-        add( "open_traces_file" , "delilah", 
-            "Open a local file to store all received traces",
-            "open_traces_file [file_name]"
+        add( "open_alerts_file" , "delilah", 
+            "Open a local file to store all received alerts",
+            "open_alerts_file [file_name]"
             );
         
-        add( "close_traces_file" , "delilah", 
+        add( "close_alerts_file" , "delilah", 
             "Close local file opened to store with command 'open_traces_file'"
             );
         
         
-        add( "send_trace" , "delilah", 
+        add( "send_alert" , "delilah", 
             "Send a trace to all conneceted delilah using a random worker as a sender\n",
             "send_trace [-worker X] [-error] [-warning] \"Message to be sent\""
             "      -worker X     Use only this worker as broadcaster\n"

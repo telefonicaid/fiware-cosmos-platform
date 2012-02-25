@@ -24,7 +24,7 @@ message Error
 	required string message = 2;	// String with the error definition ( if any )
 }
 
-message Trace
+message Alert
 {
 	
 	required string text     = 1; 
@@ -112,7 +112,6 @@ message MessageProcessPlatform
 		code_begin		      = 1;    // Begin code
         code_end           	  = 2;    // End code
 		code_operation	  	  = 3;	  // Run a particular operation
-		code_trace		      = 4;	  // A trace is send to the controller
 		code_user_error	  	  = 5;	  // Error reported by user
 		code_progress		  = 6;	  // Report progress of a particular task
     }
@@ -122,7 +121,6 @@ message MessageProcessPlatform
 
     // Optional parameters
     optional int32 operation	     = 2;  // Indicator of the operation
-    optional Trace trace	         = 3;	// Optional trace 
     optional double progress	     = 4;	// Optional progress report
     optional string progress_status  = 6;   // Optinal string describing the internal status of this task
     optional string error	         = 5;	// Error reported by user
@@ -258,8 +256,8 @@ message Message
 	optional WorkerCommand worker_command = 7;
 	optional WorkerCommandResponse worker_command_response =8;
 
-	// General traces at delilah ( display on screen )
-	optional Trace trace = 9;
+	// Alerts to delilah elementrs
+	optional Alert alert = 9;
 
 	// XML report of status from all workers
 	optional string info = 10;

@@ -28,7 +28,7 @@ namespace samson {
     
     // Class used to store traces received from SAMSON
     
-    class Trace
+    class Alert
     {
         
     public:
@@ -39,7 +39,7 @@ namespace samson {
         std::string context;
         std::string text;
         
-        Trace(  NodeIdentifier _node , std::string _type , std::string _context , std::string _text )
+        Alert(  NodeIdentifier _node , std::string _type , std::string _context , std::string _text )
         {
             node = _node;
             type = _type;
@@ -51,16 +51,16 @@ namespace samson {
     
     // class used to store some traces received from SAMSON
     
-    class TraceCollection
+    class AlertCollection
     {
         
-        au::list<Trace> traces;
+        au::list<Alert> traces;
         size_t max_num_elements;
         
     public:
         
         // Constructor
-        TraceCollection();
+        AlertCollection();
         
         // Add traces to this collection ( limited number will be stored in memory )
         void add( NodeIdentifier node , std::string type , std::string context , std::string text );

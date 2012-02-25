@@ -34,7 +34,7 @@ typedef enum MessageCode
     
     StatusReport					= CODE('S', 'R', 'p', ' '),
     
-    Trace                           = CODE('T', 'r', 'a', ' '),
+    Alert                           = CODE('A', 'l', 'e', 'r'),
 
     WorkerCommand                   = CODE('W', 'C', '-', ' '),
     WorkerCommandResponse           = CODE('W', 'C', 'R', ' '),

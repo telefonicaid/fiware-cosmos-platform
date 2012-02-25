@@ -423,12 +423,12 @@ namespace samson {
         for ( size_t i = 0 ; i < delilahs.size() ; i++ )
         {
             
-            Packet * p = new Packet( Message::Trace );
+            Packet * p = new Packet( Message::Alert );
             
-            network::Trace * trace = p->message->mutable_trace();
-            trace->set_type(type);
-            trace->set_context(context);
-            trace->set_text( message );
+            network::Alert * alert = p->message->mutable_alert();
+            alert->set_type(type);
+            alert->set_context(context);
+            alert->set_text( message );
                         
             p->message->set_delilah_component_id( (size_t)-1 ); // This message do not belong to the operation executing it
             

@@ -334,16 +334,16 @@ namespace samson
     }
     
     
-    void ProcessIsolated::sendTrace( samson::network::Trace& trace )
+    void ProcessIsolated::sendAlert( samson::network::Alert& alert )
     {
         std::vector<size_t> delilahs = distribution_information.network->getDelilahIds();
         
         for ( size_t i = 0 ; i < delilahs.size() ; i++ )
         {
             
-            Packet * p = new Packet( Message::Trace );
+            Packet * p = new Packet( Message::Alert );
             
-            p->message->mutable_trace()->CopyFrom( trace );
+            p->message->mutable_alert()->CopyFrom( alert );
             p->message->set_delilah_component_id( (size_t)-1 );
             
             

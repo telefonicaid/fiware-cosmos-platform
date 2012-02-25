@@ -304,7 +304,7 @@ namespace samson
         }
         
         
-        if (info->completingSecondWord("trace") )
+        if (info->completingSecondWord("alerts") )
         {
             if (trace_on)
                 info->add("off");
@@ -645,54 +645,54 @@ namespace samson
             return 0;
         }	
         
-        if ( mainCommand == "trace")
+        if ( mainCommand == "alerts")
         {
             
             if ( commandLine.get_num_arguments() == 1)
             {
                 if( trace_on )
-                    writeOnConsole( "Traces are activated\n" );
+                    writeOnConsole( "Alerts are activated\n" );
                 else
-                    writeOnConsole( "Traces are NOT activated\n" );
+                    writeOnConsole( "Alerts are NOT activated\n" );
                 return 0;
             }
             
             if( commandLine.get_argument(1) == "on" )
             {
                 trace_on = true;
-                writeOnConsole( "Traces are now activated\n" );
+                writeOnConsole( "Alerts are now activated\n" );
                 return 0;
             }
             if( commandLine.get_argument(1) == "off" )
             {
                 trace_on = false;
-                writeOnConsole( "Traces are now NOT activated\n" );
+                writeOnConsole( "Alerts are now NOT activated\n" );
                 return 0;
             }
             
-            writeErrorOnConsole("Usage: trace on/off\n");
+            writeErrorOnConsole("Usage: alerts on/off\n");
             return 0;
         }
         
-        if( mainCommand == "show_traces" )
+        if( mainCommand == "show_alerts" )
         {
             std::string txt = trace_colleciton.str();
             writeOnConsole( au::strToConsole( txt ) );
             return 0;
         }
         
-        if ( mainCommand == "open_traces_file" )
+        if ( mainCommand == "open_alerts_file" )
         {
             if( commandLine.get_num_arguments() < 2 )
             {
-                writeErrorOnConsole("USAGE: open_traces_file local_file ");
+                writeErrorOnConsole("USAGE: open_alerts_file local_file ");
                 return 0;
             }
             
             if( trace_file )
             {
                 writeErrorOnConsole(
-                au::str("Please close previous traces file (%s) with command 'close_traces_file'\n",trace_file_name.c_str())
+                au::str("Please close previous alerts file (%s) with command 'close_alerts_file'\n",trace_file_name.c_str())
                                     );
                 return 0;
             }
@@ -701,27 +701,27 @@ namespace samson
             trace_file = fopen(trace_file_name.c_str(), "w");
             if ( !trace_file )
             {
-                writeErrorOnConsole( au::str("Error opening file '%s' to store traces (%s)\n"
+                writeErrorOnConsole( au::str("Error opening file '%s' to store alerts (%s)\n"
                                              ,trace_file_name.c_str()
                                              , strerror(errno) )
                                     );
                 return 0;
             }
 
-            writeOnConsole(au::str("Saving traces to file '%s'\n" , trace_file_name.c_str()));
+            writeOnConsole(au::str("Saving alerts to file '%s'\n" , trace_file_name.c_str()));
             return 0;
         }
         
-        if ( mainCommand == "close_traces_file" )
+        if ( mainCommand == "close_alerts_file" )
         {
             if( !trace_file )
             {
-                writeErrorOnConsole("There is no opened trace file. Open one with command 'open_traces_file'\n");
+                writeErrorOnConsole("There is no opened alerts file. Open one with command 'open_alerts_file'\n");
                 return 0;
             }
             
             fclose(trace_file);
-            writeOnConsole("Stop saving traces to file '%s'.\nRemeber you can open a new traces file with command 'open_traces_file\n'");
+            writeOnConsole("Stop saving alerts to file '%s'.\nRemeber you can open a new alerts file with command 'open_alerts_file\n'");
             return 0;
         }
         
@@ -1114,15 +1114,13 @@ namespace samson
     {
         switch ( packet->msgCode ) 
         {
-            case Message::Trace:
+            case Message::Alert:
             {
                 
-                std::string _text     = packet->message->trace().text();
-                std::string _type     = packet->message->trace().type();
-                std::string _context  = packet->message->trace().context();
-
-                LM_W(("Trace %s", _text.c_str() ));
-                
+                std::string _text     = packet->message->alert().text();
+                std::string _type     = packet->message->alert().type();
+                std::string _context  = packet->message->alert().context();
+            
                 // Add to the local collection of traces
                 trace_colleciton.add( packet->from, _type, _context, _text);                
 
@@ -1148,7 +1146,7 @@ namespace samson
                     table.addRow( au::StringVector( "Context" , _context ) );
                     table.addRow( au::StringVector( "Message" , _text ) );
 
-                    std::string trace_message =table.str("TRACE");
+                    std::string trace_message =table.str("ALERT");
                                             
                     if( _type == "error" )
                         writeErrorOnConsole( trace_message );

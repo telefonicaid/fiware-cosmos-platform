@@ -31,7 +31,7 @@
 
 #include "samson/delilah/Delilah.h"			// samson::Delilah
 #include "samson/delilah/DelilahCommandCatalogue.h"
-#include "samson/delilah/TraceCollection.h"
+#include "samson/delilah/AlertCollection.h"
 
 namespace samson {
     
@@ -47,7 +47,7 @@ namespace samson {
         
         DelilahCommandCatalogue delilah_command_catalogue;
         
-        TraceCollection trace_colleciton;    // Collection of traces for monitoring
+        AlertCollection trace_colleciton;    // Collection of traces for monitoring
         std::string trace_file_name;         // Name of the traces file ( if any )
         FILE *trace_file;                    // FILE to store traces if defined with save_traces
         

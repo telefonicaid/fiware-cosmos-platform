@@ -24,7 +24,7 @@ namespace samson
                 case NetworkNotification:              return (char*) "NetworkNotification";    
                     
                 case StatusReport:                     return (char*) "StatusReport";
-                case Trace:                            return (char*) "Trace";
+                case Alert:                            return (char*) "Alert";
                     
                 case PushBlock:                        return (char*) "PushBlock";
                 case PushBlockResponse:                return (char*) "PushBlockResponse";

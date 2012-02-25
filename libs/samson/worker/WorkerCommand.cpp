@@ -638,14 +638,14 @@ namespace samson {
             return;
         }
         
-        if( main_command == "send_trace")
+        if( main_command == "send_alert")
         {
             std::string message = "No message";
             if( cmd.get_num_arguments() >= 2)
                 message = cmd.get_argument(1);
 
             // Full message
-            std::string full_message = au::str("[Message from Delilah_%s] %s" 
+            std::string full_message = au::str("[Alert from Delilah_%s] %s" 
                                                , au::code64_str( delilah_id ).c_str() 
                                                , message.c_str() 
                                                );

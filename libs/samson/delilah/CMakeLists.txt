@@ -13,7 +13,7 @@ SET (HEADERS
 	SamsonDataSet.h
 	SamsonFile.h
 	DelilahCommandCatalogue.h
-	TraceCollection.h
+	AlertCollection.h
 )
 
 SET (SOURCES
@@ -29,7 +29,7 @@ SET (SOURCES
 	SamsonDataSet.cpp
 	SamsonFile.cpp
 	DelilahCommandCatalogue.cpp
-	TraceCollection.cpp
+	AlertCollection.cpp
 )
 	
 	

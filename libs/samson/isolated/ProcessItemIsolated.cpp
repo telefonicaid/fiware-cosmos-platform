@@ -314,24 +314,6 @@ namespace samson
             }
                 break;
                 
-            case samson::network::MessageProcessPlatform_Code_code_trace:
-            {
-                samson::network::Trace trace = message->trace();
-                sendTrace( trace );
-                
-                // Send the continue
-                samson::network::MessagePlatformProcess * response = new samson::network::MessagePlatformProcess();
-                response->set_code( samson::network::MessagePlatformProcess_Code_code_ok );
-                if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
-		{
-		    LM_E(("Error sending trace notification, code(%d),  (pipeFdPair2[1]:%d) ",  response->code(), pipeFdPair2[1]));
-		}
-                delete response;
-                
-                // Not finish the process
-                return false;
-                
-            }
                 break;
                 
             case samson::network::MessageProcessPlatform_Code_code_progress:

@@ -164,35 +164,13 @@ namespace samson {
             // Information about the format
             format.getInfo(output);
 
-            // Block list information
-            list->getInfo( output );
-            
-            // Informat description of queue status
-            std::ostringstream status;
-            
-            au::xml_simple(output, "num_divisions", num_divisions );
-                        
-            if( lock_block_ids.num_ids() > 0)
-                status << au::str("[ Locked %d/%d blocks ] " , lock_block_ids.num_ids() , list->getNumBlocks()); 
-
-            if( status.str() == "" )
-                status << "ready";
-                                 
-            au::xml_simple( output , "status" , status.str() );
-
             // Information about content
             BlockInfo block_info;
             update( block_info );
             block_info.getInfo(output);
-
             
             au::xml_simple( output , "environment" , environment.getEnvironmentDescription() );
-            
-            // Information about simple rate
-            //au::xml_single_element( output , "rate_kvs" , &rate_kvs );
-            //au::xml_single_element( output , "rate_size" , &rate_size );
-            
-            
+                        
             au::xml_close(output, "queue");
         }
         

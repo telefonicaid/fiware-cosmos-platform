@@ -310,17 +310,16 @@ namespace samson {
             au::xml_iterate_map(output, "queues", queues);
 
             // StreamOutQueues
-            au::xml_iterate_map( output , "stream_out_connections" , stream_out_connections );
+            //au::xml_iterate_map( output , "stream_out_connections" , stream_out_connections );
             
             // Tasks
-            output << "<queue_tasks>\n";
-            queueTaskManager.getInfo( output );
-            output << "</queue_tasks>\n";
+            //output << "<queue_tasks>\n";
+            //queueTaskManager.getInfo( output );
+            //output << "</queue_tasks>\n";
 
             
             //Stream operation
-            au::xml_iterate_map( output , "stream_operations" , stream_operations );
-            
+            //au::xml_iterate_map( output , "stream_operations" , stream_operations );
             output << "</stream_manager>\n";
             
         }

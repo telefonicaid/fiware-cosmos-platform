@@ -362,26 +362,26 @@ namespace samson {
     void SamsonWorker::getInfo( std::ostringstream& output)
     {
         // Engine
-        engine::Engine::shared()->getInfo( output );
+        //engine::Engine::shared()->getInfo( output );
         
         // Engine system
-        samson::getInfoEngineSystem(output, network);
+        //samson::getInfoEngineSystem(output, network);
         
         // Modules manager
-        ModulesManager::shared()->getInfo( output );
+        //ModulesManager::shared()->getInfo( output );
                 
         // Block manager
-        stream::BlockManager::shared()->getInfo( output );
+        //stream::BlockManager::shared()->getInfo( output );
         
         // Queues manager information
         streamManager->getInfo(output);
 
         
         // WorkerCommandManager
-        workerCommandManager->getInfo(output);
+        //workerCommandManager->getInfo(output);
         
         // Network
-        network->getInfo( output , "main" );
+        //network->getInfo( output , "main" );
         
     }
     

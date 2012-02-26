@@ -30,5 +30,8 @@ public class MainSftpClient {
         // Run the process
         ConnectionHandler handler = new ConnectionHandler();
         handler.run();
+        
+        System.exit(0);
+        
     }    
 }

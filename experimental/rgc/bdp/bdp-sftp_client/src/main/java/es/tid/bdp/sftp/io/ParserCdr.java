@@ -24,10 +24,10 @@ public class ParserCdr extends ParserAbstract {
 
         if (m.matches()) {
 
-            cdr.setCellId(Long.parseLong(m.group(regPosition.get("cellId")), 16));
+            cdr.setCellId(Long.parseLong(m.group(regPosition.get("userId")), 16));
             try {
                 cdr.setUserId(Long.parseLong(
-                        m.group(regPosition.get("userId")), 16));
+                        m.group(regPosition.get("cellId")), 16));
             } catch (NumberFormatException e) {
                 cdr.setUserId(0L);
             }

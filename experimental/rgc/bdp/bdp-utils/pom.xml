@@ -9,6 +9,13 @@
 	</parent>
 	<artifactId>bdp-utils</artifactId>
 	<name>Big Data Platform - utils</name>
+	<repositories>
+		<repository>
+			<id>releases</id>
+			<name>Releases</name>
+			<url>https://oss.sonatype.org/content/repositories/releases</url>
+		</repository>
+	</repositories>
 	<build>
 		<plugins>
 			<plugin>
@@ -52,6 +59,7 @@
 									<include>com.google.protobuf:protobuf-java</include>
 									<include>com.google.guava:guava</include>
 									<include>com.twitter:elephant-bird</include>
+									<include>com.hadoop.compression:hadoop-gpl-compression</include>
 								</includes>
 							</dependency>
 						</mapping>
@@ -168,6 +176,11 @@
 					<artifactId>yamlbeans</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.hadoop.compression</groupId>
+			<artifactId>hadoop-gpl-compression</artifactId>
+			<version>0.1.0</version>
 		</dependency>
 	</dependencies>
 	<properties>

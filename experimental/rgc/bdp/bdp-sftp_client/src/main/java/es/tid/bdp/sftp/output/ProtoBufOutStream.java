@@ -74,6 +74,7 @@ public class ProtoBufOutStream extends OutputStream {
 
             } catch (Exception e) {
                 // TODO: handle exception
+                System.out.println("error: " + returnValue + " " + e.getMessage());
             }
         }
     }

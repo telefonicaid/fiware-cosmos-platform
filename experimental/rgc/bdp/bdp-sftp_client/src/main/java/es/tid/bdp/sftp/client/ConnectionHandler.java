@@ -87,6 +87,7 @@ public class ConnectionHandler {
             String ouputPath = convertPath(inputPath);
             OutputStream output = dest.getOutputStream(ouputPath);
             client.copy(inputPath, output);
+            output.close();
         }
     }
 

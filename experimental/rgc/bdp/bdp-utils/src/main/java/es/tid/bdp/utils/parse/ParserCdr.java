@@ -49,10 +49,10 @@ public class ParserCdr extends ParserAbstract {
     private Cdr createCdr(Matcher m) {
         Cdr.Builder builder = Cdr.newBuilder();
         builder.setCellId(Long.parseLong(
-                m.group(regPosition.get(ATTR_CELL_ID)), 16));
+                m.group(regPosition.get(ATTR_USER_ID)), 16));
         try {
             builder.setUserId(Long.parseLong(
-                    m.group(regPosition.get(ATTR_USER_ID)), 16));
+                    m.group(regPosition.get(ATTR_CELL_ID)), 16));
         } catch (NumberFormatException e) {
             builder.setUserId(0L);
         }

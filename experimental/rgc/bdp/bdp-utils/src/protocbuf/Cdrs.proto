@@ -6,7 +6,7 @@ option java_outer_classname = "CdrP";
 
 message Cdr {
    required uint64 userId = 1;
-   required uint64 cellId = 2;
+            uint64 cellId = 2;
    required Date date = 3;
    required Time time = 4;
 }

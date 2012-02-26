@@ -64,6 +64,7 @@ public class HdfsDestinationHandler implements DestinationHandler {
         } catch (Exception e) {
             // TODO: handle exception
             LOG.error("Error reading the properties.", e);
+            e.printStackTrace();
         }
     }
 

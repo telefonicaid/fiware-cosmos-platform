@@ -17,7 +17,8 @@ CONF=$baseDir/conf                                              # configuration 
  
 
 
-JAVA_OPTS="$JAVA_OPTS -Dlog4j.configuration=$CONF/log4j.xml"
+JAVA_OPTS="$JAVA_OPTS -Djava.library.path=/usr/lib64:/opt/hadoop/lib/native/Linux-amd64-64"
+JAVA_OPTS="$JAVA_OPTS -Dlog4j.configuration=file://$CONF/log4j.xml"
 
 # Include all dependencies in lib folder and append to classpath
 for LIB in $LIB_DIR/*.jar; do
@@ -41,8 +42,6 @@ done
 
 # Include Hadoop core jar
 CLASSPATH=$HADOOP_HOME/hadoop-core.jar:$CLASSPATH
-
-CLASSPATH=$CONF:$CLASSPATH
 
 javaArgs=" -cp $CLASSPATH  es.tid.bdp.sftp.client.MainSftpClient"     # arguments for Java launcher
 javaCommandLine="$javaExe $JAVA_OPTS $javaArgs $@"           		  # JVM command line 

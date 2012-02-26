@@ -1,26 +1,17 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+log4j.rootLogger=debug, stdout, R
 
-<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
 
-    <appender name="bdp" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="/var/log/bdp/sftpclient/bdp-sftp_client.log" />
-        <param name="MaxBackupIndex" value="10" />
-        <param name="MaxFileSize" value="1000000" />
-        <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern"
-                value="%d{dd MMM yyyy HH:mm:ss,SSS} %-5p %C{1} | %m%n" />
-        </layout>
-    </appender>
-    
-    <!-- bdp logger -->
-    <logger name="es.tid.bdp">
-        <level value="DEBUG" />
-    </logger>
+# Pattern to output the caller's file name and line number.
+log4j.appender.stdout.layout.ConversionPattern=%5p [%t] (%F:%L) - %m%n
 
-	<!-- Default logger -->
-	<root>
-		<level value="DEBUG" />
-		<appender-ref ref="bdp" />
-	</root>
-</log4j:configuration>
+log4j.appender.R=org.apache.log4j.RollingFileAppender
+log4j.appender.R.File=example.log
+
+log4j.appender.R.MaxFileSize=100KB
+# Keep one backup file
+log4j.appender.R.MaxBackupIndex=1
+
+log4j.appender.R.layout=org.apache.log4j.PatternLayout
+log4j.appender.R.layout.ConversionPattern=%p %t %c - %m%n

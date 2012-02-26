@@ -8,19 +8,19 @@
 baseDir=/usr/local/bdp/sftpclient                                # Base dir of installation
 javaCommand="java"                                               # name of the Java launcher without the path
 javaExe="$JAVA_HOME/bin/$javaCommand"                            # file name of the Java application launcher executable
-LIB=$baseDir/lib                                                 # project library jars directory
+LIB_DIR=$baseDir/lib                                                 # project library jars directory
 PLUGINS=$baseDir/plugins                                         # plugins library jars directory
 UTIL_LIB=/usr/local/bdp/utils/lib                                # utils library jars directory
 HADOOP_LIB=$HADOOP_HOME/lib 	                                 # Hadoop library jars directory
 
-CONF=$baseDir/conf/                                              # configuration directory
+CONF=$baseDir/conf                                              # configuration directory
  
 
 
 JAVA_OPTS="$JAVA_OPTS -Dlog4j.configuration=$CONF/log4j.xml"
 
 # Include all dependencies in lib folder and append to classpath
-for LIB in $LIB/*.jar; do
+for LIB in $LIB_DIR/*.jar; do
    CLASSPATH=$CLASSPATH:$LIB
 done
 
@@ -40,12 +40,12 @@ for LIB in $PLUGINS/*.jar; do
 done
 
 # Include Hadoop core jar
-CLASSPATH=$HADOOP_HOME/hadoop_core.jar
+CLASSPATH=$HADOOP_HOME/hadoop-core.jar:$CLASSPATH
 
-CLASSPATH=$CONF$CLASSPATH
+CLASSPATH=$CONF:$CLASSPATH
 
 javaArgs=" -cp $CLASSPATH  es.tid.bdp.sftp.client.MainSftpClient"     # arguments for Java launcher
-javaCommandLine="$javaExe $JAVA_OPTS $javaArgs $1"           		  # JVM command line 
+javaCommandLine="$javaExe $JAVA_OPTS $javaArgs $@"           		  # JVM command line 
 
 
 echo "$javaCommandLine"

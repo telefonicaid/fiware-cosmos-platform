@@ -67,8 +67,8 @@
 						<mapping>
 							<directory>/usr/local/bdp/sftpclient/actions</directory>
 							<filemode>750</filemode>
-							<username>dumper</username>
-							<groupname>dumpgroup</groupname>
+							<username>hdfs</username>
+							<groupname>hadoop</groupname>
 						</mapping>
 					</mappings>
 					<preinstallScriptlet>

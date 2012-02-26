@@ -36,6 +36,9 @@
 					<defineStatements>
 						<defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
 					</defineStatements>
+					<requires>
+						<require>bdp-utils &gt; 0.0.1</require>
+					</requires>
 					<mappings>
 						<mapping>
 							<directory>/usr/local/bdp/sftpclient/run</directory>

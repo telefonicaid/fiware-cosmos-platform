@@ -37,7 +37,7 @@
 						<defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
 					</defineStatements>
 					<requires>
-						<require>bdp-utils &gt; 0.0.1</require>
+						<require>bdp-utils &ge; 0.0.1</require>
 					</requires>
 					<mappings>
 						<mapping>

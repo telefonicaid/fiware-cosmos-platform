@@ -50,6 +50,7 @@
 							<dependency>
 								<includes>
 									<include>com.google.protobuf:protobuf-java</include>
+									<include>com.google.guava:guava</include>
 									<include>com.twitter:elephant-bird</include>
 								</includes>
 							</dependency>

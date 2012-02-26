@@ -14,13 +14,14 @@ import org.apache.hadoop.fs.Path;
 import com.hadoop.compression.lzo.LzopCodec;
 
 import es.tid.bdp.utils.PropertiesPlaceHolder;
+
 /**
  * 
  * @author rgc
- *
+ * 
  */
 public class HdfsDestinationHandler implements DestinationHandler {
-    
+
     private static final Log LOG = LogFactory.getLog(LzopCodec.class);
 
     private Configuration confDst;
@@ -58,9 +59,9 @@ public class HdfsDestinationHandler implements DestinationHandler {
             confDst.set(FS_DEFAULT_NAME,
                     properties.getProperty(FS_DEFAULT_NAME));
             hdfsDst = FileSystem.get(confDst);
-            
+
             LOG.debug("Properties have been reading.");
-                      
+
         } catch (Exception e) {
             // TODO: handle exception
             LOG.error("Error reading the properties.", e);
@@ -83,13 +84,20 @@ public class HdfsDestinationHandler implements DestinationHandler {
         }
         OutputStream outputStream = hdfsDst.create(outputFile, true);
         if (lzoCompression) {
+
+            confDst.set(
+                    "io.compression.codecs",
+                    "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
+
+            confDst.set("io.compression.codec.lzo.class",
+                    "com.hadoop.compression.lzo.LzoCodec");
             LzopCodec codec = new LzopCodec();
             codec.setConf(confDst);
             outputStream = codec.createOutputStream(outputStream);
+
             LOG.debug("Lzo compression has been configurated.");
 
         }
         return new ProtoBufOutStream(outputStream);
     }
-
 }

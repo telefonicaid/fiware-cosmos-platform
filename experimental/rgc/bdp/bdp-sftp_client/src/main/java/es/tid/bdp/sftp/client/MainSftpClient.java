@@ -18,8 +18,7 @@ public class MainSftpClient {
      * @throws SftpException
      * @throws IOException
      */
-    public static void main(String[] arg) throws JSchException, SftpException,
-            IOException {
+    public static void main(String[] arg) throws IOException  {
         // If there are arguments, it uses to load the properties file
         for (int i = 0; i < arg.length; i++) {
             if (CONFIG_FILE.equals(arg[i])){
@@ -29,7 +28,7 @@ public class MainSftpClient {
         }
         
         // Run the process
-        ConnectionHandler sftp = new ConnectionHandler();
-        sftp.run();
+        ConnectionHandler handler = new ConnectionHandler();
+        handler.run();
     }    
 }

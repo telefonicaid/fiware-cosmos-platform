@@ -1,8 +1,6 @@
 package es.tid.bdp.utils;
 
-
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -22,11 +20,15 @@ public class PropertiesPlaceHolder extends Properties {
     /**
      * Private constructor
      * 
-     * @throws FileNotFoundException
      * @throws IOException
+     *             if the file does not exist, is a directory rather than a
+     *             regular file, or for some other reason cannot be opened for
+     *             reading.
+     * @throws RuntimeException
+     *             if the exception has been initialized
      */
     private PropertiesPlaceHolder(String configFile)
-            throws FileNotFoundException, IOException {
+            throws IOException {
         this.load(new FileInputStream(configFile));
     }
 
@@ -34,23 +36,22 @@ public class PropertiesPlaceHolder extends Properties {
      * Static method for access to the singleton object
      * 
      * @return the singleton PropertiesPlaceHolder
-     * @throws FileNotFoundException
-     *             if the file does not exist, is a directory rather than a
-     *             regular file, or for some other reason cannot be opened for
-     *             reading.
      * @throws IOException
      *             if the file does not exist, is a directory rather than a
      *             regular file, or for some other reason cannot be opened for
      *             reading.
+     * @throws RuntimeException
+     *             if the exception has been initialized
      */
-    public static PropertiesPlaceHolder getInstance()
-            throws FileNotFoundException, IOException {
+    public static PropertiesPlaceHolder getInstance() throws IOException {
         if (instance == null) {
             synchronized (PropertiesPlaceHolder.class) {
                 if (instance == null) {
-                    String configFile = System.getProperty(CONFIGURATION_PATH_PROPERTY);
-                    if (configFile.isEmpty()){
-                        throw new IllegalArgumentException("Config file is not configurate");
+                    String configFile = System
+                            .getProperty(CONFIGURATION_PATH_PROPERTY);
+                    if (configFile.isEmpty()) {
+                        throw new IllegalArgumentException(
+                                "Config file is not configurate");
                     }
                     instance = new PropertiesPlaceHolder(configFile);
                 }
@@ -66,10 +67,6 @@ public class PropertiesPlaceHolder extends Properties {
      * @param configFile
      *            the path of configuration file
      * @return the singleton PropertiesPlaceHolder
-     * @throws FileNotFoundException
-     *             if the file does not exist, is a directory rather than a
-     *             regular file, or for some other reason cannot be opened for
-     *             reading.
      * @throws IOException
      *             if the file does not exist, is a directory rather than a
      *             regular file, or for some other reason cannot be opened for
@@ -78,7 +75,7 @@ public class PropertiesPlaceHolder extends Properties {
      *             if the exception has been initialized
      */
     public static PropertiesPlaceHolder createInstance(String configFile)
-            throws FileNotFoundException, IOException {
+            throws IOException {
         if (instance == null) {
             synchronized (PropertiesPlaceHolder.class) {
                 if (instance == null) {
@@ -122,15 +119,15 @@ public class PropertiesPlaceHolder extends Properties {
             return defaultValue;
         }
     }
-     
+
     /**
      * Searches for the property with the specified key in this property list
      * and it parses the value to boolean
      * 
      * @param key
      *            the property key.
-     * @return the value in this property list with the specified key value into a
-     *         Boolean.
+     * @return the value in this property list with the specified key value into
+     *         a Boolean.
      */
     public Boolean getPropertyBool(String key) {
         return Boolean.parseBoolean(this.getProperty(key));

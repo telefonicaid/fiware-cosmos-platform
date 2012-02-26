@@ -116,7 +116,12 @@ namespace samson {
                         
             // Quit if this connection is closed
             if( socket_connection->isDisconnected() )
+            {
+                // Save pending packets...
+                network_manager->push_pending_packet(name, &packet_queue);
+                
                 return;
+            }
             
             // Get the next packet to be sent
             Packet* packetP = packet_queue.next();

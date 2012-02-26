@@ -227,6 +227,7 @@ namespace samson
         if (info->completingSecondWord("cluster") )
         {
             info->add("info");
+            info->add("pending");
             info->add("add");
             info->add("remove");
             info->add("connect");

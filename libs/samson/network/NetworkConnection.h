@@ -13,78 +13,12 @@
 #include "samson/common/Visualitzation.h"
 
 #include "samson/network/SocketConnection.h"
+#include "samson/network/PacketQueue.h"
 #include "samson/network/Packet.h"
 
 namespace samson {
     
-    
     class NetworkManager;
-    
-    class PacketQueue
-    {
-        au::Token            token;
-        au::list<Packet>     queue;
-        
-        
-    public:
-        
-        PacketQueue() : token("PacketQueue") 
-        {
-        }
-        
-        size_t getNumPackets()
-        {
-            au::TokenTaker tt(&token);
-            return queue.size();
-        }
-        
-        void push( Packet* p)
-        {
-            au::TokenTaker tt(&token);
-            queue.push_back(p);
-        }
-
-        Packet* next()
-        {
-            au::TokenTaker tt(&token);
-            Packet* packet = queue.findFront();
-            return packet;
-        }
-        
-        void pop()
-        {
-            au::TokenTaker tt(&token);
-            Packet* packet = queue.extractFront();
-
-            if( !packet )
-                LM_W(("pop without packet called at PacketQueue"));
-        }
-        
-        std::string str()
-        {
-            au::TokenTaker tt(&token);
-            return au::str("PaquetQueue: %lu packets" , queue.size() );
-        }
-
-        
-        void clear()
-        {
-            // Clear queues, removing packages and alloc buffers
-            au::TokenTaker tt(&token);
-            au::list<Packet>::iterator it_queue;
-            for ( it_queue = queue.begin() ; it_queue != queue.end() ; it_queue++ )
-            {
-                engine::Buffer * buffer = ( *it_queue )->buffer;
-                if ( buffer )
-                    engine::MemoryManager::shared()->destroyBuffer( buffer );
-            }
-            
-            // Remove elements calling delete to all of them
-            queue.clearList();
-        }
-        
-        
-    };    
     
     class NetworkConnection
     {
@@ -114,6 +48,7 @@ namespace samson {
         bool running_t_write;     // Flag to indicate that there is a thread using this endpoint reading data
 
         friend class NetworkManager;
+        friend class CommonNetwork;
         std::string name;         //Name in NetworkManager
 
         // Information about rate

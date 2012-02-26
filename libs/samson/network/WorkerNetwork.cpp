@@ -340,6 +340,13 @@ namespace samson {
             return res;
         }
 
+        if ( main_command == "pending" )
+        {
+            au::tables::Table * table = getPendingPacketsTable();
+            std::string res = table->str();
+            delete table;
+            return res;
+        }
         
         return au::str("Unknown cluster command %s", main_command.c_str() );
     }

@@ -337,6 +337,14 @@ namespace samson {
             delete table;
             return res;
         }
+
+        if ( main_command == "pending" )
+        {
+            au::tables::Table * table = getPendingPacketsTable();
+            std::string res = table->str();
+            delete table;
+            return res;
+        }
         
         if( main_command == "get_my_id" )
         {

@@ -2,6 +2,7 @@ SET (HEADERS
 	HostMgr.h
 	Host.h
 
+	PacketQueue.h
 	NetworkManager.h
 	NetworkConnection.h
 	SocketConnection.h
@@ -25,6 +26,7 @@ SET (SOURCES
 	HostMgr.cpp
 	Host.cpp
 
+	PacketQueue.cpp
 	NetworkManager.cpp
 	NetworkConnection.cpp
 	SocketConnection.cpp

@@ -15,6 +15,7 @@
 
 #include "samson/network/ClusterInformation.h"
 #include "samson/network/Packet.h"
+#include "samson/network/PacketQueue.h"
 
 namespace samson {
     
@@ -26,6 +27,10 @@ namespace samson {
     class NetworkManager 
     {
 
+        // Pending packets ( only used while disconnected )
+        au::map<std::string , PacketQueue> packet_queues;
+        au::Token token_packet_queues;
+
     protected:
         
         // All managed connection
@@ -33,7 +38,7 @@ namespace samson {
         
     public:
         
-        NetworkManager()
+        NetworkManager() : token_packet_queues("token_packet_queues")
         {
         }
         
@@ -61,6 +66,55 @@ namespace samson {
         // Get table with connection information
         au::tables::Table * getConnectionsTable();
 
+        // Get pending packets table
+        au::tables::Table * getPendingPacketsTable();
+        
+        // Pending packets
+        void push_pending_packet( std::string name , Packet * packet )
+        {
+            au::TokenTaker tt(&token_packet_queues);
+            packet_queues.findOrCreate(name)->push(packet);                
+        }
+
+        void push_pending_packet( std::string name , PacketQueue * packet_queue )
+        {
+            au::TokenTaker tt(&token_packet_queues);
+            PacketQueue * target_paquet_queue = packet_queues.findOrCreate(name);                
+
+            while( true )
+            {
+                Packet * packet = packet_queue->extract();
+                if( !packet )
+                    return;
+                
+                target_paquet_queue->push(packet);
+                
+            }
+        }
+
+        void pop_pending_packet( std::string name , PacketQueue * packet_queue )
+        {
+            //LM_W(("Popping pending packets for connection %s" , name.c_str()));
+            
+            au::TokenTaker tt(&token_packet_queues);
+            PacketQueue * source_paquet_queue = packet_queues.extractFromMap(name);                
+            
+            if( !source_paquet_queue )
+                return; // No pending packets
+            
+            while( true )
+            {
+                Packet * packet = source_paquet_queue->extract();
+                if( !packet )
+                    break;
+                
+                packet_queue->push(packet);
+            }
+            
+            // remove the original paquet queue
+            delete source_paquet_queue;
+            
+        }        
         
     };
     

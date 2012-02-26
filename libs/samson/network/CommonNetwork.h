@@ -12,6 +12,8 @@
 #include "samson/network/NetworkInterface.h"
 #include "samson/network/NetworkManager.h"
 #include "samson/network/NetworkListener.h"
+#include "samson/network/PacketQueue.h"
+
 
 namespace samson {
     
@@ -34,6 +36,7 @@ namespace samson {
         std::string password;
         std::string connection_type;
         
+
     public:
         
         CommonNetwork()
@@ -61,8 +64,6 @@ namespace samson {
             LM_W(("processHello not implemented"));
         }
 
-
-        
         // NetworkInterface common methods
         // ----------------------------------------------------------------
         Status send( Packet* packet );

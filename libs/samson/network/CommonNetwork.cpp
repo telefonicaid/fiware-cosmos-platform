@@ -177,12 +177,16 @@ namespace samson {
         // Insert in the map of connections
         connections.insertInMap( name , network_connection );
         
-        // Start the read and write threads for this connection
-        network_connection->initReadWriteThreads();
 
         // Sent hello packages rigth now to make sure if identity us
         network_connection->push( helloMessage( network_connection ) );
         
+        // Recover pending packets
+        pop_pending_packet(name, &network_connection->packet_queue);
+        
+        // Start the read and write threads for this connection
+        network_connection->initReadWriteThreads();
+
         // Notify about this connection
         report_worker_connected( worker_id );
         
@@ -235,17 +239,27 @@ namespace samson {
             return OK;
         }
         
+        // Get code name for the connection
         std::string name = packet->to.getCodeName();
         
         NetworkConnection* connection = connections.findInMap( name );
         
         if( !connection )
         {
-            LM_W(("Packet %s destroyed since connection %s is not available" , packet->str().c_str(), name.c_str() ));
-            if( packet->buffer )
-                engine::MemoryManager::shared()->destroyBuffer(packet->buffer);
-            delete packet;
-            return Error;
+            if( !packet->disposable && (packet->to.node_type == WorkerNode) )
+            {
+                push_pending_packet( name , packet );
+                return OK;
+            }
+            else
+            {
+                // Delilah messages, just discard them
+                LM_W(("Packet %s destroyed since connection %s is not available" , packet->str().c_str(), name.c_str() ));
+                if( packet->buffer )
+                    engine::MemoryManager::shared()->destroyBuffer(packet->buffer);
+                delete packet;
+                return Error;
+            }
         }
         
         connection->push( packet );

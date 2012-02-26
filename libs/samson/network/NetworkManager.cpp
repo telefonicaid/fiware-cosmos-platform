@@ -21,6 +21,9 @@ namespace samson {
         
         network_connection->name = connection_to;
         connections.insertInMap(connection_to, network_connection);
+
+        // recover pending packets if any...
+        pop_pending_packet( connection_to,  &network_connection->packet_queue );
         
         return OK;
     }
@@ -34,12 +37,43 @@ namespace samson {
         
         // Add to the map of connections
         connections.insertInMap( name , network_connection );
+
+        // recover pending packets if any...
+        pop_pending_packet( name,  &network_connection->packet_queue );
         
         // Init threads once included in the map
         network_connection->initReadWriteThreads();
         
         return OK;
     }
+    
+    au::tables::Table * NetworkManager::getPendingPacketsTable()
+    {
+        au::tables::Table* table = new au::tables::Table( au::StringVector( "Connection" , "#Packets" , "Size" ) );
+        
+        au::map<std::string , PacketQueue>::iterator it;
+        
+        for( it = packet_queues.begin() ; it != packet_queues.end() ; it++ )
+        {
+            au::StringVector values;
+            
+            values.push_back( it->first ); // Name of the connection
+            
+            PacketQueue* packet_queue = it->second;
+
+            values.push_back( au::str( packet_queue->getNumPackets() ) );
+            values.push_back( au::str( packet_queue->getTotalSize() ) );
+            
+            table->addRow( values );
+            
+        }
+        
+        table->setDefaultTitle("Pending packets");
+        
+        return table;
+        
+    }
+
     
     au::tables::Table * NetworkManager::getConnectionsTable()
     {

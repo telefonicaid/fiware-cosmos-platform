@@ -178,12 +178,18 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<groupId>com.cloudera</groupId>
+			<artifactId>flume-core</artifactId>
+			<version>${cdh.flume.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.hadoop.compression</groupId>
 			<artifactId>hadoop-gpl-compression</artifactId>
 			<version>0.1.0</version>
 		</dependency>
 	</dependencies>
 	<properties>
+		<cdh.flume.version>0.9.4-cdh3u2</cdh.flume.version>
 		<generated.sourceDirectory>src/main/java</generated.sourceDirectory>
 	</properties>
 </project>

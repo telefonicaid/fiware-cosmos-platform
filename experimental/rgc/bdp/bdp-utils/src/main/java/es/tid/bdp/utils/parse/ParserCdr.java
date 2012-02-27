@@ -1,6 +1,5 @@
 package es.tid.bdp.utils.parse;
 
-import java.io.IOException;
 import java.util.regex.Matcher;
 
 import com.google.protobuf.Message;
@@ -27,8 +26,8 @@ public class ParserCdr extends ParserAbstract {
     private final String ATTR_DATE_MONTH = "month";
     private final String ATTR_CELL_YEAR = "year";      
 
-    public ParserCdr() throws IOException {
-        super();
+    public ParserCdr(String pattern, String attr) {
+        super(pattern, attr);
     }
 
     /*

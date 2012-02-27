@@ -1,4 +1,4 @@
-package es.tid.bdp.sftp.output;
+package es.tid.bdp.utils.io.output;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -6,13 +6,11 @@ import java.io.OutputStream;
 import com.google.protobuf.Message;
 import com.twitter.elephantbird.mapreduce.io.ProtobufBlockWriter;
 
-import es.tid.bdp.utils.PropertiesPlaceHolder;
 import es.tid.bdp.utils.parse.ParserAbstract;
 
 public class ProtoBufOutStream extends OutputStream {
 
     private static final String LINE_SEPARATOR = "\n";
-    private static final String INPUT_PARSER_CLASS = "input.parser.class";
 
     private StringBuilder linea;
     private ParserAbstract parser;
@@ -26,20 +24,9 @@ public class ProtoBufOutStream extends OutputStream {
      * 
      * @param out
      *            a stream for writing output.
-     * @throws IOException
      */
-    public ProtoBufOutStream(OutputStream outputStream) throws IOException {
-        PropertiesPlaceHolder properties = PropertiesPlaceHolder.getInstance();
-        try {
-            @SuppressWarnings("unchecked")
-            Class<ParserAbstract> klass = (Class<ParserAbstract>) Class
-                    .forName(properties.getProperty(INPUT_PARSER_CLASS));
-
-            this.parser = klass.newInstance();
-        } catch (Exception e) {
-            // TODO: handle exception
-            e.printStackTrace();
-        }
+    public ProtoBufOutStream(OutputStream outputStream, ParserAbstract parser) {
+        this.parser = parser;
         this.writer = new ProtobufBlockWriter<Message>(outputStream,
                 Message.class);
 
@@ -74,7 +61,8 @@ public class ProtoBufOutStream extends OutputStream {
 
             } catch (Exception e) {
                 // TODO: handle exception
-                System.out.println("error: " + returnValue + " " + e.getMessage());
+                System.out.println("error: " + returnValue + " "
+                        + e.getMessage());
             }
         }
     }

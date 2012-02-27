@@ -2,6 +2,7 @@ package es.tid.bdp.sftp.output;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 
 import javax.annotation.PostConstruct;
 
@@ -14,6 +15,8 @@ import org.apache.hadoop.fs.Path;
 import com.hadoop.compression.lzo.LzopCodec;
 
 import es.tid.bdp.utils.PropertiesPlaceHolder;
+import es.tid.bdp.utils.io.output.ProtoBufOutStream;
+import es.tid.bdp.utils.parse.ParserAbstract;
 
 /**
  * 
@@ -28,10 +31,14 @@ public class HdfsDestinationHandler implements DestinationHandler {
     private FileSystem hdfsDst;
     private boolean overwrite;
     private boolean lzoCompression;
+    private ParserAbstract parser;
 
     private final static String FS_DEFAULT_NAME = "fs.default.name";
     private static final String IO_OUPUT_OVERWRITE = "io.output.overwrite";
     private static final String IO_OUPUT_COMPRESSION = "io.output.compression";
+    private static final String INPUT_PARSER_CLASS = "input.parser.class";
+    private static final String INPUT_ATTRS_REGEX = "input.attrs.regex";
+    private static final String INPUT_ATTRS_DESC = "input.attrs.desc";
 
     /**
      * Constructor
@@ -51,8 +58,8 @@ public class HdfsDestinationHandler implements DestinationHandler {
             PropertiesPlaceHolder properties = PropertiesPlaceHolder
                     .getInstance();
 
-            this.overwrite = properties.getPropertyBool(IO_OUPUT_OVERWRITE);
-            this.lzoCompression = properties
+            overwrite = properties.getPropertyBool(IO_OUPUT_OVERWRITE);
+            lzoCompression = properties
                     .getPropertyBool(IO_OUPUT_COMPRESSION);
 
             confDst = new Configuration();
@@ -61,6 +68,16 @@ public class HdfsDestinationHandler implements DestinationHandler {
             hdfsDst = FileSystem.get(confDst);
 
             LOG.debug("Properties have been reading.");
+
+            @SuppressWarnings("unchecked")
+            Class<ParserAbstract> klass = (Class<ParserAbstract>) Class
+                    .forName(properties.getProperty(INPUT_PARSER_CLASS));
+
+            Constructor<ParserAbstract> constructor = klass.getConstructor(
+                    String.class, String.class);
+
+            parser = constructor.newInstance(properties.getProperty(INPUT_ATTRS_REGEX),
+                    properties.getProperty(INPUT_ATTRS_DESC));
 
         } catch (Exception e) {
             // TODO: handle exception
@@ -98,6 +115,6 @@ public class HdfsDestinationHandler implements DestinationHandler {
             LOG.debug("Lzo compression has been configurated.");
 
         }
-        return new ProtoBufOutStream(outputStream);
+        return new ProtoBufOutStream(outputStream, parser);
     }
 }

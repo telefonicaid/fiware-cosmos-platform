@@ -7,8 +7,6 @@ import java.util.regex.Pattern;
 
 import com.google.protobuf.Message;
 
-import es.tid.bdp.utils.PropertiesPlaceHolder;
-
 /**
  * 
  * @author rgc
@@ -16,16 +14,13 @@ import es.tid.bdp.utils.PropertiesPlaceHolder;
  */
 public abstract class ParserAbstract {
 
-    private static final String INPUT_ATTRS_REGEX = "input.attrs.regex";
-    private static final String INPUT_ATTRS_DESC = "input.attrs.desc";
     private static final String SEPARATOR = "\\|";
 
     protected Pattern pattern;
     protected Map<String, Integer> regPosition;
 
-    public ParserAbstract() throws IOException {
-        init();
-
+    public ParserAbstract(String pattern, String attr) {
+        init(pattern, attr);
     }
 
     /**
@@ -34,15 +29,11 @@ public abstract class ParserAbstract {
      * 
      * @throws IOException
      */
-    private void init() throws IOException {
-        PropertiesPlaceHolder properties = PropertiesPlaceHolder.getInstance();
-
-        this.pattern = Pattern.compile(properties
-                .getProperty(INPUT_ATTRS_REGEX));
+    protected void init(String pattern, String attr) {
+        this.pattern = Pattern.compile(pattern);
 
         this.regPosition = new HashMap<String, Integer>();
-        String[] array = properties.getProperty(INPUT_ATTRS_DESC).split(
-                SEPARATOR);
+        String[] array = attr.split(SEPARATOR);
         for (int i = 0; i < array.length; i++) {
             this.regPosition.put(array[i], i + 1);
         }

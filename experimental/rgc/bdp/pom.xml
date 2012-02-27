@@ -61,6 +61,7 @@
 	<modules>
 		<module>bdp-utils</module>
 		<module>bdp-sftp_client</module>
+		<module>bdp-sftp_server</module>
 	</modules>
 
 	<properties>

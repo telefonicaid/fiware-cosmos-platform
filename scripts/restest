@@ -1,0 +1,39 @@
+queue=users
+key=key
+sleepTime=.1
+
+typeset -i times
+times=100
+
+if [ "$1" == "" ] || [ "$2" == "" ]
+then
+   echo Usage: $0 '<queue> <key> <times>'
+   exit 1
+fi
+
+queue=$1
+key=$2
+if [ "$3" != "" ]
+then
+  times=$3
+fi
+
+if [ "$4" != "" ]
+then
+  sleepTime=$4
+fi
+
+time=0
+typeset -i time
+
+while [ $time -lt $times ]
+do
+    curl localhost:9898/samson/state/$queue/$key
+
+    time=$time+1
+
+    if [ $time -lt $times ]
+    then
+	    sleep $sleepTime
+	fi
+done

@@ -55,6 +55,7 @@ elif [ -e /opt/samson/modules/lib$module_name.so ]; then
    module_file=/opt/samson/modules/lib$module_name.so
 else
   echo "Unable to locate lib${module_name}"
+  exit 1
 fi
 
 if [ "$QUIET" != "y" ]; then

@@ -54,6 +54,10 @@ namespace samson {
         // Counter for the received stream buffers
         au::CounterCollection<std::string> stream_out_queue_counters;
 
+        // Flag to indicate if we are shoing traces
+        bool show_alerts;
+        bool verbose;
+        
 	public:
 		
         
@@ -74,6 +78,9 @@ namespace samson {
 		virtual void evalCommand( std::string command );
         virtual void autoComplete( au::ConsoleAutoComplete* info );
 
+        void autoCompleteQueueForOperation( au::ConsoleAutoComplete* info , std::string operation_name , int argument_pos );
+        void autoCompleteQueueWithFormat(au::ConsoleAutoComplete* info  ,  std::string key_format , std::string value_format);
+        
         virtual void process_escape_sequence( std::string sequence )
         {
             if( sequence == "samson" )
@@ -132,7 +139,7 @@ namespace samson {
 		
 		virtual void showTrace( std::string message)
 		{
-			if( trace_on )
+			if( show_alerts )
 				writeWarningOnConsole( message );
 		}
         

@@ -57,10 +57,7 @@ namespace samson {
         id = 2;	// we start with process 2 because 0 is no process & 1 is global_update messages
 		
         finish = false;				// Global flag to finish threads
-        
-        // By default, no traces
-        trace_on =  false;
-        
+                
         // Listen notification about netowrk disconnection
         listen( notification_network_diconnected );
 
@@ -72,10 +69,7 @@ namespace samson {
         
         // No operation to deal with live data from queues by default ( used in samsonClient library )
         op_delilah_process_stream_out_queue = NULL;
-        
-        // Bu default is is not updated automatically
-        automatic_update =  false;
-        
+                
         // Notification to update state
         listen( notification_update_status );
         {
@@ -175,14 +169,9 @@ namespace samson {
         
         if ( notification->isName( notification_delilah_automatic_update ) )
         {
-            // Add a hidden command to update something
-            if( automatic_update )
-            {
-                // Update local list of queus automatically
-                sendWorkerCommand("ls_queues -a -hidden -save" , NULL);
-                sendWorkerCommand("ls_workers -a -hidden -save" , NULL);
-            }
-            
+            // Update local list of queus automatically
+            sendWorkerCommand("ls_queues -a -hidden -save" , NULL);
+            sendWorkerCommand("ls_workers -a -hidden -save" , NULL);
             return;
         }
         
@@ -624,6 +613,40 @@ namespace samson {
         
         return table->str(au::str("Local files ( %s )" , pattern.c_str()));
     }
+    
+    
+    Status Delilah::stop_repeat( size_t id )
+    {
+        au::TokenTaker tt(&token);
+        DelilahComponent* component = components.findInMap(id);
+        if( !component )
+            return Error;
+
+        if( component->type != DelilahComponent::repeat )
+            return Error;
+
+        if ( component->isComponentFinished() )
+            return Error;
+        
+        component->setComponentFinished();
+        return OK;
+    }
+    
+    Status Delilah::stop_all_repeat(  )
+    {
+        au::TokenTaker tt(&token);
+		au::map<size_t , DelilahComponent>::iterator it_components;
+        for( it_components = components.begin() ; it_components != components.end() ; it_components++ )
+        {
+            DelilahComponent * component = it_components->second;
+            if( component->type == DelilahComponent::repeat )
+                component->setComponentFinished();
+        }
+        return OK;
+    }
+
+
+    
     
 }
 

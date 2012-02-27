@@ -7,7 +7,6 @@
 #include "samson/common/SamsonSetup.h"      // samson::SamsonSetup
 
 #include "StreamManager.h"          // samson::stream::StreamManager
-#include "BlockBreakQueueTask.h"    // samson::stream::BlockBreakQueueTask
 #include "Block.h"                  // samson::stream::Block
 #include "BlockList.h"              // samson::stream::BlockList
 #include "Queue.h"                  // OwnInterface
@@ -310,86 +309,6 @@ namespace samson {
                     tmp_block_list.extractBlockFrom( list );
             }
             
-            //LM_M(("Intern review queue %s" , name.c_str() ));
-            
-            // Schedule new Block Break operations if necessary
-            if( format == KVFormat("txt","txt") )
-			{
-                //LM_M(("Queue %s nor revised since format %s= txt" , name.c_str() , format.str().c_str() ));
-                return;  // No necessary operations for txt elements
-			}
-            
-            // Set the minimum number of divisions ( when possible )
-            // Only in state queues when trying to run update-state operations
-            // setMinimumNumDivisions();
-            
-            // Not break blocks any more
-            
-            /*
-            while( true )
-            {
-                //LM_M(("Queue %s: Num divisions %d.... %lu blocks" , name.c_str() , num_divisions , list->blocks.size() ));
-                
-                size_t max_size = SamsonSetup::shared()->getUInt64("stream.max_operation_input_size");
-                
-                BlockList inputBlockList("candidates_block_division");
-                getBlocksToBreak( &inputBlockList , max_size );
-
-                if( inputBlockList.isEmpty() )
-                    break;
-                
-                // Schedule a block break operation
-                size_t id = streamManager->queueTaskManager.getNewId();
-                
-                BlockBreakQueueTask *task = new BlockBreakQueueTask( id , name , num_divisions ); 
-                BlockList *input = task->getBlockList("input_0");
-                input->copyFrom( &inputBlockList , 0 ); 
-                
-                task->setWorkingSize();
-                
-                streamManager->queueTaskManager.add( task );
-                
-                LM_T(LmtBlockManager,("Running a block-break operation for queue %s %s" , name.c_str() , input->strBlockIds().c_str() ));
-            }
-            */
-            /*
-            // Compact if the over-headed is too high for a particular division
-            //LM_TODO(("To be completed..."));
-            if ( num_divisions > 1 )
-            {
-                for ( int n = 0 ; n < num_divisions ; n++)
-                {
-                    // Create a list with all the blocks exclusive for this division
-                    BlockList *tmp = new BlockList("compactation_for_queue");
-                    
-                    KVRange range = rangeForDivision(n, num_divisions);
-                    au::list< Block >::iterator block_it;
-                    for ( block_it = list->blocks.begin() ; block_it != list->blocks.end() ; block_it++)
-                    {
-                        Block *block = *block_it;
-                        if ( range.includes( block->getKVRange() ) )
-                            tmp->add( block );
-                    }
-                    
-                    
-                    // If overhead is too large, compactation is required
-                    BlockInfo block_info = tmp->getBlockInfo();
-                    
-                    //LM_M(("Queue %s: division %d/%d %d blocks with %f overhead", name.c_str() , n , num_divisions , block_info.num_blocks , block_info.getOverhead() ));
-                    
-                    if ( block_info.getOverhead() > 0.2 )
-                    {
-                        // Run a compact operation over this set
-                        // Future work...
-                    }
-                    
-                    delete tmp;
-                    
-                }
-                
-            }
-             */
-            
         }
 
         // Get some blocks that need to be broken to meet a particular number of divisions ( not locked )
@@ -415,7 +334,7 @@ namespace samson {
                         if( num_blocks  > 0 )
                             if (( max_size > 0) && ( total_size > max_size ))
                                 return;
-                        LM_T(LmtBlockManager,("Adds block to be partitioned id=%lu, num_divisions:%d, total_size:%lu, max_size:%lu" , block->getId(), num_divisions, total_size, max_size ));
+
                         lock_block_ids.addId( block->getId() );
                         
                         outputBlockList->add( *b );
@@ -494,6 +413,21 @@ namespace samson {
             if( ( options == blocks ) || (options == all ) )
             {
                 add( record , "#Blocs"     , blockInfo.num_blocks , "f=uint64,sum" );
+                
+                if( format.isTxt() )
+                    add( record , "Defrag" , "-" , "f=per,different" );
+                else
+                {
+                    size_t num_hgs = list->getAverageNumberOfHashgroups();
+                    size_t num_blocks = list->blocks.size();
+                    
+                    double f = ( (double)KVFILE_NUM_HASHGROUPS / ( (double)num_blocks * (double)num_hgs ) );
+                    if( f > 1 )
+                        f = 1;
+                    
+                    add( record , "Defrag" , f , "f=per,different" );
+                }
+                
                 add( record , "Size"       , blockInfo.size , "f=uint64,sum" );
                 add( record , "on Memory"  , blockInfo.size_on_memory , "f=uint64,sum" );
                 add( record , "on Disk"    , blockInfo.size_on_disk , "f=uint64,sum" );

@@ -238,7 +238,7 @@ namespace samson
         return KVRange( hg_begin , hg_end );
     }
     
-    void clear( KVInfo* info )
+    void clearKVInfoVector( KVInfo* info )
     {
         for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ; i++ )
             info[i].clear();

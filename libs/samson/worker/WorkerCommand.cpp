@@ -20,6 +20,7 @@
 #include "samson/stream/Queue.h"
 #include "samson/stream/BlockList.h"
 #include "samson/stream/StreamOperation.h"
+#include "samson/stream/BlockBreakQueueTask.h"
 
 #include "samson/stream/QueueTasks.h"
 
@@ -693,11 +694,50 @@ namespace samson {
             std::string queue = cmd.get_argument(1);
             
             samsonWorker->streamManager->disconnect_from_queue( delilah_id , queue );
-            
-            finishWorkerTask();
+
+            // Set finish if no pending task
+            if( num_pending_processes == 0 )
+                finishWorkerTask();
             return;
             
         }
+
+        if( main_command == "defrag" )
+        {
+            if( cmd.get_num_arguments() < 3 )
+            {
+                finishWorkerTaskWithError( "Usage: defrag queue_source queue_destination" );
+                return;
+            }
+            
+            std::string queue_from = cmd.get_argument(1);
+            std::string queue_to   = cmd.get_argument(2);
+
+            // Pointer to the queue we want to defrag
+            stream::Queue*queue = streamManager->getQueue( queue_from );
+                        
+            // Create information about how data is distributed in files to do the best defrag
+            
+            //Create the BlockBreak
+            stream::BlockBreakQueueTask *tmp 
+              = new stream::BlockBreakQueueTask( streamManager->queueTaskManager.getNewId() , queue_to ); 
+
+            // Fill necessary blocks
+            stream::BlockList* list = tmp->getBlockList( au::str("input" ) ); 
+            list->copyFrom( queue->list );
+            
+            // Set the working size to get statistics at ProcessManager
+            tmp->setWorkingSize();
+            
+            // Add me as listener and increase the number of operations to run
+            tmp->addListenerId( getEngineId() );
+            num_pending_processes++;
+            
+            // Schedule tmp task into QueueTaskManager
+            streamManager->queueTaskManager.add( tmp );
+            return;
+        }
+       
         
         if( main_command == "run_stream_operation" )
         {

@@ -17,6 +17,7 @@ namespace samson {
 	class DelilahComponent
 	{
 
+        friend class Delilah;
 		bool component_finished;		// Flag to be removed when indicated by user
 
 	public:

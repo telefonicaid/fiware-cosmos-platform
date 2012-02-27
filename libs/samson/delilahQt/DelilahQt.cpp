@@ -77,9 +77,6 @@ namespace samson
 
     DelilahQt::DelilahQt( NetworkInterface *network ) : Delilah( network )
     {
-        // Ask continuously workers about queues to monitor them
-        automatic_update = true;
-        
     }
     
     void DelilahQt::run()

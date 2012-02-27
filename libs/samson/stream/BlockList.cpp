@@ -445,6 +445,33 @@ namespace samson {
             
         }
         
+        size_t BlockList::getAverageNumberOfHashgroups()
+        {
+            if( blocks.size() == 0 )
+                return 0;
+            
+            size_t total = 0;
+            size_t total_size = 0;
+            
+            std::list<Block*>::iterator b;
+            for ( b = blocks.begin() ; b != blocks.end() ; b++ )
+            {
+                Block* block = *b;
+                size_t num_hgs = block->header->getNumHashGroups();
+                size_t size = block->header->getTotalSize();
+                
+                total += num_hgs*size;
+                total_size += size;
+            }
+            
+            if ( total_size == 0 )
+                return 0;
+            
+            return  total / total_size; 
+            
+        }
+
+        
         
     }       
 }

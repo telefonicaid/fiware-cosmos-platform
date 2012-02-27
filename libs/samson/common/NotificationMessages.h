@@ -27,6 +27,5 @@
 
 // Notification to review repeat commands in delilha
 #define notification_delilah_review_repeat_tasks            "notification_delilah_review_repeat_tasks"
-#define notification_delilah_stop_repeat_tasks            "notification_delilah_stop_repeat_tasks"
 
 #endif

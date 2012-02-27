@@ -128,7 +128,6 @@ namespace samson {
         seconds = _seconds;
         
         listen( notification_delilah_review_repeat_tasks );
-        listen( notification_delilah_stop_repeat_tasks );
         
         concept = au::str("Repeating %s",command.c_str());
     }
@@ -162,10 +161,6 @@ namespace samson {
                 
                 cronometer.reset();
             }
-        }
-        else if( notification->isName(notification_delilah_stop_repeat_tasks) )
-        {
-            setComponentFinished();
         }
     }
     

@@ -376,8 +376,8 @@ namespace samson {
     int divisionForHG( int hg , int num_divisions );
     KVRange rangeForDivision( int pos , int num_divisions );
     
-    void clear( KVInfo* info );
-    
+    void clearKVInfoVector( KVInfo* info );
+
     // Get the agregation of
     KVInfo selectRange( KVInfo* info , KVRange range );
     
@@ -545,7 +545,7 @@ namespace samson {
         KVInfo *info;
         char *data;
         
-        KVFile( char *data)
+        KVFile( char *data )
         {
             init(data);
         }

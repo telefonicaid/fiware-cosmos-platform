@@ -34,6 +34,10 @@ namespace samson
             "Close local file opened to store with command 'open_traces_file'"
             );
         
+        add( "verbose" , "delilah", 
+            "Activate or disactivate verbose mode. This shows extra information for commands executed in delilah",
+            "verbose <on> <off>"
+            );
         
         add( "send_alert" , "delilah", 
             "Send a trace to all conneceted delilah using a random worker as a sender\n",

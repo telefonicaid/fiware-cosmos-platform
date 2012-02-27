@@ -41,8 +41,6 @@ namespace samson {
         
         class SystemQueueTask : public engine::ProcessItem , public QueueTaskBase
         {
-            
-            
 
         public:
         	// Goyo moved to public

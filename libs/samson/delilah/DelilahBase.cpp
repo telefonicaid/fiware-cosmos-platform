@@ -100,18 +100,6 @@ namespace samson {
         // Replace node int he workers tree
         database.replaceNodeInTree( "workers" , tree );
         
-        /*
-        // Run basic commands to get the table
-        database.runCommand( CREATE_TABLE_QUEUES );
-        database.runCommand( CREATE_TABLE_OPERATIONS );
-        database.runCommand( CREATE_TABLE_MODULES );
-        database.runCommand( CREATE_TABLE_ENGINES );
-        database.runCommand( CREATE_TABLE_ENGINE_DELILAH );
-         
-        database.runCommand( CREATE_TABLE_STREAM_OPERATIONS );
-        database.runCommand( CREATE_TABLE_BLOCKS );
-        database.runCommand( CREATE_TABLE_QUEUE_TASKS );
-         */
     }
 
     void DelilahBase::updateDelilahXMLString( std::string txt )

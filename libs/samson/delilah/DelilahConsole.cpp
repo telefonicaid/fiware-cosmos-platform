@@ -55,7 +55,9 @@ namespace samson
     
     DelilahConsole::DelilahConsole( NetworkInterface *network ) : Delilah( network )
     {
-        trace_on = false;
+        // Default values
+        show_alerts = false;
+        verbose = true;
         
         database_mode = false;  // By default we are not in this mode
         
@@ -66,8 +68,6 @@ namespace samson
         addEspaceSequence( "samson" );
         addEspaceSequence( "d" );  // Data base mode...
         
-        automatic_update = false;
-
         // By default no save traces
         trace_file = NULL;
         
@@ -138,39 +138,58 @@ namespace samson
         }
     }        
     
-    void autoCompleteQueueWithFormat(au::ConsoleAutoComplete* info  ,  std::string key_format , std::string value_format )
+    void DelilahConsole::autoCompleteQueueWithFormat(
+                                                     au::ConsoleAutoComplete* info  ,  
+                                                     std::string key_format , 
+                                                     std::string value_format 
+                                                     )
     {
-        /*
-         au::TokenTaker tt( &token_xml_info );
-         std::string c = au::str( "//controller//queue[format/key_format=\"%s\"][format/value_format=\"%s\"]" 
-         , key_format.c_str() , value_format.c_str() ); 
-         
-         std::vector<std::string> queue_names = pugi::values( doc , c );
-         
-         for ( size_t i = 0 ;  i < queue_names.size() ; i++)
-         addOption( queue_names[i] );
-         */
+        au::tables::Table* table = database.getTable("queues");
+        
+        if( !table )
+            return;
+        
+        for ( size_t r = 0 ; r <  table->getNumRows() ; r++ )
+        {
+            if( table->getValue(r, "key") == key_format )
+                if( table->getValue(r, "value") == value_format )
+                    info->add(  table->getValue(r, "name") );
+        }
+        
+        delete table;
+        
     }  
     
-    void autoCompleteQueueForOperation( au::ConsoleAutoComplete* info , std::string mainCommand , int argument_pos )
+    void DelilahConsole::autoCompleteQueueForOperation( au::ConsoleAutoComplete* info , std::string operation_name , int argument_pos )
     {
-        /*
-         pugi::xpath_node_set node_set;
-         
-         {
-         au::TokenTaker tt( &token_xml_info );
-         std::string c = au::str( "//controller//operation[name=\"%s\"]/input_formats/format[%d]" ,  mainCommand.c_str() , argument_pos+1 );
-         node_set = pugi::select_nodes(doc, c );
-         }
-         
-         if( node_set.size() > 0 )
-         {
-         std::string key_format = pugi::get( node_set[0].node() , "key_format" );
-         std::string value_format = pugi::get( node_set[0].node() , "value_format" );
-         
-         addQueueOptions(key_format, value_format);
-         } 
-         */
+        
+        // Search in the operations
+        Operation* operation = ModulesManager::shared()->getOperation(operation_name);
+        if ( !operation )
+            return;
+
+        if( argument_pos < operation->getNumInputs() )
+        {
+            autoCompleteQueueWithFormat(
+                                        info 
+                                        , operation->inputFormats[argument_pos].keyFormat 
+                                        , operation->inputFormats[argument_pos].valueFormat 
+                                        );
+        }
+        else 
+        {
+            argument_pos -= operation->getNumInputs();
+            if( argument_pos < operation->getNumOutputs() )
+            {
+                autoCompleteQueueWithFormat(
+                                            info 
+                                            , operation->outputFormats[argument_pos].keyFormat 
+                                            , operation->outputFormats[argument_pos].valueFormat 
+                                            );
+            }
+            
+        }
+        
     }
     
     
@@ -262,6 +281,14 @@ namespace samson
         }
         
         
+        // Suggest name of queues....
+        if( info->firstWord() == "run_stream_operation" )
+        {
+            // Suggest queues... ( no format at the moment )
+            autoCompleteQueueForOperation( info , info->secondWord() , info->completingWord() - 2 );
+        }
+        
+        
         if (info->completingSecondWord( "init_stream" ) )
         {
             autoCompleteOperations( info , "script" );
@@ -307,11 +334,20 @@ namespace samson
         
         if (info->completingSecondWord("alerts") )
         {
-            if (trace_on)
+            if (show_alerts)
                 info->add("off");
             else
                 info->add("on");
         }
+
+        if (info->completingSecondWord("verbose") )
+        {
+            if (verbose)
+                info->add("off");
+            else
+                info->add("on");
+        }
+        
         
         if (info->completingSecondWord("set_database_mode") )
             info->add("on"); // It can only be on
@@ -651,7 +687,7 @@ namespace samson
             
             if ( commandLine.get_num_arguments() == 1)
             {
-                if( trace_on )
+                if( show_alerts )
                     writeOnConsole( "Alerts are activated\n" );
                 else
                     writeOnConsole( "Alerts are NOT activated\n" );
@@ -660,18 +696,47 @@ namespace samson
             
             if( commandLine.get_argument(1) == "on" )
             {
-                trace_on = true;
+                show_alerts = true;
                 writeOnConsole( "Alerts are now activated\n" );
                 return 0;
             }
             if( commandLine.get_argument(1) == "off" )
             {
-                trace_on = false;
+                show_alerts = false;
                 writeOnConsole( "Alerts are now NOT activated\n" );
                 return 0;
             }
             
             writeErrorOnConsole("Usage: alerts on/off\n");
+            return 0;
+        }
+        
+        if ( mainCommand == "verbose")
+        {
+            
+            if ( commandLine.get_num_arguments() == 1)
+            {
+                if( verbose )
+                    writeOnConsole( "verbose mode is activated\n" );
+                else
+                    writeOnConsole( "verbose mode is NOT activated\n" );
+                return 0;
+            }
+            
+            if( commandLine.get_argument(1) == "on" )
+            {
+                verbose = true;
+                writeOnConsole( "verbose mode is now activated\n" );
+                return 0;
+            }
+            if( commandLine.get_argument(1) == "off" )
+            {
+                verbose = false;
+                writeOnConsole( "verbose mode is now NOT activated\n" );
+                return 0;
+            }
+            
+            writeErrorOnConsole("Usage: verbose on/off\n");
             return 0;
         }
         
@@ -786,10 +851,26 @@ namespace samson
         
         if( mainCommand == "stop_repeat" )
         {
-            // Stop all repeat commands
-            engine::Engine::shared()->notify( new engine::Notification(notification_delilah_stop_repeat_tasks ) );
             
-            showWarningMessage("All repeat operations stoped");
+            if ( commandLine.get_num_arguments() < 2 )
+            {
+                stop_all_repeat();
+                // Stop all repeated operations
+                writeOnConsole("All repeat operations stoped");
+            }
+            else
+            {
+                size_t id_process = ::atoll( commandLine.get_argument(1).c_str() );
+                Status s = stop_repeat( id_process );
+                if( s == OK )
+                    writeOnConsole( au::str("Stopped repeate process %lu" , id_process) );
+                else
+                    writeErrorOnConsole( au::str("Problems stopping repeate process %lu" , id_process) );
+                    
+                
+            }
+            
+            
             
             return 0;
         }
@@ -853,11 +934,11 @@ namespace samson
                 
                 if( S_ISREG(buf.st_mode) )
                 {
-                    if( trace_on )
+                    if( verbose )
                     {
                         
                         std::ostringstream message;
-                        message << "Including regular file " << fileName;
+                        message << "Including regular file " << fileName << " with " <<  au::str( buf.st_size ) <<" Bytes\n";
                         writeOnConsole( message.str() );
                     }
                     
@@ -865,10 +946,10 @@ namespace samson
                 }
                 else if ( S_ISDIR(buf.st_mode) )
                 {
-                    if( trace_on )
+                    if( verbose )
                     {
                         std::ostringstream message;
-                        message << "Including directory " << fileName;
+                        message << "Including directory " << fileName << "\n";
                         writeOnConsole( message.str() );
                     }
                     
@@ -898,7 +979,7 @@ namespace samson
                 } 
                 else
                 {
-                    if( trace_on )
+                    if( verbose )
                     {
                         std::ostringstream message;
                         message << "Skipping " << fileName;
@@ -1012,19 +1093,6 @@ namespace samson
                 writeWarningOnConsole("OK");
             return 0;
         }
-
-        if( mainCommand == "automatic_update" )
-        {
-            automatic_update = true;
-            writeOnConsole("OK\n");
-            return 0;
-        }
-        
-        if( mainCommand == "cancel_automatic_update" )
-        {
-            automatic_update = true;
-            writeOnConsole("OK\n");
-        }
         
         if( mainCommand == "ls_local" )
         {
@@ -1137,7 +1205,7 @@ namespace samson
                     fwrite(trace_message.c_str(), trace_message.length(), 1, trace_file);
                 }
                 
-                if( trace_on )
+                if( show_alerts )
                 {
                     
                     au::tables::Table table( au::StringVector("Concept" , "Value" ) , au::StringVector("","left") );
@@ -1174,13 +1242,15 @@ namespace samson
         if ( component->hidden )
             return; // No notification for hidden processes
 
-        
-        std::ostringstream o;
-        o << "Local process started: " << component->getIdAndConcept() << "\n";
-        if( component->error.isActivated() )
-            writeErrorOnConsole(o.str());        
-        else
-            writeWarningOnConsole(o.str());        
+        if( verbose )
+        {
+            std::ostringstream o;
+            o << "Local process started: " << component->getIdAndConcept() << "\n";
+            if( component->error.isActivated() )
+                writeErrorOnConsole(o.str());        
+            else
+                writeWarningOnConsole(o.str());        
+        }
     }
     
     void DelilahConsole::delilahComponentFinishNotification( DelilahComponent *component )
@@ -1188,15 +1258,18 @@ namespace samson
         if ( component->hidden )
             return; // No notification for hidden processes
         
-        if( !component->error.isActivated() )
-            writeWarningOnConsole( au::str( "Local process finished: %s\n" , component->getIdAndConcept().c_str() ) );
-        else
+        if( verbose )
         {
-            writeErrorOnConsole( au::str( "Local process finished with error: %s\nERROR: %s\n" 
-                                           , component->getIdAndConcept().c_str()
-                                           , component->error.getMessage().c_str()
-                                           ) 
-                                  );
+            if( !component->error.isActivated() )
+                writeWarningOnConsole( au::str( "Local process finished: %s\n" , component->getIdAndConcept().c_str() ) );
+            else
+            {
+                writeErrorOnConsole( au::str( "Local process finished with error: %s\nERROR: %s\n" 
+                                             , component->getIdAndConcept().c_str()
+                                             , component->error.getMessage().c_str()
+                                             ) 
+                                    );
+            }
         }
         
     }

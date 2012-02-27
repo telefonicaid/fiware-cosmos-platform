@@ -149,11 +149,12 @@ namespace samson {
             void addBlockIdsTo( std::set<size_t> &block_ids );
             void removeBlockIdsAt( std::set<size_t> &block_ids );
             bool isAnyBlockIncludedIn( std::set<size_t> &block_ids);
+
+            // Get a unit of defragmentation
+            size_t getAverageNumberOfHashgroups();
             
             //Debugging str
             std::string strRanges();
-
-            
             std::string strShortDescription();
             
         };

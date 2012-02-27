@@ -82,10 +82,6 @@ namespace samson {
 		// Map of components that intercept messages
 		au::map<size_t , DelilahComponent> components;			
         
-        // Flag to indicate if we are shoing traces
-        bool trace_on;
-
-        
     public:
         
         delilah_process_stream_out_queue op_delilah_process_stream_out_queue;
@@ -99,8 +95,6 @@ namespace samson {
         // Identifier of the next worker to send data
 		int next_worker;
 		
-        bool automatic_update;
-        
 	public:
 		
 		Delilah( NetworkInterface *_network );
@@ -174,6 +168,9 @@ namespace samson {
 		
 		void clearComponents();
         void clearAllComponents();  // Force all of them to be removed
+        
+        Status stop_repeat( size_t id );        
+        Status stop_all_repeat(  );
         
         // Get a list of local directory
         std::string getLsLocal( std::string pattern );

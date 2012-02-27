@@ -63,10 +63,30 @@
 								</includes>
 							</dependency>
 						</mapping>
+
+						<mapping>
+							<directory>/usr/local/bdp/utils/lib/native</directory>
+							<filemode>750</filemode>
+							<username>hdfs</username>
+							<groupname>hadoop</groupname>
+							<sources>
+								<source>
+									<location>binaries/libgplcompression.a</location>
+									<location>binaries/libgplcompression.la</location>
+									<location>binaries/libgplcompression.so.0.0.0</location>
+								</source>
+							</sources>
+						</mapping>
 					</mappings>
-					<preinstallScriptlet>
+					<postremove>rm -f
+						/usr/local/bdp/utils/lib/native/libgplcompression.so
+					</postremove>
+					<postinstall>
+						<script>ln -s
+							/usr/local/bdp/utils/lib/native/libgplcompression.so.0.0.0
+							/usr/local/bdp/utils/lib/native/libgplcompression.so</script>
 						<script>echo "installing now"</script>
-					</preinstallScriptlet>
+					</postinstall>
 				</configuration>
 			</plugin>
 			<plugin>

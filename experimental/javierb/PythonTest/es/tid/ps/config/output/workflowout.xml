@@ -1,0 +1,132 @@
+<?xml version="1.0" ?>
+<workflow-app name="webprofilingWF" xmlns="uri:oozie:workflow:0.1" xmlns:xi="http://www.w3.org/2001/XInclude">
+	
+    
+	<start to="filtering"/>
+	
+    
+	<!-- This action runs the filtering map process over the raw data -->
+	
+    
+	
+	<xi:include href="PP_4f436f74367cfd07b1000001.xml"/>
+	<fork name="aggregation">
+		
+    
+		<path start="4f436f74367cfd07b1000002"/>
+	</fork>
+	
+	
+	
+	<!-- These actions run map reduce operations to calculate kpis of web profiling -->
+	
+	
+	
+	
+	<xi:include href="WP_4f436f74367cfd07b1000002.xml"/>
+	<join name="joining" to="end"/>
+	
+	
+	
+	<!-- This fork group runs in parallel the processes to export kpis to mysql -->
+	
+	
+	<fork name="exporttomysql">
+		
+		
+		<path start="CLEAN_PAGE_VIEWS_PROT_DEV"/>
+		
+		
+		<path start="CLEAN_PAGE_VIEWS_PROT_MET"/>
+		
+		
+		<path start="CLEAN_PAGE_VIEWS_PROT"/>
+		
+		
+		<path start="CLEAN_PAGE_VIEWS_PROT_DOM_PATH"/>
+		
+		
+		<path start="CLEAN_VISITORS_PROT"/>
+		
+		
+		<path start="CLEAN_VISITORS_PROT_DOM_PATH"/>
+		
+		
+		<path start="CLEAN_VISITORS_PROT_UAGENT"/>
+		
+    
+	</fork>
+	
+	
+	
+	<!-- These actions run sqoop operations to clean temporal tables in mysql -->
+	
+	
+	<xi:include href="sqoop/clean/clean_page_views_prot_dev.xml"/>
+	
+	
+	<xi:include href="sqoop/clean/clean_page_views_prot_met.xml"/>
+	
+	
+	<xi:include href="sqoop/clean/clean_page_views_prot.xml"/>
+	
+	
+	<xi:include href="sqoop/clean/clean_page_views_prot_dom_path.xml"/>
+	
+	
+	<xi:include href="sqoop/clean/clean_visitors_prot.xml"/>
+	
+	
+	<xi:include href="sqoop/clean/clean_visitors_prot_dom_path.xml"/>
+	
+	
+	<xi:include href="sqoop/clean/clean_visitors_prot_uagent.xml"/>
+	
+	
+	
+	<!-- These actions run sqoop operations to export kpi data to mysql -->
+	
+	
+	<xi:include href="sqoop/export/export_page_views_prot_dev.xml"/>
+	
+	
+	<xi:include href="sqoop/export/export_page_views_prot_met.xml"/>
+	
+	
+	<xi:include href="sqoop/export/export_page_views_prot.xml"/>
+	
+	
+	<xi:include href="sqoop/export/export_page_views_prot_dom_path.xml"/>
+	
+	
+	<xi:include href="sqoop/export/export_visitors_prot.xml"/>
+	
+	
+	<xi:include href="sqoop/export/export_visitors_prot_dom_path.xml"/>
+	
+	
+	<xi:include href="sqoop/export/export_visitors_prot_uagent.xml"/>
+	
+
+	
+	
+	<join name="exportjoining" to="end"/>
+	
+	
+    
+	<kill name="fail">
+		
+        
+		<message>
+			Map/Reduce failed, error message[${wf:errorMessage(wf:lastErrorNode())}]
+		</message>
+		
+    
+	</kill>
+	
+	
+    
+	<end name="end"/>
+	
+
+</workflow-app>

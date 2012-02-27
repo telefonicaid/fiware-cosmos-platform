@@ -4,7 +4,7 @@
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 
     <appender name="bdp" class="org.apache.log4j.RollingFileAppender">
-        <param name="File" value="/var/log/bdp/sftpsever/bdp-sftp_server.log" />
+        <param name="File" value="/var/log/bdp/sftpserver/bdp-sftp_server.log" />
         <param name="MaxBackupIndex" value="10" />
         <param name="MaxFileSize" value="1000000" />
         <layout class="org.apache.log4j.PatternLayout">

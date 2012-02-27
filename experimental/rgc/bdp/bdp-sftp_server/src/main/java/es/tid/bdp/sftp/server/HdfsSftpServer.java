@@ -21,17 +21,23 @@ package es.tid.bdp.sftp.server;
 
 import java.net.InetSocketAddress;
 import java.security.PublicKey;
+import java.util.Arrays;
 import java.util.EnumSet;
 
 import org.apache.sshd.SshServer;
+import org.apache.sshd.common.Factory;
+import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.util.OsUtils;
 import org.apache.sshd.common.util.SecurityUtils;
+import org.apache.sshd.server.Command;
 import org.apache.sshd.server.ForwardingFilter;
 import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.PublickeyAuthenticator;
+import org.apache.sshd.server.ServerFactoryManager;
 import org.apache.sshd.server.keyprovider.PEMGeneratorHostKeyProvider;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.session.ServerSession;
+import org.apache.sshd.server.sftp.SftpSubsystem;
 import org.apache.sshd.server.shell.ProcessShellFactory;
 
 import es.tid.bdp.sftp.server.filesystem.hadoop.HdfsFileSystemFactory;
@@ -115,6 +121,8 @@ public class HdfsSftpServer {
         });
         
         sshd.setFileSystemFactory(new HdfsFileSystemFactory());
+        sshd.setSubsystemFactories(Arrays
+                .<NamedFactory<Command>> asList(new SftpSubsystem.Factory()));
         sshd.start();
     }
 

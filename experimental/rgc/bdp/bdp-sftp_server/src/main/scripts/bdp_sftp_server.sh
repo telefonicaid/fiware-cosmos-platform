@@ -16,9 +16,14 @@ HADOOP_LIB=$HADOOP_HOME/lib 	                                 # Hadoop library j
 CONF=$baseDir/conf                                              # configuration directory
  
 
+DEBUG_OPTIONS="-Xdebug -Xrunjdwp:transport=dt_socket,address=8011,server=y  suspend=y"
+JAVA_OPTS="$JAVA_OPTS $DEBUG_OPTIONS"
+
 
 JAVA_OPTS="$JAVA_OPTS -Djava.library.path=/usr/lib64:/opt/hadoop/lib/native/Linux-amd64-64"
 JAVA_OPTS="$JAVA_OPTS -Dlog4j.configuration=file://$CONF/log4j.xml"
+
+
 
 # Include all dependencies in lib folder and append to classpath
 for LIB in $LIB_DIR/*.jar; do

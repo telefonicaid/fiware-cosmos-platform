@@ -56,9 +56,12 @@ public:
 */
 void init(samson::KVWriter* writer)
 {
-	std::string bulksize;
-	std::string history;
-	std::string lkl_fill;
+	std::string  bulksize;
+	std::string  history;
+	std::string  lkl_fill;
+    time_t       now;
+    struct tm    tmP;
+    char         timeLine[80];
 
 	mdbConnection            = NULL;
 
@@ -69,14 +72,10 @@ void init(samson::KVWriter* writer)
 	mongo_ip                 = environment->get("mongo.ip",                 "no-mongo-ip");
 	mongo_db                 = environment->get("mongo.db",                 "no-mongo-db");
 	mongo_collection         = environment->get("mongo.collection",         "no-mongo-collection");
-	
+
 	mongo_bulksize           = atoi(bulksize.c_str());
 	mongo_history            = atoi(history.c_str());
 	mongo_lkl_fill           = atoi(lkl_fill.c_str());
-
-
-	OLM_M(("Recovering value mongo_lkl_fill %s %d" , lkl_fill.c_str() ,  mongo_lkl_fill));
-
 
 	if (mongo_ip == "no-mongo-ip")
 	{
@@ -96,6 +95,16 @@ void init(samson::KVWriter* writer)
 		return;
 	}
 
+
+    //
+    // Adding 'time' to collection name
+    // The collections are predefined in mongo as the collection must be configured to use sharding ...
+    //
+    now = time(NULL);
+    gmtime_r(&now, &tmP);
+    strftime(timeLine, sizeof(timeLine), "%Y-%m-%d %H:%M:%S", &tmP);
+    mongo_collection += timeLine;
+
 	mdbConnection = new DBClientConnection();
 	OLM_M(("Connecting to mongo at '%s'", mongo_ip.c_str()));
 
@@ -108,7 +117,7 @@ void init(samson::KVWriter* writer)
 		OLM_E(("Error connecting to mongo at '%s'", mongo_ip.c_str()));
 		delete mdbConnection;
 		mdbConnection = NULL;
-		tracer->setUserError("error connecting to MongDB at " + mongo_ip);
+		tracer->setUserError("error connecting to MongoDB at " + mongo_ip);
 		return;
 	}
 

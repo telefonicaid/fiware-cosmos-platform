@@ -78,14 +78,14 @@
 							</sources>
 						</mapping>
 					</mappings>
-					<postremoveScript>rm -f
+					<postremoveScriptlet>rm -f
 						/usr/local/bdp/utils/lib/native/libgplcompression.so
-					</postremoveScript>
-					<postinstallScript>
+					</postremoveScriptlet>
+					<postinstallScriptlet>
 						<script>ln -s
 							/usr/local/bdp/utils/lib/native/libgplcompression.so.0.0.0
 							/usr/local/bdp/utils/lib/native/libgplcompression.so</script>
-					</postinstallScript>
+					</postinstallScriptlet>
 				</configuration>
 			</plugin>
 			<plugin>

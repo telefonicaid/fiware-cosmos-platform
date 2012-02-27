@@ -3,6 +3,7 @@ package es.tid.bdp.sftp.server.filesystem.hadoop;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,6 +16,10 @@ import org.apache.sshd.server.SshFile;
 import org.apache.sshd.server.filesystem.NativeSshFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import es.tid.bdp.utils.io.output.ProtoBufOutStream;
+import es.tid.bdp.utils.parse.ParserAbstract;
+import es.tid.bdp.utils.parse.ParserCdr;
 
 public class HdfsSshFile implements SshFile {
 
@@ -205,8 +210,8 @@ public class HdfsSshFile implements SshFile {
     public List<SshFile> listSshFiles() {
 
         // is a directory
-        if (isDirectory()) {
-            return null;
+        if (!isDirectory()) {
+            return Collections.unmodifiableList(new ArrayList<SshFile>());
         }
 
         // directory - return all the files
@@ -217,7 +222,7 @@ public class HdfsSshFile implements SshFile {
             throw new RuntimeException(e);
         }
         if (elements == null) {
-            return null;
+            return Collections.unmodifiableList(new ArrayList<SshFile>());
         }
 
         // make sure the files are returned in order
@@ -248,13 +253,15 @@ public class HdfsSshFile implements SshFile {
         if (offset > 0) {
             throw new RuntimeException();
         }
-        if (this.outputStream != null) {
-            return outputStream;
-        }else{
+        if (this.outputStream == null) {
             create();
-            return outputStream;
-
         }
+
+        ParserAbstract parser = new ParserCdr(
+                "(^.+)\\|(.*)\\|\\d\\|(\\d{2})/(\\d{2})/(\\d{4})\\|(\\d{2}):(\\d{2}):(\\d{2})\\|.*",
+                "userId|cellId|day|month|year|hour|minute|second");
+
+        return new ProtoBufOutStream(outputStream, parser);
     }
 
     public InputStream createInputStream(long offset) throws IOException {

@@ -102,5 +102,10 @@
 			<artifactId>sshd-core</artifactId>
 			<version>0.6.0</version>
 		</dependency>
+		<dependency>
+			<groupId>es.tid.bdp</groupId>
+			<artifactId>bdp-utils</artifactId>
+			<version>0.0.1</version>
+		</dependency>
 	</dependencies>
 </project>

@@ -17,7 +17,7 @@ CONF=$baseDir/conf                                              # configuration 
  
 
 
-JAVA_OPTS="$JAVA_OPTS -Djava.library.path=/usr/lib64:/opt/hadoop/lib/native/Linux-amd64-64"
+JAVA_OPTS="$JAVA_OPTS -Djava.library.path=$UTIL_LIB/native:/opt/hadoop/lib/native/Linux-amd64-64"
 JAVA_OPTS="$JAVA_OPTS -Dlog4j.configuration=file://$CONF/log4j.xml"
 
 # Include all dependencies in lib folder and append to classpath

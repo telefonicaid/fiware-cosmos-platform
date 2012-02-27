@@ -79,13 +79,10 @@
 						</mapping>
 					</mappings>
 					<postremoveScriptlet>
-					<script>rm -f
-						/usr/local/bdp/utils/lib/native/libgplcompression.so</script>
+					<script>rm -f /usr/local/bdp/utils/lib/native/libgplcompression.so</script>
 					</postremoveScriptlet>
 					<postinstallScriptlet>
-						<script>ln -s
-							/usr/local/bdp/utils/lib/native/libgplcompression.so.0.0.0
-							/usr/local/bdp/utils/lib/native/libgplcompression.so</script>
+						<script>ln -s /usr/local/bdp/utils/lib/native/libgplcompression.so.0.0.0 /usr/local/bdp/utils/lib/native/libgplcompression.so</script>
 					</postinstallScriptlet>
 				</configuration>
 			</plugin>

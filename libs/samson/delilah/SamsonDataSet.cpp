@@ -84,13 +84,15 @@ namespace samson {
         files.clearMap();
     }
     
-    std::string SamsonDataSet::str()
+    std::string SamsonDataSet::strSize()
     {
-        std::ostringstream output;
-        output << info.str() << " " << format.str();
-        return output.str();
+        return info.str();
     }
     
+    std::string SamsonDataSet::strFormat()
+    {
+        return format.str();
+    }
     
     void SamsonDataSet::printHashGroups(  std::ostream &output )
     {

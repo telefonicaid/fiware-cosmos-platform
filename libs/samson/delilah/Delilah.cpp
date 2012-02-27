@@ -560,9 +560,9 @@ namespace samson {
         
     }    
     
-    std::string Delilah::getLsLocal( std::string pattern )
+    std::string Delilah::getLsLocal( std::string pattern , bool only_queues )
     {
-        au::tables::Table* table = new au::tables::Table( au::StringVector( "Name" , "Type" , "Description" ) , au::StringVector( "left" , "left" , "left" ) );
+        au::tables::Table* table = new au::tables::Table( au::StringVector( "Name" , "Type" , "Size" , "Format" ) , au::StringVector( "left" , "left" , "" , "left" ) );
                                                          
         // first off, we need to create a pointer to a directory
         DIR *pdir = opendir ("."); // "." will refer to the current directory
@@ -587,8 +587,8 @@ namespace samson {
                         if( S_ISREG(buf2.st_mode) )
                         {
                             size_t size = buf2.st_size;
-                            
-                            table->addRow( au::StringVector( pent->d_name, "FILE" , au::str(size,"bytes")   ) );
+                            if (!only_queues)                            
+                                table->addRow( au::StringVector( pent->d_name, "FILE" , au::str(size,"bytes") , "-" ) );
                         }
                         if( S_ISDIR(buf2.st_mode) )
                         {
@@ -597,10 +597,11 @@ namespace samson {
                             
                             if( dataSet.error.isActivated() )
                             {
-                                table->addRow( au::StringVector( pent->d_name, "DIR" , ""   ) );
+                                if (!only_queues)                            
+                                    table->addRow( au::StringVector( pent->d_name, "DIR" , "" , ""  ) );
                             }
                             else
-                                table->addRow( au::StringVector( pent->d_name, "SAMSON Dataset" , dataSet.str()   ) );
+                                table->addRow( au::StringVector( pent->d_name, "SAMSON queue" , dataSet.strSize() , dataSet.strFormat() ) );
                             
                         }
                         
@@ -611,7 +612,10 @@ namespace samson {
             closedir (pdir);						
         }
         
-        return table->str(au::str("Local files ( %s )" , pattern.c_str()));
+        if( only_queues )
+            return table->str(au::str("Local queues ( %s )" , pattern.c_str()));
+        else
+            return table->str(au::str("Local files ( %s )" , pattern.c_str()));
     }
     
     

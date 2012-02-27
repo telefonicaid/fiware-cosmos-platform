@@ -83,6 +83,7 @@ namespace samson
         
         add("ls_local", "local", 
             "Show a list of current directory with relevant information about local data-sets");
+
         
         add("rm_local", "local",
             "Remove a local directory and all its contents"); 
@@ -218,7 +219,7 @@ namespace samson
         
         
         add( "connect_to_queue" , "push&pop"  
-            , "Connect to a particular queue to receive live data from SAMSON"
+            , "Connect to a particular queue to receive live data from SAMSON. Received data will be stored in a local directory called stream_out_<queue>"
             , "connect_to_queue queue" );
         
         add( "disconnect_from_queue" , "push&pop" ,
@@ -226,6 +227,9 @@ namespace samson
             "disconnect_from_queue queue"
             );
         
+        
+        add("ls_local_queues", "push&pop", 
+            "Show a list of local queues ( current directory ). These queues have been typically being downloaded with command pop.");
         
         add( "show_local_queue" , "push&pop"  ,
             "Show contents of a queue downloaded using pop. Modules should be installed locally",

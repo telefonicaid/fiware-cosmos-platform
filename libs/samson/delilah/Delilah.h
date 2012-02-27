@@ -173,7 +173,7 @@ namespace samson {
         Status stop_all_repeat(  );
         
         // Get a list of local directory
-        std::string getLsLocal( std::string pattern );
+        std::string getLsLocal( std::string pattern , bool only_queues );
         
         // Generate XML monitorization data
         void getInfo( std::ostringstream& output ); 

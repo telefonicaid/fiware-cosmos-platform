@@ -27,8 +27,8 @@ namespace samson {
         void printHeaders( std::ostream &output);
         void printContent( size_t limit , std::ostream &output );
         
-        
-        std::string str();
+        std::string strSize();
+        std::string strFormat();
     };
 }
 

@@ -1100,10 +1100,21 @@ namespace samson
             if( commandLine.get_num_arguments() > 1 )
                 pattern = commandLine.get_argument(1);
             
-            writeOnConsole( getLsLocal( pattern ) ); 
+            writeOnConsole( getLsLocal( pattern , false ) ); 
             return 0;
         }
 
+        if( mainCommand == "ls_local_queues" )
+        {
+            std::string pattern ="*";
+            if( commandLine.get_num_arguments() > 1 )
+                pattern = commandLine.get_argument(1);
+            
+            writeOnConsole( getLsLocal( pattern , true ) ); 
+            return 0;
+        }
+        
+        
         if ( mainCommand == "show_local_queue" )
         {
             if( commandLine.get_num_arguments() < 2 )
@@ -1288,22 +1299,25 @@ namespace samson
         size_t counter = stream_out_queue_counters.getCounterFor( queue );
         size_t packet_size = buffer->getSize();
         
-        if( mkdir( "stream_out_queues" , 0755 ) != 0 )
+        std::string directory_name = au::str("stream_out_%s" , queue.c_str() );
+        
+        if( ( mkdir( directory_name.c_str() , 0755 ) != 0 ) && ( errno != EEXIST ) )
         {
-            showErrorMessage("It was not possible to create directory stream_out_queues to store data");
+            showErrorMessage(au::str("It was not possible to create directory %s to store data from queue %s" , directory_name.c_str() , queue.c_str() ));
             showErrorMessage(au::str("Rejecting a %s data from queue %s" 
                                      , au::str(packet_size,"B").c_str()
                                      , queue.c_str() ));
             return;
         }
         
-        std::string fileName = au::str( "stream_out_queues/queue_%s_%l05u" , queue.c_str() , counter );
-        
-        showMessage( au::str("Received stream data for queue %s (%s). Stored at file %s" 
-                             , queue.c_str() 
-                             , au::str( packet_size ,"B" ).c_str() 
-                             , fileName.c_str() )
-                    );
+        std::string fileName = au::str( "%s/block_%l05u" , directory_name.c_str() , counter );
+
+        if (verbose)
+            showMessage( au::str("Received stream data for queue %s (%s). Stored at file %s" 
+                                 , queue.c_str() 
+                                 , au::str( packet_size ,"B" ).c_str() 
+                                 , fileName.c_str() )
+                        );
         
         // Disk operation....
         engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer ,  fileName , getEngineId()  );

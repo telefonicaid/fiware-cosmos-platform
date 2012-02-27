@@ -65,7 +65,7 @@
 						</mapping>
 
 						<mapping>
-							<directory>/usr/local/bdp/utils/native</directory>
+							<directory>/usr/local/bdp/utils/lib/native</directory>
 							<filemode>750</filemode>
 							<username>hdfs</username>
 							<groupname>hadoop</groupname>

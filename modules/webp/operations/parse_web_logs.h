@@ -81,12 +81,12 @@ namespace webp{
 		   log.user.value = fields[0];
 		   log.url.value = url;
 
-		   LM_M(("day:%d, month:%d, year:%d", day, month, year));
+		   //LM_M(("day:%d, month:%d, year:%d", day, month, year));
 
 		   log.time.setFromDayMonthYear( day , month , year );
 
 
-		   LM_M(("Detected log user:%s, url:%s, time:%s", log.user.value.c_str(), log.url.value.c_str(), log.time.str().c_str()));
+		   //LM_M(("Detected log user:%s, url:%s, time:%s", log.user.value.c_str(), log.url.value.c_str(), log.time.str().c_str()));
 
 		   // Find categories for this url
 		   log.categoriesSetLength(0); // Remove categories from previous entries

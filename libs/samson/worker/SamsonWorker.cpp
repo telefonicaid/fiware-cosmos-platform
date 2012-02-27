@@ -1,3 +1,4 @@
+#include <iconv.h>
 #include <iostream>                     // std::cout ...
 
 #include "logMsg/logMsg.h"                     // lmInit, LM_*
@@ -245,6 +246,8 @@ namespace samson {
         
     }
     
+
+
     // Receive notifications
     void SamsonWorker::notify( engine::Notification* notification )
     {
@@ -322,39 +325,125 @@ namespace samson {
             LM_X(1, ("SamsonWorker received an unexpected notification %s", notification->getDescription().c_str()));
     }
     
+
+
+/* ****************************************************************************
+*
+* toUTF8 - 
+*/
+static char* toUTF8(char* in, size_t* outLenP)
+{
+    static iconv_t  icDesc = (iconv_t) -1;
+
+    if (icDesc == (iconv_t) -1)
+    {
+        icDesc   = iconv_open("UTF-8", "ISO-8859-1");
+        if (icDesc == (iconv_t) -1)
+        {
+            LM_E(("error opening utf8 converter: %s", strerror(errno)));
+            return strdup("error opening utf8 converter");
+        }
+    }
+
+
+    int             outSize      = 4 * strlen(in);
+    char*           out          = (char*) calloc(1, outSize);
+    char*           outStart     = out;
+    size_t          outbytesLeft = outSize;
+    size_t          inbytesLeft  = strlen(in);
+    int             nb           = 0;
+
+    LM_T(LmtRest, ("Converting string of %d bytes to utf8", strlen(in)));
+    nb = iconv(icDesc, (char**) &in, &inbytesLeft, (char**) &out, &outbytesLeft);
+    if (nb == -1)
+    {
+        free((void*) outStart);
+        LM_RE(NULL, ("iconv: %s", strerror(errno)));
+    }
+
+    LM_T(LmtRest, ("Got a utf8 string of %d bytes as result", outSize - outbytesLeft));
+    nb = outSize - outbytesLeft;
+    if (outLenP != NULL)
+        *outLenP = nb;
+
+    return outStart;
+}
+
+
+
+    //
+    // SamsonWorker::getRESTInformation - 
+    //
     std::string SamsonWorker::getRESTInformation( ::std::string in )
     {
-        std::ostringstream output;
-        output << "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n";
-        output << "<!-- SAMSON Rest interface -->\n";
+        std::ostringstream header;
+        std::ostringstream data;
+
+        LM_T(LmtRest, ("Incoming REST request"));
         
-        output << "<samson>\n";
+        data << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n";
+        data << "<!-- SAMSON Rest interface -->\r\n";
+        
+        data << "<samson>\r\n";
         
         // Get the path components
         std::vector<std::string> path_components = au::split( in , '/' );
 
-        if ( ( path_components.size() < 2 ) || (path_components[0] != "samson") )
-            au::xml_simple(output, "message", "Error. Only /samson/path requests are valid" );
-        
-        else if( path_components[1] == "version" )
-            au::xml_simple(output, "version", au::str("SAMSON v %s" , SAMSON_VERSION ) );
+        if ((path_components.size() < 2) || (path_components[0] != "samson"))
+            au::xml_simple(data, "message", "Error. Only /samson/path requests are valid" );
+        else if (path_components[1] == "version")
+            au::xml_simple(data, "version", au::str("SAMSON v %s" , SAMSON_VERSION ) );
+        else if (path_components[1] == "utftest")
+        {
+            char     in[32];
+
+            int ix = 0;
+
+            memset(in, 0, 32);
+            in[ix++] = '-';
+            in[ix++] = 0xA2;
+            in[ix++] = 0xA3;
+            in[ix++] = 0xA4;
+            in[ix++] = '-';
+            in[ix++] = 0;
+
+            au::xml_simple(data, "utf8", au::str(in));
+        }
         else if( path_components[1] == "state" )
         {
             if( path_components.size() < 4 )
-                au::xml_simple(output, "message", au::str("Error: format /samson/state/queue/key" ) );
+                au::xml_simple(data, "message", au::str("Error: format /samson/state/queue/key" ) );
             else
-                output<< streamManager->getState( path_components[2] , path_components[3].c_str() );
+                data << streamManager->getState( path_components[2] , path_components[3].c_str() );
             
         }
         else if( path_components[1] == "cluster" )
-            network->getInfo( output , "cluster" );
+            network->getInfo( data , "cluster" );
         else
-            au::xml_simple(output, "message", au::str("Error: Unkown path component '%s'\n" , path_components[1].c_str() ) );
+            au::xml_simple(data, "message", au::str("Error: Unkown path component '%s'\n" , path_components[1].c_str() ) );
 
-        output << "\n</samson>\n";
+        data << "\r\n</samson>\r\n\r\n";
         
+        int dataLen = data.str().length();
+
+        header << "HTTP/1.1 200 OK\r\n";
+        header << "Content-Type:   \"text/xml\"\r\n";
+        header << "Content-Length: " << dataLen << "\r\n";
+        header << "\r\n";
+
+        std::ostringstream output;
+
+        char* out = toUTF8((char*) data.str().c_str(), NULL);
+        if (out == NULL)
+        {
+            out = strdup("error converting data to UTF8"); // free later ...
+            LM_E((out));
+        }
+
+        output << header.str() << out;
+        free(out);
+
         return output.str();
-        
     }
     
     

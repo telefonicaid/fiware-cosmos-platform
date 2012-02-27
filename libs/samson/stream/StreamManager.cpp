@@ -793,7 +793,7 @@ namespace samson {
         {
             Queue* queue = queues.findInMap(queue_name);
             if (!queue)
-                return au::xml_simple( "error" , au::str("Queue %s not found" , queue_name.c_str() ));
+                return au::xml_simple( "error" , au::str("Queue '%s' not found" , queue_name.c_str() ));
             
             // Data instances
             KVFormat format = queue->getFormat();

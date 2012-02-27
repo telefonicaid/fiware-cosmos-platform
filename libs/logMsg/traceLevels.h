@@ -30,7 +30,8 @@ typedef enum TraceLevels
     LmtNetworkInterface       = 22,  // Network interface 
 
     LmtHost                   = 30,  // Host & HostManager    
-    
+    LmtRest                   = 31,  // REST Interface
+
 	LmtEngine                 = 200, // SamsonEngine
 	LmtEngineNotification,
     

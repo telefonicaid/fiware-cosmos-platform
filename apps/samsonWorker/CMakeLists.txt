@@ -16,6 +16,7 @@ SET (LIBS
     engine
     au
 	tables
+	iconv
     pa
     lm
     protobuf

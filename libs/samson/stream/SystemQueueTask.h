@@ -19,6 +19,8 @@
 
 #include "samson/common/coding.h"               // KVRange
 #include "samson/common/samson.pb.h"            // network::...
+#include "samson/common/samson.pb.h"
+#include "samson/common/Visualitzation.h"
 
 #include "samson/stream/QueueTaskBase.h"        // samson::stream::QueueTaskBase
 #include "samson/stream/QueueTaskManager.h"     // samson::stream::QueueTaskManager
@@ -55,6 +57,7 @@ namespace samson {
             // xml version of the information
             void getInfo( std::ostringstream& output);
           
+            void fill( samson::network::CollectionRecord* record , VisualitzationOptions options );
             
         };
     }

@@ -51,6 +51,7 @@ namespace samson {
             au::xml_close(output , "queue_task" );
         }
 
+         
         void QueueTask::fill( samson::network::CollectionRecord* record , VisualitzationOptions options )
         {
             
@@ -78,8 +79,7 @@ namespace samson {
             }
             
             
-        }          
-        
+        }   
         
     }
         

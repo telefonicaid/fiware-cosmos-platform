@@ -295,6 +295,19 @@ namespace samson {
             for( it_queueTasks = queueTasks.begin() ; it_queueTasks != queueTasks.end() ; it_queueTasks++ )
                 if( name_match( pattern.c_str() , (*it_queueTasks)->getId() ) )
                     (*it_queueTasks)->fill( collection->add_record() , options );
+
+            
+            // System queues
+            au::map< size_t , SystemQueueTask >::iterator it_runningSystemQueueTasks;
+            for( it_runningSystemQueueTasks = runningSystemQueueTasks.begin() ; it_runningSystemQueueTasks != runningSystemQueueTasks.end() ; it_runningSystemQueueTasks++ )
+                if( name_match( pattern.c_str() , it_runningSystemQueueTasks->first ) )
+                    it_runningSystemQueueTasks->second->fill( collection->add_record() , options );
+            
+            au::list< SystemQueueTask >::iterator it_systemQueueTasks;
+            for( it_systemQueueTasks = systemQueueTasks.begin() ; it_systemQueueTasks != systemQueueTasks.end() ; it_systemQueueTasks++ )
+                if( name_match( pattern.c_str() , (*it_systemQueueTasks)->getId() ) )
+                    (*it_systemQueueTasks)->fill( collection->add_record() , options );
+            
             
             return collection;                
         }

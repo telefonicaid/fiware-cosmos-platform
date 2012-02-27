@@ -38,6 +38,7 @@ namespace samson {
             
         public:
             
+            au::Cronometer creation_cronometer;            // Creationg cronometer
             std::string queue_task_state;                  // A bit more information about state of this queue task
             void setQueueTaskState( std::string _queue_task_state )
             {

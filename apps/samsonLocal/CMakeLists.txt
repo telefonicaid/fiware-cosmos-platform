@@ -32,6 +32,7 @@ SET( STATIC_LIBS
 	au
 	tables
 	lm
+	iconv
 	pa
 	protobuf
 	dl

@@ -417,23 +417,23 @@ namespace samson {
                 if( format.isTxt() )
                     add( record , "Defrag" , "-" , "f=per,different" );
                 else
-                {
-                    size_t num_hgs = list->getAverageNumberOfHashgroups();
-                    size_t num_blocks = list->blocks.size();
-                    
-                    double f = ( (double)KVFILE_NUM_HASHGROUPS / ( (double)num_blocks * (double)num_hgs ) );
-                    if( f > 1 )
-                        f = 1;
-                    
-                    add( record , "Defrag" , f , "f=per,different" );
-                }
+                    add( record, "Defrag", list->getDefragFactor() , "f=per,different");
                 
                 add( record , "Size"       , blockInfo.size , "f=uint64,sum" );
                 add( record , "on Memory"  , blockInfo.size_on_memory , "f=uint64,sum" );
                 add( record , "on Disk"    , blockInfo.size_on_disk , "f=uint64,sum" );
                 add( record , "Locked"     , blockInfo.size_locked , "f=uint64,sum" );
-                add( record , "Time from"  , blockInfo.min_time , "f=timestamp,different" );
-                add( record , "Time to"    , blockInfo.max_time , "f=timestamp,different" );
+                
+                if( blockInfo.num_blocks == 0 )
+                {
+                    add( record , "Time from"  , "-" , "f=timestamp,different" );
+                    add( record , "Time to"    , "-" , "f=timestamp,different" );
+                }
+                else
+                {
+                    add( record , "Time from"  , au::str_timestamp(blockInfo.min_time) , "different" );
+                    add( record , "Time to"    , au::str_timestamp(blockInfo.max_time) , "different" );
+                }
             }
             
         }

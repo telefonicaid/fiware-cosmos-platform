@@ -278,7 +278,7 @@ namespace samson {
             
             return true;
         }
-        
+
         void BlockList::extractFrom( BlockList* list , size_t max_size )
         {
             size_t total_size = 0 ;
@@ -452,33 +452,35 @@ namespace samson {
             
         }
         
-        size_t BlockList::getAverageNumberOfHashgroups()
+        double BlockList::getDefragFactor()
         {
-            if( blocks.size() == 0 )
-                return 0;
-            
-            size_t total = 0;
-            size_t total_size = 0;
-            
-            std::list<Block*>::iterator b;
-            for ( b = blocks.begin() ; b != blocks.end() ; b++ )
+            int total_hgs;
+            int accumulated_num_blocks = 0;
+            for ( int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++ )
             {
-                Block* block = *b;
-                size_t num_hgs = block->header->getNumHashGroups();
-                size_t size = block->header->getTotalSize();
+                int num_blocks = 0;
+                std::list<Block*>::iterator b;
+                for ( b = blocks.begin() ; b != blocks.end() ; b++ )
+                {
+                    Block* block = *b;
+                    if ( block->header->range.contains(hg) )
+                        num_blocks++;
                 
-                total += num_hgs*size;
-                total_size += size;
+                }
+                
+                if( num_blocks > 0 )
+                {
+                    accumulated_num_blocks += num_blocks;
+                    total_hgs++;
+                }
+                    
             }
             
-            if ( total_size == 0 )
-                return 0;
-            
-            return  total / total_size; 
-            
-        }
+            double average_num_blocks = (double)accumulated_num_blocks / (double)total_hgs;
+            double total_num_blocks = blocks.size(); 
 
-        
+            return ( total_num_blocks - average_num_blocks ) / ( total_num_blocks - 1 );
+        }
         
     }       
 }

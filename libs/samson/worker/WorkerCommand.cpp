@@ -420,6 +420,24 @@ namespace samson {
     }
     
     
+    bool compare_blocks_defrag( stream::Block* b , stream::Block* b2 )
+    {
+        
+        KVHeader h1 = b->getHeader();
+        KVHeader h2 = b2->getHeader();
+
+        if( h1.range.hg_begin < h2.range.hg_begin )
+            return true;
+        if( h1.range.hg_begin > h2.range.hg_begin )
+            return false;
+
+        // If the same 
+        if( h1.range.hg_end > h2.range.hg_end )
+            return true;
+        else
+            return false;
+    }
+    
     void WorkerCommand::run()
     {
         // Nothing to to if this is waiting for another thing
@@ -727,24 +745,38 @@ namespace samson {
             stream::Queue*queue = streamManager->getQueue( queue_from );
                         
             // Create information about how data is distributed in files to do the best defrag
+            stream::BlockList init_list("defrag_block_list");
+            init_list.copyFrom( queue->list );
             
-            //Create the BlockBreak
-            stream::BlockBreakQueueTask *tmp 
-              = new stream::BlockBreakQueueTask( streamManager->queueTaskManager.getNewId() , queue_to ); 
+            // Sort blocks accordingly...
+            init_list.blocks.sort( compare_blocks_defrag );
+            
+            while( true )
+            {
+                stream::BlockList tmp_list("defrag_block_list");
+                tmp_list.extractFrom( &init_list , 400*1024*1024 );
+                
+                if( tmp_list.isEmpty() )
+                    break;
+                
+                // Create an operation to process this set of blocks
+                size_t new_id = streamManager->queueTaskManager.getNewId();
+                stream::BlockBreakQueueTask *tmp = new stream::BlockBreakQueueTask( new_id , queue_to ); 
+                
+                // Fill necessary blocks
+                tmp->getBlockList( au::str("input" ) )->copyFrom( &tmp_list );
+                
+                // Set the working size to get statistics at ProcessManager
+                tmp->setWorkingSize();
+                
+                // Add me as listener and increase the number of operations to run
+                tmp->addListenerId( getEngineId() );
+                num_pending_processes++;
+                
+                // Schedule tmp task into QueueTaskManager
+                streamManager->queueTaskManager.add( tmp );       
+            }
 
-            // Fill necessary blocks
-            stream::BlockList* list = tmp->getBlockList( au::str("input" ) ); 
-            list->copyFrom( queue->list );
-            
-            // Set the working size to get statistics at ProcessManager
-            tmp->setWorkingSize();
-            
-            // Add me as listener and increase the number of operations to run
-            tmp->addListenerId( getEngineId() );
-            num_pending_processes++;
-            
-            // Schedule tmp task into QueueTaskManager
-            streamManager->queueTaskManager.add( tmp );
             return;
         }
        

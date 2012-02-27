@@ -207,6 +207,12 @@ namespace samson
             "Show a list of commands being executed in each node of the cluster",
             "ls_worker_commands <command pattern>\n"
             );
+
+        
+        add( "defrag"  , "stream" , 
+            "Defrag content of a particular queue",
+            "defrag <queue> <destination_queue>\n"
+            );
         
         
         // PUSH&POP

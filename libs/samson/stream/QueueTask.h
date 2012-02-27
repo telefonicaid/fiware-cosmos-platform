@@ -28,8 +28,6 @@ namespace samson {
         {
             
         public:
-            
-            au::Cronometer creation_cronometer; // Creationg cronometer
 
             // Constructor
             QueueTask( size_t _id , StreamOperationBase* streamOperation  );
@@ -50,8 +48,9 @@ namespace samson {
                 getBlockList("input_0")->update( block_info );
                 setProcessItemWorkingSize( block_info.size );
             }
+
             
-            void fill( samson::network::CollectionRecord* record , VisualitzationOptions options );          
+            void fill( samson::network::CollectionRecord* record , VisualitzationOptions options );
             
         };
         

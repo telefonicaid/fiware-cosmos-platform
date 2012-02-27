@@ -143,8 +143,17 @@ void WorkerViewer::setData(WorkerData newData)
     std::string memoryString(au::str(strtoul(data.mem_used.c_str(), NULL, 0)) + "/" + au::str(strtoul(data.mem_total.c_str(), NULL, 0)));
     mem->setText(QString(memoryString.c_str()));
   
-    memBar->setRange(0, (int)(strtoul(data.mem_total.c_str(), NULL, 0)/1000ul)); //divide by 1000 to fit in int
-    memBar->setValue((int)(strtoul(data.mem_used.c_str(), NULL, 0)/1000ul));
+    //The progress bar uses int. We do the bit shift to avoid overflow
+    unsigned long memVal = strtoul(data.mem_total.c_str(), NULL, 0);
+    unsigned long memVal2 = strtoul(data.mem_used.c_str(), NULL, 0);
+    if (memVal >= 0xffff || memVal2 >= 0xffff) 
+    {
+        memVal = memVal >> 16; 
+        memVal2 = memVal2 >> 16; 
+    }   
+    
+    memBar->setRange(0, (int)memVal); 
+    memBar->setValue((int)memVal2);
     std::string coresString(au::str(strtoul(data.cores_used.c_str(), NULL, 0)) + "/" + au::str(strtoul(data.cores_total.c_str(), NULL, 0)));
     cores->setText(QString(coresString.c_str()));
     coresBar->setRange(0, strtoul(data.cores_total.c_str(), NULL, 0));

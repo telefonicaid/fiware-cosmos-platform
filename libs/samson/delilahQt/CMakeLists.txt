@@ -3,6 +3,7 @@ SET (HEADERS
 	DelilahQt.h
 	DelilahMainWindow.h
 	QueueViewer.h
+	QueueContainer.h
 	ExtQueueViewer.h
 	WorkerViewer.h
 	WorkerContainer.h
@@ -13,6 +14,7 @@ SET (SOURCES
 	DelilahMainWindow.cpp
 	TableViewer.cpp
 	QueueViewer.cpp
+	QueueContainer.cpp
 	ExtQueueViewer.cpp
 	WorkerViewer.cpp
 	WorkerContainer.cpp
@@ -23,6 +25,7 @@ SET (HEADERS_FOR_MOC
 	DelilahMainWindow.h
 	TableViewer.h
 	QueueViewer.h
+	QueueContainer.h
 	ExtQueueViewer.h
 	WorkerViewer.h
 	WorkerContainer.h

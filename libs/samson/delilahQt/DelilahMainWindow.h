@@ -18,6 +18,7 @@
 
 #include "QueueViewer.h"
 #include "ExtQueueViewer.h"
+#include "QueueContainer.h"
 #include "WorkerContainer.h"
 
 namespace samson {
@@ -39,50 +40,32 @@ namespace samson {
         QBoxLayout* mainLayout;
 
         ConfigurableTabWidget* tabs;
-        QWidget* queuesTab;
+        QueueContainer* queuesTab;
         WorkerContainer* workersTab;
         QAction *aboutAction;
         QAction *exitAction;
         QMenu *fileMenu;
         
-        QLabel* noInputLabel;
-        QLabel* noOutputLabel;
-        QLabel* noTotalLabel;
-        QGridLayout* inputLayout;
-        QGridLayout* outputLayout;
-        QGridLayout* totalLayout;
-        
-        //std::vector<QueueViewer::QueueData> queuesData;
-        //std::vector<std::string> current_queues;
-        std::vector<QueueViewer*> in_queues;
-        std::vector<QueueViewer*> out_queues;
-        QueueViewer* totalQueues;
+
         
         std::vector<ExtQueueViewer*> tabbedQueues;
         
     public:
     
         DelilahMainWindow();
-        //QueueViewer* queueViewer1;
-        /*QLabel* enginesText;
-        QLabel* queuesText;
-        QGroupBox* queuesBox;
-        QGroupBox* enginesBox;*/
-        QGroupBox* inputBox;
-        QGroupBox* outputBox;
-        QGroupBox* totalBox;
         void updateData(std::vector<QueueData>& queuesData, std::vector<WorkerData>& workersData);
         
     public slots:
         void about();
-        void onQueueDetailsClicked();
+        void onQueueDetailsClicked(QueueViewer* queue);
         void tabClosed(int index);
+        void onQueueHasChanged(QueueViewer* queue, QueueData* data);
+
 
     signals:
         void requestUpdate();
         
     private:
-        QueueViewer* findQueue(std::vector<QueueViewer*>& list, std::string name);
         ExtQueueViewer* findQueueTab(std::string name);
         //QueueData getQueueData(std::string name, ExtQueueViewer* queue);
     };

@@ -164,9 +164,9 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     
 }
 
-void ExtQueueViewer::setData(QueueData newData)
+void ExtQueueViewer::setData(QueueData* newData)
 {
-        data = newData;
+        data = *newData;
         name->setText(QString(data.name.c_str() + QString(": ")));
         kvs->setText(QString(data.kvs.c_str()));
         size->setText(QString(au::str(strtoul(data.size.c_str(), NULL, 0)).c_str()));

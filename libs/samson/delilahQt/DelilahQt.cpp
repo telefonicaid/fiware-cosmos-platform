@@ -8,6 +8,7 @@
 
 #include "DelilahQt.h" // Own interface
 #include "DelilahMainWindow.h"
+#include "WorkerViewer.h"
 
 #include <QTimer>
 #include <QtGui>

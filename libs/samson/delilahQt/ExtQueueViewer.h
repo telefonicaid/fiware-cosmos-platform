@@ -51,7 +51,7 @@ class ExtQueueViewer: public QWidget
 
         QueueData data;
         
-        void setData(QueueData newData);
+        void setData(QueueData* newData);
         void setTitle(std::string title);
         void setHiddenButton(bool hidden);
         //void setLayout(QGridLayout* layout, int row);

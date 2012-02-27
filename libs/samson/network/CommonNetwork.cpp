@@ -101,6 +101,21 @@ namespace samson {
         return cluster_information.getWorkerIds();
     }
     
+    std::vector<size_t> CommonNetwork::getConnectedWorkerIds()
+    {
+        std::vector<size_t> workers = getWorkerIds();
+        std::vector<size_t> connected_workers;
+
+        for ( size_t i = 0 ; i < workers.size() ; i++ )
+        {
+            std::string connection_name = NodeIdentifier( WorkerNode , workers[i]).getCodeName();
+            if( connections.findInMap(connection_name ) != NULL )
+                connected_workers.push_back( workers[i] );
+        }
+        
+        return connected_workers;
+    }
+    
     std::vector<size_t> CommonNetwork::getDelilahIds()
     {
         // Return all connections with pattern delilah_X

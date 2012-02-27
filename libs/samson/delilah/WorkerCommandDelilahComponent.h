@@ -38,6 +38,7 @@ namespace samson {
         size_t worker_id; // if != -1 --> worker to sent this command
         bool save_in_database;
         std::string group_field;
+        bool connected_workers;
         
 	public:
 		

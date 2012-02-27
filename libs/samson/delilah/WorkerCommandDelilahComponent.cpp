@@ -33,25 +33,44 @@ namespace samson {
         // Identify specific flags in the command
         au::CommandLine cmdLine;
         cmdLine.set_flag_boolean("hidden");
-        cmdLine.set_flag_boolean("save");    // Flag to identify if is necessary to save it locally
+        cmdLine.set_flag_boolean("save");     // Flag to identify if is necessary to save it locally
+        cmdLine.set_flag_boolean("connected_workers");    // Flag to run the operation only with connected workers
         cmdLine.set_flag_uint64("worker" , (size_t)-1 );
         cmdLine.set_flag_string("group", "");
         cmdLine.parse(command);
         
-        worker_id = cmdLine.get_flag_uint64("worker");
-        hidden = cmdLine.get_flag_bool("hidden");
-        save_in_database = cmdLine.get_flag_bool("save");
-        group_field = cmdLine.get_flag_string("group");
+        worker_id         = cmdLine.get_flag_uint64("worker");
+        hidden            = cmdLine.get_flag_bool("hidden");
+        save_in_database  = cmdLine.get_flag_bool("save");
+        group_field       = cmdLine.get_flag_string("group");
+        connected_workers = cmdLine.get_flag_bool("connected_workers");
 	}
 	
 	void WorkerCommandDelilahComponent::run()
 	{
         // Get the workers involved in this operation
-        au::Uint64Vector _workers( delilah->network->getWorkerIds() );
+        au::Uint64Vector _workers( delilah->network->getConnectedWorkerIds() );
+        
+        // Check with all the workers
+        std::vector<size_t> all_workers = delilah->network->getWorkerIds();
+        
+        // Check all the workers are connected
+        if( worker_id != (size_t)-1 )
+        {
+            if( !connected_workers )
+                if( all_workers.size() != _workers.size() )
+                {
+                    setComponentFinishedWithError( au::str( "Only %lu/%lu workers connected. Use -connected_workers to run this command only using connected workers" , _workers.size() , all_workers.size() ));
+                    return;
+                }
+        
+            if( all_workers.size() != _workers.size() )
+                delilah->showWarningMessage(au::str("Process %lu executed only using %lu/%lu workers" , id , _workers.size() , all_workers.size() ));
+        }
         
         if( _workers.size() == 0 )
         {
-            setComponentFinishedWithError("Not connected to any cluster");
+            setComponentFinishedWithError("Not connected to any worker");
             return;
         }
         

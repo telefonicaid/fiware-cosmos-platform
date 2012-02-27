@@ -125,6 +125,12 @@ namespace samson {
             return std::vector<size_t>();
         }
 
+        virtual std::vector<size_t> getConnectedWorkerIds()
+        {
+            // Default implementation( for samsonLocal )
+            return getWorkerIds();
+        }
+        
         virtual std::vector<size_t> getDelilahIds()
         {
             LM_X(1, ("NetworkInterface mothod not implemented"));
@@ -134,6 +140,11 @@ namespace samson {
         virtual std::string cluster_command( std::string command )
         {
             LM_W(("NetworkInterface mothod not implemented"));
+            return "";
+        }
+        
+        virtual std::string getLoginInfo()
+        {
             return "";
         }
         

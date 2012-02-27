@@ -92,11 +92,7 @@ namespace samson
         if( database_mode )
             return "Database >";
         
-        int t = getUpdateSeconds();
-        if ( t > 10 )
-            return au::str("[%s] Delilah>", au::str_time(t).c_str() );
-        else
-            return  "Delilah>";
+        return  au::str( "%s Delilah>" , network->getLoginInfo().c_str() );
     }
 	
 	void DelilahConsole::evalCommand(std::string command)

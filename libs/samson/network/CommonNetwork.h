@@ -69,6 +69,7 @@ namespace samson {
         Status send( Packet* packet );
         std::vector<size_t> getWorkerIds();
         std::vector<size_t> getDelilahIds();
+        std::vector<size_t> getConnectedWorkerIds();
         void getInfo( ::std::ostringstream& output , std::string command );
         virtual network::Collection* getConnectionsCollection( Visualization* visualization );
         size_t get_rate_in();

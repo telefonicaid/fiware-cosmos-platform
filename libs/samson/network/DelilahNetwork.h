@@ -45,17 +45,16 @@ public:
         return true;
     }
     
+    std::string getLoginInfo()
+    {
+        return au::str("[%s@%s:%d]" , user.c_str() , host.c_str() , port );
+    }
+    
     // Suspend the network elements implemented behind NetworkInterface
     // Close everything and return the "run" call
     virtual void quit(void)
     {
     }
-    
-    // Basic information about the cluster ( list of workers and delilahs )
-    virtual std::vector<size_t> getWorkerIds()
-    {
-        return cluster_information.getWorkerIds();
-    } 
     
     virtual std::vector<size_t> getDelilahIds()
     {

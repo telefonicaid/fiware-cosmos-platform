@@ -103,7 +103,7 @@ void init(samson::KVWriter* writer)
     now = time(NULL);
     gmtime_r(&now, &tmP);
     strftime(timeLine, sizeof(timeLine), "%Y-%m-%d %H:%M:%S", &tmP);
-    mongo_collection += timeLine;
+    mongo_collection += std::string("-") + timeLine;
 
 	mdbConnection = new DBClientConnection();
 	OLM_M(("Connecting to mongo at '%s'", mongo_ip.c_str()));

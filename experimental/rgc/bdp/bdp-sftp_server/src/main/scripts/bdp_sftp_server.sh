@@ -16,7 +16,7 @@ HADOOP_LIB=$HADOOP_HOME/lib 	                                 # Hadoop library j
 CONF=$baseDir/conf                                              # configuration directory
  
 
-DEBUG_OPTIONS="-Xdebug -Xrunjdwp:transport=dt_socket,address=8011,server=y  suspend=y"
+DEBUG_OPTIONS="-Xdebug -Xrunjdwp:transport=dt_socket,address=8011,server=y,suspend=y"
 JAVA_OPTS="$JAVA_OPTS $DEBUG_OPTIONS"
 
 

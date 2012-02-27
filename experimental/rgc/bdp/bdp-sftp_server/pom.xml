@@ -9,7 +9,7 @@
 	</parent>
 	<artifactId>bdp-sftp_server</artifactId>
 	<name>Big Data Platform - sftp server</name>
-		<build>
+	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -61,8 +61,8 @@
 							</sources>
 							<dependency>
 								<includes>
-									<include>org.apache.sshd:ssdh-core</include>
 									<include>org.apache.mina:mina-core</include>
+									<include>org.apache.sshd:sshd-core</include>
 								</includes>
 							</dependency>
 						</mapping>

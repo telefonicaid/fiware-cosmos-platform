@@ -136,8 +136,15 @@ int main(int argC, const char *argV[])
     au::tables::Table * table = new au::tables::Table( fields );
 
     struct ::stat info;
-    stat( file_name, &info);
-    
+    int error_stat;
+    if ((error_stat = stat( file_name , &info )) < 0)
+    {
+        LM_E(("Error:%d at stat for file:'%s'", error_stat, file_name));
+        std::cerr << "Error:" << error_stat << " at stat for file:" << file_name << std::endl;
+        perror(file_name);
+	exit(-1);
+    }
+
     if( S_ISREG(info.st_mode) )
         consider_file(file_name, table);
     else if ( S_ISDIR(info.st_mode) )

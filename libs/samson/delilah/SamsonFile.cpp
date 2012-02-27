@@ -146,28 +146,25 @@ namespace samson {
         // Number of records displayed    
         size_t records = 0 ;
         
-        if( error.isActivated())
+        if( error.isActivated() )
             return records;
         
         if ( header.getKVFormat() == samson::KVFormat("txt","txt") )
         {
             // txt content
             char buffer[1025];
-            int n = fread(buffer, 1, 1024, file);
             
-            while( n > 0 )
+            while( fgets(buffer, 1024, file) )
             {
-                int n_written = write(1, buffer, n);
-                if (n_written != n)
-                {
-                    LM_E(("Error when writing %d bytes to stdout, only %d written", n, n_written));
-                }
-                n = fread(buffer, 1,1024, file);
+                output << buffer;
+                records++;
+
+                if( limit > 0 )
+                    if ( records >= limit )
+                        return records;
             }
-            
             return records;
         }
-        
         
         samson::ModulesManager* modulesManager = samson::ModulesManager::shared();
         samson::Data *keyData = modulesManager->getData(format.keyFormat);
@@ -201,10 +198,9 @@ namespace samson {
                 int n = fread(data, size, 1, file);
                 if ( n != 1)
                 {
-                    std::cerr << "Not possible to read file. Wrong format\n";
-                    exit(0);
+                    output << "Not possible to read file. Wrong format\n";
+                    return 0;
                 }
-                
                 
                 size_t offset = 0 ;
                 for (size_t i = 0 ; i < kvs ; i++)

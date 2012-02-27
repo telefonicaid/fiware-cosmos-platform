@@ -325,7 +325,7 @@ namespace samson
                 std::ostringstream output;
                 
                 output << au::lineInConsole('-') << "\n";
-                output << name << "\n";
+                output << name << "    ( " << commands[i].category  <<  " )\n";
                 output << au::lineInConsole('-') << "\n";
                 output << "\n";
                 output << "DESCRIPTION:  " << commands[i].short_description << "\n";

@@ -1115,8 +1115,6 @@ namespace samson
             const char *file_name = commandLine.get_argument(1).c_str();
             int limit = commandLine.get_flag_int("limit" );
             
-            std::ostringstream output;
-            
             struct stat filestatus;
             stat( file_name , &filestatus );
             
@@ -1139,8 +1137,11 @@ namespace samson
                     return 0;
                 }
                 
+                std::ostringstream output;
                 samsonFile.printContent( limit , output );
-                
+                std::string txt =  output.str();
+                writeOnConsole( txt );
+                return 0;
             }
             else if( S_ISDIR( filestatus.st_mode ) )
             {
@@ -1151,16 +1152,23 @@ namespace samson
                     writeErrorOnConsole( au::str("%s", samsonDataSet.error.getMessage().c_str() ) );
                     return 0;
                 }
-                
+
                 if( commandLine.get_flag_bool("header") )
                 {
-                    std::cout << "Total: " << samsonDataSet.info.strDetailed() << "\n"; 
+                    std::ostringstream output;
+                    output << "Total: " << samsonDataSet.info.strDetailed() << "\n"; 
                     samsonDataSet.printHeaders(output);
-                    exit(0);
+                    std::string txt =  output.str();
+                    writeOnConsole( txt );
+                    return 0;
                 }
+
                 
+                std::ostringstream output;
                 samsonDataSet.printContent( limit , output );
-                
+                std::string txt =  output.str();
+                writeOnConsole( txt );
+                return 0;
             } 
             else
             {
@@ -1168,10 +1176,8 @@ namespace samson
                 return 0;
             }
 
-            // Write result of this operation
-            writeOnConsole( output.str() );
+            // Not possible to get here...
             return 0;
-            
         }
         
         // By default, it is considered a worker command

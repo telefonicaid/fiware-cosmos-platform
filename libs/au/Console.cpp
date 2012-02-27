@@ -456,9 +456,6 @@ void Console::writeErrorOnConsole( std::string message )
 
 void Console::writeOnConsole( std::string message )
 {
-    if( message.substr(message.length()-1) != "\n")
-        message.append("\n");
-    
     write( message );
 }
 

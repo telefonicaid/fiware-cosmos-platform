@@ -193,7 +193,8 @@ namespace samson {
         
         if( collection->record_size() == 0 )
         {
-            delilah->showWarningMessage("No records\n");
+            if( !hidden )
+                delilah->showWarningMessage("No records\n");
             return;
         }
 

@@ -160,9 +160,30 @@ public:
         outputs.push_back(output_dataset);
     }
 
-    void check()
+    bool check()
     {
         // Check everything is correct
+
+        //Checking the use of reserved words in the name
+        std::string arr_reserved_words[] = {"auto", "const", "double", "float", "int", "short", "struct", "unsigned", "break", "continue", "else", "for", "long", "signed", "switch", "void", "case", "default", "enum",
+                                        "goto", "register", "sizeof", "typedef", "volatile", "char", "do", "extern", "if", "return", "static", "union", "while", "asm", "dynamic_cast", "namespace", "reinterpret_cast",
+                                        "try", "bool", "explicit", "new", "static_cast", "typeid", "catch", "false", "operator", "template", "typename", "class", "friend", "private", "this", "using",
+                                        "const_cast", "inline", "public", "throw", "virtual", "delete", "mutable", "protected", "true", "wchar_t", "and", "bitand", "compl", "not_eq", "or_eq", "xor_eq",
+                                        "and_eq", "bitor", "not", "or", "xor", "cin", "endl", "INT_MIN", "iomanip", "main", "npos", "std", "cout", "include", "INT_MAX", "iostream", "MAX_RAND", "NULL", "string"};
+
+        std::set<std::string>   reserved_words;
+
+        for (unsigned int i = 0; (i < (sizeof(arr_reserved_words)/sizeof(arr_reserved_words[0]))); i++)
+        {
+            reserved_words.insert(arr_reserved_words[i]);
+        }
+
+        if (reserved_words.find(name) != reserved_words.end())
+        {
+            std::cerr << "samsonModuleParser: Error in operation: '" << name << "'. It is a c++ reserved word. Please chose a different name\n";
+            return false;
+        }
+
         // Andreu: Now operation can have no output to export data to other system ( i.e. mongoDb )
         /*
             if ( ( type == "map" ) || ( type == "reduce" ) || ( type == "parser" ) )
@@ -177,7 +198,7 @@ public:
             if (inputs.size() == 0)
             {
                 std::cerr << "samsonModuleParser: Error in operation " << name << ": Operation needs an input\n";
-                exit(1);
+                return false;
             }
 
         if ((type == "reduce") || (type == "parserOutreduce"))
@@ -189,7 +210,7 @@ public:
                 if (prevKeyFormat != inputs[i].key_values.keyFormat)
                 {
                     fprintf(stderr, "samsonModuleParser: Error in operation '%s' ('%s' type). keyFormat must agree for all inputs ('%s' != '%s')\n", name.c_str(), type.c_str(), prevKeyFormat.c_str(), inputs[i].key_values.keyFormat.c_str());
-                    exit(1);
+                    return false;
                 }
             }
 
@@ -200,10 +221,11 @@ public:
                 if (prevKeyCompareFunction != inputs[i].compareKeyFunction)
                 {
                     fprintf(stderr, "samsonModuleParser: Error in operation '%s' ('%s' type). compareKeyFunction must agree for all inputs ('%s' != '%s')\n", name.c_str(), type.c_str(), prevKeyCompareFunction.c_str(), inputs[i].compareKeyFunction.c_str());
-                    exit(1);
+                    return false;
                 }
             }
         }
+        return true;
 
     }
 

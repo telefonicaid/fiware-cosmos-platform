@@ -154,7 +154,12 @@ bool DataContainer::parse( AUTockenizer *module_creator ,  int begin , int end )
 		exit (1);
 	}
 
-
+    // Check everything is correct
+    if (check() == false)
+    {
+        fprintf(stderr, "samsonModuleParser: Error checking an data-type definition, close to line:%d\n", module_creator->items[pos].line);
+        exit (1);
+    }
 
 	//How to parse an element like this
 	return true;

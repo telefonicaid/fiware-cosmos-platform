@@ -70,6 +70,46 @@ public:
 
     bool parse( AUTockenizer *module_creator , int begin , int end );
 
+    bool check()
+    {
+        // Check everything is correct
+
+        //Checking the use of reserved words in the name
+        std::string arr_reserved_words[] = {"auto", "const", "double", "float", "int", "short", "struct", "unsigned", "break", "continue", "else", "for", "long", "signed", "switch", "void", "case", "default", "enum",
+                                        "goto", "register", "sizeof", "typedef", "volatile", "char", "do", "extern", "if", "return", "static", "union", "while", "asm", "dynamic_cast", "namespace", "reinterpret_cast",
+                                        "try", "bool", "explicit", "new", "static_cast", "typeid", "catch", "false", "operator", "template", "typename", "class", "friend", "private", "this", "using",
+                                        "const_cast", "inline", "public", "throw", "virtual", "delete", "mutable", "protected", "true", "wchar_t", "and", "bitand", "compl", "not_eq", "or_eq", "xor_eq",
+                                        "and_eq", "bitor", "not", "or", "xor", "cin", "endl", "INT_MIN", "iomanip", "main", "npos", "std", "cout", "include", "INT_MAX", "iostream", "MAX_RAND", "NULL", "string"};
+
+        std::set<std::string>   reserved_words;
+
+        for (unsigned int i = 0; (i < (sizeof(arr_reserved_words)/sizeof(arr_reserved_words[0]))); i++)
+        {
+            reserved_words.insert(arr_reserved_words[i]);
+        }
+
+        std::cerr << "Starts checks for " << name << std::endl;
+        if (reserved_words.find(name) != reserved_words.end())
+        {
+            std::cerr << "samsonModuleParser: Error in data-type: '" << name << "'. It is a c++ reserved word. Please chose a different name\n";
+            std::cerr << "Detected error checks for " << name << std::endl;
+            return false;
+        }
+
+        for (vector <DataType>::iterator field =items.begin() ; field != items.end() ; field++)
+        {
+            if (reserved_words.find((*field).name) != reserved_words.end())
+            {
+                std::cerr << "samsonModuleParser: Error in data-type " << name << ", item: '" << (*field).name << "'. It is a c++ reserved word. Please chose a different name\n";
+                std::cerr << "Detected error checks for " << name << std::endl;
+                return false;
+            }
+
+        }
+
+        return true;
+    }
+
     std::string mainClassName()
     {
         return name;

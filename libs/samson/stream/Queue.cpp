@@ -415,9 +415,9 @@ namespace samson {
                 add( record , "#Blocs"     , blockInfo.num_blocks , "f=uint64,sum" );
                 
                 if( format.isTxt() )
-                    add( record , "Defrag" , "-" , "f=per,different" );
+                    add( record , "Fragmentation" , "-" , "f=per,different" );
                 else
-                    add( record, "Defrag", list->getDefragFactor() , "f=per,different");
+                    add( record, "Fragmentation", list->getFragmentationFactor() , "f=per,different");
                 
                 add( record , "Size"       , blockInfo.size , "f=uint64,sum" );
                 add( record , "on Memory"  , blockInfo.size_on_memory , "f=uint64,sum" );

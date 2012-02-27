@@ -12,6 +12,7 @@
 #include "samson/stream/BlockList.h"                // stream::BlockList
 #include "samson/stream/StreamProcessBase.h"        // parent class 
 #include "samson/stream/Block.h"                    // samson::Stream::Block
+#include "samson/stream/BlockListContainer.h"
 
 namespace samson {
     namespace stream {
@@ -21,14 +22,11 @@ namespace samson {
         
         // Class manager to deal with lists of blocks that shoudl be retained when ready
         
-        class QueueTaskBase
+        class QueueTaskBase : public BlockListContainer
         {
             // Flag activated when ready has return true
             bool ready_flag;
-            
-            // All kind of inputs ( mapped by name: input_1, input_2 , .... )
-            au::map<std::string, BlockList > blockLists;
-            
+                        
             // List to block all inputs for this task
             BlockList* lockBlockList;
             

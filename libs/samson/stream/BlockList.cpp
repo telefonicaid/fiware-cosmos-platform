@@ -452,10 +452,14 @@ namespace samson {
             
         }
         
-        double BlockList::getDefragFactor()
+        double BlockList::getFragmentationFactor()
         {
-            int total_hgs;
+            if( blocks.size() == 1)
+                return 1;
+            
+            int total_hgs = 0;
             int accumulated_num_blocks = 0;
+            
             for ( int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++ )
             {
                 int num_blocks = 0;
@@ -477,9 +481,7 @@ namespace samson {
             }
             
             double average_num_blocks = (double)accumulated_num_blocks / (double)total_hgs;
-            double total_num_blocks = blocks.size(); 
-
-            return ( total_num_blocks - average_num_blocks ) / ( total_num_blocks - 1 );
+            return ( average_num_blocks - 1.0 ) / ( (double) ( blocks.size() - 1 ));
         }
         
     }       

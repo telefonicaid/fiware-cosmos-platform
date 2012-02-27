@@ -55,7 +55,7 @@ namespace samson {
         std::vector<size_t> all_workers = delilah->network->getWorkerIds();
         
         // Check all the workers are connected
-        if( worker_id != (size_t)-1 )
+        if( worker_id == (size_t)-1 )
         {
             if( !connected_workers )
                 if( all_workers.size() != _workers.size() )

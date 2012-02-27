@@ -71,7 +71,7 @@ namespace samson {
             add( record , "operation" , operation_name , "left,different" );
             
             add( record , "inputs_0" , getBlockList("input_0")->strShortDescription()  , "different");
-            add( record , "inputs_1" , getBlockList("input_1")->strShortDescription()  , "different");
+            add( record , "inputs_1" , getUniqueBlockInfo().strShort()  , "different");
             
             if( options == verbose )
             {

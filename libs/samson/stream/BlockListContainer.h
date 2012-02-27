@@ -27,6 +27,9 @@ namespace samson
         
         class BlockListContainer
         {
+            
+        protected:
+            
             au::map<std::string, BlockList > blockLists;
             
         public:

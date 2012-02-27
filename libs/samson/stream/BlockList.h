@@ -151,7 +151,7 @@ namespace samson {
             bool isAnyBlockIncludedIn( std::set<size_t> &block_ids);
 
             // Get a unit of defragmentation
-            double getDefragFactor();
+            double getFragmentationFactor();
             
             //Debugging str
             std::string strRanges();

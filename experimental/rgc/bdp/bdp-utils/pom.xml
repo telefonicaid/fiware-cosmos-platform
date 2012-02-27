@@ -41,7 +41,7 @@
 					<needarch>noarch</needarch>
 					<targetOS>Linux</targetOS>
 					<defineStatements>
-						<defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
+						<defineStatement>global _binaries_in_noarch_packages_terminate_build 0</defineStatement>
 					</defineStatements>
 					<mappings>
 						<mapping>

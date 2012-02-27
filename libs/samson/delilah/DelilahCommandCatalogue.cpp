@@ -54,7 +54,9 @@ namespace samson
             );
         
         add( "stop_repeat" , "delilah",
-            "Stop all repeat-commands. See repeat command"
+             "Stop a repeat-command or all of them ( see help repeat for more info)",
+             "stop_repeat [process_id]\n"
+             "            [process_id] optional id to be stoped\n"
             );
         
         

@@ -66,8 +66,8 @@ namespace webp{
 		   //printf("Time %s/%s/%s\n" , fields[6] , fields[7] , fields[8] );
 
 		   int day   = atoi(  fields[6] );
-		   int month = atoi(  fields[6] );
-		   int year  = atoi(  fields[6] );
+		   int month = atoi(  fields[7] );
+		   int year  = atoi(  fields[8] );
 
 
            // Full URL without http://
@@ -80,10 +80,13 @@ namespace webp{
 
 		   log.user.value = fields[0];
 		   log.url.value = url;
+
+		   LM_M(("day:%d, month:%d, year:%d", day, month, year));
+
 		   log.time.setFromDayMonthYear( day , month , year );
 
 
-		   //LM_M(("Detected log user:%s, time:%s, url:%s", log.user.value.c_str(), log.url.value.c_str(), log.time.str().c_str()));
+		   LM_M(("Detected log user:%s, url:%s, time:%s", log.user.value.c_str(), log.url.value.c_str(), log.time.str().c_str()));
 
 		   // Find categories for this url
 		   log.categoriesSetLength(0); // Remove categories from previous entries

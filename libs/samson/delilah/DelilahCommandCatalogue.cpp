@@ -121,6 +121,9 @@ namespace samson
             "show_stream_block path\n"
             );
         
+        add( "ls_blocks" , "data" , "Show the list of data blocks managed in a SAMSON cluster. This is a debug tool",
+            "ls_blocks" );
+        
         // MODULES
         // ------------------------------------------------------------------
         

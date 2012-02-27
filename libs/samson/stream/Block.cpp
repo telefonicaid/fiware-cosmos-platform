@@ -8,6 +8,7 @@
 #include "engine/Notification.h"       // engine::Notification
 #include "engine/MemoryManager.h"       // engine::MemoryManager
 
+#include "samson/common/MessagesOperations.h"
 #include "samson/common/MemoryTags.h"                 // MemoryBlocks
 #include "samson/common/SamsonSetup.h"                // samson::SamsonSetup
 
@@ -140,6 +141,12 @@ namespace samson {
             
             size_t my_task_id   = getMinTaskId();
             size_t your_task_id = b->getMinTaskId();
+            
+            
+            // If no tasks involved, just decide by time-stamp
+            if( my_task_id == (size_t)-1 )
+                if( your_task_id == (size_t)-1 )
+                    return (last_used.diffTimeInSeconds() < b->last_used.diffTimeInSeconds() );
             
             return( my_task_id < your_task_id );
         }
@@ -504,6 +511,69 @@ namespace samson {
         }
 
 
+        /*
+         au::xml_open(output, "block");
+         
+         
+         au::xml_open(output, "lists");
+         std::ostringstream output_lists;
+         std::ostringstream output_tasks_str;
+         
+         std::set< BlockList* >::iterator l;
+         std::set<size_t> tasks_ids;
+         for (l = lists.begin() ; l != lists.end() ; l++)
+         {
+         au::xml_simple(output, "list", (*l)->name );
+         output_lists << (*l)->name << " ";
+         
+         // Show tasks ids
+         size_t task_id = (*l)->task_id;
+         if( task_id != (size_t) -1 )
+         tasks_ids.insert((*l)->task_id);
+         }
+         
+         for ( std::set<size_t>::iterator it_tasks_ids = tasks_ids.begin() ; it_tasks_ids != tasks_ids.end() ; it_tasks_ids++ )
+         output_tasks_str << (*it_tasks_ids) << " ";
+         
+         au::xml_close(output, "lists");
+         
+         au::xml_simple(output, "lists_str", output_lists.str() );
+         
+         header->getInfo( output );
+         
+         
+         au::xml_simple(output, "tasks_str", output_tasks_str.str() );
+         
+         au::xml_close(output, "block");
+         */
+        
+        void Block::fill( samson::network::CollectionRecord* record , Visualization* visualization )
+        {
+            samson::add( record , "id" , au::str("%lu-%lu" , worker_id ,id) , "left,different" );
+            samson::add( record , "size" , size , "f=uint64,sum" );
+            samson::add( record , "state" , getState() , "left,different" );
+
+            samson::add( record , "created" , au::str_time( last_used.diffTime() ) , "left,different" );
+            
+            std::ostringstream output_tasks_str;
+            std::ostringstream output_block_lists_str;
+            
+            std::set< BlockList* >::iterator l;
+            std::set<size_t> tasks_ids;
+            for (l = lists.begin() ; l != lists.end() ; l++)
+            {
+                BlockList* block_list = *l;
+                output_block_lists_str << block_list->name << " ";
+                
+                // Show tasks ids
+                if( block_list->task_id != (size_t) -1 )
+                    output_tasks_str << block_list->task_id << " ";
+            }
+            
+            samson::add( record , "tasks" , output_tasks_str.str() , "left,different" );
+            samson::add( record , "lists" , output_block_lists_str.str() , "left,different" );
+            
+        }
 
 
     }

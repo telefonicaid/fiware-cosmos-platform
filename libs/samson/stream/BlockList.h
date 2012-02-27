@@ -157,6 +157,7 @@ namespace samson {
             std::string strRanges();
             std::string strShortDescription();
             
+            void touch();
         };
         
         

@@ -354,6 +354,11 @@ namespace samson {
             return id++;
         }
         
+        size_t BlockManager::getWorkerId()
+        {
+            return worker_id;
+        }
+        
         // Function used in the order of blocks
         std::list<Block*>::iterator BlockManager::_find_pos( Block *b )
         {
@@ -378,6 +383,23 @@ namespace samson {
             for (std::list<Block*>::iterator i = blocks.begin() ; i != blocks.end() ; i++ )
                 (*i)->update( block_info );
             
+        }
+        
+        network::Collection* BlockManager::getCollectionOfBlocks( Visualization* visualization )
+        {
+            network::Collection* collection = new network::Collection();
+            collection->set_name("blocks");
+            
+            au::list<Block>::iterator it_blocks;
+            for ( it_blocks = blocks.begin() ; it_blocks != blocks.end() ; it_blocks++)
+            {
+                Block* block = *it_blocks;
+                block->fill( collection->add_record() , visualization );
+            }            
+            
+            return collection;            
+            
+
         }
 
         

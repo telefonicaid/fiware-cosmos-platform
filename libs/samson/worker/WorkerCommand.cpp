@@ -19,6 +19,7 @@
 #include "samson/stream/StreamManager.h"                // samson::stream::StreamManager
 #include "samson/stream/Queue.h"
 #include "samson/stream/BlockList.h"
+#include "samson/stream/BlockManager.h"
 #include "samson/stream/StreamOperation.h"
 #include "samson/stream/BlockBreakQueueTask.h"
 
@@ -502,6 +503,15 @@ namespace samson {
             return;
         }
 
+        if( main_command == "ls_blocks" )
+        {
+            network::Collection * c = stream::BlockManager::shared()->getCollectionOfBlocks( &visualitzation );
+            c->set_title( command  );
+            collections.push_back( c );
+            finishWorkerTask();
+            return;
+        }
+        
         if( main_command == "ls_stream_operations" )
         {
             network::Collection * c = streamManager->getCollectionForStreamOperations( visualitzation_options,pattern );

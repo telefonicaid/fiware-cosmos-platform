@@ -4,6 +4,8 @@
 #include "Block.h"                      // samson::stream::Block
 #include "au/list.h"
 
+#include "samson/common/Visualitzation.h"
+#include "samson/common/samson.pb.h"
 
 #include "engine/Object.h"  // engien::EngineListener
 #include "engine/Object.h"              // engine::Object
@@ -22,7 +24,7 @@ namespace samson {
         class BlockManager : public engine::Object 
         {
             
-            au::list<Block> blocks;       // List of blocks in the system ( ordered by priority )
+            au::list<Block> blocks;         // List of blocks in the system ( ordered by priority / creation time )
             
             BlockManager();                 // Private constructor for singleton implementation
             ~BlockManager();
@@ -63,11 +65,7 @@ namespace samson {
             
             // Function to get a new id for a block
             size_t getNextBlockId();
-            
-            size_t getWorkerId()
-            {
-                return worker_id;
-            }
+            size_t getWorkerId();
             
             // Add a block to the block manager
             // It is assumed block is NOT inside the list "blocks"
@@ -107,7 +105,8 @@ namespace samson {
             
             void update( BlockInfo &block_info );
             void getInfo( std::ostringstream& output);
-
+            
+            network::Collection* getCollectionOfBlocks( Visualization* visualization );
             
         };
     }

@@ -44,8 +44,6 @@ namespace samson {
                 queue_task_state = _queue_task_state;
             }
 
-            
-            
         public:
             
             // Constructor and destructor
@@ -66,6 +64,14 @@ namespace samson {
             
             // Get the id of this task
             size_t getId();
+            
+            void touch_input_blocks()
+            {
+                au::map<std::string, BlockList >::iterator it_blockLists;
+                for( it_blockLists = blockLists.begin() ; it_blockLists != blockLists.end() ; it_blockLists++ )
+                    it_blockLists->second->touch();
+            }
+            
         };
         
     }

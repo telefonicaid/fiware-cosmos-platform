@@ -18,6 +18,8 @@
 #include "engine/MemoryManager.h"
 
 #include "samson/common/coding.h"                   
+#include "samson/common/Visualitzation.h"
+#include "samson/common/samson.pb.h"
 
 #include "engine/DiskOperation.h"                   // engine::DiskOperation
 #include "engine/Object.h"                          // engien::EngineListener
@@ -73,6 +75,8 @@ namespace samson {
             } BlockState;
 
             BlockState state;
+            
+            au::Cronometer last_used; // Cronometer to indicate the last time it was used
             
         private:
             
@@ -151,6 +155,9 @@ namespace samson {
 
             // Xml version of the info
             void getInfo( std::ostringstream& output);
+
+            // Collection-like monitorization information
+            void fill( samson::network::CollectionRecord* record , Visualization* visualization );
             
             // Accessing information
             KVInfo* getKVInfo();
@@ -159,6 +166,11 @@ namespace samson {
             KVHeader getHeader()
             {
                 return *header;
+            }
+            
+            void touch()
+            {
+                last_used.reset();
             }
             
         private:

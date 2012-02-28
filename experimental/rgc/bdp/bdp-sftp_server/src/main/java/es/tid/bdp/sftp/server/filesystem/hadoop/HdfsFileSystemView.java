@@ -97,8 +97,6 @@ public class HdfsFileSystemView implements FileSystemView {
         String physicalName = NativeSshFile.getPhysicalName("/", dir, file,
                 caseInsensitive);
 
-        // strip the root directory and return
-        String userFileName = physicalName.substring("/".length() - 1);
-        return new HdfsSshFile(hdfsSrc, builder, userFileName, userName);
+        return new HdfsSshFile(hdfsSrc, builder, userName, physicalName);
     }
 }

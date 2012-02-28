@@ -78,15 +78,7 @@ public class KpiCleanerMapperTest extends TestCase {
         expected.add(new Pair<NullWritable, ProtobufWritable<WebProfilingLog>>(
                 NullWritable.get(), this.outputPage));
 
-        assertEquals(expected.size(), out.size());
-
-        // assertListEquals doesn´t work due to the converter is returned as
-        // null.
-        for (int i = 0; i < expected.size(); i++) {
-            ProtobufWritable<WebProfilingLog> value = out.get(i).getSecond();
-            value.setConverter(WebProfilingLog.class);
-            assertEquals(value, this.outputPage);
-        }
+        assertListEquals(expected, out);
     }
 
     @Test

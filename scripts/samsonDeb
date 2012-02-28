@@ -14,15 +14,13 @@ fi
 #
 # Using command line options
 #
-version=$1
-release=$2
-
-
+version=$(echo $1.$2)
 
 #
 # Help variables
 #
 arch=$(dpkg --print-architecture)
+package_name=$(echo samson_${version}_${arch})
 
 
 
@@ -82,33 +80,26 @@ userdel samson
 PRERM
 chmod 0755 debian/DEBIAN/prerm
  
-cp BUILD_RELEASE/apps/samsonCat/samsonCat              debian/opt/samson/bin
-cp BUILD_RELEASE/apps/samsonController/samsonController       debian/opt/samson/bin
-cp BUILD_RELEASE/apps/samsonData/samsonData             debian/opt/samson/bin
-cp BUILD_RELEASE/apps/samsonLocal/samsonLocal            debian/opt/samson/bin
+cp BUILD_RELEASE/apps/samsonCat/samsonCat                       debian/opt/samson/bin
+cp BUILD_RELEASE/apps/samsonLocal/samsonLocal                   debian/opt/samson/bin
 cp BUILD_RELEASE/apps/samsonModuleParser/samsonModuleParser     debian/opt/samson/bin
-cp BUILD_RELEASE/apps/samsonSetup/samsonSetup            debian/opt/samson/bin
-cp BUILD_RELEASE/apps/samsonSpawner/samsonSpawner          debian/opt/samson/bin
-cp BUILD_RELEASE/apps/samsonWorker/samsonWorker           debian/opt/samson/bin
-cp BUILD_RELEASE/apps/samsonKiller/samsonKiller           debian/opt/samson/bin
-cp BUILD_RELEASE/apps/samsonStarter/samsonStarter           debian/opt/samson/bin
-cp BUILD_RELEASE/apps/delilah/delilah               debian/opt/samson/bin
-cp scripts/samsonProcessesSupervise                 debian/opt/samson/bin
-cp BUILD_RELEASE/apps/samsonPush/samsonPush		debian/opt/samson/bin
-cp BUILD_RELEASE/apps/samsonPop/samsonPop		debian/opt/samson/bin
-cp BUILD_RELEASE/apps/samsonTopicMonitor/samsonTopicMonitor		debian/opt/samson/bin
-cp BUILD_RELEASE/apps/delilahQt/delilahQT		debian/opt/samson/bin
-cp etc/setup.txt                                    debian/var/samson/etc
-cp etc/profile.d/samson.sh                          debian/etc/profile.d/samson.sh
-cp etc/init.d/samson.ubuntu                         debian/etc/init.d/samson
-cp README debian/opt/samson/share
-cp scripts/samsonInitSetup           debian/opt/samson/bin
-
-
+cp BUILD_RELEASE/apps/samsonSetup/samsonSetup                   debian/opt/samson/bin
+cp BUILD_RELEASE/apps/samsonWorker/samsonWorker                 debian/opt/samson/bin
+cp BUILD_RELEASE/apps/delilah/delilah                           debian/opt/samson/bin
+cp BUILD_RELEASE/apps/delilah_graph/delilah                     debian/opt/samson/bin
+cp scripts/samsonProcessesSupervise                             debian/opt/samson/bin
+cp BUILD_RELEASE/apps/samsonPush/samsonPush		                debian/opt/samson/bin
+cp BUILD_RELEASE/apps/samsonPop/samsonPop		                debian/opt/samson/bin
+cp etc/setup.txt                                                debian/var/samson/etc
+cp etc/profile.d/samson.sh                                      debian/etc/profile.d/samson.sh
+cp etc/init.d/samson.ubuntu                                     debian/etc/init.d/samson
+cp README                                                       debian/opt/samson/share
+cp scripts/samsonInitSetup                                      debian/opt/samson/bin
+cp scripts/samsonModuleDist                                     debian/opt/samson/bin
 
 #
 # Create package
 #
-dpkg-deb --build debian samson_$version-${release}_$arch.deb
+dpkg-deb --build debian ${package_name}.deb
 mkdir -p package/deb	
-mv samson_$version-${release}_$arch.deb package/deb/samson_$version-${release}_$arch.deb
+mv ${package_name}.deb package/deb/${package_name}.deb

@@ -14,21 +14,18 @@ if [ -z "${SAMSON_HOME}" ]; then
 fi
 
 #
-# Using command line options
-#
-module=$1
-lowercase_module=$(echo $module | tr 'A-Z' 'a-z' | sed 's/_/\-/g')
-version=$2
-release=$3
-
-
-
-#
 # Help variables
 #
 arch=$(dpkg --print-architecture)
 
-# Help functions
+#
+# Using command line options
+#
+module=$1
+lowercase_module=$(echo $module | tr 'A-Z' 'a-z' | sed 's/_/\-/g')
+module_name=$(echo samson-module-${lowercase_module})
+version=$(echo $2.$3)
+module_package=$(echo ${module_name}_${version}_${arch}.deb)
 
 # Generate a list of module dependencies needed to install this module
 dependencylist()
@@ -62,8 +59,7 @@ fi
 mkdir -p debian/DEBIAN
 mkdir -p debian/opt/samson/modules
 
-
-echo "Package: samson-${lowercase_module}"                 > debian/DEBIAN/control
+echo "Package: ${module_name}"                 > debian/DEBIAN/control
 echo "Version: $version"                                >> debian/DEBIAN/control
 echo "Architecture: $arch"                              >> debian/DEBIAN/control
 echo "Section: tid"                                >> debian/DEBIAN/control
@@ -74,13 +70,11 @@ echo " " >> debian/DEBIAN/control
 echo "Description: Module ${lowercase_module} for use with the Samson Map Reduce Platform."  >> debian/DEBIAN/control
 
 mkdir -p debian/opt/samson/include/samson/modules/$module
-cp ${SAMSON_HOME}/modules/lib$module.so               debian/opt/samson/modules
-
-
+cp ../../BUILD_RELEASE/modules/${module}/lib$module.so               debian/opt/samson/modules
 
 #
 # Create package
 #
-dpkg-deb --build debian samson-${lowercase_module}_$version-${release}_$arch.deb
+dpkg-deb --build debian ${module_package}
 mkdir -p ../../package/deb
-mv samson-${lowercase_module}_$version-${release}_$arch.deb ../../package/deb/samson-${lowercase_module}_$version-${release}_$arch.deb
+mv ${module_package} ../../package/deb/${module_package}

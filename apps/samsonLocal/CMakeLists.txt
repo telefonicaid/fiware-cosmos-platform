@@ -1,51 +1,62 @@
 SET (SOURCES
-	FakeEndpoint.cpp
-	NetworkFake.cpp
-	NetworkFakeCenterPacket.cpp
-	NetworkCenter.cpp
-	main_samsonLocal.cpp
+    FakeEndpoint.cpp
+    NetworkFake.cpp
+    NetworkFakeCenterPacket.cpp
+    NetworkCenter.cpp
+    main_samsonLocal.cpp
 )
 
 SET (HEADERS
-	FakeEndpoint.h
-	NetworkFake.h
-	NetworkCenter.h
-	NetworkFakeCenterPacket.h
+    FakeEndpoint.h
+    NetworkFake.h
+    NetworkCenter.h
+    NetworkFakeCenterPacket.h
 )
 
 SET (HEADERS_FOR_MOC
-	DelilahQt.h
+    DelilahQt.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)
+
+# SAMSON-956 - iconv functions are built into glibc on Linux but require a 
+# separate library on OS X
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set (ICONV_LIB "iconv")
+else (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+        set (ICONV_LIB "")
+    endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
 
 SET( STATIC_LIBS
     samsonWorkerLib
     delilahLib
     delilahQtLib
     engine
-	samsonModule
-	samsonStream
-	samsonIsolated
-	samsonNetwork
-	samsonCommon
-	au
-	tables
-	lm
-	iconv
-	pa
-	protobuf
-	dl
-	pthread
-	QtCore
-	${COMMON_SAMSON_LIBS}
+    samsonModule
+    samsonStream
+    samsonIsolated
+    samsonNetwork
+    samsonCommon
+    au
+    tables
+    lm
+    ${ICONV_LIB}
+    pa
+    protobuf
+    dl
+    pthread
+    QtCore
+    ${COMMON_SAMSON_LIBS}
 )
 
 
 # Include directories
 # ------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs")
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})		# Required for QT intermediate files to compile
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})        # Required for QT intermediate files to compile
 
 # QT Operations
 # ------------------------------------------------------------

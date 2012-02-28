@@ -5,6 +5,15 @@ SET (SOURCES
 SET (HEADERS
 )
 
+# SAMSON-956 - iconv functions are built into glibc on Linux but require a 
+# separate library on OS X
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set (ICONV_LIB "iconv")
+else (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+        set (ICONV_LIB "")
+    endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 SET (LIBS
     samsonWorkerLib
@@ -15,8 +24,8 @@ SET (LIBS
     samsonCommon
     engine
     au
-	tables
-	iconv
+    tables
+    ${ICONV_LIB}
     pa
     lm
     protobuf

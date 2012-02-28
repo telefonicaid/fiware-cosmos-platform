@@ -60,6 +60,7 @@
 									<include>com.google.guava:guava</include>
 									<include>com.twitter:elephant-bird</include>
 									<include>com.hadoop.compression:hadoop-gpl-compression</include>
+									<include>org.mongodb:mongo-java-driver</include>
 								</includes>
 							</dependency>
 						</mapping>

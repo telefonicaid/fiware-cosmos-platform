@@ -86,7 +86,7 @@ cp BUILD_RELEASE/apps/samsonModuleParser/samsonModuleParser     debian/opt/samso
 cp BUILD_RELEASE/apps/samsonSetup/samsonSetup                   debian/opt/samson/bin
 cp BUILD_RELEASE/apps/samsonWorker/samsonWorker                 debian/opt/samson/bin
 cp BUILD_RELEASE/apps/delilah/delilah                           debian/opt/samson/bin
-cp BUILD_RELEASE/apps/delilah_graph/delilah                     debian/opt/samson/bin
+cp BUILD_RELEASE/apps/delilah_graph/delilah_graph               debian/opt/samson/bin
 cp scripts/samsonProcessesSupervise                             debian/opt/samson/bin
 cp BUILD_RELEASE/apps/samsonPush/samsonPush		                debian/opt/samson/bin
 cp BUILD_RELEASE/apps/samsonPop/samsonPop		                debian/opt/samson/bin

@@ -1,0 +1,3 @@
+#!/bin/bash
+getent group samson >/dev/null || groupadd -r samson
+getent passwd samson >/dev/null || useradd -r -g samson -d /opt/samson -s /bin/bash -c 'SAMSON Platform account' samson

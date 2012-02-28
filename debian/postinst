@@ -1,0 +1,7 @@
+#!/bin/sh
+bash /opt/samson/bin/samsonInitSetup
+chown -R samson:samson /opt/samson
+chown -R samson:samson /var/samson
+chown -R samson:samson /var/log/samson
+update-rc.d samson defaults
+/etc/init.d/samson start

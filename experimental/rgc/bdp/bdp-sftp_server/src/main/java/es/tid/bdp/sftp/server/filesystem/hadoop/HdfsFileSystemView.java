@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import es.tid.bdp.utils.BuilderDdpFileDescriptorAbstract;
 import es.tid.bdp.utils.BuilderDdpFileDescriptorMongo;
+import es.tid.bdp.utils.BuilderDdpFileDescriptorTextAllow;
+import es.tid.bdp.utils.data.BdpFileDescriptor;
 
 public class HdfsFileSystemView implements FileSystemView {
 
@@ -28,7 +30,7 @@ public class HdfsFileSystemView implements FileSystemView {
     private String currDir;
 
     private BuilderDdpFileDescriptorAbstract builder;
-    
+
     private boolean caseInsensitive = false;
 
     /**
@@ -38,7 +40,7 @@ public class HdfsFileSystemView implements FileSystemView {
     protected HdfsFileSystemView(String userName) {
         this(userName, false);
     }
-  
+
     /**
      * Constructor - internal do not use directly, use
      * {@link NativeFileSystemFactory} instead
@@ -63,8 +65,11 @@ public class HdfsFileSystemView implements FileSystemView {
                 "com.hadoop.compression.lzo.LzoCodec");
         try {
             hdfsSrc = FileSystem.get(confSrc);
-            builder = new BuilderDdpFileDescriptorMongo("psmongo", 22, "pshdp",
-                    "filesystem");
+            /*
+             * builder = new BuilderDdpFileDescriptorMongo("psmongo", 22,
+             * "pshdp", "filesystem");
+             */
+            builder = new BuilderDdpFileDescriptorTextAllow();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -89,8 +94,8 @@ public class HdfsFileSystemView implements FileSystemView {
 
     protected SshFile getFile(String dir, String file) {
         // get actual file object
-        String physicalName = NativeSshFile.getPhysicalName("/",
-                dir, file, caseInsensitive);
+        String physicalName = NativeSshFile.getPhysicalName("/", dir, file,
+                caseInsensitive);
 
         // strip the root directory and return
         String userFileName = physicalName.substring("/".length() - 1);

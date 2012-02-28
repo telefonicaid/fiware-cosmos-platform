@@ -655,7 +655,7 @@ public final class CdrP {
       
       // Construct using es.tid.bdp.profile.data.CdrP.Date.newBuilder()
       private Builder() {}
-      
+        
       private static Builder create() {
         Builder builder = new Builder();
         builder.result = new es.tid.bdp.profile.data.CdrP.Date();

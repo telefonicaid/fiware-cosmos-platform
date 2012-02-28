@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>bdp</artifactId>
 		<groupId>es.tid.bdp</groupId>
-	    <version>${project.version}</version>
+		<version>0.0.1</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>bdp-sftp_client</artifactId>
@@ -105,7 +105,7 @@
 		<dependency>
 			<groupId>es.tid.bdp</groupId>
 			<artifactId>bdp-utils</artifactId>
-			<version>0.0.1</version>
+		    <version>0.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.jcraft</groupId>

@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>es.tid.bdp</groupId>
 	<artifactId>bdp</artifactId>
-	<version>${project.version}</version>
+	<version>0.0.1</version>
 	<packaging>pom</packaging>
 	<name>Big Data Platform</name>
 	<repositories>
@@ -71,7 +71,6 @@
 	<properties>
 		<copyright.year>2012</copyright.year>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.version>0.0.2</project.version>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<org.apache.hadoop>0.20.2-cdh3u2</org.apache.hadoop>
 		<junit>4.5</junit>

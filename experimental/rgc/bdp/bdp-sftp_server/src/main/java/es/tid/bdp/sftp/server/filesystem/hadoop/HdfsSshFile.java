@@ -3,6 +3,7 @@ package es.tid.bdp.sftp.server.filesystem.hadoop;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,9 +18,13 @@ import org.apache.sshd.server.filesystem.NativeSshFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hadoop.compression.lzo.LzopCodec;
+
+import es.tid.bdp.utils.BuilderDdpFileDescriptorAbstract;
+import es.tid.bdp.utils.data.BdpFileDescriptor;
+import es.tid.bdp.utils.data.BdpFileDescriptor.BdpCompresion;
 import es.tid.bdp.utils.io.output.ProtoBufOutStream;
 import es.tid.bdp.utils.parse.ParserAbstract;
-import es.tid.bdp.utils.parse.ParserCdr;
 
 public class HdfsSshFile implements SshFile {
 
@@ -29,25 +34,25 @@ public class HdfsSshFile implements SshFile {
     // The path separator character will be '/' and
     // it will always begin with '/'.
     private String fileName;
+    private String userName;
 
     private Path path;
-
-    private String userName;
+    private BuilderDdpFileDescriptorAbstract builder;
 
     private FileSystem hdfs;
 
     private OutputStream outputStream;
 
-    public HdfsSshFile(final FileSystem hdfs, final String fileName,
-            final Path path, final String userName) {
+    private BdpFileDescriptor descriptor;
+
+    public HdfsSshFile(final FileSystem hdfs,
+            final BuilderDdpFileDescriptorAbstract builder,
+            final String userName, final String fileName) {
         if (hdfs == null) {
             throw new IllegalArgumentException("Hdfs can not be null");
         }
         if (fileName == null) {
             throw new IllegalArgumentException("fileName can not be null");
-        }
-        if (path == null) {
-            throw new IllegalArgumentException("Path can not be null");
         }
 
         if (fileName.length() == 0) {
@@ -56,10 +61,10 @@ public class HdfsSshFile implements SshFile {
             throw new IllegalArgumentException(
                     "fileName must be an absolute path");
         }
+        this.descriptor = builder.build(userName, fileName);
 
         this.fileName = fileName;
-        this.path = path;
-        this.userName = userName;
+        this.path = new Path(fileName);
         this.hdfs = hdfs;
     }
 
@@ -122,13 +127,11 @@ public class HdfsSshFile implements SshFile {
     }
 
     public boolean isReadable() {
-        // TODO Auto-generated method stub
-        return true;
+        return descriptor.isReadable();
     }
 
     public boolean isWritable() {
-        // TODO Auto-generated method stub
-        return true;
+        return descriptor.isWritable();
     }
 
     public boolean isExecutable() {
@@ -243,7 +246,7 @@ public class HdfsSshFile implements SshFile {
         for (int i = 0; i < elements.length; ++i) {
             Path fileObj = elements[i].getPath();
             String fileName = virtualFileStr + fileObj.getName();
-            virtualFiles[i] = new HdfsSshFile(hdfs, fileName, fileObj, userName);
+            virtualFiles[i] = new HdfsSshFile(hdfs, builder, userName, fileName);
         }
 
         return Collections.unmodifiableList(Arrays.asList(virtualFiles));
@@ -257,11 +260,32 @@ public class HdfsSshFile implements SshFile {
             create();
         }
 
-        ParserAbstract parser = new ParserCdr(
-                "(^.+)\\|(.*)\\|\\d\\|(\\d{2})/(\\d{2})/(\\d{4})\\|(\\d{2}):(\\d{2}):(\\d{2})\\|.*",
-                "userId|cellId|day|month|year|hour|minute|second");
+        if (this.descriptor.isSerializable()) {
+            LzopCodec codec = new LzopCodec();
+            codec.setConf(hdfs.getConf());
+            outputStream = codec.createOutputStream(outputStream);
+        }
 
-        return new ProtoBufOutStream(outputStream, parser);
+        BdpCompresion compression = descriptor.getCompresion();
+
+        if (compression != null) {
+            try {
+                @SuppressWarnings("unchecked")
+                Class<ParserAbstract> klass = (Class<ParserAbstract>) Class
+                        .forName(compression.getClassName());
+
+                Constructor<ParserAbstract> constructor = klass.getConstructor(
+                        String.class, String.class);
+
+                ParserAbstract parser = constructor.newInstance(
+                        compression.getPattern(), compression.getAttr());
+                outputStream = new ProtoBufOutStream(outputStream, parser);
+            } catch (Exception e) {
+                throw new RuntimeException();
+            }
+        }
+        return outputStream;
+
     }
 
     public InputStream createInputStream(long offset) throws IOException {

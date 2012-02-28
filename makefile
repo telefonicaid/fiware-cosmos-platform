@@ -287,6 +287,7 @@ deb:
 	sed -e  "s/SAMSON_VERSION/$(SAMSON_VERSION)/"  -e "s/SAMSON_RELEASE/$(SAMSON_RELEASE)/" CHANGELOG > debian/changelog
 	# Right now *everything* comes in a single package
 	dpkg-buildpackage -b
+	mkdir -p package/deb
 	mv ../samson_$(SAMSON_VERSION).$(SAMSON_RELEASE)* package/deb
 
 publish_deb: deb

@@ -8,7 +8,7 @@ ifndef SAMSON_VERSION
 SAMSON_VERSION=0.6.1
 endif
 ifndef SAMSON_RELEASE
-SAMSON_RELEASE=$(shell svnversion . | sed 's/M//')
+SAMSON_RELEASE=$(shell svnversion . | sed -e 's/:.*//' -e 's/M//' )
 endif
 # Who to install samson as
 ifndef SAMSON_OWNER
@@ -94,7 +94,7 @@ install_debug: prepare_debug
 	echo "mkdir -p /var/samson"
 	echo "chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_WORKING)"
 
-install: prepare_release
+install: 
 	make -C BUILD_RELEASE install
 	make install_man
 	mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
@@ -282,17 +282,12 @@ publish_rpm: rpm
 # currently the deb scripts require Samson be installed before 
 # the package can be generated. Using SAMSON_HOME we can override
 # the default install location so as to not trash a live installation
-deb: release man
+deb:
 	rm -rf package/deb
-	scripts/samsonDeb $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	scripts/samsonDebDev $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	scripts/samsonDebDocs $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	scripts/samsonModuleDependencies
-	for module in $(MODULES); do \
-		cd modules/$$module; \
-		../../scripts/samsonModuleDeb $$module $(SAMSON_VERSION) $(SAMSON_RELEASE); \
-		cd ../..; \
-	done
+	sed -e  "s/SAMSON_VERSION/$(SAMSON_VERSION)/"  -e "s/SAMSON_RELEASE/$(SAMSON_RELEASE)/" CHANGELOG > debian/changelog
+	# Right now *everything* comes in a single package
+	dpkg-buildpackage -b
+	mv ../samson_$(SAMSON_VERSION).$(SAMSON_RELEASE)* package/deb
 
 publish_deb: deb
 	ssh repo@samson09 mkdir -p /tmp/samson-deb-$(SAMSON_RELEASE)/
@@ -301,14 +296,16 @@ publish_deb: deb
 	ssh repo@samson09 'cd /var/repository/ubuntu/natty; for deb in `ls /tmp/samson-deb-$(SAMSON_RELEASE)/samson*.deb`; do reprepro includedeb tid $$deb; done'
 	ssh repo@samson09 rm -rf /tmp/samson-deb-$(SAMSON_RELEASE)/
 
-man: release
-	 mkdir -p BUILD_RELEASE/man/man1
-	 mkdir -p BUILD_RELEASE/man/man7
-	 help2man --name="samson worker"         --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonWorker/samsonWorker     > ./BUILD_RELEASE/man/man1/samsonWorker.1
-	 help2man --name="samson setup"          --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonSetup/samsonSetup       > ./BUILD_RELEASE/man/man1/samsonSetup.1
-	 #help2man --name="samson spawner"        --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonSpawner/samsonSpawner   > ./BUILD_RELEASE/man/man1/samsonSpawner.1
-	 help2man --name="samson platform interaction shell" --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/delilah/delilah                > ./BUILD_RELEASE/man/man1/delilah.1
-	 cp man/samson-*.7 ./BUILD_RELEASE/man/man7
+man:
+	if [ ! -d BUILD_RELEASE ]; then \
+		echo "execute make release before trying to build the manual pages"; \
+	fi
+	mkdir -p BUILD_RELEASE/man/man1
+	mkdir -p BUILD_RELEASE/man/man7
+	help2man --name="Samson worker"         --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonWorker/samsonWorker     > ./BUILD_RELEASE/man/man1/samsonWorker.1
+	help2man --name="Samson setup"          --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonSetup/samsonSetup       > ./BUILD_RELEASE/man/man1/samsonSetup.1
+	help2man --name="Samson platform interaction shell" --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/delilah/delilah                > ./BUILD_RELEASE/man/man1/delilah.1
+	cp man/samson-*.7 ./BUILD_RELEASE/man/man7
 
 uninstall:
 	if [ -f BUILD_RELEASE/install_manifest.txt ]; then \

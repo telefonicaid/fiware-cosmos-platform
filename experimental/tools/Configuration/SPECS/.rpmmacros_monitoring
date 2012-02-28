@@ -1,0 +1,3 @@
+%_topdir /root/.hudson/jobs/ps-suite-tool/workspace/ps-suite-tool
+%_psappdir /usr/local/ps/apps
+%_apacheconfdir /etc/httpd/conf.d

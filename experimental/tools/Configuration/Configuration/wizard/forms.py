@@ -145,7 +145,7 @@ KPIS_CHOICES=(('Visitors per Domain','Visitors per Domain'),
               ('Visitors per Device','Visitors per Device'),
               ('Visitors per Protocol','Visitors per Protocol'))
 GROUPING_FIELDS_CHOICES=(('1','Enabled'),('0','Disabled'))
-ATTRIBUTE_FIELDS_CHOICES=(('visitorId','visitorId'),('protocol','protocol'),('fullUrl','fullUrl'),('status','status'),('urlDomain','urlDomain'))
+ATTRIBUTE_FIELDS_CHOICES=(('visitorId','visitorId'),('protocol','protocol'),('fullUrl','fullUrl'),('urlDomain','urlDomain'),('urlPath','urlPath'),('urlQuery','urlQuery'),('date','date'),('userAgent','userAgent'),('browser','browser'),('device','device'),('operSys','operSys'),('method','method'),('status','status'))
 CONSUMPTION_MODE_CHOICES=(('highAvailability','High Availability'),('dataExploitation','Data Exploitation'))
 class WebProfilingForm(forms.Form):
     error_css_class = 'error'
@@ -158,6 +158,7 @@ class WebProfilingForm(forms.Form):
                                                     widget=CheckboxSelectMultiple,
                                                     choices=ATTRIBUTE_FIELDS_CHOICES)
     consumption_path = forms.CharField(max_length=200)
+    job_name = forms.CharField(max_length=200)
     
     # Creates Template model from WebProfiling Form data
     # return Model
@@ -186,7 +187,10 @@ class WebProfilingForm(forms.Form):
             lbl4 = Label()
             lbl4.attribute["Consumption Path"] = self["consumption_path"].value()
             
-            tpl = Template( template = "WebProfilingTemplate", attribute_values = [lbl1,lbl2,lbl3,lbl4])
+            lbl5 = Label()
+            lbl5.attribute["Job Name"] = self["job_name"].value()
+            
+            tpl = Template( template = "WebProfilingTemplate", attribute_values = [lbl1,lbl2,lbl3,lbl4,lbl5])
             return tpl
         
     # Saves WebProfiling Form, really saves Template Model

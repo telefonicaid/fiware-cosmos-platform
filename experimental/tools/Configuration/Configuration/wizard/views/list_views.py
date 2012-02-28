@@ -25,6 +25,7 @@ def preprocessing(request):
 @csrf_protect
 def webprofiling(request):
     templates = Template.objects.filter(template = 'WebProfilingTemplate')
+    type = {}
     type['templateType'] = 'WebProfiling'
     return render_to_response('wizard/template_list.html', {
                                                     'templates': templates, 'type' : type,

@@ -116,8 +116,12 @@ def webprofiling_detail(request,pk):
                         attr_fields = label.attribute[key]
                     elif key == 'Consumption Path':
                         path = label.attribute[key]
+                    elif key == 'Job Name':
+                        job_name = label.attribute[key]
                     
-            form = WebProfilingForm({'mode' : select_mode, 'consumption_path' :path, 
+            form = WebProfilingForm({'mode' : select_mode,
+                                    'consumption_path' :path,
+                                    'job_name' :job_name, 
                                     'grouping_fields' : grp_fields, 
                                     'attributes_fields' : attr_fields})
             

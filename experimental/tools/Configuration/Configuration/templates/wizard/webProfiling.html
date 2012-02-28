@@ -20,50 +20,57 @@
                 <li>{{ error }}</li>{% endfor %}
             </ul>
             {% endif %}
-            <br/>
-            <h2 class="h-label">{{ "Attributes" }}</h2>
-		    <div class="consumption-div">
-			    <div class="consumption-div-left">
-				    <h2 class="h-label">{{ "Available Attributes" }}</h2>
-				    <div class="cons-div">
-				        {{ form.message.errors }}
-				        <label for="id_type">Attributes Fields</label>
-			        	 {{ form.attributes_fields }}		       
-				    </div>
-				</div>
-				<div class="consumption-div-right">
-				    <h2 class="h-label">{{ "Attributes Configuration" }}</h2>
-				    <div class="cons-div">
-				        {{ form.message.errors }}
-				        <label for="id_type">Grouping Fields</label>
-			        	 {{ form.grouping_fields }}<br/><br/><br/><br/>
-			        	<label for="id_type">Consumption Mode</label>
-			        	 {{ form.mode }}
-				    </div>
+            <br/>           
+				  
+		    <h2 class="h-label">{{ "Attributes Configuration" }}</h2>
+		    <div class="pre-div" style="height: 30px">
+			    <div class="pre-div-left">
+			        {{ form.message.errors }}
+			        <label class="label-cons-form" for="id_type">Job Name</label>
+	        	 	{{ form.job_name }}		       
 			    </div>
-		    </div>
-		    <h2 class="h-label">{{ "Consumption" }}</h2>
-		    <div class="field-div">
-		        {{ form.subject.errors }}
-		        <label class="label-form" for="id_type">Consumption Path</label>
-		        {{ form.consumption_path }}
+			    <div class="pre-div-right">
+			        {{ form.message.errors }}
+			        <label for="id_type">Grouping Fields</label>
+	        	 	{{ form.grouping_fields }}
+			    </div>	
+			</div><br/>
+			
+			{% if form.attributes_fields %}
+				<h2 class="h-label">{{ "Available Attributes" }}</h2>
+		        <div class="cons-div" style="height: 78px">	        		
+		 			{% for attribute in form.attributes_fields.field.choices %}
+		 				{% if attribute.0 %}			 					
+		 					<div style="width: 25%; float: left">
+		 						<label><input type="checkbox" name="choices" value="attribute"/>{{ attribute.0 }}</label>	
+		 					</div>
+		 				{% endif %}			 		 
+		 			{% endfor %}			
+		        </div>	
+		    {% endif %}<br/>    
+		         
+		   	<h2 class="h-label">{{ "Consumption" }}</h2>
+		    <div class="pre-div" style="height: 58px">
+			    <div class="pre-div-left">		    
+			        {{ form.subject.errors }}
+			        <label for="id_type">Consumption Path</label>
+			        {{ form.consumption_path }}
+			    </div>
+			    <div class="pre-div-right">  
+			    	{{ form.subject.errors }}  
+			        <label class="label-cons-form" for="id_type" style="width: 150px">Consumption Mode</label>
+			        {{ form.mode }}
+			    </div>   
 		    </div><br/>
 		    
             <input type="hidden" name="{{ step_field }}" value="{{ step0 }}" />
             {{ previous_fields|safe }}
 
-			{% if step %}
-	            <div id="buttons-div" class="submit-row" align="right">
-	             	<input type="reset" value="Cancel" class="button" name="_cancel"/>
-	             	<input type="button" value="&laquo; Back" class="button" disabled="disabled"/>
-	                <input type="submit" value="{% ifequal step step_count %}Finish{% else %}Next &raquo;{% endifequal %}" class="button" name="_save" disabled="disabled"/>               
-	            </div>
-			{% else %}
-	            <div id="buttons-div" class="submit-row" align="right">
-	             	<input type="reset" value="Cancel" class="button" name="_cancel"/>
-	                <input type="submit" value="{% ifequal step step_count %}Save{% else %}Next &raquo;{% endifequal %}" class="button" name="_save"/>               
-	            </div>			
-			{%endif%}
+			<div id="buttons-div" class="submit-row" align="right">
+             	<input type="reset" value="Cancel" class="button" name="_cancel"/>
+             	<input type="button" value="&laquo; Back" class="button"/>
+                <input type="submit" value="{% ifequal step step_count %}Finish{% else %}Next &raquo;{% endifequal %}" class="button" name="_save"/>               
+            </div>
 
             <script type="text/javascript">document.getElementById("{{ form.first_field.auto_id }}").focus();</script>
         </div>

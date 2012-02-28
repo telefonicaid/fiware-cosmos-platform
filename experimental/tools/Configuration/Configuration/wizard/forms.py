@@ -62,7 +62,9 @@ class IngestionForm(forms.Form):
         lbl2.attribute["IngestionAddress"] = self['path'].value()
         lbl3 = Label()
         lbl3.attribute["IngestionSize"] = self['size'].value()
-        tpl = Template( template = "IngestionTemplate", attribute_values = [lbl1,lbl2,lbl3] )
+        lbl4 = Label()
+        lbl4.attribute["ConfigurationName"] = self['name'].value()
+        tpl = Template( template = "IngestionTemplate", attribute_values = [lbl1,lbl2,lbl3,lbl4] )
         return tpl
 
     # Saves Ingestion Form, really saves Template Model
@@ -173,10 +175,16 @@ class WebProfilingForm(forms.Form):
             lbl1 = Label()
             lbl1.attribute['ConsumptionMode'] = dict 
             
+        #    dict1 = {}
+        #    dict1[self.cleaned_data['grouping_fields']] = 1
+        #    lbl2 = Label()
+        #    lbl2.attribute["Grouping Fields"] = dict1 
+            
             dict1 = {}
-            dict1[self.cleaned_data['grouping_fields']] = 1
+            for option in self['grouping_fields'].value():
+                dict1[option] = 1
             lbl2 = Label()
-            lbl2.attribute["Grouping Fields"] = dict1 
+            lbl2.attribute["Grouping Fields"] = dict1
             
             dict2 = {}
             for option in self['attributes_fields'].value():

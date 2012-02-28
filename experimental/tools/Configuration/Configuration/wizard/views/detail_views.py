@@ -43,8 +43,10 @@ def ingestion_detail(request,pk):
                         size = label.attribute[key]
                     elif key == 'IngestionAddress':
                         path = label.attribute[key]
+                    elif key == 'ConfigurationName':
+                        name = label.attribute[key]
                     
-            form = IngestionForm(initial = {'path' : path, 'size' : size, 'name' : 'def', 'mode' :select_mode})
+            form = IngestionForm(initial = {'path' : path, 'size' : size, 'name' : name, 'mode' : select_mode})
             
             return render_to_response('wizard/ingestion.html', {
                                                         'form': form

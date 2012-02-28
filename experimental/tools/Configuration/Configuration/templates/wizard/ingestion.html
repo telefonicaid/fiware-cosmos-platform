@@ -19,13 +19,16 @@
             </ul>
             {% endif %}
             
-            <h2 class="h-label">{{ "Service Setup" }}</h2>
-		    {{ form.non_field_errors }}
-		    <div class="field-div">
-		        {{ form.subject.errors }}
-		        <label class="label-form" for="id_identifier">Service Name</label>
-		        {{ form.name }}
-		    </div><br/><br/>
+            {% if step %}
+	            <h2 class="h-label">{{ "Service Setup" }}</h2>
+			    {{ form.non_field_errors }}
+			    <div class="field-div">
+			        {{ form.subject.errors }}
+			        <label class="label-form" for="id_identifier">Configuration Name</label>
+			        {{ form.name }}
+			    </div><br/><br/>
+			{% endif %}
+			    
 		    <h2 class="h-label">{{ "Ingestion Properties" }}</h2>
 		    <div class="field-div">
 			    <div class="fieldWrapper">

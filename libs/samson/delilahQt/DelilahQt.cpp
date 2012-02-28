@@ -22,8 +22,8 @@ namespace samson
         //au::tables::Table* table2 = database.getTable("workers");
         //if( table2 ) std::cout << "Engines read" << std::endl;
         QString str;
-        std::vector<QueueData> queuesData;
-        std::vector<WorkerData> workersData;
+        std::vector<QueueData*> queuesData;
+        std::vector<WorkerData*> workersData;
         au::tables::Table* table = database.getTable("queues");
         if( table )
         {
@@ -47,7 +47,7 @@ namespace samson
                 data.locked = table->getValue(i, "Locked");
                 data.time_from = table->getValue(i, "Time from");
                 data.time_to = table->getValue(i, "Time to");
-                queuesData.push_back(data);
+                queuesData.push_back(&data);
                 
             }
         }
@@ -55,7 +55,7 @@ namespace samson
         table = database.getTable("workers");
         if( table )
         {
-            //Store all queues in the table to send to DelilahMainWindow for processing
+           //Store all workers in the table to send to DelilahMainWindow for processing
             for(unsigned int i = 0; i< table->getNumRows(); i++)
             {
                 WorkerData data;
@@ -70,7 +70,7 @@ namespace samson
                 data.disk_out_rate = table->getValue(i, "Disk out B/s");
                 data.net_in = table->getValue(i, "Net in B/s");
                 data.net_out = table->getValue(i, "Net out B/s");
-                workersData.push_back(data);
+                workersData.push_back(&data);
             }
         }
         mainWindow->updateData(queuesData, workersData);

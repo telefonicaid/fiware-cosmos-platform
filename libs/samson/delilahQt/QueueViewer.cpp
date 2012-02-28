@@ -76,6 +76,11 @@ QueueViewer::QueueViewer(std::string _title, QWidget* parent): QWidget(parent)
     
 }
 
+void QueueViewer::setData(QueueData* newData)
+{
+    setData(*newData);
+}
+
 void QueueViewer::setData(QueueData newData)
 {
         data = newData;

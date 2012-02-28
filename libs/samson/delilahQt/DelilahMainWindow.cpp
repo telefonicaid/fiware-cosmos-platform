@@ -63,7 +63,7 @@ namespace samson
 
         connect(queuesTab, SIGNAL(queueDetailsClicked(QueueViewer*)), this, SLOT(onQueueDetailsClicked(QueueViewer*)));
         connect(queuesTab, SIGNAL(queueHasChanged(QueueViewer*, QueueData*)), this, SLOT(onQueueHasChanged(QueueViewer*, QueueData*)));
-        
+        connect(queuesTab, SIGNAL(queueDeleted(QueueViewer*)), this, SLOT(onQueueDeleted(QueueViewer*)));
 
         setMinimumSize(800,600); 
     }
@@ -73,7 +73,7 @@ namespace samson
         QMessageBox::about( this, tr("Samson"), tr("Samson version 0.6.1") );
     }
     
-    void DelilahMainWindow::updateData(std::vector<QueueData>& queuesData, std::vector<WorkerData>& workersData)
+    void DelilahMainWindow::updateData(std::vector<QueueData*>& queuesData, std::vector<WorkerData*>& workersData)
     {
         //Update worker changes
         queuesTab->setData(queuesData);
@@ -146,6 +146,16 @@ namespace samson
         if (tabbedQueue)
         {
             tabbedQueue->setData(data);
+        }
+    }
+
+    void DelilahMainWindow::onQueueDeleted(QueueViewer* queue)
+    {
+        //if there is a tab for this queue, remove it
+        ExtQueueViewer* queueTmp = findQueueTab(queue->title);
+        if(queueTmp)
+        {
+            tabs->removeTab(tabs->indexOf(queueTmp));
         }
     }
 

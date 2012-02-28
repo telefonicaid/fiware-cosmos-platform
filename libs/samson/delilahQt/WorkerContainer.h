@@ -25,7 +25,7 @@ class WorkerContainer: public QWidget
         WorkerContainer(QWidget* parent = 0);
         std::string worker_id;
         
-        void setData(std::vector<WorkerData>& workersData);
+        void setData(std::vector<WorkerData*>& workersData);
 
     private:
         

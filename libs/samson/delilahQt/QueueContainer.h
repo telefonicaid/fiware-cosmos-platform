@@ -42,21 +42,23 @@ class QueueContainer: public QWidget
         
         QueueContainer(QWidget* parent = 0);
         
-        void setData(std::vector<QueueData>& queuesData);
+        void setData(std::vector<QueueData*>& queuesData);
 
     private:
         
         std::vector<QueueViewer*> quequeViewers;
         QVBoxLayout* mainLayout;
-        QueueViewer* findQueue(std::vector<QueueViewer*>& list, std::string name);
+        QueueViewer* findQueue(std::vector<QueueViewer*>& list, std::string name_id);
+        QueueData* findQueue(std::vector<QueueData*>& list, std::string name_id);
+        std::vector<QueueViewer*> getDeletedQueues(std::vector<QueueData*>& QueuesData);
 
-    
     public slots:
     void onQueueDetailsClicked();
     
     signals:
     void queueDetailsClicked(QueueViewer* queue);
     void queueHasChanged(QueueViewer* queue, QueueData* data);
+    void queueDeleted(QueueViewer* queue);
 
 };
 

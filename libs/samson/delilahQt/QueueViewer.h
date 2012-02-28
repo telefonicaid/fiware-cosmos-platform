@@ -26,6 +26,7 @@ class QueueViewer: public QWidget
 
         QueueData data;
         
+        void setData(QueueData* newData);
         void setData(QueueData newData);
         void setTitle(std::string title);
         void setHiddenButton(bool hidden);

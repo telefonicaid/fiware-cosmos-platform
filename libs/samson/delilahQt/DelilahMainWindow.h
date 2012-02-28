@@ -53,14 +53,14 @@ namespace samson {
     public:
     
         DelilahMainWindow();
-        void updateData(std::vector<QueueData>& queuesData, std::vector<WorkerData>& workersData);
+        void updateData(std::vector<QueueData*>& queuesData, std::vector<WorkerData*>& workersData);
         
     public slots:
         void about();
         void onQueueDetailsClicked(QueueViewer* queue);
         void tabClosed(int index);
         void onQueueHasChanged(QueueViewer* queue, QueueData* data);
-
+        void onQueueDeleted(QueueViewer* queue);
 
     signals:
         void requestUpdate();

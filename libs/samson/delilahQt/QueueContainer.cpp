@@ -48,7 +48,7 @@ QueueContainer::QueueContainer(QWidget* parent): QWidget(parent)
 
 }
 
-void QueueContainer::setData(std::vector<QueueData>& queuesData)
+void QueueContainer::setData(std::vector<QueueData*>& queuesData)
 {
         bool any_change = false;
         size_t totalKvs = 0;
@@ -58,12 +58,12 @@ void QueueContainer::setData(std::vector<QueueData>& queuesData)
         for(unsigned int i = 0; i < queuesData.size(); i++)
         {
             //Increment totals
-            totalKvs += atol(queuesData[i].kvs.c_str());
-            totalSize += atol(queuesData[i].size.c_str());
-            totalRate += atol(queuesData[i].bytes_s.c_str());
+            totalKvs += atol(queuesData[i]->kvs.c_str());
+            totalSize += atol(queuesData[i]->size.c_str());
+            totalRate += atol(queuesData[i]->bytes_s.c_str());
 
             //check if the queue belongs to the input or output queues list
-            bool is_input = (fnmatch("in:*", queuesData[i].name.c_str(),0) == 0);
+            bool is_input = (fnmatch("in:*", queuesData[i]->name.c_str(),0) == 0);
             std::vector<QueueViewer*>* queuesList;
             QGroupBox* groupBoxTmp;
             QGridLayout* layoutTmp;
@@ -81,20 +81,20 @@ void QueueContainer::setData(std::vector<QueueData>& queuesData)
 
             }
 
-            QueueViewer* queueTmp = findQueue(*queuesList, queuesData[i].name);
+            QueueViewer* queueTmp = findQueue(*queuesList, queuesData[i]->name);
             bool current_queue_changed = false;
             if( queueTmp != NULL)
             {
             
                 //Check if the data has actually changed
-                current_queue_changed = !(queuesData[i] == queueTmp->data);
+                current_queue_changed = !(*queuesData[i] == queueTmp->data);
                 if(current_queue_changed)
                 {
                     any_change = true;
                     //queue already has a widget. Just update
                     queueTmp->setData(queuesData[i]);
                     //update data in queue tab
-                    emit queueHasChanged(queueTmp, &queuesData[i]);
+                    emit queueHasChanged(queueTmp, queuesData[i]);
                     /*ExtQueueViewer* tabbedQueue = findQueueTab(queueTmp->title);
                     if (tabbedQueue)
                     {
@@ -107,7 +107,7 @@ void QueueContainer::setData(std::vector<QueueData>& queuesData)
                 //new queue. Create widget
                 current_queue_changed = true;
                 any_change = true;
-                queueTmp = new QueueViewer(queuesData[i].name, groupBoxTmp);
+                queueTmp = new QueueViewer(queuesData[i]->name, groupBoxTmp);
                 queueTmp->setData(queuesData[i]);
                 queuesList->push_back(queueTmp);
                 queueTmp->setLayout(layoutTmp, queuesList->size()-1);
@@ -120,6 +120,25 @@ void QueueContainer::setData(std::vector<QueueData>& queuesData)
                 inputLayout->activate();*/
                 //inputBox->update();
                 //queueTmp->show();
+            }
+            
+            //Check if any queues have been deleted
+            std::vector<QueueViewer*> deletedQueues = getDeletedQueues(queuesData); 
+            if(deletedQueues.size() > 0) 
+            {
+                any_change = true;
+                //Remove the widgets and delete the corresponding tabs if any
+                for(std::vector<QueueViewer*>::iterator deletedIt = deletedQueues.begin(); deletedIt < deletedQueues.end(); deletedIt++)
+                {
+                    //Send signal to DelilahMainView to remove the tabs
+                    emit(queueDeleted(*deletedIt));
+                    //redo the widgets
+                    QGridLayout* layoutTmp = (fnmatch("in:*", queuesData[i]->name.c_str(),0) == 0)?inputLayout:outputLayout;
+                    layoutTmp->removeWidget(*deletedIt);
+                    delete(*deletedIt);
+                    inputBox->update();
+                    outputBox->update();
+                }
             }
         }
         
@@ -156,13 +175,13 @@ void QueueContainer::setData(std::vector<QueueData>& queuesData)
         }
 }
 
-    QueueViewer* QueueContainer::findQueue(std::vector<QueueViewer*>& list, std::string name)
+    QueueViewer* QueueContainer::findQueue(std::vector<QueueViewer*>& list, std::string name_id)
     {
         bool found = false;
         QueueViewer* queueTmp = NULL;
         for(unsigned int i = 0; i< list.size() && !found; i++)
         {
-            if (list[i]->title == name)
+            if (list[i]->title == name_id)
             {
                 found = true;
                 queueTmp = list[i];
@@ -173,6 +192,24 @@ void QueueContainer::setData(std::vector<QueueData>& queuesData)
         
     }
 
+    QueueData* QueueContainer::findQueue(std::vector<QueueData*>& list, std::string name_id)
+    {
+        bool found = false;
+        QueueData* queueTmp = NULL;
+        for(unsigned int i = 0; i< list.size() && !found; i++)
+        {
+            if (list[i]->name == name_id)
+            {
+                found = true;
+                queueTmp = list[i];
+            }
+        }
+        
+        return queueTmp;
+        
+    }
+
+
     void QueueContainer::onQueueDetailsClicked()
     {
         //Get the queue button that triggered the slot
@@ -180,4 +217,27 @@ void QueueContainer::setData(std::vector<QueueData>& queuesData)
         emit queueDetailsClicked(queue);
     }
 
+    std::vector<QueueViewer*> QueueContainer::getDeletedQueues(std::vector<QueueData*>& queuesData)
+    {
+        std::vector<QueueViewer*> deletedQueues;
+        for (unsigned int i = 0; i< in_queues.size(); i++)
+        {
+            if (findQueue(queuesData, in_queues[i]->title) == NULL)
+            {
+                deletedQueues.push_back(in_queues[i]);
+            }
+        }
+
+        for (unsigned int i = 0; i< out_queues.size(); i++)
+        {
+            if (findQueue(queuesData, out_queues[i]->title) == NULL)
+            {
+                deletedQueues.push_back(out_queues[i]);
+            }
+        }
+        
+        return deletedQueues;
+        
+    }
+    
 } //namespace

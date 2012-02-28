@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>bdp</artifactId>
 		<groupId>es.tid.bdp</groupId>
-		<version>0.0.1</version>
+	    <version>${project.version}</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<artifactId>bdp-sftp_client</artifactId>

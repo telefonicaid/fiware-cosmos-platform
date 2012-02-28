@@ -31,8 +31,6 @@ public class HdfsFileSystemView implements FileSystemView {
 
     private BuilderDdpFileDescriptorAbstract builder;
     
-    private LzopCodec codec;
-
     private boolean caseInsensitive = false;
 
     /**
@@ -65,8 +63,6 @@ public class HdfsFileSystemView implements FileSystemView {
 
         confSrc.set("io.compression.codec.lzo.class",
                 "com.hadoop.compression.lzo.LzoCodec");
-        codec.setConf(confSrc);
-
         try {
             hdfsSrc = FileSystem.get(confSrc);
             builder = new BuilderDdpFileDescriptorMongo("psmongo", 22, "pshdp",

@@ -12,8 +12,6 @@ import org.apache.sshd.server.filesystem.NativeSshFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hadoop.compression.lzo.LzopCodec;
-
 import es.tid.bdp.utils.BuilderDdpFileDescriptorAbstract;
 import es.tid.bdp.utils.BuilderDdpFileDescriptorMongo;
 
@@ -52,7 +50,7 @@ public class HdfsFileSystemView implements FileSystemView {
 
         this.caseInsensitive = caseInsensitive;
 
-        currDir = System.getProperty("user.dir");
+        this.currDir = "/";
         this.userName = userName;
 
         Configuration confSrc = new Configuration();

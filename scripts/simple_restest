@@ -1,0 +1,26 @@
+queue=users
+key=key
+sleepTime=.1
+
+typeset -i times
+times=100
+
+if [ "$1" == "" ] || [ "$2" == "" ]
+then
+   echo Usage: $0 'url <times>'
+   exit 1
+fi
+
+url=$1
+times=$2
+
+time=0
+typeset -i time
+
+while [ $time -lt $times ]
+do
+    curl $url
+
+    time=$time+1
+
+done

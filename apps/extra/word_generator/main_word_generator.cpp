@@ -92,9 +92,11 @@ int main( int argC , const char*argV[] )
     // End of line for all the words...
     word[word_length] = '\0';
 
-    LM_V(("Generating %d words of %d chars every %d seconds (%s)" , num_lines , alphabet_length , repeate_time , rand_flag?"Randomly":"Non randomly"));
+    if ( repeate_time == 0 )
+        LM_V(("Generating %s words of %d chars (%s)" , au::str( num_lines ).c_str() , alphabet_length , rand_flag?"Randomly":"Non randomly"));
+    else
+        LM_V(("Generating %s words of %d chars every %d seconds (%s)" , au::str( num_lines ).c_str() , alphabet_length , repeate_time , rand_flag?"Randomly":"Non randomly"));
     
-
     
     size_t total_num = 0;
     size_t total_size = 0;
@@ -127,19 +129,31 @@ int main( int argC , const char*argV[] )
             total_num++;
             
             local_num_lines++;
+         
+            
+            
+            if( (local_num_lines%( num_lines/100)) == 0 )
+            {
+                size_t total_seconds = cronometer.diffTimeInSeconds();
+                LM_V(( "Generated %s %s lines ( %s bytes ) in %s. Rate: %s / %s", 
+                      au::str_percentage( local_num_lines,  num_lines).c_str(), 
+                      au::str(total_num).c_str() , au::str(total_size).c_str(), au::str_time( total_seconds ).c_str() ,
+                      au::str( (double)total_num/(double)total_seconds ,"Lines/s" ).c_str() , au::str( (double)total_size/(double)total_seconds,"Bps").c_str() ));
+            }
             
         }
-        
+
+        size_t total_seconds = cronometer.diffTimeInSeconds();
+        LM_V(( "Generated %s lines ( %s bytes ) in %s. Rate: %s / %s", 
+              au::str(total_num).c_str() , au::str(total_size).c_str(), au::str_time( total_seconds ).c_str() ,
+              au::str( (double)total_num/(double)total_seconds ,"Lines/s" ).c_str() , au::str( (double)total_size/(double)total_seconds,"Bps").c_str() ));
         
         if( repeate_time == 0 )
             exit(1);
         else
         {
+            LM_V(("Sleeping %d seconds..." , (int)repeate_time));
             sleep( repeate_time );
-            size_t total_seconds = cronometer.diffTimeInSeconds();
-            LM_V(( "Generated %s lines ( %s bytes ) in %s. Rate: %s / %s. Now sleeping %d seconds\n", 
-                  au::str(total_num).c_str() , au::str(total_size).c_str(), au::str_time( total_seconds ).c_str() ,
-                  au::str( (double)total_num/(double)total_seconds ,"Lines/s" ).c_str() , au::str( (double)total_size/(double)total_seconds,"Bps").c_str() , (int)repeate_time  ));
         }
         
     }

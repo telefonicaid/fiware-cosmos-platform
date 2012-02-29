@@ -77,6 +77,8 @@ public:
     // Get a string with the time ellapsed since last reset or creation
     std::string str();
     
+    size_t getSecondRunnig();
+    
     int getSeconds();
     
 };   

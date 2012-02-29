@@ -116,6 +116,15 @@ std::string CronometerSystem::str()
    return str_time( (size_t) getSeconds() );
 }
 
+size_t CronometerSystem::getSecondRunnig()
+{
+    if( running )
+        return seconds + c.diffTime();
+    else
+        return seconds;
+}
+
+
 int CronometerSystem::getSeconds()
 {
     if( running )

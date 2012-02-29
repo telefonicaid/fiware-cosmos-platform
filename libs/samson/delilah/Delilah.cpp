@@ -447,7 +447,10 @@ namespace samson {
 	
     std::string Delilah::getListOfComponents()
     {
-        au::tables::Table table( au::StringVector( "id" ,"type" , "status" , "concept" ) , au::StringVector( "" ,"left" , "left" , "concept" ) );
+        au::tables::Table table( 
+                                au::StringVector( "id" ,"type" , "status" , "time" , "completion", "concept" ) 
+                                , au::StringVector( "" ,"left" , "left", "left", "left" , "left" ) 
+                                );
 		
 		std::map<size_t,DelilahComponent*>::iterator iter;
 		for (iter = components.begin() ; iter != components.end() ; iter++)
@@ -457,7 +460,18 @@ namespace samson {
             if( component->hidden )
                 continue;
             
-            table.addRow( au::StringVector( component->getIdStr() ,  component->getTypeName() ,  component->getStatusDescription() , component->concept ) );
+            au::StringVector values;
+            values.push_back( component->getIdStr() );
+            values.push_back( component->getTypeName() );
+            values.push_back( component->getStatusDescription() );
+            
+            values.push_back( au::str_time( component->cronometer.getSecondRunnig() ) );
+            values.push_back( au::str_percentage( component->progress ) );
+            
+            values.push_back( component->concept ); 
+            
+            //cronometer
+            table.addRow( values );
 		}
 		return table.str( "List of delilah processes" );
     }

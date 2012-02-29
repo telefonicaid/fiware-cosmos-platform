@@ -230,6 +230,7 @@ namespace samson
         }
 
         {
+            values.clear();
             values.push_back("Confirmed Pushed");
             values.push_back(au::str( uploadedSize , "B" ));
             values.push_back(au::str_percentage(uploadedSize, totalSize));              

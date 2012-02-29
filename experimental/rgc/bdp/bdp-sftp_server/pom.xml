@@ -96,7 +96,7 @@
 						</mapping>
 						<mapping>
 							<directory>/var/log/bdp/sftpserver</directory>
-							<filemode>550</filemode>
+							<filemode>750</filemode>
 							<username>hdfs</username>
 							<groupname>hadoop</groupname>
 						</mapping>

@@ -11,10 +11,11 @@
         <org.apache.hadoop.hive>0.7.1</org.apache.hadoop.hive>
         <jvm.version>1.6</jvm.version>
         <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
+        <protoc.path>protoc</protoc.path>
     </properties>
 
     <profiles>
-	    <profile>
+        <profile>
             <id>jenkins</id>
         </profile>
         <profile>
@@ -119,6 +120,13 @@
             <version>1.1</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <artifactId>slf4j-api</artifactId>
+            <groupId>org.slf4j</groupId>
+            <type>jar</type>
+            <version>1.6.4</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -147,7 +155,7 @@
                 <artifactId>maven-protoc-plugin</artifactId>
                 <version>0.1.10</version>
                 <configuration>
-                    <protocExecutable>protoc</protocExecutable>
+                    <protocExecutable>${protoc.path}</protocExecutable>
                     <checkStaleness>true</checkStaleness>
                 </configuration>
                 <executions>

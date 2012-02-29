@@ -10,6 +10,7 @@
 #include "parseArgs/parseArgs.h"
 #include "parseArgs/paIsSet.h"
 #include "logMsg/logMsg.h"
+#include "parseArgs/paConfig.h"
 #include "logMsg/traceLevels.h"
 
 #include <signal.h>
@@ -147,6 +148,20 @@ int main(int argC, const char *argV[])
 
     if (signal(SIGINT, captureSIGINT) == SIG_ERR)
         LM_W(("SIGINT cannot be handled"));
+    
+	// ------------------------------------------------------    
+    // Write pid if /var/log/samson/samsond.pid
+	// ------------------------------------------------------
+
+    std::string pid_file_name = au::str("%s/samsond.pid" , paLogFilePath );
+    FILE *file = fopen( pid_file_name.c_str() , "w" );
+    if( !file )
+        LM_X(1, ("Error opening file '%s' to store pid" , pid_file_name.c_str() ));
+	int pid = (int)getpid();
+	if( fprintf(file , "%d" , pid ) == 0)
+	   LM_X(1,("Error writing pid %d to file %s" , pid , pid_file_name.c_str() ));
+	fclose( file );
+	// ------------------------------------------------------        
     
     // Make sure this singlelton is created just once
     au::LockDebugger::shared();

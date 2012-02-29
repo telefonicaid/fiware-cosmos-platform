@@ -221,8 +221,8 @@ namespace samson
         // ------------------------------------------------------------------
         
         add( "push" , "push&pop" ,
-            "Push content of a local file/directory to a queue",
-            "push <local_file_or_dir> <queue>");
+            "Push content of a list of local file/directories to a queue",
+            "push file1/dir1 file2/dir2 file3/dir3 ... fileN/dirN <queue>");
         
         add( "pop" , "push&pop"  ,
             "Pop content of a queue to a local directory. Also working for binary queues. Use samsonCat to check content",

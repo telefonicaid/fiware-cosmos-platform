@@ -35,10 +35,13 @@ namespace samson {
         // Collections reported by workers
         au::map<std::string, network::Collection > collections;
         
-        size_t worker_id; // if != -1 --> worker to sent this command
-        bool save_in_database;
-        std::string group_field;
-        bool connected_workers;
+        size_t worker_id;               // if != -1 --> worker to sent this command
+        bool save_in_database;          // -save
+        std::string group_field;        // -group
+        std::string filter_field;       // -filter
+        std::string sort_field;         // -sort
+        bool connected_workers;         // -connected
+        int limit;                      // -limit
         
 	public:
 		

@@ -37,13 +37,19 @@ namespace samson {
         cmdLine.set_flag_boolean("connected_workers");    // Flag to run the operation only with connected workers
         cmdLine.set_flag_uint64("worker" , (size_t)-1 );
         cmdLine.set_flag_string("group", "");
+        cmdLine.set_flag_string("filter", "");
+        cmdLine.set_flag_string("sort", "");
+        cmdLine.set_flag_uint64("limit" , 0 );
         cmdLine.parse(command);
         
         worker_id         = cmdLine.get_flag_uint64("worker");
         hidden            = cmdLine.get_flag_bool("hidden");
         save_in_database  = cmdLine.get_flag_bool("save");
         group_field       = cmdLine.get_flag_string("group");
+        filter_field      = cmdLine.get_flag_string("filter");
+        sort_field        = cmdLine.get_flag_string("sort");
         connected_workers = cmdLine.get_flag_bool("connected_workers");
+        limit             = cmdLine.get_flag_uint64("limit");
 	}
 	
 	void WorkerCommandDelilahComponent::run()
@@ -241,10 +247,7 @@ namespace samson {
         if( !hidden )
         {
             // Print the generated table
-            if ( group_field != "" )
-                delilah->showMessage( table->strSortedAndGrouped( title , group_field ) );
-            else
-                delilah->showMessage( table->str( title ) );
+            delilah->showMessage( table->strSortedGroupedAndfiltered(title, group_field, sort_field, filter_field , limit ) );
         }
         
         if( save_in_database )

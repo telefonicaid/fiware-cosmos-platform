@@ -176,14 +176,29 @@ std::string Table::str( std::string title )
     return result;
 }
 
-std::string Table::strSortedAndGrouped( std::string title , std::string field)
+
+
+std::string Table::strSortedGroupedAndfiltered( std::string title , std::string group_field  , std::string sort_field ,  std::string conditions , size_t limit )
 {
     // Select all the columns
     SelectTableInformation* select = new SelectTableInformation( this );
     select->title = title;
     
-    select->group_columns.push_back(field);
-    select->sort_columns.push_back(field);
+    if( group_field != "" )
+    {
+        select->group_columns.push_back(group_field);
+        select->sort_columns.push_back(group_field);
+    }
+    
+    if( sort_field != "" )
+    {
+        select->sort_columns.push_back(sort_field);
+    }
+    
+    if( conditions != "" )
+        select->add_conditions(conditions);
+
+    select->limit = limit;
     
     std::string result =  str( select );
     delete select;
@@ -319,7 +334,7 @@ std::string Table::str( SelectTableInformation *select )
     for( size_t r = 0 ; r < table->rows.size() ; r++)
     {
         // Skip lines if there is a limit...
-        if( ( select->limit > 0 ) && ( r > select->limit ) )
+        if( ( select->limit > 0 ) && ( r >= select->limit ) )
             continue;
         
         output << "| ";

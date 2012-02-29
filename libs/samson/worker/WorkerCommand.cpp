@@ -454,7 +454,6 @@ namespace samson {
         cmd.set_flag_boolean("new");
         cmd.set_flag_boolean("remove");
         cmd.set_flag_string("group", ""); // Possible parameers
-        cmd.set_flag_boolean("save");
         cmd.set_flag_boolean("v");
         cmd.set_flag_boolean("vv");
         cmd.set_flag_boolean("vvvv");
@@ -465,6 +464,16 @@ namespace samson {
         cmd.set_flag_boolean("rates");
         cmd.set_flag_boolean("blocks");
         cmd.set_flag_boolean("running");
+        
+        // Flags used in delilah side...
+        cmd.set_flag_boolean("hidden");
+        cmd.set_flag_boolean("save");     // Flag to identify if is necessary to save it locally
+        cmd.set_flag_boolean("connected_workers");    // Flag to run the operation only with connected workers
+        cmd.set_flag_uint64("worker" , (size_t)-1 );
+        cmd.set_flag_string("group", "");
+        cmd.set_flag_string("filter", "");
+        cmd.set_flag_string("sort", "");
+        cmd.set_flag_uint64("limit" , 0 );
         
         cmd.parse( command );
 

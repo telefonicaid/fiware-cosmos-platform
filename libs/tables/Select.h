@@ -184,6 +184,8 @@ public:
         return true;
     }
     
+    void add_conditions( std::string conditions );
+    
 };
 
 

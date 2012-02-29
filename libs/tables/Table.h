@@ -81,7 +81,7 @@ public:
     std::string str( std::string title );
     std::string str( SelectTableInformation *select_table_information );
 
-    std::string strSortedAndGrouped( std::string title , std::string field);    
+    std::string strSortedGroupedAndfiltered( std::string title , std::string group_field=""  , std::string sort_field="" ,  std::string conditions="" , size_t limit=0 );
     
     Table* selectTable( SelectTableInformation *select_table_information );
     

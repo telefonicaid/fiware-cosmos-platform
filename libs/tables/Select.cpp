@@ -327,6 +327,22 @@ bool SelectTableInformation::checkChangeDivision( TableRow* row , TableRow* row2
     return row->compare( row2 , divide_columns ) != 0;
 }
 
+void SelectTableInformation::add_conditions( std::string txt_conditions )
+{
+    StringVector where_clauses = StringVector::parseFromString(txt_conditions , ',');
+    for ( size_t w = 0 ; w < where_clauses.size() ; w++ )
+    {
+        StringVector where_clause_parts = StringVector::parseFromString(where_clauses[w] , '=');
+        if( where_clause_parts.size() == 2)
+        {
+            std::string name = where_clause_parts[0];
+            std::string value = where_clause_parts[1];
+            SelectCondition condition = SelectCondition( name , value );
+            conditions.push_back( condition );
+        }
+    }
+}
+
 
 
 NAMESPACE_END

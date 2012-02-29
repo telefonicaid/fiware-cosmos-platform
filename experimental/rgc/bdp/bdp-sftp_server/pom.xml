@@ -73,8 +73,10 @@
 							<groupname>hadoop</groupname>
 							<sources>
 								<source>
-									<location>src/main/resources/log4j.xml</location>
 									<location>src/main/resources/sftp-server.properties</location>
+								</source>							
+								<source>
+									<location>src/main/resources/log4j.xml</location>
 								</source>
 							</sources>
 						</mapping>

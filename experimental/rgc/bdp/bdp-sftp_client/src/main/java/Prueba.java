@@ -1,6 +1,6 @@
 import java.io.IOException;
 
-import es.tid.bdp.sftp.io.ParserCdr;
+import es.tid.bdp.utils.BuilderDdpFileDescriptorXml;
 import es.tid.bdp.utils.PropertiesPlaceHolder;
 
 
@@ -13,11 +13,12 @@ public class Prueba {
     public static void main(String[] args) throws IOException {
         // TODO Auto-generated method stub
         
-        PropertiesPlaceHolder.createInstance("src/main/resources/sftp-client.properties");
-        ParserCdr p = new ParserCdr();
-        
-        p.parseLine("2464708016||2|06/04/2010|13:09:39|188-TELCEL||MMS128");
+        PropertiesPlaceHolder p =PropertiesPlaceHolder.createInstance("/Users/rgc/Documents/workspace/bdp/bdp-sftp_server/src/main/resources/sftp-server.properties");
 
+        BuilderDdpFileDescriptorXml g = new BuilderDdpFileDescriptorXml(p);
+        g.build("hdfs", "/erawr/rrr");
     }
+
+
 
 }

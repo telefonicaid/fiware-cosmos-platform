@@ -39,8 +39,19 @@
 					<!-- <requires> <require>bdp-utils &ge; 0.0.1</require> </requires> -->
 					<mappings>
 						<mapping>
+							<directory>/usr/local/bdp/sftpserver</directory>
+							<filemode>444</filemode>
+							<username>hdfs</username>
+							<groupname>hadoop</groupname>
+							<sources>
+								<source>
+									<location>src/main/resources/README.txt</location>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>
 							<directory>/usr/local/bdp/sftpserver/run</directory>
-							<filemode>750</filemode>
+							<filemode>700</filemode>
 							<username>hdfs</username>
 							<groupname>hadoop</groupname>
 							<sources>
@@ -51,7 +62,7 @@
 						</mapping>
 						<mapping>
 							<directory>/usr/local/bdp/sftpserver/lib</directory>
-							<filemode>750</filemode>
+							<filemode>440</filemode>
 							<username>hdfs</username>
 							<groupname>hadoop</groupname>
 							<sources>
@@ -85,7 +96,7 @@
 						</mapping>
 						<mapping>
 							<directory>/var/log/bdp/sftpserver</directory>
-							<filemode>750</filemode>
+							<filemode>550</filemode>
 							<username>hdfs</username>
 							<groupname>hadoop</groupname>
 						</mapping>

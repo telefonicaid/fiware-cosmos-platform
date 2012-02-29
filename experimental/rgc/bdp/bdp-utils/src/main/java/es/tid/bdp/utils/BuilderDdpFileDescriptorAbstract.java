@@ -7,10 +7,11 @@ import es.tid.bdp.utils.data.BdpFileDescriptor;
 import es.tid.bdp.utils.parse.ParserAbstract;
 
 public abstract class BuilderDdpFileDescriptorAbstract {
-    
-    public BuilderDdpFileDescriptorAbstract(final PropertiesPlaceHolder proterties) {
+
+    public BuilderDdpFileDescriptorAbstract(
+            final PropertiesPlaceHolder proterties) {
     }
-    
+
     /**
      * 
      * @param user
@@ -19,14 +20,18 @@ public abstract class BuilderDdpFileDescriptorAbstract {
      */
     public BdpFileDescriptor build(final String user, final String path) {
         String aux = path;
-        while (!aux.isEmpty()) {
+        while (aux.length() > 0) {
             try {
                 return searchFileDescriptor(user, aux);
             } catch (NoSuchElementException e) {
                 aux = aux.substring(0, aux.lastIndexOf("/"));
             }
         }
-        return createUnathorized();
+        try {
+            return searchFileDescriptor(user, "/");
+        } catch (NoSuchElementException e) {
+            return createUnathorized();
+        }
     }
 
     /**

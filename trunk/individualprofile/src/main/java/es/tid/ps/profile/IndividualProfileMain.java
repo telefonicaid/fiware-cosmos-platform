@@ -21,15 +21,14 @@ public class IndividualProfileMain extends Configured implements Tool {
     @Override
     public int run(String[] args)
             throws IOException, ClassNotFoundException, InterruptedException {
-        if (args.length != 4) {
+        if (args.length < 3 || args.length > 4) {
             throw new IllegalArgumentException("Mandatory parameters: "
-                    + "weblogs_path categories_path profile_path mongo_url");
+                    + "weblogs_path categories_path profile_path [mongo_url]");
         }
 
         Path webLogsPath = new Path(args[0]);
         Path categoriesPath = new Path(args[1]);
         Path profilePath = new Path(args[2]);
-        String mongoUrl = args[3];
 
         CategoryExtractionJob ceJob = new CategoryExtractionJob(this.getConf());
         ceJob.configure(webLogsPath, categoriesPath);
@@ -41,10 +40,14 @@ public class IndividualProfileMain extends Configured implements Tool {
         if (!upJob.waitForCompletion(true)) {
             return 1;
         }
-        ExporterJob exJob = new ExporterJob(this.getConf());
-        exJob.configure(profilePath, mongoUrl);
-        if (!exJob.waitForCompletion(true)) {
-            return 1;
+
+        if (args.length == 4) {
+            String mongoUrl = args[3];
+            ExporterJob exJob = new ExporterJob(this.getConf());
+            exJob.configure(profilePath, mongoUrl);
+            if (!exJob.waitForCompletion(true)) {
+                return 1;
+            }
         }
 
         return 0;

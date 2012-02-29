@@ -66,6 +66,7 @@ public class HdfsSshFile implements SshFile {
         this.fileName = fileName;
         this.path = new Path(fileName);
         this.hdfs = hdfs;
+        this.builder = builder;
     }
 
     public String getAbsolutePath() {

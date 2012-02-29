@@ -48,12 +48,14 @@ public class BuilderDdpFileDescriptorMongo extends
     protected BdpFileDescriptor searchFileDescriptor(final String user,
             final String path) {
 
-        BasicDBObject query = (BasicDBObject) BasicDBObjectBuilder.start().add("_id", path)
+        BasicDBObject query = (BasicDBObject) BasicDBObjectBuilder.start()
+                .add("_id", path)
                 .add("users." + user, new BasicDBObject("$exists", true)).get();
 
-        BasicDBObject result = (BasicDBObject) ((BasicDBObject) collPath.findOne(query).get("users")).get(user);
+        BasicDBObject result = (BasicDBObject) collPath.findOne(query);
         if (result != null) {
-            return parsBasicDBObject(result);
+            return parsBasicDBObject((BasicDBObject) ((BasicDBObject) result
+                    .get("users")).get(user));
         } else {
             throw new NoSuchElementException();
         }

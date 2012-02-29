@@ -56,7 +56,7 @@ public abstract class BuilderDdpFileDescriptorAbstract {
     protected abstract BdpFileDescriptor searchFileDescriptor(
             final String user, final String path);
 
-    protected ParserAbstract createParser(final String className,
+    public static ParserAbstract createParser(final String className,
             final String pattern, final String attr) {
         try {
             @SuppressWarnings("unchecked")

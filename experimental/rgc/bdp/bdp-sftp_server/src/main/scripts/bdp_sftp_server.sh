@@ -21,7 +21,7 @@ DEBUG_OPTIONS="-Xdebug -Xrunjdwp:transport=dt_socket,address=8011,server=y,suspe
 
 JAVA_OPTS="$JAVA_OPTS -Djava.library.path=/usr/lib64:/opt/hadoop/lib/native/Linux-amd64-64"
 JAVA_OPTS="$JAVA_OPTS -Dlog4j.configuration=file://$CONF/log4j.xml"
-JAVA_OPTS="$JAVA_OPTS -Dproperties.configuration=file://$CONF/sftp-server.properties"
+JAVA_OPTS="$JAVA_OPTS -Dproperties.configuration=/$CONF/sftp-server.properties"
 
 
 

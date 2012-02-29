@@ -24,10 +24,14 @@ public class BuilderDdpFileDescriptorMongo extends
     public BuilderDdpFileDescriptorMongo(PropertiesPlaceHolder properties) {
         super(properties);
         try {
-            Mongo mongo = new Mongo(properties.getProperty(DESCRIPTOR_MONGODB_HOST),
-                    properties.getPropertyInt(DESCRIPTOR_MONGODB_DB, DBPort.PORT));
-            DB primary = mongo.getDB(properties.getProperty(DESCRIPTOR_MONGODB_DB));
-            collPath = primary.getCollection(properties.getProperty(DESCRIPTOR_MONGODB_COLLECTION));
+            Mongo mongo = new Mongo(
+                    properties.getProperty(DESCRIPTOR_MONGODB_HOST),
+                    properties.getPropertyInt(DESCRIPTOR_MONGODB_DB,
+                            DBPort.PORT));
+            DB primary = mongo.getDB(properties
+                    .getProperty(DESCRIPTOR_MONGODB_DB));
+            collPath = primary.getCollection(properties
+                    .getProperty(DESCRIPTOR_MONGODB_COLLECTION));
         } catch (Exception e) {
             // TODO: handle exception
         }
@@ -44,10 +48,10 @@ public class BuilderDdpFileDescriptorMongo extends
     protected BdpFileDescriptor searchFileDescriptor(final String user,
             final String path) {
 
-        BasicDBObject query = (BasicDBObject) BasicDBObjectBuilder.start()
-                .add("$elemMatch", new BasicDBObject("user", user)).get();
+        BasicDBObject query = (BasicDBObject) BasicDBObjectBuilder.start().add("_id", path)
+                .add("users." + user, new BasicDBObject("$exists", true)).get();
 
-        BasicDBObject result = (BasicDBObject) collPath.findOne(query);
+        BasicDBObject result = (BasicDBObject) ((BasicDBObject) collPath.findOne(query).get("users")).get(user);
         if (result != null) {
             return parsBasicDBObject(result);
         } else {
@@ -69,15 +73,15 @@ public class BuilderDdpFileDescriptorMongo extends
         descriptor.setReadable(basicDBObject.getBoolean("isReadble", false));
         descriptor.setWritable(basicDBObject.getBoolean("isWritable", false));
 
-        BasicDBObject compressDBObject = (BasicDBObject) basicDBObject
-                .get("compression");
+        BasicDBObject parserDBObject = (BasicDBObject) basicDBObject
+                .get("paser");
 
-        if (compressDBObject != null) {
+        if (parserDBObject != null) {
 
             ParserAbstract parser = this.createParser(
-                    compressDBObject.getString("className"),
-                    compressDBObject.getString("pattern"),
-                    compressDBObject.getString("attr"));
+                    parserDBObject.getString("className"),
+                    parserDBObject.getString("pattern"),
+                    parserDBObject.getString("attr"));
             descriptor.setParser(parser);
         }
 

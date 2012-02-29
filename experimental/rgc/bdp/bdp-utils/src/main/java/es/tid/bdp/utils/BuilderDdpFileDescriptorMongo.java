@@ -74,7 +74,7 @@ public class BuilderDdpFileDescriptorMongo extends
         descriptor.setWritable(basicDBObject.getBoolean("isWritable", false));
 
         BasicDBObject parserDBObject = (BasicDBObject) basicDBObject
-                .get("paser");
+                .get("parser");
 
         if (parserDBObject != null) {
 

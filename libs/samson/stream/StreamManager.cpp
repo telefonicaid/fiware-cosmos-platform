@@ -815,6 +815,22 @@ namespace samson {
             
             // Get hashgroup
             int hg = reference_key_data_instance->hash( KVFILE_NUM_HASHGROUPS );
+
+            
+            // Cluster information to discover if we redirect this query
+            std::vector<size_t> worker_ids = worker->network->getWorkerIds();
+            int server = reference_key_data_instance->partition(  worker_ids.size() );
+            size_t worker_id = worker_ids[server];
+            size_t my_worker_id = worker->network->getMynodeIdentifier().id;
+
+            if( worker_ids[server] != my_worker_id )
+            {
+                // Redirect to the rigth server
+                std::string host = worker->network->getHostForWorker( worker_id );
+                return au::xml_simple(  "error" , au::str("Redirect to %s" , queue_name.c_str() ));
+            }
+
+            // HG Range containing only this range
             KVRange kv_range( hg , hg+1 );
             
             

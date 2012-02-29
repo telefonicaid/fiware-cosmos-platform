@@ -410,7 +410,11 @@ namespace samson {
     {
         return node_identifier;
     }
-
+    
+    std::string CommonNetwork::getHostForWorker(size_t worker_id)
+    {
+        return cluster_information.hostForWorker( worker_id );
+    }
     
     au::tables::Table* CommonNetwork::getClusterConnectionsTable()
     {

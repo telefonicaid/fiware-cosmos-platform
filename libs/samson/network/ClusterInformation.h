@@ -109,6 +109,8 @@ namespace samson {
         void setAssignedId( size_t _assigned_id );
 
         std::string str_identifier();
+
+        std::string hostForWorker( size_t worker_id);
         
         // ----------------------------------------------------
         // Saving and loading to file

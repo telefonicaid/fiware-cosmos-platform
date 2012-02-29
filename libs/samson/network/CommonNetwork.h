@@ -75,6 +75,7 @@ namespace samson {
         size_t get_rate_in();
         size_t get_rate_out();
         NodeIdentifier getMynodeIdentifier();
+        std::string getHostForWorker(size_t worker_id);
         
         // Add output worker connections
         // ----------------------------------------------------------------

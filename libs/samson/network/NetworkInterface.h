@@ -163,6 +163,12 @@ namespace samson {
         }
         
         virtual NodeIdentifier getMynodeIdentifier()=0;
+        
+        virtual std::string getHostForWorker(size_t worker_id)
+        {
+            LM_X(1, ("NetworkInterface mothod not implemented"));
+            return "";
+        }
 
         
     };

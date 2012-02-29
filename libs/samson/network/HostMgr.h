@@ -28,25 +28,37 @@ namespace samson
 */
 class HostMgr
 {
+    
+    au::vector<Host> hosts;
+/*
+    void          localIps(void);
+*/
+    
+
 public:
+    
 	HostMgr();
 	~HostMgr();
 
+    void add( std::string host_name );
+	void add(Host*);
+    void add_localhost();
+
+    Host* findHost( std::string host_name );
+    std::string str();
+
+    std::string getAlternative( std::string host_name );
+    
+    /*
 	int     hosts();
-	Host*   insert(Host*);
 	Host*   insert(const char* name, const char* ip);
 	bool    remove(const char* name);
 	Host*   lookup(const char* ip);
-	void    aliasAdd(Host* host, const char* alias);
 	void    ipSet(Host* host, const char* alias);
 	void    list(const char* why, bool forced = false);
-	Host*   localhostP;
+*/
+     
 
-private:
-	void          localIps(void);
-	void          ipsGet(Host* hostP);
-
-    au::vector<Host> hostV;
 };
 
 }

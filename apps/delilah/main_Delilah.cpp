@@ -32,6 +32,8 @@
 
 #include "samson/network/DelilahNetwork.h"
 #include "samson/network/Packet.h"
+#include "samson/network/HostMgr.h"
+#include "samson/network/Host.h"
 
 #include "samson/delilah/DelilahConsole.h"
 

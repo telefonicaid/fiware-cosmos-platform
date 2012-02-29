@@ -101,7 +101,7 @@ void captureSIGINT( int s )
 
 void captureSIGPIPE( int s )
 {
-    LM_M(("Capturing SIGPIPE"));
+    LM_M(("Captured SIGPIPE"));
 }
 
 
@@ -149,6 +149,12 @@ int main(int argC, const char *argV[])
     if (signal(SIGINT, captureSIGINT) == SIG_ERR)
         LM_W(("SIGINT cannot be handled"));
     
+    if (fg == false)
+    {
+        std::cout << "OK. samsonWorker is now working in background.\n";
+        daemonize();
+    }
+
 	// ------------------------------------------------------    
     // Write pid if /var/log/samson/samsond.pid
 	// ------------------------------------------------------
@@ -191,16 +197,13 @@ int main(int argC, const char *argV[])
 
     if (fg == false)
     {
-        std::cout << "OK. samsonWorker is now working in background.\n";
-        daemonize();
         while (true)
             sleep(10);
-
     }
-    
+
     worker->runConsole();
  
-    LM_M(("Finish worker running"));
+    LM_M(("Worker Cleanup"));
     
 	if (worker)
 		delete worker;
@@ -229,5 +232,6 @@ int main(int argC, const char *argV[])
         std::cerr << au::ThreadManager::shared()->str();
     }
     else
-        LM_M(("Finish correctly with 0 background processes"));
+        LM_M(("Finished correctly with 0 background processes"));
+    return 0;
 }

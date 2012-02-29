@@ -77,6 +77,7 @@ class SelectTableColumn
     {
         format_string,
         format_uint64,
+        format_uint,
         format_time,
         format_timestamp,
         format_double,

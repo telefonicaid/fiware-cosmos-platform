@@ -135,7 +135,6 @@ namespace samson {
             return _task_id;
         }
         
-        
         bool Block::compare( Block *b )
         {
             
@@ -550,9 +549,17 @@ namespace samson {
         void Block::fill( samson::network::CollectionRecord* record , Visualization* visualization )
         {
             samson::add( record , "id" , au::str("%lu-%lu" , worker_id ,id) , "left,different" );
+            
             samson::add( record , "size" , size , "f=uint64,sum" );
             samson::add( record , "state" , getState() , "left,different" );
 
+            size_t task = getMinTaskId();
+
+            if( task == (size_t)(-1))
+                samson::add( record , "next task" , "none" , "left,different" );
+            else
+                samson::add( record , "next task" , task , "left,different" );
+            
             samson::add( record , "created" , au::str_time( last_used.diffTime() ) , "left,different" );
             
             std::ostringstream output_tasks_str;

@@ -137,7 +137,7 @@ void SelectTableColumn::processModifier( std::string modifier )
         if( str_format == "uint64" )
             format = format_uint64;
         if( str_format == "uint" )
-            format = format_uint64;
+            format = format_uint;
         if( str_format == "double" )
             format = format_double;
         if( str_format == "per" )
@@ -177,6 +177,7 @@ std::string SelectTableColumn::simple_transform( std::string value )
     switch (format) 
     {
         case format_string:       return value;
+        case format_uint:         return value;
         case format_uint64:       return au::str( strtoll( value.c_str() , (char **)NULL, 10) );
         case format_double:       return au::str( "%0.2f", strtof( value.c_str() , (char **)NULL ));
         case format_time:         return au::str_time( strtoll( value.c_str() , (char **)NULL, 10) );
@@ -254,7 +255,7 @@ std::string SelectTableColumn::transform( StringVector& values )
 
 void SelectTableColumn::sort( StringVector& values )
 {
-    if ( ( format == format_uint64 ) || ( format == format_time ) )
+    if ( ( format == format_uint ) || ( format == format_uint64 ) || ( format == format_time ) )
     {
         std::vector<size_t> _values;
         for( size_t i = 0 ; i < values.size() ; i++ )

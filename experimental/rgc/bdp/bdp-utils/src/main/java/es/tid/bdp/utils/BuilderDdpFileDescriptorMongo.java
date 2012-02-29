@@ -6,6 +6,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBPort;
 import com.mongodb.Mongo;
 
 import es.tid.bdp.utils.data.BdpFileDescriptor;
@@ -13,16 +14,20 @@ import es.tid.bdp.utils.parse.ParserAbstract;
 
 public class BuilderDdpFileDescriptorMongo extends
         BuilderDdpFileDescriptorAbstract {
+    public static final String DESCRIPTOR_MONGODB_HOST = "description.mongodb.host";
+    public static final String DESCRIPTOR_MONGODB_PORT = "description.mongodb.port";
+    public static final String DESCRIPTOR_MONGODB_DB = "description.mongodb.db";
+    public static final String DESCRIPTOR_MONGODB_COLLECTION = "description.mongodb.collection";
 
-    DBCollection collPath;
+    private DBCollection collPath;
 
     public BuilderDdpFileDescriptorMongo(PropertiesPlaceHolder properties) {
         super(properties);
         try {
-            Mongo mongo = new Mongo(properties.getProperty("host"),
-                    properties.getPropertyInt("port"));
-            DB primary = mongo.getDB(properties.getProperty(""));
-            collPath = primary.getCollection(properties.getProperty(""));
+            Mongo mongo = new Mongo(properties.getProperty(DESCRIPTOR_MONGODB_HOST),
+                    properties.getPropertyInt(DESCRIPTOR_MONGODB_DB, DBPort.PORT));
+            DB primary = mongo.getDB(properties.getProperty(DESCRIPTOR_MONGODB_DB));
+            collPath = primary.getCollection(properties.getProperty(DESCRIPTOR_MONGODB_COLLECTION));
         } catch (Exception e) {
             // TODO: handle exception
         }

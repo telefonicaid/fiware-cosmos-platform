@@ -24,7 +24,7 @@ public class ParserCdr extends ParserAbstract {
     private final String ATTR_TIME_SEC = "second";
     private final String ATTR_DATE_DAY = "day";
     private final String ATTR_DATE_MONTH = "month";
-    private final String ATTR_CELL_YEAR = "year";      
+    private final String ATTR_CELL_YEAR = "year";
 
     public ParserCdr(String pattern, String attr) {
         super(pattern, attr);
@@ -33,30 +33,23 @@ public class ParserCdr extends ParserAbstract {
     /*
      * (non-Javadoc)
      * 
-     * @see es.tid.bdp.sftp.io.ParserAbstract#parseLine(java.lang.String)
+     * @see
+     * es.tid.bdp.utils.parse.ParserAbstract#createMessage(java.util.regex.Matcher
+     * )
      */
     @Override
-    public Message parseLine(String cdrLine) {
-        Matcher m = this.pattern.matcher(cdrLine);
-        if (m.matches()) {
-            return createCdr(m);
-        } else {
-            throw new RuntimeException("no matches");
-        }
-    }
-
-    private Cdr createCdr(Matcher m) {
+    protected Message createMessage(Matcher matcher) {
         Cdr.Builder builder = Cdr.newBuilder();
         builder.setCellId(Long.parseLong(
-                m.group(regPosition.get(ATTR_USER_ID)), 16));
+                matcher.group(regPosition.get(ATTR_USER_ID)), 16));
         try {
             builder.setUserId(Long.parseLong(
-                    m.group(regPosition.get(ATTR_CELL_ID)), 16));
+                    matcher.group(regPosition.get(ATTR_CELL_ID)), 16));
         } catch (NumberFormatException e) {
             builder.setUserId(0L);
         }
-        builder.setDate(parseDate(m));
-        builder.setTime(parseTime(m));
+        builder.setDate(parseDate(matcher));
+        builder.setTime(parseTime(matcher));
 
         return builder.build();
     }
@@ -67,25 +60,26 @@ public class ParserCdr extends ParserAbstract {
      * @param m
      * @return
      */
-    private Time parseTime(Matcher m) {
+    private Time parseTime(Matcher matcher) {
         return Time
                 .newBuilder()
                 .setHour(
-                        Integer.parseInt(m.group(regPosition
+                        Integer.parseInt(matcher.group(regPosition
                                 .get(ATTR_TIME_HOUR))))
                 .setMinute(
-                        Integer.parseInt(m.group(regPosition.get(ATTR_TIME_MIN))))
+                        Integer.parseInt(matcher.group(regPosition
+                                .get(ATTR_TIME_MIN))))
                 .setSeconds(
-                        Integer.parseInt(m.group(regPosition.get(ATTR_TIME_SEC))))
-                .build();
+                        Integer.parseInt(matcher.group(regPosition
+                                .get(ATTR_TIME_SEC)))).build();
     }
 
-    private Date parseDate(Matcher m) {
-        final int day = Integer
-                .parseInt(m.group(regPosition.get(ATTR_DATE_DAY)));
-        final int month = Integer.parseInt(m.group(regPosition
+    private Date parseDate(Matcher matcher) {
+        final int day = Integer.parseInt(matcher.group(regPosition
+                .get(ATTR_DATE_DAY)));
+        final int month = Integer.parseInt(matcher.group(regPosition
                 .get(ATTR_DATE_MONTH)));
-        final int year = Integer.parseInt(m.group(regPosition
+        final int year = Integer.parseInt(matcher.group(regPosition
                 .get(ATTR_CELL_YEAR)));
 
         return Date.newBuilder().setDay(day).setMonth(month).setYear(year)

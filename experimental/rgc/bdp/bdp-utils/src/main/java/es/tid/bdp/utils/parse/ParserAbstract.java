@@ -3,6 +3,7 @@ package es.tid.bdp.utils.parse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.protobuf.Message;
@@ -42,10 +43,18 @@ public abstract class ParserAbstract {
     /**
      * Method parses a string and return a Dynamic Protocol buffer message
      * 
-     * @param cdrLine
+     * @param line
      *            row data for parsing it
      * @return a encoding data in a Dynamic Protocol buffer message
      */
-    public abstract Message parseLine(String cdrLine);
+    public Message parseLine(String line) {
+        Matcher m = this.pattern.matcher(line);
+        if (m.matches()) {
+            return createMessage(m);
+        } else {
+            throw new RuntimeException("no matches");
+        }
+    }
 
+    protected abstract Message createMessage(Matcher matcher);
 }

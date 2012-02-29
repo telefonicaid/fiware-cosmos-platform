@@ -220,6 +220,8 @@ class WizardForm(FormWizard):
             return ['forms/wizard_%s.html' % step, 'wizard/preProcessing.html']
         elif stp == 2:
             return ['forms/wizard_%s.html' % step, 'wizard/webProfiling.html']
+        elif stp == 3:
+            return ['forms/wizard_%s.html' % step, 'wizard/webProfiling.html']
         
     def done(self, request, form_list):
         config = Configuration()

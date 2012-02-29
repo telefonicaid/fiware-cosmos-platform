@@ -24,7 +24,7 @@ urlpatterns = patterns('',
     
     # FIXME : Review Regular Expressions and order
     
-    url(r'^wizard/configuration/add/?$', WizardForm([IngestionForm, PreProcessingForm, WebProfilingForm ])),        
+    url(r'^wizard/configuration/add/?$', WizardForm([IngestionForm, PreProcessingForm, WebProfilingForm, WebProfilingForm ])),        
     url(r'^wizard/configuration/?$','wizard.views.list_views.configuration'),        
     url(r'^wizard/configuration/(?P<pk>[a-z\d]+)/$', 'wizard.views.detail_views.configuration_detail'),
     

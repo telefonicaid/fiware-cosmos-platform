@@ -26,7 +26,7 @@ namespace au {
         
         
         size_t len = strlen( string );
-        size_t required_size = size + len;
+        size_t required_size = size + len + 1;
         
         // Alloc more space if necessary
         if( required_size > max_size )

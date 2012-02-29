@@ -827,7 +827,9 @@ namespace samson {
             {
                 // Redirect to the rigth server
                 std::string host = worker->network->getHostForWorker( worker_id );
-                return au::xml_simple(  "error" , au::str("Redirect to %s" , queue_name.c_str() ));
+                return au::xml_simple(  "error" 
+                                      , au::str("Redirect to %s/samson/state/%s/%s" , host.c_str() , queue_name.c_str() , key )
+                                      );
             }
 
             // HG Range containing only this range

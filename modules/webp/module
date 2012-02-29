@@ -39,7 +39,6 @@ data User
 parser parse_web_logs
 {
     out system.String webp.Log
-    out system.String system.Void
 	
 	help
     {
@@ -47,6 +46,29 @@ parser parse_web_logs
 	   "Output: [ user Log ]"
     }
 }
+
+
+parser parse_tid_web_logs
+{
+    out system.String webp.Log
+	
+	help
+    {
+       "Parse web logs"
+	   "Output: [ user Log ]"
+    }
+}
+
+map joint_comscore_dictionary
+{
+	in system.String webp.Log
+	out system.String webp.Log
+
+	help
+	{
+     	"Lookup all url agains the comscore dictionary"
+    }
+}			
 
 reduce update_user
 {
@@ -64,6 +86,7 @@ script web_profiling
     {
         # Input queues
         alias [input]          input;
+        alias [input_tid]      input_tid;
 
 		# Internal queues
         alias [logs]           logs;
@@ -73,12 +96,14 @@ script web_profiling
 		alias [users]           users;
 
         # Operations;
-        alias [parse_input]     parse;
+        alias [parse_input]       parse;
+        alias [parse_input_tid]   parse_tid;
         alias [update_state]    update;
 
         # Definitions;
-        add_stream_operation   [parse_input]   webp.parse_web_logs [input]           [logs]  [errors];
-        add_stream_operation   [update_state]  webp.update_user    [logs] [users]    [users];
+        add_stream_operation   [parse_input]      webp.parse_web_logs      [input]       [logs];
+        add_stream_operation   [parse_input_tid]  webp.parse_tid_web_logs  [input_tid]   [logs];
+        add_stream_operation   [update_state]     webp.update_user         [logs] [users]    [users];
 
     }
 

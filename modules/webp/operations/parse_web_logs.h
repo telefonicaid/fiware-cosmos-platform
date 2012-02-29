@@ -39,7 +39,6 @@ namespace webp{
 // Please, do not remove this comments, as it will be used to check consistency on module declaration
 //
 //  output: system.String webp.Log
-//  output: system.String system.Void
 //  
 //  extendedHelp: 		Parse web logs
 //  		Output: [ user Log ]

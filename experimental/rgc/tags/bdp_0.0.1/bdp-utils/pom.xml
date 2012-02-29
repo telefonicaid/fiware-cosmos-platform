@@ -1,0 +1,220 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>bdp</artifactId>
+		<groupId>es.tid.bdp</groupId>
+        <version>0.0.1</version>
+		<relativePath>..</relativePath>
+	</parent>
+	<artifactId>bdp-utils</artifactId>
+	<name>Big Data Platform - utils</name>
+	<repositories>
+		<repository>
+			<id>releases</id>
+			<name>Releases</name>
+			<url>https://oss.sonatype.org/content/repositories/releases</url>
+		</repository>
+	</repositories>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>rpm-maven-plugin</artifactId>
+				<version>2.1-alpha-1</version>
+				<executions>
+					<execution>
+						<id>package</id>
+						<phase>package</phase>
+						<goals>
+							<goal>rpm</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<copyright>${copyright.year}, XXXXXXX</copyright>
+					<distribution></distribution>
+					<group>Application/Collectors</group>
+					<packager>XXXXXXX</packager>
+					<prefix>/usr/local/bdp/utils</prefix>
+					<changelogFile>src/changelog</changelogFile>
+					<needarch>noarch</needarch>
+					<targetOS>Linux</targetOS>
+					<defineStatements>
+						<defineStatement>_binaries_in_noarch_packages_terminate_build 0</defineStatement>
+					</defineStatements>
+					<mappings>
+						<mapping>
+							<directory>/usr/local/bdp/utils/lib</directory>
+							<filemode>440</filemode>
+							<username>hdfs</username>
+							<groupname>hadoop</groupname>
+							<sources>
+								<source>
+									<location>target/${project.artifactId}-${project.version}.jar</location>
+								</source>
+							</sources>
+							<dependency>
+								<includes>
+									<include>com.google.protobuf:protobuf-java</include>
+									<include>com.google.guava:guava</include>
+									<include>com.twitter:elephant-bird</include>
+									<include>com.hadoop.compression:hadoop-gpl-compression</include>
+									<include>org.mongodb:mongo-java-driver</include>
+								</includes>
+							</dependency>
+						</mapping>
+
+						<mapping>
+							<directory>/usr/local/bdp/utils/lib/native</directory>
+							<filemode>440</filemode>
+							<username>hdfs</username>
+							<groupname>hadoop</groupname>
+							<sources>
+								<source>
+									<location>binaries/libgplcompression.so.0.0.0</location>
+								</source>
+							</sources>
+						</mapping>
+					</mappings>
+					<preremoveScriptlet>
+					<script>rm -f /usr/local/bdp/utils/lib/native/libgplcompression.so</script>
+					</preremoveScriptlet>
+					<postinstallScriptlet>
+						<script>ln -s /usr/local/bdp/utils/lib/native/libgplcompression.so.0.0.0 /usr/local/bdp/utils/lib/native/libgplcompression.so</script>
+					</postinstallScriptlet>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>generate-sources</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<tasks>
+								<mkdir dir="${generated.sourceDirectory}" />
+								<mkdir dir="target/protocbuf" />
+								<path id="proto.path">
+									<fileset dir="src/protocbuf">
+										<include name="**/*.proto" />
+									</fileset>
+								</path>
+								<pathconvert pathsep=" " property="proto.files"
+									refid="proto.path" />
+								<exec executable="protoc" failonerror="true">
+									<arg value="--java_out=${generated.sourceDirectory}" />
+									<arg value="-I${project.basedir}/src/protocbuf" />
+									<arg line="${proto.files}" />
+								</exec>
+							</tasks>
+							<sourceRoot>${generated.sourceDirectory}</sourceRoot>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.apache.maven.plugins
+										</groupId>
+										<artifactId>
+											maven-antrun-plugin
+										</artifactId>
+										<versionRange>
+											[1.3,)
+										</versionRange>
+										<goals>
+											<goal>run</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+	<dependencies>
+		<dependency>
+			<version>2.7.3</version>
+			<scope>compile</scope>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongo-java-driver</artifactId>
+	    </dependency>
+		<dependency>
+			<groupId>org.codehaus.mojo</groupId>
+			<artifactId>rpm-maven-plugin</artifactId>
+			<version>2.1-alpha-1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>2.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.twitter</groupId>
+			<artifactId>elephant-bird</artifactId>
+			<version>2.1.7</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.thrift</groupId>
+					<artifactId>libthrift</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>cascading</groupId>
+					<artifactId>cascading-hadoop</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.google</groupId>
+					<artifactId>protobuf-java</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.hadoop</groupId>
+					<artifactId>hadoop-lzo</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>yamlbeans</groupId>
+					<artifactId>yamlbeans</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.cloudera</groupId>
+			<artifactId>flume-core</artifactId>
+			<version>${cdh.flume.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.hadoop.compression</groupId>
+			<artifactId>hadoop-gpl-compression</artifactId>
+			<version>0.1.0</version>
+		</dependency>
+	</dependencies>
+	<properties>
+		<cdh.flume.version>0.9.4-cdh3u2</cdh.flume.version>
+		<generated.sourceDirectory>src/main/java</generated.sourceDirectory>
+	</properties>
+</project>

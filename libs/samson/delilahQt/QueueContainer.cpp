@@ -20,10 +20,20 @@ QueueContainer::QueueContainer(QWidget* parent): QWidget(parent)
 {
     mainLayout = new QVBoxLayout(this);
     
+    filterLayout = new QHBoxLayout;
+    filterLabel =  new QLabel("Filter:");
+    filterValue =  new QLineEdit(this);
+
+    mainLayout->addLayout(filterLayout);
+    filterLayout->addWidget(filterLabel);
+    filterLayout->addWidget(filterValue);
+    filterLayout->addStretch();
+    
     //Initialise groupboxes
     inputBox = new QGroupBox("Input Queues", this);
     outputBox = new QGroupBox("Output Queues", this);
     totalBox = new QGroupBox("Totals", this);
+
     mainLayout->addWidget(inputBox);
     mainLayout->addWidget(outputBox);
     mainLayout->addWidget(totalBox);
@@ -45,11 +55,18 @@ QueueContainer::QueueContainer(QWidget* parent): QWidget(parent)
     totalQueues ->setHiddenButton(true);
     totalQueues->setLayout(totalLayout, 0);
     totalBox->setLayout(totalLayout);
+    
+    connect(filterValue, SIGNAL(editingFinished()), this, SLOT(onFilterEdited()));
 
 }
 
-void QueueContainer::setData(std::vector<QueueData*>& queuesData)
+void QueueContainer::setData(std::vector<QueueData*>& newQueuesData)
 {
+
+   std::cout << "QueueContainer::setData()- queues: " << queuesData.size() << std::endl;
+        queuesData.clear();
+        queuesData = newQueuesData;
+        
         bool any_change = false;
         size_t totalKvs = 0;
         size_t totalSize = 0;
@@ -57,6 +74,13 @@ void QueueContainer::setData(std::vector<QueueData*>& queuesData)
         //For each queue, check if it has already a widget defined. otherwise create it
         for(unsigned int i = 0; i < queuesData.size(); i++)
         {
+            //if the queue does not match the filter pattern, ignore it
+            if(!filterValue->text().isEmpty() 
+               && (fnmatch(filterValue->text().toAscii().constData(), queuesData[i]->name.c_str(),0) != 0))
+            {
+                continue;
+            }
+             
             //Increment totals
             totalKvs += atol(queuesData[i]->kvs.c_str());
             totalSize += atol(queuesData[i]->size.c_str());
@@ -82,9 +106,11 @@ void QueueContainer::setData(std::vector<QueueData*>& queuesData)
             }
 
             QueueViewer* queueTmp = findQueue(*queuesList, queuesData[i]->name);
+            
             bool current_queue_changed = false;
             if( queueTmp != NULL)
             {
+   std::cout << "Queue encontrada: " << queueTmp->title << std::endl;
             
                 //Check if the data has actually changed
                 current_queue_changed = !(*queuesData[i] == queueTmp->data);
@@ -104,6 +130,7 @@ void QueueContainer::setData(std::vector<QueueData*>& queuesData)
             }
             else
             {
+   std::cout << "Queue creada: " << queuesData[i]->name << std::endl;
                 //new queue. Create widget
                 current_queue_changed = true;
                 any_change = true;
@@ -238,6 +265,34 @@ void QueueContainer::setData(std::vector<QueueData*>& queuesData)
         
         return deletedQueues;
         
+    }
+    
+    void QueueContainer::regenerateQueues()
+    {
+        //First clean both in and out layouts
+        for(std::vector<QueueViewer*>::iterator it=in_queues.begin(); it<in_queues.end();it++)
+        {
+            inputLayout->removeWidget(*it);
+            delete(*it);
+        }
+        in_queues.clear();
+
+        for(std::vector<QueueViewer*>::iterator it=out_queues.begin(); it<out_queues.end();it++)
+        {
+            outputLayout->removeWidget(*it);
+            delete(*it);
+        }
+        out_queues.clear();
+       
+        //With everything empty, restart the queues
+        setData(queuesData);
+        
+    }
+    
+    void QueueContainer::onFilterEdited()
+    {
+  std::cout <<   "onFilterEdited()" << std::endl;
+        regenerateQueues();
     }
     
 } //namespace

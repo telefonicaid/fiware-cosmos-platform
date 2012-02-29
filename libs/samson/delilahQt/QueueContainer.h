@@ -21,6 +21,10 @@ class QueueContainer: public QWidget
 {
         Q_OBJECT
         
+        QHBoxLayout* filterLayout;
+        QLabel* filterLabel;
+        QLineEdit* filterValue;
+        
         QLabel* noInputLabel;
         QLabel* noOutputLabel;
         QLabel* noTotalLabel;
@@ -28,6 +32,7 @@ class QueueContainer: public QWidget
         QGridLayout* outputLayout;
         QGridLayout* totalLayout;
         
+        std::vector<QueueData*> queuesData;
         //std::vector<QueueViewer::QueueData> queuesData;
         //std::vector<std::string> current_queues;
         std::vector<QueueViewer*> in_queues;
@@ -51,9 +56,11 @@ class QueueContainer: public QWidget
         QueueViewer* findQueue(std::vector<QueueViewer*>& list, std::string name_id);
         QueueData* findQueue(std::vector<QueueData*>& list, std::string name_id);
         std::vector<QueueViewer*> getDeletedQueues(std::vector<QueueData*>& QueuesData);
+        void regenerateQueues();
 
     public slots:
-    void onQueueDetailsClicked();
+        void onQueueDetailsClicked();
+        void onFilterEdited();
     
     signals:
     void queueDetailsClicked(QueueViewer* queue);

@@ -76,6 +76,7 @@ namespace samson
     void DelilahMainWindow::updateData(std::vector<QueueData*>& queuesData, std::vector<WorkerData*>& workersData)
     {
         //Update worker changes
+   std::cout << "DelilahMainWindow::updateData()- queues: " << queuesData.size() << std::endl;
         queuesTab->setData(queuesData);
         //Update worker changes
         workersTab->setData(workersData);

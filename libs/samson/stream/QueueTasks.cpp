@@ -268,11 +268,22 @@ namespace samson {
                     return;
                 }
                 
-                KVInfo* info = (KVInfo*) ( block->getData() + sizeof(KVHeader) );
+                //KVInfo* info = (KVInfo*) ( block->getData() + sizeof(KVHeader) );
                 
                 
                 char *data = block->getData() + KVFILE_TOTAL_HEADER_SIZE;
+
+
+                inputVector.prepareInput( header->info.kvs );
+                inputVector.addKVs( 0 , header->info , data );
                 
+                KVSetStruct inputStruct;
+                inputStruct.num_kvs = inputVector.num_kvs;
+                inputStruct.kvs = inputVector._kv;
+                
+                map->run( &inputStruct , writer );
+                
+/*                
                 for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)
                 {
                     if( info[hg].size > 0 )
@@ -296,6 +307,7 @@ namespace samson {
                         
                     }
                 }
+ */
                 
                 
             }

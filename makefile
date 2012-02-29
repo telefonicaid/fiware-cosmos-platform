@@ -291,11 +291,7 @@ deb:
 	mv ../samson_$(SAMSON_VERSION).$(SAMSON_RELEASE)* package/deb
 
 publish_deb: deb
-	ssh repo@samson09 mkdir -p /tmp/samson-deb-$(SAMSON_RELEASE)/
-	scp package/deb/* repo@samson09:/tmp/samson-deb-$(SAMSON_RELEASE)/
-	ssh repo@samson09 'cd /var/repository/ubuntu/natty; for deb in `reprepro list tid | grep " samson" | cut -f 2 -d" "`; do reprepro remove tid $$deb; done'
-	ssh repo@samson09 'cd /var/repository/ubuntu/natty; for deb in `ls /tmp/samson-deb-$(SAMSON_RELEASE)/samson*.deb`; do reprepro includedeb tid $$deb; done'
-	ssh repo@samson09 rm -rf /tmp/samson-deb-$(SAMSON_RELEASE)/
+	dput package/deb/samson_$(SAMSON_VERSION).$(SAMSON_RELEASE).changes
 
 man:
 	if [ ! -d BUILD_RELEASE ]; then \

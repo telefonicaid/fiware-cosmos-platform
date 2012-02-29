@@ -3,7 +3,6 @@ package es.tid.bdp.sftp.server.filesystem.hadoop;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,7 +21,6 @@ import com.hadoop.compression.lzo.LzopCodec;
 
 import es.tid.bdp.utils.BuilderDdpFileDescriptorAbstract;
 import es.tid.bdp.utils.data.BdpFileDescriptor;
-import es.tid.bdp.utils.data.BdpFileDescriptor.BdpCompresion;
 import es.tid.bdp.utils.io.output.ProtoBufOutStream;
 import es.tid.bdp.utils.parse.ParserAbstract;
 
@@ -261,32 +259,17 @@ public class HdfsSshFile implements SshFile {
             create();
         }
 
-        if (this.descriptor.isSerializable()) {
+        if (this.descriptor.isCompressible()) {
             LzopCodec codec = new LzopCodec();
             codec.setConf(hdfs.getConf());
             outputStream = codec.createOutputStream(outputStream);
         }
 
-        BdpCompresion compression = descriptor.getCompresion();
-
-        if (compression != null) {
-            try {
-                @SuppressWarnings("unchecked")
-                Class<ParserAbstract> klass = (Class<ParserAbstract>) Class
-                        .forName(compression.getClassName());
-
-                Constructor<ParserAbstract> constructor = klass.getConstructor(
-                        String.class, String.class);
-
-                ParserAbstract parser = constructor.newInstance(
-                        compression.getPattern(), compression.getAttr());
-                outputStream = new ProtoBufOutStream(outputStream, parser);
-            } catch (Exception e) {
-                throw new RuntimeException();
-            }
+        ParserAbstract parser = descriptor.getParser();
+        if (parser != null) {
+            outputStream = new ProtoBufOutStream(outputStream, parser);
         }
         return outputStream;
-
     }
 
     public InputStream createInputStream(long offset) throws IOException {

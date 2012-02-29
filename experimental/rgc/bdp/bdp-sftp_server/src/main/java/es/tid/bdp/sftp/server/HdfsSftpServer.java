@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.EnumSet;
 
 import org.apache.sshd.SshServer;
-import org.apache.sshd.common.Factory;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.util.OsUtils;
 import org.apache.sshd.common.util.SecurityUtils;
@@ -33,7 +32,6 @@ import org.apache.sshd.server.Command;
 import org.apache.sshd.server.ForwardingFilter;
 import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.PublickeyAuthenticator;
-import org.apache.sshd.server.ServerFactoryManager;
 import org.apache.sshd.server.keyprovider.PEMGeneratorHostKeyProvider;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.session.ServerSession;
@@ -41,64 +39,60 @@ import org.apache.sshd.server.sftp.SftpSubsystem;
 import org.apache.sshd.server.shell.ProcessShellFactory;
 
 import es.tid.bdp.sftp.server.filesystem.hadoop.HdfsFileSystemFactory;
+import es.tid.bdp.utils.PropertiesPlaceHolder;
+
 /**
  * 
  * @author rgc
- *
+ * 
  */
-public class HdfsSftpServer { 
-    
+public class HdfsSftpServer {
+
+    private final static String PROPERTY_PATH = "properties.configuration";
+    private final static String PATH_CONFIG_DEFAULT = "sftp-server.properties";
+    private static final String SFTP_PORT = "sftp.port";
+    private final static int DEFAULT_PORT = 8000;
 
     public static void main(String[] args) throws Exception {
-        int port = 8000;
-        boolean error = false;
 
-        for (int i = 0; i < args.length; i++) {
-            if ("-p".equals(args[i])) {
-                if (i + 1 >= args.length) {
-                    System.err.println("option requires an argument: " + args[i]);
-                    break;
-                }
-                port = Integer.parseInt(args[++i]);
-            } else if (args[i].startsWith("-")) {
-                System.err.println("illegal option: " + args[i]);
-                error = true;
-                break;
-            } else {
-                System.err.println("extra argument: " + args[i]);
-                error = true;
-                break;
-            }
-        }
-        if (error) {
-            System.err.println("usage: sshd [-p port]");
-            System.exit(-1);
-        }
+        String configFile = System.getProperty(PROPERTY_PATH,
+                PATH_CONFIG_DEFAULT);
 
-        System.err.println("Starting SSHD on port " + port);
-                                                    
+        PropertiesPlaceHolder properties = PropertiesPlaceHolder
+                .createInstance(configFile);
+
+        int port = properties.getPropertyInt(SFTP_PORT, DEFAULT_PORT);
+
         SshServer sshd = SshServer.setUpDefaultServer();
         sshd.setPort(port);
         if (SecurityUtils.isBouncyCastleRegistered()) {
             sshd.setKeyPairProvider(new PEMGeneratorHostKeyProvider("key.pem"));
         } else {
-            sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider("key.ser"));
+            sshd.setKeyPairProvider(new SimpleGeneratorHostKeyProvider(
+                    "key.ser"));
         }
         if (OsUtils.isUNIX()) {
-            sshd.setShellFactory(new ProcessShellFactory(new String[] { "/bin/sh", "-i", "-l" },
-                                 EnumSet.of(ProcessShellFactory.TtyOptions.ONlCr)));
+            sshd.setShellFactory(new ProcessShellFactory(new String[] {
+                    "/bin/sh", "-i", "-l" }, EnumSet
+                    .of(ProcessShellFactory.TtyOptions.ONlCr)));
         } else {
-            sshd.setShellFactory(new ProcessShellFactory(new String[] { "cmd.exe "},
-                                 EnumSet.of(ProcessShellFactory.TtyOptions.Echo, ProcessShellFactory.TtyOptions.ICrNl, ProcessShellFactory.TtyOptions.ONlCr)));
+            sshd.setShellFactory(new ProcessShellFactory(
+                    new String[] { "cmd.exe " }, EnumSet.of(
+                            ProcessShellFactory.TtyOptions.Echo,
+                            ProcessShellFactory.TtyOptions.ICrNl,
+                            ProcessShellFactory.TtyOptions.ONlCr)));
         }
         sshd.setPasswordAuthenticator(new PasswordAuthenticator() {
-            public boolean authenticate(String username, String password, ServerSession session) {
+            public boolean authenticate(String username, String password,
+                    ServerSession session) {
                 return username != null && username.equals(password);
             }
         });
         sshd.setPublickeyAuthenticator(new PublickeyAuthenticator() {
-            public boolean authenticate(String username, PublicKey key, ServerSession session) {
-                //File f = new File("/Users/" + username + "/.ssh/authorized_keys");
+            public boolean authenticate(String username, PublicKey key,
+                    ServerSession session) {
+                // File f = new File("/Users/" + username +
+                // "/.ssh/authorized_keys");
                 return true;
             }
         });
@@ -111,14 +105,18 @@ public class HdfsSftpServer {
                 return true;
             }
 
-            public boolean canListen(InetSocketAddress address, ServerSession session) {
+            public boolean canListen(InetSocketAddress address,
+                    ServerSession session) {
                 return true;
             }
 
-            public boolean canConnect(InetSocketAddress address, ServerSession session) {
+            public boolean canConnect(InetSocketAddress address,
+                    ServerSession session) {
                 return true;
             }
         });
+
+        
         
         sshd.setFileSystemFactory(new HdfsFileSystemFactory());
         sshd.setSubsystemFactories(Arrays

@@ -37,77 +37,15 @@ public class HdfsFileSystemFactory implements FileSystemFactory {
     private final Logger LOG = LoggerFactory
             .getLogger(HdfsFileSystemFactory.class);
 
-    private boolean createHome;
 
     private boolean caseInsensitive;
-
-    public HdfsFileSystemFactory() {
-        super();
-    }
-
-    /**
-     * Should the home directories be created automatically
-     * 
-     * @return true if the file system will create the home directory if not
-     *         available
-     */
-    public boolean isCreateHome() {
-        return createHome;
-    }
-
-    /**
-     * Set if the home directories be created automatically
-     * 
-     * @param createHome
-     *            true if the file system will create the home directory if not
-     *            available
-     */
-
-    public void setCreateHome(boolean createHome) {
-        this.createHome = createHome;
-    }
-
-    /**
-     * Is this file system case insensitive. Enabling might cause problems when
-     * working against case-sensitive file systems, like on Linux
-     * 
-     * @return true if this file system is case insensitive
-     */
-    public boolean isCaseInsensitive() {
-        return caseInsensitive;
-    }
-
-    /**
-     * Should this file system be case insensitive. Enabling might cause
-     * problems when working against case-sensitive file systems, like on Linux
-     * 
-     * @param caseInsensitive
-     *            true if this file system should be case insensitive
-     */
-    public void setCaseInsensitive(boolean caseInsensitive) {
-        this.caseInsensitive = caseInsensitive;
-    }
+   
 
     /**
      * Create the appropriate user file system view.
      */
     public FileSystemView createFileSystemView(Session session) {
         String userName = session.getUsername();
-        // create home if does not exist
-        if (createHome) {
-            String homeDirStr = "/home/" + userName;
-            File homeDir = new File(homeDirStr);
-            if (homeDir.isFile()) {
-                LOG.warn("Not a directory :: " + homeDirStr);
-                // throw new FtpException("Not a directory :: " + homeDirStr);
-            }
-            if ((!homeDir.exists()) && (!homeDir.mkdirs())) {
-                LOG.warn("Cannot create user home :: " + homeDirStr);
-                // throw new FtpException("Cannot create user home :: "
-                // + homeDirStr);
-            }
-        }
-
         FileSystemView fsView = new HdfsFileSystemView(userName,
                 caseInsensitive);
         return fsView;

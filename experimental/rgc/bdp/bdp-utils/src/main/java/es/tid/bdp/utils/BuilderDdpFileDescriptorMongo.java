@@ -9,19 +9,20 @@ import com.mongodb.DBCollection;
 import com.mongodb.Mongo;
 
 import es.tid.bdp.utils.data.BdpFileDescriptor;
-import es.tid.bdp.utils.data.BdpFileDescriptor.BdpCompresion;
+import es.tid.bdp.utils.parse.ParserAbstract;
 
 public class BuilderDdpFileDescriptorMongo extends
         BuilderDdpFileDescriptorAbstract {
 
     DBCollection collPath;
 
-    public BuilderDdpFileDescriptorMongo(final String host, final int port,
-            final String database, final String collection) {
+    public BuilderDdpFileDescriptorMongo(PropertiesPlaceHolder properties) {
+        super(properties);
         try {
-            Mongo mongo = new Mongo(host, port);
-            DB primary = mongo.getDB(database);
-            collPath = primary.getCollection(collection);
+            Mongo mongo = new Mongo(properties.getProperty("host"),
+                    properties.getPropertyInt("port"));
+            DB primary = mongo.getDB(properties.getProperty(""));
+            collPath = primary.getCollection(properties.getProperty(""));
         } catch (Exception e) {
             // TODO: handle exception
         }
@@ -58,7 +59,7 @@ public class BuilderDdpFileDescriptorMongo extends
 
         BdpFileDescriptor descriptor = new BdpFileDescriptor();
 
-        descriptor.setSerializable(basicDBObject.getBoolean("isSerializable",
+        descriptor.setCompressible(basicDBObject.getBoolean("isCompressible",
                 false));
         descriptor.setReadable(basicDBObject.getBoolean("isReadble", false));
         descriptor.setWritable(basicDBObject.getBoolean("isWritable", false));
@@ -67,11 +68,12 @@ public class BuilderDdpFileDescriptorMongo extends
                 .get("compression");
 
         if (compressDBObject != null) {
-            BdpCompresion compression = BdpCompresion.createInstance(
+
+            ParserAbstract parser = this.createParser(
                     compressDBObject.getString("className"),
                     compressDBObject.getString("pattern"),
                     compressDBObject.getString("attr"));
-            descriptor.setCompresion(compression);
+            descriptor.setParser(parser);
         }
 
         return descriptor;

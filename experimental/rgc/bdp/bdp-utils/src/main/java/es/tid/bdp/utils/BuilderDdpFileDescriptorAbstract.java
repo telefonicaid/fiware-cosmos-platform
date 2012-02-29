@@ -1,11 +1,16 @@
 package es.tid.bdp.utils;
 
+import java.lang.reflect.Constructor;
 import java.util.NoSuchElementException;
 
 import es.tid.bdp.utils.data.BdpFileDescriptor;
+import es.tid.bdp.utils.parse.ParserAbstract;
 
 public abstract class BuilderDdpFileDescriptorAbstract {
-
+    
+    public BuilderDdpFileDescriptorAbstract(final PropertiesPlaceHolder proterties) {
+    }
+    
     /**
      * 
      * @param user
@@ -30,7 +35,7 @@ public abstract class BuilderDdpFileDescriptorAbstract {
      */
     protected BdpFileDescriptor createUnathorized() {
         BdpFileDescriptor descriptor = new BdpFileDescriptor();
-        descriptor.setSerializable(false);
+        descriptor.setCompressible(false);
         descriptor.setReadable(false);
         descriptor.setWritable(false);
 
@@ -45,4 +50,20 @@ public abstract class BuilderDdpFileDescriptorAbstract {
      */
     protected abstract BdpFileDescriptor searchFileDescriptor(
             final String user, final String path);
+
+    protected ParserAbstract createParser(final String className,
+            final String pattern, final String attr) {
+        try {
+            @SuppressWarnings("unchecked")
+            Class<ParserAbstract> klass = (Class<ParserAbstract>) Class
+                    .forName(className);
+
+            Constructor<ParserAbstract> constructor = klass.getConstructor(
+                    String.class, String.class);
+
+            return constructor.newInstance(pattern, attr);
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+    }
 }

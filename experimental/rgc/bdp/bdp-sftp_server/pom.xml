@@ -74,6 +74,7 @@
 							<sources>
 								<source>
 									<location>src/main/resources/log4j.xml</location>
+									<location>src/main/resources/sftp-server.properties</location>
 								</source>
 							</sources>
 						</mapping>

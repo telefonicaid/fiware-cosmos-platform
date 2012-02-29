@@ -1,6 +1,7 @@
 package es.tid.bdp.sftp.server.filesystem.hadoop;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -15,7 +16,9 @@ import org.slf4j.LoggerFactory;
 import es.tid.bdp.utils.BuilderDdpFileDescriptorAbstract;
 import es.tid.bdp.utils.BuilderDdpFileDescriptorMongo;
 import es.tid.bdp.utils.BuilderDdpFileDescriptorTextAllow;
+import es.tid.bdp.utils.PropertiesPlaceHolder;
 import es.tid.bdp.utils.data.BdpFileDescriptor;
+import es.tid.bdp.utils.parse.ParserAbstract;
 
 public class HdfsFileSystemView implements FileSystemView {
 
@@ -23,6 +26,7 @@ public class HdfsFileSystemView implements FileSystemView {
             .getLogger(NativeFileSystemView.class);
 
     private final static String FS_DEFAULT_NAME = "fs.default.name";
+    private static final String DESCRIPTOR_BUILDER_CLASS = "filesystem.descriptor.class";
 
     private String userName;
     private FileSystem hdfsSrc;
@@ -55,22 +59,32 @@ public class HdfsFileSystemView implements FileSystemView {
         this.currDir = "/";
         this.userName = userName;
 
-        Configuration confSrc = new Configuration();
-        confSrc.set(FS_DEFAULT_NAME, "hdfs://pshdp01.hi.inet:8011");
-        confSrc.set(
-                "io.compression.codecs",
-                "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
-
-        confSrc.set("io.compression.codec.lzo.class",
-                "com.hadoop.compression.lzo.LzoCodec");
         try {
-            hdfsSrc = FileSystem.get(confSrc);
-            /*
-             * builder = new BuilderDdpFileDescriptorMongo("psmongo", 22,
-             * "pshdp", "filesystem");
-             */
-            builder = new BuilderDdpFileDescriptorTextAllow();
-        } catch (IOException e) {
+
+            PropertiesPlaceHolder properties = PropertiesPlaceHolder
+                    .getInstance();
+
+            Configuration conf = new Configuration();
+            conf.set(FS_DEFAULT_NAME, properties.getProperty(FS_DEFAULT_NAME));
+
+            conf.set(
+                    "io.compression.codecs",
+                    "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
+
+            conf.set("io.compression.codec.lzo.class",
+                    "com.hadoop.compression.lzo.LzoCodec");
+
+            hdfsSrc = FileSystem.get(conf);
+
+            @SuppressWarnings("unchecked")
+            Class<BuilderDdpFileDescriptorAbstract> klass = (Class<BuilderDdpFileDescriptorAbstract>) Class
+                    .forName(properties.getProperty(DESCRIPTOR_BUILDER_CLASS));
+
+            Constructor<BuilderDdpFileDescriptorAbstract> constructor = klass
+                    .getConstructor(PropertiesPlaceHolder.class);
+
+            builder = constructor.newInstance(properties);
+        } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }

@@ -40,7 +40,7 @@
 					<mappings>
 						<mapping>
 							<directory>/usr/local/bdp/sftpserver</directory>
-							<filemode>444</filemode>
+							<filemode>440</filemode>
 							<username>hdfs</username>
 							<groupname>hadoop</groupname>
 							<sources>
@@ -62,7 +62,7 @@
 						</mapping>
 						<mapping>
 							<directory>/usr/local/bdp/sftpserver/lib</directory>
-							<filemode>440</filemode>
+							<filemode>550</filemode>
 							<username>hdfs</username>
 							<groupname>hadoop</groupname>
 							<sources>
@@ -79,7 +79,7 @@
 						</mapping>
 						<mapping>
 							<directory>/usr/local/bdp/sftpserver/conf</directory>
-							<filemode>750</filemode>
+							<filemode>550</filemode>
 							<username>hdfs</username>
 							<groupname>hadoop</groupname>
 							<sources>

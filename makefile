@@ -94,7 +94,7 @@ install_debug: prepare_debug
 	echo "mkdir -p /var/samson"
 	echo "chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_WORKING)"
 
-install: 
+install: prepare_release
 	make -C BUILD_RELEASE install
 	make install_man
 	mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate

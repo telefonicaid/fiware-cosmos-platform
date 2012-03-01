@@ -880,6 +880,20 @@ namespace samson {
                 }
             }
             
+            
+            // Stream operations
+            // ------------------------------------------------------------------------
+            au::map< std::string , StreamOperation >::iterator it;
+            for( it = stream_operations.begin() ; it != stream_operations.end() ; it++ )
+            {
+                std::string name = it->second->name;
+
+                if( name.substr( 0 , path.length() ) == path )
+                    if( name.find(".", path.length() ) == std::string::npos )
+                        it->second->fill( collection->add_record() , queue_visualization.options );
+            }
+
+            
             // Stream blocks inside.....
             // ------------------------------------------------------------------------
             std::string stream_block_pattern = path + "*.*";

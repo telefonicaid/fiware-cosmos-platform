@@ -125,7 +125,6 @@ namespace samson {
             // Total input history
             BlockInfo history_block_info;   // Historical information
             
-            
             //FullKVInfo info;
             //size_t temporal_size;
             

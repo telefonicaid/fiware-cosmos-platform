@@ -459,9 +459,39 @@ namespace samson {
         void StreamOperation::fill( samson::network::CollectionRecord* record , VisualitzationOptions options )
         {
             
+            
+            
+            if( options == stream_block )
+            {
+                ::samson::add( record , "type" , "stream_op" , "left,different" );
+                ::samson::add( record , "name" , name , "left,different" );
+                ::samson::add( record , "In: #kvs" , input_rate.get_total_kvs() , "f=uint64,sum" );
+                ::samson::add( record , "In: size" , input_rate.get_total_size() , "f=uint64,sum" );
+                ::samson::add( record , "State: #kvs" , "" , "f=uint64,sum" );
+                ::samson::add( record , "State: size" , "" , "f=uint64,sum" );
+                ::samson::add( record , "Out: #kvs" , output_rate.get_total_kvs() , "f=uint64,sum" );
+                ::samson::add( record , "Out: size" , output_rate.get_total_size() , "f=uint64,sum" );
+                return;
+            }
+            
+            if( options == stream_block_rates )
+            {
+                ::samson::add( record , "type" , "stream_op" , "left,different" );
+                ::samson::add( record , "name" , name , "left,different" );
+                ::samson::add( record , "In: #kvs/s" , input_rate.get_rate_kvs() , "f=uint64,sum" );
+                ::samson::add( record , "In: size/s" , input_rate.get_rate_size() , "f=uint64,sum" );
+                ::samson::add( record , "State: #kvs/s" , "" , "f=uint64,sum" );
+                ::samson::add( record , "State: size/s" , "" , "f=uint64,sum" );
+                ::samson::add( record , "Out: #kvs/s" , output_rate.get_rate_kvs() , "f=uint64,sum" );
+                ::samson::add( record , "Out: size/s" , output_rate.get_rate_size() , "f=uint64,sum" );
+                
+                return;
+            }            
+            
             // Common fields
             ::samson::add( record , "name"      , name      , "left,different" );
             ::samson::add( record , "operation" , operation , "different" );
+
             
             if( ( options == properties ) || (options == all ) )
             {

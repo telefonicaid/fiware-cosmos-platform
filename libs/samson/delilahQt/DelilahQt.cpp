@@ -109,7 +109,7 @@ namespace samson
        
     }
     
-    void DelilahQt::process_stream_out_packet( std::string queue , engine::Buffer* buffer )
+    void DelilahQt::receive_buffer_from_queue( std::string queue , engine::Buffer* buffer )
     {
         size_t size = buffer->getSize();
         LM_M(("Received buffer with size %s from queue %s" , au::str(size,"B").c_str() , queue.c_str() )  );

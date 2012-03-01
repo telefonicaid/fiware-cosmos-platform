@@ -56,7 +56,7 @@ namespace samson {
     public:
         
         // Overloaded functions from Delilah
-        virtual void process_stream_out_packet( std::string queue , engine::Buffer* buffer );
+        virtual void receive_buffer_from_queue( std::string queue , engine::Buffer* buffer );
         
         
         

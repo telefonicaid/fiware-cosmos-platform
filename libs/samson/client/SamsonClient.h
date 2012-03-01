@@ -37,6 +37,9 @@
 #include "engine/MemoryManager.h"   // engine::MemoryManager
 
 #include "samson/common/coding.h"
+#include "samson/network/DelilahNetwork.h"
+#include "samson/delilah/Delilah.h"             // samson::Delilah
+#include "samson/delilah/DelilahComponent.h"    // samson::DelilahComponent
 
 #include "samson/module/ModulesManager.h"
 
@@ -315,7 +318,7 @@ namespace  samson {
         Main class to connect to a samson cluster
      */
     
-    class SamsonClient
+    class SamsonClient : public DelilahLiveDataReceiverInterface
     {
             
         size_t memory;                          // Memory used internally for load / download operations
@@ -327,6 +330,10 @@ namespace  samson {
         std::vector<size_t> delilah_ids;        // Delilah operation to wait for...
         
         std::string connection_type;            // String to describe connection with SAMSON (pop, push, console, ...)
+        
+        samson::DelilahNetwork* networkP;       // Network interface for delilah client
+        samson::Delilah* delilah;                // Delilah client   
+        BufferContainer buffer_container;            // Blocks Container for live data
         
 	public:
 
@@ -343,6 +350,9 @@ namespace  samson {
                   , int port = SAMSON_WORKER_PORT 
                   , std::string user = "anonymous" 
                   , std::string password = "anonymous");
+        
+        // DelilahLiveDataReceiverInterface
+        void receive_buffer_from_queue(std::string queue , engine::Buffer* buffer);
         
         // Push content to a particular queue
         size_t push( std::string queue , char *data , size_t length );

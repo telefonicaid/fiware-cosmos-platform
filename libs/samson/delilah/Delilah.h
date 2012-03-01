@@ -52,14 +52,21 @@ namespace samson
 namespace samson {
     
     
-    // Function to process live streaming data
-    typedef void (*delilah_process_stream_out_queue)(std::string queue , engine::Buffer* buffer);
-    
 	class DelilahClient;
 	class DelilahComponent;
     class PushDelilahComponent;
     class PopDelilahComponent;
     class DataSource;
+    
+    // Interface to receive live data
+    class DelilahLiveDataReceiverInterface
+    {
+        
+    public:
+        
+        virtual void receive_buffer_from_queue(std::string queue , engine::Buffer* buffer)=0;
+        
+    };
     
 	/**
 	   Main class for the samson client element
@@ -85,8 +92,8 @@ namespace samson {
         // Flag to update automatically list of queues and workers
         bool automatic_update;
         
-        
-        delilah_process_stream_out_queue op_delilah_process_stream_out_queue;
+        // Interface to receive live data
+        DelilahLiveDataReceiverInterface * data_receiver_interface;
         
 	public:
 		
@@ -153,9 +160,9 @@ namespace samson {
         {
         }
 		
-        virtual void process_stream_out_packet( std::string queue , engine::Buffer* buffer )
+        virtual void receive_buffer_from_queue( std::string queue , engine::Buffer* buffer )
         {
-            LM_E(("process_stream_out_packet not implemented"));
+            LM_W(("Buffer received from queue %s not used" , queue.c_str() ));
             engine::MemoryManager::shared()->destroyBuffer(buffer);
         }
         

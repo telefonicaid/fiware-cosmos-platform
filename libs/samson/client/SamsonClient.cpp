@@ -36,8 +36,6 @@
 #include "samson/network/DelilahNetwork.h"
 #include "samson/network/Packet.h"
 
-#include "samson/delilah/Delilah.h"             // samson::Delilah
-#include "samson/delilah/DelilahComponent.h"    // samson::DelilahComponent
 
 #include "SamsonClient.h"                       // Own interface
 
@@ -119,23 +117,15 @@ namespace samson {
     
 #pragma mark
     
-    samson::DelilahNetwork* networkP  = NULL;
-    samson::Delilah* delilah = NULL;    
-    
-    BufferContainer buffer_container;   // Container for live data
-    
-    void delialh_client_delilah_process_stream_out_queue(std::string queue , engine::Buffer* buffer)
-    {
-        // Put inside the buffer to storage
-        buffer_container.push( queue , buffer );
-    }
     
     SamsonClient::SamsonClient( std::string _connection_type )
     {
         memory = 1024*1024*1024;
         load_buffer_size =  64*1024*1024;
-        
         connection_type = _connection_type;
+        
+        delilah = NULL;
+        networkP = NULL;
     }
  
     void SamsonClient::setMemory ( size_t _memory )
@@ -192,8 +182,8 @@ namespace samson {
         if( s != OK )
             LM_X(1, ("Not possible to open connection with %s:%d (%s)" , worker_host.c_str() , port , status(s) ));
         
-        // Set the funciton to process live stream data
-        delilah->op_delilah_process_stream_out_queue = delialh_client_delilah_process_stream_out_queue;
+        // Set me as the receiver for live data packets
+        delilah->data_receiver_interface = this;
         
         // What until the network is ready
         LM_V(("Waiting network connections to the all nodes in SAMSON cluster..."));
@@ -203,6 +193,11 @@ namespace samson {
         
         return true;
         
+    }
+    
+    void SamsonClient::receive_buffer_from_queue(std::string queue , engine::Buffer* buffer)
+    {
+        buffer_container.push( queue , buffer );
     }
     
     size_t SamsonClient::push( std::string queue , char *data , size_t length )

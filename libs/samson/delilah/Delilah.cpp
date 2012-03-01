@@ -62,8 +62,8 @@ namespace samson {
         // No next worker decided
         next_worker = -1;
         
-        // No operation to deal with live data from queues by default ( used in samsonClient library )
-        op_delilah_process_stream_out_queue = NULL;
+        // No receiver to deal with live data from queues by default ( used in samsonClient library )
+        data_receiver_interface = NULL;
                 
         // Notification to update state
         listen( notification_update_status );
@@ -275,10 +275,10 @@ namespace samson {
                 return;
             }
             
-            if( op_delilah_process_stream_out_queue )
-                op_delilah_process_stream_out_queue( queue , packet->buffer );
+            if( data_receiver_interface )
+                data_receiver_interface->receive_buffer_from_queue(queue, packet->buffer );
             else
-                process_stream_out_packet( queue , packet->buffer );
+                receive_buffer_from_queue( queue , packet->buffer );
             
             return;
             

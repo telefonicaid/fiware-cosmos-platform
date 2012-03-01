@@ -162,7 +162,6 @@ int main( int argC , const char *argV[] )
     
     LM_V(("Connecting to %s ..." , controller));
     
-    
     // Init connection
     if( !samson_client->init( controller , SAMSON_WORKER_PORT , user , password ) )
     {

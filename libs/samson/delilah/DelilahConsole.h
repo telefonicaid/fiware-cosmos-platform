@@ -114,7 +114,7 @@ namespace samson {
 		int _receive( Packet* packet );		
 
         // Process buffers of data received in streaming from SAMSON
-        void process_stream_out_packet( std::string queue , engine::Buffer* buffer );
+        void receive_buffer_from_queue( std::string queue , engine::Buffer* buffer );
         
         
 		// Notify that an operation hash finish

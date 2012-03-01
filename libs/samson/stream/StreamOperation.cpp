@@ -381,6 +381,11 @@ namespace samson {
                 return 0; // No task to be implemented
             }
 
+            int max_operations = getMaxTasks();
+            if( max_operations > 0 )
+                if( running_tasks.size() >= (size_t) max_operations )
+                    return 0;
+            
             // Rigth now using size * time * priority
             BlockInfo input_block_info = input->getBlockInfo();
             return input_block_info.size * input_block_info.max_time_diff() * getPriority();

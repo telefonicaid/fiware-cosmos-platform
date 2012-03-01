@@ -105,7 +105,6 @@ namespace samson {
         {
             delete list;
         }
-
         
         void Queue::push( BlockList *list )
         {

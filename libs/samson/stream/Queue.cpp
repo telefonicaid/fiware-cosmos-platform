@@ -552,7 +552,7 @@ namespace samson {
                 add( record , "#Blocs"     , blockInfo.num_blocks , "f=uint64,sum" );
                 
                 if( format.isTxt() )
-                    add( record , "Fragmentation" , "-" , "f=per,different" );
+                    add( record , "Fragmentation" , "0" , "f=per,different" );
                 else
                     add( record, "Fragmentation", list->getFragmentationFactor() , "f=per,different");
                 

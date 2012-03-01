@@ -86,7 +86,9 @@ namespace samson {
             engine::Notification *notification = new engine::Notification(notification_delilah_automatic_update);
             engine::Engine::shared()->notify( notification, period );
         }        
-        
+     
+        // By default update everything ( canceled in samsonClient )
+        automatic_update = true;
     }
     
     
@@ -168,8 +170,11 @@ namespace samson {
         if ( notification->isName( notification_delilah_automatic_update ) )
         {
             // Update local list of queus automatically
-            sendWorkerCommand("ls_queues -a -hidden -save" , NULL);
-            sendWorkerCommand("ls_workers -a -hidden -save" , NULL);
+            if( automatic_update )
+            {
+                sendWorkerCommand("ls_queues -a -hidden -save" , NULL);
+                sendWorkerCommand("ls_workers -a -hidden -save" , NULL);
+            }
             return;
         }
         
@@ -546,7 +551,8 @@ namespace samson {
     
     int Delilah::_receive( Packet* packet )
     {
-        LM_V(("Unused packet %s" , packet->str().c_str()));
+        if( packet->msgCode != Message::Alert )
+            LM_V(("Unused packet %s" , packet->str().c_str()));
         
         if( packet->buffer )
             engine::MemoryManager::shared()->destroyBuffer( packet->buffer );

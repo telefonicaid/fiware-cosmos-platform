@@ -83,6 +83,10 @@ namespace samson {
 		au::map<size_t , DelilahComponent> components;			
         
     public:
+
+        // Flag to update automatically list of queues and workers
+        bool automatic_update;
+        
         
         delilah_process_stream_out_queue op_delilah_process_stream_out_queue;
         

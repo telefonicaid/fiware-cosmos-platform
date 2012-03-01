@@ -183,6 +183,9 @@ namespace samson {
         // Create a DelilahControler once network is ready
         delilah = new Delilah( networkP );
 
+        // No automatic update
+        delilah->automatic_update = false;
+        
         // Init network connection
         Status s = networkP->addMainDelilahConnection( worker_host , port , user , password );
         

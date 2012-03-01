@@ -1166,7 +1166,9 @@ namespace samson {
     
     void WorkerCommand::fill( samson::network::CollectionRecord* record , Visualization* visualization )
     {
-        add( record , "id"      , au::str("Delilah %lu (%lu)", delilah_id , delilah_component_id) , "left,different" );
+        std::string name = NodeIdentifier( DelilahNode , delilah_id ).getCodeName();
+        
+        add( record , "id" ,  au::str("%s (%lu)", name.c_str() , delilah_component_id) , "left,different" );
 
         if( finished )
             add( record , "status" , "finished" , "left,different" );

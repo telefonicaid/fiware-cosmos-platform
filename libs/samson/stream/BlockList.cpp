@@ -454,8 +454,8 @@ namespace samson {
         
         double BlockList::getFragmentationFactor()
         {
-            if( blocks.size() == 1)
-                return 1;
+            if( blocks.size() <= 1)
+                return 0;
             
             int total_hgs = 0;
             int accumulated_num_blocks = 0;

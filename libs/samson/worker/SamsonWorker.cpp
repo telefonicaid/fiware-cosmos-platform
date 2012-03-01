@@ -427,7 +427,7 @@ static char* toUTF8(char* in, size_t* outLenP)
         int dataLen = data.str().length();
 
         header << "HTTP/1.1 200 OK\r\n";
-        header << "Content-Type:   \"text/xml\"\r\n";
+        header << "Content-Type:   \"application/xml; charset=utf-8\"\r\n";
         header << "Content-Length: " << dataLen << "\r\n";
         header << "\r\n";
 

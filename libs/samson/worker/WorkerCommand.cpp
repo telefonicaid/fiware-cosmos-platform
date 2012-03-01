@@ -181,7 +181,7 @@ namespace samson {
             if( cmd.get_num_arguments() == 3 )
             {
                 prefix.append( cmd.get_argument(1) );
-                prefix.append("/");
+                prefix.append(".");
                 
                 operation_name  = cmd.get_argument(2);
             }
@@ -346,6 +346,48 @@ namespace samson {
             
             return;
         }
+
+        if( ( main_command == "rm_queue_connection" ) )
+        {
+            if( cmd.get_num_arguments() < 3 )
+            {
+                error->set( "Usage: rm_queue_connection queue target_queue_1 target_queue_2 .. target_queue_N" );
+                return;
+            }
+            
+            std::string source_queue = cmd.get_argument(1);
+            for( int i = 2 ; i < cmd.get_num_arguments() ; i++ )
+            {
+                std::string target_queue = cmd.get_argument(i);
+                
+                if( target_queue != source_queue )     // Avoid connecting with yourself            
+                    streamManager->remove_queue_connection( source_queue , target_queue );
+            }
+            return;
+
+        }
+        
+        
+        if( ( main_command == "add_queue_connection" ) )
+        {
+            if( cmd.get_num_arguments() < 3 )
+            {
+                error->set( "Usage: add_queue_connection source_queue target_queue_1 target_queue_2 .. target_queue_N" );
+                return;
+            }
+            
+            std::string source_queue = cmd.get_argument(1);
+            for( int i = 2 ; i < cmd.get_num_arguments() ; i++ )
+            {
+                std::string target_queue = cmd.get_argument(i);
+                
+                if( target_queue != source_queue )     // Avoid connecting with yourself            
+                    streamManager->add_queue_connection( source_queue , target_queue );
+            }
+            
+            return;
+        }
+        
         
         if( main_command == "rm_stream_operation" )
         {
@@ -523,7 +565,7 @@ namespace samson {
         // Query commands
         if( main_command == "ls_queues" )
         {
-            network::Collection * c = streamManager->getCollection( visualitzation_options,pattern );
+            network::Collection * c = streamManager->getCollection( &visualitzation );
             c->set_title( command  );
             collections.push_back( c );
             finishWorkerTask();
@@ -542,6 +584,15 @@ namespace samson {
         if( main_command == "ls_stream_operations" )
         {
             network::Collection * c = streamManager->getCollectionForStreamOperations( visualitzation_options,pattern );
+            c->set_title( command  );
+            collections.push_back( c );
+            finishWorkerTask();
+            return;
+        }
+
+        if( main_command == "ls_queues_connections" )
+        {
+            network::Collection * c = streamManager->getCollectionForQueueConnections( &visualitzation  );
             c->set_title( command  );
             collections.push_back( c );
             finishWorkerTask();
@@ -605,7 +656,7 @@ namespace samson {
             return;
         }
         
-        if( main_command == "ls_worker_commands" )
+        if( main_command == "ls_workers_commands" )
         {
             network::Collection * c = samsonWorker->workerCommandManager->getCollectionOfWorkerCommands(&visualitzation);
             c->set_title( command  );
@@ -616,49 +667,29 @@ namespace samson {
         
         if( main_command == "show_stream_block" )
         {
-            
-            std::string pattern_inputs;
-            std::string pattern_states;
-            std::string pattern_outputs;
-            
             std::string path;
             
             if ( cmd.get_num_arguments() >= 2 )
             {
-                 path = cmd.get_argument(1);
+                path = cmd.get_argument(1);
                 
-                if( path.substr( path.length() - 1 ) != "/" )
-                    path.append("/");
+                if( path.substr( path.length() - 1 ) != "." )
+                    path.append(".");
                 
-                pattern_inputs += path;
-                pattern_states += path;
-                pattern_outputs += path;
             }
             else
-                path = "<root>";
+                path = "";
 
-            pattern_inputs += "in:*";
-            pattern_states += "state:*";
-            pattern_outputs += "out:*";
             
-            // Inputs
-            network::Collection *c_inputs = streamManager->getCollection( verbose , pattern_inputs );
-            c_inputs->set_title( au::str("Inputs for %s", path.c_str()) );
-            c_inputs->set_name("inputs");
-            collections.push_back( c_inputs );
+            network::Collection * c = streamManager->getCollectionForStreamBlock( path , &visualitzation);
+            c->set_title( command  );
+            collections.push_back( c );
+            finishWorkerTask();
+            return;
             
-            // States
-            network::Collection *c_states = streamManager->getCollection( normal , pattern_states );
-            c_states->set_title( au::str("States for %s", path.c_str()) );
-            c_states->set_name("states");
-            collections.push_back( c_states );
-            
-            // Outputs
-            network::Collection *c_outputs = streamManager->getCollection( verbose , pattern_outputs );
-            c_outputs->set_title( au::str("Outputs for %s", path.c_str()) );
-            c_outputs->set_name("outputs");
-            collections.push_back( c_outputs );
+            // Internal stream blocks
 
+            
             finishWorkerTask();
             return;
         }

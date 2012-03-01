@@ -19,6 +19,8 @@
 
 #include <string>
 
+#include "au/Environment.h"
+
 namespace samson
 {
 
@@ -36,7 +38,9 @@ namespace samson
         verbose,
         verbose2,
         verbose3,
-        all
+        all,
+        stream_block,        // Mode only used in show_block_stream
+        stream_block_rates    // Mode only used in show_block_stream
     } VisualitzationOptions;
 
     
@@ -45,10 +49,14 @@ namespace samson
     
     class Visualization
     {
+        
     public:
         
         VisualitzationOptions options;
         std::string pattern;
+
+        // Environemnt properties
+        au::Environment environment;
         
     };
 

@@ -85,25 +85,25 @@ script web_profiling
     code
     {
         # Input queues
-        alias [input]          input;
-        alias [input_tid]      input_tid;
+        alias [input]             in_input;
+        alias [input_tid]         in_input_tid;
 
 		# Internal queues
-        alias [logs]           logs;
-        alias [errors]         errors;
+        alias [logs]              logs;
+        alias [errors]            errors;
 
 		# State queues
-		alias [users]           users;
+		alias [users]             s_users;
 
         # Operations;
         alias [parse_input]       parse;
         alias [parse_input_tid]   parse_tid;
-        alias [update_state]    update;
-
+        alias [update_state]      update;
+ 
         # Definitions;
-        add_stream_operation   [parse_input]      webp.parse_web_logs      [input]       [logs];
-        add_stream_operation   [parse_input_tid]  webp.parse_tid_web_logs  [input_tid]   [logs];
-        add_stream_operation   [update_state]     webp.update_user         [logs] [users]    [users];
+        add_stream_operation      [parse_input]      webp.parse_web_logs      [input]       [logs];
+        add_stream_operation      [parse_input_tid]  webp.parse_tid_web_logs  [input_tid]   [logs];
+        add_stream_operation      [update_state]     webp.update_user         [logs] [users]    [users];
 
     }
 
@@ -114,8 +114,24 @@ script demo
 {
     code
     {
+
         remove_all_stream;
-        init_stream webp.web_profiling;
+
+		# ----------------------------------------------------------------
+		# Input queues
+		# ----------------------------------------------------------------        
+		alias [input]          in_web_logs;
+        alias [input_tid]      in_tid_web_logs;
+		# ----------------------------------------------------------------
+		
+		# ----------------------------------------------------------------
+		# wep profiling stream block
+		# ----------------------------------------------------------------
+        init_stream webp webp.web_profiling;
+		add_queue_connection [input]     webp.in_input;
+		add_queue_connection [input_tid] webp.in_input_tid;
+		# ----------------------------------------------------------------
+
     }
 
     helpLine "Demo about web profiling"

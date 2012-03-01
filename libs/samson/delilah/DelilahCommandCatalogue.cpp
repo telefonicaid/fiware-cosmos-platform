@@ -188,6 +188,18 @@ namespace samson
             "Unset value of an enviroment property associated to a stream operation ( defined with add_stream_operation )",
             "unset_stream_operation_property stream_operation_name variable_name");
         
+        
+        add( "add_queue_connection"    , "stream" ,  
+            "Connect a particular queue with a set of queues. All data inserted in the first queue will be redirected to the other ones",
+            "add_queue_connection source_queue target_queue_1 target_queue_2 ... target_queue_N ");
+
+        add( "rm_queue_connection"    , "stream" ,  
+            "Remove a queue connected stablished with add_queue_connection",
+            "rm_queue_connection source_queue target_queue");
+        
+        add( "ls_queues_connections"    , "stream" ,  
+            "Show queue_connections defined with the add_queue_connection command");
+        
         add( "ps_stream" , "stream" ,
             "Get a list of current stream tasks currently running in all workers"
             );
@@ -205,9 +217,9 @@ namespace samson
             );
         
         
-        add( "ls_worker_commands"  , "stream" , 
+        add( "ls_workers_commands"  , "stream" , 
             "Show a list of commands being executed in each node of the cluster",
-            "ls_worker_commands <command pattern>\n"
+            "ls_workers_commands <command pattern>\n"
             );
 
         

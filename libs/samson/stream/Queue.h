@@ -128,7 +128,7 @@ namespace samson {
 
             
             // Query function
-            void fill( samson::network::CollectionRecord* record , VisualitzationOptions options );
+            void fill( samson::network::CollectionRecord* record , Visualization* visualization );
             
         private:
 

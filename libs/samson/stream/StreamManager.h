@@ -32,6 +32,7 @@
 #include "samson/common/EnvironmentOperations.h"
 
 #include "samson/stream/QueueTaskManager.h" // samson::stream::QueueTaskManager
+#include "samson/stream/QueueConnections.h"
 
 namespace samson {
     
@@ -70,6 +71,9 @@ namespace samson {
             // Map of stream operaitons
             au::map <std::string , StreamOperation> stream_operations;
 
+            // Map of quuee connections
+            au::map <std::string , QueueConnections > queue_connections;
+            
         public:
             
             // Manager of the tasks associated with the queues
@@ -128,6 +132,14 @@ namespace samson {
             Status set_stream_operation_property( std::string name , std::string property, std::string value );
             Status unset_stream_operation_property( std::string name , std::string property );
             StreamOperation* getStreamOperation( std::string name );
+
+            // ------------------------------------------------------------
+            // Operations over queue connections
+            // ------------------------------------------------------------
+            
+            void add_queue_connection( std::string source_queue , std::string target_queue );
+            void remove_queue_connection( std::string source_queue , std::string target_queue );
+            
             
             // Get information for monitoring
             void getInfo( std::ostringstream& output);
@@ -149,14 +161,14 @@ namespace samson {
             void notifyFinishTask( SystemQueueTask *task );
 
             // Get collections from a command ( ls_queue , .... )
-            samson::network::Collection* getCollection(VisualitzationOptions options ,  std::string pattern );
-
+            samson::network::Collection* getCollection( Visualization* visualizaton );
             samson::network::Collection* getCollectionForStreamOperations(VisualitzationOptions options ,  std::string pattern );
+            samson::network::Collection* getCollectionForQueueConnections( Visualization* visualizaton );
+            samson::network::Collection* getCollectionForStreamBlock( std::string path , Visualization* visualizaton );
             
             
             // Get a pointer to a particular queue
             Queue* getQueue( std::string name );
-            
             
             // Get value for a particular state
             std::string getState( std::string queue_name , const char * key );
@@ -167,7 +179,8 @@ namespace samson {
             
             void saveStateToDisk();
             void recoverStateFromDisk();
-
+            
+            
             
         };
     }

@@ -124,8 +124,6 @@ namespace samson
         bool blockIdFromFileName( std::string fileName , size_t* worker_id , size_t *id );
 
         std::string streamManagerLogFileName();
-        std::string streamManagerAuxiliarLogFileName();
-
         
         std::string clusterInformationFileName();
         

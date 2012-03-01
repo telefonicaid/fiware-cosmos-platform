@@ -451,12 +451,7 @@ namespace samson
     {
         return _samson_working + "/log/log_stream_state.txt";
     }
-    
-    std::string SamsonSetup::streamManagerAuxiliarLogFileName()
-    {
-        return _samson_working + "/log/log_stream_state.txt";
-    }
-    
+        
     std::string SamsonSetup::clusterInformationFileName()
     {
         return _samson_working + "/log/log_cluster_information.txt";

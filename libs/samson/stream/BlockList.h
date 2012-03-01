@@ -133,7 +133,7 @@ namespace samson {
             void copyFrom( BlockList* list , KVRange range , bool exclusive , size_t max_size );
             
             // Extract blocks of data
-            void extractFrom( BlockList* list , size_t max_size );
+            void extractFrom( BlockList* list , size_t max_size = 0 );
             bool extractBlockFrom( BlockList *list );
             
             // Get information for monitoring

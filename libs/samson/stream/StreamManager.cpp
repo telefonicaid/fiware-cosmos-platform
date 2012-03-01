@@ -18,6 +18,7 @@
 
 #include "samson/common/EnvironmentOperations.h"    // copyEnviroment
 #include "samson/common/SamsonSetup.h" 
+#include "samson/common/MessagesOperations.h"
 
 #include "samson/module/ModulesManager.h"   // ModulesManager
 
@@ -176,6 +177,23 @@ namespace samson {
             // Add the blocks to the queue
             queue->push( list );
             
+            // Move data following queue_connection rules
+            QueueConnections* connections = queue_connections.findInMap( queue_name );
+            if( connections )
+            {
+                // Extract all blocks
+                BlockList tmp( "process_queue_connections" );
+                tmp.extractFrom( queue->list );
+
+                std::set<std::string>::iterator it_target_queues;
+                for( it_target_queues = connections->target_queues.begin() ; it_target_queues != connections->target_queues.end() ; it_target_queues++ )
+                {
+                    std::string target_queue = *it_target_queues;
+                    addBlocks( target_queue , &tmp );
+                }
+                
+            }
+            
             // review all the automatic operations ( maybe we can only review affected operations in the future... )
             reviewStreamOperations();            
         }
@@ -332,6 +350,7 @@ namespace samson {
         void StreamManager::reviewStreamOperations()
         {
             au::ExecesiveTimeAlarm alarm("StreamManager::reviewStreamOperations");
+
             
             while( true )
             {
@@ -413,14 +432,16 @@ namespace samson {
             }
             
             std::string fileName = SamsonSetup::shared()->streamManagerLogFileName();
-            std::string tmp_fileName = SamsonSetup::shared()->streamManagerAuxiliarLogFileName();
             
+            // Buffer to accumulate all ascii data  with state
             std::ostringstream output;
 
             // Header with time stamp
             output << "# BEGIN -- SamsonStreamManager log " << au::todayString() << "\n";
 
-            // Contents following all queues
+            // ---------------------------------------------------------------------------
+            // Queue
+            // ---------------------------------------------------------------------------
             
             au::map< std::string , Queue >::iterator it_queue;
             for ( it_queue = queues.begin() ; it_queue != queues.end() ; it_queue++)
@@ -435,10 +456,12 @@ namespace samson {
                 au::list< Block >::iterator b;
                 for ( b = queue->list->blocks.begin() ; b != queue->list->blocks.end() ; b++ )
                     output << "queue_push " << queue->name << " " << (*b)->getId() << "\n"; 
-                
-                
             }
-
+            
+            // ---------------------------------------------------------------------------
+            // Stream Operations
+            // ---------------------------------------------------------------------------
+            
             au::map< std::string , StreamOperation >::iterator it_stream_operations;
             for ( it_stream_operations = stream_operations.begin() ; it_stream_operations != stream_operations.end() ; it_stream_operations++)
             {
@@ -452,6 +475,21 @@ namespace samson {
                 output << "stream_operation_properties " << stream_operation->name << " " << stream_operation->environment.saveToString() << "\n";
                 
             }
+
+            // ---------------------------------------------------------------------------
+            // Queues Connections
+            // ---------------------------------------------------------------------------
+
+            au::map< std::string , QueueConnections >::iterator it;
+            for ( it = queue_connections.begin() ; it != queue_connections.end() ; it++)
+            {
+                QueueConnections *connections = it->second;
+                output << "# Queue connections " << connections->queue << "\n";
+                
+                // Creation command
+                output << "add_queue_connection " << connections->queue << " " << connections->str_target_queues() << "\n";
+            }
+            
             
             // Foot just to make sure we finished correctly
             output << "# END -- SamsonStreamManager log " << au::todayString() << "\n";
@@ -469,29 +507,9 @@ namespace samson {
             // Copy content of the buffer
             buffer->write( (char*) state_string.c_str() , state_string.length() );
             
-            engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer  ,  tmp_fileName , getEngineId()  );
+            engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer  ,  fileName , getEngineId()  );
             operation->environment.set("save_stream_state" , "yes" );
             engine::DiskManager::shared()->add( operation );
-            
-            /*
-            
-            FILE *file = fopen( tmp_fileName.c_str() , "w" );
-            if( !file )
-                LM_X(1,("Not possible to write stream log at %s" , tmp_fileName.c_str() ));
-
-            std::string content = output.str();
-            int w = fwrite( content.c_str() , content.length() + 1 , 1 , file );
-            if( w != 1 )
-                LM_X(1,( "Error while writing stream log at %s" , tmp_fileName.c_str() ));
-
-            fclose( file );
-            
-            int r = rename( tmp_fileName.c_str() , fileName.c_str() );
-            
-            if( r!= 0 )
-                LM_X(1,( "Error renaming log-file from stream data from %s to %s" , tmp_fileName.c_str() , fileName.c_str() ));
-             */
-            
             
         }
 
@@ -655,7 +673,19 @@ namespace samson {
                             else
                                 LM_W(("Not possible to recover state of stream operation %s since it does not exist. Skipping..." , stream_operation_name.c_str() ));
                             
-                        }                        
+                        }  
+                        else if ( main_command == "add_queue_connection" )
+                        {
+                            if ( commandLine.get_num_arguments() < 3 )
+                                continue;
+                            
+                            std::string queue_source = commandLine.get_argument(1);
+                            for ( int i = 2 ; i < commandLine.get_num_arguments() ; i++ )
+                            {
+                                std::string queue_target = commandLine.get_argument(i);
+                                add_queue_connection( queue_source, queue_target);
+                            }
+                        }
                         else
                         {
                             LM_W(("Ignoring message from stream-manager recovering: '%s'" , line ));
@@ -743,7 +773,7 @@ namespace samson {
             }
         }
         
-        samson::network::Collection* StreamManager::getCollection(VisualitzationOptions options ,  std::string pattern )
+        samson::network::Collection* StreamManager::getCollection( Visualization* visualizaton )
         {
             samson::network::Collection* collection = new samson::network::Collection();
             collection->set_name("queues");
@@ -751,11 +781,26 @@ namespace samson {
             for( it_queue = queues.begin() ; it_queue != queues.end() ; it_queue++ )
             {
                 std::string name = it_queue->second->name;
-                if( match( pattern , name ) )
-                   it_queue->second->fill( collection->add_record() , options );
+                if( match( visualizaton->pattern , name ) )
+                   it_queue->second->fill( collection->add_record() , visualizaton );
             }
             return collection;
         }
+        
+        samson::network::Collection* StreamManager::getCollectionForQueueConnections( Visualization* visualizaton )
+        {
+            samson::network::Collection* collection = new samson::network::Collection();
+            collection->set_name("queue_connections");
+            au::map< std::string , QueueConnections >::iterator it;
+            for( it = queue_connections.begin() ; it != queue_connections.end() ; it++ )
+            {
+                std::string name = it->second->queue;
+                if( match( visualizaton->pattern , name ) )
+                    it->second->fill( collection->add_record() , visualizaton );
+            }
+            return collection;
+        }
+        
         
         samson::network::Collection* StreamManager::getCollectionForStreamOperations(
                                                 VisualitzationOptions options 
@@ -773,6 +818,219 @@ namespace samson {
             return collection;
             
         }
+        
+        
+        samson::network::Collection* StreamManager::getCollectionForStreamBlock( std::string path , Visualization* visualizaton )
+        {
+            std::string pattern_inputs;
+            std::string pattern_states;
+            std::string pattern_outputs;
+            
+            pattern_inputs += path;
+            pattern_states += path;
+            pattern_outputs += path;
+            
+            pattern_inputs  += "in_*";
+            pattern_states  += "s_*";
+            pattern_outputs += "out_*";
+
+            samson::network::Collection* collection = new samson::network::Collection();
+            collection->set_name("stream_block");
+            
+            
+            // Input queues            
+            Visualization queue_visualization;
+            if( visualizaton->options == rates )
+                queue_visualization.options = stream_block_rates;
+            else
+                queue_visualization.options = stream_block;
+            
+            {
+                queue_visualization.environment.set("type","input");
+                au::map< std::string , Queue >::iterator it_queue;
+                for( it_queue = queues.begin() ; it_queue != queues.end() ; it_queue++ )
+                {
+                    std::string name = it_queue->second->name;
+                    if( match( pattern_inputs , name ) )
+                        it_queue->second->fill( collection->add_record() , &queue_visualization );
+                }
+            }
+            
+            // State queues            
+            {
+                queue_visualization.environment.set("type","state");
+                au::map< std::string , Queue >::iterator it_queue;
+                for( it_queue = queues.begin() ; it_queue != queues.end() ; it_queue++ )
+                {
+                    std::string name = it_queue->second->name;
+                    if( match( pattern_states , name ) )
+                        it_queue->second->fill( collection->add_record() , &queue_visualization );
+                }
+            }
+            
+            // Output queues            
+            {
+                queue_visualization.environment.set("type","output");
+                au::map< std::string , Queue >::iterator it_queue;
+                for( it_queue = queues.begin() ; it_queue != queues.end() ; it_queue++ )
+                {
+                    std::string name = it_queue->second->name;
+                    if( match( pattern_outputs , name ) )
+                        it_queue->second->fill( collection->add_record() , &queue_visualization );
+                }
+            }
+            
+            // Stream blocks inside.....
+            // ------------------------------------------------------------------------
+            std::string stream_block_pattern = path + "*.*";
+            std::set<std::string> stream_blocks;
+            {
+                au::map< std::string , Queue >::iterator it_queue;
+                for( it_queue = queues.begin() ; it_queue != queues.end() ; it_queue++ )
+                {
+                    std::string name = it_queue->second->name;
+                    if( match( stream_block_pattern , name ) )
+                    {
+                        size_t init = path.length();
+                        size_t finish = name.find(".",path.length());
+                        if( finish != std::string::npos )
+                        {
+                            std::string stream_block_name = name.substr( init , finish-init );
+                            stream_blocks.insert(stream_block_name);
+
+                        }
+                    }
+                }
+            }
+            
+            
+            std::set<std::string>::iterator it_stream_blocks;
+            for( it_stream_blocks = stream_blocks.begin() ; it_stream_blocks != stream_blocks.end() ; it_stream_blocks++ )
+            {
+                network::CollectionRecord * record = collection->add_record();
+                
+                std::string stream_name = *it_stream_blocks;
+                
+                std::string pattern_in = path + stream_name    + ".in_*";
+                std::string pattern_state = path + stream_name + ".s_*";
+                std::string pattern_out = path + stream_name   + ".out_*";
+
+                
+                
+                if( visualizaton->options == rates )
+                {
+                    size_t in_kvs=0;
+                    size_t in_size=0;
+                    size_t state_kvs=0;
+                    size_t state_size=0;
+                    size_t out_kvs=0;
+                    size_t out_size=0;
+
+                    au::map< std::string , Queue >::iterator it_queue;
+                    for( it_queue = queues.begin() ; it_queue != queues.end() ; it_queue++ )
+                    {
+                        Queue *queue = it_queue->second;
+                        std::string name = queue->name;
+                        
+                        if( match( pattern_in , name ) )
+                        {
+                            in_kvs += queue->rate.get_rate_kvs();
+                            in_size += queue->rate.get_rate_size();
+                        }
+                        
+                        if( match( pattern_state , name ) )
+                        {
+                            state_kvs += queue->rate.get_rate_kvs();
+                            state_size += queue->rate.get_rate_size();
+                        }
+                        
+                        if( match( pattern_out , name ) )
+                        {
+                            out_kvs += queue->rate.get_rate_kvs();
+                            out_size += queue->rate.get_rate_size();
+                        }
+                    }
+                    
+                    ::samson::add( record , "type" , "block" , "left,different" );
+                    ::samson::add( record , "name" , stream_name , "left,different" );
+                    ::samson::add( record , "In: #kvs/s" , in_kvs , "f=uint64,sum" );
+                    ::samson::add( record , "In: size/s" , in_size , "f=uint64,sum" );
+                    ::samson::add( record , "State: #kvs/s" , state_kvs , "f=uint64,sum" );
+                    ::samson::add( record , "State: size/s" , state_size , "f=uint64,sum" );
+                    ::samson::add( record , "Out: #kvs/s" , out_kvs , "f=uint64,sum" );
+                    ::samson::add( record , "Out: size/s" , out_size , "f=uint64,sum" );
+                }
+                else
+                {
+                    size_t in_kvs=0;
+                    size_t in_size=0;
+                    size_t state_kvs=0;
+                    size_t state_size=0;
+                    size_t out_kvs=0;
+                    size_t out_size=0;
+                    
+                    au::map< std::string , Queue >::iterator it_queue;
+                    for( it_queue = queues.begin() ; it_queue != queues.end() ; it_queue++ )
+                    {
+                        Queue *queue = it_queue->second;
+                        std::string name = queue->name;
+                        
+                        if( match( pattern_in , name ) )
+                        {
+                            BlockInfo blockInfo;
+                            queue->update( blockInfo );
+                            in_kvs += blockInfo.info.kvs;
+                            in_size += blockInfo.info.size;
+                        }
+                        
+                        if( match( pattern_state , name ) )
+                        {
+                            BlockInfo blockInfo;
+                            queue->update( blockInfo );
+                            state_kvs += blockInfo.info.kvs;
+                            state_size += blockInfo.info.size;
+                        }
+                        
+                        if( match( pattern_out , name ) )
+                        {
+                            BlockInfo blockInfo;
+                            queue->update( blockInfo );
+                            out_kvs += blockInfo.info.kvs;
+                            out_size += blockInfo.info.size;
+                        }
+                    }
+                    ::samson::add( record , "type" , "block" , "left,different" );
+                    ::samson::add( record , "name" , stream_name , "left,different" );
+                    ::samson::add( record , "In: #kvs" , in_kvs , "f=uint64,sum" );
+                    ::samson::add( record , "In: size" , in_size , "f=uint64,sum" );
+                    ::samson::add( record , "State: #kvs" , state_kvs , "f=uint64,sum" );
+                    ::samson::add( record , "State: size" , state_size , "f=uint64,sum" );
+                    ::samson::add( record , "Out: #kvs" , out_kvs , "f=uint64,sum" );
+                    ::samson::add( record , "Out: size" , out_size , "f=uint64,sum" );
+                }                    
+                        
+                
+                
+            }
+                
+                
+            // Internal states visualitzation....
+            std::string internal_state_pattern = path + "*.s_*";
+            {
+                queue_visualization.environment.set("type","internal_state");
+                au::map< std::string , Queue >::iterator it_queue;
+                for( it_queue = queues.begin() ; it_queue != queues.end() ; it_queue++ )
+                {
+                    std::string name = it_queue->second->name;
+                    if( match( internal_state_pattern , name ) )
+                        it_queue->second->fill( collection->add_record() , &queue_visualization );
+                }
+            }
+            
+            return collection;
+        }
+                             
+        
 
         
         void StreamManager::reset()
@@ -783,10 +1041,38 @@ namespace samson {
 
             // Remove automatic stream operations...
             stream_operations.clearMap();
+
+            // Remove queue connections
+            queue_connections.clearMap();
             
             // Pending study about how to do this..
             //workerCommands.clearMap();
+        }
 
+        void StreamManager::add_queue_connection( std::string source_queue , std::string target_queue )
+        {
+            // Create the queue if not previously created
+            getQueue( source_queue );
+            getQueue( target_queue );
+            
+            QueueConnections *connections = queue_connections.findOrCreate(source_queue);
+            connections->queue = source_queue;
+            connections->add_connection( target_queue );
+        }
+        
+        void StreamManager::remove_queue_connection( std::string source_queue , std::string target_queue )
+        {
+            QueueConnections * connections = queue_connections.findInMap( source_queue );
+            if( ! connections )
+                return;
+            
+            connections->remove_connection( target_queue );
+            
+            if( !connections->hasConnections() )
+            {
+                queue_connections.extractFromMap( source_queue );
+                delete connections;
+            }
         }
         
         std::string StreamManager::getState( std::string queue_name , const char * key )
@@ -907,9 +1193,5 @@ namespace samson {
             
         }
 
-
-        
-
-        
     }
 }

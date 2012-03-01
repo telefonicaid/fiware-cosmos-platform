@@ -9,6 +9,7 @@ SET (HEADERS
     StreamOperation.h
     QueueTaskManager.h
     Queue.h
+	QueueConnections.h
 	QueueTaskBase.h
     QueueTask.h
 	SystemQueueTask.h
@@ -32,6 +33,7 @@ SET (SOURCES
     StreamOperation.cpp
     QueueTaskManager.cpp
     Queue.cpp
+	QueueConnections.cpp
 	QueueTaskBase.cpp
     QueueTask.cpp
 	SystemQueueTask.cpp

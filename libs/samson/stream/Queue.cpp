@@ -363,8 +363,11 @@ namespace samson {
             
         }
         
-        void Queue::fill( samson::network::CollectionRecord* record , VisualitzationOptions options )
+        void Queue::fill( samson::network::CollectionRecord* record , Visualization* visualization )
         {
+            
+            // Get the options
+            VisualitzationOptions options = visualization->options;
               
             // Get block information for this queue
             BlockInfo blockInfo;
@@ -379,6 +382,119 @@ namespace samson {
                 last_component_name = name.substr( pos+1 );
              */
 
+            
+            if( options == stream_block )
+            {
+                std::string type = visualization->environment.get("type" , "unknown" );
+                
+                if( type == "input" )
+                {
+                    add( record , "type" , type , "left,different" );
+                    add( record , "name" , name , "left,different" );
+                    add( record , "In: #kvs" , blockInfo.info.kvs , "f=uint64,sum" );
+                    add( record , "In: size" , blockInfo.info.size , "f=uint64,sum" );
+                    add( record , "State: #kvs" , "" , "f=uint64,sum" );
+                    add( record , "State: size" , "" , "f=uint64,sum" );
+                    add( record , "Out: #kvs" , "" , "f=uint64,sum" );
+                    add( record , "Out: size" , "" , "f=uint64,sum" );
+                }
+
+                if( type == "state" )
+                {
+                    add( record , "type" , type , "left,different" );
+                    add( record , "name" , name , "left,different" );
+                    add( record , "In: #kvs" , "" , "f=uint64,sum" );
+                    add( record , "In: size" , "" , "f=uint64,sum" );
+                    add( record , "State: #kvs" , blockInfo.info.kvs , "f=uint64,sum" );
+                    add( record , "State: size" , blockInfo.info.size , "f=uint64,sum" );
+                    add( record , "Out: #kvs" , "" , "f=uint64,sum" );
+                    add( record , "Out: size" , "" , "f=uint64,sum" );
+                }
+                
+                if( type == "output" )
+                {
+                    add( record , "type" , type , "left,different" );
+                    add( record , "name" , name , "left,different" );
+                    add( record , "In: #kvs" , "" , "f=uint64,sum" );
+                    add( record , "In: size" , "" , "f=uint64,sum" );
+                    add( record , "State: #kvs" , "" , "f=uint64,sum" );
+                    add( record , "State: size" , "" , "f=uint64,sum" );
+                    add( record , "Out: #kvs" , blockInfo.info.kvs , "f=uint64,sum" );
+                    add( record , "Out: size" , blockInfo.info.size , "f=uint64,sum" );
+                }
+                
+                if( type == "internal_state" )
+                {
+                    add( record , "type" , type , "left,different" );
+                    add( record , "name" , name , "left,different" );
+                    add( record , "In: #kvs" , "" , "f=uint64,sum" );
+                    add( record , "In: size" , "" , "f=uint64,sum" );
+                    add( record , "State: #kvs" , blockInfo.info.kvs , "f=uint64,sum" );
+                    add( record , "State: size" , blockInfo.info.size , "f=uint64,sum" );
+                    add( record , "Out: #kvs" , "" , "f=uint64,sum" );
+                    add( record , "Out: size" , "" , "f=uint64,sum" );
+                }
+                
+                return;
+            }
+            
+            
+            if( options == stream_block_rates )
+            {
+                std::string type = visualization->environment.get("type" , "unknown" );
+                
+                if( type == "input" )
+                {
+                    add( record , "type" , type , "left,different" );
+                    add( record , "name" , name , "left,different" );
+                    add( record , "In: #kvs/s" , rate.get_rate_kvs() , "f=uint64,sum" );
+                    add( record , "In: size/s" , rate.get_rate_size() , "f=uint64,sum" );
+                    add( record , "State: #kvs/s" , "" , "f=uint64,sum" );
+                    add( record , "State: size/s" , "" , "f=uint64,sum" );
+                    add( record , "Out: #kvs/s" , "" , "f=uint64,sum" );
+                    add( record , "Out: size/s" , "" , "f=uint64,sum" );
+                }
+                
+                if( type == "state" )
+                {
+                    add( record , "type" , type , "left,different" );
+                    add( record , "name" , name , "left,different" );
+                    add( record , "In: #kvs/s" , "" , "f=uint64,sum" );
+                    add( record , "In: size/s" , "" , "f=uint64,sum" );
+                    add( record , "State: #kvs/s" , rate.get_rate_kvs() , "f=uint64,sum" );
+                    add( record , "State: size/s" , rate.get_rate_size() , "f=uint64,sum" );
+                    add( record , "Out: #kvs/s" , "" , "f=uint64,sum" );
+                    add( record , "Out: size/s" , "" , "f=uint64,sum" );
+                }
+                
+                if( type == "output" )
+                {
+                    add( record , "type" , type , "left,different" );
+                    add( record , "name" , name , "left,different" );
+                    add( record , "In: #kvs/s" , "" , "f=uint64,sum" );
+                    add( record , "In: size/s" , "" , "f=uint64,sum" );
+                    add( record , "State: #kvs/s" , "" , "f=uint64,sum" );
+                    add( record , "State: size/s" , "" , "f=uint64,sum" );
+                    add( record , "Out: #kvs/s" , rate.get_rate_kvs() , "f=uint64,sum" );
+                    add( record , "Out: size/s" , rate.get_rate_size() , "f=uint64,sum" );
+                }
+                
+                if( type == "internal_state" )
+                {
+                    add( record , "type" , type , "left,different" );
+                    add( record , "name" , name , "left,different" );
+                    add( record , "In: #kvs/s" , "" , "f=uint64,sum" );
+                    add( record , "In: size/s" , "" , "f=uint64,sum" );
+                    add( record , "State: #kvs/s" ,rate.get_rate_kvs() , "f=uint64,sum" );
+                    add( record , "State: size/s" , rate.get_rate_size() , "f=uint64,sum" );
+                    add( record , "Out: #kvs/s" , "" , "f=uint64,sum" );
+                    add( record , "Out: size/s" , "" , "f=uint64,sum" );
+                }
+                
+                return;
+            }
+            
+            
             // Spetial case for properties...
             if( options == properties )
             {

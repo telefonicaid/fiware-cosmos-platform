@@ -16,9 +16,9 @@ urlpatterns = patterns('',
 
     # Initial Page
     #url(r'^home/', 'wizard.views.views.home'),
-    url(r'^$', 'wizard.views.views.home', name='home'),
+    url(r'^monitoring/$', 'wizard.views.views.home', name='home'),
     # Uncomment the next line to enable the admin:
-    url(r'^admin/', include(admin.site.urls)),
+    #url(r'^admin/', include(admin.site.urls)),
     
     # Include Wizard views
     

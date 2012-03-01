@@ -50,6 +50,7 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     formatLayout = new QHBoxLayout();
     rateLayout = new QHBoxLayout();
     blocksLayout = new QHBoxLayout();
+    connectButtonLayout = new QHBoxLayout();
 
     sizeBox = new QGroupBox("Size", this);
     formatBox = new QGroupBox("Format", this);
@@ -200,6 +201,7 @@ void ExtQueueViewer::setData(QueueData* newData)
 void ExtQueueViewer::updateFeed(std::string line)
 {
     queueFeed->append(QString(line.c_str()) + QString("\n"));
+    queueFeed->ensureCursorVisible();    
 }
 
 } //namespace

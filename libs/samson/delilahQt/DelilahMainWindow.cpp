@@ -167,17 +167,19 @@ namespace samson
         if(button->isChecked())
         {
             emit(connectedQueue(queueViewer->title));
+            button->setText("Disconnect from this Queue");
         }
         else
         {
             emit(disconnectedQueue(queueViewer->title));
+            button->setText("Connect to this Queue");
         }
 
     }
 
-    void DelilahMainWindow::updateQueuesFeed(std::string data)
+    void DelilahMainWindow::updateQueuesFeed(std::string queuename, std::string data)
     {
-        ExtQueueViewer* queue = findQueueTab(data);
+        ExtQueueViewer* queue = findQueueTab(queuename);
         if(queue) queue->updateFeed(data);
     }
 

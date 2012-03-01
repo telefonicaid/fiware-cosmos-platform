@@ -118,7 +118,7 @@ namespace samson
         {
             std::stringstream line;
             line << "Received buffer with size " << au::str(size,"B") << " from queue " << queue;
-            mainWindow->updateQueuesFeed(line.str());
+            mainWindow->updateQueuesFeed(queue, line.str());
         }
     }
 

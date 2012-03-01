@@ -35,11 +35,11 @@ QueueViewer::QueueViewer(std::string _title, QWidget* parent): QWidget(parent)
     boldFont = name->font();
     boldFont.setBold(true);
     name->setFont(boldFont);
-    kvs = new QLineEdit(this);
+    kvs = new QLabel("#Kvs: ", this);
     kvsDigits = new QLabel(this);
     bigFont = kvsDigits->font();
     bigFont.setFamily("Helvetica"); 
-    bigFont.setPointSize(bigFont.pointSize()*1.5f);
+    bigFont.setPointSize(bigFont.pointSize()*1.2f);
     kvsDigits->setFont(bigFont);
     kvsDigits->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     kvsDigits->setLineWidth(2);

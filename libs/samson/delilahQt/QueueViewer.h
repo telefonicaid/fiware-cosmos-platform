@@ -48,7 +48,7 @@ class QueueViewer: public QWidget
         //QHBoxLayout* layout;
         
         QLabel* name;
-        QLineEdit* kvs;
+        QLabel* kvs;
         QLabel* kvsDigits; 
         QLabel* kvs_s;
         QLabel* kvs_sDigits; 

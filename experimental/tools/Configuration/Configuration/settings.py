@@ -12,10 +12,10 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django_mongodb_engine', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'PSTTT',                      # Or path to database file if using sqlite3.
+        'NAME': 'PSDemo',                      # Or path to database file if using sqlite3.
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': 'localhost', # psmongo1                     # Set to empty string for localhost. Not used with sqlite3.
+        'HOST': 'psmongo1', # psmongo1                     # Set to empty string for localhost. Not used with sqlite3.
         'PORT': 27017,                      # Set to empty string for default. Not used with sqlite3.
     }
 }

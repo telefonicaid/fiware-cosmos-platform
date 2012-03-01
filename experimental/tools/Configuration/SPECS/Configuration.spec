@@ -1,10 +1,11 @@
+Release:r001
 Summary: Monitoring Tool
-Name: monitoring 
+Name: Configuration
 Version: 0.1
-License:  def, jjgazol 
+License:  def, jjgazol
 # TODO: Find the standard group that fits the Visualization Tools
 Group: Applications/Internet
-Source0: monitoring.zip
+Source0: Configuration.tar.gz
 # Warning! Despite the name, the build-root dir will be the INSTALL-root dir (coincident in this case, but not necessarily)
 BuildRoot: %{_topdir}/BUILD
 # RPM requirements
@@ -28,7 +29,7 @@ This RPM contains the PSSuite visualization tool
 #  -q: keep quiet (do not output unpacking info)
 #  -n <name>: specified dir name to replace default one (<name>-<version>)
 %prep
-%setup -q -n monitoring
+%setup -q -n Configuration
 
 
 %build
@@ -46,7 +47,7 @@ then
 fi
 
 # Copy the Viz Tool to its destination
-cp -R %{_topdir}/BUILD/ps-tools $RPM_BUILD_ROOT%{_psappdir}/.
+cp -R %{_topdir}/BUILD/Configuration $RPM_BUILD_ROOT%{_psappdir}/.
 
 
 
@@ -66,25 +67,3 @@ fi
 /etc/init.d/httpd restart
 
 echo 'Monitor Tool has been installed!'
-
-# -------------------------------------------------------------------------------------------- #
-# post-uninstall section:
-# -------------------------------------------------------------------------------------------- #
-%postun
-# Restart Apache
-/etc/init.d/httpd restart
-
-echo 'Monitor Tool has been uninstalled!'
-
-%clean
-rm -rf $RPM_BUILD_ROOT/*
-
-%files
-%defattr(-, perserver, perserver)
-# Specify application dir
-%{_psappdir}/ps-bigData
-# Specify config file
-
-
-
-

@@ -1,0 +1,9 @@
+%_signature gpg
+%_gpg_path /home/develenv/.gnupg
+%_gpg_name BDP2012
+%_gpgbin /usr/bin/gpg
+
+%_topdir /home/develenv/app/jenkins/jobs/Configuration/workspace/Configuration
+%_psappdir /usr/local/ps/apps/ps-bigData
+%_apacheconfdir /etc/httpd/conf.d
+

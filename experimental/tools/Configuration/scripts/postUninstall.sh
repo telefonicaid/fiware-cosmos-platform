@@ -8,10 +8,10 @@ fi
 
 if [ $1 -eq  0 ]; then
     root_folder="/usr/local/ps"
-    rmdir $root_folder/apps/psapi
+    rmdir $root_folder/apps/bdp
 
     osuser=perserver
-    su - $osuser -c "rm /etc/httpd/conf.d/psapi.conf"
+    su - $osuser -c "rm /etc/httpd/conf.d/monitoring.conf"
     sudo /etc/init.d/httpd restart
 fi
 

@@ -35,7 +35,7 @@ QueueViewer::QueueViewer(std::string _title, QWidget* parent): QWidget(parent)
     boldFont = name->font();
     boldFont.setBold(true);
     name->setFont(boldFont);
-    kvs = new QLabel("KVs: ", this);
+    kvs = new QLineEdit(this);
     kvsDigits = new QLabel(this);
     bigFont = kvsDigits->font();
     bigFont.setFamily("Helvetica"); 
@@ -133,5 +133,11 @@ void QueueViewer::onDetailsClicked()
 {
     emit detailsClicked();
 }
+
+void QueueViewer::destroyWidget()
+{
+    destroy(true,true);
+}
+
 
 } //namespace

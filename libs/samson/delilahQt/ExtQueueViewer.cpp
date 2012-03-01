@@ -109,13 +109,26 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     time_to = new QLabel("0", blocksBox);
     time_to->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 
+
+    //Feed connection
+    connectButton = new QPushButton("Connect to this queue", this);
+    connectButton->setCheckable(true);
+    queueFeed = new QTextEdit(this);
+    queueFeed->setReadOnly(true);
+    
+    
     mainLayout->addWidget(name);
     mainLayout->addLayout(generalLayout);
     mainLayout->addWidget(rateBox);
     mainLayout->addWidget(sizeBox);
     mainLayout->addWidget(blocksBox);
+    mainLayout->addLayout(connectButtonLayout);
+    mainLayout->addWidget(queueFeed);
     mainLayout->addStretch();
     
+    connectButtonLayout->addWidget(connectButton);
+    connectButtonLayout->addStretch();
+
     generalLayout->addWidget(sizeBox);
     generalLayout->addWidget(formatBox);
     generalLayout->addStretch();
@@ -183,6 +196,10 @@ void ExtQueueViewer::setData(QueueData* newData)
         locked->setText(QString(au::str(strtoul(data.locked.c_str(), NULL, 0)).c_str()));
         time_from->setText(QString(au::str_time(strtoul(data.time_from.c_str(), NULL, 0)).c_str()));
         time_to->setText(QString(au::str_time(strtoul(data.time_to.c_str(), NULL, 0)).c_str()));
+}
+void ExtQueueViewer::updateFeed(std::string line)
+{
+    queueFeed->append(QString(line.c_str()) + QString("\n"));
 }
 
 } //namespace

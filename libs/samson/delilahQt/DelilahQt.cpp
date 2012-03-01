@@ -100,6 +100,8 @@ namespace samson
 
         connect(timer, SIGNAL(timeout()), this, SLOT(updateData()));
         connect(mainWindow, SIGNAL(requestUpdate()), this, SLOT(updateData()));
+        connect(mainWindow, SIGNAL(connectedQueue(std::string)), this, SLOT(onConnectedQueue(std::string)));
+        connect(mainWindow, SIGNAL(disconnectedQueue(std::string)), this, SLOT(onDisconnectedQueue(std::string)));
         connect(timer, SIGNAL(timeout()), mainWindow, SLOT(update()));
         //connect(this, SIGNAL(enginesTextValueChanged(const QString&)), mainWindow->enginesText, SLOT(setText(const QString&)));
         //connect(this, SIGNAL(queuesTextValueChanged(const QString&)), mainWindow->queuesText, SLOT(setText(const QString&)));
@@ -111,7 +113,24 @@ namespace samson
     {
         size_t size = buffer->getSize();
         LM_M(("Received buffer with size %s from queue %s" , au::str(size,"B").c_str() , queue.c_str() )  );
+   //std::cout << "Received buffer with size " << au::str(size,"B") << " from queue " << queue << std::endl;
+        if(connectedQueues.find(queue) != connectedQueues.end())
+        {
+            std::stringstream line;
+            line << "Received buffer with size " << au::str(size,"B") << " from queue " << queue;
+            mainWindow->updateQueuesFeed(line.str());
+        }
     }
 
-    
+    void DelilahQt::onConnectedQueue(std::string name)
+    {
+        connectedQueues[name] = true;
+        sendWorkerCommand( au::str("connect_to_queue %s" , name.c_str() ) , NULL );
+
+    }
+    void DelilahQt::onDisconnectedQueue(std::string name)
+    {
+        connectedQueues.erase(name);
+        sendWorkerCommand( au::str("disconnect_from_queue %s" , name.c_str() ) , NULL );
+    }
 }

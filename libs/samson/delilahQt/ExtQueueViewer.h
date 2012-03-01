@@ -54,7 +54,12 @@ class ExtQueueViewer: public QWidget
         void setData(QueueData* newData);
         void setTitle(std::string title);
         void setHiddenButton(bool hidden);
+        void updateFeed(std::string line);
         //void setLayout(QGridLayout* layout, int row);
+
+        //we make this button public to be able to connect to it from DelilahMainWindow
+        QPushButton* connectButton;
+        QTextEdit* queueFeed;
 
     private:
         QLabel* name;
@@ -89,12 +94,16 @@ class ExtQueueViewer: public QWidget
         QLabel* time_toLabel;
         QLabel* time_to;
         
+        //QPushButton* connectButton;
+        //QTextEdit* queueFeed;
+        
         QGroupBox* sizeBox;
         QGroupBox* formatBox;
         QGroupBox* rateBox;
         QGroupBox* blocksBox;
         
         QVBoxLayout* mainLayout;
+        QHBoxLayout* connectButtonLayout;
         QHBoxLayout* generalLayout;
         QHBoxLayout* sizeLayout;
         QHBoxLayout* formatLayout;

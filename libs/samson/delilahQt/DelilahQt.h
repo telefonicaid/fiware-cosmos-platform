@@ -19,6 +19,8 @@
 #include <QObject>
 #include <QtGui>
 
+#include <map>
+
 namespace samson {
 	
 	/**
@@ -31,7 +33,7 @@ namespace samson {
 		
 	public:
 		
-		DelilahQt( NetworkInterface *network );        
+		DelilahQt( NetworkInterface *network );     
         
         // Main run command ( it should be blocking )
         void run();
@@ -42,9 +44,13 @@ namespace samson {
     public slots:
         //void setData();
         void updateData();
+        void onConnectedQueue(std::string name);
+        void onDisconnectedQueue(std::string name);
         
     private:
         DelilahMainWindow* mainWindow;
+        //store the name list in a map for quick access using its hash table
+        std::map<std::string, bool> connectedQueues;
 
         
     public:

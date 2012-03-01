@@ -116,6 +116,7 @@ namespace samson
             emit requestUpdate();
             tabbedQueue->setData(&(queue->data));
             tabs->setCurrentWidget(tabbedQueue);
+            connect(tabbedQueue->connectButton,SIGNAL(clicked()), this, SLOT(onConnectButtonClicked())); 
         }
     }
     
@@ -158,5 +159,27 @@ namespace samson
             tabs->removeTab(tabs->indexOf(queueTmp));
         }
     }
+    
+    void DelilahMainWindow::onConnectButtonClicked()
+    {
+        QPushButton* button = (QPushButton*)sender();
+        ExtQueueViewer* queueViewer = (ExtQueueViewer*)button->parent();
+        if(button->isChecked())
+        {
+            emit(connectedQueue(queueViewer->title));
+        }
+        else
+        {
+            emit(disconnectedQueue(queueViewer->title));
+        }
+
+    }
+
+    void DelilahMainWindow::updateQueuesFeed(std::string data)
+    {
+        ExtQueueViewer* queue = findQueueTab(data);
+        if(queue) queue->updateFeed(data);
+    }
+
 
 }

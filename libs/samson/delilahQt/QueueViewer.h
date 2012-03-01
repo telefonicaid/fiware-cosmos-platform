@@ -31,19 +31,24 @@ class QueueViewer: public QWidget
         void setTitle(std::string title);
         void setHiddenButton(bool hidden);
         void setLayout(QGridLayout* layout, int row);
+        
+        void destroyWidget();
 
         QPushButton* detailsButton;
+
     signals:
         void detailsClicked();
+
     public slots:
         void onDetailsClicked();
+
     private:
         //QScrollArea* scrollArea;
         //QGroupBox* groupBox;
         //QHBoxLayout* layout;
         
         QLabel* name;
-        QLabel* kvs;
+        QLineEdit* kvs;
         QLabel* kvsDigits; 
         QLabel* kvs_s;
         QLabel* kvs_sDigits; 

@@ -1,4 +1,7 @@
 
+#ifndef _H_SAMSON_COMSCORE_MapId2Id
+#define _H_SAMSON_COMSCORE_MapId2Id
+
 #include "logMsg/logMsg.h"
 
 #include <string.h>
@@ -103,3 +106,5 @@ namespace samson
         
     }
 }
+
+#endif

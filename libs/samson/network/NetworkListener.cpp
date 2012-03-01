@@ -16,9 +16,9 @@
 
 namespace samson {
 
-    NetworkListener::NetworkListener( NetworkManager * _network_manager  )
+    NetworkListener::NetworkListener( NetworkListenerInterface * _network_listener_interface  )
     {
-        network_manager = _network_manager;
+        network_listener_interface = _network_listener_interface;
         
         rFd = -1; // Init value
         port = -1;
@@ -146,7 +146,7 @@ namespace samson {
                 SocketConnection* socket_connection = acceptNewNetworkConnection();
                 
                 // Notify this new connection
-                network_manager->newSocketConnection(this, socket_connection );
+                network_listener_interface->newSocketConnection(this, socket_connection );
             }
             
         }

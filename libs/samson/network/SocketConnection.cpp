@@ -222,10 +222,14 @@ namespace samson {
         return Error;
     }
     
-    
     Status SocketConnection::writeLine( const char* line )
     {
-        return partWrite(line, strlen(line), "write line");
+        Status s = partWrite(line, strlen(line), "write line");
+        
+        if( s!= OK )
+            close();
+        
+        return s;
     }
     
     Status SocketConnection::readLine( char* line, size_t max_size , int max_seconds )
@@ -239,7 +243,10 @@ namespace samson {
             Status s = partRead(line + tot , 1 , "web line character", max_seconds - c.diffTimeInSeconds() );
             
             if( s!= OK )
+            {
+                close();
                 return s;
+            }
 
 
             if ( ( line[tot] == '\n' ) || ( line[tot] == '\r' ) )
@@ -260,9 +267,9 @@ namespace samson {
     }
     
     
-    Status SocketConnection::partRead( void* vbuf, long bufLen , const char* what , int max_seconds )
+    Status SocketConnection::partRead( void* vbuf, size_t bufLen , const char* what , int max_seconds , size_t * readed_size )
     {
-        ssize_t  tot = 0;
+        size_t  tot = 0;
         Status   s;
         char*    buf = (char*) vbuf;
 
@@ -279,11 +286,19 @@ namespace samson {
                 s = msgAwait(1, 0, what); // Continous try with 1 second timeout to check max_seconds
                 
                 if( ( s!= OK ) && ( s!= Timeout ) )
+                {
+                    if ( readed_size )
+                        *readed_size = tot;
                     return s; // Different error, just report
+                }
                 
                 // Report timeout if max seconds is excedded
                 if( cronometer.diffTime() > max_seconds )
+                {
+                    if ( readed_size )
+                        *readed_size = tot;
                     return Timeout;
+                }
                 
             } while ( s!= OK );
 
@@ -300,11 +315,17 @@ namespace samson {
                 LM_RE(ConnectionClosed, ("read: %s, expecting '%s' from %s", strerror(errno), what, host.c_str()));
             }
             else if (nb == 0)
+            {
+                if ( readed_size )
+                    *readed_size = tot;
                 return ConnectionClosed;
+            }
             
             tot += nb;
         }
         
+        if ( readed_size )
+            *readed_size = tot;
         return OK;
     }
     

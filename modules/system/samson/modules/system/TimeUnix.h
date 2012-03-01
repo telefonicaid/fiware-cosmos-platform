@@ -66,6 +66,11 @@ public:
 		 value =  time(NULL);
 	  }
 
+	  size_t secondsSinceThisTime()
+	  {
+		 return time(NULL) - value;
+	  }
+
 
 	void operator= (int _value) {
 		value = _value;

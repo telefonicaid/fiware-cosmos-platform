@@ -130,7 +130,11 @@ namespace samson {
         
         bool isGenericKVFormat()
         {
-            return isEqual( KVFormat("*","*") );
+            if( keyFormat != "*" )
+                return false;
+            if( valueFormat != "*" )
+                return false;
+            return true;
         }
         
         static KVFormat generic()

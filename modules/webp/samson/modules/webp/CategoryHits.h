@@ -33,7 +33,17 @@ namespace webp{
 	   {
 		  // Add a hit
 		  hits.value++;
+		  current.value++;
 	   }
+
+	   void update( size_t seconds )
+	   {
+		  // Apply a forgetting factor to "current" counter
+		  double time_span = 300;
+		  double factor = ( time_span - 1 ) / time_span;
+		  current.value = current.value * pow( factor  , seconds );		  
+	   }
+	   
 
 	};
 

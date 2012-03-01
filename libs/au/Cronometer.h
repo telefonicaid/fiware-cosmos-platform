@@ -26,6 +26,7 @@
 #include <string>               // std::string
 
 #include "logMsg/logMsg.h"
+#include "logMsg/traceLevels.h"
 
 #include "au/namespace.h"
 
@@ -111,7 +112,7 @@ public:
         double t = c.diffTime();
         if(  t > max_time )
         {
-            LM_W(("Excessive time ( %.4f > %.4f secs ) for '%s' "
+            LM_T( LmtExcesiveTime , ("Excessive time ( %.4f > %.4f secs ) for '%s' "
                   ,t
                   ,max_time
                   ,title.c_str()

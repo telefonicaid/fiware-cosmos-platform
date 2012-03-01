@@ -79,34 +79,22 @@ namespace webp{
 
 		   log.user.value = fields[0];
 		   log.url.value = url;
-
-		   //LM_M(("day:%d, month:%d, year:%d", day, month, year));
-
 		   log.time.setFromDayMonthYear( day , month , year );
 
-
-		   //LM_M(("Detected log user:%s, url:%s, time:%s", log.user.value.c_str(), log.url.value.c_str(), log.time.str().c_str()));
-
-		   // Find categories for this url
+           // --------------------------------------------------------
+		   // Set categories for this url
+           // --------------------------------------------------------
 		   log.categoriesSetLength(0); // Remove categories from previous entries
-
 		   std::vector<uint> categories = samson_comscore_dictionary.getCategories( url );		   
-
-/*		   
-		   num++;
-		   if( (num%10000) == 0 )
-			  printf("Processed %lu urls in %s\n" , num , au::time_string( cronometer.diffTimeInSeconds() ).c_str() );
-*/
-
            for ( size_t i = 0 ; i < categories.size() ; i++ )
 		   {
 			  webp::Category *category = log.categoriesAdd();
-
 			  category->id.value = categories[i];
 			  category->name.value = samson_comscore_dictionary.getCategoryName( categories[i] );
 		   }
+           // --------------------------------------------------------
 
-
+           // Emit the key values
 		   writer->emit( 0 , &log.user , &log );
 
 		}

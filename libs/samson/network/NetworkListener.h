@@ -10,11 +10,19 @@
 namespace samson {
     
     class SocketConnection;
+    class NetworkListener;
+    
+    class NetworkListenerInterface
+    {
+        public:
+        
+        virtual void newSocketConnection( NetworkListener* listener , SocketConnection * socket_connetion )=0;
+    };
     
     class NetworkListener
     {
         // Network manager to be notified
-        NetworkManager * network_manager;
+        NetworkListenerInterface * network_listener_interface;
         
         // Port where we are listening
         int port;
@@ -28,7 +36,7 @@ namespace samson {
     public:
 
         // Constructor
-        NetworkListener( NetworkManager * network_manager );
+        NetworkListener( NetworkListenerInterface * _network_listener_interface );
         
         
         // Init and close functions

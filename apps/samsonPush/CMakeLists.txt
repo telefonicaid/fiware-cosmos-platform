@@ -1,8 +1,10 @@
 SET (SOURCES
+	SamsonPushConnectionsManager.cpp
     main_samsonPush.cpp
 )
 
 SET (HEADERS
+	SamsonPushConnectionsManager.h
 )
 
 SET( STATIC_LIBS

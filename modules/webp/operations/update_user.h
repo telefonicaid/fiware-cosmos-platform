@@ -47,11 +47,11 @@ namespace webp{
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
-
 		   if( inputs[1].num_kvs > 0 )
 		   {
 			  user_id.parse( inputs[1].kvs[0]->key );
 			  user.parse( inputs[1].kvs[0]->value );
+			  user.update(); // Update counter with time after the last update
 		   }
 		   else if ( inputs[0].num_kvs > 0 )
 		   {

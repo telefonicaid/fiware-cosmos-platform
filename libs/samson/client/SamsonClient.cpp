@@ -193,7 +193,7 @@ namespace samson {
         delilah->op_delilah_process_stream_out_queue = delialh_client_delilah_process_stream_out_queue;
         
         // What until the network is ready
-        LM_V(("Waiting network connections to the cluster..."));
+        LM_V(("Waiting network connections to the all nodes in SAMSON cluster..."));
         while ( !networkP->ready() )
             usleep(1000);
         LM_V(("Connected to all workers"));

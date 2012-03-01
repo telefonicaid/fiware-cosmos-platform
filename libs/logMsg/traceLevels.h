@@ -20,6 +20,8 @@
 typedef enum TraceLevels
 {
 	LmtFile,
+
+    LmtExcesiveTime           = 5,
     
     LmtSocketConnection       = 10,  // 
     LmtNetworkListener        = 11,  // 
@@ -34,6 +36,7 @@ typedef enum TraceLevels
 
 	LmtEngine                 = 200, // SamsonEngine
 	LmtEngineNotification,
+    
     
 	LmtDisk,                         // disk library	
 	LmtMemory,                       // memory library	

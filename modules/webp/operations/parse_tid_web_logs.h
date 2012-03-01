@@ -14,6 +14,8 @@
 #include <samson/modules/webp/Log.h>
 #include <samson/modules/system/SimpleParser.h>
 
+#include "comscore/SamsonComscoreDictionary.h"
+
 namespace samson{
 namespace webp{
 
@@ -23,6 +25,8 @@ namespace webp{
 
 	   samson::system::String user;
 	   samson::webp::Log log;
+
+	   samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary;
 
 	public:
 
@@ -40,6 +44,7 @@ namespace webp{
 
 		void init( samson::KVWriter *writer )
 		{
+		   samson_comscore_dictionary.read( "/var/comscore/samson_comscore_dictionary.bin" );
 		}
 
         void parseLine( char * line , samson::KVWriter *writer )
@@ -59,6 +64,21 @@ namespace webp{
 		   const char* path = words[6];
 
 		   log.url.value = au::str("%s%s" , server , path);
+		   log.time.value = atoll( words[0] ); // convert directly to a time value
+
+           // --------------------------------------------------------
+           // Set categories for this url
+           // --------------------------------------------------------
+           log.categoriesSetLength(0); // Remove categories from previous entries
+		   std::vector<uint> categories = samson_comscore_dictionary.getCategories( log.url.value.c_str() );
+           for ( size_t i = 0 ; i < categories.size() ; i++ )
+           {
+			  webp::Category *category = log.categoriesAdd();
+              category->id.value = categories[i];
+              category->name.value = samson_comscore_dictionary.getCategoryName( categories[i] );
+           }
+           // --------------------------------------------------------
+
 
 		   writer->emit( 0 , &user , &log);
 

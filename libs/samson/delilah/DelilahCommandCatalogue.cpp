@@ -119,8 +119,9 @@ namespace samson
             "unset_queue_property [queue] [property]"
             );
         
-        add( "show_stream_block" ,"data" , "Show data activity in a particular stream block",
-            "show_stream_block path\n"
+        add( "show_stream_block" ,"data" , "Show data activity in a particular stream block\n"
+            "It shows input and output queues, state queues, stream operations and internal states included in inner stream blocks\n"
+            ,"show_stream_block path [-rates]\n"
             );
         
         add( "ls_blocks" , "data" , "Show the list of data blocks managed in a SAMSON cluster. This is a debug tool",

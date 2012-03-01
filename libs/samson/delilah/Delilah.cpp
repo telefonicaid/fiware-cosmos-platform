@@ -107,8 +107,6 @@ namespace samson {
             int r = rand();
             next_worker = r%max;
             
-            LM_V(("Next worker %d ( r %d max %d)" , next_worker , r , max ));
-            
         }
         
         next_worker++;

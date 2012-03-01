@@ -25,6 +25,26 @@ namespace webp{
 		  id.value = _id;
 		  category_hitsSetLength(0);
 		  last_log.init();
+		  last_update.value = 0;
+	   }
+
+	   void update( )
+	   {
+		  if( last_update.value != 0 )
+		  {
+			 size_t secs = last_update.secondsSinceThisTime();
+			 update( secs );
+		  }
+		  last_update.setCurrentTime();
+	   }
+
+	   void update( size_t seconds )
+	   {
+          // Update all categories considered so far
+          for( int i = 0 ; i < category_hits_length ; i++ )
+			 category_hits[i].update( seconds );
+		  
+
 	   }
 
 	   void add_hit( Category* category )

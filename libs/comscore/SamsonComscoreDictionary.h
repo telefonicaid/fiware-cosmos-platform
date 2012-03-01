@@ -1,4 +1,7 @@
 
+#ifndef _H_SAMSON_COMSCORE
+#define _H_SAMSON_COMSCORE
+
 #include "logMsg/logMsg.h"
 
 #include <string.h>
@@ -128,3 +131,5 @@ namespace samson
     }
     
 }
+
+#endif

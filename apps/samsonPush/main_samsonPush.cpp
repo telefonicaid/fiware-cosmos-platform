@@ -26,6 +26,10 @@
 #include "samson/client/SamsonClient.h"         // samson::SamsonClient
 #include "samson/common/coding.h"               // KVHeader
 
+#include "samson/network/NetworkListener.h"
+#include "samson/network/SocketConnection.h"
+
+#include "SamsonPushConnectionsManager.h"
 
 size_t buffer_size;
 char user[1024];
@@ -36,6 +40,7 @@ char queue_name[1024];
 bool lines;                         // Flag to indicate that input is read line by line
 int push_memory;                    // Global memory used as a bffer
 int max_rate;                       // Max rate
+int port;
 
 static const char* manShortDescription = 
 "samsonPush is a easy-to-use client to send data to a particular queue in a SAMSON system. Just push data into the standard input\n";
@@ -50,12 +55,13 @@ PaArgument paArgs[] =
 	{ "-node",        controller,            "",    PaString,  PaOpt, _i "localhost"  , PaNL, PaNL,       "SMASON node to connect with "         },
 	{ "-user",             user,                  "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "User to connect to SAMSON cluster"  },
 	{ "-password",         password,              "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "Password to connect to SAMSON cluster"  },
-	{ "-buffer_size", &buffer_size,          "",  PaInt,     PaOpt,       default_buffer_size,         1,   default_buffer_size,  "Buffer size in bytes"    },
-	{ "-mr",          &max_rate,             "",  PaInt,     PaOpt,       10000000,      100,  100000000,  "Max rate in bytes/s"                            },
+	{ "-buffer_size",      &buffer_size,          "",  PaInt,     PaOpt,       default_buffer_size,         1,   default_buffer_size,  "Buffer size in bytes"    },
+	{ "-mr",               &max_rate,             "",  PaInt,     PaOpt,       10000000,      100,  100000000,  "Max rate in bytes/s"                            },
 	{ "-breaker_sequence", breaker_sequence, "",  PaString,  PaOpt,        _i "\n",   PaNL,         PaNL,  "Breaker sequence ( by default \\n )"            },
-	{ "-lines",       &lines,                "",  PaBool,    PaOpt,          false,  false,         true,  "Read std-in line by line"                       },
-	{ "-memory",      &push_memory,          "",  PaInt,     PaOpt,           1000,      1,      1000000,  "Memory in Mb used to push data ( default 1000)" },
-	{ " ",            queue_name,            "",  PaString,  PaReq,      _i "null",   PaNL,         PaNL,  "name of the queue to push data"                 },
+	{ "-lines",            &lines,                "",  PaBool,    PaOpt,          false,  false,         true,  "Read std-in line by line"                       },
+	{ "-memory",           &push_memory,          "",  PaInt,     PaOpt,           1000,      1,      1000000,  "Memory in Mb used to push data ( default 1000)" },
+	{ "-port",             &port,                 "",  PaInt,     PaOpt,              0,      0,        99999,  "Port to listen from" },
+	{ " ",                 queue_name,            "",  PaString,  PaReq,      _i "null",   PaNL,         PaNL,  "name of the queue to push data"                 },
 	PA_END_OF_ARGS
 };
 
@@ -97,6 +103,31 @@ size_t full_read( int fd , char* data , size_t size)
     return read_size;    
 }
 
+
+
+void receive_data_from_port()
+{
+    LM_V(("Opening port %d" , port));
+    
+    SamsonPushConnectionsManager manager;
+    samson::NetworkListener listener( &manager );
+    listener.initNetworkListener( port );    
+    listener.runNetworkListenerInBackground();
+    
+    while( true )
+    {
+        sleep(5);
+        manager.review_connections();
+        LM_M(("samsonPush listening from port %d with %lu active connections" , port ,  manager.getNumConnections() ));
+        
+    }
+}
+
+
+// Instance of the client to connect to SAMSON system
+samson::SamsonClient *samson_client;
+
+
 int main( int argC , const char *argV[] )
 {
     paConfig("usage and exit on any warning", (void*) true);
@@ -114,45 +145,56 @@ int main( int argC , const char *argV[] )
     // Random initialization
     srand( time(NULL) );
 
+    if( buffer_size == 0)
+        LM_X(1,("Wrong buffer size %lu", buffer_size ));
+    
 	// Check queue is specified
 	if( strcmp( queue_name , "null") == 0 )
 	   LM_X(1,("Please, specify a queue to push data to"));
     
-    // Instance of the client to connect to SAMSON system
-    samson::SamsonClient client("push");
+    // Create samson client
+    samson_client = new samson::SamsonClient("push");
     
     // Set 1G RAM for uploading content
     size_t total_memory = push_memory*1024*1024;
     LM_V(("Setting memory for samson client %s" , au::str(total_memory,"B").c_str() ));
-    client.setMemory( total_memory );
+    samson_client->setMemory( total_memory );
     
     LM_V(("Connecting to %s ..." , controller));
     
+    
     // Init connection
-    if( !client.init( controller , SAMSON_WORKER_PORT , user , password ) )
+    if( !samson_client->init( controller , SAMSON_WORKER_PORT , user , password ) )
     {
-        fprintf(stderr, "Error connecting with samson cluster: %s\n" , client.getErrorMessage().c_str() );
+        fprintf(stderr, "Error connecting with samson cluster: %s\n" , samson_client->getErrorMessage().c_str() );
         exit(0);
     }
-
-    // Create the push buffer to send data to a queue in buffer-mode
-    samson::SamsonPushBuffer *pushBuffer = new samson::SamsonPushBuffer( &client , queue_name );
-
     LM_V(("Conection to %s OK" , controller));
+
+    
+    
+    if ( port != 0 )
+    {
+        receive_data_from_port();
+        LM_V(("Exit after listenning from port %d" , port));
+        exit(0);
+    }
+    
+    
+    
+    
+    // Create the push buffer to send data to a queue in buffer-mode
+    samson::SamsonPushBuffer *pushBuffer = new samson::SamsonPushBuffer( samson_client , queue_name );
+
     
     // Read data in blocks, lock the separator backward
     // --------------------------------------------------------------------------------
     
-    if( buffer_size == 0)
-        LM_X(1,("Wrong buffer size %lu", buffer_size ));
-    
     char *data = (char*) malloc ( buffer_size );
     if( !data )
         LM_X(1,("Error allocating %lu bytes" , buffer_size ));
-    
 
     size_t size = 0;                // Bytes currently contained in the buffer
-    
 
     std::string tmp_separator = breaker_sequence;
     literal_string( tmp_separator );
@@ -207,7 +249,7 @@ int main( int argC , const char *argV[] )
         }
        
         // Print verbose the list of push components ( if any )
-        client.getInfoAboutPushConnections(true);
+        samson_client->getInfoAboutPushConnections(true);
         
         //LM_M(("Read command for %lu bytes. Read %lu" , buffer_size - size , read_bytes ));
         
@@ -263,13 +305,13 @@ int main( int argC , const char *argV[] )
     LM_V(("--------------------------------------------------------------------------------"));
     LM_V(("Stdin info:        %s", rate_stdin.str().c_str())); 
     LM_V(("PushBuffer info:   %s", pushBuffer->rate.str().c_str())); 
-    LM_V(("SamsonClient info: %s", client.rate.str().c_str())); 
+    LM_V(("SamsonClient info: %s", samson_client->rate.str().c_str())); 
     LM_V(("--------------------------------------------------------------------------------"));
     
     
     // Wait until all operations are complete
     LM_V(("Waiting for all the push operations to complete..."));
-    client.waitUntilFinish();
+    samson_client->waitUntilFinish();
 
     
     

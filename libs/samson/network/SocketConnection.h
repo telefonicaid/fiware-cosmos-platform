@@ -32,15 +32,13 @@ namespace samson {
         // Connection mnagement
         void close();                 // Disconnect
         bool isDisconnected();        // Check if we are still connected
-
+        
         // Read and write packet routines
         Status readPacket( Packet * packetP , size_t *size);
         Status writePacket( Packet * packetP , size_t *size );
         
-        // Read line 
+        // Read & Write line 
         Status readLine( char* line, size_t max_size , int max_seconds );
-        
-        // Write line
         Status writeLine( const char* line );
         
         // Monitor information
@@ -80,15 +78,13 @@ namespace samson {
         static Status newSocketConnection( std::string host , int port , SocketConnection** socket_connection );
         
         
-    private:
-        
         // Auxiliar function to read and write to the socket
         
         Status okToSend( );
         Status msgAwait( int secs, int usecs, const char* what );
         
         Status partWrite( const void* dataP, int dataLen, const char* what );
-        Status partRead( void* vbuf, long bufLen, const char* what , int max_seconds );
+        Status partRead( void* vbuf, size_t bufLen, const char* what , int max_seconds , size_t * readed_size = NULL );
         
     };
     

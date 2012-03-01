@@ -16,6 +16,7 @@
 #include "samson/network/ClusterInformation.h"
 #include "samson/network/Packet.h"
 #include "samson/network/PacketQueue.h"
+#include "samson/network/NetworkListener.h"
 
 namespace samson {
     
@@ -24,7 +25,7 @@ namespace samson {
     class SocketConnection;
     class NetworkListener;
     
-    class NetworkManager 
+    class NetworkManager : public NetworkListenerInterface
     {
 
         // Pending packets ( only used while disconnected )

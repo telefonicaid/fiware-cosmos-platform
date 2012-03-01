@@ -37,8 +37,6 @@ namespace samson {
     namespace stream
     {
         
-        
-        
         void BlockIdList::addIds( BlockList *list )
         {
             au::list< Block >::iterator block_it;
@@ -120,6 +118,22 @@ namespace samson {
                 push( *b );
         }
         
+        void Queue::check_format()
+        {
+            
+            if ( list->isEmpty() )
+            {
+                format = KVFormat("*","*");
+                
+            }
+            else if( format == KVFormat("*","*") )
+            {
+                Block* block = *list->blocks.begin();
+                format = block->header->getKVFormat();  // Get the format of the first one...
+            }
+        }
+        
+        
         void Queue::push( Block *block )
         {
             
@@ -193,23 +207,31 @@ namespace samson {
         {
             replace( from , to );
             unlock(from);
+            
+            check_format();
         }
         
         void Queue::replace( BlockList *from , BlockList *to )
         {
             // Replace a list of blocks by another list
             list->replace( from , to );
+            
+            check_format();
+
         }
 
         void Queue::removeAndUnlock( BlockList *_list )
         {
             list->remove( _list );
             unlock( _list );
+            
+            check_format();
         }
         
         void Queue::remove ( BlockList *_list )
         {
             list->remove( _list );
+            check_format();
         }
         
         void Queue::unlock ( BlockList *list )

@@ -126,6 +126,7 @@ namespace samson {
                 return format;
             }
 
+            void check_format();
             
             // Query function
             void fill( samson::network::CollectionRecord* record , Visualization* visualization );

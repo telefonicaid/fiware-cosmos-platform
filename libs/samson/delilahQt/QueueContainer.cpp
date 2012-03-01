@@ -2,7 +2,7 @@
 *
 * FILE                     QueueContainer.cpp
 *
-* DESCRIPTION			   Widget to visualize samson workers' data
+* DESCRIPTION			   Widget to visualize samson queues' data
 *
 */
 
@@ -60,12 +60,12 @@ QueueContainer::QueueContainer(QWidget* parent): QWidget(parent)
 
 }
 
-void QueueContainer::setData(std::vector<QueueData*>& newQueuesData)
+void QueueContainer::setData(std::vector<QueueData*> newQueuesData)
 {
 
-   std::cout << "QueueContainer::setData()- queues: " << queuesData.size() << std::endl;
         queuesData.clear();
         queuesData = newQueuesData;
+   //std::cout << "QueueContainer::setData()- queues: " << queuesData.size() << std::endl;
         
         bool any_change = false;
         size_t totalKvs = 0;
@@ -110,7 +110,7 @@ void QueueContainer::setData(std::vector<QueueData*>& newQueuesData)
             bool current_queue_changed = false;
             if( queueTmp != NULL)
             {
-   std::cout << "Queue encontrada: " << queueTmp->title << std::endl;
+//   std::cout << "Queue encontrada: " << queueTmp->title << std::endl;
             
                 //Check if the data has actually changed
                 current_queue_changed = !(*queuesData[i] == queueTmp->data);
@@ -130,7 +130,7 @@ void QueueContainer::setData(std::vector<QueueData*>& newQueuesData)
             }
             else
             {
-   std::cout << "Queue creada: " << queuesData[i]->name << std::endl;
+   //std::cout << "Queue creada: " << queuesData[i]->name << std::endl;
                 //new queue. Create widget
                 current_queue_changed = true;
                 any_change = true;
@@ -149,26 +149,52 @@ void QueueContainer::setData(std::vector<QueueData*>& newQueuesData)
                 //queueTmp->show();
             }
             
+        }
+        
+        
             //Check if any queues have been deleted
             std::vector<QueueViewer*> deletedQueues = getDeletedQueues(queuesData); 
             if(deletedQueues.size() > 0) 
             {
+     //std::cout << "borrando queues: " << deletedQueues.size() << std::endl;           
                 any_change = true;
-                //Remove the widgets and delete the corresponding tabs if any
+                regenerateQueues();
+/*                //Remove the widgets and delete the corresponding tabs if any
                 for(std::vector<QueueViewer*>::iterator deletedIt = deletedQueues.begin(); deletedIt < deletedQueues.end(); deletedIt++)
                 {
+     //std::cout << "borrando queue: " << (*deletedIt)->title << std::endl;
                     //Send signal to DelilahMainView to remove the tabs
                     emit(queueDeleted(*deletedIt));
                     //redo the widgets
-                    QGridLayout* layoutTmp = (fnmatch("in:*", queuesData[i]->name.c_str(),0) == 0)?inputLayout:outputLayout;
+                    //Get pointers to the right layout and list for input and output
+                    bool is_input = (fnmatch("in:*", (*deletedIt)->title.c_str(),0) == 0);
+                    QGridLayout* layoutTmp = (is_input)?inputLayout:outputLayout;
+                    std::vector<QueueViewer*>* queViewersTmp = (is_input)?&in_queues:&out_queues;
+                    
                     layoutTmp->removeWidget(*deletedIt);
-                    delete(*deletedIt);
+                    //remove from queues vector
+                    bool found = false;
+                    for ( std::vector<QueueViewer*>::iterator viewerIt = queViewersTmp->begin() ; viewerIt != queViewersTmp->end() && !found ; viewerIt++)
+                    {
+                        if ((**viewerIt).title == (*deletedIt)-> title)
+                        {
+                            found = true;
+                            queViewersTmp->erase(viewerIt);
+        std::cout << "borrando widget: " << (**viewerIt).title << std::endl;
+                            delete *viewerIt;
+        std::cout << "borrado widget: " << (**viewerIt).title << std::endl;
+        update();
+                        }
+                    }
+
+//                    delete *deletedIt;
+                    
                     inputBox->update();
                     outputBox->update();
                 }
+                */
             }
-        }
-        
+
         if(any_change)
         {
             //Update Totals
@@ -252,6 +278,7 @@ void QueueContainer::setData(std::vector<QueueData*>& newQueuesData)
             if (findQueue(queuesData, in_queues[i]->title) == NULL)
             {
                 deletedQueues.push_back(in_queues[i]);
+  //std::cout <<   "Se ha encontrado borrada: " << in_queues[i]->title << std::endl;                
             }
         }
 
@@ -269,9 +296,11 @@ void QueueContainer::setData(std::vector<QueueData*>& newQueuesData)
     
     void QueueContainer::regenerateQueues()
     {
-        //First clean both in and out layouts
+ //std::cout <<   "QueueContainer::regenerateQueues()" << std::endl;
+         //First clean both in and out layouts
         for(std::vector<QueueViewer*>::iterator it=in_queues.begin(); it<in_queues.end();it++)
         {
+            (*it)->hide();
             inputLayout->removeWidget(*it);
             delete(*it);
         }
@@ -279,19 +308,20 @@ void QueueContainer::setData(std::vector<QueueData*>& newQueuesData)
 
         for(std::vector<QueueViewer*>::iterator it=out_queues.begin(); it<out_queues.end();it++)
         {
+            (*it)->hide();
             outputLayout->removeWidget(*it);
             delete(*it);
         }
         out_queues.clear();
        
         //With everything empty, restart the queues
-        setData(queuesData);
+        //setData(queuesData);
         
     }
     
     void QueueContainer::onFilterEdited()
     {
-  std::cout <<   "onFilterEdited()" << std::endl;
+  //std::cout <<   "onFilterEdited()" << std::endl;
         regenerateQueues();
     }
     

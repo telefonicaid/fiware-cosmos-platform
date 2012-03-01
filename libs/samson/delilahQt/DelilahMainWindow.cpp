@@ -73,10 +73,9 @@ namespace samson
         QMessageBox::about( this, tr("Samson"), tr("Samson version 0.6.1") );
     }
     
-    void DelilahMainWindow::updateData(std::vector<QueueData*>& queuesData, std::vector<WorkerData*>& workersData)
+    void DelilahMainWindow::updateData(std::vector<QueueData*> queuesData, std::vector<WorkerData*> workersData)
     {
-        //Update worker changes
-   std::cout << "DelilahMainWindow::updateData()- queues: " << queuesData.size() << std::endl;
+        //Update queues changes
         queuesTab->setData(queuesData);
         //Update worker changes
         workersTab->setData(workersData);

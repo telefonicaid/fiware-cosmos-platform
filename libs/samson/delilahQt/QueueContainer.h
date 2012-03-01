@@ -47,7 +47,7 @@ class QueueContainer: public QWidget
         
         QueueContainer(QWidget* parent = 0);
         
-        void setData(std::vector<QueueData*>& queuesData);
+        void setData(std::vector<QueueData*> queuesData);
 
     private:
         

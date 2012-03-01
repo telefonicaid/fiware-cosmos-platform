@@ -30,6 +30,7 @@ public class UserProfileMapper extends Mapper<BinaryKey,
     protected void map(BinaryKey userDateKey,
             ProtobufWritable<CategoryInformation> categoryInfoValue,
             Context context) throws IOException, InterruptedException {
+        categoryInfoValue.setConverter(CategoryInformation.class);
         CategoryInformation categoryInfo = categoryInfoValue.get();
         for (String category : categoryInfo.getCategoriesList()) {
             this.categoryCountWrapper.set(CategoryCount

@@ -4,47 +4,44 @@ package es.tid.bdp.profile.dictionary.comscore;
  * Class that defines the native methods to access the comScore dictionary API
  * via JNI.
  *
- * @author dmicol
+ * @author dmicol, sortega
  */
 public class CSDictionaryJNIInterface {
-    /**
-     * Initializes the dictionary wrapper using the terms in domain file.
-     *
-     * @param iMode
-     *            the operation mode (value should be 1)
-     * @param szTermsInDomainFlatFileName
-     *            the terms in domain file name
-     * @return whether the initialization succeeded
-     */
-    public native boolean initFromTermsInDomainFlatFile(int iMode,
-            String szTermsInDomainFlatFileName);
+    public static final String COMSCORE_LIB_PROPERTY = "es.tid.comscore-path";
 
     /**
      * Loads the comScore dictionary in memory.
      *
-     * @param iMode
-     *            the operation mode (value should be 1)
-     * @param szTermsInDomainFlatFileName
-     *            the terms in domain file name
-     * @param szDictionaryName
+     * @param dictionaryFilename
      *            the file name of the dictionary
      * @return whether the load of the dictionary succeeded
      */
-    public native boolean loadCSDictionary(int iMode,
-            String szTermsInDomainFlatFileName, String szDictionaryName);
+    public native boolean loadCSDictionary(String dictionaryFilename);
 
     /**
-     * Applies the dictionary to the given URL, and returns the pattern ID for
-     * such URL.
+     * Find outs the categories associated to an url.
      *
-     * @param szURL
-     *            the url to apply the dictionary to
-     * @return the pattern ID of the URL
+     * @param url
+     *          the url to apply the dictionary to
+     * @return the list of category IDs
      */
-    public native long applyDictionaryUsingUrl(String szURL);
+    public native int[] lookupCategories(String url);
+
+    /**
+     * Provides the name of a category.
+     *
+     * @param categoryId
+     *            category ID provided by #lookupCategories
+     * @return the category name
+     */
+    public native String getCategoryName(int categoryId);
 
     static {
-        System.load("/opt/hadoop/lib/native/Linux-amd64-64/libcsCFD.so.1");
-        System.load("/opt/hadoop/lib/native/Linux-amd64-64/libCategories.so");
+        String comscorePath = System.getProperty(COMSCORE_LIB_PROPERTY);
+        if (comscorePath != null && !comscorePath.isEmpty()) {
+            System.load(comscorePath);
+        } else {
+            System.loadLibrary("comscore");
+        }
     }
 }

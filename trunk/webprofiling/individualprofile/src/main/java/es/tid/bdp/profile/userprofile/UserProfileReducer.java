@@ -9,6 +9,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import es.tid.bdp.base.mapreduce.BinaryKey;
 import es.tid.bdp.profile.data.ProfileProtocol.CategoryCount;
 import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
+import es.tid.bdp.profile.data.ProfileProtocol.UserProfile.Builder;
 
 /**
  * Aggregates category counts into a user profile.
@@ -20,7 +21,6 @@ public class UserProfileReducer extends Reducer<BinaryKey,
                                                 ProtobufWritable<CategoryCount>,
                                                 Text,
                                                 ProtobufWritable<UserProfile>> {
-    private UserProfile.Builder profile;
     private ProtobufWritable<UserProfile> profileWrapper;
     private Text userId;
     private CategoryCountAggregator categoryCountAggregator;
@@ -28,7 +28,6 @@ public class UserProfileReducer extends Reducer<BinaryKey,
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
-        this.profile = UserProfile.newBuilder();
         this.profileWrapper = new ProtobufWritable<UserProfile>();
         this.profileWrapper.setConverter(UserProfile.class);
         this.userId = new Text();
@@ -41,9 +40,9 @@ public class UserProfileReducer extends Reducer<BinaryKey,
                           Iterable<ProtobufWritable<CategoryCount>> counts,
                           Context context) throws IOException,
                                                   InterruptedException {
-        this.profile.clear();
-        this.profile.setUserId(userDateKey.getPrimaryKey());
-        this.profile.setDate(userDateKey.getSecondaryKey());
+        Builder profile = UserProfile.newBuilder()
+                                  .setUserId(userDateKey.getPrimaryKey())
+                                  .setDate(userDateKey.getSecondaryKey());
 
         this.categoryCountAggregator.clear();
         for (ProtobufWritable<CategoryCount> wrappedCount : counts) {
@@ -51,9 +50,9 @@ public class UserProfileReducer extends Reducer<BinaryKey,
             CategoryCount count = wrappedCount.get();
             categoryCountAggregator.add(count);
         }
-        this.profile.addAllCounts(categoryCountAggregator.getSortedCounts());
+        profile.addAllCounts(categoryCountAggregator.getSortedCounts());
         this.userId.set(userDateKey.getPrimaryKey());
-        this.profileWrapper.set(this.profile.build());
+        this.profileWrapper.set(profile.build());
         context.write(this.userId, this.profileWrapper);
     }
 }

@@ -1,0 +1,6 @@
+# Independent libraries
+ADD_SUBDIRECTORY(logMsg)
+ADD_SUBDIRECTORY(parseArgs)
+ADD_SUBDIRECTORY(au)
+ADD_SUBDIRECTORY(tables)
+ADD_SUBDIRECTORY(comscore)

@@ -27,6 +27,7 @@ public class IndividualProfileMain extends Configured implements Tool {
             throws IOException, ClassNotFoundException, InterruptedException {
         if (args.length < 1 || args.length > 2) {
             throw new IllegalArgumentException("Mandatory parameters: "
+                    + "[-D input.serialization=text|protobuf] "
                     + "weblogs_path [mongo_url]");
         }
 
@@ -35,7 +36,14 @@ public class IndividualProfileMain extends Configured implements Tool {
         Path profilePath = new Path(PROFILE_PATH);
 
         CategoryExtractionJob ceJob = new CategoryExtractionJob(this.getConf());
-        ceJob.configure(webLogsPath, categoriesPath);
+        if (this.getConf().get("input.serialization", "protobuf").equals("protobuf")) {
+            System.out.println("Protobuf input");
+            ceJob.configureProtobufInput();
+        } else {
+            System.out.println("Text input");
+            ceJob.configureTextInput();
+        }
+        ceJob.configurePaths(webLogsPath, categoriesPath);
         if (!ceJob.waitForCompletion(true)) {
             return 1;
         }

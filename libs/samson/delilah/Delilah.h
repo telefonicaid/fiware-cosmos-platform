@@ -49,8 +49,6 @@ namespace samson
     class Delilah;
 }
 
-extern samson::Delilah* global_delilah;
-
 namespace samson {
     
     

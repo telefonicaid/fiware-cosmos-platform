@@ -1,5 +1,6 @@
 
 #include <algorithm>
+#include <fnmatch.h>
 
 #include "Table.h"
 #include "Tree.h"
@@ -9,39 +10,9 @@
 NAMESPACE_BEGIN(au)
 NAMESPACE_BEGIN(tables)
 
-bool compare_strings( std::string& a , std::string& b)
+bool compare_strings( std::string& pattern , std::string& value)
 {
-    if( a == "*" )
-        return true;
-    if( b == "*" )
-        return true;
-
-    if( a[a.length()-1] == '*' )
-    {
-        // Starts with
-        if( b.length() < (a.length()-1) )
-            return false;
-        for( size_t i = 0 ; i < (a.length()-1) ; i++ )
-            if( b[i] != a[i] )
-                return false;
-        return true;
-    }
-    
-    if( a[0] == '*' )
-    {
-        // Ends with
-        if( b.length() < (a.length()-1) )
-            return false;
-        for( size_t i = 0 ; i < (a.length()-1) ; i++ )
-            if( b[ b.length() - (a.length()-1) + i  ] != a[i] )
-                return false;
-        return true;
-    }    
-    
-    if ( a==b)
-        return true;
-    
-    return false;
+    return ( ::fnmatch( pattern.c_str() , value.c_str() , 0 ) == 0 );
 }
 
 
@@ -55,7 +26,8 @@ bool SelectCondition::check( TableRow *row )
 
 bool SelectCondition::check( TreeItem *tree )
 {
-    return (tree->getFirstNodeValue(name) == value);
+    std::string _value = tree->getFirstNodeValue(name);
+    return compare_strings( value , _value );
 }
 
 

@@ -39,8 +39,6 @@
 
 #define notification_delilah_automatic_update "notification_delilah_automatic_update"
 
-samson::Delilah* global_delilah = NULL;
-
 namespace samson {
     
     
@@ -61,9 +59,6 @@ namespace samson {
         // Listen notification about netowrk disconnection
         listen( notification_network_diconnected );
 
-        // Global pointer to access delilah
-        global_delilah = this;
-     
         // No next worker decided
         next_worker = -1;
         

@@ -100,39 +100,31 @@ namespace samson
 		runAsyncCommand(command);
 	}
 
-    void autoCompleteOperations( au::ConsoleAutoComplete* info )
+    void DelilahConsole::autoCompleteOperations( au::ConsoleAutoComplete* info )
     {
-        if( global_delilah )
-        {
-            std::vector<std::string> operation_names = global_delilah->getOperationNames();
-            
-            for ( size_t i = 0 ;  i < operation_names.size() ; i++)
-                info->add( operation_names[i] );
-        }
+        std::vector<std::string> operation_names = getOperationNames();
+        
+        for ( size_t i = 0 ;  i < operation_names.size() ; i++)
+            info->add( operation_names[i] );
     }
 
-    void autoCompleteOperations( au::ConsoleAutoComplete* info , std::string type )
+    void DelilahConsole::autoCompleteOperations( au::ConsoleAutoComplete* info , std::string type )
     {
-        if( global_delilah )
-        {
-            std::vector<std::string> operation_names = global_delilah->getOperationNames( type );
-            
-            for ( size_t i = 0 ;  i < operation_names.size() ; i++)
-                info->add( operation_names[i] );
-        }
+        std::vector<std::string> operation_names = getOperationNames( type );
+        
+        for ( size_t i = 0 ;  i < operation_names.size() ; i++)
+            info->add( operation_names[i] );
     }
     
-    
-    void autoCompleteQueues( au::ConsoleAutoComplete* info )
+    void DelilahConsole::autoCompleteQueues(au::ConsoleAutoComplete* info )
     {
-        if( global_delilah) 
-        {
-            std::vector<std::string> queue_names = global_delilah->getQueueNames();
-            
-            for ( size_t i = 0 ;  i < queue_names.size() ; i++)
-                info->add( queue_names[i] );
-        }
-    }        
+        au::tables::Table* table = database.getTable("queues");
+        if( !table )
+            return;
+        for ( size_t r = 0 ; r <  table->getNumRows() ; r++ )
+            info->add(  table->getValue(r, "name") );
+        delete table;
+    }      
     
     void DelilahConsole::autoCompleteQueueWithFormat(
                                                      au::ConsoleAutoComplete* info  ,  
@@ -214,6 +206,8 @@ namespace samson
             info->add("-rates");
             info->add("-properties");
             info->add("-blocks");
+            
+            autoCompleteQueues( info );
         }
 
         if (info->completingSecondWord("ls_stream_operations") )

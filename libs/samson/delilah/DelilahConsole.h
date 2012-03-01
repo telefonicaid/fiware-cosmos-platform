@@ -78,8 +78,12 @@ namespace samson {
 		virtual void evalCommand( std::string command );
         virtual void autoComplete( au::ConsoleAutoComplete* info );
 
+        void autoCompleteOperations( au::ConsoleAutoComplete* info );
+        void autoCompleteOperations( au::ConsoleAutoComplete* info , std::string type );
+
         void autoCompleteQueueForOperation( au::ConsoleAutoComplete* info , std::string operation_name , int argument_pos );
         void autoCompleteQueueWithFormat(au::ConsoleAutoComplete* info  ,  std::string key_format , std::string value_format);
+        void autoCompleteQueues(au::ConsoleAutoComplete* info );
         
         virtual void process_escape_sequence( std::string sequence )
         {

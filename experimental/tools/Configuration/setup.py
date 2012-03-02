@@ -40,10 +40,10 @@ setup(
     long_description = "Big Data Platform Monitoring",
     author = "Telefonica R&D",
     url = "http://tid.es/en",
-    packages = find_packages(exclude=['test*']),
+    packages = ['Configuration'] , #find_packages(exclude=['test*','wizard','templates']),
     data_files=[
         ('/etc/httpd/conf.d', ['apacheConf/monitoring.conf']),
-        ('/usr/local/ps/apps/bdp/Configuration', ['Configuration/settings/settings_prod.py'])],
+        ('/usr/local/ps/apps/bdp/Configuration', ['Configuration/settings_prod.py'])],
         options = {'bdist_rpm':{'release' : getRevision(),
                             'requires' : 'httpd', #mod_wsgi, django-nonrel, pymongo, djangotoolbox, django-mongodb',
                             'post_install' : 'scripts/postInstall.sh',

@@ -218,6 +218,30 @@ namespace samson {
             return output.str();
         }
         
+        std::string strJSON(std::string name)
+        {
+            std::ostringstream output;
+            output << "[ ";
+            
+            typename std::list<T*>::iterator it_elements;
+            for (it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
+                output << (*it_elements)->str() << " ";
+            output << "]";
+            return output.str();
+        }
+        
+        std::string strJSONInternal(std::string name)
+        {
+            std::ostringstream output;
+            output << "[ ";
+            
+            typename std::list<T*>::iterator it_elements;
+            for (it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
+                output << (*it_elements)->str() << " ";
+            output << "]";
+            return output.str();
+        }
+        
         int hash( int max_num )
         {
             if( elements.size() == 0)

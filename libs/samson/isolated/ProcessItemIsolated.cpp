@@ -64,7 +64,7 @@ namespace samson
                 {
                     int s = WTERMSIG( stat_loc );
                     LM_T(LmtIsolated,("Background process (pid=%d) ended with signal with signal %d",pid, s));
-                    LM_W(("Background process (pid=%d) ended with signal with signal %d",pid, s));
+                    LM_E(("Background process (pid=%d) ended with signal with signal %d",pid, s));
                 }
                 else
                 {
@@ -226,7 +226,7 @@ namespace samson
         }
 		
         // Exchange all the necessary messages between background and foreground process
-        LM_T( LmtIsolated , ("Isolated process %s: father runExchangeMessages start, child pid=%d ",getStatus().c_str(), pid));
+        LM_M(("Isolated process %s: father runExchangeMessages start, child pid=%d ",getStatus().c_str(), pid));
         
         runExchangeMessages();
         

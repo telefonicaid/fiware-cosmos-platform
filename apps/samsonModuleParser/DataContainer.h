@@ -76,10 +76,10 @@ public:
 
         //Checking the use of reserved words in the name
         std::string arr_reserved_words[] = {"auto", "const", "double", "float", "int", "short", "struct", "unsigned", "break", "continue", "else", "for", "long", "signed", "switch", "void", "case", "default", "enum",
-                                        "goto", "register", "sizeof", "typedef", "volatile", "char", "do", "extern", "if", "return", "static", "union", "while", "asm", "dynamic_cast", "namespace", "reinterpret_cast",
-                                        "try", "bool", "explicit", "new", "static_cast", "typeid", "catch", "false", "operator", "template", "typename", "class", "friend", "private", "this", "using",
-                                        "const_cast", "inline", "public", "throw", "virtual", "delete", "mutable", "protected", "true", "wchar_t", "and", "bitand", "compl", "not_eq", "or_eq", "xor_eq",
-                                        "and_eq", "bitor", "not", "or", "xor", "cin", "endl", "INT_MIN", "iomanip", "main", "npos", "std", "cout", "include", "INT_MAX", "iostream", "MAX_RAND", "NULL", "string"};
+                "goto", "register", "sizeof", "typedef", "volatile", "char", "do", "extern", "if", "return", "static", "union", "while", "asm", "dynamic_cast", "namespace", "reinterpret_cast",
+                "try", "bool", "explicit", "new", "static_cast", "typeid", "catch", "false", "operator", "template", "typename", "class", "friend", "private", "this", "using",
+                "const_cast", "inline", "public", "throw", "virtual", "delete", "mutable", "protected", "true", "wchar_t", "and", "bitand", "compl", "not_eq", "or_eq", "xor_eq",
+                "and_eq", "bitor", "not", "or", "xor", "cin", "endl", "INT_MIN", "iomanip", "main", "npos", "std", "cout", "include", "INT_MAX", "iostream", "MAX_RAND", "NULL", "string"};
 
         std::set<std::string>   reserved_words;
 
@@ -614,24 +614,101 @@ public:
         file << "\t};\n";
 
         // str
-        file << "\n\tstd::string str(){\n";
+        file << "\n\tstd::string str(){\n;";
         file << "\t\tstd::ostringstream o;\n";
-
         for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
         {
             file << (*field).getToStringCommand("\t\t") ;
             file << "\t\to<<\" \";\n";
         }
+        file <<"\t\treturn o.str();\n";
+        file <<"\t}\n\n";
 
+        // strJSON
+        file << "\n\tstd::string strJSON(std::string _varNameInternal){\n";
+        file << "\t\tstd::ostringstream o;\n";
+        file << "\t\tbool _vectorMember = false;\n";
+        file << "\t\to << \"{\" << \"\\\"\" << _varNameInternal << \"\\\"\" << \":\";\n";
+        if (items.size() != 1 || items.begin()->isVector() == false)
+        {
+            file << "\t\to << \"{\";\n";
+        }
+        for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
+        {
+            if (field != items.begin())
+            {
+                file << "\t\to << \",\";\n";
+            }
+            file << (*field).getToStringJSONCommand("\t\t") ;
+        }
+        if (items.size() != 1 || items.begin()->isVector() == false)
+        {
+            file << "\t\to << \"}\";\n";
+        }
+        file << "\t\to << \"}\";\n";
+        file <<"\t\treturn o.str();\n";
+        file <<"\t}\n\n";
+
+        // strJSONInternal
+        file << "\n\tstd::string strJSONInternal(std::string _varNameInternal, bool _vectorMember){\n";
+        file << "\t\tstd::ostringstream o;\n";
+        //file << "\t\to << \"{\" << \"\\\"\" << _varNameInternal << \"\\\"\" << \":{\";\n";
+        file << "\t\tif (_vectorMember == false)\n";
+        file << "\t\t{\n";
+        file << "\t\t\to << \"\\\"\" << _varNameInternal << \"\\\"\" << \":\";\n";
+        file << "\t\t}\n";
+        file << "\t\t_vectorMember = false;\n\n";
+        if (items.size() != 1 || items.begin()->isVector() == false)
+        {
+            file << "\t\to << \"{\";\n";
+        }
+        for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
+        {
+            if (field != items.begin())
+            {
+                file << "\t\to<<\",\";\n";
+            }
+            file << (*field).getToStringJSONCommand("\t\t") ;
+        }
+        if (items.size() != 1 || items.begin()->isVector() == false)
+        {
+            file << "\to << \"}\";\n";
+        }
+        file << "\t\to << \"}\";\n";
         file <<"\t\treturn o.str();\n";
         file <<"\t}\n\n";
 
 
+        // strXML
+        file << "\n\tstd::string strXML(std::string _varNameInternal){\n";
+        file << "\t\tstd::ostringstream o;\n";
+        file << "\t\to << \"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\" ?>\";\n";
+        file << "\t\to << \"<\" << _varNameInternal << \">\";\n";
+        for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
+        {
+            file << (*field).getToStringXMLCommand("\t\t") ;
+        }
+        file << "\t\to << \"</\" << _varNameInternal << \">\";\n";
+        file <<"\t\treturn o.str();\n";
+        file <<"\t}\n\n";
+
+        // strXMLInternal
+        file << "\n\tstd::string strXMLInternal(std::string _varNameInternal){\n";
+        file << "\t\tstd::ostringstream o;\n";
+        file << "\t\to << \"<\" << _varNameInternal << \">\";\n";
+        for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
+        {
+            file << (*field).getToStringXMLCommand("\t\t") ;
+        }
+        file << "\t\to << \"</\" << _varNameInternal << \">\";\n";
+        file <<"\t\treturn o.str();\n";
+        file <<"\t}\n\n";
+
+
+        // End of class
         file << "\t}; //class "<< name << "_base\n\n";
 
-        // End of namspace
-
-
+        // End of namespace
         file << "} // end of namespace " << module << "\n";
         file << "} // end of namespace samson\n";
 

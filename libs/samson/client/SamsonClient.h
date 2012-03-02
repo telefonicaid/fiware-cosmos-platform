@@ -157,7 +157,7 @@ namespace  samson {
         virtual char* getTXTBufferPointer()=0;
         
         virtual void print_header()=0;
-        virtual void print_content(int max_kvs)=0;
+        virtual void print_content(int max_kvs, const char *format="plain")=0;
         
     };
 
@@ -242,7 +242,7 @@ namespace  samson {
             std::cout << header->str() << "\n";
         }
         
-        void print_content(int max_kvs)
+        void print_content(int max_kvs, const char *outputFormat)
         {
             if( error.isActivated())
             {
@@ -294,9 +294,25 @@ namespace  samson {
                 char time_string[1024];
                 ctime_r(&_time, time_string );
                 time_string[strlen(time_string) - 1] = '\0';
-                
+               
+            if (strcmp(outputFormat, "plain") == 0)
+            {
                 std::cout << "[" << time_string << "] " << key->str() << " " << value->str() << std::endl;
-                
+            }
+            else if (strcmp(outputFormat, "json") == 0)
+            {
+                bool vectorMember  = false;
+                std::cout << "[" << time_string << "] " << "{" << key->strJSONInternal("key", vectorMember) << "," << value->strJSONInternal("value", vectorMember) << "}" << std::endl;
+            }
+            else if (strcmp(outputFormat, "xml") == 0)
+            {
+                std::cout << "[" << time_string << "] " << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><key-value>" << key->strXMLInternal("key") << value->strXMLInternal("value") << "</key-value>" << std::endl;
+            }
+            else
+            {
+                std::cerr << "ERROR. outputFormat:'" << outputFormat << "' not supported" << std::endl;
+            }
+ 
                 num_kvs++;
                 if( max_kvs > 0 )   
                     if( num_kvs >= (size_t) max_kvs )

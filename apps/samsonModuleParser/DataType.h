@@ -124,8 +124,15 @@ public:
 
     string getToStringCommandIndividual(string pre_line, string _name);
     string getToStringCommandVector(string pre_line, string _name);
-
     string getToStringCommand( string pre_line );
+
+    string getToStringJSONCommandIndividual(string pre_line, string _name);
+    string getToStringJSONCommandVector(string pre_line, string _name);
+    string getToStringJSONCommand( string pre_line );
+
+    string getToStringXMLCommandIndividual(string pre_line, string _name);
+    string getToStringXMLCommandVector(string pre_line, string _name);
+    string getToStringXMLCommand( string pre_line );
 
     string getCopyFromCommandIndividual(string pre_line, string _name);
     string getCopyFromCommandVector(string pre_line, string _name);

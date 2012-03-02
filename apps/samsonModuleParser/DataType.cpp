@@ -659,6 +659,118 @@ string DataType::getToStringCommand( string pre_line )
 }
 
 
+// getToStringJSONCommand Command
+
+string DataType::getToStringJSONCommandIndividual(string pre_line, string _name)
+{
+    ostringstream o;
+    o << pre_line << "{ // toStringJSON "<<name<<"\n";
+    o << pre_line << "\to << " << _name << ".strJSONInternal(" << "\"" << _name << "\"" << ", _vectorMember);\n";
+    o << pre_line << "}\n";
+    return o.str();
+}
+
+string DataType::getToStringJSONCommandVector(string pre_line, string _name)
+{
+    ostringstream o;
+    string pre_line_local;
+
+    o << pre_line << "{ // toStringJSON of vector " << name << "\n";
+    o << pre_line << "\to << \"\\\"" << _name << "\\\":\"" << ";\n";
+    o << pre_line << "\to << \"[\" ;\n";
+    o << pre_line << "\tfor(int i = 0 ; i < " << name << "_length ; i++)\n";
+    o << pre_line << "\t{\n";
+    o << pre_line << "\t\t_vectorMember = true;\n";
+    o << pre_line << "\t\tif (i != 0) o << \",\";\n";
+    pre_line_local = pre_line + "\t\t";
+    o << getToStringJSONCommandIndividual(pre_line_local, name+"[i]");
+    o << pre_line << "\t\t_vectorMember = false;\n";
+    o << pre_line << "\t}\n";
+    o << pre_line << "\to << \"]\" ;\n";
+
+    o << pre_line << "}\n";
+    return o.str();
+}
+
+string DataType::getToStringJSONCommand( string pre_line )
+{
+
+    ostringstream o;
+    string add_despl = "";
+
+    if (optional)
+    {
+        o << pre_line << "if (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
+        add_despl = "\t";
+    }
+
+    if( isVector() )
+    {
+        o << getToStringJSONCommandVector(pre_line, name) << "\n";
+    }
+    else
+    {
+        o << getToStringJSONCommandIndividual(pre_line, name) << "\n";
+    }
+
+    return o.str();
+
+}
+
+// getToStringXMLCommand Command
+
+string DataType::getToStringXMLCommandIndividual(string pre_line, string _name)
+{
+    ostringstream o;
+    o << pre_line << "{ // toStringXML "<<name<<"\n";
+    o << pre_line << "\to << " << _name << ".strXMLInternal(" << "\"" << name << "\");\n";
+    o << pre_line << "}\n";
+    return o.str();
+}
+
+string DataType::getToStringXMLCommandVector(string pre_line, string _name)
+{
+    ostringstream o;
+    string pre_line_local;
+
+    o << pre_line << "{ // toStringXML of vector " << name << "\n";
+
+    o << pre_line << "\tfor(int i = 0 ; i < " << name << "_length ; i++)\n";
+    o << pre_line << "\t{\n";
+    pre_line_local = pre_line + "\t\t";
+    o << getToStringXMLCommandIndividual(pre_line_local, name+"[i]");
+    o << pre_line << "\t}\n";
+
+    o << pre_line << "}\n";
+    return o.str();
+}
+
+string DataType::getToStringXMLCommand( string pre_line )
+{
+
+    ostringstream o;
+    string add_despl = "";
+
+    if (optional)
+    {
+        o << pre_line << "if (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
+        add_despl = "\t";
+    }
+
+    if( isVector() )
+    {
+        o << getToStringXMLCommandVector(pre_line, name) << "\n";
+    }
+    else
+    {
+        o << getToStringXMLCommandIndividual(pre_line, name) << "\n";
+    }
+
+    return o.str();
+
+}
+
+
 // getSetFromString Command
 
 string DataType::getSetFromStringCommandIndividual( string pre_line, string _name )

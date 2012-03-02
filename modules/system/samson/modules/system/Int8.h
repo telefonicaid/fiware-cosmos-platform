@@ -16,188 +16,220 @@ class Int8 : public FixedLengthDataInstance<char>
 {
 public:
 
-   std::string getName()
-   {
-	  return "system.Int8";
-   }
+    std::string getName()
+    {
+        return "system.Int8";
+    }
 
 
 
-	int hash(int max_num_partitions){
-		return abs(value)%max_num_partitions;
-	}
+    int hash(int max_num_partitions){
+        return abs(value)%max_num_partitions;
+    }
 
-	void setFromString(const char *_data)
-	{
-		if (strncmp(_data, "0x", strlen("0x")) == 0)
-		{
-			value = strtol(_data, (char **) NULL, 16);
-		}
-		else
-		{
-			value = strtol(_data, (char **) NULL, 10);
-		}
+    void setFromString(const char *_data)
+    {
+        if (strncmp(_data, "0x", strlen("0x")) == 0)
+        {
+            value = strtol(_data, (char **) NULL, 16);
+        }
+        else
+        {
+            value = strtol(_data, (char **) NULL, 10);
+        }
 
-	}
+    }
 
-	int toInt()
-	{
-		return (value);
-	}
+    int toInt()
+    {
+        return (value);
+    }
 
-	std::string str(){
-		std::ostringstream o;
-		o << (int)value << " ";
-		return o.str();
-	}
+    std::string str(){
+        std::ostringstream o;
+        o << (int)value << " ";
+        return o.str();
+    }
 
-	int *getDataPath(const std::string &dataPathString){
-		return(getDataPathStatic(dataPathString));
-	}
+    std::string strJSON(std::string _varNameInternal){
+        std::ostringstream o;
+        o << "{" << "\"" << _varNameInternal << "\":" << (int)value << "}";
+        return o.str();
+    }
 
-	static int *getDataPathStatic(const std::string &dataPathString){
-		const char *dataPathCharP = dataPathString.c_str();
-		int nlevels = 1;
-		int *dataPathIntP;
+    std::string strJSONInternal(std::string _varNameInternal, bool vectorMember){
+        std::ostringstream o;
+        if (vectorMember)
+        {
+            o << (int)value;
+        }
+        else
+        {
+            o << "\"" << _varNameInternal << "\":" << (int)value;
+        }
+        return o.str();
+    }
 
-		const char *p_sep = dataPathCharP;
-		while ((p_sep = strchr(p_sep, '.')) != NULL)
-		{
-			nlevels++;
-			p_sep++;
-		}
+    std::string strXML(std::string _varNameInternal){
+        std::ostringstream o;
+        o << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
+        o << strXMLInternal(_varNameInternal);
+        return o.str();
+    }
 
-		if ((dataPathIntP = (int *)malloc((nlevels + 1)*sizeof(int))) == NULL)
-		{
-			return ((int *)NULL);
-		}
+    std::string strXMLInternal(std::string _varNameInternal){
+        std::ostringstream o;
+        o << "<" << _varNameInternal << ">" << (int)value << "</" << _varNameInternal << ">\n";
+        return o.str();
+    }
 
-		int retError = getDataPath(dataPathCharP, dataPathIntP);
+    int *getDataPath(const std::string &dataPathString){
+        return(getDataPathStatic(dataPathString));
+    }
 
-		if (retError)
-		{
-			free(dataPathIntP);
-			dataPathIntP = NULL;
-		}
+    static int *getDataPathStatic(const std::string &dataPathString){
+        const char *dataPathCharP = dataPathString.c_str();
+        int nlevels = 1;
+        int *dataPathIntP;
 
-		return  (dataPathIntP);
-	}
+        const char *p_sep = dataPathCharP;
+        while ((p_sep = strchr(p_sep, '.')) != NULL)
+        {
+            nlevels++;
+            p_sep++;
+        }
 
-	static int getDataPath(const char * dataPathCharP, int *dataPathIntP){
-		if (*dataPathCharP == 0)
-		{
-			*dataPathIntP = -1;
-			return (0);
-		}
+        if ((dataPathIntP = (int *)malloc((nlevels + 1)*sizeof(int))) == NULL)
+        {
+            return ((int *)NULL);
+        }
 
-		if (strcmp(dataPathCharP, "Int8") == 0)
-		{
-			*dataPathIntP = -1;
-			return (0);
-		}
+        int retError = getDataPath(dataPathCharP, dataPathIntP);
 
-		return -1;
-	}
+        if (retError)
+        {
+            free(dataPathIntP);
+            dataPathIntP = NULL;
+        }
 
-	std::string getTypeFromPath(const std::string &dataPathString){
-		const char *dataPathCharP = dataPathString.c_str();
-		return(getTypeFromPathStatic(dataPathCharP));
-	}
+        return  (dataPathIntP);
+    }
 
-	static std::string getTypeFromPathStatic(const char * dataPathCharP){
-		if (*dataPathCharP == 0)
-		{
-			return ("system.Int8");
-		}
-		if (strcmp(dataPathCharP, ".") == 0)
-		{
-			return ("system.Int8");
-		}
+    static int getDataPath(const char * dataPathCharP, int *dataPathIntP){
+        if (*dataPathCharP == 0)
+        {
+            *dataPathIntP = -1;
+            return (0);
+        }
 
-		if (strcmp(dataPathCharP, "Int8") == 0)
-		{
-			return ("system.Int8");
-		}
-		return("_ERROR_");
-	}
+        if (strcmp(dataPathCharP, "Int8") == 0)
+        {
+            *dataPathIntP = -1;
+            return (0);
+        }
 
-	std::string getTypeFromPath(const int *dataPathIntP){
-		return(getTypeFromPathStatic(dataPathIntP));
-	}
+        return -1;
+    }
 
-	static std::string getTypeFromPathStatic(const int *dataPathIntP){
-		switch(*dataPathIntP)
-		{
-		case -1:
-			return ("system.Int8");
-			break;
-		default:
-			return ("_ERROR_");
-			break;
-		};
-	}
+    std::string getTypeFromPath(const std::string &dataPathString){
+        const char *dataPathCharP = dataPathString.c_str();
+        return(getTypeFromPathStatic(dataPathCharP));
+    }
 
-	static const char *getTypeStatic()
-	{
-		return ("system.Int8");
-	}
+    static std::string getTypeFromPathStatic(const char * dataPathCharP){
+        if (*dataPathCharP == 0)
+        {
+            return ("system.Int8");
+        }
+        if (strcmp(dataPathCharP, ".") == 0)
+        {
+            return ("system.Int8");
+        }
 
-	const char *getType()
-	{
-		return ("system.Int8");
-	}
+        if (strcmp(dataPathCharP, "Int8") == 0)
+        {
+            return ("system.Int8");
+        }
+        return("_ERROR_");
+    }
 
-	static bool checkTypeStatic(const char *type)
-	{
-		if (strcmp(type, "system.Int8") == 0)
-		{
-			return true;
-		}
-		return false;
-	}
+    std::string getTypeFromPath(const int *dataPathIntP){
+        return(getTypeFromPathStatic(dataPathIntP));
+    }
 
-	bool checkType(const char *type)
-	{
-		if (strcmp(type, "system.Int8") == 0)
-		{
-			return true;
-		}
-		return false;
-	}
+    static std::string getTypeFromPathStatic(const int *dataPathIntP){
+        switch(*dataPathIntP)
+        {
+        case -1:
+            return ("system.Int8");
+            break;
+        default:
+            return ("_ERROR_");
+            break;
+        };
+    }
 
-	static size_t getHashTypeStatic(){
-		return(14669836451525464989ULL);
-	}
+    static const char *getTypeStatic()
+    {
+        return ("system.Int8");
+    }
 
-	size_t getHashType(){
-		return(14669836451525464989ULL);
-	}
+    const char *getType()
+    {
+        return ("system.Int8");
+    }
 
-	static bool checkHashTypeStatic(size_t valType){
-		if (valType == 14669836451525464989ULL)
-		{
-			return true;
-		}		return false;
-	}
+    static bool checkTypeStatic(const char *type)
+    {
+        if (strcmp(type, "system.Int8") == 0)
+        {
+            return true;
+        }
+        return false;
+    }
 
-	 bool checkHashType(size_t valType){
-		if (valType == 14669836451525464989ULL)
-		{
-			return true;
-		}		return false;
-	}
+    bool checkType(const char *type)
+    {
+        if (strcmp(type, "system.Int8") == 0)
+        {
+            return true;
+        }
+        return false;
+    }
 
-	DataInstance * getDataInstanceFromPath(const int *dataPathIntP){
-		switch(*dataPathIntP)
-		{
-		case -1:
-			return (this);
-			break;
-		default:
-			return (NULL);
-			break;
-		};
-	}
+    static size_t getHashTypeStatic(){
+        return(14669836451525464989ULL);
+    }
+
+    size_t getHashType(){
+        return(14669836451525464989ULL);
+    }
+
+    static bool checkHashTypeStatic(size_t valType){
+        if (valType == 14669836451525464989ULL)
+        {
+            return true;
+        }		return false;
+    }
+
+    bool checkHashType(size_t valType){
+        if (valType == 14669836451525464989ULL)
+        {
+            return true;
+        }		return false;
+    }
+
+    DataInstance * getDataInstanceFromPath(const int *dataPathIntP){
+        switch(*dataPathIntP)
+        {
+        case -1:
+            return (this);
+            break;
+        default:
+            return (NULL);
+            break;
+        };
+    }
 
 };
 

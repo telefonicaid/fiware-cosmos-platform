@@ -30,6 +30,7 @@ size_t timeOut;
 
 char controller[1024];
 char queue_name[1024];
+char format[81];
 char user[1024];
 char password[1024];
 bool show_header;
@@ -39,19 +40,20 @@ int limit;
 
 PaArgument paArgs[] =
 {
-	{ "-node",        controller,      "",    PaString,  PaOpt, _i "localhost"  , PaNL, PaNL,       "SMASON node to connect with "         },
+	{ "-node",        controller,      "",    PaString,  PaOpt, _i "localhost"  , PaNL, PaNL,       "SAMSON node to connect with "         },
     { "-user",             user,                  "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "User to connect to SAMSON cluster"  },
 	{ "-password",         password,              "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "Password to connect to SAMSON cluster"  },
 	{ "-header",      &show_header,    "SHOW_HEADER",   PaBool,    PaOpt,  false, false,  true,     "Show only header of blocks"   },
 	{ "-remove",      &flag_remove,    "",              PaBool,    PaOpt,  false, false,  true,     "Remove downloaded stuff"   },
 	{ "-new",         &flag_new,       "",              PaBool,    PaOpt,  false, false,  true,     "Get only new data"   },
 	{ "-limit",       &limit,          "MAX_KVS",       PaInt,     PaOpt,     0,      0,    10000,  "number of kvs to be shown for each block"   },
+    { "-format",       format,          "",       PaString,     PaOpt,     _i "plain",      PaNL,    PaNL,  "type of output format: [plain|json|xml]"   },
 	{ " ",            queue_name,      "QUEUE",         PaString,  PaReq,  (long) "null",   PaNL,   PaNL,  "name of the queue to pop data from"         },
     PA_END_OF_ARGS
 };
 
 static const char* manSynopsis =
-"[-help] [-controller str_controller] [-header bool] [-limit int_n] queue\n";
+"[-help] [-controller str_controller] [-header bool] [-limit int_n] [-format plain|json|xml] queue\n";
 
 static const char* manShortDescription = 
 "samsonPop is an easy-to-use client to receive data from a particular queue in a SAMSON system.\n";
@@ -109,6 +111,12 @@ int main( int argC , const char *argV[] )
     
     // Parse input arguments    
     paParse(paArgs, argC, (char**) argV, 1, false);
+
+    if ((strcmp(format, "plain") != 0) && (strcmp(format,"json") != 0) && (strcmp(format,"xml") != 0))
+    {
+        fprintf(stderr, "Format '%s' not supported. Please select \"plain\", \"json\" or \"xml\"\n", format);
+        exit(-1);
+    }
     logFd = lmFirstDiskFileDescriptor();
     
     // Random initialization
@@ -145,7 +153,7 @@ int main( int argC , const char *argV[] )
             if( show_header )
                 block->print_header();
             else
-                block->print_content( limit );
+                block->print_content( limit, format );
             
             delete block;
         }

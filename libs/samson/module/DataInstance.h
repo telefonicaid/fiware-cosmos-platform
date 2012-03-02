@@ -55,6 +55,11 @@ namespace samson {
         virtual std::string getName()=0;
         
 		virtual std::string  str()= 0;									// Function  to get a debug-like string with the content
+		virtual std::string strJSON(std::string name)=0;
+		virtual std::string strJSONInternal(std::string name, bool vectorMember)=0;
+        virtual std::string strXML(std::string name)=0;
+        virtual std::string strXMLInternal(std::string name)=0;
+
 		virtual ~DataInstance(){}                                       // Virtual destructor necessary since delete is called from parent class
 	};
     

@@ -16,6 +16,8 @@ except ImportError, e:
 got_setuptools = True
 try:
     from setuptools import setup as toolssetup
+    from setuptools import find_packages
+    from setuptools import join
 except ImportError, e:
     print "ERROR:",e
     got_setuptools = False
@@ -38,12 +40,12 @@ setup(
     long_description = "Big Data Platform Monitoring",
     author = "Telefonica R&D",
     url = "http://tid.es/en",
-    packages = ['monitoring'],
+    packages = find_packages(exclude=['test*']),
     data_files=[
         ('/etc/httpd/conf.d', ['apacheConf/monitoring.conf']),
-        ('/usr/local/ps/apps/bdp/Configuration', ['Configuration/settings.py'])],
+        ('/usr/local/ps/apps/bdp/Configuration', ['Configuration/settings/settings_prod.py'])],
         options = {'bdist_rpm':{'release' : getRevision(),
-                            'requires' : 'httpd, mod_wsgi, django-nonrel, pymongo, djangotoolbox, django-mongodb',
+                            'requires' : 'httpd', #mod_wsgi, django-nonrel, pymongo, djangotoolbox, django-mongodb',
                             'post_install' : 'scripts/postInstall.sh',
                             'pre_install' : 'scripts/preInstall.sh',
                             #'pre_uninstall' : 'scripts/preUninstall.sh',

@@ -1,9 +1,7 @@
 import os
 import sys
 
-sys.path.append('/Users/def/tid/BigData/workspace/Configuration')
-sys.path.append('/Users/def/tid/BigData/workspace/Configuration/Configuration')
-
+sys.path.append('/usr/local/ps/apps/bdp/Configuration/Configuration/settings')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'Configuration.settings'
 

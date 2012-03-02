@@ -147,6 +147,10 @@ namespace samson
         add( "reload_modules" , "modules", 
             "Reload modules in all workers");
         
+        add( "push_module" , "modules", 
+            "Push a module to the cluster. The module has to be compatible with hardware architecture",
+            "push_module <module_file>"
+            );
         
         // STREAM
         // ------------------------------------------------------------------

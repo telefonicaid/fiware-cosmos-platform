@@ -342,7 +342,14 @@ namespace samson
         if (info->completingSecondWord("set_database_mode") )
             info->add("on"); // It can only be on
         
-       
+
+        if ( info->completingSecondWord("push_module") )
+        {
+            info->auto_complete_files("");
+            return;
+        }
+        
+        
         // Push operation
         // ------------------------------------------------------------------------
         if ( info->completingSecondWord("push") )
@@ -1180,6 +1187,38 @@ namespace samson
             // Not possible to get here...
             return 0;
         }
+        
+        if( mainCommand == "push_module" )
+        {
+            
+            if( commandLine.get_num_arguments() < 3 )
+            {
+                writeErrorOnConsole( "Usage: push_module <file> <module_name>");
+                return 0;
+            }
+
+            std::string file_name = commandLine.get_argument(1);
+            std::string module_name = commandLine.get_argument(2);
+            
+            struct ::stat info;
+            if( stat(file_name.c_str(), &info) != 0 )
+            {
+                writeErrorOnConsole( au::str("Error reading file %s (%s)" , file_name.c_str() , strerror(errno) ) );
+                return 0;
+            }
+            // Size of the file
+            size_t file_size = info.st_size;
+            engine::Buffer * buffer = engine::MemoryManager::shared()->newBuffer("push_module", file_size, 0);
+            buffer->setSize(file_size);
+            
+            // Load the file
+            FILE* file = fopen( file_name.c_str(), "r");
+            fread(buffer->getData(), file_size, 1, file);
+            fclose(file);
+            
+            return sendWorkerCommand( au::str("push_module %s" , module_name.c_str() ) , buffer );
+        }
+        
         
         // By default, it is considered a worker command
         return sendWorkerCommand( command , NULL );

@@ -26,6 +26,8 @@ namespace samson
 			
 		void *hndl;	// Pointer for the dlOpen
 
+        std::string file_name;
+        
 		Module()
 		{
 			hndl    = NULL;

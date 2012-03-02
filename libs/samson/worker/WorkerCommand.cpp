@@ -7,6 +7,7 @@
 
 #include "engine/Notification.h"
 #include "engine/ProcessManager.h"  
+#include "engine/DiskManager.h"
 
 
 #include "samson/common/EnvironmentOperations.h"        // copyEnvironment
@@ -73,6 +74,7 @@ namespace samson {
     WorkerCommand::WorkerCommand( size_t _delilah_id , size_t _delilah_component_id ,  const network::WorkerCommand& _command )
     {
         samsonWorker = NULL;
+        buffer = NULL;
         
         //Identifiers to notify when finished
         delilah_id = _delilah_id;
@@ -96,11 +98,13 @@ namespace samson {
         
         // No pending process at the moment
         num_pending_processes = 0;
+        num_pending_disk_operations = 0;
     }
     
     WorkerCommand::WorkerCommand( std::string _command )
     {
         samsonWorker = NULL;
+        buffer = NULL;
         
         // Not necessary to notify
         originalWorkerCommand = NULL;
@@ -116,12 +120,19 @@ namespace samson {
         
         // No pending process at the moment
         num_pending_processes = 0;
+        num_pending_disk_operations = 0;
     }
     
     WorkerCommand::~WorkerCommand()
     {
         if( originalWorkerCommand )
             delete originalWorkerCommand;
+        
+        if( buffer )
+        {
+            engine::MemoryManager::shared()->destroyBuffer(buffer);
+            buffer = NULL;
+        }
     }
     
     void WorkerCommand::setSamsonWorker( SamsonWorker * _samsonWorker )
@@ -286,6 +297,8 @@ namespace samson {
             }
             return;
         }
+
+
         
         if ( cmd.get_argument(0) == "push_queue" )
         {
@@ -561,6 +574,35 @@ namespace samson {
         visualitzation.options = visualitzation_options;
         visualitzation.pattern = pattern; 
         
+        if ( main_command == "push_module" )
+        {
+            if( cmd.get_num_arguments() < 2 )
+            {
+                finishWorkerTaskWithError( "Usage push_module <name>" );
+                return;
+            }
+            
+            if ( !buffer )
+            {
+                finishWorkerTaskWithError("No data provided for this module");
+                return;
+            }
+            
+            // Destination file
+            std::string file_name = au::str("%s/lib%s.so" 
+                                            , SamsonSetup::shared()->modulesDirectory().c_str() 
+                                            , cmd.get_argument(1).c_str() 
+                                            );
+            
+            engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation(buffer, file_name, getEngineId() );
+            engine::DiskManager::shared()->add( operation );
+            num_pending_disk_operations++;
+            
+            // Buffer will be destroyed by the disk operation
+            buffer = NULL;
+            
+            return;
+        }        
         
         // Query commands
         if( main_command == "ls_queues" )
@@ -1143,6 +1185,16 @@ namespace samson {
             return;
         }
         
+        if( notification->isName( notification_disk_operation_request_response ) )
+        {
+            num_pending_disk_operations--;
+            if( notification->environment.isSet("error") )
+                error.set( notification->environment.get("error" , "no_error") );
+            
+            checkFinish();
+            return;
+        }
+        
         LM_W(("Unexpected notification at WorkerCommand"));
         
     }
@@ -1151,7 +1203,7 @@ namespace samson {
     {
         if( error.isActivated() )
             finishWorkerTask();
-        else if( num_pending_processes <= 0 )
+        else if( ( num_pending_processes <= 0 ) && (num_pending_disk_operations <= 0 ) )
             finishWorkerTask();
     }
     

@@ -46,6 +46,13 @@ namespace samson {
 	public:
 		
 		WorkerCommandDelilahComponent( std::string _command , engine::Buffer *buffer );
+        ~WorkerCommandDelilahComponent()
+        {
+            if( buffer )
+            {
+                engine::MemoryManager::shared()->destroyBuffer( buffer );
+            }
+        }
 		
 		void receive( Packet* packet );
 		void run();

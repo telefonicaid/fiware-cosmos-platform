@@ -135,8 +135,17 @@ namespace samson {
             
             copyEnviroment( &e , c->mutable_environment() );
             
-            // Set the buffer data ( if any )
-            p->buffer = buffer;
+            // Duplicate data to send to this worker
+            if( buffer )
+            {
+                size_t size = buffer->getSize();
+                engine::Buffer* _buffer = engine::MemoryManager::shared()->newBuffer( "worker_commnad" , size , 0 );
+                memcpy(_buffer->getData(), buffer->getData(), size );
+                _buffer->setSize( size );            
+                p->buffer = _buffer;
+            }
+            else
+                p->buffer = NULL;
             
             // Information about destination....
             p->to.node_type = WorkerNode;

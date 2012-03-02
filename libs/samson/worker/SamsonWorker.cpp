@@ -161,7 +161,6 @@ namespace samson {
             return;
         }
         
-        
         // --------------------------------------------------------------------
         // push messages
         // --------------------------------------------------------------------
@@ -214,6 +213,10 @@ namespace samson {
             }
             return;
         }
+        
+        // --------------------------------------------------------------------
+        // pop messages
+        // --------------------------------------------------------------------
              
         if( msgCode == Message::PopQueue )
         {
@@ -226,6 +229,10 @@ namespace samson {
             return;
         }
         
+        // --------------------------------------------------------------------
+        // Worker commands
+        // --------------------------------------------------------------------
+        
         if( msgCode == Message::WorkerCommand )
         {
             if( !packet->message->has_worker_command() )
@@ -237,7 +244,15 @@ namespace samson {
             size_t delilah_id = packet->from.id;
             size_t delilah_component_id = packet->message->delilah_component_id();
             
-            WorkerCommand *workerCommand = new WorkerCommand(  delilah_id , delilah_component_id , packet->message->worker_command() );
+            WorkerCommand *workerCommand = new WorkerCommand(  delilah_id 
+                                                             , delilah_component_id 
+                                                             , packet->message->worker_command() 
+                                                             );
+            
+            // If it comes with a buffer, set the buffer property
+            if( packet->buffer )
+                workerCommand->setBuffer( packet->buffer );
+            
             workerCommandManager->addWorkerCommand( workerCommand );
             return;
         }

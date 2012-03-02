@@ -78,9 +78,13 @@ namespace samson {
         
         // Number of pending processes
         int num_pending_processes;
+        int num_pending_disk_operations;
         
         // Collections added in the response message
         au::vector< samson::network::Collection > collections;
+        
+        // Buffer
+        engine::Buffer *buffer;
         
         friend class WorkerCommandManager;
         
@@ -103,6 +107,14 @@ namespace samson {
 
         // Fill a collection record
         void fill( samson::network::CollectionRecord* record , Visualization* visualization );
+        
+        // Set buffer form the original message
+        void setBuffer( engine::Buffer* _buffer )
+        {
+            if( buffer )
+                LM_X(1, ("Internal error"));
+            buffer = _buffer;
+        }
         
     private:
         

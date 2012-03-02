@@ -56,6 +56,8 @@ namespace samson {
         
         static Status loadModule( std::string path , Module** module , std::string* version_string );
         
+        std::string getModuleFileName( std::string module );
+
 	public:
 		
 		// Reload modules from default directories

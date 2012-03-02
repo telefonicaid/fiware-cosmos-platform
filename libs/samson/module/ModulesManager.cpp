@@ -108,6 +108,16 @@ namespace samson
 		
 	}
 
+    std::string ModulesManager::getModuleFileName( std::string module_name )
+    {
+        au::TokenTaker tt( &token , "ModulesManager::reloadModules");
+        Module* module = modules.findInMap(module_name);
+        if( !module )
+            return "";
+        
+        return module->file_name;
+    }
+
 	
 	void ModulesManager::reloadModules()
 	{
@@ -223,6 +233,8 @@ namespace samson
         getVersionFunction fv = (getVersionFunction)getVersionPointer;
         
         Module *module = f();
+        module->file_name = path; // Save the full path of this module
+        
         std::string platform_version  = fv();
         
         if ( !module )

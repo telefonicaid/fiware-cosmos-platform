@@ -13,7 +13,7 @@ class Preprocessing(object):
     '''
     def __init__(self):
         self.db = Connection("psmongo1", 27017).PSDemo
-        self.xmlTemplate = parse("preprocessing/preprocessing.xml")
+        self.xmlTemplate = parse("templates/preprocessing.xml")
         
     def __setFilters(self, filterName):
         namespace = "es.tid.ps.kpicalculation.cleaning." + filterName.replace(' ', '')
@@ -32,8 +32,14 @@ class Preprocessing(object):
                 properties[0].firstChild.data = val
             else:
                 properties[0].firstChild.data += "," +val
+    
+    def __setPaths(self, moduleId, userConfig):
+        path = "//property[name='mapred.output.dir']/value"
+        outputProperty = xpath.find( path, self.xmlTemplate)
+        outputProperty[0].firstChild.data = "${nameNode}" + userConfig['defaultPath'] + userConfig['modules'][moduleId]['output'] + "/cleaned/" + "${outputDir}"
         
-    def getOoziesXml(self, template):
+    def getOoziesXml(self, template, userConfig, moduleId):
+        self.__setPaths(moduleId, userConfig)
         values = template['attribute_values']
         attributes = self.db.wizard_FixedTemplates.find( {"name" : "PreprocessingTemplate"} )[0]['attributes']
         for att in attributes:

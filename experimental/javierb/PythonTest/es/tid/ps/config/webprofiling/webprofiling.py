@@ -16,7 +16,7 @@ class WebProfiling(object):
     
     def __init__(self):
         self.db = Connection("psmongo1", 27017).PSDemo
-        self.xmlTemplate = parse("webprofiling/webprofiling.xml")
+        self.xmlTemplate = parse("templates/webprofiling.xml")
         
     def setValues(self,propertyName,values):
         path = "//property[name='kpi.aggregation." + propertyName +"']/value"
@@ -30,10 +30,20 @@ class WebProfiling(object):
     def setName(self, name):
         path = "//action"
         properties = xpath.find( path, self.xmlTemplate)
-        properties[0].setAttribute("name", str(name))
+        properties[0].setAttribute("name", 'aggregation')
+        '''properties[0].setAttribute("name", 'action_' + str(name))'''
+    
+    def __setPaths(self, template, moduleId, userConfig):
+        path = "//property[name='mapred.input.dir']/value"
+        inputProperty = xpath.find( path, self.xmlTemplate)
+        inputProperty[0].firstChild.data = "${nameNode}" + userConfig['defaultPath'] + userConfig['modules'][moduleId]['output'] + "/cleaned/" + "${outputDir}" 
         
+        path = "//property[name='mapred.output.dir']/value"
+        inputProperty = xpath.find( path, self.xmlTemplate)
+        inputProperty[0].firstChild.data = "${nameNode}" + userConfig['defaultPath'] + userConfig['modules'][moduleId]['output'] + "/kpis/" + str(template['_id']) + "/${outputDir}"
         
-    def getOoziesXml(self, template):
+    def getOoziesXml(self, template, userConfig, moduleId):
+        self.__setPaths(template, moduleId, userConfig)
         values = template['attribute_values']
         self.setName(template['_id'])
         attributes = self.db.wizard_FixedTemplates.find( {"name" : "WebProfilingTemplate"} )[0]['attributes']

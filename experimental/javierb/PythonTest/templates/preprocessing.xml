@@ -29,11 +29,11 @@
             </property>
             <property>
             	<name>mapred.output.key.class</name>
-            	<value>org.apache.hadoop.io.Text</value>
+            	<value>org.apache.hadoop.io.NullWritable</value>
             </property>
             <property>
             	<name>mapred.mapoutput.value.class</name>
-            	<value>org.apache.hadoop.io.Text</value>
+            	<value>com.twitter.elephantbird.mapreduce.io.ProtobufWritable</value>
             </property>
             <property>
             	<name>mapred.mapoutput.key.class</name>
@@ -41,21 +41,17 @@
             </property>
 			<property>
 				<name>mapred.output.value.class</name>
-				<value>org.apache.hadoop.io.Text</value>
+				<value>com.twitter.elephantbird.mapreduce.io.ProtobufWritable</value>
 			</property>
 			<property>
 				<name>mapreduce.outputformat.class</name>
-				<value>org.apache.hadoop.mapreduce.lib.output.TextOutputFormat</value>
+				<value>com.twitter.elephantbird.mapreduce.output.LzoProtobufB64LineOutputFormat</value>
 			</property>
 			<property>
-				<name>mapred.output.compression.codec</name>
-				<value>com.hadoop.compression.lzo.LzopCodec</value>
+				<name>elephantbird.protobuf.class.for.com.twitter.elephantbird.mapreduce.output.LzoProtobufB64LineOutputFormat</name>
+				<value>es.tid.ps.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog</value>
 			</property>
 			<property>
-				<name>mapred.output.compress</name>
-				<value>true</value>
-			</property>
-      		<property>
                 <name>mapred.reduce.tasks</name>
                 <value>0</value>
             </property>
@@ -77,11 +73,11 @@
         	</property>
             <property>
                 <name>mapred.input.dir</name>
-                <value>/user/javierb/osn_lzo_backup/o2_gsma_gprs_hellcat30a_20101130.dat.lzo</value>
+                <value>${inputDir}</value>
             </property>
             <property>
                 <name>mapred.output.dir</name>
-                <value>${nameNode}/user/javierb/es/webprofiling/${outputDir}</value>
+                <value> </value>
             </property>
         </configuration>
     </map-reduce>

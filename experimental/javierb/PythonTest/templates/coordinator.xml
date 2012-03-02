@@ -1,0 +1,55 @@
+<coordinator-app name="webprofilingCo" frequency="${coord:days(1)}" start="2010-12-01T00:00Z" end="2010-12-03T00:00Z" timezone="UTC" xmlns="uri:oozie:coordinator:0.1">
+    <datasets>
+        <dataset name="din" frequency="${coord:days(1)}" initial-instance="2010-11-30T00:00Z" timezone="UTC">
+            <uri-template> </uri-template>
+            <done-flag></done-flag>
+        </dataset>
+        <dataset name="cleanout" frequency="${coord:days(1)}" initial-instance="2010-11-30T00:00Z" timezone="UTC">
+            <uri-template>${YEAR}/${MONTH}/${DAY}</uri-template>
+        </dataset>
+    </datasets>
+    <input-events>
+       <data-in name="input" dataset="din">
+           <instance>${coord:current(-1)}</instance>
+       </data-in>
+    </input-events>
+    <output-events>
+        <data-out name="output" dataset="cleanout">
+            <instance>${coord:current(-1)}</instance>
+        </data-out>
+    </output-events>
+    <action>
+        <workflow>
+            <app-path> </app-path>
+            <!-- You can define properties that you want to pass to your workflow here -->
+            <!-- The input_files variable will contain the hdfs path for the 24 input files -->
+            <configuration>
+            	<property>
+                    <name>nameNode</name>
+                    <value>hdfs://pshdp01:8011</value>
+                </property>
+                <property>
+                    <name>jobTracker</name>
+                    <value>pshdp01:8012</value>
+                </property>
+                <property>
+                    <name>queueName</name>
+                    <value>default</value>
+                </property>
+                <property>
+                    <name>oozie.use.system.libpath</name>
+                    <value>true</value>
+                </property>
+                <property>
+                    <name>outputDir</name>
+                    <value>${coord:dataOut('output')}</value>
+                </property>
+                <property>
+                    <name>inputDir</name>
+                    <value>${coord:dataIn('input')}</value>
+                </property>
+            </configuration>
+         </workflow>
+     </action>
+</coordinator-app>
+

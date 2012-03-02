@@ -1,4 +1,4 @@
-<?xml version="1.0" ?><action name="4f436f74367cfd07b1000002">
+<action name="PAGE_VIEWS_PROT">
 	<map-reduce>
 		<job-tracker>${jobTracker}</job-tracker>
 		<name-node>${nameNode}</name-node>
@@ -45,11 +45,15 @@
 			</property>
 			<property>
 				<name>mapreduce.inputformat.class</name>
-				<value>com.hadoop.mapreduce.LzoTextInputFormat</value>
+				<value>com.twitter.elephantbird.mapreduce.input.LzoProtobufB64LineInputFormat</value>
+			</property>
+			<property>
+				<name>elephantbird.class.for.MultiInputFormat</name>
+				<value>es.tid.ps.kpicalculation.data.KpiCalculationProtocol$WebProfilingLog</value>
 			</property>
 			<property>
 				<name>mapred.mapoutput.key.class</name>
-				<value>es.tid.ps.kpicalculation.data.WebLogCounter</value>
+				<value>es.tid.ps.base.mapreduce.SingleKey</value>
 			</property>
 			<property>
 				<name>mapred.mapoutput.value.class</name>
@@ -73,7 +77,7 @@
 			</property>
 			<property>
 				<name>kpi.aggregation.fields</name>
-				<value>visitorId,protocol,fullUrl</value>
+				<value> </value>
 			</property>
 			<property>
 				<name>mapred.output.compress</name>
@@ -85,14 +89,14 @@
 			</property>
 			<property>
 				<name>mapred.input.dir</name>
-				<value>${nameNode}/user/javierb/es/webprofiling/${outputDir}</value>
+				<value> </value>
 			</property>
 			<property>
 				<name>mapred.output.dir</name>
-				<value>${nameNode}/user/javierb/es/webprofiling/aggregation/PAGE_VIEWS_PROT/${outputDir}/</value>
+				<value> </value>
 			</property>
 		</configuration>
 	</map-reduce>
-	<ok to="joining"/>
+	<ok to="end"/>
 	<error to="fail"/>
 </action>

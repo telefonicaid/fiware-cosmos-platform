@@ -323,6 +323,7 @@ packages: install man rpm deb
 init_home:
 	mkdir -p $(SAMSON_HOME)
 	mkdir -p $(SAMSON_WORKING)
-	chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_HOME) $(SAMSON_WORKING)
+	mkdir -p /var/log/samson
+	chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_HOME) $(SAMSON_WORKING) /var/log/samson
 
 #vim: noexpandtab

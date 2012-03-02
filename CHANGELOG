@@ -1,4 +1,4 @@
-samson (SAMSON_VERSION.SAMSON_RELEASE) unstable; urgency=low
+samson (SAMSON_VERSION.SAMSON_RELEASE) DISTRO_CODENAME; urgency=low
 
   * see http://wikis.hi.inet/samson
 

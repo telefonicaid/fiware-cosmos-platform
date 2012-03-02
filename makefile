@@ -16,6 +16,7 @@ SAMSON_OWNER=samson
 endif
 
 DISTRO=$(shell lsb_release -is)
+DISTRO_CODENAME=$(shell lsb_release -cs)
 
 # List of modules that gets used to build packages. *Don't forget* to update modules/makefile as well when adding a new module
 MODULES=system \
@@ -284,14 +285,15 @@ publish_rpm: rpm
 # the default install location so as to not trash a live installation
 deb:
 	rm -rf package/deb
-	sed -e  "s/SAMSON_VERSION/$(SAMSON_VERSION)/"  -e "s/SAMSON_RELEASE/$(SAMSON_RELEASE)/" CHANGELOG > debian/changelog
+	sed -e  "s/SAMSON_VERSION/$(SAMSON_VERSION)/"  -e "s/SAMSON_RELEASE/$(SAMSON_RELEASE)/" -e "s/DISTRO_CODENAME/$(DISTRO_CODENAME)/" CHANGELOG > debian/changelog
 	# Right now *everything* comes in a single package
 	dpkg-buildpackage -b
 	mkdir -p package/deb
 	mv ../samson_$(SAMSON_VERSION).$(SAMSON_RELEASE)* package/deb
 
 publish_deb: deb
-	dput package/deb/samson_$(SAMSON_VERSION).$(SAMSON_RELEASE).changes
+	# Upload the files. A cron job on the server will include them in the repository
+	scp package/deb/* repos@samson09:/var/repository/ubuntu/incoming/$(DISTRO_CODENAME)
 
 man:
 	if [ ! -d BUILD_RELEASE ]; then \

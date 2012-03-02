@@ -233,8 +233,6 @@ namespace samson
         getVersionFunction fv = (getVersionFunction)getVersionPointer;
         
         Module *module = f();
-        module->file_name = path; // Save the full path of this module
-        
         std::string platform_version  = fv();
         
         if ( !module )
@@ -244,8 +242,11 @@ namespace samson
             return;
         }
         
+        module->file_name = path; // Save the full path of this module
+        
         if( platform_version == SAMSON_VERSION )
         {
+
             LM_T(LmtModuleManager,("Module %s compiled for version %s ... OK!" , module->name.c_str() , platform_version.c_str()  ));
             LM_T(LmtModuleManager,("Adding module %s (%s) %d ops & %d data-types" , 
                         module->name.c_str() , 

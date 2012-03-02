@@ -492,18 +492,21 @@ namespace samson
         if( createFullDirectory( _samson_working ) != OK )
             LM_X(1,("Error creating directory %s" , _samson_working.c_str() ));
         if( createFullDirectory( _samson_working + "/data" )!= OK )
-            LM_X(1,("Error creating directory %s" , _samson_working.c_str() ));
+            LM_X(1,("Error creating directory at %s" , _samson_working.c_str() ));
         if( createFullDirectory( _samson_working + "/log" )!= OK )
-            LM_X(1,("Error creating directory %s" , _samson_working.c_str() ));
+            LM_X(1,("Error creating directory at %s" , _samson_working.c_str() ));
         if( createFullDirectory( _samson_working + "/blocks" )!= OK )
-            LM_X(1,("Error creating directory %s" , _samson_working.c_str() ));
+            LM_X(1,("Error creating directory at %s" , _samson_working.c_str() ));
         if( createFullDirectory( _samson_working + "/etc" )!= OK )
-            LM_X(1,("Error creating directory %s" , _samson_working.c_str() ));
+            LM_X(1,("Error creating directory at %s" , _samson_working.c_str() ));
         if( createFullDirectory( _samson_working + "/config" )!= OK )
-            LM_X(1,("Error creating directory %s" , _samson_working.c_str() ));
+            LM_X(1,("Error creating directory at %s" , _samson_working.c_str() ));
+        
+        // Create modules directory 
+        if( createFullDirectory( _samson_home + "/modules" ) )
+            LM_X(1,("Error creating directory at %s" , _samson_home.c_str() ));
+        
     }
-    
-
     
     int SamsonSetup::save()
     {

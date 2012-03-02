@@ -230,7 +230,7 @@ namespace samson {
             return output.str();
         }
         
-        std::string strJSONInternal(std::string name)
+        std::string strJSONInternal(std::string name, bool _vectorMember)
         {
             std::ostringstream output;
             output << "[ ";
@@ -242,6 +242,29 @@ namespace samson {
             return output.str();
         }
         
+        std::string strXML(std::string name)
+        {
+            std::ostringstream output;
+	    output << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>";
+            typename std::list<T*>::iterator it_elements;
+            for (it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
+	    {
+	        output << (*it_elements)->strXMLInternal(name);
+            }
+            return output.str();
+        }
+        
+        std::string strXMLInternal(std::string name)
+        {
+            std::ostringstream output;
+            typename std::list<T*>::iterator it_elements;
+            for (it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
+	    {
+	        output << (*it_elements)->strXMLInternal(name);
+            }
+            return output.str();
+        }
+
         int hash( int max_num )
         {
             if( elements.size() == 0)

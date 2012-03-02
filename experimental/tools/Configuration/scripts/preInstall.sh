@@ -6,7 +6,6 @@
 root_folder="/usr/local/ps"
 mkdir -p $root_folder/apps
 mkdir -p $root_folder/apps/bdp
-mkdir -p $root_folder/apps/bdp/Configuration
 
 
 osuser=perserver

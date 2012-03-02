@@ -101,6 +101,9 @@ static const char* manCopyright     = "Copyright (C) 2011 Telefonica Investigaci
 static const char* manVersion       = SAMSON_VERSION;
 
 
+// Custom name for the log file
+extern char * paProgName;
+size_t delilah_random_code;
 
 /* ****************************************************************************
 *
@@ -124,12 +127,19 @@ int main(int argC, const char *argV[])
     paConfig("man copyright",                 (void*) manCopyright);
     paConfig("man version",                   (void*) manVersion);
 
+    // Random initialization
+    srand( time(NULL) );
+
+    // Random code for delilah
+    delilah_random_code = au::code64_rand();
+	paProgName = strdup( au::str("delilah_%s" , au::code64_str( delilah_random_code ).c_str() ).c_str() );
+    
 	paParse(paArgs, argC, (char**) argV, 1, true);
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
-	
-    // Random initialization
-    srand( time(NULL));
+
+    // Log random identifier for this delilah
+    LM_M(("Delilah random code %s" , au::code64_str( delilah_random_code ).c_str() ));
     
     // Make sure this singleton is created just once
     au::LockDebugger::shared();
@@ -152,10 +162,10 @@ int main(int argC, const char *argV[])
 	samson::ModulesManager::init();         // Init the modules manager
 	
 	// Initialize the network element for delilah
-	samson::DelilahNetwork * networkP  = new samson::DelilahNetwork( "console" );
+	samson::DelilahNetwork * networkP  = new samson::DelilahNetwork( "console" , delilah_random_code );
     
 	// Create a DelilahControler once network is ready
-	samson::DelilahConsole* delilahConsole = new samson::DelilahConsole(networkP);
+	samson::DelilahConsole* delilahConsole = new samson::DelilahConsole( networkP);
 
     // Add main delilah connection with specified worker
     samson::Status s = networkP->addMainDelilahConnection( target_host , target_port , user , password );        

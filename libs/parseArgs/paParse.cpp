@@ -372,8 +372,8 @@ int paParse
 	}
 	else
 	{
-		progNameCopy = strdup(progName);
-		progName     = strdup(progName);
+		progNameCopy = strdup(paProgName);
+		progName     = strdup(paProgName);
 	}
 
 

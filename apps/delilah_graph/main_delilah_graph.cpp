@@ -100,6 +100,10 @@ static const char* manCopyright     = "Copyright (C) 2011 Telefonica Investigaci
 static const char* manVersion       = SAMSON_VERSION;
 
 
+// Custom name for the log file
+extern char * paProgName;
+size_t delilah_random_code;
+
 
 /* ****************************************************************************
 *
@@ -123,13 +127,17 @@ int main(int argC, const char *argV[])
     paConfig("man copyright",                 (void*) manCopyright);
     paConfig("man version",                   (void*) manVersion);
 
+    // Random initialization
+    srand( time(NULL));
+
+    // Random code for delilah
+    delilah_random_code = au::code64_rand();
+    paProgName = strdup( au::str("delilah_graph_%s" , au::code64_str( delilah_random_code ).c_str() ).c_str() );
+    
 	paParse(paArgs, argC, (char**) argV, 1, true);
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 	
-    // Random initialization
-    srand( time(NULL));
-    
     // Make sure this singleton is created just once
     au::LockDebugger::shared();
 
@@ -151,7 +159,7 @@ int main(int argC, const char *argV[])
 	samson::ModulesManager::init();         // Init the modules manager
 	
 	// Initialize the network element for delilah
-	samson::DelilahNetwork * networkP  = new samson::DelilahNetwork( "graph" );
+	samson::DelilahNetwork * networkP  = new samson::DelilahNetwork( "graph" , delilah_random_code );
     
 	// Create a DelilahQt once network is ready
     samson::DelilahQt* delilahQt = new samson::DelilahQt( networkP );

@@ -28,10 +28,10 @@ namespace samson {
         return true;
     }
     
-    DelilahNetwork::DelilahNetwork( std::string _connection_type )
+    DelilahNetwork::DelilahNetwork( std::string _connection_type , size_t delilah_random_code )
     {
         // I am a delilah ( random id auto-asigned )
-        node_identifier = NodeIdentifier( DelilahNode , au::code64_rand() );
+        node_identifier = NodeIdentifier( DelilahNode , delilah_random_code );
         
         // Save connection type string  to be send in all hello messages
         connection_type = _connection_type;

@@ -168,7 +168,7 @@ namespace samson {
         samson::ModulesManager::init();         // Init the modules manager
         
         // Initialize the network element for delilah
-        networkP  = new samson::DelilahNetwork( connection_type );
+        networkP  = new samson::DelilahNetwork( connection_type , au::code64_rand() );
 
         // Create a DelilahControler once network is ready
         delilah = new Delilah( networkP );

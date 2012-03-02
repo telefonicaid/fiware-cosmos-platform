@@ -27,8 +27,6 @@
 #include "tables/Select.h"
 #include "tables/Table.h"
 
-#include "DelilahClient.h"                  // ss:DelilahClient
-
 #include "samson/delilah/Delilah.h"			// samson::Delilah
 #include "samson/delilah/DelilahCommandCatalogue.h"
 #include "samson/delilah/AlertCollection.h"

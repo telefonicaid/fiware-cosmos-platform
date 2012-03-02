@@ -20,7 +20,7 @@ class DelilahNetwork : public CommonNetwork
     
 public:
     
-    DelilahNetwork( std::string connection_type );
+    DelilahNetwork( std::string connection_type , size_t delilah_random_code );
     
     // NetworkManager interface
     // ------------------------------------------------------------

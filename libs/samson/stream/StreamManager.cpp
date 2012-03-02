@@ -1097,9 +1097,8 @@ namespace samson {
             
             // Data instances
             KVFormat format = queue->getFormat();
-            if ( format.isGenericKVFormat() )
-                return au::xml_simple( "error" , au::str("Queue '%s' has generic format %s" , queue_name.c_str() , format.str().c_str() ));
-
+            if (format.isGenericKVFormat())
+                return au::xml_simple( "error" , au::str("Queue '%s' is of generic format '%s'" , queue_name.c_str() , format.str().c_str() ));
             
             Data* key_data = ModulesManager::shared()->getData( format.keyFormat );
             Data* value_data = ModulesManager::shared()->getData( format.valueFormat );

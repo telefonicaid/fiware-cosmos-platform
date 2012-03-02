@@ -41,6 +41,7 @@ char        paShell[128];
 char        paTerm[128];
 char        paSystem[128];
 char        paVisual[128];
+char        paLogDir[256];
 
 
 
@@ -71,6 +72,7 @@ PaArgument paBuiltin[] =
  { "--help",    &paHelpVar,      NULL,              PaBool, PaOpt,      F,     T,     F,  "show help"                 },
  { "--version", &paVersion,      NULL,              PaBool, PaOpt,      F,     T,     F,  "show version"              },
  { "-version",  &paVersion,      NULL,              PaBool, PaOpt,      F,     T,     F,  "show version"              },
+ { "-logDir",   &paLogDir,       "LOG_DIR",         PaStr,  PaOpt,      0,  PaNL,  PaNL,  "log file directory"        },
  { "",          paUserName,      "!USER",           PaStr,  PaHid,      0,  PaNL,  PaNL,  "user name"                 },
  { "",          paPwd,           "!PWD",            PaStr,  PaHid,      0,  PaNL,  PaNL,  "current dir"               },
  { "",          paColumns,       "!COLUMNS",        PaStr,  PaHid,      0,  PaNL,  PaNL,  "columns"                   },

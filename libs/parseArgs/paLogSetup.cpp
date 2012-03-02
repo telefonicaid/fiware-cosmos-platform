@@ -5,6 +5,7 @@
 #include "logMsg/logMsg.h"      /* lmVerbose, lmDebug, ...                   */
 
 #include "paPrivate.h"          /* PaTypeUnion, config variables, ...        */
+#include "paBuiltin.h"          /* paLogDir                                  */
 #include "paTraceLevels.h"      /* LmtPaEnvVal, ...                          */
 #include "parseArgs/paConfig.h" /* paConfigActions                           */
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */
@@ -50,12 +51,25 @@ int paLmSdGet(void)
 extern char* paExtraLogSuffix;
 int paLogSetup(void)
 {
-	LmStatus    s;
+	LmStatus    s = LmsOk;
 	char        w[512];
+
+    // printf("In paLogSetup. paLogToFile == %s\n", (paLogToFile == true)? "true" : "false");
 
 	if (paLogToFile)
 	{
-		s = lmPathRegister(paLogFilePath, paLogFileLineFormat, paLogFileTimeFormat, &lmFd);
+        // printf("paLogDir == '%s'\n", paLogDir);
+        if (paLogDir[0] != 0)
+        {
+            // printf("Using paLogDir '%s'", paLogDir);
+            s = lmPathRegister(paLogDir, paLogFileLineFormat, paLogFileTimeFormat, &lmFd);
+        }
+        else
+        {
+            // printf("Using paLogFilePath: '%s'\n", paLogFilePath);
+            s = lmPathRegister(paLogFilePath, paLogFileLineFormat, paLogFileTimeFormat, &lmFd);
+        }
+
 		if (s != LmsOk)
 		{
 			sprintf(w, "lmPathRegister: %s", lmStrerror(s));

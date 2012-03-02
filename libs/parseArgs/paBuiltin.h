@@ -40,6 +40,7 @@ extern char        paShell[128];
 extern char        paTerm[128];
 extern char        paSystem[128];
 extern char        paVisual[128];
+extern char        paLogDir[256];
 
 
 

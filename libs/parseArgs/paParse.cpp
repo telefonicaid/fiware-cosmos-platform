@@ -396,10 +396,7 @@ int paParse
 	/* ****************************************************** */
 	/* Initializing all subsystems                            */
 	/*                                                        */
-	if ((s = paLogSetup()) == -1)
-		RETURN_ERROR("paLogSetup error");
-
-	if ((s != -2) && ((s = paArgInit(paList)) == -1))
+	if ((s = paArgInit(paList)) == -1)
 		RETURN_ERROR("paArgInit error");
 
 	if ((s != -2) && ((s = paConfigActions(true)) == -1))
@@ -419,6 +416,9 @@ int paParse
 
 	if ((s != -2) && ((s = paOptionsParse(paList, argV, argC)) == -1))
 		RETURN_ERROR("paOptionsParse");
+
+	if (paLogSetup() == -1)
+		RETURN_ERROR("paLogSetup error");
 
 	if ((s != -2) && ((s = paLimitCheck(paList)) == -1))
 		RETURN_ERROR("paLimitCheck");

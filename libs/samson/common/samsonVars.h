@@ -41,6 +41,7 @@
 */
 #define SWD _i SAMSON_WORKING_DEFAULT
 #define SHD _i SAMSON_HOME_DEFAULT
+#define SLD _i SAMSON_LOGDIR_DEFAULT
 #define SAMSON_ARGS \
 	{ "-working",  samsonWorking,  "SAMSON_WORKING", PaString,  PaOpt, SWD,     PaNL,   PaNL,  "working directory"       },  \
 	{ "-home",     samsonHome,     "SAMSON_HOME",    PaString,  PaOpt, SHD,     PaNL,   PaNL,  "home directory"          }

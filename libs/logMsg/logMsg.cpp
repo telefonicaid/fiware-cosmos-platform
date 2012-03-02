@@ -81,7 +81,6 @@ char         progNameV[512];         /* where to store progName            */
 #define INIT_CHECK() \
 	if (initDone == false) \
     do {\
-        fprintf(stderr,"Please, call lmInit before using LM_ library\n");\
 		return LmsInitNotDone;\
     } while(0)
 

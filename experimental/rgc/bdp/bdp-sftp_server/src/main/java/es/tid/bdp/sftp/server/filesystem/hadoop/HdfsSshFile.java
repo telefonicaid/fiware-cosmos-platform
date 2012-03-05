@@ -27,7 +27,7 @@ import es.tid.bdp.utils.parse.ParserAbstract;
 /**
  * 
  * @author rgc
- *
+ * 
  */
 public class HdfsSshFile implements SshFile {
 
@@ -304,6 +304,7 @@ public class HdfsSshFile implements SshFile {
 
     /*
      * (non-Javadoc)
+     * 
      * @see org.apache.sshd.server.SshFile#create()
      */
     @Override
@@ -314,6 +315,7 @@ public class HdfsSshFile implements SshFile {
 
     /*
      * (non-Javadoc)
+     * 
      * @see org.apache.sshd.server.SshFile#truncate()
      */
     @Override
@@ -324,6 +326,7 @@ public class HdfsSshFile implements SshFile {
 
     /*
      * (non-Javadoc)
+     * 
      * @see org.apache.sshd.server.SshFile#move(org.apache.sshd.server.SshFile)
      */
     @Override
@@ -334,6 +337,7 @@ public class HdfsSshFile implements SshFile {
 
     /*
      * (non-Javadoc)
+     * 
      * @see org.apache.sshd.server.SshFile#listSshFiles()
      */
     @Override
@@ -380,6 +384,7 @@ public class HdfsSshFile implements SshFile {
 
     /*
      * (non-Javadoc)
+     * 
      * @see org.apache.sshd.server.SshFile#createOutputStream(long)
      */
     @Override
@@ -406,6 +411,7 @@ public class HdfsSshFile implements SshFile {
 
     /*
      * (non-Javadoc)
+     * 
      * @see org.apache.sshd.server.SshFile#createInputStream(long)
      */
     @Override
@@ -418,10 +424,11 @@ public class HdfsSshFile implements SshFile {
 
     /*
      * (non-Javadoc)
+     * 
      * @see org.apache.sshd.server.SshFile#handleClose()
      */
     @Override
     public void handleClose() throws IOException {
-        throw new RuntimeException("handleClose is not implemented");
+        // TODO rgc
     }
 }

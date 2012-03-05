@@ -17,6 +17,7 @@ public abstract class ParserAbstract {
     private static final String DEFAULT_SEPARATOR = "\\|";
 
     protected Pattern pattern;
+    protected Matcher matcher;
     protected Map<String, Integer> regPosition;
 
     public ParserAbstract(final String pattern, final String attr) {
@@ -35,6 +36,7 @@ public abstract class ParserAbstract {
     protected void init(final String pattern, final String attr,
             final String separator) {
         this.pattern = Pattern.compile(pattern);
+        this.matcher = this.pattern.matcher(null);
 
         this.regPosition = new HashMap<String, Integer>();
         String[] array = attr.split(separator);
@@ -69,9 +71,9 @@ public abstract class ParserAbstract {
      *             regular expression
      */
     public Message parseLine(final String line) {
-        Matcher m = this.pattern.matcher(line);
-        if (m.matches()) {
-            return createMessage(m);
+        this.matcher.reset(line);
+        if (this.matcher.matches()) {
+            return createMessage();
         } else {
             throw new RuntimeException("no matches");
         }
@@ -84,6 +86,6 @@ public abstract class ParserAbstract {
      *            Object that will match the given input against this pattern
      * @return a encoding data in a Dynamic Protocol buffer message
      */
-    protected abstract Message createMessage(final Matcher matcher);
+    protected abstract Message createMessage();
 
 }

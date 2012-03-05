@@ -21,7 +21,7 @@ public class ParserWebLog extends ParserAbstract {
     }
 
     @Override
-    protected Message createMessage(Matcher matcher) {
+    protected Message createMessage() {
 
         WebLog.Builder builder = WebLog.newBuilder();
 

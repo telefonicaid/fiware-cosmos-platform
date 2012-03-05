@@ -38,15 +38,15 @@ public class ParserCdr extends ParserAbstract {
      * )
      */
     @Override
-    protected Message createMessage(Matcher matcher) {
+    protected Message createMessage() {
         Cdr.Builder builder = Cdr.newBuilder();
         builder.setCellId(parserHexNumber(matcher.group(regPosition
                 .get(ATTR_CELL_ID))));        
         builder.setUserId(parserHexNumber(matcher.group(regPosition
                         .get(ATTR_USER_ID))));
 
-        builder.setDate(parseDate(matcher));
-        builder.setTime(parseTime(matcher));
+        builder.setDate(parseDate());
+        builder.setTime(parseTime());
 
         return builder.build();
     }
@@ -57,7 +57,7 @@ public class ParserCdr extends ParserAbstract {
      * @param m
      * @return
      */
-    private Time parseTime(Matcher matcher) {
+    private Time parseTime() {
         return Time
                 .newBuilder()
                 .setHour(
@@ -71,7 +71,7 @@ public class ParserCdr extends ParserAbstract {
                                 .get(ATTR_TIME_SEC)))).build();
     }
 
-    private Date parseDate(Matcher matcher) {
+    private Date parseDate() {
         final int day = Integer.parseInt(matcher.group(regPosition
                 .get(ATTR_DATE_DAY)));
         final int month = Integer.parseInt(matcher.group(regPosition

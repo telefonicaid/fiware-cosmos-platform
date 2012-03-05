@@ -33,7 +33,7 @@ public class ParserWebLogExperimental extends ParserAbstract {
     }
 
     @Override
-    protected Message createMessage(Matcher matcher) {
+    protected Message createMessage() {
         // TODO Auto-generated method stub
         return null;
     }

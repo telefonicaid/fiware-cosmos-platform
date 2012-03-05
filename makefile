@@ -245,7 +245,6 @@ reset:
 	rm -f testing/module_test/Module.*
 	rm -f /etc/init/samson.conf
 	rm -f /etc/profile.d/samson.sh
-	rm -rf rpm
 
 cleansvn: 
 	for file in `svn status | grep ? | awk '{print $$2}'`; do rm -rf $$file; done

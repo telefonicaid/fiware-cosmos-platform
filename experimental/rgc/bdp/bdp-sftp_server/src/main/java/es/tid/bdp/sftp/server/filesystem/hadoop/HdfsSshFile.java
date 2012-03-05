@@ -320,8 +320,7 @@ public class HdfsSshFile implements SshFile {
      */
     @Override
     public void truncate() throws IOException {
-        // TODO rgc: Not implemented
-        throw new RuntimeException("truncate is not implemented");
+        // TODO rgc: review this implementation
     }
 
     /*

@@ -7,6 +7,7 @@
 #include "samson/module/Operation.h"    // samson::Operation
 
 #include "samson/module/Factory.h"
+/*
 
 namespace samson
 {
@@ -55,4 +56,8 @@ namespace samson
     
     
 }
+ 
+ */
+
+
 #endif

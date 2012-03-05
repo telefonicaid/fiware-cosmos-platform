@@ -6,6 +6,9 @@ Module system
 }
 
 # System defaults ( to be implemented in the rigth file )
+
+data Value {}
+
 data UInt {}
 data String {}
 data Void {}
@@ -106,3 +109,20 @@ parser parser_uint_void
 
 }
 
+
+
+# Value operations
+
+parser parse_to_value
+{
+	out system.Value system.Value
+	helpLine "Parse lines with fields separated by a single char tab , space , coma , ..."
+}
+
+map map_value_to_value
+{
+	in  system.Value system.Value
+	out system.Value system.Value
+
+	helpLine "Generic map to transform values. User enviroment variable command to specify what to do..."
+}

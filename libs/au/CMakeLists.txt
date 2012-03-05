@@ -45,6 +45,9 @@ ThreadManager.h
 
 StringCollection.h
 StructCollection.h
+
+Pool.h
+StringComponents.h
 )
 
 SET (SOURCES
@@ -84,6 +87,9 @@ ThreadManager.cpp
 
 StringCollection.cpp
 StructCollection.cpp
+
+Pool.cpp
+StringComponents.cpp
 )
 
 

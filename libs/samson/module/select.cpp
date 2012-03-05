@@ -4,6 +4,7 @@
 #include "au/CommandLine.h"         // au::CommandLine
 #include "au/string.h"              // au::Format
 
+/*
 namespace samson
 {
     
@@ -83,16 +84,6 @@ namespace samson
 
             key_data_instance->parse( inputs[0].kvs[i]->key );
             value_data_instance->parse( inputs[0].kvs[i]->value );
-
-            /*
-             
-            writer->emit(
-                         0,  
-                         output_key_data_instance->getDataInstanceFromPath(output_key_path)  , 
-                         output_value_data_instance->getDataInstanceFromPath(output_value_path)
-                         );
-             
-             */
             
             //key.parse( inputs[0].kvs[i]->key );
             //value.parse( inputs[0].kvs[i]->value );
@@ -100,4 +91,6 @@ namespace samson
         }
     }
     
+
 }
+ */

@@ -1,5 +1,18 @@
 SET( MODULE_NAME system )
 
+SET (AUX_HEADERS
+    samson/modules/system/Value.h
+	operations/parse_to_value.h
+	operations/map_value_to_value.h	
+	operations/Filter.h
+	operations/Filter.cpp
+)			  
+
+SET( SOURCES_TEST
+	 main_system_test.cpp
+)
+
+
 cmake_minimum_required(VERSION 2.6)
 
 # Install directory
@@ -96,12 +109,15 @@ MESSAGE( "----------------------------------------------------------------------
 MESSAGE( "Creating module ${MODULE_NAME}" )
 MESSAGE( "----------------------------------------------------------------------------")
 
-ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
+include_directories( "/opt/samson/include" )
+link_directories( "/opt/samson/lib" )
 
-TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm )
+ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES} ${AUX_HEADERS}  )
+TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm au )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 
-#ENABLE_TESTING()
-#ADD_SUBDIRECTORY(testing)     # Test module and ctest stuff
+
+#ADD_EXECUTABLE(system_test  ${SOURCES_TEST} ${SOURCES} ${HEADERS})
+#TARGET_LINK_LIBRARIES(system_test lm au )

@@ -917,6 +917,25 @@ namespace samson {
             }
             
             
+            // Generate the environment from extra parameters
+            Environment operation_environment;
+            for ( size_t i = ( 2 + ( op->getNumInputs() + op->getNumOutputs() )) ; i < (size_t)cmd.get_num_arguments() ; i++ )
+            {
+                std::string full_name = cmd.get_argument(i);
+                std::string prefix = "env:";
+                if( full_name.substr(0,prefix.size()) == prefix  )
+                {
+                    std::string name = full_name.substr( prefix.size() );
+                    if( i <= (size_t) (cmd.get_num_arguments()-2 ) )
+                    {
+                        // Set property...
+                        std::string value = cmd.get_argument(i+1);
+                        operation_environment.set(name , value );
+                    }
+                }
+            }
+            
+            
             switch (op->getType()) 
             {
                     
@@ -947,6 +966,7 @@ namespace samson {
                         //Create the reduce operation
                         stream::ReduceQueueTask *tmp = new stream::ReduceQueueTask( streamManager->queueTaskManager.getNewId() , operation , range ); 
                         tmp->addOutputsForOperation(op);
+                        tmp->operation_environment.copyFrom(&operation_environment);
                         
                         // Take data from each input
                         for (int q = 0 ; q < (int) queues.size() ; q++ )
@@ -1037,7 +1057,10 @@ namespace samson {
                                 LM_X(1,("Internal error"));
                                 break;
                         }
-                        
+
+                        // Set enviroment variables
+                        tmp->operation_environment.copyFrom(&operation_environment);
+
                         // Set the outputs    
                         tmp->addOutputsForOperation(op);
                         

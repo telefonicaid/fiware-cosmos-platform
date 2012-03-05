@@ -40,8 +40,10 @@
 #include "samson/delilah/SamsonDataSet.h"
 #include "samson/delilah/Delilah.h"					// samson::Delailh
 #include "samson/delilah/DelilahConsole.h"			// Own interface
+
 #include "PushDelilahComponent.h"                   // samson::PushDelilahComponent
 #include "PushDelilahComponent.h"                   // PushDataComponent
+#include "PopDelilahComponent.h"
 
 
 #define DEF1             "TYPE:EXEC/FUNC: TEXT"
@@ -469,6 +471,7 @@ namespace samson
 		commandLine.set_flag_boolean("gz");                 // Flag to indicate compression ( not used )
 		commandLine.set_flag_int("threads",4);              // Specify number of threads ( not used )
         commandLine.set_flag_boolean("force");              // Force to remove directory if exist before in pop operations
+        commandLine.set_flag_boolean("show");               // Show data after poping data
         commandLine.set_flag_boolean("clear");              // Used in the ps command
         commandLine.set_flag_boolean("header");             // Used in the show_local_queue command
         commandLine.set_flag_int("limit", 10);
@@ -1009,8 +1012,9 @@ namespace samson
             std::string fileName    = commandLine.get_argument(2);
             
             bool force_flag = commandLine.get_flag_bool("force");
+            bool show_flag = commandLine.get_flag_bool("show");
             
-            size_t id = addPopData( queue_name ,  fileName , force_flag );
+            size_t id = addPopData( queue_name ,  fileName , force_flag , show_flag );
             
             return id;
         }
@@ -1213,8 +1217,8 @@ namespace samson
             
             // Load the file
             FILE* file = fopen( file_name.c_str(), "r");
-            size_t tmp_size = fread(buffer->getData(), file_size, 1, file);
-            if (tmp_size);
+            if( fread(buffer->getData(), file_size, 1, file) != 1 )
+                LM_W(("Errro reading file %s" , file_name.c_str() ));
             fclose(file);
             
             return sendWorkerCommand( au::str("push_module %s" , module_name.c_str() ) , buffer );
@@ -1317,6 +1321,20 @@ namespace samson
                                              ) 
                                     );
             }
+        }
+        
+        
+        // Extra work
+        if ( component->type == DelilahComponent::pop )
+        {
+            
+            PopDelilahComponent* popComponent = (PopDelilahComponent*) component;
+            if ( popComponent->show_flag )
+            {
+                // Add a command to show this conetnt
+                runAsyncCommand( au::str("show_local_queue %s" , popComponent->fileName.c_str() ) );
+            }
+            
         }
         
     }

@@ -243,7 +243,7 @@ namespace samson
         
         add( "pop" , "push&pop"  ,
             "Pop content of a queue to a local directory. Also working for binary queues. Use samsonCat to check content",
-            "push <local_file_or_dir> <queue>");
+            "pop  <queue> <local_file_or_dir> [-force] [-show]");
         
         
         add( "connect_to_queue" , "push&pop"  

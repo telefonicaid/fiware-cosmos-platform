@@ -34,14 +34,14 @@ namespace samson {
         };
 
         // Methods for select a particular component inside this datatype
-        virtual int *getDataPath(const std::string &dataPathString) = 0; // Function to select fields
-        virtual std::string getTypeFromPath(const std::string &dataPathString) = 0;
-        virtual std::string getTypeFromPath(const int *dataPathIntP) = 0;
-        virtual const char *getType() = 0;
+        // virtual int *getDataPath(const std::string &dataPathString) = 0; // Function to select fields
+        // virtual std::string getTypeFromPath(const std::string &dataPathString) = 0;
+        // virtual std::string getTypeFromPath(const int *dataPathIntP) = 0;
+        //virtual DataInstance * getDataInstanceFromPath(const int *dataPathIntP) = 0;        
+		
+		virtual const char *getType() = 0;
         virtual bool checkType(const char *type) = 0;
-        virtual DataInstance * getDataInstanceFromPath(const int *dataPathIntP) = 0;
-        virtual int serial_compare( char* data1 , char* data2 )=0;
-        
+        virtual int serial_compare( char* data1 , char* data2 )=0;        
         virtual void setFromString( const char* str )
         {
             // Set value from a char* ( used to lookup by key )

@@ -371,9 +371,9 @@ namespace samson {
      * popData - 
      */
     
-	size_t Delilah::addPopData( std::string queue_name , std::string fileName , bool force_flag )
+	size_t Delilah::addPopData( std::string queue_name , std::string fileName , bool force_flag , bool show_flag )
 	{
-		PopDelilahComponent * d = new PopDelilahComponent( queue_name , fileName , force_flag );
+		PopDelilahComponent * d = new PopDelilahComponent( queue_name , fileName , force_flag , show_flag );
 		size_t tmp_id = addComponent(d);	
 
         if( d->error.isActivated() )

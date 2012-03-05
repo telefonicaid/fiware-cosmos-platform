@@ -146,7 +146,7 @@ namespace samson
 		addModules();
 		
         // Add the select operation
-        add( new SelectOperation() );
+        //add( new SelectOperation() );
         
 		/*
 		 Spetial operation to be moved to a proper file

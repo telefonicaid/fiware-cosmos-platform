@@ -123,7 +123,7 @@ namespace samson {
 		// Add particular process that will take input parameters
         size_t addPushData( std::vector<std::string> fileNames , std::vector<std::string> queues );
         size_t addPushData( DataSource* dataSource , std::vector<std::string> queues );
-        size_t addPopData( std::string queue_name , std::string fileName , bool force_flag );
+        size_t addPopData( std::string queue_name , std::string fileName , bool force_flag  , bool show_flag);
 
 		size_t sendWorkerCommand( std::string command , engine::Buffer *buffer );
 		

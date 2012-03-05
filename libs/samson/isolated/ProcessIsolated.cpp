@@ -215,7 +215,7 @@ namespace samson
 						{
 							bool ans = buffer->write( (char*) node[node_id].data, node[node_id].size );
 							if( !ans )
-								LM_X(1,("Error writing key-values into a temporal Buffer"));
+								LM_X(1,("Error writing key-values into a temporal Buffer ( size %lu ) " , node[node_id].size ));
 							
 							// Go to the next node
 							node_id = node[node_id].next;

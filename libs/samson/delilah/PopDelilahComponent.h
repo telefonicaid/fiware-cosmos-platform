@@ -49,8 +49,9 @@ namespace samson {
         au::CounterCollection<int> counter_per_worker;     // Count the number of outputs per worker
         
         bool force_flag;                    // Flag to remove previos directory
+        bool show_flag;
         
-        PopDelilahComponent( std::string _queue , std::string _fileName , bool force_flag );
+        PopDelilahComponent( std::string _queue , std::string _fileName , bool force_flag , bool show_flag );
         
         ~PopDelilahComponent();
         

@@ -27,7 +27,7 @@ namespace samson
     
 #pragma mark pop
     
-    PopDelilahComponent::PopDelilahComponent( std::string _queue , std::string _fileName , bool _force_flag ) : DelilahComponent( DelilahComponent::pop )
+    PopDelilahComponent::PopDelilahComponent( std::string _queue , std::string _fileName , bool _force_flag , bool _show_flag ) : DelilahComponent( DelilahComponent::pop )
     {
         
         queue = _queue;
@@ -38,6 +38,7 @@ namespace samson
         
 
         force_flag = _force_flag;
+        show_flag = _show_flag;
         
         setConcept( au::str("Pop queue %s to local directory %s" , queue.c_str() , fileName.c_str() ) );
     }
@@ -160,11 +161,17 @@ namespace samson
     {
         if ( error.isActivated() )
             setComponentFinished();
-        
+
         if( ( num_finish_worker == workers.size() ) && (num_write_operations==0) )
         {
-            // Finish operation
-            setComponentFinished();
+            if( !isComponentFinished() )
+            {
+                // Finish operation
+                setComponentFinished();
+                
+
+                
+            }
         }
         
     }

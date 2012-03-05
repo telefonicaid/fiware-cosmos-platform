@@ -293,7 +293,7 @@ deb:
 
 publish_deb: deb
 	# Upload the files. A cron job on the server will include them in the repository
-	scp package/deb/* repos@samson09:/var/repository/ubuntu/incoming/$(DISTRO_CODENAME)
+	scp package/deb/* repo@samson09:/var/repository/ubuntu/incoming/$(DISTRO_CODENAME)
 
 man:
 	if [ ! -d BUILD_RELEASE ]; then \

@@ -359,19 +359,39 @@ public:
 
     std::string strJSON(std::string _varNameInternal){
         std::ostringstream o;
-        o << "{" << "\"" << _varNameInternal << "\":" << "\"" << value << "\"" << "}";
+        String strEscaped;
+        strEscaped.value = value;;
+        strEscaped.findAndReplace("\\", "\\\\");
+        strEscaped.findAndReplace("\"", "\\\"");
+        //strEscaped.findAndReplace("\/", "\\/");
+        strEscaped.findAndReplace("\b", "\\b");
+        strEscaped.findAndReplace("\f", "\\f");
+        strEscaped.findAndReplace("\n", "\\n");
+        strEscaped.findAndReplace("\r", "\\r");
+        strEscaped.findAndReplace("\t", "\\t");
+        o << "{" << "\"" << _varNameInternal << "\":" << "\"" << strEscaped.value << "\"" << "}";
         return o.str();
     }
 
     std::string strJSONInternal(std::string _varNameInternal, bool vectorMember){
         std::ostringstream o;
+        String strEscaped;
+        strEscaped.value = value;;
+        strEscaped.findAndReplace("\\", "\\\\");
+        strEscaped.findAndReplace("\"", "\\\"");
+        //strEscaped.findAndReplace("\/", "\\/");
+        strEscaped.findAndReplace("\b", "\\b");
+        strEscaped.findAndReplace("\f", "\\f");
+        strEscaped.findAndReplace("\n", "\\n");
+        strEscaped.findAndReplace("\r", "\\r");
+        strEscaped.findAndReplace("\t", "\\t");
         if (vectorMember)
         {
-            o << "\""  << value << "\"";
+            o << "\""  << strEscaped.value << "\"";
         }
         else
         {
-            o << "\"" << _varNameInternal << "\":" << "\"" << value << "\"";
+            o << "\"" << _varNameInternal << "\":" << "\"" << strEscaped.value << "\"";
         }
         return o.str();
     }
@@ -484,6 +504,32 @@ public:
     void set( const char* str )
     {
         value = str;
+    }
+
+    void findAndReplace(std::string strToFind, std::string strToReplace)
+    {
+        // handle error situations/trivial cases
+
+        if (strToFind.length() == 0) {
+            // searching for a match to the empty string will result in
+            //  an infinite loop
+            //  it might make sense to throw an exception for this case
+            return;
+        }
+
+        if (value.length() == 0) {
+            return;  // nothing to match against
+        }
+
+        size_t idx = 0;
+
+        for (;;) {
+            idx = value.find( strToFind, idx);
+            if (idx == std::string::npos)  break;
+
+            value.replace( idx, strToFind.length(), strToReplace);
+            idx += strToReplace.length();
+        }
     }
 
 };

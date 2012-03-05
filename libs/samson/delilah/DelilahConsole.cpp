@@ -1213,7 +1213,8 @@ namespace samson
             
             // Load the file
             FILE* file = fopen( file_name.c_str(), "r");
-            fread(buffer->getData(), file_size, 1, file);
+            size_t tmp_size = fread(buffer->getData(), file_size, 1, file);
+            if (tmp_size);
             fclose(file);
             
             return sendWorkerCommand( au::str("push_module %s" , module_name.c_str() ) , buffer );

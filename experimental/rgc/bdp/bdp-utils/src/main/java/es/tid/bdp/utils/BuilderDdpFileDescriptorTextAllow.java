@@ -1,10 +1,12 @@
 package es.tid.bdp.utils;
 
+import java.util.Properties;
+
 import es.tid.bdp.utils.data.BdpFileDescriptor;
 
-public class BuilderDdpFileDescriptorTextAllow extends BuilderDdpFileDescriptorAbstract{
+public class BuilderDdpFileDescriptorTextAllow extends FileSystemControllerAbstract{
 
-    public BuilderDdpFileDescriptorTextAllow(PropertiesPlaceHolder proterties) {
+    public BuilderDdpFileDescriptorTextAllow(Properties proterties) {
         super(proterties);
     }
 

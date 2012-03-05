@@ -2,14 +2,15 @@ package es.tid.bdp.utils;
 
 import java.lang.reflect.Constructor;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 
 import es.tid.bdp.utils.data.BdpFileDescriptor;
 import es.tid.bdp.utils.parse.ParserAbstract;
 
-public abstract class BuilderDdpFileDescriptorAbstract {
+public abstract class FileSystemControllerAbstract {
 
-    public BuilderDdpFileDescriptorAbstract(
-            final PropertiesPlaceHolder proterties) {
+    public FileSystemControllerAbstract(
+            final Properties proterties) {
     }
 
     /**

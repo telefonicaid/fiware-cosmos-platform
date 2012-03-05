@@ -33,6 +33,7 @@ import org.apache.sshd.server.Command;
 import org.apache.sshd.server.ForwardingFilter;
 import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.PublickeyAuthenticator;
+import org.apache.sshd.server.filesystem.NativeFileSystemFactory;
 import org.apache.sshd.server.keyprovider.PEMGeneratorHostKeyProvider;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.session.ServerSession;
@@ -49,7 +50,7 @@ import es.tid.bdp.utils.PropertiesPlaceHolder;
  * @author rgc
  * 
  */
-public class HdfsSftpServer {
+public class SftpServer {
 
     private final static String PROPERTY_PATH = "properties.configuration";
     private final static String PATH_CONFIG_DEFAULT = "sftp-server.properties";
@@ -60,7 +61,7 @@ public class HdfsSftpServer {
             .getLogger(HdfsFileSystemFactory.class);
 
     public static void main(String[] args) throws Exception {
-        HdfsSftpServer server = new HdfsSftpServer();
+        SftpServer server = new SftpServer();
         server.run();
 
     }
@@ -130,7 +131,7 @@ public class HdfsSftpServer {
             }
         });
 
-        sshd.setFileSystemFactory(new HdfsFileSystemFactory());
+        sshd.setFileSystemFactory(new NativeFileSystemFactory());
         sshd.setSubsystemFactories(Arrays
                 .<NamedFactory<Command>> asList(new SftpSubsystem.Factory()));
         sshd.start();

@@ -40,14 +40,11 @@ public class ParserCdr extends ParserAbstract {
     @Override
     protected Message createMessage(Matcher matcher) {
         Cdr.Builder builder = Cdr.newBuilder();
-        builder.setCellId(Long.parseLong(
-                matcher.group(regPosition.get(ATTR_USER_ID)), 16));
-        try {
-            builder.setUserId(Long.parseLong(
-                    matcher.group(regPosition.get(ATTR_CELL_ID)), 16));
-        } catch (NumberFormatException e) {
-            builder.setUserId(0L);
-        }
+        builder.setCellId(parserHexNumber(matcher.group(regPosition
+                .get(ATTR_CELL_ID))));        
+        builder.setUserId(parserHexNumber(matcher.group(regPosition
+                        .get(ATTR_USER_ID))));
+
         builder.setDate(parseDate(matcher));
         builder.setTime(parseTime(matcher));
 

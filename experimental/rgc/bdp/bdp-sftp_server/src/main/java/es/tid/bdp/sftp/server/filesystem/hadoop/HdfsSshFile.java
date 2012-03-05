@@ -19,11 +19,16 @@ import org.slf4j.LoggerFactory;
 
 import com.hadoop.compression.lzo.LzopCodec;
 
-import es.tid.bdp.utils.BuilderDdpFileDescriptorAbstract;
+import es.tid.bdp.utils.FileSystemControllerAbstract;
 import es.tid.bdp.utils.data.BdpFileDescriptor;
 import es.tid.bdp.utils.io.output.ProtoBufOutStream;
 import es.tid.bdp.utils.parse.ParserAbstract;
 
+/**
+ * 
+ * @author rgc
+ *
+ */
 public class HdfsSshFile implements SshFile {
 
     private final Logger LOG = LoggerFactory.getLogger(NativeSshFile.class);
@@ -35,7 +40,7 @@ public class HdfsSshFile implements SshFile {
     private String userName;
 
     private Path path;
-    private BuilderDdpFileDescriptorAbstract builder;
+    private FileSystemControllerAbstract hfdsCtrl;
 
     private FileSystem hdfs;
 
@@ -44,29 +49,38 @@ public class HdfsSshFile implements SshFile {
     private BdpFileDescriptor descriptor;
 
     public HdfsSshFile(final FileSystem hdfs,
-            final BuilderDdpFileDescriptorAbstract builder,
-            final String userName, final String fileName) {
+            final FileSystemControllerAbstract hfdsCtrl, final String userName,
+            final String fileName) {
         if (hdfs == null) {
+            LOG.error("Hdfs can not be null");
             throw new IllegalArgumentException("Hdfs can not be null");
         }
         if (fileName == null) {
+            LOG.error("fileName can not be null");
             throw new IllegalArgumentException("fileName can not be null");
         }
-
         if (fileName.length() == 0) {
+            LOG.error("fileName can not be empty");
             throw new IllegalArgumentException("fileName can not be empty");
         } else if (fileName.charAt(0) != '/') {
+            LOG.error("fileName must be an absolute path");
             throw new IllegalArgumentException(
                     "fileName must be an absolute path");
         }
-        this.descriptor = builder.build(userName, fileName);
 
+        this.descriptor = hfdsCtrl.build(userName, fileName);
         this.fileName = fileName;
         this.path = new Path(fileName);
         this.hdfs = hdfs;
-        this.builder = builder;
+        this.hfdsCtrl = hfdsCtrl;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.sshd.server.SshFile#getAbsolutePath()
+     */
+    @Override
     public String getAbsolutePath() {
         // strip the last '/' if necessary
         String fullName = fileName;
@@ -74,10 +88,15 @@ public class HdfsSshFile implements SshFile {
         if ((filelen != 1) && (fullName.charAt(filelen - 1) == '/')) {
             fullName = fullName.substring(0, filelen - 1);
         }
-
         return fullName;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.sshd.server.SshFile#getName()
+     */
+    @Override
     public String getName() {
         // root - the short name will be '/'
         if (fileName.equals("/")) {
@@ -99,64 +118,132 @@ public class HdfsSshFile implements SshFile {
         return shortName;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.sshd.server.SshFile#isDirectory()
+     */
+    @Override
     public boolean isDirectory() {
         try {
             return this.hdfs.getFileStatus(path).isDir();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOG.error("Error int he access to HDFS");
             throw new RuntimeException(e);
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.sshd.server.SshFile#isFile()
+     */
+    @Override
     public boolean isFile() {
         try {
             return !this.hdfs.getFileStatus(path).isDir();
         } catch (IOException e) {
+            LOG.error("Error int he access to HDFS");
             throw new RuntimeException(e);
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.sshd.server.SshFile#doesExist()
+     */
+    @Override
     public boolean doesExist() {
         try {
             return hdfs.exists(path);
         } catch (IOException e) {
+            LOG.error("Error int he access to HDFS");
             throw new RuntimeException(e);
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.sshd.server.SshFile#isReadable()
+     */
+    @Override
     public boolean isReadable() {
         return descriptor.isReadable();
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.sshd.server.SshFile#isWritable()
+     */
+    @Override
     public boolean isWritable() {
         return descriptor.isWritable();
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.sshd.server.SshFile#isExecutable()
+     */
+    @Override
     public boolean isExecutable() {
-        // TODO Auto-generated method stub
-        return false;
+        // TODO rgc: Not implemented
+        throw new RuntimeException("isExecutable is not implemented");
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.sshd.server.SshFile#isRemovable()
+     */
+    @Override
     public boolean isRemovable() {
-        // TODO Auto-generated method stub
-        return false;
+        // TODO rgc: Not implemented
+        throw new RuntimeException("isExecutable is not implemented");
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.sshd.server.SshFile#getParentFile()
+     */
+    @Override
     public SshFile getParentFile() {
-        // TODO Auto-generated method stub
-        return null;
+        int indexOfSlash = getAbsolutePath().lastIndexOf('/');
+        String parentFullName;
+        if (indexOfSlash == 0) {
+            parentFullName = "/";
+        } else {
+            parentFullName = getAbsolutePath().substring(0, indexOfSlash);
+        }
+        return new HdfsSshFile(hdfs, hfdsCtrl, userName, parentFullName);
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.sshd.server.SshFile#getLastModified()
+     */
+    @Override
     public long getLastModified() {
         try {
             FileStatus fileStatus = hdfs.getFileStatus(path);
             return fileStatus.getModificationTime();
         } catch (Exception e) {
+            LOG.error("Error int he access to HDFS");
             throw new RuntimeException(e);
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.sshd.server.SshFile#setLastModified(long)
+     */
+    @Override
     public boolean setLastModified(long time) {
         try {
             hdfs.setTimes(path, time, time);
@@ -166,27 +253,47 @@ public class HdfsSshFile implements SshFile {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.sshd.server.SshFile#getSize()
+     */
+    @Override
     public long getSize() {
         try {
             FileStatus fileStatus = hdfs.getFileStatus(path);
             return fileStatus.getLen();
         } catch (Exception e) {
+            LOG.error("Error int he access to HDFS");
             throw new RuntimeException(e);
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.sshd.server.SshFile#mkdir()
+     */
+    @Override
     public boolean mkdir() {
         boolean retVal = false;
         if (isWritable()) {
             try {
                 retVal = hdfs.mkdirs(path);
             } catch (IOException e) {
+                LOG.error("Error int he access to HDFS");
                 throw new RuntimeException(e);
             }
         }
         return retVal;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.apache.sshd.server.SshFile#delete()
+     */
+    @Override
     public boolean delete() {
         try {
             return hdfs.delete(path, true);
@@ -195,22 +302,42 @@ public class HdfsSshFile implements SshFile {
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.apache.sshd.server.SshFile#create()
+     */
+    @Override
     public boolean create() throws IOException {
         outputStream = hdfs.create(path);
         return true;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.apache.sshd.server.SshFile#truncate()
+     */
+    @Override
     public void truncate() throws IOException {
-        // TODO Auto-generated method stub
-
+        // TODO rgc: Not implemented
+        throw new RuntimeException("truncate is not implemented");
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.apache.sshd.server.SshFile#move(org.apache.sshd.server.SshFile)
+     */
+    @Override
     public boolean move(SshFile destination) {
-        return false;
+        // TODO rgc: Not implemented
+        throw new RuntimeException("move is not implemented");
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.apache.sshd.server.SshFile#listSshFiles()
+     */
+    @Override
     public List<SshFile> listSshFiles() {
-
         // is a directory
         if (!isDirectory()) {
             return Collections.unmodifiableList(new ArrayList<SshFile>());
@@ -245,12 +372,17 @@ public class HdfsSshFile implements SshFile {
         for (int i = 0; i < elements.length; ++i) {
             Path fileObj = elements[i].getPath();
             String fileName = virtualFileStr + fileObj.getName();
-            virtualFiles[i] = new HdfsSshFile(hdfs, builder, userName, fileName);
+            virtualFiles[i] = new HdfsSshFile(hdfs, hfdsCtrl, userName,
+                    fileName);
         }
-
         return Collections.unmodifiableList(Arrays.asList(virtualFiles));
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.apache.sshd.server.SshFile#createOutputStream(long)
+     */
+    @Override
     public OutputStream createOutputStream(long offset) throws IOException {
         if (offset > 0) {
             throw new RuntimeException();
@@ -272,6 +404,11 @@ public class HdfsSshFile implements SshFile {
         return outputStream;
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.apache.sshd.server.SshFile#createInputStream(long)
+     */
+    @Override
     public InputStream createInputStream(long offset) throws IOException {
         if (offset > 0) {
             throw new RuntimeException();
@@ -279,9 +416,12 @@ public class HdfsSshFile implements SshFile {
         return hdfs.open(path);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.apache.sshd.server.SshFile#handleClose()
+     */
+    @Override
     public void handleClose() throws IOException {
-        // TODO Auto-generated method stub
-
+        throw new RuntimeException("handleClose is not implemented");
     }
-
 }

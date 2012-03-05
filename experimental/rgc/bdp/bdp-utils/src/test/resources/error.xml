@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<descriptions>
-	<description path="/">
+<descriptions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<description>
 		<users>
 			<user user="cdr" isCompressible="true" isReadable="true"
 				isWritable="true">

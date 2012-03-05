@@ -12,8 +12,7 @@ import com.mongodb.Mongo;
 import es.tid.bdp.utils.data.BdpFileDescriptor;
 import es.tid.bdp.utils.parse.ParserAbstract;
 
-public class BuilderDdpFileDescriptorMongo extends
-        BuilderDdpFileDescriptorAbstract {
+public class FileSystemControllerMongo extends FileSystemControllerAbstract {
     public static final String DESCRIPTOR_MONGODB_HOST = "description.mongodb.host";
     public static final String DESCRIPTOR_MONGODB_PORT = "description.mongodb.port";
     public static final String DESCRIPTOR_MONGODB_DB = "description.mongodb.db";
@@ -21,7 +20,7 @@ public class BuilderDdpFileDescriptorMongo extends
 
     private DBCollection collPath;
 
-    public BuilderDdpFileDescriptorMongo(PropertiesPlaceHolder properties) {
+    public FileSystemControllerMongo(PropertiesPlaceHolder properties) {
         super(properties);
         try {
             Mongo mongo = new Mongo(

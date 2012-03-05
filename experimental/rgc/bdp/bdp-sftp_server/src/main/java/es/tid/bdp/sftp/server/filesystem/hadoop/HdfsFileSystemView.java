@@ -1,9 +1,5 @@
 package es.tid.bdp.sftp.server.filesystem.hadoop;
 
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.sshd.server.FileSystemView;
 import org.apache.sshd.server.SshFile;
@@ -13,27 +9,27 @@ import org.apache.sshd.server.filesystem.NativeSshFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import es.tid.bdp.utils.BuilderDdpFileDescriptorAbstract;
-import es.tid.bdp.utils.BuilderDdpFileDescriptorMongo;
-import es.tid.bdp.utils.BuilderDdpFileDescriptorTextAllow;
-import es.tid.bdp.utils.PropertiesPlaceHolder;
-import es.tid.bdp.utils.data.BdpFileDescriptor;
-import es.tid.bdp.utils.parse.ParserAbstract;
+import es.tid.bdp.utils.FileSystemControllerAbstract;
 
+/**
+ * File system view based on hdfs file system. Here the root directory will be
+ * user virtual root (/). It needs a controller for checking the access of the
+ * users to the different files and directories
+ * 
+ * @author rgc
+ * 
+ */
 public class HdfsFileSystemView implements FileSystemView {
 
     private final Logger LOG = LoggerFactory
             .getLogger(NativeFileSystemView.class);
 
-    private final static String FS_DEFAULT_NAME = "fs.default.name";
-    private static final String DESCRIPTOR_BUILDER_CLASS = "filesystem.descriptor.class";
-
     private String userName;
-    private FileSystem hdfsSrc;
+    private FileSystem hdfs;
 
     private String currDir;
 
-    private BuilderDdpFileDescriptorAbstract builder;
+    private FileSystemControllerAbstract hfdsCtrl;
 
     private boolean caseInsensitive = false;
 
@@ -41,15 +37,8 @@ public class HdfsFileSystemView implements FileSystemView {
      * Constructor - internal do not use directly, use
      * {@link NativeFileSystemFactory} instead
      */
-    protected HdfsFileSystemView(String userName) {
-        this(userName, false);
-    }
-
-    /**
-     * Constructor - internal do not use directly, use
-     * {@link NativeFileSystemFactory} instead
-     */
-    public HdfsFileSystemView(String userName, boolean caseInsensitive) {
+    public HdfsFileSystemView(String userName, boolean caseInsensitive,
+            FileSystem hdfs, FileSystemControllerAbstract hfdsCtrl) {
         if (userName == null) {
             throw new IllegalArgumentException("user can not be null");
         }
@@ -58,38 +47,9 @@ public class HdfsFileSystemView implements FileSystemView {
 
         this.currDir = "/";
         this.userName = userName;
+        this.hdfs = hdfs;
+        this.hfdsCtrl = hfdsCtrl;
 
-        try {
-
-            PropertiesPlaceHolder properties = PropertiesPlaceHolder
-                    .getInstance();
-
-            Configuration conf = new Configuration();
-            conf.set(FS_DEFAULT_NAME, properties.getProperty(FS_DEFAULT_NAME));
-
-            conf.set(
-                    "io.compression.codecs",
-                    "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
-
-            conf.set("io.compression.codec.lzo.class",
-                    "com.hadoop.compression.lzo.LzoCodec");
-
-            hdfsSrc = FileSystem.get(conf);
-
-            @SuppressWarnings("unchecked")
-            Class<BuilderDdpFileDescriptorAbstract> klass = (Class<BuilderDdpFileDescriptorAbstract>) Class
-                    .forName(properties.getProperty(DESCRIPTOR_BUILDER_CLASS));
-
-            Constructor<BuilderDdpFileDescriptorAbstract> constructor = klass
-                    .getConstructor(PropertiesPlaceHolder.class);
-
-            builder = constructor.newInstance(properties);
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        // add last '/' if necessary
         LOG.debug(
                 "Hdfs filesystem view created for user \"{}\" with root \"{}\"",
                 userName, currDir);
@@ -111,6 +71,6 @@ public class HdfsFileSystemView implements FileSystemView {
         String physicalName = NativeSshFile.getPhysicalName("/", dir, file,
                 caseInsensitive);
 
-        return new HdfsSshFile(hdfsSrc, builder, userName, physicalName);
+        return new HdfsSshFile(hdfs, hfdsCtrl, userName, physicalName);
     }
 }

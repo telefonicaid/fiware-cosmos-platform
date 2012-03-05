@@ -190,8 +190,8 @@ public class HdfsSshFile implements SshFile {
      */
     @Override
     public boolean isExecutable() {
-        // TODO rgc: Not implemented
-        throw new RuntimeException("isExecutable is not implemented");
+        // there are no files executables in HDFS system
+        return false;
     }
 
     /*

@@ -18,6 +18,13 @@ endif
 DISTRO=$(shell lsb_release -is)
 DISTRO_CODENAME=$(shell lsb_release -cs)
 
+OS=$(shell uname -s)
+ifeq ($(OS),Darwin)
+	CPU_COUNT=$(shell sysctl hw.ncpu)
+else
+	CPU_COUNT=$(shell cat /proc/cpuinfo | grep processor | wc -l)
+endif
+
 # List of modules that gets used to build packages. *Don't forget* to update modules/makefile as well when adding a new module
 MODULES=system \
 	txt \
@@ -134,7 +141,7 @@ clean:
 
 
 release: prepare_release
-	make -C BUILD_RELEASE #-j 7
+	make -C BUILD_RELEASE -j $(CPU_COUNT)
 
 # ------------------------------------------------
 # RELEASE Version
@@ -143,21 +150,21 @@ release: prepare_release
 
 strict: strict_compilation
 strict_compilation: prepare_strict
-	make -C BUILD_STRICT #-j 7
+	make -C BUILD_STRICT -j $(CPU_COUNT)
 
 # ------------------------------------------------
 # DEBUG Version
 # ------------------------------------------------
 
 debug: prepare_debug
-	make -C BUILD_DEBUG #-j 4
+	make -C BUILD_DEBUG -j $(CPU_COUNT)
 
 # ------------------------------------------------
 # DEBUG Version
 # ------------------------------------------------
 
 coverage: prepare_coverage
-	make -C BUILD_COVERAGE # -j8
+	make -C BUILD_COVERAGE -j $(CPU_COUNT)
 	lcov -d BUILD_COVERAGE -z	
 	BUILD_COVERAGE/apps/unitTest/unitTest
 	mkdir -p coverage

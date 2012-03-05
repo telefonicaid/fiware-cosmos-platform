@@ -113,6 +113,11 @@ install: prepare_release
 
 install_man: man
 	cp -r BUILD_RELEASE/man $(SAMSON_HOME)/
+
+# Install the supporting script/files that go in the OS directories
+install_scripts:
+	cp etc/profile.d 
+
  
 clean:
 	make -C BUILD_DEBUG clean
@@ -266,18 +271,16 @@ clear_ipcs:
 set_ssm_linux:
 	sudo sysctl -w kernel.shmmax=64000000
 
-rpm: release man
-	rm -rf package/rpm
-	scripts/samsonRpm $(SAMSON_VERSION) $(SAMSON_RELEASE)
-	scripts/samsonModuleDependencies
-	for module in $(MODULES); do \
-		cd modules/$$module; \
-		../../scripts/samsonModuleRpm $$module $(SAMSON_VERSION) $(SAMSON_RELEASE); \
-		cd ../..; \
-	done
-
+rpm:
+	mkdir -p ~/rpmbuild/{BUILD,RPMS,S{OURCE,PEC,RPM}S}
+	rm -f ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
+	tar cz --transform 's,^./,samson-$(SAMSON_VERSION)/,' .  --show-transformed-names --exclude=*.svn* -f ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
+	sed -e "s/SAMSON_VERSION/$(SAMSON_VERSION)/g" -e "s/SAMSON_RELEASE/$(SAMSON_RELEASE)/g" rpm/samson.spec > rpm/samson-$(SAMSON_VERSION).spec
+	rpmbuild -bb rpm/samson-$(SAMSON_VERSION).spec
+    
 publish_rpm: rpm
-	rsync  -v package/rpm/*.rpm repo@samson09.hi.inet:/var/repository/redhat/6/x86_64
+	rpm/rpm-sign.exp ~/rpmbuild/RPMS/x86_64/samson-$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm
+	rsync  -v  ~/rpmbuild/RPMS/x86_64/samson-$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm repo@samson09.hi.inet:/var/repository/redhat/6/x86_64
 	ssh repo@samson09.hi.inet createrepo -q -d /var/repository/redhat/6/x86_64
 
 # currently the deb scripts require Samson be installed before 
@@ -321,6 +324,8 @@ packages: install man rpm deb
 
 .PHONY : modules
 .PHONY : man
+.PHONY : rpm
+.PHONY : deb
 
 init_home:
 	mkdir -p $(SAMSON_HOME)

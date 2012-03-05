@@ -1,6 +1,7 @@
 package es.tid.bdp.utils;
 
 import java.util.NoSuchElementException;
+import java.util.Properties;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
@@ -20,16 +21,14 @@ public class FileSystemControllerMongo extends FileSystemControllerAbstract {
 
     private DBCollection collPath;
 
-    public FileSystemControllerMongo(PropertiesPlaceHolder properties) {
+    public FileSystemControllerMongo(Properties properties) {
         super(properties);
+        PropertiesPlaceHolder prop = (PropertiesPlaceHolder) properties;
         try {
-            Mongo mongo = new Mongo(
-                    properties.getProperty(DESCRIPTOR_MONGODB_HOST),
-                    properties.getPropertyInt(DESCRIPTOR_MONGODB_DB,
-                            DBPort.PORT));
-            DB primary = mongo.getDB(properties
-                    .getProperty(DESCRIPTOR_MONGODB_DB));
-            collPath = primary.getCollection(properties
+            Mongo mongo = new Mongo(prop.getProperty(DESCRIPTOR_MONGODB_HOST),
+                    prop.getPropertyInt(DESCRIPTOR_MONGODB_DB, DBPort.PORT));
+            DB primary = mongo.getDB(prop.getProperty(DESCRIPTOR_MONGODB_DB));
+            collPath = primary.getCollection(prop
                     .getProperty(DESCRIPTOR_MONGODB_COLLECTION));
         } catch (Exception e) {
             // TODO: handle exception
@@ -79,7 +78,7 @@ public class FileSystemControllerMongo extends FileSystemControllerAbstract {
 
         if (parserDBObject != null) {
 
-            ParserAbstract parser = this.createParser(
+            ParserAbstract parser = FileSystemControllerAbstract.createParser(
                     parserDBObject.getString("className"),
                     parserDBObject.getString("pattern"),
                     parserDBObject.getString("attr"));

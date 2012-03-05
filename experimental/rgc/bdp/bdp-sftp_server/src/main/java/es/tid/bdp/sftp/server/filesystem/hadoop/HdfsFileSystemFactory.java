@@ -20,6 +20,7 @@ package es.tid.bdp.sftp.server.filesystem.hadoop;
  */
 
 import java.lang.reflect.Constructor;
+import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -93,7 +94,7 @@ public class HdfsFileSystemFactory implements FileSystemFactory {
                     .forName(properties.getProperty(DESCRIPTOR_BUILDER_CLASS));
 
             Constructor<FileSystemControllerAbstract> constructor = klass
-                    .getConstructor(PropertiesPlaceHolder.class);
+                    .getConstructor(Properties.class);
 
             hdfsCtrl = constructor.newInstance(properties);
         } catch (Exception e) {

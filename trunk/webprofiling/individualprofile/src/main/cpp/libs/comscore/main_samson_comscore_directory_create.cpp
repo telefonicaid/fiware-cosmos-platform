@@ -38,7 +38,7 @@ static char paDictPath[128];
  */
 PaArgument paArgs[] ={
     { "", paDictPath, "", PaStr, PaHid, 0, PaNL, PaNL,
-            "Path to cs_mmxi.bcp, pattern_category_mapping.txt and cat_subcat_lookup.txt"},
+            "Path to cs_mmxi.bcp, pattern_category_mapping.txt and cat_subcat_map.txt"},
     PA_END_OF_ARGS
 };
 
@@ -240,7 +240,7 @@ int main(int argC, const char *argV[]) {
     std::string pattern_to_category_file_name = comscore_path;
     pattern_to_category_file_name += "/pattern_category_mapping.txt";
     std::string comscore_categories_files = comscore_path;
-    comscore_categories_files += "/cat_subcat_lookup.txt";
+    comscore_categories_files += "/cat_subcat_map.txt";
 
     const char* samson_comsore_dictionary_file_name = "samson_comscore_dictionary.bin"; // Current directories
 

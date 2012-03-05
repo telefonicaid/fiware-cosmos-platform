@@ -18,11 +18,13 @@ endif
 DISTRO=$(shell lsb_release -is)
 DISTRO_CODENAME=$(shell lsb_release -cs)
 
-OS=$(shell uname -s)
-ifeq ($(OS),Darwin)
-	CPU_COUNT=$(shell sysctl hw.ncpu)
-else
-	CPU_COUNT=$(shell cat /proc/cpuinfo | grep processor | wc -l)
+ifndef CPU_COUNT
+	OS=$(shell uname -s)
+	ifeq ($(OS),Darwin)
+		CPU_COUNT=$(shell sysctl hw.ncpu)
+	else
+		CPU_COUNT=$(shell cat /proc/cpuinfo | grep processor | wc -l)
+	endif
 endif
 
 # List of modules that gets used to build packages. *Don't forget* to update modules/makefile as well when adding a new module

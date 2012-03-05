@@ -116,7 +116,12 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     connectButton->setCheckable(true);
     queueFeed = new QTextEdit(this);
     queueFeed->setReadOnly(true);
-    
+    connectGroup = new QButtonGroup(this);
+    connectGroup->setExclusive(true);
+    connectNew = new QRadioButton("Only new data", this);
+    connectClear = new QRadioButton("Remove popped data", this);
+    connectGroup->addButton(connectNew);
+    connectGroup->addButton(connectClear);
     
     mainLayout->addWidget(name);
     mainLayout->addLayout(generalLayout);
@@ -128,6 +133,8 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     mainLayout->addStretch();
     
     connectButtonLayout->addWidget(connectButton);
+    connectButtonLayout->addWidget(connectNew);
+    connectButtonLayout->addWidget(connectClear);
     connectButtonLayout->addStretch();
 
     generalLayout->addWidget(sizeBox);
@@ -201,6 +208,13 @@ void ExtQueueViewer::setData(QueueData* newData)
 void ExtQueueViewer::updateFeed(std::string line)
 {
     queueFeed->append(QString(line.c_str()) + QString("\n"));
+    queueFeed->ensureCursorVisible();
+    queueFeed->update();
+}
+
+void ExtQueueViewer::clearFeed()
+{
+    queueFeed->setText("");
     queueFeed->ensureCursorVisible();    
 }
 

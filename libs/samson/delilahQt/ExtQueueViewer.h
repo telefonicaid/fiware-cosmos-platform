@@ -55,6 +55,7 @@ class ExtQueueViewer: public QWidget
         void setTitle(std::string title);
         void setHiddenButton(bool hidden);
         void updateFeed(std::string line);
+        void clearFeed();
         //void setLayout(QGridLayout* layout, int row);
 
         //we make this button public to be able to connect to it from DelilahMainWindow
@@ -96,6 +97,9 @@ class ExtQueueViewer: public QWidget
         
         //QPushButton* connectButton;
         //QTextEdit* queueFeed;
+        QButtonGroup* connectGroup;
+        QRadioButton* connectNew;
+        QRadioButton* connectClear;
         
         QGroupBox* sizeBox;
         QGroupBox* formatBox;

@@ -10,6 +10,8 @@
 #include "DelilahMainWindow.h"
 #include "WorkerViewer.h"
 
+#include <time.h>
+
 #include <QTimer>
 #include <QtGui>
 
@@ -116,8 +118,15 @@ namespace samson
    //std::cout << "Received buffer with size " << au::str(size,"B") << " from queue " << queue << std::endl;
         if(connectedQueues.find(queue) != connectedQueues.end())
         {
+            time_t rawtime;
+            struct tm * timeinfo;
+
+            time ( &rawtime );
+            timeinfo = localtime ( &rawtime );
+            std::string timeString = std::string(asctime (timeinfo));
+
             std::stringstream line;
-            line << "Received buffer with size " << au::str(size,"B") << " from queue " << queue;
+            line << timeString << "Received buffer with size " << au::str(size,"B") << " from queue " << queue;
             mainWindow->updateQueuesFeed(queue, line.str());
         }
     }

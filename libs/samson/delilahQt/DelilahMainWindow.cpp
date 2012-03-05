@@ -167,6 +167,7 @@ namespace samson
         if(button->isChecked())
         {
             emit(connectedQueue(queueViewer->title));
+            queueViewer->clearFeed();
             button->setText("Disconnect from this Queue");
         }
         else

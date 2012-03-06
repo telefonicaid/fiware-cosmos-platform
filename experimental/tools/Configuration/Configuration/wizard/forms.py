@@ -1,11 +1,12 @@
 from django import forms
 from django.forms.fields import ChoiceField
-from django.forms.widgets import RadioSelect,CheckboxSelectMultiple, Select
+from django.forms.widgets import RadioSelect,CheckboxSelectMultiple, Select, DateInput
 from django.contrib.formtools.wizard import FormWizard
 from django.shortcuts import render_to_response
 from Configuration.wizard.models import Template, Label, Configuration
 from djangotoolbox.fields import ListField
 from django.http import HttpResponseRedirect
+import datetime
 
 
 class ConfigurationForm(forms.Form):
@@ -46,7 +47,13 @@ class IngestionForm(forms.Form):
     mode = ChoiceField(widget=RadioSelect, choices=INGESTION_MODE_CHOICES)
     path = forms.CharField(max_length=200)
     size = forms.IntegerField()
+    initial_date = forms.DateField(initial=datetime.date.today, input_formats='%d/%m/%Y')
+    end_date = forms.DateField(input_formats='%d/%m/%Y')
+    frequency = forms.CharField(initial='1',required=False)
+    output = forms.CharField(max_length=200)
+    file_name = forms.CharField(max_length=200)
     
+        
     # Creates Template Model from Ingestion Form data
     def create_template_model(self):
         # Create Template
@@ -59,12 +66,22 @@ class IngestionForm(forms.Form):
         lbl1 = Label()
         lbl1.attribute['IngestionMode'] = dict  
         lbl2 = Label()
-        lbl2.attribute["IngestionAddress"] = self['path'].value()
+        lbl2.attribute["LandingArea"] = self['path'].value()
         lbl3 = Label()
         lbl3.attribute["IngestionSize"] = self['size'].value()
         lbl4 = Label()
         lbl4.attribute["ConfigurationName"] = self['name'].value()
-        tpl = Template( template = "IngestionTemplate", attribute_values = [lbl1,lbl2,lbl3,lbl4] )
+        lbl5 = Label()
+        lbl5.attribute["InitialDate"] = self['initial_date'].value()
+        lbl6 = Label()
+        lbl6.attribute["EndDate"] = self['end_date'].value()
+        lbl7 = Label()
+        lbl7.attribute["UploadFrequency"] = self['frequency'].value()
+        lbl8 = Label()
+        lbl8.attribute["OutputPath"] = self['output'].value()
+        lbl9 = Label()
+        lbl9.attribute["FileNamePattern"] = self['file_name'].value()
+        tpl = Template( template = "IngestionTemplate", attribute_values = [lbl1,lbl2,lbl3,lbl4,lbl5,lbl6,lbl7,lbl8,lbl9] )
         return tpl
 
     # Saves Ingestion Form, really saves Template Model

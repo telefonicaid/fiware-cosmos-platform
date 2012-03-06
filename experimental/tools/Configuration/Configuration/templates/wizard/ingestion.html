@@ -29,25 +29,56 @@
 			    </div><br/><br/>
 			{% endif %}
 			    
-		    <h2 class="h-label">{{ "Ingestion Properties" }}</h2>
-		    <div class="field-div">
-			    <div class="fieldWrapper">
-			        {{ form.message.errors }}
-			        <label class="label-form-radio" for="id_type">Ingestion Mode</label>
-			        {{ form.mode }}
-			    </div><br/><br/>
-			    <div class="fieldWrapper">
-			        {{ form.message.errors }}
-			        <label class="label-form" for="id_type">Ingestion Address</label>
-			        {{ form.path }}
-			    </div><br/><br/><br/>
-			    <div class="fieldWrapper">
-			        {{ form.message.errors }}
-			        <label class="label-form" for="id_type">Ingestion Size</label>
-			        {{ form.size }}
-			    </div>	
+		    <div class="field-div-ingestion">
+		    	<div class="pre-div-left-border">
+			        <div class="fieldWrapper">
+				        {{ form.message.errors }}
+				        <label class="label-form-radio" for="id_type">Ingestion Mode</label>
+				        {{ form.mode }}
+				    </div><br/>
+				    <div class="fieldWrapper">
+				        {{ form.message.errors }}
+				        <label class="label-form" for="id_type">Landing Area</label>
+				        {{ form.path }}
+				    </div><br/><br/>
+				    <div class="fieldWrapper">
+				        {{ form.message.errors }}
+				        <label class="label-form" for="id_type">Ingestion Size</label>
+				        {{ form.size }}
+				    </div>		       
+			    </div>
+			    <div class="pre-div-right-border" style="padding-top: 20px">
+			        <div class="fieldWrapper">
+				        {{ form.message.errors }}
+				        <label class="label-form" for="id_type">Initial Date</label>
+				        {{ form.initial_date }}
+				    </div><br/><br/>
+				    <div class="fieldWrapper">
+				        {{ form.message.errors }}
+				        <label class="label-form" for="id_type">End Date</label>
+				        {{ form.end_date }}
+				    </div><br/><br/>
+				    <div class="fieldWrapper">
+				        {{ form.message.errors }}
+				        <label class="label-form" for="id_type">Upload Frequency</label>
+				        {{ form.frequency }}
+				    </div>	
+			    </div>			    
 			  </div><br/><br/>      
-			
+				
+			  <div class="pre-div" style="height: 30px">
+			    <div class="pre-div-left" style="width: 48%">
+			        {{ form.message.errors }}
+			        <label class="label-cons-form" for="id_type">Output Path</label>
+	        	 	{{ form.output }}		       
+			    </div>
+			    <div class="pre-div-right" style="width: 48%">
+			        {{ form.message.errors }}
+			        <label for="id_type">File Name Pattern</label>
+	        	 	{{ form.file_name }}
+			    </div>				    			    
+			   </div><br/>	
+				
             <input type="hidden" name="{{ step_field }}" value="{{ step0 }}" />
             {{ previous_fields|safe }}
 

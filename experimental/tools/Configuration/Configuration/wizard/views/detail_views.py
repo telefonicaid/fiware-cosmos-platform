@@ -41,12 +41,23 @@ def ingestion_detail(request,pk):
                         else: select_mode = 'File'
                     elif key == 'IngestionSize':
                         size = label.attribute[key]
-                    elif key == 'IngestionAddress':
+                    elif key == 'LandingArea':
                         path = label.attribute[key]
                     elif key == 'ConfigurationName':
                         name = label.attribute[key]
+                    elif key == 'InitialDate':
+                        initial_date = label.attribute[key]
+                    elif key == 'EndDate':
+                        end_date = label.attribute[key]
+                    elif key == 'UploadFrequency':
+                        frequency = label.attribute[key]
+                    elif key == 'OutputPath':
+                        output = label.attribute[key]
+                    elif key == 'FileNamePattern':
+                        file_name = label.attribute[key]
                     
-            form = IngestionForm(initial = {'path' : path, 'size' : size, 'name' : name, 'mode' : select_mode})
+            form = IngestionForm(initial = {'path' : path, 'size' : size, 'name' : name, 'mode' : select_mode, 'initial_date' : initial_date,
+                                            'end_date' : end_date, 'frequency' : frequency, 'output' : output, 'file_name' : file_name})
             
             return render_to_response('wizard/ingestion.html', {
                                                         'form': form

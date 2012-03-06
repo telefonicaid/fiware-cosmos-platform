@@ -36,7 +36,7 @@ bash /opt/samson/bin/samsonInitSetup
 rm -rf $RPM_BUILD_ROOT
 
 %build
-make SAMSON_HOME=$RPM_BUILD_ROOT/opt/samson
+make release_all SAMSON_HOME=$RPM_BUILD_ROOT/opt/samson
 
 %install
 make SAMSON_HOME=$RPM_BUILD_ROOT/opt/samon install

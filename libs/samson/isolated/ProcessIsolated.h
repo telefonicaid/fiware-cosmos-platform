@@ -147,7 +147,7 @@ namespace samson {
 		void setProcessBaseMode(ProcessBaseType _type);
       
         // Send traces using distribution information
-        void sendAlert( samson::network::Alert& alert );
+        //void sendAlert( samson::network::Alert& alert );
         
         
     };

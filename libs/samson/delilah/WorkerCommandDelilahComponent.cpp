@@ -173,16 +173,27 @@ namespace samson {
                 setComponentFinishedWithError( au::str("WorkerCommandResponse received from worker %lu not involved in this operation" ) );
                 return;
             }
-            confirmed_workers.insert( worker_id );
+            
+            if( responses.findInMap(worker_id) != NULL )
+            {
+                setComponentFinishedWithError( au::str("Duplicated WorkerCommandResponse received from worker %lu" ) );
+                return;
+            }
+            
+            // If error is returned, worker_command is automatically canceled
+            if( packet->message->worker_command_response().has_error() )
+            {
+                std::string error_message = packet->message->worker_command_response().error().message();
+                WorkerResponese *response = new WorkerResponese( worker_id , error_message );
+                responses.insertInMap(worker_id, response);
+            }
+            else
+            {
+                WorkerResponese *response = new WorkerResponese( worker_id );
+                responses.insertInMap(worker_id, response);
+            }
+            
         }
-
-        // If error is returned, worker_command is automatically canceled
-        if( packet->message->worker_command_response().has_error() )
-        {
-            setComponentFinishedWithError( packet->message->worker_command_response().error().message() );
-            return;
-        }
-        
         
         // Extract collections if included ( adding worker_id field )
         for( int i = 0 ; i < packet->message->collection_size() ; i++ )
@@ -207,13 +218,29 @@ namespace samson {
             }
         }
         
-        if( confirmed_workers.size() == workers.size() )
+        if( responses.size() == workers.size() )
         {
-            //LM_M(("setComponentFinished() fromId(%d) num_confirmed_workers(%d)", fromId, num_confirmed_workers));
-            setComponentFinished();
             
+            bool general_error = false;
+            std::string general_error_message;
+            au::map<size_t , WorkerResponese >::iterator it_responses;
+            for ( it_responses = responses.begin() ; it_responses != responses.end() ; it_responses++ )
+            {
+                size_t worker_id = it_responses->first;
+                WorkerResponese* response = it_responses->second;
+                if ( response->error.isActivated() )
+                {
+                    general_error_message.append( au::str("[Worker %lu] " , worker_id ) + response->error.getMessage() + "\n" );
+                    general_error = true;
+                }
+            }
             
-            // Print the result in a table
+            if( general_error )
+                setComponentFinishedWithError( general_error_message );
+            else
+                setComponentFinished();
+            
+            // Print the result in a table if necessary
             au::map<std::string, network::Collection >::iterator it;
             for( it = collections.begin() ; it != collections.end() ; it++ )
                 print_content( it->second );
@@ -271,18 +298,40 @@ namespace samson {
 	
 	std::string WorkerCommandDelilahComponent::getStatus()
 	{
-        std::set<size_t>::iterator it;
-		std::ostringstream o;
-        o << "Workers              ";
-        for( it = workers.begin() ; it != workers.end() ; it++ )
-            o << *it << " ";
-        o << "\n";
         
-        o << "Confirmed workers    ";
-        for( it = confirmed_workers.begin() ; it != confirmed_workers.end() ; it++ )
-            o << *it  << " ";
-        o << "\n";
-		return o.str();
+        au::tables::Table table( au::StringVector("Worker" , "Status" , "Message" ) , au::StringVector("left" , "left" , "left" ) );
+        
+        std::set<size_t>::iterator it;
+        for( it = workers.begin() ; it != workers.end() ; it++ )
+        {
+            size_t worker_id = *it;
+            
+            au::StringVector values;
+            values.push_back( au::str("%lu" , worker_id ));
+            
+            WorkerResponese * response = responses.findInMap( worker_id );
+            if( !response )
+            {
+                values.push_back("Pending");
+                values.push_back("");
+            }
+            else
+            {
+                if( response->error.isActivated() )
+                {
+                    values.push_back("Error");
+                    values.push_back( response->error.getMessage() );
+                }
+                else
+                {
+                    values.push_back("Finish");
+                    values.push_back("OK");
+                }
+            }
+            table.addRow( values );
+        }
+        
+		return table.str("Responses from SAMSON workers");
 	}
 	
 }

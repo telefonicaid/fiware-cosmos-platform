@@ -333,7 +333,7 @@ namespace samson
         type = _type;
     }
     
-    
+    /*
     void ProcessIsolated::sendAlert( samson::network::Alert& alert )
     {
         std::vector<size_t> delilahs = distribution_information.network->getDelilahIds();
@@ -355,11 +355,8 @@ namespace samson
             distribution_information.network->send( p );
             
         }
-        
-        
-        
-        
     }
+     */
     
     
 }

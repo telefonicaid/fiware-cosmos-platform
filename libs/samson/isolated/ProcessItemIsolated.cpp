@@ -343,6 +343,7 @@ namespace samson
             case samson::network::MessageProcessPlatform_Code_code_user_error:
             {
                 LM_T( LmtIsolated , ("Isolated process %s: Message reporting user error  ",getStatus().c_str() ));
+                LM_E(("User generated error at operation %s received %s", operation_name.c_str() , message->error().c_str() ));
                 
                 // Set the error
                 if( message->has_error() )

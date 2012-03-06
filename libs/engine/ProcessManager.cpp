@@ -180,6 +180,8 @@ void ProcessManager::finishProcessItem( ProcessItem *item )
     // Notify this using the notification Mechanism
     Notification * notification = new Notification( notification_process_request_response , item , item->listeners );
     notification->environment.copyFrom( &item->environment );
+    if( item->error.isActivated() )
+        notification->environment.set("error", item->error.getMessage());
     Engine::shared()->notify( notification );
     
 }

@@ -68,7 +68,7 @@ namespace samson {
         void sendMessageProcessPlatform( samson::network::MessageProcessPlatform *message );
 
 		
-        virtual void sendAlert( samson::network::Alert& alert )=0;
+        //virtual void sendAlert( samson::network::Alert& alert )=0;
         
 	public:		
 

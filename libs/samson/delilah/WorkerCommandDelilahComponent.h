@@ -24,13 +24,34 @@ namespace samson {
 	 Simple component created when a command is send to the controller ( waiting for answeres )
 	 */
 	
+    class WorkerResponese
+    {
+        
+    public:
+        
+        size_t worker_id;
+        au::ErrorManager error;
+        
+        WorkerResponese( size_t _worker_id )
+        {
+            worker_id = _worker_id;
+        }
+        
+        WorkerResponese( size_t _worker_id , std::string error_message )
+        {
+            worker_id = _worker_id;
+            error.set( error_message );
+        }
+        
+    };
+    
 	class WorkerCommandDelilahComponent : public DelilahComponent
 	{
 		std::string command;
 		engine::Buffer *buffer;
 
-        std::set<size_t> workers;             // Ids of the workers involved in this command
-        std::set<size_t> confirmed_workers;   // Ids of the workers confirmed finish of this operation
+        std::set<size_t> workers;                       // Ids of the workers involved in this command
+        au::map<size_t , WorkerResponese > responses;   // Map with all the responses from workers
         
         // Collections reported by workers
         au::map<std::string, network::Collection > collections;

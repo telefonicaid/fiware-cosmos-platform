@@ -151,9 +151,9 @@ int main( int argC , const char *argV[] )
         {
             
             if( show_header )
-                block->print_header();
+                std::cout << block->get_header_content();
             else
-                block->print_content( limit, format );
+                std::cout << block->get_content( limit, format );
             
             delete block;
         }

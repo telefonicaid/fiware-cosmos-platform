@@ -41,7 +41,7 @@
 
 #include "samson/client/SamsonClient.h"         // samson::SamsonClient
 #include "samson/common/samsonVars.h"
-
+#include "samson/client/SamsonPushBuffer.h"
 
 
 /* ****************************************************************************

@@ -32,6 +32,8 @@
 
 #include "samson/network/Packet.h"						// ss:Packet
 
+#include "samson/client/SamsonClient.h"
+
 #include "samson/module/ModulesManager.h"           // samson::ModulesManager
 #include "samson/module/samsonVersion.h"            // SAMSON_VERSION
 
@@ -1367,11 +1369,23 @@ namespace samson
         std::string fileName = au::str( "%s/block_%l05u" , directory_name.c_str() , counter );
 
         if (verbose)
-            showMessage( au::str("Received stream data for queue %s (%s). Stored at file %s" 
-                                 , queue.c_str() 
-                                 , au::str( packet_size ,"B" ).c_str() 
-                                 , fileName.c_str() )
-                        );
+        {
+            
+            // Show the first line or key-value
+            SamsonClientBlock samson_client_block( buffer , false );  // Not remove buffer at destrutor
+            
+            std::ostringstream output;
+            output << "====================================================================\n";
+            output << au::str("Received stream data for queue %s\n" , queue.c_str() ); 
+            output << au::str("Stored at file %s\n" , fileName.c_str() );
+            output << samson_client_block.get_header_content();
+            output << "====================================================================\n";
+            output << samson_client_block.get_content( 5 );
+            output << "====================================================================\n";
+            
+            showMessage( output.str() );
+        }
+        
         
         // Disk operation....
         engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer ,  fileName , getEngineId()  );

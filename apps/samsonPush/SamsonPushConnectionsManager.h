@@ -8,7 +8,7 @@
 #include "samson/network/NetworkListener.h"
 #include "samson/network/SocketConnection.h"
 #include "samson/client/SamsonClient.h"
-
+#include "samson/client/SamsonPushBuffer.h"
 
 // Function to run the background thread
 void* run_SamsonPushConnection( void* p);

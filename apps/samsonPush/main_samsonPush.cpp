@@ -24,6 +24,8 @@
 #include "au/string.h"              // au::str()
 
 #include "samson/client/SamsonClient.h"         // samson::SamsonClient
+#include "samson/client/SamsonPushBuffer.h"
+
 #include "samson/common/coding.h"               // KVHeader
 
 #include "samson/network/NetworkListener.h"

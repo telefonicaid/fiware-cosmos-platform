@@ -1063,8 +1063,10 @@ namespace samson{
                         // Check if it is integuer
                         _value_int = _value_double;
                         double tmp_value = _value_int;
+                        
                         if( tmp_value == _value_double )
                             value_type = value_int;
+                        
                         return;
                     }
                         

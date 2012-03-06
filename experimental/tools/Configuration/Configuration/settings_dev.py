@@ -120,7 +120,10 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
+    # NoSql Django apps
     'django_mongodb_engine',
+    'djangotoolbox',
+    # BDP Apps
     'wizard',
 )
 
@@ -146,3 +149,5 @@ LOGGING = {
         },
     }
 }
+
+LOGIN_URL= '/login/'

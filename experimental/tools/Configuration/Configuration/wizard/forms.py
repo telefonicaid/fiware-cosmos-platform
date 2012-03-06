@@ -241,7 +241,6 @@ class WizardForm(FormWizard):
 
 RegisterWizard = WizardForm([IngestionForm, PreProcessingForm, WebProfilingForm]) 
 
-
 def wizard(request): 
     if request.POST and 'wizard_continue' in request.POST: 
         RegisterWizard.form_list.append(WebProfilingForm)

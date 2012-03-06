@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.ps.base.mapreduce.BinaryKey;
+import es.tid.bdp.base.mapreduce.BinaryKey;
 import es.tid.bdp.profile.data.CategoryCountUtil;
 import es.tid.bdp.profile.data.ProfileProtocol.CategoryCount;
 import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;

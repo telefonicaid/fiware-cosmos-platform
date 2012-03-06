@@ -9,7 +9,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.ps.base.mapreduce.BinaryKey;
+import es.tid.bdp.base.mapreduce.BinaryKey;
 import es.tid.bdp.profile.data.ProfileProtocol.CategoryInformation;
 import es.tid.bdp.profile.data.ProfileProtocol.UserNavigation;
 import es.tid.bdp.profile.dictionary.Categorization;

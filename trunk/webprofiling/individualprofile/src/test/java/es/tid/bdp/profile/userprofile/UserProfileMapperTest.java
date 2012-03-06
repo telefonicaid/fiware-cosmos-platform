@@ -20,7 +20,7 @@ import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.ps.base.mapreduce.BinaryKey;
+import es.tid.bdp.base.mapreduce.BinaryKey;
 import static es.tid.bdp.profile.data.CategoryCountUtil.createAndWrap;
 import es.tid.bdp.profile.data.ProfileProtocol.CategoryCount;
 import es.tid.bdp.profile.data.ProfileProtocol.CategoryInformation;

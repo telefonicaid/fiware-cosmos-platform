@@ -13,7 +13,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
-import es.tid.ps.base.mapreduce.BinaryKey;
+import es.tid.bdp.base.mapreduce.BinaryKey;
 import es.tid.bdp.profile.export.mongodb.ExporterJob;
 
 /**

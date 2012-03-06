@@ -478,11 +478,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>es.tid.ps</groupId>
-            <artifactId>base</artifactId>
-            <version>0.0.2</version>
-        </dependency>
     </dependencies>
 
 

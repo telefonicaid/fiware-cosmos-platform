@@ -53,7 +53,7 @@
             <version>0.1.0</version>
         </dependency>
         <dependency>
-            <groupId>es.tid.ps</groupId>
+            <groupId>es.tid.bdp</groupId>
             <artifactId>base</artifactId>
             <version>0.0.2</version>
         </dependency>
@@ -175,7 +175,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>es.tid.ps.profile.IndividualProfileMain</mainClass>
+                            <mainClass>es.tid.bdp.profile.IndividualProfileMain</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -209,7 +209,7 @@
                     <transformers>
                         <transformer
                             implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>es.tid.ps.profile.IndividualProfileMain</mainClass>
+                            <mainClass>es.tid.bdp.profile.IndividualProfileMain</mainClass>
                         </transformer>
                     </transformers>
                 </configuration>

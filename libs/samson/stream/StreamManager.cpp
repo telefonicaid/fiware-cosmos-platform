@@ -1183,8 +1183,8 @@ namespace samson {
                         if( memcmp(s1, s2, key_size) == 0 )
                         {
                             std::ostringstream output;
-                            au::xml_simple( output , "key" , key_data_instance->str() );
-                            au::xml_simple( output , "value" , value_data_instance->str() );
+                            output << key_data_instance->strXML("key");
+                            output << value_data_instance->strXML("value");
 
                             delete reference_key_data_instance;
                             delete key_data_instance;

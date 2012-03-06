@@ -26,7 +26,8 @@ DISTRO_CODENAME=$(shell lsb_release -cs)
 ifndef CPU_COUNT
 	OS=$(shell uname -s)
 	ifeq ($(OS),Darwin)
-		CPU_COUNT=$(shell sysctl hw.ncpu)
+		#CPU_COUNT=$(shell sysctl hw.ncpu)
+		CPU_COUNT=1
 	else
 		CPU_COUNT=$(shell cat /proc/cpuinfo | grep processor | wc -l)
 	endif

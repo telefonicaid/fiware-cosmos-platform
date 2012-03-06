@@ -252,14 +252,8 @@ cleanhudson:
 #	make -C modules
 
 
-qt:
-	make -C build/apps/delilahQt
-
-clean_qt:
-	make -C build/apps/delilahQt clean
-
-
-v: di
+v: valgrind
+valgrind: di
 	valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  samsonLocal  2> output_valgrind_samsonLocal
 
 
@@ -330,5 +324,8 @@ init_home:
 	mkdir -p $(SAMSON_WORKING)
 	mkdir -p /var/log/samson
 	chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_HOME) $(SAMSON_WORKING) /var/log/samson
+
+help:
+	less doc/makefile_targets
 
 #vim: noexpandtab

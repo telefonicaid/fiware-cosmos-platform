@@ -6,7 +6,7 @@
 <key>DJANGO_MANAGE_LOCATION</key>
 <value>Configuration/manage.py</value>
 <key>DJANGO_SETTINGS_MODULE</key>
-<value>Configuration.settings</value>
+<value>Configuration.settings_dev</value>
 </pydev_variables_property>
 <pydev_pathproperty name="org.python.pydev.PROJECT_SOURCE_PATH">
 <path>/Configuration</path>

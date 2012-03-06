@@ -126,3 +126,29 @@ map map_value_to_value
 
 	helpLine "Generic map to transform values. User enviroment variable command to specify what to do..."
 }
+
+map map_value_to_2_value
+{
+	in  system.Value system.Value
+	out system.Value system.Value
+	out system.Value system.Value
+
+	helpLine "Generic map to transform values. User enviroment variable command to specify what to do..."
+}
+
+map map_value_to_3_value
+{
+	in  system.Value system.Value
+	out system.Value system.Value
+	out system.Value system.Value
+
+	helpLine "Generic map to transform values. User enviroment variable command to specify what to do..."
+}
+
+reduce reduce_value_to_value
+{
+    in  system.Value system.Value
+    out system.Value system.Value
+
+	helpLine "Reduce all the values for every particular key. Possible commands  sum_double (default) , average_double , max_double  "
+}

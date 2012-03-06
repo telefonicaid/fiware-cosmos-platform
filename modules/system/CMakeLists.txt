@@ -4,6 +4,9 @@ SET (AUX_HEADERS
     samson/modules/system/Value.h
 	operations/parse_to_value.h
 	operations/map_value_to_value.h	
+	operations/map_value_to_2_value.h	
+	operations/map_value_to_3_value.h	
+	operations/reduce_value_to_value.h
 	operations/Filter.h
 	operations/Filter.cpp
 )			  

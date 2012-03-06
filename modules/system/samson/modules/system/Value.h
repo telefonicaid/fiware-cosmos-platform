@@ -229,7 +229,7 @@ namespace samson{
                 size_t offset = 1; 
                 
                 // Length of the vector ( decoded in different ways )
-                size_t _length;
+                size_t _length = 0;
 
                 switch (code) 
                 {
@@ -1147,6 +1147,56 @@ namespace samson{
                         break;
                 }
             }
+            
+            
+            bool isNumber()
+            {
+                switch (value_type) 
+                {
+                    case value_int:
+                    case value_double:
+                        return true;
+                    case value_string:
+                    case value_void:
+                    case value_vector:
+                    case value_map:
+                        return false;
+                }
+            }
+            
+            // Numerical sum
+            double getDouble()
+            {
+                switch ( value_type )
+                {
+                    case value_void:
+                        return 0;
+                    case value_int:
+                        return  (double)_value_int;
+                    case value_double:
+                        return _value_double;
+                        
+                    case value_string:
+                        return 0;
+                        
+                    case value_vector:
+                    {
+                        if( _value_vector.size() > 0 )
+                            return _value_vector[0]->getDouble();
+                        else
+                            return 0;
+                    }
+                        
+                    case value_map:
+                        return 0;
+                }
+
+                LM_X(1, ("Internal error"));
+                return 0;
+            }
+
+            
+            
             
         };
         

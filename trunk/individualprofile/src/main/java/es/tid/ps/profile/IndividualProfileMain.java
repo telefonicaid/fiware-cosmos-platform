@@ -18,30 +18,36 @@ import es.tid.ps.profile.userprofile.UserProfileJob;
  * @author dmicol, sortega
  */
 public class IndividualProfileMain extends Configured implements Tool {
+    private static final String TMP_DIR = "/tmp/individualprofile";
+    private static final String CATEGORIES_PATH = TMP_DIR + "/categories";
+    private static final String PROFILE_PATH = TMP_DIR + "profile";
+
     @Override
     public int run(String[] args)
             throws IOException, ClassNotFoundException, InterruptedException {
-        if (args.length < 3 || args.length > 4) {
+        if (args.length < 1 || args.length > 2) {
             throw new IllegalArgumentException("Mandatory parameters: "
-                    + "weblogs_path categories_path profile_path [mongo_url]");
+                    + "weblogs_path [mongo_url]");
         }
 
         Path webLogsPath = new Path(args[0]);
-        Path categoriesPath = new Path(args[1]);
-        Path profilePath = new Path(args[2]);
+        Path categoriesPath = new Path(CATEGORIES_PATH);
+        Path profilePath = new Path(PROFILE_PATH);
 
         CategoryExtractionJob ceJob = new CategoryExtractionJob(this.getConf());
         ceJob.configure(webLogsPath, categoriesPath);
         if (!ceJob.waitForCompletion(true)) {
             return 1;
         }
+
         UserProfileJob upJob = new UserProfileJob(this.getConf());
         upJob.configure(categoriesPath, profilePath);
         if (!upJob.waitForCompletion(true)) {
             return 1;
         }
 
-        if (args.length == 4) {
+        // Perform the MongoDB export.
+        if (args.length == 2) {
             String mongoUrl = args[3];
             ExporterJob exJob = new ExporterJob(this.getConf());
             exJob.configure(profilePath, mongoUrl);

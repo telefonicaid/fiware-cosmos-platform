@@ -153,12 +153,12 @@ class WebProfilingForm(forms.Form):
     error_css_class = 'error'
     required_css_class = 'required'
     mode = ChoiceField(widget=RadioSelect, choices=CONSUMPTION_MODE_CHOICES)
-    grouping_fields = forms.ChoiceField(  required=False, 
-                                                    widget=Select,
-                                                    choices=ATTRIBUTE_FIELDS_CHOICES)
-    attributes_fields = forms.MultipleChoiceField(  required=False, 
-                                                    widget=CheckboxSelectMultiple,
-                                                    choices=ATTRIBUTE_FIELDS_CHOICES)
+    grouping_fields = forms.ChoiceField( required=False, 
+                                         widget=Select,
+                                         choices=ATTRIBUTE_FIELDS_CHOICES)
+    attributes_fields = forms.MultipleChoiceField( required=False, 
+                                                   widget=CheckboxSelectMultiple,
+                                                   choices=ATTRIBUTE_FIELDS_CHOICES)
     consumption_path = forms.CharField(max_length=200)
     job_name = forms.CharField(max_length=200)
     
@@ -212,6 +212,11 @@ class WebProfilingForm(forms.Form):
             return render_to_response('forms/error.html')
 
 class WizardForm(FormWizard): 
+    def process_step(self, request, form, step):
+        stp = step
+        if stp >= 3:
+            return ['forms/wizard_%s.html' % step, 'wizard/preProcessing.html']
+        
     def get_template(self,step):
         stp = step
         if stp == 0:
@@ -220,8 +225,8 @@ class WizardForm(FormWizard):
             return ['forms/wizard_%s.html' % step, 'wizard/preProcessing.html']
         elif stp == 2:
             return ['forms/wizard_%s.html' % step, 'wizard/webProfiling.html']
-        elif stp == 3:
-            return ['forms/wizard_%s.html' % step, 'wizard/webProfiling.html']
+        else:          
+            return ['forms/wizard_%s.html' % step, 'wizard/webProfiling.html']  
         
     def done(self, request, form_list):
         config = Configuration()
@@ -232,4 +237,18 @@ class WizardForm(FormWizard):
         config.name = form_list[0].cleaned_data['name']
         config.save()
         return HttpResponseRedirect('../')
-        
+
+
+RegisterWizard = WizardForm([IngestionForm, PreProcessingForm, WebProfilingForm]) 
+
+
+def wizard(request): 
+    if request.POST and 'wizard_continue' in request.POST: 
+        RegisterWizard.form_list.append(WebProfilingForm)
+    response = RegisterWizard(request) 
+    
+    hashes = [RegisterWizard.security_hash(request, RegisterWizard.get_form(i, request.POST)) for i in range(RegisterWizard.step)]  
+    
+    response['WizardHashes'] = hashes  
+      
+    return response

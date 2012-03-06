@@ -1066,7 +1066,6 @@ namespace samson{
                         
                         if( tmp_value == _value_double )
                             value_type = value_int;
-                        
                         return;
                     }
                         
@@ -1087,8 +1086,8 @@ namespace samson{
 
                         if( is_double( _value_string.c_str() ) )
                         {
-                            value_type = value_int;
-                            _value_int = atof( _value_string.c_str() );
+                            value_type = value_double;
+                            _value_double = atof( _value_string.c_str() );
                             return;
                         }
                         

@@ -13,7 +13,10 @@
 
 int main()
 {
-    
-    samson::system::FilterSelect filter_select( "[key:0;key:1],<andreu>" );
-    std::cout << filter_select.str();
+
+   samson::system::Value v;
+   v.set_string("10.4");
+
+   printf("%s\n" , v.str().c_str() );
+
 }

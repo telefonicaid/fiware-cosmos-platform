@@ -7,6 +7,7 @@ SET (AUX_HEADERS
 	operations/map_value_to_2_value.h	
 	operations/map_value_to_3_value.h	
 	operations/reduce_value_to_value.h
+	operations/update_state.h 
 	operations/Filter.h
 	operations/Filter.cpp
 )			  

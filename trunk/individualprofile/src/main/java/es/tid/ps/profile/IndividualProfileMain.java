@@ -48,7 +48,11 @@ public class IndividualProfileMain extends Configured implements Tool {
 
         // Perform the MongoDB export.
         if (args.length == 2) {
+<<<<<<< HEAD
             String mongoUrl = args[3];
+=======
+            String mongoUrl = args[1];
+>>>>>>> 29c6704... Remove unnecessary parameters from the invidual profile.
             ExporterJob exJob = new ExporterJob(this.getConf());
             exJob.configure(profilePath, mongoUrl);
             if (!exJob.waitForCompletion(true)) {

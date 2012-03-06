@@ -1,15 +1,15 @@
 package es.tid.bdp.kpicalculation.cleaning;
 
-import es.tid.ps.kpicalculation.cleaning.ExtensionFilter;
-import es.tid.ps.kpicalculation.cleaning.IKpiCalculationFilter;
-import es.tid.ps.kpicalculation.cleaning.KpiCalculationFilterException;
+import es.tid.bdp.kpicalculation.cleaning.ExtensionFilter;
+import es.tid.bdp.kpicalculation.cleaning.IKpiCalculationFilter;
+import es.tid.bdp.kpicalculation.cleaning.KpiCalculationFilterException;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
+import es.tid.bdp.kpicalculation.data.KpiCalculationCounter;
 
 public class ExtensionFilterTest extends TestCase {
     private IKpiCalculationFilter filter;

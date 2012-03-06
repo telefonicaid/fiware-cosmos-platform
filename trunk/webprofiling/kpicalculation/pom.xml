@@ -70,7 +70,7 @@
                 <artifactId>maven-protoc-plugin</artifactId>
                 <version>0.1.10</version>
                 <configuration>
-                    <protocExecutable>protoc</protocExecutable>
+                    <protocExecutable>${protoc.path}</protocExecutable>
                     <checkStaleness>true</checkStaleness>
                 </configuration>
                 <executions>

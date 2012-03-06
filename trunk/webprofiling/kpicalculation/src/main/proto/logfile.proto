@@ -1,6 +1,6 @@
 package kpicalculation;
 
-option java_package = "es.tid.ps.kpicalculation.data";
+option java_package = "es.tid.bdp.kpicalculation.data";
 option java_outer_classname = "KpiCalculationProtocol";
 
 message WebProfilingLog {

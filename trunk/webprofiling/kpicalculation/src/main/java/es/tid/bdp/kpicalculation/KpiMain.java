@@ -27,10 +27,10 @@ import com.twitter.elephantbird.mapreduce.input.LzoProtobufB64LineInputFormat;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import com.twitter.elephantbird.mapreduce.output.LzoProtobufB64LineOutputFormat;
 
-import es.tid.ps.base.mapreduce.BinaryKey;
-import es.tid.ps.base.mapreduce.SingleKey;
+import es.tid.bdp.base.mapreduce.BinaryKey;
+import es.tid.bdp.base.mapreduce.SingleKey;
 import es.tid.bdp.kpicalculation.data.JobDetails;
-import es.tid.ps.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
+import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
 
 /**
  * This class performs the webprofiling processing of the data received from

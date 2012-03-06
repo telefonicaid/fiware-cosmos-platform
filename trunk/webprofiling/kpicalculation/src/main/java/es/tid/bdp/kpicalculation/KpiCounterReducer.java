@@ -7,7 +7,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.ps.base.mapreduce.SingleKey;
+import es.tid.bdp.base.mapreduce.SingleKey;
 
 /**
  * This class makes the reduce phase in the simple kpi aggregates calculation of

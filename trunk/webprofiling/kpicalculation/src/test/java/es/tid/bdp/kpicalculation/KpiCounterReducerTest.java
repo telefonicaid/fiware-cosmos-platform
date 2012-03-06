@@ -14,8 +14,8 @@ import org.apache.hadoop.mrunit.types.Pair;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.ps.base.mapreduce.SingleKey;
-import es.tid.ps.kpicalculation.KpiCounterReducer;
+import es.tid.bdp.base.mapreduce.SingleKey;
+import es.tid.bdp.kpicalculation.KpiCounterReducer;
 
 /**
  * Test cases for the KpiCounterReducer class.

@@ -15,11 +15,11 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
-import es.tid.ps.base.mapreduce.BinaryKey;
-import es.tid.ps.base.mapreduce.CompositeKey;
-import es.tid.ps.base.mapreduce.SingleKey;
+import es.tid.bdp.base.mapreduce.BinaryKey;
+import es.tid.bdp.base.mapreduce.CompositeKey;
+import es.tid.bdp.base.mapreduce.SingleKey;
 import es.tid.bdp.kpicalculation.data.KpiCalculationCounter;
-import es.tid.ps.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
+import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
 
 /**
  * This class receives lines of a information of CDR´s files that have passed

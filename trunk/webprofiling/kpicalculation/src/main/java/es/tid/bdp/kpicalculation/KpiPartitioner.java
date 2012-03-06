@@ -3,7 +3,7 @@ package es.tid.bdp.kpicalculation;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Partitioner;
 
-import es.tid.ps.base.mapreduce.CompositeKey;
+import es.tid.bdp.base.mapreduce.CompositeKey;
 
 /**
  * This class partitions the data output from the map phase before it is sent

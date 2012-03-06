@@ -15,11 +15,11 @@ import org.junit.Test;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
-import es.tid.ps.kpicalculation.KpiCleanerMapper;
-import es.tid.ps.kpicalculation.KpiCleanerMapper;
-import es.tid.ps.kpicalculation.data.KpiCalculationCounter;
-import es.tid.ps.kpicalculation.data.KpiCalculationProtocol;
-import es.tid.ps.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
+import es.tid.bdp.kpicalculation.KpiCleanerMapper;
+import es.tid.bdp.kpicalculation.KpiCleanerMapper;
+import es.tid.bdp.kpicalculation.data.KpiCalculationCounter;
+import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol;
+import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
 
 import junit.framework.TestCase;
 

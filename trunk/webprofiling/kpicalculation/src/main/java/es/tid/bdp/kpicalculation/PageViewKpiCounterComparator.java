@@ -5,8 +5,8 @@ import java.io.IOException;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.RawComparator;
 
-import es.tid.ps.base.mapreduce.CompositeKey;
-import es.tid.ps.base.mapreduce.SingleKey;
+import es.tid.bdp.base.mapreduce.CompositeKey;
+import es.tid.bdp.base.mapreduce.SingleKey;
 import es.tid.bdp.kpicalculation.data.KpiCalculationComparationException;
 import es.tid.bdp.kpicalculation.data.KpiCalculationCounter;
 

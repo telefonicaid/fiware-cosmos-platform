@@ -48,7 +48,7 @@ public class IndividualProfileMain extends Configured implements Tool {
 
         // Perform the MongoDB export.
         if (args.length == 2) {
-            String mongoUrl = args[3];
+            String mongoUrl = args[1];
             ExporterJob exJob = new ExporterJob(this.getConf());
             exJob.configure(profilePath, mongoUrl);
             if (!exJob.waitForCompletion(true)) {

@@ -15,30 +15,10 @@ urlpatterns = patterns('',
 
 
     # Initial Page
-    #url(r'^home/', 'wizard.views.views.home'),
-    url(r'^monitoring/$', 'wizard.views.views.home', name='home'),
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
     
-    (r'^login/$', 'django.contrib.auth.views.login'),
+    url(r'^login/$', 'django.contrib.auth.views.login'),    
     
-    # Include Wizard views
-    
-    # FIXME : Review Regular Expressions and order
-    
-    url(r'^wizard/configuration/add/?$','wizard.forms.wizard'),                 
-    url(r'^wizard/configuration/?$','wizard.views.list_views.configuration'),        
-    url(r'^wizard/configuration/(?P<pk>[a-z\d]+)/$', 'wizard.views.detail_views.configuration_detail'),
-    
-    url(r'^wizard/ingestion/add/', 'wizard.views.add_views.ingestion'),
-    url(r'^wizard/ingestion/?$', 'wizard.views.list_views.ingestion'),
-    url(r'^wizard/ingestion/(?P<pk>[a-z\d]+)/$', 'wizard.views.detail_views.ingestion_detail'),
-    
-    url(r'^wizard/preprocessing/add/', 'wizard.views.add_views.preprocessing'),
-    url(r'^wizard/preprocessing/?$', 'wizard.views.list_views.preprocessing'),
-    url(r'^wizard/preprocessing/(?P<pk>[a-z\d]+)/$', 'wizard.views.detail_views.preprocessing_detail'),
-    
-    url(r'^wizard/webprofiling/?$', 'wizard.views.list_views.webprofiling'),
-    url(r'^wizard/webprofiling/add/', 'wizard.views.add_views.webprofiling'),
-    url(r'^wizard/webprofiling/(?P<pk>[a-z\d]+)/$', 'wizard.views.detail_views.webprofiling_detail'),
+    url(r'^wizard/', include('Configuration.wizard.urls')),
 )

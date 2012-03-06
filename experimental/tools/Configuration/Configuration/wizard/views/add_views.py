@@ -6,6 +6,10 @@ from django.template import RequestContext
 from django.http import HttpResponseRedirect
 
 
+@csrf_protect    
+def configuration(request):
+    return render_to_response('forms/wizard.html', {},context_instance=RequestContext(request))
+
 @csrf_protect
 def ingestion(request):
     if request.method == 'GET':
@@ -53,5 +57,4 @@ def webprofiling(request):
             template_form.save()
             return HttpResponseRedirect('../')
         else:
-            form = WebProfilingForm(request.POST)   
-    
+            form = WebProfilingForm(request.POST)

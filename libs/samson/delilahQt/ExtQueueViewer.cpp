@@ -42,6 +42,7 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     
     title = _title;
     data.name = _title;
+    connectQueueParameters.queueName = _title;
     
     mainLayout = new QVBoxLayout(this);
     
@@ -117,11 +118,15 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     queueFeed = new QTextEdit(this);
     queueFeed->setReadOnly(true);
     connectGroup = new QButtonGroup(this);
-    connectGroup->setExclusive(true);
-    connectNew = new QRadioButton("Only new data", this);
-    connectClear = new QRadioButton("Remove popped data", this);
+    connectGroup->setExclusive(false);
+    connectNew = new QCheckBox("Only new data", this);
+    connectClear = new QCheckBox("Remove popped data", this);
     connectGroup->addButton(connectNew);
     connectGroup->addButton(connectClear);
+    
+    connect(connectButton, SIGNAL(clicked()), this, SLOT(onConnectButtonClicked()));
+    connect(connectNew, SIGNAL(toggled(bool)), this, SLOT(onConnectNewClicked(bool)));
+    connect(connectClear, SIGNAL(toggled(bool)), this, SLOT(onConnectClearClicked(bool)));
     
     mainLayout->addWidget(name);
     mainLayout->addLayout(generalLayout);
@@ -189,6 +194,7 @@ void ExtQueueViewer::setData(QueueData* newData)
 {
         data = *newData;
         name->setText(QString(data.name.c_str() + QString(": ")));
+        connectQueueParameters.queueName = data.name;
         kvs->setText(QString(data.kvs.c_str()));
         size->setText(QString(au::str(strtoul(data.size.c_str(), NULL, 0)).c_str()));
         key->setText(QString(data.key.c_str()));
@@ -216,6 +222,34 @@ void ExtQueueViewer::clearFeed()
 {
     queueFeed->setText("");
     queueFeed->ensureCursorVisible();    
+}
+
+void ExtQueueViewer::onConnectButtonClicked()
+{
+    bool connected = connectButton->isChecked();
+    connectQueueParameters.connected = connected;
+    if (connected)
+    {
+        clearFeed();
+        connectButton->setText("Disconnect from this Queue");
+    }
+    else
+    {
+        connectButton->setText("Connect to this Queue");
+    }
+    emit updateConnection(connectQueueParameters);
+}
+
+void ExtQueueViewer::onConnectNewClicked(bool checked)
+{
+    connectQueueParameters.newData = checked;
+    emit updateConnection(connectQueueParameters);
+}
+
+void ExtQueueViewer::onConnectClearClicked(bool checked)
+{
+    connectQueueParameters.clearPopped = checked;
+    emit updateConnection(connectQueueParameters);
 }
 
 } //namespace

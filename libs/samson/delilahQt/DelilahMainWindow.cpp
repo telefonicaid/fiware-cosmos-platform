@@ -116,7 +116,7 @@ namespace samson
             emit requestUpdate();
             tabbedQueue->setData(&(queue->data));
             tabs->setCurrentWidget(tabbedQueue);
-            connect(tabbedQueue->connectButton,SIGNAL(clicked()), this, SLOT(onConnectButtonClicked())); 
+            connect(tabbedQueue, SIGNAL(updateConnection(ConnectQueueParameters)), this, SLOT(onConnectionUpdate(ConnectQueueParameters))); 
         }
     }
     
@@ -160,22 +160,9 @@ namespace samson
         }
     }
     
-    void DelilahMainWindow::onConnectButtonClicked()
+    void DelilahMainWindow::onConnectionUpdate(ConnectQueueParameters params)
     {
-        QPushButton* button = (QPushButton*)sender();
-        ExtQueueViewer* queueViewer = (ExtQueueViewer*)button->parent();
-        if(button->isChecked())
-        {
-            emit(connectedQueue(queueViewer->title));
-            queueViewer->clearFeed();
-            button->setText("Disconnect from this Queue");
-        }
-        else
-        {
-            emit(disconnectedQueue(queueViewer->title));
-            button->setText("Connect to this Queue");
-        }
-
+        emit(updateConnection(params));
     }
 
     void DelilahMainWindow::updateQueuesFeed(std::string queuename, std::string data)

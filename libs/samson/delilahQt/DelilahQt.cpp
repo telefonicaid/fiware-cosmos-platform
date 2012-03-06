@@ -102,8 +102,7 @@ namespace samson
 
         connect(timer, SIGNAL(timeout()), this, SLOT(updateData()));
         connect(mainWindow, SIGNAL(requestUpdate()), this, SLOT(updateData()));
-        connect(mainWindow, SIGNAL(connectedQueue(std::string)), this, SLOT(onConnectedQueue(std::string)));
-        connect(mainWindow, SIGNAL(disconnectedQueue(std::string)), this, SLOT(onDisconnectedQueue(std::string)));
+        connect(mainWindow, SIGNAL(updateConnection(ConnectQueueParameters)), this, SLOT(onConnectionUpdate(ConnectQueueParameters)));
         connect(timer, SIGNAL(timeout()), mainWindow, SLOT(update()));
         //connect(this, SIGNAL(enginesTextValueChanged(const QString&)), mainWindow->enginesText, SLOT(setText(const QString&)));
         //connect(this, SIGNAL(queuesTextValueChanged(const QString&)), mainWindow->queuesText, SLOT(setText(const QString&)));
@@ -131,15 +130,22 @@ namespace samson
         }
     }
 
-    void DelilahQt::onConnectedQueue(std::string name)
+    void DelilahQt::onConnectionUpdate(ConnectQueueParameters params)
     {
-        connectedQueues[name] = true;
-        sendWorkerCommand( au::str("connect_to_queue %s" , name.c_str() ) , NULL );
+        std::string command;
+        if(params.connected)
+        {   
+            command = au::str("connect_to_queue %s" , params.queueName.c_str() );
+            connectedQueues[params.queueName] = true;
+            if(params.newData) command += " -new";
+            if(params.clearPopped) command += " -clean";
+        }
+        else
+        {
+            command = au::str("disconnect_from_queue %s" , params.queueName.c_str() );
+            connectedQueues.erase(params.queueName);
+        }
+        sendWorkerCommand( command , NULL );
 
-    }
-    void DelilahQt::onDisconnectedQueue(std::string name)
-    {
-        connectedQueues.erase(name);
-        sendWorkerCommand( au::str("disconnect_from_queue %s" , name.c_str() ) , NULL );
     }
 }

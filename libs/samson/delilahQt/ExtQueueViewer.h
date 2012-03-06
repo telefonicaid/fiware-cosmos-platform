@@ -40,7 +40,19 @@ class  QueueData
         bool operator==(const QueueData &other) const;
 };
 
-        
+class ConnectQueueParameters        
+{
+    public: 
+        bool connected;
+        std::string queueName;
+        bool newData;
+        bool clearPopped;
+        ConnectQueueParameters()
+        {   
+            connected = newData = clearPopped = false;
+        }
+};
+
 class ExtQueueViewer: public QWidget
 {
         Q_OBJECT
@@ -50,6 +62,8 @@ class ExtQueueViewer: public QWidget
         std::string title;
 
         QueueData data;
+        
+        ConnectQueueParameters connectQueueParameters;
         
         void setData(QueueData* newData);
         void setTitle(std::string title);
@@ -98,8 +112,8 @@ class ExtQueueViewer: public QWidget
         //QPushButton* connectButton;
         //QTextEdit* queueFeed;
         QButtonGroup* connectGroup;
-        QRadioButton* connectNew;
-        QRadioButton* connectClear;
+        QCheckBox* connectNew;
+        QCheckBox* connectClear;
         
         QGroupBox* sizeBox;
         QGroupBox* formatBox;
@@ -114,8 +128,16 @@ class ExtQueueViewer: public QWidget
         QHBoxLayout* rateLayout;
         QHBoxLayout* blocksLayout;
         
+    signals:
+        void updateConnection(ConnectQueueParameters params);
+
+    public slots:
+        void onConnectButtonClicked();
+        void onConnectNewClicked(bool checked);
+        void onConnectClearClicked(bool checked);
+        
 };
 
 } //namespace
 
-#endif //_H_Delilah_QT
+#endif //_H_ExtQueueViewer

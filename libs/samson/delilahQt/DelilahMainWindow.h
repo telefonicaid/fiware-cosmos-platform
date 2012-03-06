@@ -62,12 +62,13 @@ namespace samson {
         void tabClosed(int index);
         void onQueueHasChanged(QueueViewer* queuename, QueueData* data);
         void onQueueDeleted(QueueViewer* queue);
-        void onConnectButtonClicked();
+        void onConnectionUpdate(ConnectQueueParameters params);
 
     signals:
         void requestUpdate();
-        void connectedQueue(std::string name);
+        void connectedQueue(std::string name, bool onlyNew);
         void disconnectedQueue(std::string name);
+        void updateConnection(ConnectQueueParameters params);
         
     private:
         ExtQueueViewer* findQueueTab(std::string name);

@@ -44,8 +44,9 @@ namespace samson {
     public slots:
         //void setData();
         void updateData();
-        void onConnectedQueue(std::string name);
-        void onDisconnectedQueue(std::string name);
+        void onConnectionUpdate(ConnectQueueParameters params);
+        //void onConnectedQueue(std::string name);
+        //void onDisconnectedQueue(std::string name);
         
     private:
         DelilahMainWindow* mainWindow;

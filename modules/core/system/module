@@ -1,0 +1,154 @@
+Module system
+{
+	title	"System default elements"
+	author	"Andreu Urruela"
+	version "0.2"
+}
+
+# System defaults ( to be implemented in the rigth file )
+
+data Value {}
+
+data UInt {}
+data String {}
+data Void {}
+data Int32 {}
+data Int16 {}
+data Int8 {}
+data UInt64 {}
+data UInt32 {}
+data UInt16 {}
+data UInt8 {}
+data Double {}
+data Float {}
+
+# Very simple implementation for time
+# Only provides conversion from (getTimeFromCalendar, just mktime) and to (getCalendarFromTime, just gmtime_r) struct tm expanded format
+# For conversions to string, use asctime_r()
+data TimeUnix {}
+
+# Standard time and date representations
+data Time
+{
+     system.Int8 hour;
+     system.Int8 minute;
+     system.Int8 seconds;
+}
+
+data Date
+{
+     system.UInt8 year;
+     system.Int8 month;
+     system.Int8 day;
+     optional system.UInt days_2000;
+     optional system.Int8 week_day; 
+}
+
+data DateComplete
+{
+     system.UInt8 year;
+     system.Int8 month;
+     system.Int8 day;
+     system.UInt days_2000;
+     system.Int8 week_day; 
+}
+
+# Time slot. Useful in mobility solution, and perhaps in other scenarios
+data TimeSlot
+{
+	system.UInt8 wdaysMask;
+	system.Int32 initSec;
+	system.Int32 finalSec;
+}
+
+data ComplexTimeSlot
+{
+	system.UInt8 flagSet;
+	vector system.TimeSlot ts;
+	system.UInt8 wdaysMask;
+	system.UInt8 wdayFirstDay;
+	system.UInt8 monthDays;
+	system.UInt8 coveredDays;	
+}
+
+data Vector_UInt
+{
+  vector system.UInt values;	
+}
+
+data UInt2
+{
+	system.UInt value_1;
+	system.UInt value_2;
+}
+
+data StringVector
+{
+    vector system.String values;
+}
+
+
+parser parse_id_id
+{
+	out system.UInt2 system.Void
+
+        help
+        {
+                "Generic parser to get a system.UInt-system.UInt file set form a txt file with this format: number|number"
+                "This is used for instace to get into SAMSON results from SQL operations"
+        }
+}
+
+# Basic parsers
+
+parser parser_uint_void
+{
+	out system.UInt system.Void
+
+	helpLine "Parse txt files with an unsigned integer per line"
+
+}
+
+
+
+# Value operations
+
+parser parse_to_value
+{
+	out system.Value system.Value
+	helpLine "Parse lines with fields separated by a single char tab , space , coma , ..."
+}
+
+map map_value_to_value
+{
+	in  system.Value system.Value
+	out system.Value system.Value
+
+	helpLine "Generic map to transform values. User enviroment variable command to specify what to do..."
+}
+
+map map_value_to_2_value
+{
+	in  system.Value system.Value
+	out system.Value system.Value
+	out system.Value system.Value
+
+	helpLine "Generic map to transform values. User enviroment variable command to specify what to do..."
+}
+
+map map_value_to_3_value
+{
+	in  system.Value system.Value
+	out system.Value system.Value
+	out system.Value system.Value
+
+	helpLine "Generic map to transform values. User enviroment variable command to specify what to do..."
+}
+
+reduce reduce_value_to_value
+{
+    in  system.Value system.Value
+    out system.Value system.Value
+
+	helpLine "Reduce all the values for every particular key. Possible commands  sum_double (default) , average_double , max_double  "
+}

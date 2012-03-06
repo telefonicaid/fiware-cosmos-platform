@@ -1,0 +1,5 @@
+remove_all
+add quijote -txt
+upload quijote.txt quijote
+txt.test_2 quijote out.txt -clear -create
+download out.txt out.txt

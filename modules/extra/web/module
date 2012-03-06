@@ -1,0 +1,48 @@
+
+Module web
+{
+	title	"Hit manipulation"
+	author	"Andreu Urruela & Richard Gass"
+	version "0.1"
+}
+
+
+parser parse_web_hits
+{
+    out system.String system.UInt
+
+}
+
+script init_stream_operations
+{
+    code
+    {
+		# Queues;
+		alias [input]   01.input;
+		alias [words]   99.hit.01.input;
+
+		# Operations;
+		alias [parse_web]   01.parse_web;
+
+		# Definitions;
+		add_stream_operation  [parse_web]  web.parse_web_hits [input] [words];
+
+		# Auxiliar modules;
+		init_stream 99.hit hit.init_stream_operations
+    }
+
+    helpLine "Init stream operations"
+}
+
+script demo
+{
+    code
+    {
+		remove_all_stream;
+		init_stream demo web.init_stream_operations;
+    }
+
+    helpLine "Demo about web hit"
+}
+
+

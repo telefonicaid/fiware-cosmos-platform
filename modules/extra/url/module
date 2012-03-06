@@ -1,0 +1,995 @@
+Module url
+{
+	title	"URL operations"
+	author	"Andreu Urruela & Gregorio Escalada"
+	version "0.1"
+}
+
+data URL
+{
+	system.String server;	# Name of the server: www.google.com
+	system.UInt8 type;	# Type of URL
+	system.String path;	# Path of the URL: index.html or path_to_somewhere/index.html
+
+	system.UInt user;	# Identifier of the user
+	# Time stamp?
+}
+
+data Category
+{
+	system.UInt weight;			# Weight of the category in the description of the site
+	system.UInt confidence;		# Confidence in the measure of the weight (without any normalization)
+	system.UInt countServer; 	# Number of occurences in the server key
+	system.UInt countUser;   	# Number of occurences in the user key
+}
+
+data UserPath   # Temporal data-set in order to make only once the server encoding
+{
+	system.UInt user;       # Identifier of the user
+	system.String path;     # Path of the URL: index.html or path_to_somewhere/index.html
+}
+
+data CategoryPath   
+{
+	system.UInt category;	    # Identifier of the category
+	url.Category category_info; # Additional information (weight, confidence) for the category
+	system.String path;         # Path of the URL: index.html or path_to_somewhere/index.html
+}
+
+data ServerPath  
+{
+	system.UInt server;     # Identifier of the server
+	system.String path;     # Path of the URL: index.html or path_to_somewhere/index.html
+}
+
+data ServerPathCount  
+{
+	system.UInt server;     # Identifier of the server
+	system.String path;     # Path of the URL: index.html or path_to_somewhere/index.html
+	system.UInt count;      # number of visits
+	system.UInt weight;		# weight of associated category
+}
+
+data ServerPathVector   
+{
+	vector url.ServerPathCount serverPath;     # Vector of elements server(id) and path(string)
+	system.UInt countRef;
+}
+
+data ServerStrPath   # Temporal data-set in keep server and path, both as strings
+{
+	system.String server;     # String of the server
+	system.String path;       # Path of the URL: index.html or path_to_somewhere/index.html
+}
+
+
+data ServerStrPathVector   
+{
+	vector url.ServerStrPath serverStrPath;     # Vector of elements server(string) and path(string)
+	system.UInt countRef;
+}
+
+data ServerCount 
+{
+	system.UInt server;
+	system.UInt count;
+}
+
+data ServerCountVector
+{
+	vector url.ServerCount serversCount;
+	system.UInt countRef;
+}
+
+data CategoryVector
+{
+	vector url.Category category;   # Weight and confidence in the category server classification (categoryId is the index)	
+	system.UInt8 fixed;		        # Flag to indicate if the category vector is fixed by definition
+}
+
+data PathCount 
+{
+	system.String path;
+	system.UInt count;
+}
+
+data PathCountVector
+{
+	vector url.PathCount pathsCount;
+	system.UInt countRef;
+}
+
+data UserCount 
+{
+	system.UInt user;
+	system.UInt count;
+}
+
+data UserCountVector
+{
+	vector url.UserCount usersCount;
+	system.UInt countRef;
+}
+
+# Generators of fake data for demo
+
+generator fakeURLs
+{
+	out url.URL system.Void
+	
+	helpLine "Generate url.num_users_per_user URLs for url.num_users users randomly" 
+}
+
+generator fakeURLs_fixed
+{
+	out url.URL system.Void
+	
+	helpLine "Generate url.num_users_per_user URLs for url.num_users users fixed, for testing purposes" 
+}
+
+generator fakeServers
+{
+	out system.String system.UInt
+	out system.UInt system.String
+	
+	helpLine "Generate url.num_urls different URLs with an associated identifier, and the reversed distribution"
+}
+
+generator fakeInfos
+{
+	out system.UInt url.CategoryVector  # Server(id) - CategoryVector
+	
+	helpLine "Generate url.num_centroids_server different servers with categories distribution"
+}
+
+script script_GeneratingFakes
+{
+	out url.URL system.Void				# visited URLs info; 	URL - Void					($1)
+	out system.String system.UInt		# servers encoding;		Server(string) - Server(id)	($2)
+	out system.UInt system.String		# servers decoding;		Server(id) - Server(string)	($3)
+	out system.UInt url.CategoryVector  # servers calssif;		Server(id) - CategoryVector	($4)
+	
+	helpLine "Generates fake data"
+	
+	help
+	{
+		"Generates fake data"
+		"out url.URL system.Void			 visited URLs info; 	URL - Void					($1)"
+		"out system.String system.UInt		 servers encoding;		Server(string) - Server(id)	($2)"
+		"out system.UInt system.String		 servers decoding;		Server(id) - Server(string)	($3)"
+		"out system.UInt url.CategoryVector  servers calssif;		Server(id) - CategoryVector	($4)"
+		
+	}
+	
+	code
+	{
+	url.fakeURLs $1 -create -clear;
+	url.fakeServers $2 $3 -create -clear;
+	url.fakeInfos $4 -create -clear;
+
+	url.exportURL_Void $1 $1.txt -clear -create;
+	url.exportString_UInt $2 $2.txt -clear -create;
+	url.exportUInt_CategoryVector $4 $4.txt -clear -create;
+	#download urls.txt urls.txt;
+	#download servers.txt servers.txt;
+	#download categories.txt categories.txt;
+	}
+}
+
+script script_GeneratingFakes_fixed
+{
+	out url.URL system.Void				# visited URLs info; 	URL - Void					($1)
+	out system.String system.UInt		# servers encoding;		Server(string) - Server(id)	($2)
+	out system.UInt system.String		# servers decoding;		Server(id) - Server(string)	($3)
+	out system.UInt url.CategoryVector  # servers calssif;		Server(id) - CategoryVector	($4)
+	
+	helpLine "Generates fake data"
+	
+	help
+	{
+		"Generates fake data"
+		"out url.URL system.Void			 visited URLs info; 	URL - Void					($1)"
+		"out system.String system.UInt		 servers encoding;		Server(string) - Server(id)	($2)"
+		"out system.UInt system.String		 servers decoding;		Server(id) - Server(string)	($3)"
+		"out system.UInt url.CategoryVector  servers calssif;		Server(id) - CategoryVector	($4)"
+		
+	}
+	
+	code
+	{
+	url.fakeURLs_fixed $1 -create -clear;
+	url.fakeServers $2 $3 -create -clear;
+	url.fakeInfos $4 -create -clear;
+
+	url.exportURL_Void $1 $1.txt -clear -create;
+	url.exportString_UInt $2 $2.txt -clear -create;
+	url.exportUInt_CategoryVector $4 $4.txt -clear -create;
+	#download urls.txt urls.txt;
+	#download servers.txt servers.txt;
+	#download categories.txt categories.txt;
+	}
+}
+
+
+# parserOut for intermediate data-sets
+
+parserOut exportURL_Void
+{
+	in url.URL system.Void
+	
+	helpLine "parserOut for URL-Void type data-sets"
+}
+
+parserOut exportString_UInt
+{
+	in system.String system.UInt
+	
+	helpLine "parserOut for String-UInt type data-sets"
+}
+
+parserOut exportUInt_String
+{
+	in system.UInt system.String 
+	
+	helpLine "parserOut for UInt-String type data-sets"
+}
+
+parserOut exportUInt_UInt
+{
+	in system.UInt system.UInt
+	
+	helpLine "parserOut for UInt-UInt type data-sets"
+}
+
+parserOut exportUInt_ServerPath
+{
+	in system.UInt url.ServerPath  
+	
+	helpLine "parserOut for UInt-ServerPath type data-sets"
+}
+
+parserOut exportUInt_ServerCountVector
+{
+	in system.UInt url.ServerCountVector  
+	
+	helpLine "parserOut for UInt-ServerCountVector type data-sets"
+}
+
+parserOut exportUInt_CategoryVector
+{
+	in system.UInt url.CategoryVector
+	
+	helpLine "parserOut for UInt-CategoryVector type data-sets"
+}
+
+# Operations for categories
+
+map getServerURL
+{
+	in url.URL system.Void
+	out system.String url.UserPath		# Server(string) User(id)-Path(string)
+
+	helpLine "Extract the server-userPath connection form a set of input URLs"
+}
+
+reduce fuseServer
+{
+	in system.String	url.UserPath	# Server(string) User(id)-Path(string)
+	in system.String	system.UInt	    # Server(string) server(id)
+	out system.UInt		system.UInt	    # Server - User
+	out system.UInt		system.UInt	    # User - Server
+	out system.UInt		system.String	# Server - Path
+	out system.UInt		url.ServerPath	# User - ServerPath
+	
+	helpLine "From the URL information and server encoding. generates all the subsets needed in the next steps. It can be limited by the number of outputs allowed in the platform"
+}
+
+reduce fuseServerUser
+{
+	in system.String	url.UserPath	# Server(string) User(id)-Path(string)
+	in system.String	system.UInt	    # Server(string) server(id)
+	out system.UInt		system.UInt	    # Server - User
+	out system.UInt		system.UInt	    # User - Server
+	
+	helpLine "From the URL information and server encoding. generates the subsets related to user and server visits, needed in the next steps. Splitted from reduce fuseServer because of limited number of outputs in the platform"
+}
+
+reduce fuseServerUserPath
+{
+	in system.String	url.UserPath	# Server(string) User(id)-Path(string)
+	in system.String	system.UInt	    # Server(string) server(id)
+	out system.UInt		system.String	# Server - Path
+	out system.UInt		url.ServerPath	# User - ServerPath
+	
+	helpLine "From the URL information and server encoding. generates the subsets related to the complete URL path, needed in the next steps. Splitted from reduce fuseServer because of limited number of outputs in the platform"
+	
+}
+
+
+script script_PrepareBasicData
+{
+	in url.URL system.Void				# visited URLs info;	URLs - Void 			  	($1)
+	in system.String	system.UInt	    # servers encoding;		Server(string) server(id) 	($2)
+	out system.UInt		system.UInt	    # server encoded kv;	Server - User				($3)
+	out system.UInt		system.UInt	    # server encoded kv		User - Server				($4)
+	out system.UInt		system.String	# server encoded kv		Server - Path				($5)
+	out system.UInt		url.ServerPath	# server encoded kv		User - ServerPath			($6)	
+	
+	helpLine "From the (or parsed) data, prepares different sets of key-values, mapping URLs and encoding the server info"
+	
+	help
+	{
+		"From the (or parsed) data, prepares different sets of key-values, extracting URLs info and encoding the server info"
+		"in url.URL system.Void				 visited URLs info;	URLs - Void 			  	($1)"
+		"in system.String system.UInt	     servers encoding;		Server(string) server(id) 	($2)"
+		"out system.UInt system.UInt	     server encoded kv;	Server - User				($3)"
+		"out system.UInt system.UInt	     server encoded kv		User - Server				($4)"
+		"out system.UInt system.String		 server encoded kv		Server - Path				($5)"
+		"out system.UInt url.ServerPath		 server encoded kv		User - ServerPath			($6)"			
+	}
+	
+	code
+	{
+	url.getServerURL $1 $1.ServStr_UserPath -create -clear;
+	#url.fuseServer $1.ServStr_UserPath $2 $3 $4 $5 $6 -create -clear;
+	url.fuseServerUser $1.ServStr_UserPath $2 $3 $4  -create -clear;
+	url.fuseServerUserPath $1.ServStr_UserPath $2  $5 $6 -create -clear;
+	
+	rm $1.ServStr_UserPath -f;
+	}
+}
+
+
+#
+# Server INFO categories problem
+#
+
+reduce getServersFromUser
+{
+	in system.UInt system.UInt             # User(id) - Server(id)
+	out system.UInt url.ServerCountVector  # Server(id) - Servers(Vector, with count)
+
+	helpLine       "Transform User-Server pairs into Server-ServerCountVector pairs (count may be important to spread categories)"
+}
+
+
+reduce AssociateCategoriesToServers
+{
+	in system.UInt url.CategoryVector	  # Server(id) - CategoryVector
+	in system.UInt url.ServerCountVector  # Server(id) - Servers(Vector, with count)	
+	out system.UInt url.CategoryVector    # Server(id) - CategoryVector
+	
+	helpLine "Assign categories to every server, according to the common key. For every server in the vector, emits the server-categories kv"
+}
+
+reduce getServerCategory
+{
+	in system.UInt system.UInt
+	in system.UInt url.CategoryVector   # Server(id) - CategoryVector
+	out system.UInt url.CategoryVector  # Server(id) - CategoryVector
+
+	helpLine	"Get the new category-vectors associated to a particular server"
+}
+
+reduce FuseServerCategory
+{
+	in system.UInt url.CategoryVector   # Server(id) - CategoryVector (previous reference distribution)
+	in system.UInt url.CategoryVector   # Server(id) - CategoryVector (emitted from server similarity)
+	out system.UInt url.CategoryVector  # Server(id) - CategoryVector (if !fixed, mean of category distribution)
+
+	helpLine "Fuse previous knowledge of categories with new samples"
+}
+
+reduce DecodeServerCategories
+{
+	in system.UInt system.String	      # Server(id) - Server(string) to decode the server information
+	in system.UInt url.CategoryVector     # Server(id) - CategoryVector (averaged through servers)
+	out system.String url.CategoryVector  # Server(string) - CategoryVector
+	
+	helpLine "Decode the list of servers to string, with category distribution"
+}
+
+parserOut exportServerCategories
+{
+	in system.String url.CategoryVector   # Server(string) - CategoryVector (averaged through servers)
+
+	
+	helpLine "Exports the list of servers with category distribution"
+}
+
+script script_ServerCategoriesDistribution
+{
+	in system.UInt system.UInt         # kv for servers visted by user;			User(id) - Server(id)									($1)
+	in system.UInt system.String	   # kv to decode server id;				Server(id) - Server(string) 							($2)	
+	in system.UInt url.CategoryVector  # in-out server classification by categ	Server(id) - CategoryVector (ref as in, updated as out)	($3)
+	out txt txt 					   # out categories in textual form																	($4)
+	
+	helpLine "According to the user visits and the list of reference sites, assign categories weight to every server and update reference list"
+	
+	help
+	{
+		"According to the user visits and the list of reference sites, assign categories weight to every server and update reference list"
+		"in system.UInt system.UInt         kv for servers visted by user;			User(id) - Server(id)									($1)"
+		"in system.UInt system.String	    kv to decode server id;				Server(id) - Server(string) 							($2)"
+		"in system.UInt url.CategoryVector  in-out server classification by categ;	Server(id) - CategoryVector (ref as in, updated as out)	($3)"
+	}
+	
+	code
+	{
+	url.getServersFromUser $1 $1.Serv_CatVector -create -clear;
+	url.AssociateCategoriesToServers $3 $1.Serv_CatVector $3.new -clear -create;
+	# Not sure I am using -clear input properly;
+	#url.FuseServerCategory $3 $3.new $3 -create -clear -clear_input;
+	url.FuseServerCategory $3 $3.new $3.update -create -clear;
+	rm $3;
+	mv $3.update $3;
+	url.DecodeServerCategories $2 $3 $1.ServStr_CatVector -clear -create;
+	
+	url.exportServerCategories $1.ServStr_CatVector $4 -create -clear;
+	#download categories_new.txt categories_new.txt;
+	rm $1.Serv_CatVector -f;
+	#rm $3.new -f;
+	rm $1.ServStr_CatVector -f;
+	}
+}
+
+#
+# Server TOP hits problem
+#
+
+reduce getPathCount
+{
+	in system.UInt system.String	     # Server - Path
+	out system.UInt url.PathCountVector  # Server - PathVector
+	
+	helpLine "Accumulates all the URL paths for every server, sort by count and truncate to 'url.num_hits'"
+}
+
+#reduce sortAndTruncate
+#{
+#	in system.UInt url.PathCountVector  # Server - PathVector
+#	out system.UInt url.PathCountVector # Server - PathVector
+#	
+#	helpLine "Reducer, only to get the paths sorted by frequency, and truncate to 'url.num_hits'"
+#	# We have to chose, either sort by path for the getPathCount reduce, or by count for this one"
+#}
+
+reduce DecodeServerHits
+{
+	in system.UInt system.String	       # Server(id) - Server(string) to decode the server information
+	in system.UInt url.PathCountVector     # Server - PathVector  
+	out system.String url.PathCountVector  # Server(string) - PathVector
+	
+	helpLine "Decode the list of servers to string, with paths associated"
+}
+
+parserOut exportServerPathHits
+{
+	in system.String url.PathCountVector  # Server(string) - PathVector  
+	
+	helpLine "Exports the list of hits"
+}
+
+script script_TopHits
+{
+	in system.UInt system.String			# kv with URLs visits;				Server - Path					($1)
+	in system.UInt system.String			# kv for server decoding;			Server(id) - Server(string) 	($2)
+	out system.String url.PathCountVector	# most visited paths per server;	Server(string) - PathVector		($3)
+	out txt txt								# most visited paths per server;	(textual)						($4)
+	
+	helpLine "Compute the 'url.num_hits' hits"
+	
+	help
+	{
+		"Compute the 'url.num_hits' hits"
+		"in system.UInt system.String			 kv with URLs visits;				Server - Path					($1)"
+		"in system.UInt system.String			 kv for server decoding;			Server(id) - Server(string) 	($2)"
+		"out system.String url.PathCountVector	 most visited paths per server;	Server(string) - PathVector		($3)"
+	}
+	
+	code
+	{
+	url.getPathCount $1 $1.Serv_PathCountVector -clear -create;
+	url.DecodeServerHits $2 $1.Serv_PathCountVector $3 -clear -create;
+	
+	url.exportServerPathHits $3 $4 -create -clear;
+	#download serverStr_path_hits.txt serverStr_path_hits.txt;
+	rm $1.Serv_PathCountVector -f;
+	}
+}
+
+#
+# User INFO categories problem
+#
+
+reduce getUsersFromServer
+{
+	in system.UInt system.UInt           # Server(id) - User(id)
+	out system.UInt url.UserCountVector  # Server(id) - Users(Vector, with count)
+
+	helpLine       "Transform Server-User pairs into Server-UsersCountVector pairs (count may be important to spread categories)"
+}
+
+
+reduce AssociateCategoriesToUsers
+{
+	in system.UInt url.CategoryVector	  # Server(id) - CategoryVector
+	in system.UInt url.UserCountVector    # Server(id) - Users(Vector, with count)	
+	out system.UInt url.CategoryVector    # User(id) - CategoryVector
+	
+	helpLine "Assign categories to every user, according to the common key. For every user in the vector, emits the user-categories kv"
+}
+
+
+reduce FuseUserCategory
+{
+	in system.UInt url.CategoryVector   # User(id) - CategoryVector (emitted from user servers visits)
+	out system.UInt url.CategoryVector  # User(id) - CategoryVector 
+
+	helpLine "Fuse distribution of categories for users"
+}
+
+parserOut exportUserCategories
+{
+	in system.UInt url.CategoryVector   # User(id) - CategoryVector (averaged through servers)
+	
+	helpLine "Exports the list of users with category distribution"
+}
+
+script script_UserCategoriesDistribution
+{
+	in system.UInt system.UInt          # Server(id) - User(id)				($1)
+	in system.UInt url.CategoryVector	# Server(id) - CategoryVector		($2)
+	out system.UInt url.CategoryVector  # User(id) - CategoryVector 		($3)
+	out txt txt                         # User(id) - CategoryVector (textual)	($4)
+	
+	helpLine "According to the user visits and the list or reference sites, assign categories weight to every user"
+	
+	code
+	{
+	url.getUsersFromServer $1 $1.Serv_UserCountVector -create -clear;
+	url.AssociateCategoriesToUsers $2 $1.Serv_UserCountVector $1.User_CategoryVector -clear -create;
+	url.FuseUserCategory $1.User_CategoryVector $3 -create -clear;
+	
+	url.exportUserCategories $3 $4 -create -clear;
+	#download listUserCategories.txt listUserCategories.txt;
+	#rm $1.Serv_UserCountVector -f;
+	#rm $1.User_CategoryVector -f;
+	}
+}
+
+
+#
+# Category PROMINENT hits problem
+#
+
+reduce AssociateCategoriesToServerPaths
+{
+	in system.UInt url.CategoryVector	  # Server(id) - CategoryVector
+	in system.UInt system.String          # Server(id) - Path(string)
+	out system.UInt url.ServerPathCount   # Category(id) - ServerPathCount (weight as count)
+	
+	helpLine "Assign categories to every ServerPath, and emits cat-serverPath key-values. The weight goes into the count field"
+}
+
+reduce SumServerPathsPerCategory
+{
+	in system.UInt url.ServerPathCount   # Category(id) - ServerPathCount (weight as count)
+	out system.UInt url.ServerPathVector # Category(id) - ServerPathVector
+	
+	helpLine "Accumulate the serverPath information for the key category, and create a vector"
+}
+
+reduce FuseCategoryHits
+{
+	in system.UInt url.ServerPathVector  # Category(id) - ServerPathVector (historical)
+	in system.UInt url.ServerPathVector  # Category(id) - ServerPathVector
+	out system.UInt url.ServerPathVector # Category(id) - ServerPathVector (updated)
+	
+	helpLine "Update the list of hits per category"
+}
+
+parserOut exportHitsPerCategory
+{
+	in system.UInt url.ServerPathVector  # Category(id) - ServerPathVector
+	
+	helpLine "Exports the list of hits for every category"
+}
+
+script script_HitsPerCategory
+{
+	in system.UInt url.CategoryVector	 # Server(id) - CategoryVector								($1)
+	in system.UInt system.String         # Server(id) - Path(string)								($2)
+	in system.UInt system.String         # Server(id) - Server(string)								($3)
+	out system.UInt url.ServerPathVector  # Category(id) - ServerPathVector (historical) (in-out)	($4)
+	out txt txt 						# Category(id) - ServerPathVector (historical) (textual)    ($5)
+	
+	
+	helpLine "Detects the more relevant URLs for every category"
+	code
+	{
+	url.AssociateCategoriesToServerPaths $1 $2 $2.Cat_ServPathCount -create -clear;
+	url.SumServerPathsPerCategory $2.Cat_ServPathCount $2.Cat_ServPathVector -create -clear;
+	
+	# Maybe we don't have yet a distribution. (but it doesn't work, we have to add it before calling the script
+	# At least, being an input parameter.
+	add -f $4 system.UInt url.ServerPathVector;
+	# Not sure I am using -clear input properly
+	#url.FuseCategoryHits $4 $2.Cat_ServPathVector $4 -clear -create -clear_input;
+	url.FuseCategoryHits $4 $2.Cat_ServPathVector $4.update -clear -create -clear_input;
+	rm $4;
+	mv $4.update $4;
+	
+	url.exportHitsPerCategory $4 $5 -create -clear;
+	#download cat_serverPathVector_ref.txt cat_serverPathVector_ref.txt
+	
+	# If you want to have server as String
+	url.ExpandCategoryHits $2.Cat_ServPathVector $2.Serv_CatPath -create -clear;
+	url.DecodeServerForCategories $3  $2.Serv_CatPath $2.Cat_ServStrPath -create -clear;
+	url.SumServerStrPathsPerCategories $2.Cat_ServStrPath $2.Cat_ServStrPathVector -create -clear;
+
+	url.exportHitsPerCategoryWithStrings $2.Cat_ServStrPathVector $2.Cat_ServStrPathVector.txt -create -clear;
+	#download cat_serverStrPathVector.txt cat_serverStrPathVector.txt
+	rm $2.Cat_ServPathCount -f;
+	rm $2.Cat_ServPathVector -f;
+	rm $2.Serv_CatPath -f;
+	rm $2.Cat_ServStrPath -f;
+	rm $2.Cat_ServStrPathVector -f;
+	}	
+}
+
+# In order to export it with server strings:
+
+map ExpandCategoryHits
+{
+	in system.UInt url.ServerPathVector # Category(id) - ServerPathVector
+	out system.UInt url.CategoryPath    # Server(id) - CategoryPath
+	
+	helpLine "Transforms the key-values in order to make later the server decoding" 
+}
+
+reduce DecodeServerForCategories
+{
+	in system.UInt system.String                # Server(id) - Server(string)
+	in system.UInt url.CategoryPath             # Server(id) - CategoryPath
+	out system.UInt url.ServerStrPath           # Category(id) - ServerStrPath
+	
+	helpLine "Reconstruct serverPath information per category, with server as string"
+}
+
+reduce SumServerStrPathsPerCategories
+{
+	in system.UInt url.ServerStrPath             # Category(id) - ServerStrPath
+	out system.UInt url.ServerStrPathVector      # Category(id) - ServerStrPath
+	
+	helpLine "Accumulate the serverStrPath information for the key category, and create a vector"
+}
+
+parserOut exportHitsPerCategoryWithStrings
+{
+	in system.UInt url.ServerStrPathVector  # Category(id) - ServerStrPathVector
+	
+	helpLine "Exports the list of hits for every category"
+}
+
+#
+# URLs RECOMENDATION for users problem
+#
+
+# Taking profit of the list of categories per user and the list of hits per category,
+# obtained in the previous tasks
+
+map EmitUsersPerCategory
+{
+	in system.UInt url.CategoryVector # User(id) - CategoryVector 
+	out system.UInt system.UInt       # Category(id) - User(id)
+	
+	helpLine "From the list of categories per user, emits kv pairs with category-User"
+}
+
+reduce AssociateHitsPerCategoryToUsers
+{
+	in system.UInt url.ServerPathVector   # Category(id) - ServerPathVector
+	in system.UInt system.UInt            # Category(id) - User(id)
+	out system.UInt url.ServerPathCount	  # User(id) - ServerPathCount  
+	
+	helpLine "Join user per category with the list of hits, and emits them individually, in order to later produce the list of possible hits recommended to user"
+}
+
+reduce SumServerPathFromUser
+{
+	in system.UInt url.ServerPathCount			# User(id) - ServerPathCount  
+	out system.UInt url.ServerPathVector	# User(id) - ServerPathVector   (suitable recommendations)
+
+	helpLine "Aggregate all the recommendations for every user"
+}
+
+reduce getServerPathFromUser
+{
+	in system.UInt		url.ServerPath          # User - ServerPath
+	out system.UInt		url.ServerPathVector	# User - ServerPathVector
+	
+	helpLine "Aggregate ServerPath per User, to form a ServerPathVector"
+}
+
+reduce ClearVisitedURLs
+{
+	in system.UInt url.ServerPathVector   # User(id) - ServerPathVector (suitable)
+	in system.UInt url.ServerPathVector	  # User(id) - ServerPathVector (already visited)
+	out system.UInt url.ServerPathVector  # User(id) - ServerPathVector (recommended)
+	
+	helpLine "Eliminate the URLs already visited from the list of possible recommendations"	
+}
+
+parserOut exportHitsRecommendationPerUser
+{
+	in system.UInt url.ServerPathVector  # User(id) - ServerPathVector
+	
+	helpLine "Exports a list of hits for user"
+}
+
+script script_HitsRecommendation
+{
+	in system.UInt url.CategoryVector		# User(id) - CategoryVector 				($1)
+	in system.UInt url.ServerPathVector		# Category(id) - ServerPathVector			($2)
+	in system.UInt url.ServerPath			# User - ServerPath							($3)
+	out system.UInt url.ServerPathVector	# User(id) - ServerPathVector (recommended)	($4)
+	out txt txt 							# User(id) - ServerPathVector (recommended)	(textual) $5
+	
+	
+	
+	helpLine "With the previous information of relevant URLs and user preferences by category, recommends the most visited sites to every user"
+	code
+	{
+	url.EmitUsersPerCategory $1  $1.Cat_User -create -clear;
+	url.AssociateHitsPerCategoryToUsers $2 $1.Cat_User $1.User_serverPathCount -create -clear;
+	url.SumServerPathFromUser $1.User_serverPathCount $1.User_ServPathVector_suitable -create -clear;
+	url.getServerPathFromUser $3 $1.User_ServPathVector_visited -create -clear;
+	url.ClearVisitedURLs $1.User_ServPathVector_suitable $1.User_ServPathVector_visited $4 -create -clear;
+
+	url.exportHitsRecommendationPerUser $4 $5 -create -clear;
+	#download user_serverPathVector_recommended.txt user_serverPathVector_recommended.txt
+	rm $1.Cat_User -f;
+	rm $1.User_serverPathCount -f;
+	rm $1.User_ServPathVector_suitable -f;
+	rm $1.User_ServPathVector_visited -f;
+	}
+}
+
+#
+# TESTING
+# 
+
+script test_1
+{
+	out txt txt			# servers classification by categories		($1)
+
+	
+	helpLine "Test script for categorical classification "
+	
+	
+	code
+	{
+	set url.num_users               10;
+	set url.num_servers             10;
+	set url.num_paths_per_server    10;
+	set url.num_urls_per_user       2;
+	set url.num_servers_ref         5;
+	set url.num_categories          4;
+	set url.num_hits                3;
+	set url.fixed_categories        1;
+	
+	url.fakeURLs_fixed urls -create -clear;
+	url.fakeServers servers serversRev -create -clear;
+	url.fakeInfos categories -create -clear;
+	url.exportURL_Void urls urls.txt -clear -create;
+	url.exportString_UInt servers servers.txt -clear -create;
+	url.exportUInt_CategoryVector categories categories.txt -clear -create;
+	
+	url.script_PrepareBasicData urls servers server_user user_server server_path user_serverPath -create -clear;
+	url.script_ServerCategoriesDistribution user_server serversRev categories $1 -create -clear;
+	rm -f urls servers serversRev categories server_user user_server server_path user_serverPath ;
+	}
+}
+
+script test_2
+{
+	out txt txt			# servers classification by categories		($1)
+
+	
+	helpLine "Test script for categorical classification "
+	
+	
+	code
+	{
+	set url.num_users               10;
+	set url.num_servers             10;
+	set url.num_paths_per_server    10;
+	set url.num_urls_per_user       2;
+	set url.num_servers_ref         5;
+	set url.num_categories          4;
+	set url.num_hits                3;
+	set url.fixed_categories        1;
+	
+	url.fakeURLs_fixed urls -create -clear;
+	url.fakeServers servers serversRev -create -clear;
+	url.fakeInfos categories -create -clear;
+	
+	url.script_PrepareBasicData urls servers server_user user_server server_path user_serverPath -create -clear;
+	url.script_ServerCategoriesDistribution user_server serversRev categories categories.txt -create -clear;
+	url.script_TopHits server_path serversRev serverStr_path_hits $1  -create;
+	rm -f urls servers serversRev categories server_user user_server server_path user_serverPath serverStr_path_hits;
+	rm -f categories.txt;
+	}
+}
+
+script test_3
+{
+	out txt txt			# servers classification by categories		($1)
+
+	
+	helpLine "Test script for categorical classification "
+	
+	
+	code
+	{
+	set url.num_users               10;
+	set url.num_servers             10;
+	set url.num_paths_per_server    10;
+	set url.num_urls_per_user       2;
+	set url.num_servers_ref         5;
+	set url.num_categories          4;
+	set url.num_hits                3;
+	set url.fixed_categories        1;
+	
+	url.fakeURLs_fixed urls -create -clear;
+	url.fakeServers servers serversRev -create -clear;
+	url.fakeInfos categories -create -clear;
+	
+	url.script_PrepareBasicData urls servers server_user user_server server_path user_serverPath -create -clear;
+	url.script_ServerCategoriesDistribution user_server serversRev categories categories.txt -create -clear;
+	url.script_TopHits server_path serversRev serverStr_path_hits serverStr_path_hits.txt -create;
+	url.script_UserCategoriesDistribution server_user categories listUserCategories listUserCategories.txt -create -clear;
+	url.script_HitsPerCategory categories server_path serversRev cat_serverPathVector_ref $1 -create -clear;
+	rm -f urls servers serversRev categories server_user user_server server_path user_serverPath serverStr_path_hits	;
+	rm -f categories.txt;
+	rm -f serverStr_path_hits.txt;
+	rm -f listUserCategories.txt;
+	}
+}
+
+script test_4
+{
+	out txt txt			# servers classification by categories		($1)
+
+	
+	helpLine "Test script for categorical classification "
+	
+	
+	code
+	{
+	set url.num_users               10;
+	set url.num_servers             10;
+	set url.num_paths_per_server    10;
+	set url.num_urls_per_user       2;
+	set url.num_servers_ref         5;
+	set url.num_categories          4;
+	set url.num_hits                3;
+	set url.fixed_categories        1;
+	
+	url.fakeURLs_fixed urls -create -clear;
+	url.fakeServers servers serversRev -create -clear;
+	url.fakeInfos categories -create -clear;
+	
+	url.script_PrepareBasicData urls servers server_user user_server server_path user_serverPath -create -clear;
+	url.script_ServerCategoriesDistribution user_server serversRev categories categories.txt -create -clear;
+	url.script_TopHits server_path serversRev serverStr_path_hits serverStr_path_hits.txt -create;
+	url.script_UserCategoriesDistribution server_user categories listUserCategories listUserCategories.txt -create -clear;
+	url.script_HitsPerCategory categories server_path serversRev cat_serverPathVector_ref cat_serverPathVector_ref.txt -create -clear;
+	url.script_HitsRecommendation listUserCategories cat_serverPathVector_ref user_serverPath user_serverPathVector_recommended  $1 -create -clear;
+	rm -f urls servers serversRev categories server_user user_server server_path user_serverPath serverStr_path_hits	;
+	rm -f categories.txt;
+	rm -f serverStr_path_hits.txt;
+	rm -f listUserCategories.txt;
+	rm -f cat_serverPathVector_ref.txt;
+	}
+}
+
+script test_5
+{
+	out txt txt			# servers classification by categories		($1)
+
+	
+	helpLine "Test script for categorical classification "
+	
+	
+	code
+	{
+	set url.num_users               100000;
+	set url.num_servers             1000;
+	set url.num_paths_per_server    100;
+	set url.num_urls_per_user       100;
+	set url.num_servers_ref         20;
+	set url.num_categories          10;
+	set url.num_hits                5;
+	set url.fixed_categories        1;
+	
+	url.fakeURLs_fixed urls -create -clear;
+	url.fakeServers servers serversRev -create -clear;
+	url.fakeInfos categories -create -clear;
+	
+	url.script_PrepareBasicData urls servers server_user user_server server_path user_serverPath -create -clear;
+	url.script_ServerCategoriesDistribution user_server serversRev categories categories.txt -create -clear;
+	url.script_TopHits server_path serversRev serverStr_path_hits serverStr_path_hits.txt -create;
+	url.script_UserCategoriesDistribution server_user categories listUserCategories listUserCategories.txt -create -clear;
+	url.script_HitsPerCategory categories server_path serversRev cat_serverPathVector_ref cat_serverPathVector_ref.txt -create -clear;
+	url.script_HitsRecommendation listUserCategories cat_serverPathVector_ref user_serverPath user_serverPathVector_recommended  $1 -create -clear;
+	rm -f urls servers serversRev categories server_user user_server server_path user_serverPath serverStr_path_hits	;
+	rm -f categories.txt;
+	rm -f serverStr_path_hits.txt;
+	rm -f listUserCategories.txt;
+	rm -f cat_serverPathVector_ref.txt;
+	}
+}
+
+
+# Simplified problem
+
+
+data ServerHits
+{
+	system.String server;
+	system.UInt hits;
+}
+
+parser parse_urls
+{
+	out system.String system.Void     # Url or Server
+	helpLine "Parse txt files with URL content. Output is the server (url.output=server) or url (url.output=url)"
+}
+
+reduce accumulate_hits
+{
+	in system.String system.Void		    # Input URLs
+	in system.String system.Vector_UInt	    # Collection of hits for this urls 
+	out system.String system.Vector_UInt	    # Collection of hits for this urls ( Accumulated version )
+}
+
+script add_urls
+{
+	in txt txt
+	in  system.String system.Vector_UInt
+
+	code
+	{
+		url.parse_urls $1 $1_tmp -create;
+		url.accumulate_hits $1_tmp $2 $2 -clear_inputs;
+		rm $1_tmp;
+	}	
+}
+
+# Select the top servers per hits
+
+script select_top
+{
+	in system.String system.Vector_UInt
+	out txt txt
+
+	code
+	{
+	url.select_top_map $1 $1_tmp -create	;
+	url.select_top_reduce $1_tmp $2;
+	rm $1_tmp	;
+	}
+}
+
+map select_top_map
+{
+	in system.String system.Vector_UInt
+	out system.UInt url.ServerHits
+}
+
+parserOutReduce select_top_reduce
+{
+	in system.UInt url.ServerHits
+}

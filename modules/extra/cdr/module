@@ -1,0 +1,365 @@
+Module cdr
+{
+
+	title	"CDR  module"
+	author 	"Andreu Urruela (andreu@tid.es), Miguel Santos (masp20@tid.es) for the GASSET data"
+	version "1.0.1"
+	
+}
+
+# ---------------------------------------------------------------------------
+# datas
+# ---------------------------------------------------------------------------
+
+data CDR
+{
+     system.UInt node;
+     system.Date date;
+     system.Time time;
+     system.UInt duration;
+}
+
+
+data User
+{
+     system.UInt id;
+     system.UInt titularId;
+     system.UInt8 type;
+     system.TimeUnix activationDate;
+     system.UInt8 activationCode;
+     system.UInt8 age;
+     system.UInt8 province;
+     system.UInt8 sex;
+     system.TimeUnix churnDate;
+     system.UInt8 churnCode;
+}
+
+data gstCdr
+{
+     system.UInt phone;
+     system.TimeUnix timeUnix;
+     system.UInt duration;
+     system.UInt type;  # 0=voice; 1=sms; 2=mms;
+     system.UInt dir;
+     system.UInt cellId;
+     system.UInt mobScope;
+}
+
+# Data type to store cell
+# information from the cell catalogue.
+data Cell
+{
+     system.UInt32 cellId;
+     system.UInt btsId;
+     system.UInt lacId;
+     system.UInt stateId;
+    
+}
+
+# Data type to store cell
+# information from the cell catalogue.
+# including position, for Mobility 2.0
+data CellPos
+{
+     system.UInt32 cellId;
+     system.UInt bts;
+     system.UInt mun; #Same as lacId
+     system.UInt sta;
+     system.Float posx;
+     system.Float posy;
+}
+
+# Data type to store the fields
+# from CDRs that are necessary for
+# Mobility.
+data mobCdr
+{
+   system.UInt phone;
+   system.UInt32 cellId;
+#   system.UInt btsId;
+#   system.UInt lacId;
+#   system.UInt stateId;
+   system.TimeUnix timeUnix;
+#   system.UInt absDay;
+   system.UInt8 mobScope;
+}
+
+
+# -------------------------------------------------
+# Operations with cdrs
+# -------------------------------------------------
+
+generator fake_cdrs
+{
+	out	system.UInt cdr.CDR
+
+	helpLine "Generate a random set of cdrs from a group of 1000 users. 20% of the CDRs are duplicated"
+
+	help
+	{
+		"Generate a random set of cdrs from a group of 1000 users. 20% of the CDRs are duplicated"
+	}
+}
+
+generator fake_users
+{
+        out     system.UInt cdr.User
+
+        help
+        {
+                "Generate a random set of users"
+        }
+}
+
+
+
+reduce remove_duplicated_cdrs
+{
+	in 	system.UInt cdr.CDR
+	out	system.UInt cdr.CDR	
+
+	helpLine "Remove duplicatated cdrs. Input and output are in the same format"
+
+	help
+	{
+		"Remove duplicatated cdrs. Input and output are in the same format"
+	}
+	
+}
+
+map spread_cdrs_to_links
+{
+	in	system.UInt cdr.CDR
+	out 	system.UInt system.UInt
+
+	helpLine "Spread each CDR producing two key-values at the output per CDR. A-B and B-A"
+
+	help
+	{
+		"Spread cdrs at the input in the sense that emit two key-values at the output for each cdr."
+		"For every CDR (A-B) two key-values are emitted A,B and B,A"
+		"This operation is tippically concatenated with sna_compute_graph to generate the graph from cdrs."
+	}	
+}
+
+map spread_cdrs_to_links2
+{
+	in	system.UInt cdr.CDR
+	out 	system.UInt2 system.Void
+
+	helpLine "Spread each CDR producing two key-values at the output per CDR. A-B and B-A"
+
+}
+
+#reduce combine_graphs3
+#{
+#        in      system.UInt graph.Node
+#        in      system.UInt graph.Node
+#        in      system.UInt graph.Node
+#        out     system.UInt graph.Node
+#
+#        help
+#        {
+#                "Prototype of the combine graph function."
+#                "Rigth now, it takes three graph as inputs and compute the final weigth of each link as the mean of initial weigths."
+#                "It is suppoused to be refactored when more information is avilable"
+#        }
+#}
+
+
+parser parse_cdrs
+{
+	out system.UInt cdr.CDR	
+	
+	helpLine "Parse CDRs in txt format producing a single key-value at the output per each valid CDR (output: system.UInt cdr.CDR)"
+
+	help
+	{
+		"parse txt-file of CDRS in  different formats."
+		"This is a generic parse for different formats. Please, specify with the -format <format>"
+		"It can also be selected with the environment variable 'cdr.CDRs_source'"
+		"Suported formats:"
+		"TME:       --> 1|689644587|685015313|01/09/08 18:52:44|123|2|2"
+		"O2UKsmsc:  --> exact format to be defined "
+		"O2UKp2p:   --> exact format to be defined "
+		"O2UKmms:   --> exact format to be defined "
+	}
+}
+
+parser parse_gst_cdrs
+{
+  out system.UInt cdr.gstCdr
+
+  helpLine "Parse txt-file of Gasset CDRS in  different formats."
+
+  help
+  {
+    "Parse txt-file of CDRS in  different formats."
+    "This is a generic parse for different formats. Please, specify with the -format <format>"
+    "Use the -old_date to swich the format to old CDRs dates (01/01/2010)"
+    "Suported formats:"
+    "TEMM:   --> 33F43061B47A63|6691159047|33F43061B47A63|0446691557000|2|20100101|01:57:39|4|NOROAMI"
+  }
+}
+
+# Parse CDR files. Get only
+# fields necessary fo Mobility.
+parser parse_mob_cdrs
+{
+   out system.UInt cdr.mobCdr
+
+   #extern mobGetCdrInfo _mobGetCdrInfo;
+   #extern MRData_Uint64 phone;
+   #extern MRData_MOB.Cdr cdr;
+
+   helpLine "Parse CDR files to obtain the mobility imformation associated to each phone."
+
+   help
+   {
+      "Parse CDR files to obtain the mobility imformation associated to each phone."
+   }
+
+}
+
+map convert_cdrs_gst2mob
+{
+  in  system.UInt cdr.gstCdr
+  out system.UInt cdr.mobCdr  
+  
+  helpLine "Convert CDRs from Gasset format to Mob format."
+
+  help
+  {
+    "Convert CDRs from Gasset format to Mob format."
+  }
+}
+
+reduce convert_cdrs_gst2mob_three
+{
+  in system.UInt cdr.gstCdr
+  in system.UInt cdr.gstCdr
+  in system.UInt cdr.gstCdr
+  out system.UInt64 cdr.mobCdr
+  
+  helpLine "Convert three sources of CDRs from Gasset format to Mob format."
+  
+  help
+  {
+	"Convert three sources of CDRs from Gasset format to Mob format."
+  }
+}
+
+
+
+
+
+parser parse_users
+{
+        out     system.UInt cdr.User
+
+        help
+        {
+		"parse of Users information"
+                "parse the content of a file with information about users. Commontly the name of this file is ALFA_CARACT.TXT."
+		"Example: 687562010|910000000001|1|07/04/06|2|49|28|2||"
+        }
+}
+
+parser parse_users_O2UK
+{
+        out     system.UInt cdr.User
+
+        help
+        {
+		"parse of Users information from O2UK. From the moment, we have buil the O2UK user information as the users that appear both as calling and called in the log files"
+		"Example: 44687562010"
+        }
+}
+
+# Parse cell catalogue
+parser parse_cell_catalogue
+{
+   out system.UInt32 cdr.Cell
+
+   helpLine "Parse the cell catalogue."
+
+   help
+   {
+      "Parse the cell catalogue."
+   }
+}
+
+# Parse cell catalogue with postion info for Mobility 2.0
+parser parse_cell_catalogue_position
+{
+   out system.UInt32 cdr.CellPos
+
+   helpLine "Parse the cell catalogue with position info (Mobility 2.0)."
+
+   help
+   {
+      "Parse the cell catalogue with position info (Mobility 2.0)."
+   }
+}
+
+#map convert_cell
+#{
+#  in  system.UInt MOB.GSTCell
+#  out system.UInt MOB.Cell 
+#  
+#  helpLine "Convert Cells from Gasset format to Mob format."
+#
+#  help
+#  {
+#    "Convert Cells from Gasset format to Mob format."
+#  }
+#}
+
+# Parse client sample
+parser parse_clients
+{
+   out system.UInt cdr.User
+
+   helpLine "Parse the clients sample."
+
+   help
+   {
+      "Parse the clients sample."
+   }
+}
+
+map convert_client
+{
+  in  system.UInt cdr.User
+  out system.UInt system.Void 
+  
+  helpLine "Convert Clients from Gasset format to Mob format."
+
+  help
+  {
+    "Convert Clients from Gasset format to Mob format."
+  }
+}
+
+
+
+parserOut select_cdrs
+{
+	in system.UInt cdr.CDR
+
+	helpLine "Export cdrs in txt format"
+}
+
+parserOut export_mob_cdrs
+{
+	in system.UInt64 cdr.mobCdr
+
+	helpLine "Export mobility cdrs in txt format"
+}
+
+parserOut export_UInt_mobcdrs
+{
+	in system.UInt cdr.mobCdr
+
+	helpLine "Export mobility cdrs in txt format"
+}

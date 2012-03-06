@@ -1,0 +1,1582 @@
+Module mob2
+{
+
+	title	"mob-2.0  module"
+	author 	"Alberto Martín, ported to SAMSON by Gregorio Escalada"
+	version "0.1"
+	help
+	{
+		"module for Mobility 2.0 analysis"
+		"The results of the analysis:"
+		" -communication vectors: compute the communication vectors for users, bts and points of interest (POIs)"
+		" -communication vectors labelling (users, bts and POIs)"
+		" -compute influence area and turning radius for users"
+		" -compute users' itineraries between POIs"	
+	}
+	
+}
+
+# ---------------------------------------------------------------------------
+# datas
+# ---------------------------------------------------------------------------
+
+#############################
+# data for mobility product #
+#############################
+data TwoInt
+{
+	system.UInt num1;
+	system.UInt num2;
+}
+
+data Bts
+{
+	 system.UInt id;
+	 system.Float area;
+	 system.UInt comms;
+}
+
+data Poi
+{
+	 system.UInt node;
+	 system.UInt bts;
+	 system.UInt labelnode;
+	 system.UInt labelgroupnode;
+	 system.UInt8 confidentnode;
+	 system.Double distancenode;
+	 system.UInt labelbts;
+	 system.UInt labelgroupbts;
+	 system.UInt8 confidentbts;
+	 system.Double distancebts;
+	 system.UInt labelnodebts;
+	 system.UInt labelgroupnodebts;
+	 system.UInt8 confidentnodebts;
+	 system.Double distancenodebts;
+}
+
+data Node_Bts
+{
+	 system.UInt phone;
+	 system.UInt bts;
+	 system.UInt16 wday;
+	 system.UInt range;
+}
+
+data Bts_Counter
+{
+	system.UInt bts;
+	system.UInt16 wday;
+	system.UInt range;
+	system.UInt count;
+}
+
+data NodeMx_Counter
+{
+	vector mob2.Bts_Counter bts;
+}
+
+data Node_Bts_Day
+{
+	system.UInt node;
+	system.UInt bts;
+	system.UInt16 workday;
+	system.UInt count;
+}
+
+## Vectors ##
+#############
+
+#data Double
+#{
+#	double value;
+#}
+
+data DateVector
+{
+	system.UInt16 day;
+	system.UInt16 month;
+	system.UInt16 hour;
+}
+data DailyVector
+{
+	vector mob2.TwoInt hours;
+}
+data ClusterVector
+{
+	vector system.Double coms;
+}
+data Cluster
+{
+	system.UInt16 label;
+	system.UInt16 labelgroup;
+	system.UInt8 confident; # 0: No confident	1: Confident
+	system.Double mean;
+	system.Double distance;
+	mob2.ClusterVector coords;
+}
+data ClusterSet
+{
+	vector mob2.Cluster cluster;
+}
+
+## Influence area ##
+####################
+data TelMonth
+{
+	system.UInt phone;
+	system.UInt month;		# Number of month
+	system.UInt workingday;	# 0: working day	1: weekend
+}
+data TempMob
+{
+	vector system.UInt btss;
+	vector system.UInt muns;
+	vector system.UInt states;
+	vector system.Float coord_utmx;
+	vector system.Float coord_utmy;
+}
+data MobVars
+{
+	system.UInt month;
+	system.UInt workingday;
+	system.UInt num_pos;
+	system.UInt dif_btss;
+	system.UInt dif_muns;
+	system.UInt dif_states;
+	system.Float masscenter_utmx;
+	system.Float masscenter_utmy;
+	system.Float radius;
+	system.Float diam_areainf;
+}
+data Mob_VI_MobVars
+{
+	vector mob2.MobVars vars;
+}
+
+## Itineraries ##
+#################
+data ItinTime
+{
+	system.Date date;
+	system.Time time;
+	system.UInt bts;
+}
+data ItinMovement
+{
+	mob2.ItinTime source;
+	mob2.ItinTime target;
+}
+data ItinRange
+{
+	system.UInt node;
+	system.UInt poiSrc;
+	system.UInt poiTgt;
+	system.UInt group;
+	system.UInt range;
+}
+data ItinPercMove
+{
+	system.UInt group;
+	system.UInt range;
+	system.Double perc_moves;
+}
+data Itinerary
+{
+	system.UInt source;
+	system.UInt target;
+	vector system.UInt wdays;
+	system.UInt range;
+	system.UInt num_moves;
+}
+
+## Borrar ##
+############
+#data VectorUInt
+#{
+#	vector system.UInt values;
+#}
+
+
+# -------------------------------------------------
+# Operations with data
+# -------------------------------------------------
+
+##    Get a sample of around 10000 cdrs    ##
+#############################################
+map get_sample_10000
+{
+	in system.UInt cdr.mobCdr
+	out system.UInt cdr.mobCdr
+	
+	help
+	{	
+		"Extract a sample of around 10000 clients"
+	}
+}
+
+##    Parse cells        ##
+###########################
+parser parse_cells
+{
+	out	system.UInt32 cdr.CellPos
+
+	help
+	{
+		"Parse a txt file to extract TEMM cells"
+	}
+}
+
+##	  Parse clusters	 ##
+###########################
+parser parse_client_clusters
+{
+	out system.UInt mob2.Cluster
+	
+	help
+	{
+		"Parse a txt file to extract client clusters"
+	}
+}
+
+parser parse_mongodb_client_clusters
+{
+	help
+	{
+		"Parse a txt file to extract client clusters and store them in MongoDB, to be accesible later"
+	}
+}
+
+
+parser parse_clientbts_clusters
+{
+	out system.UInt mob2.Cluster
+	
+	help
+	{
+		"Parse a txt file to extract clientbts clusters"
+	}
+}
+
+parser parse_mongodb_clientbts_clusters
+{	
+	help
+	{
+		"Parse a txt file to extract clientbts clusters and store them in MongoDB, to be accesible later"
+	}
+}
+
+
+parser parse_bts_clusters
+{
+	out system.UInt mob2.Cluster
+	
+	help
+	{
+		"Parse a txt file to extract bts clusters"
+	}
+}
+
+parser parse_mongodb_bts_clusters
+{
+	help
+	{
+		"Parse a txt file to extract bts clusters and store them in MongoDB, to be accesible later"
+	}
+}
+
+##	  Parse clusters	 ##
+###########################
+parser parse_mongodb_mob_clusters
+{	
+	help
+	{
+		"Parse a txt file to extract mobility clusters (clients, bts or clientBts) and store them in MongoDB, to be accesible later"
+	}
+}
+
+
+
+
+##    Filter cdrs with cell info    ##
+######################################
+map filter_cellnoinfo
+{
+	in system.UInt cdr.mobCdr
+	out system.UInt32 cdr.mobCdr
+	out system.UInt cdr.mobCdr
+	
+	help
+	{
+		"Spread cdrs by cell, and filt them by cellinfo/cellnoinfo"
+		"Input 0: phone - cdr"
+		"Output 0: cdrs with cell info"
+		"Output 1: cdrs without cell info"
+	}
+}
+
+##    Change cell by bts    ##
+##############################
+reduce join_bts_node
+{
+	in system.UInt32 cdr.mobCdr
+	in system.UInt32 cdr.CellPos
+	out mob2.Node_Bts system.Void
+	out system.UInt mob2.TwoInt
+	out system.UInt cdr.mobCdr
+	out mob2.TelMonth cdr.CellPos
+	
+	help
+	{
+		"Change the cell id by bts id"
+		"Input 0: cdrs"
+		"Input 1: cell catalogue"
+		"Output 0: node, bts, wday and range - void"
+		"Output 1: bts - wday and range"
+		"Output 2: cellId - cdr"
+		"Output 3: telMonth - cell"
+	}
+}
+
+##    Number comms by node,bts and hour   ##
+############################################
+reduce node_bts_counter
+{
+	in mob2.Node_Bts system.Void
+	out system.UInt mob2.Bts_Counter
+	
+	help
+	{
+		"Count number of comms by node, bts, day and hour"
+	}
+}
+
+##    Array of counters   ##
+############################
+reduce node_mobInfo
+{
+	in system.UInt mob2.Bts_Counter
+	out system.UInt mob2.NodeMx_Counter
+	
+	help
+	{
+		"Create the array of counters by node: num of comms by day and hour"
+	}
+}
+
+## Spread counters by node and bts ##
+#####################################
+map repbts_spread_nodebts
+{
+	in system.UInt mob2.NodeMx_Counter
+	out mob2.Node_Bts_Day system.UInt
+	
+	help
+	{
+		"Spread client counters by node and bts"
+	}
+}
+## Number of comms of a client in a bts ##
+##########################################
+reduce repbts_aggbybts
+{
+	in mob2.Node_Bts_Day system.UInt
+	out system.UInt mob2.Node_Bts_Day
+
+	help
+	{
+		"Add the number comms of a client in a bts"
+	}
+}
+## Filter clients by total num of comms ##
+##########################################
+reduce repbts_filter_num_comms
+{
+	in system.UInt mob2.Node_Bts_Day
+	in system.UInt cdr.mobCdr
+	in system.UInt cdr.mobCdr
+	out system.UInt system.UInt
+	#out system.UInt system.UInt
+	#out system.UInt system.UInt
+	
+	help
+	{
+		"Count of number of coms by client, and filter according the total number communications"
+		"Output0: Clients in filter"
+		#"Output1: Clients under filter (known communications lower than limit)"
+		#"Output2: Clients over filter (communications higher than limit)"
+	}
+}
+## Calculate percent of coms bts-client ##
+##########################################
+reduce repbts_join_dist_comms
+{
+	in system.UInt mob2.Node_Bts_Day
+	in system.UInt system.UInt
+	out system.UInt mob2.Bts_Counter
+	
+	help
+	{
+		"Get percentages of communication of a client by bts and range"
+	}
+}
+## Extract representative bts ##
+################################
+reduce repbts_get_representative_bts
+{
+	in system.UInt mob2.Bts_Counter
+	out mob2.TwoInt mob2.Bts_Counter
+	
+	help
+	{
+		"Extract the most representative btss for a node"
+	}
+}
+
+######################################################
+#################### VECTORS #########################
+######################################################
+
+## Normalization ##
+###################
+map vector_normalized
+{
+	in mob2.Node_Bts mob2.ClusterVector
+	out mob2.Node_Bts mob2.ClusterVector
+	
+	help
+	{
+		"Normalization of a vector"
+	}
+}
+
+## Get vector by coms in a node (4 groups) ##
+#############################################
+reduce vector_filt_clients
+{
+	in system.UInt cdr.mobCdr
+	in system.UInt system.UInt
+	out system.UInt cdr.mobCdr
+	
+	help
+	{
+		"Filter cdrs to clients filtered by total comms"
+		"Input 0: Cdrs"
+		"Input 1: List of clients filtered by total comms"
+	}
+}
+map vector_spread_nodedayhour
+{
+	in system.UInt cdr.mobCdr
+	out mob2.Node_Bts system.Void
+	
+	help
+	{
+		"Spread cdrs by node, day and hour"
+	}
+}
+reduce vector_get_ncoms_nodedayhour
+{
+	in mob2.Node_Bts system.Void
+	out mob2.Node_Bts mob2.TwoInt
+	
+	help
+	{
+		"Get number of comms by node, day and hour"
+	} 
+}
+reduce vector_create_node_dayhour
+{
+	in mob2.Node_Bts mob2.TwoInt
+	out mob2.TwoInt  mob2.DailyVector
+	
+	help
+	{
+		"Create the vector of node comms by day and hour"
+	}
+}
+reduce vector_fuse_node_daygroup
+{
+	in mob2.TwoInt  mob2.DailyVector
+	out mob2.Node_Bts mob2.ClusterVector
+	
+	help
+	{
+		"Fuse the vector of node comms by group day"
+	}
+}
+
+## Get vector by coms in a node-bts (4 groups) ##
+#################################################
+map vector_spread_nodbts
+{
+	in system.UInt mob2.NodeMx_Counter
+	out mob2.Node_Bts system.UInt
+	
+	help
+	{
+		"Spread clients info array by node, bts, group and hour."
+	}
+}
+reduce vector_sum_groupcomms
+{
+	in mob2.Node_Bts system.UInt
+	out mob2.TwoInt mob2.Bts_Counter
+	
+	help
+	{
+		"Add num of comms of a client in a bts by group and hour"
+	}
+}
+reduce vector_filt_clientbts
+{
+	in mob2.TwoInt mob2.Bts_Counter
+	in mob2.TwoInt mob2.Bts_Counter
+	out mob2.Node_Bts mob2.TwoInt
+	
+	help
+	{
+		"Filter pair clients-bts to representative btss of a client"
+		"Input 0: Node-bts sum of group comms by hour"
+		"Input 1: Representative bts"
+	}
+}
+
+## Get vector by coms in a node-bts (4 groups) ##
+#################################################
+reduce vector_filter_bts
+{
+	in system.UInt mob2.TwoInt
+	out mob2.Bts_Counter system.Void
+	
+	help
+	{
+		"Filter bts by num of comms total and max area"
+	}
+}
+reduce vector_sum_coms_bts
+{
+	in mob2.Bts_Counter system.Void
+	out mob2.Node_Bts mob2.TwoInt
+	
+	help
+	{
+		"Sum number of comms by bts, group and hour"
+	}
+}
+
+######################################################
+#################### DISTANCES #######################
+######################################################
+
+## Min euclidean distance (Client vector)##
+###########################################
+map cluster_client_get_min_distance
+{
+	in mob2.Node_Bts mob2.ClusterVector
+	out system.UInt mob2.Cluster
+	
+	help
+	{
+		"Calculate the euclidean distance between a vector and a cluster"
+	}
+}
+## Min pearson distance (Clientbts vector)##
+############################################
+map cluster_clientbts_get_min_distance
+{
+	in mob2.Node_Bts mob2.ClusterVector
+	out system.UInt mob2.Poi
+	out mob2.TwoInt mob2.Cluster
+	
+	help
+	{
+		"Calculate the pearson distance between a vector and a cluster"
+	}
+}
+## Min euclidean distance (Bts vector)##
+########################################
+reduce cluster_bts_get_min_distance
+{
+	in mob2.Node_Bts mob2.ClusterVector
+	out system.UInt mob2.Cluster
+	
+	help
+	{
+		"Calculate the euclidean distance between a vector and a cluster."
+	}
+}
+## Filter bts vector by commarea
+reduce filter_bts_vector
+{
+	in system.UInt mob2.Cluster
+	in system.UInt mob2.Bts
+	out system.UInt mob2.Cluster
+	
+	help
+	{
+		"Filter bts vector by num of comms and area"
+	}
+}
+## Aggregate points of interest info ##
+#######################################
+reduce cluster_agg_node_cluster
+{
+	in system.UInt mob2.Poi
+	in system.UInt mob2.Cluster
+	out mob2.TwoInt mob2.Poi
+	out system.UInt mob2.Poi
+	
+	help
+	{
+		"Aggregate to results info about client cluster"
+		"Input 0: POI with clientbts cluster info"
+		"Input 1: Info about client cluster"
+	}
+}
+## Extract majority pois by node label
+map cluster_spread_nodelbl_poilbl
+{
+	in mob2.TwoInt mob2.Poi
+	out mob2.TwoInt system.Void
+	
+	help
+	{
+		"Spread points of interest by client label and poi label"
+	}
+}
+reduce cluster_count_majPoi_by_node
+{
+	in mob2.TwoInt system.Void
+	out system.UInt mob2.TwoInt
+	
+	help
+	{
+		"Count number of times pair node label - poi label"
+	}
+}
+reduce cluster_get_majPoi_by_node
+{
+	in system.UInt mob2.TwoInt
+	out system.UInt system.UInt
+	
+	help
+	{
+		"Get max majority POI label by node label"
+	}
+}
+reduce cluster_join_potPoi_label
+{
+	in system.UInt mob2.Poi
+	in system.UInt system.UInt
+	out mob2.TwoInt system.Void
+	
+	help
+	{
+		"Set label to pois by majority node label"
+		"Input 0: potential pois"
+		"Input 1: node label - majority poi label"
+	}
+}
+reduce cluster_agg_potPoi_pois
+{
+	in mob2.TwoInt mob2.Poi
+	in mob2.TwoInt mob2.Cluster
+	in mob2.TwoInt system.Void
+	out system.UInt mob2.Poi
+	out mob2.TwoInt mob2.Cluster
+	
+	help
+	{
+		"Aggregate the potential pois labeled to all pois"
+		"Input 0: all pois"
+		"Input 1: client communications vector"
+		"Input 2: potential pois"
+	}
+}
+
+##
+reduce cluster_agg_bts_cluster
+{
+	in system.UInt mob2.Poi
+	in system.UInt mob2.Cluster
+	out mob2.TwoInt mob2.Poi
+	
+	help
+	{
+		"Aggregate to results info about bts cluster"
+		"Input 0: POI with clientbts cluster info and client cluster info"
+		"Input 1: Info about bts cluster"
+	}
+}
+## Export results ##
+####################
+parserOut vector_oneid_out
+{
+	in system.UInt mob2.Cluster
+	
+	help
+	{
+		"Parse out of a vector"
+	}
+}
+parserOut vector_nodbts_out
+{
+	in mob2.TwoInt mob2.Cluster
+	
+	help
+	{
+		"Parse out of a vector"
+	}
+}
+parserOut vector_pois_out
+{
+	in mob2.TwoInt mob2.Poi
+	
+	help
+	{
+		"Parse out of points of interest"
+	}
+}
+
+##############################################
+###			INDIVIDUAL VARIABLES			##
+##############################################
+## Individual varible by month
+reduce MobVar_calcvariables
+{
+	in mob2.TelMonth cdr.CellPos
+	out system.UInt mob2.MobVars
+	
+	help
+	{
+		"Calculate individual variables by period"
+	}
+}
+reduce MobVar_fusiontotalvars
+{
+	in system.UInt mob2.MobVars
+	out system.UInt mob2.Mob_VI_MobVars
+	
+	help
+	{
+		"Fuse working/weekend day statistics and variables of all months of a user"
+	}
+}
+parserOut MobVar_indVars_out
+{
+	in system.UInt mob2.Mob_VI_MobVars
+	
+	help
+	{
+		"Parse out of individual variables of a client"
+	}
+}
+## Accumulate individual variables
+map MobVar_delete_period
+{
+	in mob2.TelMonth cdr.CellPos
+	out mob2.TelMonth cdr.CellPos
+	
+	help
+	{
+		"Delete the period to calculate individual variables of a whole sample"
+	}
+}
+parserOut MobVar_indVars_accumulated_out
+{
+	in system.UInt mob2.Mob_VI_MobVars
+	
+	help
+	{
+		"Parse out of individual variables of a client"
+	}
+}
+
+##############################################
+###				  ITINERARIES				##
+##############################################
+reduce itin_join_cell_bts
+{
+	in system.UInt32 cdr.mobCdr
+	in system.UInt32 cdr.CellPos
+	out mob2.TwoInt  mob2.ItinTime
+	
+	help
+	{
+		"Change cell of cdrs by bts for itineraries"
+		"Input 0: Cdrs with cell info"
+		"Input 1: Cells catalogue"
+	}
+}
+reduce itin_filter_pois
+{
+	in mob2.TwoInt  mob2.ItinTime
+	in mob2.TwoInt mob2.Bts_Counter
+	out system.UInt  mob2.ItinTime
+	
+	help
+	{
+		"Filter cdrs to the pois of a client"
+		"Input 0: Cdrs with bts info"
+		"Input 1: Pois of clients"
+		"Output 0: Cdrs with POI"
+	}
+}
+reduce itin_move_client_pois
+{
+	in system.UInt  mob2.ItinTime
+	out system.UInt  mob2.ItinMovement
+	
+	help
+	{
+		"Extract movements between POIs of a client"
+	}
+}
+map itin_get_ranges
+{
+	in system.UInt  mob2.ItinMovement
+	out  mob2.ItinRange system.Double
+	
+	help
+	{
+		"Set ranges of a POIs of a client"
+	}
+}
+reduce itin_count_ranges
+{
+	in  mob2.ItinRange system.Double
+	out  mob2.ItinRange mob2.ItinPercMove
+	
+	help
+	{
+		"Count percentages of movements in a range"
+	}
+}
+reduce itin_get_vector
+{
+	in mob2.ItinRange mob2.ItinPercMove
+	out mob2.ItinRange mob2.ClusterVector
+	
+	help
+	{
+		"Get vector of moves between POIs"
+	}
+}
+reduce itin_get_peaks
+{
+	in mob2.ItinRange mob2.ClusterVector
+	out mob2.ItinRange mob2.ClusterVector
+	
+	help
+	{
+		"Get peaks of moves vector"
+	}
+}
+map spread_peaks_by_hour_wday
+{
+	in mob2.ItinRange mob2.ClusterVector
+	out mob2.ItinRange mob2.TwoInt
+	out mob2.ItinRange system.Void	# Borrar
+	
+	help
+	{
+		"Spread peaks vector by week day and range"
+	}
+}
+
+reduce get_itineraries
+{
+	in  mob2.ItinRange mob2.TwoInt
+	out system.UInt  mob2.Itinerary
+	
+	help
+	{
+		"Calculate itineraries for a client"
+	}
+}
+
+############
+## BORRAR ##
+############
+#parserOut borrar_vector_client_out
+#{
+#	in mob2.Node_Bts mob2.ClusterVector
+#	
+#	help
+#	{
+#		"Parse out of client vectors"
+#	}
+#}
+#parserOut borrar_client_clusters_out
+#{
+#	in mob2.Node_Bts mob2.Cluster
+#	
+#	help
+#	{
+#		"Parse out of clients clusterized"
+#	}
+#}
+#parserOut borrar_vector_clientbts_out
+#{
+#	in mob2.Node_Bts mob2.ClusterVector
+#	
+#	help
+#	{
+#		"Parse out of client vectors"
+#	}
+#}
+#parserOut borrar_clientbts_clusters_out
+#{
+#	in mob2.Node_Bts mob2.Cluster
+#	
+#	help
+#	{
+#		"Parse out of clients clusterized"
+#	}
+#}
+## Get Rocio's vector
+parser borrar_get_bts_vector
+{
+	out mob2.Node_Bts mob2.ClusterVector
+
+	help
+	{
+		"Parse a txt file to extract bts vectors from Roc�o"
+	}
+}
+
+parser borrar_get_bts_comarea
+{
+	out system.UInt mob2.Bts
+	
+	help
+	{
+		"Parse a txt file to extract bts area"
+	}
+}
+####
+## Data analysis POIS
+####
+## Number of clients/btss with confident label
+map borrar_spread_confident_label
+{
+	in system.UInt mob2.Cluster
+	out system.UInt system.Void
+	
+	help
+	{
+		"Get confident of client/bts labelling"
+	}	
+}
+## Number of pois with confident label
+map borrar_spread_confident_poi_label
+{
+	in mob2.TwoInt mob2.Cluster
+	out system.UInt system.Void
+	
+	help
+	{
+		"Get confident of poi labelling"
+	}	
+}
+
+
+### Num of clients with POI labeled
+map spread_pois_by_node
+{
+	in mob2.TwoInt mob2.Poi
+	out system.UInt system.Void
+	
+	help
+	{
+		"Spread by client confidence of POIs"
+	}
+}
+reduce get_label_pois_by_client
+{
+	in system.UInt system.Void
+	out system.UInt system.Void
+	
+	help
+	{
+		"List of clients with confident pois"
+	}
+}
+
+### Extract statistics
+reduce borrar_get_statistics
+{
+	in system.UInt system.Void
+	out system.UInt system.UInt
+	
+	help
+	{
+		"Get statistics of a serie"
+	}
+}
+
+#### Distance in time between movements in minutes
+reduce borrar_get_distTime_itin
+{
+	in system.UInt  mob2.ItinMovement
+	out system.UInt system.Void
+	
+	help
+	{
+		"Extract the number of minutes in movements of a client"
+	}
+}
+
+#### Distance in absolute hour between movements
+reduce borrar_get_distHour_itin
+{
+	in system.UInt mob2.ItinMovement
+	out system.UInt system.Void
+	
+	help
+	{
+		"Extract difference in absolute hour between movements"
+	}
+}
+
+#### Group of days of an itinerary
+map borrar_get_days_itin
+{
+	in system.UInt  mob2.Itinerary
+	out system.Vector_UInt system.Void
+	
+	help
+	{
+		"Extract the week days when a movement is"
+	}
+}
+reduce borrar_get_vector_statistics
+{
+	in system.Vector_UInt system.Void
+	out system.Vector_UInt system.UInt
+	
+	help
+	{
+		"Get statistics of a UInt vector"
+	}
+}
+## Itineraries by client and movement
+map borrar_get_nItin_by_client
+{
+	in system.UInt mob2.Itinerary
+	out mob2.ItinRange system.Void
+	
+	help
+	{
+		"Prepare to calculate the number of different itineraries of a client between the same POIs"
+	}
+}
+reduce borrar_get_nItin_statistics
+{
+	in mob2.ItinRange system.Void
+	out system.UInt system.Void
+	
+	help
+	{
+		"Extract the number of different itineraries of a client between the same POIs"
+	}
+}
+## Size of itineraries by day/hour
+map borrar_get_size_itin
+{
+	in system.UInt mob2.Itinerary
+	out system.UInt system.Void
+	out system.UInt system.Void
+	out system.Double system.Void
+	
+	help
+	{
+		"Extract size of itineraries"
+		"Output 0: num of movements"
+		"Output 1: num of different days"
+		"Output 2: mean of movements by day"
+	}	
+}
+reduce borrar_get_double_statistics
+{
+	in system.Double system.Void
+	out system.Double system.UInt
+	
+	help
+	{
+		"Get statistics of double series"
+	}
+}
+## Size of itineraries by vector
+map borrar_get_size_vitin
+{
+	in mob2.ItinRange mob2.ClusterVector
+	out system.UInt system.Void
+	
+	help
+	{
+		"Extract num of movements (sum) of a itinerary vector"
+	}	
+}
+## Analysis of peaks
+reduce borrar_get_peaks_by_day
+{
+	in mob2.ItinRange system.Void
+	out system.UInt system.Void
+	out mob2.ItinRange system.Void
+	
+	help
+	{
+		"Extract num of peaks by day"
+		"Output 0: num of peaks by day"
+		"Output 1: peak in a day of week"
+	}
+}
+reduce borrar_get_days_with_peak
+{
+	in mob2.ItinRange system.Void
+	out system.UInt system.Void
+	
+	help
+	{
+		"Extract num of day with peak"
+	}
+}
+
+## Get min distance between itineraries by movement
+map borrar_spread_clipoisrange
+{
+	in system.UInt mob2.Itinerary
+	out mob2.ItinRange system.UInt
+	
+	help
+	{
+		"Spread itineraries by client, movement and range"
+	}
+}
+reduce borrar_get_minDistance
+{
+	in mob2.ItinRange system.UInt
+	out system.UInt system.Void
+	
+	help
+	{
+		"Get min distance between itineraries by client with the same movement"
+	}
+}
+
+
+# ------------------------------------------------------------
+# My Scripts
+# ------------------------------------------------------------
+script script_extract_POIs
+{
+   in txt txt  # Results folder
+
+   top
+
+   help
+   {
+      "Script to identify the points of interest of a client."
+   }
+
+   code
+   {
+	  # Delete intermediate objects
+	  rm $1.cdrsinfo -f;
+	  rm $1.cdrsnoinfo -f;
+	  rm $1.clients_bts -f;
+	  rm $1.bts_comms -f;
+	  rm $1.cdrsnobts -f;
+	  rm $1.vi_telmonth_bts -f;
+	  rm $1.clients_btscounter -f;
+	  rm $1.clients_info -f;
+	  rm $1.clients_info_spread -f;
+	  rm $1.clients_info_aggbybts -f;
+	  rm $1.clients_info_filtered -f;
+	  rm $1.clients_info_bts_perc -f;
+	  rm $1.clients_repbts -f;
+	 	  
+      # Parse CDR's
+      cdr.parse_mob_cdrs $1.cdrstxt $1.cdrs_mob -create -clear;
+
+      # Parse clients sample
+      cdr.parse_clients $1.userstxt $1.users -create -clear;
+      cdr.convert_client $1.users $1.clients -create -clear;
+
+      # Parse cell catalogue
+      cdr.parse_cell_catalogue_position $1.cellstxt $1.cells -create -clear;
+      
+      # Parse reference clusters, and store them in MongoDB
+      mob2.parse_mongodb_mob_clusters jun.centroides_client.txt -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=clientClusters;
+      mob2.parse_mongodb_mob_clusters jun.centroidesBts.txt -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=btsClusters;
+      mob2.parse_mongodb_mob_clusters jun.medoides_pearson_nodobts.txt -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=clientbtsClusters;
+      
+
+      # Filter cdrs of clients with no info about cell
+      mob2.filter_cellnoinfo $1.cdrs_mob $1.cdrsinfo $1.cdrsnoinfo -create -clear;
+      # Change cells by bts
+      mob2.join_bts_node $1.cdrsinfo $1.cells $1.clients_bts $1.bts_comms $1.cdrsnobts $1.vi_telmonth_bts -create -clear;
+      # Number of comms by client, bts and hour
+      mob2.node_bts_counter $1.clients_bts $1.clients_btscounter -create -clear;
+      # Array of counters
+      mob2.node_mobInfo $1.clients_btscounter $1.clients_info -create -clear;
+	  
+	  # Save space
+	  rm clients_bts -f;
+	  rm clients_btscounter -f;
+	  
+      # Spread array by client and bts
+	  mob2.repbts_spread_nodebts $1.clients_info $1.clients_info_spread -create -clear;
+	  # Group and count total comms by client and bts
+	  mob2.repbts_aggbybts $1.clients_info_spread $1.clients_info_aggbybts -create -clear;
+	  # Filter by number of comms
+	  mob2.repbts_filter_num_comms $1.clients_info_aggbybts $1.cdrsnoinfo $1.cdrsnobts $1.clients_info_filtered -create -clear;
+	  # Calculate percentages of bts
+	  mob2.repbts_join_dist_comms $1.clients_info_aggbybts $1.clients_info_filtered $1.clients_info_bts_perc -create -clear;
+	  # Extract POIs
+	  mob2.repbts_get_representative_bts $1.clients_info_bts_perc $1.clients_repbts -create -clear;
+
+      # Save space
+      rm clients_info_spread -f;
+      rm clients_info_aggbybts -f;
+      rm clients_info_bts_perc -f;
+      rm cdrsnoinfo -f;
+      rm cdrsnobts -f;
+   }
+}
+
+script script_label_POIs
+{
+   in txt txt  # Results folder
+
+   top
+
+   help
+   {
+      "Script to label the points of interest of a client."
+   }
+
+   code
+   {
+	  # Delete intermediate objects
+	  rm $1.cdrs_filtered -f;
+	  rm $1.clients_info_spread -f;
+	  rm $1.cliVec_numcoms -f;
+	  rm $1.cliVec_group -f;
+	  rm $1.clusters_client -f;
+	  rm $1.vector_client -f;
+	  rm $1.vector_client_norm -f;
+	  rm $1.vector_client_cluster -f;
+	  rm $1.bts_counts -f;
+      rm $1.bts_sum_coms -f;
+      rm $1.bts_dayhour -f;
+      rm $1.clusters_bts -f;
+      rm $1.vector_bts -f;
+      rm $1.vector_bts_norm -f;
+      rm $1.vector_bts_cluster -f;
+      rm $1.clientsbts_spread -f;
+      rm $1.clientsbts_sum -f;
+      rm $1.clientsbts_repbts -f;
+      rm $1.clientsbts_group -f;
+      rm $1.clusters_clientbts -f;
+      rm $1.vector_clientbts -f;
+      rm $1.vector_clientbts_norm -f;
+      rm $1.vector_clientbts_cluster -f;
+      rm $1.points_of_interest_temp -f;
+      rm $1.points_of_interest_temp2 -f;
+      rm $1.pointsOfInterestTxt -f;
+      rm $1.vectorClientTxt -f;
+      rm $1.vectorClientBtsTxt -f;
+      rm $1.vectorBtsTxt -f;
+      
+ 	 	  
+      # CLIENT VECTOR
+      # Filter cdrs by clients filtered
+      mob2.vector_filt_clients $1.cdrs_mob $1.clients_info_filtered $1.cdrs_filtered -create -clear;
+      # Spread by client, group and hour
+      mob2.vector_spread_nodedayhour $1.cdrs_filtered $1.clients_info_spread -create -clear;
+      # Number of comms by client, day group and hour
+      mob2.vector_get_ncoms_nodedayhour $1.clients_info_spread $1.cliVec_numcoms -create -clear;
+      # Vector by client and group
+      mob2.vector_create_node_dayhour $1.cliVec_numcoms $1.cliVec_group -create -clear;
+      # Fuse group vectors by client
+      mob2.vector_fuse_node_daygroup $1.cliVec_group $1.vector_client -create -clear;
+      # Vector normalization
+      mob2.vector_normalized $1.vector_client $1.vector_client_norm -create -clear;
+      # Centroids parser
+      mob2.parse_client_clusters $1.centroides_client $1.clusters_client -create -clear;
+      # Labelling of client vector
+      mob2.cluster_client_get_min_distance $1.vector_client_norm $1.vector_client_cluster  -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=clientClusters;
+      # Save space
+      rm $1.cdrs_filtered -f;
+      rm $1.clients_info_spread -f;
+      rm $1.cliVec_numcoms -f;
+      rm $1.cliVec_group -f;
+      rm $1.vector_client -f;
+      rm $1.clusters_client -f;
+      rm $1.vector_client_norm -f;
+
+      # BTS VECTOR
+      # ???
+      mob2.vector_filter_bts $1.bts_comms $1.bts_counts -create -clear;
+      # Num of comms by bts, group and hour
+      mob2.vector_sum_coms_bts $1.bts_counts $1.bts_sum_coms -create -clear;
+      # Vector of comms by bts and day group
+      mob2.vector_create_node_dayhour $1.bts_sum_coms $1.bts_dayhour -create -clear;
+      # Fuse group vectors by bts
+      mob2.vector_fuse_node_daygroup $1.bts_dayhour $1.vector_bts -create -clear;
+      # Vector normalization
+      mob2.vector_normalized $1.vector_bts $1.vector_bts_norm -create -clear;
+      # Centroids parser
+      mob2.parse_bts_clusters $1.centroides_bts $1.clusters_bts -create -clear;
+      # Labelling of bts vector
+      mob2.cluster_bts_get_min_distance $1.vector_bts_norm $1.vector_bts_cluster -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=btsClusters;
+      # Save space
+      rm $1.bts_counts -f;
+      rm $1.bts_sum_coms -f;
+      rm $1.bts_dayhour -f;
+      rm $1.vector_bts -f;
+      rm $1.vector_bts_norm -f;
+      rm $1.clusters_bts -f;
+
+      # POI VECTOR
+      # Extend by client, bts, day group and hour
+      mob2.vector_spread_nodbts $1.clients_info $1.clientsbts_spread -create -clear;
+      # Num of comms by client, bts, day group and hour
+      mob2.vector_sum_groupcomms $1.clientsbts_spread $1.clientsbts_sum -create -clear;
+      # Filter bts by POIs of a client
+      mob2.vector_filt_clientbts $1.clientsbts_sum $1.clients_repbts $1.clientsbts_repbts -create -clear;
+      # Vector of comms by client, bts and day group
+      mob2.vector_create_node_dayhour $1.clientsbts_repbts $1.clientsbts_group -create -clear;
+      # Fuse group vectors by client and bts
+      mob2.vector_fuse_node_daygroup $1.clientsbts_group $1.vector_clientbts -create -clear;
+      # Vector normalization
+      mob2.vector_normalized $1.vector_clientbts $1.vector_clientbts_norm -create -clear;
+      # Medoids parser
+      mob2.parse_clientbts_clusters $1.medoides_clientbts $1.clusters_clientbts -create -clear;
+      # Labelling of POI vector
+      mob2.cluster_clientbts_get_min_distance $1.vector_clientbts_norm $1.points_of_interest_temp $1.vector_clientbts_cluster -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=clientbtsClusters;
+      # Save space
+      rm $1.clientsbts_spread -f;
+      rm $1.clientsbts_sum -f;
+      rm $1.clientsbts_repbts -f;
+      rm $1.clientsbts_group -f;
+      rm $1.vector_clientbts -f;
+      rm $1.vector_clientbts_norm -f;
+      rm $1.clusters_clientbts -f;
+      
+      # JOIN LABELS
+      # Join POI label and Client label
+      mob2.cluster_agg_node_cluster $1.points_of_interest_temp $1.vector_client_cluster $1.points_of_interest_temp2 -create -clear;
+      # Join Bts label to results
+      mob2.cluster_agg_bts_cluster $1.points_of_interest_temp2 $1.vector_bts_cluster $1.bts_comarea $1.points_of_interest -create -clear;
+      # Extract results to text
+      mob2.vector_pois_out $1.points_of_interest $1.pointsOfInterestTxt -create -clear;
+      mob2.vector_oneid_out $1.vector_client_cluster $1.vectorClientTxt -create -clear;
+      mob2.vector_nodbts_out $1.vector_clientbts_cluster $1.vectorClientBtsTxt -create -clear;
+      mob2.vector_oneid_out $1.vector_bts_cluster $1.vectorBtsTxt -create -clear;
+
+      # Save space
+      rm $1.points_of_interest_temp -f;
+      rm $1.points_of_interest_temp2 -f;
+      #rm $1.clients_info_filtered -f;
+      #rm $1.bts_comms -f;
+      #rm $1.clients_info -f;
+   }
+}
+
+script script_extract_MIVs
+{
+   in txt txt  # Results folder
+
+   top
+
+   help
+   {
+      "Script to calculate the mobility individual variables of a client."
+   }
+
+   code
+   {
+	  # Delete intermediate objects
+	  rm $1.vi_telmonth_mobvars -f;
+	  rm $1.vi_client_fuse -f;
+	  rm $1.viClientFuseTxt -f;
+	  rm $1.vi_telmonth_bts_acc -f;
+	  rm $1.vi_telmonth_mobvars_acc -f;
+	  rm $1.vi_client_fuse_acc -f;
+	  rm $1.viClientFuseAccTxt -f;
+	 	  
+      # Calculate individual variables by month
+      mob2.MobVar_calcvariables vi_telmonth_bts vi_telmonth_mobvars -create -clear;
+      # Fuse in a set all user info
+      mob2.MobVar_fusiontotalvars vi_telmonth_mobvars vi_client_fuse -create -clear;
+      # Extract to text file
+      mob2.MobVar_indVars_out vi_client_fuse viClientFuseTxt -create -clear;
+      # Delete months
+      mob2.MobVar_delete_period vi_telmonth_bts vi_telmonth_bts_acc -create -clear;
+      # Calculate individual variables for every months
+      mob2.MobVar_calcvariables vi_telmonth_bts_acc vi_telmonth_mobvars_acc -create -clear;
+      # Fuse in a set all user info
+      mob2.MobVar_fusiontotalvars vi_telmonth_mobvars_acc vi_client_fuse_acc -create -clear;
+      # Extract to text file
+      mob2.MobVar_indVars_accumulated_out vi_client_fuse_acc viClientFuseAccTxt -create -clear;
+
+	  # Save space
+	  rm $1.vi_telmonth_mobvars -f;
+	  rm $1.vi_telmonth_bts_mobvars -f;
+	  rm $1.vi_telmonth_bts_acc -f;
+	  rm $1.vi_telmonth_mobvars_acc -f;
+	  #rm $1.vi_telmonth_bts -f;
+   }
+}
+
+
+## Passive Location ##
+
+## Parse xmls for Passive Location ##
+######################################
+parser parse_xml_ARCANUM
+{
+	out system.UInt cdr.mobCdr
+	out system.UInt system.UInt
+	out system.UInt system.UInt
+	out system.UInt32 system.UInt
+	out system.UInt mob2.UserState
+	
+	helpLine "Parse xmls for Passive Location, events generated by ARCANUM"
+	
+	help
+	{
+		"Parse xmls fro Passive Location, generated by ARCANUM"
+		"Emits: phone-cdr info"
+		"\tphone-IMEI kvs"
+		"\tIMEI-phone kvs"
+		"\tTAC-phone kvs"
+		"\tphone-user info (like a cdr, with IMEI info)"
+	}
+}
+
+map map_cdrs_to_user_timestamp
+{
+	in system.UInt cdr.mobCdr
+	out system.UInt system.TimeUnix
+	
+	helpLine "From every CDR, emit user and timestamp"
+	
+	help
+	{
+		"From every CDR, emit user and timestamp"
+	}
+}
+
+parserOutReduce print_user_statistics
+{
+	in system.UInt system.TimeUnix
+	
+	helpLine "For every user, prints number of CDRs with cellId, and total period in seconds"
+	
+	help
+	{
+		"For every user, prints number of CDRs with cellId, and total period in seconds"
+	}
+} 
+
+parserOutReduce print_user_imei
+{
+	in system.UInt system.UInt
+	
+	helpLine "For every user, prints IMEIs (more than one, if necessary)"
+	
+	help
+	{
+		"For every user, prints IMEIs (more than one, if necessary)"
+	}
+} 
+
+parserOutReduce print_imei_user
+{
+	in system.UInt system.UInt
+	
+	helpLine "For IMEI, prints users (more than one, if neccesary)"
+	
+	help
+	{
+		"For IMEI, prints users (more than one, if neccesary)"
+	}
+} 
+
+parserOutReduce print_TAC_users
+{
+	in system.UInt32 system.UInt
+	
+	helpLine "For every TAC, prints number of users"
+	
+	help
+	{
+		"For every TAC, prints number of users"
+	}
+} 
+
+data LastPosition
+{
+	system.TimeUnix time;
+	system.UInt32 cell;	
+}
+
+data UserState
+{	
+	mob2.LastPosition position;
+	system.UInt imei;
+}
+
+parser parse_user_state
+{
+	out system.UInt mob2.UserState
+	
+	helpLine "fake parser to create the userState queue"
+}
+
+reduce reduce_update_last_position
+{
+	in system.UInt cdr.mobCdr
+	in system.UInt mob2.UserState
+	out system.UInt mob2.UserState
+	
+	helpLine "Updates last position information for every user"
+}
+
+reduce reduce_user_info
+{
+	in system.UInt mob2.UserState
+	in system.UInt mob2.UserState
+	out system.UInt mob2.UserState
+	out system.UInt mob2.UserState
+	
+	helpLine "Updates last position and imei information for every user, and detects changes in imei"
+}
+
+reduce reduce_check_imeis_by_user
+{
+	in system.UInt mob2.UserState
+	in system.UInt mob2.UserState
+	out system.UInt mob2.UserState
+	out system.UInt mob2.UserState
+	
+	helpLine "Detects when a user changes terminal"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

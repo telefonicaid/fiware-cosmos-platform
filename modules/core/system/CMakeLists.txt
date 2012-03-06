@@ -1,0 +1,122 @@
+SET( MODULE_NAME system )
+
+SET (AUX_HEADERS
+    samson/modules/system/Value.h
+	operations/parse_to_value.h
+	operations/map_value_to_value.h	
+	operations/map_value_to_2_value.h	
+	operations/map_value_to_3_value.h	
+	operations/reduce_value_to_value.h
+	operations/Filter.h
+	operations/Filter.cpp
+)			  
+
+SET( SOURCES_TEST
+	 main_system_test.cpp
+)
+
+
+cmake_minimum_required(VERSION 2.6)
+
+# Install directory
+SET (INSTALL_DIR $ENV{SAMSON_HOME})
+if (INSTALL_DIR)
+    MESSAGE("Using $ENV{SAMSON_HOME} as the installation location")
+    SET (CMAKE_INSTALL_PREFIX $ENV{SAMSON_HOME} CACHE INTERNAL "")
+else (NOT INSTALL_DIR)
+    MESSAGE("Default to /opt/samson as the installation location. Set the environment variable SAMSON_HOME to override")
+    SET (CMAKE_INSTALL_PREFIX /opt/samson CACHE INTERNAL "")
+endif (INSTALL_DIR)
+
+# Locate samsonModuleParser
+if (SAMSONMODULEPARSER)
+    MESSAGE ("Using ${SAMSONMODULEPARSER} to parse the module file")
+else (NOT SAMSONMODULEPARSER)
+    FIND_PROGRAM(HAVE_SAMSONMODULEPARSER samsonModuleParser HINTS ${PROJECT_BINARY_DIR}/apps/samsonModuleParser/samsonModuleParser ENV PATH)
+    if (HAVE_SAMSONMODULEPARSER)
+        SET (SAMSONMODULEPARSER ${HAVE_SAMSONMODULEPARSER} CACHE INTERNAL "")
+    else (NOT HAVE_SAMSONMODULEPARSER)
+        MESSAGE("*****************************")
+        MESSAGE("")
+        MESSAGE("samsonModuleParser not found")
+        MESSAGE("")
+        MESSAGE("*****************************")
+    endif (HAVE_SAMSONMODULEPARSER)
+endif (SAMSONMODULEPARSER)
+
+IF (SVN_BUILD)
+    ADD_CUSTOM_COMMAND(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
+        COMMAND samsonModuleParser ${CMAKE_CURRENT_SOURCE_DIR}/module ${CMAKE_CURRENT_SOURCE_DIR} Module
+        MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/module
+    )
+ELSE (NOT SVN_BUILD)
+    ADD_CUSTOM_COMMAND(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
+        COMMAND ${SAMSONMODULEPARSER} ${PROJECT_SOURCE_DIR}/module ${PROJECT_SOURCE_DIR} Module
+      	MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/module
+    )
+ENDIF (SVN_BUILD)
+
+SET (SOURCES
+    ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
+)
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/Module.cpp PROPERTIES GENERATED 1)
+
+# Install headers to be used by other modules
+FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
+
+# Compiler options for DEBUG or RELEASE (copied from trunk/CMakeList)
+add_definitions(-fPIC)
+
+#Baseline compiler flags
+set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror")
+
+if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
+
+    MESSAGE("cmake: DEBUG compilation")
+    add_definitions(-DDEBUG -DDEBUG_$ENV{USER} -DDEBUG_${USER})
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+
+else (NOT CMAKE_BUILD_TYPE STREQUAL DEBUG)
+
+    MESSAGE("cmake: RELEASE compilation")
+    add_definitions(-DRELEASE)
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
+
+endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
+
+# -Wunused-but-set-variable is available from gcc 4.6.0 but can be set in 4.5.x
+# OS X comes with gcc 4.2.1 (10.7) and does not accept this flag
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+# Include directory pointing to current dir and /usr/local/include
+IF (SVN_BUILD)
+    include_directories("${PROJECT_SOURCE_DIR}/libs")
+    include_directories("${PROJECT_SOURCE_DIR}/modules/core/${MODULE_NAME}")
+ELSE (NOT SVN_BUILD)
+    include_directories("${PROJECT_SOURCE_DIR}")
+    include_directories("${CMAKE_INSTALL_PREFIX}")
+    include_directories("${CMAKE_INSTALL_PREFIX}/include")
+    include_directories("${CMAKE_INSTALL_PREFIX}/include/samson")
+    link_directories("${CMAKE_INSTALL_PREFIX}/lib")
+ENDIF (SVN_BUILD)
+
+MESSAGE( "----------------------------------------------------------------------------")
+MESSAGE( "Creating module ${MODULE_NAME}" )
+MESSAGE( "----------------------------------------------------------------------------")
+
+include_directories( "/opt/samson/include" )
+link_directories( "/opt/samson/lib" )
+
+ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES} ${AUX_HEADERS}  )
+TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm au )
+
+INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
+INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
+
+
+#ADD_EXECUTABLE(system_test  ${SOURCES_TEST} ${SOURCES} ${HEADERS})
+#TARGET_LINK_LIBRARIES(system_test lm au )

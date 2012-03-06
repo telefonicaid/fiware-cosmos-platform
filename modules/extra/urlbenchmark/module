@@ -1,0 +1,237 @@
+Module urlbenchmark
+{
+
+	title	"urlbenchmark  module"
+	author 	"Gregorio Escalada (jges@tid.es)"
+	version "0.1"
+	
+}
+
+# ---------------------------------------------------------------------------
+# datas
+# ---------------------------------------------------------------------------
+
+data URLHit
+{	
+	system.UInt count;
+	system.String URL;
+}
+
+data TopHits
+{
+	vector urlbenchmark.URLHit hit;     # Vector of hits, an URL and a count
+}
+
+
+# -------------------------------------------------
+# Operations with data
+# -------------------------------------------------
+
+generator fake_visits_fixed
+{
+	out	system.UInt system.String  # UserId - URL visited
+
+	helpLine "Generate a fixed set of visits from a group of of users and a number of URLs"
+}
+
+generator fake_visits
+{
+	out	system.UInt system.String  # UserId - URL visited
+
+	helpLine "Generate a fixed set of visits from a group of of users and a number of URLs"
+}
+
+generator fake_servers
+{
+	out	system.String system.UInt  # ServerName - Category classification
+
+	helpLine "Generate a fixed set of servers with one associated category each"
+}
+
+parserOut export_generated_visits
+{
+	in system.UInt system.String  # UserId - URL visited
+	
+	helpLine "Dumps to text the generated visits"
+}
+
+parserOut export_generated_servers
+{
+	in system.String system.UInt  # ServerName - Category classification
+	
+	helpLine "Dumps to text the servers classification"
+}
+
+map map_visits
+{
+	in system.UInt system.String  # UserId - URL visited
+	out system.String system.String   # ServerName - Path (URL without ServerName)
+}
+
+parser parse_visits
+{
+	out system.String system.String   # ServerName - Path (URL without ServerName)
+	
+	helpLine "Parse input text with visits information"
+}
+
+parser parse_servers
+{
+	out system.String system.UInt   # ServerName - Category
+	
+	helpLine "Parse input text with server classification"
+}
+
+reduce join_URLs_category_per_server
+{
+	in system.String system.String           # ServerName - Path (URL without ServerName)
+	in system.String system.UInt             # ServerName - Category
+	out system.UInt urlbenchmark.URLHit       # Category -  URLS visited per server
+
+	helpLine "From the visits information and server classification, classifies the individual URLs per server, and selects the top 'urlbenchmark.num_hits' (per server)"
+}
+
+reduce select_top_hits_per_category
+{
+	in system.UInt urlbenchmark.URLHit       # Category -  URLS visited per server
+	out system.UInt urlbenchmark.TopHits     # Category - Top URLS visited for all the servers
+
+	helpLine "From the classification of URLs per server, selects the top 'urlbenchmark.num_hits' (globally)"
+}
+
+parserOut export_top_hits_per_category
+{
+	in system.UInt urlbenchmark.TopHits      # Category - Top URLS visited 
+	
+	helpLine "Dumps to text the top hits visited per category"
+}
+
+script GenerateFakes
+{
+	out	system.UInt system.String     # UserId - URL visited                        ($1)
+	out system.String system.String   # ServerName - Path (URL without ServerName)  ($2)
+	out	system.String system.UInt     # ServerName - Category classification        ($3)
+
+	
+	helpLine "Generates fake data"
+	
+	help
+	{
+		"Generates fake data"
+		"out system.UInt system.String     UserId - URL visited                        ($1)"
+		"out system.String system.String   ServerName - Path (URL without ServerName)  ($2)"
+		"out system.String system.UInt     ServerName - Category classification        ($3)"
+	}
+	
+	code
+	{
+	urlbenchmark.fake_visits $1 -create -clear;
+	urlbenchmark.map_visits $1 $2 -create -clear;
+	urlbenchmark.fake_servers $3 -create -clear;
+	
+	urlbenchmark.export_generated_visits $1 $1.txt -clear -create;
+	urlbenchmark.export_generated_servers $3 $3.txt -clear -create;
+	#download urls.txt urls.txt;
+	#download servers.txt servers.txt;
+	#download categories.txt categories.txt;
+	}
+}
+
+script ParseVisitsServers
+{
+	out	system.String system.String   # ServerName - Path (URL without ServerName)  ($1)
+	out	system.String system.UInt     # ServerName - Category classification        ($2)
+
+	
+	helpLine "Parses visits and servers information from text"
+	
+	help
+	{
+		"Parses visits and servers information from text"
+		"out	system.String system.String   ServerName - Path (URL without ServerName)  ($1)"
+		"out	system.String system.UInt     ServerName - Category classification        ($2)"
+		"$1.txt and $2.txt are expected to have been uploaded previously"
+	}
+	
+	code
+	{
+	urlbenchmark.parse_visits $1.txt $1 -create -clear;
+	urlbenchmark.parse_servers $2.txt $2 -create -clear;
+	}
+}
+
+script ProcessURLs
+{
+	in	system.String system.String      # ServerName - Path (URL without ServerName) ($1)
+	in	system.String system.UInt        # ServerName - Category classification       ($2)
+	out system.UInt urlbenchmark.TopHits  # Category - Top hits                        ($3)
+	
+	helpLine "Joins URLs with category info, and selects the top 'urlbenchmark.num_hits'"
+	
+	help
+	{
+		"Joins URLs with category info, and selects the top 'urlbenchmark.num_hits'"
+		"in	system.String system.String       ServerName - Path (URL without ServerName) ($1)"
+		"in	system.String system.UInt         ServerName - Category classification       ($2)"
+		"out system.UInt urlbenchmark.TopHits  Category - Top hits                        ($3)"
+	}
+
+	code
+	{
+	urlbenchmark.join_URLs_category_per_server $1 $2 $3.server -create -clear;
+	urlbenchmark.select_top_hits_per_category $3.server $3 -create -clear;
+	
+	urlbenchmark.export_top_hits_per_category $3 $3.txt;
+	}
+}
+
+script test_1
+{
+	out txt txt                # TopHits per category
+	
+	helpLine "tests the complete flow, with small data size"
+	
+	code
+	{
+	set urlbenchmark.num_users           10;
+	set urlbenchmark.num_servers           10;
+	set urlbenchmark.num_paths_per_server           10;
+	set urlbenchmark.num_urls_per_user           7;
+	set urlbenchmark.num_categories           4;
+	set urlbenchmark.num_hits           3;
+	
+	urlbenchmark.fake_visits_fixed urls -create -clear;
+	urlbenchmark.fake_servers servers -create -clear;
+	urlbenchmark.map_visits urls serverPath -create -clear;
+	
+	urlbenchmark.join_URLs_category_per_server serverPath servers catHitsperServer -create -clear;
+	urlbenchmark.select_top_hits_per_category catHitsperServer catTopHits -create -clear;
+	urlbenchmark.export_top_hits_per_category catTopHits $1 -create -clear;
+	}
+}
+
+script test_2
+{
+	out txt txt                # TopHits per category
+	
+	helpLine "tests the complete flow, with medium data size"
+	
+	code
+	{
+	set urlbenchmark.num_users               100000;
+	set urlbenchmark.num_servers             1000;
+	set urlbenchmark.num_paths_per_server    100;
+	set urlbenchmark.num_urls_per_user       100;
+	set urlbenchmark.num_categories          10;
+	set urlbenchmark.num_hits                5;
+		
+	urlbenchmark.fake_visits_fixed urls -create -clear;
+	urlbenchmark.fake_servers servers -create -clear;
+	urlbenchmark.map_visits urls serverPath -create -clear;
+	
+	urlbenchmark.join_URLs_category_per_server serverPath servers catHitsperServer -create -clear;
+	urlbenchmark.select_top_hits_per_category catHitsperServer catTopHits -create -clear;
+	#urlbenchmark.export_top_hits_per_category catTopHits $1 -create -clear;
+	}
+}
+

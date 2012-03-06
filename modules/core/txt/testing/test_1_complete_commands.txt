@@ -1,0 +1,7 @@
+remove_all
+add quijote -txt
+upload quijote.txt quijote
+txt.parser_words quijote parsed_quijote -clear -create
+txt.word_count parsed_quijote out -clear -create
+rm_local out
+download out out

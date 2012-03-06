@@ -1,0 +1,88 @@
+add jun -txt
+add home -txt
+add work -txt
+add jun.cdrstxt -txt
+add jun.userstxt -txt
+add jun.cellstxt -txt
+add jun.centroides_client.txt -txt
+add jun.centroidesBts.txt -txt
+add jun.medoides_pearson_nodobts.txt -txt
+
+
+
+upload callsTxt jun.cdrstxt 
+upload GASSET_clientes_awk.txt jun.userstxt 
+upload GASSET_CELDAS_RED_OCT2009.dat jun.cellstxt 
+
+upload cen20_kmeans_nod_euclidea.txt jun.centroides_client.txt 
+upload cen5_kmeans_bts_euclidea.txt jun.centroidesBts.txt 
+upload med20_pam_nodbts_pearson.txt jun.medoides_pearson_nodobts.txt 
+
+
+#Script global
+mob.script_extract_POIs jun
+	# Parsing
+	cdr.parse_mob_cdrs jun.cdrstxt jun.cdrs_mob -create -clear
+	cdr.parse_clients jun.userstxt jun.users -create -clear
+	cdr.convert_client jun.users jun.clients -create -clear
+	cdr.parse_cell_catalogue_position jun.cellstxt jun.cells -create -clear
+
+	mob2.parse_mongodb_mob_clusters jun.centroides_client.txt -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=clientClusters
+	mob2.parse_mongodb_mob_clusters jun.centroidesBts.txt -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=btsClusters
+	mob2.parse_mongodb_mob_clusters jun.medoides_pearson_nodobts.txt -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=clientbtsClusters
+
+	#Filter cdrs
+	mob2.filter_cellnoinfo jun.cdrs_mob jun.cdrsinfo jun.cdrsnoinfo -create -clear
+	mob2.join_bts_node jun.cdrsinfo jun.cells jun.clients_bts jun.bts_comms jun.cdrsnobts jun.vi_telmonth_bts -create -clear
+	mob2.node_bts_counter jun.clients_bts jun.clients_btscounter -create -clear
+	mob2.node_mobInfo jun.clients_btscounter jun.clients_info -create -clear
+
+	#Spread array by client and bts
+	mob2.repbts_spread_nodebts jun.clients_info jun.clients_info_spread -create -clear
+	mob2.repbts_aggbybts jun.clients_info_spread jun.clients_info_aggbybts -create -clear
+	mob2.repbts_filter_num_comms jun.clients_info_aggbybts jun.cdrsnoinfo jun.cdrsnobts jun.clients_info_filtered -create -clear
+	mob2.repbts_join_dist_comms jun.clients_info_aggbybts jun.clients_info_filtered jun.clients_info_bts_perc -create -clear
+	mob2.repbts_get_representative_bts jun.clients_info_bts_perc jun.clients_repbts -create -clear
+
+mob2.script_label_POIs
+	mob2.vector_filt_clients jun.cdrs_mob jun.clients_info_filtered jun.cdrs_filtered -create -clear
+	mob2.vector_spread_nodedayhour jun.cdrs_filtered jun.clients_info_spread -create -clear
+	mob2.vector_get_ncoms_nodedayhour jun.clients_info_spread jun.cliVec_numcoms -create -clear
+	mob2.vector_create_node_dayhour jun.cliVec_numcoms jun.cliVec_group -create -clear
+	mob2.vector_fuse_node_daygroup jun.cliVec_group jun.vector_client -create -clear
+	mob2.vector_normalized jun.vector_client jun.vector_client_norm -create -clear
+	mob2.cluster_client_get_min_distance jun.vector_client_norm jun.vector_client_cluster  -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=clientClusters
+	mob2.vector_filter_bts jun.bts_comms jun.bts_counts -create -clear
+	mob2.vector_sum_coms_bts jun.bts_counts jun.bts_sum_coms -create -clear
+	mob2.vector_create_node_dayhour jun.bts_sum_coms jun.bts_dayhour -create -clear
+	mob2.vector_fuse_node_daygroup jun.bts_dayhour jun.vector_bts -create -clear
+	mob2.vector_normalized jun.vector_bts jun.vector_bts_norm -create -clear
+	mob2.cluster_bts_get_min_distance jun.vector_bts_norm jun.vector_bts_cluster -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=btsClusters
+
+	mob2.vector_spread_nodbts jun.clients_info jun.clientsbts_spread -create -clear
+	mob2.vector_sum_groupcomms jun.clientsbts_spread jun.clientsbts_sum -create -clear
+	mob2.vector_filt_clientbts jun.clientsbts_sum jun.clients_repbts jun.clientsbts_repbts -create -clear
+	mob2.vector_create_node_dayhour jun.clientsbts_repbts jun.clientsbts_group -create -clear
+	mob2.vector_fuse_node_daygroup jun.clientsbts_group jun.vector_clientbts -create -clear
+	mob2.vector_normalized jun.vector_clientbts jun.vector_clientbts_norm -create -clear
+	mob2.cluster_clientbts_get_min_distance jun.vector_clientbts_norm jun.points_of_interest_temp jun.vector_clientbts_cluster -create -clear mongo.ip=localhost mongo.db=mob2 mongo.collection=clientbtsClusters
+
+	mob2.cluster_agg_node_cluster jun.points_of_interest_temp jun.vector_client_cluster jun.points_of_interest_temp2 -create -clear
+	mob2.cluster_agg_bts_cluster jun.points_of_interest_temp2 jun.vector_bts_cluster jun.bts_comarea jun.points_of_interest -create -clear
+	mob2.vector_pois_out jun.points_of_interest jun.pointsOfInterestTxt -create -clear
+	mob2.vector_oneid_out jun.vector_client_cluster jun.vectorClientTxt -create -clear
+	mob2.vector_nodbts_out jun.vector_clientbts_cluster jun.vectorClientBtsTxt -create -clear
+	mob2.vector_oneid_out jun.vector_bts_cluster jun.vectorBtsTxt -create -clear
+
+
+mob2.script_extract_MIVs
+	mob2.MobVar_calcvariables vi_telmonth_bts vi_telmonth_mobvars -create -clear
+	mob2.MobVar_fusiontotalvars vi_telmonth_mobvars vi_client_fuse -create -clear
+	mob2.MobVar_indVars_out vi_client_fuse viClientFuseTxt -create -clear
+	mob2.MobVar_delete_period vi_telmonth_bts vi_telmonth_bts_acc -create -clear
+	mob2.MobVar_calcvariables vi_telmonth_bts_acc vi_telmonth_mobvars_acc -create -clear
+	mob2.MobVar_fusiontotalvars vi_telmonth_mobvars_acc vi_client_fuse_acc -create -clear
+	mob2.MobVar_indVars_accumulated_out vi_client_fuse_acc viClientFuseAccTxt -create -clear
+
+
+

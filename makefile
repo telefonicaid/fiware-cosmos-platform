@@ -55,6 +55,13 @@ prepare_coverage:
 	mkdir BUILD_COVERAGE || true
 	cd BUILD_COVERAGE; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCOVERAGE=True -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
 
+prepare_release_all:
+	mkdir BUILD_RELEASE || true
+	cd BUILD_RELEASE; cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_MODULES=True -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
+
+prepare_debug_all:
+	mkdir BUILD_DEBUG || true
+	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_MODULES=True -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
 
 prepare: prepare_release prepare_debug
 
@@ -107,31 +114,29 @@ clean:
 	make -C BUILD_RELEASE clean	
 
 # ------------------------------------------------
-# RELEASE Version
+# Platform RELEASE version
 # ------------------------------------------------
-
 
 release: prepare_release
 	make -C BUILD_RELEASE -j $(CPU_COUNT)
 
 # ------------------------------------------------
-# RELEASE Version
+# Platform STRICT compilation
 # ------------------------------------------------
-
 
 strict: strict_compilation
 strict_compilation: prepare_strict
 	make -C BUILD_STRICT -j $(CPU_COUNT)
 
 # ------------------------------------------------
-# DEBUG Version
+# Platform DEBUG Version
 # ------------------------------------------------
 
 debug: prepare_debug
 	make -C BUILD_DEBUG -j $(CPU_COUNT)
 
 # ------------------------------------------------
-# DEBUG Version
+# Platform Code Coverage Version
 # ------------------------------------------------
 
 coverage: prepare_coverage
@@ -143,6 +148,21 @@ coverage: prepare_coverage
 	lcov -r coverage/samson.info "/usr/include/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "/usr/local/include/*" -o coverage/samson.info
 	genhtml -o coverage coverage/samson.info
+
+# ------------------------------------------------
+# Platform + Modules RELEASE version
+# ------------------------------------------------
+
+all: release_all
+release_all: prepare_release_all
+	make -C BUILD_RELEASE -j $(CPU_COUNT)
+
+# ------------------------------------------------
+# Platform + Modules DEBUG version
+# ------------------------------------------------
+
+debug_all: prepare_debug_all
+	make -C BUILD_DEBUG -j $(CPU_COUNT)
 
 # ------------------------------------------------
 # Testing

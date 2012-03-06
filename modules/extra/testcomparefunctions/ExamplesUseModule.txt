@@ -1,0 +1,33 @@
+// Create datasets
+testcomparefunctions.gen_calls calls -create -clear
+testcomparefunctions.gen_users users -create -clear
+testcomparefunctions.gen_companys companys -create -clear
+
+testcomparefunctions.export_users users users.txt -create -clear
+download users.txt users.txt
+
+
+testcomparefunctions.red_userExpense_by_company calls users company_user user_filled -create -clear
+
+testcomparefunctions.red_acumCompany user_filled user_filled.txt -create -clear
+download user_filled.txt user_filled.txt
+
+testcomparefunctions.red_expense_by_companyAge company_user company_user.txt -clear -create
+download company_user.txt company_user.txt
+
+
+testcomparefunctions.red_top10_by_company company_user company_user_top10 -clear -create
+testcomparefunctions.export_top10_by_company company_user_top10 company_user_top10.txt -clear -create
+download company_user_top10.txt company_user_top10.txt
+
+testcomparefunctions.red_alphabetically_by_company company_user_top10 company_user_top10_alph.txt -create -clear
+download company_user_top10_alph.txt company_user_top10_alph.txt
+
+
+# SELECT operations
+
+set selectedFieldStr "User.Address.ZIP"
+testcomparefunctions.map_select users zip_codes -clear -create
+testcomparefunctions.print_select users zip.txt -clear -create
+download zip.txt zip.txt
+

@@ -356,18 +356,11 @@ namespace samson {
             return true;
         }
         
-        void StreamOperationForward::review()
+        void StreamOperationForward::push( BlockList *list )
         {
-            // Default message for this stream operation if 'sheduceQueueTasks' is not called...
-            last_review = "not considered";
-            
-            // Extract data from input queue to the "input" blocklist ( no size limit... all blocks )
-            Queue *input = streamManager->getQueue( input_queues[0] );
-            
             // Update history information since we will absorb all data included in this list
-            input->list->update( history_block_info );
-            
-            getBlockList("input")->extractFrom( input->list , 0 );
+            list->update( history_block_info );
+            getBlockList("input")->copyFrom( list , 0 );
         }
         
         size_t StreamOperationForward::getNextQueueTaskPriorityParameter( )
@@ -605,15 +598,12 @@ namespace samson {
             return true;
         }
         
-        void StreamOperationUpdateState::review()
+        void StreamOperationUpdateState::push( BlockList *list )
         {
-            
-            // Get the input queue
-            Queue *input = streamManager->getQueue( input_queues[0] );
-            
+                        
             // Extract data from input queue to the "input" blocklist ( no size limit... all blocks )
             BlockList tmp;
-            tmp.extractFrom( input->list , 0 );
+            tmp.copyFrom( list , 0 );
             
             // Update history information since we will absorb all data included in this list
             tmp.update( history_block_info );
@@ -832,18 +822,11 @@ namespace samson {
             return true;
         }
         
-        void StreamOperationForwardReduce::review()
+        void StreamOperationForwardReduce::push( BlockList *list )
         {
-            last_review = "not considered";
-            
-            // Extract data from input queue to the "input" blocklist ( no size limit... all blocks )
-            Queue *input = streamManager->getQueue( input_queues[0] );
-
             // Update history information since we will absorb all data included in this list
-            input->list->update( history_block_info );
-            
-            getBlockList("input")->extractFrom( input->list , 0 );
-            
+            list->update( history_block_info );
+            getBlockList("input")->copyFrom( list , 0 );
         }
         
         size_t StreamOperationForwardReduce::getNextQueueTaskPriorityParameter( )

@@ -163,6 +163,68 @@ namespace samson {
             LM_W(("Unknown notification at StreamManager"));
         }
         
+        std::vector<std::string> StreamManager::getConnectedQueuesForQueue( std::string queue_name )
+        {
+            QueueConnections* connections = queue_connections.findInMap( queue_name );
+            if( !connections )
+                return std::vector<std::string>();
+            else
+                return  connections->getTargetQueues();
+        }
+        
+        std::vector<std::string> StreamManager::getStreamOperationsForQueues( std::string queue )
+        {
+        
+            std::vector<std::string> stream_operation_names;
+            
+            // First review all stream operations
+            au::map <std::string , StreamOperation>::iterator it_stream_operations;
+            for (it_stream_operations = stream_operations.begin() ; it_stream_operations != stream_operations.end() ; it_stream_operations++ )
+            {
+                StreamOperation *stream_operation = it_stream_operations->second;
+                
+                if( stream_operation->input_queues.size() > 0 )
+                    if( stream_operation->input_queues[0] == queue )
+                        stream_operation_names.push_back( it_stream_operations->first );
+            }
+            return stream_operation_names;
+        }
+        
+        
+        void StreamManager::review_queue( std::string queue_name )
+        {
+            
+            // Get or create the queue
+            Queue *queue = getQueue( queue_name );
+            
+            // Get the list of stream-operations and connections for this queue
+            std::vector<std::string> stream_operation_names = getStreamOperationsForQueues( queue_name );
+            std::vector<std::string> queue_connections = getConnectedQueuesForQueue( queue_name );
+            
+            if( ( stream_operation_names.size() > 0 ) || (queue_connections.size() > 0 ) )
+            {
+                // Extract data to be push to all connectd queues and operations...
+                // Extract all blocks
+                BlockList tmp( "queue_to_connections_or_stream_operations" );
+                tmp.extractFrom( queue->list );
+                
+                
+                // Connected queues
+                for( size_t i = 0 ; i < queue_connections.size() ; i++ )
+                    addBlocks( queue_connections[i] , &tmp );
+                
+                // Stream operations
+                for( size_t i = 0 ; i < stream_operation_names.size() ; i++ )
+                {
+                    StreamOperation * stream_operation = stream_operations.findInMap( stream_operation_names[i] );
+                    if (stream_operation)
+                        stream_operation->push( &tmp );
+                }
+            }
+            
+            // review all the automatic operations ( maybe we can only review affected operations in the future... )
+            reviewStreamOperations();            
+        }
         
         void StreamManager::addBlocks( std::string queue_name ,  BlockList *list )
         {
@@ -176,26 +238,9 @@ namespace samson {
             
             // Add the blocks to the queue
             queue->push( list );
-            
-            // Move data following queue_connection rules
-            QueueConnections* connections = queue_connections.findInMap( queue_name );
-            if( connections )
-            {
-                // Extract all blocks
-                BlockList tmp( "process_queue_connections" );
-                tmp.extractFrom( queue->list );
 
-                std::set<std::string>::iterator it_target_queues;
-                for( it_target_queues = connections->target_queues.begin() ; it_target_queues != connections->target_queues.end() ; it_target_queues++ )
-                {
-                    std::string target_queue = *it_target_queues;
-                    addBlocks( target_queue , &tmp );
-                }
-                
-            }
-            
-            // review all the automatic operations ( maybe we can only review affected operations in the future... )
-            reviewStreamOperations();            
+            // Review if content of this queue is redistributed
+            review_queue( queue_name );
         }
      
         void StreamManager::add( StreamOperation* operation )
@@ -206,6 +251,10 @@ namespace samson {
                 delete previous;
 
             stream_operations.insertInMap( operation->name , operation );
+            
+            // Review input queue
+            if ( operation->input_queues.size() > 0 )
+                review_queue( operation->input_queues[0] );
             
             // review all the operations...
             reviewStreamOperations();
@@ -379,8 +428,7 @@ namespace samson {
                     }
                     
                     //  Review operation
-                    stream_operation->review(); // Basically take input data for input....
-                    
+                    stream_operation->last_review = "Pending revisions...";
                     
                     // Let's see if we are really the next stream operation to be schedule next task...
                     size_t tmp_max_priority_rank = stream_operation->getNextQueueTaskPriorityParameter();
@@ -402,7 +450,7 @@ namespace samson {
                 double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
                 if ( memory_usage >= 1.0 )
                 {
-                    LM_W(("Not schedulling new stream-tasks since memory usage is %s ( criteria >= 1.0 )", au::str_percentage( memory_usage ).c_str() ));
+                    LM_W(("Not schedulling new stream-tasks since memory usage is %s >= 100%", au::str_percentage( memory_usage ).c_str() ));
                     return;
                 }
                 
@@ -1072,6 +1120,9 @@ namespace samson {
             QueueConnections *connections = queue_connections.findOrCreate(source_queue);
             connections->queue = source_queue;
             connections->add_connection( target_queue );
+            
+            // Review if there is data waiting for you
+            review_queue( source_queue );
         }
         
         void StreamManager::remove_queue_connection( std::string source_queue , std::string target_queue )

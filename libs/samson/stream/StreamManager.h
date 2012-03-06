@@ -100,6 +100,14 @@ namespace samson {
             StreamManager( ::samson::SamsonWorker* worker );
 
             // ------------------------------------------------------------
+            // Operations to review how data is redistributed for a queue
+            // ------------------------------------------------------------
+            
+            std::vector<std::string> getConnectedQueuesForQueue( std::string queue );
+            std::vector<std::string> getStreamOperationsForQueues( std::string queue );
+            void review_queue( std::string queue_name );
+            
+            // ------------------------------------------------------------
             // Operations over queues
             // ------------------------------------------------------------
             

@@ -164,10 +164,7 @@ namespace samson {
             
             int getPriority();
             
-            virtual void review()
-            {
-                LM_X(1,("Internal error")); // This should be always subclased
-            }
+            virtual void push( BlockList *list )=0;
             
             int getCoreSeconds()
             {
@@ -209,7 +206,7 @@ namespace samson {
         public:
             
             bool isValid();
-            void review();
+            void push( BlockList *list );
             
             virtual std::string getStatus()
             {
@@ -275,7 +272,7 @@ namespace samson {
             
             
             bool isValid();
-            void review();
+            void push( BlockList *list );
             
             void finish_update_division( int division )
             {
@@ -304,7 +301,7 @@ namespace samson {
         public:
             
             bool isValid();
-            void review();
+            void push( BlockList *list );
 
             virtual std::string getStatus()
             {

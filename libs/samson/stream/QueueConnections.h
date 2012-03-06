@@ -36,7 +36,6 @@ namespace samson {
             target_queues.erase( target_queue );
         }
         
-        
         bool hasConnections()
         {
             return ( target_queues.size() != 0 );
@@ -49,6 +48,15 @@ namespace samson {
 
             add( record , "connected to.." , str_target_queues() , "left,different" );
             
+        }
+        
+        std::vector<std::string> getTargetQueues()
+        {
+            std::vector<std::string> queues;
+            std::set<std::string>::iterator it_target_queues;
+            for ( it_target_queues = target_queues.begin() ; it_target_queues != target_queues.end() ; it_target_queues++  )
+                queues.push_back( *it_target_queues );
+            return queues;
         }
         
         std::string str_target_queues()

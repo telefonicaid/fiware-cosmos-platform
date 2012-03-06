@@ -116,6 +116,11 @@ endif (HAVE_GTEST)
 #
 set (CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Rogue")
 
+#
+# Indicate this is an SVN build
+set (SVN_BUILD TRUE)
+
+ADD_SUBDIRECTORY(modules)
 
 #
 # Continuing if OK

@@ -31,8 +31,8 @@ endif (SAMSONMODULEPARSER)
 IF (SVN_BUILD)
     ADD_CUSTOM_COMMAND(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
-        COMMAND samsonModuleParser ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/module ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME} Module
-        MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/module
+        COMMAND samsonModuleParser ${CMAKE_CURRENT_SOURCE_DIR}/module ${CMAKE_CURRENT_SOURCE_DIR} Module
+        MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/module
     )
 ELSE (NOT SVN_BUILD)
     ADD_CUSTOM_COMMAND(
@@ -47,7 +47,7 @@ SET (SOURCES
 )
 
 # Take all .cpp file in the compilation
-FILE( GLOB ADDITIONAL_SOURCES ${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}/*.cpp  )
+FILE( GLOB ADDITIONAL_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp  )
 
 # Install headers to be used by other modules
 FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
@@ -82,8 +82,8 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 # Include directory pointing to current dir and /usr/local/include
 IF (SVN_BUILD)
     include_directories("${PROJECT_SOURCE_DIR}/libs")
-    include_directories("${PROJECT_SOURCE_DIR}/modules/${MODULE_NAME}")
-    include_directories("${PROJECT_SOURCE_DIR}/modules/system")
+    include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+    include_directories("${PROJECT_SOURCE_DIR}/modules/core/system")
     include_directories("${PROJECT_BINARY_DIR}/modules/${MODULE_NAME}")
 ELSE (NOT SVN_BUILD)
     include_directories("${PROJECT_SOURCE_DIR}")

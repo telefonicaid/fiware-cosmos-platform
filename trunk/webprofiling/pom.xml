@@ -511,8 +511,8 @@
     </distributionManagement>
 
     <modules>
+        <module>individualprofile</module>
         <module>kpicalculation</module>
-
     </modules>
 
     <properties>

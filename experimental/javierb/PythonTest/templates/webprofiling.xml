@@ -1,4 +1,4 @@
-<action name="PAGE_VIEWS_PROT">
+<action name="aggregation">
 	<map-reduce>
 		<job-tracker>${jobTracker}</job-tracker>
 		<name-node>${nameNode}</name-node>
@@ -97,6 +97,6 @@
 			</property>
 		</configuration>
 	</map-reduce>
-	<ok to="end"/>
+	<ok to="joining"/>
 	<error to="fail"/>
 </action>

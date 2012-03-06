@@ -33,7 +33,7 @@
 
     <parent>
         <artifactId>webprofiling</artifactId>
-        <groupId>es.tid.ps</groupId>
+        <groupId>es.tid.bdp</groupId>
         <version>${env.ProductVersion}${env.SVN_REVISION}</version>
     </parent>
 
@@ -90,7 +90,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>es.tid.ps.kpicalculation.KpiMain</mainClass>
+                            <mainClass>es.tid.bdp.kpicalculation.KpiMain</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -124,7 +124,7 @@
                     <transformers>
                         <transformer
                             implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>es.tid.ps.kpicalculation.KpiMain</mainClass>
+                            <mainClass>es.tid.bdp.kpicalculation.KpiMain</mainClass>
                         </transformer>
                     </transformers>
                 </configuration>

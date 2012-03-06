@@ -1,17 +1,16 @@
 package es.tid.bdp.utils.io.output;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
-import java.io.IOException;
-
+import com.twitter.elephantbird.mapreduce.io.ProtobufBlockReader;
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import com.twitter.elephantbird.util.TypeRef;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.google.protobuf.Message;
-import com.twitter.elephantbird.mapreduce.io.ProtobufBlockWriter;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import es.tid.bdp.utils.parse.ParserAbstract;
 import es.tid.ps.kpicalculation.data.WebLogPB.WebLog;
@@ -19,21 +18,18 @@ import es.tid.ps.kpicalculation.data.WebLogPB.WebLog;
 public class ProtoBufOutStreamTest {
 
     private ParserAbstract parser;
+    private ByteArrayOutputStream output;
+    private ProtoBufOutStream instance;
 
     @Before
     public void setup() {
-        parser = (ParserAbstract) mock(ParserAbstract.class);
-
+        this.parser = mock(ParserAbstract.class);
+        this.output = new ByteArrayOutputStream();
+        this.instance = new ProtoBufOutStream(output, parser);
     }
 
     @Test
-    public void parserMessageTest() throws IOException {
-        ProtoBufOutStream out = new ProtoBufOutStream(null, parser);
-        ProtobufBlockWriter<Message> writer = (ProtobufBlockWriter<Message>) mock(ProtobufBlockWriter.class);
-
-        out.setWriter(writer);
-
-        
+    public void parserMessageTest() throws Exception {
         WebLog returned = WebLog.newBuilder().setVisitorId("196971a1e4081456")
                 .setFullUrl("http://api.facebook.com/restserver.php")
                 .setDate("30Nov2010000005").setHttpStatus("200")
@@ -43,21 +39,14 @@ public class ProtoBufOutStreamTest {
 
         String str = "test\n";
         byte[] buffer = str.getBytes();
-        out.write(buffer, 0, buffer.length);
-        
-        
-        verify(writer, times(1)).write(returned);
+        instance.write(buffer, 0, buffer.length);
+        instance.close();
 
+        assertOutput(returned);
     }
-    
+
     @Test
-    public void parserMessage2partsLineTest() throws IOException {
-        ProtoBufOutStream out = new ProtoBufOutStream(null, parser);
-        ProtobufBlockWriter<Message> writer = (ProtobufBlockWriter<Message>) mock(ProtobufBlockWriter.class);
-
-        out.setWriter(writer);
-
-        
+    public void parserMessage2partsLineTest() throws Exception {
         WebLog returned = WebLog.newBuilder().setVisitorId("196971a1e4081456")
                 .setFullUrl("http://api.facebook.com/restserver.php")
                 .setDate("30Nov2010000005").setHttpStatus("200")
@@ -67,26 +56,21 @@ public class ProtoBufOutStreamTest {
 
         String str = "test";
         byte[] buffer = str.getBytes();
-        out.write(buffer, 0, buffer.length);
-        
-        
+        instance.write(buffer, 0, buffer.length);
+
+
         str = "aa\n";
         byte[] buffer2 = str.getBytes();
-        out.write(buffer2, 0, buffer2.length);
-        
-        verify(writer, times(1)).write(returned);
+        instance.write(buffer2, 0, buffer2.length);
 
+        instance.close();
+
+        assertOutput(returned);
     }
 
-    
+
     @Test
-    public void parserMessage2LinesTest() throws IOException {
-        ProtoBufOutStream out = new ProtoBufOutStream(null, parser);
-        ProtobufBlockWriter<Message> writer = (ProtobufBlockWriter<Message>) mock(ProtobufBlockWriter.class);
-
-        out.setWriter(writer);
-
-        
+    public void parserMessage2LinesTest() throws Exception {
         WebLog returned1 = WebLog.newBuilder().setVisitorId("testaa")
                 .setFullUrl("http://api.facebook.com/restserver.php")
                 .setDate("30Nov2010000005").setHttpStatus("200")
@@ -102,26 +86,20 @@ public class ProtoBufOutStreamTest {
 
         String str = "test";
         byte[] buffer = str.getBytes();
-        out.write(buffer, 0, buffer.length);
-        
-        
+        instance.write(buffer, 0, buffer.length);
+
+
         str = "aa\ntestbb\n";
         byte[] buffer2 = str.getBytes();
-        out.write(buffer2, 0, buffer2.length);
-        
-        verify(writer, times(1)).write(returned1);
-        verify(writer, times(1)).write(returned2);
+        instance.write(buffer2, 0, buffer2.length);
 
+        instance.close();
+
+        assertOutput(returned1, returned2);
     }
-    
+
     @Test
-    public void closeBufferFullTest() throws IOException {
-        ProtoBufOutStream out = new ProtoBufOutStream(null, parser);
-        ProtobufBlockWriter<Message> writer = (ProtobufBlockWriter<Message>) mock(ProtobufBlockWriter.class);
-
-        out.setWriter(writer);
-
-        
+    public void closeBufferFullTest() throws Exception {
         WebLog returned1 = WebLog.newBuilder().setVisitorId("testaa")
                 .setFullUrl("http://api.facebook.com/restserver.php")
                 .setDate("30Nov2010000005").setHttpStatus("200")
@@ -131,10 +109,24 @@ public class ProtoBufOutStreamTest {
 
         String str = "test";
         byte[] buffer = str.getBytes();
-        out.write(buffer, 0, buffer.length);
-        
-        out.close();
-        
-        verify(writer, times(1)).write(returned1);
+        instance.write(buffer, 0, buffer.length);
+        instance.close();
+
+        assertOutput(returned1);
+    }
+
+    private void assertOutput(WebLog... expectedWebLogs) throws Exception {
+        ByteArrayInputStream input = new ByteArrayInputStream(this.output.toByteArray());
+        ProtobufBlockReader<WebLog> reader = new ProtobufBlockReader<WebLog>(input,
+                new TypeRef(WebLog.class) {});
+        ProtobufWritable<WebLog> wrapper = ProtobufWritable.newInstance(WebLog.class);
+        for (WebLog expected : expectedWebLogs) {
+            assertTrue("Expected message" + expected + "but none was found",
+                    reader.readProtobuf(wrapper));
+            assertEquals(expected, wrapper.get());
+        }
+        boolean hasMore = reader.readProtobuf(wrapper);
+        assertFalse("No more messages expected but " + wrapper.get() +
+                "was found", hasMore);
     }
 }

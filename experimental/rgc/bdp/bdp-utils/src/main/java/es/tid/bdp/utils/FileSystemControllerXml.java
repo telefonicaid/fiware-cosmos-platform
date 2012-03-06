@@ -58,8 +58,6 @@ public class FileSystemControllerXml extends FileSystemControllerAbstract {
                         .currentThread().getContextClassLoader()
                         .getResourceAsStream("filesystem.xsd")) }));
 
-        ;
-
         SAXParser parser = factory.newSAXParser();
 
         XMLReader reader = parser.getXMLReader();
@@ -72,7 +70,6 @@ public class FileSystemControllerXml extends FileSystemControllerAbstract {
         DefaultHandler handler = new FileDescriptorHandler();
 
         saxParser.parse(path, handler);
-
     }
 
     @Override

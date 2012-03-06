@@ -8,9 +8,9 @@ import java.util.regex.Pattern;
 import com.google.protobuf.Message;
 
 /**
- * 
+ *
  * @author rgc
- * 
+ *
  */
 public abstract class ParserAbstract {
 
@@ -36,7 +36,7 @@ public abstract class ParserAbstract {
     protected void init(final String pattern, final String attr,
             final String separator) {
         this.pattern = Pattern.compile(pattern);
-        this.matcher = this.pattern.matcher(null);
+        this.matcher = this.pattern.matcher("");
 
         this.regPosition = new HashMap<String, Integer>();
         String[] array = attr.split(separator);
@@ -48,7 +48,7 @@ public abstract class ParserAbstract {
     /**
      * Method that parses a hexadecimal string to a Long. If the string is empty
      * return 0L
-     * 
+     *
      * @param strNum
      *            hexadecimal string for parsing.
      * @return a long the sting value parsed
@@ -62,7 +62,7 @@ public abstract class ParserAbstract {
 
     /**
      * Method parses a string and return a Dynamic Protocol buffer message
-     * 
+     *
      * @param line
      *            row data for parsing it
      * @return a encoding data in a Dynamic Protocol buffer message
@@ -81,7 +81,7 @@ public abstract class ParserAbstract {
 
     /**
      * This abstract method is used for create new message.
-     * 
+     *
      * @param matcher
      *            Object that will match the given input against this pattern
      * @return a encoding data in a Dynamic Protocol buffer message

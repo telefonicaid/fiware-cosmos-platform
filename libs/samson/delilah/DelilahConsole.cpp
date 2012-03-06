@@ -519,6 +519,12 @@ namespace samson
             return 0;
         }
         
+        if( mainCommand == "reload_modules" )
+        {
+            ModulesManager::shared()->reloadModules();
+            writeWarningOnConsole("Modules at delilah client has been reloaded.");
+        }
+        
         if ( mainCommand == "cluster" )
         {
             // Interact with the network layer

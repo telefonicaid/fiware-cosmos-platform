@@ -1,6 +1,6 @@
 package individualprofile;
 
-option java_package = "es.tid.ps.profile.data";
+option java_package = "es.tid.bdp.profile.data";
 option java_outer_classname = "ProfileProtocol";
 
 message UserNavigation {

@@ -20,5 +20,8 @@ urlpatterns = patterns('',
     
     url(r'^login/$', 'django.contrib.auth.views.login'),    
     
+    # Initial Page
+    url(r'^monitoring/$', 'wizard.views.views.home', name='home'),
+    
     url(r'^wizard/', include('Configuration.wizard.urls')),
 )

@@ -120,7 +120,10 @@ set (CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Rogue")
 # Indicate this is an SVN build
 set (SVN_BUILD TRUE)
 
-ADD_SUBDIRECTORY(modules)
+if (BUILD_MODULES)
+    MESSAGE("Building platform analytical modules")
+    ADD_SUBDIRECTORY(modules)
+endif (BUILD_MODULES)
 
 #
 # Continuing if OK

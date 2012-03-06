@@ -91,6 +91,7 @@ ELSE (NOT SVN_BUILD)
     include_directories("${CMAKE_INSTALL_PREFIX}")
     include_directories("${CMAKE_INSTALL_PREFIX}/include")
     include_directories("${CMAKE_INSTALL_PREFIX}/include/samson")
+    link_directories("${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF (SVN_BUILD)
 include_directories("/opt/mongodb/mongo-cxx-driver-v2.0")
 

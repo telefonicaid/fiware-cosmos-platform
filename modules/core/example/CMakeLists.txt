@@ -90,6 +90,7 @@ ELSE (NOT SVN_BUILD)
     include_directories("${CMAKE_INSTALL_PREFIX}/include")
     include_directories("${CMAKE_INSTALL_PREFIX}/include/samson")
     link_directories("${CMAKE_INSTALL_PREFIX}/lib")
+    link_directories("${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF (SVN_BUILD)
 
 link_directories("${CMAKE_INSTALL_PREFIX}/lib")

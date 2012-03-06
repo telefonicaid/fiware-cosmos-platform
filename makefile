@@ -1,3 +1,8 @@
+
+# ------------------------------------------------------------
+# Environment variables
+# ------------------------------------------------------------
+
 ifndef SAMSON_HOME
 SAMSON_HOME=/opt/samson
 endif
@@ -27,42 +32,11 @@ ifndef CPU_COUNT
 	endif
 endif
 
-# List of modules that gets used to build packages. *Don't forget* to update modules/makefile as well when adding a new module
-MODULES=system \
-	txt \
-	txt_md \
-	example \
-	tienda \
-	cdr \
-	mobility \
-	mob \
-	mob2 \
-	passive_location \
-	graph \
-	sna \
-	snalight \
-	osn \
-	url \
-	urlbenchmark \
-	sort \
-	terasort \
-	testtime \
-	testcomparefunctions \
-	hit \
-	gg \
-	page_rank \
-	wiki \
-	simple_mobility \
-	web \
-	webp \
-	twitter
-
 default: release
 
 # ------------------------------------------------
 # Prepare CMAKE
 # ------------------------------------------------
-
 
 prepare_release:
 	mkdir BUILD_RELEASE || true
@@ -126,16 +100,10 @@ install_man: man
 # Install the supporting script/files that go in the OS directories
 install_scripts:
 	cp etc/profile.d 
-
  
 clean:
 	make -C BUILD_DEBUG clean
 	make -C BUILD_RELEASE clean	
-	for module in $(MODULES); do \
-		cd modules/$$module; \
-		make reset; \
-		cd ../..; \
-	done
 
 # ------------------------------------------------
 # RELEASE Version
@@ -174,6 +142,7 @@ coverage: prepare_coverage
 	lcov -r coverage/samson.info "/usr/include/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "/usr/local/include/*" -o coverage/samson.info
 	genhtml -o coverage coverage/samson.info
+
 # ------------------------------------------------
 # Testing
 # ------------------------------------------------

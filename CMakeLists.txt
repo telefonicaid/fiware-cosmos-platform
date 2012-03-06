@@ -72,16 +72,20 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 #
 # Common include
 #
+
 include_directories("/opt/local/include")
+
 #
 # Library directories
 #
+
 link_directories("/opt/local/lib")
 link_directories("/usr/lib64")
 
-#
+# ---------------------------------------------------------
 # External dependency checks
-#
+# ---------------------------------------------------------
+
 # See if we have KDChart installed (check_include_files does not work due to these being C++ headers)
 FIND_PATH(HAVE_KDCHART KDChartChart PATHS /usr/local/KDAB/KDChart-2.3.0/include /usr/local/kdchart/include /usr/local/KDAB/KDChart-2.4.2/include)
 if (HAVE_KDCHART)
@@ -107,24 +111,11 @@ else ( HAVE_GTEST )
     MESSAGE("Not using the Google Test library")
 endif (HAVE_GTEST)
 
-SET(SVN_BUILD TRUE)
-
-# Indicate that this is an SVN build
-# Modules use this variable to determine which files to use
-SET (SVN_BUILD TRUE)
-
 #
 # Architecture 
 #
 set (CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Rogue")
 
-#
-# Common libraries
-#
-
-if(COVERAGE)
-	SET( COMMON_SAMSON_LIBS gcov )
-endif(COVERAGE)
 
 #
 # Continuing if OK
@@ -137,16 +128,9 @@ if (error EQUAL 0)
   ADD_SUBDIRECTORY(extern)
   
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
-
-ADD_SUBDIRECTORY(testing)	# Test module and ctest stuff
-
+   ADD_SUBDIRECTORY(testing)	# Test module and ctest stuff
 endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
-
-#  ADD_SUBDIRECTORY(etc)	# Add setup file when installing
 
 else ()
     MESSAGE("cmake: NOT OK")
 endif (error EQUAL 0)
-
-
-ADD_SUBDIRECTORY(modules)

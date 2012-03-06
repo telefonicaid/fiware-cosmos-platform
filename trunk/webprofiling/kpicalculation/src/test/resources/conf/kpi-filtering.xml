@@ -4,9 +4,9 @@
     <property>
         <name>kpifilters</name>
         <value>
-            es.tid.ps.kpicalculation.cleaning.ExtensionFilter,
-            es.tid.ps.kpicalculation.cleaning.ThirdPartyFilter,
-            es.tid.ps.kpicalculation.cleaning.PersonalInfoFilter
+            es.tid.bdp.kpicalculation.cleaning.ExtensionFilter,
+            es.tid.bdp.kpicalculation.cleaning.ThirdPartyFilter,
+            es.tid.bdp.kpicalculation.cleaning.PersonalInfoFilter
         </value>
         <description>Definition of filters applied</description>
     </property>

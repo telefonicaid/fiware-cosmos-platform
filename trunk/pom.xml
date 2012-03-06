@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>es.tid.bdp</groupId>
-    <artifactId>webprofiling</artifactId>
+    <artifactId>bigdataplatform</artifactId>
     <version>${env.ProductVersion}${env.SVN_REVISION}</version>
     <packaging>pom</packaging>
-    <name>webprofiling</name>
+    <name>bigdataplatform</name>
     <description>Group of projects in where develop the PS webprofiling modules over Hadoop</description>
     <organization>
         <name>Telefonica Investigacion y Desarrollo</name>
@@ -406,6 +406,16 @@
             <version>1.1</version>
             <scope>test</scope>
         </dependency>
+        <!-- <dependency> <groupId>org.apache.hadoop.hive</groupId> <artifactId>hive-jdbc</artifactId> 
+            <version>${org.apache.hadoop.hive}-cdh3u1</version> </dependency> <dependency> 
+            <groupId>org.apache.hadoop.hive</groupId> <artifactId>hive-exec</artifactId> 
+            <version>${org.apache.hadoop.hive}-cdh3u1</version> </dependency> <dependency> 
+            <groupId>org.apache.hadoop.hive</groupId> <artifactId>hive-metastore</artifactId> 
+            <version>${org.apache.hadoop.hive}-cdh3u1</version> </dependency> <dependency> 
+            <groupId>org.apache.hadoop.hive</groupId> <artifactId>hive-service</artifactId> 
+            <version>${org.apache.hadoop.hive}-cdh3u1</version> </dependency> <dependency> 
+            <groupId>org.apache.hadoop.hive</groupId> <artifactId>hive-serde</artifactId> 
+            <version>${org.apache.hadoop.hive}-cdh3u1</version> </dependency> -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -468,11 +478,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>es.tid.bdp</groupId>
-            <artifactId>base</artifactId>
-            <version>0.0.2</version>
-        </dependency>
     </dependencies>
 
 
@@ -501,8 +506,8 @@
     </distributionManagement>
 
     <modules>
-        <module>individualprofile</module>
-        <module>kpicalculation</module>
+        <module>base</module>
+        <module>webprofiling</module>
     </modules>
 
     <properties>

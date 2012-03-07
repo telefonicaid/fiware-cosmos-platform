@@ -1,0 +1,12 @@
+CMakeFiles/
+CMakeCache.txt
+Testing/
+*.cmake
+*.bin
+*.a
+*.o
+*.so
+*.dylib
+Makefile
+makefile
+es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface.h

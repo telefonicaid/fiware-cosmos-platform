@@ -1,12 +1,13 @@
 package es.tid.bdp.profile.categoryextraction;
 
 import java.io.IOException;
-import java.util.Arrays;
+import static java.util.Arrays.asList;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.filecache.DistributedCache;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
@@ -24,23 +25,24 @@ import es.tid.bdp.profile.dictionary.comscore.CSDictionary;
 public class CategoryExtractionReducer extends Reducer<BinaryKey,
         ProtobufWritable<UserNavigation>, BinaryKey,
         ProtobufWritable<CategoryInformation>> {
+    public static final String DICTIONARY_NAME_PROPERTY =
+            "categoryextraction.dict.name";
     private static Dictionary dictionary = null;
-    private CategoryInformation.Builder catInfo;
     private ProtobufWritable<CategoryInformation> catWrapper;
 
     @Override
     public void setup(Context context) throws IOException {
         this.setupDictionary(context);
-        this.catInfo = CategoryInformation.newBuilder();
         this.catWrapper = new ProtobufWritable<CategoryInformation>();
         this.catWrapper.setConverter(CategoryInformation.class);
     }
 
     protected void setupDictionary(Context context) throws IOException {
         if (dictionary == null) {
-            dictionary = new CSDictionary(
-                    DistributedCache.getLocalCacheFiles(
-                    context.getConfiguration()));
+            String dictionaryName = context.getConfiguration().get(
+                    DICTIONARY_NAME_PROPERTY);
+            dictionary = new CSDictionary(getCachedDictionaryPath(context,
+                    dictionaryName));
             dictionary.init();
         }
     }
@@ -58,14 +60,15 @@ public class CategoryExtractionReducer extends Reducer<BinaryKey,
                 case KNOWN_URL:
                     context.getCounter(CategoryExtractionCounter.KNOWN_VISITS).
                             increment(urlInstances);
-                    this.catInfo.clear();
-                    this.catInfo.setUserId(key.getPrimaryKey());
-                    this.catInfo.setUrl(url);
-                    this.catInfo.setDate(key.getSecondaryKey());
-                    this.catInfo.setCount(urlInstances);
-                    this.catInfo.addAllCategories(
-                            Arrays.asList(dictionaryResponse.getCategories()));
-                    this.catWrapper.set(this.catInfo.build());
+
+                    this.catWrapper.set(CategoryInformation.newBuilder()
+                            .setUserId(key.getPrimaryKey())
+                            .setUrl(url)
+                            .setDate(key.getSecondaryKey())
+                            .setCount(urlInstances)
+                            .addAllCategories(
+                                asList(dictionaryResponse.getCategories()))
+                            .build());
                     context.write(key, this.catWrapper);
                     break;
 
@@ -97,6 +100,22 @@ public class CategoryExtractionReducer extends Reducer<BinaryKey,
 
     protected Categorization categorize(String url) {
         return dictionary.categorize(url);
+    }
+
+    public String getCachedDictionaryPath(Context context, String dictionaryName)
+            throws IOException, RuntimeException {
+        Path dictionaryPath = null;
+        for (Path path : DistributedCache.getLocalCacheFiles(
+                context.getConfiguration())) {
+            if (path.getName().equals(dictionaryName)) {
+                dictionaryPath = path;
+                break;
+            }
+        }
+        if (dictionaryPath == null) {
+            throw new RuntimeException("No dictionary file was configured");
+        }
+        return dictionaryPath.toString();
     }
 
     private Map<String, Long> getUniqueUrlCounts(

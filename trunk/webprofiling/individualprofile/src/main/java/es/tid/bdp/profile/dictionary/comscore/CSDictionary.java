@@ -1,40 +1,27 @@
 package es.tid.bdp.profile.dictionary.comscore;
 
+import java.io.IOException;
+import java.net.URI;
+
 import es.tid.bdp.profile.dictionary.Categorization;
 import es.tid.bdp.profile.dictionary.CategorizationResult;
 import es.tid.bdp.profile.dictionary.Dictionary;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
-import org.apache.hadoop.fs.Path;
 
 /*
  * Class to handle the comScore dictionary.
  *
- * @author dmicol
+ * @author dmicol, sortega
  */
 public class CSDictionary implements Dictionary {
-    private static final String TERMS_IN_DOMAIN_FILENAME =
-            "cs_terms_in_domain.bcp";
-    private static final String DICTIONARY_FILENAME =
-            "cs_mmxi.bcp.gz";
-    private static final String CATEGORY_PATTERN_MAPPING_FILENAME =
-            "patterns_to_categories.txt";
-    private static final String CATEGORY_NAMES_FILENAME =
-            "cat_subcat_map.txt";
-    
+    public final String DEFAULT_COMSCORE_LIB =
+            "/opt/hadoop/lib/native/Linux-amd64-64/libcomscore.so";
     private boolean isInitialized;
-    private final List<Path> dictionayFiles;
+    private final String dictionayFile;
     private CSDictionaryJNIInterface dictionary;
-    private CSPatternToCategoryMap patternToCategoryMap;
-    private CSCategoryIdToNameMap categoryIdToNameMap;
 
-    public CSDictionary(Path[] dictionayFiles) {
+    public CSDictionary(String dictionayFile) {
         this.isInitialized = false;
-        this.dictionayFiles = Arrays.asList(dictionayFiles);
+        this.dictionayFile = dictionayFile;
     }
 
     @Override
@@ -43,29 +30,10 @@ public class CSDictionary implements Dictionary {
             return;
         }
 
-        String termsInDomainFlatFileName = null;
-        String dictionaryFileName = null;
-        String categoryPatterMappingFileName = null;
-        String categoryNamesFileName = null;
-
-        for (Path path : this.dictionayFiles) {
-            if (path.getName().equals(TERMS_IN_DOMAIN_FILENAME)) {
-                termsInDomainFlatFileName = path.toString();
-            } else if (path.getName().equals(DICTIONARY_FILENAME)) {
-                dictionaryFileName = path.toString();
-            } else if (path.getName().equals(
-                    CATEGORY_PATTERN_MAPPING_FILENAME)) {
-                categoryPatterMappingFileName = path.toString();
-            } else if (path.getName().equals(CATEGORY_NAMES_FILENAME)) {
-                categoryNamesFileName = path.toString();
-            }
-        }
-
+        System.setProperty(CSDictionaryJNIInterface.COMSCORE_LIB_PROPERTY,
+                DEFAULT_COMSCORE_LIB);
         this.dictionary = new CSDictionaryJNIInterface();
-        this.dictionary.loadCSDictionary(1, termsInDomainFlatFileName,
-                dictionaryFileName);
-        this.loadCategoryPatternMapping(categoryPatterMappingFileName);
-        this.loadCategoryNames(categoryNamesFileName);
+        this.dictionary.loadCSDictionary(dictionayFile);
         this.isInitialized = true;
     }
 
@@ -78,31 +46,20 @@ public class CSDictionary implements Dictionary {
 
         URI uri = URI.create(url);
         String normalizedUrl = uri.getHost() + uri.getPath();
-        long patternId = this.dictionary.applyDictionaryUsingUrl(normalizedUrl);
-        if (patternId < 0) {
-            return this.processIrrelevantUrl();
-        } else if (patternId == 0) {
-            throw new IllegalArgumentException("Invalid pattern ID.");
-        } else if (patternId == 1) {
+        int[] categories = this.dictionary.lookupCategories(normalizedUrl);
+        if (categories.length == 0) {
             return this.processUknownUrl();
         } else {
-            return this.processKnownUrl(patternId);
+            return this.processKnownUrl(categories);
         }
     }
 
-    private Categorization processKnownUrl(long patternId) {
+    private Categorization processKnownUrl(int[] categoryIds) {
         Categorization categorization = new Categorization();
-        long[] categoryIds;
-        try {
-            categoryIds = this.patternToCategoryMap.getCategories(patternId);
-        } catch (IllegalArgumentException ex) {
-            categorization.setResult(CategorizationResult.GENERIC_FAILURE);
-            return categorization;
-        }
 
         String[] categoryNames = new String[categoryIds.length];
         for (int i = 0; i < categoryIds.length; i++) {
-            categoryNames[i] = this.categoryIdToNameMap.getCategoryName(
+            categoryNames[i] = this.dictionary.getCategoryName(
                     categoryIds[i]);
         }
         categorization.setResult(CategorizationResult.KNOWN_URL);
@@ -114,30 +71,5 @@ public class CSDictionary implements Dictionary {
         Categorization categorization = new Categorization();
         categorization.setResult(CategorizationResult.UNKNOWN_URL);
         return categorization;
-    }
-
-    private Categorization processIrrelevantUrl() {
-        Categorization categorization = new Categorization();
-        categorization.setResult(CategorizationResult.IRRELEVANT_URL);
-        return categorization;
-    }
-    
-    private void loadCategoryPatternMapping(String fileName)
-            throws IOException {
-        this.patternToCategoryMap = new CSPatternToCategoryMap();
-
-        FileInputStream file = new FileInputStream(fileName);
-        InputStreamReader input = new InputStreamReader(file);
-        this.patternToCategoryMap.init(input);
-        file.close();
-    }
-
-    private void loadCategoryNames(String fileName) throws IOException {
-        this.categoryIdToNameMap = new CSCategoryIdToNameMap();
-
-        FileInputStream file = new FileInputStream(fileName);
-        InputStreamReader input = new InputStreamReader(file);
-        this.categoryIdToNameMap.init(input);
-        file.close();
     }
 }

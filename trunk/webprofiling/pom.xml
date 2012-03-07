@@ -1,5 +1,13 @@
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>bigdataplatform</artifactId>
+        <groupId>es.tid.bdp</groupId>
+        <version>${env.ProductVersion}${env.SVN_REVISION}</version>
+    </parent>
+
     <groupId>es.tid.bdp</groupId>
     <artifactId>webprofiling</artifactId>
     <version>${env.ProductVersion}${env.SVN_REVISION}</version>
@@ -167,215 +175,124 @@
             </plugin>
 			
 			
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>2.2</version>
-				<configuration>
-					<dependencyDetailsEnabled>false</dependencyDetailsEnabled>
-					<dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.7</version>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
+                    <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.7</version>
+            </plugin>
 			<!-- plugin para reports de sonar -->
-			<plugin>
-				<groupId>org.codehaus.sonar-plugins</groupId>
-				<artifactId>maven-report</artifactId>
-				<version>0.1</version>
-			</plugin>
+            <plugin>
+                <groupId>org.codehaus.sonar-plugins</groupId>
+                <artifactId>maven-report</artifactId>
+                <version>0.1</version>
+            </plugin>
 			<!-- Plugin para generar los referencias 
-				cruzadas del cÃ³digo -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jxr-plugin</artifactId>
-				<version>2.2</version>
-			</plugin>
+				cruzadas del cÃ?digo -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>2.2</version>
+            </plugin>
 			<!-- Plugin para generar los informes de 
 				entregas al SVN por desarrollador -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-changelog-plugin</artifactId>
-				<version>2.2</version>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-changelog-plugin</artifactId>
+                <version>2.2</version>
+            </plugin>
 			<!-- Plugin para generar los reports de calidad 
 				de codigo. Faltaria definir las metricas a aplicar -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-pmd-plugin</artifactId>
-				<version>2.5</version>
-				<configuration>
-					<linkXref>true</linkXref>
-					<sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
-					<minimumTokens>100</minimumTokens>
-					<targetJdk>${jvm.version}</targetJdk>
-					<excludes>
-						<exclude>**/pojos/*.java</exclude>
-						<exclude>**/generated/*.java</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-plugin-plugin</artifactId>
-				<version>2.7</version>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>javancss-maven-plugin</artifactId>
-				<version>2.0-beta-2</version>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>jdepend-maven-plugin</artifactId>
-				<version>2.0-beta-2</version>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <linkXref>true</linkXref>
+                    <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
+                    <minimumTokens>100</minimumTokens>
+                    <targetJdk>${jvm.version}</targetJdk>
+                    <excludes>
+                        <exclude>**/pojos/*.java</exclude>
+                        <exclude>**/generated/*.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-plugin-plugin</artifactId>
+                <version>2.7</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>javancss-maven-plugin</artifactId>
+                <version>2.0-beta-2</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jdepend-maven-plugin</artifactId>
+                <version>2.0-beta-2</version>
+            </plugin>
 			<!-- Plugin para generar los informes del 
 				JUNIT -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-report-plugin</artifactId>
-				<version>2.7.2</version>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>2.7.2</version>
+            </plugin>
 			<!-- Plugin para analizar las tags en el 
-				cÃ³digo, por ejemplo para generar un informe con todos los TODO -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>taglist-maven-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<tags>
-						<tag>TODO</tag>
-						<tag>FIXME</tag>
-						<tag>@todo</tag>
-						<tag>@deprecated</tag>
-					</tags>
-				</configuration>
-			</plugin>
+				cÃ?digo, por ejemplo para generar un informe con todos los TODO -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>taglist-maven-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <tags>
+                        <tag>TODO</tag>
+                        <tag>FIXME</tag>
+                        <tag>@todo</tag>
+                        <tag>@deprecated</tag>
+                    </tags>
+                </configuration>
+            </plugin>
 			<!-- Plugin para generar informes de calidad 
 				del codigo -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>2.6</version>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>2.6</version>
+            </plugin>
 			<!-- Genera los informes de Cobertura de 
 				los Test -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>cobertura-maven-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<formats>
-						<format>xml</format>
-						<format>html</format>
-					</formats>
-				</configuration>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <formats>
+                        <format>xml</format>
+                        <format>html</format>
+                    </formats>
+                </configuration>
             </plugin>
         </plugins>
     </build>
-    <repositories>
-        <repository>
-            <id>cdh-repository</id>
-            <url>https://repository.cloudera.com/artifactory/libs-release-local</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-         <repository>
-            <id>apache-repository</id>
-            <url>https://repository.apache.org/content/repositories/releases</url>
-        </repository>
-        <repository>
-            <id>google-maven-repository</id>
-            <name>Google Maven Repository</name>
-            <url>http://google-maven-repository.googlecode.com/svn/repository/</url>
-        </repository>
-         <repository>
-            <id>ps2-nexus</id>
-            <url>http://ps2-ci/nexus/content/groups/public-snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>thirdparty</id>
-            <url>http://ps2-ci/nexus/content/repositories/thirdparty</url>
-        </repository>
-        <repository>
-            <id>releases</id>
-            <name>Releases</name>
-            <url>https://oss.sonatype.org/content/repositories/releases</url>
-        </repository>
-         <repository>
-            <id>ps2-nexus-releases</id>
-            <url>http://ps2-ci/nexus/content/repositories/releases</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-       
-        
-    </repositories>
+
     <pluginRepositories>
         <pluginRepository>
             <id>dtrott</id>
             <url>http://maven.davidtrott.com/repository</url>
         </pluginRepository>
     </pluginRepositories>
-    <developers>
-        <developer>
-            <id>dmicol</id>
-            <name>Daniel Micol</name>
-            <email>dmicol@tid.es</email>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <organization>${project.organization.name}</organization>
-            <organizationUrl>${project.organization.url}
-            </organizationUrl>
-            <timezone>+1</timezone>
-        </developer>
-        <developer>
-            <id>javierb</id>
-            <name>Javier Rodriguez Benito</name>
-            <email>javierb@tid.es</email>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <organization>${project.organization.name}</organization>
-            <organizationUrl>${project.organization.url}
-            </organizationUrl>
-            <timezone>+1</timezone>
-        </developer>
-        <developer>
-            <id>cesargg</id>
-            <name>Cesar García</name>
-            <email>cesargg@tid.es</email>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <organization>${project.organization.name}</organization>
-            <organizationUrl>${project.organization.url}
-            </organizationUrl>
-            <timezone>+1</timezone>
-        </developer>
-        <developer>
-            <id>rgc</id>
-            <name>Rubén González Caballero</name>
-            <email>rgc@tid.es</email>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <organization>${project.organization.name}</organization>
-            <organizationUrl>${project.organization.url}
-            </organizationUrl>
-            <timezone>+1</timezone>
-        </developer>
-    </developers>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -387,7 +304,6 @@
             <artifactId>hadoop-gpl-compression</artifactId>
             <version>0.1.0</version>
         </dependency>
-         <!-- test dependencies -->
         <dependency>
             <groupId>org.apache.mrunit</groupId>
             <artifactId>mrunit</artifactId>
@@ -411,7 +327,6 @@
             <artifactId>slf4j-api</artifactId>
             <version>1.6.3</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.nutch</groupId>
             <artifactId>nutch</artifactId>
@@ -427,14 +342,14 @@
             <artifactId>urlnormalizer-regex</artifactId>
             <version>1.3</version>
         </dependency>
-           <dependency>
+        <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
             <version>2.3.0</version>
         </dependency>
- 		<dependency>
+        <dependency>
             <groupId>org.apache.hadoop</groupId>
-    		<artifactId>libthrift</artifactId>
+            <artifactId>libthrift</artifactId>
             <version>0.5.0.0</version>
         </dependency>
         <dependency>
@@ -471,28 +386,21 @@
         <dependency>
             <groupId>es.tid.bdp</groupId>
             <artifactId>base</artifactId>
-            <version>0.0.2</version>
+            <version>0.0.3</version>
         </dependency>
     </dependencies>
 
-
-    <!-- Pendiente de la maquina de integración -->
     <distributionManagement>
-
-        <!-- Repositorio para hacer el deploy de las releases -->
-
         <repository>
             <id>${repoMavenId}</id>
             <name>${repoMavenName}</name>
             <url>${repoMavenUrl}</url>
         </repository>
-        <!-- Repositorio de snapshot de Telefónica I+D Barcelona -->
         <snapshotRepository>
             <id>${repoMavenSnapshotId}</id>
             <name>${repoMavenSnapshotName}</name>
             <url>${repoMavenSnapshotUrl}</url>
         </snapshotRepository>
-        <!-- Máquina donde se publica el site del proyecto -->
         <site>
             <id>${repoSiteId}</id>
             <name>${repoSiteName}</name>

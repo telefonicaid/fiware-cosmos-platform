@@ -3,6 +3,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <artifactId>bigdataplatform</artifactId>
+        <groupId>es.tid.bdp</groupId>
+        <version>${env.ProductVersion}${env.SVN_REVISION}</version>
+    </parent>
+
     <groupId>es.tid.bdp</groupId>
     <artifactId>base</artifactId>
     <version>0.0.2</version>

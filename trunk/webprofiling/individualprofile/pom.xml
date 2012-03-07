@@ -30,6 +30,12 @@
         </profile>
     </profiles>
 
+    <parent>
+        <artifactId>webprofiling</artifactId>
+        <groupId>es.tid.bdp</groupId>
+        <version>${env.ProductVersion}${env.SVN_REVISION}</version>
+    </parent>
+
     <groupId>es.tid.bdp</groupId>
     <artifactId>individualprofile</artifactId>
     <version>${env.ProductVersion}${env.SVN_REVISION}</version>

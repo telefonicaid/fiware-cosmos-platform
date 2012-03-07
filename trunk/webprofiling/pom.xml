@@ -1,5 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>bigdataplatform</artifactId>
+        <groupId>es.tid.bdp</groupId>
+        <version>${env.ProductVersion}${env.SVN_REVISION}</version>
+    </parent>
+
     <groupId>es.tid.bdp</groupId>
     <artifactId>webprofiling</artifactId>
     <version>${env.ProductVersion}${env.SVN_REVISION}</version>
@@ -188,7 +195,7 @@
 				<version>0.1</version>
 			</plugin>
 			<!-- Plugin para generar los referencias 
-				cruzadas del cÃ³digo -->
+				cruzadas del cÃ?digo -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jxr-plugin</artifactId>
@@ -241,7 +248,7 @@
 				<version>2.7.2</version>
 			</plugin>
 			<!-- Plugin para analizar las tags en el 
-				cÃ³digo, por ejemplo para generar un informe con todos los TODO -->
+				cÃ?digo, por ejemplo para generar un informe con todos los TODO -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>taglist-maven-plugin</artifactId>

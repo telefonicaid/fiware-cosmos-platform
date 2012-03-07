@@ -21,6 +21,11 @@ namespace samson
             "alerts <on> <off>"
             );
         
+        add( "trace" , "delilah", 
+            "Activate or disactivate trace levels in SAMSON platform",
+            "trace <on> <off>"
+            );
+        
         add( "show_alerts" , "delilah", 
             "Show the last alerts received from SAMSON cluster"
             );
@@ -37,6 +42,16 @@ namespace samson
         add( "verbose" , "delilah", 
             "Activate or disactivate verbose mode. This shows extra information for commands executed in delilah",
             "verbose <on> <off>"
+            );
+        
+        add( "wverbose" , "delilah", 
+            "Activate or disactivate verbose mode for workers. This shows extra information for worker commands",
+            "verbose <0-5> <off>"
+            );
+        
+        add( "wdebug" , "delilah", 
+            "Activate or disactivate debug mode for workers. This shows extra information for worker commands",
+            "debug <on> <off>"
             );
         
         add( "send_alert" , "delilah", 

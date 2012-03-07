@@ -334,6 +334,12 @@ namespace samson
                 info->add("on");
         }
 
+        if (info->completingSecondWord("trace") )
+        {
+            info->add("off");
+            info->add("on");
+        }
+
         if (info->completingSecondWord("verbose") )
         {
             if (verbose)

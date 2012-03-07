@@ -1086,7 +1086,7 @@ extern char* lmProgName(char* pn, int levels, bool pid, const char* extra = NULL
 *
 * lmTraceSet - 
 */
-extern LmStatus lmTraceSet(char* levelFormat);
+extern LmStatus lmTraceSet(const char* levelFormat);
 
 
 
@@ -1094,7 +1094,7 @@ extern LmStatus lmTraceSet(char* levelFormat);
 *
 * lmTraceAdd - 
 */
-extern LmStatus lmTraceAdd(char* levelFormat);
+extern LmStatus lmTraceAdd(const char* levelFormat);
 
 
 
@@ -1102,7 +1102,7 @@ extern LmStatus lmTraceAdd(char* levelFormat);
 *
 * lmTraceSub - 
 */
-extern LmStatus lmTraceSub(char* levelFormat);
+extern LmStatus lmTraceSub(const char* levelFormat);
 
 
 

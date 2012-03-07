@@ -574,6 +574,13 @@ namespace samson {
         visualitzation.options = visualitzation_options;
         visualitzation.pattern = pattern; 
         
+        LM_V(("V1: Got command '%s'", main_command.c_str()));
+        LM_V2(("V2: Got command '%s'", main_command.c_str()));
+        LM_V3(("V3: Got command '%s'", main_command.c_str()));
+        LM_V4(("V4: Got command '%s'", main_command.c_str()));
+        LM_V5(("V5: Got command '%s'", main_command.c_str()));
+        LM_D(("D: Got command '%s'", main_command.c_str()));
+
         if ( main_command == "push_module" )
         {
             if( cmd.get_num_arguments() < 2 )
@@ -749,6 +756,128 @@ namespace samson {
             return;
         }
         
+        if (main_command == "trace")
+        {
+            std::string subcommand;
+            std::string levels;
+
+            //
+            // 01: off
+            // 02: get
+            // 03: set [09-,]*
+            // 04: add [09-,]*
+            // 05: del [09-,]*
+            //
+            if (cmd.get_num_arguments() < 2)
+            {
+                finishWorkerTaskWithError( "Usage: trace [ off ] [ get ] [ set | add | del (range-list of trace levels)]" );
+                return;
+            }                
+
+            subcommand = cmd.get_argument(1);
+
+            if (subcommand == "off")
+                lmTraceSet(NULL);
+            else if (subcommand == "get")
+            {
+                
+            }
+            else if ((subcommand == "set") || (subcommand == "add") || (subcommand == "del"))
+            {
+                if (cmd.get_num_arguments() < 3)
+                {
+                    finishWorkerTaskWithError( "Usage: trace " + subcommand + " (range-list of trace levels)");
+                    return;
+                }                
+
+                levels = cmd.get_argument(2);
+
+                if (subcommand == "set")
+                    lmTraceSet((char*) levels.c_str());
+                else if (subcommand == "add")
+                    lmTraceAdd((char*) levels.c_str());
+                else if (subcommand == "del")
+                    lmTraceSub((char*) levels.c_str());
+            }
+            else
+            {
+                finishWorkerTaskWithError( au::str("Usage: bad subcommand for 'trace': %s", subcommand.c_str()));
+                return;
+            }
+
+            finishWorkerTask();
+            return;
+        }
+
+        if (main_command == "wverbose")
+        {
+            std::string subcommand;
+
+            if (cmd.get_num_arguments() < 2)
+            {
+                finishWorkerTaskWithError( "Usage: verbose [ off ] [ 0 - 5 ]");
+                return;
+            }                
+
+            subcommand = cmd.get_argument(1);
+
+            if ((subcommand == "off") || (subcommand == "0"))
+            {
+                lmVerbose  = false;
+                lmVerbose2 = false;
+                lmVerbose3 = false;
+                lmVerbose4 = false;
+                lmVerbose5 = false;
+            }
+            else if ((subcommand == "1") || (subcommand == "2") || (subcommand == "3") || (subcommand == "4") || (subcommand == "5"))
+            {
+                int level = subcommand.c_str()[0] - '0';
+
+                switch (level)
+                {
+                case 5: lmVerbose5 = true;
+                case 4: lmVerbose4 = true;
+                case 3: lmVerbose3 = true;
+                case 2: lmVerbose2 = true;
+                case 1: lmVerbose  = true;
+                }
+            }
+            else
+            {
+                finishWorkerTaskWithError( "Usage: verbose [ off ] [ 0 - 5 ]");
+                return;
+            }
+
+            finishWorkerTask();
+            return;
+        }
+
+        if (main_command == "wdebug")
+        {
+            std::string subcommand;
+
+            if (cmd.get_num_arguments() < 2)
+            {
+                finishWorkerTaskWithError( "Usage: wdebug [ off | on ]");
+                return;
+            }                
+
+            subcommand = cmd.get_argument(1);
+
+            if (subcommand == "off")
+                lmDebug = false;
+            else if (subcommand == "on")
+                lmDebug = true;
+            else
+            {
+                finishWorkerTaskWithError( "Usage: wdebug [ off | on ]");
+                return;
+            }
+
+            finishWorkerTask();
+            return;
+        }
+
         if( main_command == "send_alert")
         {
             std::string message = "No message";

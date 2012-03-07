@@ -22,18 +22,16 @@ class QueueViewer: public QWidget
     public:
         
         QueueViewer(std::string _title, QWidget* parent = 0);
+        ~QueueViewer();
         std::string title;
 
         QueueData data;
         
         void setData(QueueData* newData);
         void setData(QueueData newData);
-        void setTitle(std::string title);
         void setHiddenButton(bool hidden);
         void setLayout(QGridLayout* layout, int row);
         
-        void destroyWidget();
-
         QPushButton* detailsButton;
 
     signals:
@@ -46,23 +44,16 @@ class QueueViewer: public QWidget
         //QScrollArea* scrollArea;
         //QGroupBox* groupBox;
         //QHBoxLayout* layout;
-        
+
         QLabel* name;
         QLabel* kvs;
         QLabel* kvsDigits; 
         QLabel* kvs_s;
         QLabel* kvs_sDigits; 
-        //QLabel* kvssize;
         QLabel* size;
         QLabel* sizeDigits; 
-        //QLabel* size_locked;
-        //QLabel* size_on_disk;
-        //QLabel* size_on_memory;
-        //QLabel* kvs_rate;
-        //QLabel* kvs_rate_size;
         QLabel* rate;
         QLabel* rateDigits;
-        //QLabel* rate_size;
         
 };
 

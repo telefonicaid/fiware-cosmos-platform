@@ -33,8 +33,6 @@ class QueueContainer: public QWidget
         QGridLayout* totalLayout;
         
         std::vector<QueueData*> queuesData;
-        //std::vector<QueueViewer::QueueData> queuesData;
-        //std::vector<std::string> current_queues;
         std::vector<QueueViewer*> in_queues;
         std::vector<QueueViewer*> out_queues;
         QueueViewer* totalQueues;

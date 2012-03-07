@@ -17,14 +17,9 @@ namespace samson{
 
 QueueViewer::QueueViewer(std::string _title, QWidget* parent): QWidget(parent)
 {
-    //QVBoxLayout* layout;
-    
     title = _title;
     data.name = _title;
     
-    //groupBox = new QGroupBox(this);
-    //QSizePolicy expandingPolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    //groupBox->setSizePolicy(expandingPolicy);
    /* scrollArea = new QScrollArea;
     scrollArea->setBackgroundRole(QPalette::Dark);
     scrollArea->setWidget(groupBox);   
@@ -64,16 +59,23 @@ QueueViewer::QueueViewer(std::string _title, QWidget* parent): QWidget(parent)
 
     detailsButton = new QPushButton("details >>",this);
     connect(detailsButton, SIGNAL(clicked()), this, SLOT(onDetailsClicked()));
+}
 
-    if (data.name.empty())
-    {
-        setTitle("Empty Queue");
-    }
-    else
-    {
-        setTitle(data.name);
-    }
-    
+QueueViewer::~QueueViewer()
+{   
+    //Javi: for some reason we need to explicitly delete all the widgets 
+    // or otherwise the widget does not dissapear even if we call "delete myQueueViewer;". 
+    // This doesn't seem right, so I'll keep an eye on it.
+    delete name;
+    delete kvs;
+    delete kvsDigits;
+    delete kvs_s;
+    delete kvs_sDigits;
+    delete size;
+    delete sizeDigits;
+    delete rate;
+    delete rateDigits;
+    delete detailsButton;
 }
 
 void QueueViewer::setData(QueueData* newData)
@@ -90,13 +92,6 @@ void QueueViewer::setData(QueueData newData)
         sizeDigits->setText(QString(au::str(strtoul(data.size.c_str(), NULL, 0)).c_str()));
         rateDigits->setText(QString((au::str(strtoul(data.bytes_s.c_str(), NULL, 0))).c_str()));
 }
-
-void QueueViewer::setTitle(std::string title)
-{
-    //if (groupBox) groupBox->setTitle(QString(title.c_str()));
-}
-
-
 
 void QueueViewer::setHiddenButton(bool hidden)
 {
@@ -133,11 +128,5 @@ void QueueViewer::onDetailsClicked()
 {
     emit detailsClicked();
 }
-
-void QueueViewer::destroyWidget()
-{
-    destroy(true,true);
-}
-
 
 } //namespace

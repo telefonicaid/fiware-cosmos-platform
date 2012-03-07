@@ -152,3 +152,14 @@ reduce reduce_value_to_value
 
 	helpLine "Reduce all the values for every particular key. Possible commands  sum_double (default) , average_double , max_double  "
 }
+
+reduce update_state
+{
+    in  system.Value system.Value
+    in  system.Value system.Value
+
+    out system.Value system.Value	
+
+	helpLine "Update state operations like last_10 , last_1 , ..."
+
+}

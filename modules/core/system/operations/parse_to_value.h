@@ -12,6 +12,9 @@
 
 #include "au/StringComponents.h"
 
+#include "Filter.h"
+
+
 namespace samson{
 namespace system{
 
@@ -22,6 +25,9 @@ namespace system{
 	   au::StringComponents string_component;
 	   samson::system::Value key;
 	   samson::system::Value value;
+        
+        // Collection of filters to execute for every key-value
+        FilterCollection filters_collection;
 
 	public:
 
@@ -39,6 +45,16 @@ namespace system{
 		{
 		   //value.set_string("1");
             value.set_int(1);
+            
+            // Setup the process chain...
+            std::string command =  environment->get( "command" ,  "" );
+            au::ErrorManager error;
+            filters_collection.addFilters( command , writer , &error );
+            
+            // Error defined by user
+            if( error.isActivated() )
+                tracer->setUserError( error.getMessage() );
+
 		}
 
 		void run( char *data , size_t length , samson::KVWriter *writer )
@@ -62,8 +78,17 @@ namespace system{
                  new_value->set_string( string_component.components[i] );
               }
 
-               //Emit the parsed key value
-               writer->emit( 0 , &key , &value );
+               
+               if( filters_collection.filters.size() > 0 )
+               {
+                   for( size_t f = 0 ; f < filters_collection.filters.size() ; f++ )
+                       filters_collection.filters[f]->run(&key, &value);
+               }
+               else
+               {                   
+                   //Emit the parsed key value
+                   writer->emit( 0 , &key , &value );
+               }
 		   }
 		}
 

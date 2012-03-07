@@ -38,14 +38,14 @@ namespace system{
 
 		void init( samson::KVWriter *writer )
 		{
-            command =  environment->get( "command" ,  "sum_double" ); // Default command
+            command =  environment->get( "command" ,  "sum" ); // Default command
 		}
 
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
             key.parse( inputs[0].kvs[0]->key );
             
-            if ( command == "sum_double" )
+            if ( command == "sum" )
             {
                 double total = 0;
                 for( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
@@ -59,16 +59,18 @@ namespace system{
                 writer->emit( 0 , &key , &value );
             }
             
-            if ( command == "average_double" )
+            if ( command == "average" )
             {
                 double total = 0;
                 for( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
                 {
-                    value.parse( inputs[0].kvs[i]->key );
-                    total += value.getDouble();
+                    value.parse( inputs[0].kvs[i]->value );
+                    double tmp =  value.getDouble();
+                    total += tmp;
                 }
-                
-                value =  ( total / (double) inputs[0].num_kvs);
+                total /= (double) inputs[0].num_kvs;
+                value = total;
+                printf("Average %lu %f %s\n" , inputs[0].num_kvs , total , value.str().c_str() );
                 writer->emit( 0 , &key , &value );
             }
 

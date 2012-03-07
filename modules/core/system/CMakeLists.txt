@@ -7,6 +7,7 @@ SET (AUX_HEADERS
 	operations/map_value_to_2_value.h	
 	operations/map_value_to_3_value.h	
 	operations/reduce_value_to_value.h
+	operations/update_state.h 
 	operations/Filter.h
 	operations/Filter.cpp
 )			  
@@ -63,6 +64,10 @@ SET (SOURCES
 )
 SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/Module.cpp PROPERTIES GENERATED 1)
 
+# Take all .cpp file in the compilation
+FILE( GLOB ADDITIONAL_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp  )
+MESSAGE("Addding ${ADDITIONAL_SOURCES}")
+
 # Install headers to be used by other modules
 FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
 
@@ -95,7 +100,8 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 # Include directory pointing to current dir and /usr/local/include
 IF (SVN_BUILD)
     include_directories("${PROJECT_SOURCE_DIR}/libs")
-    include_directories("${PROJECT_SOURCE_DIR}/modules/core/${MODULE_NAME}")
+    include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+    include_directories("${PROJECT_BINARY_DIR}/modules/${MODULE_NAME}")
 ELSE (NOT SVN_BUILD)
     include_directories("${PROJECT_SOURCE_DIR}")
     include_directories("${CMAKE_INSTALL_PREFIX}")

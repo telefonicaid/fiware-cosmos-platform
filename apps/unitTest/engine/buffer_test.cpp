@@ -149,7 +149,6 @@ TEST(bufferTest, skipReadTest) {
     buffer1->skipRead(3);
     buffer1->read(readBuffer, 4);
     readBuffer[4] = '\0';
-    //std::cout << "readBuffer: " << readBuffer << std::endl;
     //readbuffer should have started reading at 3 instead of 0
     EXPECT_EQ(strcmp(readBuffer, "3456"), 0) << "wrong data after skipRead";
 
@@ -165,7 +164,6 @@ TEST(bufferTest, readTest) {
     char readBuffer[5];
     buffer1->read(readBuffer, 4);
     readBuffer[4] = '\0';
-    //std::cout << "readBuffer: " << readBuffer << std::endl;
     EXPECT_EQ(strcmp(readBuffer, "0123"), 0) << "Reading error";
 
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
@@ -180,7 +178,6 @@ TEST(bufferTest, getSizePendingReadTest) {
     buffer1->write(data, 10);
     char readBuffer[5];
     buffer1->read(readBuffer, 4);
-    //std::cout << "readBuffer: " << readBuffer << std::endl;
     EXPECT_EQ(buffer1->getSizePendingRead(), 6) << "Wrong pending read size";
 
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
@@ -196,7 +193,6 @@ TEST(bufferTest, getDataTest) {
     char readBuffer[5];
     memcpy(readBuffer, buffer1->getData(), 4);
     readBuffer[4] = '\0';
-    //std::cout << "readBuffer: " << readBuffer << std::endl;
     EXPECT_EQ(strcmp(readBuffer, "0123"), 0) << "Error accesing buffer data pointer";
     
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
@@ -233,7 +229,6 @@ TEST(bufferTest, getSimpleBufferTest) {
     char readBuffer[5];
     memcpy(readBuffer, simple.getData(), 4);
     readBuffer[4] = '\0';
-    //std::cout << "readBuffer: " << readBuffer << std::endl;
     EXPECT_EQ(strcmp(readBuffer, "0123"), 0) << "Wrong data in the SimpleBuffer";
     
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
@@ -252,7 +247,6 @@ TEST(bufferTest, getSimpleBufferAtOffsetTest) {
     char readBuffer[5];
     memcpy(readBuffer, simple.getData(), 4);
     readBuffer[4] = '\0';
-    //std::cout << "readBuffer: " << readBuffer << std::endl;
     //The dta in the SimpleBuffer should start at 2 instead of 0
     EXPECT_EQ(strcmp(readBuffer, "2345"), 0) << "Wrong data in the SimpleBuffer";
 
@@ -309,7 +303,6 @@ TEST(bufferTest, getInfoTest) {
     
     std::ostringstream info;
     buffer1->getInfo( info );
-    //std::cout << info.str() << std::endl;
     
     //read and check xml
     XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"buffer");

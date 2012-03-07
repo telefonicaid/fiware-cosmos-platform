@@ -84,8 +84,6 @@ TEST(processManagerTest, addTest) {
     
     std::ostringstream info;
     engine::ProcessManager::shared()->getInfo( info );
-    std::cout << info.str() << std::endl;
-
 
     EXPECT_EQ(engine::ProcessManager::shared()->public_num_proccesses, 1);
 

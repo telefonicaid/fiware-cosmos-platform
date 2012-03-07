@@ -42,7 +42,6 @@ TEST(memoryManagerTest, getInfoTest) {
     //get info and check it is right
     std::ostringstream info;
     engine::MemoryManager::shared()->getInfo( info );
-    //std::cout << info.str() << std::endl;
 
     XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"memory_manager");
  
@@ -87,7 +86,6 @@ TEST(memoryManagerTest, addTest) {
     //get MemoryRequest info and check it is right
     std::ostringstream info;
     request->getInfo( info );
-    //std::cout << info.str() << std::endl;
 
     XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"memory_request");
     EXPECT_TRUE(!xMainNode.isEmpty());

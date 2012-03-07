@@ -14,7 +14,7 @@
 
 #include "gtest/gtest.h"
 
-#include "engine/DiskStatistics.h"
+//#include "engine/DiskStatistics.h"
 
 #include "xmlparser/xmlParser.h"
 

@@ -47,11 +47,11 @@ public:
 TEST(processItemTest, getStatusTest) {
     engine::Engine::init();
 
-    ProcessItemExample item;;
+    ProcessItemExample item;
     
-    EXPECT_EQ(item.getStatus(), "Q:10:Prewrite    0 Bytes") << "Error getting status";
+    EXPECT_EQ(item.getStatus(), "Q:5:unknown") << "Error getting status";
     EXPECT_TRUE(item.isReady()) << "Item should be ready";
-    EXPECT_EQ(item.getDescription(), "Process Item 'Prewrite    0 Bytes' Status: Q:10:Prewrite    0 Bytes") << "Error in description";
+    EXPECT_EQ(item.getDescription(), "Process Item 'unknown' Status: Q:5:unknown") << "Error in description";
     EXPECT_TRUE(item.isRunning()==false) << "Process item is not supposed to be running at this point";
 
 }
@@ -78,15 +78,14 @@ TEST(processItemTest, getInfoTest) {
     
     std::ostringstream info;
     item.getInfo( info );
-    //std::cout << "getInfo: " << info.str() << std::endl;
 
     //XML parsing
     XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"process_item");
     EXPECT_EQ(std::string(xMainNode.getChildNode("time").getClear().lpszValue), " 00:00:00") << "Error writing time tag";
     EXPECT_EQ(std::string(xMainNode.getChildNode("progress").getText()), "0") << "Error writing progress tag";
     EXPECT_EQ(std::string(xMainNode.getChildNode("state").getText()), "queued") << "Error writing state tag";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("priority").getText()), "10") << "Error writing priority tag";
-    EXPECT_TRUE(std::string(xMainNode.getChildNode("operation_name").getText()).find("Prewrite") != std::string::npos ) << "Error writing operation_name tag";
+    EXPECT_EQ(std::string(xMainNode.getChildNode("priority").getText()), "5") << "Error writing priority tag";
+    EXPECT_TRUE(std::string(xMainNode.getChildNode("operation_name").getText()).find("unknown") != std::string::npos ) << "Error writing operation_name tag";
 }
 
 

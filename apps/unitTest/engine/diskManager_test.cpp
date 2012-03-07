@@ -52,7 +52,6 @@ TEST(diskManagerTest, getInfoTest) {
 
     std::ostringstream info;
     engine::DiskManager::shared()->getInfo( info );
-    //std::cout << std::endl << info.str() << std::endl;
 
     //XML parsing
     XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_manager");

@@ -9,9 +9,9 @@ SET (SOURCES
     engine/processItem_test.cpp
     engine/operationscontainer_test.cpp
     engine/buffer_test.cpp
-    engine/diskStatistics_test.cpp
-    engine/diskOperation_test.cpp
-    engine/diskManager_test.cpp
+    #engine/diskStatistics_test.cpp
+    #engine/diskOperation_test.cpp
+    #engine/diskManager_test.cpp
     engine/memoryManager_test.cpp
     engine/engine_test.cpp
 )

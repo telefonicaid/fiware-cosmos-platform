@@ -54,8 +54,6 @@ TEST(operationsContainerTest, addMemoryRequestTest) {
 
     engine::MemoryRequest* request = new engine::MemoryRequest(10, 50.0, 1);
 
-    //std::cout << "container: " << container.getOperationsContainerStr() << std::endl;
-    
     container.add(request);
     container.erase(request);
     
@@ -82,6 +80,7 @@ TEST(operationsContainerTest, addDiskOperationTest) {
 }
 
 //Test void erase( engine::DiskOperation *diskOperation );
+/* //Commented out for using DiskManager
 TEST(operationsContainerTest, eraseDiskOperationTest) {
     engine::Engine::init();
     engine::OperationsContainer container;
@@ -89,7 +88,6 @@ TEST(operationsContainerTest, eraseDiskOperationTest) {
     char buffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 3 , 5, 0 );
 
-    
     container.add(operation);
     
     EXPECT_TRUE(container.getOperationsContainerStr().find("1 disk ops") != std::string::npos);
@@ -101,7 +99,7 @@ TEST(operationsContainerTest, eraseDiskOperationTest) {
 
     delete operation;
 }
-
+*/
  
 //Test void add( engine::ProcessItem *process_item );
 TEST(operationsContainerTest, addProcessItemTest) {
@@ -138,6 +136,7 @@ TEST(operationsContainerTest, eraseProcessItemTest) {
 }
 
 //Test bool hasPendingEngineOperations();
+/* //Commented out because it uses  DiskOperation
 TEST(operationsContainerTest, hasPendingEngineOperationsTest) {
     engine::Engine::init();
     engine::OperationsContainer container;
@@ -162,9 +161,10 @@ TEST(operationsContainerTest, hasPendingEngineOperationsTest) {
 
     delete operation;
 }
-
+*/
     
 //Test void cancelEngineOperations();
+/* //Commented out because it uses  DiskOperation
 TEST(operationsContainerTest, cancelEngineOperationsTest) {
     engine::Engine::init();
     engine::OperationsContainer container;
@@ -187,8 +187,10 @@ TEST(operationsContainerTest, cancelEngineOperationsTest) {
 
     delete operation;
 }
+*/
     
 //Test std::string getOperationsContainerStr();
+/* //Commented out because it uses  DiskOperation
 TEST(operationsContainerTest, getOperationsContainerStrTest) {
     engine::Engine::init();
     engine::OperationsContainer container;
@@ -206,9 +208,8 @@ TEST(operationsContainerTest, getOperationsContainerStrTest) {
     container.add(&item2);
     container.add(&item3);
     
-    //std::cout << "container: " << container.getOperationsContainerStr() << std::endl;
     EXPECT_TRUE(container.getOperationsContainerStr().find("1 disk ops & 3 item ops") != std::string::npos);
     
 }
 
-
+*/

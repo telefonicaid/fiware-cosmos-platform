@@ -27,7 +27,6 @@ TEST(diskOperationTest, getInfoTest) {
     
     std::ostringstream info;
     operation->getInfo( info );
-    //std::cout << info.str() << std::endl;
     
     //parse and check xml
     XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
@@ -50,7 +49,6 @@ TEST(diskOperationTest, newReadOperationTest) {
     //parse and check xml for the rest of values
     std::ostringstream info;
     operation->getInfo( info );
-    //std::cout << info.str() << std::endl;
     XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
     EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_data/test_data.txt") << "Wrong file_name in constructor";
     EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "6") << "Wrong size in constructor";
@@ -152,7 +150,6 @@ TEST(diskOperationTest, setErrorTest) {
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 3 , 6, 2 );
 
     operation->setError("Error test");
-    //std::cout << operation->error.getMessage()<< std::endl;
     EXPECT_EQ(operation->error.getMessage(), "Error test ( Read from file: 'test_filename.txt' Size:   6 B [6B] Offset:3 )");
 }
     

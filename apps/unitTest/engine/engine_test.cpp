@@ -50,7 +50,6 @@ TEST(engineTest, getInfoTest) {
 
     std::ostringstream info;
     engine::Engine::shared()->getInfo( info );
-    //std::cout << info.str() << std::endl;
     
     //XML parsing class
     XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"engine");
@@ -84,7 +83,6 @@ TEST(engineTest, notificationTest) {
     //get xml info and check it there
     std::ostringstream info;
     engine::Engine::shared()->getInfo( info );
-    //std::cout << info.str() << std::endl;
 
     XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"engine");
     XMLNode element1Node = xMainNode.getChildNode("elements").getChildNode("engine_element",0);
@@ -162,6 +160,7 @@ TEST(engineTest, getObjectByNameTest) {
 
 
 //quitEngineService()
+/*
 TEST(engineTest, quitEngineServiceTest) {
     //engine::Engine::init();
 
@@ -178,6 +177,6 @@ TEST(engineTest, quitEngineServiceTest) {
     
 }
 
-
+*/
 
 

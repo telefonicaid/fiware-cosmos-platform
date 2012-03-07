@@ -13,6 +13,8 @@ import es.tid.bdp.profile.dictionary.Dictionary;
  * @author dmicol, sortega
  */
 public class CSDictionary implements Dictionary {
+    public final String DEFAULT_COMSCORE_LIB =
+            "/opt/hadoop/lib/native/Linux-amd64-64/libcomscore.so";
     private boolean isInitialized;
     private final String dictionayFile;
     private CSDictionaryJNIInterface dictionary;
@@ -29,9 +31,9 @@ public class CSDictionary implements Dictionary {
         }
 
         System.setProperty(CSDictionaryJNIInterface.COMSCORE_LIB_PROPERTY,
-                "/opt/hadoop/lib/native/Linux-amd64-64/libcomscore.so");
+                DEFAULT_COMSCORE_LIB);
         this.dictionary = new CSDictionaryJNIInterface();
-        this.dictionary.loadCSDictionary(dictionayFile.toString());
+        this.dictionary.loadCSDictionary(dictionayFile);
         this.isInitialized = true;
     }
 

@@ -7,6 +7,7 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.log4j.Logger;
 
 import es.tid.bdp.profile.categoryextraction.CategoryExtractionJob;
 import es.tid.bdp.profile.export.mongodb.ExporterJob;
@@ -18,6 +19,11 @@ import es.tid.bdp.profile.userprofile.UserProfileJob;
  * @author dmicol, sortega
  */
 public class IndividualProfileMain extends Configured implements Tool {
+    public static final String INPUT_SERIALIZATION = "input.serialization";
+    public static final String PROTOBUF_SERIALIZATION = "protobuf";
+
+    private static final Logger logger = Logger.getLogger(
+            IndividualProfileMain.class);
     private static final String TMP_DIR = "/tmp/individualprofile";
     private static final String CATEGORIES_PATH = TMP_DIR + "/categories";
     private static final String PROFILE_PATH = TMP_DIR + "profile";
@@ -28,7 +34,8 @@ public class IndividualProfileMain extends Configured implements Tool {
         if (args.length < 1 || args.length > 2) {
             throw new IllegalArgumentException("Mandatory parameters: "
                     + "[-D input.serialization=text|protobuf] "
-                    + "weblogs_path [mongo_url]");
+                    + "weblogs_path [mongo_url]\n"
+                    + "\tDefault input serialization is protobuf");
         }
 
         Path webLogsPath = new Path(args[0]);
@@ -36,11 +43,12 @@ public class IndividualProfileMain extends Configured implements Tool {
         Path profilePath = new Path(PROFILE_PATH);
 
         CategoryExtractionJob ceJob = new CategoryExtractionJob(this.getConf());
-        if (this.getConf().get("input.serialization", "protobuf").equals("protobuf")) {
-            System.out.println("Protobuf input");
+        if (this.getConf().get(INPUT_SERIALIZATION, PROTOBUF_SERIALIZATION)
+                .equals(PROTOBUF_SERIALIZATION)) {
+            logger.info("Protobuf input");
             ceJob.configureProtobufInput();
         } else {
-            System.out.println("Text input");
+            logger.info("Text input");
             ceJob.configureTextInput();
         }
         ceJob.configurePaths(webLogsPath, categoriesPath);

@@ -10,7 +10,6 @@
 
 #include <jni.h>
 
-
 #include <signal.h>
 #include "au/LockDebugger.h"            // au::LockDebugger
 #include "au/ThreadManager.h"
@@ -41,7 +40,6 @@ JNIEXPORT jboolean JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDiction
 
 JNIEXPORT jintArray JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface_lookupCategories
   (JNIEnv *env, jobject jobj, jstring jurl) {
-
     jboolean isCopy;
     const char *url = env->GetStringUTFChars(jurl, &isCopy);
     std::vector<uint> categories =
@@ -60,7 +58,6 @@ JNIEXPORT jintArray JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictio
 
 JNIEXPORT jstring JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface_getCategoryName
   (JNIEnv *env, jobject jobj, jint jcategory) {
-
     const char *name = samson_comscore_dictionary.getCategoryName(jcategory);
     return env->NewStringUTF(name);
 }

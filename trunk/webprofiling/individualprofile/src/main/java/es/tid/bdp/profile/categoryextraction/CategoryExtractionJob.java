@@ -15,7 +15,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
-import es.tid.bdp.profile.export.mongodb.ExporterJob;
 import es.tid.bdp.profile.data.ProfileProtocol.WebProfilingLog;
 import es.tid.bdp.profile.export.mongodb.ExporterJob;
 
@@ -25,7 +24,8 @@ import es.tid.bdp.profile.export.mongodb.ExporterJob;
  */
 public class CategoryExtractionJob extends Job {
     private static final String JOB_NAME = "CategoryExtraction";
-    private static final String COM_SCORE_BASE = "/user/hdfs/comscore/";
+    private static final String COM_SCORE_BASE = "/user/hdfs/comscore/latest/";
+    private final String DEFAULT_DICTIONARY_NAME = "dictionary.bin";
 
     public CategoryExtractionJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
@@ -40,7 +40,7 @@ public class CategoryExtractionJob extends Job {
 
         // Distribution of dictionary files by the distributed cache
         this.conf.set(CategoryExtractionReducer.DICTIONARY_NAME_PROPERTY,
-                "dictionary.bin");
+                DEFAULT_DICTIONARY_NAME);
     }
 
     public void configureTextInput() throws IllegalStateException {

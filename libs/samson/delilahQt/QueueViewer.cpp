@@ -26,7 +26,7 @@ QueueViewer::QueueViewer(std::string _title, QWidget* parent): QWidget(parent)
     */
     QFont bigFont;
     QFont boldFont;
-    name = new QLabel("", this);
+    name = new QLabel(QString(title.c_str()), this);
     boldFont = name->font();
     boldFont.setBold(true);
     name->setFont(boldFont);

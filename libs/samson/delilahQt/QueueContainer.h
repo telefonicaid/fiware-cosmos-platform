@@ -36,6 +36,8 @@ class QueueContainer: public QWidget
         std::vector<QueueViewer*> in_queues;
         std::vector<QueueViewer*> out_queues;
         QueueViewer* totalQueues;
+        QueueViewer* totalInputQueues;
+        QueueViewer* totalOutputQueues;
 
         QGroupBox* inputBox;
         QGroupBox* outputBox;

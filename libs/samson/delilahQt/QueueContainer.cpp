@@ -56,6 +56,12 @@ QueueContainer::QueueContainer(QWidget* parent): QWidget(parent)
     totalQueues = new QueueViewer("Total", totalBox);
     totalQueues ->setHiddenButton(true);
     totalQueues->setLayout(totalLayout, 0);
+    totalInputQueues = new QueueViewer("Input", totalBox);
+    totalInputQueues ->setHiddenButton(true);
+    totalInputQueues->setLayout(totalLayout, 1);
+    totalOutputQueues = new QueueViewer("Output", totalBox);
+    totalOutputQueues ->setHiddenButton(true);
+    totalOutputQueues->setLayout(totalLayout, 2);
     totalBox->setLayout(totalLayout);
     
     connect(filterValue, SIGNAL(editingFinished()), this, SLOT(onFilterEdited()));
@@ -72,6 +78,15 @@ void QueueContainer::setData(std::vector<QueueData*> newQueuesData)
         size_t totalKvs = 0;
         size_t totalSize = 0;
         size_t totalRate = 0;
+        size_t totalRateKvs = 0;
+        size_t totalInputKvs = 0;
+        size_t totalInputSize = 0;
+        size_t totalInputRate = 0;
+        size_t totalInputRateKvs = 0;
+        size_t totalOutputKvs = 0;
+        size_t totalOutputSize = 0;
+        size_t totalOutputRate = 0;
+        size_t totalOutputRateKvs = 0;
         //For each queue, check if it has already a widget defined. otherwise create it
         for(unsigned int i = 0; i < queuesData.size(); i++)
         {
@@ -82,13 +97,28 @@ void QueueContainer::setData(std::vector<QueueData*> newQueuesData)
                 continue;
             }
             
+            //check if the queue belongs to the input or output queues list
+            bool is_input = (fnmatch("in_*", queuesData[i]->name.c_str(),0) == 0);
             //Increment totals
             totalKvs += atol(queuesData[i]->kvs.c_str());
             totalSize += atol(queuesData[i]->size.c_str());
             totalRate += atol(queuesData[i]->bytes_s.c_str());
+            totalRateKvs += atol(queuesData[i]->kvs_s.c_str());
+            if(is_input)
+            {
+                totalInputKvs += atol(queuesData[i]->kvs.c_str());
+                totalInputSize += atol(queuesData[i]->size.c_str());
+                totalInputRate += atol(queuesData[i]->bytes_s.c_str());
+                totalInputRateKvs += atol(queuesData[i]->kvs_s.c_str());
+            }
+            else
+            {
+                totalOutputKvs += atol(queuesData[i]->kvs.c_str());
+                totalOutputSize += atol(queuesData[i]->size.c_str());
+                totalOutputRate += atol(queuesData[i]->bytes_s.c_str());
+                totalOutputRateKvs += atol(queuesData[i]->kvs_s.c_str());
+            }
 
-            //check if the queue belongs to the input or output queues list
-            bool is_input = (fnmatch("in_*", queuesData[i]->name.c_str(),0) == 0);
             std::vector<QueueViewer*>* queuesList;
             QGroupBox* groupBoxTmp;
             QGridLayout* layoutTmp;
@@ -153,13 +183,28 @@ void QueueContainer::setData(std::vector<QueueData*> newQueuesData)
         {
             //Update Totals
             QueueData totalData = totalQueues->data;
+            QueueData totalInputData = totalInputQueues->data;
+            QueueData totalOutputData = totalOutputQueues->data;
             
             totalData.kvs = au::str("%lu", totalKvs);
             totalData.size = au::str("%lu", totalSize);
             totalData.bytes_s = au::str("%lu", totalRate);
+            totalData.kvs_s = au::str("%lu", totalRateKvs);
+            totalInputData.kvs = au::str("%lu", totalInputKvs);
+            totalInputData.size = au::str("%lu", totalInputSize);
+            totalInputData.bytes_s = au::str("%lu", totalInputRate);
+            totalInputData.kvs_s = au::str("%lu", totalInputRateKvs);
+            totalOutputData.kvs = au::str("%lu", totalOutputKvs);
+            totalOutputData.size = au::str("%lu", totalOutputSize);
+            totalOutputData.bytes_s = au::str("%lu", totalOutputRate);
+            totalOutputData.kvs_s = au::str("%lu", totalOutputRateKvs);
             
             totalQueues->setData(totalData);
             totalQueues->update();
+            totalInputQueues->setData(totalInputData);
+            totalInputQueues->update();
+            totalOutputQueues->setData(totalOutputData);
+            totalOutputQueues->update();
             
             //Hide or show emptiness labels
             if (in_queues.size() != 0)

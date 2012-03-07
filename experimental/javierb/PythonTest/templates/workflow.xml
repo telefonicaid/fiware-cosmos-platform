@@ -7,8 +7,11 @@
 	<!-- These actions run map reduce operations to calculate kpis of web profiling -->
 	
 	
+	<fork name="aggregation">
+		
+    </fork>
 	
-	
+	<join name="joining" to="end"/>
 		
     <kill name="fail">
         <message>Map/Reduce failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>

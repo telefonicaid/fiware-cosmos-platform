@@ -4,7 +4,12 @@ from django.shortcuts import render_to_response
 from django.views.decorators.csrf import csrf_protect
 from django.template import RequestContext
 from django.http import HttpResponseRedirect
+from Configuration.wizard import forms
 
+
+@csrf_protect    
+def configuration(request):
+    return forms.wizard(request)
 
 @csrf_protect
 def ingestion(request):
@@ -53,5 +58,4 @@ def webprofiling(request):
             template_form.save()
             return HttpResponseRedirect('../')
         else:
-            form = WebProfilingForm(request.POST)   
-    
+            form = WebProfilingForm(request.POST)

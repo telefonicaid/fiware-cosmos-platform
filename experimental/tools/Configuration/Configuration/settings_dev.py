@@ -33,7 +33,7 @@ TIME_ZONE = 'America/Chicago'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 
-SITE_ID = u'4f3cd43e367cfd0cdc00001d'
+SITE_ID = u'4f55f9ac1d6fa78a73b5eb9d'
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
@@ -120,7 +120,10 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
+    # NoSql Django apps
     'django_mongodb_engine',
+    'djangotoolbox',
+    # BDP Apps
     'wizard',
 )
 
@@ -146,3 +149,5 @@ LOGGING = {
         },
     }
 }
+
+LOGIN_URL= '/login/'

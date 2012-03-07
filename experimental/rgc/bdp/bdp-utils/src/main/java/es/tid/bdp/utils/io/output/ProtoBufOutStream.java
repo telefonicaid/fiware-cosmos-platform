@@ -21,7 +21,7 @@ public class ProtoBufOutStream extends OutputStream {
      * Constructor. Into the construct it loads the configuration from the
      * properties holder. It prepares the schema for generating the record and
      * the structure for parsing the line
-     * 
+     *
      * @param out
      *            a stream for writing output.
      */
@@ -35,7 +35,7 @@ public class ProtoBufOutStream extends OutputStream {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.io.OutputStream#write(int)
      */
     @Override
@@ -45,7 +45,7 @@ public class ProtoBufOutStream extends OutputStream {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.io.OutputStream#write(byte[], int, int)
      */
     @Override
@@ -58,7 +58,7 @@ public class ProtoBufOutStream extends OutputStream {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.io.OutputStream#close()
      */
     @Override
@@ -68,17 +68,6 @@ public class ProtoBufOutStream extends OutputStream {
         write(linea.toString());
         writer.finish();
         writer.close();
-
-    }
-
-    /**
-     * This method is for inject a mock writer for testing
-     * 
-     * @param writer
-     *            mock of writer, for testing
-     */
-    protected void setWriter(ProtobufBlockWriter<Message> writer) {
-        this.writer = writer;
     }
 
     /**
@@ -97,7 +86,7 @@ public class ProtoBufOutStream extends OutputStream {
 
     /**
      * This method parses the line and writes en the buffer
-     * 
+     *
      * @param string
      *            line with the data
      */

@@ -9,9 +9,9 @@
 	<a>{{ "1. Ingestion" }}</a> &rsaquo;&rsaquo;&rsaquo;
     <a>{{ "2. Pre-processing" }}</a> &rsaquo;&rsaquo;&rsaquo;
     {% ifequal step step_count %}
-		<a>{{ "3. Processing and Consumption" }}</a> &rsaquo;&rsaquo;&rsaquo;
-		<a id="a-ingestion">{{ "4. Final Step" }}</a><br/>
-	{% else %}	
+		<a>{{ "3. Processing and Consumption" }}</a> &rsaquo;&rsaquo;&rsaquo;    ...    &rsaquo;&rsaquo;&rsaquo;
+		<a id="a-ingestion">{{ step }}{{ ". New Step" }}</a><br/>
+	{% else %}
 		<a id="a-ingestion">{{ "3. Processing and Consumption" }}</a><br/>
 	{% endifequal %}	
     <form {% if form.form.is_multipart %}enctype="multipart/form-data" {% endif %}method="post" action="" id="{{ opts.module_name }}_form">{% csrf_token %}
@@ -71,20 +71,12 @@
             <input type="hidden" name="{{ step_field }}" value="{{ step0 }}" />
             {{ previous_fields|safe }}
 			
-			{% ifequal step step_count %}
-	            <div id="buttons-div" class="submit-row" align="right">
-	            	<input type="reset" value="Cancel" class="button" name="_cancel"/>
-             		<input type="button" value="&laquo; Back" class="button"/>
-                	<input type="submit" value="{% ifequal step step_count %}Finish{% else %}Next &raquo;{% endifequal %}" class="button" name="_save"/>                           	          
-	            </div>
-			{% else %}
-	            <div id="buttons-div" class="submit-row" align="right">
-	             	<input type="reset" value="Cancel" class="button" name="_cancel"/>
-             		<input type="button" value="&laquo; Back" class="button"/>
-             		<input type="submit" value="{% ifequal step step_count %}Finish{% else %}Add Step &raquo;{% endifequal %}" class="button" name="_save" style="width: 100px"/>             
-                	<input type="submit" value="Finish" class="button" name="_save"/>             
-	            </div>			
-			{% endifequal %}
+            <div id="buttons-div" class="submit-row" align="right">
+             	<input type="reset" value="Cancel" class="button" name="_cancel"/>
+            	<input type="button" value="&laquo; Back" class="button"/>
+            	<input type="submit" value="Add Step &raquo;" class="button" name="wizard_continue" style="width: 95px"/>             
+               	<input type="submit" value="Finish" class="button" name="_save"/>                           	                      
+            </div>			
 
             <script type="text/javascript">document.getElementById("{{ form.first_field.auto_id }}").focus();</script>
         </div>

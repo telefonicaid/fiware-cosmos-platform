@@ -30,22 +30,25 @@ class WebProfiling(object):
     def setName(self, name):
         path = "//action"
         properties = xpath.find( path, self.xmlTemplate)
-        properties[0].setAttribute("name", 'aggregation')
-        '''properties[0].setAttribute("name", 'action_' + str(name))'''
+        properties[0].setAttribute("name", 'action_' + str(name))
     
-    def __setPaths(self, template, moduleId, userConfig):
+    def setNext(self, name):
+        path = "//ok"
+        properties = xpath.find( path, self.xmlTemplate)
+        properties[0].setAttribute("to", name)
+    
+    def __setPaths(self, template, module, userConfig):
         path = "//property[name='mapred.input.dir']/value"
         inputProperty = xpath.find( path, self.xmlTemplate)
-        inputProperty[0].firstChild.data = "${nameNode}" + userConfig['defaultPath'] + userConfig['modules'][moduleId]['output'] + "/cleaned/" + "${outputDir}" 
+        inputProperty[0].firstChild.data = "${nameNode}" + userConfig['defaultPath'] + userConfig['modules'][str(module['_id'])]['output'] + "/cleaned/" + "${outputDir}" 
         
         path = "//property[name='mapred.output.dir']/value"
         inputProperty = xpath.find( path, self.xmlTemplate)
-        inputProperty[0].firstChild.data = "${nameNode}" + userConfig['defaultPath'] + userConfig['modules'][moduleId]['output'] + "/kpis/" + str(template['_id']) + "/${outputDir}"
+        inputProperty[0].firstChild.data = "${nameNode}" + userConfig['defaultPath'] + userConfig['modules'][str(module['_id'])]['output'] + "/kpis/" + str(template['_id']) + "/${outputDir}"
         
-    def getOoziesXml(self, template, userConfig, moduleId):
-        self.__setPaths(template, moduleId, userConfig)
+    def getOoziesXml(self, template, userConfig, module):
+        self.__setPaths(template, module, userConfig)
         values = template['attribute_values']
-        self.setName(template['_id'])
         attributes = self.db.wizard_FixedTemplates.find( {"name" : "WebProfilingTemplate"} )[0]['attributes']
         for att in attributes:
             header = att['label']['header']

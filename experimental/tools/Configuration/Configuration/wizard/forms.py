@@ -1,11 +1,12 @@
 from django import forms
 from django.forms.fields import ChoiceField
-from django.forms.widgets import RadioSelect,CheckboxSelectMultiple, Select
+from django.forms.widgets import RadioSelect,CheckboxSelectMultiple, Select, DateInput
 from django.contrib.formtools.wizard import FormWizard
 from django.shortcuts import render_to_response
 from Configuration.wizard.models import Template, Label, Configuration
 from djangotoolbox.fields import ListField
 from django.http import HttpResponseRedirect
+import datetime
 
 
 class ConfigurationForm(forms.Form):
@@ -46,7 +47,13 @@ class IngestionForm(forms.Form):
     mode = ChoiceField(widget=RadioSelect, choices=INGESTION_MODE_CHOICES)
     path = forms.CharField(max_length=200)
     size = forms.IntegerField()
+    initial_date = forms.DateField(initial=datetime.date.today, input_formats='%d/%m/%Y')
+    end_date = forms.DateField(input_formats='%d/%m/%Y')
+    frequency = forms.CharField(initial='1',required=False)
+    output = forms.CharField(max_length=200)
+    file_name = forms.CharField(max_length=200)
     
+        
     # Creates Template Model from Ingestion Form data
     def create_template_model(self):
         # Create Template
@@ -59,12 +66,22 @@ class IngestionForm(forms.Form):
         lbl1 = Label()
         lbl1.attribute['IngestionMode'] = dict  
         lbl2 = Label()
-        lbl2.attribute["IngestionAddress"] = self['path'].value()
+        lbl2.attribute["LandingArea"] = self['path'].value()
         lbl3 = Label()
         lbl3.attribute["IngestionSize"] = self['size'].value()
         lbl4 = Label()
         lbl4.attribute["ConfigurationName"] = self['name'].value()
-        tpl = Template( template = "IngestionTemplate", attribute_values = [lbl1,lbl2,lbl3,lbl4] )
+        lbl5 = Label()
+        lbl5.attribute["InitialDate"] = self['initial_date'].value()
+        lbl6 = Label()
+        lbl6.attribute["EndDate"] = self['end_date'].value()
+        lbl7 = Label()
+        lbl7.attribute["UploadFrequency"] = self['frequency'].value()
+        lbl8 = Label()
+        lbl8.attribute["OutputPath"] = self['output'].value()
+        lbl9 = Label()
+        lbl9.attribute["FileNamePattern"] = self['file_name'].value()
+        tpl = Template( template = "IngestionTemplate", attribute_values = [lbl1,lbl2,lbl3,lbl4,lbl5,lbl6,lbl7,lbl8,lbl9] )
         return tpl
 
     # Saves Ingestion Form, really saves Template Model
@@ -153,12 +170,12 @@ class WebProfilingForm(forms.Form):
     error_css_class = 'error'
     required_css_class = 'required'
     mode = ChoiceField(widget=RadioSelect, choices=CONSUMPTION_MODE_CHOICES)
-    grouping_fields = forms.ChoiceField(  required=False, 
-                                                    widget=Select,
-                                                    choices=ATTRIBUTE_FIELDS_CHOICES)
-    attributes_fields = forms.MultipleChoiceField(  required=False, 
-                                                    widget=CheckboxSelectMultiple,
-                                                    choices=ATTRIBUTE_FIELDS_CHOICES)
+    grouping_fields = forms.ChoiceField( required=False, 
+                                         widget=Select,
+                                         choices=ATTRIBUTE_FIELDS_CHOICES)
+    attributes_fields = forms.MultipleChoiceField( required=False, 
+                                                   widget=CheckboxSelectMultiple,
+                                                   choices=ATTRIBUTE_FIELDS_CHOICES)
     consumption_path = forms.CharField(max_length=200)
     job_name = forms.CharField(max_length=200)
     
@@ -212,6 +229,11 @@ class WebProfilingForm(forms.Form):
             return render_to_response('forms/error.html')
 
 class WizardForm(FormWizard): 
+    def process_step(self, request, form, step):
+        stp = step
+        if stp >= 3:
+            return ['forms/wizard_%s.html' % step, 'wizard/preProcessing.html']
+        
     def get_template(self,step):
         stp = step
         if stp == 0:
@@ -220,8 +242,8 @@ class WizardForm(FormWizard):
             return ['forms/wizard_%s.html' % step, 'wizard/preProcessing.html']
         elif stp == 2:
             return ['forms/wizard_%s.html' % step, 'wizard/webProfiling.html']
-        elif stp == 3:
-            return ['forms/wizard_%s.html' % step, 'wizard/webProfiling.html']
+        else:          
+            return ['forms/wizard_%s.html' % step, 'wizard/webProfiling.html']  
         
     def done(self, request, form_list):
         config = Configuration()
@@ -232,4 +254,17 @@ class WizardForm(FormWizard):
         config.name = form_list[0].cleaned_data['name']
         config.save()
         return HttpResponseRedirect('../')
-        
+
+
+RegisterWizard = WizardForm([IngestionForm, PreProcessingForm, WebProfilingForm]) 
+
+def wizard(request): 
+    if request.POST and 'wizard_continue' in request.POST: 
+        RegisterWizard.form_list.append(WebProfilingForm)
+    response = RegisterWizard(request) 
+    
+    hashes = [RegisterWizard.security_hash(request, RegisterWizard.get_form(i, request.POST)) for i in range(RegisterWizard.step)]  
+    
+    response['WizardHashes'] = hashes  
+      
+    return response

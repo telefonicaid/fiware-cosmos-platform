@@ -113,7 +113,7 @@ namespace samson {
 
             BlockLookupList*  lookupListGet();
             void              lookupListCreate(void);
-            const char*       lookup(const char* key);
+            std::string       lookup(const char* key);
 
             // Set and Get priority ( manual ordering if blocks are not assigned to tasks )
             void setPriority( int _priority );

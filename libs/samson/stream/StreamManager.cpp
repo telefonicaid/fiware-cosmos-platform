@@ -1183,15 +1183,12 @@ namespace samson {
                                       );
             }
 
-            // HG Range containing only this hash group
-            KVRange kv_range(hg, hg + 1);
-            
             if ( queue->list->blocks.size() == 0 )
                 return au::xml_simple(  "error" , au::str("No data in queue %s" , queue_name.c_str() ));
 
             // Look up this key
             BlockList list;
-            list.copyFrom(queue->list, kv_range);
+            list.copyFirstBlockFrom(queue->list, hg);
 
             if (list.blocks.size() == 0)
                 return au::xml_simple(  "error" , au::str("No data in queue %s" , queue_name.c_str() ));
@@ -1220,22 +1217,7 @@ namespace samson {
             delete key_data_instance;
             delete value_data_instance;
 
-            const char* value = block->lookup(key);
-            if (value == NULL)
-            {
-                LM_T(LmtRest, ("Key '%s' not found", key));
-                return au::xml_simple("error", au::str("No entry in queue %s for key %s", queue_name.c_str(), key));
-            }
-            else
-            {
-                LM_T(LmtRest, ("Found key '%s': '%s'", key, value));
-                std::ostringstream output;
-                au::xml_simple(output, "key",   key);
-                au::xml_simple(output, "value", value);
-                return output.str();
-            }
-
-            return au::xml_simple(  "error" , au::str("No entry in queue %s for key %s" , queue_name.c_str() , key ) );
+            return block->lookup(key);
         }
     }
 }

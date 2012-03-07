@@ -683,7 +683,7 @@ namespace samson {
         }
 
 
-        const char* Block::lookup(const char* key)
+        std::string Block::lookup(const char* key)
         {
             int            hashGroup;
             int            keySize;
@@ -719,7 +719,7 @@ namespace samson {
 
                     valueDataInstance->parse(valueP);
 
-                    return valueDataInstance->strXMLInternal("value").c_str();
+                    return keyDataInstance->strXMLInternal("key") + valueDataInstance->strXMLInternal("value");
                 }
 
                 if (compare < 0) // keyName < testKey => Go to the left - to 'smaller' key names

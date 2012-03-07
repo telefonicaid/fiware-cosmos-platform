@@ -265,6 +265,24 @@ namespace samson {
             }
         }
         
+        void BlockList::copyFirstBlockFrom(BlockList* list, int hashgroup)
+        {
+            au::list<Block>::iterator  b;
+            KVRange                    range(hashgroup, hashgroup + 1);
+
+            for (b = list->blocks.begin(); b != list->blocks.end(); b++)
+            {
+                Block*  block       = *b;
+                KVRange block_range = block->getKVRange();
+                
+                if (block_range.overlap(range))
+                {
+                    add(block);
+                    return;
+                }
+            }
+        }
+
         bool BlockList::extractBlockFrom( BlockList *list )
         {
             if( list->blocks.size() == 0)

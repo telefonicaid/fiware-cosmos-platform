@@ -131,7 +131,8 @@ namespace samson {
             void copyFrom( BlockList* list , size_t max_size );
             void copyFrom( BlockList* list , KVRange range );
             void copyFrom( BlockList* list , KVRange range , bool exclusive , size_t max_size );
-            
+            void copyFirstBlockFrom(BlockList* list, int hashgroup);
+
             // Extract blocks of data
             void extractFrom( BlockList* list , size_t max_size = 0 );
             bool extractBlockFrom( BlockList *list );

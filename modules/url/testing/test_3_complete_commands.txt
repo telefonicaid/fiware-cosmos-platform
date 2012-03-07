@@ -1,3 +1,0 @@
-remove_all
-url.test_3 out.txt -clear -create
-download out.txt out.txt

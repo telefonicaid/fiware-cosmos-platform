@@ -1,7 +1,0 @@
-remove_all
-url.test_1 out.txt -clear -create
-download  urls.txt urls.txt
-download servers.txt servers.txt
-download categories.txt categories.txt
-
-download out.txt out.txt

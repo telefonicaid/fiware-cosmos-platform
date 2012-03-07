@@ -1,3 +1,0 @@
-#remove_all
-twitter.test_1 out.txt -clear -create
-download out.txt out.txt

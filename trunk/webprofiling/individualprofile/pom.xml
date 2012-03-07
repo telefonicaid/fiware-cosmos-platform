@@ -3,17 +3,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <properties>
-        <copyright.year>2012</copyright.year>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <org.apache.hadoop>0.20.2</org.apache.hadoop>
-        <org.apache.hadoop.hive>0.7.1</org.apache.hadoop.hive>
-        <jvm.version>1.6</jvm.version>
-        <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
-        <protoc.path>protoc</protoc.path>
-    </properties>
-
     <profiles>
         <profile>
             <id>jenkins</id>

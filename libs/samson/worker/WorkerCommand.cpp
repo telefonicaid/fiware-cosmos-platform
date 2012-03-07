@@ -776,6 +776,17 @@ namespace samson {
                 char levels[1024];
 
                 lmTraceGet(levels);
+                
+                
+                samson::network::Collection* collection = new  samson::network::Collection();
+                collection->set_title("Trace information");
+                collection->set_name("trace_levels");
+                
+                samson::network::CollectionRecord* record = collection->add_record();
+                
+                ::samson::add(record, "Trace levels", levels, "left,different" );
+                collections.push_back(collection);
+                
                 finishWorkerTask();
                 return;
             }

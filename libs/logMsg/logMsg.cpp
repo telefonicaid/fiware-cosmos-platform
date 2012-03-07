@@ -1074,6 +1074,7 @@ char* lmTraceGet(char* levelString)
 	if (j == 0)
 	{
 		LOG_OUT(("returning '%s'", levelString));
+        snprintf(levelString, 80, "empty");
 		return levelString;
 	}
 	
@@ -1111,7 +1112,7 @@ char* lmTraceGet(char* levelString)
 			strncat(levelString, str, 80 - 1);
 		}
 	}
-	
+    
 	return levelString;
 }
 

@@ -128,6 +128,9 @@ namespace samson
             line << timeString << "Received buffer with size " << au::str(size,"B") << " from queue " << queue;
             mainWindow->updateQueuesFeed(queue, line.str());
         }
+        
+        //Destroy Buffer
+        engine::MemoryManager::shared()->destroyBuffer(buffer);
     }
 
     void DelilahQt::onConnectionUpdate(ConnectQueueParameters params)

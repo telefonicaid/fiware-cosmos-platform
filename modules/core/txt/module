@@ -99,16 +99,11 @@ parser parser_collocations_stripes
 
 script demo
 {
-
-	code
-	{
-		add txt.input -txt -f;					# Create incomming txt queue
-		add txt.input_bin system.String system.UInt -f;		# Create incomming queue in binary format
-
-		add txt.words system.String system.UInt -f;		# Create accumulated set for the words
-
-		clear txt.input txt.input_bin txt.words; 		# Clean everything to begin...
-	}
+    code
+    {
+        add_stream_operation p txt.parser_words input words;
+        add_stream_operation c txt.word_count2 words state state;
+    }
 }
 
 script words

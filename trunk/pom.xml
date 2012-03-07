@@ -183,28 +183,21 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>2.7</version>
             </plugin>
-			<!-- plugin para reports de sonar -->
             <plugin>
                 <groupId>org.codehaus.sonar-plugins</groupId>
                 <artifactId>maven-report</artifactId>
                 <version>0.1</version>
             </plugin>
-			<!-- Plugin para generar los referencias 
-				cruzadas del cÃ?digo -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
                 <version>2.2</version>
             </plugin>
-			<!-- Plugin para generar los informes de 
-				entregas al SVN por desarrollador -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-changelog-plugin</artifactId>
                 <version>2.2</version>
             </plugin>
-			<!-- Plugin para generar los reports de calidad 
-				de codigo. Faltaria definir las metricas a aplicar -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
@@ -235,15 +228,11 @@
                 <artifactId>jdepend-maven-plugin</artifactId>
                 <version>2.0-beta-2</version>
             </plugin>
-			<!-- Plugin para generar los informes del 
-				JUNIT -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
                 <version>2.7.2</version>
             </plugin>
-			<!-- Plugin para analizar las tags en el 
-				cÃ?digo, por ejemplo para generar un informe con todos los TODO -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>taglist-maven-plugin</artifactId>
@@ -257,15 +246,11 @@
                     </tags>
                 </configuration>
             </plugin>
-			<!-- Plugin para generar informes de calidad 
-				del codigo -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>2.6</version>
             </plugin>
-			<!-- Genera los informes de Cobertura de 
-				los Test -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
@@ -378,7 +363,7 @@
         </developer>
         <developer>
             <id>sortega</id>
-            <name>Sebastián Ortega</name>
+            <name>Sebasti√°n Ortega</name>
             <email>sortega@tid.es</email>
             <roles>
                 <role>developer</role>
@@ -390,7 +375,7 @@
         </developer>
         <developer>
             <id>rgc</id>
-            <name>Rubén González Caballero</name>
+            <name>Rub√©n Gonz√°lez Caballero</name>
             <email>rgc@tid.es</email>
             <roles>
                 <role>developer</role>

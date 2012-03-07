@@ -1,5 +1,6 @@
 PROJECT(SamsonComscore)
 cmake_minimum_required(VERSION 2.6)
+set(THIRD_PARTY ../../../../../../third-party/)
 
 #
 # DEBUG or RELEASE build ?
@@ -52,24 +53,18 @@ SET(CMAKE_INCLUDE_DIRECTORIES_PROJECT_BEFORE TRUE)
 # Common include
 #
 include_directories("/opt/local/include")
+include_directories("${THIRD_PARTY}/samson/include")
 #
 # Library directories
 #
+cmake_policy(SET CMP0015 NEW)
 link_directories("/opt/local/lib")
 link_directories("/usr/lib64")
-
-# QT check
-FIND_PATH( HAVE_QT Qt PATHS /opt/local/include /usr/include/qt4 )
-if ( HAVE_QT )
-    MESSAGE("Using ${HAVE_QT} for QT")
-else ( HAVE_QT )
-    MESSAGE("Not using QT library")
-endif (HAVE_QT)
-
-
-# Indicate that this is an SVN build
-# Modules use this variable to determine which files to use
-#SET (SVN_BUILD TRUE)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    link_directories("${THIRD_PARTY}/samson/linux/lib")
+else (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    link_directories("${THIRD_PARTY}/samson/macosx/lib")
+endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 #
 # Architecture 
@@ -94,7 +89,6 @@ FIND_PACKAGE(JNI REQUIRED)
 #
 if (error EQUAL 0)
   MESSAGE("cmake: OK")
-  ADD_SUBDIRECTORY(libs)
 
   ADD_CUSTOM_COMMAND(OUTPUT es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface.h COMMAND ${Java_JAVAH_EXECUTABLE} -jni -classpath ../../../target/classes/ es.tid.bdp.profile.dictionary.comscore.CSDictionaryJNIInterface)
   INCLUDE_DIRECTORIES(${JNI_INCLUDE_DIRS})

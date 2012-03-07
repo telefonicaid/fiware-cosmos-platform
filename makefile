@@ -110,8 +110,14 @@ install_scripts:
 	cp etc/profile.d 
  
 clean:
-	make -C BUILD_DEBUG clean
-	make -C BUILD_RELEASE clean	
+	if [ -d BUILD_DEBUG ]; then \
+		make -C BUILD_DEBUG clean; \
+	fi
+	if [ -d BUILD_RELEASE ]; then \
+		make -C BUILD_RELEASE clean; \
+	fi
+	rm -rf BUILD_DEBUG
+	rm -rf BUILD_RELEASE
 
 # ------------------------------------------------
 # Platform RELEASE version
@@ -263,7 +269,7 @@ clear_ipcs:
 set_ssm_linux:
 	sudo sysctl -w kernel.shmmax=64000000
 
-rpm:
+rpm: clean cleansvn
 	mkdir -p ~/rpmbuild/{BUILD,RPMS,S{OURCE,PEC,RPM}S}
 	rm -f ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
 	tar cz --transform 's,^./,samson-$(SAMSON_VERSION)/,' .  --show-transformed-names --exclude=*.svn* -f ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz

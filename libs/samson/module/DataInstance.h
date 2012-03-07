@@ -25,7 +25,7 @@ namespace samson {
 	{
 	public:
 		virtual int          parse(char *data) = 0;						// Parse input buffer (return bytes read)
-		virtual int          serialize(char *data)= 0;					// Serialize to a vector (returns bytes writed)
+		virtual int          serialize(char *data)= 0;					// Serialize to a vector (returns bytes written)
 
 		virtual int          hash(int max_max) = 0;						// Hash function when this is used as key
         virtual int          partition( int num_partitions )

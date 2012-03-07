@@ -11,7 +11,8 @@
  * A block is a unit of data possibly in memory with replication of disk
  *
  */
-
+#include "au/Token.h"
+#include "au/TokenTaker.h"
 
 #include "au/simple_map.h"                         // au::simple_map
 
@@ -38,9 +39,27 @@ namespace samson {
         class BlockList;
         
         /**
-         Main class to hold a block on memory
+         Main class to hold a block in memory
          */
         
+        typedef struct BlockLookupRecord
+        {
+            char* keyP;
+        } BlockLookupRecord;
+
+        typedef struct BlockHashLookupRecord
+        {
+            size_t  startIx;
+            size_t  endIx;
+        } BlockHashLookupRecord;
+
+        typedef struct BlockLookupList
+        {
+            BlockLookupRecord*      head;
+            size_t                  size;
+            BlockHashLookupRecord*  hashInfo;
+        } BlockLookupList;
+
         class Block :  public engine::Object
         {
             
@@ -65,6 +84,8 @@ namespace samson {
             
             int requests;					// Number of times block has been detected as "not in memory" when scheduling a task;
 
+            au::Token token_lookup_creation;
+
             typedef enum
             {
                 on_memory,      // Initial state
@@ -79,14 +100,20 @@ namespace samson {
             au::Cronometer last_used; // Cronometer to indicate the last time it was used
             
         private:
-            
             // Constructor only visible in a BlockList
             Block( engine::Buffer *buffer  );
             Block( size_t _worker_id , size_t _id , size_t _size , KVHeader* _header );
             
-        public:
             
+            BlockLookupList lookupList;
+
+        public:
+
             ~Block();
+
+            BlockLookupList*  lookupListGet();
+            void              lookupListCreate(void);
+            const char*       lookup(const char* key);
 
             // Set and Get priority ( manual ordering if blocks are not assigned to tasks )
             void setPriority( int _priority );

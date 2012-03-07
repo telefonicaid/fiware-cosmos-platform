@@ -1,50 +1,46 @@
 
 
-#include <string>           // std::string
-#include <algorithm>        // std::ort
-#include <sstream>          // std::stringstream
+#include <string>                                   // std::string
+#include <algorithm>                                // std::ort
+#include <sstream>                                  // std::stringstream
 #include <sys/types.h>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <fnmatch.h>
-#include "au/time.h"            // au::todayString()
-#include "au/file.h"            
 
-#include "engine/Engine.h"              // engine::Engine
+#include "au/time.h"                                // au::todayString()
+#include "au/file.h"            
+#include "engine/Engine.h"                          // engine::Engine
 #include "engine/MemoryManager.h"
 #include "engine/Notification.h"
 #include "engine/DiskOperation.h"
 #include "engine/DiskManager.h"
-
 #include "samson/common/EnvironmentOperations.h"    // copyEnviroment
 #include "samson/common/SamsonSetup.h" 
 #include "samson/common/MessagesOperations.h"
-
-#include "samson/module/ModulesManager.h"   // ModulesManager
-
+#include "samson/module/ModulesManager.h"           // ModulesManager
 #include "samson/worker/SamsonWorker.h"
-
-#include "samson/stream/BlockBreakQueueTask.h"        // samson::stream::BlockBreakQueueTask
-#include "samson/stream/BlockManager.h"         // samson::BlockManager
-#include "samson/stream/PopQueue.h"             // stream::PopQueue
+#include "samson/stream/BlockBreakQueueTask.h"      // samson::stream::BlockBreakQueueTask
+#include "samson/stream/BlockManager.h"             // samson::BlockManager
+#include "samson/stream/PopQueue.h"                 // stream::PopQueue
 #include "samson/stream/QueueTask.h"
 #include "samson/stream/Queue.h"
-#include "samson/stream/QueueTasks.h"            // samson::stream::ParserQueueTask
+#include "samson/stream/QueueTasks.h"               // samson::stream::ParserQueueTask
 #include "samson/stream/BlockList.h"                // BlockList
 #include "samson/stream/Queue.h"
 #include "samson/stream/SystemQueueTask.h"
 #include "samson/stream/PopQueueTask.h"
 #include "samson/stream/StreamOperation.h"
 #include "samson/stream/StreamOutput.h"
-#include "Queue.h"          // samson::stream::Queue
-#include "Block.h"          // samson::stream::Block
+#include "Queue.h"                                  // samson::stream::Queue
+#include "Block.h"                                  // samson::stream::Block
 
+#include "StreamManager.h"                          // Own interface
 
-#include "StreamManager.h"                      // Own interface
 
 
 namespace samson {
-    namespace stream{
+    namespace stream {
     
         
         
@@ -1140,8 +1136,10 @@ namespace samson {
             }
         }
         
-        std::string StreamManager::getState( std::string queue_name , const char * key )
+        std::string StreamManager::getState(std::string queue_name, const char* key)
         {
+            LM_T(LmtRest, ("looking up key '%s' in queue '%s'", key, queue_name.c_str()));
+
             Queue* queue = queues.findInMap(queue_name);
             if (!queue)
                 return au::xml_simple( "error" , au::str("Queue '%s' not found" , queue_name.c_str() ));
@@ -1151,111 +1149,93 @@ namespace samson {
             if (format.isGenericKVFormat())
                 return au::xml_simple( "error" , au::str("Queue '%s' is of generic format '%s'" , queue_name.c_str() , format.str().c_str() ));
             
-            Data* key_data = ModulesManager::shared()->getData( format.keyFormat );
+            Data* key_data   = ModulesManager::shared()->getData( format.keyFormat );
             Data* value_data = ModulesManager::shared()->getData( format.valueFormat );
 
             if( !key_data || !value_data )
                 return au::xml_simple( "error" , au::str("Queue '%s' has wrong format" , queue_name.c_str() ));
                 
             DataInstance* reference_key_data_instance  = (DataInstance*)key_data->getInstance();
-            
+
             DataInstance* key_data_instance            = (DataInstance*)key_data->getInstance();
             DataInstance* value_data_instance          = (DataInstance*)value_data->getInstance();
-            
+
             // Get all the information from the reference key
-            reference_key_data_instance->setFromString( key );
-            
-            char tmp_buffer[1024];
-            int reference_key_size = reference_key_data_instance->serialize( tmp_buffer );
+            reference_key_data_instance->setFromString(key);
             
             // Get hashgroup
-            int hg = reference_key_data_instance->hash( KVFILE_NUM_HASHGROUPS );
+            int hg = reference_key_data_instance->hash(KVFILE_NUM_HASHGROUPS);
+            LM_T(LmtRest, ("Hash group: %d", hg));
 
-            
             // Cluster information to discover if we redirect this query
-            std::vector<size_t> worker_ids = worker->network->getWorkerIds();
-            int server = reference_key_data_instance->partition(  worker_ids.size() );
-            size_t worker_id = worker_ids[server];
-            size_t my_worker_id = worker->network->getMynodeIdentifier().id;
+            std::vector<size_t> worker_ids    = worker->network->getWorkerIds();
+            int                 server        = reference_key_data_instance->partition(  worker_ids.size() );
+            size_t              worker_id     = worker_ids[server];
+            size_t              my_worker_id  = worker->network->getMynodeIdentifier().id;
 
-            if( worker_ids[server] != my_worker_id )
+            if (worker_ids[server] != my_worker_id)
             {
-                // Redirect to the rigth server
                 std::string host = worker->network->getHostForWorker( worker_id );
+
+                LM_T(LmtRest, ("Redirect to the right server (%s)", host.c_str()));
                 return au::xml_simple(  "error" 
                                       , au::str("Redirect to %s/samson/state/%s/%s" , host.c_str() , queue_name.c_str() , key )
                                       );
             }
 
-            // HG Range containing only this range
-            KVRange kv_range( hg , hg+1 );
-            
+            // HG Range containing only this hash group
+            KVRange kv_range(hg, hg + 1);
             
             if ( queue->list->blocks.size() == 0 )
                 return au::xml_simple(  "error" , au::str("No data in queue %s" , queue_name.c_str() ));
 
             // Look up this key
             BlockList list;
-            list.copyFrom( queue->list , kv_range );
+            list.copyFrom(queue->list, kv_range);
 
-            if ( list.blocks.size() == 0 )
+            if (list.blocks.size() == 0)
                 return au::xml_simple(  "error" , au::str("No data in queue %s" , queue_name.c_str() ));
-            else
+
+            Block* block = *list.blocks.begin();
+            LM_T(LmtRest, ("Any faster way to get the block ?"));
+
+            if (!block->isContentOnMemory())
             {
-                Block* block = *list.blocks.begin();
-                
-                if( !block->isContentOnMemory() )
-                {
-                    delete reference_key_data_instance;
-                    delete key_data_instance;
-                    delete value_data_instance;
-                    return au::xml_simple(  "error" , au::str("Block not in memory for queue %s" , queue_name.c_str() ) );
-                }
-                
-                //KVInfo* info = (KVInfo*)( block->getData() + sizeof(KVHeader)); 
-                char *data = block->getData() + KVFILE_TOTAL_HEADER_SIZE; // We skip the kvs/size vector
-                
-                size_t offset = 0;
-                size_t num_kvs = block->getHeader().info.kvs;
-                
-                for ( size_t i = 0 ; i < num_kvs ; i++ )
-                {
-                    int key_size   = key_data_instance->parse(data+offset);
-                    int value_size = value_data_instance->parse(data+offset+key_size);
-                    
-                    //int c = key_data_instance->serial_compare( data , tmp_buffer );
-                    
-                    if( reference_key_size == key_size )
-                    {
-                        
-                        char * s1 = data+offset;
-                        char * s2 = tmp_buffer;
-                        
-                        if( memcmp(s1, s2, key_size) == 0 )
-                        {
-                            std::ostringstream output;
-                            output << key_data_instance->strXMLInternal("key");
-                            output << value_data_instance->strXMLInternal("value");
-
-                            delete reference_key_data_instance;
-                            delete key_data_instance;
-                            delete value_data_instance;
-
-                            return output.str();
-                        }
-                    }
-
-                    // Move to the next one
-                    offset += key_size + value_size;
-                }
-                
+                LM_T(LmtRest, ("Sorry, block not in memory ..."));
                 delete reference_key_data_instance;
                 delete key_data_instance;
                 delete value_data_instance;
-                return au::xml_simple(  "error" , au::str("No entry in queue %s for key %s" , queue_name.c_str() , key ) );
+                return au::xml_simple(  "error" , au::str("Block not in memory for queue %s" , queue_name.c_str() ) );
+            }
+                
+            BlockLookupList* blockLookupList = block->lookupListGet();
+            if (blockLookupList->head == NULL)
+            {
+                LM_T(LmtRest, ("calling block->lookupListCreate"));
+                block->lookupListCreate();
+                LM_T(LmtRest, ("block->lookupListCreate done"));
             }
             
-        }
+            delete reference_key_data_instance;
+            delete key_data_instance;
+            delete value_data_instance;
 
+            const char* value = block->lookup(key);
+            if (value == NULL)
+            {
+                LM_T(LmtRest, ("Key '%s' not found", key));
+                return au::xml_simple("error", au::str("No entry in queue %s for key %s", queue_name.c_str(), key));
+            }
+            else
+            {
+                LM_T(LmtRest, ("Found key '%s': '%s'", key, value));
+                std::ostringstream output;
+                au::xml_simple(output, "key",   key);
+                au::xml_simple(output, "value", value);
+                return output.str();
+            }
+
+            return au::xml_simple(  "error" , au::str("No entry in queue %s for key %s" , queue_name.c_str() , key ) );
+        }
     }
 }

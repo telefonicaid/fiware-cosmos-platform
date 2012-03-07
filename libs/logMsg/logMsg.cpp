@@ -983,11 +983,10 @@ LmStatus lmTraceSet(char* levelFormat)
 {
 	INIT_CHECK();
 
-	if (levelFormat == NULL)
-		return LmsOk;
-
 	subLevels(tLevel, 0, TRACE_LEVELS - 1);
-	traceFix(levelFormat, ADD);
+
+	if (levelFormat != NULL)
+        traceFix(levelFormat, ADD);
 
 	return LmsOk;
 }

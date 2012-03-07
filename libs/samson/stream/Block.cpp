@@ -1,22 +1,26 @@
 
-#include "logMsg/logMsg.h"                     // LM_W
+#include "logMsg/logMsg.h"                          // LM_W
 
 
-#include "engine/DiskOperation.h"       // engine::DiskOperation
-#include "engine/DiskManager.h"        // notification_disk_operation_request_response
-#include "engine/Engine.h"              // engine::Engine
-#include "engine/Notification.h"       // engine::Notification
-#include "engine/MemoryManager.h"       // engine::MemoryManager
+#include "au/TokenTaker.h"
+
+#include "engine/DiskOperation.h"                   // engine::DiskOperation
+#include "engine/DiskManager.h"                     // notification_disk_operation_request_response
+#include "engine/Engine.h"                          // engine::Engine
+#include "engine/Notification.h"                    // engine::Notification
+#include "engine/MemoryManager.h"                   // engine::MemoryManager
 
 #include "samson/common/MessagesOperations.h"
-#include "samson/common/MemoryTags.h"                 // MemoryBlocks
-#include "samson/common/SamsonSetup.h"                // samson::SamsonSetup
+#include "samson/common/MemoryTags.h"               // MemoryBlocks
+#include "samson/common/SamsonSetup.h"              // samson::SamsonSetup
+#include "samson/module/ModulesManager.h"           // ModulesManager
+#include "PopQueueTask.h"                           // samson::stream::PopQueueTask
+#include "BlockManager.h"                           // BlockManager
+#include "BlockList.h"                              // BlockList
 
-#include "PopQueueTask.h"               // samson::stream::PopQueueTask
-#include "BlockManager.h"               // BlockManager
-#include "BlockList.h"                  // BlockList
+#include "Block.h"                                  // Own interface
 
-#include "Block.h"                      // Own interface
+
 
 namespace samson {
     namespace stream
@@ -46,7 +50,7 @@ namespace samson {
         }
         
         
-        Block::Block( engine::Buffer *_buffer )
+        Block::Block( engine::Buffer *_buffer ) : token_lookup_creation("lookupCreation")
         {
             // Get a new unique id from the block manager
             worker_id = BlockManager::shared()->getWorkerId();
@@ -74,10 +78,11 @@ namespace samson {
 
             LM_T(LmtBlockManager, ("Block created from buffer: %s", this->str().c_str()));
 
-            
+            lookupList.head     = NULL;
+            lookupList.hashInfo = NULL;
         }
         
-        Block::Block( size_t _worker_id , size_t _id , size_t _size , KVHeader* _header )
+        Block::Block( size_t _worker_id , size_t _id , size_t _size , KVHeader* _header ) : token_lookup_creation("lookupCreation")
         {
             // Get a new unique id from the block manager
             worker_id = _worker_id;
@@ -100,12 +105,18 @@ namespace samson {
 
             LM_T(LmtBlockManager,("Block created from id: %s", this->str().c_str()));
 
+            lookupList.head     = NULL;
+            lookupList.hashInfo = NULL;
         }
         
 
         Block::~Block()
         {
-            
+            if (lookupList.head != NULL)
+                free(lookupList.head);
+            if (lookupList.hashInfo != NULL)
+                free(lookupList.hashInfo);
+
             // Destroy buffer if still in memory
             if( buffer )
                 engine::MemoryManager::shared()->destroyBuffer( buffer );
@@ -583,5 +594,144 @@ namespace samson {
         }
 
 
+
+        void Block::lookupListCreate(void)
+        {
+            au::TokenTaker tt(&token_lookup_creation);
+
+            LM_T(LmtRest, ("Creating lookup list"));
+            // semTake();
+            lookupList.head = (BlockLookupRecord*) calloc(header->info.kvs, sizeof(BlockLookupRecord));
+            lookupList.size = header->info.kvs;
+
+            if (lookupList.head == NULL)
+                LM_RVE(("Error allocating lookupList.head of %d bytes", header->info.kvs * sizeof(BlockLookupRecord)));
+
+            lookupList.hashInfo = (BlockHashLookupRecord*) calloc(KVFILE_NUM_HASHGROUPS, sizeof(BlockHashLookupRecord)); 
+            if (lookupList.hashInfo == NULL)
+            {
+                free(lookupList.head);
+                lookupList.head = NULL;
+                LM_RVE(("Error allocating lookupList.hashInfo of %d bytes", KVFILE_NUM_HASHGROUPS * sizeof(BlockHashLookupRecord)));
+            }
+
+            LM_T(LmtRest, ("Created a lookup list for %d records", header->info.kvs));
+            
+            unsigned int  hashIx;
+            unsigned int  kvIx;
+            KVFormat      kvFormat            = getKVFormat();
+            unsigned int  offset              = 0;
+            unsigned int  noOfKvs             = 0;
+            KVInfo*       kvInfoV             = (KVInfo*) (getData() + sizeof(KVHeader)); 
+            char*         kvsStart            = getData() + sizeof(KVHeader) + sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
+            Data*         keyData             = ModulesManager::shared()->getData(kvFormat.keyFormat);
+            Data*         valueData           = ModulesManager::shared()->getData(kvFormat.valueFormat);
+            DataInstance* keyDataInstance     = (DataInstance*) keyData->getInstance();
+            DataInstance* valueDataInstance   = (DataInstance*) valueData->getInstance();
+            int           maxEntries          = 0;
+            int           maxEntryHashGroup   = -1;
+
+            for (hashIx = 0; hashIx < KVFILE_NUM_HASHGROUPS; hashIx++)
+            {
+                if (kvInfoV[hashIx].kvs != 0)
+                {
+                    int entries = kvInfoV[hashIx].kvs;
+
+                    if (entries > maxEntries)
+                    {
+                        maxEntries        = entries;
+                        maxEntryHashGroup = hashIx;
+                    }
+
+                    LM_T(LmtRest, ("setting hashInfo[%d]: %d-%d (%d entries in hashgroup - max entries is %d)", hashIx, noOfKvs, noOfKvs + kvInfoV[hashIx].kvs, entries, maxEntries));
+                }
+
+                lookupList.hashInfo[hashIx].startIx = noOfKvs;
+                lookupList.hashInfo[hashIx].endIx   = noOfKvs + kvInfoV[hashIx].kvs;
+
+                for (kvIx = 0; kvIx < kvInfoV[hashIx].kvs; kvIx++)
+                {
+                    int keySize   = keyDataInstance->parse(kvsStart + offset);
+                    int valueSize = valueDataInstance->parse(kvsStart + offset + keySize);
+
+                    lookupList.head[noOfKvs].keyP = kvsStart + offset;
+
+                    offset += (keySize + valueSize);
+                    ++noOfKvs;
+                }
+            }
+            LM_T(LmtRest, ("Hash Group %d has %d entries", maxEntryHashGroup, maxEntries));
+
+            // int wordIx = 0;
+            // for (size_t ix = lookupList.hashInfo[maxEntryHashGroup].startIx; ix <= lookupList.hashInfo[maxEntryHashGroup].endIx; ix++)
+            // {
+            //     samson::system::String string;
+            //     string->parse(lookupList.head[ix].keyP);
+            // 
+            //     LM_T(LmtHash, ("HG %d, Word %02d: '%s'", maxEntryHashGroup, wordIx, string->value.c_str()));
+            //     ++wordIx;
+            // }
+
+            LM_T(LmtRest, ("lookup list created"));
+            // semGive();
+        }
+
+
+        BlockLookupList* Block::lookupListGet(void)
+        {
+            return &lookupList;
+        }
+
+
+        const char* Block::lookup(const char* key)
+        {
+            int            hashGroup;
+            int            keySize;
+            int            testKeySize;
+            char           keyName[1024];
+            KVFormat       kvFormat            = getKVFormat();
+            Data*          keyData             = ModulesManager::shared()->getData(kvFormat.keyFormat);
+            DataInstance*  keyDataInstance     = (DataInstance*) keyData->getInstance();
+            int            compare;
+
+            LM_T(LmtRest, ("looking up key '%s'", key));
+            keyDataInstance->setFromString(key);
+
+            keySize      = keyDataInstance->serialize(keyName);
+            hashGroup    = keyDataInstance->hash(KVFILE_NUM_HASHGROUPS);
+
+            int startIx  = lookupList.hashInfo[hashGroup].startIx;
+            int endIx    = lookupList.hashInfo[hashGroup].endIx;
+            int testIx   = (endIx - startIx) / 2 + startIx;
+
+            while (true)
+            {
+                LM_T(LmtRest, ("looking up key '%s' - comparing with ix %d (from ix %d to %d)", key, testIx, startIx, endIx));
+                compare = keyDataInstance->serial_compare(keyName, lookupList.head[testIx].keyP);
+
+                if (compare == 0)
+                {
+                    testKeySize = keyDataInstance->parse(lookupList.head[testIx].keyP);
+
+                    Data*          valueData          = ModulesManager::shared()->getData(kvFormat.valueFormat);
+                    char*          valueP             = (char*) ((size_t) lookupList.head[testIx].keyP + testKeySize);
+                    DataInstance*  valueDataInstance  = (DataInstance*) valueData->getInstance();
+
+                    valueDataInstance->parse(valueP);
+
+                    return valueDataInstance->strXMLInternal("value").c_str();
+                }
+
+                if (compare < 0) // keyName < testKey => Go to the left - to 'smaller' key names
+                    endIx = testIx - 1;
+                else
+                    startIx = testIx + 1;
+
+                testIx = (endIx - startIx) / 2 + startIx;
+
+                if (startIx > endIx) // Not found
+                    return NULL;
+            }
+        }
     }
 }

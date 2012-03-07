@@ -434,8 +434,34 @@ static char* toUTF8(char* in, size_t* outLenP)
         }
         else if( path_components[1] == "cluster" )
             network->getInfo( data , "cluster" );
+        else if (path_components[1] == "traceSet")
+        {
+            lmTraceSet((char*) path_components[2].c_str());
+            LM_M(("Changed tracelevels to '%s'", path_components[2].c_str()));
+        }
+        else if (path_components[1] == "traceGet")
+        {
+            char traceLevels[1024];
+            lmTraceGet(traceLevels);
+            au::xml_simple(data, "message", au::str("Tracelevels: '%s'", traceLevels));
+        }
+        else if (path_components[1] == "traceOff")
+        {
+            lmTraceSet(NULL);
+            LM_M(("Turned all trace levels off"));
+        }
+        else if (path_components[1] == "traceAdd")
+        {
+            lmTraceAdd((char*) path_components[2].c_str());
+            LM_M(("Added tracelevel '%s'", path_components[2].c_str()));
+        }
+        else if (path_components[1] == "traceDel")
+        {
+            lmTraceSub((char*) path_components[2].c_str());
+            LM_M(("Removed tracelevel '%s'", path_components[2].c_str()));
+        }
         else
-            au::xml_simple(data, "message", au::str("Error: Unkown path component '%s'\n" , path_components[1].c_str() ) );
+            au::xml_simple(data, "message", au::str("Error: Unknown path component '%s'\n" , path_components[1].c_str() ) );
 
         data << "\r\n</samson>\r\n\r\n";
         

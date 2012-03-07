@@ -17,6 +17,21 @@ namespace samson{
     namespace system{
         
         
+        
+        class KeyValue
+        {
+            public:
+            
+            samson::system::Value* key;
+            samson::system::Value* value;
+            
+            KeyValue( samson::system::Value* _key , samson::system::Value* _value )
+            {
+                key = _key;
+                value = _value;
+            }
+        };
+        
         class Filter
         {
             
@@ -30,7 +45,7 @@ namespace samson{
                 next = NULL;
             }
             
-            virtual void run( samson::system::Value* key , samson::system::Value* value )=0;
+            virtual void run( KeyValue kv )=0;
             virtual std::string str()=0;
         };
         
@@ -51,10 +66,10 @@ namespace samson{
                 channel = _channel;
             }
             
-            void run( samson::system::Value* key , samson::system::Value* value )
+            virtual void run( KeyValue kv )
             {
                 //printf("Running emit with '%s'-'%s'\n" , key->str().c_str() , value->str().c_str() );
-                writer->emit(channel, key, value );
+                writer->emit(channel, kv.key, kv.value );
             }
             
             std::string str()
@@ -75,186 +90,229 @@ namespace samson{
             
             typedef enum
             {
-                source_key,      // Selecting something in the key
-                source_value,    // Selecting something in the value
-                
-                source_vector,   // Selecting a vector of things
-                
-                source_constant, // Constant value
+                source_key,              // Selecting key
+                source_value,            // Selecting value
+
+                source_key_vector,       // Selecting something in the key   ( assuming it is a vector )
+                source_value_vector,     // Selecting something in the value ( assuming it is a vector )
+
+                source_key_map,          // Selecting something in the key   ( assuming it is a map )
+                source_value_map,        // Selecting something in the value ( assuming it is a map )
+                 
+                source_constant,         // Constant value
                 
             } Source;
             
             // Used in direct selections
             Source source;
-            int position;
             
             // Used in vector-based selection
             std::vector<FilterSelectSource*> vector_filter_select_source;
             
             // Used in constant value
-            samson::system::Value value_constant;
+            samson::system::Value value_constant;      // Used in constant experesions
+            FilterSelectSource * select_value_index;   // Used when indexing over a vector or map
             
-            // key // value          Simple selection of key and value
-            // key:1 // value:3      Selection of a field in a vector element
-            // Future key:map:user   Selection of a entry in a map element
+            // ----------------------------------------------------------------------------
+            // FilterSelectSource definitions
+            // ----------------------------------------------------------------------------
+            
+            // "Constants"
+            
+            // key
+            // value
+            
+            // key[1]
+            // value["3"]
+            
+            // key:[user]
+            // value:["user"]
+            
+            // ----------------------------------------------------------------------------
+
+            FilterSelectSource( std::string constant )
+            {
+                source = source_constant;
+                value_constant.set_constant( constant.c_str() );
+            }
+
+            FilterSelectSource( Source _source )
+            {
+                source = _source;
+                select_value_index = NULL;
+            }
+            
+            FilterSelectSource( Source _source , FilterSelectSource* index  )
+            {
+                source = _source;
+                select_value_index = index;
+            }
+            
             
             static FilterSelectSource* new_source( std::string description )
             {
+                printf("FilterSelect source '%s'\n" , description.c_str() );
+                                
                 if( description.length() == 0)
                     return NULL;
-                
-                // --------------------------------------------------------------------
-                // Vector selections
-                // --------------------------------------------------------------------
-                if( description.substr(0,1) == "[")
-                {
-                    //printf("Creating vector FilterSelectSource....\n");
-                    if( description.substr( description.length()-1,1 ) != "]" )
-                    {
-                        //printf("error Creating vector FilterSelectSource....\n");
-                        return NULL;
-                    }
-
-                    // Create a vector-base selector
-                    FilterSelectSource* filter_select_source = new FilterSelectSource();
-                    filter_select_source->source = source_vector;
-                    
-                    std::vector<std::string> vector_components 
-                    = au::split( description.substr( 1 , description.length() - 2 ) , ';' );
-                    
-                    for( size_t i = 0 ; i < vector_components.size() ; i++ )
-                    {
-                        FilterSelectSource *tmp = FilterSelectSource::new_source( vector_components[i] );
-                        if( !tmp )
-                        {
-                            delete filter_select_source;
-                            return NULL;
-                        }
-                        else
-                            filter_select_source->vector_filter_select_source.push_back( tmp );
-                    }
-                    return filter_select_source;
-                }
                 
                 // --------------------------------------------------------------------
                 // Constant
                 // --------------------------------------------------------------------
                 
-                if( description.substr(0,1) == "<")
+                if( au::string_begins( description , "'" ) )
                 {
-                    if( description.substr( description.length()-1,1 ) != ">" )
+                    if( !au::string_ends( description , "'" ) )
                         return NULL;
+
+                    // Get internal description
+                    std::string internal_description = au::substring_without_prefix_and_posfix(description, "\"", "\"");
                     
-                    FilterSelectSource* filter_select_source = new FilterSelectSource();
-                    filter_select_source->source = source_constant;
-                    filter_select_source->value_constant.set_string( description.substr( 1 , description.length() - 2 ).c_str() );
-                    return filter_select_source;
+                    return new FilterSelectSource( internal_description );
                 }            
                 
                 // --------------------------------------------------------------------
-                // Normal selector
+                // Key selector
                 // --------------------------------------------------------------------
                 
-                std::vector<std::string> components = au::split(description, ':' );
-                size_t num_components = components.size();
-                if( ( num_components != 1 ) && ( num_components != 2 ) )
-                    return NULL;
-                
-                FilterSelectSource* filter_select_source = new FilterSelectSource();
-                filter_select_source->position = -1;
-                if( components.size() == 2 )
-                    filter_select_source->position = atoi( components[1].c_str() );
-                
-                if( components[0] == "key" )
-                    filter_select_source->source = source_key;
-                else if( components[0] == "value" )
-                    filter_select_source->source = source_value;
-                else
+                if( au::string_begins( description , "key" ) )
                 {
-                    delete filter_select_source;
-                    return  NULL;
+                    if( description == "key" )
+                        return new FilterSelectSource( source_key ); // Pure key selector
+                    
+                    if( au::string_begins_and_ends( description, "key[", "]") )
+                    {
+                        // Vector selector
+                        std::string internal_description = au::substring_without_prefix_and_posfix(description, "key[", "]");
+                        FilterSelectSource * filter = new_source( internal_description );
+                        if( !filter )
+                            return NULL;
+                        
+                        return new FilterSelectSource( source_key_vector , filter );
+                    }
+
+                    if( au::string_begins_and_ends( description, "key:[", "]") )
+                    {
+                        // Vector selector
+                        std::string internal_description = au::substring_without_prefix_and_posfix(description, "key:[", "]");
+                        FilterSelectSource * filter = new_source( internal_description );
+                        if( !filter )
+                            return NULL;
+                        
+                        return new FilterSelectSource( source_key_map , filter );
+                    }
+                    
+                    // Error in format
+                    return NULL;
                 }
 
-                return filter_select_source;
+                // --------------------------------------------------------------------
+                // value selector
+                // --------------------------------------------------------------------
+                
+                if( au::string_begins( description , "value" ) )
+                {
+                    if( description == "value" )
+                        return new FilterSelectSource( source_key ); // Pure key selector
+                    
+                    if( au::string_begins_and_ends( description, "value[", "]") )
+                    {
+                        // Vector selector
+                        std::string internal_description = au::substring_without_prefix_and_posfix(description, "key[", "]");
+                        FilterSelectSource * filter = new_source( internal_description );
+                        if( !filter )
+                            return NULL;
+                        
+                        return new FilterSelectSource( source_key_vector , filter );
+                    }
+                    
+                    if( au::string_begins_and_ends( description, "value:[", "]") )
+                    {
+                        // Vector selector
+                        std::string internal_description = au::substring_without_prefix_and_posfix(description, "value:[", "]");
+                        FilterSelectSource * filter = new_source( internal_description );
+                        if( !filter )
+                            return NULL;
+                        
+                        return new FilterSelectSource( source_key_map , filter );
+                    }
+                    
+                    // Error in format
+                    return NULL;
+                }                
+                
+                // --------------------------------------------------------------------
+                // Implicit constant values selector
+                // --------------------------------------------------------------------
+                
+                return new FilterSelectSource( description );
             }
             
             std::string str()
             {
-                if( source == source_vector )
+                switch (source) 
                 {
-                    std::ostringstream output;
-                    output << "Vector [ ";
-                    for( size_t i = 0 ; i < vector_filter_select_source.size() ; i++ )
-                        output << vector_filter_select_source[i]->str() << " ";
-                    output << "]";
-                    return output.str();
+                        
+                    case source_constant:
+                        return value_constant.str();
+                        break;
+                    case source_key:
+                        return "Key";
+                    case source_value:
+                        return "Value";
+                    case source_key_vector:
+                        return au::str("Key[%s]" , select_value_index->str().c_str() );
+                    case source_value_vector:
+                        return au::str("Value[%s]" , select_value_index->str().c_str() );
+                    case source_key_map:
+                        return au::str("Key:[%s]" , select_value_index->str().c_str() );
+                    case source_value_map:
+                        return au::str("Value:[%s]" , select_value_index->str().c_str() );
                 }
-                if( source == source_constant )
-                    return "Constant " + value_constant.str() ;
-                if( source == source_key )
-                    return au::str("Key:%d" , position );
-                if( source == source_value )
-                    return au::str("Value:%d" , position );
-                
                 return "Error";
             }
             
-            
-            bool set( samson::system::Value* target , samson::system::Value* key , samson::system::Value* value )
+            samson::system::Value* get( KeyValue kv )
             {
-                
-                // Source value
-                samson::system::Value* _source_for_target = NULL;
-                
                 switch ( source ) 
                 {
                     case source_constant:
-                        target->copyFrom( &value_constant );
-                        return true;
+                        return &value_constant;
                         break;
                         
-                    case source_vector:
-                    {
-                        target->set_as_vector();
-                        for ( size_t i = 0 ; i < vector_filter_select_source.size() ; i++ )
-                            if( ! vector_filter_select_source[i]->set(  target->add_value_to_vector() , key, value ) )
-                                return false;
-                        return true;
-                    }
-                        
                     case source_key:
-                        _source_for_target = key;
+                        return kv.key;
                         break;
                         
                     case source_value:
-                        _source_for_target = value;
+                        return kv.value;
                         break;
                         
+                    case source_key_vector:
+                    {
+                        Value* value_index = select_value_index->get(kv);
+                        if (!value_index )
+                            return NULL;
+                        return kv.key->get_value_from_vector( (size_t)value_index->getDouble() );
+                    }
                         
+                    case source_value_vector:
+                    {
+                        Value* value_index = select_value_index->get(kv);
+                        if (!value_index )
+                            return NULL;
+                        return kv.value->get_value_from_vector( (size_t)value_index->getDouble() );
+                    }
+                        
+                    case source_key_map:
+                    case source_value_map:
+                        LM_X(1, ("Unimplemented"));
                 }
                 
-                if( position == -1 )
-                {
-                    target->copyFrom( _source_for_target );
-                    return true;
-                }
-                else
-                {
-                    samson::system::Value* _internal_source_for_target = _source_for_target->get_value_from_vector( position );
-                    
-                    if( _internal_source_for_target )
-                    {
-                        target->copyFrom( _internal_source_for_target );
-                        //printf("Final Source %s  // %s\n" , _internal_source_for_target->str().c_str() , target->str().c_str() );
-                        return true;
-                    }
-                    else
-                        return false;
-                }
+                LM_X(1, ("Internal error"));
+                return NULL;
                 
             }
-            
-            
         };
         
         typedef enum
@@ -266,46 +324,47 @@ namespace samson{
             less_or_equal_than
         } Comparisson;
         
+        const char* str_Comparisson( Comparisson c );
+        
         class FilterCondition : public Filter
         {
             
-        public:
+            Comparisson c;                        // Type of comparisson
+            FilterSelectSource* select_source;    // Left Source 
+            FilterSelectSource* select_value;     // Rigth source
             
-
-        private:
-            
-            FilterSelectSource* source;
-            Comparisson c;
-            Value internal_value;
             double value_reference;
             
         public:
             
             // filter key:2 = 4.56
-            FilterCondition( FilterSelectSource* _source , Comparisson _c , double _value_reference  )
+            FilterCondition( FilterSelectSource* _select_source , Comparisson _c , FilterSelectSource* _select_value  )
             {
-                source = _source;
+                select_source = _select_source;
                 c = _c;
-                value_reference = _value_reference;
+                select_value = _select_value;
             }
             
-            
-            bool test( samson::system::Value* key , samson::system::Value* value )
+            bool test( KeyValue kv )
             {
-                if( !source->set( &internal_value, key, value ) )
-                    return  false; // Not possible to get the value
+                Value * v1 = select_source->get(kv);
+                Value * v2 = select_value->get(kv);
                 
-                double tmp_value = internal_value.getDouble();
+                if( !v1 || !v2 )
+                    return  false; // Not possible to get one of the values
+                
+                double v1_value = v1->getDouble();
+                double v2_value = v2->getDouble();
                 
                 //printf("Comparing %f - %f\n" , tmp_value , value_reference );
                 
                 switch (c) 
                 {
-                    case equal:                 return ( tmp_value == value_reference );
-                    case greater_than:          return ( tmp_value >  value_reference );
-                    case less_than:             return ( tmp_value <  value_reference );
-                    case greater_or_equal_than: return ( tmp_value >= value_reference );
-                    case less_or_equal_than:    return ( tmp_value <= value_reference );
+                    case equal:                 return ( v1_value == v2_value );
+                    case greater_than:          return ( v1_value >  v2_value );
+                    case less_than:             return ( v1_value <  v2_value );
+                    case greater_or_equal_than: return ( v1_value >= v2_value );
+                    case less_or_equal_than:    return ( v1_value <= v2_value );
                 }
                 
                 LM_X(1, ("Internal error"));
@@ -313,19 +372,16 @@ namespace samson{
                 
             }
             
-            void run( samson::system::Value* key , samson::system::Value* value )
+            void run( KeyValue kv )
             {
-                
-                //printf("Run %s over %s %s" , str().c_str() , key->str().c_str() , value->str().c_str()  );
-                
-                if( test(key,value) )
+                if( test(kv) )
                     if( next )
-                        next->run(key, value);
+                        next->run( kv );
             }
             
             std::string str()
             {
-                return au::str("FilterCondition %s"  , source->str().c_str() );
+                return au::str("FilterCondition %s %s %s"  , select_source->str().c_str() , str_Comparisson(c) , select_value->str().c_str() );
             }
             
         };
@@ -333,61 +389,128 @@ namespace samson{
         class FilterSelect : public Filter
         {
             
-            FilterSelectSource* source_key;
-            FilterSelectSource* source_value;
+            au::vector<FilterSelectSource> sources_for_key;
+            au::vector<FilterSelectSource> sources_for_value;
             
             samson::system::Value _key;
             samson::system::Value _value;
-            
+
         public:
             
-            // | select key:0,value:6 |
-            
-            FilterSelect( FilterSelectSource* _source_key , FilterSelectSource* _source_value  )
+            typedef enum
             {
-                source_key = _source_key;
-                source_value = _source_value;
+                vector,        // Multiple components are selected by creating a vector
+                join           // Multiple components are selected by joining strings
+            } Type;
+            
+
+            Type type;
+            // | select key:0 key:1 , value:6 |
+            
+            FilterSelect( Type _type )
+            {
+                type = _type;
             }
             
             ~FilterSelect()
             {
-                delete source_key;
-                delete source_value;
+                sources_for_key.clearVector();
+                sources_for_value.clearVector();
+            }
+
+            void addComponentForKey( FilterSelectSource* source_for_key )
+            {
+                sources_for_key.push_back( source_for_key );
+            }
+
+            void addComponentForValue( FilterSelectSource* source_for_value )
+            {
+                sources_for_value.push_back( source_for_value );
             }
             
             std::string str()
             {
-                return au::str("Filter select '%s'  '%s' " 
-                               , source_key->str().c_str() 
-                               , source_value->str().c_str() 
-                               );
+                std::ostringstream output;
+                output << "Filter select [ ";
+                for ( size_t i = 0 ; i < sources_for_key.size() ; i++ )
+                    output << sources_for_key[i]->str() << " ";
+                output << ", ";
+                for ( size_t i = 0 ; i < sources_for_value.size() ; i++ )
+                    output << sources_for_value[i]->str() << " ";
+                output << "]";
+                
+                return output.str();
             }
             
-            void run( samson::system::Value* key , samson::system::Value* value )
+            
+            void run_individual( Value* v , au::vector<FilterSelectSource>& sources , KeyValue kv )
             {
-                //printf("Running filter with '%s'-'%s'\n" , key->str().c_str() , value->str().c_str() );
-                bool r_key   = source_key->set(&_key, key, value);
-                bool r_value = source_value->set(&_value, key, value);
                 
-                if( r_key && r_value )
+                if( sources.size() == 0)
                 {
-                    if( next )
-                    {
-                        next->run(&_key, &_value);
-                    }
+                    v->set_as_void();
+                    return;
+                }
+                
+                if ( sources.size() == 1 )
+                {
+                    Value* value_source = sources[0]->get(kv);
+                    if ( value_source )
+                        v->copyFrom( value_source );
                     else
+                        v->set_as_void();
+                    return;
+                }
+                
+
+                if( type == vector )
+                {
+                    // Vector kind of 
+                    v->set_as_vector();
+                    for( size_t i = 0 ; i < sources.size() ; i++ )
                     {
-                        //printf("Error no next...\n");
+                        Value* value_source = sources[i]->get(kv);
+                        
+                        if( value_source )
+                            v->add_value_to_vector()->copyFrom( value_source );
+                        else
+                            v->add_value_to_vector()->set_as_void();
                     }
+                }
+                else if( type == join )
+                {
+                    v->set_as_void(); // Nothing
+                    for( size_t i = 0 ; i < sources.size() ; i++ )
+                    {
+                        Value* value_source = sources[i]->get(kv);
+                        if( value_source )
+                            v->append_string( value_source );
+                    }
+
                     
                 }
-                else
+                
+                
+                
+            }
+            
+            void run( KeyValue kv )
+            {
+                // Create new key & value components
+                run_individual( &_key   , sources_for_key  , kv );
+                run_individual( &_value , sources_for_value  , kv );
+                
+                if( next )
                 {
-                    //printf("Error selecting...\n");
+                    KeyValue kv2( &_key , &_value );
+                    next->run(kv2);
                 }
             }
         };
         
+        /*
+         Collections of filter - chains to be executed
+         */
         
         class FilterCollection
         {
@@ -413,46 +536,50 @@ namespace samson{
             Filter* getFilter( std::string command , samson::KVWriter *writer , au::ErrorManager* error )
             {
                 
-                /*
-                 
-                 select key:0,value:3
-                 select value,key
-                 select [key:2;key:1],<1>
-                 
-                 emit 0
-                 
-                 filter key:0 = 34
-                 filter key:1 < 34
-                 filter key:1 > 34
-                 
-                 */
-                
                 au::CommandLine cmdLine;
                 cmdLine.parse( command );
                 
                 // Get the main command
                 std::string main_command = cmdLine.get_argument(0);
                 
-                if ( main_command == "select" )
+                if ( au::string_begins(main_command, "select") )
                 {
-                    if( cmdLine.get_num_arguments() != 2 )
-                    {
-                        error->set("select clause with wrong number of arguments");
-                        return  NULL;
-                    }
+                    FilterSelect * filter;
                     
-                    std::vector<std::string> components = au::split( cmdLine.get_argument(1) , ',' );
-
-                    if( components.size() != 2 )
-                    {
-                        error->set("select clause with wrong argument (coma separated key value fields )");
+                    if( main_command == "select_join" )
+                        filter = new FilterSelect( FilterSelect::join );
+                    else if( main_command == "select" )
+                        filter = new FilterSelect( FilterSelect::vector );
+                    else
                         return NULL;
+                    
+                    bool selecting_for_key = true;
+
+                    for( int i = 1 ; i < cmdLine.get_num_arguments() ; i++ )
+                    {
+                        std::string component = cmdLine.get_argument(i);
+                        
+                        if( component == "," )
+                        {
+                            selecting_for_key = false;
+                            continue;
+                        }
+                        
+                        FilterSelectSource * filter_source = FilterSelectSource::new_source( component );
+                        
+                        if( filter_source )
+                        {
+                            
+                            if( selecting_for_key )
+                                filter->addComponentForKey( filter_source );
+                            else
+                                filter->addComponentForValue( filter_source );
+                        }
+                        
                     }
-                    
-                    FilterSelectSource* key_source = FilterSelectSource::new_source( components[0] );
-                    FilterSelectSource* value_source = FilterSelectSource::new_source( components[1] );
-                    
-                    return new FilterSelect( key_source , value_source );
+
+                    // Return created filter
+                    return filter;
                 }
                 else if( main_command == "emit" )
                 {
@@ -469,16 +596,21 @@ namespace samson{
                         return  NULL;
                     }
                     
-                    FilterSelectSource* key_source = FilterSelectSource::new_source( cmdLine.get_argument(1) );
-                    
-                    if( !key_source )
+                    FilterSelectSource* left_source = FilterSelectSource::new_source( cmdLine.get_argument(1) );
+                    if( !left_source )
                     {
-                        error->set("filter clause with wrong source definition");
+                        error->set( au::str("Non valid selector %s" , cmdLine.get_argument(1).c_str() ));
                         return NULL;
                     }
                     
+                    FilterSelectSource* rigth_source = FilterSelectSource::new_source( cmdLine.get_argument(3) );
+                    if( !rigth_source )
+                    {
+                        error->set( au::str("Non valid selector %s" , cmdLine.get_argument(3).c_str() ));
+                        return NULL;
+                    }
                     std::string s = cmdLine.get_argument(2);
-
+                    
                     Comparisson c = equal;
                     if( s == "=" )
                         c = equal;
@@ -493,12 +625,12 @@ namespace samson{
                     else
                     {
                         error->set("filter clause with unknown comparison selector");
-                        delete key_source;
+                        delete left_source;
+                        delete rigth_source;
                         return NULL;
                     }
                     
-                    double value = atof( cmdLine.get_argument(3).c_str() );
-                    return new FilterCondition( key_source , c , value );
+                    return new FilterCondition( left_source , c , rigth_source );
                 }
                 
                 return NULL;
@@ -545,7 +677,7 @@ namespace samson{
             
             void addFilters( std::string command  , samson::KVWriter *writer , au::ErrorManager* error )
             { 
-                std::vector<std::string> commands = au::split(command, '/' );
+                std::vector<std::string> commands = au::split(command, '#' );
                 for( size_t i = 0 ; i < commands.size() ; i++ )
                     addFilter( commands[i] , writer , error );
 

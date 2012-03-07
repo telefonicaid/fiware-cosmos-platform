@@ -25,16 +25,13 @@ namespace samson{
                 // ------------------------------------------------------------
                 ser_void,
 
-                // Serialitzation of int's
+                // Serialitzation of numbers
                 // ------------------------------------------------------------
                 ser_int_positive,
                 ser_int_negative,
                 ser_int_value_0,
                 ser_int_value_1,
                 ser_int_value_minus_1,
-
-                // Serialitzation of double
-                // ------------------------------------------------------------
                 ser_double,      
 
                 // Serialitzation of double
@@ -61,8 +58,7 @@ namespace samson{
             {
                 value_void,        // No content
 
-                value_int,         // Generic int content     ( using _value_int    )
-                value_double,      // Generic double content  ( using _value_double )
+                value_number,      // Generic number content  ( using _value_double )
                 value_string,      // Generic string content  ( using _value_string )
                 value_vector,      // A vector of values      ( using _value_vector )
                 value_map,         // A map of values         ( using _value_map    )
@@ -77,19 +73,16 @@ namespace samson{
             // Internal representation of the value
             // ------------------------------------------------------------
             
-            // int
-            ssize_t _value_int;
-
-            // double
+            // Number
             double _value_double;
             
-            // string
+            // String
             std::string _value_string;
             
-            // vector
+            // Vector
             std::vector<Value*> _value_vector;
 
-            // vector
+            // Map
             au::map<std::string,Value> _value_map;
             
             // Pool of Vaues for vector and map
@@ -119,29 +112,27 @@ namespace samson{
                 value_type = value_void;
                 return 1; // Void is always serialized in 1 byte
             }
-            
-            inline int parse_int( char* data )
+                        
+            inline int parse_number( char*data )
             {
-                //printf("Parsing int %p\n" , data);
-                
                 SerialitzationCode code = (SerialitzationCode)data[0];
-
+                
                 // Common init to value int
-                value_type = value_int;
+                value_type = value_number;
                 
                 switch (code) 
                 {
                     // Constant values
                     case ser_int_value_0:
-                        _value_int = 0;
+                        _value_double = 0;
                         return 1; // Codified in the serialization code
                         break;
                     case ser_int_value_1:
-                        _value_int = 1;
+                        _value_double = 1;
                         return 1; // Codified in the serialization code
                         break;
                     case ser_int_value_minus_1:
-                        _value_int = -1;
+                        _value_double = -1;
                         return 1; // Codified in the serialization code
                         break;
                         
@@ -149,43 +140,26 @@ namespace samson{
                     {
                         size_t tmp;
                         int total = 1 + samson::staticVarIntParse( data + 1 , &tmp);
-                        _value_int = tmp;
+                        _value_double = tmp;
                         return total;
                     }
-
+                        
                     case ser_int_negative:
                     {
                         size_t tmp;
                         int total = 1 + samson::staticVarIntParse( data + 1 , &tmp);
-                        _value_int = -tmp;
+                        _value_double = -tmp;
                         return total;
                     }
                         
-                    default:
-                        LM_X(1, ("Internal error"));
-
-                }
-                
-                LM_X(1, ("Internal error"));
-                return 0;
-            }
-            
-            
-            inline int parse_double( char*data )
-            {
-                SerialitzationCode code = (SerialitzationCode)data[0];
-                
-                // Common init to value int
-                value_type = value_double;
-                
-                switch (code) 
-                {
                     case ser_double:
                         _value_double = *( (double*) (data+1) );
                         return 1 + sizeof(double);
-                        
+
                     default:
                         LM_X(1, ("Internal error"));
+                        return 0;
+                        
                 }
                 
                 LM_X(1, ("Internal error"));
@@ -309,10 +283,8 @@ namespace samson{
                     case ser_int_value_0:
                     case ser_int_value_1:
                     case ser_int_value_minus_1:
-                        return parse_int(data);
-                        
                     case ser_double:
-                        return parse_double(data);
+                        return parse_number(data);
                         
                     case ser_string:
                         return parse_string(data);
@@ -363,40 +335,43 @@ namespace samson{
                 return 1;
             }
             
-            int serialize_int(char *data)
+
+            int serialize_number(char *data)
             {
-                if( _value_int == 0 )
+                
+                if( _value_double == 0 )
                 {
                     data[0] = (char) ser_int_value_0;
                     return 1; // Codified in 1 byte
                 }
-                if( _value_int == 1 )
+                if( _value_double == 1 )
                 {
                     data[0] = (char) ser_int_value_1;
                     return 1; // Codified in 1 byte
                 }
-                if( _value_int == -1 )
+                if( _value_double == -1 )
                 {
                     data[0] = (char) ser_int_value_minus_1;
                     return 1; // Codified in 1 byte
                 }
-
+                
+                // Integuer numbers...
                 // Generic variable lengh codification
-                if( _value_int >= 0 )
+                if( (double) ((ssize_t) _value_double) == _value_double )
                 {
-                    data[0] = (char) ser_int_positive;
-                    return 1 + samson::staticVarIntSerialize( data + 1 , _value_int );
+                    if( _value_double >= 0 )
+                    {
+                        data[0] = (char) ser_int_positive;
+                        return 1 + samson::staticVarIntSerialize( data + 1 , _value_double );
+                    }
+                    else
+                    {
+                        data[0] = (char) ser_int_negative;
+                        return 1 + samson::staticVarIntSerialize( data + 1 , - _value_double );
+                    }
                 }
-                else
-                {
-                    data[0] = (char) ser_int_negative;
-                    _value_int *= -1;
-                    return 1 + samson::staticVarIntSerialize( data + 1 , _value_int );
-                }
-            }
-
-            int serialize_double(char *data)
-            {
+                
+                // Generic double codification
                 data[0] = (char) ser_double;
                 *( (double*) (data+1) ) = _value_double;
                 return 1 + sizeof( double );         
@@ -412,8 +387,20 @@ namespace samson{
             
             int serialize_vector(char *data)
             {
-                size_t offset = 1; // 
+                if( _value_vector.size() == 0 )
+                {
+                    // If no elements, serialize as void
+                    data[0] = (char) ser_void;
+                    return 1;
+                }
                 
+                if( _value_vector.size() == 1)
+                {
+                    // Serialize as a single element
+                    return _value_vector[0]->serialize(data);
+                }
+                
+                size_t offset = 1; // 
                 if( _value_vector.size() == 2)
                     data[0] = (char) ser_vector_len_2;
                 else if( _value_vector.size() == 3)
@@ -446,8 +433,6 @@ namespace samson{
             
             int serialize(char *data)
             {
-                // Possible conversions before serializing data
-                convert();
              
                 //printf("Serialize %s\n" , str().c_str() );
                 
@@ -456,17 +441,14 @@ namespace samson{
                     case value_void:
                         return serialize_void(data);
                         break;
-                    case value_int:
+                    case value_number:
                     {
-                        int r = serialize_int(data);
+                        int r = serialize_number(data);
                         //printf("serialize int '%s' in %d bytes\n" , str().c_str() , r );
                         //print_data( data , r );
                         return r;
                         break;
                     }
-                    case value_double:
-                        return serialize_double(data);
-                        break;
                     case value_string:
                     {
                         int r = serialize_string(data);
@@ -502,15 +484,7 @@ namespace samson{
                 return 0;
             }
 
-            int hash_int(int max_num_partitions)
-            {
-                if( _value_int >= 0 )
-                    return _value_int%max_num_partitions;
-                else
-                    return -_value_int%max_num_partitions;
-            }
-            
-            int hash_double(int max_num_partitions)
+            int hash_number(int max_num_partitions)
             {
                 if( _value_double >= 0 )
                     return ((size_t)_value_double)%max_num_partitions;
@@ -550,10 +524,8 @@ namespace samson{
                 {
                     case value_void:
                         return hash_void(max_num_partitions);
-                    case value_int:
-                        return hash_int(max_num_partitions);
-                    case value_double:
-                        return hash_double(max_num_partitions);
+                    case value_number:
+                        return hash_number(max_num_partitions);
                     case value_string:
                         return hash_string(max_num_partitions);
                     case value_vector:
@@ -593,17 +565,10 @@ namespace samson{
                 {
                     case value_void:
                         return 0;
-                    case value_int:
-                        if( _value_int > other.value_int )
+                    case value_number:
+                        if( _value_double > other._value_double )
                             return 1;
-                        else if( _value_int < other.value_int )
-                            return -1;
-                        else
-                            return 0;
-                    case value_double:
-                        if( _value_double > other.value_double )
-                            return 1;
-                        else if( _value_double < other.value_double )
+                        else if( _value_double < other._value_double )
                             return -1;
                         else
                             return 0;
@@ -746,9 +711,6 @@ namespace samson{
             {
                 value_type = value_string;
                 _value_string = _data;
-                
-                // See if it is possible to convert to number
-                convert();
             }
             
             // ------------------------------------------------------------
@@ -765,11 +727,7 @@ namespace samson{
                     case value_void:
                         break;
                         
-                    case value_int:
-                        _value_int = other->_value_int;
-                        break;
-
-                    case value_double:
+                    case value_number:
                         _value_double = other->_value_double;
                         break;
                         
@@ -804,16 +762,10 @@ namespace samson{
                     case value_void:
                         return "<void>";
                         
-                    case value_int:
+                    case value_number:
                     {
                         std::ostringstream output;
-                        output << "I:" << _value_int;
-                        return output.str();
-                    }
-                    case value_double:
-                    {
-                        std::ostringstream output;
-                        output << "D:" << _value_double;
+                        output << "N:" << _value_double;
                         return output.str();
                     }
                         
@@ -933,7 +885,7 @@ namespace samson{
             // ----------------------------------------------------------------------------------------
             // CONVERT functions
             // ----------------------------------------------------------------------------------------
-            
+            /*
             bool is_int( const char* data )
             {
                 bool found_sign  = false;
@@ -971,6 +923,8 @@ namespace samson{
                 LM_X(1,("Internal error"));
                 return true;
             }
+             
+             */
             
             bool is_double( const char* data )
             {
@@ -1021,81 +975,36 @@ namespace samson{
                 return true;
             }
             
-            void convert()
+            void convert_to_number()
             {
-                
                 switch (value_type) 
                 {
                     case value_void:
-                    case value_int:
-                        break;
+                    case value_number:
+                        // It is already a number
+                        return;
                         
                     case value_vector:
-                    {
-                        if( _value_vector.size() == 0 )
-                        {
-                            value_type = value_void;
-                            return;
-                        }
-
-                        if( _value_vector.size() == 1 )
-                        {
-                            Value* tmp = _value_vector[0];
-                            _value_vector.clear();
-                            copyFrom(tmp);
-                            
-                            // Put in the pool for future recoverry
-                            pool_values.push(tmp);
-
-                        
-                            // Recursive call to convert
-                            convert();
-                        }
-                        
-                        
-                        
-                    }
-                    case value_map:
-                        break;
-                        
-                    case value_double:
-                    {
-                        // Check if it is integuer
-                        _value_int = _value_double;
-                        double tmp_value = _value_int;
-                        
-                        if( tmp_value == _value_double )
-                            value_type = value_int;
+                        set_double( 0 );
                         return;
-                    }
+                        
+                    case value_map:
+                        set_double( 0 );
+                        return;
                         
                     case value_string:
                         
-                        if( _value_string == "" )
-                        {
-                            value_type = value_void;
-                            return;
-                        }
-                        
-                        if( is_int( _value_string.c_str() ) )
-                        {
-                            value_type = value_int;
-                            _value_int = atoll( _value_string.c_str() );
-                            return;
-                        }
-
-                        if( is_double( _value_string.c_str() ) )
-                        {
-                            value_type = value_double;
-                            _value_double = atof( _value_string.c_str() );
-                            return;
-                        }
-                        
-                        break;
+                        _value_double = atof( _value_string.c_str() );
+                        return;
                 }
-                
             }
-
+            
+            void convert_to_string()
+            {
+                if( value_type !=  value_string )
+                    set_string( get_string() );
+            }
+            
             // ----------------------------------------------------------------------------------------
             // SET AND GET functions
             // ----------------------------------------------------------------------------------------
@@ -1105,43 +1014,50 @@ namespace samson{
                 // Set as integer
                 value_type = value_string;
                 _value_string = _value;
-                convert();
+            }
+            
+            
+            void set_string( std::string _value )
+            {
+                value_type = value_string;
+                _value_string = _value;
+            }
+            
+            void set_constant( std::string _value )
+            {
+                if ( is_double( _value.c_str() ) )
+                    set_double( atof( _value.c_str() ) );
+                else
+                    set_string( _value );
+                               
             }
             
             void operator=( double _value ) 
             {
                 // Set as integer
-                value_type = value_double;
+                value_type = value_number;
                 _value_double = _value;
-                convert();
             }
             
-            void set_int( ssize_t _value )
+            void set_double( double _value ) 
             {
                 // Set as integer
-                value_type = value_int;
-                _value_int = _value;
+                value_type = value_number;
+                _value_double = _value;
             }
             
             void set_string( const char * _value )
             {
                 value_type = value_string;
                 _value_string = _value;
-                convert();
             }
             
             void operator++ () 
             {
                 switch (value_type) 
                 {
-                    case value_int:
-                        _value_int++;
-                        convert();
-                        break;
-                        
-                    case value_double:
+                    case value_number:
                         _value_double++;
-                        convert();
                         break;
                         
                     default:
@@ -1152,29 +1068,21 @@ namespace samson{
             
             bool isNumber()
             {
-                switch (value_type) 
-                {
-                    case value_int:
-                    case value_double:
-                        return true;
-                    case value_string:
-                    case value_void:
-                    case value_vector:
-                    case value_map:
-                        return false;
-                }
+                return ( value_type ==  value_number );
             }
-            
-            // Numerical sum
+
+            bool isString()
+            {
+                return ( value_type ==  value_string );
+            }
+                        
             double getDouble()
             {
                 switch ( value_type )
                 {
                     case value_void:
                         return 0;
-                    case value_int:
-                        return  (double)_value_int;
-                    case value_double:
+                    case value_number:
                         return _value_double;
                         
                     case value_string:
@@ -1195,9 +1103,42 @@ namespace samson{
                 LM_X(1, ("Internal error"));
                 return 0;
             }
-
             
+            std::string get_string()
+            {
+                switch ( value_type )
+                {
+                    case value_void:
+                        return "";
+                    case value_number:
+                        return au::str("%f", _value_double);
+                    case value_string:
+                        return _value_string;
+                        
+                    case value_vector:
+                    {
+                        std::ostringstream output;
+                        output << "[ ";
+                        for( size_t i = 0 ; i < _value_vector.size() ; i++ )
+                            output << _value_vector[i]->str() << " ";
+                        output << "]";
+                        return output.str();
+                    }
+                        
+                    case value_map:
+                        return 0;
+                }
+                
+                LM_X(1, ("Internal error"));
+                return 0;                
+            }
             
+            void append_string( Value* value )
+            {
+                // Convert this to string
+                convert_to_string();
+                _value_string.append( value->get_string() );
+            }
             
         };
         

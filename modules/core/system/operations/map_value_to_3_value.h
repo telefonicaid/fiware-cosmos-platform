@@ -64,8 +64,9 @@ namespace system{
                 // Run the filters
                 // ---------------------------------------------------------
                 
+                KeyValue kv( &key, &value );
                 for( size_t f = 0 ; f < filters_collection.filters.size() ; f++ )
-                    filters_collection.filters[f]->run(&key, &value);
+                    filters_collection.filters[f]->run(kv);
             }
 		}
 

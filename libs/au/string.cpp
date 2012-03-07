@@ -568,5 +568,29 @@ std::string string_in_color(std::string message , std::string color )
 
 }
 
+bool string_begins( std::string& str , std::string prefix )
+{
+    return str.substr( 0 , prefix.length() ) == prefix;
+}
+
+bool string_ends( std::string& str , std::string postfix )
+{
+    return str.substr( str.length()-postfix.length() ) == postfix;
+}
+
+bool string_begins_and_ends( std::string& str , std::string prefix , std::string postfix )
+{
+    if( str.substr( 0 , prefix.length() ) != prefix )
+        return false;
+    if( str.substr( str.length()-postfix.length() ) != postfix )
+        return false;
+    return true;
+}
+
+std::string substring_without_prefix_and_posfix( std::string& str , std::string prefix , std::string postfix )
+{
+    return str.substr(  prefix.length()  ,  str.length() - prefix.length() - postfix.length() );
+}
+
 
 NAMESPACE_END

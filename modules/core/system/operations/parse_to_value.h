@@ -43,8 +43,8 @@ namespace system{
 
 		void init( samson::KVWriter *writer )
 		{
-		   //value.set_string("1");
-            value.set_int(1);
+            // By default, value is 1
+            value = 1;
             
             // Setup the process chain...
             std::string command =  environment->get( "command" ,  "" );
@@ -81,8 +81,9 @@ namespace system{
                
                if( filters_collection.filters.size() > 0 )
                {
+                   KeyValue kv( &key, &value );
                    for( size_t f = 0 ; f < filters_collection.filters.size() ; f++ )
-                       filters_collection.filters[f]->run(&key, &value);
+                       filters_collection.filters[f]->run(kv);
                }
                else
                {                   

@@ -126,7 +126,12 @@ void find_and_replace( std::string &source, const std::string find, std::string 
 
 std::string string_in_color(std::string txt , std::string color );
 
+// Checks prefix and postfix of strings
 
+bool string_begins( std::string& str , std::string prefix );
+bool string_ends( std::string& str , std::string postfix );
+bool string_begins_and_ends( std::string& str , std::string prefix , std::string postfix );
+std::string substring_without_prefix_and_posfix( std::string& str , std::string prefix , std::string postfix );
 
 NAMESPACE_END
 

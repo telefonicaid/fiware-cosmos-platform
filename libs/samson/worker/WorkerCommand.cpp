@@ -574,13 +574,6 @@ namespace samson {
         visualitzation.options = visualitzation_options;
         visualitzation.pattern = pattern; 
         
-        LM_V(("V1: Got command '%s'", main_command.c_str()));
-        LM_V2(("V2: Got command '%s'", main_command.c_str()));
-        LM_V3(("V3: Got command '%s'", main_command.c_str()));
-        LM_V4(("V4: Got command '%s'", main_command.c_str()));
-        LM_V5(("V5: Got command '%s'", main_command.c_str()));
-        LM_D(("D: Got command '%s'", main_command.c_str()));
-
         if ( main_command == "push_module" )
         {
             if( cmd.get_num_arguments() < 2 )
@@ -780,7 +773,11 @@ namespace samson {
                 lmTraceSet(NULL);
             else if (subcommand == "get")
             {
-                
+                char levels[1024];
+
+                lmTraceGet(levels);
+                finishWorkerTask();
+                return;
             }
             else if ((subcommand == "set") || (subcommand == "add") || (subcommand == "del"))
             {

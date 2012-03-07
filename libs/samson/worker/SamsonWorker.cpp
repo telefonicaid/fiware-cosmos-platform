@@ -436,6 +436,9 @@ static char* toUTF8(char* in, size_t* outLenP)
             network->getInfo( data , "cluster" );
         else if (path_components[1] == "traceSet")
         {
+            if (path_components.size() < 3)
+                au::xml_simple(data, "message", au::str("Error: format /samson/traceSet/<list of trace level ranges>" ) );
+
             lmTraceSet((char*) path_components[2].c_str());
             LM_M(("Changed tracelevels to '%s'", path_components[2].c_str()));
         }
@@ -452,13 +455,64 @@ static char* toUTF8(char* in, size_t* outLenP)
         }
         else if (path_components[1] == "traceAdd")
         {
+            if (path_components.size() < 3)
+                au::xml_simple(data, "message", au::str("Error: format /samson/traceAdd/<list of trace level ranges>" ) );
+
             lmTraceAdd((char*) path_components[2].c_str());
             LM_M(("Added tracelevel '%s'", path_components[2].c_str()));
         }
         else if (path_components[1] == "traceDel")
         {
+            if (path_components.size() < 3)
+                au::xml_simple(data, "message", au::str("Error: format /samson/traceDel/<list of trace level ranges>" ) );
+
             lmTraceSub((char*) path_components[2].c_str());
             LM_M(("Removed tracelevel '%s'", path_components[2].c_str()));
+        }
+        else if (path_components[1] == "verboseOff")
+        {
+            lmVerbose  = false;
+            lmVerbose2 = false;
+            lmVerbose3 = false;
+            lmVerbose4 = false;
+            lmVerbose5 = false;
+
+            LM_M(("Turned all verbose levels off"));
+        }
+        else if (path_components[1] == "verbose")
+        {
+            lmVerbose  = true;
+            LM_M(("Turned on verbose level 1"));
+        }
+        else if (path_components[1] == "verbose2")
+        {
+            lmVerbose   = true;
+            lmVerbose2  = true;
+            LM_M(("Turned on verbose levels 1-2"));
+        }
+        else if (path_components[1] == "verbose3")
+        {
+            lmVerbose   = true;
+            lmVerbose2  = true;
+            lmVerbose3  = true;
+            LM_M(("Turned on verbose levels 1-3"));
+        }
+        else if (path_components[1] == "verbose4")
+        {
+            lmVerbose   = true;
+            lmVerbose2  = true;
+            lmVerbose3  = true;
+            lmVerbose4  = true;
+            LM_M(("Turned on verbose levels 1-4"));
+        }
+        else if (path_components[1] == "verbose5")
+        {
+            lmVerbose   = true;
+            lmVerbose2  = true;
+            lmVerbose3  = true;
+            lmVerbose4  = true;
+            lmVerbose5  = true;
+            LM_M(("Turned all verbose levels on"));
         }
         else
             au::xml_simple(data, "message", au::str("Error: Unknown path component '%s'\n" , path_components[1].c_str() ) );

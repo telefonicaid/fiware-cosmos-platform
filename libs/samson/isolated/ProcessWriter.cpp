@@ -129,7 +129,7 @@ namespace samson {
         
 	}
 	
-	void ProcessWriter::emit( int output , DataInstance *key , DataInstance *value )
+	void ProcessWriter::emitKV( int output , DataInstance *key , DataInstance *value )
 	{
         // Spetial case for logging...
         if( output == -1 )
@@ -318,7 +318,7 @@ namespace samson {
 		*size = 0;
 	}
 	
-	void ProcessTXTWriter::emit( const char * _data , size_t _size)
+	void ProcessTXTWriter::emitKV( const char * _data , size_t _size)
 	{
 		if( *size + _size  > max_size )
 		{

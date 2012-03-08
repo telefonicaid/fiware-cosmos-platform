@@ -14,7 +14,7 @@ namespace samson {
 	public:
 
 		// Emit key values to a particular output
-		virtual void emit( int output , DataInstance *key , DataInstance *value )=0;
+		virtual void emitKV( int output , DataInstance *key , DataInstance *value )=0;
 		
 		//virtual void emit(DataInstance* key, DataInstance* value) = 0;
 		//virtual void close()=0;
@@ -29,10 +29,10 @@ namespace samson {
 		virtual ~TXTWriter(){}
         
         
-		virtual void emit( const char * data , size_t length)=0;
-		void emit( std::string data )
+		virtual void emitKV( const char * data , size_t length)=0;
+		void emitKV( std::string data )
 		{
-			emit(data.c_str(), data.length());
+			emitKV(data.c_str(), data.length());
 		}
 	};
 	

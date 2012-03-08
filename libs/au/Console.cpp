@@ -196,6 +196,12 @@ void Console::internal_command( std::string command )
     {
         command_history->current()->delete_char();
         print_command();
+    }   
+
+    if ( command == "delete_word" )
+    {
+        command_history->current()->delete_word();
+        print_command();
     }    
     
 }
@@ -391,11 +397,13 @@ void Console::runConsole()
                 internal_command( "move_home" );
             else if ( c == 5 )
                 internal_command( "move_end" );
+            else if ( c == 23 )  // CTRL-W
+                internal_command( "delete_word" );
             else if ( c == 7 ) // bell
                 printf("%c",c);
             else if ( c == 27 )
             {
-                escaping = true;  // Start a scape mode
+                escaping = true;  // Start a escape mode
                 escape_sequence.init();
             }
             else

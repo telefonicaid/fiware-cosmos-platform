@@ -4,7 +4,7 @@
 
     <groupId>es.tid.bdp</groupId>
     <artifactId>bigdataplatform</artifactId>
-    <version>${env.ProductVersion}${env.SVN_REVISION}</version>
+    <version>${env.ProductVersion}${env.GIT_COMMIT}</version>
     <packaging>pom</packaging>
     <name>bigdataplatform</name>
     <description>Big Data Platform</description>

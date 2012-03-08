@@ -6,7 +6,7 @@
     <parent>
         <artifactId>bigdataplatform</artifactId>
         <groupId>es.tid.bdp</groupId>
-        <version>${env.ProductVersion}${env.SVN_REVISION}</version>
+        <version>${env.ProductVersion}${env.GIT_COMMIT}</version>
     </parent>
 
     <groupId>es.tid.bdp</groupId>

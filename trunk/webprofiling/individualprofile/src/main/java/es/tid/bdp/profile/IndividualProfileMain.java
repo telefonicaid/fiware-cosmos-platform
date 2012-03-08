@@ -10,7 +10,8 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 import es.tid.bdp.profile.categoryextraction.CategoryExtractionJob;
-import es.tid.bdp.profile.export.mongodb.ExporterJob;
+import es.tid.bdp.profile.export.mongodb.MongoDBExporterJob;
+import es.tid.bdp.profile.export.ps.PSExporterJob;
 import es.tid.bdp.profile.userprofile.UserProfileJob;
 
 /**
@@ -61,13 +62,21 @@ public class IndividualProfileMain extends Configured implements Tool {
         if (!upJob.waitForCompletion(true)) {
             return 1;
         }
-
+        
+        String psOutputFile = args[2];
+        PSExporterJob exPsJob = new PSExporterJob(this.getConf());
+        exPsJob.configure(profilePath, new Path(psOutputFile));
+        if (!exPsJob.waitForCompletion(true)) {
+            return 1;
+        }
+        
         // Perform the MongoDB export.
-        if (args.length == 2) {
-            String mongoUrl = args[1];
-            ExporterJob exJob = new ExporterJob(this.getConf());
-            exJob.configure(profilePath, mongoUrl);
-            if (!exJob.waitForCompletion(true)) {
+        if (args.length == 3) {
+            String mongoUrl = args[2];
+            MongoDBExporterJob exMongoJob = new MongoDBExporterJob(
+                    this.getConf());
+            exMongoJob.configure(profilePath, mongoUrl);
+            if (!exMongoJob.waitForCompletion(true)) {
                 return 1;
             }
         }

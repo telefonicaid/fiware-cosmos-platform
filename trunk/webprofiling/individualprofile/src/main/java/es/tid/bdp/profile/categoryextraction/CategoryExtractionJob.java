@@ -16,7 +16,7 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
 import es.tid.bdp.profile.data.ProfileProtocol.WebProfilingLog;
-import es.tid.bdp.profile.export.mongodb.ExporterJob;
+import es.tid.bdp.profile.export.mongodb.MongoDBExporterJob;
 
 /**
  *
@@ -29,7 +29,7 @@ public class CategoryExtractionJob extends Job {
 
     public CategoryExtractionJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
-        this.setJarByClass(ExporterJob.class);
+        this.setJarByClass(MongoDBExporterJob.class);
         this.setMapOutputKeyClass(BinaryKey.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
 

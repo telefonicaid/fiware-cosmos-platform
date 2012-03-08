@@ -19,15 +19,15 @@ import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
  * 
  * @author sortega
  */
-public class ExporterJob extends Job {
+public class MongoDBExporterJob extends Job {
     private static final String JOB_NAME = "ExportJob";
 
-    public ExporterJob(Configuration conf) throws IOException {
+    public MongoDBExporterJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
-        this.setJarByClass(ExporterJob.class);
+        this.setJarByClass(MongoDBExporterJob.class);
         this.setMapOutputKeyClass(Text.class);
         this.setMapOutputValueClass(UserProfile.class);
-        this.setReducerClass(ExporterReducer.class);
+        this.setReducerClass(MongoDBExporterReducer.class);
         this.setOutputKeyClass(MongoProperty.class);
         this.setOutputValueClass(BSONWritable.class);
     }

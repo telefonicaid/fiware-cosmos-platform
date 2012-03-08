@@ -150,6 +150,10 @@ int main(int argC, const char *argV[])
     if (signal(SIGINT, captureSIGINT) == SIG_ERR)
         LM_W(("SIGINT cannot be handled"));
 
+    // Init basic setup stuff ( necessary for memory check
+    au::LockDebugger::shared();
+	samson::SamsonSetup::init(samsonHome , samsonWorking );          // Load setup and create default directories
+    
     // Check to see if the current memory configuration is ok or not
     if (samson::MemoryCheck() == false)
         LM_X(1,("Insufficient memory configured. Check %ssamsonWorkerLog for more information.", paLogFilePath));
@@ -175,9 +179,6 @@ int main(int argC, const char *argV[])
 	// ------------------------------------------------------        
     
     // Make sure this singlelton is created just once
-    au::LockDebugger::shared();
-    
-	samson::SamsonSetup::init(samsonHome , samsonWorking );          // Load setup and create default directories
     samson::SamsonSetup::shared()->createWorkingDirectories();      // Create working directories
     
 	engine::Engine::init();

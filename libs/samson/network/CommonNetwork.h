@@ -36,6 +36,7 @@ namespace samson {
         std::string password;
         std::string connection_type;
         
+        std::list<Packet*> pending_packets_for_me;
 
     public:
         

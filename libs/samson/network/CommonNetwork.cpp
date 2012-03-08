@@ -301,7 +301,23 @@ namespace samson {
         
         // Common interface to receive packets
         packet->from = connection->getNodeIdentifier();
-        network_interface_receiver->schedule_receive( packet );
+        
+
+        // Flush previous packets for me ( if any )
+        if( network_interface_receiver )
+        {
+            while( pending_packets_for_me.size() > 0 )
+            {
+                Packet * previous_packet = pending_packets_for_me.front();
+                pending_packets_for_me.pop_front();
+                network_interface_receiver->schedule_receive( previous_packet );
+            }
+
+            // Schedule the new packet
+            network_interface_receiver->schedule_receive( packet );
+        }
+        else
+            pending_packets_for_me.push_back( packet );
         
     }
 

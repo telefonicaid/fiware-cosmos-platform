@@ -87,6 +87,7 @@ public:
             info->add("save");
             info->add("use_desktop_values");
             info->add("use_default_values");
+            info->add("shared_memory_check");
         }
         
         // Options for ls_queues

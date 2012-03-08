@@ -58,8 +58,6 @@ namespace samson
         const char *SYSCTL_SHMALL = "kern.sysv.shmall";
 #endif
 
-        // SamsonSetup init
-        samson::SamsonSetup::init( samsonHome , samsonWorking );
 
         // Fetch the current SAMSON configuration
         std::string num_processes_str = samson::SamsonSetup::shared()->getValueForParameter("general.num_processess");

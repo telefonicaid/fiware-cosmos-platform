@@ -71,6 +71,14 @@ map joint_comscore_dictionary
     }
 }			
 
+map emit_hist
+{
+	in system.String webp.Log
+	out system.String system.UInt
+
+	helpLine "Emit all the strings to be tracked.To be connected with hit module..."
+}
+
 reduce update_user
 {
 	in  system.String webp.Log
@@ -92,19 +100,20 @@ script web_profiling
 		# Internal queues
         alias [logs]              logs;
         alias [errors]            errors;
-
-		# State queues
-		alias [users]             s_users;
+        alias [hits]              logs;
 
         # Operations;
         alias [parse_input]       parse;
         alias [parse_input_tid]   parse_tid;
-        alias [update_state]      update;
+        alias [emit_hits]         emit_hits;
  
         # Definitions;
         add_stream_operation      [parse_input]      webp.parse_web_logs      [input]       [logs];
         add_stream_operation      [parse_input_tid]  webp.parse_tid_web_logs  [input_tid]   [logs];
-        add_stream_operation      [update_state]     webp.update_user         [logs] [users]    [users];
+        add_stream_operation      [emit_hits]        webp.emit_hits           [logs]        [hits];
+
+		 # Auxiliar modules;
+        init_stream hit hit.init_stream_operations
 
     }
 

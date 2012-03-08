@@ -78,10 +78,6 @@ if(COVERAGE)
 	SET( COMMON_SAMSON_LIBS gcov )
 endif(COVERAGE)
 
-#
-# Java tools
-#
-FIND_PACKAGE(JAVA REQUIRED)
 FIND_PACKAGE(JNI REQUIRED)
 
 #
@@ -90,12 +86,10 @@ FIND_PACKAGE(JNI REQUIRED)
 if (error EQUAL 0)
   MESSAGE("cmake: OK")
 
-  ADD_CUSTOM_COMMAND(OUTPUT es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface.h COMMAND ${Java_JAVAH_EXECUTABLE} -jni -classpath ../../../target/classes/ es.tid.bdp.profile.dictionary.comscore.CSDictionaryJNIInterface)
   INCLUDE_DIRECTORIES(${JNI_INCLUDE_DIRS})
-  INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/libs")
-  ADD_LIBRARY(comscore SHARED libcomscore.cpp es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface.h)
+  INCLUDE_DIRECTORIES("../../../target/native/javah/")
+  ADD_LIBRARY(comscore SHARED libcomscore.cpp ../../../target/native/javah/es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface.h)
   TARGET_LINK_LIBRARIES(comscore tables samson_comscore au lm dl pthread)
-
   
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 

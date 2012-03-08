@@ -21,7 +21,6 @@ import org.apache.mahout.tid.math.hadoop.similarity.cooccurrence.measures.Countb
 import org.apache.mahout.math.stats.LogLikelihood;
 
 public class LoglikelihoodSimilarity extends CountbasedMeasure {
-
     @Override
     public double similarity(double summedAggregations, double normA,
             double normB, int numberOfColumns) {

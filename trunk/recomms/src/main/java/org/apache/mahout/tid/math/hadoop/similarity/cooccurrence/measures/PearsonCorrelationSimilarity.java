@@ -23,7 +23,6 @@ import org.apache.mahout.tid.math.hadoop.similarity.cooccurrence.measures.Cosine
 import java.util.Iterator;
 
 public class PearsonCorrelationSimilarity extends CosineSimilarity {
-
     @Override
     public Vector normalize(Vector vector) {
         if (vector.getNumNondefaultElements() == 0) {

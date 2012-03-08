@@ -28,7 +28,6 @@ import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
 public final class VectorOrPrefWritable implements Writable {
-
     private Vector vector;
     private long userID;
     private float value;

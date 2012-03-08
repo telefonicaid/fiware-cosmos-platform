@@ -25,7 +25,6 @@ import java.io.IOException;
 
 public class ToItemVectorsReducer extends
         Reducer<IntWritable, VectorWritable, IntWritable, VectorWritable> {
-
     @Override
     protected void reduce(IntWritable row, Iterable<VectorWritable> vectors,
             Context ctx) throws IOException, InterruptedException {

@@ -15,33 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.mahout.tid.impl.recommender;
+package org.apache.mahout.tid.hadoop.item;
 
 import java.io.IOException;
 
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.mahout.math.VarIntWritable;
-import org.apache.mahout.math.Vector;
-import org.apache.mahout.math.VectorWritable;
+import org.apache.mahout.math.VarLongWritable;
 
-/**
- * maps a row of the similarity matrix to a {@link VectorOrPrefWritable}
- * 
- * actually a column from that matrix has to be used but as the similarity
- * matrix is symmetric, we can use a row instead of having to transpose it
- */
-public final class SimilarityMatrixRowWrapperMapper
+public final class ItemIDIndexObjReducer
         extends
-        Mapper<IntWritable, VectorWritable, VarIntWritable, VectorOrPrefWritable> {
+        Reducer<VarIntWritable, VarLongWritable, VarIntWritable, VarLongWritable> {
     @Override
-    public void map(IntWritable key, VectorWritable value, Context context)
+    protected void reduce(VarIntWritable index,
+            Iterable<VarLongWritable> possibleItemIDs, Context context)
             throws IOException, InterruptedException {
-        Vector similarityMatrixRow = value.get();
-        /* remove self similarity */
-        similarityMatrixRow.set(key.get(), Double.NaN);
-        context.write(new VarIntWritable(key.get()), new VectorOrPrefWritable(
-                similarityMatrixRow));
+        long minimumItemID = Long.MAX_VALUE;
+        for (VarLongWritable varLongWritable : possibleItemIDs) {
+            long itemID = varLongWritable.get();
+            if (itemID < minimumItemID) {
+                minimumItemID = itemID;
+            }
+        }
+        if (minimumItemID != Long.MAX_VALUE) {
+            context.write(index, new VarLongWritable(minimumItemID));
+        }
     }
 
 }

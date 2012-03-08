@@ -49,7 +49,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RowSimilarityJob extends AbstractJob {
-
     public static final double NO_THRESHOLD = Double.MIN_VALUE;
 
     static final String SIMILARITY_CLASSNAME = RowSimilarityJob.class

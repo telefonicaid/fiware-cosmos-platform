@@ -43,7 +43,6 @@ import org.slf4j.LoggerFactory;
 public final class UserVectorSplitterMapper
         extends
         Mapper<VarLongWritable, VectorWritable, VarIntWritable, VectorOrPrefWritable> {
-
     private static final Logger log = LoggerFactory
             .getLogger(UserVectorSplitterMapper.class);
 

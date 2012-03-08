@@ -29,7 +29,6 @@ import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 
 public final class VectorAndPrefsWritable implements Writable {
-
     private Vector vector;
     private List<Long> userIDs;
     private List<Float> values;

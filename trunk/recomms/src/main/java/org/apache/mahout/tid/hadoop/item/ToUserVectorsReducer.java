@@ -24,8 +24,8 @@ import org.apache.mahout.math.RandomAccessSparseVector;
 import org.apache.mahout.math.VarLongWritable;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
-import org.apache.mahout.tid.hadoop.item.ItemIDIndexMapper;
-import org.apache.mahout.tid.hadoop.item.ItemIDIndexReducer;
+import org.apache.mahout.tid.hadoop.item.ItemIDIndexObjMapper;
+import org.apache.mahout.tid.hadoop.item.ItemIDIndexObjReducer;
 import org.apache.mahout.tid.hadoop.item.ToUserVectorsReducer;
 import org.apache.mahout.cf.taste.hadoop.TasteHadoopUtils;
 import org.apache.mahout.cf.taste.hadoop.EntityPrefWritable;
@@ -45,14 +45,13 @@ import org.apache.mahout.cf.taste.hadoop.EntityPrefWritable;
  * of the same item IDs and preference values. Item IDs are used as vector
  * indexes; they are hashed into ints to work as indexes with
  * {@link TasteHadoopUtils#idToIndex(long)}. The mapping is remembered for later
- * with a combination of {@link ItemIDIndexMapper} and
- * {@link ItemIDIndexReducer}.
+ * with a combination of {@link ItemIDIndexObjMapper} and
+ * {@link ItemIDIndexObjReducer}.
  * </p>
  */
 public final class ToUserVectorsReducer
         extends
         Reducer<VarLongWritable, VarLongWritable, VarLongWritable, VectorWritable> {
-
     public static final String MIN_PREFERENCES_PER_USER = ToUserVectorsReducer.class
             .getName() + ".minPreferencesPerUser";
 

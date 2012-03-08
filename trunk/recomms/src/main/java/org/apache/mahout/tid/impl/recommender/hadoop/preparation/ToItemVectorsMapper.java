@@ -32,7 +32,6 @@ import java.util.Iterator;
 
 public class ToItemVectorsMapper extends
         Mapper<VarLongWritable, VectorWritable, IntWritable, VectorWritable> {
-
     public static final String SAMPLE_SIZE = ToItemVectorsMapper.class
             + ".sampleSize";
 

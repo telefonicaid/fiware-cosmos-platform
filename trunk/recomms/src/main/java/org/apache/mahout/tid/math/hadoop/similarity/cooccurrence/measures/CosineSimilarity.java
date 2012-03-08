@@ -21,7 +21,6 @@ import org.apache.mahout.math.Vector;
 import org.apache.mahout.tid.math.hadoop.similarity.cooccurrence.measures.VectorSimilarityMeasure;
 
 public class CosineSimilarity implements VectorSimilarityMeasure {
-
     @Override
     public Vector normalize(Vector vector) {
         return vector.normalize();

@@ -20,7 +20,6 @@ package org.apache.mahout.tid.math.hadoop.similarity.cooccurrence.measures;
 import org.apache.mahout.tid.math.hadoop.similarity.cooccurrence.measures.CountbasedMeasure;
 
 public class CityBlockSimilarity extends CountbasedMeasure {
-
     @Override
     public double similarity(double dots, double normA, double normB,
             int numberOfColumns) {

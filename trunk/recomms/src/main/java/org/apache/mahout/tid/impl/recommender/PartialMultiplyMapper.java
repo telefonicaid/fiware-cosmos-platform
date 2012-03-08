@@ -31,7 +31,6 @@ import org.apache.mahout.math.Vector;
 public final class PartialMultiplyMapper
         extends
         Mapper<VarIntWritable, VectorAndPrefsWritable, VarLongWritable, PrefAndSimilarityColumnWritable> {
-
     @Override
     public void map(VarIntWritable key,
             VectorAndPrefsWritable vectorAndPrefsWritable, Context context)

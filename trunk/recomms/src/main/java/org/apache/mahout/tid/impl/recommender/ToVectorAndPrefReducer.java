@@ -28,7 +28,6 @@ import org.apache.mahout.math.Vector;
 public final class ToVectorAndPrefReducer
         extends
         Reducer<VarIntWritable, VectorOrPrefWritable, VarIntWritable, VectorAndPrefsWritable> {
-
     @Override
     public void reduce(VarIntWritable key,
             Iterable<VectorOrPrefWritable> values, Context context)

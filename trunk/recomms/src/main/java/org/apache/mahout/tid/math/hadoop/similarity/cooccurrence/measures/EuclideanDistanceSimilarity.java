@@ -23,7 +23,6 @@ import org.apache.mahout.tid.math.hadoop.similarity.cooccurrence.measures.Vector
 import java.util.Iterator;
 
 public class EuclideanDistanceSimilarity implements VectorSimilarityMeasure {
-
     @Override
     public Vector normalize(Vector vector) {
         return vector;

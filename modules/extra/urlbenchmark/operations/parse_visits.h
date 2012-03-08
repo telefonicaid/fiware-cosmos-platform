@@ -93,7 +93,7 @@ namespace urlbenchmark{
 				}
 				++offset;
 			}
-			// Goyo. Mientras no tenga claro cómo se trocea el texto de entrada, mejor no procesar la última línea
+			// Goyo. Mientras no tenga claro cÃ³mo se trocea el texto de entrada, mejor no procesar la Ãºltima lÃ­nea
 			//OLM_T(LMT_User01, ("Last Detected line with offset:%d, length:%d, line_begin:%d, data[length-1]:%d", offset, length, line_begin, data[length-1]));
 			//parseLines(data+line_begin , writer);
 			//OLM_T(LMT_User01, ("Returned from parseLines"));

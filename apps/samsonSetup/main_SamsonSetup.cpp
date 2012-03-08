@@ -16,6 +16,7 @@
 #include "samson/common/ports.h"
 #include "samson/common/coding.h"				// samson::FormatHeader
 #include "samson/common/samsonVars.h"           // SAMSON_ARG_VARS SAMSON_ARGS
+#include "samson/common/MemoryCheck.h"          // samson::MemoryCheck
 #include "samson/module/KVFormat.h"             // samson::KVFormat
 #include "samson/module/ModulesManager.h"		// samson::ModulesManager
 #include "samson/common/samsonVersion.h"
@@ -60,6 +61,7 @@ std::string getHelpMessage()
     output << " save                     Save modified values\n";
     output << " use_desktop_values       Set typical values for desktop (2GB RAM & 2 cores)\n";
     output << " use_default_values       Set default values for a server (10GB RAM & 16 cores)\n";
+    output << " shared_memory_check      Check the current kernel shared memory configuration is OK\n";
     output << " quit                     Quit samsonSetup tool\n";
 
     return output.str();
@@ -223,6 +225,19 @@ public:
         if ( main_command == "show" )
         {
             std::cout << samson::SamsonSetup::shared()->str();
+            return;
+        }
+
+        if ( main_command == "shared_memory_check" )
+        {
+            if ( samson::MemoryCheck() == false )
+            {
+                std::cout << "Insufficient shared memory configured. Revise your kernel configuration.\n";
+            }
+            else
+            {
+                std::cout << "Kernel shared memory config OK.\n";
+            }
             return;
         }
         

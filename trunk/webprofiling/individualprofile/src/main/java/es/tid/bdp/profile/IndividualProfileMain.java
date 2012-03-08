@@ -32,10 +32,10 @@ public class IndividualProfileMain extends Configured implements Tool {
     @Override
     public int run(String[] args)
             throws IOException, ClassNotFoundException, InterruptedException {
-        if (args.length < 1 || args.length > 2) {
+        if (args.length < 2 || args.length > 3) {
             throw new IllegalArgumentException("Mandatory parameters: "
                     + "[-D input.serialization=text|protobuf] "
-                    + "weblogs_path [mongo_url]\n"
+                    + "weblogs_path psoutput_path [mongo_url]\n"
                     + "\tDefault input serialization is protobuf");
         }
 
@@ -63,7 +63,7 @@ public class IndividualProfileMain extends Configured implements Tool {
             return 1;
         }
         
-        String psOutputFile = args[2];
+        String psOutputFile = args[1];
         PSExporterJob exPsJob = new PSExporterJob(this.getConf());
         exPsJob.configure(profilePath, new Path(psOutputFile));
         if (!exPsJob.waitForCompletion(true)) {

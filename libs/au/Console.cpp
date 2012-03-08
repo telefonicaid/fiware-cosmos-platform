@@ -51,6 +51,7 @@ NAMESPACE_BEGIN(au)
 
 Console *current_console=NULL;
 void handle_winch(int sig);
+void handle_tstp(int sig);
 
 Console::Console() : token_pending_messages("token_pending_messages")
 {
@@ -326,6 +327,7 @@ void Console::runConsole()
     // Signal to handle terminal changes...
     current_console = this;
     signal(SIGWINCH, handle_winch);
+    signal(SIGTSTP, handle_tstp);
     
     // First version with just the promtp
     print_command();
@@ -512,5 +514,32 @@ void handle_winch(int sig)
     // Rewrite current command
     current_console->refresh();
 }
+
+//  SAMSON-1114 - Handle SIGTSTP so we can re-init the console allowing the
+//  cursor keys to work
+void handle_tstp(int sig) 
+{ 
+    sigset_t mask;
+
+    // Unblock SIGSTSTP
+    sigemptyset(&mask); sigaddset(&mask, SIGTSTP); sigprocmask(SIG_UNBLOCK, &mask, NULL);
+
+    // Reset the signal handler to the default 
+    signal(SIGTSTP, SIG_DFL); 
+
+    // And send ourself the signal so we get suspended as the user intended
+    kill(getpid(), SIGTSTP);
+
+    /*
+     * In suspension .....
+     */
+
+    // When we come back reset the handler to our handler function
+    signal(SIGTSTP, handle_tstp); /* reestablish signal handler */
+
+    // Re init console
+    init_console_mode();
+}
+    
 
 NAMESPACE_END

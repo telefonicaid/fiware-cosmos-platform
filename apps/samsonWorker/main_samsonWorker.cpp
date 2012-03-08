@@ -152,13 +152,7 @@ int main(int argC, const char *argV[])
 
     // Check to see if the current memory configuration is ok or not
     if (samson::MemoryCheck() == false)
-    {
         LM_X(1,("Insufficient memory configured. Check %ssamsonWorkerLog for more information.", paLogFilePath));
-    }
-    else
-    {
-        std::cout << "Memory check OK\n";
-    }
     
     if (fg == false)
     {

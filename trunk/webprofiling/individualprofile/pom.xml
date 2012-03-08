@@ -6,13 +6,11 @@
     <parent>
         <artifactId>webprofiling</artifactId>
         <groupId>es.tid.bdp</groupId>
-        <version>${env.ProductVersion}${env.GIT_COMMIT}</version>
+        <version>${env.ProductVersion}.${env.GIT_COMMIT}</version>
     </parent>
 
-    <groupId>es.tid.bdp</groupId>
     <artifactId>individualprofile</artifactId>
-    <version>${env.ProductVersion}${env.GIT_COMMIT}</version>
-    <packaging>jar</packaging>
+    <name>individualprofile</name>
 
     <dependencies>
         <dependency>

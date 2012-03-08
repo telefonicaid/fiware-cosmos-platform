@@ -5,12 +5,10 @@
     <parent>
         <artifactId>bigdataplatform</artifactId>
         <groupId>es.tid.bdp</groupId>
-        <version>${env.ProductVersion}${env.GIT_COMMIT}</version>
+        <version>${env.ProductVersion}.${env.GIT_COMMIT}</version>
     </parent>
 
-    <groupId>es.tid.bdp</groupId>
     <artifactId>webprofiling</artifactId>
-    <version>${env.ProductVersion}${env.GIT_COMMIT}</version>
     <packaging>pom</packaging>
     <name>webprofiling</name>
     
@@ -377,7 +375,7 @@
         <dependency>
             <groupId>es.tid.bdp</groupId>
             <artifactId>base</artifactId>
-            <version>0.0.3</version>
+            <version>${env.ProductVersion}.${env.GIT_COMMIT}</version>
         </dependency>
     </dependencies>
 

@@ -10,6 +10,8 @@
 #include "DelilahMainWindow.h"
 #include "WorkerViewer.h"
 
+#include "samson/client/SamsonClient.h"
+
 #include <time.h>
 
 #include <QTimer>
@@ -125,7 +127,17 @@ namespace samson
             std::string timeString = std::string(asctime (timeinfo));
 
             std::stringstream line;
-            line << timeString << "Received buffer with size " << au::str(size,"B") << " from queue " << queue;
+            //line << timeString << "Received buffer with size " << au::str(size,"B") << " from queue " << queue;
+            // Show the first line or key-value
+            SamsonClientBlock samson_client_block( buffer , false );  // Not remove buffer at destrutor
+            
+            line << "====================================================================\n";
+            line << au::str("Received stream data for queue %s\n" , queue.c_str() ); 
+            line << samson_client_block.get_header_content();
+            line << "====================================================================\n";
+            line << samson_client_block.get_content( 5 );
+            line << "====================================================================\n";
+
             mainWindow->updateQueuesFeed(queue, line.str());
         }
         

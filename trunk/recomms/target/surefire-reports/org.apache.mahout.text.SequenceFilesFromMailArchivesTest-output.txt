@@ -1,0 +1,4 @@
+12/02/13 16:22:07 INFO text.SequenceFilesFromMailArchives: At /tmp/mahout-SequenceFilesFromMailArchivesTest-7042283350448685056/mail-archives-in/subdir
+12/02/13 16:22:07 INFO text.SequenceFilesFromMailArchives: Parsed 2 messages from directory /tmp/mahout-SequenceFilesFromMailArchivesTest-7042283350448685056/mail-archives-in/subdir
+12/02/13 16:22:07 INFO text.SequenceFilesFromMailArchives: Parsed 2 messages from /tmp/mahout-SequenceFilesFromMailArchivesTest-7042283350448685056/mail-archives-in
+12/02/13 16:22:07 INFO text.SequenceFilesFromMailArchives: Conversion took 12ms

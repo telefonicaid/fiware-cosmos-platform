@@ -9,6 +9,11 @@ namespace samson
 {
     namespace stream
     {
+        BlockListContainer::BlockListContainer( std::string _container_name )
+        {
+            container_name = _container_name;
+        }
+        
         BlockListContainer::~BlockListContainer()
         {
             blockLists.clearMap();                  // Remove all BlockList instances
@@ -20,7 +25,7 @@ namespace samson
             
             if( !blockList )
             {
-                blockList = new BlockList( name );
+                blockList = new BlockList( au::str("<%s:%s>" , container_name.c_str() , name.c_str() ) );
                 blockLists.insertInMap(name, blockList);    
             }
             

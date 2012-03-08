@@ -344,6 +344,8 @@ namespace samson {
         void set( int _hg_begin , int _hg_end );
         
         void setFrom( KVInfo *info );        
+        void setFrom( FullKVInfo *info );
+        
         bool isValid();
       
         void getInfo( std::ostringstream& output);
@@ -518,7 +520,7 @@ namespace samson {
         std::string str()
         {
             std::ostringstream output;
-            output << "KVHeader: " << info.str() << " (" << getKVFormat().str() << ")";
+            output << "KVHeader: " << info.str() << "(" << range.str() << ") (" << getKVFormat().str() << ")";
             return output.str();
         }
         

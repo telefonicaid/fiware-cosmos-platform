@@ -40,7 +40,7 @@ namespace samson {
         
 #pragma StreamOperation
         
-        StreamOperation::StreamOperation(  )
+        StreamOperation::StreamOperation(  ) : BlockListContainer("StreamOperation")
         {
             streamManager = NULL;
             

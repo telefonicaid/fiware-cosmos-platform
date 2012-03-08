@@ -30,19 +30,28 @@ namespace samson {
         {
             switch (state) {
                 case Block::on_memory:
-                    return " M ";
+                    if( isLockedInMemory() )
+                        return "L ";
+                    else
+                        return "M ";
                     break;
                 case Block::on_disk:
-                    return "  D";
+                    return " D";
                     break;
                 case Block::ready:
-                    return " MD";
+                    if( isLockedInMemory() )
+                        return "LD";
+                    else
+                        return "MD";
                     break;
                 case Block::writing:
-                    return " MW";
+                    if( isLockedInMemory() )
+                        return "LW";
+                    else
+                        return "MW";
                     break;
                 case Block::reading:
-                    return " RD";
+                    return "RD";
                     break;
             }
             
@@ -62,8 +71,6 @@ namespace samson {
             
             // Get the size of the packet
             size = buffer->getSize();
-
-            requests = 0;
 
             // Default state is on_memory because the buffer has been given at memory
             state = on_memory;
@@ -101,8 +108,6 @@ namespace samson {
             header = (KVHeader*) malloc( sizeof( KVHeader ) );
             memcpy(header, _header , sizeof(KVHeader));
             
-            requests = 0;
-
             LM_T(LmtBlockManager,("Block created from id: %s", this->str().c_str()));
 
             lookupList.head     = NULL;
@@ -145,6 +150,12 @@ namespace samson {
             
             return _task_id;
         }
+        
+        size_t Block::getLiveTime()
+        {
+            return last_used.diffTimeInSeconds();
+        }
+
         
         bool Block::compare( Block *b )
         {
@@ -293,14 +304,7 @@ namespace samson {
                 // Whatever operation it was it is always ready
                 state = ready;
                 
-                // To avoid having it freed before time to be locked by the task that requested it;
-                requests = 20;
-
                 LM_T(LmtBlockManager,("Block::notify block state set to ready for block:'%s'", str().c_str()));
-
-                // Review if if has to be removed
-                if( canBeRemoved() )
-                    BlockManager::shared()->check( this );
             }
             
         }
@@ -350,7 +354,7 @@ namespace samson {
             output << "[ ";
             //output << "Task:" << task_id << " order: " << task_order << " ";
             if( header )
-                output << "HG id=" << id << " size=" << size << " " <<  header->range.str() << "(req:" << requests << " " << getState() << ")";
+                output << "HG id=" << id << " size=" << size << " " <<  header->range.str() << "(" << getState() << ")";
             output << " ]";
             return output.str();
         }
@@ -564,6 +568,8 @@ namespace samson {
             samson::add( record , "size" , size , "f=uint64,sum" );
             samson::add( record , "state" , getState() , "left,different" );
 
+            samson::add( record , "KVRange" , getKVRange().str() , "left,different" );
+            
             size_t task = getMinTaskId();
 
             if( task == (size_t)(-1))

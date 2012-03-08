@@ -11,6 +11,7 @@
 #include "samson/common/NotificationMessages.h"         // notification_process_request
 #include "samson/common/SamsonSetup.h"                      // SamsonSetup
 
+#include "BlockManager.h"
 #include "StreamManager.h"          // StreamManager
 #include "SystemQueueTask.h"        // SystemQueueTask
 #include "PopQueue.h"               // PopQueueTasks
@@ -47,6 +48,9 @@ namespace samson {
             
             // Check if it is necessary to run a task
             reviewPendingQueueTasks();
+            
+            // Review block manager
+            BlockManager::shared()->review();
         }
         
         void QueueTaskManager::add( SystemQueueTask* task )
@@ -56,6 +60,9 @@ namespace samson {
             
             // Check if it is necessary to run a task
             reviewPendingQueueTasks();
+            
+            // Review block manager
+            BlockManager::shared()->review();
         }
 
         void QueueTaskManager::notify( engine::Notification* notification )

@@ -95,7 +95,10 @@ namespace samson {
             
             // Get the next element to be processed
             Block* top( );
-
+            
+            // Get next block for defrag ( minimum hash-group )
+            Block* getNextBlockForDefrag();
+            
             // Simple add or remove blocks
             void add( Block *b );
             void remove( Block* block );
@@ -135,6 +138,7 @@ namespace samson {
 
             // Extract blocks of data
             void extractFrom( BlockList* list , size_t max_size = 0 );
+            void extractFromForDefrag( BlockList* list , size_t max_size = 0 );
             bool extractBlockFrom( BlockList *list );
             
             // Get information for monitoring

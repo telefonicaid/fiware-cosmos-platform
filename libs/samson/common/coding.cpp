@@ -100,9 +100,33 @@ namespace samson
         
         hg_end = j;
         
+		//LM_M(("KVRange for output block %s" , str().c_str()));
+    }
+
+    void KVRange::setFrom( FullKVInfo *info )
+    {
+        int i = 0 ;
+        while( (info[i].size == 0) && ( i < KVFILE_NUM_HASHGROUPS ) )
+            i++;
+        
+        if( i == KVFILE_NUM_HASHGROUPS)
+        {
+            LM_W(("No content for generated block"));
+            set(0,1);   // Smaller set
+            return;
+        }
+        
+        hg_begin = i;
+        
+        int j = KVFILE_NUM_HASHGROUPS;
+        while( (info[j-1].size == 0) && ( j > (i+1) ) )
+            j--;
+        
+        hg_end = j;
         
 		//LM_M(("KVRange for output block %s" , str().c_str()));
     }
+    
     
     bool KVRange::isValid()
     {

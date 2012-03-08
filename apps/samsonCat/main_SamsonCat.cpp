@@ -102,7 +102,7 @@ int main(int argC, const char *argV[])
         
         if( show_header )
         {
-            std::cout << samsonFile.header.str() << " " << " [ " << samsonFile.header.info.kvs << " kvs in " << samsonFile.header.info.size << "bytes\n";            
+            std::cout << samsonFile.header.str() << " " << " [ " << samsonFile.header.info.kvs << " kvs in " << samsonFile.header.info.size << "bytes]\n";            
             exit(0);
         }
         

@@ -12,13 +12,13 @@ namespace samson {
     namespace stream{
         
         
-        QueueTaskBase::QueueTaskBase( size_t _id )
+        QueueTaskBase::QueueTaskBase( size_t _id ) : BlockListContainer( au::str("Task_%lu" , _id) )
         {
             // Set the id of this task
             id = _id;
             
             // Create the lock block list to put all inputs when ready...
-            lockBlockList  = new BlockList( au::str("Task %lu input lock" , id ) , id , true );
+            lockBlockList  = new BlockList( au::str("<Task %lu lock>" , id ) , id , true );
             
             ready_flag = false;
             
@@ -65,7 +65,7 @@ namespace samson {
             BlockList* blockList = blockLists.findInMap( name );
             if( !blockList )
             {
-                blockList  = new BlockList( au::str("QueueTaskBase %lu input %s" , id , name.c_str() ) , id , false );
+                blockList  = new BlockList( au::str("<Task %lu : %s>" , id , name.c_str() ) , id , false );
                 blockLists.insertInMap(name, blockList );
             }
             

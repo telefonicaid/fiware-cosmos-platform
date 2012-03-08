@@ -82,8 +82,6 @@ namespace samson {
 
             std::set< BlockList* > lists;   // List where this block is contained
             
-            int requests;					// Number of times block has been detected as "not in memory" when scheduling a task;
-
             au::Token token_lookup_creation;
 
             typedef enum
@@ -200,10 +198,9 @@ namespace samson {
                 last_used.reset();
             }
             
-        private:
-            
             // Get the minimum task id to get the order of the blocks
             size_t getMinTaskId();
+            size_t getLiveTime();
             
         };
             

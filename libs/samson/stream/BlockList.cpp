@@ -119,7 +119,6 @@ namespace samson {
         
         void BlockList::add( Block *block )
         {
-            
             // Accumulated information
             block->update( accumulated_block_info );
             
@@ -128,10 +127,6 @@ namespace samson {
             
             // Insert myself in the the list inside the block
             block->lists.insert( this );
-            
-            // Check the block
-            BlockManager::shared()->check( block );
-            
             
         }
         
@@ -142,10 +137,6 @@ namespace samson {
 
             // remove this container from the list inside the block
             block->lists.erase( this );
-         
-            // Check the block
-            BlockManager::shared()->check(block);
-            
         }
         
         void BlockList::remove( BlockList* list )
@@ -175,6 +166,25 @@ namespace samson {
                 return NULL;
             return blocks.front();
         }
+        
+        Block* BlockList::getNextBlockForDefrag()
+        {
+            Block* b = NULL;
+            
+            au::list< Block >::iterator it_blocks;
+            for ( it_blocks = blocks.begin() ; it_blocks != blocks.end() ; it_blocks++) 
+            {
+                Block* b2 = *it_blocks;
+
+                // Take it if no previous selection ( or minor minimum hash-group )
+                if( !b || ( b->getKVRange().hg_begin > b2->getKVRange().hg_begin ) )
+                    b = b2;
+            }
+            
+            return b;
+        
+        }
+
         
         size_t BlockList::getSize()
         {
@@ -326,6 +336,35 @@ namespace samson {
             
         }
 
+        void BlockList::extractFromForDefrag( BlockList* list , size_t max_size )
+        {
+            size_t total_size = 0 ;
+            int num_blocks = 0;
+            
+            Block* nextBlock = list->getNextBlockForDefrag();
+            
+            while( nextBlock )
+            {
+                // Increment the size
+                total_size += nextBlock->getSize();
+                
+                if( num_blocks  > 0 )
+                    if (( max_size > 0) && ( total_size > max_size ))
+                    {
+                    	LM_T(LmtBlockManager,("Stop extractFrom list '%s' at block %s with (total_size(%lu) > max_size(%lu)) after %d blocks", list->name.c_str(), nextBlock->str().c_str(), total_size, max_size, num_blocks));
+                        return;
+                    }
+                
+                add( nextBlock );
+                list->remove( nextBlock );
+                num_blocks++;
+                
+                // Get the next one...
+                nextBlock = list->getNextBlockForDefrag();
+            }
+            
+        }
+
         
         bool BlockList::isEmpty()
         {
@@ -340,16 +379,11 @@ namespace samson {
             for ( b = blocks.begin() ; b != blocks.end() ; b++ )
                 if( ! (*b)->isContentOnMemory() )
                 {
-                	LM_T(LmtBlockManager,("BlockList block id=%lu not in memory with %d requests", (*b)->getId(), (*b)->requests));
-                	(*b)->requests += 25;
+                	LM_T(LmtBlockManager,("BlockList block id=%lu not in memory", (*b)->getId() ));
                 	return false;
                 }
-
-            
             return true;
         }
-        
-
         
         // Get information
         void BlockList::update( BlockInfo &block_info)

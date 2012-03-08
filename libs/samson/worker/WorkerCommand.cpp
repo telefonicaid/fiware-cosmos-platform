@@ -25,10 +25,91 @@
 #include "samson/stream/BlockBreakQueueTask.h"
 
 #include "samson/stream/QueueTasks.h"
+#include "samson/stream/Block.h"
+#include "samson/stream/BlockList.h"
 
 #include "WorkerCommand.h"     // Own interface
 
 namespace samson {
+    
+    class KVRangeAndSize
+    {
+    public:
+        
+        KVRange range;
+        size_t size;
+        
+        KVRangeAndSize( KVRange _range , size_t _size )
+        {
+            range = _range;
+            size = _size;
+        }
+    };
+    
+    class KVRangeAndSizeManager
+    {
+        
+        public:
+        
+        std::vector<KVRangeAndSize> items;  // Input information
+        std::vector<KVRange> ranges;        // Output ranges
+        
+        au::ErrorManager error;             // Error management
+        
+        void compute_ranges( size_t max_size )
+        {
+            
+            int num_cores = SamsonSetup::shared()->getInt("general.num_processess");
+            
+            int hg_begin = 0;
+            int hg_end = 0;
+            
+            while( true )
+            {
+                if( hg_begin >= KVFILE_NUM_HASHGROUPS )
+                    break; // No more ranges
+
+                while( 
+                      (hg_end < KVFILE_NUM_HASHGROUPS) 
+                      && 
+                      (compute_size( KVRange(hg_begin,hg_end+1) ) < max_size ) 
+                      && ( (hg_end - hg_begin) < (KVFILE_NUM_HASHGROUPS/num_cores) ) // Distribute small reducers...
+                      )
+                    hg_end++;
+                
+                if( hg_begin == hg_end )
+                {
+                    // Error sice it is not possible to include this hash-group alone
+                    size_t size = compute_size( KVRange( hg_begin , hg_begin+1) );
+                    error.set( au::str("Not possible to process hash-group %d ( %s > %s ). Please degrag input queues"
+                                       , hg_begin
+                                       , au::str(size).c_str()
+                                       , au::str(max_size).c_str() ));
+                    return;
+                }
+                
+                // Create a new set
+                KVRange r( hg_begin , hg_end );
+                ranges.push_back(r);
+                
+                // Next hash-groups
+                hg_begin = hg_end;
+                hg_end = hg_begin;
+            }
+            
+        }
+        
+        size_t compute_size( KVRange range )
+        {
+            size_t total = 0;
+            for( size_t i = 0 ; i < items.size() ; i++ )
+                if( items[i].range.overlap( range ) )
+                    total += items[i].size; 
+            return total;
+        }
+        
+        
+    };
     
     bool ignoreCommand( std::string command )
     {
@@ -967,20 +1048,43 @@ namespace samson {
             stream::BlockList init_list("defrag_block_list");
             init_list.copyFrom( queue->list );
             
-            // Sort blocks accordingly...
-            init_list.blocks.sort( compare_blocks_defrag );
+            
+            // Print considered blocks
+            std::list<stream::Block*>::iterator b;
+            for ( b = init_list.blocks.begin() ; b != init_list.blocks.end() ; b++ )
+            {
+                stream::Block* block = *b;
+                LM_W(("Block to defrag %s" , block->str().c_str() ));
+            }
+            
+ 
+            size_t input_operation_size = SamsonSetup::shared()->getUInt64("general.memory") / 2;
+            
+            size_t num_defrag_blocks = init_list.getBlockInfo().size / input_operation_size;
+            size_t output_operation_size = input_operation_size / num_defrag_blocks;
+            
+            if( output_operation_size > (64*1024*1024) )
+                output_operation_size = (64*1024*1024);
             
             while( true )
             {
                 stream::BlockList tmp_list("defrag_block_list");
-                tmp_list.extractFrom( &init_list , 400*1024*1024 );
+                tmp_list.extractFromForDefrag( &init_list , input_operation_size );
                 
                 if( tmp_list.isEmpty() )
                     break;
+
+                LM_W(("New operation for defrag..."));
+                std::list<stream::Block*>::iterator b;
+                for ( b = tmp_list.blocks.begin() ; b != tmp_list.blocks.end() ; b++ )
+                {
+                    stream::Block* block = *b;
+                    LM_W((">>Block to defrag %s" , block->str().c_str() ));
+                }
                 
                 // Create an operation to process this set of blocks
                 size_t new_id = streamManager->queueTaskManager.getNewId();
-                stream::BlockBreakQueueTask *tmp = new stream::BlockBreakQueueTask( new_id , queue_to ); 
+                stream::BlockBreakQueueTask *tmp = new stream::BlockBreakQueueTask( new_id , queue_to , output_operation_size ); 
                 
                 // Fill necessary blocks
                 tmp->getBlockList( au::str("input" ) )->copyFrom( &tmp_list );
@@ -1080,28 +1184,55 @@ namespace samson {
                 {
                     stream::StreamOperationBase *operation = getStreamOperation( op );
                     
-                    // Get the input queues
+                    
+                    size_t memory = SamsonSetup::shared()->getUInt64("general.memory");
+                    int num_cores = SamsonSetup::shared()->getInt("general.num_processess");
+                    size_t max_memory =  memory / num_cores;
+
+                    // Compute the ranges to use
+                    KVRangeAndSizeManager ranges_manager;
+                    
+                    // Add all input blocs to the ranges_manager
                     std::vector< stream::Queue* > queues;
-                    BlockInfo block_info;
-                    int num_divisions = 1;
-                    
-                    
                     for (int i = 0 ; i < op->getNumInputs() ; i++ )
                     {
                         std::string input_queue_name = operation->input_queues[i];
                         stream::Queue*queue = streamManager->getQueue( input_queue_name );
-                        queue->update( block_info );
                         queues.push_back( queue );                            
+                        
+                        au::list< stream::Block >::iterator it_blocks;
+                        for( it_blocks = queue->list->blocks.begin() ; it_blocks != queue->list->blocks.end() ; it_blocks++ )
+                        {
+                            stream::Block* block = *it_blocks;
+                            
+                            KVRange range = block->getKVRange();
+                            size_t size = block->getSize();
+                            
+                            ranges_manager.items.push_back( KVRangeAndSize( range, size) );
+                        }
                     }
                     
-                    // For each range, create a set of reduce operations...
-                    for ( int r = 0 ; r < num_divisions ; r++ )
+                    // Compute used ranges
+                    ranges_manager.compute_ranges(max_memory);
+                    if ( ranges_manager.error.isActivated() )
                     {
-                        KVRange  range = rangeForDivision( r , num_divisions );
-                        
+                        finishWorkerTaskWithError( ranges_manager.error.getMessage() ); 
+                        return;
+                    }
+
+                    
+                    // For each range, create a set of reduce operations...
+                    for ( size_t r = 0 ; r < ranges_manager.ranges.size() ; r++ )
+                    {
+                        // Selected ranges
+                        KVRange  range = ranges_manager.ranges[r];
                         
                         //Create the reduce operation
-                        stream::ReduceQueueTask *tmp = new stream::ReduceQueueTask( streamManager->queueTaskManager.getNewId() , operation , range ); 
+                        stream::ReduceQueueTask *tmp = new stream::ReduceQueueTask(
+                                                        streamManager->queueTaskManager.getNewId() 
+                                                        , operation 
+                                                        , range ); 
+                        
                         tmp->addOutputsForOperation(op);
                         tmp->operation_environment.copyFrom(&operation_environment);
                         
@@ -1117,12 +1248,17 @@ namespace samson {
                         
                         // Add me as listener and increase the number of operations to run
                         tmp->addListenerId( getEngineId() );
+                        
+                        // Add to the vector of pending operations
+                        // Mark as a new pending operation
                         num_pending_processes++;
                         
                         // Schedule tmp task into QueueTaskManager
                         streamManager->queueTaskManager.add( tmp );
                         
                     }
+                    
+
                     
                     
                     delete operation;

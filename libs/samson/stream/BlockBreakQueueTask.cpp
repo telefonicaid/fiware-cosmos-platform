@@ -26,12 +26,13 @@ namespace samson {
 #pragma mark BlockBreakQueueTask        
 
         
-        BlockBreakQueueTask::BlockBreakQueueTask( size_t _id , std::string _queue_name )
+        BlockBreakQueueTask::BlockBreakQueueTask( size_t _id , std::string _queue_name , size_t _output_operation_size )
         : SystemQueueTask( _id , au::str("BlockBreak ( %lu )" , _id ) )
         {
 
             queue_name = _queue_name;
             setProcessItemOperationName( "system.BlockBreak" );
+            output_operation_size = _output_operation_size;
         }
         
         void BlockBreakQueueTask::run()
@@ -54,15 +55,15 @@ namespace samson {
                 for( size_t f = 0 ; f < files.size() ; f++ )
                     info[hg].append( files[f].info[hg]  );
             }
-
-            // Create 64Mb ouptut blocks
-            size_t accumulated_size = info[0].size;
-            int from_hg = 0;
-            int to_hg = 1;
+            
+            // Create (aprox) 64Mb ouptut blocks....
+            size_t accumulated_size = 0;
+            int from_hg = 0;  
+            int to_hg = 0;
             
             while( to_hg < ( KVFILE_NUM_HASHGROUPS - 1 ) )
             {
-                if( ( accumulated_size + info[to_hg].size ) > (64*1024*1024) )
+                if( (to_hg > from_hg) && (( accumulated_size + info[to_hg].size ) > output_operation_size ))
                 {
                     createBlock( from_hg, to_hg+1 );
                     from_hg = to_hg + 1;
@@ -78,8 +79,7 @@ namespace samson {
 
             // Create the last block
             if( to_hg > from_hg )
-                createBlock( from_hg, KVFILE_NUM_HASHGROUPS );
-            
+                createBlock( from_hg, to_hg );
             
             free(info);
             
@@ -126,7 +126,9 @@ namespace samson {
                 }
             }
             
-            file.header->range = KVRange(hg_begin , hg_end );
+            // Adjust the range
+            //file.header->range = KVRange(hg_begin , hg_end );
+            file.header->range.setFrom( file.info ); // Adjust the range of generated bocks
             
             // Collect the output buffer
             outputBuffers.push_back(buffer);

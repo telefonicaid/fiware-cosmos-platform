@@ -27,13 +27,15 @@ namespace samson
         
         class BlockListContainer
         {
+            std::string container_name;
             
         protected:
             
             au::map<std::string, BlockList > blockLists;
             
         public:
-            
+
+            BlockListContainer( std::string _container_name );
             ~BlockListContainer();
             
             BlockList* getBlockList( std::string name );

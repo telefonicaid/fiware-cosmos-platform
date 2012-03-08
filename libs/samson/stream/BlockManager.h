@@ -21,6 +21,8 @@ namespace samson {
          Manager of all the blocks running on the system
          */
         
+        bool compare_blocks( Block*b1 , Block *b2 );
+        
         class BlockManager : public engine::Object 
         {
             
@@ -37,7 +39,6 @@ namespace samson {
             
             size_t memory;                  // Total amount of memory used by all blocks
             size_t max_memory;              // Maximum amount of memory to always kept
-            size_t max_memory_abs;          // Maximum amount of memory to be used
             
         public:
 
@@ -71,21 +72,9 @@ namespace samson {
             // It is assumed block is NOT inside the list "blocks"
             
             void insert( Block* b );
-            
-            // Reconsider the position of this block in the global list 
-            // it will affect who is loaded from disk / saved to disk or event flush out from memory
-            // It is assumed block is inside the list "blocks"
-            
-            void check( Block* b );
-            
-        private:
 
             // Function to review pending read / free / write operations
-            void _review();
-
-            // Function used in the order of blocks
-            std::list<Block*>::iterator _find_pos( Block *b );
-
+            void review();
             
         public:
             

@@ -15,7 +15,7 @@ namespace samson
                        , num_blocks 
                        , au::str( info.kvs , "kvs" ).c_str()
                        , au::str( info.size ,"B" ).c_str()
-                       , ( size_on_memory == size )?'M':' '
+                       , ( size_locked == size )?'L':( ( size_on_memory == size )?'M':' ')
                        , ( size_on_disk == size )?'D':' '
                        );
     }        

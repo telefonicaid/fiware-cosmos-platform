@@ -55,7 +55,7 @@ namespace samson
             );
         
         add( "send_alert" , "delilah", 
-            "Send a trace to all conneceted delilah using a random worker as a sender\n",
+            "Send a trace to all conneceted delilah using a random worker as a sender",
             "send_trace [-worker X] [-error] [-warning] \"Message to be sent\""
             "      -worker X     Use only this worker as broadcaster\n"
             "      -error        Mark this trace as an error for correct visualitzation\n"
@@ -134,9 +134,9 @@ namespace samson
             "unset_queue_property [queue] [property]"
             );
         
-        add( "show_stream_block" ,"data" , "Show data activity in a particular stream block\n"
+        add( "show_stream_block" ,"data" , "Show data activity in a particular stream block",
             "It shows input and output queues, state queues, stream operations and internal states included in inner stream blocks\n"
-            ,"show_stream_block path [-rates]\n"
+            "show_stream_block path [-rates]\n"
             );
         
         add( "ls_blocks" , "data" , "Show the list of data blocks managed in a SAMSON cluster. This is a debug tool",

@@ -6,22 +6,11 @@
     <parent>
         <artifactId>bigdataplatform</artifactId>
         <groupId>es.tid.bdp</groupId>
-        <version>${env.ProductVersion}${env.GIT_COMMIT}</version>
+        <version>${env.ProductVersion}.${env.GIT_COMMIT}</version>
     </parent>
 
-    <groupId>es.tid.bdp</groupId>
     <artifactId>base</artifactId>
-    <version>0.0.3</version>
-    <packaging>jar</packaging>
-
-    <properties>
-        <copyright.year>2011</copyright.year>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <org.apache.hadoop>0.20.2</org.apache.hadoop>
-        <org.apache.hadoop.hive>0.7.1</org.apache.hadoop.hive>
-        <jvm.version>1.6</jvm.version>
-    </properties>
+    <name>base</name>
 
     <dependencies>
         <dependency>

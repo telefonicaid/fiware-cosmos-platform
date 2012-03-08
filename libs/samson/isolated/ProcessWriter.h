@@ -70,7 +70,7 @@ namespace samson {
 		 Called allways from the Process side 
 		 */
 		
-		void emitKV( int output , DataInstance *key , DataInstance *value );
+		void emit( int output , DataInstance *key , DataInstance *value );
 
 		// Clear the current buffer to submit new key-values
 		void clear();
@@ -100,7 +100,7 @@ namespace samson {
 
     public:
  		
-		void emitKV( const char * _data , size_t _size);
+		void emit( const char * _data , size_t _size);
 
 		void flushBuffer( bool finish );
 		

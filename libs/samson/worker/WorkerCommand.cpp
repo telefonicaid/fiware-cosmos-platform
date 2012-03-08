@@ -830,6 +830,60 @@ namespace samson {
             return;
         }
         
+        if (main_command == "log")
+        {
+            char   type;
+            char   date[64];
+            int    ms;
+            char   progName[64];
+            char   fileName[64];
+            int    lineNo;
+            int    pid;
+            int    tid;
+            char   funcName[64];
+            char   message[256];
+
+            samson::network::Collection* collection = new samson::network::Collection();
+            collection->set_name("Log File Lines");
+            collection->set_title("Log File Lines");
+
+            long lmPos = 0;
+            while (1) // Until lmLogLineGet returns EOF (-2)
+            {
+                samson::network::CollectionRecord* record = collection->add_record();
+                
+                // LM_M(("Calling lmLogLineGet for position %lu", lmPos));
+                lmPos = lmLogLineGet(&type, date, &ms, progName, fileName, &lineNo, &pid, &tid, funcName, message, lmPos);
+                // LM_M(("lmLogLineGet returned %lu", lmPos));
+                if (lmPos < 0)
+                {
+                    if (lmPos != -2)
+                        LM_E(("lmLogLineGet returned %lu ...", lmPos));
+                    break;
+                }
+
+                ::samson::add(record, "Type",         type,     "left,different");
+                ::samson::add(record, "Date",         date,     "left,different");
+                ::samson::add(record, "Milliseconds", ms,       "left,different");
+                ::samson::add(record, "Program Name", progName, "left,different");
+                ::samson::add(record, "File Name",    fileName, "left,different");
+                ::samson::add(record, "Line No",      lineNo,   "left,different");
+                ::samson::add(record, "PID",          pid,      "left,different");
+                ::samson::add(record, "TID",          tid,      "left,different");
+                ::samson::add(record, "Function",     funcName, "left,different");
+                ::samson::add(record, "Message",      message,  "left,different");
+            }
+
+            // Close fP for log file peeking ...
+            lmPos = lmLogLineGet(NULL, date, &ms, progName, fileName, &lineNo, &pid, &tid, funcName, message, lmPos);
+
+            // LM_M(("Adding RECORD of type %c: %s", type, message));
+            collections.push_back(collection);
+
+            finishWorkerTask();
+            return;
+        } 
+
         if (main_command == "trace")
         {
             std::string subcommand;

@@ -2167,12 +2167,184 @@ LmStatus lmReopen(int index)
 
 
 
+/* ****************************************************************************
+*
+* lmLogLineGet - 
+*/
+long lmLogLineGet(char* typeP, char* dateP, int* msP, char* progNameP, char* fileNameP, int* lineNoP, int* pidP, int* tidP, char* funcNameP, char* messageP, long offset)
+{
+    static FILE*  fP = NULL;
+    char          line[1024];
+    char*         lineP = line;
+    char*         delimiter;
+    long          ret;
+
+    if (typeP == NULL)
+    {
+        if (fP != NULL)
+            fclose(fP);
+        fP = NULL;
+        return 0;
+    }
+
+    if (fP == NULL)
+    {
+        // printf("opening log file\n");
+        if ((fP = fopen(fds[0].info, "r")) == NULL)
+        {
+            // printf("error opening log file '%s'\n", fds[0].info);
+            return -1;
+        }
+
+        fgets(line, LINE_MAX, fP);
+        fgets(line, LINE_MAX, fP);
+        fgets(line, LINE_MAX, fP);
+        fgets(line, LINE_MAX, fP);
+    }
+    else
+    {
+        // printf("seek to %lu\n", offset);
+        if (fseek(fP, offset, SEEK_SET) == -1)
+            goto lmerror;
+    }
+
+    if (fgets(line, LINE_MAX, fP) == NULL)
+    {
+        fclose(fP);
+        fP = NULL;
+        return -2; // EOF
+    }
+
+    if (line[strlen(line) - 1] == '\n')
+        line[strlen(line) - 1] = 0;
+
+    // printf("Got line '%s'\n", line);
+    // M:Thursday 08 Mar 13:40:45 2012(373):samsonWorker-father/WorkerCommand.cpp[784](p.3409)(t.3410) run: Adding RECORD of type M
+
+    *typeP = *lineP;
+
+    lineP += 2;
+    delimiter = strchr(lineP, '('); if (delimiter == NULL) goto lmerror;
+    *delimiter = 0;
+    strcpy(dateP, lineP);
+    lineP = delimiter + 1;
+
+    delimiter = strchr(lineP, ')'); if (delimiter == NULL) goto lmerror;
+    *delimiter = 0;
+    *msP = atoi(lineP);
+    lineP = delimiter + 2;
+
+    delimiter = strchr(lineP, '/'); if (delimiter == NULL) goto lmerror;
+    *delimiter = 0;
+    strcpy(progNameP, lineP);
+    lineP = delimiter + 1;
+
+    delimiter = strchr(lineP, '['); if (delimiter == NULL) goto lmerror;
+    *delimiter = 0;
+    strcpy(fileNameP, lineP);
+    lineP = delimiter + 1;
+
+    delimiter = strchr(lineP, ']'); if (delimiter == NULL) goto lmerror;
+    *delimiter = 0;
+    *lineNoP = atoi(lineP);    
+    lineP = delimiter + 4;
+
+    delimiter = strchr(lineP, ')'); if (delimiter == NULL) goto lmerror;
+    *delimiter = 0;
+    *pidP = atoi(lineP);
+    lineP = delimiter + 4;
+
+    delimiter = strchr(lineP, ')'); if (delimiter == NULL) goto lmerror;
+    *delimiter = 0;
+    *tidP = atoi(lineP);
+    lineP = delimiter + 2;
+    
+    delimiter = strchr(lineP, ':'); if (delimiter == NULL) goto lmerror;
+    *delimiter = 0;
+    strcpy(funcNameP, lineP);
+    lineP = delimiter + 2;
+
+    strcpy(messageP, lineP);
+
+    ret = ftell(fP);
+    // printf("Line parsed - returning %lu\n", ret);
+    return ret;
+
+lmerror:
+    fclose(fP);
+    fP = NULL;
+    // printf("Error in line: %s", lineP);
+    return -1;
+}
+
+
+
+/* ****************************************************************************
+*
+* lmContentGet - 
+*/
+int lmContentGet(char* buf, unsigned int bufLen, int* linesP, char* pattern, bool* theresMoreP, long* offsetP)
+{
+    FILE*        fP;
+    unsigned int total = 0;
+    int          lines = 0;
+    char         line[LINE_MAX];
+
+    if (theresMoreP)
+        *theresMoreP = false;
+
+    if ((fP = fopen(fds[0].info, "r")) == NULL)
+    {
+        buf[0] = 0;
+
+        if (*linesP)
+            *linesP = 0;
+
+        return 0;
+    }
+
+	while (fgets(line, LINE_MAX, fP) != NULL)
+	{
+        if (pattern != NULL)
+        {
+            if (strstr(line, pattern) == NULL)
+                continue;
+        }
+
+        if (total + strlen(line) > bufLen)
+        {
+            if (*linesP)
+                *linesP = 0;
+
+            *theresMoreP = true;
+
+            // I could do an ftell here and return the position for consecutive searches ...
+            fclose(fP);
+            return total;
+        }
+
+        strncat(buf, line, bufLen);
+        total += strlen(line);
+        ++lines;
+    }    
+
+    fclose(fP);
+
+    if (*linesP)
+        *linesP = 0;
+
+    return total;
+}
+
+
+
 typedef struct LineRemove
 {
 	char      type;
 	int       offset;
 	bool      remove;
 } LineRemove;
+
 
 
 /* ****************************************************************************

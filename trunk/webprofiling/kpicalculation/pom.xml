@@ -3,14 +3,14 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
     xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
-   
+
     <profiles>
         <profile>
             <id>local</id>
 
             <properties>      
-        	    <env.SVN_REVISION>Build</env.SVN_REVISION>
-        	    <env.ProductVersion>Local</env.ProductVersion>   
+        	    <env.GIT_COMMIT>Build</env.GIT_COMMIT>
+                    <env.ProductVersion>Local</env.ProductVersion>   
             </properties>
             <activation>
                 <activeByDefault>true</activeByDefault>
@@ -24,7 +24,7 @@
     <parent>
         <artifactId>webprofiling</artifactId>
         <groupId>es.tid.bdp</groupId>
-        <version>${env.ProductVersion}${env.SVN_REVISION}</version>
+        <version>${env.ProductVersion}${env.GIT_COMMIT}</version>
     </parent>
 
     <artifactId>kpicalculation</artifactId>

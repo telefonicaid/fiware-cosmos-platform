@@ -17,6 +17,7 @@ SET (HEADERS
 	MemoryTags.h
 	KVInputVector.h
 	samsonVars.h
+    MemoryCheck.h
 )
 
 SET (SOURCES
@@ -31,6 +32,7 @@ SET (SOURCES
 	KVInputVector.cpp
 	status.cpp
 	Visualitzation.cpp 
+    MemoryCheck.cpp
 )
 
 # Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''

@@ -28,6 +28,7 @@
 #include "samson/common/samsonVars.h"
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/daemonize.h"
+#include "samson/common/MemoryCheck.h"
 #include "samson/network/WorkerNetwork.h"
 #include "samson/worker/SamsonWorker.h"
 #include "samson/isolated/SharedMemoryManager.h"
@@ -148,6 +149,16 @@ int main(int argC, const char *argV[])
 
     if (signal(SIGINT, captureSIGINT) == SIG_ERR)
         LM_W(("SIGINT cannot be handled"));
+
+    // Check to see if the current memory configuration is ok or not
+    if (samson::MemoryCheck() == false)
+    {
+        LM_X(1,("Insufficient memory configured. Check %ssamsonWorkerLog for more information.", paLogFilePath));
+    }
+    else
+    {
+        std::cout << "Memory check OK\n";
+    }
     
     if (fg == false)
     {

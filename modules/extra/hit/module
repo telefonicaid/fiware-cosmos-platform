@@ -79,6 +79,34 @@ script init_stream_operations
 }
 
 
+####################################################################################
+# Simple version of the accumulator
+####################################################################################
+
+script stream_block_simple
+{
+  code
+  {
+
+    # Queues;
+    alias [input]          in_input;
+    alias [words]          tmp_concepts;
+    alias [words_updats]   tmp_concept_updates;
+    alias [tops]           s_info;
+
+    # Operations;
+    alias [reduce_words]    01.reduce_words;
+    alias [reduce_tops]     20.reduce_tops;
+
+    # Definitions;
+    add_stream_operation [reduce_words] hit.reduceHits              [input] [words]              [words_updats] [words];
+    add_stream_operation [reduce_tops]  hit.reduceHitCollections    [words_updats] [tops]        null           [tops];
+
+  }
+
+}
+
+
 ################################################################
 # Other operations
 ################################################################

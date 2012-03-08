@@ -53,12 +53,24 @@ namespace samson {
             size_t  endIx;
         } BlockHashLookupRecord;
 
-        typedef struct BlockLookupList
+        
+        class Block;
+        class BlockLookupList
         {
+            
             BlockLookupRecord*      head;
             size_t                  size;
             BlockHashLookupRecord*  hashInfo;
-        } BlockLookupList;
+            KVFormat                kvFormat;
+            
+        public:
+
+            BlockLookupList( Block* _block );
+            ~BlockLookupList();
+            
+            std::string loopup( const char* key );
+            
+        };
 
         class Block :  public engine::Object
         {
@@ -70,6 +82,7 @@ namespace samson {
             friend class BlockReader;
             friend class Queue;
             friend class StreamOutQueueTask;
+            friend class BlockLookupList;
             
             size_t worker_id;               // Identifier of the worker in the cluster
             size_t id;                      // Identifier of the block ( in this node )
@@ -82,7 +95,10 @@ namespace samson {
 
             std::set< BlockList* > lists;   // List where this block is contained
             
-            au::Token token_lookup_creation;
+            
+            // Lock up table to quick access to key-values from REST interface
+            au::Token token_lookupList;
+            BlockLookupList* lookupList;
 
             typedef enum
             {
@@ -101,17 +117,13 @@ namespace samson {
             // Constructor only visible in a BlockList
             Block( engine::Buffer *buffer  );
             Block( size_t _worker_id , size_t _id , size_t _size , KVHeader* _header );
-            
-            
-            BlockLookupList lookupList;
 
         public:
 
             ~Block();
 
-            BlockLookupList*  lookupListGet();
-            void              lookupListCreate(void);
-            std::string       lookup(const char* key);
+            // Lookup for a particular queue ( lookupList is created if necessary )
+            std::string  lookup(const char* key);
 
             // Set and Get priority ( manual ordering if blocks are not assigned to tasks )
             void setPriority( int _priority );

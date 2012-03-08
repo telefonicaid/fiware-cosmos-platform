@@ -71,7 +71,7 @@ map joint_comscore_dictionary
     }
 }			
 
-map emit_hist
+map emit_hits
 {
 	in system.String webp.Log
 	out system.String system.UInt
@@ -100,7 +100,7 @@ script web_profiling
 		# Internal queues
         alias [logs]              logs;
         alias [errors]            errors;
-        alias [hits]              logs;
+        alias [hits]              hits;
 
         # Operations;
         alias [parse_input]       parse;
@@ -113,8 +113,10 @@ script web_profiling
         add_stream_operation      [emit_hits]        webp.emit_hits           [logs]        [hits];
 
 		 # Auxiliar modules;
-        init_stream hit hit.init_stream_operations
+        init_stream hit hit.stream_block_simple;
 
+		# Connect quuees
+		add_queue_connection      [hits] hit.in_input
     }
 
     helpLine "Init stream operations"

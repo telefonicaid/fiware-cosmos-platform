@@ -188,7 +188,12 @@ namespace samson {
             
             for (int i = 0 ; i < num_outputs ; i++ )
             {
-                std::string queue_name = prefix + cmd.get_argument( 3 + num_inputs + i );
+                std::string original_queue_name = cmd.get_argument( 3 + num_inputs + i );
+                std::string queue_name = prefix + original_queue_name;
+                
+                if( original_queue_name == "null" )
+                    queue_name = "null";
+                
                 stream_operation->output_queues.push_back( queue_name );
             }            
             

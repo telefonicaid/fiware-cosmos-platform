@@ -19,6 +19,8 @@ namespace samson {
             network = NULL;
         }
         
+        size_t get_my_worker_id();
+        
     };
 
     

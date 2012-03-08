@@ -1204,19 +1204,11 @@ namespace samson {
                 delete value_data_instance;
                 return au::xml_simple(  "error" , au::str("Block not in memory for queue %s" , queue_name.c_str() ) );
             }
-                
-            BlockLookupList* blockLookupList = block->lookupListGet();
-            if (blockLookupList->head == NULL)
-            {
-                LM_T(LmtRest, ("calling block->lookupListCreate"));
-                block->lookupListCreate();
-                LM_T(LmtRest, ("block->lookupListCreate done"));
-            }
             
             delete reference_key_data_instance;
             delete key_data_instance;
             delete value_data_instance;
-
+                
             return block->lookup(key);
         }
     }

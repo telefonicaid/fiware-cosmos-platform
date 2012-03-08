@@ -78,9 +78,26 @@ namespace samson {
         {
             if( queue_name == "null")
                 return;
+
+            // Select the target worker_id
+            // ------------------------------------------------------------------------------------
+            size_t target_worker_id;
+            if( outputWorker == -1 )
+            {
+                // To my self
+                target_worker_id = distribution_information.get_my_worker_id();
+            }
+            else
+            {
             
-            if ( ( outputWorker < 0 ) || ( outputWorker > (int)distribution_information.workers.size() ) )
-                LM_X(1, ("Non valid worker %d (%lu)" , outputWorker , distribution_information.workers.size() ) );
+                if ( ( outputWorker < 0 ) || ( outputWorker > (int)distribution_information.workers.size() ) )
+                    LM_X(1, ("Non valid worker %d (#workers %lu) when seding buffer to queue %s" , outputWorker , distribution_information.workers.size() , queue_name.c_str() ) );
+                target_worker_id = distribution_information.workers[ outputWorker ];
+            }
+            
+            // ------------------------------------------------------------------------------------
+            // Sent the packet
+            // ------------------------------------------------------------------------------------
             
             Packet* packet = new Packet( Message::PushBlock );
             packet->buffer = buffer;    // Set the buffer of data
@@ -88,7 +105,6 @@ namespace samson {
             
             network::PushBlock* pb =  packet->message->mutable_push_block();
             pb->set_size( buffer->getSize() );
-            
             
             std::vector<std::string> queue_names = au::split( queue_name , ',' );
             for ( size_t i = 0 ; i < queue_names.size() ; i++)
@@ -99,7 +115,7 @@ namespace samson {
             
             // Direction to send packet
             packet->to.node_type = WorkerNode;
-            packet->to.id = distribution_information.workers[ outputWorker ];
+            packet->to.id = target_worker_id;
             
             // Send packet
             distribution_information.network->send( packet );

@@ -6,6 +6,7 @@
 #ifndef _H_SAMSON_webp_Category
 #define _H_SAMSON_webp_Category
 
+#include "au/string.h"
 
 #include <samson/modules/webp/Category_base.h>
 
@@ -16,6 +17,18 @@ namespace webp{
 
 	class Category : public Category_base
 	{
+
+	public:
+
+	   std::string get_name()
+	   {
+		  std::string _name = au::str("%lu_%s" , id.value , name.value.c_str() );
+		  // Replace spaces
+		  for( size_t i = 0 ; i < _name.length() ; i++ )
+			 if( _name[i] == ' ' )
+				_name[i] = '_';
+		  return _name;
+	   }
 	};
 
 

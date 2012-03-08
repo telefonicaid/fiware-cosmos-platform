@@ -470,10 +470,10 @@ namespace samson {
                 return;
             }
             
-            std::string source_queue = cmd.get_argument(1);
+            std::string source_queue = prefix + cmd.get_argument(1);
             for( int i = 2 ; i < cmd.get_num_arguments() ; i++ )
             {
-                std::string target_queue = cmd.get_argument(i);
+                std::string target_queue = prefix + cmd.get_argument(i);
                 
                 if( target_queue != source_queue )     // Avoid connecting with yourself            
                     streamManager->add_queue_connection( source_queue , target_queue );

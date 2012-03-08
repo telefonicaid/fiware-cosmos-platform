@@ -145,6 +145,7 @@ namespace samson {
         
         void BlockManager::review()
         {
+            
             LM_T( LmtBlockManager , ("Reviewing block manager"));
             
             au::ExecesiveTimeAlarm alarm("BlockManager::_review");
@@ -189,12 +190,15 @@ namespace samson {
                 }
             }
             
+            // If no blocks, nothing to do...
+            if ( blocks.size() == 0 )
+                return;
             
             // --------------------------------------------------------------------------------
             // Find the blocks that should be in memory
             // --------------------------------------------------------------------------------
             size_t accumulated_memory = 0;
-            Block * limit_block = NULL;
+            Block * limit_block = *blocks.begin(); // Point to the first one
             std::list<Block*>::iterator b;
             for ( b = blocks.begin() ; b != blocks.end() ; b++ )
             {

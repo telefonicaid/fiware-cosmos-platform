@@ -52,10 +52,10 @@ namespace samson
         const char *SYSCTL_SHMALL = "kernel.shmall";
 #endif
 #ifdef OSX
-        const char *KERNEL_SHMMAX = "kern.sysv.shmmax"
-        const char *KERNEL_SHMALL = "kern.sysv.shmall"
-        const char *SYSCTL_SHMMAX = "kern.sysv.shmmax"
-        const char *SYSCTL_SHMALL = "kern.sysv.shmall"
+        const char *KERNEL_SHMMAX = "kern.sysv.shmmax";
+        const char *KERNEL_SHMALL = "kern.sysv.shmall";
+        const char *SYSCTL_SHMMAX = "kern.sysv.shmmax";
+        const char *SYSCTL_SHMALL = "kern.sysv.shmall";
 #endif
 
         // SamsonSetup init

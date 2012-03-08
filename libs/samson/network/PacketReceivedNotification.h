@@ -2,6 +2,8 @@
 #define _H_PACKET_RECEIVER_NOTIFICATION
 
 #include "engine/EngineElement.h"// samson::EngineElement
+#include "engine/MemoryManager.h"
+
 #include "samson/network/NetworkInterface.h"
 #include "samson/network/Packet.h"			// samson::Packet
 
@@ -27,10 +29,6 @@ namespace samson
         {
             receiver = _receiver;
             packet = _packet; 
-
-            if( ! _receiver )
-                LM_X(1, ("No receiver in PacketReceivedNotification"));
-                             
             
             std::ostringstream txt;
             txt << "PacketReceivedNotification ";
@@ -43,8 +41,19 @@ namespace samson
         
         void run()
         {
-            receiver->receive( packet );
-            delete packet;// Remove the packet recieved from the network
+            if( ! receiver )
+            {
+                LM_W(("Packet %s lost since ntework interface is still not activated." , packet->str().c_str() ));
+                if( packet->buffer )
+                    engine::MemoryManager::shared()->destroyBuffer( packet->buffer );
+                return;
+                delete packet;// Remove the packet recieved from the network
+            }
+            else
+            {
+                receiver->receive( packet );
+                delete packet;// Remove the packet recieved from the network
+            }
         }
         
     };

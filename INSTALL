@@ -23,7 +23,7 @@ The following packages are required to be able to build SAMSON against Ubuntu
 
 To install them use the following command: 
 
-    sudo aptitude install subversion boost-dev ncurses-dev \
+    sudo apt-get install subversion boost-dev ncurses-dev \
     make gcc cmake libedit-dev libprotobuf-dev \
     protobuf-compiler mongodb libboost-filesystem-dev \
     libboost-thread-dev help2man

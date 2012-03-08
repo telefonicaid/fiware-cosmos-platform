@@ -94,7 +94,7 @@ if (error EQUAL 0)
   INCLUDE_DIRECTORIES(${JNI_INCLUDE_DIRS})
   INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/libs")
   ADD_LIBRARY(comscore SHARED libcomscore.cpp es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface.h)
-  TARGET_LINK_LIBRARIES(comscore tables samson_comscore au lm pa dl pthread)
+  TARGET_LINK_LIBRARIES(comscore tables samson_comscore au lm dl pthread)
 
   
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)

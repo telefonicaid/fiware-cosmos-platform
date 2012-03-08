@@ -14,7 +14,7 @@
 #include "au/ThreadManager.h"
 #include "comscore/common.h"
 #include "comscore/SamsonComscoreDictionary.h"
-#include "parseArgs/paConfig.h"
+#include "logMsg/logMsg.h"
 
 #include "es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface.h"
 
@@ -22,22 +22,9 @@ typedef samson::comscore::uint uint;
 
 samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary;
 
-PaArgument paArgs[] =
-{
-    PA_END_OF_ARGS
-};
-
 JNIEXPORT jboolean JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface_init
   (JNIEnv *env, jclass jClassObject) {
-    paConfig("builtin prefix",                (void *) "CS_DICT_");
-    paConfig("usage and exit on any warning", (void *) true);
-    paConfig("log to screen",                 (void *) true);
-    paConfig("screen line format", (void *) "TYPE@TIME  EXEC: TEXT");
-    paConfig("log to file", (void *) false);
-    paConfig("log file line format",
-	    (void *) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
-    char *argv[] = { (char *) "cs_dict", NULL };
-    return !paParse(paArgs, 1, argv, 1, false); 
+    return !lmInitX((char *)"ComscoreDict", NULL, NULL, NULL);
 }
 
 JNIEXPORT jboolean JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface_loadCSDictionary

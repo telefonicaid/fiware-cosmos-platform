@@ -67,7 +67,7 @@ elseif (CMAKE_BUILD_TYPE STREQUAL RELEASE)
     if (STRICT)
         MESSAGE("cmake: Strict compilation")
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra")
-    endif (COVERAGE)
+    endif (STRICT)
 
 else (CMAKE_BUILD_TYPE STREQUAL DEBUG)
     MESSAGE("cmake: bad value for CMAKE_BUILD_TYPE - please set the variable to either DEBUG or RELEASE")

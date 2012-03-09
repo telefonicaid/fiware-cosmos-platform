@@ -8,6 +8,7 @@
 
 #include "au/string.h"
 #include "au/vector.h"
+#include "au/StringComponents.h"
 
 #include <samson/module/samson.h>
 #include <samson/modules/system/Value.h>
@@ -17,6 +18,10 @@ namespace samson{
     namespace system{
         
         
+        
+        // -----------------------------------------------------------------------
+        // KeyValue : system.Value system.Value
+        // -----------------------------------------------------------------------
         
         class KeyValue
         {
@@ -31,6 +36,10 @@ namespace samson{
                 value = _value;
             }
         };
+        
+        // -----------------------------------------------------------------------
+        // Filter for map-like operations over system.Value system.Value queues
+        // -----------------------------------------------------------------------
         
         class Filter
         {
@@ -79,9 +88,145 @@ namespace samson{
             
             
         };
+
+        
+        // --------------------------------------------------------
+        // parse -  parse line
+        // --------------------------------------------------------
+        
+        class FilterParser : public Filter
+        {
+            
+            typedef enum{
+                string,
+                number
+            } Type;
+            
+            // Field codification
+            std::vector<Type> fields;
+            
+            // Separator
+            char separator;
+            
+            // Key key used to "emit" to the next filter
+            samson::system::Value key;
+            
+            FilterParser()
+            {
+                separator = ' ';
+            }
+            
+        public:
+            
+            virtual ~FilterParser()
+            {
+                
+            }
+            
+            // parse field0 field1 field2 -separator X 
+            
+            static FilterParser* getFilter( std::string command , au::ErrorManager * error )
+            {
+                au::CommandLine cmdLine;
+                cmdLine.set_flag_string("separator", " "); // By default space is used as separator
+                cmdLine.parse( command );
+                
+                if( cmdLine.get_num_arguments() == 0 )
+                {
+                    error->set("No command provided");
+                    return NULL;
+                }
+                
+                FilterParser* filter = new FilterParser();
+                
+                std::string separator_param = cmdLine.get_flag_string("separator");
+                if( separator_param.length() == 0 )
+                    filter->separator = ' ';
+                else if( separator_param.length() == 1 )
+                    filter->separator = separator_param[0];
+                else if ( separator_param == "tab" )
+                    filter->separator = '\t';
+                else
+                {
+                    delete filter;
+                    error->set("Unknown separator. Use single character separator or tab");
+                    return NULL;
+                }
+                
+                // Fields ( if any )
+                for( int i = 1 ; i < cmdLine.get_num_arguments() ; i++ )
+                {
+                    std::string field_definition = cmdLine.get_argument(i);
+                    
+                    if( ( field_definition == "number" ) || ( field_definition == "num" ) || ( field_definition == "n" ) )
+                        filter->fields.push_back( number );
+                    else
+                        filter->fields.push_back( string );
+                }
+                
+                return filter;
+            }
+            
+            virtual void run( KeyValue kv )
+            {
+                // Key should be string for this operation
+                if ( !kv.key->isString() )
+                    return ;
+                
+                std::string line = kv.key->get_string();
+
+                au::StringComponents string_components;
+                string_components.process_line( line.c_str() , line.length() , separator );
+                
+                key.set_as_vector();
+
+                if( fields.size() == 0 )
+                {
+                    for ( size_t i = 0 ; i < string_components.components.size() ; i++ )
+                        key.add_value_to_vector()->set_string( string_components.components[i] );
+                }
+                else
+                {
+                    for ( size_t i = 0 ; i < string_components.components.size() ; i++ )
+                    {
+                        if( i < fields.size() )
+                        {
+                            samson::system::Value *v = key.add_value_to_vector();
+                            v ->set_string( string_components.components[i] );
+                            
+                            switch (fields[i]) 
+                            {
+                                case string:
+                                    break;
+                                case number:
+                                    v->convert_to_number();
+                                    break;
+                            }
+                        }
+                    }
+                }
+                
+                // Run next filter
+                if( next )
+                {
+                    KeyValue next_kv( &key , kv.value );
+                    next->run( next_kv );
+                }
+                
+            }
+            
+            std::string str()
+            {
+                return au::str("FilterParser: " );
+            }
+            
+            
+        };
         
         
-        // | select  key:0,key:1  |
+        // --------------------------------------------------------
+        // FilterSelectSource
+        // --------------------------------------------------------
         
         class FilterSelectSource
         {
@@ -213,7 +358,7 @@ namespace samson{
                 if( au::string_begins( description , "value" ) )
                 {
                     if( description == "value" )
-                        return new FilterSelectSource( source_key ); // Pure key selector
+                        return new FilterSelectSource( source_value ); // Pure key selector
                     
                     if( au::string_begins_and_ends( description, "value[", "]") )
                     {
@@ -580,6 +725,11 @@ namespace samson{
 
                     // Return created filter
                     return filter;
+                }
+                else if ( main_command == "parse" )
+                {
+                    // Parse kind of filter
+                    return FilterParser::getFilter(  command , error );
                 }
                 else if( main_command == "emit" )
                 {

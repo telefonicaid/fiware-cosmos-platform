@@ -770,7 +770,7 @@ namespace samson{
                     }
                         
                     case value_string:
-                        return "S:" + _value_string;
+                        return "S:\"" + _value_string + "\"";
                         
                     case value_vector:
                     {
@@ -993,8 +993,7 @@ namespace samson{
                         return;
                         
                     case value_string:
-                        
-                        _value_double = atof( _value_string.c_str() );
+                        set_double( atof( _value_string.c_str() ));
                         return;
                 }
             }

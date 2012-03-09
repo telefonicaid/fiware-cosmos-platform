@@ -167,6 +167,7 @@ release_all: prepare_release_all
 # Platform + Modules DEBUG version
 # ------------------------------------------------
 
+da: debug_all
 debug_all: prepare_debug_all
 	make -C BUILD_DEBUG -j $(CPU_COUNT)
 

@@ -228,7 +228,7 @@ namespace samson {
 
             LM_T(LmtBlockManager, ("Block created from buffer: %s", this->str().c_str()));
 
-            token_lookupList = NULL;
+            lookupList = NULL;
         }
         
         Block::Block( size_t _worker_id , size_t _id , size_t _size , KVHeader* _header ) : token_lookupList("token_lookupList")
@@ -252,7 +252,7 @@ namespace samson {
             
             LM_T(LmtBlockManager,("Block created from id: %s", this->str().c_str()));
 
-            token_lookupList = NULL;
+            lookupList = NULL;
         }
         
 

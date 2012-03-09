@@ -22,12 +22,14 @@ namespace system{
 	class parse_to_value : public samson::Parser
 	{
 
-	   au::StringComponents string_component;
 	   samson::system::Value key;
 	   samson::system::Value value;
         
         // Collection of filters to execute for every key-value
         FilterCollection filters_collection;
+
+        // Internal buffer to store line
+        char line[1024];
 
 	public:
 
@@ -60,37 +62,35 @@ namespace system{
 		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
             
+            size_t offset = 0;
+            while( offset < length )
+            {
+                // Parse a line
+                size_t line_pos = 0;
+                while( ( offset < length ) && data[offset] != '\n' )
+                {
+                    line[line_pos++] = data[offset];
+                    offset++;
+                }
+                offset++; // Skip the '\n'
+                line[line_pos] = '\0';
 
-		   size_t offset = 0;
-		   while( offset < length )
-		   {
-			  size_t line_length = string_component.process_line( data + offset , length - offset , ' ' );
-			  
-              // Advance the offset
-			  offset += line_length;
-			  
-              // Set the key
-			  key.set_as_vector();
-			  for ( size_t i = 0 ; i < string_component.components.size() ; i++ )
-              {
-				 
-				 Value* new_value = key.add_value_to_vector(); 
-                 new_value->set_string( string_component.components[i] );
-              }
+                // Set the key with the new string
+                key.set_string( line );
 
-               
-               if( filters_collection.filters.size() > 0 )
-               {
-                   KeyValue kv( &key, &value );
-                   for( size_t f = 0 ; f < filters_collection.filters.size() ; f++ )
-                       filters_collection.filters[f]->run(kv);
-               }
-               else
-               {                   
-                   //Emit the parsed key value
-                   writer->emit( 0 , &key , &value );
-               }
-		   }
+                
+                if( filters_collection.filters.size() > 0 )
+                {
+                    KeyValue kv( &key, &value );
+                    for( size_t f = 0 ; f < filters_collection.filters.size() ; f++ )
+                        filters_collection.filters[f]->run(kv);
+                }
+                else
+                {                   
+                    //Emit the parsed key value
+                    writer->emit( 0 , &key , &value );
+                }
+            }
 		}
 
 		void finish( samson::KVWriter *writer )

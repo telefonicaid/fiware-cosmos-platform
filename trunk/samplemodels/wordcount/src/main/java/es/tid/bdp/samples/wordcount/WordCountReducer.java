@@ -8,7 +8,7 @@ import org.apache.hadoop.mapreduce.*;
 public class WordCountReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 
     public void reduce(Text key, Iterable<IntWritable> values, Context context) 
-      throws IOException, InterruptedException {
+          throws IOException, InterruptedException {
         int sum = 0;
         for (IntWritable val : values) {
             sum += val.get();

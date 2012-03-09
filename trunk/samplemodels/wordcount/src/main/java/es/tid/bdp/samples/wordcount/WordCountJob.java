@@ -2,15 +2,15 @@ package es.tid.bdp.samples.wordcount;
 
 import java.io.IOException;
 
-import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 /**
  * Defines a job to count words in a text.
@@ -18,10 +18,8 @@ import org.apache.hadoop.io.IntWritable;
  * @author logc
  */
 public class WordCountJob extends Job {
-
     private static final String JOB_NAME = "WordCountJob";
 
-    /* Class constructor */
     public WordCountJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 

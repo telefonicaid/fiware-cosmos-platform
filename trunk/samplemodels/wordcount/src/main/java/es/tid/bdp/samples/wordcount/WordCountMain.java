@@ -16,7 +16,6 @@ import org.apache.log4j.Logger;
  * @author logc
  */
 public class WordCountMain extends Configured implements Tool {
-
     private static final Logger logger = Logger.getLogger(
             WordCountMain.class);
 

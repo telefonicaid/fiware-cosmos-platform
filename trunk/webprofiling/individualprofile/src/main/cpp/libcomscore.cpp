@@ -9,26 +9,30 @@
  */
 
 #include <jni.h>
-
 #include <signal.h>
-#include "au/LockDebugger.h"            // au::LockDebugger
-#include "au/ThreadManager.h"
 
+#include "au/ThreadManager.h"
 #include "comscore/common.h"
 #include "comscore/SamsonComscoreDictionary.h"
+#include "logMsg/logMsg.h"
 
 #include "es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface.h"
 
 typedef samson::comscore::uint uint;
 
-
 samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary;
 
+extern char *progName; // Bug workaround
+
+JNIEXPORT jboolean JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface_init
+  (JNIEnv *env, jclass jClassObject) {
+    LmStatus status = lmInitX((char *)"ComscoreDict", NULL, NULL, NULL);
+    progName = strdup(progName); // Bug workaround
+    return !status;
+}
 
 JNIEXPORT jboolean JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface_loadCSDictionary
   (JNIEnv *env, jobject jobj, jstring jdictionary_name) {
-    lmInit();
-
     jboolean isCopy;
     const char *dictionary_file_name =
                 env->GetStringUTFChars(jdictionary_name, &isCopy);

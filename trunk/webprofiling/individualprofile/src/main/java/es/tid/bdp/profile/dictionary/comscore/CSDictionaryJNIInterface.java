@@ -36,12 +36,22 @@ public class CSDictionaryJNIInterface {
      */
     public native String getCategoryName(int categoryId);
 
+    /**
+     * Initializes library code.
+     *
+     * @return sucess or failure status
+     */
+    private native static boolean init();
+
     static {
         String comscorePath = System.getProperty(COMSCORE_LIB_PROPERTY);
         if (comscorePath != null && !comscorePath.isEmpty()) {
             System.load(comscorePath);
         } else {
             System.loadLibrary("comscore");
+        }
+        if (!init()) {
+            throw new ExceptionInInitializerError("Cannot initilize libcomscore");
         }
     }
 }

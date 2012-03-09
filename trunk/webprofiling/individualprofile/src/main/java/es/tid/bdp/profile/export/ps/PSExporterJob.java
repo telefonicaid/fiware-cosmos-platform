@@ -27,6 +27,7 @@ public class PSExporterJob extends Job {
         this.setMapOutputKeyClass(Text.class);
         this.setMapOutputValueClass(UserProfile.class);
         this.setReducerClass(PSExporterReducer.class);
+        this.setNumReduceTasks(1);
         this.setOutputKeyClass(NullWritable.class);
         this.setOutputValueClass(Text.class);
     }

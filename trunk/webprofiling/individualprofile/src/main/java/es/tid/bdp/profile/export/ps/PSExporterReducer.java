@@ -16,9 +16,9 @@ import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
  * @author dmicol, sortega
  */
 public class PSExporterReducer extends Reducer<Text,
-                                             ProtobufWritable<UserProfile>,
-                                             NullWritable, Text> {
-    // TODO: missing file header
+                                               ProtobufWritable<UserProfile>,
+                                               NullWritable, Text> {
+    private static boolean headerAdded = false;
     
     @Override
     public void reduce(Text userId,
@@ -27,6 +27,11 @@ public class PSExporterReducer extends Reducer<Text,
                                                InterruptedException {
         for (Iterator<ProtobufWritable<UserProfile>> it = profiles.iterator();
                 it.hasNext();) {
+            if (!headerAdded) {
+                // TODO: add header
+                headerAdded = true;
+            }
+
             final ProtobufWritable<UserProfile> wrappedProfile = it.next();
             wrappedProfile.setConverter(UserProfile.class);
             UserProfile profile = wrappedProfile.get();

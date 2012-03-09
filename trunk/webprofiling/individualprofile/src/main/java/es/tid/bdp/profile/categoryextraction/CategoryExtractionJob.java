@@ -7,12 +7,14 @@ import com.twitter.elephantbird.mapreduce.input.LzoProtobufB64LineInputFormat;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
+import es.tid.bdp.base.mapreduce.TernaryKey;
 import es.tid.bdp.profile.dictionary.comscore.DistributedCacheDictionary;
 import es.tid.bdp.profile.export.mongodb.MongoDBExporterJob;
 import es.tid.bdp.profile.generated.data.ProfileProtocol.WebProfilingLog;
@@ -27,8 +29,8 @@ public class CategoryExtractionJob extends Job {
     public CategoryExtractionJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
         this.setJarByClass(MongoDBExporterJob.class);
-        this.setMapOutputKeyClass(BinaryKey.class);
-        this.setMapOutputValueClass(ProtobufWritable.class);
+        this.setMapOutputKeyClass(TernaryKey.class);
+        this.setMapOutputValueClass(LongWritable.class);
 
         this.setReducerClass(CategoryExtractionReducer.class);
         this.setOutputKeyClass(BinaryKey.class);

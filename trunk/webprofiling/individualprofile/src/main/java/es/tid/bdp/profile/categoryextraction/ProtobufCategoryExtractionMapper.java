@@ -5,45 +5,42 @@ import java.io.IOException;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.log4j.Logger;
 
-import es.tid.bdp.base.mapreduce.BinaryKey;
-import es.tid.bdp.profile.generated.data.ProfileProtocol.UserNavigation;
+import es.tid.bdp.base.mapreduce.TernaryKey;
 import es.tid.bdp.profile.generated.data.ProfileProtocol.WebProfilingLog;
 
 /**
- * Maps from <line_no, log_line> to <[visitorId, date], user_navigation>
+ * Maps from <line_no, log_line> to <[visitorId, date, url], count>
  *
- * @author dmicol
+ * @author dmicol, sortega
  **/
 public class ProtobufCategoryExtractionMapper extends Mapper<LongWritable,
-        ProtobufWritable<WebProfilingLog>, BinaryKey,
-        ProtobufWritable<UserNavigation>> {
-    private ProtobufWritable<UserNavigation> webLogWritable;
-    private BinaryKey cKey;
+        ProtobufWritable<WebProfilingLog>, TernaryKey, LongWritable> {
+    private static final Logger LOG = Logger.getLogger(
+            ProtobufCategoryExtractionMapper.class);
+    private LongWritable ONE = new LongWritable(1L);
+    private TernaryKey outKey;
 
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
-        this.webLogWritable = ProtobufWritable.newInstance(
-                UserNavigation.class);
-        this.cKey = new BinaryKey();
+        this.outKey = new TernaryKey();
     }
 
     @Override
-    public void map(LongWritable key, ProtobufWritable<WebProfilingLog> value, Context context) {
+    public void map(LongWritable key, ProtobufWritable<WebProfilingLog> value,
+                    Context context) {
         try {
             WebProfilingLog webLog = value.get();
-            this.cKey.setPrimaryKey(webLog.getVisitorId());
-            this.cKey.setSecondaryKey(webLog.getDate());
-            this.webLogWritable.set(UserNavigation.newBuilder()
-                    .setUserId(webLog.getVisitorId())
-                    .setUrl(webLog.getFullUrl())
-                    .setDate(webLog.getDate())
-                    .build());
-            context.write(this.cKey, this.webLogWritable);
+            this.outKey.setPrimaryKey(webLog.getVisitorId());
+            this.outKey.setSecondaryKey(webLog.getDate());
+            this.outKey.setTertiaryKey(webLog.getFullUrl());
+            context.write(this.outKey, this.ONE);
         } catch (Exception ex) {
             context.getCounter(CategoryExtractionCounter.WRONG_FILTERING_FIELDS)
                     .increment(1L);
+            LOG.warn("Exception mapping weblogs", ex);
         }
     }
 }

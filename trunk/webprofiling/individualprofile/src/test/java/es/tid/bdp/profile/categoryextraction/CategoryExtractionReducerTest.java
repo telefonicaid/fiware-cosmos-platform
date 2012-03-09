@@ -19,6 +19,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
@@ -27,11 +28,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
-import es.tid.bdp.profile.data.UserNavigationUtil;
+import es.tid.bdp.base.mapreduce.TernaryKey;
 import es.tid.bdp.profile.dictionary.Categorization;
 import es.tid.bdp.profile.dictionary.CategorizationResult;
 import es.tid.bdp.profile.generated.data.ProfileProtocol.CategoryInformation;
-import es.tid.bdp.profile.generated.data.ProfileProtocol.UserNavigation;
 
 /**
  * Test case for CategoryExtractionReducer
@@ -39,8 +39,9 @@ import es.tid.bdp.profile.generated.data.ProfileProtocol.UserNavigation;
  * @author sortega@tid.es
  */
 public class CategoryExtractionReducerTest {
+    private final LongWritable one = new LongWritable(1L);
     private CategoryExtractionReducer instance;
-    private ReduceDriver<BinaryKey, ProtobufWritable<UserNavigation>, BinaryKey,
+    private ReduceDriver<TernaryKey, LongWritable, BinaryKey,
             ProtobufWritable<CategoryInformation>> driver;
 
     @Before
@@ -72,7 +73,7 @@ public class CategoryExtractionReducerTest {
                 return categorization;
             }
         };
-        this.driver = new ReduceDriver<BinaryKey, ProtobufWritable<UserNavigation>,
+        this.driver = new ReduceDriver<TernaryKey, LongWritable,
                 BinaryKey, ProtobufWritable<CategoryInformation>>(this.instance);
     }
 
@@ -81,21 +82,16 @@ public class CategoryExtractionReducerTest {
         String visitorId = "CA003B";
         String fullUrl = "http://www.marca.es/basket";
         Calendar date = Calendar.getInstance();
-        BinaryKey key = new BinaryKey(visitorId, date.toString());
-        UserNavigation nav =
-                UserNavigationUtil.create(visitorId, fullUrl, date.toString());
-        ProtobufWritable<UserNavigation> wrapper =
-                ProtobufWritable.newInstance(UserNavigation.class);
-        wrapper.setConverter(UserNavigation.class);
-        wrapper.set(nav);
+        TernaryKey inKey = new TernaryKey(visitorId, date.toString(), fullUrl);
+        BinaryKey outKey = new BinaryKey(visitorId, date.toString());
 
         List<Pair<BinaryKey, ProtobufWritable<CategoryInformation>>> results =
-                driver.withInput(key, asList(wrapper, wrapper)).run();
+                driver.withInput(inKey, asList(one, one)).run();
 
         assertEquals(1, results.size());
         final Pair<BinaryKey, ProtobufWritable<CategoryInformation>> result =
                 results.get(0);
-        assertEquals(key, result.getFirst());
+        assertEquals(outKey, result.getFirst());
 
         CategoryInformation expectedCategoryInformation = CategoryInformation.
                 newBuilder().setUserId(visitorId).setUrl(fullUrl).setDate(date.
@@ -115,16 +111,11 @@ public class CategoryExtractionReducerTest {
         String visitorId = "CA003C";
         String fullUrl = "http://www.mutxamel.org";
         String date = "02/01/2012";
-        BinaryKey key = new BinaryKey(visitorId, date);
-        UserNavigation nav =
-                UserNavigationUtil.create(visitorId, fullUrl, date.toString());
-        ProtobufWritable<UserNavigation> wrapper =
-                ProtobufWritable.newInstance(UserNavigation.class);
-        wrapper.set(nav);
+        TernaryKey inKey = new TernaryKey(visitorId, date.toString(), fullUrl);
 
-        driver.withInput(key, asList(wrapper, wrapper))
+        driver.withInput(inKey, asList(one, one, one))
                 .runTest();
-        assertEquals(2l, driver.getCounters().findCounter(
+        assertEquals(3l, driver.getCounters().findCounter(
                 CategoryExtractionCounter.UNKNOWN_VISITS).getValue());
     }
 
@@ -133,16 +124,11 @@ public class CategoryExtractionReducerTest {
         String visitorId = "CA003D";
         String fullUrl = "http://www.realmadrid.com";
         Calendar date = Calendar.getInstance();
-        BinaryKey key = new BinaryKey(visitorId, date.toString());
-        UserNavigation nav =
-                UserNavigationUtil.create(visitorId, fullUrl, date.toString());
-        ProtobufWritable<UserNavigation> wrapper =
-                ProtobufWritable.newInstance(UserNavigation.class);
-        wrapper.set(nav);
+        TernaryKey inKey = new TernaryKey(visitorId, date.toString(), fullUrl);
 
-        driver.withInput(key, asList(wrapper, wrapper))
+        driver.withInput(inKey, asList(one))
                 .runTest();
-        assertEquals(2l, driver.getCounters().findCounter(
+        assertEquals(1l, driver.getCounters().findCounter(
                 CategoryExtractionCounter.IRRELEVANT_VISITS).getValue());
     }
 
@@ -151,14 +137,9 @@ public class CategoryExtractionReducerTest {
         String visitorId = "CA003E";
         String fullUrl = "";
         Calendar date = Calendar.getInstance();
-        BinaryKey key = new BinaryKey(visitorId, date.toString());
-        UserNavigation nav =
-                UserNavigationUtil.create(visitorId, fullUrl, date.toString());
-        ProtobufWritable<UserNavigation> wrapper =
-                ProtobufWritable.newInstance(UserNavigation.class);
-        wrapper.set(nav);
+        TernaryKey inKey = new TernaryKey(visitorId, date.toString(), fullUrl);
 
-        driver.withInput(key, asList(wrapper, wrapper))
+        driver.withInput(inKey, asList(one, one))
                 .runTest();
         assertEquals(2l, driver.getCounters().findCounter(
                 CategoryExtractionCounter.UNPROCESSED_VISITS).getValue());

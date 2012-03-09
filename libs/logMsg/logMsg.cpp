@@ -2174,10 +2174,11 @@ LmStatus lmReopen(int index)
 long lmLogLineGet(char* typeP, char* dateP, int* msP, char* progNameP, char* fileNameP, int* lineNoP, int* pidP, int* tidP, char* funcNameP, char* messageP, long offset)
 {
     static FILE*  fP = NULL;
-    char          line[1024];
+    char          line[LINE_MAX];
     char*         lineP = line;
     char*         delimiter;
     long          ret;
+	char*         nada;
 
     if (typeP == NULL)
     {
@@ -2196,10 +2197,13 @@ long lmLogLineGet(char* typeP, char* dateP, int* msP, char* progNameP, char* fil
             return -1;
         }
 
-        fgets(line, LINE_MAX, fP);
-        fgets(line, LINE_MAX, fP);
-        fgets(line, LINE_MAX, fP);
-        fgets(line, LINE_MAX, fP);
+        nada = fgets(line, 1024, fP);
+        nada = fgets(line, 1024, fP);
+        nada = fgets(line, 1024, fP);
+        nada = fgets(line, 1024, fP);
+		if (nada == NULL)
+		{
+		}
     }
     else
     {

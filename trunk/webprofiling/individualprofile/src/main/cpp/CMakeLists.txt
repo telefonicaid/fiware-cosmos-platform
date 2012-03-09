@@ -90,11 +90,10 @@ if (error EQUAL 0)
   INCLUDE_DIRECTORIES("../../../target/native/javah/")
   ADD_LIBRARY(comscore SHARED libcomscore.cpp ../../../target/native/javah/es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface.h)
   TARGET_LINK_LIBRARIES(comscore tables samson_comscore au lm dl pthread)
+
+  ADD_EXECUTABLE(pack_dictionary pack_dictionary.cpp)
+  TARGET_LINK_LIBRARIES(pack_dictionary tables samson_comscore au lm dl pthread)
   
-if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
-
-endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
-
 else ()
     MESSAGE("cmake: NOT OK")
 endif (error EQUAL 0)

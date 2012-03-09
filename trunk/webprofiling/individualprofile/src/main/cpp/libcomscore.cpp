@@ -22,9 +22,13 @@ typedef samson::comscore::uint uint;
 
 samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary;
 
+extern char *progName; // Bug workaround
+
 JNIEXPORT jboolean JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface_init
   (JNIEnv *env, jclass jClassObject) {
-    return !lmInitX((char *)"ComscoreDict", NULL, NULL, NULL);
+    LmStatus status = lmInitX((char *)"ComscoreDict", NULL, NULL, NULL);
+    progName = strdup(progName); // Bug workaround
+    return !status;
 }
 
 JNIEXPORT jboolean JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface_loadCSDictionary

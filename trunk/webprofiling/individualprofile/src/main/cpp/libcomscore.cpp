@@ -24,15 +24,17 @@ samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary;
 
 extern char *progName; // Bug workaround
 
-JNIEXPORT jboolean JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface_init
-  (JNIEnv *env, jclass jClassObject) {
-    LmStatus status = lmInitX((char *)"ComscoreDict", NULL, NULL, NULL);
-    progName = strdup(progName); // Bug workaround
-    return !status;
-}
-
 JNIEXPORT jboolean JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface_loadCSDictionary
   (JNIEnv *env, jobject jobj, jstring jdictionary_name) {
+    if (!progName) {
+	LmStatus status = lmInitX((char *)"ComscoreDict", NULL, NULL, NULL);
+	progName = strdup(progName); // Bug workaround
+	if (status) {
+	    std::cerr << "LM failed with status " << status << std::endl;
+	    return false;
+	}
+    }
+
     jboolean isCopy;
     const char *dictionary_file_name =
                 env->GetStringUTFChars(jdictionary_name, &isCopy);

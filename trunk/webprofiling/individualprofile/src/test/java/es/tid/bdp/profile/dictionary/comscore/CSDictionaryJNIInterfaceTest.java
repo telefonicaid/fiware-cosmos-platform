@@ -34,7 +34,7 @@ public class CSDictionaryJNIInterfaceTest {
 
     @Before
     public void setUp() throws Exception {
-        instance = new CSDictionaryJNIInterface();
+        this.instance = new CSDictionaryJNIInterface();
         assertTrue("Cannot initialize dictionary",
                 instance.loadCSDictionary(TEST_DICTIONARY));
     }

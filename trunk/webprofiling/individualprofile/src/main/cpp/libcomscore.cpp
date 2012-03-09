@@ -1,13 +1,3 @@
-/* ****************************************************************************
- *
- * FILE                     main_samson_comscore_directory_create.cpp
- *
- * AUTHOR                   Andreu Urrueka
- *
- * CREATION DATE            2012
- *
- */
-
 #include <jni.h>
 #include <signal.h>
 
@@ -22,17 +12,21 @@ typedef samson::comscore::uint uint;
 
 samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary;
 
-extern char *progName; // Bug workaround
-
-JNIEXPORT jboolean JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface_init
-  (JNIEnv *env, jclass jClassObject) {
-    LmStatus status = lmInitX((char *)"ComscoreDict", NULL, NULL, NULL);
-    progName = strdup(progName); // Bug workaround
-    return !status;
-}
+// TODO: Bug workaround remove when its fixed in Samson
+extern char *progName; 
 
 JNIEXPORT jboolean JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface_loadCSDictionary
   (JNIEnv *env, jobject jobj, jstring jdictionary_name) {
+    if (progName == NULL) {
+        LmStatus status = lmInitX((char *)"ComscoreDict", NULL, NULL, NULL);
+        // TODO: Bug workaround remove when its fixed in Samson
+        progName = strdup(progName);
+        if (status != LmsOk) {
+            std::cerr << "LM failed with status " << status << std::endl;
+            return false;
+        }
+    }
+
     jboolean isCopy;
     const char *dictionary_file_name =
                 env->GetStringUTFChars(jdictionary_name, &isCopy);

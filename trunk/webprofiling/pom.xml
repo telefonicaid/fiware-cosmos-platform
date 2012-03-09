@@ -5,24 +5,13 @@
     <parent>
         <artifactId>bigdataplatform</artifactId>
         <groupId>es.tid.bdp</groupId>
-        <version>${env.ProductVersion}${env.SVN_REVISION}</version>
+        <version>${env.ProductVersion}.${env.GIT_COMMIT}</version>
     </parent>
 
-    <groupId>es.tid.bdp</groupId>
     <artifactId>webprofiling</artifactId>
-    <version>${env.ProductVersion}${env.SVN_REVISION}</version>
     <packaging>pom</packaging>
     <name>webprofiling</name>
-    <description>Group of projects in where develop the PS webprofiling modules over Hadoop</description>
-    <organization>
-        <name>Telefonica Investigacion y Desarrollo</name>
-        <url>http://www.tid.es</url>
-    </organization>
-    <scm>
-        <connection>scm:svn:https://barricada.hi.inet/repositorio/ps2/trunk/webprofiling</connection>
-        <developerConnection>scm:svn:https://barricada.hi.inet/repositorio/ps2/trunk/webprofiling</developerConnection>
-        <url>https://barricada.hi.inet/repositorio/ps2/trunk/webprofiling</url>
-    </scm>
+    
     <build>
         <!-- Resources being filtered -->
         <resources>
@@ -386,7 +375,7 @@
         <dependency>
             <groupId>es.tid.bdp</groupId>
             <artifactId>base</artifactId>
-            <version>0.0.3</version>
+            <version>${env.ProductVersion}.${env.GIT_COMMIT}</version>
         </dependency>
     </dependencies>
 
@@ -412,15 +401,5 @@
         <module>individualprofile</module>
         <module>kpicalculation</module>
     </modules>
-
-    <properties>
-        <copyright.year>2011</copyright.year>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <org.apache.hadoop>0.20.2</org.apache.hadoop>
-        <org.apache.hadoop.hive>0.7.1</org.apache.hadoop.hive>
-        <jvm.version>1.6</jvm.version>
-        <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
-    </properties>
 
 </project>

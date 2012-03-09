@@ -27,12 +27,12 @@ extern char *progName; // Bug workaround
 JNIEXPORT jboolean JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface_loadCSDictionary
   (JNIEnv *env, jobject jobj, jstring jdictionary_name) {
     if (!progName) {
-	LmStatus status = lmInitX((char *)"ComscoreDict", NULL, NULL, NULL);
-	progName = strdup(progName); // Bug workaround
-	if (status) {
-	    std::cerr << "LM failed with status " << status << std::endl;
-	    return false;
-	}
+        LmStatus status = lmInitX((char *)"ComscoreDict", NULL, NULL, NULL);
+        progName = strdup(progName); // Bug workaround
+        if (status) {
+            std::cerr << "LM failed with status " << status << std::endl;
+            return false;
+        }
     }
 
     jboolean isCopy;

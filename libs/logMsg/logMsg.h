@@ -837,8 +837,8 @@ do {                                                                    \
 *
 * LM_READS - read buffer presentation
 */
-#define LM_READS(_to, _desc, _buf, _sz, _form)  \
-   lmBufferPresent((char*) __FUNCTION__, (char*) _to, (char*) _desc, _buf, _sz, _form, 'r')
+#define LM_READS(_from, _desc, _buf, _sz, _form)  \
+   lmBufferPresent((char*) __FUNCTION__, (char*) _from, (char*) _desc, _buf, _sz, _form, 'r')
 
 
 

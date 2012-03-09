@@ -98,6 +98,8 @@ namespace samson {
             
             tot += nb;
         }
+
+        LM_WRITES("Someone", what, data, tot, LmfByte);
         return OK;
     }
     
@@ -108,7 +110,7 @@ namespace samson {
 
         *size =0;
         
-        LM_T(LmtSocketConnection, ("SocketConnection %s: Sending Paket '%s' " , str().c_str() , packetP->str().c_str() ));
+        LM_T(LmtSocketConnection, ("SocketConnection %s: Sending Packet '%s' " , str().c_str() , packetP->str().c_str() ));
         
         //
         // Preparing header
@@ -252,6 +254,7 @@ namespace samson {
             if ( ( line[tot] == '\n' ) || ( line[tot] == '\r' ) )
             {
                 line[tot] = '\0';
+                LM_READS("REST Interface", "Web Line", line, tot, LmfByte);
                 return OK;
             }
             
@@ -267,7 +270,7 @@ namespace samson {
     }
     
     
-    Status SocketConnection::partRead( void* vbuf, size_t bufLen , const char* what , int max_seconds , size_t * readed_size )
+    Status SocketConnection::partRead( void* vbuf, size_t bufLen , const char* what , int max_seconds , size_t * read_size )
     {
         size_t  tot = 0;
         Status   s;
@@ -287,16 +290,16 @@ namespace samson {
                 
                 if( ( s!= OK ) && ( s!= Timeout ) )
                 {
-                    if ( readed_size )
-                        *readed_size = tot;
+                    if ( read_size )
+                        *read_size = tot;
                     return s; // Different error, just report
                 }
                 
                 // Report timeout if max seconds is excedded
                 if( cronometer.diffTime() > max_seconds )
                 {
-                    if ( readed_size )
-                        *readed_size = tot;
+                    if ( read_size )
+                        *read_size = tot;
                     return Timeout;
                 }
                 
@@ -316,16 +319,17 @@ namespace samson {
             }
             else if (nb == 0)
             {
-                if ( readed_size )
-                    *readed_size = tot;
+                if ( read_size )
+                    *read_size = tot;
                 return ConnectionClosed;
             }
             
             tot += nb;
         }
         
-        if ( readed_size )
-            *readed_size = tot;
+        if ( read_size )
+            *read_size = tot;
+
         return OK;
     }
     

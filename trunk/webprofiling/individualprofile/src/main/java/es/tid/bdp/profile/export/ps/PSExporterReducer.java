@@ -21,11 +21,13 @@ public class PSExporterReducer extends Reducer<Text,
                                                NullWritable, Text> {
     private StringBuilder builder;
     private Text record;
+    private Counter recordCounter;
 
     @Override
     public void setup(Context context) throws IOException {
         this.builder = new StringBuilder();
         this.record = new Text();
+        this.recordCounter = context.getCounter(PSExporterCounter.NUM_RECORDS);
     }
     
     @Override
@@ -33,14 +35,13 @@ public class PSExporterReducer extends Reducer<Text,
                        Iterable<ProtobufWritable<UserProfile>> profiles,
                        Context context) throws IOException,
                                                InterruptedException {
-        Counter recordCount = context.getCounter(PSExporterCounter.NUM_RECORDS);
         for (Iterator<ProtobufWritable<UserProfile>> it = profiles.iterator();
                 it.hasNext();) {
             final ProtobufWritable<UserProfile> wrappedProfile = it.next();
             wrappedProfile.setConverter(UserProfile.class);
             UserProfile profile = wrappedProfile.get();
 
-            if (recordCount.getValue() == 0L) {
+            if (this.recordCounter.getValue() == 0L) {
                 this.builder.setLength(0);
                 this.builder.append("User");
                 this.builder.append("|");
@@ -62,7 +63,16 @@ public class PSExporterReducer extends Reducer<Text,
             this.record.set(this.builder.toString());
             context.write(NullWritable.get(), this.record);
 
-            recordCount.increment(1L);
+            this.recordCounter.increment(1L);
         }
+    }
+        
+    @Override
+    public void cleanup(Context context) throws IOException,
+                                                InterruptedException {
+        this.builder.setLength(0);
+        this.builder.append(this.recordCounter.getValue());
+        this.record.set(this.builder.toString());
+        context.write(NullWritable.get(), this.record);
     }
 }

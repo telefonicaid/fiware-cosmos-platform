@@ -49,6 +49,11 @@ namespace samson{
                 // Serialitzation of map
                 // ------------------------------------------------------------
                 ser_map,
+                ser_map_len_1,
+                ser_map_len_2,
+                ser_map_len_3,
+                ser_map_len_4,
+                ser_map_len_5,
                 
             } SerialitzationCode;
             
@@ -246,21 +251,57 @@ namespace samson{
             
             inline int parse_map( char *data )
             {
+                //printf("Parsing vector %p\n" , data);
                 SerialitzationCode code = (SerialitzationCode)data[0];
                 
                 // Common init to value int
-                value_type = value_map;
+                set_as_map();
+                
+                // Skip serialization code
+                size_t offset = 1; 
+                
+                // Length of the vector ( decoded in different ways )
+                size_t _length = 0;
                 
                 switch (code) 
                 {
+                    case ser_map_len_1:
+                        _length = 2;
+                    case ser_map_len_2:
+                        _length = 2;
+                        break;
+                    case ser_map_len_3:
+                        _length = 3;
+                        break;
+                    case ser_map_len_4:
+                        _length = 4;
+                        break;
+                    case ser_map_len_5:
+                        _length = 5;
+                        break;
                     case ser_map:
                     {
-                        LM_X(1, ("Unimplemented"));
+                        // Recover the number of elements we have serialized
+                        offset += samson::staticVarIntParse( data + offset , &_length );                        
+                        break;
                     }
                         
                     default:
                         LM_X(1, ("Internal error"));
                 }
+                
+                // Parse all components of the vector
+                Value tmp_key; // Component to parse keys...
+                for( size_t i = 0 ; i < _length ; i++ )
+                {
+                    // Parse key
+                    offset += tmp_key.parse( data + offset );
+                    
+                    Value * new_value = add_value_to_map( tmp_key.get_string() );
+                    offset += new_value->parse( data + offset );
+                }
+                return offset;
+                
                 
                 LM_X(1, ("Internal error"));
                 return 0;
@@ -297,8 +338,12 @@ namespace samson{
                         return parse_vector(data);
                         
                     case ser_map:
+                    case ser_map_len_1:
+                    case ser_map_len_2:
+                    case ser_map_len_3:
+                    case ser_map_len_4:
+                    case ser_map_len_5:
                         return parse_map(data);
-                        
                 }
                 
                 LM_X(1, ("Internal error"));
@@ -424,10 +469,43 @@ namespace samson{
                 return offset;
             }
 
-            int serialize_map(char *data)
+            int serialize_map( char *data )
             {
-                LM_X(1, ("Unimplemented"));
-                return 0;
+                if( _value_map.size() == 0 )
+                {
+                    // If no elements, serialize as void
+                    data[0] = (char) ser_void;
+                    return 1;
+                }
+                                
+                size_t offset = 1; // 
+                if( _value_vector.size() == 1)
+                    data[0] = (char) ser_map_len_1;
+                if( _value_vector.size() == 2)
+                    data[0] = (char) ser_map_len_2;
+                else if( _value_vector.size() == 3)
+                    data[0] = (char) ser_map_len_3;
+                else if( _value_vector.size() == 4)
+                    data[0] = (char) ser_map_len_4;
+                else if( _value_vector.size() == 5)
+                    data[0] = (char) ser_map_len_5;
+                else
+                {
+                    data[0] = (char) ser_map;
+                    offset += samson::staticVarIntSerialize( data + offset , _value_map.size() );
+                }
+                
+                // Serialize all the components
+                Value tmp_key; // Value to serialize key
+                au::map<std::string,Value>::iterator it;
+                for( it = _value_map.begin() ; it != _value_map.end() ; it++ )
+                {
+                    tmp_key.set_string( it->first );
+                    Value * value = it->second;
+                    offset += tmp_key.serialize( data + offset );
+                    offset += value->serialize( data + offset );
+                }
+                return offset;
             }
             
             
@@ -845,7 +923,10 @@ namespace samson{
             void set_as_vector()
             {
                 value_type = value_vector;
+                
+                // Clear mapo and vector to reuse components
                 clear_vector();
+                clear_map();
             }
             
             Value* add_value_to_vector()
@@ -880,6 +961,47 @@ namespace samson{
                     return NULL;
                 else
                     return _value_vector[pos];
+            }
+            
+            // ----------------------------------------------------------------------------------------
+            // Map functions
+            // ----------------------------------------------------------------------------------------
+            
+            void clear_map()
+            {
+                au::map<std::string,Value>::iterator it;
+                for( it = _value_map.begin() ; it != _value_map.end() ; it++ )
+                    pool_values.push( it->second );
+                _value_map.clear();
+            }
+
+            void set_as_map()
+            {
+                value_type = value_map;
+                
+                // Clear vector and map to reuse component
+                clear_vector();
+                clear_map();
+            }
+            
+            Value* add_value_to_map( std::string key )
+            {
+                // Just make sure we are in vector mode
+                if( value_type != value_map )
+                    set_as_map();
+                                
+                // Get a new instance of Value and push it to the vector
+                Value* value = pool_values.pop();
+                _value_map.insertInMap(key, value );
+                
+                // Alwyas return a void object
+                value->value_type = value_void;
+                return value;
+            }
+            
+            Value* get_value_from_map( std::string& key )
+            {
+                return _value_map.findInMap(key);
             }
             
             // ----------------------------------------------------------------------------------------

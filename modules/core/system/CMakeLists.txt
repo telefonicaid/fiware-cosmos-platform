@@ -124,5 +124,5 @@ INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 
 
-#ADD_EXECUTABLE(system_test  ${SOURCES_TEST} ${SOURCES} ${HEADERS})
-#TARGET_LINK_LIBRARIES(system_test lm au )
+ADD_EXECUTABLE(system_test operations/Filter.cpp  ${SOURCES_TEST} ${SOURCES} ${HEADERS})
+TARGET_LINK_LIBRARIES(system_test lm au )

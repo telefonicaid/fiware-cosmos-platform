@@ -48,6 +48,8 @@ StructCollection.h
 
 Pool.h
 StringComponents.h
+
+Tokenizer.h
 )
 
 SET (SOURCES
@@ -90,6 +92,8 @@ StructCollection.cpp
 
 Pool.cpp
 StringComponents.cpp
+
+Tokenizer.cpp
 )
 
 

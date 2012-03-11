@@ -159,6 +159,29 @@
             </plugin>
 
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>native-maven-plugin</artifactId>
+                <version>1.0-alpha-7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <javahClassNames>
+                        <javahClassName>
+                        es.tid.bdp.profile.dictionary.comscore.CSDictionaryJNIInterface
+                        </javahClassName>
+                    </javahClassNames>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-headers</id>
+                        <goals>
+                            <goal>javah</goal>
+                        </goals>
+                        <phase>compile</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>2.4</version>

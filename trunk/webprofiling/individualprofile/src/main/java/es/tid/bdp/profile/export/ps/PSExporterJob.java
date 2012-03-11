@@ -19,7 +19,7 @@ import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
  * @author sortega
  */
 public class PSExporterJob extends Job {
-    private static final String JOB_NAME = "ExportJob";
+    private static final String JOB_NAME = "PSExporterJob";
 
     public PSExporterJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);

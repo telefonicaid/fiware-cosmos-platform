@@ -41,24 +41,24 @@ public class PSExporterReducer extends Reducer<Text,
             wrappedProfile.setConverter(UserProfile.class);
             UserProfile profile = wrappedProfile.get();
 
+            // TODO: need to get the complete list of categories
             if (this.recordCounter.getValue() == 0L) {
                 this.builder.setLength(0);
                 this.builder.append("User");
-                this.builder.append("|");
                 for (CategoryCount count : profile.getCountsList()) {
-                    this.builder.append(count.getName());
                     this.builder.append("|");
+                    this.builder.append(count.getName());
                 }
+                this.record.set(this.builder.toString());
+                context.write(NullWritable.get(), this.record);
             }
-            this.record.set(this.builder.toString());
-            context.write(NullWritable.get(), this.record);
 
             this.builder.setLength(0);
             String userIdAndDate = userId + "_" + profile.getDate();
             this.builder.append(userIdAndDate);
             for (CategoryCount count : profile.getCountsList()) {
-                this.builder.append(count.getCount());
                 this.builder.append("|");
+                this.builder.append(count.getCount());
             }
             this.record.set(this.builder.toString());
             context.write(NullWritable.get(), this.record);

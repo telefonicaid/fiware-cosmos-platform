@@ -21,7 +21,7 @@ import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
  *
  * @author sortega
  */
-public class ExporterReducerTest {
+public class MongoDBExporterReducerTest {
     private ReduceDriver<Text, ProtobufWritable<UserProfile>, MongoProperty,
             BSONWritable> driver;
     private Text userId;

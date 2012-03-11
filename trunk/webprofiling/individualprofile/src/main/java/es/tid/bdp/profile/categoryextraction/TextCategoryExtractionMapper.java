@@ -40,7 +40,6 @@ public class TextCategoryExtractionMapper extends Mapper<LongWritable, Text,
         } catch (Exception ex) {
             context.getCounter(CategoryExtractionCounter.WRONG_FILTERING_FIELDS)
                     .increment(1L);
-            System.err.println(ex.getMessage());
         }
     }
 }

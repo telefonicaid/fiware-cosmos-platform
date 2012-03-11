@@ -12,6 +12,7 @@ import org.junit.Test;
  * @author sortega
  */
 public class CSDictionaryJNIInterfaceTest {
+    private static final String TEST_DICTIONARY = "src/test/resources/dictionary.bin";
     private static final String[] LIB_EXTENSIONS = {"so", "dylib"};
     private static final int THREAD_COUNT = 4;
     private static final int TEST_COUNT = 100000;
@@ -34,7 +35,8 @@ public class CSDictionaryJNIInterfaceTest {
     @Before
     public void setUp() throws Exception {
         this.instance = new CSDictionaryJNIInterface();
-        instance.loadCSDictionary("src/test/resources/dictionary.bin");
+        assertTrue("Cannot initialize dictionary",
+                instance.loadCSDictionary(TEST_DICTIONARY));
     }
 
     @Test

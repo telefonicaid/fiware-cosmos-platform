@@ -1,33 +1,31 @@
-/* ****************************************************************************
- *
- * FILE                     main_samson_comscore_directory_create.cpp
- *
- * AUTHOR                   Andreu Urrueka
- *
- * CREATION DATE            2012
- *
- */
-
 #include <jni.h>
-
 #include <signal.h>
-#include "au/LockDebugger.h"            // au::LockDebugger
-#include "au/ThreadManager.h"
 
+#include "au/ThreadManager.h"
 #include "comscore/common.h"
 #include "comscore/SamsonComscoreDictionary.h"
+#include "logMsg/logMsg.h"
 
 #include "es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface.h"
 
 typedef samson::comscore::uint uint;
 
-
 samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary;
 
+// TODO: Bug workaround remove when its fixed in Samson
+extern char *progName; 
 
 JNIEXPORT jboolean JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface_loadCSDictionary
   (JNIEnv *env, jobject jobj, jstring jdictionary_name) {
-    lmInit();
+    if (progName == NULL) {
+        LmStatus status = lmInitX((char *)"ComscoreDict", NULL, NULL, NULL);
+        // TODO: Bug workaround remove when its fixed in Samson
+        progName = strdup(progName);
+        if (status != LmsOk) {
+            std::cerr << "LM failed with status " << status << std::endl;
+            return false;
+        }
+    }
 
     jboolean isCopy;
     const char *dictionary_file_name =

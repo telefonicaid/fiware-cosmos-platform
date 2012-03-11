@@ -6,7 +6,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 /**
- * Test case for CompositeKey
+ * Test case for SingleKey
  *
  * @author dmicol
  */

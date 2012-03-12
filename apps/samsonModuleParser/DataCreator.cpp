@@ -135,6 +135,7 @@ namespace samson {
 					( command == "generator" )          || 
 					( command == "map" )                || 
 					( command == "parser" )             || 
+					( command == "simpleParser" )       ||
 					( command == "parserOut" )          || 
 					( command == "parserOutReduce" )	|| 
 					( command == "reduce" )
@@ -292,6 +293,7 @@ namespace samson {
 		}
 		for( std::set<std::string>::iterator iter = includes.begin() ; iter != includes.end() ; iter++)
 			output << *iter;
+
 		
 		
 		
@@ -360,12 +362,14 @@ namespace samson {
 				output << "\t\t\tsamson::Operation * operation = new samson::Operation( \"" << op.module << "." << op.name << "\" , samson::Operation::"<< op.type <<");"<<std::endl;
 			else if( ( op.type == "reduce") || ( op.type == "parserOutReduce" ) )
 				output << "\t\t\tsamson::Operation * operation = new samson::Operation( \"" << op.module << "." << op.name << "\" , samson::Operation::"<< op.type <<" , au::factory<"<< op.name <<">, " << op.getCompareFunctionName() <<  ", " << op.getCompareByKeyFunctionName() <<  " );"<<std::endl;
+			else if ( op.type == "simpleParser")
+			    output << "\t\t\tsamson::Operation * operation = new samson::Operation( \"" << op.module << "." << op.name << "\" , samson::Operation::"<< "parser" <<" , au::factory<"<< op.name <<"> );"<<std::endl;
 			else
 				output << "\t\t\tsamson::Operation * operation = new samson::Operation( \"" << op.module << "." << op.name << "\" , samson::Operation::"<< op.type <<" , au::factory<"<< op.name <<"> );"<<std::endl;
 
 			// Automatic adding input and output of the parser and parserOut
 			
-			if( op.type == "parser")
+			if(( op.type == "parser") || (op.type == "simpleParser"))
 				output << "\t\t\toperation->inputFormats.push_back( samson::KVFormat::format(\"txt\" ,\"txt\") );"<<std::endl;
 
 			if( op.type == "parserOut")

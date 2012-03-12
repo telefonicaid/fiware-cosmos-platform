@@ -115,7 +115,7 @@ public:
 
     void addInput( DataSet input_dataset )
     {
-        if( type == "parser" )
+        if(( type == "parser" ) || (type == "simpleParser"))
         {
             std::cerr << "Error in operation " << name << ": Not possible to add inputs to a parser. The unique txt-txt input will be added automatically\n";
             exit(1);
@@ -242,11 +242,17 @@ public:
         if( type == "reduce")
             return "samson::Reduce";
 
+        if( type == "splitter")
+            return "samson::Splitter";
+
         if( type == "script")
             return "samson::Script";
 
         if( type == "parser")
             return "samson::Parser";
+
+        if( type == "simpleParser")
+            return "samson::system::SimpleParser";
 
         if( type == "parserOut")
             return "samson::ParserOut";
@@ -311,6 +317,10 @@ public:
             getIncludes(includes);
             for( std::set<std::string>::iterator iter = includes.begin() ; iter != includes.end() ; iter++)
                 file << *iter;
+        }
+        if (type == "simpleParser")
+        {
+            file << "#include <samson/modules/system/SimpleParser.h>" << std::endl;
         }
 
 
@@ -383,6 +393,12 @@ public:
             {
                 file << "\t\tvoid init( samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
                 file << "\t\tvoid run( char *data , size_t length , samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
+                file << "\t\tvoid finish( samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
+            }
+            if( type == "simpleParser" )
+            {
+                file << "\t\tvoid init( samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
+                file << "\t\tvoid parseLine( char * line, samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
                 file << "\t\tvoid finish( samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
             }
             if( ( type == "parserOut" ) || ( type == "parserOutReduce" ) )

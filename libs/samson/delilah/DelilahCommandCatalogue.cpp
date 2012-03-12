@@ -26,6 +26,13 @@ namespace samson
             "trace <on> <off>"
             );
         
+        add( "log" , "delilah", 
+             "log - view lines of the log files of the workers (last 20 lines by default - change using option '-lines')\n"
+             "  log 'pattern'     only lines that match 'pattern'\n"
+             "  log Type=X        only lines of Type 'X'\n"
+             "  log FileName=X    only lines from the file X"
+            );
+        
         add( "show_alerts" , "delilah", 
             "Show the last alerts received from SAMSON cluster"
             );

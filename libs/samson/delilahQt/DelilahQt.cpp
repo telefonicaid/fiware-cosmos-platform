@@ -126,21 +126,18 @@ namespace samson
             timeinfo = localtime ( &rawtime );
             std::string timeString = std::string(asctime (timeinfo));
 
-            std::stringstream line;
+            std::stringstream headerString;
             //line << timeString << "Received buffer with size " << au::str(size,"B") << " from queue " << queue;
             // Show the first line or key-value
             SamsonClientBlock samson_client_block( buffer , false );  // Not remove buffer at destrutor
             
-            line << "====================================================================\n";
-            line << au::str("Received stream data for queue %s\n" , queue.c_str() ); 
-            line << samson_client_block.get_header_content();
-            line << "====================================================================\n";
-            line << samson_client_block.get_content( 5 );
-            line << "====================================================================\n";
+            headerString << "====================================================================\n";
+            headerString << au::str("Received stream data for queue %s\n" , queue.c_str() ); 
+            headerString << samson_client_block.get_header_content();
+            headerString << "====================================================================\n";
+            std::string dataString = samson_client_block.get_content( 5 );
 
-            mainWindow->updateQueuesFeed(queue, line.str());
-            
-     std::cout<<"sending data" << std::endl;
+            mainWindow->updateQueuesFeed(queue, headerString.str(), dataString);
         }
         
         //Destroy Buffer

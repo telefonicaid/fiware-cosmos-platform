@@ -165,10 +165,14 @@ namespace samson
         emit(updateConnection(params));
     }
 
-    void DelilahMainWindow::updateQueuesFeed(std::string queuename, std::string data)
+    void DelilahMainWindow::updateQueuesFeed(std::string queuename, std::string header, std::string data)
     {
         ExtQueueViewer* queue = findQueueTab(queuename);
-        if(queue) queue->updateFeed(data);
+        if(queue) 
+        {
+            queue->updateHeader(header);
+            queue->updateFeed(data);
+        }
     }
 
 

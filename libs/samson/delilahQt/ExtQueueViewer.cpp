@@ -115,18 +115,22 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     //Feed connection
     connectButton = new QPushButton("Connect to this queue", this);
     connectButton->setCheckable(true);
+    queueHeader = new QTextEdit(this);
+    queueHeader->setReadOnly(true);
     queueFeed = new QTextEdit(this);
     queueFeed->setReadOnly(true);
     connectGroup = new QButtonGroup(this);
     connectGroup->setExclusive(false);
     connectNew = new QCheckBox("Only new data", this);
     connectClear = new QCheckBox("Remove popped data", this);
+    clearFeedButton = new QPushButton("Clear", this);
     connectGroup->addButton(connectNew);
     connectGroup->addButton(connectClear);
     
     connect(connectButton, SIGNAL(clicked()), this, SLOT(onConnectButtonClicked()));
     connect(connectNew, SIGNAL(toggled(bool)), this, SLOT(onConnectNewClicked(bool)));
     connect(connectClear, SIGNAL(toggled(bool)), this, SLOT(onConnectClearClicked(bool)));
+    connect(clearFeedButton, SIGNAL(clicked()), this, SLOT(clearFeed()));
     
     mainLayout->addWidget(name);
     mainLayout->addLayout(generalLayout);
@@ -134,6 +138,9 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     mainLayout->addWidget(sizeBox);
     mainLayout->addWidget(blocksBox);
     mainLayout->addLayout(connectButtonLayout);
+    mainLayout->addWidget(queueHeader);
+    //queueHeader->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
+    //queueFeed->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     mainLayout->addWidget(queueFeed);
     mainLayout->addStretch();
     
@@ -141,6 +148,7 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     connectButtonLayout->addWidget(connectNew);
     connectButtonLayout->addWidget(connectClear);
     connectButtonLayout->addStretch();
+    connectButtonLayout->addWidget(clearFeedButton);
 
     generalLayout->addWidget(sizeBox);
     generalLayout->addWidget(formatBox);
@@ -211,6 +219,17 @@ void ExtQueueViewer::setData(QueueData* newData)
         time_from->setText(QString(au::str_time(strtoul(data.time_from.c_str(), NULL, 0)).c_str()));
         time_to->setText(QString(au::str_time(strtoul(data.time_to.c_str(), NULL, 0)).c_str()));
 }
+
+void ExtQueueViewer::updateHeader(std::string line)
+{
+    queueHeader->append(QString(line.c_str()) + QString("\n"));
+    //scroll contents to the bottom so added data is visible
+    QScrollBar *sb = queueHeader->verticalScrollBar();
+    sb->setValue(sb->maximum());
+
+    queueHeader->update();
+}
+
 void ExtQueueViewer::updateFeed(std::string line)
 {
     queueFeed->append(QString(line.c_str()) + QString("\n"));
@@ -223,8 +242,8 @@ void ExtQueueViewer::updateFeed(std::string line)
 
 void ExtQueueViewer::clearFeed()
 {
+    queueHeader->setText("");
     queueFeed->setText("");
-    queueFeed->ensureCursorVisible();    
 }
 
 void ExtQueueViewer::onConnectButtonClicked()

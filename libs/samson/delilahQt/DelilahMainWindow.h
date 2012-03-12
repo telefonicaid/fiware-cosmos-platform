@@ -54,7 +54,7 @@ namespace samson {
     
         DelilahMainWindow();
         void updateData(std::vector<QueueData*> queuesData, std::vector<WorkerData*> workersData);
-        void updateQueuesFeed(std::string queue, std::string data);
+        void updateQueuesFeed(std::string queue, std::string header, std::string data);
        
     public slots:
         void about();

@@ -1,6 +1,7 @@
 package es.tid.bdp.profile.dictionary.comscore;
 
 import java.io.File;
+import java.util.Arrays;
 
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -12,10 +13,11 @@ import org.junit.Test;
  * @author sortega
  */
 public class CSDictionaryJNIInterfaceTest {
-    private static final String TEST_DICTIONARY = "src/test/resources/dictionary.bin";
+    private static final String TEST_DICTIONARY =
+            "src/test/resources/dictionary.bin";
     private static final String[] LIB_EXTENSIONS = {"so", "dylib"};
     private static final int THREAD_COUNT = 4;
-    private static final int TEST_COUNT = 100000;
+    private static final int TEST_COUNT = 10000;
     private CSDictionaryJNIInterface instance;
 
     @BeforeClass
@@ -24,7 +26,8 @@ public class CSDictionaryJNIInterfaceTest {
         for (String ext : LIB_EXTENSIONS) {
             library = new File("src/main/cpp/libcomscore." + ext);
             if (library.exists()) {
-                System.setProperty(CSDictionaryJNIInterface.COMSCORE_LIB_PROPERTY,
+                System.setProperty(
+                        CSDictionaryJNIInterface.COMSCORE_LIB_PROPERTY,
                         library.getAbsolutePath());
                 return;
             }
@@ -41,9 +44,11 @@ public class CSDictionaryJNIInterfaceTest {
 
     @Test
     public void testJNIInterface() throws Exception {
-        int[] categories = instance.lookupCategories("www.newsalert.com/user/123");
+        int[] categories = instance.lookupCategories(
+                "www.newsalert.com/user/123");
         assertEquals(2, categories.length);
-        assertEquals("Business/Finance", instance.getCategoryName(categories[0]));
+        assertEquals("Business/Finance",
+                instance.getCategoryName(categories[0]));
         assertEquals("News/Research", instance.getCategoryName(categories[1]));
 
         assertEquals(0, instance.lookupCategories("unknown.org").length);
@@ -60,8 +65,8 @@ public class CSDictionaryJNIInterfaceTest {
         @Override
         public void run() {
             for (int test = 0; test < TEST_COUNT; ++test) {
-                int[] categories = dictionary.lookupCategories(
-                        "ASKJEEVES.COM/web?o=10181&jr=true&q=hola&qsrc=0&o=10181&l=dir");
+                int[] categories = dictionary.lookupCategories("ASKJEEVES.COM"
+                        + "/web?o=10181&jr=true&q=hola&qsrc=0&o=10181&l=dir");
                 assertEquals("Search/Navigation",
                         dictionary.getCategoryName(categories[0]));
             }
@@ -81,5 +86,14 @@ public class CSDictionaryJNIInterfaceTest {
             worker.join();
             assertTrue(worker.success);
         }
+    }
+
+    @Test
+    public void testGetAllCategories() throws Exception {
+        String[] names = instance.getAllCategoryNames();
+        assertEquals(132, names.length);
+        assertArrayEquals(new String[] {"Auctions", "Automotive",
+                "Business/Finance", "Career Services and Development",
+                "Community"}, Arrays.copyOfRange(names, 0, 5));
     }
 }

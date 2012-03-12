@@ -6,31 +6,11 @@
     <parent>
         <artifactId>bigdataplatform</artifactId>
         <groupId>es.tid.bdp</groupId>
-        <version>${env.ProductVersion}.${env.GIT_COMMIT}</version>
+        <version>0.0.3.0</version>
     </parent>
 
     <artifactId>base</artifactId>
     <name>base</name>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-core</artifactId>
-            <version>${org.apache.hadoop}-cdh3u2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-mrunit</artifactId>
-            <version>${org.apache.hadoop}-cdh3u0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.10</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
 
     <build>
         <pluginManagement>

@@ -23,11 +23,12 @@ public class IndividualProfileMain extends Configured implements Tool {
     public static final String INPUT_SERIALIZATION = "input.serialization";
     public static final String PROTOBUF_SERIALIZATION = "protobuf";
 
-    private static final Logger logger = Logger.getLogger(
-            IndividualProfileMain.class);
     private static final String TMP_DIR = "/tmp/individualprofile";
     private static final String CATEGORIES_PATH = TMP_DIR + "/categories";
     private static final String PROFILE_PATH = TMP_DIR + "profile";
+    
+    private static Logger logger = Logger.getLogger(
+            IndividualProfileMain.class);
 
     @Override
     public int run(String[] args)

@@ -25,7 +25,7 @@ import es.tid.bdp.profile.export.mongodb.MongoDBExporterJob;
 public class CategoryExtractionJob extends Job {
     private static final String JOB_NAME = "CategoryExtraction";
     private static final String COM_SCORE_BASE = "/user/hdfs/comscore/latest/";
-    private final String DEFAULT_DICTIONARY_NAME = "dictionary.bin";
+    private static final String DEFAULT_DICTIONARY_NAME = "dictionary.bin";
 
     public CategoryExtractionJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
@@ -43,12 +43,12 @@ public class CategoryExtractionJob extends Job {
                 DEFAULT_DICTIONARY_NAME);
     }
 
-    public void configureTextInput() throws IllegalStateException {
+    public void configureTextInput() {
         this.setInputFormatClass(LzoTextInputFormat.class);
         this.setMapperClass(TextCategoryExtractionMapper.class);
     }
 
-    public void configureProtobufInput() throws IllegalStateException {
+    public void configureProtobufInput() {
         this.setInputFormatClass(LzoProtobufB64LineInputFormat
                 .getInputFormatClass(WebProfilingLog.class,
                 this.getConfiguration()));

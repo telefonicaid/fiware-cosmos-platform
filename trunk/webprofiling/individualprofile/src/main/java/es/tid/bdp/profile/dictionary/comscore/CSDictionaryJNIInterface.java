@@ -8,6 +8,8 @@ package es.tid.bdp.profile.dictionary.comscore;
  */
 public class CSDictionaryJNIInterface {
     public static final String COMSCORE_LIB_PROPERTY = "es.tid.comscore-path";
+    public static final String DEFAULT_COMSCORE_LIB =
+            "/opt/hadoop/lib/native/Linux-amd64-64/libcomscore.so";
 
     /**
      * Loads the comScore dictionary in memory.
@@ -35,6 +37,13 @@ public class CSDictionaryJNIInterface {
      * @return the category name
      */
     public native String getCategoryName(int categoryId);
+
+    /**
+     * Lists all category names.
+     *
+     * @return List of categories.
+     */
+    public native String[] getAllCategoryNames();
 
     static {
         String comscorePath = System.getProperty(COMSCORE_LIB_PROPERTY);

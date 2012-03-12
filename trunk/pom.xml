@@ -2,25 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <profiles>
-        <profile>
-            <id>local</id>
-            <properties>
-                <env.GIT_COMMIT>0</env.GIT_COMMIT>
-                <env.ProductVersion>0.0.3</env.ProductVersion>
-            </properties>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-        </profile>
-        <profile>
-            <id>jenkins</id>
-        </profile>
-    </profiles>
-
     <groupId>es.tid.bdp</groupId>
     <artifactId>bigdataplatform</artifactId>
-    <version>${env.ProductVersion}.${env.GIT_COMMIT}</version>
+    <version>0.0.3.0</version>
     <packaging>pom</packaging>
     <name>bigdataplatform</name>
     <description>Big Data Platform</description>
@@ -475,6 +459,11 @@
                     <artifactId>yamlbeans</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>11.0.1</version>
         </dependency>
     </dependencies>
 

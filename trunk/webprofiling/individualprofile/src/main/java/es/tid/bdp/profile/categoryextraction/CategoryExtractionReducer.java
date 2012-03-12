@@ -16,6 +16,7 @@ import es.tid.bdp.profile.data.ProfileProtocol.UserNavigation;
 import es.tid.bdp.profile.dictionary.Categorization;
 import es.tid.bdp.profile.dictionary.Dictionary;
 import es.tid.bdp.profile.dictionary.comscore.CSDictionary;
+import es.tid.bdp.profile.dictionary.comscore.CSDictionaryJNIInterface;
 
 /*
  * Enum with the list of counters to use in the CategoryExtraction mapreduces.
@@ -41,8 +42,9 @@ public class CategoryExtractionReducer extends Reducer<BinaryKey,
         if (dictionary == null) {
             String dictionaryName = context.getConfiguration().get(
                     DICTIONARY_NAME_PROPERTY);
-            dictionary = new CSDictionary(getCachedDictionaryPath(context,
-                    dictionaryName));
+            dictionary = new CSDictionary(
+                    getCachedDictionaryPath(context, dictionaryName),
+                    CSDictionaryJNIInterface.DEFAULT_COMSCORE_LIB);
             dictionary.init();
         }
     }

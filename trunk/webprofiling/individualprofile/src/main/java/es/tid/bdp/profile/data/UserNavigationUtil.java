@@ -13,6 +13,12 @@ import es.tid.bdp.profile.data.ProfileProtocol.UserNavigation;
  */
 public abstract class UserNavigationUtil {
     private static final String DELIMITER = "\t";
+
+    private static final int VISITOR_ID_INDEX = 0;
+    private static final int URL_INDEX = 2;
+    private static final int YEAR_INDEX = 8;
+    private static final int MONTH_INDEX = 7;
+    private static final int DAY_INDEX = 6;
     
     private UserNavigationUtil() {
     }
@@ -33,7 +39,8 @@ public abstract class UserNavigationUtil {
 
     public static UserNavigation parse(String line) {
         String[] fields = line.split(DELIMITER);
-        return create(fields[0], fields[2],
-                String.format("%s-%s-%s", fields[8], fields[7], fields[6]));
+        return create(fields[VISITOR_ID_INDEX], fields[URL_INDEX],
+                      String.format("%s-%s-%s", fields[YEAR_INDEX],
+                                    fields[MONTH_INDEX], fields[DAY_INDEX]));
     }
 }

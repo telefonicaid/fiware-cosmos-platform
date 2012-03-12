@@ -8,6 +8,8 @@ package es.tid.bdp.profile.dictionary.comscore;
  */
 public class CSDictionaryJNIInterface {
     public static final String COMSCORE_LIB_PROPERTY = "es.tid.comscore-path";
+    public static final String DEFAULT_COMSCORE_LIB =
+            "/opt/hadoop/lib/native/Linux-amd64-64/libcomscore.so";
 
     /**
      * Loads the comScore dictionary in memory.

@@ -9,8 +9,8 @@ import es.tid.bdp.profile.data.ProfileProtocol.CategoryCount;
  *
  * @author sortega
  */
-public abstract class CategoryCountUtil {
-    private CategoryCountUtil() {
+public class CategoryCountUtil {
+    protected CategoryCountUtil() {
     }
     
     public static CategoryCount create(String name, long count) {

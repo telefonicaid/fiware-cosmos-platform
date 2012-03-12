@@ -1,4 +1,7 @@
 
+#ifndef _H_SAMSON_COMSCORE
+#define _H_SAMSON_COMSCORE
+
 #include "logMsg/logMsg.h"
 
 #include <string.h>
@@ -86,6 +89,7 @@ namespace samson
         class SamsonComscoreDictionary
         {
             Header header;
+	protected:
             au::StringCollection string_collection;
             au::StructCollection<DictionaryEntry> dictionary_entries;
             MapId2Id pattern_to_category;
@@ -128,3 +132,5 @@ namespace samson
     }
     
 }
+
+#endif

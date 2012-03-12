@@ -38,6 +38,13 @@ public class CSDictionaryJNIInterface {
      */
     public native String getCategoryName(int categoryId);
 
+    /**
+     * Lists all category names.
+     *
+     * @return List of categories.
+     */
+    public native String[] getAllCategoryNames();
+
     static {
         String comscorePath = System.getProperty(COMSCORE_LIB_PROPERTY);
         if (comscorePath != null && !comscorePath.isEmpty()) {

@@ -18,23 +18,27 @@ import org.apache.nutch.util.NutchConfiguration;
  * @author javierb
  */
 public final class KpiCalculationNormalizer {
-    private static BasicURLNormalizer basicNorm;
-    private static RegexURLNormalizer regexNorm;
+    private static boolean isInitialized = false;
+    private static BasicURLNormalizer basicNorm = null;
+    private static RegexURLNormalizer regexNorm = null;
 
     private KpiCalculationNormalizer() {
     }
+
     /**
      * Method that initializes the normalizers
      */
     public static void init() {
-        if (basicNorm != null && regexNorm != null) {
+        if (isInitialized) {
             // Avoid unnecessary re-initializations.
             return;
         }
+
         basicNorm = new BasicURLNormalizer();
         Configuration conf = NutchConfiguration.create();
         basicNorm.setConf(conf);
         regexNorm = new RegexURLNormalizer(conf);
+        isInitialized = true;
     }
 
     /**
@@ -46,9 +50,12 @@ public final class KpiCalculationNormalizer {
      */
     public static String normalize(String inputUrl)
             throws MalformedURLException {
+        if (!isInitialized) {
+            throw new IllegalStateException("Normalized is not initialized");
+        }
+
         String normalizedUrl = basicNorm.normalize(inputUrl,
-                URLNormalizers.SCOPE_DEFAULT);
-       
+                URLNormalizers.SCOPE_DEFAULT);       
         // Advanced Nutch URL normalization based on regular expressions
         return regexNorm.normalize(normalizedUrl, URLNormalizers.SCOPE_DEFAULT);
     }

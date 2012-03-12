@@ -104,8 +104,8 @@ public class CategoryExtractionReducer extends Reducer<BinaryKey,
         return dictionary.categorize(url);
     }
 
-    public String getCachedDictionaryPath(Context context, String dictionaryName)
-            throws IOException, RuntimeException {
+    public String getCachedDictionaryPath(Context context,
+            String dictionaryName) throws IOException {
         Path dictionaryPath = null;
         for (Path path : DistributedCache.getLocalCacheFiles(
                 context.getConfiguration())) {
@@ -115,7 +115,7 @@ public class CategoryExtractionReducer extends Reducer<BinaryKey,
             }
         }
         if (dictionaryPath == null) {
-            throw new RuntimeException("No dictionary file was configured");
+            throw new IllegalStateException("No dictionary file was configured");
         }
         return dictionaryPath.toString();
     }

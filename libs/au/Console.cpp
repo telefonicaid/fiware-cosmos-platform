@@ -393,6 +393,8 @@ void Console::runConsole()
                 internal_command( "del" );
             else if ( c == 11 )
                 internal_command( "del_rest_line" );
+            else if ( c == 4 )
+                 Console::quitConsole();
             else if ( c == 1 )
                 internal_command( "move_home" );
             else if ( c == 5 )

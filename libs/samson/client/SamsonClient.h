@@ -19,6 +19,9 @@
 #ifndef _H_Samson_SamsonClient
 #define _H_Samson_SamsonClient
 
+//We need to undef the macro "emit" because Qt library was setting it to empty string
+#undef emit
+
 #include <string>       // std::string
 #include <vector>       // std::vector
 #include <pthread.h>        /* pthread*/

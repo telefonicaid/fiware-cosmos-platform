@@ -214,7 +214,10 @@ void ExtQueueViewer::setData(QueueData* newData)
 void ExtQueueViewer::updateFeed(std::string line)
 {
     queueFeed->append(QString(line.c_str()) + QString("\n"));
-    queueFeed->ensureCursorVisible();
+    //scroll contents to the bottom so added data is visible
+    QScrollBar *sb = queueFeed->verticalScrollBar();
+    sb->setValue(sb->maximum());
+
     queueFeed->update();
 }
 

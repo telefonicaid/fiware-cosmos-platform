@@ -15,6 +15,7 @@
 #include "samson/delilah/Delilah.h"			// samson::Delilah
 
 #include "DelilahMainWindow.h"
+#include "WorkerViewer.h"
 
 #include <QObject>
 #include <QtGui>

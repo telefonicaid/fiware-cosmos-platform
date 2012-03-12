@@ -19,6 +19,8 @@ import es.tid.bdp.base.mapreduce.CompositeKey;
  * @author javierb
  */
 public class KpiPartitioner extends Partitioner<CompositeKey, IntWritable> {
+    private static final int HASH_CODE_FACTOR = 127;
+    
     /**
      * Get the paritition number for a given key, in this case the partition is
      * calculate from the naturalKey of the structure CompositeKey
@@ -33,6 +35,7 @@ public class KpiPartitioner extends Partitioner<CompositeKey, IntWritable> {
      */
     @Override
     public int getPartition(CompositeKey key, IntWritable value, int numPartitions) {
-        return Math.abs(key.get(0).hashCode() * 127) % numPartitions;
+        return Math.abs(key.get(0).hashCode() * HASH_CODE_FACTOR)
+                % numPartitions;
     }
 }

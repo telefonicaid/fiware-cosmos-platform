@@ -16,6 +16,22 @@ namespace mobility{
 
 	class Cell : public Cell_base
 	{
+        std::string str(){
+                std::ostringstream o;
+                                { //Texting cellId
+ o << cellId.str() << "(0x" << std::hex << (cellId.value >> 16) << ",0x" << (cellId.value & 0x0000ffff) << ")(" << std::dec << (cellId.value >> 16) << "," << (cellId.value & 0x0000ffff) << ")";
+
+                }
+
+                o<<" ";
+                                { //Texting position
+                        o << position.str();
+                }
+
+                o<<" ";
+                return o.str();
+        }
+
 	};
 
 

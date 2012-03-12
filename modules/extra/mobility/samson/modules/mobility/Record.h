@@ -16,6 +16,34 @@ namespace mobility{
 
 	class Record : public Record_base
 	{
+	public:
+
+        std::string str(){
+                std::ostringstream o;
+                                { //Texting userId
+                        o << userId.str();
+                }
+
+                o<<" ";
+                                { //Texting timestamp
+                        o << timestamp.str();
+                }
+
+                o<<" ";
+                                { //Texting cellId
+o << cellId.str() << "(0x" << std::hex << (cellId.value >> 16) << ",0x" << (cellId.value & 0x0000ffff) << ")(" << std::dec << (cellId.value >> 16) << "," << (cellId.value & 0x0000ffff) << ")";
+
+                }
+
+                o<<" ";
+                                { //Texting position
+                        o << position.str();
+                }
+
+                o<<" ";
+                return o.str();
+        }
+
 	};
 
 

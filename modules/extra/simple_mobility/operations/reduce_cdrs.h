@@ -127,8 +127,33 @@ helpLine: Update internal state
 				 
 			  }
 			  
+	            for (int i = 0 ; i < user.cells_length ; i++)
+	              {
+	                 bool in_previous = user.cells[i].cellId.value == user.cellId.value;
+	                 bool in_now = user.cells[i].cellId.value == record.cellId.value;
+
+	                 if( !in_previous && in_now )
+	                 {
+	                    level_int_32->push( user.cells[i].name.value , 1 );
+
+	                    message.value = au::str("User enters cellIdLabelled '%s' when moving from %s to %s" , user.cells[i].str().c_str() , user.cellId.str().c_str() , record.cellId.str().c_str() );
+	                    writer->emit( 0 , &key,  &message );
+
+	                 }
+
+	                 if( in_previous && !in_now )
+	                 {
+	                    level_int_32->push( user.cells[i].name.value , -1 );
+
+	                    message.value = au::str("User leaves cellIdLabelled '%s' when moving from %s to %s" , user.cells[i].str().c_str() , user.cellId.str().c_str() , record.cellId.str().c_str() );
+	                    writer->emit( 0 , &key,  &message );
+	                 }
+
+	              }
+
 			  // update state
 			  user.position.copyFrom( &record.position );
+			  user.cellId.value =  record.cellId.value;
 			  
 		   }
 		

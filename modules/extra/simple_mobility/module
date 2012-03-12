@@ -10,8 +10,10 @@ Module simple_mobility
 data User
 {
 	mobility.Position position;               # Last known position
+	system.UInt32 cellId;               # Last known cellId
 	system.Int8 track;						  # Flag to indicate if we want to track this user		 
 	vector mobility.Area areas;	  			  # Areas defined for this user
+	vector mobility.CellIdLabelled cells;     # Cells defined for this user
 }
 
 parser parser_cdrs

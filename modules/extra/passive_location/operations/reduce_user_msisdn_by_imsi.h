@@ -59,6 +59,8 @@ namespace passive_location{
 	            {
 	                record.parse( inputs[0].kvs[i]->value );
 	                // Emitted by imei, in order to try later a second option
+	                // Actually, this option is not working, there is no improvement
+	                // in detection by using IMEI
 	                if (record.imei.value != 0)
 	                {
 	                    writer->emit( 1 , &record.imei , &record );

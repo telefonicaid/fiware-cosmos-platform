@@ -15,6 +15,8 @@
 #include "mongo/client/dbclient.h"
 #include "mongo/client/dbclientcursor.h"
 
+#include "logMsg/logMsg.h"
+
 
 using namespace mongo;
 
@@ -72,10 +74,15 @@ void init(samson::KVWriter* writer)
 	mongo_ip                 = environment->get("mongo.ip",                 "no-mongo-ip");
 	mongo_db                 = environment->get("mongo.db",                 "no-mongo-db");
 	mongo_collection         = environment->get("mongo.collection",         "no-mongo-collection");
-
+	
 	mongo_bulksize           = atoi(bulksize.c_str());
 	mongo_history            = atoi(history.c_str());
 	mongo_lkl_fill           = atoi(lkl_fill.c_str());
+
+
+	// OLM_M(("Recovering value mongo_lkl_fill %s %d" , lkl_fill.c_str() ,  mongo_lkl_fill));
+	LM_M(("Operation [START] "));
+
 
 	if (mongo_ip == "no-mongo-ip")
 	{
@@ -96,6 +103,7 @@ void init(samson::KVWriter* writer)
 	}
 
 
+
     //
     // Adding 'time' to collection name
     // The collections are predefined in mongo as the collection must be configured to use sharding ...
@@ -105,20 +113,44 @@ void init(samson::KVWriter* writer)
     strftime(timeLine, sizeof(timeLine), "%Y%m%d_%H%M%S", &tmP);
     mongo_collection += std::string("_") + timeLine;
 
-	mdbConnection = new DBClientConnection();
-	OLM_M(("Connecting to mongo at '%s'", mongo_ip.c_str()));
 
-	try
+	mdbConnection = new DBClientConnection();
+	LM_M(("Connect to mongo at '%s'", mongo_ip.c_str()));
+
+	bool connected = false;
+	for (int tries = 1; tries < 10; tries++)
 	{
-		mdbConnection->connect(mongo_ip);
+	    std::string errorString;
+
+	    errorString = "";
+
+	    try
+	    {
+		LM_M(("Connecting [START] to mongo"));
+		bool conn = mdbConnection->connect(mongo_ip, errorString);
+		if (conn == true)
+		{
+		    LM_M(("Connecting [DONE] to mongo"));
+		    connected = true;
+		    break;
+		}
+		else
+		    LM_M(("Connecting [ERROR] mongo connection error: %s", errorString.c_str()));
+	    }
+	    catch(mongo::ConnectException &e)
+	    {
+		LM_E(("Error connecting to mongo at '%s': %s", mongo_ip.c_str(), errorString.c_str()));
+		usleep(5000);
+	    }
 	}
-	catch(mongo::ConnectException &e)
+
+	if (connected == false)
 	{
-		OLM_E(("Error connecting to mongo at '%s'", mongo_ip.c_str()));
-		delete mdbConnection;
-		mdbConnection = NULL;
-		tracer->setUserError("error connecting to MongoDB at " + mongo_ip);
-		return;
+	    delete mdbConnection;
+	    mdbConnection = NULL;
+	    tracer->setUserError("error connecting to MongoDB at " + mongo_ip);
+	    LM_E(("Sorry, cannot connect to mongo ..."));
+	    return;
 	}
 
 	mongo_db_path          = mongo_db         + "." + mongo_collection;
@@ -177,8 +209,10 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 
 			if ((inserts != 0) && ((inserts % mongo_bulksize) == 0))
 			{
-				OLM_M(("Run[inside-loop]: Inserting bulk of %d records (bulksize: %d)", inserts, mongo_bulksize));
+				//LM_M(("Inserting [START] bulk of %d records (bulksize: %d), grandTotalInserts:%d", inserts, mongo_bulksize, grandTotalInserts));
 				mdbConnection->insert(mongo_db_path, dataVec);
+				//LM_M(("Inserting [DONE]  bulk of %d records (bulksize: %d), grandTotalInserts:%d", inserts, mongo_bulksize, grandTotalInserts));
+
 				dataVec.clear();
 				inserts = 0;
 			}
@@ -198,9 +232,10 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 
 			if ((inserts != 0) && ((inserts % mongo_bulksize) == 0))
 			{
-				OLM_M(("Run[inside-loop]: Inserting bulk of %d records (bulksize: %d)", inserts, mongo_bulksize));
-    			OLM_M(("Filling up LastKnown"));
+				//LM_M(("Filling up LastKnown: Run[inside-loop]: Inserting bulk of %d records (bulksize: %d)", inserts, mongo_bulksize));
+				//LM_M(("Inserting [START] bulk of %d records (bulksize: %d), grandTotalInserts:%d", inserts, mongo_bulksize, grandTotalInserts));
 				mdbConnection->insert(mongo_db_path, dataVec);
+				//LM_M(("Inserting [DONE]  bulk of %d records (bulksize: %d), grandTotalInserts:%d", inserts, mongo_bulksize, grandTotalInserts));
 				dataVec.clear();
 				inserts = 0;
 			}
@@ -218,7 +253,14 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 			query  = BSON("_id" << (long long int) value.userId.value << "T" << BSON("$lt" << (long long int) value.timestamp.value));
 
 			++grandTotalUpdates;
+			//LM_M(("Updating [START] a document in mongo, grandTotalUpdates:%d", grandTotalUpdates));
 			mdbConnection->update(mongo_db_path, query, record, true);
+			//LM_M(("Updating [DONE] a document in mongo, grandTotalUpdates:%d", grandTotalUpdates));
+
+			if ((grandTotalUpdates % 1000) == 0)
+			{
+			    //LM_M(("LKL update %d", grandTotalUpdates));
+			}
 		}
 	}
 
@@ -226,7 +268,7 @@ void run(samson::KVSetStruct* inputs, samson::KVWriter* writer)
 	{
 		if ((inserts != 0) && ((inserts % mongo_bulksize) == 0))
 		{
-			OLM_M(("Run[out-of-loop]: Inserting bulk of %d records (bulksize: %d)", inserts, mongo_bulksize));
+			//LM_M(("Run[out-of-loop]: Inserting bulk of %d records (bulksize: %d)", inserts, mongo_bulksize));
 			mdbConnection->insert(mongo_db_path, dataVec);
 			dataVec.clear();
 			inserts = 0;
@@ -247,15 +289,15 @@ void finish(samson::KVWriter* writer)
 {
 	if (((mongo_history == 1) || (mongo_lkl_fill == 1)) && (inserts != 0))
 	{
-		OLM_M(("Finish: Inserting bulk of %d records (bulksize: %d)", inserts, mongo_bulksize));
+		LM_M(("Finish: Inserting bulk of %d records (bulksize: %d)", inserts, mongo_bulksize));
 		mdbConnection->insert(mongo_db_path, dataVec);
 		dataVec.clear();
 	}
 
 	if (mongo_history == 1)
-		OLM_M(("Grand total: %d inserts, %d records inserted, %d calls to run", grandTotalInserts, records, runs));
+		LM_M(("Operation [END] Finish: Grand total: %d inserts, %d records inserted, %d calls to run", grandTotalInserts, records, runs));
 	else
-		OLM_M(("Grand total: %d updates, %d calls to run", grandTotalUpdates, runs));
+		LM_M(("Operation [END] Finish: Grand total: %d updates, %d calls to run", grandTotalUpdates, runs));
 
 	delete mdbConnection;
 }

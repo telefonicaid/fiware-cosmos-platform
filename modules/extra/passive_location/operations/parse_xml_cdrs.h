@@ -29,12 +29,12 @@ public:
 
 
 //  INFO_MODULE
-//    If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
+// If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 //
-//    out system.UInt passive_location.Record                     # Emitted with key = imsi
-//    out passive_location.CompleteTMSI passive_location.Record   # Whem imsi = 0, emitted with key = tmsi
-//    out system.UInt passive_location.Record                     # If no cellId or LAC is parsed in the record
-//    out passive_location.CompleteTMSI passive_location.IMSIbyTime               # Queue to recover imsi from tmsi
+//  out system.UInt passive_location.Record                     # Emitted with key = imsi
+//  out passive_location.CompleteTMSI passive_location.Record   # Whem imsi = 0, emitted with key = tmsi
+//  out system.UInt passive_location.Record                     # If no cellId or LAC is parsed in the record
+//  out passive_location.CompleteTMSI passive_location.IMSIbyTime               # Queue to recover imsi from tmsi
 //
 //
 //    helpLine: Parse input cdrs from Arkanum platform. Note that output key is imsi at the output
@@ -93,9 +93,6 @@ public:
         uint32_t cellID = 0;
 
         uint64_t tmsi = 0;
-
-        int output_queue = 0;
-
 
 #define XML_TAG_USERID "<IMSI>"
         if ((p_tag_begin = strstr(p_xml, XML_TAG_USERID)) != NULL)
@@ -202,7 +199,7 @@ public:
             }
             *p_sep = '\0';
             cellID = strtoul(p_tag_begin, &endptr, 10 );
-            record.cellId.value = cellIdTmp | cellID;
+            record.cellId.value = cellIdTmp | (cellID%10000);
             if (*endptr != '\0')
             {
                 OLM_E(("xml with wrong cellId:'%s'", p_tag_begin));
@@ -261,10 +258,6 @@ public:
             imsiTime.timestamp.value = record.timestamp.value;
             writer->emit(3, &completeTMSI, &imsiTime);
         }
-
-
-        // Emit the record at the output
-        writer->emit(output_queue, &user, &record);
 
         return;
 

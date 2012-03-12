@@ -40,6 +40,11 @@ class parse_tek_drs : public samson::Parser
     samson::system::String infoKey;   // Info key
     samson::system::UInt infoValue;   // Info value
 
+    uint64_t DR_counter_total;
+    uint64_t DR_counter_nocell;
+    uint64_t DR_counter_noimsi;
+    uint64_t DR_counter_OK;
+
 public:
 
 
@@ -60,6 +65,10 @@ public:
 
     void init( samson::KVWriter *writer )
     {
+        DR_counter_total = 0;
+        DR_counter_nocell = 0;
+        DR_counter_noimsi = 0;
+        DR_counter_OK = 0;
     }
 
     void run( char *data , size_t length , samson::KVWriter *writer )
@@ -71,7 +80,8 @@ public:
         unsigned char *p_blob = (unsigned char *)data;
         unsigned char *p_end_blob = (unsigned char *)data + length;
 
-        unsigned char *p_init_ohdr;
+        unsigned char *p_init_ohdr = p_blob;
+
         unsigned char *p_end_ohdr;
 
         unsigned int sizeOHDR = 0;
@@ -81,12 +91,8 @@ public:
         unsigned int sizeDR = 0;
         struct struct_tek_record tek_record;
 
+        bool OK_OHDR_header = true;
 
-
-        //        for (int i = 0; (i < 32); i++)
-        //        {
-        //            LM_M(("data[%d](0x%0x) = 0x%0x", i, p_blob+i, int(p_blob[i])));
-        //        }
 
         while( p_blob < p_end_blob )
         {
@@ -96,7 +102,8 @@ public:
             //            }
 
             p_init_ohdr = p_blob;
-            if (parse_OHDR_header(&p_blob, &sizeOHDR, &numDRs, &typeMsg))
+
+            if ((OK_OHDR_header = parse_OHDR_header(&p_blob, &sizeOHDR, &numDRs, &typeMsg)) && ((p_init_ohdr + sizeOHDR) <= p_end_blob))
             {
                 p_end_ohdr = p_init_ohdr + sizeOHDR;
                 //LM_M(("Parsing DRs in OHDR of size:%d", sizeOHDR));
@@ -106,6 +113,7 @@ public:
                     //LM_M(("Parsing DR:%d of numDRs:%d", i, numDRs));
                     if (parse_DR(&p_blob, &sizeDR, &tek_record))
                     {
+                        DR_counter_total++;
 
                         if (tek_record.last_tmsi != 0)
                         {
@@ -123,7 +131,7 @@ public:
                         record.imei.value = tek_record.imei;
                         record.timestamp.value = tek_record.timestamp;
                         // We compose location id with ((LAC << 16) | cell_id), in a uint32_t field
-			// Test, following Arturo's advice
+                        // Test, following Arturo's advice
                         uint32_t cellIdTmp = tek_record.LAC;
                         uint32_t cellIdTruncTmp = (tek_record.cellID)%10000;
                         record.cellId.value = (cellIdTmp << 16) | cellIdTruncTmp;
@@ -133,54 +141,57 @@ public:
 
                         //LM_M(("Ready to emit typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu tmsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.tmsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
 
-                        // Emitting infos
-                        {
-                            std::stringstream ss;//create a stringstream
-
-                            infoValue.value = 1;
-                            ss << tek_record.callType;
-                            infoKey.value = "callType " + ss.str();
-                            writer->emit(5, &infoKey, &infoValue);
-
-                            ss << tek_record.typeDR;
-                            infoKey.value = "typeDR " + ss.str();
-                            writer->emit(5, &infoKey, &infoValue);
-
-                            ss << tek_record.LAC;
-                            infoKey.value = "LAC " + ss.str();
-                            writer->emit(5, &infoKey, &infoValue);
-
-                            ss << record.cellId.value;
-                            infoKey.value = "cellId " + ss.str();
-                            writer->emit(5, &infoKey, &infoValue);
-
-                            if (tek_record.imsi != 0)
-                            {
-                                ss << tek_record.imsi;
-                                infoKey.value = "imsi " + ss.str();
-                                writer->emit(5, &infoKey, &infoValue);
-                            }
-
-
-                        }
+                        //                        // Emitting infos
+                        //                        {
+                        //                            std::stringstream ss;//create a stringstream
+                        //
+                        //                            infoValue.value = 1;
+                        //                            ss << tek_record.callType;
+                        //                            infoKey.value = "callType " + ss.str();
+                        //                            writer->emit(5, &infoKey, &infoValue);
+                        //
+                        //                            ss << tek_record.typeDR;
+                        //                            infoKey.value = "typeDR " + ss.str();
+                        //                            writer->emit(5, &infoKey, &infoValue);
+                        //
+                        //                            ss << tek_record.LAC;
+                        //                            infoKey.value = "LAC " + ss.str();
+                        //                            writer->emit(5, &infoKey, &infoValue);
+                        //
+                        //                            ss << record.cellId.value;
+                        //                            infoKey.value = "cellId " + ss.str();
+                        //                            writer->emit(5, &infoKey, &infoValue);
+                        //
+                        //                            if (tek_record.imsi != 0)
+                        //                            {
+                        //                                ss << tek_record.imsi;
+                        //                                infoKey.value = "imsi " + ss.str();
+                        //                                writer->emit(5, &infoKey, &infoValue);
+                        //                            }
+                        //
+                        //
+                        //                        }
 
 
                         // Emit the record at the corresponding output
                         if ((tek_record.cellID == 0) || (tek_record.LAC == 0))
                         {
-                            LM_W(("Emit records without cellId: typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
+                            //LM_W(("Emit records without cellId: typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
                             writer->emit(2, &user, &record);
+                            DR_counter_nocell++;
                         }
                         else if (tek_record.imsi == 0)
                         {
                             //LM_W(("Emit records without imsi: typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu tmsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.tmsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
 
                             writer->emit(1, &completeTMSI, &record);
+                            DR_counter_noimsi++;
                         }
                         else
                         {
                             //LM_W(("Emit complete records: typeDR:%d for callNumber:%d callType:0x%0x imsi:%lu imei:%lu at cellId:%d in LAC:%d (compose:%lu 0x%0x) at %lu(%s)", tek_record.typeDR, tek_record.callNumber, tek_record.callType, tek_record.imsi, tek_record.imei, tek_record.cellID, tek_record.LAC, record.cellId.value, record.cellId.value, record.timestamp.value, record.timestamp.str().c_str()));
                             writer->emit(0, &user, &record);
+                            DR_counter_OK++;
                         }
 
                         if ((tek_record.imsi != 0) && (tek_record.LAC != 0))
@@ -212,9 +223,18 @@ public:
                     LM_W(("Alignment failed in a OHDR of size:%d, numDRs:%d", sizeOHDR, numDRs));
                 }
             }
+            else if (OK_OHDR_header == false)
+            {
+                LM_W(("WRONG decoded OHDR, with typeMsg:%d, updated p_blob:%p, p_end_blob:%p\n", typeMsg, p_blob, p_end_blob));
+                if ((p_init_ohdr + sizeOHDR) > p_end_blob)
+                {
+                    LM_W(("Probably, OHDR ends further than the end of the chunk with p_init_ohdr:%p + sizeOHDR:%u > p_end_blob:%p, p_blob updated:%p\n", p_init_ohdr, sizeOHDR, p_end_blob, p_blob));
+                }
+                p_blob = p_init_ohdr+1;
+            }
             else
             {
-                LM_W(("OHDR ignored because not valid header, with typeMsg=%d, at pos:%lu of length:%lu", typeMsg, p_init_ohdr - (unsigned char *)data, length));
+                LM_W(("OHDR ignored because not complete, with typeMsg=%d, at pos:%lu of length:%lu, p_blob:%p, p_end_blob:%p", typeMsg, p_init_ohdr - (unsigned char *)data, length, p_blob, p_end_blob));
             }
             //OLM_M(("p_end_blob - p_blob=%lu (length(%lu))", p_end_blob - p_blob, length));
         }
@@ -222,6 +242,50 @@ public:
 
     void finish( samson::KVWriter *writer )
     {
+        LM_M(("Total records:%lu, OK:%lu, noimsi:%lu, nocell:%lu", DR_counter_total, DR_counter_OK, DR_counter_noimsi, DR_counter_nocell));
+        // Emitting infos
+        {
+            std::stringstream ss;//create a stringstream
+
+            infoValue.value = DR_counter_total;
+            infoKey.value = "DR_total";
+            writer->emit(5, &infoKey, &infoValue);
+
+            infoValue.value = DR_counter_OK;
+            infoKey.value = "DR_OK";
+            writer->emit(5, &infoKey, &infoValue);
+
+            infoValue.value = DR_counter_noimsi;
+            infoKey.value = "DR_imsi0";
+            writer->emit(5, &infoKey, &infoValue);
+
+            infoValue.value = DR_counter_nocell;
+            infoKey.value = "DR_cell0";
+            writer->emit(5, &infoKey, &infoValue);
+        }
+
+
+        // Emitting infos
+        {
+            std::stringstream ss;//create a stringstream
+
+            infoValue.value = DR_counter_total;
+            infoKey.value = "DR_total";
+            writer->emit(5, &infoKey, &infoValue);
+
+            infoValue.value = DR_counter_OK;
+            infoKey.value = "DR_OK";
+            writer->emit(5, &infoKey, &infoValue);
+
+            infoValue.value = DR_counter_noimsi;
+            infoKey.value = "DR_imsi0";
+            writer->emit(5, &infoKey, &infoValue);
+
+            infoValue.value = DR_counter_nocell;
+            infoKey.value = "DR_cell0";
+            writer->emit(5, &infoKey, &infoValue);
+        }
+
     }
 
 

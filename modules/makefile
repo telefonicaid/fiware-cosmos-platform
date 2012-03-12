@@ -50,7 +50,7 @@ extra_modules_debug:
 
 core_reset:
 	for module in $(CORE_MODULES); do \
-		make -C extra/$$module reset; \
+		make -C core/$$module reset; \
 		if [ "$$?" -ne 0 ]; then \
 			break; \
 		fi; \

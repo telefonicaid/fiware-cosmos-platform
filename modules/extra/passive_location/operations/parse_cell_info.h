@@ -44,10 +44,14 @@ namespace passive_location{
           split_in_words( line, words , '|' );
 		  
 		  if( words.size() < 8 )
+		  {
+			 LM_W(("Wrong format in line:'%s', %d fields", line, words.size()));
 			 return; // Wrong format
+		  }
 		  
 		  if( !strcmp(words[0], "CSR") )
 		  {
+			 LM_W(("Ignoring CSR in line:'%s', %d fields", line, words.size()));
 			 return; // Header
 		  }
 
@@ -67,11 +71,11 @@ namespace passive_location{
 		      LM_W(("Parsing:'%s' LAC:%u, cellId:%u, compose:%u", line, LAC, cellId, cell.cellId.value));
 		  }
 
-		  if (!strcmp(words[3], "900"))
+		  if ((!strcmp(words[3], "900")) || (!strcmp(words[3], "2G")))
 		  {
 		      cell.type.value = 1;
 		  }
-		  else if (!strcmp(words[3], "UMTS"))
+		  else if ((!strcmp(words[3], "UMTS")) || (!strcmp(words[3], "3G")))
           {
               cell.type.value = 2;
           }
@@ -88,7 +92,10 @@ namespace passive_location{
 		  split_in_words( lat_lon_definition, lat_lon , ',' );
 
 		  if( lat_lon.size() != 2 )
+		  {
+		  LM_W(("Wrong format for LATLONG field ($7): '%s'", lat_lon_definition));
 			 return; // Wrong format;
+		 }
 		  
 		  cell.position.latitude.value = atof( lat_lon[0] );
 		  cell.position.longitude.value = atof( lat_lon[1] );

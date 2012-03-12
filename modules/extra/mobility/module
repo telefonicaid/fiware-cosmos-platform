@@ -38,6 +38,12 @@ data Cell
 	mobility.Position  position;
 }
 
+data CellIdLabelled
+{
+	system.String     name;     # Name of this cell ( home , work , ... )
+	system.UInt32	   cellId;
+}
+
 data Area
 {
     system.String     name;     # Name of this area ( home , work , ... )

@@ -21,6 +21,7 @@ class update_tmsi_imsi_table_with_new_tmsi : public samson::Reduce
 
     samson::passive_location::CompleteTMSI completeTMSI;    // Input key
     samson::passive_location::CompleteTMSI newTMSI;    // Used as value at the output
+    samson::passive_location::CompleteTMSI oldTMSI;    // Input key for TMSI update
     samson::passive_location::IMSIbyTime newIMSI;                           // Input value of the records
     samson::passive_location::IMSIbyTime stateIMSI;                         // Input value of the state
 
@@ -52,35 +53,58 @@ public:
 
     void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
     {
-        if ((inputs[0].num_kvs > 0) && (inputs[1].num_kvs > 0))
-        {
-            // We have a TMSI update
-            // We emit the new TMSI, with the same IMSI
-            // (the old TMSI will be reemited in next loops)
-            // We know that we lose the timespan of this TMSI update
-
-            // If we are in 'live mode' (timespan != 0), only reemit recent
-            // associations
-
-            stateIMSI.parse(inputs[1].kvs[0]->value);
-
-            if ((tmps_timespan == 0) || ((now - stateIMSI.timestamp.value) < (int64_t)tmps_timespan))
-            {
-                newTMSI.parse(inputs[0].kvs[0]->value);
-                writer->emit( 0 , &newTMSI , &stateIMSI );
-            }
-        }
 
         if (inputs[1].num_kvs > 0)
         {
-            stateIMSI.parse(inputs[1].kvs[0]->value);
-            if ((tmps_timespan == 0) || ((now - stateIMSI.timestamp.value) < (int64_t)tmps_timespan))
-            {
-                completeTMSI.parse(inputs[1].kvs[0]->key);
-                writer->emit( 0 , &completeTMSI , &stateIMSI );
-            }
+            // We don't have an IMSIstate whose TMSI should be updated
+            return;
         }
 
+        if (inputs[0].num_kvs == 0)
+        {
+            // If we don't receive new tmsi, just resend the state
+
+            // If we are in 'live mode' (timespan != 0), only reemit recent
+            // associations
+            if (inputs[1].num_kvs > 1)
+            {
+                LM_M(("More than one(%d) tmsi-imsi record in table, without update", inputs[1].num_kvs));
+            }
+
+            // In any case, we will just re-emit the last state
+            stateIMSI.parse(inputs[1].kvs[inputs[1].num_kvs-1]->value);
+            if ((tmps_timespan == 0) || ((now - stateIMSI.timestamp.value) < (int64_t)tmps_timespan))
+            {
+                //for (uint64_t i = 0; (i < inputs[1].num_kvs); i++)
+                {
+                    completeTMSI.parse(inputs[1].kvs[0]->key);
+                    writer->emit( 0 , &completeTMSI , &stateIMSI );
+                }
+            }
+            return;
+        }
+
+        // We have a TMSI update
+        // We emit the new TMSI, with the same IMSI
+        // (the old TMSI will be reemited in next loops)
+        // We keep also the old TMSI-IMSi association, because
+        // we could receive records just from before and after this one
+        // We know that we lose the timespan of this TMSI update
+
+        // If we are in 'live mode' (timespan != 0), only reemit recent
+        // associations
+
+        // In any case, we will just re-emit the last state
+        stateIMSI.parse(inputs[1].kvs[inputs[1].num_kvs-1]->value);
+
+        if ((tmps_timespan == 0) || ((now - stateIMSI.timestamp.value) < (int64_t)tmps_timespan))
+        {
+            // We just emit one. We are not sure it is the last one by time, but there is no solution
+            // with the data-types we are using now
+            newTMSI.parse(inputs[0].kvs[inputs[0].num_kvs-1]->value);
+            writer->emit( 0 , &newTMSI , &stateIMSI );
+
+        }
     }
 
     void finish( samson::KVWriter *writer )

@@ -122,7 +122,7 @@ int main( int argc, const char *argv[])
                 fclose(outputTxtFile);
             }
 
-            sprintf(outputTxtFileName, "%s_%d.txt", outputFile_base, numChunk);
+            sprintf(outputTxtFileName, "%s_%03d.txt", outputFile_base, numChunk);
             if ((outputTxtFile = fopen(outputTxtFileName, "w")) == NULL)
             {
                 fprintf(stderr, "Error al hacer open del fichero %s\n", outputTxtFileName);
@@ -153,7 +153,7 @@ int main( int argc, const char *argv[])
 
                         localtime_r( &time, &st_time);
 
-                        strftime(timestampStr, MAX_TIME_LENGTH, "%Y%m%d%H%M%s", &st_time);
+                        strftime(timestampStr, MAX_TIME_LENGTH, "%Y%m%d%H%M%S", &st_time);
 
 
                         fprintf(outputTxtFile, "%d|%d|%lu|%lu|%lu|%lu|%d|%d|%s|%d|%d|%d|%d|%d|%d\n", tek_record.typeDR, tek_record.callType, tek_record.imsi, tek_record.tmsi, tek_record.last_tmsi, tek_record.imei, tek_record.LAC, tek_record.cellID, timestampStr, tek_record.DTAPCause, tek_record.BSSMAPCause, tek_record.ALCAPCause, tek_record.CCCause, tek_record.MMCause, tek_record.RANAPCause);
@@ -177,7 +177,7 @@ int main( int argc, const char *argv[])
         if ((p_blob - p_chunk) > size)
         {
             fprintf(stdout, "New chunk of %lu bytes (size:%lu)\n", (p_blob - p_chunk), size);
-            sprintf(outputFileName, "%s_%d.bin", outputFile_base, numChunk);
+            sprintf(outputFileName, "%s_%03d.bin", outputFile_base, numChunk);
             if ((outputFd = open(outputFileName, O_CREAT|O_WRONLY, 0666)) < 0)
             {
                 fprintf(stderr, "Error al hacer open del fichero %s\n", outputFileName);

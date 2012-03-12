@@ -42,6 +42,30 @@ system.TimeUnix timestamp;
 system.UInt     imsi;
 }
 
+data DailyActivity
+{
+	system.UInt32 day;
+	system.UInt hits;
+}
+
+data LocActivity
+{
+	system.UInt32 cellId;
+	vector passive_location.DailyActivity dayActivity;
+}
+
+data LocActivityHistory
+{
+	system.UInt32 last_cellId;
+	vector passive_location.LocActivity loc;
+}
+
+data UserLocActivityState
+{
+	passive_location.LocActivityHistory home;
+	passive_location.LocActivityHistory work;
+}
+
 # ------------------------------------------------------------
 # Parse input data (from Arcanum) to generate passive_location.Record 
 # ------------------------------------------------------------
@@ -246,6 +270,25 @@ map mongo_location_export
 # Script to init stream operations
 # ------------------------------------------------------------
 
+
+# -------------------------------------------------------------
+# Estimate home/work cellId, in streaming, with a UserLocActivityState
+# -------------------------------------------------------------
+
+reduce eval_location
+{
+	in system.UInt mobility.Record                        # Records bkuped from the mongo history stream
+	in system.UInt passive_location.UserLocActivityState  # input state with stored activity, per user
+	out system.UInt system.StringVector                   # commands to simple_mobility module
+	out system.UInt passive_location.UserLocActivityState  # Updated state with stored activity, per user
+	
+	helpLine "Estimate home/work cellId, in streaming, with a UserLocActivityState"
+}
+
+
+
+
+
 script init_stream_operations
 {
 	code
@@ -279,6 +322,9 @@ script init_stream_operations
 		alias [redrecords_lkl]          200.redrecords_lkl;
 		alias [redrecords_nocell]      201.redrecords_no_cell_join;	
 		
+		alias [loc_state]             300.loc_state;
+		alias [loc_commands]          301.loc_commands;
+		
 		# Operations;
 
        alias [parse_cell]          00.parse_cell;
@@ -296,6 +342,17 @@ script init_stream_operations
 		alias [join_cells]          26.mobility_records;
 		alias [export_history]      30.export_mongo;
 		alias [export_lkl]          31.export_mongo_lkl;
+		alias [eval_location]       40.eval_location;
+		
+		alias [q5] 20.users;
+		alias [q6] 30.messages;
+		alias [q7] 99.level.01.input;
+		
+		# Operations;
+
+		alias [o3] 50.reduce_commands;
+		alias [o4] 51.reduce_cdrs;
+		
 
 		add_stream_operation  [parse_cell]        passive_location.parse_cell_info                [cells.txt]       [cells];
 		add_stream_operation  [parse_user]        passive_location.parse_user_info                [users.txt]       [users_imsi] [users_imei];
@@ -305,30 +362,47 @@ script init_stream_operations
 
 		add_stream_operation  [update_tmsi]        passive_location.update_tmsi_imsi_table                  [tmsi_imsi] [tmsi_table]            [tmsi_table];
 		#set_stream_operation_property   [update_tmsi]  pl.tmps_age.timespan         86400;  # Keeping only mappings younger than 1 day (24 * 3600)
-		add_stream_operation  [update_tmsi_new]    passive_location.update_tmsi_imsi_table_with_new_tmsi                  [new_tmsi] [tmsi_table]            [tmsi_table];
+		#add_stream_operation  [update_tmsi_new]    passive_location.update_tmsi_imsi_table_with_new_tmsi                  [new_tmsi] [tmsi_table]            [tmsi_table];
 		#set_stream_operation_property   [update_tmsi_new]  pl.tmps_age.timespan         86400;  # Keeping only mappings younger than 1 day (24 * 3600)
 
 		add_stream_operation  [join_tmsi_imsi]    passive_location.reduce_user_imsi_by_tmsi        [records_imsi0] [tmsi_table]           [records],[records].bkup_tmsi [records_imsi0].reinjected [nouser_imsi_from_tmsi] -forward;
 		#set_stream_operation_property   [join_tmsi_imsi]  pl.record_retry.timespan  86400;  # Retrying only records younger than 1 day (24 * 3600)
+		set_stream_operation_property   [join_tmsi_imsi] pl.TMSI.timespan 3600; # Apply TMSI->IMSI only when closer than 1 hour
 		
 		add_stream_operation  [join_imsi_msisdn]   passive_location.reduce_user_msisdn_by_imsi     [records] [users_imsi]          [records_cell] [nouser_msisdn_from_imsi] -forward;
 		#add_stream_operation  [join_imei_msisdn]  passive_location.reduce_user_msisdn_by_imei     [nouser_imsi] [users_imei]         [records_cell] [records_noimsi_noimei] -forward;
 		
 		add_stream_operation  [get_cell_records]  passive_location.get_mobility_cell_records      [records_cell]              [redrecords],[redrecords].bkup;
-		add_stream_operation  [join_cells]        passive_location.reduce_cell_latitude_longitude [redrecords] [cells]     [redrecords_history],[redrecords_lkl],[redrecords_lkl].bkup [redrecords_nocell] -forward;
-		add_stream_operation  [export_history]    passive_location.mongo_location_export          [redrecords_history];
-		add_stream_operation  [export_lkl]        passive_location.mongo_location_export          [redrecords_lkl];
+		add_stream_operation  [join_cells]        passive_location.reduce_cell_latitude_longitude [redrecords] [cells]     [redrecords_history],[redrecords_lkl],[redrecords_history].1,[redrecords_history].2,[redrecords_history].bkup [redrecords_nocell] -forward;
+		#add_stream_operation  [export_history]    passive_location.mongo_location_export          [redrecords_history];
+		#add_stream_operation  [export_lkl]        passive_location.mongo_location_export          [redrecords_lkl];
 
 		#set_stream_operation_property   [export_history]      mongo.ip                  samson05;  #TID's cluster
-		set_stream_operation_property   [export_history]      mongo.ip                  localhost;  #PassiveLocation cluster
-		set_stream_operation_property   [export_history]      mongo.db                  PassiveLocation;
-		set_stream_operation_property   [export_history]      mongo.collection          History;
+		#set_stream_operation_property   [export_history]      mongo.ip                  localhost;  #PassiveLocation cluster
+		#set_stream_operation_property   [export_history]      mongo.db                  PassiveLocation;
+		#set_stream_operation_property   [export_history]      mongo.collection          History;
 
 		#set_stream_operation_property   [export_lkl]  mongo.ip                  samson08;  #TID's cluster
-		set_stream_operation_property   [export_lkl]  mongo.ip                  localhost; 	#PassiveLocation cluster	
-		set_stream_operation_property   [export_lkl]  mongo.db                  PassiveLocation;
-		set_stream_operation_property   [export_lkl]  mongo.collection          LastKnownLocation;
-		set_stream_operation_property   [export_lkl]  mongo.history             0;
+		#set_stream_operation_property   [export_lkl]  mongo.ip                  localhost; 	#PassiveLocation cluster	
+		#set_stream_operation_property   [export_lkl]  mongo.db                  PassiveLocation;
+		#set_stream_operation_property   [export_lkl]  mongo.collection          LastKnownLocation;
+		#set_stream_operation_property   [export_lkl]  mongo.history             0;
+		
+		add_stream_operation [eval_location] passive_location.eval_location [redrecords_history].2 [loc_state]        [loc_commands],[loc_commands].bkup [loc_state];
+		#set_stream_operation_property [eval_location] pasloc.conf.ref_day 4400;
+		set_stream_operation_property [eval_location] pasloc.conf.window_length_in_days 120;
+		
+		# From simple_mobility module	
+		# Definitions;
+
+		add_stream_operation [o3]  simple_mobility.reduce_commands    [loc_commands] [q5]   [q6] [q7] [q5];
+		add_stream_operation [o4]  simple_mobility.reduce_cdrs        [redrecords_history].1 [q5]   [q6] [q7] [q5];
+
+		#set_queue_property [q6] max_size 1;
+
+		# Connect with the level module to keep uptated the number of users at home/word...
+		init_stream 99.level level.init_stream_operations;
+		
     }
 }
 

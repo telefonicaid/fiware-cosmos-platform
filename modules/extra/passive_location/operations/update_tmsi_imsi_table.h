@@ -60,11 +60,20 @@ public:
 
             // If we are in 'live mode' (timespan != 0), only reemit recent
             // associations
-            stateIMSI.parse(inputs[1].kvs[0]->value);
+            if (inputs[1].num_kvs > 1)
+            {
+                LM_M(("More than one(%d) tmsi-imsi record in table, without update", inputs[1].num_kvs));
+            }
+
+            // In any case, we will just re-emit the last state
+            stateIMSI.parse(inputs[1].kvs[inputs[1].num_kvs-1]->value);
             if ((tmps_timespan == 0) || ((now - stateIMSI.timestamp.value) < (int64_t)tmps_timespan))
             {
-                completeTMSI.parse(inputs[1].kvs[0]->key);
-                writer->emit( 0 , &completeTMSI , &stateIMSI );
+                //for (uint64_t i = 0; (i < inputs[1].num_kvs); i++)
+                {
+                    completeTMSI.parse(inputs[1].kvs[0]->key);
+                    writer->emit( 0 , &completeTMSI , &stateIMSI );
+                }
             }
             return;
         }

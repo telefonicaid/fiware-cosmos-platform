@@ -21,11 +21,14 @@ namespace simple_mobility{
 
 	   void init()
 	   {
-		  // Init the position elememnt
+		  // Init the position element
 		  position.set( 0 , 0 );
 
 		  // Set length of the areas
 		  areasSetLength(0);
+
+		  // Set length of the cells
+		  cellsSetLength(0);
 
 		  // Set tracking to false
 		  setTraking( false );
@@ -53,6 +56,14 @@ namespace simple_mobility{
 		  return NULL;
 	   }
 
+	   samson::mobility::CellIdLabelled* getCellIdLabelled( std::string name )
+	   {
+		  for (int i = 0 ; i < cells_length ; i++ )
+			 if( cells[i].name.value == name )
+				return &cells[i];
+
+		  return NULL;
+	  }
 
 	};
 

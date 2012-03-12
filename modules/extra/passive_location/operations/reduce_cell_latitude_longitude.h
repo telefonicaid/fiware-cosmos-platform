@@ -6,7 +6,7 @@
 #ifndef _H_SAMSON_passive_location_reduce_cell_latitude_longitude
 #define _H_SAMSON_passive_location_reduce_cell_latitude_longitude
 
-
+#include "logMsg/logMsg.h"
 #include <samson/module/samson.h>
 #include <samson/modules/mobility/CellRecord.h>
 #include <samson/modules/mobility/Record.h>
@@ -70,7 +70,7 @@ public:
 
         if (inputs[1].num_kvs > 1)
         {
-            OLM_W(("More than one cell description for cellId:%u (%lu infos)", cellId_key.value, inputs[1].num_kvs));
+            LM_W(("More than one cell description for cellId:%u (%lu infos)", cellId_key.value, inputs[1].num_kvs));
         }
         //LM_M(("Emitting %lu records for cellId:%u", inputs[0].num_kvs, cellId_key.value));
 

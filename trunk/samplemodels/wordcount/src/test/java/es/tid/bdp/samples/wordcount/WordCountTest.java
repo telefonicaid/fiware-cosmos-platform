@@ -1,13 +1,13 @@
 package es.tid.bdp.samples.wordcount;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mrunit.mapreduce.MapReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.apache.hadoop.io.*;
-import org.apache.hadoop.mrunit.mapreduce.MapReduceDriver;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import es.tid.bdp.samples.wordcount.WordCountMapper;
 import es.tid.bdp.samples.wordcount.WordCountReducer;
@@ -18,7 +18,6 @@ import es.tid.bdp.samples.wordcount.WordCountReducer;
  * @author logc
  */
 public class WordCountTest {
-
     private WordCountMapper mapper;
     private WordCountReducer reducer;
     private MapReduceDriver driver;
@@ -28,25 +27,25 @@ public class WordCountTest {
         this.mapper = new WordCountMapper();
         this.reducer = new WordCountReducer();
         this.driver = new MapReduceDriver<LongWritable, Text, Text,
-            IntWritable, Text, IntWritable>();
+                IntWritable, Text, IntWritable>();
     }
 
     @Test
     public void shouldCountWords() {
-        Text a_short_text = new Text("una cadena de texto donde se repite una palabra");
+        Text aShortText = new Text("a string of text where a word is repeated");
 
         this.driver
-            .withInput(new LongWritable(1), a_short_text)
+            .withInput(new LongWritable(1), aShortText)
             .withMapper(this.mapper)
             .withReducer(this.reducer)
-            .withOutput(new Text("cadena"), new IntWritable(1))
-            .withOutput(new Text("de"), new IntWritable(1))
-            .withOutput(new Text("donde"), new IntWritable(1))
-            .withOutput(new Text("palabra"), new IntWritable(1))
-            .withOutput(new Text("repite"), new IntWritable(1))
-            .withOutput(new Text("se"), new IntWritable(1))
-            .withOutput(new Text("texto"), new IntWritable(1))
-            .withOutput(new Text("una"), new IntWritable(2)) // this is the repeated word
+            .withOutput(new Text("a"), new IntWritable(2)) // this is the repeated word
+            .withOutput(new Text("is"), new IntWritable(1))
+            .withOutput(new Text("of"), new IntWritable(1))
+            .withOutput(new Text("repeated"), new IntWritable(1))
+            .withOutput(new Text("string"), new IntWritable(1))
+            .withOutput(new Text("text"), new IntWritable(1))
+            .withOutput(new Text("where"), new IntWritable(1))
+            .withOutput(new Text("word"), new IntWritable(1))
             .runTest();
     }
 }

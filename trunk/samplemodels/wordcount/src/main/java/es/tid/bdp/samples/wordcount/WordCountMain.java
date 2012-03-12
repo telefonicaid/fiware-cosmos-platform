@@ -2,11 +2,11 @@ package es.tid.bdp.samples.wordcount;
 
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.log4j.Logger;
 
 /**
@@ -16,7 +16,7 @@ import org.apache.log4j.Logger;
  * @author logc
  */
 public class WordCountMain extends Configured implements Tool {
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger LOGGER = Logger.getLogger(
             WordCountMain.class);
 
     @Override
@@ -31,12 +31,10 @@ public class WordCountMain extends Configured implements Tool {
         WordCountJob wcJob = new WordCountJob(this.getConf());
         wcJob.configure(textPath, outPath);
 
-        logger.info("wordcount started");
         if (!wcJob.waitForCompletion(true)) {
-            logger.error("done with errors");
+            LOGGER.error("done with errors");
             return 1;
         }
-        logger.info("done");
         return 0;
     }
 

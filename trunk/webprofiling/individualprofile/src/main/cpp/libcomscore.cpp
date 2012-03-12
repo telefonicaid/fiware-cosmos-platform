@@ -14,15 +14,15 @@ typedef samson::comscore::uint uint;
 
 class CSDict : public samson::comscore::SamsonComscoreDictionary {
     public:
-	vector<string> getAllCategoryNames() {
-	    vector<string> names;
-	    samson::comscore::Id2Id* category = categories.v;
-	    for (size_t i = 0; i < categories.size; i++) {
-		names.push_back(getCategoryName(category->first));
-		category++;
-	    }
-	    return names;
-	}
+        vector<string> getAllCategoryNames() {
+            vector<string> names;
+            samson::comscore::Id2Id* category = categories.v;
+            for (size_t i = 0; i < categories.size; ++i) {
+                names.push_back(getCategoryName(category->first));
+                category++;
+            }
+            return names;
+        }
 };
 
 CSDict dictionary;
@@ -79,10 +79,10 @@ JNIEXPORT jobjectArray JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDic
   (JNIEnv *env, jobject jobj) {
     vector<string> names = dictionary.getAllCategoryNames();
     jobjectArray jnames = env->NewObjectArray(names.size(),
-	    env->FindClass("java/lang/String"), NULL);
+            env->FindClass("java/lang/String"), NULL);
     for (size_t i = 0; i < names.size(); ++i) {
-	env->SetObjectArrayElement(jnames, i,
-		env->NewStringUTF(names[i].c_str()));
+        env->SetObjectArrayElement(jnames, i,
+                env->NewStringUTF(names[i].c_str()));
     }
     return jnames;
 }

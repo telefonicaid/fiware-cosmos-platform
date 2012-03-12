@@ -37,6 +37,8 @@ reset:
 	rm -Rf BUILD_DEBUG
 	rm -f Module.*
 	rm -Rf xcodeProj
+	rm -f samson/modules/*/*_base.h
+
 
 clean: clean_release
 clean_release:

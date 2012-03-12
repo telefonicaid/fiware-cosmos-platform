@@ -1,38 +1,20 @@
 CORE_MODULES=system \
 			 txt \
-			 example
+			 example \
+			 shop
 
-EXTRA_MODULES=tienda \
-		txt_md \
-		snalight \
-		urlbenchmark \
-		webp \
-		graph \
-		terasort \
+EXTRA_MODULES= webp \
 		wiki \
-		url \
 		hit \
-		osn \
-		prime \
 		web \
-		shop \
 		gg \
-		testcomparefunctions \
-		mob2 \
-		sna \
-		cdr \
-		passive_location \
-		sort \
-		twitter \
-		testtime \
 		mobility \
-		page_rank \
-		mob \
-		level \
-		simple_mobility
+		simple_mobility \
+		passive_location 
 
 all: core_modules extra_modules
 all_debug: core_modules_debug extra_modules_debug
+reset: core_reset extra_reset
 
 core_modules:
 	for module in $(CORE_MODULES); do \
@@ -61,6 +43,22 @@ core_modules_debug:
 extra_modules_debug:
 	for module in $(EXTRA_MODULES); do \
 		make -C extra/$$module install_debug; \
+		if [ "$$?" -ne 0 ]; then \
+			break; \
+		fi; \
+	done
+
+core_reset:
+	for module in $(CORE_MODULES); do \
+		make -C extra/$$module reset; \
+		if [ "$$?" -ne 0 ]; then \
+			break; \
+		fi; \
+	done
+
+extra_reset:
+	for module in $(EXTRA_MODULES); do \
+		make -C extra/$$module reset; \
 		if [ "$$?" -ne 0 ]; then \
 			break; \
 		fi; \

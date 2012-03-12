@@ -14,6 +14,7 @@ import java.util.Locale;
  */
 public final class KpiCalculationDateFormatter {
     private static boolean isInitialized = false;
+    private static String currentDelimiter = null;
     private static SimpleDateFormat inputFormat = null;
     private static SimpleDateFormat dateFormat = null;
     private static Calendar calendar = null;
@@ -25,14 +26,15 @@ public final class KpiCalculationDateFormatter {
      * Method that initializes the formatters
      */
     public static void init(String delimiter) {
-        if (isInitialized) {
+        if (isInitialized && currentDelimiter == delimiter) {
             // Avoid unnecessary re-initializations.
             return;
         }
 
+        currentDelimiter = delimiter;
         inputFormat = new SimpleDateFormat("ddMMMyyyyhhmmss", Locale.ENGLISH);
-        dateFormat = new SimpleDateFormat("dd" + delimiter + "MM" + delimiter
-                + "yyyy");
+        dateFormat = new SimpleDateFormat("dd" + currentDelimiter + "MM"
+                + currentDelimiter + "yyyy");
         calendar = Calendar.getInstance();
         isInitialized = true;
     }

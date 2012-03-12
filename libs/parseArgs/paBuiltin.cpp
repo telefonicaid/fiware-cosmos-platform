@@ -65,7 +65,7 @@ PaArgument paBuiltin[] =
     "X delimiter"
  },
 
- { "-U",        &paEUsageVar,    NULL,              PaBool, PaOpt,      F,     T,     F,  "extended usage"            },
+ { "-U",        &paEUsageVar,    NULL,              PaBool, PaOpt,      F,     T,     F,  "extended usage",      PafError, { "NADA" }, 0, 0, false, false, false, false, 0 },
  { "-u",        &paUsageVar,     NULL,              PaBool, PaOpt,      F,     T,     F,  "usage"                     },
  { "-h",        &paUsageVar,     NULL,              PaBool, PaOpt,      F,     T,     F,  "usage"                     },
  { "-help",     &paHelpVar,      NULL,              PaBool, PaOpt,      F,     T,     F,  "show help"                 },

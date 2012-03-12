@@ -838,7 +838,7 @@ do {                                                                    \
 * LM_READS - read buffer presentation
 */
 #define LM_READS(_from, _desc, _buf, _sz, _form)  \
-   lmBufferPresent((char*) __FUNCTION__, (char*) _from, (char*) _desc, _buf, _sz, _form, 'r')
+   lmBufferPresent((char*) _from, (char*) _desc, _buf, _sz, _form, 'r')
 
 
 
@@ -848,7 +848,7 @@ do {                                                                    \
 * LM_BUF - buffer presentation
 */
 #define LM_BUF(_desc, _buf, _sz, _form)  \
-   lmBufferPresent((char*) __FUNCTION__, NULL, _desc, _buf, _sz, _form, 'b')
+   lmBufferPresent(NULL, _desc, _buf, _sz, _form, 'b')
 
 
 
@@ -858,7 +858,7 @@ do {                                                                    \
 * LM_WRITES - written buffer presentation
 */
 #define LM_WRITES(_to, _desc, _buf, _sz, _form)  \
-   lmBufferPresent((char*) __FUNCTION__, (char*) _to, (char*) _desc, (char*) _buf, _sz, _form, 'w')
+   lmBufferPresent((char*) _to, (char*) _desc, (char*) _buf, _sz, _form, 'w')
 
 #endif
 
@@ -1275,7 +1275,6 @@ extern LmStatus lmWarningFunction(LmWarningFp fp, void* input);
 */
 int lmBufferPresent
 (
-   char*       fName,
    char*       to,
    char*       description,
    void*       bufP,

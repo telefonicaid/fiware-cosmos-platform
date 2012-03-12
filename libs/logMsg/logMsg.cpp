@@ -1935,7 +1935,6 @@ LmStatus lmErrorFunction(LmErrorFp fp, void* input)
 */
 int lmBufferPresent
 (
-	char*       fName,
 	char*       to,
 	char*       description,
 	void*       bufP,
@@ -2289,65 +2288,6 @@ lmerror:
 
 
 
-/* ****************************************************************************
-*
-* lmContentGet - 
-*/
-int lmContentGet(char* buf, unsigned int bufLen, int* linesP, char* pattern, bool* theresMoreP, long* offsetP)
-{
-    FILE*        fP;
-    unsigned int total = 0;
-    int          lines = 0;
-    char         line[LINE_MAX];
-
-    if (theresMoreP)
-        *theresMoreP = false;
-
-    if ((fP = fopen(fds[0].info, "r")) == NULL)
-    {
-        buf[0] = 0;
-
-        if (*linesP)
-            *linesP = 0;
-
-        return 0;
-    }
-
-	while (fgets(line, LINE_MAX, fP) != NULL)
-	{
-        if (pattern != NULL)
-        {
-            if (strstr(line, pattern) == NULL)
-                continue;
-        }
-
-        if (total + strlen(line) > bufLen)
-        {
-            if (*linesP)
-                *linesP = 0;
-
-            *theresMoreP = true;
-
-            // I could do an ftell here and return the position for consecutive searches ...
-            fclose(fP);
-            return total;
-        }
-
-        strncat(buf, line, bufLen);
-        total += strlen(line);
-        ++lines;
-    }    
-
-    fclose(fP);
-
-    if (*linesP)
-        *linesP = 0;
-
-    return total;
-}
-
-
-
 typedef struct LineRemove
 {
 	char      type;
@@ -2363,16 +2303,15 @@ typedef struct LineRemove
 */
 LmStatus lmClear(int index, int keepLines, int lastLines)
 {
-#if 0
 	LineRemove* lrV;
-	int         initialLrv;
+	void*       initialLrv;
 	char        line[LINE_MAX];
 	int         i;
 	int         j = 0;
 	FILE*       fP;
 	int         oldOffset;
 	int         linesToRemove;
-	char*       order       = "rwbRTdtDVFMWEPBXh";
+	char*       order       = (char*) "rwbRTdtDVFMWEPBXh";
 	int         newLogLines = 0;
 	int         fdPos;
 	char        tmpName[512];
@@ -2404,7 +2343,7 @@ LmStatus lmClear(int index, int keepLines, int lastLines)
 	if (lrV == NULL)
 		return LmsMalloc;
 
-	initialLrv = (int) lrV;
+	initialLrv = lrV;
 	memset(lrV, 0, sizeof(LineRemove) * (logLines + 4));
 
 	i = 0;
@@ -2481,12 +2420,13 @@ LmStatus lmClear(int index, int keepLines, int lastLines)
 	{
 		if (lrV[i].remove == false)
 		{
-			char line[LINE_MAX];
+			char   line[LINE_MAX];
+			char*  lineP;
 
 			if (fseek(fP, lrV[i].offset, SEEK_SET) != 0)
 				CLEANUP("fseek", LmsFseek);
 
-			fgets(line, LINE_MAX, fP);
+			lineP = fgets(line, LINE_MAX, fP);
 			if (strncmp(line, "Cleared at", 10) != 0)
 			{
 				len = strlen(line);
@@ -2505,7 +2445,7 @@ LmStatus lmClear(int index, int keepLines, int lastLines)
 				strftime(tm, 80, TIME_FORMAT_DEF, &tmP);
 				
 				snprintf(buf, sizeof(buf), "Cleared at %s\n", tm);
-				if (write(fd, buf, strlen(buf)) != strlen(buf))
+				if (write(fd, buf, strlen(buf)) != (int) strlen(buf))
 					CLEANUP("write", LmsWrite);
 			}
 
@@ -2515,10 +2455,12 @@ LmStatus lmClear(int index, int keepLines, int lastLines)
 
 	if (lrV != NULL)
 	{
-	    if ((int) lrV == initialLrv)
-		::free((void*) lrV);
+	    if (lrV == initialLrv)
+		   ::free(lrV);
 	    else
-		LOG_OUT(("ERROR: lrV has changed ... (from 0x%x to 0x%x)", (int) initialLrv, (int) lrV));
+		{
+		   LOG_OUT(("ERROR: lrV has changed ... (from 0x%lx to 0x%lx)", initialLrv, lrV));
+		}
 	}
 
 	fclose(fP);
@@ -2537,7 +2479,7 @@ LmStatus lmClear(int index, int keepLines, int lastLines)
 
 	logLines = newLogLines;
 	LOG_OUT(("Set logLines to %d", logLines));
-#endif
+
 	return LmsOk;
 }
 

@@ -47,7 +47,7 @@ public class CategoryExtractionReducerTest {
     public void setUp() {
         this.instance = new CategoryExtractionReducer() {
             @Override
-            public void setupDictionary(Context context) throws IOException {
+            protected void setupDictionary(Context context) throws IOException {
                 // Avoid loading the real dictionary
             }
 

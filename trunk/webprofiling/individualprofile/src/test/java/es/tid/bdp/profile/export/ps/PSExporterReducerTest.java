@@ -31,7 +31,7 @@ public class PSExporterReducerTest {
     public void setUp() {
         this.instance = new PSExporterReducer() {
             @Override
-            public void setupDictionary(Context context) throws IOException {
+            protected void setupDictionary(Context context) throws IOException {
                 // Avoid loading the real dictionary
                 categoryNames = new String[] { "Sport", "Leisure", "Games",
                                                "Lifestyle", "News", "Search",

@@ -23,5 +23,7 @@ public class KpiPartitionerTest {
     public void shouldPartitionByFirstKey() {
         assertEquals(6, this.instance.getPartition(new BinaryKey("a", "b"), 
                                                    new IntWritable(3), 7));
+        assertEquals(6, this.instance.getPartition(new BinaryKey("a", "c"),
+                                                   new IntWritable(2), 7));
     }
 }

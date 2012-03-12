@@ -574,6 +574,90 @@ namespace samson {
             return false;
     }
     
+
+
+    static bool logFilter
+    (
+        const char*  filter,
+        const char*  all,
+        char         type,
+        const char*  date,
+        int          ms,
+        const char*  progName,
+        const char*  fileName,
+        int          lineNo,
+        int          pid,
+        int          tid,
+        const char*  funcName,
+        const char*  message
+    )
+    {
+        std::string  item;
+        char*        value;
+        char*        eq;
+        char         filterCopy[512];
+
+        strncpy(filterCopy, filter, sizeof(filterCopy));
+
+        eq = strchr((char*) filterCopy, '=');
+        if (eq != NULL)
+        {
+            *eq = 0;
+            ++eq;
+            item  = std::string(filterCopy);
+            value = eq;
+        }
+        else
+        {
+            item  = std::string("XXXXX_NO_ITEM");
+            value = (char*) filterCopy;
+        }
+
+        // No item - grep in all
+        if (item == "XXXXX_NO_ITEM")
+        {
+            if (strstr(all, value) != NULL)
+                return true;
+            return false;
+        }
+
+        if (item == "Type")
+        {
+            if (strlen(value) != 1)
+                return false;
+
+            if (value[0] != type)
+                return false;
+
+            return true;
+        }
+
+        if (item == "FileName")
+        {
+            if (strncmp(value, fileName, strlen(value)) == 0)
+                return true;
+
+            return false;
+        }
+
+        return false;
+    }
+
+
+typedef struct LogLineInfo
+{
+    char         type;
+    std::string  date;
+    int          ms;
+    std::string  progName;
+    std::string  fileName;
+    int          lineNo;
+    int          pid;
+    int          tid;
+    std::string  funcName;
+    std::string  message;
+} LogLineInfo;
+
     void WorkerCommand::run()
     {
         // Nothing to to if this is waiting for another thing
@@ -600,6 +684,7 @@ namespace samson {
         cmd.set_flag_boolean("rates");
         cmd.set_flag_boolean("blocks");
         cmd.set_flag_boolean("running");
+        cmd.set_flag_int("lines", 20);
         
         // Flags used in delilah side...
         cmd.set_flag_boolean("hidden");
@@ -832,52 +917,94 @@ namespace samson {
         
         if (main_command == "log")
         {
-            char   type;
-            char   date[64];
-            int    ms;
-            char   progName[64];
-            char   fileName[64];
-            int    lineNo;
-            int    pid;
-            int    tid;
-            char   funcName[64];
-            char   message[256];
+            char                          type;
+            char                          date[64];
+            int                           ms;
+            char                          progName[64];
+            char                          fileName[64];
+            int                           lineNo;
+            int                           pid;
+            int                           tid;
+            char                          funcName[64];
+            char                          message[256];
+            int                           hits   = 0;
+            std::list<LogLineInfo>        lines;
+            LogLineInfo                   logLine;
+            std::string                   filter     = cmd.get_argument(1);
+            int                           maxLines   = cmd.get_flag_int("lines");
+            long                          lmPos      = 0;
+            char*                         all        = NULL;
 
-            samson::network::Collection* collection = new samson::network::Collection();
-            collection->set_name("Log File Lines");
-            collection->set_title("Log File Lines");
-
-            long lmPos = 0;
             while (1) // Until lmLogLineGet returns EOF (-2)
             {
-                samson::network::CollectionRecord* record = collection->add_record();
+                if (all != NULL) // strdup and free - a little slow ... I might replace this mechanism with a char[] ...
+                    free(all);
                 
-                // LM_M(("Calling lmLogLineGet for position %lu", lmPos));
-                lmPos = lmLogLineGet(&type, date, &ms, progName, fileName, &lineNo, &pid, &tid, funcName, message, lmPos);
-                // LM_M(("lmLogLineGet returned %lu", lmPos));
+                lmPos = lmLogLineGet(&type, date, &ms, progName, fileName, &lineNo, &pid, &tid, funcName, message, lmPos, &all);
                 if (lmPos < 0)
                 {
                     if (lmPos != -2)
                         LM_E(("lmLogLineGet returned %lu ...", lmPos));
+                    LM_M(("Got %d hits", hits));
+
+                    if (all != NULL)
+                        free(all);
                     break;
                 }
 
-                ::samson::add(record, "Type",         type,     "left,different");
-                ::samson::add(record, "Date",         date,     "left,different");
-                ::samson::add(record, "Milliseconds", ms,       "left,different");
-                ::samson::add(record, "Program Name", progName, "left,different");
-                ::samson::add(record, "File Name",    fileName, "left,different");
-                ::samson::add(record, "Line No",      lineNo,   "left,different");
-                ::samson::add(record, "PID",          pid,      "left,different");
-                ::samson::add(record, "TID",          tid,      "left,different");
-                ::samson::add(record, "Function",     funcName, "left,different");
-                ::samson::add(record, "Message",      message,  "left,different");
+                if (filter != "no-argument")
+                {
+                    if (logFilter(filter.c_str(), all, type, date, ms, progName, fileName, lineNo, pid, tid, funcName, message) == false)
+                        continue;
+                }
+
+                logLine.type          = type;
+                logLine.date          = date;
+                logLine.ms            = ms;
+                logLine.progName      = progName;
+                logLine.fileName      = fileName;
+                logLine.lineNo        = lineNo;
+                logLine.pid           = pid;
+                logLine.tid           = tid;
+                logLine.funcName      = funcName;
+                logLine.message       = message;
+
+                lines.push_front(logLine);
+
+                ++hits;
+                if (maxLines != 0)
+                {
+                    if ((int) lines.size() > maxLines)
+                        lines.pop_back();
+                }
             }
 
             // Close fP for log file peeking ...
-            lmPos = lmLogLineGet(NULL, date, &ms, progName, fileName, &lineNo, &pid, &tid, funcName, message, lmPos);
+            lmPos = lmLogLineGet(NULL, (char*) date, &ms, progName, fileName, &lineNo, &pid, &tid, funcName, message, lmPos, NULL);
 
-            // LM_M(("Adding RECORD of type %c: %s", type, message));
+            samson::network::Collection*  collection = new samson::network::Collection();
+            collection->set_name("Log File Lines");
+            collection->set_title("Log File Lines");
+
+            while (lines.size() > 0)
+            {
+                samson::network::CollectionRecord* record = collection->add_record();
+
+                logLine = lines.back();
+                lines.pop_back();
+
+                ::samson::add(record, "Type",         logLine.type,     "left,different");
+                ::samson::add(record, "Date",         logLine.date,     "left,different");
+                ::samson::add(record, "Milliseconds", logLine.ms,       "left,different");
+                ::samson::add(record, "ProgramName",  logLine.progName, "left,different");
+                ::samson::add(record, "FileName",     logLine.fileName, "left,different");
+                ::samson::add(record, "LineNo",       logLine.lineNo,   "left,different");
+                ::samson::add(record, "PID",          logLine.pid,      "left,different");
+                ::samson::add(record, "TID",          logLine.tid,      "left,different");
+                ::samson::add(record, "Function",     logLine.funcName, "left,different");
+                ::samson::add(record, "Message",      logLine.message,  "left,different");
+            }
+
             collections.push_back(collection);
 
             finishWorkerTask();

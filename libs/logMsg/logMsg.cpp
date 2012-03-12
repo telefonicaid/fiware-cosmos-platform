@@ -2171,7 +2171,7 @@ LmStatus lmReopen(int index)
 *
 * lmLogLineGet - 
 */
-long lmLogLineGet(char* typeP, char* dateP, int* msP, char* progNameP, char* fileNameP, int* lineNoP, int* pidP, int* tidP, char* funcNameP, char* messageP, long offset)
+long lmLogLineGet(char* typeP, char* dateP, int* msP, char* progNameP, char* fileNameP, int* lineNoP, int* pidP, int* tidP, char* funcNameP, char* messageP, long offset, char** allP)
 {
     static FILE*  fP = NULL;
     char          line[LINE_MAX];
@@ -2179,6 +2179,9 @@ long lmLogLineGet(char* typeP, char* dateP, int* msP, char* progNameP, char* fil
     char*         delimiter;
     long          ret;
 	char*         nada;
+
+    if (allP != NULL)
+        *allP = NULL;
 
     if (typeP == NULL)
     {
@@ -2221,6 +2224,9 @@ long lmLogLineGet(char* typeP, char* dateP, int* msP, char* progNameP, char* fil
 
     if (line[strlen(line) - 1] == '\n')
         line[strlen(line) - 1] = 0;
+
+    if (allP != NULL)
+        *allP = strdup(line);
 
     // printf("Got line '%s'\n", line);
     // M:Thursday 08 Mar 13:40:45 2012(373):samsonWorker-father/WorkerCommand.cpp[784](p.3409)(t.3410) run: Adding RECORD of type M

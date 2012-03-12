@@ -1449,6 +1449,6 @@ extern int lmFirstDiskFileDescriptor(void);
 *
 * lmLogLineGet - 
 */
-extern long lmLogLineGet(char* typeP, char* dateP, int* msP, char* progNameP, char* fileNameP, int* lineNoP, int* pidP, int* tidP, char* funcNameP, char* messageP, long offset);
+extern long lmLogLineGet(char* typeP, char* dateP, int* msP, char* progNameP, char* fileNameP, int* lineNoP, int* pidP, int* tidP, char* funcNameP, char* messageP, long offset, char** lineP);
 
 #endif

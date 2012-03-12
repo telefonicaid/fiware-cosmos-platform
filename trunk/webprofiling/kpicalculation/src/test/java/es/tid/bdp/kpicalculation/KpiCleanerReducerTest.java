@@ -26,7 +26,7 @@ public class KpiCleanerReducerTest {
     }
     
     @Test
-    public void testReduce() throws IOException {
+    public void shouldRemoveFirstInput() throws IOException {
         Text a = new Text("a");
         Text b = new Text("b");
         this.driver

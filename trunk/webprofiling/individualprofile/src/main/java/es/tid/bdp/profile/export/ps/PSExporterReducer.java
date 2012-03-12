@@ -1,6 +1,7 @@
 package es.tid.bdp.profile.export.ps;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
@@ -11,6 +12,8 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.bdp.profile.data.ProfileProtocol.CategoryCount;
 import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
+import es.tid.bdp.profile.dictionary.comscore.CSDictionary;
+import es.tid.bdp.profile.dictionary.comscore.CSDictionaryHadoopHandler;
 
 /**
  *
@@ -19,15 +22,28 @@ import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
 public class PSExporterReducer extends Reducer<Text,
                                                ProtobufWritable<UserProfile>,
                                                NullWritable, Text> {
+    private static CSDictionary dictionary = null;
+    protected static String[] categoryNames = null;
+
     private StringBuilder builder;
     private Text record;
+    private HashMap<String, CategoryCount> categories;
     private Counter recordCounter;
 
     @Override
     public void setup(Context context) throws IOException {
+        setupDictionary(context);
+
         this.builder = new StringBuilder();
         this.record = new Text();
+        this.categories = new HashMap<String, CategoryCount>();
         this.recordCounter = context.getCounter(PSExporterCounter.NUM_RECORDS);
+    }
+    
+    protected void setupDictionary(Context context) throws IOException {
+        CSDictionaryHadoopHandler.init(context);
+        dictionary = CSDictionaryHadoopHandler.get();
+        categoryNames = dictionary.getAllCategoryNames();
     }
     
     @Override
@@ -41,24 +57,34 @@ public class PSExporterReducer extends Reducer<Text,
             wrappedProfile.setConverter(UserProfile.class);
             UserProfile profile = wrappedProfile.get();
 
-            // TODO: need to get the complete list of categories
             if (this.recordCounter.getValue() == 0L) {
                 this.builder.setLength(0);
                 this.builder.append("User");
-                for (CategoryCount count : profile.getCountsList()) {
+                for (String categoryName : categoryNames) {
                     this.builder.append("|");
-                    this.builder.append(count.getName());
+                    this.builder.append(categoryName);
                 }
                 this.record.set(this.builder.toString());
                 context.write(NullWritable.get(), this.record);
             }
 
+            this.categories.clear();
+            for (CategoryCount count : profile.getCountsList()) {
+                this.categories.put(count.getName(), count);
+            }
+
             this.builder.setLength(0);
             String userIdAndDate = userId + "_" + profile.getDate();
             this.builder.append(userIdAndDate);
-            for (CategoryCount count : profile.getCountsList()) {
+            for (String categoryName : categoryNames) {
                 this.builder.append("|");
-                this.builder.append(count.getCount());
+                long value = 0L;
+                if (this.categories.containsKey(categoryName)) {
+                    CategoryCount count =
+                            (CategoryCount)this.categories.get(categoryName);
+                    value = count.getCount();
+                }
+                this.builder.append(value);
             }
             this.record.set(this.builder.toString());
             context.write(NullWritable.get(), this.record);

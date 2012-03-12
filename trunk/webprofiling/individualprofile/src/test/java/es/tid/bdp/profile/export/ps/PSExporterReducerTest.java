@@ -1,5 +1,6 @@
 package es.tid.bdp.profile.export.ps;
 
+import java.io.IOException;
 import static java.util.Arrays.asList;
 import java.util.List;
 
@@ -21,14 +22,24 @@ import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
  * @author dmicol
  */
 public class PSExporterReducerTest {
+    private PSExporterReducer instance;
     private ReduceDriver<Text, ProtobufWritable<UserProfile>, NullWritable,
                          Text> driver;
     private Text userId;
 
     @Before
     public void setUp() {
+        this.instance = new PSExporterReducer() {
+            @Override
+            public void setupDictionary(Context context) throws IOException {
+                // Avoid loading the real dictionary
+                categoryNames = new String[] { "Sport", "Leisure", "Games",
+                                               "Lifestyle", "News", "Search",
+                                               "Shopping", "Social" };
+            }
+        };
         this.driver = new ReduceDriver<Text, ProtobufWritable<UserProfile>,
-                NullWritable, Text>(new PSExporterReducer());
+                NullWritable, Text>(this.instance);
         this.userId = new Text("USER00123");
     }
 
@@ -62,11 +73,11 @@ public class PSExporterReducerTest {
                 this.driver.withInput(this.userId,
                                       asList(wrappedP1,wrappedP2)).run();
         assertEquals(4, results.size());
-        assertEquals("User|Sport|Lifestyle",
+        assertEquals("User|Sport|Leisure|Games|Lifestyle|News|Search|Shopping|Social",
                      results.get(0).getSecond().toString());
-        assertEquals("USER00123_2012/02/01|5|10",
+        assertEquals("USER00123_2012/02/01|5|0|0|10|0|0|0|0",
                      results.get(1).getSecond().toString());
-        assertEquals("USER00123_2012/02/02|3|16",
+        assertEquals("USER00123_2012/02/02|0|0|0|0|3|0|16|0",
                      results.get(2).getSecond().toString());
         assertEquals("2",
                      results.get(3).getSecond().toString());

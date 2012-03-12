@@ -16,6 +16,7 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
 import es.tid.bdp.profile.data.ProfileProtocol.WebProfilingLog;
+import es.tid.bdp.profile.dictionary.comscore.CSDictionaryHadoopHandler;
 import es.tid.bdp.profile.export.mongodb.MongoDBExporterJob;
 
 /**
@@ -39,7 +40,7 @@ public class CategoryExtractionJob extends Job {
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
 
         // Distribution of dictionary files by the distributed cache
-        this.conf.set(CategoryExtractionReducer.DICTIONARY_NAME_PROPERTY,
+        this.conf.set(CSDictionaryHadoopHandler.DICTIONARY_NAME_PROPERTY,
                 DEFAULT_DICTIONARY_NAME);
     }
 

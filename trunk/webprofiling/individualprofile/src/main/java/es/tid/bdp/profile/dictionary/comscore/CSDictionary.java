@@ -53,6 +53,10 @@ public class CSDictionary implements Dictionary {
             return this.processKnownUrl(categories);
         }
     }
+    
+    public String[] getAllCategoryNames() {
+        return this.dictionary.getAllCategoryNames();
+    }
 
     private Categorization processKnownUrl(int[] categoryIds) {
         Categorization categorization = new Categorization();

@@ -76,7 +76,7 @@ static const char *Smaz_rcb[254] = {
 "e, ", " it", "whi", " ma", "ge", "x", "e c", "men", ".com"
 };
 
-int smaz_compress(const char *in, int inlen, char *out, int outlen) {
+int smaz_compress( char *in, int inlen, char *out, int outlen) {
     unsigned int h1,h2,h3=0;
     int verblen = 0, _outlen = outlen;
     char verb[256], *_out = out;

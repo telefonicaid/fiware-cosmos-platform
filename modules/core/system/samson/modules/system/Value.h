@@ -5,6 +5,7 @@
 #include <string.h>
 #include <cctype>
 
+#include "smaz.h"
 
 #include "logMsg/logMsg.h"
 #include "au/Pool.h"
@@ -13,7 +14,6 @@
 
 namespace samson{
     namespace system{
-        
         
         class Value : public samson::DataInstance 
         {
@@ -31,13 +31,36 @@ namespace samson{
                 ser_int_negative,
                 ser_int_value_0,
                 ser_int_value_1,
+                ser_int_value_2,
+                ser_int_value_3,
+                ser_int_value_4,
+                ser_int_value_5,
+                ser_int_value_6,
+                ser_int_value_7,
+                ser_int_value_8,
+                ser_int_value_9,
+                ser_int_value_10,
                 ser_int_value_minus_1,
+                
+                ser_double_positive_1_decimal,       // Double with a fixed number of decimals
+                ser_double_positive_2_decimal,      
+                ser_double_positive_3_decimal,      
+                ser_double_positive_4_decimal,      
+                ser_double_positive_5_decimal,      
+                
+                ser_double_negative_1_decimal,      
+                ser_double_negative_2_decimal,      
+                ser_double_negative_3_decimal,      
+                ser_double_negative_4_decimal,      
+                ser_double_negative_5_decimal,      
+
                 ser_double,      
 
                 // Serialitzation of double
                 // ------------------------------------------------------------
                 ser_string,
-                
+                ser_string_smaz,  // Compressed using smaz
+                  
                 // Serialitzation of vector
                 // ------------------------------------------------------------
                 ser_vector,
@@ -136,6 +159,42 @@ namespace samson{
                         _value_double = 1;
                         return 1; // Codified in the serialization code
                         break;
+                    case ser_int_value_2:
+                        _value_double = 2;
+                        return 1; // Codified in the serialization code
+                        break;
+                    case ser_int_value_3:
+                        _value_double = 3;
+                        return 1; // Codified in the serialization code
+                        break;
+                    case ser_int_value_4:
+                        _value_double = 4;
+                        return 1; // Codified in the serialization code
+                        break;
+                    case ser_int_value_5:
+                        _value_double = 5;
+                        return 1; // Codified in the serialization code
+                        break;
+                    case ser_int_value_6:
+                        _value_double = 6;
+                        return 1; // Codified in the serialization code
+                        break;
+                    case ser_int_value_7:
+                        _value_double = 7;
+                        return 1; // Codified in the serialization code
+                        break;
+                    case ser_int_value_8:
+                        _value_double = 8;
+                        return 1; // Codified in the serialization code
+                        break;
+                    case ser_int_value_9:
+                        _value_double = 9;
+                        return 1; // Codified in the serialization code
+                        break;
+                    case ser_int_value_10:
+                        _value_double = 10;
+                        return 1; // Codified in the serialization code
+                        break;
                     case ser_int_value_minus_1:
                         _value_double = -1;
                         return 1; // Codified in the serialization code
@@ -156,6 +215,79 @@ namespace samson{
                         _value_double = -tmp;
                         return total;
                     }
+                        
+                    case ser_double_positive_1_decimal:
+                    {
+                        size_t tmp;
+                        int total = 1 + samson::staticVarIntParse( data + 1 , &tmp);
+                        _value_double = (double)tmp/10.0;
+                        return total;
+                    }
+                    case ser_double_positive_2_decimal:
+                    {
+                        size_t tmp;
+                        int total = 1 + samson::staticVarIntParse( data + 1 , &tmp);
+                        _value_double = (double)tmp/100.0;
+                        return total;
+                    }
+                    case ser_double_positive_3_decimal:
+                    {
+                        size_t tmp;
+                        int total = 1 + samson::staticVarIntParse( data + 1 , &tmp);
+                        _value_double = (double)tmp/1000.0;
+                        return total;
+                    }
+                    case ser_double_positive_4_decimal:
+                    {
+                        size_t tmp;
+                        int total = 1 + samson::staticVarIntParse( data + 1 , &tmp);
+                        _value_double = (double)tmp/10000.0;
+                        return total;
+                    }
+                    case ser_double_positive_5_decimal:
+                    {
+                        size_t tmp;
+                        int total = 1 + samson::staticVarIntParse( data + 1 , &tmp);
+                        _value_double = (double)tmp/100000.0;
+                        return total;
+                    }
+
+                    case ser_double_negative_1_decimal:
+                    {
+                        size_t tmp;
+                        int total = 1 + samson::staticVarIntParse( data + 1 , &tmp);
+                        _value_double = -(double)tmp/10.0;
+                        return total;
+                    }
+                    case ser_double_negative_2_decimal:
+                    {
+                        size_t tmp;
+                        int total = 1 + samson::staticVarIntParse( data + 1 , &tmp);
+                        _value_double = -(double)tmp/100.0;
+                        return total;
+                    }
+                    case ser_double_negative_3_decimal:
+                    {
+                        size_t tmp;
+                        int total = 1 + samson::staticVarIntParse( data + 1 , &tmp);
+                        _value_double = -(double)tmp/1000.0;
+                        return total;
+                    }
+                    case ser_double_negative_4_decimal:
+                    {
+                        size_t tmp;
+                        int total = 1 + samson::staticVarIntParse( data + 1 , &tmp);
+                        _value_double = -(double)tmp/10000.0;
+                        return total;
+                    }
+                    case ser_double_negative_5_decimal:
+                    {
+                        size_t tmp;
+                        int total = 1 + samson::staticVarIntParse( data + 1 , &tmp);
+                        _value_double = -(double)tmp/100000.0;
+                        return total;
+                    }
+                        
                         
                     case ser_double:
                         _value_double = *( (double*) (data+1) );
@@ -186,6 +318,18 @@ namespace samson{
                     case ser_string:
                         _value_string = &data[1];
                         return  1 + _value_string.length() +1 ; // serializtion code, string, '\0'
+
+                    case ser_string_smaz:
+                    {
+                        char line[1024];
+                        int len_in = (char)data[1];
+                        int len = smaz_decompress( &data[2] , len_in, (char*)line, 1024 );
+                        line[len] = '\0';
+                        _value_string = line;
+                        printf("Parsed '%s' usign smaz l=%d \n" , _value_string.c_str() , len_in );
+
+                        return  1 + 1 + len_in ; // serializtion code, length , compressed_string 
+                    }
                         
                     default:
                         LM_X(1, ("Internal error"));
@@ -323,11 +467,31 @@ namespace samson{
                     case ser_int_negative:
                     case ser_int_value_0:
                     case ser_int_value_1:
+                    case ser_int_value_2:
+                    case ser_int_value_3:
+                    case ser_int_value_4:
+                    case ser_int_value_5:
+                    case ser_int_value_6:
+                    case ser_int_value_7:
+                    case ser_int_value_8:
+                    case ser_int_value_9:
+                    case ser_int_value_10:
                     case ser_int_value_minus_1:
                     case ser_double:
+                    case ser_double_positive_1_decimal:
+                    case ser_double_positive_2_decimal:
+                    case ser_double_positive_3_decimal:
+                    case ser_double_positive_4_decimal:
+                    case ser_double_positive_5_decimal:
+                    case ser_double_negative_1_decimal:
+                    case ser_double_negative_2_decimal:
+                    case ser_double_negative_3_decimal:
+                    case ser_double_negative_4_decimal:
+                    case ser_double_negative_5_decimal:
                         return parse_number(data);
                         
                     case ser_string:
+                    case ser_string_smaz:
                         return parse_string(data);
 
                     case ser_vector:
@@ -394,6 +558,52 @@ namespace samson{
                     data[0] = (char) ser_int_value_1;
                     return 1; // Codified in 1 byte
                 }
+                if( _value_double == 2 )
+                {
+                    data[0] = (char) ser_int_value_2;
+                    return 1; // Codified in 1 byte
+                }
+                if( _value_double == 3 )
+                {
+                    data[0] = (char) ser_int_value_3;
+                    return 1; // Codified in 1 byte
+                }
+                if( _value_double == 4 )
+                {
+                    data[0] = (char) ser_int_value_4;
+                    return 1; // Codified in 1 byte
+                }
+                if( _value_double == 5 )
+                {
+                    data[0] = (char) ser_int_value_5;
+                    return 1; // Codified in 1 byte
+                }
+                if( _value_double == 6 )
+                {
+                    data[0] = (char) ser_int_value_6;
+                    return 1; // Codified in 1 byte
+                }
+                if( _value_double == 7 )
+                {
+                    data[0] = (char) ser_int_value_7;
+                    return 1; // Codified in 1 byte
+                }
+                if( _value_double == 8 )
+                {
+                    data[0] = (char) ser_int_value_8;
+                    return 1; // Codified in 1 byte
+                }
+                if( _value_double == 9 )
+                {
+                    data[0] = (char) ser_int_value_9;
+                    return 1; // Codified in 1 byte
+                }
+                if( _value_double == 10 )
+                {
+                    data[0] = (char) ser_int_value_10;
+                    return 1; // Codified in 1 byte
+                }
+                
                 if( _value_double == -1 )
                 {
                     data[0] = (char) ser_int_value_minus_1;
@@ -416,6 +626,78 @@ namespace samson{
                     }
                 }
                 
+                // Limited number of decimals
+                
+                if( (double) ( (double) ( (ssize_t) (_value_double*10.0) ) / 10.0 ) == _value_double )
+                {
+                    if( _value_double >= 0 )
+                    {
+                        data[0] = (char) ser_double_positive_1_decimal;
+                        return 1 + samson::staticVarIntSerialize( data + 1 , _value_double*10 );
+                    }
+                    else
+                    {
+                        data[0] = (char) ser_double_negative_1_decimal;
+                        return 1 + samson::staticVarIntSerialize( data + 1 , - _value_double*10 );
+                    }
+                }
+
+                if( (double) ( (double) ( (ssize_t) (_value_double*100.0) ) / 100.0 ) == _value_double )
+                {
+                    if( _value_double >= 0 )
+                    {
+                        data[0] = (char) ser_double_positive_2_decimal;
+                        return 1 + samson::staticVarIntSerialize( data + 1 , _value_double*100 );
+                    }
+                    else
+                    {
+                        data[0] = (char) ser_double_negative_2_decimal;
+                        return 1 + samson::staticVarIntSerialize( data + 1 , - _value_double*100 );
+                    }
+                }
+
+                
+                if( (double) ( (double) ( (ssize_t) (_value_double*1000.0) ) / 1000.0 ) == _value_double )
+                {
+                    if( _value_double >= 0 )
+                    {
+                        data[0] = (char) ser_double_positive_3_decimal;
+                        return 1 + samson::staticVarIntSerialize( data + 1 , _value_double*1000 );
+                    }
+                    else
+                    {
+                        data[0] = (char) ser_double_negative_3_decimal;
+                        return 1 + samson::staticVarIntSerialize( data + 1 , - _value_double*1000 );
+                    }
+                }
+                if( (double) ( (double) ( (ssize_t) (_value_double*10000.0) ) / 10000.0 ) == _value_double )
+                {
+                    if( _value_double >= 0 )
+                    {
+                        data[0] = (char) ser_double_positive_4_decimal;
+                        return 1 + samson::staticVarIntSerialize( data + 1 , _value_double*10000 );
+                    }
+                    else
+                    {
+                        data[0] = (char) ser_double_negative_4_decimal;
+                        return 1 + samson::staticVarIntSerialize( data + 1 , - _value_double*10000 );
+                    }
+                }
+                if( (double) ( (double) ( (ssize_t) (_value_double*100000.0) ) / 100000.0 ) == _value_double )
+                {
+                    if( _value_double >= 0 )
+                    {
+                        data[0] = (char) ser_double_positive_5_decimal;
+                        return 1 + samson::staticVarIntSerialize( data + 1 , _value_double*100000 );
+                    }
+                    else
+                    {
+                        data[0] = (char) ser_double_negative_5_decimal;
+                        return 1 + samson::staticVarIntSerialize( data + 1 , - _value_double*100000 );
+                    }
+                }
+
+                
                 // Generic double codification
                 data[0] = (char) ser_double;
                 *( (double*) (data+1) ) = _value_double;
@@ -424,6 +706,22 @@ namespace samson{
 
             int serialize_string(char *data)
             {
+                // Try compressed vertion
+                    char line[1024];
+                size_t len = ::smaz_compress((char*) _value_string.c_str(), _value_string.length() , line, 1024);
+                
+                if( len < 256 )
+                    if( len < _value_string.length() )
+                    {
+                        // Serialize using compression
+                        data[0] = (char) ser_string_smaz;
+                        data[1] = (char) len;
+                        memcpy( data+2, line , len );
+                        int total  = 1 + ( 1 + len ); // Serialization code - strin - '\0'                        
+                        return total;
+                    }
+
+                // Default serialization of string
                 data[0] = (char) ser_string;
                 strcpy( data+1, _value_string.c_str() );
                 int total  = 1 + ( _value_string.length() + 1 ); // Serialization code - strin - '\0'                        

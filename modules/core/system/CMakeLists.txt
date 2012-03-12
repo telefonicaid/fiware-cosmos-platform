@@ -1,6 +1,7 @@
 SET( MODULE_NAME system )
 
 SET (AUX_HEADERS
+	system_common.h
     samson/modules/system/Value.h
 	operations/parse_to_value.h
 	operations/map_value_to_value.h	
@@ -8,8 +9,16 @@ SET (AUX_HEADERS
 	operations/map_value_to_3_value.h	
 	operations/reduce_value_to_value.h
 	operations/update_state.h 
+	operations/KeyValue.h
+    operations/KeyValue.cpp
 	operations/Filter.h
 	operations/Filter.cpp
+	operations/Source.h
+	operations/Source.cpp
+	operations/SourceFunction.h
+	operations/SourceFunction.cpp
+	smaz.h
+	smaz.cpp
 )			  
 
 SET( SOURCES_TEST
@@ -124,5 +133,5 @@ INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 
 
-ADD_EXECUTABLE(system_test operations/Filter.cpp  ${SOURCES_TEST} ${SOURCES} ${HEADERS})
+ADD_EXECUTABLE(system_test ${AUX_HEADERS} ${SOURCES_TEST} ${SOURCES} ${HEADERS})
 TARGET_LINK_LIBRARIES(system_test lm au )

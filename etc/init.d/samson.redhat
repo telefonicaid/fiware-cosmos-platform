@@ -25,6 +25,7 @@
 ### END INIT INFO
 
 PARAM=$1
+PIDFILE=/var/log/samson/samsond.pid
 
 # Load the samson environment
 if [ -f /etc/profile.d/samson.sh ]; then
@@ -40,7 +41,7 @@ case $PARAM in
 
         'start')
 
-                /usr/bin/sudo -u samson -i ${SAMSON_HOME}/bin/samsonSpawner
+                /usr/bin/sudo -u samson -i ${SAMSON_HOME}/bin/samsonWorker
                 ;;
 
         'stop')

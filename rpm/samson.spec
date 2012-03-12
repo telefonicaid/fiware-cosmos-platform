@@ -27,6 +27,9 @@ exit 0
 bash /opt/samson/bin/samsonInitSetup
 /sbin/chkconfig --add samson
 /sbin/chkconfig --level 35 samson on
+chown -R samson:samson /opt/samson
+chown -R samson:samson /var/samson
+chown -R samson:samson /var/log/samson
 /etc/init.d/samson start
 
 %preun
@@ -41,13 +44,16 @@ make release_all SAMSON_HOME=$RPM_BUILD_ROOT/opt/samson
 %install
 make SAMSON_HOME=$RPM_BUILD_ROOT/opt/samson install
 mkdir -p $RPM_BUILD_ROOT/var/samson
-mkdir -p $RPM_BUILD_ROOT/var/samson
+mkdir -p $RPM_BUILD_ROOT/var/log/samson
 mkdir -p $RPM_BUILD_ROOT/var/samson/etc
 mkdir -p $RPM_BUILD_ROOT/etc/init.d
 mkdir -p $RPM_BUILD_ROOT/etc/profile.d
 cp etc/setup.txt $RPM_BUILD_ROOT/var/samson/etc
 cp etc/init.d/samson.redhat $RPM_BUILD_ROOT/etc/init.d/samson
+chmod 755 $RPM_BUILD_ROOT/etc/init.d/samson
 cp etc/profile.d/samson.sh  $RPM_BUILD_ROOT/etc/profile.d/samson.sh
+chmod 755 $RPM_BUILD_ROOT/etc/profile.d/samson.sh
+
 
 echo "%%defattr(-, samson, samson, - )" > MANIFEST
 (cd %{buildroot}; find . -type f -or -type l | sed -e s/^.// -e /^$/d) >>MANIFEST

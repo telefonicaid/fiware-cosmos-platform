@@ -8,12 +8,27 @@
 
 #include "es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface.h"
 
+using namespace std;
+
 typedef samson::comscore::uint uint;
 
-samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary;
+class CSDict : public samson::comscore::SamsonComscoreDictionary {
+    public:
+	vector<string> getAllCategoryNames() {
+	    vector<string> names;
+	    samson::comscore::Id2Id* category = categories.v;
+	    for (size_t i = 0; i < categories.size; i++) {
+		names.push_back(getCategoryName(category->first));
+		category++;
+	    }
+	    return names;
+	}
+};
+
+CSDict dictionary;
 
 // TODO: Bug workaround remove when its fixed in Samson
-extern char *progName; 
+extern char *progName;
 
 JNIEXPORT jboolean JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface_loadCSDictionary
   (JNIEnv *env, jobject jobj, jstring jdictionary_name) {
@@ -30,7 +45,7 @@ JNIEXPORT jboolean JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDiction
     jboolean isCopy;
     const char *dictionary_file_name =
                 env->GetStringUTFChars(jdictionary_name, &isCopy);
-    samson_comscore_dictionary.read(dictionary_file_name);
+    dictionary.read(dictionary_file_name);
     env->ReleaseStringUTFChars(jdictionary_name, dictionary_file_name);
 
     return true;
@@ -41,7 +56,7 @@ JNIEXPORT jintArray JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictio
     jboolean isCopy;
     const char *url = env->GetStringUTFChars(jurl, &isCopy);
     std::vector<uint> categories =
-            samson_comscore_dictionary.getCategories(url);
+            dictionary.getCategories(url);
     env->ReleaseStringUTFChars(jurl, url);
 
     jintArray jcategories = env->NewIntArray(categories.size());
@@ -56,6 +71,18 @@ JNIEXPORT jintArray JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictio
 
 JNIEXPORT jstring JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface_getCategoryName
   (JNIEnv *env, jobject jobj, jint jcategory) {
-    const char *name = samson_comscore_dictionary.getCategoryName(jcategory);
+    const char *name = dictionary.getCategoryName(jcategory);
     return env->NewStringUTF(name);
+}
+
+JNIEXPORT jobjectArray JNICALL Java_es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface_getAllCategoryNames
+  (JNIEnv *env, jobject jobj) {
+    vector<string> names = dictionary.getAllCategoryNames();
+    jobjectArray jnames = env->NewObjectArray(names.size(),
+	    env->FindClass("java/lang/String"), NULL);
+    for (size_t i = 0; i < names.size(); ++i) {
+	env->SetObjectArrayElement(jnames, i,
+		env->NewStringUTF(names[i].c_str()));
+    }
+    return jnames;
 }

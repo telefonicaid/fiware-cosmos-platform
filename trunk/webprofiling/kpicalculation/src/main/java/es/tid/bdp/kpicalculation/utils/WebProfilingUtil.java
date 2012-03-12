@@ -18,6 +18,7 @@ public final class WebProfilingUtil {
     private static final String DELIMITER = "\t";
 
     private static WebProfilingLog.Builder builder;
+    private static KpiCalculationDateFormatter dateFormatter;
 
     private WebProfilingUtil() {
     }
@@ -30,8 +31,7 @@ public final class WebProfilingUtil {
     }
 
     private static void init() {
-        KpiCalculationNormalizer.init();
-        KpiCalculationDateFormatter.init(WebProfilingUtil.DELIMITER);
+        dateFormatter = new KpiCalculationDateFormatter(DELIMITER);
         builder = WebProfilingLog.newBuilder();
     }
 
@@ -51,8 +51,7 @@ public final class WebProfilingUtil {
                     .getQueryString() : "null";
             builder.setUrlQuery(urlQuery);
 
-            builder.setDate(KpiCalculationDateFormatter.getValue(stt
-                    .nextToken()));
+            builder.setDate(dateFormatter.getValue(stt.nextToken()));
             builder.setStatus(stt.nextToken());
             builder.setMimeType(stt.nextToken());
 

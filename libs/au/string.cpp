@@ -39,163 +39,163 @@ std::string str_percentage( double value , double total )
 
 std::string str_timestamp( time_t t )
 {
-    
+
     struct tm timeinfo;
     char buffer_time[1024];
-    
+
     localtime_r ( &t , &timeinfo );
     strftime (buffer_time,1024,"%d/%m/%Y (%X)",&timeinfo);
-    
+
     return std::string( buffer_time );
 }
 
 
 std::string str_time( size_t seconds )
 {
-    
+
     int days = 0;
     while( seconds > (3600*24) )
     {
         days++;
         seconds-= (3600*24);
     }
-    
+
     int minutes = seconds/60;
     seconds -= minutes*60;
-    
+
     int hours = minutes/60;
     minutes -= hours*60;
-    
+
     if( days > 0 )
         return au::str( "%02dd %02d:%02d" , days , hours , minutes );
-    
+
     return au::str( " %02d:%02d:%02d" , hours , minutes , (int)seconds);
-    
-    
+
+
 }
 
 std::string str_progress_bar( double p , int len )
 {
     std::ostringstream output;
-    
-    
+
+
     if( p < 0 )
         p = 0;
     if( p > 1 )
         p = 1;
-    
+
     int pos = len * p;
-    
+
     output << " [ ";
     for (int s = 0 ; s < pos ; s++ )
         output << "*";
     for (int s = pos ; s < len ; s++ )
         output << ".";
     output << " ] ";
-    
+
     return  output.str();
 }
 
 std::string str_progress_bar( double p , int len , char c , char c2 )
 {
     std::ostringstream output;
-    
-    
+
+
     if( p < 0 )
         p = 0;
     if( p > 1 )
         p = 1;
-    
+
     int pos = len * p;
-    
+
     output << " [ ";
     for (int s = 0 ; s < pos ; s++ )
         output << c;
     for (int s = pos ; s < len ; s++ )
         output << c2;
     output << " ] ";
-    
+
     return  output.str();
 }    
 
 std::string str_double_progress_bar( double p1 , double p2 , char c1 ,char c2 , char c3, int len )
 {
     std::ostringstream output;
-    
-    
+
+
     if( p1 < 0 )
         p1 = 0;
     if( p1 > 1 )
         p1 = 1;
-    
+
     if( p2 < 0 )
         p2 = 0;
     if( p2 > 1 )
         p2 = 1;
-    
+
     if( p2 < p1 )
         p2 = p1;    // no sense
-    
-    
+
+
     int pos1 = (double)len * p1;
     int pos2 = (double)len * p2;
-    
+
     output << " [ ";
-    
+
     for (int s = 0 ; s < pos1 ; s++ )
         output << c1;
-    
+
     for (int s = pos1 ; s < pos2 ; s++ )
         output << c2;
-    
+
     for (int s = pos2 ; s < len ; s++ )
         output << c3;
-    
+
     output << " ] ";
-    
+
     return  output.str();
 }
 
 void find_and_replace( std::string &source, const std::string find, std::string replace ) 
 {
     size_t pos = 0;
-    
+
     //LM_M(("Finding string of %d bytes at position %lu of a string with length %lu" , find.length() , pos , source.length() ));
     pos = source.find( find , pos );
     //LM_M(("Position found %lu bytes" , find.length() ));
-    
+
     while(pos != std::string::npos )
     {
         source.replace( pos, find.length(), replace );
-        
+
         // Go forward in the input string
         pos += replace.length();
-        
+
         //LM_M(("Finding string of %d bytes at position %lu of a string with length %lu" , find.length() , pos , source.length() ));
         pos = source.find( find , pos );
         //LM_M(("Position found %lu bytes" , find.length() ));
-        
-        
+
+
     }
 }
 
 std::string getRoot( std::string& path )
 {
     size_t pos = path.find( "." , 0 );
-    
+
     if( pos == std::string::npos )
         return path;
-    
+
     return path.substr( 0 , pos );
 }
 
 std::string getRest( std::string& path )
 {
     size_t pos = path.find( "." , 0 );
-    
+
     if( pos == std::string::npos )
         return "";
-    
+
     return path.substr( pos+1 , path.length() );
 }    
 
@@ -204,7 +204,7 @@ std::string str_indent( std::string txt )
 {
     // Replace all "returns" by "return and tab"
     find_and_replace( txt , "\n" , "\n\t" );
-    
+
     // Insert the first tab
     txt.insert(0, "\t");
     return txt;
@@ -215,10 +215,10 @@ std::string str_indent( std::string txt , int num_spaces )
     std::string sep;
     for (int i = 0 ; i < num_spaces ; i++ )
         sep.insert(0, " ");
-    
+
     // Replace all "returns" by "return and tab"
     find_and_replace( txt , "\n" , "\n" + sep );
-    
+
     // Insert the first tab
     txt.insert(0, sep);
     return txt;
@@ -227,15 +227,15 @@ std::string str_indent( std::string txt , int num_spaces )
 std::string str( double value, char  letter )
 {
     char line[2000];
-    
+
     if ( value < 10 )
         sprintf(line, "%4.2f%c",value,letter);
     else if ( value < 100 )
         sprintf(line, "%4.1f%c",value,letter);
     else 
         sprintf(line, "%4.0f%c",value,letter);
-    
-    
+
+
     return std::string( line );
 }
 
@@ -246,15 +246,15 @@ std::string str(const char* format, ...)
 {
     va_list        args;
     char           vmsg[2048];
-    
+
     /* "Parse" the varible arguments */
     va_start(args, format);
-    
+
     /* Print message to variable */
     vsnprintf(vmsg, sizeof(vmsg), format, args);
     //vmsg[2047] = 0;
     va_end(args);
-    
+
     return std::string(vmsg);
 }        
 
@@ -262,22 +262,22 @@ std::string str( Color color, const char* format, ...)
 {
     va_list        args;
     char           vmsg[2048];
-    
+
     /* "Parse" the varible arguments */
     va_start(args, format);
-    
+
     /* Print message to variable */
     vsnprintf(vmsg, sizeof(vmsg), format, args);
     //vmsg[2047] = 0;
     va_end(args);
 
     switch (color) {
-        case normal:
-            return std::string(vmsg);
-        case red:
-            return std::string("\033[1;31m") + std::string(vmsg) + std::string("\033[0m");
-        case purple:
-            return std::string("\033[1;35m") + std::string(vmsg) + std::string("\033[0m");
+    case normal:
+        return std::string(vmsg);
+    case red:
+        return std::string("\033[1;31m") + std::string(vmsg) + std::string("\033[0m");
+    case purple:
+        return std::string("\033[1;35m") + std::string(vmsg) + std::string("\033[0m");
     }
 
     // Default mode ( just in case )
@@ -287,7 +287,7 @@ std::string str( Color color, const char* format, ...)
 
 std::string str( size_t value )
 {
-    
+
     if (value < 1000)
     {
         // Special case
@@ -306,7 +306,7 @@ std::string str( size_t value )
 #endif
     else 
         return au::str( (double)value/ 1000000000000000.0 , 'P');
-    
+
 }    
 
 std::string str( size_t value , std::string postfix )
@@ -319,7 +319,7 @@ std::string str_detail( size_t value )
 {
     if( value < 1000 )
         return str(value);
-    
+
     return str("%lu (%s)" , value, au::str( value ).c_str() );
 }
 
@@ -327,7 +327,7 @@ std::string str_detail( size_t value , std::string postfix )
 {
     if( value < 1000 )
         return str(value,postfix);
-    
+
     return str("%lu %s (%s)" , value , postfix.c_str() , au::str( value, postfix ).c_str() );
 }
 
@@ -338,16 +338,16 @@ bool isOneOf( char c , std::string s )
     for (size_t i = 0 ; i < s.size() ; i++)
         if( s[i] == c )
             return true;
-    
+
     return false;
 }
 
 std::vector<std::string> simpleTockenize( std::string txt )
-{
+                {
     std::string tockens = " #\r\t\r\n{};\"";//All possible delimiters
-    
+
     std::vector<std::string> items;
-    
+
     // Simple parser
     size_t pos = 0;
     for (size_t i = 0 ; i < txt.size() ; i++)
@@ -365,47 +365,47 @@ std::vector<std::string> simpleTockenize( std::string txt )
             pos = i+1;
         }
     }
-    
+
     if ( txt.size() > pos )
         items.push_back(txt.substr(pos, txt.size() - pos ));
-    
-    
+
+
     return items;
-}
+                }
 
 
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) 
-{
+                {
     std::stringstream ss(s);
     std::string item;
     while(std::getline(ss, item, delim)) 
         if( item.length() > 0 )
             elems.push_back(item);
     return elems;
-}
+                }
 
 
 std::vector<std::string> split(const std::string &s, char delim) 
-{
+                {
     std::vector<std::string> elems;
     return split(s, delim, elems);
-}  
+                }
 
 int get_term_size (int fd, int *x, int *y)
 {
 #ifdef TIOCGSIZE
-	struct ttysize win;
-	
+    struct ttysize win;
+
 #elif defined(TIOCGWINSZ)
-	struct winsize win;
-	
+    struct winsize win;
+
 #endif
-	
+
 #ifdef TIOCGSIZE
-	if (ioctl (fd, TIOCGSIZE, &win))
-	    return 0;
-	if (y)
-	    *y=win.ts_lines;
+    if (ioctl (fd, TIOCGSIZE, &win))
+        return 0;
+    if (y)
+        *y=win.ts_lines;
     if (x)
         *x=win.ts_cols;
 #elif defined TIOCGWINSZ
@@ -430,21 +430,21 @@ int get_term_size (int fd, int *x, int *y)
             *x=80;
     }
 #endif
-    
+
     return 1;
-    
+
 }
 
 
 
 int getTerminalWidth()
 {
-	int x,y;
-	if( get_term_size (0, &x, &y) )
-	    return x;
-	else
+    int x,y;
+    if( get_term_size (0, &x, &y) )
+        return x;
+    else
         return 0;
-    
+
 }
 
 std::string lineInConsole( char c )
@@ -458,30 +458,30 @@ std::string lineInConsole( char c )
 std::string strWithMaxLineLength( std::string& txt , int max_line_length )
 {
     std::istringstream input_stream( txt );
-    
+
     std::ostringstream output;
-    
+
     char line[1024];
-    
+
     while( input_stream.getline( line, 1023 ) )
     {
-        
+
         int line_length = (int)strlen(line);
-        
+
         if( line_length > max_line_length )
         {
             line[max_line_length-1] = '\0';
             line[max_line_length-2] = '.';
             line[max_line_length-3] = '.';
             line[max_line_length-4] = '.';
-            
+
             //LM_M(("Exesive line %d / %d ", line_length , max_line_length )); 
         }
         else
         {
             //LM_M(("Normal line %d / %d", line_length , max_line_length )); 
         }
-        
+
         output << line << "\n";
     }
     return output.str();
@@ -501,7 +501,7 @@ const char *laststrstr(const char *source ,const  char *target )
 const char *laststrstr(const char *source , size_t source_length , const char *target )
 {
     const char *sp;
-    
+
     /* Step backward through the source string - one character at a time */
     for( sp = source + source_length - strlen(target) ; sp >= source ; sp --)
     {
@@ -509,7 +509,7 @@ const char *laststrstr(const char *source , size_t source_length , const char *t
         /* go forward through the search string and source checking characters
          Stop the loop if the character are unequal or you reach the end of the target (or string) */
         for( tp = target, spt = sp ;  (*tp == *spt)  && (*spt != '\0') && (*tp != '\0') ; spt++, tp++ ) ;
-        
+
         /* if the loop above gets to the end of the target string then it must have matched all the characters */
         if (*tp == '\0')
             break ;
@@ -547,12 +547,12 @@ std::string path_from_directory( std::string directory , std::string file )
 {
     if ( directory.length() == 0)
         return file;
-    
+
     if( directory[ directory.length() - 1 ] == '/' )
         return  directory + file;
     else
         return  directory + "/" + file;
-    
+
 }
 std::string string_in_color(std::string message , std::string color )
 {
@@ -563,7 +563,7 @@ std::string string_in_color(std::string message , std::string color )
         output << "\033[1;35m"<< message << "\033[0m";
     else
         output << message;
-    
+
     return  output.str();
 
 }
@@ -590,6 +590,87 @@ bool string_begins_and_ends( std::string& str , std::string prefix , std::string
 std::string substring_without_prefix_and_posfix( std::string& str , std::string prefix , std::string postfix )
 {
     return str.substr(  prefix.length()  ,  str.length() - prefix.length() - postfix.length() );
+}
+
+
+size_t strlenUTF8(const char *cad_utf)
+{
+    char *p_utf;
+    char byte_1_orig ;
+    char byte_2_orig ;
+    char byte_3_orig ;
+    size_t lengthUTF8 = 0;
+
+    char UTF8_2_ISO_8859_1_len[] =
+    {
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* erroneous */
+            2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 5, 6
+    };
+
+    static char UTF8_2_ISO_8859_1_mask[] = {0x3F, 0x7F, 0x1F, 0x0F, 0x07,
+            0x03, 0x01};
+
+    if (cad_utf == NULL)
+    {
+        return(lengthUTF8);
+    }
+    p_utf = (char *) cad_utf;
+
+    while (*p_utf != '\0')
+    {
+        int           len = UTF8_2_ISO_8859_1_len[(*p_utf >> 2) & 0x3F];
+        unsigned long u   = *p_utf & UTF8_2_ISO_8859_1_mask[len];
+
+
+        if (len == 0)
+            len = 5;
+
+        if (len == 3)
+        {
+            byte_1_orig = *p_utf;
+            byte_2_orig = *(p_utf+1);
+            byte_3_orig = *(p_utf+2);
+        }
+
+
+        if ((len == 3) && (byte_1_orig == '\342') && (byte_2_orig == '\200') && (byte_3_orig == '\234'))
+        {
+            lengthUTF8++;
+            p_utf+=3;
+        }
+        else if ((len == 3) && (byte_1_orig == '\342') && (byte_2_orig == '\200') && (byte_3_orig == '\235'))
+        {
+            lengthUTF8++;
+            p_utf+=3;
+        }
+        else if ((len == 3) && (byte_1_orig == '\342') && (byte_2_orig == '\200') && (byte_3_orig == '\231'))
+        {
+            lengthUTF8++;
+            p_utf+=3;
+        }
+        else if ((len == 3) && (byte_1_orig == '\342') && (byte_2_orig == '\202') && (byte_3_orig == '\254'))
+        {
+            lengthUTF8++;
+            p_utf+=3;
+        }
+        else
+        {
+
+            for (++p_utf; --len > 0 && (*p_utf != '\0'); ++p_utf)
+            {
+
+                if ((*p_utf & 0xC0) != 0x80)
+                    break;
+
+
+                u = (u << 6) | (*p_utf & 0x3F);
+            }
+            lengthUTF8++;
+        }
+    }
+    return(lengthUTF8);
 }
 
 

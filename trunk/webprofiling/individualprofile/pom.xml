@@ -66,29 +66,6 @@
             </plugin>
 
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>native-maven-plugin</artifactId>
-                <version>1.0-alpha-7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <javahClassNames>
-                        <javahClassName>
-                        es.tid.bdp.profile.dictionary.comscore.CSDictionaryJNIInterface
-                        </javahClassName>
-                    </javahClassNames>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-headers</id>
-                        <goals>
-                            <goal>javah</goal>
-                        </goals>
-                        <phase>compile</phase>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>1.5</version>
@@ -108,25 +85,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.2.1</version>
-                <executions>
-                    <execution>
-                        <id>cmake</id>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <phase>test-compile</phase>
-                    </execution>
-                </executions>
-                <configuration>
-                    <executable>./bootstrap.sh</executable>
-                    <workingDirectory>src/main/cpp</workingDirectory>
-                </configuration>
             </plugin>
 
             <plugin>

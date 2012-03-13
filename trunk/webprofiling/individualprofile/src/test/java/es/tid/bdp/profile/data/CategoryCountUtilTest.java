@@ -13,12 +13,12 @@ import es.tid.bdp.profile.data.ProfileProtocol.CategoryCount;
  */
 public class CategoryCountUtilTest {
     private CategoryCountUtil instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new CategoryCountUtil();
     }
-    
+
     @Test
     public void testCreate() {
         CategoryCount count = CategoryCountUtil.create("Sports", 5L);

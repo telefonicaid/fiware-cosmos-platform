@@ -14,7 +14,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import es.tid.bdp.profile.data.ProfileProtocol.CategoryCount;
 import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
 import es.tid.bdp.profile.dictionary.comscore.CSDictionary;
-import es.tid.bdp.profile.dictionary.comscore.CSDictionaryHadoopHandler;
+import es.tid.bdp.profile.dictionary.comscore.DistributedCacheDictionary;
 
 /**
  *
@@ -23,8 +23,8 @@ import es.tid.bdp.profile.dictionary.comscore.CSDictionaryHadoopHandler;
 public class PSExporterReducer extends Reducer<Text,
                                                ProtobufWritable<UserProfile>,
                                                NullWritable, Text> {
-    private static CSDictionary dictionary = null;
-    private static String[] categoryNames = null;
+    private static CSDictionary sharedDictionary = null;
+    private static String[] sharedCategoryNames = null;
 
     private StringBuilder builder;
     private Text record;
@@ -40,17 +40,19 @@ public class PSExporterReducer extends Reducer<Text,
         this.categories = new HashMap<String, CategoryCount>();
         this.recordCounter = context.getCounter(PSExporterCounter.NUM_RECORDS);
     }
-    
+
     protected void setupDictionary(Context context) throws IOException {
-        CSDictionaryHadoopHandler.init(context);
-        dictionary = CSDictionaryHadoopHandler.get();
-        this.setCategoryNames(dictionary.getAllCategoryNames());
+        if (sharedDictionary == null) {
+            sharedDictionary = DistributedCacheDictionary
+                    .loadFromCache(context);
+            setCategoryNames(sharedDictionary.getAllCategoryNames());
+        }
     }
-    
-    protected void setCategoryNames(String[] categoryNames) {
-        this.categoryNames = categoryNames.clone();
+
+    protected static void setCategoryNames(String[] categoryNames) {
+        sharedCategoryNames = categoryNames;
     }
-    
+
     @Override
     public void reduce(Text userId,
                        Iterable<ProtobufWritable<UserProfile>> profiles,
@@ -65,7 +67,7 @@ public class PSExporterReducer extends Reducer<Text,
             if (this.recordCounter.getValue() == 0L) {
                 this.builder.setLength(0);
                 this.builder.append("User");
-                for (String categoryName : categoryNames) {
+                for (String categoryName : sharedCategoryNames) {
                     this.builder.append("|");
                     this.builder.append(categoryName);
                 }
@@ -81,7 +83,7 @@ public class PSExporterReducer extends Reducer<Text,
             this.builder.setLength(0);
             String userIdAndDate = userId + "_" + profile.getDate();
             this.builder.append(userIdAndDate);
-            for (String categoryName : categoryNames) {
+            for (String categoryName : sharedCategoryNames) {
                 this.builder.append("|");
                 long value = 0L;
                 if (this.categories.containsKey(categoryName)) {
@@ -97,7 +99,7 @@ public class PSExporterReducer extends Reducer<Text,
             this.recordCounter.increment(1L);
         }
     }
-        
+
     @Override
     public void cleanup(Context context) throws IOException,
                                                 InterruptedException {

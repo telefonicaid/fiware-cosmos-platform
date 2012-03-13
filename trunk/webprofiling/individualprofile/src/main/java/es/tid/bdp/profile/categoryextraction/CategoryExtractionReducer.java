@@ -13,7 +13,7 @@ import es.tid.bdp.profile.data.ProfileProtocol.CategoryInformation;
 import es.tid.bdp.profile.data.ProfileProtocol.UserNavigation;
 import es.tid.bdp.profile.dictionary.Categorization;
 import es.tid.bdp.profile.dictionary.Dictionary;
-import es.tid.bdp.profile.dictionary.comscore.CSDictionaryHadoopHandler;
+import es.tid.bdp.profile.dictionary.comscore.DistributedCacheDictionary;
 
 /*
  * Enum with the list of counters to use in the CategoryExtraction mapreduces.
@@ -23,22 +23,24 @@ import es.tid.bdp.profile.dictionary.comscore.CSDictionaryHadoopHandler;
 public class CategoryExtractionReducer extends Reducer<BinaryKey,
         ProtobufWritable<UserNavigation>, BinaryKey,
         ProtobufWritable<CategoryInformation>> {
-    private static Dictionary dictionary = null;
+
+    private static Dictionary sharedDictionary = null;
     private ProtobufWritable<CategoryInformation> catWrapper;
 
     @Override
     public void setup(Context context) throws IOException {
         this.setupDictionary(context);
-
         this.catWrapper = new ProtobufWritable<CategoryInformation>();
         this.catWrapper.setConverter(CategoryInformation.class);
     }
 
     protected void setupDictionary(Context context) throws IOException {
-        CSDictionaryHadoopHandler.init(context);
-        dictionary = CSDictionaryHadoopHandler.get();
+        if (sharedDictionary == null) {
+            sharedDictionary = DistributedCacheDictionary
+                    .loadFromCache(context);
+        }
     }
-    
+
     @Override
     protected void reduce(BinaryKey key,
             Iterable<ProtobufWritable<UserNavigation>> values, Context context)
@@ -91,7 +93,7 @@ public class CategoryExtractionReducer extends Reducer<BinaryKey,
     }
 
     protected Categorization categorize(String url) {
-        return dictionary.categorize(url);
+        return sharedDictionary.categorize(url);
     }
 
     private Map<String, Long> getUniqueUrlCounts(

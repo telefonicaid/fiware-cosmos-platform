@@ -12,10 +12,11 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
+import es.tid.bdp.profile.dictionary.comscore.DistributedCacheDictionary;
 
 /**
  * Export user profiles to mongodb
- * 
+ *
  * @author sortega
  */
 public class PSExporterJob extends Job {
@@ -34,16 +35,18 @@ public class PSExporterJob extends Job {
 
     /**
      * Configure inputs and outputs.
-     * 
+     *
      * @param inputPath HDFS input path
      * @param outputPath HDFS output path
      *
-     * @throws IOException 
+     * @throws IOException
      */
     public void configure(Path inputPath, Path outputPath) throws IOException {
         this.setInputFormatClass(SequenceFileInputFormat.class);
         TextInputFormat.setInputPaths(this, inputPath);
         this.setOutputFormatClass(TextOutputFormat.class);
         TextOutputFormat.setOutputPath(this, outputPath);
+        DistributedCacheDictionary.cacheDictionary(this,
+                DistributedCacheDictionary.LATEST_DICTIONARY);
     }
 }

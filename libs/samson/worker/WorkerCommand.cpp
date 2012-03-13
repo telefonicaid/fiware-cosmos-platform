@@ -935,10 +935,6 @@ typedef struct LogLineInfo
                 lmPos = lmLogLineGet(&type, date, &ms, progName, fileName, &lineNo, &pid, &tid, funcName, message, lmPos, &all);
                 if (lmPos < 0)
                 {
-                    if (lmPos != -2)
-                        LM_E(("lmLogLineGet returned %lu ...", lmPos));
-                    LM_M(("Got %d hits", hits));
-
                     if (all != NULL)
                         free(all);
                     break;

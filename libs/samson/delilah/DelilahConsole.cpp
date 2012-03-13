@@ -55,7 +55,7 @@ namespace samson
     const char* general_description = \
     "SAMSON is a distributed platform for efficient processing of unbounded streams of big data";
     
-    const char* auths = "Andreu Urruela , Gregorio Sardina & Ken Zangelin";
+    const char* auths = "Andreu Urruela, J.Gregorio Escalada & Ken Zangelin";
     
     DelilahConsole::DelilahConsole( NetworkInterface *network ) : Delilah( network )
     {
@@ -236,7 +236,7 @@ namespace samson
             
         }
         
-        // Options for the cluter command
+        // Options for the cluster command
         if (info->completingSecondWord("cluster") )
         {
             info->add("info");
@@ -338,6 +338,12 @@ namespace samson
         {
             info->add("off");
             info->add("on");
+        }
+
+        if (info->completingSecondWord("log"))
+        {
+            info->add("FileName=");
+            info->add("Type=");
         }
 
         if (info->completingSecondWord("verbose") )
@@ -586,16 +592,16 @@ namespace samson
                 output << "\n";
                 output << au::str_indent( general_description ) << "\n";
                 output << "\n";
-                output << au::str_indent( au::str("Auths: %s", auths ) ) << "\n";
+                output << au::str_indent( au::str("Authors: %s", auths ) ) << "\n";
                 output << "\n";
-                output << au::str_indent( au::str("Telefonica I+D 2010" ) ) << "\n";
+                output << au::str_indent( au::str("Telefonica I+D 2010-2012" ) ) << "\n";
                 output << "\n";
                 output << au::lineInConsole('-') << "\n";
                 output << "\n";
                 output << "\tType help all [-category category_name] to get help for all available commands\n";
                 output << "\t\tCurrent categories: " << delilah_command_catalogue.getCategories().str() << "\n";
                 output << "\n";
-                output << "\tType help <command> to get more concrete information for a command\n";
+                output << "\tType help <command> to get detailed information for a command\n";
                 output << "\n";
                 output << au::lineInConsole('-') << "\n";
                 output << "\n";

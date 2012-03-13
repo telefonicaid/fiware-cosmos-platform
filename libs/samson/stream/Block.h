@@ -214,6 +214,7 @@ namespace samson {
             
             // Get the minimum task id to get the order of the blocks
             size_t getMinTaskId();
+            int getMaxPriority();
             size_t getLiveTime();
             
         };

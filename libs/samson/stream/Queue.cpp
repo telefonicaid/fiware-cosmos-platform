@@ -195,6 +195,14 @@ namespace samson {
         void Queue::setProperty( std::string property , std::string value )
         {
             environment.set( property , value );
+            
+            if( property == "priority" )
+            {
+                int p = atoi( value.c_str() );
+                LM_W(("Setting priority to queue %d" , p));
+                list->setPriority( p );
+            }
+            
         }
 
         void Queue::unsetProperty( std::string property )

@@ -495,13 +495,16 @@ namespace samson {
         
         std::string BlockList::strShortDescription()
         {
-            BlockInfo block_info = getBlockInfo();
-            return au::str("%d blocks / %s / %s" , 
-                           block_info.num_blocks , 
-                           au::str(block_info.info.kvs,"kvs").c_str() , 
-                           au::str(block_info.info.size,"B").c_str()
-                           );
+            std::ostringstream output;
+            output << name;
             
+            if( priority > 0 )
+                output << " (p:" << priority << ")";
+
+            if( task_id != (size_t) -1 )
+                output << " (t:" << task_id << ")";
+            
+            return output.str();
         }
         
         double BlockList::getFragmentationFactor()
@@ -535,6 +538,13 @@ namespace samson {
             double average_num_blocks = (double)accumulated_num_blocks / (double)total_hgs;
             return ( average_num_blocks - 1.0 ) / ( (double) ( blocks.size() - 1 ));
         }
+        
+        void BlockList::setPriority( int p )
+        {
+            priority = p;
+            printf("Priority for list '%s' set to %d\n" , name.c_str() , priority );
+        }
+        
         
     }       
 }

@@ -290,6 +290,19 @@ namespace samson {
             return _task_id;
         }
         
+        int Block::getMaxPriority()
+        {
+            int _max_priority = -1000000;
+            
+            std::set< BlockList* >::iterator l;
+            for ( l = lists.begin() ; l != lists.end() ; l++ )
+                if( (*l)->priority > _max_priority )
+                    _max_priority= (*l)->priority;
+            
+            return _max_priority;
+        }
+
+        
         size_t Block::getLiveTime()
         {
             return last_used.diffTimeInSeconds();
@@ -722,13 +735,15 @@ namespace samson {
             samson::add( record , "state" , getState() , "left,different" );
 
             samson::add( record , "KVRange" , getKVRange().str() , "left,different" );
-            
-            size_t task = getMinTaskId();
 
+            // Next task
+            size_t task = getMinTaskId();
             if( task == (size_t)(-1))
                 samson::add( record , "next task" , "none" , "left,different" );
             else
                 samson::add( record , "next task" , task , "left,different" );
+
+            samson::add( record , "priority" , getMaxPriority() , "left,different" );
             
             samson::add( record , "created" , au::str_time( last_used.diffTime() ) , "left,different" );
             
@@ -739,8 +754,9 @@ namespace samson {
             std::set<size_t> tasks_ids;
             for (l = lists.begin() ; l != lists.end() ; l++)
             {
+                // List of lists where this block is included
                 BlockList* block_list = *l;
-                output_block_lists_str << block_list->name << " ";
+                output_block_lists_str << block_list->strShortDescription() << " ";
                 
                 // Show tasks ids
                 if( block_list->task_id != (size_t) -1 )

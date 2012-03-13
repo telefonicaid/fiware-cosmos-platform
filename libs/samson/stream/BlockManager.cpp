@@ -33,11 +33,19 @@ namespace samson {
             
             if( min_task_id_1 == min_task_id_2 )
             {
-                size_t t1 = b1->getLiveTime();
-                size_t t2 = b2->getLiveTime();
-                return ( t1 < t2 );
+                // Comapre by priority
+                int p1 = b1->getMaxPriority();
+                int p2 = b2->getMaxPriority();
+                
+                if( p1 == p2 )
+                {                
+                    size_t t1 = b1->getLiveTime();
+                    size_t t2 = b2->getLiveTime();
+                    return ( t1 < t2 );
+                }
+                else
+                    return (p1 > p2);
             }
-            
             return( min_task_id_1 < min_task_id_2 );
         }        
         

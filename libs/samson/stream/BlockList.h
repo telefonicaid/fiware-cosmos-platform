@@ -61,13 +61,16 @@ namespace samson {
             size_t task_id;                         // Order of the task if really a task
             bool lock_in_memory;                    // Lock in memory
             
+            int priority;                           // Priority level for blocks that are not involved in tasks
+            
             au::list< Block > blocks;               // List of blocks
 
             BlockList(  )
             {
                 name = "no_name";
                 task_id             = (size_t) -1;      // By default minimum priority
-                lock_in_memory      = false;            // By default no lock in memory                
+                lock_in_memory      = false;            // By default no lock in memory                 
+                priority = 0;                           // Default priority level
             }
             
             BlockList( std::string _name )
@@ -75,6 +78,7 @@ namespace samson {
                 name = _name;
                 task_id             = (size_t) -1;      // By default minimum priority
                 lock_in_memory      = false;            // By default no lock in memory                
+                priority = 0;                           // Default priority level
             }
 
             BlockList( std::string _name , size_t _task_id , bool _lock_in_memory )
@@ -82,7 +86,7 @@ namespace samson {
                 name = _name;
                 task_id             = _task_id;             // Task is the order of priority
                 lock_in_memory      = _lock_in_memory;      // By default no lock in memory
-                
+                priority = 0;                           // Default priority level
             }
             
             ~BlockList();
@@ -162,7 +166,10 @@ namespace samson {
             std::string strRanges();
             std::string strShortDescription();
             
-            void touch();
+            
+            // Modify prioriyt of the queue
+            void setPriority(int p );
+           void touch();
         };
         
         

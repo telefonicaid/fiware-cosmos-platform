@@ -25,7 +25,9 @@ import es.tid.bdp.profile.export.mongodb.ExporterJob;
 public class CategoryExtractionJob extends Job {
     private static final String JOB_NAME = "CategoryExtraction";
     private static final String COM_SCORE_BASE = "/user/hdfs/comscore/latest/";
-    private static final String DEFAULT_DICTIONARY_NAME = "dictionary.bin";
+    private static final String DEFAULT_DICTIONARY_NAMES =
+            "cs_terms_in_domain.bcp|cs_mmxi.bcp.gz|patterns_to_categories.txt"
+            + "|cat_subcat_map.txt";
 
     public CategoryExtractionJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
@@ -39,8 +41,8 @@ public class CategoryExtractionJob extends Job {
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
 
         // Distribution of dictionary files by the distributed cache
-        this.conf.set(CategoryExtractionReducer.DICTIONARY_NAME_PROPERTY,
-                DEFAULT_DICTIONARY_NAME);
+        this.conf.set(CategoryExtractionReducer.DICTIONARY_NAMES_PROPERTY,
+                DEFAULT_DICTIONARY_NAMES);
     }
 
     public void configureTextInput() {

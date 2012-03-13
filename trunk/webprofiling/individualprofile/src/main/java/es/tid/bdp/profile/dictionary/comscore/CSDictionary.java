@@ -1,6 +1,8 @@
 package es.tid.bdp.profile.dictionary.comscore;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 
 import es.tid.bdp.profile.dictionary.Categorization;
@@ -14,14 +16,27 @@ import es.tid.bdp.profile.dictionary.Dictionary;
  */
 public class CSDictionary implements Dictionary {
     private boolean isInitialized;
-    private final String dictionayFile;
-    private final String comscoreLib;
     private CSDictionaryJNIInterface dictionary;
+    private CSPatternToCategoryMap patternToCategoryMap;
+    private CSCategoryIdToNameMap categoryIdToNameMap;
+    private final String[] nativeLibraries;
 
-    public CSDictionary(String dictionayFile, String comscoreLib) {
+    private final String termsFileName;
+    private final String dictionaryFileName;
+    private final String categoryPatternMappingFileName;
+    private final String categoryNamesFileName;
+
+    public CSDictionary(String termsFileName,
+            String dictionaryFileName,
+            String categoryPatternMappingFileName,
+            String categoryNamesFileName,
+            String[] nativeLibraries) {
         this.isInitialized = false;
-        this.dictionayFile = dictionayFile;
-        this.comscoreLib = comscoreLib;
+        this.termsFileName = termsFileName;
+        this.dictionaryFileName = dictionaryFileName;
+        this.categoryPatternMappingFileName = categoryPatternMappingFileName;
+        this.categoryNamesFileName = categoryNamesFileName;
+        this.nativeLibraries = nativeLibraries.clone();
     }
 
     @Override
@@ -30,10 +45,15 @@ public class CSDictionary implements Dictionary {
             return;
         }
 
-        System.setProperty(CSDictionaryJNIInterface.COMSCORE_LIB_PROPERTY,
-                this.comscoreLib);
+        for (String nativeLibrary : this.nativeLibraries) {
+            System.load(nativeLibrary);
+        }
+
         this.dictionary = new CSDictionaryJNIInterface();
-        this.dictionary.loadCSDictionary(this.dictionayFile);
+        this.dictionary.loadCSDictionary(1, termsFileName,
+                dictionaryFileName);
+        this.loadCategoryPatternMapping(categoryPatternMappingFileName);
+        this.loadCategoryNames(categoryNamesFileName);
         this.isInitialized = true;
     }
 
@@ -46,20 +66,31 @@ public class CSDictionary implements Dictionary {
 
         URI uri = URI.create(url);
         String normalizedUrl = uri.getHost() + uri.getPath();
-        int[] categories = this.dictionary.lookupCategories(normalizedUrl);
-        if (categories.length == 0) {
+        long patternId = this.dictionary.applyDictionaryUsingUrl(normalizedUrl);
+        if (patternId < 0) {
+            return this.processIrrelevantUrl();
+        } else if (patternId == 0) {
+            throw new IllegalArgumentException("Invalid pattern ID.");
+        } else if (patternId == 1) {
             return this.processUknownUrl();
         } else {
-            return this.processKnownUrl(categories);
+            return this.processKnownUrl(patternId);
         }
     }
 
-    private Categorization processKnownUrl(int[] categoryIds) {
+    private Categorization processKnownUrl(long patternId) {
         Categorization categorization = new Categorization();
+        long[] categoryIds;
+        try {
+            categoryIds = this.patternToCategoryMap.getCategories(patternId);
+        } catch (IllegalArgumentException ex) {
+            categorization.setResult(CategorizationResult.GENERIC_FAILURE);
+            return categorization;
+        }
 
         String[] categoryNames = new String[categoryIds.length];
         for (int i = 0; i < categoryIds.length; i++) {
-            categoryNames[i] = this.dictionary.getCategoryName(
+            categoryNames[i] = this.categoryIdToNameMap.getCategoryName(
                     categoryIds[i]);
         }
         categorization.setResult(CategorizationResult.KNOWN_URL);
@@ -71,5 +102,30 @@ public class CSDictionary implements Dictionary {
         Categorization categorization = new Categorization();
         categorization.setResult(CategorizationResult.UNKNOWN_URL);
         return categorization;
+    }
+
+    private Categorization processIrrelevantUrl() {
+        Categorization categorization = new Categorization();
+        categorization.setResult(CategorizationResult.IRRELEVANT_URL);
+        return categorization;
+    }
+
+    private void loadCategoryPatternMapping(String fileName)
+            throws IOException {
+        this.patternToCategoryMap = new CSPatternToCategoryMap();
+
+        FileInputStream file = new FileInputStream(fileName);
+        InputStreamReader input = new InputStreamReader(file);
+        this.patternToCategoryMap.init(input);
+        file.close();
+    }
+
+    private void loadCategoryNames(String fileName) throws IOException {
+        this.categoryIdToNameMap = new CSCategoryIdToNameMap();
+
+        FileInputStream file = new FileInputStream(fileName);
+        InputStreamReader input = new InputStreamReader(file);
+        this.categoryIdToNameMap.init(input);
+        file.close();
     }
 }

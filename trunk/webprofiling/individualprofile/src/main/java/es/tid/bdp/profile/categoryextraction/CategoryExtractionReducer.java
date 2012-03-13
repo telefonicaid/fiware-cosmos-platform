@@ -3,6 +3,8 @@ package es.tid.bdp.profile.categoryextraction;
 import java.io.IOException;
 import static java.util.Arrays.asList;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
@@ -26,8 +28,14 @@ import es.tid.bdp.profile.dictionary.comscore.CSDictionaryJNIInterface;
 public class CategoryExtractionReducer extends Reducer<BinaryKey,
         ProtobufWritable<UserNavigation>, BinaryKey,
         ProtobufWritable<CategoryInformation>> {
-    public static final String DICTIONARY_NAME_PROPERTY =
-            "categoryextraction.dict.name";
+    public static final String DICTIONARY_NAMES_PROPERTY =
+            "categoryextraction.dict.names";
+    private static final String SEPARATOR = "|";
+    private static final int TERMS_PATH = 0;
+    private static final int DICTIONARY_PATH = 1;
+    private static final int CATEGORY_PATTERN_MAPPING_PATH = 2;
+    private static final int CATEGORY_NAMES_PATH = 3;
+
     private static Dictionary dictionary = null;
     private ProtobufWritable<CategoryInformation> catWrapper;
 
@@ -40,11 +48,20 @@ public class CategoryExtractionReducer extends Reducer<BinaryKey,
 
     protected void setupDictionary(Context context) throws IOException {
         if (dictionary == null) {
-            String dictionaryName = context.getConfiguration().get(
-                    DICTIONARY_NAME_PROPERTY);
+            String dictionaryNames = context.getConfiguration().get(
+                    DICTIONARY_NAMES_PROPERTY);
+            if (dictionaryNames == null || dictionaryNames.isEmpty()) {
+                throw new IllegalStateException("Dictionary names were not "
+                        + "configured properly");
+            }
+            List<String> cachedFiles = getCachedPaths(context,
+                    dictionaryNames.split(SEPARATOR));
             dictionary = new CSDictionary(
-                    getCachedDictionaryPath(context, dictionaryName),
-                    CSDictionaryJNIInterface.DEFAULT_COMSCORE_LIB);
+                    cachedFiles.get(TERMS_PATH),
+                    cachedFiles.get(DICTIONARY_PATH),
+                    cachedFiles.get(CATEGORY_PATTERN_MAPPING_PATH),
+                    cachedFiles.get(CATEGORY_NAMES_PATH),
+                    CSDictionaryJNIInterface.DEFAULT_COMSCORE_LIBS);
             dictionary.init();
         }
     }
@@ -104,20 +121,25 @@ public class CategoryExtractionReducer extends Reducer<BinaryKey,
         return dictionary.categorize(url);
     }
 
-    public String getCachedDictionaryPath(Context context,
-            String dictionaryName) throws IOException {
-        Path dictionaryPath = null;
+    public List<String> getCachedPaths(Context context, String[] fileNames)
+            throws IOException {
+        List<String> cachedPaths = new LinkedList<String>();
+        for(String fileName : fileNames) {
+            cachedPaths.add(getCachedPath(context, fileName));
+        }
+        return cachedPaths;
+    }
+
+    public String getCachedPath(Context context, String fileName)
+            throws IOException {
         for (Path path : DistributedCache.getLocalCacheFiles(
                 context.getConfiguration())) {
-            if (path.getName().equals(dictionaryName)) {
-                dictionaryPath = path;
-                break;
+            if (path.getName().equals(fileName)) {
+                return path.toString();
             }
         }
-        if (dictionaryPath == null) {
-            throw new IllegalStateException("No dictionary file was configured");
-        }
-        return dictionaryPath.toString();
+        throw new IllegalArgumentException("'" + fileName +
+                "' is not in the distributed cache");
     }
 
     private Map<String, Long> getUniqueUrlCounts(

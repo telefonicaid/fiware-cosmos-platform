@@ -8,12 +8,13 @@
 * $Log: paArgs.c,v $
 *
 */
-#include <string.h>              /* strcmp                                    */
+#include <string.h>                   /* strcmp                              */
 
-#include "parseArgs/parseArgs.h" /* PaFrom, PaArgument                        */
-#include "paIterate.h"           /* paIterateInit, paIterateNext              */
-#include "paEnvVals.h"           /* paEnvName                                 */
-#include "paValueFrom.h"         /* Own interface                             */
+#include "parseArgs/parseArgs.h"      /* PaFrom, PaArgument                  */
+#include "parseArgs/paPrivate.h"      /* paiList                             */
+#include "parseArgs/paIterate.h"      /* paIterateInit, paIterateNext        */
+#include "parseArgs/paEnvVals.h"      /* paEnvName                           */
+#include "parseArgs/paValueFrom.h"    /* Own interface                       */
 
 
 
@@ -23,10 +24,10 @@
 */
 PaFrom paValueFrom(PaArgument* paList, char* oName)
 {
-	PaArgument* aP;
+	PaiArgument* aP;
 
 	paIterateInit();
-	while ((aP = paIterateNext(paList)) != NULL)
+	while ((aP = paIterateNext(paiList)) != NULL)
 	{
 		char envVarName[64];
 

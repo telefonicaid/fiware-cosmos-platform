@@ -27,7 +27,7 @@
 *
 * paFromName - 
 */
-char* paFromName(PaArgument* aP, char* out)
+char* paFromName(PaiArgument* aP, char* out)
 {
 	switch (aP->from)
 	{
@@ -49,9 +49,9 @@ char* paFromName(PaArgument* aP, char* out)
 *
 * paFrom - from where did the value come?
 */
-char* paFrom(PaArgument* paList, const char* name)
+char* paFrom(PaiArgument* paList, const char* name)
 {
-	PaArgument* aP;
+	PaiArgument* aP;
 
 	paIterateInit();
 

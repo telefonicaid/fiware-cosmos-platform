@@ -928,7 +928,7 @@ int main(int argC, const char* argV[])
     else
     {
         fprintf(stderr, "%s: bad parameters - either '-tektronix' or '-fake' must be used", paProgName);
-        paUsage(paArgs);
+        paUsage();
     }
     
     // Only here if we received a SIGQUIT

@@ -50,7 +50,7 @@ SET (SOURCES
 	baStd.cpp
 )
 
-# Inclue directories
+# Include directories
 # -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs")
 

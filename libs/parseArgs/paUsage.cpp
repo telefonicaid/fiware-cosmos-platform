@@ -7,6 +7,7 @@
 #include "parseArgs.h"          /* PaArgument                                */
 #include "paPrivate.h"          /* PaTypeUnion, paBuiltins, ...              */
 #include "paTraceLevels.h"      /* LmtPaApVals, LmtPaUsage, ...              */
+#include "paLog.h"              /* PA_XXX                                    */
 #include "paFrom.h"             /* paFrom, paFromName                        */
 #include "paConfig.h"           /* paHelpFile, paHelpText                    */
 #include "paFullName.h"         /* paFullName                                */
@@ -64,11 +65,11 @@ char* escape(char out[], char* value)
 */
 static void getApVals
 (
-	PaArgument*  aP,
-	char*        defVal,
-	char*        minVal,
-	char*        maxVal,
-	char*        realVal
+	PaiArgument*  aP,
+	char*         defVal,
+	char*         minVal,
+	char*         maxVal,
+	char*         realVal
 )
 {
 	PaTypeUnion*  defP;
@@ -192,14 +193,14 @@ static void getApVals
 *
 * paUsage - print synopsis (to file pointer or to paResultString)
 */
-void paUsage(PaArgument* paList)
+void paUsage(void)
 {
-	char*        spacePad;
-	char         string[512];
-	char         s[1024];
-	PaArgument*  aP;
-	int          ix       = -1;
-	int          builtins = paBuiltinNoOf();
+	char*         spacePad;
+	char          string[512];
+	char          s[1024];
+	PaiArgument*  aP;
+	int           ix       = -1;
+	bool          firstUserOptionFound = false;
 
 	LM_T(LmtPaUsage, ("presenting usage"));
 
@@ -209,18 +210,29 @@ void paUsage(PaArgument* paList)
 	sprintf(s, "Usage: %s ", progName);
 	strncat(paResultString, s, sizeof(paResultString) - 1);
 
+	// paLogOn = true;
 	paIterateInit();
-	LM_T(LmtPaUsage, ("presenting usage"));
-	while ((aP = paIterateNext(paList)) != NULL)
+	PA_M(("------------- presenting usage -------------"));
+	while ((aP = paIterateNext(paiList)) != NULL)
 	{
 		char  xName[512];
 
+		PA_M(("Got option '%s'", aP->option));
+
 		++ix;
-		if (ix < builtins)
-			continue;
 
 		if (aP->sort == PaHid)
 			continue;
+		if ((aP->isBuiltin == true) && (aP->includeInUsage == false))
+			continue;
+
+		if ((aP->isBuiltin == false) && (firstUserOptionFound == false))
+		{
+			firstUserOptionFound = true;
+			strncat(paResultString, "\n",       sizeof(paResultString) - 1);
+			strncat(paResultString, spacePad,   sizeof(paResultString) - 1);
+			strncat(paResultString, "        ", sizeof(paResultString) - 1);
+		}
 
 		if (PA_IS_OPTION(aP) && (aP->sort == PaOpt))
 			sprintf(xName, "[%s]", paFullName(string, aP));
@@ -237,10 +249,12 @@ void paUsage(PaArgument* paList)
 		strncat(paResultString, s, sizeof(paResultString) - 1);
 		sprintf(s, "%s        ", spacePad); /* 8 spaces for "Usage:  " */
 		strncat(paResultString, s, sizeof(paResultString) - 1);
-    }
 
+		PA_M(("parsed arg %d", ix));
+    }
+	// paLogOn = false;
     free(spacePad);
-    LM_T(LmtPaUsage, ("presenting usage"));
+    PA_M(("presenting usage"));
     strncat(paResultString, "\r", sizeof(paResultString) - 1);
 
 	printf("%s\n", paResultString);
@@ -253,24 +267,25 @@ void paUsage(PaArgument* paList)
 *
 * paExtendedUsage - print extended synopsis
 */
-void paExtendedUsage(PaArgument* paList)
+void paExtendedUsage(void)
 {
-	char*        spacePad;
-	char         string[80];
-	PaArgument*  aP;
-	int          optNameMaxLen = 0;
-	int          varNameMaxLen = 0;
-	int          valsMaxLen    = 0;
-	char         format[64];
-	char         progNAME[128];
-	bool         firstLine = true;
+	char*         spacePad;
+	char          string[80];
+	PaiArgument*  aP;
+	int           optNameMaxLen = 0;
+	int           varNameMaxLen = 0;
+	int           valsMaxLen    = 0;
+	char          format[64];
+	char          progNAME[128];
+	bool          firstLine = true;
 
-	sprintf(progNAME, "Usage: %s ", progName);
+	sprintf(progNAME, "Extended Usage: %s ", progName);
 	spacePad = (char*) strdup(progNAME);
 	memset(spacePad, 0x20202020, strlen(spacePad));  /* replace progNAME */
 
+	PA_M(("-------------- Preparing list for Extended usage -----------------"));
 	paIterateInit();
-	while ((aP = paIterateNext(paList)) != NULL)
+	while ((aP = paIterateNext(paiList)) != NULL)
 	{
 		char  name[128];
 		char  vals[128];
@@ -281,7 +296,7 @@ void paExtendedUsage(PaArgument* paList)
 		char  out[256];
 		char  out2[256];
 
-        printf("processing '%s' for extended usage\n", aP->name);
+        PA_M(("processing '%s' for extended usage\n", aP->name));
 
 		/* 1. Option Name */
 		memset(name, 0, sizeof(name));
@@ -331,8 +346,9 @@ void paExtendedUsage(PaArgument* paList)
 			varNameMaxLen + 2,
 			valsMaxLen + 2);
 
+	// paLogOn = true;
 	paIterateInit();
-	while ((aP = paIterateNext(paList)) != NULL)
+	while ((aP = paIterateNext(paiList)) != NULL)
 	{
 		char  optName[128];
 		char  varName[128];
@@ -345,7 +361,10 @@ void paExtendedUsage(PaArgument* paList)
 		char  s[512];
 
 		if (aP->sort == PaHid)
+		{
+			PA_M(("skipping hidden option '%s'", aP->option));
 			continue;
+		}
 
 		/* 1. Option Name */
 		if (PA_IS_OPTION(aP) && (aP->sort == PaOpt))
@@ -403,6 +422,7 @@ void paExtendedUsage(PaArgument* paList)
 	
 		firstLine = false;
 	}
+	// paLogOn = false;
 
 	strncat(paResultString, "\r", sizeof(paResultString) - 1);
     
@@ -477,13 +497,13 @@ void paVersionPrint(void)
 *
 * paManUsage - 
 */
-static void paManUsage(PaArgument* paList)
+static void paManUsage(void)
 {
-	PaArgument*  aP;
+	PaiArgument*  aP;
 
 	paIterateInit();
 
-	while ((aP = paIterateNext(paList)) != NULL)
+	while ((aP = paIterateNext(paiList)) != NULL)
 	{
 		if (aP->sort == PaHid)
 			continue;
@@ -503,7 +523,7 @@ static void paManUsage(PaArgument* paList)
 *
 * paManHelp - 
 */
-static void paManHelp(PaArgument* paList)
+static void paManHelp(void)
 {
 	paExitOnUsage = false;
 
@@ -517,7 +537,7 @@ static void paManHelp(PaArgument* paList)
 	else
 		printf("%s (short description) ...\n", paProgName);
 
-	paManUsage(paList);
+	paManUsage();
 
 	if (paManDescription)
 		printf("%s\n", paManDescription);
@@ -541,11 +561,11 @@ static void paManHelp(PaArgument* paList)
 *
 * paHelp - print help text
 */
-void paHelp(PaArgument* paList)
+void paHelp(void)
 {
 	LM_ENTRY();
 
-	paManHelp(paList);
+	paManHelp();
 	exit(1);
 
 #if 0
@@ -555,7 +575,7 @@ void paHelp(PaArgument* paList)
 
 	memset(paResultString, 0, sizeof(paResultString));
 	paExitOnUsage = false;
-	paUsage(paList);
+	paUsage();
 	strncpy(usageString, paResultString, sizeof(usageString));
 	memset(paResultString, 0, sizeof(paResultString));
 	
@@ -617,6 +637,6 @@ void paHelp(PaArgument* paList)
 				sizeof(paResultString) - 1);
 	}
 	else
-		paUsage(paList);
+		paUsage();
 #endif
 }

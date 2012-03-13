@@ -16,6 +16,6 @@
 *
 * paFullName - fill in name and description in string string
 */
-extern char* paFullName(char* string, PaArgument* aP);
+extern char* paFullName(char* string, PaiArgument* aP);
 
 #endif

@@ -18,6 +18,7 @@
 #include "parseArgs.h"          /* PaArgument                                */
 #include "paPrivate.h"          /* PaTypeUnion, config variables, ...        */
 #include "paTraceLevels.h"      /* LmtPaEnvVal, ...                          */
+#include "paLog.h"              /* PA_XXX                                    */
 #include "paIterate.h"          /* paIterateInit, paIterateNext              */
 #include "paGetVal.h"           /* paGetVal                                  */
 #include "paIsOption.h"         /* paIsOption                                */
@@ -88,33 +89,37 @@ static char* require(PaType type)
 *
 * argFind - search the slot in the argument list corresponding to 'string'
 */
-static PaArgument* argFind
+static PaiArgument* argFind
 (
-	PaArgument*  paList,
-	char*        string,
-	int          strict,
-	int*         parNoP
+	PaiArgument*  paList,
+	char*         string,
+	int           strict,
+	int*          parNoP
 )
 {
-	PaArgument*  aP;
-	PaArgument*  foundP       = NULL;
-	int          foundNameLen = 0;
+	PaiArgument*  aP;
+	PaiArgument*  foundP       = NULL;
+	int           foundNameLen = 0;
 
 	LM_ENTRY();
 
 	paIterateInit();
+	PA_M(("----- Looking up '%s' -----", string));
 	while ((aP = paIterateNext(paList)) != NULL)
 	{	
 		if (parNoP == NULL)
 		{
 			int len;
 
+			PA_M(("Got option '%s' from itrration", aP->option));
 			if ((aP->option == NULL) || (aP->option[0] == 0))
 				continue;
+			
+			PA_M(("comparing '%s' to '%s'", string, aP->option));
 
 			len = strlen(aP->option);
 			if (strict == STRICT)
-			   len = MAX(strlen(string), (unsigned int) len);
+				len = MAX(strlen(string), (unsigned int) len);
 
 			if (len == 0)
 			{
@@ -139,15 +144,19 @@ static PaArgument* argFind
 		else if ((aP->what & PawParameter) == PawParameter)
 		{
 			if (aP->aux != 0)
-				LM_W(("cant use this parameter"));
+				PA_W(("cant use this parameter"));
 			else
 			{
 				aP->aux = 1;
 				LM_EXIT();				
 				return aP;
 			}
-		}		
+		}
+		else
+			PA_M(("skipping option '%s'", aP->option));
 	}
+	
+	PA_M(("----- returning foundP ... -----"));
 
 	LM_EXIT();
 	return foundP;
@@ -168,7 +177,7 @@ static int iListFix(int* iV, char* s, int* error)
 	char* endP  = &s[strlen(s)];
 	int   ix    = 0;
 
-	LM_T(LmtPaIList, ("incoming list: '%s'", s));
+	PA_M(("incoming list: '%s'", s));
 	baWsStrip(s);
 
 	while ((unsigned long) tmP < (unsigned long) endP)
@@ -183,7 +192,7 @@ static int iListFix(int* iV, char* s, int* error)
 		{
 			/* Check 's' for valid integer - reflect in *error parameter */
 			iV[ix + 1] = baStoi(s);
-			LM_T(LmtPaIList, ("item %d in int-list: %d", ix + 1, iV[ix + 1]));
+			PA_M(("item %d in int-list: %d", ix + 1, iV[ix + 1]));
 			++ix;
 			iV[0] = ix;
 			break;
@@ -326,18 +335,19 @@ char* optOrPar(char* opt)
 *
 * paOptionsParse - 
 */
-int paOptionsParse(PaArgument* paList, char* argV[], int argC)
+int paOptionsParse(PaiArgument* paList, char* argV[], int argC)
 {
-	PaArgument* aP;
-	char*       valueP;
-	int         argNo    = 0;
-	int         param    = 1;
-	bool        extendedUsage = false;
-	char        w[512];
+	PaiArgument*  aP;
+	char*         valueP;
+	int           argNo         = 0;
+	int           param         = 1;
+	bool          extendedUsage = false;
+	char          w[512];
 
 	LM_ENTRY();
 	w[0] = 0;
 
+	PA_M(("incoming arg list of %d args", argC));
 	while (++argNo < argC)
 	{
 		char  e[80];
@@ -345,11 +355,10 @@ int paOptionsParse(PaArgument* paList, char* argV[], int argC)
 		int   eee;
 		int*  eP;
 
-		LM_T(LmtPaApVals, ("next two: '%s' '%s'", argV[argNo], argV[argNo + 1]));
-
 		eP  = &eee;
 		*eP = PaNotOk;
 
+		PA_M(("Looking up '%s'", argV[argNo]));
 		if ((aP = argFind(paList, argV[argNo], STRICT, NULL)) != NULL)
 		{
 			valueP = argV[++argNo];
@@ -363,7 +372,7 @@ int paOptionsParse(PaArgument* paList, char* argV[], int argC)
 		else
 		{
 			sprintf(w, "%s '%s' not recognized", optOrPar(argV[argNo]), argV[argNo]);
-			LM_W((w));
+			PA_W(("Warning: '%s'", w));
 			PA_WARNING(PasNoSuchOption, w);
 			continue;
 		}
@@ -375,7 +384,7 @@ int paOptionsParse(PaArgument* paList, char* argV[], int argC)
 			memset(paResultString, 0, sizeof(paResultString));
 			if (extendedUsage == false)
 			{
-				paUsage(paList);
+				paUsage();
 				return -2;
 			}
 		}
@@ -394,7 +403,7 @@ int paOptionsParse(PaArgument* paList, char* argV[], int argC)
 		else if (aP->varP == (void*) &paHelpVar)
 		{
 			memset(paResultString, 0, sizeof(paResultString));
-			paHelp(paList);
+			paHelp();
 			return -2;
 		}
 
@@ -444,7 +453,7 @@ int paOptionsParse(PaArgument* paList, char* argV[], int argC)
 		{
 		case PaInt:
 		case PaIntU:
-            *((int*) aP->varP) = (int) (long long) paGetVal(valueP, eP, o);
+            *((int*) aP->varP) = (int) (long long) paGetVal(valueP, eP);
             if (*eP != PaOk)
                 return -1;
 
@@ -453,7 +462,7 @@ int paOptionsParse(PaArgument* paList, char* argV[], int argC)
 
 		case PaInt64:
 		case PaIntU64:
-			*((long long*) aP->varP) = (long long) paGetVal(valueP, eP, o);
+			*((long long*) aP->varP) = (long long) paGetVal(valueP, eP);
             if (*eP != PaOk)
                 return -1;
 
@@ -462,7 +471,7 @@ int paOptionsParse(PaArgument* paList, char* argV[], int argC)
 
 		case PaChar:
 		case PaCharU:
-            *((char*)  aP->varP) = (char) (long long) paGetVal(valueP, eP, o);
+            *((char*)  aP->varP) = (char) (long long) paGetVal(valueP, eP);
             if (*eP != PaOk)
                 return -1;
 
@@ -471,7 +480,7 @@ int paOptionsParse(PaArgument* paList, char* argV[], int argC)
 
 		case PaShort:
 		case PaShortU:
-            *((short*) aP->varP) = (short) (long long) paGetVal(valueP, eP, o);
+            *((short*) aP->varP) = (short) (long long) paGetVal(valueP, eP);
             if (*eP != PaOk)
                 return -1;
 
@@ -537,7 +546,7 @@ int paOptionsParse(PaArgument* paList, char* argV[], int argC)
 
 	if (extendedUsage == true)
 	{
-		paExtendedUsage(paList);
+		paExtendedUsage();
 		return -2;
 	}
 

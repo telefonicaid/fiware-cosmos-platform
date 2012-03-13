@@ -8,7 +8,7 @@
 * AUTHOR                Ken Zangelin
 *
 */
-#include "parseArgs/parseArgs.h"          /* PaArgument                                */
+#include "parseArgs/parseArgs.h"          /* PaArgument                      */
 
 
 
@@ -16,7 +16,7 @@
 *
 * paDefaultValues - set default values, initially
 */
-extern int paDefaultValues(PaArgument* paList);
+extern int paDefaultValues(PaiArgument* paiList);
 
 #endif
 

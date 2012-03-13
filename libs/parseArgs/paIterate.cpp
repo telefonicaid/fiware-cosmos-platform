@@ -2,6 +2,7 @@
 #include "logMsg/logMsg.h"       /* LM_ENTRY, LM_EXIT, ...                    */
 
 #include "parseArgs/parseArgs.h" /* PaArgument                                */
+#include "paLog.h"               /* PA_XXX                                    */
 #include "paBuiltin.h"           /* paBuiltin, paBuiltinNoOf                  */
 #include "paPrivate.h"           /* PawBuiltin                                */
 #include "paIterate.h"           /* Own interface                             */
@@ -23,6 +24,7 @@ int         builtins = -1;
 */
 void paIterateInit(void)
 {
+	PA_M(("Preparing to iterate"));
 	ix       = 0;
 	builtins = paBuiltinNoOf();
 }
@@ -33,19 +35,21 @@ void paIterateInit(void)
 *
 * paIterateNext - 
 */
-PaArgument* paIterateNext(PaArgument* paList)
+PaiArgument* paIterateNext(PaiArgument* paList)
 {
-	PaArgument* aP;
+	PaiArgument* aP;
 
 	if (builtins == -1)
 		paIterateInit();
 
+	PA_M(("builtins == %d (ix == %d)", builtins, ix));
 	do
 	{
 		if (ix < builtins)
 		{
 			aP = &paBuiltin[ix];
 			aP->what |= PawBuiltin;
+			PA_M(("Found builtin '%s'", aP->option));
 		}
 		else if (paList != NULL)
 			aP = &paList[ix - builtins];

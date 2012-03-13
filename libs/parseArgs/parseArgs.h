@@ -180,7 +180,20 @@ typedef struct PaArgument
 	long long    min;
 	long long    max;
 	const char*  description;
+} PaArgument;
 
+
+typedef struct PaiArgument
+{
+	const char*  option;
+	void*        varP;
+	const char*  envName;
+	PaType       type;
+	PaSort       sort;
+	long long    def;
+	long long    min;
+	long long    max;
+	const char*  description;
 
 	/* The following fields are set initially by paParse */
 	PaFrom       from;
@@ -190,9 +203,11 @@ typedef struct PaArgument
 	bool         hasDefault;
 	bool         hasMinLimit;
 	bool         hasMaxLimit;
+    bool         isBuiltin;
 	bool         removed;
+    bool         includeInUsage;
 	int          aux;
-} PaArgument;
+} PaiArgument;
 
 
 

@@ -16,7 +16,7 @@
 *
 * paLimitCheck - check limits for all options
 */
-extern int paLimitCheck(PaArgument* paList);
+extern int paLimitCheck(PaiArgument* paList);
 
 #endif
 

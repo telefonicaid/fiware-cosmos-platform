@@ -3,8 +3,9 @@
 
 #include "baStd.h"              /* BA standard header file                  */
 
-#include "paConfig.h"           /* config variables                          */
 #include "parseArgs.h"          /* PaArgument                                */
+#include "paLog.h"              /* PA_XXX                                    */
+#include "paConfig.h"           /* config variables                          */
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */
 #include "paIterate.h"          /* paIterateInit, paIterateNext              */
 #include "paEnvVals.h"          /* paEnvName                                 */
@@ -47,11 +48,15 @@ char        paLogDir[256];
 
 #define T (int) true
 #define F (int) false
+
+#define PAI_REST            PafUnchanged, { 'N', 'a', 'm', 'e', 0 }, 0, 0, false, false, false, true, false, false, 0
+#define PAI_REST_IN_USAGE   PafUnchanged, { 'N', 'a', 'm', 'e', 0 }, 0, 0, false, false, false, true, false, true, 0
+#define PAI_END_OF_ARGS     { "^D", NULL, "NADA", PaLastArg, PaReq, 0, 0, 0, "", PAI_REST }
 /* ****************************************************************************
 *
 * paBuiltin - 
 */
-PaArgument paBuiltin[] =
+PaiArgument paBuiltin[] =
 {
  { 
     "--", 
@@ -62,59 +67,59 @@ PaArgument paBuiltin[] =
     false,
     true,
     false,
-    "X delimiter"
+    "X delimiter", PAI_REST
  },
 
- { "-U",        &paEUsageVar,    NULL,              PaBool, PaOpt,      F,     T,     F,  "extended usage",      PafError, { "NADA" }, 0, 0, false, false, false, false, 0 },
- { "-u",        &paUsageVar,     NULL,              PaBool, PaOpt,      F,     T,     F,  "usage"                     },
- { "-h",        &paUsageVar,     NULL,              PaBool, PaOpt,      F,     T,     F,  "usage"                     },
- { "-help",     &paHelpVar,      NULL,              PaBool, PaOpt,      F,     T,     F,  "show help"                 },
- { "--help",    &paHelpVar,      NULL,              PaBool, PaOpt,      F,     T,     F,  "show help"                 },
- { "--version", &paVersion,      NULL,              PaBool, PaOpt,      F,     T,     F,  "show version"              },
- { "-version",  &paVersion,      NULL,              PaBool, PaOpt,      F,     T,     F,  "show version"              },
- { "-logDir",   &paLogDir,       "LOG_DIR",         PaStr,  PaOpt,      0,  PaNL,  PaNL,  "log file directory"        },
- { "",          paUserName,      "!USER",           PaStr,  PaHid,      0,  PaNL,  PaNL,  "user name"                 },
- { "",          paPwd,           "!PWD",            PaStr,  PaHid,      0,  PaNL,  PaNL,  "current dir"               },
- { "",          paColumns,       "!COLUMNS",        PaStr,  PaHid,      0,  PaNL,  PaNL,  "columns"                   },
- { "",          paRows,          "!ROWS",           PaStr,  PaHid,      0,  PaNL,  PaNL,  "rows"                      },
- { "",          paDisplay,       "!DISPLAY",        PaStr,  PaHid,      0,  PaNL,  PaNL,  "display"                   },
- { "",          paEditor,        "!EDITOR",         PaStr,  PaHid,      0,  PaNL,  PaNL,  "editor"                    },
- { "",          paLang,          "!LANG",           PaStr,  PaHid,      0,  PaNL,  PaNL,  "language"                  },
- { "",          paPager,         "!PAGER",          PaStr,  PaHid,      0,  PaNL,  PaNL,  "pager"                     },
- { "",          paPpid,          "!PPID",           PaStr,  PaHid,      0,  PaNL,  PaNL,  "parent process id"         },
- { "",          paPrinter,       "!PRINTER",        PaStr,  PaHid,      0,  PaNL,  PaNL,  "printer"                   },
- { "",          paShell,         "!SHELL",          PaStr,  PaHid,      0,  PaNL,  PaNL,  "shell"                     },
- { "",          paTerm,          "!TERM",           PaStr,  PaHid,      0,  PaNL,  PaNL,  "terminal"                  },
- { "",          paSystem,        "!SYSTEM",         PaStr,  PaHid,      0,  PaNL,  PaNL,  "system"                    },
- { "",          paVisual,        "!VISUAL",         PaStr,  PaHid,      0,  PaNL,  PaNL,  "visual"                    },
- { "-t",        paTraceV,        "TRACE",           PaStr,  PaOpt,      0,  PaNL,  PaNL,  "trace level"               },
- { "-v",        &paVerbose,      "VERBOSE",         PaBool, PaOpt,      F,     T,     F,  "verbose mode"              },
- { "-vv",       &paVerbose2,     "VERBOSE2",        PaBool, PaOpt,      F,     T,     F,  "verbose2 mode"             },
- { "-vvv",      &paVerbose3,     "VERBOSE3",        PaBool, PaOpt,      F,     T,     F,  "verbose3 mode"             },
- { "-vvvv",     &paVerbose4,     "VERBOSE4",        PaBool, PaOpt,      F,     T,     F,  "verbose4 mode"             },
- { "-vvvvv",    &paVerbose5,     "VERBOSE5",        PaBool, PaOpt,      F,     T,     F,  "verbose5 mode"             },
- { "-d",        &paDebug,        "DEBUG",           PaBool, PaOpt,      F,     T,     F,  "debug mode"                },
- { "-toDo",     &paToDo,         "TODO",            PaBool, PaOpt,      F,     T,     F,  "toDo mode"                 },
- { "-r",        &paReads,        "READS",           PaBool, PaOpt,      F,     T,     F,  "reads mode"                },
- { "-w",        &paWrites,       "WRITES",          PaBool, PaOpt,      F,     T,     F,  "writes mode"               },
- { "-F",        &paFix,          "FIX",             PaBool, PaOpt,      F,     T,     F,  "fixes mode"                },
- { "-B",        &paBug,          "BUGS",            PaBool, PaOpt,      F,     T,     F,  "bugs mode"                 },
- { "-b",        &paBuf,          "BUFS",            PaBool, PaOpt,      F,     T,     F,  "buf mode"                  },
- { "-?",        &paDoubt,        "DOUBT",           PaBool, PaOpt,      F,     T,     F,  "doubts mode"               },
- { "-lmnc",     &paNoClear,      "NO_CLEAR",        PaBool, PaOpt,      F,     T,     F,  "don't clear log file"      },
- { "-lmca",     &paClearAt,      "CLEAR_AT",        PaInt,  PaOpt,     -1,  PaNL,  PaNL,  "clear at lines"            },
- { "-lmkl",     &paKeepLines,    "KEEP_LINES",      PaInt,  PaOpt,     -1,  PaNL,  PaNL,  "clear 'keep lines'"        },
- { "-lmll",     &paLastLines,    "LAST_LINES",      PaInt,  PaOpt,     -1,  PaNL,  PaNL,  "clear 'last lines'"        },
- { "-assert",   &paAssertAtExit, "ASSERT_AT_EXIT",  PaBool, PaOpt,      F,     T,     F,  "assert instead of exiting" },
+ { "-U",        &paEUsageVar,    NULL,              PaBool, PaOpt,      F,     T,     F,  "extended usage",              PAI_REST_IN_USAGE },
+ { "-u",        &paUsageVar,     NULL,              PaBool, PaOpt,      F,     T,     F,  "usage",                       PAI_REST_IN_USAGE },
+ { "-h",        &paUsageVar,     NULL,              PaBool, PaOpt,      F,     T,     F,  "usage",                       PAI_REST },
+ { "-help",     &paHelpVar,      NULL,              PaBool, PaOpt,      F,     T,     F,  "show help",                   PAI_REST },
+ { "--help",    &paHelpVar,      NULL,              PaBool, PaOpt,      F,     T,     F,  "show help",                   PAI_REST },
+ { "--version", &paVersion,      NULL,              PaBool, PaOpt,      F,     T,     F,  "show version",                PAI_REST_IN_USAGE },
+ { "-version",  &paVersion,      NULL,              PaBool, PaOpt,      F,     T,     F,  "show version",                PAI_REST },
+ { "-logDir",   &paLogDir,       "LOG_DIR",         PaStr,  PaOpt,      0,  PaNL,  PaNL,  "log file directory",          PAI_REST_IN_USAGE },
+ { "",          paUserName,      "!USER",           PaStr,  PaHid,      0,  PaNL,  PaNL,  "user name",                   PAI_REST },
+ { "",          paPwd,           "!PWD",            PaStr,  PaHid,      0,  PaNL,  PaNL,  "current dir",                 PAI_REST },
+ { "",          paColumns,       "!COLUMNS",        PaStr,  PaHid,      0,  PaNL,  PaNL,  "columns",                     PAI_REST },
+ { "",          paRows,          "!ROWS",           PaStr,  PaHid,      0,  PaNL,  PaNL,  "rows",                        PAI_REST },
+ { "",          paDisplay,       "!DISPLAY",        PaStr,  PaHid,      0,  PaNL,  PaNL,  "display",                     PAI_REST },
+ { "",          paEditor,        "!EDITOR",         PaStr,  PaHid,      0,  PaNL,  PaNL,  "editor",                      PAI_REST },
+ { "",          paLang,          "!LANG",           PaStr,  PaHid,      0,  PaNL,  PaNL,  "language",                    PAI_REST },
+ { "",          paPager,         "!PAGER",          PaStr,  PaHid,      0,  PaNL,  PaNL,  "pager",                       PAI_REST },
+ { "",          paPpid,          "!PPID",           PaStr,  PaHid,      0,  PaNL,  PaNL,  "parent process id",           PAI_REST },
+ { "",          paPrinter,       "!PRINTER",        PaStr,  PaHid,      0,  PaNL,  PaNL,  "printer",                     PAI_REST },
+ { "",          paShell,         "!SHELL",          PaStr,  PaHid,      0,  PaNL,  PaNL,  "shell",                       PAI_REST },
+ { "",          paTerm,          "!TERM",           PaStr,  PaHid,      0,  PaNL,  PaNL,  "terminal",                    PAI_REST },
+ { "",          paSystem,        "!SYSTEM",         PaStr,  PaHid,      0,  PaNL,  PaNL,  "system",                      PAI_REST },
+ { "",          paVisual,        "!VISUAL",         PaStr,  PaHid,      0,  PaNL,  PaNL,  "visual",                      PAI_REST },
+ { "-t",        paTraceV,        "TRACE",           PaStr,  PaOpt,      0,  PaNL,  PaNL,  "trace level",                 PAI_REST_IN_USAGE },
+ { "-v",        &paVerbose,      "VERBOSE",         PaBool, PaOpt,      F,     T,     F,  "verbose mode",                PAI_REST_IN_USAGE },
+ { "-vv",       &paVerbose2,     "VERBOSE2",        PaBool, PaOpt,      F,     T,     F,  "verbose2 mode",               PAI_REST_IN_USAGE },
+ { "-vvv",      &paVerbose3,     "VERBOSE3",        PaBool, PaOpt,      F,     T,     F,  "verbose3 mode",               PAI_REST_IN_USAGE },
+ { "-vvvv",     &paVerbose4,     "VERBOSE4",        PaBool, PaOpt,      F,     T,     F,  "verbose4 mode",               PAI_REST_IN_USAGE },
+ { "-vvvvv",    &paVerbose5,     "VERBOSE5",        PaBool, PaOpt,      F,     T,     F,  "verbose5 mode",               PAI_REST_IN_USAGE },
+ { "-d",        &paDebug,        "DEBUG",           PaBool, PaOpt,      F,     T,     F,  "debug mode",                  PAI_REST_IN_USAGE },
+ { "-toDo",     &paToDo,         "TODO",            PaBool, PaOpt,      F,     T,     F,  "toDo mode",                   PAI_REST },
+ { "-r",        &paReads,        "READS",           PaBool, PaOpt,      F,     T,     F,  "reads mode",                  PAI_REST_IN_USAGE },
+ { "-w",        &paWrites,       "WRITES",          PaBool, PaOpt,      F,     T,     F,  "writes mode",                 PAI_REST_IN_USAGE },
+ { "-F",        &paFix,          "FIX",             PaBool, PaOpt,      F,     T,     F,  "fixes mode",                  PAI_REST },
+ { "-B",        &paBug,          "BUGS",            PaBool, PaOpt,      F,     T,     F,  "bugs mode",                   PAI_REST },
+ { "-b",        &paBuf,          "BUFS",            PaBool, PaOpt,      F,     T,     F,  "buf mode",                    PAI_REST },
+ { "-?",        &paDoubt,        "DOUBT",           PaBool, PaOpt,      F,     T,     F,  "doubts mode",                 PAI_REST },
+ { "-lmnc",     &paNoClear,      "NO_CLEAR",        PaBool, PaOpt,      F,     T,     F,  "don't clear log file",        PAI_REST },
+ { "-lmca",     &paClearAt,      "CLEAR_AT",        PaInt,  PaOpt,     -1,  PaNL,  PaNL,  "clear at lines",              PAI_REST },
+ { "-lmkl",     &paKeepLines,    "KEEP_LINES",      PaInt,  PaOpt,     -1,  PaNL,  PaNL,  "clear 'keep lines'",          PAI_REST },
+ { "-lmll",     &paLastLines,    "LAST_LINES",      PaInt,  PaOpt,     -1,  PaNL,  PaNL,  "clear 'last lines'",          PAI_REST },
+ { "-assert",   &paAssertAtExit, "ASSERT_AT_EXIT",  PaBool, PaOpt,      F,     T,     F,  "assert instead of exiting",   PAI_REST },
 
- PA_END_OF_ARGS
+ PAI_END_OF_ARGS
 };
 
 #undef T
 #undef F
 
 
-
+extern int paBuiltins;
 /* ****************************************************************************
 *
 * paBuiltinNoOf - 
@@ -123,13 +128,23 @@ int paBuiltinNoOf(void)
 {
 	int ix = 0;
 
+	if (paBuiltins != -1)
+		return paBuiltins;
+
+	PA_M(("Counting builtins"));
+
 	if (paUseBuiltins == false)
+	{
+		PA_M(("Not using builtins!"));
 		return 0;
+	}
 
 	while (paBuiltin[ix].type != PaLastArg)
 		++ix;
 
-	return ix;
+	paBuiltins = ix;
+	PA_M(("%d builtins found", paBuiltins));
+	return paBuiltins;
 }
 
 
@@ -140,7 +155,7 @@ int paBuiltinNoOf(void)
 */
 int paBuiltinRemove(char* name)
 {
-	PaArgument* aP;
+	PaiArgument* aP;
 
 	/* 1. lookup aP->option or aP->variable          */
 	/* 2. if found - mark the aP as PaRemoved        */

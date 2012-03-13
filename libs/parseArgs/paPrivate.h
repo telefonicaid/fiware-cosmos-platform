@@ -8,8 +8,8 @@
 * AUTHOR                Ken Zangelin
 *
 */
-#include "baStd.h"         /* BaBoolean                                      */
-#include "parseArgs/parseArgs.h"     /* PaArgument                                     */
+#include "baStd.h"                   /* BaBoolean                            */
+#include "parseArgs/parseArgs.h"     /* PaArgument                           */
 
 
 
@@ -62,7 +62,15 @@ typedef union PaTypeUnion
 *
 * paBuiltin - 
 */
-extern PaArgument paBuiltin[];
+extern PaiArgument*  paiList;
+
+
+
+/* ****************************************************************************
+*
+* paBuiltin - 
+*/
+extern PaiArgument paBuiltin[];
 
 
 

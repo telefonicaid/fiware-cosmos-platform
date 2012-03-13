@@ -26,7 +26,7 @@ extern int builtins;
 *
 * paEnvName - get real name of variable (environment or RC-file variable)
 */
-char* paEnvName(PaArgument* aP, char* out)
+char* paEnvName(PaiArgument* aP, char* out)
 {
 	bool isbuiltin = ((aP->what & PawBuiltin) == PawBuiltin);
 
@@ -52,9 +52,9 @@ char* paEnvName(PaArgument* aP, char* out)
 *
 * paEnvVals - 
 */
-int paEnvVals(PaArgument* paList)
+int paEnvVals(PaiArgument* paList)
 {
-	PaArgument*  aP;
+	PaiArgument*  aP;
 	char         w[512];
 
 	paIterateInit();

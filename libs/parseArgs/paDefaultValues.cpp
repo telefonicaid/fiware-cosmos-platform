@@ -28,10 +28,10 @@
 *
 * paDefaultValues - set default values, initially
 */
-int paDefaultValues(PaArgument* paList)
+int paDefaultValues(PaiArgument* paList)
 {
-    PaArgument*  aP;
-    char         w[512];
+    PaiArgument*  aP;
+    char          w[512];
 
     LM_ENTRY();
 

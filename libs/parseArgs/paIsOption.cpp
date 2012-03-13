@@ -16,10 +16,10 @@
 *
 * paIsOption - is the string 'string' an option?
 */
-bool paIsOption(PaArgument* paList, char* string)
+bool paIsOption(PaiArgument* paList, char* string)
 {
-	int         len;
-	PaArgument* aP;
+	int          len;
+	PaiArgument* aP;
 
 	LM_ENTRY();
 	paIterateInit();

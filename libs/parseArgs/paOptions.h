@@ -16,6 +16,6 @@
 *
 * paOptionsNoOf - 
 */
-extern int paOptionsNoOf(PaArgument* paList);
+extern int paOptionsNoOf(PaiArgument* paList);
 
 #endif

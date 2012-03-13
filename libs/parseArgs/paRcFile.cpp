@@ -153,12 +153,12 @@ int paRcFileParse(PaArgument* paList)
 
 	while (fgets(line, sizeof(line), fP) != NULL)
 	{
-		char*        delim;
-		char*        var;
-		char*        val;
-		PaArgument*  aP;
-		bool         varFound;
-		char         envVarName[128];
+		char*         delim;
+		char*         var;
+		char*         val;
+		PaiArgument*  aP;
+		bool          varFound;
+		char          envVarName[128];
 
 		++lineNo;
 		LM_T(LmtPaRcFile, ("got line %d", lineNo));
@@ -203,7 +203,7 @@ int paRcFileParse(PaArgument* paList)
 		varFound = false;
 
 		paIterateInit();
-		while ((aP = paIterateNext(paList)) != NULL)
+		while ((aP = paIterateNext(paiList)) != NULL)
 		{
 			paEnvName(aP, envVarName);
 

@@ -41,7 +41,7 @@ static char* getSpaces(int spaces, char* s)
 *
 * limits - check limits for an option
 */
-static int limits(PaArgument* paList, PaArgument* aP, char* input)
+static int limits(PaiArgument* paList, PaiArgument* aP)
 {
 	char                valS[80];
 	bool                upper = true;
@@ -299,16 +299,16 @@ static int limits(PaArgument* paList, PaArgument* aP, char* input)
 *
 * paLimitCheck - check limits for all options
 */
-int paLimitCheck(PaArgument* paList)
+int paLimitCheck(PaiArgument* paList)
 {
-	PaArgument* aP;
+	PaiArgument* aP;
 
 	LM_ENTRY();
 
 	paIterateInit();
 	while ((aP = paIterateNext(paList)) != NULL)
 	{
-		if (limits(paList, aP, NULL) == -1)
+		if (limits(paList, aP) == -1)
 		{
 			LM_EXIT();
 			return -1;

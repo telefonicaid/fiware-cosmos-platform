@@ -16,6 +16,6 @@
 *
 * paIsOption - is the string 'string' an option?
 */
-extern bool paIsOption(PaArgument* paList, char* string);
+extern bool paIsOption(PaiArgument* paList, char* string);
 
 #endif

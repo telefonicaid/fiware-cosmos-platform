@@ -32,11 +32,6 @@ typedef enum PaGetVal
 *
 * paGetVal - calculate the integer value of a string
 */
-extern void* paGetVal
-(
-   char*  string,
-   int*   error,
-   char*  fullname
-);
+extern void* paGetVal(char* string, int* error);
 
 #endif

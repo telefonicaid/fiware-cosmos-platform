@@ -48,8 +48,8 @@ extern char        paLogDir[256];
 *
 * paBuiltin - vector of builtin
 */
-extern PaArgument paBuiltin[];
-extern int        paBuiltins;
+extern PaiArgument  paBuiltin[];
+extern int          paBuiltins;
 
 
 

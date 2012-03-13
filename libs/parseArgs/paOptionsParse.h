@@ -16,6 +16,6 @@
 *
 * paOptionsParse - 
 */
-extern int paOptionsParse(PaArgument* paList, char* argV[], int argC);
+extern int paOptionsParse(PaiArgument* paList, char* argV[], int argC);
 
 #endif

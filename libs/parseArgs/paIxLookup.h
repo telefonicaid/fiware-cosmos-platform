@@ -8,7 +8,7 @@
 * AUTHOR                Ken Zangelin
 *
 */
-#include "parseArgs/parseArgs.h"          /* PaArgument                                */
+#include "parseArgs/parseArgs.h"          /* PaArgument                      */
 
 
 
@@ -16,6 +16,6 @@
 *
 * paIxLookup - 
 */
-extern PaArgument* paIxLookup(PaArgument* paList, int ix);
+extern PaiArgument* paIxLookup(PaiArgument* paList, int ix);
 
 #endif

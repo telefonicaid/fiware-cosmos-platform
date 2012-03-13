@@ -24,7 +24,7 @@ extern void paIterateInit(void);
 *
 * paIterateNext - 
 */
-extern PaArgument* paIterateNext(PaArgument* paList);
+extern PaiArgument* paIterateNext(PaiArgument* paList);
 
 
 

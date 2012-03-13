@@ -14,32 +14,33 @@
 * $Log: paArgs.c,v $
 *
 */
-#include <stdio.h>              /* stderr, stdout, ...                       */
-#include <string.h>             /* strdup, strncmp                           */
-#include <memory.h>             /* memset                                    */
-#include <unistd.h>             /* getpid                                    */
-#include <stdlib.h>             /* exit                                      */
+#include <stdio.h>                        /* stderr, stdout, ...             */
+#include <string.h>                       /* strdup, strncmp                 */
+#include <memory.h>                       /* memset                          */
+#include <unistd.h>                       /* getpid                          */
+#include <stdlib.h>                       /* exit                            */
 
-#include "baStd.h"              /* BA standard header file                   */
-#include "logMsg/logMsg.h"      /* lmVerbose, lmDebug, ...                   */
+#include "parseArgs/baStd.h"              /* BA standard header file         */
+#include "logMsg/logMsg.h"                /* lmVerbose, lmDebug, ...         */
 
-#include "paPrivate.h"          /* PaTypeUnion, config variables, ...        */
-#include "paTraceLevels.h"      /* LmtPaEnvVal, ...                          */
-#include "paUsage.h"            /* paUsage, paExtendedUsage, paHelp          */
-#include "paConfig.h"           /* paConfigActions                           */
-#include "paFullName.h"         /* paFullName                                */
-#include "paBuiltin.h"          /* paBuiltin, paBuiltinNoOf                  */
-#include "paEnvVals.h"          /* paEnvVals                                 */
-#include "paRcFile.h"           /* paRcFileParse                             */
-#include "paWarning.h"          /* paWaringInit, paWarningAdd                */
-#include "paIterate.h"          /* paIterateInit, paIterateNext              */
-#include "paDefaultValues.h"    /* paDefaultValues                           */
-#include "paOptionsParse.h"     /* paOptionsParse                            */
-#include "paLimitCheck.h"       /* paLimitCheck                              */
-#include "paLogSetup.h"         /* paLogSetup                                */
-#include "paIxLookup.h"         /* paIxLookup                                */
-#include "paOptions.h"          /* paOptionsNoOf                             */
-#include "parseArgs.h"          /* Own interface                             */
+#include "parseArgs/paPrivate.h"          /* PaTypeUnion, config variables,  */
+#include "parseArgs/paTraceLevels.h"      /* LmtPaEnvVal, ...                */
+#include "parseArgs/paUsage.h"            /* paUsage, paExtendedUsage, paHelp*/
+#include "parseArgs/paLog.h"              /* PA_XXX                          */
+#include "parseArgs/paConfig.h"           /* paConfigActions                 */
+#include "parseArgs/paFullName.h"         /* paFullName                      */
+#include "parseArgs/paBuiltin.h"          /* paBuiltin, paBuiltinNoOf        */
+#include "parseArgs/paEnvVals.h"          /* paEnvVals                       */
+#include "parseArgs/paRcFile.h"           /* paRcFileParse                   */
+#include "parseArgs/paWarning.h"          /* paWaringInit, paWarningAdd      */
+#include "parseArgs/paIterate.h"          /* paIterateInit, paIterateNext    */
+#include "parseArgs/paDefaultValues.h"    /* paDefaultValues                 */
+#include "parseArgs/paOptionsParse.h"     /* paOptionsParse                  */
+#include "parseArgs/paLimitCheck.h"       /* paLimitCheck                    */
+#include "parseArgs/paLogSetup.h"         /* paLogSetup                      */
+#include "parseArgs/paIxLookup.h"         /* paIxLookup                      */
+#include "parseArgs/paOptions.h"          /* paOptionsNoOf                   */
+#include "parseArgs/parseArgs.h"          /* Own interface                   */
 
 
 
@@ -56,12 +57,22 @@ char*        paExtraLogSuffix = NULL;  /* To append to log file path         */
 
 /* ****************************************************************************
 *
+* Global vars
+*/
+PaiArgument* paiList;
+bool         paLogOn    = false;
+int          paBuiltins = -1;
+
+
+
+/* ****************************************************************************
+*
 * optionNameDuplicated - 
 */
 static bool optionNameDuplicated(char* name, PaArgument* paList, int start)
 {
 	int ix;
-	int opts    = paOptionsNoOf(paList);
+	int opts    = paOptionsNoOf(paiList);
 	int matches = 0;
 
 	if (name == NULL)
@@ -71,9 +82,9 @@ static bool optionNameDuplicated(char* name, PaArgument* paList, int start)
 
 	for (ix = start; ix < opts; ix++)
 	{
-		PaArgument* aP;
+		PaiArgument* aP;
 
-		if ((aP = paIxLookup(paList, ix)) == NULL)
+		if ((aP = paIxLookup(paiList, ix)) == NULL)
 			break;
 
 		if (aP->option == NULL)
@@ -107,7 +118,7 @@ static bool optionNameDuplicated(char* name, PaArgument* paList, int start)
 static bool envNameDuplicated(char* name, PaArgument* paList, int start)
 {
 	int   ix;
-	int   opts    = paOptionsNoOf(paList);
+	int   opts    = paOptionsNoOf(paiList);
 	int   matches = 0;
 	
 	if (name == NULL)
@@ -117,10 +128,10 @@ static bool envNameDuplicated(char* name, PaArgument* paList, int start)
 
 	for (ix = start; ix < opts; ix++)
 	{
-		PaArgument* aP;
-		char        envVarName[128];
+		PaiArgument*  aP;
+		char          envVarName[128];
 
-		if ((aP = paIxLookup(paList, ix)) == NULL)
+		if ((aP = paIxLookup(paiList, ix)) == NULL)
 			break;
 
 		if (aP->removed == true)
@@ -148,12 +159,34 @@ static bool envNameDuplicated(char* name, PaArgument* paList, int start)
 */
 static int paArgInit(PaArgument* paList)
 {
-	PaArgument* aP;
-	int         parNo = 0;
-	int         ix    = 0;
+	PaiArgument* aP;
+	int          parNo = 0;
+	int          ix    = 0;
+	int          args  = 0;
+
+	while (paList[ix].type != PaLastArg)
+	{
+        ++args;
+		++ix;
+	}
+
+	paiList = (PaiArgument*) calloc(args + 1, sizeof(PaiArgument));
+	if (paiList == NULL)
+	{
+		PA_E(("Error allocating room for %d options", args));
+		exit(1);
+	}
+
+    PA_M(("Allocated room for %d args (plus one)", args));
+	for (ix = 0; ix < args + 1; ix++)
+    {
+		PA_M(("Copying arg %d", ix));
+        memcpy(&paiList[ix], &paList[ix], sizeof(paList[ix]));
+		paiList[ix].isBuiltin = false;
+    }
 
 	paIterateInit();
-	while ((aP = paIterateNext(paList)) != NULL)
+	while ((aP = paIterateNext(paiList)) != NULL)
 	{
 		char envVarName[128];
 
@@ -377,7 +410,6 @@ int paParse
 	}
 
 
-
 	/* ************************************************* */
 	/* The rcFileName must not have any '/' in its name. */
 	/* it should be called (by default) .<progname>rc    */
@@ -402,7 +434,7 @@ int paParse
 	if ((s != -2) && ((s = paConfigActions(true)) == -1))
 		RETURN_ERROR("paConfigActions");
 
-	if ((s != -2) && ((s = paDefaultValues(paList)) == -1))
+	if ((s != -2) && ((s = paDefaultValues(paiList)) == -1))
 		RETURN_ERROR("paDefaultValues");
 
 #if 0
@@ -411,16 +443,16 @@ int paParse
 		RETURN_ERROR("paRcFileParse");
 #endif
 
-	if ((s != -2) && ((s = paEnvVals(paList)) == -1))
+	if ((s != -2) && ((s = paEnvVals(paiList)) == -1))
 		RETURN_ERROR("paEnvVals");
 
-	if ((s != -2) && ((s = paOptionsParse(paList, argV, argC)) == -1))
+	if ((s != -2) && ((s = paOptionsParse(paiList, argV, argC)) == -1))
 		RETURN_ERROR("paOptionsParse");
 
 	if (paLogSetup() == -1)
 		RETURN_ERROR("paLogSetup error");
 
-	if ((s != -2) && ((s = paLimitCheck(paList)) == -1))
+	if ((s != -2) && ((s = paLimitCheck(paiList)) == -1))
 		RETURN_ERROR("paLimitCheck");
 
 	if ((s != -2) && ((s = paConfigActions(false)) == -1))
@@ -452,7 +484,7 @@ int paParse
 				fprintf(fP, "%s\n\n", paWarning[ix].string);
 
 			if (paUsageOnAnyWarning)
-			  paUsage(paList);
+			  paUsage();
 			if (paResultString[0] != 0)
 			  fprintf(fP, "%s\n", paResultString);
 
@@ -478,7 +510,7 @@ int paParse
 			if (paUsageOnAnyWarning)
 			{
 			  printf("paUsageOnAnyWarning == true (2)\n");
-			  paUsage(paList);
+			  paUsage();
 			}
 		}
 	}

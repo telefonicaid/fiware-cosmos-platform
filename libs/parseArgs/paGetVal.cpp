@@ -14,7 +14,7 @@
 *
 * paGetVal - calculate the integer value of a string
 */
-void* paGetVal(char* string, int* error, char* fullname)
+void* paGetVal(char* string, int* error)
 {
 	long      value;
 	int       type;

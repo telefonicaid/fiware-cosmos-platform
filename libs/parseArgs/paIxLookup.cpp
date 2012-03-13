@@ -12,7 +12,7 @@
 *
 * paIxLookup - 
 */
-PaArgument* paIxLookup(PaArgument* paList, int ix)
+PaiArgument* paIxLookup(PaiArgument* paList, int ix)
 {
    int builtins = paBuiltinNoOf();
 

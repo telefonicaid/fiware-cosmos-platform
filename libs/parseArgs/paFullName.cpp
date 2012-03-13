@@ -9,7 +9,7 @@
 *
 * paFullName - fill in name and description in string string
 */
-char* paFullName(char* string, PaArgument* aP)
+char* paFullName(char* string, PaiArgument* aP)
 {
 	if ((aP->option == NULL) || (aP->option[0] == 0))
 		sprintf(string, "variable %s", aP->description);

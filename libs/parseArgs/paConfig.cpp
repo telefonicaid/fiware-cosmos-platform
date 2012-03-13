@@ -16,6 +16,7 @@
 
 #include "paPrivate.h"          /* PaTypeUnion, config variables, ...        */
 #include "paTraceLevels.h"      /* LmtPaDefaultValues, ...                   */
+#include "paLog.h"              /* PA_XXX                                    */
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */
 #include "paBuiltin.h"          /* paBuiltinRemove                           */
 #include "paLog.h"              /* log macros to debug paConfig              */
@@ -122,131 +123,197 @@ typedef struct PaVars
 */
 void paConfigCleanup(void)
 {
+	PA_M(("Cleaning up"));
+
 	if (paPrefix)
     {
 		free(paPrefix);
         paPrefix = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paBuiltinPrefix)
     {
 		free(paBuiltinPrefix);
         paBuiltinPrefix = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paProgName != NULL)
     {
 		free(paProgName);
         paProgName = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paRcFileName != NULL)
     {
 		free(paRcFileName);
         paRcFileName = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paRcFileDir)
     {
 		free(paRcFileDir);
         paRcFileDir = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paGenericRcDir)
     {
 		free(paGenericRcDir);
         paGenericRcDir = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paVersionString)
     {
 		free(paVersionString);
         paVersionString = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paExecVersion)
     {
 		free(paExecVersion);
         paExecVersion = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paHelpFile)
     {
 		free(paHelpFile);
         paHelpFile = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paHelpText)
     {
 		free(paHelpText);
         paHelpText = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paTracelevels)
     {
 		free(paTracelevels);
         paTracelevels = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paTraceInfoAtEol != NULL)
     {
         free(paTraceInfoAtEol);
         paTraceInfoAtEol = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paLogFilePath != NULL)
     {
 		free(paLogFilePath);
         paLogFilePath = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paLogFileLineFormat != NULL)
     {
 		free(paLogFileLineFormat);
         paLogFileLineFormat = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paLogFileTimeFormat != NULL)
     {
         free(paLogFileTimeFormat);
         paLogFileTimeFormat = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paLogScreenLineFormat != NULL)
     {
 		free(paLogScreenLineFormat);
         paLogScreenLineFormat = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paLogScreenTimeFormat != NULL)
     {
         free(paLogScreenTimeFormat);
         paLogScreenTimeFormat = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paManSynopsis)
     {
 		free(paManSynopsis);
         paManSynopsis = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paManShortDescription)
     {
 		free(paManShortDescription);
         paManShortDescription = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paManDescription)
     {
 		free(paManDescription);
         paManDescription = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paManExitStatus)
     {
 		free(paManExitStatus);
         paManExitStatus = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paManAuthor)
     {
 		free(paManAuthor);
         paManAuthor = NULL;
     }
+
+	PA_M(("Cleaning up"));
 	if (paManReportingBugs)
     {
 		free(paManReportingBugs);
         paManReportingBugs = NULL;
     }
+
+	PA_M(("freeing paManCopyright"));
 	if (paManCopyright)
     {
 		free(paManCopyright);
         paManCopyright = NULL;
     }
+
+	PA_M(("freeing paManVersion"));
 	if (paManVersion)
     {
 		free(paManVersion);
         paManVersion = NULL;
     }
+
+	PA_M(("freeing paiList"));
+	if (paiList != NULL)
+	{
+		PA_M(("freeing paiList"));
+		free(paiList);
+		PA_M(("freeing paiList"));
+		paiList = NULL;
+		PA_M(("freed paiList II"));
+	}
+
+	PA_M(("Clean up DONE"));
+	PA_M(("Clean up DONE"));
+	PA_M(("Clean up DONE"));
+
+	exit(0);
 }
 
 

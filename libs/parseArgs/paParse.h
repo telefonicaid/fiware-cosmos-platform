@@ -8,9 +8,6 @@
 * AUTHOR                Ken Zangelin
 *
 */
-
-
-
-extern char progNameV[512];
+extern char          progNameV[512];
 
 #endif

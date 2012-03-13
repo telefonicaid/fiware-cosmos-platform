@@ -144,16 +144,16 @@ namespace samson {
 		virtual int _receive( Packet* packet );
 
         // Notification form a delilah component
-        virtual void delilahComponentStartNotification( DelilahComponent *component){};
-        virtual void delilahComponentFinishNotification( DelilahComponent *component){};
+        virtual void delilahComponentStartNotification( DelilahComponent *component)  { component = NULL; };
+        virtual void delilahComponentFinishNotification( DelilahComponent *component) { component = NULL; };
 
 		// Write something on screen
-		virtual void showMessage( std::string message){};
-		virtual void showWarningMessage( std::string message){};
-		virtual void showErrorMessage( std::string message){};
+		virtual void showMessage( std::string message)          { LM_D(("not implemented (%s)", message.c_str())); };
+		virtual void showWarningMessage( std::string message)   { LM_D(("not implemented (%s)", message.c_str())); };
+		virtual void showErrorMessage( std::string message)     { LM_D(("not implemented (%s)", message.c_str())); };
         
 		// Show traces  ( by default it does nothing )
-		virtual void showTrace( std::string message){};
+		virtual void showTrace( std::string message)            { LM_D(("not implemented (%s)", message.c_str())); };
 		
 		// Callback to notify that a particular operation has finished
 		virtual void notifyFinishOperation( size_t )

@@ -1,4 +1,5 @@
 
+#include <stdlib.h> // malloc
 
 #include "KVFile.h" // Own interface
 

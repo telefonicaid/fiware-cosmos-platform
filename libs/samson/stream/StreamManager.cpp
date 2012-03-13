@@ -59,10 +59,6 @@ namespace samson {
             }
             
             
-
-            // Recover state from log-file
-            recoverStateFromDisk();
-            
             id_pop_queue = 1;    // Init the id counter for pop queue operations
 
             // Init flag to detect if we are saving state to disk
@@ -73,7 +69,10 @@ namespace samson {
             listen( notification_review_stream_manager_save_state );
             listen( notification_samson_worker_check_finish_tasks );
             listen( notification_network_diconnected );
+            listen( notification_recoverStateFromDisk );
             
+            // Create a notification for the recover state from disk
+            engine::Engine::shared()->notify( new engine::Notification( notification_recoverStateFromDisk ) );
         }
 
         
@@ -85,6 +84,15 @@ namespace samson {
         
         void StreamManager::notify( engine::Notification* notification )
         {
+            
+            if( notification->isName( notification_recoverStateFromDisk ) )
+            {
+                // Recover state from log-file
+                LM_M(("Recovering state from disk..."));
+                recoverStateFromDisk();
+                LM_M(("Recovering state from disk...done"));
+                return;
+            }
             
             if( notification->isName( notification_network_diconnected ) )
             {

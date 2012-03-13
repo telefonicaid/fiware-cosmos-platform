@@ -21,9 +21,12 @@
 #define notification_review_stream_manager_fast           "notification_review_stream_manager_fast"
 #define notification_review_stream_manager_save_state     "notification_review_stream_manager_save_state"
 
-
 // Notification that a network element has been disconnected
 #define notification_network_diconnected                    "notification_network_diconnected"
+
+// Notification to recover state from files
+#define notification_recoverStateFromDisk                   "notification_recoverStateFromDisk"
+
 
 // Notification to review repeat commands in delilha
 #define notification_delilah_review_repeat_tasks            "notification_delilah_review_repeat_tasks"

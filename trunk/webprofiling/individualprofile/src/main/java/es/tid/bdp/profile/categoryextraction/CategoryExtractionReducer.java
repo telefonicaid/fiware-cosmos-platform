@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.filecache.DistributedCache;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
@@ -15,9 +13,7 @@ import es.tid.bdp.profile.data.ProfileProtocol.CategoryInformation;
 import es.tid.bdp.profile.data.ProfileProtocol.UserNavigation;
 import es.tid.bdp.profile.dictionary.Categorization;
 import es.tid.bdp.profile.dictionary.Dictionary;
-import es.tid.bdp.profile.dictionary.comscore.CSDictionary;
 import es.tid.bdp.profile.dictionary.comscore.CSDictionaryHadoopHandler;
-import es.tid.bdp.profile.dictionary.comscore.CSDictionaryJNIInterface;
 
 /*
  * Enum with the list of counters to use in the CategoryExtraction mapreduces.
@@ -32,7 +28,7 @@ public class CategoryExtractionReducer extends Reducer<BinaryKey,
 
     @Override
     public void setup(Context context) throws IOException {
-        setupDictionary(context);
+        this.setupDictionary(context);
 
         this.catWrapper = new ProtobufWritable<CategoryInformation>();
         this.catWrapper.setConverter(CategoryInformation.class);

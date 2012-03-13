@@ -3,6 +3,7 @@ package es.tid.bdp.profile.export.ps;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -23,16 +24,16 @@ public class PSExporterReducer extends Reducer<Text,
                                                ProtobufWritable<UserProfile>,
                                                NullWritable, Text> {
     private static CSDictionary dictionary = null;
-    protected static String[] categoryNames = null;
+    private static String[] categoryNames = null;
 
     private StringBuilder builder;
     private Text record;
-    private HashMap<String, CategoryCount> categories;
+    private Map<String, CategoryCount> categories;
     private Counter recordCounter;
 
     @Override
     public void setup(Context context) throws IOException {
-        setupDictionary(context);
+        this.setupDictionary(context);
 
         this.builder = new StringBuilder();
         this.record = new Text();
@@ -43,7 +44,11 @@ public class PSExporterReducer extends Reducer<Text,
     protected void setupDictionary(Context context) throws IOException {
         CSDictionaryHadoopHandler.init(context);
         dictionary = CSDictionaryHadoopHandler.get();
-        categoryNames = dictionary.getAllCategoryNames();
+        this.setCategoryNames(dictionary.getAllCategoryNames());
+    }
+    
+    protected void setCategoryNames(String[] categoryNames) {
+        this.categoryNames = categoryNames.clone();
     }
     
     @Override

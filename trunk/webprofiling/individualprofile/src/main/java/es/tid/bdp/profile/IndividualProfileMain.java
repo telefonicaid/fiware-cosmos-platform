@@ -20,8 +20,11 @@ import es.tid.bdp.profile.userprofile.UserProfileJob;
  * @author dmicol, sortega
  */
 public class IndividualProfileMain extends Configured implements Tool {
-    public static final String INPUT_SERIALIZATION = "input.serialization";
-    public static final String PROTOBUF_SERIALIZATION = "protobuf";
+    private static final int MIN_ARGS = 2;
+    private static final int MAX_ARGS = 3;
+    
+    private static final String INPUT_SERIALIZATION = "input.serialization";
+    private static final String PROTOBUF_SERIALIZATION = "protobuf";
 
     private static final String TMP_DIR = "/tmp/individualprofile";
     private static final String CATEGORIES_PATH = TMP_DIR + "/categories";
@@ -33,7 +36,7 @@ public class IndividualProfileMain extends Configured implements Tool {
     @Override
     public int run(String[] args)
             throws IOException, ClassNotFoundException, InterruptedException {
-        if (args.length < 2 || args.length > 3) {
+        if (args.length < MIN_ARGS || args.length > MAX_ARGS) {
             throw new IllegalArgumentException("Mandatory parameters: "
                     + "[-D input.serialization=text|protobuf] "
                     + "weblogs_path psoutput_path [mongo_url]\n"
@@ -72,7 +75,7 @@ public class IndividualProfileMain extends Configured implements Tool {
         }
         
         // Perform the MongoDB export.
-        if (args.length == 3) {
+        if (args.length == MAX_ARGS) {
             String mongoUrl = args[2];
             MongoDBExporterJob exMongoJob = new MongoDBExporterJob(
                     this.getConf());

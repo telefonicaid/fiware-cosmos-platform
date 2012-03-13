@@ -33,9 +33,9 @@ public class PSExporterReducerTest {
             @Override
             protected void setupDictionary(Context context) throws IOException {
                 // Avoid loading the real dictionary
-                categoryNames = new String[] { "Sport", "Leisure", "Games",
-                                               "Lifestyle", "News", "Search",
-                                               "Shopping", "Social" };
+                this.setCategoryNames(
+                        new String[]{"Sport", "Leisure", "Games", "Lifestyle",
+                                     "News", "Search", "Shopping", "Social"});
             }
         };
         this.driver = new ReduceDriver<Text, ProtobufWritable<UserProfile>,

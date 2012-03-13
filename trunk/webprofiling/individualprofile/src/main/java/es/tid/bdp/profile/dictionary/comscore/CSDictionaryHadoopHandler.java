@@ -6,8 +6,6 @@ import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
-import es.tid.bdp.profile.dictionary.Dictionary;
-
 /**
  *
  * @author dmicol

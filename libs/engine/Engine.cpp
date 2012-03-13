@@ -44,7 +44,7 @@ void* runEngineBackground(void* e)
     Engine::shared()->run();
     Engine::shared()->running_thread = false;
     
-    return NULL;
+    return e;
 }
 
 Engine::Engine() : token("EngineToken")

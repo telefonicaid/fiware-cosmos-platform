@@ -44,7 +44,8 @@ namespace samson {
         virtual int serial_compare( char* data1 , char* data2 )=0;        
         virtual void setFromString( const char* str )
         {
-            str = NULL;
+            if (str == NULL)
+                return;
             // Set value from a char* ( used to lookup by key )
         }
         

@@ -388,14 +388,14 @@ namespace samson {
          \param writer element to deliver output value pairs \n
          */
         
-        virtual void init(KVWriter *writer) { writer = NULL; };     // Called once before running any operation
+        virtual void init(KVWriter *writer) { if (writer == NULL) return; };     // Called once before running any operation
 
         // Called once to inform the generator about how many different generators will run in paralel in the cluster
-        virtual void setup( int worker , int num_workers, int process , int num_processes) { worker = -1; num_workers = -1; process = -1; num_processes = -1; };
+        virtual void setup( int worker , int num_workers, int process , int num_processes) { if (worker == -1 || num_workers == -1 || process == -1 || num_processes == -1) return; };
         
         virtual void run( KVWriter *writer )=0;
         
-        virtual void finish(KVWriter *writer) { writer = NULL; };     // Called once after all operations are executed
+        virtual void finish(KVWriter *writer) { if (writer == NULL) return; };     // Called once after all operations are executed
 
     };
     
@@ -416,11 +416,11 @@ namespace samson {
          Main function to overload by the operation
          */
 
-        virtual void init(KVWriter *writer) { writer = NULL; };      // Called once before running any operation
+        virtual void init(KVWriter *writer) { if (writer == NULL) return; };      // Called once before running any operation
 
         virtual void run(KVSetStruct* inputs , KVWriter *writer )=0;
         
-        virtual void finish(KVWriter *writer) { writer = NULL; };     // Called once after all operations are executed
+        virtual void finish(KVWriter *writer) { if (writer == NULL) return; };     // Called once after all operations are executed
 
     };
     
@@ -442,11 +442,11 @@ namespace samson {
          Main function to overload by the operation
          */
 
-        virtual void init(TXTWriter *writer) { writer = NULL; };      // Called once before running any operation
+        virtual void init(TXTWriter *writer) { if (writer == NULL) return; };      // Called once before running any operation
 
         virtual void run(KVSetStruct* inputs , TXTWriter *writer )=0;
 
-        virtual void finish(TXTWriter *writer) { writer = NULL; };   // Called once after all operations are executed
+        virtual void finish(TXTWriter *writer) { if (writer == NULL) return; };   // Called once after all operations are executed
 
     };
 
@@ -467,11 +467,11 @@ namespace samson {
          Main function to overload by the operation
          */
 
-        virtual void init(TXTWriter *writer) {writer = NULL; };      // Called once before running any operation
+        virtual void init(TXTWriter *writer) {if (writer == NULL) return; };      // Called once before running any operation
 
         virtual void run(KVSetStruct* inputs , TXTWriter *writer )=0;
 
-        virtual void finish(TXTWriter *writer) { writer = NULL; };   // Called once after all operations are executed
+        virtual void finish(TXTWriter *writer) { if (writer == NULL) return; };   // Called once after all operations are executed
         
     };
     
@@ -495,11 +495,11 @@ namespace samson {
          Main function to overload by the map
          */
 
-        virtual void init(KVWriter *writer) { writer = NULL; };      // Called once before running any operation
+        virtual void init(KVWriter *writer) { if (writer == NULL) return; };      // Called once before running any operation
 
         virtual void run(KVSetStruct* inputs, samson::KVWriter *writer) = 0;
         
-        virtual void finish(KVWriter *writer) { writer = NULL; };    // Called once after all operations are executed
+        virtual void finish(KVWriter *writer) { if (writer == NULL) return; };    // Called once after all operations are executed
 
     };
     
@@ -531,11 +531,11 @@ namespace samson {
     {
     public:
 
-        virtual void init(KVWriter *writer) { writer = NULL; };      // Called once before running any operation
+        virtual void init(KVWriter *writer) { if (writer == NULL) return; };      // Called once before running any operation
 
         virtual void run( char *data , size_t length , samson::KVWriter *writer )=0;
 
-        virtual void finish(KVWriter *writer) { writer = NULL; };    // Called once after all operations are executed
+        virtual void finish(KVWriter *writer) { if (writer == NULL) return; };    // Called once after all operations are executed
     };
     
 }

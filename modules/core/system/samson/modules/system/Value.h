@@ -321,12 +321,23 @@ namespace samson{
 
                     case ser_string_smaz:
                     {
-                        char line[1024];
-                        int len_in = (char)data[1];
-                        int len = smaz_decompress( &data[2] , len_in, (char*)line, 1024 );
+                        char line[8192];
+                        
+                        // We skip the serialization char
+                        size_t offset = 1;
+                        
+                        size_t len_in = 0;
+                        offset += samson::staticVarIntParse( data + offset , &len_in);
+                        
+                        int len = smaz_decompress( data + offset , len_in, (char*)line, 8192 );
+                        
+                        //printf("Parsing compress string length %lu // Original string length %d\n" , len_in , len );
+                        
                         line[len] = '\0';
                         _value_string = line;
-                        return  1 + 1 + len_in ; // serializtion code, length , compressed_string 
+
+                        offset += len_in;
+                        return offset;
                     }
                         
                     default:
@@ -686,20 +697,31 @@ namespace samson{
 
             int serialize_string(char *data)
             {
-                // Try compressed vertion
-                    char line[1024];
-                size_t len = ::smaz_compress((char*) _value_string.c_str(), _value_string.length() , line, 1024);
-                
-                if( len < 256 )
+                if( _value_string.length() < 4096 )
+                {
+                    // Try compressed vertion
+                    char line[8192];
+                    size_t len = ::smaz_compress((char*) _value_string.c_str(), _value_string.length() , line, 8192);
+                    
                     if( len < _value_string.length() )
                     {
                         // Serialize using compression
-                        data[0] = (char) ser_string_smaz;
-                        data[1] = (char) len;
-                        memcpy( data+2, line , len );
-                        int total  = 1 + ( 1 + len ); // Serialization code - strin - '\0'                        
-                        return total;
+                        size_t offset = 0;
+                        
+                        data[offset] = (char) ser_string_smaz;
+                        offset++;
+                        
+                        offset += samson::staticVarIntSerialize( data + offset , len );
+
+                        memcpy( data+offset, line , len );
+                        offset += len;
+                        
+                        //printf("Serialized string length %lu // Sent len %lu" , _value_string.length() , len  );
+                        
+                        return offset;
                     }
+                    
+                }
 
                 // Default serialization of string
                 data[0] = (char) ser_string;

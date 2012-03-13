@@ -78,7 +78,7 @@ void test_selialization( double v )
 
 void test_selialization( std::string txt )
 {
-    char data[1000];
+    char data[10000];
     samson::system::Value value, value2;
     value.set_string(txt);
     size_t size = value.serialize(data);
@@ -99,7 +99,8 @@ void test_selialization( std::string txt )
     std::string txt2 = value2.get_string();
     if( txt != txt2 )
     {
-        printf("Error serialiazing '%s': Recovered '%s'\n" , txt.c_str() , txt2.c_str() );
+        printf("Error serialiazing '%s (length %lu)'\n" , txt.c_str() , txt.length() );
+        printf("RECOVERED: '%s'\n" , txt2.c_str() );
         exit(0);
     }
     
@@ -147,6 +148,9 @@ void test_selialization( )
     test_selialization("http://www.google.com");
     test_selialization("Esto es una frase como qualquier otra");
 
+    /*
+    test_selialization("Esto es una prueba con un string la leche de largo porque he observado que cuando el string pasa de cierto numero de caracteres pasan cosas muy raras.Esto es una prueba con un string la leche de largo porque he observado que cuando el string pasa de cierto numero de caracteres pasan cosas muy raras.Esto es una prueba con un string la leche de largo porque he observado que cuando el string pasa de cierto numero de caracteres pasan cosas muy raras.Esto es una prueba con un string la leche de largo porque he observado que cuando el string pasa de cierto numero de caracteres pasan cosas muy raras.Esto es una prueba con un string la leche de largo porque he observado que cuando el string pasa de cierto numero de caracteres pasan cosas muy raras.Esto es una prueba con un string la leche de largo porque he observado que cuando el string pasa de cierto numero de caracteres pasan cosas muy raras.Esto es una prueba con un string la leche de largo porque he observado que cuando el string pasa de cierto numero de caracteres pasan cosas muy raras.Esto es una prueba con un string la leche de largo porque he observado que cuando el string pasa de cierto numero de caracteres pasan cosas muy raras.Esto es una prueba con un string la leche de largo porque he observado que cuando el string pasa de cierto numero de caracteres pasan cosas muy raras.Esto es una prueba con un string la leche de largo porque he observado que cuando el string pasa de cierto numero de caracteres pasan cosas muy raras.Esto es una prueba con un string la leche de largo porque he observado que cuando el string pasa de cierto numero de caracteres pasan cosas muy raras.Esto es una prueba con un string la leche de largo porque he observado que cuando el string pasa de cierto numero de caracteres pasan cosas muy raras.Esto es una prueba con un string la leche de largo porque he observado que cuando el string pasa de cierto numero de caracteres pasan cosas muy raras.Esto es una prueba con un string la leche de largo porque he observado que cuando el string pasa de cierto numero de caracteres pasan cosas muy raras.Esto es una prueba con un string la leche de largo porque he observado que cuando el string pasa de cierto numero de caracteres pasan cosas muy raras.");
+    */
     
 }
 

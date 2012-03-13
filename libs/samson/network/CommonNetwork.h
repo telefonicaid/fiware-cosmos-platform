@@ -62,10 +62,9 @@ namespace samson {
         void receive( NetworkConnection* connection, Packet* packet );
         virtual void processHello(NetworkConnection* connection , Packet* packet)
         {
-            connection = NULL;
-            packet     = NULL;
-
             LM_W(("processHello not implemented"));
+            if ((connection == NULL) || (packet == NULL))
+                return;
         }
 
         // NetworkInterface common methods

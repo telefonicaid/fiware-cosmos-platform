@@ -49,17 +49,17 @@ namespace samson {
         // Main interface to inform avout a new connection comming from a listener
         virtual void newSocketConnection(NetworkListener* listener , SocketConnection* socket_connetion)
         {
-            listener         = NULL;
-            socket_connetion = NULL;
             LM_W(("NetworkManager::newSocketConnection not implemented"));
+            if ((listener == NULL) || (socket_connetion == NULL))
+                return;
         }
         
         // Interface to inform about a received packet from a network connection
         virtual void receive( NetworkConnection* connection, Packet* packet )
         {
-            connection = NULL;
-            packet     = NULL;
             LM_W(("NetworkManager::receive not implemented"));
+            if ((connection == NULL) || (packet == NULL))
+                return;
         }
 
         // Add a network connection

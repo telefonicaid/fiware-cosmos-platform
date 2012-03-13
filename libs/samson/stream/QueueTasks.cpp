@@ -529,8 +529,6 @@ namespace samson {
                 // Check if this is inside the range we are interested in processing
                 if( ( hg >= range.hg_begin ) && (hg < range.hg_end) )
                 {
-                    LM_W(("Reduce operation hg %d (%s)" , hg , range.str().c_str() ));
-
                     // Prepare the blockReaderCollection for thi hash-group
                     size_t num_kvs = blockreaderCollection.prepare( hg );
                     

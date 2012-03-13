@@ -214,6 +214,12 @@ namespace samson
             autoCompleteQueues( info );
         }
 
+        if (info->completingSecondWord("rm_queue") )
+        {
+            autoCompleteQueues( info );
+        }
+        
+        
         if (info->completingSecondWord("ls_stream_operations") )
         {
             info->add("-properties");

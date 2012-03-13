@@ -4,8 +4,8 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.bdp.base.mapreduce.BinaryKey;
 import es.tid.bdp.base.mapreduce.CompositeKey;
-import es.tid.bdp.base.mapreduce.SingleKey;
 
 /**
  *
@@ -21,9 +21,9 @@ public class PageViewKpiCounterGroupedComparatorTest {
     
     @Test
     public void testCompare() {
-        CompositeKey k1 = new SingleKey("a");
-        CompositeKey k2 = new SingleKey("b");
-        CompositeKey k3 = new SingleKey("a");
+        CompositeKey k1 = new BinaryKey("a", "c");
+        CompositeKey k2 = new BinaryKey("b", "c");
+        CompositeKey k3 = new BinaryKey("a", "c");
         assertEquals(-1, this.instance.compare(k1, k2));
         assertEquals(1, this.instance.compare(k2, k1));
         assertEquals(0, this.instance.compare(k1, k3));

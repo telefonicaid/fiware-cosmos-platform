@@ -133,6 +133,7 @@ namespace samson {
 			else if( 
 					( command == "script" )             ||
 					( command == "generator" )          || 
+					( command == "splitter" )           ||
 					( command == "map" )                || 
 					( command == "parser" )             || 
 					( command == "simpleParser" )       ||

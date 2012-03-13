@@ -66,14 +66,14 @@ namespace samson {
         //virtual void setup( std::string command ) {}       
         
         /**
-         Optional method that can be implemented bu custom operation. It is suppoused to be called once at the begin of the operation.\n
+         Optional method that can be implemented by custom operation. It is supposed to be called once at the begin of the operation.\n
          Perfect place to alloc memory space if necessary
          */
         
         //virtual void init() {};        // Called once before running any operation
         
         /**
-         Optional method that can be implemented bu custom operation. It is suppoused to be called once at the end of the operation.\n
+         Optional method that can be implemented by custom operation. It is supposed to be called once at the end of the operation.\n
          Perfect place to release memory space if necessary
          */
         
@@ -96,7 +96,8 @@ namespace samson {
             parserOut,
             parserOutReduce,
             script,
-            system,     // Spetial operation of the system
+            system,     // Special operation of the system
+            splitter,   // Operation to split input data blocks pushed to the platform, before been sent to the parser
             unknown
         } Type;
 
@@ -275,6 +276,7 @@ namespace samson {
                 case generator:         return "generator"; break;
                 case script:            return "script";    break;
                 case system:            return "system";    break;
+                case splitter:          return "splitter";  break;
                 case unknown:           return "unknown";   break;
             }
             return "?";
@@ -524,7 +526,7 @@ namespace samson {
      
      \class Parser
      
-     A parser is a generic operation that tranform input files (usualy txt files) into key-values
+     A parser is a generic operation that transforms input files (usually txt files) into key-values
      */
     
     class Parser : public OperationInstance
@@ -538,6 +540,20 @@ namespace samson {
         virtual void finish(KVWriter *writer) { if (writer == NULL) return; };    // Called once after all operations are executed
     };
     
+    /**
+
+     \class Splitter
+
+     A splitter is a generic operation that can be defined to customize the way the platform breaks input data blocks before being sent to the parser
+     */
+
+    class Splitter : public OperationInstance
+    {
+    public:
+
+        virtual int split( char * inData, size_t inLength, char ** outData, size_t *outLength, char ** nextData)=0;
+    };
+
 }
 
 #endif

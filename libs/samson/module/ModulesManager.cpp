@@ -155,6 +155,10 @@ namespace samson
 		Operation *compact = new Operation( "samson.compact" , Operation::system );
 		compact->inputFormats.push_back( samson::KVFormat::format("*" ,"*") );
 		add( compact );
+
+        Operation *splitter = new Operation( "samson.splitter" , Operation::splitter );
+        splitter->inputFormats.push_back( samson::KVFormat::format("*" ,"*") );
+        add( splitter );
         
 		
 	}

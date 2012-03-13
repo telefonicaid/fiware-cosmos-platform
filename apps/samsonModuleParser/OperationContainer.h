@@ -201,6 +201,20 @@ public:
                 return false;
             }
 
+        if (type == "splitter")
+        {
+            if (inputs.size() != 0)
+            {
+                std::cerr << "samsonModuleParser: Error in operation " << name << ": Operation does not require any input\n";
+                return false;
+            }
+            if (outputs.size() != 0)
+            {
+                std::cerr << "samsonModuleParser: Error in operation " << name << ": Operation does not require any output\n";
+                return false;
+            }
+        }
+
         if ((type == "reduce") || (type == "parserOutreduce"))
         {
             std::string prevKeyFormat = inputs[0].key_values.keyFormat;
@@ -406,6 +420,10 @@ public:
                 file << "\t\tvoid init( TXTWriter *writer )\n\t\t{\n\t\t}\n\n";
                 file << "\t\tvoid run( KVSetStruct* inputs , TXTWriter *writer )\n\t\t{\n\t\t}\n\n";
                 file << "\t\tvoid finish( TXTWriter *writer )\n\t\t{\n\t\t}\n\n";
+            }
+            if( type == "splitter" )
+            {
+                file << "\t\tint split( char * inData, size_t inLength, char ** outData, size_t *outLength, char ** nextData)\n\t\t{\n\t\t\treturn 0;\n\t\t}\n\n";
             }
 
         }

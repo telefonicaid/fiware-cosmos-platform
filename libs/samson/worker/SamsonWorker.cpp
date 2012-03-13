@@ -314,6 +314,24 @@ namespace samson {
                 network->send( p );
             }
             
+            // Some ancient samson-0.6 useful Status information
+            // Collect some information and print status...
+            int num_processes = engine::ProcessManager::shared()->public_num_proccesses;
+            int max_processes = engine::ProcessManager::shared()->public_max_proccesses;
+
+            size_t used_memory = engine::MemoryManager::shared()->public_used_memory;
+            size_t max_memory = engine::MemoryManager::shared()->public_max_memory;
+
+            size_t disk_read_rate = (size_t) engine::DiskManager::shared()->get_rate_in();
+            size_t disk_write_rate = (size_t) engine::DiskManager::shared()->get_rate_out();
+
+            LM_M(("Status [ P %s M %s D_in %s D_out %s ]"
+                  , au::str_percentage( num_processes, max_processes ).c_str()
+                  , au::str_percentage(used_memory, max_memory).c_str()
+                  , au::str( disk_read_rate , "Bs" ).c_str()
+                  , au::str( disk_write_rate , "Bs" ).c_str()
+                  ));
+
         }
         else if( notification->isName( notification_samson_worker_send_packet ) )
         {
@@ -330,7 +348,7 @@ namespace samson {
         }
         else if ( notification->isName( notification_samson_worker_send_trace ) )
         {
-            std::string message = notification->environment.get("message","No message comming with trace-notification" );
+            std::string message = notification->environment.get("message","No message coming with trace-notification" );
             std::string context = notification->environment.get("context","?" );
             std::string type    = notification->environment.get("type","message" );
             

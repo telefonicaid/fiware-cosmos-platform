@@ -682,8 +682,6 @@ static char* toUTF8(char* in, size_t* outLenP)
     
     network::Collection* SamsonWorker::getWorkerCollection( Visualization* visualization )
     {
-        visualization = NULL;
-
         network::Collection* collection = new network::Collection();
         collection->set_name("workers");
         
@@ -707,6 +705,9 @@ static char* toUTF8(char* in, size_t* outLenP)
         ::samson::add( record , "Net out B/s" , network->get_rate_out() , "f=uint64,sum" );
         
         
+        if (visualization == NULL)
+            return collection;
+
         return collection;
     }
 

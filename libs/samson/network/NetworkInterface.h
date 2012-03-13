@@ -101,7 +101,7 @@ namespace samson {
         // Send packet to an element in the samson cluster ( delilah or worker )
         virtual Status send( Packet* packet )
         {
-			packet = NULL;
+            if (packet == NULL) {}
             LM_X(1, ("NetworkInterface method not implemented"));
             return Error;
         }
@@ -153,7 +153,7 @@ namespace samson {
         
         virtual network::Collection* getConnectionsCollection( Visualization* visualization )
         {
-			visualization = NULL;
+			if (visualization == NULL) {}
             return NULL;
         }
         
@@ -170,7 +170,7 @@ namespace samson {
         
         virtual std::string getHostForWorker(size_t worker_id)
         {
-			worker_id = 0;
+			if (worker_id == 0) {}
             LM_X(1, ("NetworkInterface method not implemented"));
             return "";
         }

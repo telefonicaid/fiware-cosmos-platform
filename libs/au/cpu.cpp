@@ -20,9 +20,9 @@ void cpuID2(unsigned i, unsigned regs[4])
 #endif
 }
 
+#if 0
 int get_cpu_info( cpu_info* _info )
 {
-    /*
      unsigned regs[4];
      
      // Get vendor
@@ -63,9 +63,10 @@ int get_cpu_info( cpu_info* _info )
      bool hyperThreads = cpuFeatures & (1 << 28) && cores < logical;
      
      _info->hyperThreads = hyperThreads;
-     */
+
     return 0;
 }
+#endif
 
 NAMESPACE_END
 

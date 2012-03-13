@@ -22,7 +22,7 @@
 *
 * paValueFrom - 
 */
-PaFrom paValueFrom(PaArgument* paList, char* oName)
+PaFrom paValueFrom(char* oName)
 {
 	PaiArgument* aP;
 

@@ -8,7 +8,6 @@
 * AUTHOR                Ken Zangelin
 *
 */
-#include "parseArgs/parseArgs.h"          /* PaFrom, PaArgument                        */
 
 
 
@@ -16,6 +15,6 @@
 *
 * paValueFrom - 
 */
-extern PaFrom paValueFrom(PaArgument* paList, char* oName);
+extern PaFrom paValueFrom(char* oName);
 
 #endif

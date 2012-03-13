@@ -8,13 +8,13 @@
 * AUTHOR                Ken Zangelin
 *
 */
-#include "parseArgs/parseArgs.h"          /* PaArgument                                */
+
 
 
 /* ****************************************************************************
 *
 * paRcFileParse - parse startup file
 */
-extern int paRcFileParse(PaArgument* paList);
+extern int paRcFileParse(void);
 
 #endif

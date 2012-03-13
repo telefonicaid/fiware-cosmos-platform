@@ -69,7 +69,7 @@ int          paBuiltins = -1;
 *
 * optionNameDuplicated - 
 */
-static bool optionNameDuplicated(char* name, PaArgument* paList, int start)
+static bool optionNameDuplicated(char* name, int start)
 {
 	int ix;
 	int opts    = paOptionsNoOf(paiList);
@@ -115,7 +115,7 @@ static bool optionNameDuplicated(char* name, PaArgument* paList, int start)
 *
 * envNameDuplicated - 
 */
-static bool envNameDuplicated(char* name, PaArgument* paList, int start)
+static bool envNameDuplicated(char* name, int start)
 {
 	int   ix;
 	int   opts    = paOptionsNoOf(paiList);
@@ -263,7 +263,7 @@ static int paArgInit(PaArgument* paList)
 			}
 		}
 
-		if (optionNameDuplicated((char*) aP->option, paList, ix) == true)
+		if (optionNameDuplicated((char*) aP->option, ix) == true)
 		{
 			char w[512];
 
@@ -274,7 +274,7 @@ static int paArgInit(PaArgument* paList)
 
 		paEnvName(aP, envVarName);
 		
-		if (envNameDuplicated(envVarName, paList, ix) == true)
+		if (envNameDuplicated(envVarName, ix) == true)
 		{
 			char w[512];
 			
@@ -439,7 +439,7 @@ int paParse
 
 #if 0
 	// Samson doesn't use paRcFileParse ...
-	if ((s != -2) && ((s = paRcFileParse(paList)) == -1))
+	if ((s != -2) && ((s = paRcFileParse()) == -1))
 		RETURN_ERROR("paRcFileParse");
 #endif
 

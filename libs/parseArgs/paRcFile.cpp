@@ -50,7 +50,7 @@ static char* commentStrip(char* s, char c)
 *
 * dirFind - find "most important" directory with rc-file
 */
-static int dirFind(char* dir, int dirLen, char* rcFile)
+static int dirFind(char* dir, int dirLen)
 {
 	char           path[512];
 	struct passwd* pwP;
@@ -122,7 +122,7 @@ static int dirFind(char* dir, int dirLen, char* rcFile)
 *
 * paRcFileParse - parse startup file
 */
-int paRcFileParse(PaArgument* paList)
+int paRcFileParse(void)
 {
 	char   dir[1024];
 	char   path[1024];
@@ -139,7 +139,7 @@ int paRcFileParse(PaArgument* paList)
 		return 0;
 	}
 
-	if (dirFind(dir, sizeof(dir), paRcFileName) == 0)
+	if (dirFind(dir, sizeof(dir)) == 0)
 		LM_T(LmtPaRcFile, ("RC file '%s' found in directory '%s'",
 						   paRcFileName, dir));
 	else

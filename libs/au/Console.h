@@ -56,7 +56,7 @@ public:
     virtual void autoComplete( ConsoleAutoComplete* info );
     
     void addEspaceSequence( std::string sequence );
-    virtual void process_escape_sequence( std::string sequence ){};
+    virtual void process_escape_sequence( std::string sequence ){ sequence = "SEQ"; };
     
     void refresh();
     

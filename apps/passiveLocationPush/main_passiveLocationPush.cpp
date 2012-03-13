@@ -27,6 +27,10 @@
 #include <netinet/tcp.h>        // TCP_NODELAY
 #include <unistd.h>             // close
 #include <fcntl.h>              // fcntl, F_SETFD
+#include <sys/stat.h>           // stat
+#include <dirent.h>             // opendir, scandir
+#include <errno.h>              // errno
+#include <inttypes.h>           // uint64_t etc.
 
 #include "au/time.h"            // au::todatString()
 #include "au/string.h"          // au::str()
@@ -46,15 +50,30 @@
 
 /* ****************************************************************************
 *
+* File -
+*/
+typedef struct File
+{
+    char       name[256];
+    time_t     date;
+    uint64_t   size;
+    int        fd;
+} File;
+
+
+/* ****************************************************************************
+*
 * Option variables
 */
 SAMSON_ARG_VARS;
 
 char            controller[256];
 char            file[256];
+char            directory[256];
 char            queueName[256];
 bool            tektronix;
 bool            fake;
+bool            toFile;
 char            host[256];
 unsigned short  port       = 0;
 int             timeout    = 0;
@@ -71,6 +90,7 @@ PaArgument paArgs[] =
 {
     SAMSON_ARGS,
 
+    { "-dir",        directory,    "SS_PLP_DIRECTORY",      PaString,  PaOpt,     _i "nodir",    PaNL,   PaNL,  "directory"                  },
     { "-tektronix", &tektronix,    "SS_PLP_TEKTRONIX",      PaBool,    PaOpt,          false,    false,  true,  "act as tektronix consumer"  },
     { "-fake",      &fake,         "SS_PLP_FAKE",           PaBool,    PaOpt,          false,    false,  true,  "fake data"                  },
     { "-host",       host,         "SS_PLP_TEKTRONIX_HOST", PaString,  PaOpt,           PaND,    PaNL,   PaNL,  "tektronix tunnel host"      },
@@ -99,6 +119,71 @@ int           savedLen          = 0;
 int           storageFd         = -1;
 int           nbAccumulated     = 0;
 int           packets           = 0;
+int             totalFileSize     = 0;
+int             pushed            = 0;
+int             nextIndex         = 0;
+int             files;
+time_t          newest  = 0;
+File*           fileV;
+struct timeval  startTime;
+struct timeval  endTime;
+struct timeval  diffTime;
+unsigned long   bytesPushed = 0;
+
+/* ****************************************************************************
+*
+* timeDiff -
+*/
+void timeDiff(struct timeval* end, struct timeval* start, struct timeval* diff)
+{
+    diff->tv_sec  = end->tv_sec  - start->tv_sec;
+    diff->tv_usec = end->tv_usec - start->tv_usec;
+
+    if (diff->tv_usec < 0)
+    {
+        diff->tv_sec  -= 1;
+        diff->tv_usec += 1000000;
+    }
+}
+
+
+/* ****************************************************************************
+*
+* toFile -
+*/
+void toFileF(const char* buf, int bufLen)
+{
+    static int  fd  = -1;
+    int         tot = 0;
+    int         nb;
+
+    if (toFile == false)
+        return;
+
+    if (fd == -1)
+    {
+        LM_V(("Opening plp.bin"));
+        fd = open("plp.bin", O_WRONLY | O_CREAT | O_TRUNC, 0777);
+        if (fd == -1)
+            LM_X(1, ("open('plp.bin): %s", strerror(errno)));
+    }
+
+    while (tot < bufLen)
+    {
+        nb = write(fd, &buf[tot], bufLen - tot);
+        if (nb == -1)
+            LM_X(1, ("Error writing to 'plp.bin': %s", strerror(errno)));
+        else if (nb == 0)
+            LM_RVE(("written ZERO bytes to 'plp.bin'"));
+
+        tot += nb;
+    }
+
+    totalFileSize += bufLen;
+    // LM_M(("Written %d bytes to file (%d bytes in total)", bufLen, totalFileSize));
+}
+
+
 
 
 
@@ -170,11 +255,11 @@ int connectToServer(void)
 *
 * bufPresent - 
 */
-void bufPresent(const char* title, char* buf, int bufLen)
+void bufPresent(const char* title, char* buf, int bufLen, int verboseLevel)
 {
 	int ix = 0;
 
-	if (lmVerbose < 2)
+	if (lmVerbose < verboseLevel)
 	   return;
 
 	printf("----- %s -----\n", title);
@@ -199,129 +284,418 @@ void bufPresent(const char* title, char* buf, int bufLen)
 *
 * bufPush - 
 */
-void bufPush(char* buf, int size, samson::SamsonPushBuffer* pushBuffer)
+int bufPush(char* buf, unsigned int size, samson::SamsonPushBuffer* pushBuffer)
 {
-    int    packetLen;
-	char*  initialBuf = buf;
-	int    totalLen   = 0;
-	int    ppackets   = 0;
+    unsigned int    packetLen;
+    char*           initialBuf = buf;
+    unsigned long   totalLen   = 0;
+    unsigned long   dataLen;
+    static int      calls = 0;
+    int             relPacket = 0;
 
-	LM_VVV(("Pushing a buffer of %d bytes", size));
+    ++calls;
 
-    //
-    // Any data leftover from last push?
-    // Add the data from buf to make it a whole packet,
-    // and then forward this 'incomplete' packet first
-    //
-    if (savedLen != 0)
-    {
-        LM_V(("Detected a saved buf of %d bytes, adding another %d bytes to it", savedLen, savedMissing));
-
-        if (size >= savedMissing)
-        {
-            int* iP = (int*) savedBuffer;
-            LM_D(("Restoring a saved packet: 0x%08x 0x%08x 0x%08x 0x%08x", iP[0], iP[1], iP[2], iP[3]));
-
-            memcpy(&savedBuffer[savedLen], buf, savedMissing);
-
-            LM_V(("Pushing a border record of %d bytes", savedLen + savedMissing));
-
-            if (fake == false)
-            {
-			   LM_VVV(("Pushing buffer of %d bytes to samson", savedLen + savedMissing));
-			   pushBuffer->push(savedBuffer, savedLen + savedMissing, true); // Is the '4' included here ... ?
-			}
-            else
-                LM_V(("NOT pushing buffer of %d bytes (dataLen: %d)", savedLen + savedMissing, *iP));
-
-            buf   = &buf[savedMissing];
-            size    -= savedMissing;
-            savedLen = 0;
-            packets  = packets + 1;
-        }
-        else
-        {
-            LM_D(("Buffer too small to fill an entire packet - copying a part and reading again ..."));
-            memcpy(&savedBuffer[savedLen], buf, size);
-            savedLen += size;
-            return;
-        }
-    }
-
+    LM_V3(("Pushing a buffer of %d bytes", size));
 
     //
-    // Now, finally, loop over all packets in the buf and write them to file
+    // Loop over all packets in the buf and write them to file/push
     //
     while (size > 0)
     {
         packetLen = ntohl(*((int*) buf));
+        dataLen   = packetLen + 4;
 
-        if ((packets % 100) == 0)
-            LM_V(("parsed packet %d of %d data length (bigendian: 0x%x)", packets, packetLen, *((int*) buf)));
-
-        // We are having problems when dying, so we'll try to avoid the LM_X,
-        // and try to process the block
-		if (packetLen > 3000) // For example ...
-		{
-			packetLen = ntohl(packetLen);
-			if (packetLen > 3000)
-				LM_X(1, ("Bad packetLen: %d (original: 0x%x, htohl: 0x%x)", packetLen, *((int*) buf), ntohl(*((int*) buf))));
-		}
-
-		LM_D(("packetLen: %d", packetLen));
-        if (size >= packetLen + 4)
+        // NOT Enough bytes for an entire packet?
+        if ((size < 4) || size < dataLen)
         {
-			totalLen += packetLen + 4;
+            if (size >= 4)
+            {
+                // LM_W(("bytes read: %d, packetLen == %d (totalLen == %d)", size, packetLen, totalLen));
+                if (packetLen > 50000)
+                {
+                    bufPresent("bad packetLen", buf, size, 1);
+                    LM_X(1, ("Bad packetLen in packet %d: %d (original: 0x%x, htohl: 0x%x)", packets, packetLen, *((int*) buf), ntohl(*((int*) buf))));
+                }
+            }
+            //else
+            //    LM_W(("bytes read: %d (totalLen == %d)", size, totalLen));
 
-            ++packets;
-            ++ppackets;
-            LM_D(("Got package %d (grand total bytes read: %d)", packets, nbAccumulated));
+            if (totalLen != 0)
+            {
+                if (fake == false)
+                {
+                    pushBuffer->push(initialBuf, totalLen, false);
+                    pushed += totalLen;
+                    LM_V2(("Pushed buffer of %d bytes to samson (total: %lu bytes)", totalLen, pushed));
+                }
 
-			LM_VVV(("Don't push packet %d here ... push all packets afterwards ...", ppackets));
-            // pushBuffer->push(buf, packetLen + 4, true);
+                toFileF(initialBuf, totalLen);
+            }
 
-            buf = &buf[packetLen + 4];
-            size  -= (packetLen + 4);
+            memcpy(initialBuf, buf, size);
+            return size;
+        }
+
+        if (packetLen > 50000)
+        {
+            bufPresent("Bad Packet Len (>50000)", buf, size, 1);
+            LM_X(1, ("Bad packetLen in packet %d: %d (original: 0x%x, htohl: 0x%x)", packets + 1, packetLen, *((int*) buf), ntohl(*((int*) buf))));
+        }
+
+        ++packets;
+        ++relPacket;
+
+        size     -= dataLen;
+        totalLen += dataLen;
+
+        LM_V2(("Got packet %d.%d (%d) of %d bytes (%d bytes read). %d bytes left", calls, relPacket, packets, packetLen + 4, totalLen, size));
+        bufPresent("packet", buf, packetLen + 4, 1);
+
+    buf       = &buf[dataLen];
+    }
+
+    if (totalLen != 0)
+    {
+      if (fake == false)
+      {
+          pushBuffer->push(initialBuf, totalLen, false);
+          pushed += totalLen;
+          LM_V(("Pushed buffer of %d bytes to samson (total: %lu bytes)", totalLen, pushed));
+      }
+      toFileF(initialBuf, totalLen);
+    }
+    //else
+    //   LM_W(("totalLen == %d", totalLen));
+
+    return size;
+}
+
+
+/* ****************************************************************************
+*
+* dirPresent -
+*/
+void dirPresent(void)
+{
+    int ix;
+
+    for (ix = 0; ix < files; ix++)
+        printf("  %s\n", fileV[ix].name);
+}
+
+
+
+/* ****************************************************************************
+*
+* dirScan -
+*/
+int dirScan(const char* dirPath, const char* suffix)
+{
+    DIR*            dir;
+    struct dirent*  entry;
+    int             files;
+
+    LM_V(("Opening directory '%s'", dirPath));
+
+    if (chdir(dirPath) == -1)
+        LM_X(1, ("Error changing to directory '%s': %s", dirPath, strerror(errno)));
+
+    dir  = opendir(".");
+    if (dir == NULL)
+        LM_X(1, ("opendir(%s): %s", dirPath, strerror(errno)));
+
+
+    //
+    // Count number of files in the directory
+    //
+    files = 0;
+    while ((entry = readdir(dir)) != NULL)
+    {
+        char* suff;
+
+        if (entry->d_name[0] == '.')
+            continue;
+
+    suff = strrchr(entry->d_name, '.');
+    if (suff == NULL)
+        continue;
+    ++suff;
+    if (strcmp(suff, suffix) != 0)
+        continue;
+
+        ++files;
+    }
+    LM_V(("Initially found %d files in '%s'", files, dirPath));
+
+    //
+    // Create a vector to hold the files
+    //
+    fileV = (File*) calloc(files, sizeof(File));
+    if (fileV == NULL)
+        LM_X(1, ("error allocating vector for %d Files: %s", files, strerror(errno)));
+
+
+    //
+    // Gather info on the files and fill the vector
+    //
+    rewinddir(dir);
+    int ix = 0;
+    while ((entry = readdir(dir)) != NULL)
+    {
+        char*        suff;
+        struct stat  statBuf;
+
+        if (entry->d_name[0] == '.')
+            continue;
+
+        suff = strrchr(entry->d_name, '.');
+        if (suff == NULL)
+            continue;
+        ++suff;
+        if (strcmp(suff, suffix) != 0)
+            continue;
+
+        if (stat(entry->d_name, &statBuf) == -1)
+        {
+            LM_E(("stat(%s): %s", entry->d_name, strerror(errno)));
+            continue;
+        }
+
+        if (!S_ISREG(statBuf.st_mode))
+            continue;
+
+        if (newest != 0) // newest == 0 only the first time ...
+        {
+            LM_D(("comparing newest=%lu to %s:%lu", newest, entry->d_name, (unsigned long) statBuf.st_mtime));
+            if (statBuf.st_mtime <= newest)
+            {
+                LM_D(("skipping '%s' as it is old", entry->d_name));
+                continue;
+            }
         }
         else
+            LM_D(("newest == 0 - first time in function?"));
+
+        if (strlen(entry->d_name) > sizeof(fileV[ix].name))
         {
-			if (totalLen != 0)
-			{
-                int* iP = (int*) initialBuf;
+            LM_E(("File name too long: '%s'", entry->d_name));
+            continue;
+        }
 
-			    LM_VVV(("Pushing a block of %d packets (%d bytes)", ppackets, totalLen));
+        LM_V2(("Adding file '%s'", entry->d_name));
 
-                if (fake == false)
-				{
-					pushBuffer->push(initialBuf, totalLen, true);
-					totalLen = 0;
-					ppackets = 0;
-				}
-                else
-                    LM_V(("NOT pushing buffer of %d bytes (dataLen: %d)", totalLen, *iP));
-			}
-			else
-				LM_W(("totalLen == 0 ..."));
+        strcpy(fileV[ix].name, entry->d_name);
+        fileV[ix].date      = statBuf.st_mtime;
+        fileV[ix].size      = statBuf.st_size;
 
-            memcpy(savedBuffer, buf, size);
-            savedLen       = size;
-            savedMissing   = packetLen + 4 - savedLen;
+        ++ix;
+    }
+    closedir(dir);
 
-            LM_D(("Saved packet %d of %d bytes (packetLen: %d, so %d bytes missing ...)", packets, savedLen, packetLen, savedMissing));
+    files = ix;
+    LM_V(("%d files in vector", files));
 
-            int* iP = (int*) savedBuffer;
-            LM_D(("saved: 0x%x 0x%x 0x%x 0x%x", iP[0], iP[1], iP[2], iP[3]));
-            return; // read more ...
+
+    //
+    // Sort the vector in name order (smallest first)
+    //
+    int    first;
+    int    second;
+    int    smallestIx = -1;
+    File*  smallest;
+    File   copy;
+
+    for (first = 0; first < files - 1; first++)
+    {
+        smallest = &fileV[first];
+
+        if (fileV[first].date > newest)
+        {
+            newest = fileV[first].date;
+            LM_D(("newest: %lu", newest));
+        }
+
+        for (second = first + 1; second < files; second++)
+        {
+            if (strcmp(fileV[second].name, smallest->name) < 0)
+            {
+                smallest = &fileV[second];
+                smallestIx = second;
+            }
+        }
+        LM_V(("%05d: '%s'", first, smallest->name));
+
+        // Swap
+        if (smallest != &fileV[first])
+        {
+            LM_VV(("Copying smallest from index %d to %d", smallestIx, first));
+            memcpy(&copy, &fileV[first], sizeof(copy));
+            memcpy(&fileV[first], smallest, sizeof(fileV[first]));
+            memcpy(smallest, &copy, sizeof(copy));
         }
     }
 
-	if ((totalLen != 0) && (fake == false))
-	{
-		LM_VVV(("Pushing buffer of %d bytes to samson", totalLen));
-		pushBuffer->push(initialBuf, totalLen, true);
-		totalLen = 0;
-	}
+    LM_V(("Done scanning directory '%s'", dirPath));
+
+    return files;
 }
+
+
+
+int pushes    = 0;
+int nonsleeps = 0;
+/* ****************************************************************************
+*
+* injectFromFile -
+*/
+void injectFromFile(File* fileP, samson::SamsonPushBuffer* pushBuffer, char* buffer, int bufLen)
+{
+    int           nb;
+    unsigned int  total;
+    float         wantedTime;
+    float         executionTime;
+    int64_t       sleepTime;
+    float         actualRate;
+
+    LM_V2(("reading chunks of %d bytes from %s (fd %d)", bufLen, fileP->name, fileP->fd));
+    total = 0;
+    while (total < fileP->size)
+    {
+        nb = read(fileP->fd, buffer, bufLen);
+        if (nb == -1)
+            LM_X(1, ("read(%s): %s", fileP->name, strerror(errno)));
+        else if (nb == 0)
+            LM_X(1, ("read ZERO bytes from %s (fd %d)", fileP->name, fileP->fd));
+
+        if (fake == false)
+            pushBuffer->push(buffer, nb, false);
+
+        bytesPushed += nb;
+        total       += nb;
+        pushes      += 1;
+
+
+        gettimeofday(&endTime, NULL);
+        timeDiff(&endTime, &startTime, &diffTime);
+
+        wantedTime    = ((float)  bytesPushed / 1024 / 1024) / rate;
+        executionTime = float(diffTime.tv_sec) + ((float) diffTime.tv_usec) / 1000000;
+        sleepTime     = (int64_t) ((wantedTime - executionTime) * 1000000);
+        actualRate    = ((float)  bytesPushed / 1024 / 1024) / ((float) diffTime.tv_sec + (float) diffTime.tv_usec / 1000000);
+
+        if ((pushes != 0) && (pushes % 500 == 0))
+        {
+            LM_V(("------------------------------------------------------------------------------"));
+            LM_V(("Pushes:                       %d/%d (%d%%)",   pushes, nonsleeps, (nonsleeps / pushes) * 100));
+            LM_V(("Bytes pushed so far:          %ldMB",   bytesPushed / 1024 / 1024));
+            LM_V(("Actual rate:                  %f Mb/s", actualRate));
+            LM_V(("Wanted rate:                  %f Mb/s", rate));
+            LM_V(("Time we've been executing:    %.6fs",   executionTime));
+            LM_V(("Time to get to correct rate:  %.6fs",   wantedTime));
+            LM_V(("Time to sleep:                %dus",    sleepTime));
+        }
+
+        if (sleepTime > 0)
+            usleep(sleepTime);
+        else
+            ++nonsleeps;
+    }
+}
+
+
+/* ****************************************************************************
+*
+* injectFromDirectory -
+*/
+void injectFromDirectory(const char* dirPath, samson::SamsonPushBuffer* pushBuffer)
+{
+    int     fileIx;
+    char*   buffer;
+    float   executionTime;
+    float   actualRate;
+
+    buffer = (char*) malloc(bufSize);
+    if (buffer == NULL)
+        LM_X(1, ("error allocating buffer of %d bytes", bufSize));
+
+    LM_V(("Reading from directory '%s'", dirPath));
+
+    files = dirScan(dirPath, "blob");
+
+    for (fileIx = 0; fileIx < files; fileIx++)
+    {
+        fileV[fileIx].fd = open(fileV[fileIx].name, O_RDONLY);
+        LM_V2(("file %d (%s) opened as file descriptor %d", fileIx, fileV[fileIx].name, fileV[fileIx].fd));
+        if (fileV[fileIx].fd == -1)
+        {
+            LM_E(("error opening '%s': %s", fileV[fileIx], strerror(errno)));
+            continue;
+        }
+        injectFromFile(&fileV[fileIx], pushBuffer, buffer, bufSize);
+    }
+
+    gettimeofday(&endTime, NULL);
+    timeDiff(&endTime, &startTime, &diffTime);
+
+    executionTime = float(diffTime.tv_sec) + ((float) diffTime.tv_usec) / 1000000;
+    actualRate    = ((float)  bytesPushed / 1024 / 1024) / ((float) diffTime.tv_sec + (float) diffTime.tv_usec / 1000000);
+
+    LM_V(("============ Injected %d files to samson =====================================", files));
+    LM_V(("Pushes:                       %d",          pushes));
+    LM_V(("Bytes pushed:                 %ld (%ldMB)", bytesPushed, bytesPushed / 1024 / 1024));
+    LM_V(("Final rate:                   %f Mb/s",     actualRate));
+    LM_V(("Execution Time:               %.6fs",       executionTime));
+}
+
+
+
+/* ****************************************************************************
+*
+* injectFromServer -
+*/
+void injectFromServer(int fd, samson::SamsonPushBuffer* pushBuffer)
+{
+    int nb;
+
+    LM_VVV(("Reading from server"));
+    while (signaled_quit == false)
+    {
+        // Read as much as we possibly can ...
+        nb = read(fd, &buffer[nextIndex], sizeof(buffer) - nextIndex);
+        if (nb > 0)
+        {
+            nbAccumulated += nb;
+            LM_V2(("Read %d bytes from tunnel (%d bytes in total)", nb, nbAccumulated));
+
+            bufPresent("Read from Tunnel", buffer, nb + nextIndex, 2);
+            nextIndex = bufPush(buffer, nb + nextIndex, pushBuffer);
+        }
+        else
+        {
+            if (nb == -1)
+                LM_E(("Error reading from the Tunnel: %s", strerror(errno)));
+            else
+                LM_E(("The Tunnel closed the connection?"));
+
+            close(fd);
+            fd        = connectToServer();
+            nextIndex = 0;
+        }
+    }
+}
+
+
+
+/* ****************************************************************************
+*
+* directoryData -
+*/
+void directoryData(samson::SamsonPushBuffer* pushBuffer, const char* dirPath)
+{
+    injectFromDirectory(dirPath, pushBuffer);
+}
+
+
 
 
 
@@ -344,7 +718,7 @@ void readFromServer(int fd, samson::SamsonPushBuffer* pushBuffer)
             nbAccumulated += nb;
 
             LM_D(("Read %d bytes of data from tunnel (grand total: %d)", nb, nbAccumulated));
-			bufPresent("Read from Tunnel", buffer, nb);
+			bufPresent("Read from Tunnel", buffer, nb, 2);
 
 			LM_VVV(("Calling bufPush with a buffer of %d bytes", nb));
             bufPush(buffer, nb, pushBuffer);
@@ -501,17 +875,23 @@ int main(int argC, const char* argV[])
         LM_W(("SIGINT cannot be handled"));
     signaled_quit = false;
 
+    gettimeofday(&startTime, NULL);
+
     // Instance of the client to connect to SAMSON system
     samson::SamsonClient client("push");
 
     // Set 1G RAM for uploading content
-    client.setMemory(1024 * 1024 * 1024);
+    uint64_t mem = 1024 * 1024 * 1024;
+
+    mem *= 4;
+    client.setMemory(mem);
+
 
     LM_V(("Connecting to '%s'", controller));
 
     // Initialize connection
     samson::SamsonPushBuffer* pushBuffer;
-    if ((tektronix == true) && (fake == true))
+    if (((tektronix == true) || (strcmp(directory, "nodir") != 0)) && (fake == true))
         pushBuffer = NULL;
     else
     {
@@ -527,6 +907,8 @@ int main(int argC, const char* argV[])
 
     if (tektronix == true)
         tektronixData(pushBuffer);
+    else if (strcmp(directory, "nodir") != 0)
+       directoryData(pushBuffer, directory);
     else if (fake == true)
         fakeData(pushBuffer);
     else
@@ -548,4 +930,7 @@ int main(int argC, const char* argV[])
     // Wait until all operations are complete
     LM_V(("Waiting for all the push operations to complete..."));
     client.waitUntilFinish();
+
+    LM_V(("DONE"));
+    return 0;
 }

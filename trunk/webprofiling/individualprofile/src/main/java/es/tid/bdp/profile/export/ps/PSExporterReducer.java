@@ -13,7 +13,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.bdp.profile.data.ProfileProtocol.CategoryCount;
 import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
-import es.tid.bdp.profile.dictionary.comscore.CSDictionary;
+import es.tid.bdp.profile.dictionary.Dictionary;
 import es.tid.bdp.profile.dictionary.comscore.DistributedCacheDictionary;
 
 /**
@@ -23,7 +23,7 @@ import es.tid.bdp.profile.dictionary.comscore.DistributedCacheDictionary;
 public class PSExporterReducer extends Reducer<Text,
                                                ProtobufWritable<UserProfile>,
                                                NullWritable, Text> {
-    private static CSDictionary sharedDictionary = null;
+    private static Dictionary sharedDictionary = null;
     private static String[] sharedCategoryNames = null;
 
     private StringBuilder builder;
@@ -44,7 +44,7 @@ public class PSExporterReducer extends Reducer<Text,
     protected void setupDictionary(Context context) throws IOException {
         if (sharedDictionary == null) {
             sharedDictionary = DistributedCacheDictionary
-                    .loadFromCache(context);
+                    .loadFromCache(context.getConfiguration());
             setCategoryNames(sharedDictionary.getAllCategoryNames());
         }
     }

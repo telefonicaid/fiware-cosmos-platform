@@ -37,7 +37,7 @@ public class CategoryExtractionReducer extends Reducer<BinaryKey,
     protected void setupDictionary(Context context) throws IOException {
         if (sharedDictionary == null) {
             sharedDictionary = DistributedCacheDictionary
-                    .loadFromCache(context);
+                    .loadFromCache(context.getConfiguration());
         }
     }
 

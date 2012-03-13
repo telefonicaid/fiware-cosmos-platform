@@ -5,6 +5,7 @@ CORE_MODULES=system \
 
 EXTRA_MODULES= webp \
 		wiki \
+		level \
 		hit \
 		web \
 		gg \

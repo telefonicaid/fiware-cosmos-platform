@@ -233,7 +233,7 @@ static int               keepLines = 1000;
 static int               lastLines = 1000;
 
 static int               logLines  = 0;
-static bool              doClear   = true;
+static bool              doClear   = false;
 static int               fdNoOf    = 0;
 
 static LmTracelevelName  userTracelevelName     = NULL;

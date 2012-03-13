@@ -507,8 +507,7 @@ void Console::evalCommand( std::string command )
 
 void Console::autoComplete( ConsoleAutoComplete* info )
 {
-    writeWarningOnConsole("Console::auto_complete not implemented");
-	info = NULL;
+    writeWarningOnConsole("Console::auto_complete not implemented (%p)", info);
 }
 
 void Console::refresh()
@@ -519,9 +518,7 @@ void Console::refresh()
 
 void handle_winch(int sig)
 {
-	sig = 43;
-
-    if( !current_console )
+    if (!current_console || sig == 0x12345678)
         return;
     
     // Rewrite current command
@@ -534,25 +531,27 @@ void handle_tstp(int sig)
 { 
     sigset_t mask;
 
-	sig = 0;
-    // Unblock SIGSTSTP
-    sigemptyset(&mask); sigaddset(&mask, SIGTSTP); sigprocmask(SIG_UNBLOCK, &mask, NULL);
+    if (sig == SIGSTSTP)
+    {
+        // Unblock SIGSTSTP
+        sigemptyset(&mask); sigaddset(&mask, SIGTSTP); sigprocmask(SIG_UNBLOCK, &mask, NULL);
 
-    // Reset the signal handler to the default 
-    signal(SIGTSTP, SIG_DFL); 
+        // Reset the signal handler to the default 
+        signal(SIGTSTP, SIG_DFL); 
 
-    // And send ourself the signal so we get suspended as the user intended
-    kill(getpid(), SIGTSTP);
+        // And send ourself the signal so we get suspended as the user intended
+        kill(getpid(), SIGTSTP);
 
-    /*
-     * In suspension .....
-     */
+        /*
+         * In suspension .....
+         */
 
-    // When we come back reset the handler to our handler function
-    signal(SIGTSTP, handle_tstp); /* reestablish signal handler */
+        // When we come back reset the handler to our handler function
+        signal(SIGTSTP, handle_tstp); /* reestablish signal handler */
 
-    // Re init console
-    init_console_mode();
+        // Re init console
+        init_console_mode();
+    }
 }
     
 

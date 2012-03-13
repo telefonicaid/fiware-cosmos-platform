@@ -20,7 +20,7 @@ SAMSON is a high-performance MapReduce platform that is designed for scaling tas
 
 %pre
 getent group samson >/dev/null || groupadd -r samson
-getent passwd samson >/dev/null || useradd -r -g samson -d /opt/samson -s /bin/bash -c 'SAMSON account' samson
+getent passwd samson >/dev/null || useradd -r -g samson -m -d /opt/samson -s /bin/bash -c 'SAMSON account' samson
 exit 0
 
 %post
@@ -29,6 +29,7 @@ bash /opt/samson/bin/samsonInitSetup
 /sbin/chkconfig --level 35 samson on
 chown -R samson:samson /opt/samson
 chown -R samson:samson /var/samson
+mkdir -p /var/log/samson
 chown -R samson:samson /var/log/samson
 /etc/init.d/samson start
 
@@ -44,7 +45,6 @@ make release_all SAMSON_HOME=$RPM_BUILD_ROOT/opt/samson
 %install
 make SAMSON_HOME=$RPM_BUILD_ROOT/opt/samson install
 mkdir -p $RPM_BUILD_ROOT/var/samson
-mkdir -p $RPM_BUILD_ROOT/var/log/samson
 mkdir -p $RPM_BUILD_ROOT/var/samson/etc
 mkdir -p $RPM_BUILD_ROOT/etc/init.d
 mkdir -p $RPM_BUILD_ROOT/etc/profile.d

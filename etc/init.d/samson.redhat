@@ -37,22 +37,30 @@ if [ -z "${SAMSON_HOME}" ]; then
   exit 1
 fi
 
+
+samson_start()
+{
+    /usr/bin/sudo -u samson -i ${SAMSON_HOME}/bin/samsonWorker
+}
+
+samson_stop()
+{
+    kill `cat $PIDFILE`
+}
+
 case $PARAM in
 
         'start')
-
-                /usr/bin/sudo -u samson -i ${SAMSON_HOME}/bin/samsonWorker
+                samson_start
                 ;;
 
         'stop')
-
-                /usr/bin/sudo -u samson -i ${SAMSON_HOME}/bin/samsonKiller
+                samson_stop
                 ;;
 
         'restart')
-
-                /usr/bin/sudo -u samson -i ${SAMSON_HOME}/bin/samsonKiller
-                /usr/bin/sudo -u samson -i ${SAMSON_HOME}/bin/samsonSpawner
+                samson_stop
+                samson_start
                 ;;
 esac
 

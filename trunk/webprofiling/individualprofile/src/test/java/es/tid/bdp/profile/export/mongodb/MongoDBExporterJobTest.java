@@ -14,12 +14,12 @@ import org.junit.Test;
  *
  * @author dmicol
  */
-public class ExporterJobTest {
-    private ExporterJob instance;
+public class MongoDBExporterJobTest {
+    private MongoDBExporterJob instance;
     
     @Before
     public void setUp() throws IOException {
-        this.instance = new ExporterJob(new Configuration());
+        this.instance = new MongoDBExporterJob(new Configuration());
     }
     
     @Test

@@ -17,7 +17,7 @@ import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
  *
  * @author dmicol, sortega
  */
-public class ExporterReducer extends Reducer<Text,
+public class MongoDBExporterReducer extends Reducer<Text,
                                              ProtobufWritable<UserProfile>,
                                              MongoProperty, BSONWritable> {
     private MongoProperty id;

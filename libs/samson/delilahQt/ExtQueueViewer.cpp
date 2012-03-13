@@ -198,6 +198,11 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     
 }
 
+ExtQueueViewer::~ExtQueueViewer()
+{
+    disconnect();
+}
+
 void ExtQueueViewer::setData(QueueData* newData)
 {
         data = *newData;
@@ -222,7 +227,7 @@ void ExtQueueViewer::setData(QueueData* newData)
 
 void ExtQueueViewer::updateHeader(std::string line)
 {
-    queueHeader->append(QString(line.c_str()) + QString("\n"));
+    queueHeader->append(QString::fromUtf8(line.c_str()) + QString("\n"));
     //scroll contents to the bottom so added data is visible
     QScrollBar *sb = queueHeader->verticalScrollBar();
     sb->setValue(sb->maximum());
@@ -232,7 +237,7 @@ void ExtQueueViewer::updateHeader(std::string line)
 
 void ExtQueueViewer::updateFeed(std::string line)
 {
-    queueFeed->append(QString(line.c_str()) + QString("\n"));
+    queueFeed->append(QString::fromUtf8(line.c_str()) + QString("\n"));
     //scroll contents to the bottom so added data is visible
     QScrollBar *sb = queueFeed->verticalScrollBar();
     sb->setValue(sb->maximum());
@@ -271,6 +276,12 @@ void ExtQueueViewer::onConnectNewClicked(bool checked)
 void ExtQueueViewer::onConnectClearClicked(bool checked)
 {
     connectQueueParameters.clearPopped = checked;
+    emit updateConnection(connectQueueParameters);
+}
+
+void ExtQueueViewer::disconnect()
+{
+    connectQueueParameters.connected = false;
     emit updateConnection(connectQueueParameters);
 }
 

@@ -63,7 +63,7 @@ namespace samson
 
         connect(queuesTab, SIGNAL(queueDetailsClicked(QueueViewer*)), this, SLOT(onQueueDetailsClicked(QueueViewer*)));
         connect(queuesTab, SIGNAL(queueHasChanged(QueueViewer*, QueueData*)), this, SLOT(onQueueHasChanged(QueueViewer*, QueueData*)));
-        connect(queuesTab, SIGNAL(queueDeleted(QueueViewer*)), this, SLOT(onQueueDeleted(QueueViewer*)));
+        connect(queuesTab, SIGNAL(queueDeleted(std::string)), this, SLOT(onQueueDeleted(std::string)));
 
         setMinimumSize(800,600); 
     }
@@ -125,6 +125,7 @@ namespace samson
         ExtQueueViewer* removedQueue = dynamic_cast<ExtQueueViewer*>(tabs->widget(index));
         if(removedQueue)
         {
+            removedQueue->disconnect();
             //Find the queue in the list and remove it
             bool found;
             for (std::vector<ExtQueueViewer*>::iterator queuesIter = tabbedQueues.begin();
@@ -150,12 +151,13 @@ namespace samson
         }
     }
 
-    void DelilahMainWindow::onQueueDeleted(QueueViewer* queue)
+    void DelilahMainWindow::onQueueDeleted(std::string queueName)
     {
         //if there is a tab for this queue, remove it
-        ExtQueueViewer* queueTmp = findQueueTab(queue->title);
+        ExtQueueViewer* queueTmp = findQueueTab(queueName);
         if(queueTmp)
         {
+            queueTmp->disconnect();
             tabs->removeTab(tabs->indexOf(queueTmp));
         }
     }

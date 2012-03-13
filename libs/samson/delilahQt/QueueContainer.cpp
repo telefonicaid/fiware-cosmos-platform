@@ -177,6 +177,10 @@ void QueueContainer::setData(std::vector<QueueData*> newQueuesData)
             {
                 any_change = true;
                 regenerateQueues();
+                for(unsigned int i = 0; i< deletedQueues.size();i++)
+                {
+                    emit(queueDeleted(deletedQueues[i]->title));
+                }
             }
 
         if(any_change)

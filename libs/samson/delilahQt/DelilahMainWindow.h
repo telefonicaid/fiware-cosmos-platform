@@ -61,7 +61,7 @@ namespace samson {
         void onQueueDetailsClicked(QueueViewer* queue);
         void tabClosed(int index);
         void onQueueHasChanged(QueueViewer* queuename, QueueData* data);
-        void onQueueDeleted(QueueViewer* queue);
+        void onQueueDeleted(std::string queueName);
         void onConnectionUpdate(ConnectQueueParameters params);
 
     signals:

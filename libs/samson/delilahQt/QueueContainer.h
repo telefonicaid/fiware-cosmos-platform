@@ -65,7 +65,7 @@ class QueueContainer: public QWidget
     signals:
     void queueDetailsClicked(QueueViewer* queue);
     void queueHasChanged(QueueViewer* queue, QueueData* data);
-    void queueDeleted(QueueViewer* queue);
+    void queueDeleted(std::string queueName);
 
 };
 

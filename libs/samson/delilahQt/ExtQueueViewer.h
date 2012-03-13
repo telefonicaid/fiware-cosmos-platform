@@ -59,6 +59,7 @@ class ExtQueueViewer: public QWidget
     public:
         
         ExtQueueViewer(std::string _title, QWidget* parent = 0);
+        ~ExtQueueViewer();
         std::string title;
 
         QueueData data;
@@ -137,6 +138,7 @@ class ExtQueueViewer: public QWidget
         void onConnectButtonClicked();
         void onConnectNewClicked(bool checked);
         void onConnectClearClicked(bool checked);
+        void disconnect();
         void clearFeed();
         
 };

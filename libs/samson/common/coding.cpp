@@ -25,6 +25,8 @@ namespace samson
     
     bool operator<(const KVRange & left, const KVRange & right)
     {
+        int strictX;
+
         if( left.hg_begin < left.hg_begin )
             return true;
         if( left.hg_begin > left.hg_begin )
@@ -33,6 +35,8 @@ namespace samson
         if( left.hg_end < left.hg_end )
             return true;
         
+		strictX = right.hg_end;
+
         return false;
     }    
 

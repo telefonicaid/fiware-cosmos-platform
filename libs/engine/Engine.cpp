@@ -36,8 +36,10 @@ NAMESPACE_BEGIN(engine)
 //Initialise singleton instance pointer to NULL
 Engine *Engine::engine = NULL;
 
-void* runEngineBakground(void* e )
+void* runEngineBackground(void* e)
 {    
+    e = NULL;
+
     Engine::shared()->running_thread = true;
     Engine::shared()->run();
     Engine::shared()->running_thread = false;
@@ -86,7 +88,7 @@ void Engine::init()
     engine->elements.push_back( element );
     
     LM_T( LmtEngine , ("Running engine in background...") );
-    au::ThreadManager::shared()->addThread("Engine", &engine->t, 0, runEngineBakground, NULL );
+    au::ThreadManager::shared()->addThread("Engine", &engine->t, 0, runEngineBackground, NULL );
 }
 
 void Engine::destroy()

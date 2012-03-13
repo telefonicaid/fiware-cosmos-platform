@@ -46,8 +46,8 @@ namespace samson {
     class ProcessIsolatedDataGenerator
     {
     public:
-		virtual void generateKeyValues( KVWriter *writer ){};
-		virtual void generateTXT( TXTWriter *writer ){};
+		virtual void generateKeyValues( KVWriter *writer ) { writer = NULL; };
+		virtual void generateTXT( TXTWriter *writer )      { writer = NULL; };
     };
     
     /**
@@ -121,8 +121,8 @@ namespace samson {
         // Methods implemented by subclases to generate content
         // Not pure virtual
         // --------------------------------------------------------------------------
-		virtual void generateKeyValues( KVWriter *writer ){};
-		virtual void generateTXT( TXTWriter *writer ){};
+		virtual void generateKeyValues( KVWriter *writer ) { writer = NULL; };
+		virtual void generateTXT( TXTWriter *writer )      { writer = NULL; };
         
         // --------------------------------------------------------------------------
         // Methods implemented by subclases to do something with the output buffers

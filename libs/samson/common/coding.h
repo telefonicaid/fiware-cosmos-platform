@@ -337,7 +337,7 @@ namespace samson {
     {
         int hg_begin;
         int hg_end;
-        
+
         KVRange();
         KVRange( int _hg_begin , int _hg_end );
 

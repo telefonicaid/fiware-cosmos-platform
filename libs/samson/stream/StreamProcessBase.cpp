@@ -63,7 +63,8 @@ namespace samson {
 
         void StreamProcessBase::processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )
         {
-            // Spetial case for logging
+            finish = false;
+            // Special case for logging
             if( output == (int) streamOperation->output_queues.size() )
             {
                 sendBufferToQueue( buffer , outputWorker , au::str("log_%s", streamOperation->name.c_str() ) );
@@ -127,7 +128,9 @@ namespace samson {
         
         void StreamProcessBase::processOutputTXTBuffer( engine::Buffer *buffer , bool finish )
         {
-            //LM_M(("[%s] Processing buffer %s" , streamOperation->operation.c_str(), au::str(buffer->getSize()).c_str() ));
+            finish = false;
+
+            // LM_M(("[%s] Processing buffer %s" , streamOperation->operation.c_str(), au::str(buffer->getSize()).c_str() ));
 
             int output = 0;
             int outputWorker = -1;  // Send always to myself ( txt is not distributed )

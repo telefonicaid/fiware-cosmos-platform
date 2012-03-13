@@ -605,6 +605,8 @@ namespace samson {
 
         void ReduceQueueTask::processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )
         {
+            finish = false;
+
             int output_channel = (int)streamOperation->output_queues.size() - 1 ;
             
             
@@ -876,7 +878,7 @@ namespace samson {
         
         void ReduceQueueTask::processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )
         {
-            
+            finish = false;
             
             if( output == ( streamOperation->output_queues_size() - 1 ) )
             {

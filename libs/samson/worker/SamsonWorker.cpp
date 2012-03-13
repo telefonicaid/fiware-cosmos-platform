@@ -664,6 +664,8 @@ static char* toUTF8(char* in, size_t* outLenP)
     
     network::Collection* SamsonWorker::getWorkerCollection( Visualization* visualization )
     {
+        visualization = NULL;
+
         network::Collection* collection = new network::Collection();
         collection->set_name("workers");
         

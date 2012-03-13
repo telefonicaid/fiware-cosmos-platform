@@ -198,6 +198,8 @@ void toFileF(const char* buf, int bufLen)
 sig_atomic_t signaled_quit = false;
 void captureSIGINT(int s)
 {
+    s = 0;
+
     signaled_quit = true;
 	lmVerbose     = false;
 }

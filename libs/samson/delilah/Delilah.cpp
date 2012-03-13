@@ -314,6 +314,8 @@ namespace samson {
     void Delilah::notificationSent(size_t id, bool success)
     {
         // Do something
+        id = 0;
+        success = false;
     }
     
     
@@ -559,6 +561,9 @@ namespace samson {
     // Get information for monitorization
     void Delilah::getInfo( std::ostringstream& output)
     {
+        if (output != output)
+            LM_E(("sorry, just wanted to avoid a 'strict' warning ..."));
+
         // Engine
         //engine::Engine::shared()->getInfo( output );
 

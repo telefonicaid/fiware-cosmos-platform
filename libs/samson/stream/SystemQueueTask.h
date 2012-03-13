@@ -52,7 +52,7 @@ namespace samson {
             ~SystemQueueTask();
 
             // Function executed just before task is deleted in the main thread
-            virtual void finalize( StreamManager* streamManager ){};
+            virtual void finalize( StreamManager* streamManager) { streamManager = NULL; };
 
             // xml version of the information
             void getInfo( std::ostringstream& output);

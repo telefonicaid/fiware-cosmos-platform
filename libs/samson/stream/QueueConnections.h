@@ -43,11 +43,9 @@ namespace samson {
         
         void fill( samson::network::CollectionRecord* record , Visualization* visualitzation )
         {
+            visualitzation = NULL;
             add( record , "queue" , queue , "left,different" );
-
-
             add( record , "connected to.." , str_target_queues() , "left,different" );
-            
         }
         
         std::vector<std::string> getTargetQueues()

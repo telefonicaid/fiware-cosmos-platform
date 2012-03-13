@@ -61,6 +61,7 @@ void NetworkInterfaceReceiver::schedule_receive(Packet* packet)
     
     void getInfoEngineSystem( std::ostringstream &output , NetworkInterface* network )
     {
+        network = NULL;
         au::xml_open(output, "engine_system");
         engine::MemoryManager::shared()->getInfo( output );
         engine::DiskManager::shared()->getInfo( output  );

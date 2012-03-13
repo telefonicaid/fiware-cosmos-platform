@@ -13,6 +13,7 @@ namespace samson {
     
     void CommonNetwork::notify( engine::Notification* notification )
     {
+        notification = NULL;
 
         // Check disconnected elements to be removed ( if possible no threads or pending packets )
         // -------------------------------------------------------------------------------------

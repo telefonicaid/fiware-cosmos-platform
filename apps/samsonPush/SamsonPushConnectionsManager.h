@@ -48,6 +48,8 @@ public:
     
     virtual void newSocketConnection( samson::NetworkListener* listener , samson::SocketConnection * socket_connetion )
     {
+        listener = NULL;
+
         // Mutex protection
         au::TokenTaker tt(&token);
         

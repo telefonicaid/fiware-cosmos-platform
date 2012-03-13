@@ -512,6 +512,9 @@ public:
     {
         bool errorDetected = false;
 
+        if (infoFile != infoFile)
+           LM_E(("avoiding a strict warning ..."));
+
         if (_inputs.size() != inputs_impl.size() )
         {
             cerr << ">>> Error in number of inputs to the operation: "  << name << std::endl;

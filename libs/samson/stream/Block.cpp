@@ -713,6 +713,8 @@ namespace samson {
         
         void Block::fill( samson::network::CollectionRecord* record , Visualization* visualization )
         {
+            visualization = NULL;
+
             samson::add( record , "id" , au::str("%lu-%lu" , worker_id ,id) , "left,different" );
             
             samson::add( record , "size" , size , "f=uint64,sum" );

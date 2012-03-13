@@ -79,6 +79,7 @@ namespace samson {
         
         int get_num_divisions( size_t size )
         {
+            size = 0;
             return 2;   // Just for testing...
         }
         
@@ -304,7 +305,7 @@ namespace samson {
         
         void StreamManager::notifyFinishTask( QueueTask *task )
         {
-            
+            task = NULL;
         }
         
         void StreamManager::notifyFinishTask( SystemQueueTask *task )

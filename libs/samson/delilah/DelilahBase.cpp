@@ -79,6 +79,10 @@ namespace samson {
     std::vector<std::string> DelilahBase::getQueueNames( KVFormat format )
     {
         au::StringVector values = database.getValuesFromColumn("queues", "name");
+
+        if (format != format)
+           LM_E(("avoiding a strict warning"));
+
         values.unique();
         return values;
     }

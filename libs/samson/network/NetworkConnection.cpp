@@ -149,6 +149,7 @@ namespace samson {
     
     void NetworkConnection::fill( network::CollectionRecord * record, Visualization* visualization )
     {
+        visualization = NULL;
 
         ::samson::add( record , "name"    , name , "different,left" );
         ::samson::add( record , "user"    , user , "different,left" );

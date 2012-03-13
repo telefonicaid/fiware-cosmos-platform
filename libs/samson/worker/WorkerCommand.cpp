@@ -581,15 +581,7 @@ namespace samson {
         const char*  filter,
         const char*  all,
         char         type,
-        const char*  date,
-        int          ms,
-        const char*  progName,
-        const char*  fileName,
-        int          lineNo,
-        int          pid,
-        int          tid,
-        const char*  funcName,
-        const char*  message
+        const char*  fileName
     )
     {
         std::string  item;
@@ -954,7 +946,7 @@ typedef struct LogLineInfo
 
                 if (filter != "no-argument")
                 {
-                    if (logFilter(filter.c_str(), all, type, date, ms, progName, fileName, lineNo, pid, tid, funcName, message) == false)
+                    if (logFilter(filter.c_str(), all, type, fileName) == false)
                         continue;
                 }
 
@@ -1695,6 +1687,8 @@ typedef struct LogLineInfo
     
     void WorkerCommand::fill( samson::network::CollectionRecord* record , Visualization* visualization )
     {
+        visualization = NULL;
+
         std::string name = NodeIdentifier( DelilahNode , delilah_id ).getCodeName();
         
         add( record , "id" ,  au::str("%s (%lu)", name.c_str() , delilah_component_id) , "left,different" );

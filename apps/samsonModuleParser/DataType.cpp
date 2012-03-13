@@ -295,6 +295,7 @@ string DataType::getParseCommandVector( string pre_line, string _name )
     ostringstream o;
     string pre_line_local;
 
+    _name  = "not used";
     o << pre_line << "{ //Parsing vector "<<name<<"\n";
     o << pre_line << "\tsize_t _length;\n";
     o << pre_line << "\t_offsetInternal += samson::staticVarIntParse( _dataInternal+_offsetInternal , &_length );\n";
@@ -347,6 +348,8 @@ string DataType::getSerializationCommandVector( string pre_line, string _name)
     ostringstream o;
     string pre_line_local;
 
+    _name  = "not used";
+
     o << pre_line << "{ //Serialization vector "<<name<<"\n";
     o << pre_line << "\t_offsetInternal += samson::staticVarIntSerialize( _dataInternal+_offsetInternal , "<< name <<"_length );\n";
     o << pre_line << "\tfor (int i = 0 ; i < (int)"<<name<<"_length ; i++)\n";
@@ -384,6 +387,9 @@ string DataType::getSerializeCommand( string pre_line )
 string DataType::getSizeCommandIndividual( string pre_line, string _name)
 {
     ostringstream o;
+
+    _name  = "not used";
+
     o << pre_line << "{ //Sizing "<<name<<"\n";
     o << pre_line << "\t_offsetInternal += " << classNameForType() << "::size(_dataInternal+_offsetInternal);\n";
     o << pre_line << "}\n";
@@ -393,6 +399,9 @@ string DataType::getSizeCommandIndividual( string pre_line, string _name)
 string DataType::getSizeCommandList( string pre_line, string _name)
 {
     ostringstream o;
+
+    _name  = "not used";
+
     o << pre_line << "{ //Sizing "<<name<<"\n";
     o << pre_line << "\t_offsetInternal += ::samson::List< " << classNameForType() << " >::size(_dataInternal+_offsetInternal);\n";
     o << pre_line << "}\n";
@@ -404,6 +413,8 @@ string DataType::getSizeCommandVector( string pre_line, string _name)
 {
     ostringstream o;
     string pre_line_local;
+
+    _name  = "not used";
 
     o << pre_line << "{ //Getting size of vector "<<name<<"\n";
     o << pre_line << "\tsize_t _length;\n";
@@ -463,6 +474,8 @@ string DataType::getPartitionCommandVector(string pre_line, string _name)
 {
     ostringstream o;
     string pre_line_local;
+
+    _name  = "not used";
 
     o << pre_line <<  "if( " << name << "_length > 0 )\n";
     pre_line_local = pre_line + "\t";
@@ -533,6 +546,8 @@ string DataType::getCompareCommandIndividual( string pre_line ,  string _name )
 string DataType::getCompareCommandVector( string pre_line ,  string _name )
 {
     ostringstream o;
+
+    _name  = "not used";
 
     o << pre_line << "{ // Comparing vector " << name << "\n";
 
@@ -617,6 +632,8 @@ string DataType::getToStringCommandVector(string pre_line, string _name)
 {
     ostringstream o;
     string pre_line_local;
+
+    _name  = "not used";
 
     o << pre_line << "{// toString of vector " << name << "\n";
     o << pre_line << "\to << \"[\" ;\n";
@@ -733,6 +750,8 @@ string DataType::getToStringXMLCommandVector(string pre_line, string _name)
     ostringstream o;
     string pre_line_local;
 
+    _name  = "not used";
+
     o << pre_line << "{ // toStringXML of vector " << name << "\n";
 
     o << pre_line << "\tfor(int i = 0 ; i < " << name << "_length ; i++)\n";
@@ -785,7 +804,7 @@ string DataType::getSetFromStringCommandVector( string pre_line, string _name )
     ostringstream o;
     string pre_line_local;
 
-
+    _name  = "not used";
 
     o << pre_line << "\tconst char *p_item = p_item_vector;" << "\n";
     o << pre_line << "\tif ((p_item_vector=strchr(p_item_vector, '[')) != NULL){p_item_vector++;}else{p_item_vector=p_item;}" << "\n";
@@ -883,6 +902,8 @@ string DataType::getGetTypeFromStr(string pre_line, int index)
 {
     ostringstream o;
 
+    index = 0;
+
     o << pre_line << "{ //Scanning "<<name<<", terminal and non-terminal\n";
     o << pre_line << "\tif (strcmp(dataPathCharP, \"" << name << "\") == 0)\n";
     o << pre_line << "\t{\n";
@@ -961,6 +982,8 @@ string DataType::getCopyFromCommandVector(string pre_line, string _name)
 {
     ostringstream o;
     string pre_line_local;
+
+    _name  = "not used";
 
     o << pre_line << "{ // CopyFrom field " << name << "\n";
     o << pre_line << "\t" << name << "SetLength( _otherField->" << name << "_length);\n";

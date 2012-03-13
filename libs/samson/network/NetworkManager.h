@@ -47,14 +47,18 @@ namespace samson {
         void notify( engine::Notification* notification );
 
         // Main interface to inform avout a new connection comming from a listener
-        virtual void newSocketConnection( NetworkListener* listener , SocketConnection * socket_connetion )
+        virtual void newSocketConnection(NetworkListener* listener , SocketConnection* socket_connetion)
         {
+            listener         = NULL;
+            socket_connetion = NULL;
             LM_W(("NetworkManager::newSocketConnection not implemented"));
         }
         
         // Interface to inform about a received packet from a network connection
         virtual void receive( NetworkConnection* connection, Packet* packet )
         {
+            connection = NULL;
+            packet     = NULL;
             LM_W(("NetworkManager::receive not implemented"));
         }
 

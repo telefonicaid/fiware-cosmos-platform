@@ -33,7 +33,7 @@ namespace samson {
             QueueTask( size_t _id , StreamOperationBase* streamOperation  );
             
             // Function executed just before task is deleted in the main thread
-            virtual void finalize(StreamManager* streamManager){};
+            virtual void finalize(StreamManager* streamManager) { streamManager = NULL; };
             
             // Get information for monitoring
             void getInfo( std::ostringstream& output);

@@ -97,11 +97,13 @@ static const char* manVersion       = SAMSON_VERSION;
 
 void captureSIGINT( int s )
 {
+    s = 3;
     LM_X(1, ("Signal SIGINT"));
 }
 
 void captureSIGPIPE( int s )
 {
+    s = 3;
     LM_M(("Captured SIGPIPE"));
 }
 

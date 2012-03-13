@@ -107,6 +107,7 @@ namespace samson {
 
 		void receive( Packet* packet )
         {
+            packet = NULL;
             LM_W(("Received a packet in a RepeatDelilahComponent... nothing was expected"));
         }
         

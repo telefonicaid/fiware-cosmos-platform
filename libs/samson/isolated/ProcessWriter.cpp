@@ -172,13 +172,21 @@ namespace samson {
         size_t key_size_theoretical = key->parse( miniBuffer );
         
         if( key_size != key_size_theoretical  )
+        {
+            LM_W(("Error serializing [%s] '%s'" , key->getType() , key->str().c_str() ));
             LM_W(("Error serializing data. Different key size serializing key %lu sv %lu"  , key_size , key_size_theoretical));
+            LM_X(1, ("Non valid serialization key"));
+        }
         
 		size_t value_size               = value->serialize( miniBuffer + key_size );
 		size_t value_size_theoretical	= value->parse( miniBuffer + key_size );
         
         if( value_size != value_size_theoretical )
-            LM_W(("Error serializing data. Different key size serializing value %lu sv %lu"  , value_size , value_size_theoretical));
+        {
+            LM_W(("Error serializing [%s] '%s'" , value->getType() , value->str().c_str() ));
+            LM_W(("Error serializing data. Different value size serializing key %lu sv %lu"  , value_size , value_size_theoretical));
+            LM_X(1, ("Non valid serialization value"));
+        }
         
         // Total size including key & value
 		miniBufferSize		= key_size + value_size;

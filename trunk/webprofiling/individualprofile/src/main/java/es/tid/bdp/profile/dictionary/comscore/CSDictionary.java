@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.Collection;
 
 import es.tid.bdp.profile.dictionary.Categorization;
 import es.tid.bdp.profile.dictionary.CategorizationResult;
@@ -76,6 +77,14 @@ public class CSDictionary implements Dictionary {
         } else {
             return this.processKnownUrl(patternId);
         }
+    }
+
+    @Override
+    public String[] getAllCategoryNames() {
+        Collection<String> categoriesCollection =
+                this.categoryIdToNameMap.getCategories();
+        String[] categories = new String[categoriesCollection.size()];
+        return categoriesCollection.toArray(categories);
     }
 
     private Categorization processKnownUrl(long patternId) {

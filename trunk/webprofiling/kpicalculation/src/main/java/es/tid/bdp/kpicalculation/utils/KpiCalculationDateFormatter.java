@@ -9,46 +9,32 @@ import java.util.Locale;
 /**
  * Class used to format the date string received in log data allowing to get the
  * date and time in the wanted format
- * 
+ *
  * @author javierb
  */
-public final class KpiCalculationDateFormatter {
-	private static SimpleDateFormat inputFormat;
-	private static SimpleDateFormat dateFormat;
-	private static SimpleDateFormat timeFormat;
+public class KpiCalculationDateFormatter {
+    private SimpleDateFormat inputFormat;
+    private SimpleDateFormat dateFormat;
+    private Calendar calendar;
 
-	private static Calendar calendar;
+    public KpiCalculationDateFormatter(String delimiter) {
+        this.inputFormat = new SimpleDateFormat("ddMMMyyyyhhmmss",
+                                                Locale.ENGLISH);
+        this.dateFormat = new SimpleDateFormat("dd" + delimiter + "MM"
+                + delimiter + "yyyy");
+        this.calendar = Calendar.getInstance();
+    }
 
-	private KpiCalculationDateFormatter() {
-	}
-	
-	/**
-	 * Method that initializes the formatters
-	 */
-	public static void init(String delimiter) {
-		if (inputFormat != null && dateFormat != null && timeFormat != null
-				&& calendar != null) {
-			// Avoid unnecessary re-initializations.
-			return;
-		}
-		inputFormat = new SimpleDateFormat("ddMMMyyyyhhmmss", Locale.ENGLISH);
-		dateFormat = new SimpleDateFormat("dd" + delimiter + "MM" + delimiter
-				+ "yyyy");
-		timeFormat = new SimpleDateFormat("HH:mm:ss");
-		calendar = Calendar.getInstance();
-
-	}
-
-	/**
-	 * Method that provides the formatted date string corresponding to the input
-	 * 
-	 * @param inputDate
-	 *            String date to format
-	 * @return the formatted date
-	 */
-	public static String getValue(String inputDate) throws ParseException {
-		Date date = inputFormat.parse(inputDate);
-		calendar.setTime(date);
-		return dateFormat.format(calendar.getTime());
-	}
+    /**
+     * Method that provides the formatted date string corresponding to the input
+     *
+     * @param inputDate
+     *            String date to format
+     * @return the formatted date
+     */
+    public String getValue(String inputDate) throws ParseException {
+        Date date = this.inputFormat.parse(inputDate);
+        this.calendar.setTime(date);
+        return this.dateFormat.format(this.calendar.getTime());
+    }
 }

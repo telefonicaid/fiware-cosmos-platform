@@ -9,8 +9,8 @@ import es.tid.bdp.profile.data.ProfileProtocol.WebProfilingLog;
  *
  * @author dmicol
  */
-public abstract class WebProfilingLogUtil {
-    private WebProfilingLogUtil() {
+public class WebProfilingLogUtil {
+    protected WebProfilingLogUtil() {
     }
 
     public static WebProfilingLog create(String visitorId, String protocol,

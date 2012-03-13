@@ -235,6 +235,7 @@ eclipse:
 
 reset:
 	rm -Rf BUILD_DEBUG
+	rm -Rf BUILD_STRICT
 	rm -Rf BUILD_RELEASE
 	rm -Rf BUILD_DEBUG_COVERAGE
 	rm -Rf xcode_proj

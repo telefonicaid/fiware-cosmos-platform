@@ -29,7 +29,7 @@ namespace system{
         FilterCollection filters_collection;
 
         // Internal buffer to store line
-        char line[1024];
+        char *line;
 
 	public:
 
@@ -45,6 +45,9 @@ namespace system{
 
 		void init( samson::KVWriter *writer )
 		{
+            // Alloc space for the lines...
+            line = (char *) malloc( 20000 );
+            
             // By default, value is 1
             value = 1;
             
@@ -69,7 +72,8 @@ namespace system{
                 size_t line_pos = 0;
                 while( ( offset < length ) && data[offset] != '\n' )
                 {
-                    line[line_pos++] = data[offset];
+                    if( line_pos < (20000-2) ) // Limit for parsed lines
+                        line[line_pos++] = data[offset];
                     offset++;
                 }
                 offset++; // Skip the '\n'
@@ -95,6 +99,7 @@ namespace system{
 
 		void finish( samson::KVWriter *writer )
 		{
+            free(line);
 		}
 
 

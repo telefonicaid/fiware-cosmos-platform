@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.filecache.DistributedCache;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
@@ -15,8 +13,7 @@ import es.tid.bdp.profile.data.ProfileProtocol.CategoryInformation;
 import es.tid.bdp.profile.data.ProfileProtocol.UserNavigation;
 import es.tid.bdp.profile.dictionary.Categorization;
 import es.tid.bdp.profile.dictionary.Dictionary;
-import es.tid.bdp.profile.dictionary.comscore.CSDictionary;
-import es.tid.bdp.profile.dictionary.comscore.CSDictionaryJNIInterface;
+import es.tid.bdp.profile.dictionary.comscore.CSDictionaryHadoopHandler;
 
 /*
  * Enum with the list of counters to use in the CategoryExtraction mapreduces.
@@ -26,29 +23,22 @@ import es.tid.bdp.profile.dictionary.comscore.CSDictionaryJNIInterface;
 public class CategoryExtractionReducer extends Reducer<BinaryKey,
         ProtobufWritable<UserNavigation>, BinaryKey,
         ProtobufWritable<CategoryInformation>> {
-    public static final String DICTIONARY_NAME_PROPERTY =
-            "categoryextraction.dict.name";
     private static Dictionary dictionary = null;
     private ProtobufWritable<CategoryInformation> catWrapper;
 
     @Override
     public void setup(Context context) throws IOException {
         this.setupDictionary(context);
+
         this.catWrapper = new ProtobufWritable<CategoryInformation>();
         this.catWrapper.setConverter(CategoryInformation.class);
     }
 
     protected void setupDictionary(Context context) throws IOException {
-        if (dictionary == null) {
-            String dictionaryName = context.getConfiguration().get(
-                    DICTIONARY_NAME_PROPERTY);
-            dictionary = new CSDictionary(
-                    getCachedDictionaryPath(context, dictionaryName),
-                    CSDictionaryJNIInterface.DEFAULT_COMSCORE_LIB);
-            dictionary.init();
-        }
+        CSDictionaryHadoopHandler.init(context);
+        dictionary = CSDictionaryHadoopHandler.get();
     }
-
+    
     @Override
     protected void reduce(BinaryKey key,
             Iterable<ProtobufWritable<UserNavigation>> values, Context context)
@@ -102,22 +92,6 @@ public class CategoryExtractionReducer extends Reducer<BinaryKey,
 
     protected Categorization categorize(String url) {
         return dictionary.categorize(url);
-    }
-
-    public String getCachedDictionaryPath(Context context,
-            String dictionaryName) throws IOException {
-        Path dictionaryPath = null;
-        for (Path path : DistributedCache.getLocalCacheFiles(
-                context.getConfiguration())) {
-            if (path.getName().equals(dictionaryName)) {
-                dictionaryPath = path;
-                break;
-            }
-        }
-        if (dictionaryPath == null) {
-            throw new IllegalStateException("No dictionary file was configured");
-        }
-        return dictionaryPath.toString();
     }
 
     private Map<String, Long> getUniqueUrlCounts(

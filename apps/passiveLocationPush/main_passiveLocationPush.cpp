@@ -68,6 +68,8 @@ typedef struct File
 SAMSON_ARG_VARS;
 
 char            controller[256];
+char user[1024];
+char password[1024];
 char            file[256];
 char            directory[256];
 char            queueName[256];
@@ -99,6 +101,8 @@ PaArgument paArgs[] =
     { "-timeout",    &timeout,     "SS_PLP_TIMEOUT",        PaInt,     PaOpt,              0,       0,   3600,  "timeout"                    },
     { "-rate",       &rate,        "SS_PLP_RATE",           PaDouble,  PaOpt,         _i 1.0,    PaNL,   PaNL,  "rate"                       },
     { "-node",       controller,   "",                      PaString,  PaOpt, _i "localhost",    PaNL,   PaNL,  "SAMSON node"                },
+    { "-user",             user,                  "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "User to connect to SAMSON cluster"  },
+    { "-password",         password,              "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "Password to connect to SAMSON cluster"  },
     { "-file",       file,         "SS_PLP_FILE",           PaString,  PaOpt, _i "generator",    PaNL,   PaNL,  "file"                       },
 
     PA_END_OF_ARGS
@@ -854,7 +858,6 @@ void fakeData(samson::SamsonPushBuffer* pushBuffer)
 }
 
 
-
 /* ****************************************************************************
 *
 * main - 
@@ -877,6 +880,10 @@ int main(int argC, const char* argV[])
 
     gettimeofday(&startTime, NULL);
 
+    // Check queue is specified
+    if( strcmp( queueName , "null") == 0 )
+       LM_X(1,("Please, specify a queue to push data to"));
+
     // Instance of the client to connect to SAMSON system
     samson::SamsonClient client("push");
 
@@ -890,13 +897,20 @@ int main(int argC, const char* argV[])
     LM_V(("Connecting to '%s'", controller));
 
     // Initialize connection
+    // Init connection
+
+
     samson::SamsonPushBuffer* pushBuffer;
     if (((tektronix == true) || (strcmp(directory, "nodir") != 0)) && (fake == true))
         pushBuffer = NULL;
     else
     {
-        if (!client.init(controller))
-            LM_X(0, ("Error connecting to samson cluster (controller at: '%s'): %s\n" , controller, client.getErrorMessage().c_str()));
+        if( !client.init( controller , SAMSON_WORKER_PORT , user , password ) )
+        {
+            fprintf(stderr, "Error connecting with samson cluster: %s\n" , client.getErrorMessage().c_str() );
+            exit(0);
+        }
+        LM_V(("Conection to %s OK" , controller));
 
         pushBuffer = new samson::SamsonPushBuffer(&client, queueName);
     }

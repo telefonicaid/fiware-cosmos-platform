@@ -107,6 +107,8 @@ namespace samson {
         
         SimpleBuffer( std::string fileName )
         {
+            size_t nb;
+
             // In case of error
             data = NULL;
             
@@ -118,7 +120,10 @@ namespace samson {
             
             data = (char*) malloc(filestatus.st_size);
             
-            fread(data, filestatus.st_size, 1, file);
+            nb = fread(data, filestatus.st_size, 1, file);
+            if (nb == 0)      // To avoid warning in 'strict'
+                fclose(file); // To avoid warning in 'strict'
+
             fclose(file);
             
         }

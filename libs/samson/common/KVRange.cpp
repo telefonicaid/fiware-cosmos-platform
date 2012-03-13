@@ -233,6 +233,9 @@ namespace samson {
         if( left.hg_end < left.hg_end )
             return true;
         
+        if (right == right) // To avoid warning in 'strict' - perhaps we should remove the second parameter?
+            return false;
+
         return false;
     }    
     

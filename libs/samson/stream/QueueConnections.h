@@ -41,9 +41,11 @@ namespace samson {
             return ( target_queues.size() != 0 );
         }
         
-        void fill( samson::network::CollectionRecord* record , Visualization* visualitzation )
+        void fill( samson::network::CollectionRecord* record , Visualization* visualization )
         {
-            visualitzation = NULL;
+            if (visualization == NULL)
+                LM_D(("visualization == NULL"));
+
             add( record , "queue" , queue , "left,different" );
             add( record , "connected to.." , str_target_queues() , "left,different" );
         }

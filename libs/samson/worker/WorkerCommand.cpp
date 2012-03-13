@@ -1675,8 +1675,6 @@ typedef struct LogLineInfo
     
     void WorkerCommand::fill( samson::network::CollectionRecord* record , Visualization* visualization )
     {
-        visualization = NULL;
-
         std::string name = NodeIdentifier( DelilahNode , delilah_id ).getCodeName();
         
         add( record , "id" ,  au::str("%s (%lu)", name.c_str() , delilah_component_id) , "left,different" );
@@ -1689,11 +1687,12 @@ typedef struct LogLineInfo
             add( record , "status" , "running" , "left,different" );
 
         add( record , "command" , command , "left,different" );
-        
         add( record , "#operations" , num_pending_processes , "left,uint64,sum" );
         add( record , "#disk_operations" , num_pending_disk_operations , "left,uint64,sum" );
-        
         add( record , "error"   , error.getMessage() , "left,different" );
+
+        if (visualization == NULL)
+            return;
     }
 
     

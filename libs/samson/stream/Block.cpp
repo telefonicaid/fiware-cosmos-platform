@@ -727,8 +727,6 @@ namespace samson {
         
         void Block::fill( samson::network::CollectionRecord* record , Visualization* visualization )
         {
-            visualization = NULL;
-
             samson::add( record , "id" , au::str("%lu-%lu" , worker_id ,id) , "left,different" );
             
             samson::add( record , "size" , size , "f=uint64,sum" );
@@ -766,6 +764,8 @@ namespace samson {
             samson::add( record , "tasks" , output_tasks_str.str() , "left,different" );
             samson::add( record , "lists" , output_block_lists_str.str() , "left,different" );
             
+            if (visualization == NULL)
+                return;
         }
 
 

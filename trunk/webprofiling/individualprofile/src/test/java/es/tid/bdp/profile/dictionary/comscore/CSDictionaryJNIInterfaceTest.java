@@ -87,13 +87,4 @@ public class CSDictionaryJNIInterfaceTest {
             assertTrue(worker.success);
         }
     }
-
-    @Test
-    public void testGetAllCategories() throws Exception {
-        String[] names = instance.getAllCategoryNames();
-        assertEquals(132, names.length);
-        assertArrayEquals(new String[] {"Auctions", "Automotive",
-                "Business/Finance", "Career Services and Development",
-                "Community"}, Arrays.copyOfRange(names, 0, 5));
-    }
 }

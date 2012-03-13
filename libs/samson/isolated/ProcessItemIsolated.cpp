@@ -593,7 +593,6 @@ namespace samson
         // It was desactivated in samson 0.6.1
         // A new system based on blocks should be provided
         
-	   
 #if 0
          
         LM_T(LmtIsolated,("Background process: Sending trace %s", logData->text ));
@@ -615,7 +614,7 @@ namespace samson
         
         delete message;        
 #else
-		logData = NULL;
+        if (logData == NULL) return; // 'strict' ...
 #endif
 	}	
 	

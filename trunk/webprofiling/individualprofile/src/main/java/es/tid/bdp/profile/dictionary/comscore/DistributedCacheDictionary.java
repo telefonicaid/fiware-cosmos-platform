@@ -43,7 +43,7 @@ public abstract class DistributedCacheDictionary {
             String[] dictionaryNames) {
         DistributedCache.createSymlink(job.getConfiguration());
         if (!baseDirectory.endsWith(File.separator)) {
-            baseDirectory += File.pathSeparator;
+            baseDirectory += File.separator;
         }
         for (String name : dictionaryNames) {
             DistributedCache.addCacheFile(URI.create(baseDirectory + name),
@@ -101,7 +101,7 @@ public abstract class DistributedCacheDictionary {
         return cachedPaths;
     }
 
-    public static String getCachedPath(Context context, String fileName)
+    private static String getCachedPath(Context context, String fileName)
             throws IOException {
         for (Path path : DistributedCache.getLocalCacheFiles(
                 context.getConfiguration())) {

@@ -13,14 +13,14 @@ public class JobDetailsTest {
     
     @Before
     public void setUp() {
-        this.instance = new JobDetails("a", "b", "c");
+        this.instance = new JobDetails("a", "b");
     }
     
     @Test
     public void testGettersAndSetters() {
         assertEquals("a", this.instance.getName());
         assertEquals("b", this.instance.getFields());
-        assertEquals("c", this.instance.getGroup());
+        assertEquals(null, this.instance.getGroup());
         
         this.instance.setName("d");
         this.instance.setFields("e");

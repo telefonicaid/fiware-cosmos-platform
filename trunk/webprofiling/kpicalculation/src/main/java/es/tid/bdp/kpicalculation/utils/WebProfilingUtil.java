@@ -14,13 +14,13 @@ import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
  * 
  * @author javierb
  */
-public final class WebProfilingUtil {
+public class WebProfilingUtil {
     private static final String DELIMITER = "\t";
 
     private static WebProfilingLog.Builder builder;
     private static KpiCalculationDateFormatter dateFormatter;
 
-    private WebProfilingUtil() {
+    protected WebProfilingUtil() {
     }
 
     public static WebProfilingLog getInstance(String line) {

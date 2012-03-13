@@ -26,7 +26,7 @@ public class KpiCounterCombinerTest {
     }
     
     @Test
-    public void testReduce() throws IOException {
+    public void shouldCountPairs() throws IOException {
         SingleKey key = new SingleKey("a");
         this.driver
                 .withInput(key, asList(new IntWritable(2), new IntWritable(3)))

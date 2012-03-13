@@ -1,6 +1,7 @@
 package es.tid.bdp.profile.data;
 
 import static org.junit.Assert.assertEquals;
+import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.bdp.profile.data.ProfileProtocol.UserNavigation;
@@ -11,7 +12,13 @@ import es.tid.bdp.profile.data.ProfileProtocol.UserNavigation;
  * @author sortega
  */
 public class UserNavigationUtilTest {
-
+    private UserNavigationUtil instance;
+    
+    @Before
+    public void setUp() {
+        this.instance = new UserNavigationUtil();
+    }
+    
     @Test
     public void testParse() {
         UserNavigation instance = UserNavigationUtil.parse("cfae4f24cb42c12d\t"

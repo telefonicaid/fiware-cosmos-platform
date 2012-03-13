@@ -507,7 +507,8 @@ void Console::evalCommand( std::string command )
 
 void Console::autoComplete( ConsoleAutoComplete* info )
 {
-    writeWarningOnConsole("Console::auto_complete not implemented (%p)", info);
+
+    writeWarningOnConsole(au::str("Console::auto_complete not implemented (%p)", info));
 }
 
 void Console::refresh()
@@ -531,7 +532,7 @@ void handle_tstp(int sig)
 { 
     sigset_t mask;
 
-    if (sig == SIGSTSTP)
+    if (sig == SIGTSTP)
     {
         // Unblock SIGSTSTP
         sigemptyset(&mask); sigaddset(&mask, SIGTSTP); sigprocmask(SIG_UNBLOCK, &mask, NULL);

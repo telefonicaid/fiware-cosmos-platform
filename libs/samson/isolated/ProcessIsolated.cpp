@@ -9,6 +9,7 @@
 #include "ProcessWriter.h"
 #include "SharedMemoryManager.h"
 
+#include "samson/common/KVHeader.h"
 
 #include "samson/network/NetworkInterface.h"
 #include "samson/network/Packet.h"
@@ -181,36 +182,39 @@ namespace samson
 				if( _channel->info.size > 0)
 				{
                     
-                    engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer( "ProcessWriter", KVFILE_TOTAL_HEADER_SIZE + _channel->info.size , MemoryOutputNetwork );
+                    engine::MemoryManager * mm = engine::MemoryManager::shared();
+                    engine::Buffer *buffer = mm->newBuffer(  "ProcessWriter"
+                                                            , sizeof(KVHeader) + _channel->info.size 
+                                                            , MemoryOutputNetwork );
+                    
 					if( !buffer )
 						LM_X(1,("Internal error: Missing buffer in ProcessBase"));
 					
 					// Pointer to the header
 					KVHeader *header = (KVHeader*) buffer->getData();
-					
-					// Pointer to the info vector
-					KVInfo *info = (KVInfo*) (buffer->getData() + sizeof( KVHeader ));
-					
+										
 					// Initial offset for the buffer to write data
-					buffer->skipWrite(KVFILE_TOTAL_HEADER_SIZE);
+					buffer->skipWrite( sizeof(KVHeader) );
                     
 					//KVFormat format = KVFormat( output_queue.format().keyformat() , output_queue.format().valueformat() );
                     if( outputFormats.size() > (size_t)o )
                         header->init( outputFormats[o] , _channel->info );
                     else
                         header->init( KVFormat( "no-used" , "no-used" ) , _channel->info );
-					
+
+                    // This buffer is not not sended with the buffer
+					KVInfo* info = (KVInfo*) malloc( sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS );
+                    
 					for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ; i++)
 					{
-                        
-						HashGroupOutput * _hgOutput	= &_channel->hg[i];							// Current hash-group output
+                        // Current hash-group output
+						HashGroupOutput * _hgOutput	= &_channel->hg[i];							
 						
 						// Set gloal info
-						info[i] = _hgOutput->info;
+                        info[i] = _hgOutput->info;
 						
 						// Write data followign nodes
 						uint32 node_id = _hgOutput->first_node;
-						
 						while( node_id != KV_NODE_UNASIGNED )
 						{
 							bool ans = buffer->write( (char*) node[node_id].data, node[node_id].size );
@@ -224,14 +228,12 @@ namespace samson
                     					
 					if( buffer->getSize() != buffer->getMaxSize() )
 						LM_X(1,("Internal error"));
-
                     
                     // Set the hash-group limits of the header
                     header->range.setFrom( info );
-                    //header->range = KVRange( 0 , KVFILE_NUM_HASHGROUPS );
 
-                    //LM_M(("Output buffer for operation %s with range %s", operation_name.c_str() , header->range.str().c_str() ));
-                    
+                    // Free buffer of KVInfo ( not not sended with the buffer )
+                    free(info);
                     
                     // Process the output buffer
                     processOutputBuffer(buffer, o, s, finish);

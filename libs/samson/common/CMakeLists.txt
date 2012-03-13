@@ -1,5 +1,11 @@
 SET (HEADERS
-	Rate.h
+	common.h
+	KVInfo.h
+	FullKVInfo.h
+	KVRange.h
+	KVHeader.h
+	KVFile.h
+	Rate.h	
     NotificationMessages.h
 	samson.pb.h
 	status.h
@@ -21,6 +27,11 @@ SET (HEADERS
 )
 
 SET (SOURCES
+	KVInfo.cpp
+	FullKVInfo.cpp
+	KVRange.cpp
+	KVHeader.cpp
+	KVFile.cpp
     Rate.cpp
 	samson.pb.cc
 	SamsonSetup.cpp

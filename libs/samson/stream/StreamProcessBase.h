@@ -11,7 +11,7 @@
 #include "engine/Engine.h"                              // samson::Engine
 
 #include "samson/common/samson.pb.h"                    // samson::network::...
-#include "samson/common/coding.h"                       // samson::ProcessAssistantSharedFile
+#include "samson/common/coding.h"                       
 #include "samson/common/samson.pb.h"                    // samson::network::...
 #include "samson/common/MemoryTags.h"                   // MemoryOutputNetwork
 

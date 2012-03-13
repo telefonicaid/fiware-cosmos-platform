@@ -1,12 +1,15 @@
 #include <sys/types.h>
 #include <dirent.h>
 
+#include "logMsg/traceLevels.h"
+
 #include "engine/DiskManager.h"        // notification_disk_operation_request_response
 #include "engine/Engine.h"             // engine::Engine
 #include "engine/Notification.h"       // engine::Notification
 
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
-#include "logMsg/traceLevels.h"
+
+#include "samson/common/KVHeader.h"
 
 #include "BlockList.h"          // BlockList
 #include "BlockManager.h"       // Own interface

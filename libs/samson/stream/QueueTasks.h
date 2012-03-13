@@ -52,7 +52,8 @@ namespace samson
             
         public:
             
-            ParserOutQueueTask( size_t id  , StreamOperationBase* streamOperation , KVRange _range  ) : stream::QueueTask(id , streamOperation )
+            ParserOutQueueTask( size_t id  , StreamOperationBase* streamOperation , KVRange _range  ) 
+            : stream::QueueTask(id , streamOperation )
             {
                 // Set operation name for debugging
                 setProcessItemOperationName( "stream:" + streamOperation->operation );
@@ -85,7 +86,8 @@ namespace samson
             
         public:
             
-            MapQueueTask( size_t id , StreamOperationBase* streamOperation , KVRange _range  ) :stream::QueueTask(id , streamOperation )
+            MapQueueTask( size_t id , StreamOperationBase* streamOperation , KVRange _range  )
+            :stream::QueueTask(id , streamOperation )
             {
                 // Set operation name for debugging
                 setProcessItemOperationName( "stream:" + streamOperation->operation );

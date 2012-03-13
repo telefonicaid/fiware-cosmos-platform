@@ -107,47 +107,7 @@ namespace samson
 	
 
 	
-	void KVInputVector::addKVs( ProcessSharedFile& file )
-	{
-		int input = file.header->input;
-		
-		// Get the right size function
-		DataSizeFunction _valueSize = valueSize[input];
-		
-		// Get the pointer to data
-		char *data = file.data + file.offset;
-		
-		// Get the info we should read
-		KVInfo info = file.info[ file.hg ];
-		
-		// Local offset
-		size_t offset = 0;
-		
-		// Process a set of key values
-		for (size_t i = 0 ; i < info.kvs ; i++)
-		{
-			kv[ num_kvs ].key = data + offset;
-			
-			offset += keySize( data + offset );
-			
-			kv[ num_kvs ].value = data + offset;
-			
-			offset += _valueSize( data + offset );
-			
-			kv[num_kvs].input = input;
-			
-			num_kvs++;
-		}
-		
-		// Make sure the parsing is OK!
-		if( offset != info.size )
-			LM_X(1,("Error adding key-values to a KVInputVector, with file.hg:%d, info.kvs:%lu, offset(%lu) != info.size(%lu)\n", file.hg, info.kvs, offset, info.size));
-		
-		// update the  file for the next round
-		file.hg++;
-		file.offset += info.size;
-		
-	}
+
 	
     void KVInputVector::addKVs(int input , KVInfo info , char *data )
     {

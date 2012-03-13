@@ -69,6 +69,33 @@ namespace samson{
             
         };
 
+        // --------------------------------------------------------
+        // FilterEmit
+        // --------------------------------------------------------
+        
+        class FilterEmitTxt : public Filter
+        {
+            samson::TXTWriter *writer;
+            
+        public:
+            
+            FilterEmitTxt( samson::TXTWriter *_writer )
+            {
+                writer = _writer;
+            }
+            
+            virtual void run( KeyValue kv )
+            {
+                std::string output = au::str("%s %s\n" , kv.key->str().c_str() , kv.value->str().c_str() );
+                writer->emit(output.c_str() , output.length() );
+            }
+            
+            std::string str()
+            {
+                return "Emit txt";
+            }
+            
+        };        
         
         // --------------------------------------------------------
         // parse -  parse line
@@ -508,7 +535,7 @@ namespace samson{
                 return output.str();
             }
             
-            Filter* getFilter( std::string command , samson::KVWriter *writer , au::ErrorManager* error )
+            Filter* getFilter( std::string command , samson::KVWriter *writer , TXTWriter *txt_writer , au::ErrorManager* error )
             {
                 
                 au::CommandLine cmdLine;
@@ -559,10 +586,20 @@ namespace samson{
                 }
                 else if( main_command == "emit" )
                 {
-                    if ( cmdLine.get_num_arguments() > 1 )
-                        return new FilterEmit( atoi( cmdLine.get_argument(1).c_str() ) , writer );
-                    else
-                        return new FilterEmit( 0 , writer ); // Default channel "0"
+                    
+                    if( writer )
+                    {
+                    
+                        if ( cmdLine.get_num_arguments() > 1 )
+                            return new FilterEmit( atoi( cmdLine.get_argument(1).c_str() ) , writer );
+                        else
+                            return new FilterEmit( 0 , writer ); // Default channel "0"
+                    }
+                    else if ( txt_writer )
+                    {
+                        return new FilterEmitTxt( txt_writer );                        
+                    }
+                    
                 }
                 else if ( main_command == "filter" )
                 {
@@ -616,7 +653,7 @@ namespace samson{
             
             // filter key = 67 | select key:1,value | emit 0 / filter key = 56 | select key:1,value | emit 1
 
-            void addFilter( std::string command  , samson::KVWriter *writer , au::ErrorManager* error )
+            void addFilter( std::string command  , samson::KVWriter *writer , TXTWriter *txt_writer ,  au::ErrorManager* error )
             {
                 //printf("adding filter '%s'\n" , command.c_str() );
                 
@@ -626,7 +663,7 @@ namespace samson{
                 std::vector<std::string> components = au::split(command, '|' );
                 for( size_t i = 0 ; i < components.size() ; i++ )
                 {
-                    Filter * filter = getFilter( components[i] , writer , error );
+                    Filter * filter = getFilter( components[i] , writer , txt_writer ,  error );
 
                     
                     if( !filter )
@@ -651,11 +688,11 @@ namespace samson{
             }
             
             
-            void addFilters( std::string command  , samson::KVWriter *writer , au::ErrorManager* error )
+            void addFilters( std::string command  , samson::KVWriter *writer , TXTWriter *txt_writer , au::ErrorManager* error )
             { 
                 std::vector<std::string> commands = au::split(command, ';' );
                 for( size_t i = 0 ; i < commands.size() ; i++ )
-                    addFilter( commands[i] , writer , error );
+                    addFilter( commands[i] , writer , txt_writer , error );
 
             }
             

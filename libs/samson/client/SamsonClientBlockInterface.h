@@ -1,6 +1,8 @@
 #ifndef _H_SamsonClientBlockInterface_SamsonClient
 #define _H_SamsonClientBlockInterface_SamsonClient
 
+#include "samson/common/KVHeader.h"
+
 namespace  samson 
 {
     

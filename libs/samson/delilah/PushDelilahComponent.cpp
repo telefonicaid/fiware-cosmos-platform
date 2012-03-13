@@ -12,13 +12,15 @@
 #include "samson/network/Packet.h"							// samson::Packet
 #include "samson/network/Message.h"						// samson::Message
 #include "samson/delilah/Delilah.h"						// samson::Delilah
+
 #include "samson/common/samson.pb.h"						// network::...
-#include "DelilahClient.h"					// samson::DelilahClient
 #include "samson/common/SamsonSetup.h"					// samson::SamsonSetup
+#include "samson/common/KVHeader.h"
 #include "samson/common/MemoryTags.h"                     // samson::MemoryInput , samson::MemoryOutput...
 
 #include "PushDelilahComponent.h"                      // Own interface
 
+#include "DelilahClient.h"					// samson::DelilahClient
 
 namespace samson
 {

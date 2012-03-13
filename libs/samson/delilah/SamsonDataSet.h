@@ -2,8 +2,12 @@
 #ifndef _H_SAMSON_DATA_SET
 #define _H_SAMSON_DATA_SET
 
-#include "au/map.h"                         // au::map
 #include <string>                           // std::string
+
+#include "au/map.h"                         // au::map
+
+#include "samson/common/FullKVInfo.h"
+
 #include "samson/delilah/SamsonFile.h"      // samson::SamsonFile
 
 namespace samson {

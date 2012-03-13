@@ -12,7 +12,6 @@ namespace samson {
     {
         fileName = _fileName;
         file = fopen( fileName.c_str() , "r" );        
-        info = NULL;
         
         if( !file )
         {
@@ -39,7 +38,7 @@ namespace samson {
         struct stat filestatus;
         stat( fileName.c_str() , &filestatus );
         
-        if ( header.getKVFormat() == samson::KVFormat("txt","txt") )
+        if ( header.getKVFormat().isTxt() )
         {
             size_t expected_size =   (size_t)( sizeof(samson::KVHeader)  + header.info.size );
             
@@ -59,11 +58,10 @@ namespace samson {
                 
                 return;
             }
-            
         }
         else
         {
-            size_t expected_size =   (size_t)( sizeof(samson::KVHeader) + (sizeof(samson::KVInfo)*KVFILE_NUM_HASHGROUPS) + header.info.size ) ;            
+            size_t expected_size =   (size_t)( sizeof(samson::KVHeader) + header.info.size ) ;            
             
             if( (size_t)filestatus.st_size != expected_size)
             {
@@ -71,7 +69,6 @@ namespace samson {
                 message << "Wrong file length\n";
                 message << "Expected:";
                 message << " Header: " << sizeof(samson::KVHeader);
-                message << " + Info: " << (sizeof(samson::KVInfo)*KVFILE_NUM_HASHGROUPS);
                 message << " + Data: " <<  header.info.size;
                 message << " = " << expected_size << "\n";
                 message << "File size: " << filestatus.st_size << " bytes\n";
@@ -79,44 +76,17 @@ namespace samson {
                 error.set( message.str() );
                 return;
             }
-            
         }
-        
-        
         
         // Get format
         format = header.getKVFormat(); 
-        
-        // Get hash-group information
-        if ( header.getKVFormat() == samson::KVFormat("txt","txt") )
-            info = NULL;
-        else
-        {
-            
-            info = (samson::KVInfo*) malloc(  sizeof(samson::KVInfo)*(KVFILE_NUM_HASHGROUPS));
-            int          total_size =  sizeof(samson::KVInfo) * (KVFILE_NUM_HASHGROUPS);
-            nb = fread(info, 1, total_size, file);
-            
-            if (nb != total_size)
-            {
-                error.set("Error reading information about hash-groups");
-                return;
-            }
-            
-        }
-        
     }
     
     SamsonFile::~SamsonFile()
     {
         if( file )
             fclose( file );
-        
-        if( info )
-            delete info;
     }
-    
-    
     
     bool SamsonFile::hasError()
     {
@@ -128,18 +98,65 @@ namespace samson {
         return error.getMessage();
     }
     
+    class SimpleBuffer
+    {
+        
+    public:
+        
+        char* data;
+        
+        SimpleBuffer( std::string fileName )
+        {
+            // In case of error
+            data = NULL;
+            
+            struct stat filestatus;
+            if( stat( fileName.c_str() , &filestatus ) != 0 )
+                return;            
+            
+            FILE *file = fopen( fileName.c_str() , "r" );    
+            
+            data = (char*) malloc(filestatus.st_size);
+            
+            fread(data, filestatus.st_size, 1, file);
+            fclose(file);
+            
+        }
+        
+        SimpleBuffer( size_t size )
+        {
+            if( data )
+                data = ( char* ) malloc( size );
+        }
+        
+        ~SimpleBuffer()
+        {
+            free( data );
+        }
+        
+    };
+
     
     std::string SamsonFile::getHashGroups()
     {
+        SimpleBuffer simple_buffer( fileName );
+        
+        au::ErrorManager error;
+        KVInfo* info = createKVInfoVector( simple_buffer.data , &error );
+
         if( !info)
-            return "[No info]";
+            return au::str( "Error getting vector for hashgroups. (%s)" , error.getMessage().c_str() );;
         
         std::ostringstream output;
         for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ; i++)
             output << i << " " << info[i].kvs << " " << info[i].size << "\n";
+
+        free( info );
         
         return output.str();
     }
+    
+    
     
     size_t SamsonFile::printContent( size_t limit , std::ostream &output )
     {
@@ -149,7 +166,7 @@ namespace samson {
         if( error.isActivated() )
             return records;
         
-        if ( header.getKVFormat() == samson::KVFormat("txt","txt") )
+        if ( header.getKVFormat().isTxt() )
         {
             // txt content
             char buffer[1025];
@@ -185,48 +202,26 @@ namespace samson {
         samson::DataInstance *key = (samson::DataInstance *)keyData->getInstance();
         samson::DataInstance *value = (samson::DataInstance *)valueData->getInstance();
         
-        for (int i = 0 ; i < KVFILE_NUM_HASHGROUPS ;i++)
+        
+        // Load file in memory..
+        SimpleBuffer file_buffer( fileName );
+        char* data = file_buffer.data;
+        
+        size_t offset = sizeof(KVHeader);
+        for ( int i = 0 ; i < (int)header.info.kvs ; i++ )
         {
+            size_t key_size = key->parse(data+offset);
+            offset += key_size;
             
-            size_t size = info[i].size;
-            size_t kvs = info[i].kvs; 
+            size_t value_size = value->parse(data+offset);
+            offset += value_size;
+
+            output << key->str() << " " << value->str() << std::endl;
             
-            if( size > 0)
-            {
-                char *data = (char*)malloc( size );
-                
-                int n = fread(data, size, 1, file);
-                if ( n != 1)
-                {
-                    output << "Not possible to read file. Wrong format\n";
-                    return 0;
-                }
-                
-                size_t offset = 0 ;
-                for (size_t i = 0 ; i < kvs ; i++)
-                {
-                    offset += key->parse(data+offset);
-                    offset += value->parse(data+offset);
-                    
-                    output << key->str() << " " << value->str() << std::endl;
-                    
-                    records++;
-                    if( limit > 0)
-                        if( records >= limit )
-                            return records;
-                    
-                }
-                
-                if( offset != size)
-                {
-                    output << "Wrong file format\n";
+            records++;
+            if( limit > 0)
+                if( records >= limit )
                     return records;
-                }
-                
-                free( data );
-            }
-            
-            
         }
         
         return records;

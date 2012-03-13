@@ -13,10 +13,6 @@
 #include <vector>
 #include <sstream>
 
-#pragma mark ************************************************
-#pragma mark KVFormat key-value format definition
-#pragma mark ************************************************
-
 namespace samson {
 
 	class KVFormat
@@ -152,8 +148,9 @@ namespace samson {
             return isEqual( KVFormat("NonCommon","NonCommon") );
         }
         
-        
 	};
+    
+    
 }
 
 #endif

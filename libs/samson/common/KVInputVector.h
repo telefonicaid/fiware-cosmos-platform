@@ -50,7 +50,6 @@ namespace samson
 		~KVInputVector();
 		
 		// Function to add key-values to the input vector
-		void addKVs( ProcessSharedFile& file );
 		void addKVs(int input , KVInfo info , char *data );
         
 		// global sort function key - input - value used in reduce operations

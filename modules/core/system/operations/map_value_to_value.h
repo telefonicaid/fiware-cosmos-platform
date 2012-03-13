@@ -46,7 +46,7 @@ namespace system{
             // Setup the process chain...
             command =  environment->get( "command" ,  "" );
             au::ErrorManager error;
-            filters_collection.addFilters( command , writer , &error );
+            filters_collection.addFilters( command , writer , NULL, &error );
 
             // Error defined by user
             if( error.isActivated() )

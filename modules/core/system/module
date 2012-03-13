@@ -97,6 +97,13 @@ parser parse_to_value
 	helpLine "Parse lines with fields separated by a single char tab , space , coma , ..."
 }
 
+parserOut export_to_txt
+{
+	in  system.Value system.Value
+
+	helpLine "Export system.Value system.Value elements to string"
+}
+
 map map_value_to_value
 {
 	in  system.Value system.Value

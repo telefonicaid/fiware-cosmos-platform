@@ -13,6 +13,8 @@
 
 #include "tables/Select.h"
 
+#include "samson/common/coding.h"
+
 #include "DelilahBase.h"        // Own interface
 
 #define CREATE_TABLE_QUEUES     \
@@ -78,10 +80,13 @@ namespace samson {
 
     std::vector<std::string> DelilahBase::getQueueNames( KVFormat format )
     {
-        au::StringVector values = database.getValuesFromColumn("queues", "name");
+        if( format.isTxt() )
+        {
+            
+        }
 
-        if (format != format)
-           LM_E(("avoiding a strict warning"));
+        // Get all the values
+        au::StringVector values = database.getValuesFromColumn("queues", "name");
 
         values.unique();
         return values;

@@ -7,7 +7,7 @@
 #include <sstream>				// std::ostringstream
 
 #include "samson/common/samson.pb.h"			// samson::network::...
-#include "samson/common/coding.h"				// samson::ProcessAssistantSharedFile
+#include "samson/common/coding.h"				
 #include "samson/common/MemoryTags.h"           
 
 #include "samson/module/Environment.h"              // samson::Enviroment

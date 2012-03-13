@@ -4,6 +4,7 @@ SET (AUX_HEADERS
 	system_common.h
     samson/modules/system/Value.h
 	operations/parse_to_value.h
+	operations/export_to_txt.h
 	operations/map_value_to_value.h	
 	operations/map_value_to_2_value.h	
 	operations/map_value_to_3_value.h	

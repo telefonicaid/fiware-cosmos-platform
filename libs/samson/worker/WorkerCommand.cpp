@@ -1217,19 +1217,11 @@ typedef struct LogLineInfo
             stream::BlockList init_list("defrag_block_list");
             init_list.copyFrom( queue->list );
             
-            
-            // Print considered blocks
-            std::list<stream::Block*>::iterator b;
-            for ( b = init_list.blocks.begin() ; b != init_list.blocks.end() ; b++ )
-            {
-                stream::Block* block = *b;
-                LM_W(("Block to defrag %s" , block->str().c_str() ));
-            }
-            
- 
             size_t input_operation_size = SamsonSetup::shared()->getUInt64("general.memory") / 2;
             
             size_t num_defrag_blocks = init_list.getBlockInfo().size / input_operation_size;
+            if( num_defrag_blocks == 0)
+                num_defrag_blocks = 1;
             size_t output_operation_size = input_operation_size / num_defrag_blocks;
             
             if( output_operation_size > (64*1024*1024) )
@@ -1697,6 +1689,10 @@ typedef struct LogLineInfo
             add( record , "status" , "running" , "left,different" );
 
         add( record , "command" , command , "left,different" );
+        
+        add( record , "#operations" , num_pending_processes , "left,uint64,sum" );
+        add( record , "#disk_operations" , num_pending_disk_operations , "left,uint64,sum" );
+        
         add( record , "error"   , error.getMessage() , "left,different" );
     }
 

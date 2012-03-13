@@ -326,8 +326,6 @@ namespace samson{
                         int len = smaz_decompress( &data[2] , len_in, (char*)line, 1024 );
                         line[len] = '\0';
                         _value_string = line;
-                        printf("Parsed '%s' usign smaz l=%d \n" , _value_string.c_str() , len_in );
-
                         return  1 + 1 + len_in ; // serializtion code, length , compressed_string 
                     }
                         
@@ -518,24 +516,6 @@ namespace samson{
             // ------------------------------------------------------------
             // SERIALIZE Operations
             // ------------------------------------------------------------
-
-            void print_data( char * data , size_t l )
-            {
-                printf("DATA>> ");
-                
-                for( size_t i = 0 ; i < l ; i++ )
-                {
-                    int c = data[i];
-                    
-                    if( ( c >=31 ) && (c<127))
-                        printf("[%d/%c]" , c , c );
-                    else
-                        printf("[%d]" , c );
-                    
-                }
-                
-                printf("\n");
-            }
 
 
             int serialize_void(char *data)

@@ -34,6 +34,11 @@ namespace samson {
             setProcessItemOperationName( "system.BlockBreak" );
             output_operation_size = _output_operation_size;
         }
+
+        BlockBreakQueueTask::~BlockBreakQueueTask()
+        {
+            files.clearVector();
+        }
         
         void BlockBreakQueueTask::run()
         {
@@ -43,7 +48,7 @@ namespace samson {
             // Get all pointers to correct datas ( using KVFile structure )
             au::list<Block>::iterator b;
             for ( b = list->blocks.begin() ; b != list->blocks.end() ; b++)
-                files.push_back( KVFile( (*b)->buffer->getData() ) );
+                files.push_back( new KVFile( (*b)->buffer->getData() ) );
 
             
             // Compute the size for each hg
@@ -53,7 +58,7 @@ namespace samson {
             {
                 info[hg].clear();
                 for( size_t f = 0 ; f < files.size() ; f++ )
-                    info[hg].append( files[f].info[hg]  );
+                    info[hg].append( files[f]->getKVInfoForHashGroup(hg) );
             }
             
             // Create (aprox) 64Mb ouptut blocks....
@@ -92,43 +97,46 @@ namespace samson {
             KVInfo info;
             for( int hg = hg_begin ; hg < hg_end ; hg++ )
                 for (size_t f = 0 ; f < files.size() ; f++ )
-                    info.append( files[f].info[hg] );
+                    info.append( files[f]->getKVInfoForHashGroup(hg) );
             
             if ( info.size == 0 )
                 return; // No block is generated
             
             // total size of the new block
-            size_t size = sizeof( KVHeader ) + sizeof(KVInfo)*KVFILE_NUM_HASHGROUPS + info.size;
+            size_t size = sizeof( KVHeader ) + info.size;
             
-            // Alloc buffer
+            // Get the buffer from the memory manager & set the correct size
             engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer( "block_break", size , MemoryBlocks );
             buffer->setSize( size );
 
-            // KVFile to work with this file
-            KVFile file( buffer->getData() );
+            // Pointer to the header
+            KVHeader * header = (KVHeader*) buffer->getData();
+            char* data = buffer->getData() + sizeof(KVHeader);
             
-            // Header copying the header of the first one
-            memcpy( file.header , files[0].header ,  sizeof( KVHeader ) );
-            file.header->info = info;
+            // Copy header from the first block
+            memcpy( header , files[0]->getKVHeader() ,  sizeof( KVHeader ) );
             
-            //KVInfo vector for this buffer
-            clearKVInfoVector( file.info );
+            // Temporal vector of KVInfo's
+            KVInfo* info_vector = new KVInfo[ KVFILE_NUM_HASHGROUPS ];
             
+            // Copy content            
             size_t offset = 0;
             for (int hg = hg_begin ; hg < hg_end ; hg++)
             {
                 for (size_t f = 0 ; f < files.size() ; f++ )
                 {
-                    memcpy(file.data + offset, files[f].data + files[f].offset(hg) , files[f].info[hg].size );
-                    offset += files[f].info[hg].size;
+                    KVInfo _info = files[f]->getKVInfoForHashGroup(hg);
                     
-                    file.info[hg].append( files[f].info[hg] );
+                    memcpy(data + offset, files[f]->dataForHashGroup(hg) , _info.size );
+                    offset += _info.size;
+                    
+                    info_vector[hg].append( _info );
                 }
             }
             
             // Adjust the range
             //file.header->range = KVRange(hg_begin , hg_end );
-            file.header->range.setFrom( file.info ); // Adjust the range of generated bocks
+            header->range.setFrom( info_vector ); // Adjust the range of generated bocks
             
             // Collect the output buffer
             outputBuffers.push_back(buffer);

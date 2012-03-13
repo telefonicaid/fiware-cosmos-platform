@@ -13,7 +13,11 @@
 #include "samson/common/MessagesOperations.h"
 #include "samson/common/MemoryTags.h"               // MemoryBlocks
 #include "samson/common/SamsonSetup.h"              // samson::SamsonSetup
+#include "samson/common/KVHeader.h"
+
+#include "samson/module/KVFormat.h"
 #include "samson/module/ModulesManager.h"           // ModulesManager
+
 #include "PopQueueTask.h"                           // samson::stream::PopQueueTask
 #include "BlockManager.h"                           // BlockManager
 #include "BlockList.h"                              // BlockList
@@ -221,10 +225,6 @@ namespace samson {
             // Get a copy of the header
             header = (KVHeader*) malloc( sizeof( KVHeader ) );
             memcpy(header, buffer->getData(), sizeof(KVHeader));
-
-            // Check range is coherent with the info vector
-            if( !header->range.check( getKVInfo() ) )
-                LM_X(1,("Internal error: incoherence between range in header"));
 
             LM_T(LmtBlockManager, ("Block created from buffer: %s", this->str().c_str()));
 
@@ -665,6 +665,7 @@ namespace samson {
         
         KVInfo* Block::getKVInfo()
         {
+            LM_X(1, ("Unimplemented... "));
             KVInfo *info = (KVInfo *) ( buffer->getData() + sizeof( KVHeader ) );
             return info;
         }

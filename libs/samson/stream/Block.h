@@ -18,7 +18,9 @@
 
 #include "engine/MemoryManager.h"
 
-#include "samson/common/coding.h"                   
+#include "samson/common/KVHeader.h"                   
+#include "samson/common/KVInfo.h"
+#include "samson/common/FullKVInfo.h"
 #include "samson/common/Visualitzation.h"
 #include "samson/common/samson.pb.h"
 

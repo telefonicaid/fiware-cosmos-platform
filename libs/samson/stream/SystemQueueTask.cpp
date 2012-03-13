@@ -75,6 +75,7 @@ namespace samson {
             add( record , "id" , id , "left,different" );
             add( record , "creation" , creation_cronometer.diffTime() , "f=time,different" );
             add( record , "running " , cronometer.getSeconds() , "f=time,different" );
+            add( record , "progress " , progress , "f=percentadge,different" );
             
             if( ProcessItem::isRunning() )
                 add( record , "state" , "running" , "left,different" );

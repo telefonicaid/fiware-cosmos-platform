@@ -65,7 +65,7 @@ namespace samson {
         for ( file = files.begin() ; file != files.end() ; file++)
         {
             KVFormat format2 = file->second->format;
-            if( format != format2 )
+            if( !format.isEqual( format2 ) )
             {
                 LM_E(("Different formats found in included files"));
                 error.set("Different formats found in included files");

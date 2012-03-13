@@ -7,7 +7,8 @@
 
 #include "au/ErrorManager.h"            // au::ErrorManager
 
-#include "samson/common/coding.h"       // KVHeader, KVInfo , ...
+#include "samson/common/KVHeader.h"
+#include "samson/module/KVFormat.h"
 
 namespace samson {
 
@@ -22,7 +23,6 @@ namespace samson {
         
         samson::KVHeader header;
         samson::KVFormat format;
-        samson::KVInfo*  info;
         
         SamsonFile( std::string _fileName );
         ~SamsonFile();

@@ -15,7 +15,8 @@
 #include "engine/ProcessItem.h"                 // engine::ProcessItem
 
 
-#include "samson/common/coding.h"               // KVRange
+#include "samson/common/KVInfo.h"
+#include "samson/common/KVFile.h"
 #include "samson/common/samson.pb.h"            // network::...
 #include "samson/stream/QueueTaskManager.h"     // samson::stream::QueueTaskManager
 #include "samson/stream/SystemQueueTask.h"      // samson::stream::SystemQueueTask
@@ -42,6 +43,7 @@ namespace samson {
         public:
             
             BlockBreakQueueTask( size_t _id , std::string queue_name , size_t _output_operation_size );
+            ~BlockBreakQueueTask();
             
             void run();
             
@@ -59,7 +61,7 @@ namespace samson {
         private:
 
             // Vector of KVFile structures to access all blokcs
-            std::vector<KVFile> files;
+            au::vector<KVFile> files;
 
             // Auxiliar function to create a block
             void createBlock( int hg_begin , int hg_end );

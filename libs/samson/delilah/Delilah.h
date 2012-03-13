@@ -144,8 +144,8 @@ namespace samson {
 		virtual int _receive( Packet* packet );
 
         // Notification form a delilah component
-        virtual void delilahComponentStartNotification( DelilahComponent *component)  { if (component == NULL) return: };
-        virtual void delilahComponentFinishNotification( DelilahComponent *component) { if (component == NULL) return: };
+        virtual void delilahComponentStartNotification( DelilahComponent *component)  { if (component == NULL) return; };
+        virtual void delilahComponentFinishNotification( DelilahComponent *component) { if (component == NULL) return; };
 
 		// Write something on screen
 		virtual void showMessage( std::string message)          { LM_D(("not implemented (%s)", message.c_str())); };

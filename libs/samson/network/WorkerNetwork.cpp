@@ -87,30 +87,34 @@ namespace samson {
         }
         else if ( listener == web_listener )
         {
-            
-            // Read line ( timeout 10 secs )
             char line[1024];
 
             Status s = socket_connection->readLine( line , sizeof(line) , 10 );
-            
-            if( s == OK )
+
+            if (s == OK)
             {
-                
+                //
+                // Read the rest of the REST Request, but without parsing it ...
+                //
+                char flags[1024];
+                s = socket_connection->readBuffer(flags, sizeof(flags), 1);
+                if (s == OK)
+                    LM_T(LmtRest, ("Rest of GET:\n%s", flags));
+                else
+                    LM_W(("error reading rest of REST request"));
                 au::CommandLine cmdLine;
                 cmdLine.parse( line );
                 
-                if ( ( cmdLine.get_num_arguments() >= 2 ) && ( cmdLine.get_argument(0) == "GET" ) )
+                if ((cmdLine.get_num_arguments() >= 2) && (cmdLine.get_argument(0) == "GET"))
                 {
-                    std::string content = network_interface_receiver->getRESTInformation( cmdLine.get_argument(1) );
-                    socket_connection->writeLine( content.c_str() );
+                    std::string content = network_interface_receiver->getRESTInformation(cmdLine.get_argument(1));
+                    socket_connection->writeLine(content.c_str());
                 }
                 else
-                    socket_connection->writeLine( "Error: GET message expected\n" );
+                    socket_connection->writeLine("Error: GET message expected\n");
             }
             else
-                socket_connection->writeLine( 
-                    au::str("Error: Not possible to read incomming command (%s)\n" , status(s)).c_str() 
-                                             );
+                socket_connection->writeLine(au::str("Error: unable to read incoming command (%s)\n", status(s)).c_str());
 
             
             // Close socket connection in all cases

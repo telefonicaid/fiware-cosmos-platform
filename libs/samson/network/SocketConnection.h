@@ -39,6 +39,7 @@ namespace samson {
         
         // Read & Write line 
         Status readLine( char* line, size_t max_size , int max_seconds );
+        Status readBuffer(char* line, size_t max_size, int tmoSecs);
         Status writeLine( const char* line );
         
         // Monitor information

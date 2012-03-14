@@ -234,6 +234,17 @@ namespace samson {
         return s;
     }
     
+    Status SocketConnection::readBuffer(char* line, size_t max_size, int tmoSecs)
+    {
+        int nb;
+        nb = read(fd, line, max_size);
+
+        if (nb > 0)
+            return OK;
+        return ReadError;
+    }
+
+
     Status SocketConnection::readLine( char* line, size_t max_size , int max_seconds )
     {
         au::Cronometer c;

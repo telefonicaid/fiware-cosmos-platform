@@ -10,9 +10,9 @@ NAMESPACE_BEGIN(engine)
 
 NotificationElement::NotificationElement(  Notification * _notification )
 {
-    notification = _notification;
-    description = au::str("Notification %s", notification->getDescription().c_str() );
-    shortDescription = "Not:" + notification->getShortDescription();
+    notification      = _notification;
+    description       =  notification->getDescription();
+    shortDescription  =  notification->getShortDescription();
 }
 
 NotificationElement::~NotificationElement()

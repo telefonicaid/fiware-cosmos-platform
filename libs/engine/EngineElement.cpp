@@ -71,56 +71,29 @@ std::string EngineElement::getDescription()
 {
     if( repeated )
     {
-        return au::str( "[ %s repeated count:%d time:%02.2f delay:%d ] %s" 
+        return au::str( "[ Engine element '%s' to be executed in 02.2f seconds ( repeat every %d secs , repeated %d times )] " 
                        , description.c_str()
-                       , counter
                        , getTimeToTrigger()
                        , delay
-                       , shortDescription.c_str() 
+                       , counter
                        );
     }
     else
     {
-        return au::str( "[ %s once time:%02.2f  ] %s" 
+        return au::str( "[ Engine element '%s' to be executed in %02.2f seconds]" 
                        , description.c_str()
                        , getTimeToTrigger()
-                       , shortDescription.c_str() 
                        );
     }
     //return description;
 }
 
-std::string EngineElement::getShortDescription()
-{
-    if( repeated )
-    {
-        return au::str( "[ EngineElement in %.2f secs ( repetition count:%d delay:%d ) ] %s" 
-                       , getTimeToTrigger()
-                       , counter
-                       , delay
-                       , shortDescription.c_str() 
-                       );
-    }
-    else
-    {
-        return au::str( "[ EngineElement in %.2f secs ] %s" 
-                       , getTimeToTrigger()
-                       , counter
-                       , delay
-                       , shortDescription.c_str() 
-                       );
-        
-    }
-}
 
 // get xml information
 void EngineElement::getInfo( std::ostringstream& output)
 {
     au::xml_open(output, "engine_element");
-    
-    au::xml_simple(output, "short_description", getShortDescription() );
     au::xml_simple(output, "description", getDescription() );
-    
     au::xml_close(output, "engine_element");
 }
 

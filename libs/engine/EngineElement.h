@@ -31,7 +31,6 @@ NAMESPACE_BEGIN(engine)
 class EngineElement 
 {
     
-    //time_t thiggerTime;							// Delay to process this item
     int delay;									// Delay of execution or period in repeated operations
     bool repeated;								// Flag to determine if it is necessary to repeated the process
     int counter;                                // Number of times this element has been executed ( only in repeated )
@@ -57,12 +56,13 @@ public:
     // Reschedule action once executed
     void Reschedule();
     
+    // Check if it is a repeat tasks
     bool isRepeated();
     
     // Get a description string for debuggin
     std::string getDescription();
-    std::string getShortDescription();
 
+    // Get time to be executed
     double getTimeToTrigger();
     
     // get xml information

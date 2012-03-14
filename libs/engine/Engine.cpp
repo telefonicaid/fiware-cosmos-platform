@@ -249,16 +249,21 @@ void Engine::run()
             int excesive_time = - running_element->getTimeToTrigger();
             if ( excesive_time > 10 )
             {
-                LM_W(("Task %s delayed %d seconds in starting. This should not be more than 10"
-                      , running_element->getDescription().c_str() 
-                      , excesive_time 
-                      ));
+                LM_W(("Engine is running an element delayed %d seconds", excesive_time ));
+                //LM_W(("Engine element to execute now: %s" , running_element->getDescription().c_str() ));
             }
             
             {
                 // Run the item controlling excesive time
-                au::ExecesiveTimeAlarm alarm( au::str("ProcessItem run '%s'",running_element->getDescription().c_str() ));
+                au::Cronometer c;
                 running_element->run();
+                
+                int execution_time =c.diffTime();
+                if ( execution_time > 10 )
+                {
+                    LM_W(("Engine has executed an item in %d seconds." , execution_time ));
+                    LM_W(("Engine Executed item: %s" ,  running_element->getDescription().c_str()  ));
+                }
             }
             
             LM_T( LmtEngine, ("[DONE] Engine executing %s" , running_element->getDescription().c_str()));

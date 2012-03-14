@@ -47,26 +47,20 @@ Notification::Notification( const char* _name , Object * _object , std::set<size
 std::string Notification::getDescription()
 {
     std::ostringstream output;
-    
     output << "[ Notification " << name << " ";
-    
     output << "Targets: (";
-    
     std::set<size_t>::iterator iterator_listener_id; 
     for ( iterator_listener_id = targets.begin() ; iterator_listener_id != targets.end() ; iterator_listener_id++)
         output  << *iterator_listener_id << " ";
     output << ") ";
-    
     output << environment.getEnvironmentDescription().c_str() << " ]";
-    
     return output.str();
 }    
 
 std::string Notification::getShortDescription()
 {
-    return au::str("[ Not: %s]" , name );
+    return au::str("[ Not: %s ]" , name );
 }
-
 
 void Notification::destroyObjects()
 {

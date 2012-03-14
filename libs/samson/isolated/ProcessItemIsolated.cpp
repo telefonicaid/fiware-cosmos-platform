@@ -226,7 +226,7 @@ namespace samson
         }
 		
         // Exchange all the necessary messages between background and foreground process
-        LM_M(("Isolated process %s: father runExchangeMessages start, child pid=%d ",getStatus().c_str(), pid));
+        LM_T(LmtIsolated,  ("Isolated process %s: father runExchangeMessages start, child pid=%d ",getStatus().c_str(), pid));
         
         runExchangeMessages();
         

@@ -6,7 +6,7 @@ package es.tid.bdp.profile.dictionary.comscore;
  *
  * @author dmicol, sortega
  */
-public class CSDictionaryJNIInterface implements CSDictionaryInterface {
+public class CSDictionaryJNIInterface implements NativeCSDictionary {
     public static final String[] DEFAULT_COMSCORE_LIBS = new String[] {
         "/opt/hadoop/lib/native/Linux-amd64-64/libcsCFD.so.1",
         "/opt/hadoop/lib/native/Linux-amd64-64/libCategories.so"

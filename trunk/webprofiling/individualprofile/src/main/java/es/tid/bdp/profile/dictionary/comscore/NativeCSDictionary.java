@@ -1,17 +1,19 @@
 package es.tid.bdp.profile.dictionary.comscore;
 
 /**
+ * Interface for the native ComScore dictionary.
  *
  * @author sortega
  */
-public interface CSDictionaryInterface {
+public interface NativeCSDictionary {
+    public static final int DEFAULT_MODE = 1;
 
     /**
      * Applies the dictionary to the given URL, and returns the pattern ID for
      * such URL.
      *
      * @param szURL
-     * the url to apply the dictionary to
+     *          the url to apply the dictionary to
      * @return the pattern ID of the URL
      */
     long applyDictionaryUsingUrl(String szURL);
@@ -20,9 +22,9 @@ public interface CSDictionaryInterface {
      * Initializes the dictionary wrapper using the terms in domain file.
      *
      * @param iMode
-     * the operation mode (value should be 1)
+     *              the operation mode (value should be 1)
      * @param szTermsInDomainFlatFileName
-     * the terms in domain file name
+     *              the terms in domain file name
      * @return whether the initialization succeeded
      */
     boolean initFromTermsInDomainFlatFile(int iMode,
@@ -32,14 +34,13 @@ public interface CSDictionaryInterface {
      * Loads the comScore dictionary in memory.
      *
      * @param iMode
-     * the operation mode (value should be 1)
+     *          the operation mode (value should be 1)
      * @param szTermsInDomainFlatFileName
-     * the terms in domain file name
+     *          the terms in domain file name
      * @param szDictionaryName
-     * the file name of the dictionary
+     *          the file name of the dictionary
      * @return whether the load of the dictionary succeeded
      */
     boolean loadCSDictionary(int iMode, String szTermsInDomainFlatFileName,
             String szDictionaryName);
-
 }

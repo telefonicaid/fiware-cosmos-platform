@@ -21,7 +21,8 @@ public class CSCategoryIdToNameMapTest {
     @Before
     public void setUp() throws Exception {
         this.instance = new CSCategoryIdToNameMap();
-        this.input = new StringReader("3193263	Online Travel Agents	1	778234	\n"
+        this.input = new StringReader(
+                "3193263	Online Travel Agents	1	778234	\n"
                 + "3260684	Career Resources	1	778216	\n"
                 + "3260685	Job Search	1	778216	\n"
                 + "3260686	Training and Education	1	778216	\n"
@@ -49,8 +50,8 @@ public class CSCategoryIdToNameMapTest {
         final Collection<String> names = this.instance.getCategories();
         assertThat(names.size(), is(9));
         assertThat(names, hasItems("Online Gambling", "Training and Education",
-                "Career Resources", "Job Search", "Gambling",
-                "Online Travel Agents", "Information", "Online Gaming",
-                "Lotto/Sweepstakes"));
+                                   "Career Resources", "Job Search", "Gambling",
+                                   "Online Travel Agents", "Information",
+                                   "Online Gaming", "Lotto/Sweepstakes"));
     }
 }

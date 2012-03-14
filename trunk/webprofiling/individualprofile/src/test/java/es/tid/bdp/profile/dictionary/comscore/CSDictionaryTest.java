@@ -18,7 +18,7 @@ public class CSDictionaryTest {
     private static final String RES_PATH = "src/test/resources/";
     private CSDictionary instance;
 
-    public static class FakeNativeInterface implements CSDictionaryInterface {
+    public static class FakeNativeInterface implements NativeCSDictionary {
         public static String loadedDictionary = null;
         public static int initializations;
 

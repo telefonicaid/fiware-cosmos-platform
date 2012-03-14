@@ -16,11 +16,11 @@ import es.tid.bdp.profile.dictionary.Dictionary;
  * @author dmicol, sortega
  */
 public class CSDictionary implements Dictionary {
-    private static Class<? extends CSDictionaryInterface>
+    private static Class<? extends NativeCSDictionary>
             dictionaryInterfaceClass = CSDictionaryJNIInterface.class;
 
     private boolean isInitialized;
-    private CSDictionaryInterface dictionary;
+    private NativeCSDictionary dictionary;
     private CSPatternToCategoryMap patternToCategoryMap;
     private CSCategoryIdToNameMap categoryIdToNameMap;
     private final String[] nativeLibraries;
@@ -31,7 +31,7 @@ public class CSDictionary implements Dictionary {
     private final String categoryNamesFileName;
 
     public static void setNativeInterfaceClass(Class<? extends
-            CSDictionaryInterface> clazz) {
+            NativeCSDictionary> clazz) {
         dictionaryInterfaceClass = clazz;
     }
 
@@ -62,8 +62,8 @@ public class CSDictionary implements Dictionary {
             throw new IllegalStateException("Misconfigured native dictionary "
                     + "interface", ex);
         }
-        this.dictionary.loadCSDictionary(1, this.termsFileName,
-                this.dictionaryFileName);
+        this.dictionary.loadCSDictionary(NativeCSDictionary.DEFAULT_MODE,
+                this.termsFileName, this.dictionaryFileName);
         this.loadCategoryPatternMapping(this.categoryPatternMappingFileName);
         this.loadCategoryNames(this.categoryNamesFileName);
         this.isInitialized = true;

@@ -78,8 +78,20 @@ namespace samson {
         // Pending packets
         void push_pending_packet( std::string name , Packet * packet )
         {
-            au::TokenTaker tt(&token_packet_queues);
-            packet_queues.findOrCreate(name)->push(packet);                
+            std::string prefix = "worker_";
+            if( name.substr( 0 , prefix.length() ) == prefix )
+            {
+                au::TokenTaker tt(&token_packet_queues);
+                packet_queues.findOrCreate(name)->push(packet);                
+            }
+            else
+            {
+                LM_W(("Destroying packet %s for unconnected node (%s) since it is not a worker" 
+                      , packet->str().c_str(), name.c_str() ));
+                
+                if( packet->buffer )
+                    engine::MemoryManager::shared()->destroyBuffer(packet->buffer);
+            }
         }
 
         void push_pending_packet( std::string name , PacketQueue * packet_queue )

@@ -71,11 +71,17 @@ namespace samson {
             size_t id;
             
             if( !SamsonSetup::shared()->blockIdFromFileName( fileName ,&worker_id , &id ) )
+            {
+                LM_W(("Not possible to get ids for file %s to recover block" , fileName.c_str() ));
                 return NULL;
+            }
             
             FILE *file = fopen( fileName.c_str() , "r" );
             if(!file)
+            {
+                LM_W(("Not possible to open file %s to recover block" , fileName.c_str() ));
                 return NULL;
+            }
             
             KVHeader header;
             
@@ -83,6 +89,7 @@ namespace samson {
             if( r != 1 )
             {
                 fclose( file );
+                LM_W(("Not possible to read header for file %s" , fileName.c_str() ));
                 return NULL;
             }
 
@@ -91,7 +98,7 @@ namespace samson {
             // Check file-size
             if ( !header.check_size( fileSize ) )
             {
-                LM_W(("Not correct file while recovering block %lu from file %s" , id , fileName.c_str() ));
+                LM_W(("Not correct size while recovering block %lu-%lu from file %s" , worker_id , id , fileName.c_str() ));
                 fclose( file );
                 return NULL;
             }

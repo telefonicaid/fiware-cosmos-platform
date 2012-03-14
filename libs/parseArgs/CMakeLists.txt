@@ -57,3 +57,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # Library declaration
 # -----------------------------------------------------------------
 ADD_LIBRARY(pa STATIC ${SOURCES} ${HEADERS})
+SET (LIBPA ${PROJECT_BINARY_DIR}/libs/parseArgs/libpa.a CACHE INTERNAL "")
+
+INSTALL(TARGETS pa ARCHIVE DESTINATION lib)
+INSTALL(FILES ${HEADERS} DESTINATION include/parseArgs)

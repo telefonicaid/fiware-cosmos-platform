@@ -410,7 +410,7 @@ static void paConfigInit(void)
 *
 * paConfig - 
 */
-int paConfig(const char* item, void* value)
+int paConfig(const char* item, const void* value)
 {
 	static int firstTime = 0;
 	long        val       = (long) value;

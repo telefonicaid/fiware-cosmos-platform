@@ -117,16 +117,16 @@ typedef void (*PavCb)(char* varName, int value);
 */
 typedef enum PaType
 {
-   PaBoolean = 0,  PaBool = PaBoolean,
-   PaString,       PaStr  = PaString,
-   PaShort,        PaSh   = PaShort,
-   PaShortU,       PaShU  = PaShortU,
-   PaChar,         PaCh   = PaChar,
-   PaCharU,        PaChU  = PaCharU,
-   PaInt,
-   PaIntU,
-   PaInt64,
-   PaIntU64,
+   PaBoolean = 0,  PaBool    = PaBoolean,
+   PaString,       PaStr     = PaString,
+   PaShort,        PaSh      = PaShort,
+   PaShortU,       PaShU     = PaShortU,    PaUShort  = PaShortU,
+   PaChar,         PaCh      = PaChar,   
+   PaCharU,        PaChU     = PaCharU,     PaUChar   = PaCharU,
+   PaInt,          PaInt32   = PaInt,
+   PaIntU,         PaUInt    = PaIntU,
+   PaInt64,        PaLong    = PaInt64,
+   PaIntU64,       PaULong   = PaIntU64,    PaUInt64  = PaIntU64,
    PaFloat,
    PaDouble,
    PaIList,
@@ -252,7 +252,7 @@ extern int paParse
 *
 * paConfig - 
 */
-extern int paConfig(const char* item, void* value);
+extern int paConfig(const char* item, const void* value);
 
 
 

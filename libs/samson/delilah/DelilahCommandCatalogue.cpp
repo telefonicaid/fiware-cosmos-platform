@@ -149,6 +149,10 @@ namespace samson
         add( "ls_blocks" , "data" , "Show the list of data blocks managed in a SAMSON cluster. This is a debug tool",
             "ls_blocks" );
         
+        add( "ls_buffers" , "data" , "Show the list of data buffers managed in a SAMSON cluster. This is a debug tool",
+            "ls_buffers" );
+
+        
         // MODULES
         // ------------------------------------------------------------------
         

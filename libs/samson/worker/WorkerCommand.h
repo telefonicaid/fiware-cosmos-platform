@@ -124,6 +124,10 @@ namespace samson {
         // Auxiliar operation    
         stream::StreamOperationBase *getStreamOperation( Operation *op );
         
+        // Create collection for buffers (Memory manager )
+        network::Collection* getCollectionOfBuffers( Visualization* visualization );
+
+        
         // Function to check everything is finished
         void checkFinish();
         

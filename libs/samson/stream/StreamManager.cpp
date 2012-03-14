@@ -553,7 +553,9 @@ namespace samson {
             currently_saving = true;
 
             // Get a buffer with the rigth size
-            engine::Buffer* buffer = engine::MemoryManager::shared()->newBuffer( "buffer to save stream state" , state_string.length() , 0 );
+            engine::Buffer* buffer = engine::MemoryManager::shared()->newBuffer( "buffer to save stream state" 
+                                                                                , "stream"
+                                                                                , state_string.length() );
             if (!buffer )
                 LM_X(1, ("No buffer to save stream state"));
             

@@ -86,7 +86,7 @@ namespace samson {
                     
                     size_t  size = block->buffer->getSize();
                     
-                    engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer("PopQueueTask_run", size, 0 );
+                    engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer("PopQueueTask_run", "pop", size );
                     
                     memcpy( buffer->getData(), block->buffer->getData(), size );
                     buffer->setSize(size);
@@ -151,7 +151,7 @@ namespace samson {
                     
                     size_t  size = block->buffer->getSize();
                     
-                    engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer("PopQueueTask_run", size, 0 );
+                    engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer("PopQueueTask_run","pop" ,size );
                     
                     memcpy( buffer->getData(), block->buffer->getData(), size );
                     buffer->setSize(size);

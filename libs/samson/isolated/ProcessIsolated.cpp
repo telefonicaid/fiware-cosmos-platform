@@ -54,22 +54,7 @@ namespace samson
             if( shm_id != -1 )
                 item = engine::SharedMemoryManager::shared()->getSharedMemoryPlatform( shm_id );
         }
-        
-        bool available_memory = true;
-        
-        engine::MemoryManager *mm = engine::MemoryManager::shared();
-        double memory_output_network    = mm->getMemoryUsageByTag( MemoryOutputNetwork );
-        double memory_output_disk       = mm->getMemoryUsageByTag( MemoryOutputDisk );
-        
-        if( (memory_output_network + memory_output_disk ) > 0.5 )
-            available_memory = false;
-
-        if( !available_memory )
-        {
-            //LM_M(("ProcessItem not ready since there is not output memory "));
-            return false;
-        }
-        
+ 
         if ( !item )
         {
             //LM_M(("ProcessItem not ready since there is not shared memory"));
@@ -183,9 +168,9 @@ namespace samson
 				{
                     
                     engine::MemoryManager * mm = engine::MemoryManager::shared();
-                    engine::Buffer *buffer = mm->newBuffer(  "ProcessWriter"
-                                                            , sizeof(KVHeader) + _channel->info.size 
-                                                            , MemoryOutputNetwork );
+                    engine::Buffer *buffer = mm->newBuffer( "Output of " + processItemIsolated_description 
+                                                            , "ProcessIsolated"
+                                                            , sizeof(KVHeader) + _channel->info.size );
                     
 					if( !buffer )
 						LM_X(1,("Internal error: Missing buffer in ProcessBase"));
@@ -272,9 +257,10 @@ namespace samson
 		if( size > 0 )
 		{
 			
-			//size_t task_id = task->workerTask.task_id();
-			
-			engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer( "ProcessTXTWriter", sizeof(KVHeader) + size , MemoryOutputNetwork );
+            engine::MemoryManager *mm = engine::MemoryManager::shared();
+			engine::Buffer *buffer = mm->newBuffer( "Output of " + processItemIsolated_description
+                                                   , "ProcessIsolated"
+                                                   , sizeof(KVHeader) + size );
 
 			if( !buffer )
 				LM_X(1,("Internal error"));

@@ -106,7 +106,7 @@ namespace samson {
             size_t size = sizeof( KVHeader ) + info.size;
             
             // Get the buffer from the memory manager & set the correct size
-            engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer( "block_break", size , MemoryBlocks );
+            engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer( "block_break", "break", size );
             buffer->setSize( size );
 
             // Pointer to the header

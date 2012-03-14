@@ -12,11 +12,13 @@
 
 #include "engine/Engine.h"
 #include "engine/Notification.h"
+#include "engine/Object.h"
 
 #include "samson/network/ClusterInformation.h"
 #include "samson/network/Packet.h"
 #include "samson/network/PacketQueue.h"
 #include "samson/network/NetworkListener.h"
+
 
 namespace samson {
     
@@ -28,11 +30,12 @@ namespace samson {
     class NetworkManager : public NetworkListenerInterface
     {
 
+
+    protected:
+
         // Pending packets ( only used while disconnected )
         au::map<std::string , PacketQueue> packet_queues;
         au::Token token_packet_queues;
-
-    protected:
         
         // All managed connection
         au::map<std::string , NetworkConnection> connections;
@@ -43,8 +46,6 @@ namespace samson {
         {
         }
         
-        // notifications from Engine
-        void notify( engine::Notification* notification );
 
         // Main interface to inform avout a new connection comming from a listener
         virtual void newSocketConnection(NetworkListener* listener , SocketConnection* socket_connetion)

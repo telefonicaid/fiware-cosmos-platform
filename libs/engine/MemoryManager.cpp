@@ -81,21 +81,20 @@ MemoryManager::~MemoryManager()
     memoryRequests.clearList(); // Remove pending requests
 }
 
-Buffer *MemoryManager::newBuffer( std::string name , size_t size , int tag )
+Buffer *MemoryManager::newBuffer( std::string name , std::string type , size_t size  )
 {
 	//LM_M(("Before new mutex  buffer:%s, size:%lu, tag:%d\n", name.c_str(), size, tag));
     au::TokenTaker tk( &token );
 
     
-    Buffer *b = _newBuffer( name , size , tag );
+    Buffer *b = _newBuffer( name , type ,size );
     return b;
 }
 
-Buffer *MemoryManager::_newBuffer( std::string name , size_t size , int tag )
+Buffer *MemoryManager::_newBuffer( std::string name , std::string type , size_t size  )
 {
     
-    Buffer *b = new Buffer( name, size, tag );
-    
+    Buffer *b = new Buffer( name, type , size );
     
     //LM_M(("Alloc buffer '%s' " , b->str().c_str() ));
     
@@ -107,7 +106,8 @@ Buffer *MemoryManager::_newBuffer( std::string name , size_t size , int tag )
     // Update public value
     public_used_memory += size;
     
-    LM_T(LmtMemory, ("New memory buffer:%s, size:%lu, tag:%d, acum_memory:%lu\n", b->str().c_str(), size, tag, public_used_memory));
+    LM_T(LmtMemory, ("New memory buffer %s size:%lu, acum_memory:%lu\n"
+                     , b->str().c_str(), size, public_used_memory));
     
     return b;
 }	
@@ -193,61 +193,27 @@ void MemoryManager::_checkMemoryRequests()
         
         LM_T(LmtMemory, ("Checking memory request with size %lu type percentage %f "  , r->size , r->mem_percentadge ));
         
-        if( r->mem_percentadge == 1.0 )
+        // Full memory request, it is granted if memory is bellow 100%
+        double memory_usage = _getMemoryUsage();
+        
+        LM_T(LmtMemory, ("memory usage %f"  , memory_usage ));
+        
+        if( memory_usage < r->mem_percentadge )
         {
+            // Extract the request properly
+            r = memoryRequests.extractFront();
+            if (!r )
+                LM_X(1,("Internal error"));
             
+            // Get the buffer
+            r->buffer = _newBuffer("Buffer from general request", "request" ,  r->size  );   // By default ( tag == 0 )
             
-            
-            // Full memory request, it is granted if memory is bellow 100%
-            double memory_usage = _getMemoryUsage();
-            
-            LM_T(LmtMemory, ("memory usage %f"  , memory_usage ));
-            
-            if( memory_usage < 1.0 )
-            {
-                // Extract the request properly
-                r = memoryRequests.extractFront();
-                if (!r )
-                    LM_X(1,("Internal error"));
-                
-                // Get the buffer
-                r->buffer = _newBuffer("Buffer from general request", r->size , 0 );   // By default ( tag == 0 )
-                
-                // Send the answer with a notification
-                Engine::shared()->notify( new Notification( notification_memory_request_response , r , r->listner_id ) );
-                
-            }
-            else
-                return;
-            
-            //LM_M(("Finish Checking memory request 100%"));
+            // Send the answer with a notification
+            Engine::shared()->notify( new Notification( notification_memory_request_response , r , r->listner_id ) );
             
         }
         else
-        {
-            
-            // Normal memory requests ( for classical batch processing )
-            double memory_input_usage = _getMemoryUsageByTag( 0 );
-            
-            
-            r = NULL;
-            if (  memory_input_usage < 0.5 )  // Maximum usage for input ( tag == 0) 50% of memory
-                r = memoryRequests.extractFront();
-            
-            if( !r )
-            {
-                //LM_X((1,"Internal error"));
-                return;
-            }
-            else
-            {
-                // Get the buffer
-                r->buffer = _newBuffer("Buffer from request", r->size , 0 );   // By default ( tag == 0 )
-                
-                // Send the answer with a notification
-                Engine::shared()->notify( new Notification( notification_memory_request_response , r , r->listner_id ) );
-            }
-        }
+            return;
         
     }
     
@@ -299,57 +265,6 @@ double MemoryManager::_getMemoryUsage()
     return (double) _getUsedMemory() / (double) memory;
 }
 
-
-
-int MemoryManager::getNumBuffersByTag( int tag )
-{
-    au::TokenTaker tk( &token );
-    
-    return _getNumBuffersByTag(tag);
-}
-
-size_t MemoryManager::getUsedMemoryByTag( int tag )
-{
-    au::TokenTaker tk( &token );
-    return _getUsedMemoryByTag(tag);
-}
-
-double MemoryManager::getMemoryUsageByTag( int tag )
-{
-    return (double) getUsedMemoryByTag(tag) / (double) memory;
-}
-
-
-int MemoryManager::_getNumBuffersByTag( int tag )
-{
-    size_t num = 0;
-    std::set<Buffer*>::iterator i;
-    for ( i = buffers.begin() ; i != buffers.end() ; i++)
-        if( (*i)->tag == tag)
-            num++;
-    
-    return num;
-    
-}
-
-size_t MemoryManager::_getUsedMemoryByTag( int tag )
-{
-    size_t total = 0;
-    std::set<Buffer*>::iterator i;
-    for ( i = buffers.begin() ; i != buffers.end() ; i++)
-        if( (*i)->tag == tag)
-            total+= (*i)->getMaxSize();
-    return total;
-    
-}
-
-
-double MemoryManager::_getMemoryUsageByTag( int tag )
-{
-    return (double) _getUsedMemoryByTag(tag) / (double) memory;
-}
-
-
 void MemoryManager::getInfo( std::ostringstream& output)
 {
     
@@ -376,6 +291,31 @@ void MemoryManager::getInfo( std::ostringstream& output)
     
     
     au::xml_close(output, "memory_manager");
+    
+}
+
+au::tables::Table MemoryManager::getTableOfBuffers()
+{
+    
+    au::tables::Table table( au::StringVector("Type" , "Name" , "Size" ) 
+                      , au::StringVector("left,different" , "left,different" , "f=uint64,sum" ) );
+    
+    au::TokenTaker tt(&token);
+    std::set<Buffer*>::iterator it_buffers;
+    for( it_buffers = buffers.begin() ; it_buffers != buffers.end() ; it_buffers++ )
+    {
+        Buffer* buffer = *it_buffers;
+        au::StringVector values;
+        
+        values.push_back( buffer->getType() );
+        values.push_back( buffer->getName() );
+        values.push_back( au::str("%lu" , buffer->getSize() ) );
+        
+        table.addRow( values );
+        
+    }
+    
+    return table;
     
 }
 

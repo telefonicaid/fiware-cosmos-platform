@@ -139,7 +139,7 @@ namespace samson {
             if( buffer )
             {
                 size_t size = buffer->getSize();
-                engine::Buffer* _buffer = engine::MemoryManager::shared()->newBuffer( "worker_commnad" , size , 0 );
+                engine::Buffer* _buffer = engine::MemoryManager::shared()->newBuffer( "worker_commnad" , "delilah" , size );
                 memcpy(_buffer->getData(), buffer->getData(), size );
                 _buffer->setSize( size );            
                 p->buffer = _buffer;

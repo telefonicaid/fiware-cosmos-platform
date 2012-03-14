@@ -1238,7 +1238,7 @@ namespace samson
             }
             // Size of the file
             size_t file_size = info.st_size;
-            engine::Buffer * buffer = engine::MemoryManager::shared()->newBuffer("push_module", file_size, 0);
+            engine::Buffer * buffer = engine::MemoryManager::shared()->newBuffer("push_module" , "delilah", file_size );
             buffer->setSize(file_size);
             
             // Load the file

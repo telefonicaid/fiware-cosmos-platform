@@ -403,7 +403,7 @@ namespace samson {
         {
             // Alloc a buffer to read buffer of data
             std::string buffer_name = au::str("Network Buffer from %s" , host.c_str() );
-            packetP->buffer = engine::MemoryManager::shared()->newBuffer( buffer_name , header.kvDataLen, samson::MemoryOutputDisk  );
+            packetP->buffer = engine::MemoryManager::shared()->newBuffer( buffer_name , "network" , header.kvDataLen );
             
             char*  kvBuf  = packetP->buffer->getData();
             s = partRead(kvBuf, header.kvDataLen , "Key-Value Data" , 300);

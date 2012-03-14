@@ -24,11 +24,17 @@ namespace samson {
         au::Token            token;
         au::list<Packet>     queue;
         
+        au::Cronometer cronometer;
         
     public:
         
         PacketQueue() : token("PacketQueue") 
         {
+        }
+
+        size_t getSeconds()
+        {
+            return cronometer.diffTimeInSeconds();
         }
         
         size_t getNumPackets()

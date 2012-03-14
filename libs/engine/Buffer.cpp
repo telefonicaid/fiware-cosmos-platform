@@ -24,33 +24,29 @@
 
 NAMESPACE_BEGIN(engine)
 
-Buffer::Buffer( std::string name ,   size_t max_size , int _tag )
+Buffer::Buffer( std::string name , std::string type ,  size_t max_size  )
 {
     _max_size = max_size;
     _offset = 0;
-    
-    tag = _tag;
-    
+        
     _name = name;
+    _type = type;
     
-    if( max_size > 0)
+    if( max_size > 0 )
     {
         _data = (char *) malloc(max_size);
+        
         if( !_data )
         {
             
             LM_M(("Used memory %lu" , MemoryManager::shared()->getUsedMemory() ));
-            
-#ifdef __LP64__
-            LM_X(1,("Error (errno:%d) allocating memory for %lu bytes for tag:%d and name:'%s'", errno, max_size, tag, name.c_str()));
-#else
-            LM_X(1,("Error (errno:%d) allocating memory for %d bytes for tag:%d and name:'%s'", errno, max_size, tag, name.c_str()));
-#endif
+            LM_X(1,("Error (errno:%d) allocating memory for %d bytes for name:'%s' type:'%s'"
+                    , errno, max_size, name.c_str() , type.c_str()));
         }
     }
     else
     {
-        LM_W(("Buffer request of max_size(%lu) <= 0, for tag:%d and name:'%s'", max_size, tag, name.c_str()));
+        LM_W(("Buffer request of max_size(%lu) <= 0, for name:'%s' type:'%s'", max_size, name.c_str() , type.c_str() ));
         _data = NULL;
     }
     
@@ -64,7 +60,8 @@ Buffer::~Buffer()
 
 std::string Buffer::str()
 {
-    return au::str("[ Buffer (%s) MaxSize: %lu Size: %lu Offset %lu ]" , _name.c_str() , _max_size , _size , _offset );
+    return au::str("[ Buffer (%s / %s) MaxSize: %lu Size: %lu Offset %lu ]" 
+                   , _name.c_str() , _type.c_str() , _max_size , _size , _offset );
 }
 
 

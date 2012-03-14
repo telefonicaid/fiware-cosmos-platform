@@ -198,7 +198,8 @@ namespace samson
 			// Copy the buffer (if any)
 			if (p->buffer)
 			{
-				buffer = engine::MemoryManager::shared()->newBuffer("", p->buffer->getSize(), p->buffer->tag );
+                std::string name = au::str("Copy of '%s'" , p->buffer->getName().c_str() );
+				buffer = engine::MemoryManager::shared()->newBuffer( name , p->buffer->getType() , p->buffer->getSize() );
 				memcpy(buffer->getData(), p->buffer->getData(), p->buffer->getSize() );
 				buffer->setSize( p->buffer->getSize() );
 			}

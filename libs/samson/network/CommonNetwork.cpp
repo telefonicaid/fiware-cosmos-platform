@@ -16,6 +16,27 @@ namespace samson {
         if (notification == NULL)
             LM_D(("notification == NULL"));
 
+        // Check pennding packets to be removed after 1 minute disconnected
+        // -------------------------------------------------------------------------------------
+        
+        {
+            au::TokenTaker tt(&token_packet_queues);
+            au::map<std::string , PacketQueue>::iterator it_packet_queues;
+            for( it_packet_queues = packet_queues.begin() ; it_packet_queues != packet_queues.end() ;  )
+            {
+                if( it_packet_queues->second->getSeconds() > 60 )
+                {
+                    std::string name = it_packet_queues->first;
+                    LM_W(("Removing  pending packerts for %s since it has been disconnected mote thatn 60 secs",name.c_str()));
+                    it_packet_queues->second->clear();   
+                    packet_queues.erase( it_packet_queues++ );
+                }
+                else
+                    ++it_packet_queues;
+            }
+        }
+        
+        
         // Check disconnected elements to be removed ( if possible no threads or pending packets )
         // -------------------------------------------------------------------------------------
         std::vector<std::string> to_be_removed;
@@ -246,6 +267,11 @@ namespace samson {
 
     Status CommonNetwork::send( Packet* packet )
     {
+        if( packet->buffer )
+        {
+            packet->buffer->addToName( au::str(" [in packet to %s]" , packet->to.str().c_str() ));
+        }
+        
         //LM_W(("Sending packet %s to %s" ,  packet->str().c_str() , packet->to.str().c_str() ));
         
         if ( packet->to == node_identifier )

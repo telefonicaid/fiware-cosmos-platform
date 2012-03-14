@@ -36,14 +36,14 @@ class Buffer : public Object
     
 public:
     
-    // Tag identifying the type of buffer ( for better control )
-    int tag;        
     
 private:
     
     char * _data;			// Buffer of data
     size_t _max_size;		// Maximum size of this buffer
+
     std::string _name;		// Internal name for debugging
+    std::string _type;      // Identifier of groups of blocks
     
     /**
      Current size used in this buffer 
@@ -63,7 +63,7 @@ private:
     
     // Private constructor/destructors since it can be only access by MemoryManager
     
-    Buffer( std::string name ,   size_t max_size, int _tag );
+    Buffer( std::string name , std::string type , size_t max_size );
     ~Buffer();
     
     void free();
@@ -138,6 +138,27 @@ public:
     // Remove the last characters of an unfinished line and put them in buffer.
     int removeLastUnfinishedLine( char *& buffer , size_t& buffer_size);
     
+    
+    std::string getName()
+    {
+        return _name;
+    }
+
+    std::string getType()
+    {
+        return _type;
+    }
+    
+    void setNameAndType( std::string name , std::string type )
+    {
+        _name = name;
+        _type = type;
+    }
+    
+    void addToName( std::string description )
+    {
+        _name.append( description );
+    }
     
 public:
     

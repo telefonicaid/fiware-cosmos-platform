@@ -214,7 +214,6 @@ namespace samson {
             
             // Buffer of data
             buffer = _buffer;  
-            buffer->tag = MemoryBlocks;     // Set the tag to MemoryBlock to controll the memory used by this system
             
             // Get the size of the packet
             size = buffer->getSize();
@@ -226,8 +225,11 @@ namespace samson {
             header = (KVHeader*) malloc( sizeof( KVHeader ) );
             memcpy(header, buffer->getData(), sizeof(KVHeader));
 
+            // Set name of buffer
+            buffer->setNameAndType( au::str("%lu-%lu" , worker_id , id) , "blocks" );
+            
             LM_T(LmtBlockManager, ("Block created from buffer: %s", this->str().c_str()));
-
+            
             lookupList = NULL;
         }
         
@@ -401,7 +403,7 @@ namespace samson {
             
             
             // Allocate a buffer
-            buffer = engine::MemoryManager::shared()->newBuffer("block", size, 0 ); 
+            buffer = engine::MemoryManager::shared()->newBuffer( au::str("%lu-%lu" , worker_id , id) ,  "blocks", size ); 
             buffer->setSize( size );    // Set the final size ( only used after read opertion has finished )
             
             // Change the state to reading
@@ -517,7 +519,7 @@ namespace samson {
             output << "[ ";
             //output << "Task:" << task_id << " order: " << task_order << " ";
             if( header )
-                output << "HG id=" << id << " size=" << size << " " <<  header->range.str() << "(" << getState() << ")";
+                output << " id=" << worker_id << "-" << id << " size=" << size << " " <<  header->range.str() << "(" << getState() << ")";
             output << " ]";
             return output.str();
         }

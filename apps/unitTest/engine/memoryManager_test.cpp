@@ -34,7 +34,7 @@ TEST(memoryManagerTest, getInfoTest) {
     //engine::Engine::init();
     engine::MemoryManager::init(1000);
   
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  100 , 1 );
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test", 100  );
 
     engine::MemoryRequest* request = new engine::MemoryRequest(10, 50.0, 1);
     engine::MemoryManager::shared()->add(request);
@@ -98,7 +98,7 @@ TEST(memoryManagerTest, addTest) {
 TEST(memoryManagerTest, newBufferDestroyBufferTest) {
     //engine::Engine::init();
     engine::MemoryManager::init(1000);
-    engine::Buffer* buffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  100 , 1 );
+    engine::Buffer* buffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 100  );
     EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 1) << "Buffer was not created";
     engine::MemoryManager::shared()->destroyBuffer(buffer);
     EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 0) << "Buffer was not properly destroyed";
@@ -109,9 +109,9 @@ TEST(memoryManagerTest, getNumBuffersTest) {
     //engine::Engine::init();
     engine::MemoryManager::init(1000);
     EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 0) << "Should bew no buffers";
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  100 , 1 );
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 100  );
     EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 1) << "Wrong number of buffers";
-    engine::Buffer* buffer2 = engine::MemoryManager::shared()->newBuffer( "buffer2" ,  100 , 1 );
+    engine::Buffer* buffer2 = engine::MemoryManager::shared()->newBuffer( "buffer2" ,  "test" , 100  );
     EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 2) << "Wrong number of buffers";
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
     EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 1) << "Wrong number of buffers";
@@ -127,10 +127,10 @@ TEST(memoryManagerTest, getUsedMemoryTest) {
     engine::MemoryManager::init(1000);
     EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemory(), 0) << "Used memory does not match";
     EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsage(), 0.0) << "Memory usage does not match";
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  100 , 1 );
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 100  );
     EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemory(), 100) << "Used memory does not match";
     EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsage(), 0.1) << "Memory usage does not match";
-    engine::Buffer* buffer2 = engine::MemoryManager::shared()->newBuffer( "buffer2" ,  200 , 1 );
+    engine::Buffer* buffer2 = engine::MemoryManager::shared()->newBuffer( "buffer2" , "test" , 100  );
     EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemory(), 300) << "Used memory does not match";
     EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsage(), 0.3) << "Memory usage does not match";
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
@@ -143,53 +143,6 @@ TEST(memoryManagerTest, getUsedMemoryTest) {
 }
 
     
-    
-//Test int getNumBuffersByTag( int tag );
-//Test size_t getUsedMemoryByTag( int tag );
-//Test double getMemoryUsageByTag( int tag );
-TEST(memoryManagerTest, getNumBuffersByTagTest) {
-    //engine::Engine::init();
-    engine::MemoryManager::init(1000);
-    EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemoryByTag(1), 0) << "Used memory does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsageByTag(1), 0.0) << "Memory usage does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffersByTag(1), 0) << "Number of buffers does not match";
-  
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  100 , 1 );
-    EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemoryByTag(1), 100) << "Used memory does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsageByTag(1), 0.1) << "Memory usage does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffersByTag(1), 1) << "Number of buffers does not match";
-    engine::Buffer* buffer2 = engine::MemoryManager::shared()->newBuffer( "buffer2" ,  200 , 2 );
-    EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemoryByTag(1), 100) << "Used memory does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsageByTag(1), 0.1) << "Memory usage does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffersByTag(1), 1) << "Number of buffers does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemoryByTag(2), 200) << "Used memory does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsageByTag(2), 0.2) << "Memory usage does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffersByTag(2), 1) << "Number of buffers does not match";
-    engine::Buffer* buffer3 = engine::MemoryManager::shared()->newBuffer( "buffer3" ,  200 , 1 );
-    EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemoryByTag(1), 300) << "Used memory does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsageByTag(1), 0.3) << "Memory usage does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffersByTag(1), 2) << "Number of buffers does not match";
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
-    EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemoryByTag(1), 200) << "Used memory does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsageByTag(1), 0.2) << "Memory usage does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffersByTag(1), 1) << "Number of buffers does not match";
-    engine::MemoryManager::shared()->destroyBuffer(buffer2);
-    EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemoryByTag(1), 200) << "Used memory does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsageByTag(1), 0.2) << "Memory usage does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffersByTag(1), 1) << "Number of buffers does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemoryByTag(2), 0) << "Used memory does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsageByTag(2), 0.0) << "Memory usage does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffersByTag(2), 0) << "Number of buffers does not match";
-    engine::MemoryManager::shared()->destroyBuffer(buffer3);
-    EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemoryByTag(1), 0) << "Used memory does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsageByTag(1), 0.0) << "Memory usage does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffersByTag(1), 0) << "Number of buffers does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemoryByTag(2), 0) << "Used memory does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsageByTag(2), 0.0) << "Memory usage does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffersByTag(2), 0) << "Number of buffers does not match";
-}
-
-
     
 //Test void runThread();        
     

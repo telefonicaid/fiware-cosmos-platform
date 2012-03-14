@@ -36,6 +36,8 @@
 #include "au/string.h"                      // au::Format
 #include "au/namespace.h"
 
+#include "tables/Table.h"
+
 #define notification_memory_request_response    "notification_memory_request_response"
 
 NAMESPACE_BEGIN(engine)
@@ -59,7 +61,7 @@ class MemoryManager
     size_t memory;                                  // Total available memory
     
     // List of memory requests
-    au::list <MemoryRequest> memoryRequests;        // Only used for inputs ( tag == 0 )
+    au::list <MemoryRequest> memoryRequests;        // Request for memory
     
     // List of active buffers for better monitoring
     std::set<Buffer*> buffers;
@@ -86,11 +88,11 @@ public:
      --------------------------------------------------------------------
      */
     
-    Buffer *newBuffer( std::string name ,  size_t size , int tag );
+    Buffer *newBuffer( std::string name , std::string type ,  size_t size );
     
 private:
     
-    Buffer *_newBuffer( std::string name ,  size_t size , int tag );
+    Buffer *_newBuffer( std::string name , std::string type , size_t size );
     
     
     /*
@@ -139,20 +141,11 @@ public:
     double getMemoryUsage();
     
     
-    int getNumBuffersByTag( int tag );
-    size_t getUsedMemoryByTag( int tag );
-    double getMemoryUsageByTag( int tag );
     
 private:
     
     double _getMemoryUsage();
     size_t _getUsedMemory();
-    
-    
-    int _getNumBuffersByTag( int tag );
-    size_t _getUsedMemoryByTag( int tag );
-    double _getMemoryUsageByTag( int tag );
-    
     
 public:
     
@@ -162,6 +155,7 @@ public:
     // get xml information
     void getInfo( std::ostringstream& output);
     
+    au::tables::Table getTableOfBuffers();    
 };
 
 NAMESPACE_END

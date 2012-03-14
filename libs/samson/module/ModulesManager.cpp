@@ -295,9 +295,11 @@ namespace samson
     
     samson::network::Collection* ModulesManager::getModulesCollection(VisualitzationOptions options ,  std::string pattern )
     {
-        if (options != options)
-            LM_E(("sorry, just avoiding a strict warning"));
-
+        if( options == normal )
+        {
+            
+        }
+        
         samson::network::Collection* collection = new samson::network::Collection();
         collection->set_name("modules");
         au::map< std::string , Module >::iterator it;
@@ -323,8 +325,10 @@ namespace samson
     }
     samson::network::Collection* ModulesManager::getDatasCollection(VisualitzationOptions options ,  std::string pattern )
     {
-        if (options != options)
-            LM_E(("sorry, just avoiding a strict warning"));
+        if( options == normal )
+        {
+            
+        }
 
         samson::network::Collection* collection = new samson::network::Collection();
         collection->set_name("datas");

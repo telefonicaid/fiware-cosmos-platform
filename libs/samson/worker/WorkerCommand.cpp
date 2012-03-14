@@ -780,6 +780,15 @@ typedef struct LogLineInfo
             finishWorkerTask();
             return;
         }
+
+        if( main_command == "ls_buffers" )
+        {
+            network::Collection * c = getCollectionOfBuffers( &visualitzation );
+            c->set_title( command  );
+            collections.push_back( c );
+            finishWorkerTask();
+            return;
+        }
         
         if( main_command == "ls_stream_operations" )
         {
@@ -1695,5 +1704,34 @@ typedef struct LogLineInfo
             return;
     }
 
-    
+    network::Collection* WorkerCommand::getCollectionOfBuffers( Visualization* visualization )
+    {
+        
+        network::Collection* collection = new network::Collection();
+        collection->set_name("buffers");
+        
+        au::tables::Table table = engine::MemoryManager::shared()->getTableOfBuffers();
+        
+        // Debug
+        //printf("%s\n" , table.str().c_str() );
+        
+        for ( size_t r = 0 ; r < table.getNumRows() ; r ++ )
+        {
+            network::CollectionRecord* record = collection->add_record();
+            
+            for ( size_t c = 0 ; c < table.getNumColumns() ; c++ )
+            {
+                std::string concept = table.getColumn(c);
+                std::string format = table.getFormatForColumn(c);
+                
+                std::string value = table.getValue(r, c);
+                
+                ::samson::add( record , concept , value , format );
+            }
+        }
+        
+        return collection;            
+        
+        
+    }
 }

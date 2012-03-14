@@ -435,7 +435,7 @@ namespace samson {
         peer.sin_addr.s_addr = ((struct in_addr*) (hp->h_addr))->s_addr;
         peer.sin_port        = htons(port);
         
-        LM_T(LmtSocketConnection, ("Connecting to %s at %s:%d", host.c_str(), port));
+        LM_T(LmtSocketConnection, ("Connecting to worker at %s:%d", host.c_str(), port));
 
         // Try several times....
         int retries = 10;

@@ -111,11 +111,11 @@ size_t delilah_random_code;
 */
 int main(int argC, const char *argV[])
 {
-    
 	paConfig("prefix",                        (void*) "SSW_");
 	paConfig("usage and exit on any warning", (void*) true);
-	paConfig("log to screen",                 (void*) false);
+	paConfig("log to screen",                 (void*) true);
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
+	paConfig("screen line format",            (void*) "TYPE: TEXT");
 	paConfig("log to file",                   (void*) true);
 
     paConfig("man synopsis",                  (void*) manSynopsis);
@@ -138,9 +138,16 @@ int main(int argC, const char *argV[])
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
 
+    if ((strcmp(target_host, "localhost") == 0) || (strcmp(target_host, "127.0.0.1") == 0))
+    {
+        if (gethostname(target_host, sizeof(target_host)) != 0)
+            LM_X(1, ("gethostname: %s", strerror(errno)));
+        LM_M(("Translated 'localhost' to %s", target_host));
+    }
+
     // Log random identifier for this delilah
     LM_M(("Delilah random code %s" , au::code64_str( delilah_random_code ).c_str() ));
-    
+
     // Make sure this singleton is created just once
     au::LockDebugger::shared();
 
@@ -200,6 +207,7 @@ int main(int argC, const char *argV[])
     if ( strcmp( command , "" ) != 0 )
     {
         // Running a single command
+        lmFdUnregister(1); // no more traces to stdout
 
 
         // TODO... spetial wait in delilah to make sure I got all monitor information
@@ -262,7 +270,8 @@ int main(int argC, const char *argV[])
         int num_line = 0;
 		char line[1024];
         
-		//LM_M(("Processing commands file %s", commandFileName ));
+		LM_M(("Processing commands file %s", commandFileName ));
+        lmFdUnregister(1); // no more traces to stdout
 		while( fgets(line, sizeof(line), f) )
 		{
 			// Remove the last return of a string
@@ -311,6 +320,7 @@ int main(int argC, const char *argV[])
 	}
 
     LM_M(("Running delilah console..."));
+    lmFdUnregister(1); // no more traces to stdout
     delilahConsole->run();
 
     // ------------------------------------------------------------------------

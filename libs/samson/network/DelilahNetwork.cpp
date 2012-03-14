@@ -358,6 +358,16 @@ namespace samson {
                 return "Usage: cluster connect host [port]";
             
             std::string host = cmdLine.get_argument(2);
+            if ((host == "localhost") || (host == "127.0.0.1"))
+            {
+               char realname[64];
+
+               if (gethostname(realname, sizeof(realname)) != 0)
+                  LM_X(1, ("gethostname: %s", strerror(errno)));
+               LM_M(("Translated 'localhost' to %s", realname));
+               host = std::string(realname);
+            }
+
             int port = SAMSON_WORKER_PORT;
             if( cmdLine.get_num_arguments() > 3 )
                 port = atoi( cmdLine.get_argument(3).c_str() );
@@ -384,6 +394,16 @@ namespace samson {
                 return "Usage: cluster add host_name [port]";
             
             std::string host = cmdLine.get_argument(2);
+            if ((host == "localhost") || (host == "127.0.0.1"))
+            {
+               char realname[64];
+
+               if (gethostname(realname, sizeof(realname)) != 0)
+                  LM_X(1, ("gethostname: %s", strerror(errno)));
+               LM_M(("Translated 'localhost' to %s", realname));
+               host = std::string(realname);
+            }
+
             int port = SAMSON_WORKER_PORT;
             if( cmdLine.get_num_arguments() > 3 )
                 port = atoi( cmdLine.get_argument(3).c_str() );

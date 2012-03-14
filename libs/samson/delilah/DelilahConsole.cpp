@@ -542,7 +542,7 @@ namespace samson
         if( mainCommand == "reload_modules" )
         {
             ModulesManager::shared()->reloadModules();
-            writeWarningOnConsole("Modules at delilah client has been reloaded.");
+            writeWarningOnConsole("Modules at delilah client have been reloaded.");
         }
         
         if ( mainCommand == "cluster" )

@@ -49,6 +49,9 @@ TEST(engineTest, getInfoTest) {
     //engine::Engine::init();
 
     std::ostringstream info;
+    std::string tmpString;
+
+    info << "";
     engine::Engine::shared()->getInfo( info );
     
     //XML parsing class
@@ -58,13 +61,15 @@ TEST(engineTest, getInfoTest) {
     EXPECT_EQ(std::string(xMainNode.getChildNode("running_element").getClear().lpszValue), "No running element") << "Error writing running element tag";
     XMLNode elementNode = xMainNode.getChildNode("elements").getChildNode("engine_element");
     ASSERT_TRUE(!elementNode.isEmpty());
+    /*
     std::string tmpString = std::string(elementNode.getChildNode("short_description").getClear().lpszValue);
     EXPECT_TRUE( tmpString.find("[ EngineElement in ") != std::string::npos
                  && tmpString.find(" secs ( repetition count:0 delay:10 ) ] Not:[ Not: alive]") != std::string::npos )
         << "Error writing short_description tag";
+        */
     tmpString = std::string(elementNode.getChildNode("description").getClear().lpszValue);
-    EXPECT_TRUE( tmpString.find("[ Notification [ Notification alive Targets: () () ] repeated count:0 time:") != std::string::npos
-                 && tmpString.find(" delay:10 ] Not:[ Not: alive]") != std::string::npos )
+    EXPECT_TRUE( tmpString.find("Notification [ Notification alive Targets: () () ]") != std::string::npos
+                 && tmpString.find(" repeat every 10 secs , repeated 0 times") != std::string::npos )
         << "Error writing description tag";
     //Uptime value is not testable because it varies with time, but we can at least check that it is set
     EXPECT_TRUE(!xMainNode.getChildNode("uptime").isEmpty()) << "Error writing uptime tag";

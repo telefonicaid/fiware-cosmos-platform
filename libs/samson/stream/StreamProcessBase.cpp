@@ -77,8 +77,14 @@ namespace samson {
         
         void StreamProcessBase::sendBufferToQueue( engine::Buffer *buffer , int outputWorker , std::string queue_name  )
         {
-            if( queue_name == "null")
+            if(!buffer)
                 return;
+            
+            if( queue_name == "null")
+            {
+                engine::MemoryManager::shared()->destroyBuffer(buffer);
+                return;
+            }
 
             // Select the target worker_id
             // ------------------------------------------------------------------------------------

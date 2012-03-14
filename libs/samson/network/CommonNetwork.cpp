@@ -263,8 +263,11 @@ namespace samson {
         
         if( !connection )
         {
-            if( !packet->disposable && (packet->to.node_type == WorkerNode) )
+            // Only messages to workers are saved to be sended when reconnecting
+            std::string prefix = "worker_";
+            if( ( name.substr( 0 , prefix.length() ) == prefix ) &&  !packet->disposable && (packet->to.node_type == WorkerNode) )
             {
+                // Save this messages appart
                 push_pending_packet( name , packet );
                 return OK;
             }

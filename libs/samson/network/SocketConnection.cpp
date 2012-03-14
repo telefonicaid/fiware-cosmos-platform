@@ -86,7 +86,7 @@ namespace samson {
         while (tot < dataLen)
         {
             if ((s = okToSend(retries, tv_sec, tv_usec)) != OK )
-                LM_RE(s, ("Cannot write to '%s' (fd %d) (returning -2 as if it was a 'connection closed' ...)", host.c_str(), fd));
+                LM_RE(s, ("Cannot write to '%s' after %d tries (fd %d) (returning -2 as if it was a 'connection closed' ...)", host.c_str(), fd, retries));
             
             nb = ::write(fd, &data[tot], dataLen - tot);
             if (nb == -1)

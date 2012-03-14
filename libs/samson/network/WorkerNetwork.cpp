@@ -108,13 +108,13 @@ namespace samson {
                 if ((cmdLine.get_num_arguments() >= 2) && (cmdLine.get_argument(0) == "GET"))
                 {
                     std::string content = network_interface_receiver->getRESTInformation(cmdLine.get_argument(1));
-                    socket_connection->writeLine(content.c_str(), 1, 0, 1000); // Try just once, timeout 0.001 seconds
+                    socket_connection->writeLine(content.c_str(), 1, 0, 100); // Try just once, timeout 0.0001 seconds
                 }
                 else
-                    socket_connection->writeLine("Error: GET message expected\n", 1, 0, 1000);
+                    socket_connection->writeLine("Error: GET message expected\n", 1, 0, 100);
             }
             else
-                socket_connection->writeLine(au::str("Error: unable to read incoming command (%s)\n", status(s)).c_str(), 1, 0, 1000);
+                socket_connection->writeLine(au::str("Error: unable to read incoming command (%s)\n", status(s)).c_str(), 1, 0, 100);
 
             
             // Close socket connection in all cases

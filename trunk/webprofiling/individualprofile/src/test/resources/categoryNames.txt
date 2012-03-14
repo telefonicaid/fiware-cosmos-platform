@@ -1,0 +1,132 @@
+778213	Auctions	0	1	
+778214	Automotive	0	1	
+778215	Business/Finance	0	1	
+778216	Career Services and Development	0	1	
+778217	Community	0	1	
+778218	Corporate Presence	0	1	
+778219	Directories/Resources	0	1	
+778220	Education	0	1	
+778221	Entertainment	0	1	
+778222	Government	0	1	
+778223	Health	0	1	
+778224	Hobbies/Lifestyle	0	1	
+778225	ISP	0	1	
+778226	News/Information	0	1	
+778227	Portals	0	1	
+778228	Real Estate	0	1	
+778229	Regional/Local	0	1	
+778230	Retail	0	1	
+778231	Search/Navigation	0	1	
+778232	Sports	0	1	
+778233	Technology	0	1	
+778234	Travel	0	1	
+778235	Services	0	1	
+778236	XXX Adult	0	1	
+778237	Business to Business	0	1	
+778239	All Other	0	1	
+778240	Resources	1	778214	
+778241	Manufacturer	1	778214	
+778243	Banking	1	778215	
+778247	News/Research	1	778215	
+778248	Online Trading	1	778215	
+778249	Taxes	1	778215	
+778250	Personal Finance	1	778215	
+778251	Family & Parenting	1	778217	
+778252	Gay/Lesbian	1	778217	
+778254	Women	1	778217	
+778255	Directories	1	778219	
+778256	Reference	1	778219	
+778257	Maps	1	778219	
+778258	Personals	1	778219	
+778259	Classifieds	1	778219	
+778260	Shipping	1	778219	
+778261	Entertainment - News	1	778221	
+778262	Entertainment - Movies	1	778221	
+778263	Entertainment - Music	1	778221	
+778265	Multimedia	1	778221	
+778266	Kids	1	778221	
+778267	Health - Information	1	778223	
+778268	Pharmacy	1	778223	
+778269	Genealogy	1	778224	
+778270	Hobbies/Lifestyle - Food	1	778224	
+778271	Home	1	778224	
+778272	General News	1	778226	
+778273	Weather	1	778226	
+778274	Apparel	1	778230	
+778275	Books	1	778230	
+778276	Retail - Music	1	778230	
+778277	Retail - Movies	1	778230	
+778278	Computer Software	1	778230	
+778279	Consumer Electronics	1	778230	
+778280	Consumer Goods	1	778230	
+778281	Department Stores	1	778230	
+778282	Flowers/Gifts/Greetings	1	778230	
+778284	Health Care	1	778230	
+778285	Mall	1	778230	
+778286	Sports/Outdoor	1	778230	
+778287	Toys	1	778230	
+778288	Retail - Food	1	778230	
+778289	Fragrances/Cosmetics	1	778230	
+778291	Home Furnishings	1	778230	
+778292	Technology - News	1	778233	
+778293	Travel - Information	1	778234	
+778294	Transactions	1	778234	
+778295	Discussion/Chat	1	778235	
+778296	e-mail	1	778235	
+778297	Incentives	1	778235	
+778298	Downloads	1	778235	
+778299	Coupons	1	778235	
+778300	Web Hosting	1	778235	
+778301	e-cards	1	778235	
+778302	Financial Information/Advice	1	778215	
+778303	Religion/Spirituality	1	778217	
+778304	Teens	1	778217	
+778305	Humor	1	778221	
+778306	TV	1	778221	
+778307	Radio	1	778221	
+778308	Games	0	1	
+778309	Gaming Information	1	778308	
+3439111	Telecommunications	0	1	
+778312	Politics	1	778226	
+778313	Jewelry/Luxury Goods/Accessories	1	778230	
+778314	Comparison Shopping	1	778230	
+778315	Computer Hardware	1	778230	
+778316	Tickets	1	778230	
+778317	Car Rental	1	778234	
+778318	Hotels/Resorts	1	778234	
+778319	Instant Messengers	1	778235	
+778320	Promotional Servers	0	1	
+3193261	Airlines	1	778234	
+3193262	Ground/Cruise	1	778234	
+3193263	Online Travel Agents	1	778234	
+3260684	Career Resources	1	778216	
+3260685	Job Search	1	778216	
+3260686	Training and Education	1	778216	
+3322148	Gambling	0	1	
+3322199	Lotto/Sweepstakes	1	3322148	
+3322200	Online Gambling	1	3322148	
+3322210	Online Gaming	1	778308	
+3357049	Information	1	778220	
+3563661	Photos	1	778235	
+3603661	Blogs	1	778235	
+3865972	Instant Messengers (Legacy)	0	1	
+4333643	Social Networking	1	778217	
+4622803	Social Media	0	1	
+4623956	Social Networking	1	4622803	
+4623960	Blogs	1	4622803	
+4962873	Newspapers	1	778226	
+5317162	Other Distributed Content	0	1	
+5317163	Video	0	1	
+5317164	Distributed Content	0	1	
+5317165	Ad Network	1	5317164	
+5317166	Platform	1	5317164	
+5317167	Publisher	1	5317164	
+5571806	On Portal	0	1	
+5642119	Personals	1	778217	
+5642120	Lifestyles	1	778217	
+5642121	Beauty/Fashion/Style	1	778217	
+5642122	Community - Food	1	778217	
+5642123	Home	1	778217	
+5836265	Green	1	778217	
+6709025	Pets	1	778217	
+6846850	Optimized Mobile	0	1	

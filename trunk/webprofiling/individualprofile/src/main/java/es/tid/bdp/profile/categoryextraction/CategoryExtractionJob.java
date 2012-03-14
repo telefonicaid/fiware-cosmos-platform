@@ -36,11 +36,17 @@ public class CategoryExtractionJob extends Job {
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
     }
 
+    /**
+     * Use a LZO-compressed plain-text input.
+     */
     public void configureTextInput() {
         this.setInputFormatClass(LzoTextInputFormat.class);
         this.setMapperClass(TextCategoryExtractionMapper.class);
     }
 
+    /**
+     * Use a LZO-compressed base64-encoded protocol buffers input.
+     */
     public void configureProtobufInput() {
         this.setInputFormatClass(LzoProtobufB64LineInputFormat
                 .getInputFormatClass(WebProfilingLog.class,

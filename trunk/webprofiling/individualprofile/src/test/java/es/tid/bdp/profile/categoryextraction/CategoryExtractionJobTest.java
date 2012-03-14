@@ -17,12 +17,12 @@ import org.junit.Test;
  */
 public class CategoryExtractionJobTest {
     private CategoryExtractionJob instance;
-    
+
     @Before
     public void setUp() throws IOException {
         this.instance = new CategoryExtractionJob(new Configuration());
     }
-    
+
     @Test
     public void testConfigureTextInput() throws ClassNotFoundException {
         this.instance.configureTextInput();

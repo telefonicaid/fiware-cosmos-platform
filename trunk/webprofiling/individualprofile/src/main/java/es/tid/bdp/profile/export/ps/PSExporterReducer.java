@@ -50,7 +50,7 @@ public class PSExporterReducer extends Reducer<Text,
     }
 
     protected static void setCategoryNames(String[] categoryNames) {
-        sharedCategoryNames = categoryNames;
+        sharedCategoryNames = categoryNames.clone();
     }
 
     @Override

@@ -10,7 +10,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.Reducer.Context;
 
 import es.tid.bdp.profile.dictionary.Dictionary;
 
@@ -45,11 +44,12 @@ public abstract class DistributedCacheDictionary {
     public static void cacheDictionary(Job job, String baseDirectory,
             String[] dictionaryNames) {
         DistributedCache.createSymlink(job.getConfiguration());
-        if (!baseDirectory.endsWith(File.separator)) {
-            baseDirectory += File.separator;
+        String prefix = baseDirectory;
+        if (!prefix.endsWith(File.separator)) {
+            prefix += File.separator;
         }
         for (String name : dictionaryNames) {
-            DistributedCache.addCacheFile(URI.create(baseDirectory + name),
+            DistributedCache.addCacheFile(URI.create(prefix + name),
                     job.getConfiguration());
         }
         job.getConfiguration().setStrings(DICTIONARY_NAMES, dictionaryNames);

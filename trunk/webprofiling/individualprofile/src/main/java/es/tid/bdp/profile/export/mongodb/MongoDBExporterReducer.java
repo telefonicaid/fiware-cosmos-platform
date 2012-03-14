@@ -1,7 +1,6 @@
 package es.tid.bdp.profile.export.mongodb;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import com.mongodb.hadoop.io.BSONWritable;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
@@ -34,10 +33,8 @@ public class MongoDBExporterReducer extends Reducer<Text,
                        Iterable<ProtobufWritable<UserProfile>> profiles,
                        Context context) throws IOException,
                                                InterruptedException {
-        for (Iterator<ProtobufWritable<UserProfile>> it = profiles.iterator();
-                it.hasNext();) {
-            id.setValue(userId.toString());
-            final ProtobufWritable<UserProfile> wrappedProfile = it.next();
+        id.setValue(userId.toString());
+        for (ProtobufWritable<UserProfile> wrappedProfile : profiles) {
             wrappedProfile.setConverter(UserProfile.class);
             context.write(id, toBSON(wrappedProfile.get()));
         }

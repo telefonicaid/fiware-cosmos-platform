@@ -107,6 +107,18 @@ void captureSIGPIPE( int s )
     LM_M(("Captured SIGPIPE"));
 }
 
+void captureSIGTERM( int s )
+{
+    s = 3;
+    LM_M(("Captured SIGTERM"));
+    LM_M(("Cleaning up"));
+    std::string pid_file_name = au::str("%s/samsond.pid" , paLogFilePath );
+    if ( remove (pid_file_name.c_str()) != 0)
+    {
+        LM_W(("Error deleting the pid file %s", pid_file_name.c_str() ));
+    }
+    exit(1);
+}
 
 /* ****************************************************************************
 *
@@ -151,6 +163,9 @@ int main(int argC, const char *argV[])
 
     if (signal(SIGINT, captureSIGINT) == SIG_ERR)
         LM_W(("SIGINT cannot be handled"));
+
+    if (signal(SIGTERM, captureSIGTERM) == SIG_ERR)
+        LM_W(("SIGTERM cannot be handled"));
 
     // Init basic setup stuff ( necessary for memory check
     au::LockDebugger::shared();

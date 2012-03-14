@@ -32,6 +32,9 @@ namespace au {
         
         // Constructor
         StringCollection();
+        
+        // Destructor
+        ~StringCollection();
 
         // Add string ( cause reallocation if required )
         int add( const char * string );

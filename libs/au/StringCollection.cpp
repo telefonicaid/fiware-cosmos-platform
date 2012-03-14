@@ -12,6 +12,12 @@ namespace au {
         max_size = 1;
     }
     
+    StringCollection::~StringCollection()
+    {
+        if (v)
+            free(v);
+    }
+    
     int StringCollection::add( const char * string )
     {
         

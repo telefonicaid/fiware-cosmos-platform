@@ -3,8 +3,8 @@
 
 namespace samson 
 {
-    class KVInfo;
-    class FullKVInfo;
+    struct KVInfo;
+    struct FullKVInfo;
     
 	/**
      KVRange keeps information about a particular range of hash-groups

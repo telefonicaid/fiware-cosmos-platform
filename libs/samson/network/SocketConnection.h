@@ -39,9 +39,11 @@ namespace samson {
         
         // Read & Write line 
         Status readLine( char* line, size_t max_size , int max_seconds );
-        Status readBuffer(char* line, size_t max_size, int tmoSecs);
-        Status writeLine( const char* line );
+        Status writeLine( const char* line, int retries, int tv_sec, int tv_usec);
         
+        // Read buffer
+        Status readBuffer(char* line, size_t max_size, int tmoSecs);
+
         // Monitor information
         std::string str()
         {
@@ -81,10 +83,10 @@ namespace samson {
         
         // Auxiliar function to read and write to the socket
         
-        Status okToSend( );
+        Status okToSend(int tries, int tv_sec, int tv_usec);
         Status msgAwait( int secs, int usecs, const char* what );
         
-        Status partWrite( const void* dataP, int dataLen, const char* what );
+        Status partWrite( const void* dataP, int dataLen, const char* what, int retries = 300, int tv_sec = 1, int tv_usec = 0);
         Status partRead( void* vbuf, size_t bufLen, const char* what , int max_seconds , size_t * readed_size = NULL );
         
     };

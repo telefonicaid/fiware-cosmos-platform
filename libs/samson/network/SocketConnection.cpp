@@ -42,19 +42,17 @@ namespace samson {
         return ( fd == -1 );
     }
     
-    Status SocketConnection::okToSend( )
+    Status SocketConnection::okToSend(int tries, int tv_sec, int tv_usec)
     {
         int             fds;
         fd_set          wFds;
         struct timeval  timeVal;
         int             tryh;
-        int             tries = 300;
         
         for (tryh = 0; tryh < tries; tryh++)
         {
-            
-            timeVal.tv_sec  = 1;
-            timeVal.tv_usec = 0;
+            timeVal.tv_sec  = tv_sec;
+            timeVal.tv_usec = tv_usec;
             
             FD_ZERO(&wFds);
             FD_SET(fd, &wFds);
@@ -78,7 +76,7 @@ namespace samson {
         return Timeout;
     }      
     
-    Status SocketConnection::partWrite( const void* dataP, int dataLen, const char* what )
+    Status SocketConnection::partWrite( const void* dataP, int dataLen, const char* what, int retries, int tv_sec, int tv_usec)
     {
         int    nb;
         int    tot  = 0;
@@ -87,7 +85,7 @@ namespace samson {
         
         while (tot < dataLen)
         {
-            if ((s = okToSend( ) ) != OK )
+            if ((s = okToSend(retries, tv_sec, tv_usec)) != OK )
                 LM_RE(s, ("Cannot write to '%s' (fd %d) (returning -2 as if it was a 'connection closed' ...)", host.c_str(), fd));
             
             nb = ::write(fd, &data[tot], dataLen - tot);
@@ -157,7 +155,7 @@ namespace samson {
                 LM_X(1, ("SerializeToArray failed"));
             
             size_t size_message = packetP->message->ByteSize();
-            s = partWrite( outputVec, size_message, "Google Protocol Buffer" );
+            s = partWrite( outputVec, size_message, "Google Protocol Buffer");
             free(outputVec);
             if (s != OK)
                 LM_RE(s, ("partWrite:GoogleProtocolBuffer(): %s", status(s)));
@@ -167,7 +165,7 @@ namespace samson {
         
         if (packetP && (packetP->buffer != 0))
         {
-            s = partWrite( packetP->buffer->getData(), packetP->buffer->getSize(), "KV data" );
+            s = partWrite( packetP->buffer->getData(), packetP->buffer->getSize(), "KV data");
             if (s != OK)
                 LM_RE(s, ("partWrite returned %d and not the expected %d", s, packetP->buffer->getSize()));
             *size += packetP->buffer->getSize();
@@ -224,11 +222,11 @@ namespace samson {
         return Error;
     }
     
-    Status SocketConnection::writeLine( const char* line )
+    Status SocketConnection::writeLine( const char* line, int retries, int tv_sec, int tv_usec)
     {
-        Status s = partWrite(line, strlen(line), "write line");
+        Status s = partWrite(line, strlen(line), "write line", retries, tv_sec, tv_usec);
         
-        if( s!= OK )
+        if (s!= OK)
             close();
         
         return s;

@@ -8,6 +8,11 @@
 * DESCRIPTION			   Widget to visualize samson queues' data
 *
 */
+
+#include "Plot.h"
+
+#include "au/RRT.h"             // au::ValueCollection 
+
 #include <QtGui>
 #include <vector>
 #include <string>
@@ -111,6 +116,8 @@ class ExtQueueViewer: public QWidget
         QLabel* time_toLabel;
         QLabel* time_to;
         
+        Plot* plot;
+        
         //QPushButton* connectButton;
         //QTextEdit* queueFeed;
         QButtonGroup* connectGroup;
@@ -123,6 +130,8 @@ class ExtQueueViewer: public QWidget
         QGroupBox* rateBox;
         QGroupBox* blocksBox;
         
+        QGroupBox* ratePlotBox;
+        
         QVBoxLayout* mainLayout;
         QHBoxLayout* connectButtonLayout;
         QHBoxLayout* generalLayout;
@@ -130,6 +139,9 @@ class ExtQueueViewer: public QWidget
         QHBoxLayout* formatLayout;
         QHBoxLayout* rateLayout;
         QHBoxLayout* blocksLayout;
+        
+        //Data for the plot
+        au::ContinuousValueCollection<unsigned long> rateCollection;
         
     signals:
         void updateConnection(ConnectQueueParameters params);
@@ -140,6 +152,7 @@ class ExtQueueViewer: public QWidget
         void onConnectClearClicked(bool checked);
         void disconnect();
         void clearFeed();
+        void redrawPlot();
         
 };
 

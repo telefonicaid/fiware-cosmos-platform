@@ -57,6 +57,7 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     formatBox = new QGroupBox("Format", this);
     rateBox = new QGroupBox("Rate", this);
     blocksBox = new QGroupBox("Blocks", this);
+    ratePlotBox = new QGroupBox("Rate gr", this);
 
     QFont bigFont;
     QFont boldFont;
@@ -127,6 +128,9 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     connectGroup->addButton(connectNew);
     connectGroup->addButton(connectClear);
     
+    //Rate graph
+    plot = new Plot(ratePlotBox, "Time", "Rate (B/s)");
+    
     connect(connectButton, SIGNAL(clicked()), this, SLOT(onConnectButtonClicked()));
     connect(connectNew, SIGNAL(toggled(bool)), this, SLOT(onConnectNewClicked(bool)));
     connect(connectClear, SIGNAL(toggled(bool)), this, SLOT(onConnectClearClicked(bool)));
@@ -142,6 +146,7 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     //queueHeader->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
     //queueFeed->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     mainLayout->addWidget(queueFeed);
+    mainLayout->addWidget(ratePlotBox);
     mainLayout->addStretch();
     
     connectButtonLayout->addWidget(connectButton);
@@ -223,6 +228,13 @@ void ExtQueueViewer::setData(QueueData* newData)
         locked->setText(QString(au::str(strtoul(data.locked.c_str(), NULL, 0)).c_str()));
         time_from->setText(QString(au::str_time(strtoul(data.time_from.c_str(), NULL, 0)).c_str()));
         time_to->setText(QString(au::str_time(strtoul(data.time_to.c_str(), NULL, 0)).c_str()));
+  std::cout<<"antes de set: " << data.bytes_s;
+        rateCollection.set(atof(data.bytes_s.c_str()));
+  std::cout<<" - despues de set."<< std::endl;
+        rateCollection.takeSample();
+        
+        redrawPlot();
+        
 }
 
 void ExtQueueViewer::updateHeader(std::string line)
@@ -284,5 +296,28 @@ void ExtQueueViewer::disconnect()
     connectQueueParameters.connected = false;
     emit updateConnection(connectQueueParameters);
 }
+
+void ExtQueueViewer::redrawPlot()
+{
+   // Update the model for the plot....
+    std::vector<std::string> labels;
+    plot->clear();
+    int row = 0;
+ std::cout << rateCollection.getNumSamples() << std::endl;
+    for ( int i = 0 ; i < 10 /*rateCollection.getNumSamples()*/ ; i++)
+    {
+  std::cout << "i: " << i << std::endl;
+        plot->set( i , row , rateCollection.getSample(i) );
+        //plot->set( i , row , rand()%10 );
+        row++;
+    }
+        
+    //labels.push_back( it_value_collections->first );
+        
+    
+    //plot->set_legend( "Levels..", labels );
+
+}
+
 
 } //namespace

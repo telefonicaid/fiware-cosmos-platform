@@ -7,6 +7,7 @@ SET (HEADERS
 	ExtQueueViewer.h
 	WorkerViewer.h
 	WorkerContainer.h
+	Plot.h
 )
 
 SET (SOURCES
@@ -18,6 +19,7 @@ SET (SOURCES
 	ExtQueueViewer.cpp
 	WorkerViewer.cpp
 	WorkerContainer.cpp
+	Plot.cpp
 )
 
 SET (HEADERS_FOR_MOC
@@ -35,6 +37,7 @@ FIND_PACKAGE(Qt4 REQUIRED)
 
 SET (STATIC_LIBS
      QtCore
+     kdchart
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/libs")

@@ -27,8 +27,7 @@ public class IndividualProfileMain extends Configured implements Tool {
     
     private static final String INPUT_SERIALIZATION = "input.serialization";
     private static final String PROTOBUF_SERIALIZATION = "protobuf";
-
-    private static final String DIR_SEPARATOR = "/";
+    
     private static final String TMP_DIR = "tmp";
     private static final String CATEGORIES_DIR = "categories";
     private static final String PROFILE_DIR = "profile";
@@ -59,8 +58,9 @@ public class IndividualProfileMain extends Configured implements Tool {
         }
         
         Path webLogsPath = new Path(args[0]);
-        Path categoriesPath = new Path(tmpDir + DIR_SEPARATOR + CATEGORIES_DIR);
-        Path profilePath = new Path(tmpDir + DIR_SEPARATOR + PROFILE_DIR);
+        Path categoriesPath = new Path(
+                tmpDir + Path.SEPARATOR + CATEGORIES_DIR);
+        Path profilePath = new Path(tmpDir + Path.SEPARATOR + PROFILE_DIR);
 
         CategoryExtractionJob ceJob = new CategoryExtractionJob(this.getConf());
         if (this.getConf().get(INPUT_SERIALIZATION, PROTOBUF_SERIALIZATION)
@@ -104,7 +104,7 @@ public class IndividualProfileMain extends Configured implements Tool {
     }
 
     private static String getTmpDir() {
-        final String path = DIR_SEPARATOR + TMP_DIR + DIR_SEPARATOR +
+        final String path = Path.SEPARATOR + TMP_DIR + Path.SEPARATOR +
                 "individualprofile" + "_"
                 + Calendar.YEAR + Calendar.MONDAY + Calendar.DATE
                 + Calendar.HOUR_OF_DAY + Calendar.MINUTE + Calendar.SECOND

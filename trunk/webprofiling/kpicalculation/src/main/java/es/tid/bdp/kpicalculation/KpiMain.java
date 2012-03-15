@@ -1,9 +1,8 @@
 package es.tid.bdp.kpicalculation;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.net.URL;
 import java.util.Date;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,7 +25,8 @@ import org.apache.hadoop.util.ToolRunner;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
 import es.tid.bdp.base.mapreduce.SingleKey;
-import es.tid.bdp.kpicalculation.data.JobDetails;
+import es.tid.bdp.kpicalculation.config.JobDetails;
+import es.tid.bdp.kpicalculation.config.KpiConfig;
 import es.tid.bdp.kpicalculation.generated.data.KpiCalculationProtocol
         .WebProfilingLog;
 
@@ -42,6 +42,8 @@ import es.tid.bdp.kpicalculation.generated.data.KpiCalculationProtocol
  * project
  */
 public class KpiMain extends Configured implements Tool {
+    private final URL KPI_DEFINITIONS = KpiMain.class.getResource(
+            "/conf/kpi.properties");
     private static final Logger LOGGER = Logger.getLogger("KpiMain");
 
     public static void main(String[] args) {
@@ -80,8 +82,10 @@ public class KpiMain extends Configured implements Tool {
             return 1;
         }
 
-        // Definition of kpis to calculate
-        for (JobDetails details : getKpiList()) {
+        KpiConfig config = new KpiConfig();
+        config.read(KPI_DEFINITIONS);
+
+        for (JobDetails details : config.getKpis()) {
             Path kpiOutputPath = outputPath.suffix("/" + details.getName() + "/"
                     + timeFolder);
             Job aggregationJob = new Job(conf, "Aggregation Job ..."
@@ -131,29 +135,6 @@ public class KpiMain extends Configured implements Tool {
         }
 
         return 0;
-    }
-
-    private List<JobDetails> getKpiList() {
-        List<JobDetails> list = new ArrayList<JobDetails>();
-
-        list.add(new JobDetails("PAGE_VIEWS_PROT", "protocol,date"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_VIS_DEV",
-                "visitorId,protocol,device,date"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_VIS",
-                "visitorId,protocol,date"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_DEV", "device,protocol,date"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_MET", "method,protocol,date"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_URL_VIS",
-                "visitorId,urlDomain,urlPath,protocol,date"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_DOM_VIS",
-                "visitorId,urlDomain,protocol,date"));
-        list.add(new JobDetails("PAGE_VIEWS_PROT_DOM",
-                "urlDomain,protocol,date"));
-        list.add(new JobDetails("VISITORS_PROT_URL",
-                "urlDomain,urlPath,protocol,date", "visitorId"));
-        list.add(new JobDetails("VISITORS_PROT", "protocol,date", "visitorId"));
-
-        return list;
     }
 
     private Job cleanWebNavigationLogs(Configuration conf, Path input,

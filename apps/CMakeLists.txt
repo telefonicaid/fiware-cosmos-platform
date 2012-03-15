@@ -1,5 +1,6 @@
-ADD_SUBDIRECTORY(samsonLocal)
-
+#
+# Command line tools that do not use QT or KDChart
+#
 ADD_SUBDIRECTORY(samsonSetup)
 ADD_SUBDIRECTORY(samsonWorker)
 ADD_SUBDIRECTORY(delilah)
@@ -16,14 +17,17 @@ ADD_SUBDIRECTORY(samsonPush)
 ADD_SUBDIRECTORY(samsonPop)
 ADD_SUBDIRECTORY(samsonMemCheck)
 
-# Andreu: Remove unit test for quick development of Netowrk 2.1... sorry if I forgot this line
 if (HAVE_GTEST)
    ADD_SUBDIRECTORY(unitTest)
 endif (HAVE_GTEST)
 
+#
+# Any application that makes use of QT or KDChart should be in the correct section below
+#
 if (HAVE_QT)
     if (HAVE_KDCHART)
         ADD_SUBDIRECTORY(delilah_graph)
+        ADD_SUBDIRECTORY(samsonLocal)
         #ADD_SUBDIRECTORY(delilahQt)
         #ADD_SUBDIRECTORY(samsonLevelMonitor)
     endif (HAVE_KDCHART)

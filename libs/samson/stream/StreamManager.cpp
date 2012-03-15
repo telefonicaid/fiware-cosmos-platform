@@ -455,6 +455,10 @@ namespace samson {
                 double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
                 if ( memory_usage >= 1.0 )
                 {
+                    
+                    if( memory_usage > 2.0 )
+                        LM_X(1,("Execesive memory usage %s", au::str_percentage( memory_usage ).c_str() ));
+                    
                     LM_W(("Not schedulling new stream-tasks since memory usage is %s >= 100%", au::str_percentage( memory_usage ).c_str() ));
                     return;
                 }

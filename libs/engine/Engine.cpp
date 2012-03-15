@@ -230,7 +230,7 @@ void Engine::run()
             if ( t_sleep > 0.1 )
                 t_sleep = 0.1; // Max time to sleep to avoid locks...
                          // Sleeping a bit for the next engine element...
-            LM_T( LmtEngine, ("Engine: Sleeping %.2f secs ..." , t));
+            LM_T( LmtEngine, ("Engine: Sleeping %.2f secs ..." , t_sleep));
             {
                 au::ExecesiveTimeAlarm alarm( "Engine sleep2" , 2*t_sleep );
                 sleep_select( t_sleep );

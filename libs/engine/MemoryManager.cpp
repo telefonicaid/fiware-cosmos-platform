@@ -81,18 +81,57 @@ MemoryManager::~MemoryManager()
     memoryRequests.clearList(); // Remove pending requests
 }
 
-Buffer *MemoryManager::newBuffer( std::string name , std::string type , size_t size  )
+Buffer *MemoryManager::newBuffer( std::string name , std::string type , size_t size , double mem_limit  )
 {
-	//LM_M(("Before new mutex  buffer:%s, size:%lu, tag:%d\n", name.c_str(), size, tag));
-    au::TokenTaker tk( &token );
-
+    au::Cronometer cronometer;
+    int count = 0;
+    while (true)
+	{
+        //LM_M(("Before new mutex  buffer:%s, size:%lu, tag:%d\n", name.c_str(), size, tag));
+        
+        
+        if (count > 60 * 100)
+        {
+            LM_M(("Already waiting 60 seconds (count:%d) for a memory buffer. Let's give it", count));
+            mem_limit = 0;
+        }
+        
+        Buffer *b = NULL;
+        {	   
+            au::TokenTaker tk( &token );
+            b = _newBuffer( name , type , size , mem_limit );
+        }
+        
+        if (b)
+        {
+            return b;
+        }
+        else
+        {
+            if (count %100 == 0)
+            {
+                LM_M(("Allocation for new memory buffer with size:%lu for '%s' delayed since memory %s > %s ( delayed %lu secs)"
+                      , size
+                      , name.c_str()
+                      , au::str_percentage( _getMemoryUsage() ).c_str()
+                      , au::str_percentage( mem_limit ).c_str()
+                      , au::str_time( cronometer.diffTimeInSeconds() ).c_str()
+                      ));
+            }
+            usleep (10000);
+            count ++;
+        }
+	}
     
-    Buffer *b = _newBuffer( name , type ,size );
-    return b;
+    LM_X(1, ("Internal error"));
+    return NULL;
+    
 }
 
-Buffer *MemoryManager::_newBuffer( std::string name , std::string type , size_t size  )
+Buffer *MemoryManager::_newBuffer( std::string name , std::string type , size_t size , double mem_limit  )
 {
+    if ((mem_limit != 0) && (mem_limit < _getMemoryUsage()))
+       	return NULL;
     
     Buffer *b = new Buffer( name, type , size );
     
@@ -206,7 +245,7 @@ void MemoryManager::_checkMemoryRequests()
                 LM_X(1,("Internal error"));
             
             // Get the buffer
-            r->buffer = _newBuffer("Buffer from general request", "request" ,  r->size  );   // By default ( tag == 0 )
+            r->buffer = _newBuffer("Buffer from general request", "request" ,  r->size , 0  );   // By default ( tag == 0 )
             
             // Send the answer with a notification
             Engine::shared()->notify( new Notification( notification_memory_request_response , r , r->listner_id ) );

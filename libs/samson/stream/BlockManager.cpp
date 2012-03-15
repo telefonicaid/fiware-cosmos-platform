@@ -156,6 +156,10 @@ namespace samson {
         
         void BlockManager::review()
         {
+            // Do not review if max read/write operations are scheduled
+            if( num_reading_operations >= BLOCK_MANAGEMENT_MAX_READ_OPERATIONS )
+                if( num_writing_operations >= BLOCK_MANAGEMENT_MAX_WRITE_OPERATIONS )
+                    return;
             
             LM_T( LmtBlockManager , ("Reviewing block manager"));
             

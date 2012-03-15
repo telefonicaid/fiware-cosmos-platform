@@ -88,11 +88,11 @@ public:
      --------------------------------------------------------------------
      */
     
-    Buffer *newBuffer( std::string name , std::string type ,  size_t size );
+    Buffer *newBuffer( std::string name , std::string type ,  size_t size , double mem_limit=0.0 );
     
 private:
     
-    Buffer *_newBuffer( std::string name , std::string type , size_t size );
+    Buffer *_newBuffer( std::string name , std::string type , size_t size , double mem_limit );
     
     
     /*

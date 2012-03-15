@@ -110,7 +110,7 @@ Buffer *MemoryManager::newBuffer( std::string name , std::string type , size_t s
         {
             if (count %100 == 0)
             {
-                LM_M(("Allocation for new memory buffer with size:%lu for '%s' delayed since memory %s > %s ( delayed %lu secs)"
+                LM_M(("Allocation for new memory buffer with size:%lu for '%s' delayed since memory %s > %s ( delayed %s secs)"
                       , size
                       , name.c_str()
                       , au::str_percentage( _getMemoryUsage() ).c_str()

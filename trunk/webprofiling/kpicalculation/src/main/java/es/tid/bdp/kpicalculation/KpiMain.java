@@ -42,7 +42,7 @@ import es.tid.bdp.kpicalculation.generated.data.KpiCalculationProtocol
  * project
  */
 public class KpiMain extends Configured implements Tool {
-    private final URL KPI_DEFINITIONS = KpiMain.class.getResource(
+    private static final URL KPI_DEFINITIONS = KpiMain.class.getResource(
             "/conf/kpi.properties");
     private static final Logger LOGGER = Logger.getLogger("KpiMain");
 

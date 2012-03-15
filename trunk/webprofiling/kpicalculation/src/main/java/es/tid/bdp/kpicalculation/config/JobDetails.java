@@ -6,8 +6,8 @@ import java.util.Arrays;
  * @author javierb, sortega
  */
 public class JobDetails {
-    private final int HASH_SALT = 79;
-    private final int HASH_SEED = 7;
+    private final static int HASH_SALT = 79;
+    private final static int HASH_SEED = 7;
     private final String name;
     private final String[] fields;
     private final String group;

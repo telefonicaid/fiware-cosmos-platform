@@ -848,7 +848,7 @@ namespace samson
                     output << " Process " << id << " ";
                     
                     if( component->isComponentFinished() )
-                        output << "FINISHED";
+                        output << "FINISHED "  << component->cronometer.str();
                         else
                             output << " RUNNING " << component->cronometer.str();
                     output << "\n";

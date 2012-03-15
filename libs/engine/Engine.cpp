@@ -170,19 +170,7 @@ void Engine::run()
         if( quitting )
             return; 
         
-        // Check if there are elements in the list
-        bool isEmpty;
-        {
-            // Mutex protection
-            au::TokenTaker tt(&token , "Engine::getNextElement");
-            isEmpty = ( ( repeated_elements.size() == 0 ) && ( normal_elements.size() == 0) );
-        }
         
-        if( isEmpty )
-        {
-            LM_T( LmtEngine, ("SamsonEngine: No more elements to process in the engine. Quitting ..."));
-            return;
-        }
         
         // ------------------------------------------------------------------------------------
         // Try to get the next element in the repeat_elements list , if not , normal elements
@@ -192,6 +180,14 @@ void Engine::run()
         {
             // Mutex protection to access elements
             au::TokenTaker tt(&token , "Engine::getNextElement");
+
+            // Check if there are elements in the list
+            bool isEmpty = ( ( repeated_elements.size() == 0 ) && ( normal_elements.size() == 0) );
+            if( isEmpty )
+            {
+                LM_T( LmtEngine, ("SamsonEngine: No more elements to process in the engine. Quitting ..."));
+                return;
+            }
             
             LM_T( LmtEngine, ("Number of elements in the engine stack %d" , (int) normal_elements.size() ));
 

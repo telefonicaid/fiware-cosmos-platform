@@ -1,11 +1,15 @@
 COMSCOREDIR=../../../../../../third-party/comscore-dictionary
 CXXFLAGS=-shared -fpic
 LDDFLAGS=-I/usr/java/default/include -I$(COMSCOREDIR) \
-	 -I/usr/java/default/include/linux -I/System/Library/Frameworks/JavaVM.framework/Headers
+	 -I/usr/java/default/include/linux \
+	 -I/usr/lib/jvm/java-6-sun/include \
+	 -I/usr/lib/jvm/java-6-sun/include/linux \
+	 -I/System/Library/Frameworks/JavaVM.framework/Headers
 
 all: libCategories.so
 
 es/tid/bdp/profile/dictionary/comscore/CSDictionaryJNIInterface.class:
+	javac -d . ../java/es/tid/bdp/profile/dictionary/comscore/NativeCSDictionary.java
 	javac -d . ../java/es/tid/bdp/profile/dictionary/comscore/CSDictionaryJNIInterface.java
 
 es_tid_bdp_profile_dictionary_comscore_CSDictionaryJNIInterface.h: es/tid/bdp/profile/dictionary/comscore/CSDictionaryJNIInterface.class

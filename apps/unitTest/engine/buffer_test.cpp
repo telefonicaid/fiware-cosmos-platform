@@ -56,7 +56,7 @@ TEST(bufferTest, strTest) {
     engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 15 );
     buffer1->setSize(5);
 
-    EXPECT_EQ(buffer1->str(), "[ Buffer (buffer1) MaxSize: 15 Size: 5 Offset 0 ]") << "Error in str()";
+    EXPECT_EQ(buffer1->str(), "[ Buffer (buffer1 / test) MaxSize: 15 Size: 5 Offset 0 ]") << "Error in str()";
 
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
 

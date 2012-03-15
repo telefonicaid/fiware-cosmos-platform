@@ -68,7 +68,7 @@ TEST(memoryManagerTest, getInfoTest) {
     EXPECT_EQ(std::string(buffer2Node.getChildNode("max_size").getClear().lpszValue), "10") << "Error writing max_size tag";
     EXPECT_EQ(std::string(buffer2Node.getChildNode("size").getClear().lpszValue), "0") << "Error writing size tag";
     EXPECT_EQ(std::string(buffer2Node.getChildNode("offset").getClear().lpszValue), "0") << "Error writing offset tag";
-    EXPECT_EQ(std::string(buffer2Node.getChildNode("name").getClear().lpszValue), "Buffer from request") << "Error writing name tag";
+    EXPECT_EQ(std::string(buffer2Node.getChildNode("name").getClear().lpszValue), "Buffer from general request") << "Error writing name tag";
 
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
 
@@ -131,11 +131,11 @@ TEST(memoryManagerTest, getUsedMemoryTest) {
     EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemory(), 100) << "Used memory does not match";
     EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsage(), 0.1) << "Memory usage does not match";
     engine::Buffer* buffer2 = engine::MemoryManager::shared()->newBuffer( "buffer2" , "test" , 100  );
-    EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemory(), 300) << "Used memory does not match";
-    EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsage(), 0.3) << "Memory usage does not match";
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
     EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemory(), 200) << "Used memory does not match";
     EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsage(), 0.2) << "Memory usage does not match";
+    engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemory(), 100) << "Used memory does not match";
+    EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsage(), 0.1) << "Memory usage does not match";
     engine::MemoryManager::shared()->destroyBuffer(buffer2);
     EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemory(), 0) << "Used memory does not match";
     EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsage(), 0.0) << "Memory usage does not match";

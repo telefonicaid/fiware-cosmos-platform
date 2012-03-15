@@ -533,11 +533,11 @@ namespace samson {
             }
             
             
+            // Normal lists
+            
             add( record , "name" , name , "left,different" );
             add( record , "#kvs" , blockInfo.info.kvs , "f=uint64,sum" );
             add( record , "size" , blockInfo.info.size , "f=uint64,sum" );
-
-            
             
             if( ( options == normal ) || (options == all ) )
             {
@@ -555,7 +555,7 @@ namespace samson {
                 add( record , "Bytes/s" , (size_t) rate.get_rate_size() , "f=uint64,sum" );
             }
             
-            if( ( options == blocks ) || (options == all ) )
+            if( options == blocks )
             {
                 add( record , "#Blocs"     , blockInfo.num_blocks , "f=uint64,sum" );
                 

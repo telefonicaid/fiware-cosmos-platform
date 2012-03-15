@@ -30,7 +30,7 @@ public class KpiConfig {
             String name = entry.getKey().toString();
             String[] parts = entry.getValue().toString().split(GROUP_SEPARATOR);
             String[] fields = parts[FIELDS_PART].split(FIELD_SEPARATOR);
-            String group = (parts[GROUP_PART] != null) ? parts[GROUP_PART]
+            String group = (parts.length > GROUP_PART) ? parts[GROUP_PART]
                                                        : null;
             this.kpis.add(new JobDetails(name, fields, group));
         }

@@ -193,8 +193,10 @@ void Engine::run()
             // Mutex protection to access elements
             au::TokenTaker tt(&token , "Engine::getNextElement");
             
-            if( normal_elements.size() > 30 )
-                LM_W(("Execesive number of elements in the engine sack %d" , (int) normal_elements.size() ));
+            LM_T( LmtEngine, ("Number of elements in the engine stack %d" , (int) normal_elements.size() ));
+
+            if( normal_elements.size() > 100 )
+                LM_W(("Execesive number of elements in the engine stack %d" , (int) normal_elements.size() ));
             
             if( repeated_elements.size() > 0 )
             {
@@ -391,6 +393,9 @@ void Engine::add( EngineElement *element )
     // Mutex protection
     au::TokenTaker tt(&token);
 
+    LM_T( LmtEngine, ("Adding Engineelement: %s", element->getDescription().c_str() ));
+    
+    
     // Insert an element in the engine
     
     if( element->isRepeated() )

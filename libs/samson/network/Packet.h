@@ -224,6 +224,11 @@ namespace samson
         {
             std::ostringstream output;
             output << "Packet " << messageCode( msgCode );
+
+            // Extra information for worker command
+            if( msgCode == Message::WorkerCommand )
+                output << "(" << message->worker_command().command() << ")";
+            
             if ( buffer )
                 output << "[ Buffer " << au::str(  buffer->getSize() ) << "/" << au::str(  buffer->getMaxSize() ) << " ]" ;
             else

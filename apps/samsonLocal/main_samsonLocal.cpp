@@ -39,7 +39,7 @@
 #include "NetworkFake.h"
 #include "NetworkCenter.h"
 
-#include "samson/delilahQt/DelilahQt.h"
+//#include "samson/delilahQt/DelilahQt.h"
 
 
 /* ****************************************************************************
@@ -51,7 +51,7 @@ int              workers;
 bool             noLog;
 char			 commandFileName[1024];
 bool             thread_mode;
-bool             delilah_qt;
+//bool             delilah_qt;
 
 
 #define S01 (long int) "samson01:1234"
@@ -66,7 +66,7 @@ PaArgument paArgs[] =
 	{ "-workers",     &workers,         "WORKERS",     PaInt,     PaOpt,     1,      1,    100,  "number of workers"   },
 	{ "-nolog",       &noLog,           "NO_LOG",      PaBool,    PaOpt,    false,  false,   true,  "no logging"          },
 	{ "-thread_mode", &thread_mode,     "THREAD_MODE", PaBool,    PaOpt,    false,  false,   true,  "thread_mode"          },
-	{ "-qt",          &delilah_qt,     "" ,            PaBool,    PaOpt,    false,  false,   true,  "Delilah Qt"          },
+//	{ "-qt",          &delilah_qt,     "" ,            PaBool,    PaOpt,    false,  false,   true,  "Delilah Qt"          },
 	{ "-f",           commandFileName,  "FILE_NAME",   PaString,  PaOpt,  _i "",   PaNL,   PaNL,  "File with commands to run"     },
 	PA_END_OF_ARGS
 };
@@ -168,12 +168,12 @@ int main(int argC, const char *argV[])
     atexit(deleteNetworkCenter);
 	
     samson::DelilahConsole* delilahConsole = NULL;
-    samson::DelilahQt* delilahQt = NULL;
+//    samson::DelilahQt* delilahQt = NULL;
     
     // Console delilah..
-    if( delilah_qt )
+/*    if( delilah_qt )
         delilahQt = new samson::DelilahQt( networkCenter->getNetworkForDelilah() );
-    else            
+    else            */
         delilahConsole = new samson::DelilahConsole( networkCenter->getNetworkForDelilah() );
 
 	
@@ -188,7 +188,7 @@ int main(int argC, const char *argV[])
 	
 	// Run the network center in background
 	networkCenter->runInBackground();
-    
+
     // Set the command file name
     if( delilahConsole )
     {
@@ -200,12 +200,11 @@ int main(int argC, const char *argV[])
     }
 
     // Set the command file name
-    if( delilahQt )
+/*    if( delilahQt )
         delilahQt->run();
-    
+  */  
 	// Not necessary anymore since engine starts automatically with the init call
 	// engine::Engine::run();
-
     atexit(deleteWorkers);
     
     while( true )

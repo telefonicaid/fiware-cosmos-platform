@@ -13,9 +13,9 @@ SET (HEADERS
     NetworkFakeCenterPacket.h
 )
 
-SET (HEADERS_FOR_MOC
-    DelilahQt.h
-)
+#SET (HEADERS_FOR_MOC
+#    DelilahQt.h
+#)
 
 FIND_PACKAGE(Qt4 REQUIRED)
 
@@ -33,7 +33,7 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 SET( STATIC_LIBS
     samsonWorkerLib
     delilahLib
-    delilahQtLib
+    #delilahQtLib
     engine
     samsonModule
     samsonStream
@@ -65,15 +65,15 @@ INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})        # Required for QT interm
 #QT4_ADD_RESOURCES(RESOURCES_RCC ${RESOURCES})
 # ------------------------------------------------------------
 
-INCLUDE(${QT_USE_FILE})
-ADD_DEFINITIONS(${QT_DEFINITIONS})
+#INCLUDE(${QT_USE_FILE})
+#ADD_DEFINITIONS(${QT_DEFINITIONS})
 
 # Executable declaration
 # ------------------------------------------------------------
 
 ADD_EXECUTABLE(samsonLocal ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES(samsonLocal ${STATIC_LIBS})
-TARGET_LINK_LIBRARIES( samsonLocal ${QT_LIBRARIES} )
+#TARGET_LINK_LIBRARIES( samsonLocal ${QT_LIBRARIES} )
 
 INSTALL(TARGETS               samsonLocal
         RUNTIME DESTINATION   bin)

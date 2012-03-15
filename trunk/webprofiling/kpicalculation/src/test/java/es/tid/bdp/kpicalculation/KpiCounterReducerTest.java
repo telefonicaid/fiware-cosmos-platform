@@ -3,8 +3,6 @@ package es.tid.bdp.kpicalculation;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
@@ -14,13 +12,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.bdp.base.mapreduce.SingleKey;
-import es.tid.bdp.kpicalculation.KpiCounterReducer;
 
 /**
  * Test cases for the KpiCounterReducer class.
  */
 
-public class KpiCounterReducerTest extends TestCase {
+public class KpiCounterReducerTest {
     private KpiCounterReducer reducer;
     private ReduceDriver<SingleKey, IntWritable, Text, IntWritable> driver;
 

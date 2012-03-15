@@ -1,6 +1,6 @@
 package kpicalculation;
 
-option java_package = "es.tid.bdp.kpicalculation.data";
+option java_package = "es.tid.bdp.kpicalculation.generated.data";
 option java_outer_classname = "KpiCalculationProtocol";
 
 message WebProfilingLog {
@@ -19,4 +19,3 @@ message WebProfilingLog {
   required string status = 13;
   required string mimeType = 14;
 }
-	

@@ -252,6 +252,19 @@ void Engine::run()
                 LM_W(("Engine is running an element delayed %d seconds", excesive_time ));
                 //LM_W(("Engine element to execute now: %s" , running_element->getDescription().c_str() ));
             }
+            if ( excesive_time > 100 )
+            {
+                // Print entire engine items...
+                
+                au::list<EngineElement>::iterator it_elements;
+                for( it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
+                {
+                    EngineElement* element = *it_elements;
+                    LM_M(("%s",element->getDescription().c_str()));
+                }
+                LM_X(1,("Engine is running an element delayed %d seconds", excesive_time ));
+                //LM_W(("Engine element to execute now: %s" , running_element->getDescription().c_str() ));
+            }
             
             {
                 // Run the item controlling excesive time

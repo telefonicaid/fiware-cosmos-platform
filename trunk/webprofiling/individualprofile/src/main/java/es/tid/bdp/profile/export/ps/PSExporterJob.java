@@ -1,6 +1,7 @@
 package es.tid.bdp.profile.export.ps;
 
 import java.io.IOException;
+import java.util.Date;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
@@ -28,6 +29,7 @@ public class PSExporterJob extends Job {
         this.setMapOutputKeyClass(Text.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
         this.setReducerClass(PSExporterReducer.class);
+        PSExporterReducer.setTimestamp(this, new Date());
         this.setNumReduceTasks(1);
         this.setOutputKeyClass(NullWritable.class);
         this.setOutputValueClass(Text.class);

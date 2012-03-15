@@ -2,11 +2,13 @@ package es.tid.bdp.profile.export.ps;
 
 import java.io.IOException;
 import static java.util.Arrays.asList;
+import java.util.Date;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import static org.junit.Assert.assertEquals;
@@ -22,6 +24,7 @@ import es.tid.bdp.profile.generated.data.ProfileProtocol.UserProfile;
  * @author dmicol
  */
 public class PSExporterReducerTest {
+    private static final String SAMPLE_TIMESTAMP = "2012-03-15T12:00:00Z";
     private PSExporterReducer instance;
     private ReduceDriver<Text, ProtobufWritable<UserProfile>, NullWritable,
                          Text> driver;
@@ -40,6 +43,8 @@ public class PSExporterReducerTest {
         };
         this.driver = new ReduceDriver<Text, ProtobufWritable<UserProfile>,
                 NullWritable, Text>(this.instance);
+        this.driver.getConfiguration().set(PSExporterReducer.PSEXPORT_TIMESTAMP,
+                                           SAMPLE_TIMESTAMP);
         this.userId = new Text("USER00123");
     }
 
@@ -72,14 +77,27 @@ public class PSExporterReducerTest {
         List<Pair<NullWritable, Text>> results =
                 this.driver.withInput(this.userId,
                                       asList(wrappedP1,wrappedP2)).run();
-        assertEquals(4, results.size());
-        assertEquals("User|Sport|Leisure|Games|Lifestyle|News|Search|Shopping|Social",
+        assertEquals(5, results.size());
+        assertEquals("M|PS|unnamed||" + SAMPLE_TIMESTAMP,
                      results.get(0).getSecond().toString());
-        assertEquals("USER00123_2012/02/01|5|0|0|10|0|0|0|0",
+        assertEquals("H|kpi|service_user_id|update_date|update_source|Sport|" +
+                     "Leisure|Games|Lifestyle|News|Search|Shopping|Social",
                      results.get(1).getSecond().toString());
-        assertEquals("USER00123_2012/02/02|0|0|0|0|3|0|16|0",
+        assertEquals("I|kpi|USER00123_2012/02/01|" + SAMPLE_TIMESTAMP +
+                     "|BDP|5|0|0|10|0|0|0|0",
                      results.get(2).getSecond().toString());
-        assertEquals("2",
+        assertEquals("I|kpi|USER00123_2012/02/02|" + SAMPLE_TIMESTAMP +
+                     "|BDP|0|0|0|0|3|0|16|0",
                      results.get(3).getSecond().toString());
+        assertEquals("F|2",
+                     results.get(4).getSecond().toString());
+    }
+
+    @Test
+    public void shouldConfigureTimestamp() throws Exception {
+        Job job = new Job();
+        PSExporterReducer.setTimestamp(job, new Date(1331830825230L));
+        assertEquals("2012-03-15T18:00:25Z", job.getConfiguration()
+                .get(PSExporterReducer.PSEXPORT_TIMESTAMP));
     }
 }

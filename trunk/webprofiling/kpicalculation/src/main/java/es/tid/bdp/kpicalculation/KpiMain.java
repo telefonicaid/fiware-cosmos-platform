@@ -47,12 +47,6 @@ public class KpiMain extends Configured implements Tool {
     private static final Logger LOGGER = Logger.getLogger("KpiMain");
 
     public static void main(String[] args) {
-        if (args.length != 2) {
-            LOGGER.setLevel(Level.ALL);
-            LOGGER.severe("Wrong Arguments. Example: hadoop jar kpicalculation-LocalBuild.jar inputPath outputPath");
-            System.exit(1);
-        }
-
         try {
             int res = ToolRunner.run(new Configuration(), new KpiMain(), args);
             System.exit(res);
@@ -66,6 +60,12 @@ public class KpiMain extends Configured implements Tool {
     @Override
     public int run(String[] args) throws IOException, ClassNotFoundException,
             InterruptedException {
+        if (args.length != 2) {
+            LOGGER.setLevel(Level.ALL);
+            LOGGER.severe("Wrong Arguments. Example: hadoop jar kpicalculation-LocalBuild.jar inputPath outputPath");
+            System.exit(1);
+        }
+        
         Path inputPath = new Path(args[0]);
         Path outputPath = new Path(args[1] + "/aggregates");
         String timeFolder = "data." + Long.toString(new Date().getTime());

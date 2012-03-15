@@ -7,9 +7,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
-import es.tid.bdp.profile.data.ProfileProtocol.CategoryCount;
-import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
-import es.tid.bdp.profile.data.ProfileProtocol.UserProfile.Builder;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.CategoryCount;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.UserProfile;
 
 /**
  * Aggregates category counts into a user profile.
@@ -40,7 +39,7 @@ public class UserProfileReducer extends Reducer<BinaryKey,
                           Iterable<ProtobufWritable<CategoryCount>> counts,
                           Context context) throws IOException,
                                                   InterruptedException {
-        Builder profile = UserProfile.newBuilder()
+        UserProfile.Builder profile = UserProfile.newBuilder()
                                   .setUserId(userDateKey.getPrimaryKey())
                                   .setDate(userDateKey.getSecondaryKey());
 

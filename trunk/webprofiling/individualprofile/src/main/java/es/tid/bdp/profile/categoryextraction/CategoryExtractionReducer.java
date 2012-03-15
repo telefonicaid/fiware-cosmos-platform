@@ -9,11 +9,11 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
-import es.tid.bdp.profile.data.ProfileProtocol.CategoryInformation;
-import es.tid.bdp.profile.data.ProfileProtocol.UserNavigation;
 import es.tid.bdp.profile.dictionary.Categorization;
 import es.tid.bdp.profile.dictionary.Dictionary;
 import es.tid.bdp.profile.dictionary.comscore.DistributedCacheDictionary;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.CategoryInformation;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.UserNavigation;
 
 /*
  * Enum with the list of counters to use in the CategoryExtraction mapreduces.
@@ -37,7 +37,7 @@ public class CategoryExtractionReducer extends Reducer<BinaryKey,
     protected void setupDictionary(Context context) throws IOException {
         if (sharedDictionary == null) {
             sharedDictionary = DistributedCacheDictionary
-                    .loadFromCache(context);
+                    .loadFromCache(context.getConfiguration());
         }
     }
 

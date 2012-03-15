@@ -7,8 +7,8 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
-import es.tid.bdp.profile.data.ProfileProtocol.UserNavigation;
-import es.tid.bdp.profile.data.ProfileProtocol.WebProfilingLog;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.UserNavigation;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.WebProfilingLog;
 
 /**
  * Maps from <line_no, log_line> to <[visitorId, date], user_navigation>

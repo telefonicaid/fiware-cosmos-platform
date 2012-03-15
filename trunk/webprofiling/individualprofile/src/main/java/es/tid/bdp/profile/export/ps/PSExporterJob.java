@@ -11,8 +11,8 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
 import es.tid.bdp.profile.dictionary.comscore.DistributedCacheDictionary;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.UserProfile;
 
 /**
  * Export user profiles to mongodb

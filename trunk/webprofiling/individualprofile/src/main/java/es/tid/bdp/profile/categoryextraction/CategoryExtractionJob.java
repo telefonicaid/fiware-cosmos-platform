@@ -13,9 +13,9 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
-import es.tid.bdp.profile.data.ProfileProtocol.WebProfilingLog;
 import es.tid.bdp.profile.dictionary.comscore.DistributedCacheDictionary;
 import es.tid.bdp.profile.export.mongodb.MongoDBExporterJob;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.WebProfilingLog;
 
 /**
  *
@@ -36,11 +36,17 @@ public class CategoryExtractionJob extends Job {
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
     }
 
+    /**
+     * Use a LZO-compressed plain-text input.
+     */
     public void configureTextInput() {
         this.setInputFormatClass(LzoTextInputFormat.class);
         this.setMapperClass(TextCategoryExtractionMapper.class);
     }
 
+    /**
+     * Use a LZO-compressed base64-encoded protocol buffers input.
+     */
     public void configureProtobufInput() {
         this.setInputFormatClass(LzoProtobufB64LineInputFormat
                 .getInputFormatClass(WebProfilingLog.class,

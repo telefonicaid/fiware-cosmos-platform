@@ -8,8 +8,7 @@ import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.mapreduce.Job;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -58,5 +57,16 @@ public class DistributedCacheDictionaryTest {
                                        "patterns_to_categories.txt",
                                        "cat_subcat_map.txt"},
                 this.config.getStrings("comscore.dict.filenames"));
+    }
+
+    @Test
+    public void getCachedPathsTest() throws Exception {
+        DistributedCacheDictionary.cacheDictionary(this.job, "/base/path/",
+                new String[] { "a", "b", "c", "d" });
+        config.set(DistributedCache.CACHE_LOCALFILES, "/local/path/d,"
+                + "/local/path/b,/local/path/a,/local/path/c");
+        assertEquals(asList("/local/path/a", "/local/path/b", "/local/path/c",
+                "/local/path/d"), DistributedCacheDictionary.getCachedPaths(
+                config));
     }
 }

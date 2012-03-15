@@ -1,9 +1,12 @@
 package es.tid.bdp.profile.dictionary.comscore;
 
 import java.io.StringReader;
+
 import static org.junit.Assert.assertArrayEquals;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /**
  *
@@ -12,7 +15,10 @@ import org.junit.Test;
 public class CSPatternToCategoryMapTest {
     private CSPatternToCategoryMap instance;
     private StringReader input;
-    
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     @Before
     public void setUp() throws Exception {
         this.instance = new CSPatternToCategoryMap();
@@ -31,12 +37,21 @@ public class CSPatternToCategoryMapTest {
 
     @Test
     public void shouldFindKnownMapping() throws Exception {
-        assertArrayEquals(new long[]{ 778308l, 3322210l },
-                this.instance.getCategories(666285l));
+        assertArrayEquals(new long[]{ 778308L, 3322210L },
+                this.instance.getCategories(666285L));
     }
-    
-    @Test(expected=IllegalArgumentException.class)
+
+    @Test()
     public void shouldFailForUnknownPatterns() throws Exception {
-        this.instance.getCategories(555555l);
+        this.thrown.expect(IllegalArgumentException.class);
+        this.thrown.expectMessage("Unknown pattern ID: 555555");
+        this.instance.getCategories(555555L);
+    }
+
+    @Test()
+    public void shouldFailForOutOfRangePatterns() throws Exception {
+        this.thrown.expect(IllegalArgumentException.class);
+        this.thrown.expectMessage("Unable to cast value.");
+        this.instance.getCategories(100000000000L);
     }
 }

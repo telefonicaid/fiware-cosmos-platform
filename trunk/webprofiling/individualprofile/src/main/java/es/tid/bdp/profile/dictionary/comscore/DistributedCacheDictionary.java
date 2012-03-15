@@ -6,10 +6,12 @@ import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.Reducer.Context;
+
+import es.tid.bdp.profile.dictionary.Dictionary;
 
 /**
  *
@@ -42,11 +44,12 @@ public abstract class DistributedCacheDictionary {
     public static void cacheDictionary(Job job, String baseDirectory,
             String[] dictionaryNames) {
         DistributedCache.createSymlink(job.getConfiguration());
-        if (!baseDirectory.endsWith(File.separator)) {
-            baseDirectory += File.separator;
+        String prefix = baseDirectory;
+        if (!prefix.endsWith(File.separator)) {
+            prefix += File.separator;
         }
         for (String name : dictionaryNames) {
-            DistributedCache.addCacheFile(URI.create(baseDirectory + name),
+            DistributedCache.addCacheFile(URI.create(prefix + name),
                     job.getConfiguration());
         }
         job.getConfiguration().setStrings(DICTIONARY_NAMES, dictionaryNames);
@@ -77,11 +80,9 @@ public abstract class DistributedCacheDictionary {
      * @return        A dictionary
      * @throws IOException
      */
-    public static CSDictionary loadFromCache(Context context)
+    public static Dictionary loadFromCache(Configuration config)
             throws IOException {
-        String[] dictionaryNames = context.getConfiguration()
-                .getStrings(DICTIONARY_NAMES, DEFAULT_DICTIONARY_NAMES);
-        List<String> cachedFiles = getCachedPaths(context, dictionaryNames);
+        List<String> cachedFiles = getCachedPaths(config);
         CSDictionary dictionary = new CSDictionary(
                 cachedFiles.get(TERMS_PATH),
                 cachedFiles.get(DICTIONARY_PATH),
@@ -92,19 +93,20 @@ public abstract class DistributedCacheDictionary {
         return dictionary;
     }
 
-    public static List<String> getCachedPaths(Context context,
-            String[] fileNames) throws IOException {
+    public static List<String> getCachedPaths(Configuration config)
+            throws IOException {
+        String[] fileNames = config.getStrings(DICTIONARY_NAMES,
+                DEFAULT_DICTIONARY_NAMES);
         List<String> cachedPaths = new LinkedList<String>();
         for (String fileName : fileNames) {
-            cachedPaths.add(getCachedPath(context, fileName));
+            cachedPaths.add(getCachedPath(config, fileName));
         }
         return cachedPaths;
     }
 
-    private static String getCachedPath(Context context, String fileName)
+    private static String getCachedPath(Configuration config, String fileName)
             throws IOException {
-        for (Path path : DistributedCache.getLocalCacheFiles(
-                context.getConfiguration())) {
+        for (Path path : DistributedCache.getLocalCacheFiles(config)) {
             if (path.getName().equals(fileName)) {
                 return path.toString();
             }

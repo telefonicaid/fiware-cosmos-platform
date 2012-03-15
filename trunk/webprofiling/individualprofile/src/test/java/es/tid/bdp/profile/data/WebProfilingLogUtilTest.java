@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.bdp.profile.data.ProfileProtocol.WebProfilingLog;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.WebProfilingLog;
 
 /**
  * Test case for WebProfilingLogUtil
@@ -13,12 +13,12 @@ import es.tid.bdp.profile.data.ProfileProtocol.WebProfilingLog;
  */
 public class WebProfilingLogUtilTest {
     private WebProfilingLogUtil instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new WebProfilingLogUtil();
     }
-    
+
     @Test
     public void testCreate() {
         WebProfilingLog log = WebProfilingLogUtil.create(

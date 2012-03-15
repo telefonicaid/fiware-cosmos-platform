@@ -16,8 +16,11 @@ import es.tid.bdp.profile.dictionary.Dictionary;
  * @author dmicol, sortega
  */
 public class CSDictionary implements Dictionary {
+    private static Class<? extends NativeCSDictionary>
+            dictionaryInterfaceClass = CSDictionaryJNIInterface.class;
+
     private boolean isInitialized;
-    private CSDictionaryJNIInterface dictionary;
+    private NativeCSDictionary dictionary;
     private CSPatternToCategoryMap patternToCategoryMap;
     private CSCategoryIdToNameMap categoryIdToNameMap;
     private final String[] nativeLibraries;
@@ -26,6 +29,11 @@ public class CSDictionary implements Dictionary {
     private final String dictionaryFileName;
     private final String categoryPatternMappingFileName;
     private final String categoryNamesFileName;
+
+    public static void setNativeInterfaceClass(Class<? extends
+            NativeCSDictionary> clazz) {
+        dictionaryInterfaceClass = clazz;
+    }
 
     public CSDictionary(String termsFileName,
             String dictionaryFileName,
@@ -45,16 +53,19 @@ public class CSDictionary implements Dictionary {
         if (this.isInitialized) {
             return;
         }
-
-        for (String nativeLibrary : this.nativeLibraries) {
-            System.load(nativeLibrary);
+        try {
+            for (String nativeLibrary : this.nativeLibraries) {
+                System.load(nativeLibrary);
+            }
+            this.dictionary = dictionaryInterfaceClass.newInstance();
+        } catch (Exception ex) {
+            throw new IllegalStateException("Misconfigured native dictionary "
+                    + "interface", ex);
         }
-
-        this.dictionary = new CSDictionaryJNIInterface();
-        this.dictionary.loadCSDictionary(1, termsFileName,
-                dictionaryFileName);
-        this.loadCategoryPatternMapping(categoryPatternMappingFileName);
-        this.loadCategoryNames(categoryNamesFileName);
+        this.dictionary.loadCSDictionary(NativeCSDictionary.DEFAULT_MODE,
+                this.termsFileName, this.dictionaryFileName);
+        this.loadCategoryPatternMapping(this.categoryPatternMappingFileName);
+        this.loadCategoryNames(this.categoryNamesFileName);
         this.isInitialized = true;
     }
 

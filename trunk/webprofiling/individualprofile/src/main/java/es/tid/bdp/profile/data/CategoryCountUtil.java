@@ -2,7 +2,8 @@ package es.tid.bdp.profile.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
-import es.tid.bdp.profile.data.ProfileProtocol.CategoryCount;
+import es.tid.bdp.profile.generated.data.ProfileProtocol;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.CategoryCount;
 
 /**
  * Construction utils for CategoryCount
@@ -12,7 +13,7 @@ import es.tid.bdp.profile.data.ProfileProtocol.CategoryCount;
 public class CategoryCountUtil {
     protected CategoryCountUtil() {
     }
-    
+
     public static CategoryCount create(String name, long count) {
         return ProfileProtocol.CategoryCount
                 .newBuilder()

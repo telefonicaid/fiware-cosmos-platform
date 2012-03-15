@@ -7,10 +7,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
-import es.tid.bdp.profile.data.ProfileProtocol.UserNavigation;
-import es.tid.bdp.profile.data.ProfileProtocol.WebProfilingLog;
 import es.tid.bdp.profile.data.UserNavigationUtil;
 import es.tid.bdp.profile.data.WebProfilingLogUtil;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.UserNavigation;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.WebProfilingLog;
 
 /**
  * Test case for ProtobufCategoryExtractionMapper

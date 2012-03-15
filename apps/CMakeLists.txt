@@ -1,6 +1,7 @@
 #
 # Command line tools that do not use QT or KDChart
 #
+ADD_SUBDIRECTORY(samsonLocal)
 ADD_SUBDIRECTORY(samsonSetup)
 ADD_SUBDIRECTORY(samsonWorker)
 ADD_SUBDIRECTORY(delilah)
@@ -27,7 +28,6 @@ endif (HAVE_GTEST)
 if (HAVE_QT)
     if (HAVE_KDCHART)
         ADD_SUBDIRECTORY(delilah_graph)
-        ADD_SUBDIRECTORY(samsonLocal)
         #ADD_SUBDIRECTORY(delilahQt)
         #ADD_SUBDIRECTORY(samsonLevelMonitor)
     endif (HAVE_KDCHART)

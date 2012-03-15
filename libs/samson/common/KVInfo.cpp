@@ -96,11 +96,12 @@ namespace samson
     // Create the vector of KVInfo from block data    
     KVInfo* createKVInfoVector( char* _data , au::ErrorManager *error )
     {
+        
         KVHeader * header = (KVHeader*) _data;
         char *data = _data + sizeof(KVHeader);
         
         Data* key_data = ModulesManager::shared()->getData( header->keyFormat );
-        Data* value_data = ModulesManager::shared()->getData( header->keyFormat );
+        Data* value_data = ModulesManager::shared()->getData( header->valueFormat );
         
         if( !key_data )
         {
@@ -153,6 +154,15 @@ namespace samson
             previous_hg = hg;
         }
         
+        
+        // Check with header
+        KVInfo total_info;
+        total_info.clear();
+        for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++ )
+            total_info.append( info[hg] );
+        
+        if( ( total_info.size != header->info.size ) || ( total_info.kvs != header->info.kvs ))
+            LM_W(("Error creating KVInfo vector. %s != %s\n" , total_info.str().c_str() , header->info.str().c_str()  ));
         
         return info;
         

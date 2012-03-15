@@ -50,15 +50,68 @@ namespace webp{
 			  // Only interested in the value
 			  log.parse(inputs[0].kvs[i]->value );
 
+			  // get domain
+			  std::string domain  = "no_domain";
+			  size_t pos = log.url.value.find("/");
+			  if( pos == std::string::npos )
+				 domain = log.url.value;
+			  else
+				 domain = log.url.value.substr(0,pos);
 
+			  // Top categories
+              // ------------------------------------------------------------------------------------------
+              for ( int c = 0; c < log.categories_length ; c++ )
+              {
+				 output_key.value = "top_categories";
+				 output_key.value.append(" ");
+				 output_key.value.append( log.categories[c].get_name() );
+				 
+				 writer->emit(0, &output_key , &output_value );
+			  }
+
+
+			  // Top users
+              // ------------------------------------------------------------------------------------------
+			  output_key.value = "top_users";
+			  output_key.value.append(" ");
+			  output_key.value.append( log.user.value );
+			  
+			  writer->emit(0, &output_key , &output_value );
+
+
+			  // Categories per user
+              // ------------------------------------------------------------------------------------------
 			  for ( int c = 0; c < log.categories_length ; c++ )
 			  {
-				 output_key.value = log.user.value;
+				 output_key.value = "top_categories_per_user_";
+				 output_key.value.append( log.user.value );
 				 output_key.value.append(" ");
 				 output_key.value.append( log.categories[c].get_name() );
 
 				 writer->emit(0, &output_key , &output_value );
 			  }
+
+			  // Domains  per user
+              // ------------------------------------------------------------------------------------------
+			  output_key.value = "top_domains_per_user_";
+			  output_key.value.append( log.user.value );
+			  output_key.value.append(" ");
+			  output_key.value.append( domain );
+			  
+			  writer->emit(0, &output_key , &output_value );
+
+
+			  // Domains per category
+              // ------------------------------------------------------------------------------------------
+              for ( int c = 0; c < log.categories_length ; c++ )
+              {
+                 output_key.value = "top_domains_per_category_";
+                 output_key.value.append( log.categories[c].get_name() );
+                 output_key.value.append(" ");
+                 output_key.value.append( domain );
+
+                 writer->emit(0, &output_key , &output_value );
+              }
 
 		   }
 

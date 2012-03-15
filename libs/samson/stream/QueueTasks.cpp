@@ -374,6 +374,7 @@ namespace samson {
             
             void insertInputBlocks( Block *block , int channel )
             {
+
                 if ( ( channel < 0 ) || ( channel > ( operation->getNumInputs() - 1 ) ) )
                     LM_X(1,("Internal error"));
                 
@@ -424,7 +425,9 @@ namespace samson {
                                         );
                 }
                 
-                return input_num_kvs + state_num_kvs;
+                size_t total_kvs = input_num_kvs + state_num_kvs;
+                return total_kvs;
+
             }                
             
             
@@ -486,6 +489,7 @@ namespace samson {
         
         void ReduceQueueTask::generateKeyValues( KVWriter *writer )
         {
+            
             BlockInfo block_info;
             update( block_info );
             
@@ -512,6 +516,7 @@ namespace samson {
             {
                 BlockList* list = getBlockList( au::str("input_%d", i) );
                 std::list< Block* >::iterator b;
+                
                 
                 for ( b = list->blocks.begin() ; b != list->blocks.end() ; b++)
                     if( update_state_mode && i == (operation->getNumInputs()-1) )

@@ -1226,7 +1226,7 @@ typedef struct LogLineInfo
             stream::BlockList init_list("defrag_block_list");
             init_list.copyFrom( queue->list );
             
-            size_t input_operation_size = SamsonSetup::shared()->getUInt64("general.memory") / 2;
+            size_t input_operation_size = SamsonSetup::shared()->getUInt64("general.memory") / 3;
             
             size_t num_defrag_blocks = init_list.getBlockInfo().size / input_operation_size;
             if( num_defrag_blocks == 0)

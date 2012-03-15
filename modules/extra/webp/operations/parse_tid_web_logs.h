@@ -63,6 +63,7 @@ namespace webp{
 		   const char* server = words[3];
 		   const char* path = words[6];
 
+		   log.user.value = user.value;
 		   log.url.value = au::str("%s%s" , server , path);
 		   log.time.value = atoll( words[0] ); // convert directly to a time value
 

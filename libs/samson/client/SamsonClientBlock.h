@@ -15,7 +15,6 @@ namespace  samson
         samson::KVHeader *header;
         samson::KVFormat format;           // Format 
         
-        KVInfo *info;                      // Info vector
         
         au::ErrorManager error;            // Error message
         
@@ -35,7 +34,6 @@ namespace  samson
             if( !header->check() )
             {
                 error.set("Header check failed");
-                info = NULL;
                 return;
             }
             
@@ -47,14 +45,12 @@ namespace  samson
             if ( format.isTxt() )
             {
                 expected_size =   (size_t)( sizeof(samson::KVHeader)  + header->info.size );
-                info = NULL;
                 data = buffer->getData() + sizeof(samson::KVHeader);
             }
             else
             {
-                expected_size =   (size_t)( sizeof(samson::KVHeader) + (sizeof(samson::KVInfo)*KVFILE_NUM_HASHGROUPS) + header->info.size ) ;           
-                info = (KVInfo*) buffer->getData() + sizeof(samson::KVHeader);
-                data = buffer->getData() + sizeof(samson::KVHeader) + ( sizeof(samson::KVInfo)*KVFILE_NUM_HASHGROUPS );
+                expected_size =   (size_t)( sizeof(samson::KVHeader) + header->info.size ) ;           
+                data = buffer->getData() + sizeof(samson::KVHeader);
             }
             
             if( expected_size != buffer->getSize() )

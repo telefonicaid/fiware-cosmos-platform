@@ -67,6 +67,8 @@ namespace samson {
             
         public:
 
+            au::ErrorManager error;
+
             BlockLookupList( Block* _block );
             ~BlockLookupList();
             

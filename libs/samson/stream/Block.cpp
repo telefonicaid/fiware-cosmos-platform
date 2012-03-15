@@ -34,6 +34,15 @@ namespace samson {
         
         BlockLookupList::BlockLookupList( Block* block )
         {
+            // Vector of KVInfo per hash-group
+            KVInfo* kvInfoV  = createKVInfoVector(block->getData(), &error);
+            if( !kvInfoV )
+            {
+                head = NULL;
+                hashInfo = NULL;
+                return;
+            }
+            
             LM_T(LmtRest, ("Creating lookup list"));
             
             // Store format locally
@@ -57,8 +66,7 @@ namespace samson {
             unsigned int  kvIx;
             unsigned int  offset              = 0;
             unsigned int  noOfKvs             = 0;
-            KVInfo*       kvInfoV             = (KVInfo*) (block->getData() + sizeof(KVHeader)); 
-            char*         kvsStart            = block->getData() + sizeof(KVHeader) + sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
+            char*         kvsStart            = block->getData() + sizeof(KVHeader);
             Data*         keyData             = ModulesManager::shared()->getData(kvFormat.keyFormat);
             Data*         valueData           = ModulesManager::shared()->getData(kvFormat.valueFormat);
             DataInstance* keyDataInstance     = (DataInstance*) keyData->getInstance();
@@ -109,6 +117,10 @@ namespace samson {
             
             LM_T(LmtRest, ("lookup list created"));
             // semGive();
+            
+            
+            if( kvInfoV ) 
+                free(kvInfoV);
         }
         
         BlockLookupList::~BlockLookupList()
@@ -165,7 +177,7 @@ namespace samson {
                         testIx = (endIx - startIx) / 2 + startIx;
                         
                         if (startIx > endIx) // Not found
-                            return NULL;
+                            return au::xml_simple("error", au::str("Key %s not found" , key));
             }
         }
         
@@ -785,7 +797,18 @@ namespace samson {
             // We should check if the block can be locked in memory...
             
             if( !lookupList )
+            {
                 lookupList = new BlockLookupList( this );
+                
+                // Detect error during creating
+                if( lookupList->error.isActivated() )
+                {
+                    LM_W(("Error creating BlockLookupList (%s)" , lookupList->error.getMessage().c_str()));
+                    delete lookupList;
+                    lookupList = NULL;
+                    return au::xml_simple("error", "Error creating BlockLookupList");
+                }
+            }
             
             return lookupList->loopup( key );
         }

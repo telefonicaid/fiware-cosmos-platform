@@ -2,6 +2,7 @@ package es.tid.bdp.profile.export.ps;
 
 import java.io.IOException;
 
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
@@ -12,7 +13,6 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.bdp.profile.dictionary.comscore.DistributedCacheDictionary;
-import es.tid.bdp.profile.generated.data.ProfileProtocol.UserProfile;
 
 /**
  * Export user profiles to mongodb
@@ -26,7 +26,7 @@ public class PSExporterJob extends Job {
         super(conf, JOB_NAME);
         this.setJarByClass(PSExporterJob.class);
         this.setMapOutputKeyClass(Text.class);
-        this.setMapOutputValueClass(UserProfile.class);
+        this.setMapOutputValueClass(ProtobufWritable.class);
         this.setReducerClass(PSExporterReducer.class);
         this.setNumReduceTasks(1);
         this.setOutputKeyClass(NullWritable.class);

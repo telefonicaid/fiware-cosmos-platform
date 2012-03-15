@@ -62,8 +62,9 @@ public class KpiMain extends Configured implements Tool {
             InterruptedException {
         if (args.length != 2) {
             LOGGER.setLevel(Level.ALL);
-            LOGGER.severe("Wrong Arguments. Example: hadoop jar kpicalculation-LocalBuild.jar inputPath outputPath");
-            System.exit(1);
+            LOGGER.severe("Wrong Arguments. Example: hadoop jar "
+                    + "kpicalculation-LocalBuild.jar inputPath outputPath");
+            return 1;
         }
         
         Path inputPath = new Path(args[0]);

@@ -45,8 +45,8 @@ public abstract class DistributedCacheDictionary {
             String[] dictionaryNames) {
         DistributedCache.createSymlink(job.getConfiguration());
         String prefix = baseDirectory;
-        if (!prefix.endsWith(File.separator)) {
-            prefix += File.separator;
+        if (!prefix.endsWith("/")) {
+            prefix += '/';
         }
         for (String name : dictionaryNames) {
             DistributedCache.addCacheFile(URI.create(prefix + name),

@@ -412,6 +412,8 @@ static char* toUTF8(char* in, size_t* outLenP)
         std::ostringstream header;
         std::ostringstream data;
 
+        unsigned short int http_state = 200;  // be optimistic and assume all is ok :)
+
         LM_T(LmtRest, ("Incoming REST request"));
         
         data << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n";
@@ -423,7 +425,10 @@ static char* toUTF8(char* in, size_t* outLenP)
         std::vector<std::string> path_components = au::split( in , '/' );
 
         if ((path_components.size() < 2) || (path_components[0] != "samson"))
+        {
             au::xml_simple(data, "message", "Error. Only /samson/path requests are valid" );
+            http_state = 400;
+        }
         else if (path_components[1] == "version")
             au::xml_simple(data, "version", au::str("SAMSON v %s" , SAMSON_VERSION ) );
         else if (path_components[1] == "utftest")
@@ -445,137 +450,233 @@ static char* toUTF8(char* in, size_t* outLenP)
         else if( path_components[1] == "state" )
         {
             if( path_components.size() < 4 )
+            {
                 au::xml_simple(data, "message", au::str("Error: format /samson/state/queue/key" ) );
+                http_state = 400;
+                    
+            }
             else
                 data << streamManager->getState( path_components[2] , path_components[3].c_str() );
             
         }
+        else if( path_components[1] == "queue" )   // /samson/queue....
+        {
+            if ( path_components[3] == "key" )
+            {
+                if( path_components.size() < 4 )
+                {
+                    au::xml_simple(data, "message", au::str("Error: format /samson/queue/<queue_name>/<key>" ) );
+                    http_state = 400;
+                }
+                else
+                    data << streamManager->getState( path_components[2] , path_components[3].c_str() );
+            }
+        }
         else if( path_components[1] == "cluster" )
             network->getInfo( data , "cluster" );
-        else if (path_components[1] == "readsOn")
+        else if (path_components[1] == "logging" )
         {
-            au::xml_simple(data, "reads", au::str("reads turned ON"));
-            lmReads = true;
-        }
-        else if (path_components[1] == "readsOff")
-        {
-            au::xml_simple(data, "reads", au::str("reads turned OFF"));
-            lmReads = false;
-        }
-        else if (path_components[1] == "writesOn")
-        {
-            au::xml_simple(data, "writes", au::str("writes turned ON"));
-            lmWrites = true;
-        }
-        else if (path_components[1] == "writesOff")
-        {
-            au::xml_simple(data, "writes", au::str("writes turned OFF"));
-            lmWrites = false;
-        }
-        else if (path_components[1] == "traceSet")
-        {
-            if (path_components.size() < 3)
-                au::xml_simple(data, "message", au::str("Error: format /samson/traceSet/<list of trace level ranges>" ) );
-            else
+            if (path_components[2] == "reads")
             {
-                lmTraceSet((char*) path_components[2].c_str());
-                au::xml_simple(data, "traceLevels", au::str(path_components[2].c_str()));
-                LM_M(("Changed tracelevels to '%s'", path_components[2].c_str()));
+                if ( path_components[3] == "on" )
+                {
+                    au::xml_simple(data, "reads", au::str("reads turned ON"));
+                    lmReads = true;
+                }
+                else if ( path_components[3] == "off" )
+                {
+                    au::xml_simple(data, "reads", au::str("reads turned OFF"));
+                    lmReads = false;
+                }
+                else
+                {
+                    au::xml_simple(data, "message", au::str("Error: unknown state for /samson/logging/reads" ) );
+                    http_state = 400;
+                }
             }
-        }
-        else if (path_components[1] == "traceGet")
-        {
-            char traceLevels[1024];
-            lmTraceGet(traceLevels);
-            au::xml_simple(data, "message", au::str("Tracelevels: '%s'", traceLevels));
-        }
-        else if (path_components[1] == "traceOff")
-        {
-            lmTraceSet(NULL);
-            LM_M(("Turned all trace levels off"));
-            au::xml_simple(data, "traceLevels", au::str("all trace levels turned off"));
-        }
-        else if (path_components[1] == "traceAdd")
-        {
-            if (path_components.size() < 3)
-                au::xml_simple(data, "message", au::str("Error: format /samson/traceAdd/<list of trace level ranges>" ) );
-            else
+            else if (path_components[2] == "writes")
             {
-                lmTraceAdd((char*) path_components[2].c_str());
-                LM_M(("Added tracelevel '%s'", path_components[2].c_str()));
-                au::xml_simple(data, "traceLevels", au::str("added level(s) %s",  path_components[2].c_str()));
+                if ( path_components[3] == "on" )
+                {
+                    au::xml_simple(data, "writes", au::str("writes turned ON"));
+                    lmWrites = true;
+                }
+                else if ( path_components[3] == "off" )
+                {
+                    au::xml_simple(data, "writes", au::str("writes turned OFF"));
+                    lmWrites = false;
+                    lmReads = false;
+                }
+                else
+                {
+                    au::xml_simple(data, "message", au::str("Error: unknown state for /samson/logging/writes" ) );
+                    http_state = 400;
+                }
             }
-        }
-        else if (path_components[1] == "traceDel")
-        {
-            if (path_components.size() < 3)
-                au::xml_simple(data, "message", au::str("Error: format /samson/traceDel/<list of trace level ranges>" ) );
-            else
+            else if (path_components[2] == "trace")  // /samson/logging/trace/set/xxxx
             {
-                lmTraceSub((char*) path_components[2].c_str());
-                LM_M(("Removed tracelevel '%s'", path_components[2].c_str()));
-                au::xml_simple(data, "traceLevels", au::str("removed level(s) %s",  path_components[2].c_str()));
-            }
-        }
-        else if (path_components[1] == "verboseOff")
-        {
-            lmVerbose  = false;
-            lmVerbose2 = false;
-            lmVerbose3 = false;
-            lmVerbose4 = false;
-            lmVerbose5 = false;
+                if ( path_components[3] == "set" )
+                {   
+                    if ( path_components.size() != 5 )
+                    {
+                        au::xml_simple(data, "message", au::str("Error: format /samson/logging/trace/set/<list of trace level ranges>" ) );
+                        http_state = 400;
+                    }
+                    else
+                    {
+                        lmTraceSet((char*) path_components[5].c_str());
+                        au::xml_simple(data, "traceLevels", au::str(path_components[5].c_str()));
+                        LM_M(("Changed tracelevels to '%s'", path_components[5].c_str()));
+                    }
+                }
+                else if ( path_components[3] == "get" )
+                {
+                    char traceLevels[1024];
+                    lmTraceGet(traceLevels);
+                    au::xml_simple(data, "message", au::str("Tracelevels: '%s'", traceLevels));
+                }
+                else if (path_components[3] == "off")
+                {
+                    lmTraceSet(NULL);
+                    LM_M(("Turned all trace levels off"));
+                    au::xml_simple(data, "traceLevels", au::str("all trace levels turned off"));
+                }
+                else if (path_components[3] == "add")
+                {
+                    if ( path_components.size() != 5 )
+                    {
+                        au::xml_simple(data, "message", au::str("Error: format /samson/logging/trace/add/<list of trace level ranges>" ) );
+                        http_state = 400;
+                    }
+                    else
+                    {
+                        lmTraceAdd((char*) path_components[2].c_str());
+                        LM_M(("Added tracelevel '%s'", path_components[2].c_str()));
+                        au::xml_simple(data, "traceLevels", au::str("added level(s) %s",  path_components[2].c_str()));
+                    }
+                }
+                else if (path_components[3] == "del")
+                {
+                    if ( path_components.size() != 5 )
+                    {
+                        au::xml_simple(data, "message", au::str("Error: format /samson/logging/trace/del/<list of trace level ranges>" ) );
+                        http_state = 400;
+                    }
+                    else
+                    {
+                        lmTraceSub((char*) path_components[2].c_str());
+                        LM_M(("Removed tracelevel '%s'", path_components[2].c_str()));
+                        au::xml_simple(data, "traceLevels", au::str("removed level(s) %s",  path_components[2].c_str()));
+                    }
+                }
+                else if ( path_components[3] == "verbose" )  // /samson/logging/trace/verbose
+                {
+                    if ( path_components[4] == "off" || path_components[4] == "0" ) 
+                    {
+                        lmVerbose  = false;
+                        lmVerbose2 = false;
+                        lmVerbose3 = false;
+                        lmVerbose4 = false;
+                        lmVerbose5 = false;
 
-            LM_M(("Turned all verbose levels off"));
-            au::xml_simple(data, "verbose", au::str("all verbose levels OFF"));
-        }
-        else if (path_components[1] == "verbose")
-        {
-            lmVerbose  = true;
-            LM_M(("Turned on verbose level 1"));
-            au::xml_simple(data, "verbose", au::str("verbose level 1 SET"));
-        }
-        else if (path_components[1] == "verbose2")
-        {
-            lmVerbose   = true;
-            lmVerbose2  = true;
-            LM_M(("Turned on verbose levels 1-2"));
-            au::xml_simple(data, "verbose", au::str("verbose levels 1-2 SET"));
-        }
-        else if (path_components[1] == "verbose3")
-        {
-            lmVerbose   = true;
-            lmVerbose2  = true;
-            lmVerbose3  = true;
-            LM_M(("Turned on verbose levels 1-3"));
-            au::xml_simple(data, "verbose", au::str("verbose levels 1-3 SET"));
-        }
-        else if (path_components[1] == "verbose4")
-        {
-            lmVerbose   = true;
-            lmVerbose2  = true;
-            lmVerbose3  = true;
-            lmVerbose4  = true;
-            LM_M(("Turned on verbose levels 1-4"));
-            au::xml_simple(data, "verbose", au::str("verbose levels 1-4 SET"));
-        }
-        else if (path_components[1] == "verbose5")
-        {
-            lmVerbose   = true;
-            lmVerbose2  = true;
-            lmVerbose3  = true;
-            lmVerbose4  = true;
-            lmVerbose5  = true;
-            LM_M(("Turned all verbose levels on"));
-            au::xml_simple(data, "verbose", au::str("verbose levels 1-5 SET"));
+                        LM_M(("Turned all verbose levels off"));
+                        au::xml_simple(data, "verbose", au::str("all verbose levels OFF"));
+                    }
+                    else if (path_components[4] == "1")
+                    {
+                        lmVerbose  = true;
+                        LM_M(("Turned on verbose level 1"));
+                        au::xml_simple(data, "verbose", au::str("verbose level 1 SET"));
+                    }
+                    else if (path_components[4] == "2")
+                    {
+                        lmVerbose   = true;
+                        lmVerbose2  = true;
+                        LM_M(("Turned on verbose levels 1-2"));
+                        au::xml_simple(data, "verbose", au::str("verbose levels 1-2 SET"));
+                    }
+                    else if (path_components[4] == "3")
+                    {
+                        lmVerbose   = true;
+                        lmVerbose2  = true;
+                        lmVerbose3  = true;
+                        LM_M(("Turned on verbose levels 1-3"));
+                        au::xml_simple(data, "verbose", au::str("verbose levels 1-3 SET"));
+                    }
+                    else if (path_components[4] == "4")
+                    {
+                        lmVerbose   = true;
+                        lmVerbose2  = true;
+                        lmVerbose3  = true;
+                        lmVerbose4  = true;
+                        LM_M(("Turned on verbose levels 1-4"));
+                        au::xml_simple(data, "verbose", au::str("verbose levels 1-4 SET"));
+                    }
+                    else if (path_components[4] == "5")
+                    {
+                        lmVerbose   = true;
+                        lmVerbose2  = true;
+                        lmVerbose3  = true;
+                        lmVerbose4  = true;
+                        lmVerbose5  = true;
+                        LM_M(("Turned all verbose levels on"));
+                        au::xml_simple(data, "verbose", au::str("verbose levels 1-5 SET"));
+                    }
+                    else
+                    {
+                        au::xml_simple(data, "message", au::str("Error: Unknown verbose trace level  '%s'\n" , path_components[4].c_str() ) );
+                        http_state = 400;
+                    }
+                }
+                else
+                {
+                    if ( path_components.size() > 2 )
+                    {
+                        au::xml_simple(data, "message", au::str("Error: Unknown trace option '%s'\n" , path_components[3].c_str() ) );
+                    }
+                    else
+                    {
+                        au::xml_simple(data, "message", au::str("Error: incomplete trace URI") );
+                    }
+                    http_state = 400;
+                }
+            }
+            else
+            {
+                if ( path_components.size() > 2 )
+                {
+                    au::xml_simple(data, "message", au::str("Error: Unknown logging option '%s'\n" , path_components[2].c_str() ) );
+                }
+                else
+                {
+                    au::xml_simple(data, "message", au::str("Error: incomplete logging URI") );
+                }
+                http_state = 400;
+            }
         }
         else
+        {
             au::xml_simple(data, "message", au::str("Error: Unknown path component '%s'\n" , path_components[1].c_str() ) );
+            http_state = 404;
+        }
 
         data << "\r\n</samson>";
         
         int dataLen = data.str().length();
 
-        header << "HTTP/1.1 200 OK\r\n";
+        // Send the correct HTTP status code
+        switch (http_state)
+        {
+            case 200:
+                header << "HTTP/1.1 200 OK\r\n";
+                break;
+            case 400:
+                header << "HTTP/1.1 400 Bad Request\r\n";
+                break;
+            default:
+                header << "HTTP/1.1 Bad Request \r\n"; 
+                break;
+        }
         header << "Content-Type:   \"application/xml; charset=utf-8\"\r\n";
         header << "Content-Length: " << dataLen << "\r\n";
         header << "\r\n";

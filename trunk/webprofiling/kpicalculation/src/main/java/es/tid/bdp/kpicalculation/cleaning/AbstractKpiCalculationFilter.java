@@ -20,9 +20,9 @@ public abstract class AbstractKpiCalculationFilter implements
     protected void init(Configuration conf, String configParameter,
             String regularExpression) {
         String forbiddenPattern = setPattern(regularExpression,
-                conf.get(configParameter));
+                                             conf.get(configParameter));
         this.pattern = Pattern.compile(forbiddenPattern,
-                Pattern.CASE_INSENSITIVE);
+                                       Pattern.CASE_INSENSITIVE);
     }
 
     @Override
@@ -52,7 +52,7 @@ public abstract class AbstractKpiCalculationFilter implements
     }
 
     protected Pattern getPattern() {
-        return pattern;
+        return this.pattern;
     }
 
     protected void setPattern(Pattern pattern) {
@@ -60,7 +60,7 @@ public abstract class AbstractKpiCalculationFilter implements
     }
 
     protected Matcher getMatcher() {
-        return matcher;
+        return this.matcher;
     }
 
     protected void setMatcher(Matcher matcher) {

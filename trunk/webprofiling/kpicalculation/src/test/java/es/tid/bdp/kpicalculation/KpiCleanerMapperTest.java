@@ -3,25 +3,20 @@ package es.tid.bdp.kpicalculation;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import junit.framework.TestCase;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import static org.apache.hadoop.mrunit.testutil.ExtendedAssert.assertListEquals;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.types.Pair;
-
 import org.junit.Before;
 import org.junit.Test;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-
-import es.tid.bdp.kpicalculation.KpiCleanerMapper;
-import es.tid.bdp.kpicalculation.KpiCleanerMapper;
 import es.tid.bdp.kpicalculation.data.KpiCalculationCounter;
 import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol;
 import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
-
-import junit.framework.TestCase;
 
 /**
  * Test case for KpiCleanerMapper
@@ -31,9 +26,10 @@ import junit.framework.TestCase;
 public class KpiCleanerMapperTest extends TestCase {
 
     private KpiCleanerMapper mapper;
-    private MapDriver<LongWritable, Text, NullWritable, ProtobufWritable<KpiCalculationProtocol.WebProfilingLog>> driver;
+    private MapDriver<LongWritable, Text, NullWritable,
+                      ProtobufWritable<WebProfilingLog>> driver;
 
-    private ProtobufWritable<KpiCalculationProtocol.WebProfilingLog> outputPage;
+    private ProtobufWritable<WebProfilingLog> outputPage;
     private WebProfilingLog.Builder builder;
 
     @Before

@@ -27,14 +27,14 @@ public class KpiCounterByReducerTest extends TestCase {
 
     @Before
     public void setUp() {
-        reducer = new KpiCounterByReducer();
-        driver = new ReduceDriver<BinaryKey, IntWritable, Text, IntWritable>(
-                reducer);
+        this.reducer = new KpiCounterByReducer();
+        this.driver = new ReduceDriver<BinaryKey, IntWritable, Text,
+                                       IntWritable>(this.reducer);
 
-        driver.getConfiguration().setStrings("kpi.aggregation.fields",
-                "protocol,urlDomain");
-        driver.getConfiguration().setStrings("kpi.aggregation.group",
-                "visitorId");
+        this.driver.getConfiguration().setStrings("kpi.aggregation.fields",
+                                                  "protocol,urlDomain");
+        this.driver.getConfiguration().setStrings("kpi.aggregation.group",
+                                                  "visitorId");
     }
 
     @Test
@@ -49,9 +49,10 @@ public class KpiCounterByReducerTest extends TestCase {
         values.add(new IntWritable(4));
 
         List<Pair<Text, IntWritable>> out = null;
-        out = driver.withInputKey(key).withInputValues(values).run();
+        out = this.driver.withInputKey(key).withInputValues(values).run();
 
-        List<Pair<Text, IntWritable>> expected = new ArrayList<Pair<Text, IntWritable>>();
+        List<Pair<Text, IntWritable>> expected =
+                new ArrayList<Pair<Text, IntWritable>>();
         expected.add(new Pair<Text, IntWritable>(new Text("http\ttid.es"),
                 new IntWritable(1)));
 

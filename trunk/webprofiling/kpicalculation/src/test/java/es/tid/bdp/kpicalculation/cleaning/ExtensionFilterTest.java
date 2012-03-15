@@ -1,8 +1,5 @@
 package es.tid.bdp.kpicalculation.cleaning;
 
-import es.tid.bdp.kpicalculation.cleaning.ExtensionFilter;
-import es.tid.bdp.kpicalculation.cleaning.IKpiCalculationFilter;
-import es.tid.bdp.kpicalculation.cleaning.KpiCalculationFilterException;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
@@ -17,9 +14,9 @@ public class ExtensionFilterTest extends TestCase {
 
     @Before
     protected void setUp() {
-        conf = new Configuration();
-        conf.addResource("kpi-filtering.xml");
-        filter = new ExtensionFilter(conf);
+        this.conf = new Configuration();
+        this.conf.addResource("kpi-filtering.xml");
+        this.filter = new ExtensionFilter(this.conf);
     }
 
     /**
@@ -29,10 +26,8 @@ public class ExtensionFilterTest extends TestCase {
      */
     @Test
     public void testFilterForbiddenExtension() {
-        String input = "http://www.tid.es/foto.jpg";
-
         try {
-            filter.filter(input);
+            this.filter.filter("http://www.tid.es/foto.jpg");
             fail("A forbidden extension is passing the filter");
         } catch (KpiCalculationFilterException ex) {
             assertEquals("The URL provided has a forbidden extension",
@@ -49,8 +44,6 @@ public class ExtensionFilterTest extends TestCase {
      */
     @Test
     public void testFilterAllowedExtension() throws Exception {
-        String input = "http://www.tid.es/music.mp3";
-
-        filter.filter(input);
+        this.filter.filter("http://www.tid.es/music.mp3");
     }
 }

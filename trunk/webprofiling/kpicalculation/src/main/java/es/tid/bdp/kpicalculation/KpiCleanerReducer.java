@@ -13,7 +13,7 @@ import org.apache.hadoop.mapreduce.Reducer;
  */
 public class KpiCleanerReducer extends
         Reducer<LongWritable, Text, NullWritable, Text> {
-
+    @Override
     protected void reduce(LongWritable key, Iterable<Text> values,
             Context context) throws IOException, InterruptedException {
         context.write(NullWritable.get(), values.iterator().next());

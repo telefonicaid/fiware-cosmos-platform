@@ -16,7 +16,6 @@ public interface IKpiCalculationFilter {
      * 
      * @param url
      *            url the filter will be applied to.
-     * 
      */
     void filter(String url);
 }

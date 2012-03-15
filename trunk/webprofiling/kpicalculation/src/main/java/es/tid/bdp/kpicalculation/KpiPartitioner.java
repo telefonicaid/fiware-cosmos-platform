@@ -34,7 +34,8 @@ public class KpiPartitioner extends Partitioner<CompositeKey, IntWritable> {
      * @return the partition number for the <code>key</code>.
      */
     @Override
-    public int getPartition(CompositeKey key, IntWritable value, int numPartitions) {
+    public int getPartition(CompositeKey key, IntWritable value,
+                            int numPartitions) {
         return Math.abs(key.get(0).hashCode() * HASH_CODE_FACTOR)
                 % numPartitions;
     }

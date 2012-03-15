@@ -32,7 +32,7 @@ public class KpiGenericMapperTest {
     private WebProfilingLog.Builder builder;
 
     @Before
-    protected void setUp() {
+    public void setUp() {
         this.mapper = new KpiGenericMapper();
         this.driver = new MapDriver<LongWritable,
                                     ProtobufWritable<WebProfilingLog>,

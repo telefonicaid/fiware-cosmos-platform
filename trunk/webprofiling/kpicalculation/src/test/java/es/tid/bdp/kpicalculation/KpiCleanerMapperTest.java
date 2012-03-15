@@ -31,7 +31,7 @@ public class KpiCleanerMapperTest {
     private WebProfilingLog.Builder builder;
 
     @Before
-    protected void setUp() {
+    public void setUp() {
 
         this.mapper = new KpiCleanerMapper();
         this.driver = new MapDriver<LongWritable, Text, NullWritable,

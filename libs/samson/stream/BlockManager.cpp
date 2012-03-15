@@ -167,7 +167,7 @@ namespace samson {
             
             // Sort list of blocks according to id and min_task involved
             {
-                au::ExecesiveTimeAlarm alarm("BlockManager::sort" , 0 );
+                au::ExecesiveTimeAlarm alarm("BlockManager::sort" , 0.05 );
                 blocks.sort( compare_blocks );
             }
             

@@ -124,7 +124,16 @@ typedef struct PaVars
 void paConfigCleanup(void)
 {
 	PA_M(("Cleaning up"));
+	printf("Cleaning up parseArgs library\n");
 
+	PA_M(("freeing progName"));
+	if (progName != NULL)
+    {
+		free(progName);
+        progName = NULL;
+    }
+
+	PA_M(("freeing paPrefix"));
 	if (paPrefix)
     {
 		free(paPrefix);

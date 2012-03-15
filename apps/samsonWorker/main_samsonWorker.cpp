@@ -45,8 +45,10 @@ SAMSON_ARG_VARS;
 
 bool     fg;
 bool     noLog;
+bool     valgrind;
 int      port;
 int      web_port;
+
 
 
 /* ****************************************************************************
@@ -56,10 +58,12 @@ int      web_port;
 PaArgument paArgs[] =
 {
 	SAMSON_ARGS,
-    { "-fg",        &fg,        "SS_SPAWNER_FOREGROUND",   PaBool,    PaOpt,    false,    false,   true,  "don't start as daemon"  },
-	{ "-port",      &port,      "",  PaInt,  PaOpt, SAMSON_WORKER_PORT,     1,  9999,  "Port to receive new connections"   },
-	{ "-web_port",  &web_port,  "",  PaInt,  PaOpt, SAMSON_WORKER_WEB_PORT, 1,  9999,  "Port to receive new connections"   },
-	{ "-nolog",     &noLog,     "SS_WORKER_NO_LOG", PaBool, PaOpt, false,  false,   true,  "no logging" },
+    { "-fg",        &fg,        "SAMSON_WORKER_FOREGROUND", PaBool, PaOpt, false,                  false,  true,  "don't start as daemon"             },
+	{ "-port",      &port,      "",                         PaInt,  PaOpt, SAMSON_WORKER_PORT,     1,      9999,  "Port to receive new connections"   },
+	{ "-web_port",  &web_port,  "",                         PaInt,  PaOpt, SAMSON_WORKER_WEB_PORT, 1,      9999,  "Port to receive new connections"   },
+	{ "-nolog",     &noLog,     "SAMSON_WORKER_NO_LOG",     PaBool, PaOpt, false,                  false,  true,  "no logging"                        },
+    { "-valgrind",  &valgrind,  "SAMSON_WORKER_VALGRIND",   PaBool, PaOpt, false,                  false,  true,  "help valgrind debugging process"   },
+
 	PA_END_OF_ARGS
 };
 
@@ -120,16 +124,39 @@ void captureSIGTERM( int s )
     exit(1);
 }
 
+
+void cleanup(void)
+{
+    google::protobuf::ShutdownProtobufLibrary();
+
+	if (worker)
+	{
+        delete worker;
+
+        samson::ModulesManager::destroy();
+    
+        engine::ProcessManager::destroy();
+        engine::DiskManager::destroy();
+        engine::MemoryManager::destroy();
+        engine::Engine::destroy();
+        samson::SamsonSetup::destroy();
+    }
+}
+
+
+
 /* ****************************************************************************
 *
 * main - 
 */
 int main(int argC, const char *argV[])
 {
+	atexit(cleanup);
+
 	paConfig("builtin prefix",                (void*) "SS_WORKER_");
 	paConfig("usage and exit on any warning", (void*) true);
 
-    // Andreu: samsonWorker is not a console in foregroung (debug) mode ( to ask to status with comamnds )
+    // Andreu: samsonWorker is not a console in foreground (debug) mode ( to ask to status with commands )
 	paConfig("log to screen",                 (void*) "only errors");
 	//paConfig("log to screen",                 (void*) (void*) false);
     
@@ -195,7 +222,7 @@ int main(int argC, const char *argV[])
 	fclose( file );
 	// ------------------------------------------------------        
     
-    // Make sure this singlelton is created just once
+    // Make sure this singleton is created just once
     samson::SamsonSetup::shared()->createWorkingDirectories();      // Create working directories
     
 	engine::Engine::init();
@@ -207,7 +234,6 @@ int main(int argC, const char *argV[])
 	samson::ModulesManager::init();
     samson::stream::BlockManager::init();
 
-    
 	// Instance of network object and initialization
 	// --------------------------------------------------------------------
 	samson::WorkerNetwork*  networkP  = new samson::WorkerNetwork( port , web_port );
@@ -217,6 +243,9 @@ int main(int argC, const char *argV[])
 	worker = new samson::SamsonWorker(networkP);
 
     LM_M(("Worker Running"));
+
+    if (valgrind)
+        LM_X(1, ("Valgrind option set - I exit"));
 
     if (fg == false)
     {
@@ -256,5 +285,6 @@ int main(int argC, const char *argV[])
     }
     else
         LM_M(("Finished correctly with 0 background processes"));
+
     return 0;
 }

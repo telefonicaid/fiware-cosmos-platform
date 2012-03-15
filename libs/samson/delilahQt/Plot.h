@@ -27,12 +27,14 @@ class Plot
 private:
     
     // Diagram ( created in constructor )
-    KDChart::BarDiagram* diagram;
+    KDChart::LineDiagram* diagram;
     
 public:
     
     Plot( QGroupBox *_box , const char* x_title ,  const char* y_title );
 	~Plot();
+    
+    QVBoxLayout* layout;
     
     // KV Chart
     KDChart::Chart m_chart;

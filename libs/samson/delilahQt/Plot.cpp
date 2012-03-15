@@ -5,7 +5,7 @@
 
 #include <QApplication>
 #include <KDChartWidget>
-#include <KDChartBarDiagram>
+#include <KDChartLineDiagram>
 #include <KDChartPosition>
 #include <KDChartLegend>
 
@@ -14,7 +14,7 @@ Plot::Plot( QGroupBox *_box , const char* x_title ,  const char* y_title )
    // Keep a pointer to the group ( change the title in the future )
 	box = _box;
 	
-    diagram = new KDChart::BarDiagram;
+    diagram = new KDChart::LineDiagram;
     diagram->setModel(&m_model);
     
     diagram->setPen( 0 , QPen( Qt::red, 0 ) );
@@ -65,8 +65,8 @@ Plot::Plot( QGroupBox *_box , const char* x_title ,  const char* y_title )
 
     
 	// Add the plot in the box
-    QVBoxLayout* l = new QVBoxLayout( box );
-    l->addWidget(&m_chart);
+    layout = new QVBoxLayout( box );
+    layout->addWidget(&m_chart);
     m_chart.setGlobalLeadingTop( 10 );
 	//KDChart::setLayout(l);
 

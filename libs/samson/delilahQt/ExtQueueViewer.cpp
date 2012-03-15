@@ -58,6 +58,7 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     rateBox = new QGroupBox("Rate", this);
     blocksBox = new QGroupBox("Blocks", this);
     ratePlotBox = new QGroupBox("Rate gr", this);
+    ratePlotBox->setMinimumSize(200,200);
 
     QFont bigFont;
     QFont boldFont;
@@ -129,12 +130,26 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     connectGroup->addButton(connectClear);
     
     //Rate graph
-    plot = new Plot(ratePlotBox, "Time", "Rate (B/s)");
+    plot = new Plot(ratePlotBox, "", "Rate (B/s)");
+    //Plot controls
+    plotControlsLayout = new QHBoxLayout();
+    plotReset = new QPushButton("Reset", ratePlotBox);
+    plotStop = new QPushButton("Pause", ratePlotBox);
+    plotStop->setCheckable(true);
+    plotNSamplesLabel = new QLabel("Num. of Samples:",ratePlotBox);
+    plotNSamples = new QLineEdit(ratePlotBox);
+    plotControlsLayout->addWidget(plotReset);
+    plotControlsLayout->addWidget(plotStop);
+    plotControlsLayout->addWidget(plotNSamplesLabel);
+    plotControlsLayout->addWidget(plotNSamples);
+    plotControlsLayout->addStretch();
+    plot->layout->addLayout(plotControlsLayout);
     
     connect(connectButton, SIGNAL(clicked()), this, SLOT(onConnectButtonClicked()));
     connect(connectNew, SIGNAL(toggled(bool)), this, SLOT(onConnectNewClicked(bool)));
     connect(connectClear, SIGNAL(toggled(bool)), this, SLOT(onConnectClearClicked(bool)));
     connect(clearFeedButton, SIGNAL(clicked()), this, SLOT(clearFeed()));
+    connect(plotReset, SIGNAL(clicked()), this, SLOT(onPlotReset()));
     
     mainLayout->addWidget(name);
     mainLayout->addLayout(generalLayout);
@@ -228,12 +243,10 @@ void ExtQueueViewer::setData(QueueData* newData)
         locked->setText(QString(au::str(strtoul(data.locked.c_str(), NULL, 0)).c_str()));
         time_from->setText(QString(au::str_time(strtoul(data.time_from.c_str(), NULL, 0)).c_str()));
         time_to->setText(QString(au::str_time(strtoul(data.time_to.c_str(), NULL, 0)).c_str()));
-  std::cout<<"antes de set: " << data.bytes_s;
-        rateCollection.set(atof(data.bytes_s.c_str()));
-  std::cout<<" - despues de set."<< std::endl;
-        rateCollection.takeSample();
+        rateCollection.push(atof(data.bytes_s.c_str()));
+        //rateCollection.takeSample();
         
-        redrawPlot();
+        if(!plotStop->isChecked()) redrawPlot();
         
 }
 
@@ -303,11 +316,12 @@ void ExtQueueViewer::redrawPlot()
     std::vector<std::string> labels;
     plot->clear();
     int row = 0;
- std::cout << rateCollection.getNumSamples() << std::endl;
-    for ( int i = 0 ; i < 10 /*rateCollection.getNumSamples()*/ ; i++)
+    //int desiredSamples = 50;
+    //int increment = rateCollection.getNumSamples()/DesiredSamples;
+    
+    for ( unsigned int i = 0 ; i < rateCollection.elements.size() ; i++)
     {
-  std::cout << "i: " << i << std::endl;
-        plot->set( i , row , rateCollection.getSample(i) );
+        plot->set( i , 0 , rateCollection.get(i));//;Sample(i) );
         //plot->set( i , row , rand()%10 );
         row++;
     }
@@ -319,5 +333,10 @@ void ExtQueueViewer::redrawPlot()
 
 }
 
+void ExtQueueViewer::onPlotReset()
+{
+   rateCollection.reset();
+   redrawPlot();
+}
 
 } //namespace

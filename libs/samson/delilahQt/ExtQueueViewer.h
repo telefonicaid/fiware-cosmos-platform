@@ -117,6 +117,14 @@ class ExtQueueViewer: public QWidget
         QLabel* time_to;
         
         Plot* plot;
+        //Data for the plot
+        au::RRT<unsigned long,50> rateCollection;
+        //Plot controls
+        QHBoxLayout* plotControlsLayout;
+        QPushButton* plotReset;
+        QPushButton* plotStop;
+        QLabel* plotNSamplesLabel;
+        QLineEdit* plotNSamples;
         
         //QPushButton* connectButton;
         //QTextEdit* queueFeed;
@@ -140,8 +148,6 @@ class ExtQueueViewer: public QWidget
         QHBoxLayout* rateLayout;
         QHBoxLayout* blocksLayout;
         
-        //Data for the plot
-        au::ContinuousValueCollection<unsigned long> rateCollection;
         
     signals:
         void updateConnection(ConnectQueueParameters params);
@@ -153,6 +159,7 @@ class ExtQueueViewer: public QWidget
         void disconnect();
         void clearFeed();
         void redrawPlot();
+        void onPlotReset();
         
 };
 

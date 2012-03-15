@@ -47,7 +47,14 @@ public:
         while( elements.size() < n )
             elements.push_back( 0 );
     }
-    
+
+    void reset()
+    {
+        elements.clear();
+        while( elements.size() < n )
+            elements.push_back( 0 );
+    }
+   
     void push( T value )
     {
         elements.push_back( value );

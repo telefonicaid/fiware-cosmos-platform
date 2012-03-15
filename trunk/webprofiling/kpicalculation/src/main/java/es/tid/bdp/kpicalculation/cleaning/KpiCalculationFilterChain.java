@@ -24,7 +24,7 @@ public class KpiCalculationFilterChain {
     private List<IKpiCalculationFilter> handlers;
 
     public KpiCalculationFilterChain(Configuration conf) {
-        handlers = new ArrayList<IKpiCalculationFilter>();
+        this.handlers = new ArrayList<IKpiCalculationFilter>();
         Collection<String> classes = conf.getStringCollection(COLLECTION_ID);
         Iterator<String> it = classes.iterator();
         while (it.hasNext()) {
@@ -33,7 +33,7 @@ public class KpiCalculationFilterChain {
                 filter = (IKpiCalculationFilter) Class
                         .forName(it.next().trim())
                         .getConstructor(Configuration.class).newInstance(conf);
-                handlers.add(filter);
+                this.handlers.add(filter);
             } catch (Exception exception) {
                 throw new KpiCalculationFilterException(
                         "Wrong configuration of filter", exception,
@@ -44,7 +44,7 @@ public class KpiCalculationFilterChain {
 
     public void filter(String url) {
         IKpiCalculationFilter currentFilter;
-        ListIterator<IKpiCalculationFilter> it = handlers.listIterator();
+        ListIterator<IKpiCalculationFilter> it = this.handlers.listIterator();
         while (it.hasNext()) {
             currentFilter = it.next();
             currentFilter.filter(url);

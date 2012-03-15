@@ -4,12 +4,11 @@ import java.io.IOException;
 
 import javax.annotation.Resource;
 
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
 import es.tid.bdp.kpicalculation.cleaning.KpiCalculationFilterChain;
 import es.tid.bdp.kpicalculation.cleaning.KpiCalculationFilterException;
@@ -44,9 +43,8 @@ import es.tid.bdp.kpicalculation.utils.WebProfilingUtil;
  * 
  * @author javierb@tid.es
  */
-public class KpiCleanerMapper
-        extends
-        Mapper<LongWritable, Text, NullWritable, ProtobufWritable<WebProfilingLog>> {
+public class KpiCleanerMapper extends Mapper<LongWritable, Text, NullWritable,
+        ProtobufWritable<WebProfilingLog>> {
     @Resource
     private KpiCalculationFilterChain filter;
 

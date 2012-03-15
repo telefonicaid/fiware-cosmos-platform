@@ -21,7 +21,7 @@ public class KpiCalculationDateFormatter {
         this.inputFormat = new SimpleDateFormat("ddMMMyyyyhhmmss",
                                                 Locale.ENGLISH);
         this.dateFormat = new SimpleDateFormat("dd" + delimiter + "MM"
-                + delimiter + "yyyy");
+                                               + delimiter + "yyyy");
         this.calendar = Calendar.getInstance();
     }
 

@@ -47,11 +47,11 @@ import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
  * 
  * @author javierb@tid.es
  */
-public class KpiGenericMapper
-        extends
-        Mapper<LongWritable, ProtobufWritable<WebProfilingLog>, CompositeKey, IntWritable> {
+public class KpiGenericMapper extends Mapper<LongWritable,
+        ProtobufWritable<WebProfilingLog>, CompositeKey, IntWritable> {
     private static final IntWritable ONE = new IntWritable(1);
-    private static final String MAIN_FIELDS_PARAMETER = "kpi.aggregation.fields";
+    private static final String MAIN_FIELDS_PARAMETER =
+            "kpi.aggregation.fields";
     private static final String GROUP_FIELD_PARAMETER = "kpi.aggregation.group";
 
     private CompositeKey key;
@@ -131,6 +131,6 @@ public class KpiGenericMapper
     }
 
     private String getSecondaryKeyValue(WebProfilingLog log) {
-        return (String) log.getField(this.secondaryDescriptor).toString();
+        return log.getField(this.secondaryDescriptor).toString();
     }
 }

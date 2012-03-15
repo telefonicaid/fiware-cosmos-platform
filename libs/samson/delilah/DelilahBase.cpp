@@ -109,6 +109,8 @@ namespace samson {
         // Replace node int he workers tree
         database.replaceNodeInTree( "workers" , tree );
         
+        // Create the list of queues from tree 
+        //database.runCommand( CREATE_TABLE_QUEUES );
     }
 
     void DelilahBase::updateDelilahXMLString( std::string txt )

@@ -167,8 +167,8 @@ namespace samson {
             // Update local list of queus automatically
             if( automatic_update )
             {
-                sendWorkerCommand("ls_queues -a -hidden -save" , NULL);
-                sendWorkerCommand("ls_workers -a -hidden -save" , NULL);
+                //sendWorkerCommand("ls_queues -a -hidden -save" , NULL);
+                //sendWorkerCommand("ls_workers -a -hidden -save" , NULL);
             }
             return;
         }

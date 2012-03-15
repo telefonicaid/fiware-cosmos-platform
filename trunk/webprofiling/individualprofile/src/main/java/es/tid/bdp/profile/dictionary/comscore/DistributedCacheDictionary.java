@@ -32,6 +32,7 @@ public abstract class DistributedCacheDictionary {
     private static final int DICTIONARY_PATH = 1;
     private static final int CATEGORY_PATTERN_MAPPING_PATH = 2;
     private static final int CATEGORY_NAMES_PATH = 3;
+    private static final String URI_SEPARATOR = "/";
 
     /**
      * Configure the distributed cache to share the dictionary files to all
@@ -45,8 +46,8 @@ public abstract class DistributedCacheDictionary {
             String[] dictionaryNames) {
         DistributedCache.createSymlink(job.getConfiguration());
         String prefix = baseDirectory;
-        if (!prefix.endsWith("/")) {
-            prefix += '/';
+        if (!prefix.endsWith(URI_SEPARATOR)) {
+            prefix += URI_SEPARATOR;
         }
         for (String name : dictionaryNames) {
             DistributedCache.addCacheFile(URI.create(prefix + name),

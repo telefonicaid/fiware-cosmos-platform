@@ -9,43 +9,34 @@ NAMESPACE_BEGIN(engine)
 
 EngineElement::EngineElement()
 {
-    delay = 0;
+    // Flag to indicate that this element will be executed just once
     repeated = false;
-    counter = 0;
-
-    gettimeofday(&trigger_time, NULL);
-    trigger_time.tv_sec += delay;
     
-    std::ostringstream txt;
-    txt << "Unknown once ( at " << trigger_time.tv_sec  << " seconds ) engine element";
-    description = txt.str();
-    shortDescription = txt.str();
-}
+    description = "Engine element to be executed once";
+    shortDescription = "Engine element to be executed once";
 
-// Repeated action
+}
 
 EngineElement::EngineElement( int seconds )
 {
-    delay = seconds;
     repeated = true;
+    period = seconds;
     counter = 0;
-
-    gettimeofday(&trigger_time, NULL);
-    trigger_time.tv_sec += delay;
     
     std::ostringstream txt;
-    txt << "Unknown repeated ( at " << trigger_time.tv_sec << " every " << seconds  << " seconds ) engine element";
+    txt << "Engine element repeated every " << seconds  << " seconds";
     description = txt.str();
-    
-    shortDescription = "Unk";
+    shortDescription = txt.str();
 }
 
 // Reschedule action once executed
 
 void EngineElement::Reschedule()
 {
-    gettimeofday(&trigger_time, NULL);
-    trigger_time.tv_sec += delay;
+    // Reset cronometer
+    cronometer.reset();
+
+    // Increse the counter to get an idea of the number of times a repeated task is executed
     counter++;
 }
 
@@ -56,34 +47,31 @@ bool EngineElement::isRepeated()
 
 double EngineElement::getTimeToTrigger()
 {
-    timeval t;
-    gettimeofday(&t, NULL);
-
-    timeval t_diff;
-    
-    timersub( &trigger_time , &t , &t_diff);
-    double time = t_diff.tv_sec + (t_diff.tv_usec / 1000000.0 );
-    
-    return time;
+    // Time for the next execution
+    return period - cronometer.diffTime(); 
 }
+
+double EngineElement::getWaitingTime()
+{
+    // Time for the next execution
+    return cronometer.diffTime(); 
+}
+
 
 std::string EngineElement::getDescription()
 {
     if( repeated )
     {
-        return au::str( "[ Engine element '%s' to be executed in 02.2f seconds ( repeat every %d secs , repeated %d times )] " 
+        return au::str( "[ Engine element '%s' to be executed in %02.2f seconds ( repeat every %d secs , repeated %d times )] " 
                        , description.c_str()
                        , getTimeToTrigger()
-                       , delay
+                       , period
                        , counter
                        );
     }
     else
     {
-        return au::str( "[ Engine element '%s' to be executed in %02.2f seconds]" 
-                       , description.c_str()
-                       , getTimeToTrigger()
-                       );
+        return au::str( "[ Engine element '%s' ]" , description.c_str() );
     }
     //return description;
 }

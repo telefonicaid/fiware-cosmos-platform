@@ -25,22 +25,24 @@
 
 #include "au/string.h"                  // au::Format
 #include "au/namespace.h"
+#include "au/Cronometer.h"
+
 
 NAMESPACE_BEGIN(engine)
 
 class EngineElement 
 {
     
-    int delay;									// Delay of execution or period in repeated operations
     bool repeated;								// Flag to determine if it is necessary to repeated the process
+    int period;									// Period of the execution
     int counter;                                // Number of times this element has been executed ( only in repeated )
+
+    au::Cronometer cronometer;                  // Cronometer since creation of last execution
     
 protected:
     
     std::string description;                    // String for easy debugging
     std::string shortDescription;               // Short description
-
-    timeval trigger_time;                       // Time when this engine will be fired
 
 public:
     
@@ -62,8 +64,10 @@ public:
     // Get a description string for debuggin
     std::string getDescription();
 
-    // Get time to be executed
+    // Get time to be executed ( in repeated task )
     double getTimeToTrigger();
+    
+    double getWaitingTime();
     
     // get xml information
     void getInfo( std::ostringstream& output);

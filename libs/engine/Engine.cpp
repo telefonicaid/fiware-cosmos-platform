@@ -57,7 +57,8 @@ Engine::Engine() : token("EngineToken")
 Engine::~Engine()
 {
     // Remove pending elements in Engine
-    elements.clearList();
+    repeated_elements.clearList();
+    normal_elements.clearList();
 }
 
 Engine* Engine::shared()
@@ -85,7 +86,7 @@ void Engine::init()
     
     // Add a simple periodic element to not die inmediatelly
     EngineElement *element = new NotificationElement( new Notification("alive") , 10 );
-    engine->elements.push_back( element );
+    engine->repeated_elements.push_back( element );
     
     LM_T( LmtEngine , ("Running engine in background...") );
     au::ThreadManager::shared()->addThread("Engine", &engine->t, 0, runEngineBackground, NULL );
@@ -174,7 +175,7 @@ void Engine::run()
         {
             // Mutex protection
             au::TokenTaker tt(&token , "Engine::getNextElement");
-            isEmpty = ( elements.size() == 0);
+            isEmpty = ( ( repeated_elements.size() == 0 ) && ( normal_elements.size() == 0) );
         }
         
         if( isEmpty )
@@ -183,95 +184,98 @@ void Engine::run()
             return;
         }
         
-        // Get time for the next engine element
-        double t;
+        // ------------------------------------------------------------------------------------
+        // Try to get the next element in the repeat_elements list , if not , normal elements
+        // ------------------------------------------------------------------------------------
+        double t_sleep = 0.1; // Default sleep time if no periodic elements
+        
         {
             // Mutex protection to access elements
             au::TokenTaker tt(&token , "Engine::getNextElement");
-            t = elements.front()->getTimeToTrigger();
-        }
-        
-        if( t > 0.01 ) // It not necessary to sleep less than 1/100 secs
-        {
-            if ( t > 0.1 )
-                t = 0.1; // Max time to sleep to avoid locks...
             
-            // Sleeping a bit for the next engine element...
-            LM_T( LmtEngine, ("Engine: Sleeping %.2f secs ..." , t));
+            if( normal_elements.size() > 30 )
+                LM_W(("Execesive number of elements in the engine sack %d" , (int) normal_elements.size() ));
             
-            /*
+            if( repeated_elements.size() > 0 )
             {
-                // Mutex protection to show list
-                au::TokenTaker tt(&token , "Engine::getNextElement");
-                LM_T( LmtEngine, ("--------------------------------------------------------" ));
-                au::list<EngineElement>::iterator it_elements;
-                for (it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
+                t_sleep = repeated_elements.front()->getTimeToTrigger();
+            
+                // Ready to be executed
+                if( t_sleep < 0.01 )
                 {
-                    EngineElement *element = *it_elements;
-                    LM_T( LmtEngine, ("%s" , element->getShortDescription().c_str() ));    
+                    running_element = repeated_elements.front();
+                    repeated_elements.pop_front();
                 }
-                LM_T( LmtEngine, ("--------------------------------------------------------" ));
             }
-             */
             
+            if( !running_element && (normal_elements.size() > 0 ) )
             {
-                au::ExecesiveTimeAlarm alarm( "Engine sleep2" , 2*t );
-                sleep_select( t );
+                running_element = normal_elements.front();
+                normal_elements.pop_front();
             }
+            
+        }
 
-            /*
+        /*
+        if( running_element )
+            LM_W(("Engine status next: %s normal: %lu periodid: %lu " , running_element->getDescription().c_str() , normal_elements.size() , repeated_elements.size() ));
+        else
+            LM_W(("Engine status sleep time: %f normal: %lu periodid: %lu " , t_sleep , normal_elements.size() , repeated_elements.size() ));
+        */
+         
+        if( !running_element )
+        {
+            if ( t_sleep > 0.1 )
+                t_sleep = 0.1; // Max time to sleep to avoid locks...
+                         // Sleeping a bit for the next engine element...
+            LM_T( LmtEngine, ("Engine: Sleeping %.2f secs ..." , t));
             {
-                int microsecons = t*1000000;
-                au::ExecesiveTimeAlarm alarm( "Engine sleep" , 2*t );
-                usleep( microsecons );
+                au::ExecesiveTimeAlarm alarm( "Engine sleep2" , 2*t_sleep );
+                sleep_select( t_sleep );
             }
-             */
+            
             continue; // Loop again to check again...
         }
         
-        // Get the top element to be executed
-        {
-            // Mutex protection to access elements
-            au::TokenTaker tt(&token , "Engine::getNextElement");
-            
-            running_element = elements.front();
-            elements.pop_front();
-        }
-        
-        // Run or sleep
-        if ( !running_element )
-            LM_X(1,("Internal error at Engine"));
         
         {
             // Execute the item selected as running_element
             LM_T( LmtEngine, ("[START] Engine executing %s" , running_element->getDescription().c_str() ));
             
-            int excesive_time = - running_element->getTimeToTrigger();
-            if ( excesive_time > 10 )
+            int waiting_time = running_element->getWaitingTime();
+            if ( waiting_time > 10 )
             {
-                LM_W(("Engine is running an element delayed %d seconds", excesive_time ));
+                LM_W(("Engine is running an element has been waiting %d seconds", waiting_time ));
                 //LM_W(("Engine element to execute now: %s" , running_element->getDescription().c_str() ));
             }
-            if ( excesive_time > 100 )
+            if ( waiting_time > 100 )
             {
                 // Print entire engine items...
                 
                 au::list<EngineElement>::iterator it_elements;
-                for( it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
+                for( it_elements = repeated_elements.begin() ; it_elements != repeated_elements.end() ; it_elements++ )
                 {
                     EngineElement* element = *it_elements;
-                    LM_M(("%s",element->getDescription().c_str()));
+                    LM_M(("ENGINE REPEATED ELEMENT: %s",element->getDescription().c_str()));
                 }
-                LM_X(1,("Engine is running an element delayed %d seconds", excesive_time ));
-                //LM_W(("Engine element to execute now: %s" , running_element->getDescription().c_str() ));
+
+                for( it_elements = normal_elements.begin() ; it_elements != normal_elements.end() ; it_elements++ )
+                {
+                    EngineElement* element = *it_elements;
+                    LM_M(("ENGINE NORMAL ELEMENT: %s",element->getDescription().c_str()));
+                }
+                
+                LM_X(1,("Engine is running an element has been waiting %d seconds", waiting_time ));
             }
             
             {
                 // Run the item controlling excesive time
                 au::Cronometer c;
+                
+                // Run the running element ;)
                 running_element->run();
                 
-                int execution_time =c.diffTime();
+                int execution_time = c.diffTime();
                 if ( execution_time > 10 )
                 {
                     LM_W(("Engine has executed an item in %d seconds." , execution_time ));
@@ -298,15 +302,15 @@ void Engine::run()
 }
 
 
-std::list<EngineElement*>::iterator Engine::_find_pos( EngineElement *e)
+std::list<EngineElement*>::iterator Engine::_find_pos_in_repeated_elements( EngineElement *e)
 {
-    for (std::list<EngineElement*>::iterator i = elements.begin() ; i != elements.end() ; i++)
+    for (std::list<EngineElement*>::iterator i = repeated_elements.begin() ; i != repeated_elements.end() ; i++)
     {
         if ( (*i)->getTimeToTrigger() > e->getTimeToTrigger() )
             return i;
     }
     
-    return elements.end();
+    return repeated_elements.end();
 }
 
 #pragma mark ----
@@ -326,7 +330,6 @@ void Engine::getInfo( std::ostringstream& output)
     else
         au::xml_simple( output , "running_element" , "No running element" );
     
-    au::xml_iterate_list( output , "elements" , elements );
     
     au::xml_simple( output , "uptime" , uptime.diffTimeInSeconds() );
     
@@ -387,10 +390,14 @@ void Engine::add( EngineElement *element )
 {
     // Mutex protection
     au::TokenTaker tt(&token);
-    
+
     // Insert an element in the engine
-    elements.insert( _find_pos( element ) ,  element );
     
+    if( element->isRepeated() )
+        repeated_elements.insert( _find_pos_in_repeated_elements( element ) ,  element );
+    else
+        normal_elements.push_back( element );
+        
     // Wake up main thread if sleeping
     tt.wakeUp();
 }

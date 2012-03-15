@@ -52,11 +52,17 @@ class Engine
     // Common engine instance
     static Engine* engine;
 
-    au::list<EngineElement> elements;               // Elements of the samson engine
+    // Elements of the samson engine to be repeated periodically
+    au::list<EngineElement> repeated_elements;           
     
-    EngineElement *running_element;                 // Element that is currently running
+    // General fifo elements of the SAMSON Engine
+    au::list<EngineElement> normal_elements;               
     
-    au::Token token;                                // General mutex to protect global variable engine and block the main thread if necessary
+    // Element that is currently running
+    EngineElement *running_element;                      
+    
+    // General mutex to protect global variable engine and block the main thread if necessary
+    au::Token token;                                
     
     pthread_t t;                                    // Thread to run the engine in background ( if necessary )
     
@@ -91,7 +97,7 @@ public:
 private:
     
     // Find the position in the list to inser a new element
-    std::list<EngineElement*>::iterator _find_pos( EngineElement *e);
+    std::list<EngineElement*>::iterator _find_pos_in_repeated_elements( EngineElement *e);
     
     
 public:

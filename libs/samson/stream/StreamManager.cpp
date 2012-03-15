@@ -1151,7 +1151,7 @@ namespace samson {
             }
         }
         
-        std::string StreamManager::getState(std::string queue_name, const char* key)
+        std::string StreamManager::getState(std::string queue_name, const char* key, char* redirect, int redirectSize)
         {
             LM_T(LmtRest, ("looking up key '%s' in queue '%s'", key, queue_name.c_str()));
 
@@ -1193,10 +1193,14 @@ namespace samson {
                 std::string host = worker->network->getHostForWorker( worker_id );
 
                 LM_T(LmtRest, ("Redirect to the right server (%s)", host.c_str()));
+                // Careful with 'state' / 'queue' here ...
+                snprintf(redirect, redirectSize, "%s:9898/samson/state/%s/%s", host.c_str() , queue_name.c_str() , key);
+
                 return au::xml_simple(  "error" 
                                       , au::str("Redirect to %s/samson/state/%s/%s" , host.c_str() , queue_name.c_str() , key )
                                       );
             }
+
 
             if ( queue->list->blocks.size() == 0 )
                 return au::xml_simple(  "error" , au::str("No data in queue %s" , queue_name.c_str() ));

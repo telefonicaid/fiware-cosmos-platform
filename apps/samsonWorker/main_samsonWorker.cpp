@@ -57,14 +57,14 @@ int      web_port;
 */
 PaArgument paArgs[] =
 {
-	SAMSON_ARGS,
+    SAMSON_ARGS,
     { "-fg",        &fg,        "SAMSON_WORKER_FOREGROUND", PaBool, PaOpt, false,                  false,  true,  "don't start as daemon"             },
-	{ "-port",      &port,      "",                         PaInt,  PaOpt, SAMSON_WORKER_PORT,     1,      9999,  "Port to receive new connections"   },
-	{ "-web_port",  &web_port,  "",                         PaInt,  PaOpt, SAMSON_WORKER_WEB_PORT, 1,      9999,  "Port to receive new connections"   },
-	{ "-nolog",     &noLog,     "SAMSON_WORKER_NO_LOG",     PaBool, PaOpt, false,                  false,  true,  "no logging"                        },
+    { "-port",      &port,      "",                         PaInt,  PaOpt, SAMSON_WORKER_PORT,     1,      9999,  "Port to receive new connections"   },
+    { "-web_port",  &web_port,  "",                         PaInt,  PaOpt, SAMSON_WORKER_WEB_PORT, 1,      9999,  "Port to receive new connections"   },
+    { "-nolog",     &noLog,     "SAMSON_WORKER_NO_LOG",     PaBool, PaOpt, false,                  false,  true,  "no logging"                        },
     { "-valgrind",  &valgrind,  "SAMSON_WORKER_VALGRIND",   PaBool, PaOpt, false,                  false,  true,  "help valgrind debugging process"   },
 
-	PA_END_OF_ARGS
+    PA_END_OF_ARGS
 };
 
 
@@ -115,6 +115,7 @@ void captureSIGTERM( int s )
 {
     s = 3;
     LM_M(("Captured SIGTERM"));
+
     LM_M(("Cleaning up"));
     std::string pid_file_name = au::str("%s/samsond.pid" , paLogFilePath );
     if ( remove (pid_file_name.c_str()) != 0)
@@ -129,16 +130,28 @@ void cleanup(void)
 {
     google::protobuf::ShutdownProtobufLibrary();
 
-	if (worker)
-	{
+    printf("Shutting down worker components (worker at %p)\n", worker);
+    if (worker)
+    {
+        printf("deleting worker\n");
         delete worker;
 
+        printf("destroying ModulesManager\n");
         samson::ModulesManager::destroy();
     
+        printf("destroying ProcessManager\n");
         engine::ProcessManager::destroy();
+
+        printf("destroying DiskManager\n");
         engine::DiskManager::destroy();
+
+        printf("destroying MemoryManager\n");
         engine::MemoryManager::destroy();
+
+        printf("destroying Engine\n");
         engine::Engine::destroy();
+
+        printf("Shutting down SamsonSetup\n");
         samson::SamsonSetup::destroy();
     }
 }
@@ -151,27 +164,27 @@ void cleanup(void)
 */
 int main(int argC, const char *argV[])
 {
-	atexit(cleanup);
+    atexit(cleanup);
 
-	paConfig("builtin prefix",                (void*) "SS_WORKER_");
-	paConfig("usage and exit on any warning", (void*) true);
+    paConfig("builtin prefix",                (void*) "SS_WORKER_");
+    paConfig("usage and exit on any warning", (void*) true);
 
     // Andreu: samsonWorker is not a console in foreground (debug) mode ( to ask to status with commands )
-	paConfig("log to screen",                 (void*) "only errors");
-	//paConfig("log to screen",                 (void*) (void*) false);
+    paConfig("log to screen",                 (void*) "only errors");
+    //paConfig("log to screen",                 (void*) (void*) false);
     
-	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
-	paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT");
-	paConfig("log to file",                   (void*) true);
+    paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
+    paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT");
+    paConfig("log to file",                   (void*) true);
 
-	paConfig("man synopsis",                  (void*) manSynopsis);
-	paConfig("man shortdescription",          (void*) manShortDescription);
-	paConfig("man description",               (void*) manDescription);
-	paConfig("man exitstatus",                (void*) manExitStatus);
-	paConfig("man author",                    (void*) manAuthor);
-	paConfig("man reportingbugs",             (void*) manReportingBugs);
-	paConfig("man copyright",                 (void*) manCopyright);
-	paConfig("man version",                   (void*) manVersion);
+    paConfig("man synopsis",                  (void*) manSynopsis);
+    paConfig("man shortdescription",          (void*) manShortDescription);
+    paConfig("man description",               (void*) manDescription);
+    paConfig("man exitstatus",                (void*) manExitStatus);
+    paConfig("man author",                    (void*) manAuthor);
+    paConfig("man reportingbugs",             (void*) manReportingBugs);
+    paConfig("man copyright",                 (void*) manCopyright);
+    paConfig("man version",                   (void*) manVersion);
 
     const char* extra = paIsSetSoGet(argC, (char**) argV, "-port");
     paParse(paArgs, argC, (char**) argV, 1, false, extra);
@@ -182,7 +195,7 @@ int main(int argC, const char *argV[])
     for (int ix = 0; ix < argC; ix++)
         LM_V(("  %02d: '%s'", ix, argV[ix]));
 
-	logFd = lmFirstDiskFileDescriptor();
+    logFd = lmFirstDiskFileDescriptor();
     
     // Capturing SIGPIPE
     if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR)
@@ -196,7 +209,7 @@ int main(int argC, const char *argV[])
 
     // Init basic setup stuff ( necessary for memory check
     au::LockDebugger::shared();
-	samson::SamsonSetup::init(samsonHome , samsonWorking );          // Load setup and create default directories
+    samson::SamsonSetup::init(samsonHome , samsonWorking );          // Load setup and create default directories
     
     // Check to see if the current memory configuration is ok or not
     if (samson::MemoryCheck() == false)
@@ -208,41 +221,55 @@ int main(int argC, const char *argV[])
         daemonize();
     }
 
-	// ------------------------------------------------------    
+    // ------------------------------------------------------    
     // Write pid if /var/log/samson/samsond.pid
-	// ------------------------------------------------------
+    // ------------------------------------------------------
 
     std::string pid_file_name = au::str("%s/samsond.pid" , paLogFilePath );
     FILE *file = fopen( pid_file_name.c_str() , "w" );
     if( !file )
         LM_X(1, ("Error opening file '%s' to store pid" , pid_file_name.c_str() ));
-	int pid = (int)getpid();
-	if( fprintf(file , "%d" , pid ) == 0)
-	   LM_X(1,("Error writing pid %d to file %s" , pid , pid_file_name.c_str() ));
-	fclose( file );
-	// ------------------------------------------------------        
+    int pid = (int)getpid();
+    if( fprintf(file , "%d" , pid ) == 0)
+       LM_X(1,("Error writing pid %d to file %s" , pid , pid_file_name.c_str() ));
+    fclose( file );
+    // ------------------------------------------------------        
     
     // Make sure this singleton is created just once
+    LM_D(("createWorkingDirectories"));
     samson::SamsonSetup::shared()->createWorkingDirectories();      // Create working directories
     
-	engine::Engine::init();
-	engine::SharedMemoryManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess") , samson::SamsonSetup::shared()->getUInt64("general.shared_memory_size_per_buffer"));
+    LM_D(("engine::Engine::init"));
+    engine::Engine::init();
+
+    LM_D(("engine::SharedMemoryManager::init"));
+    engine::SharedMemoryManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess") , samson::SamsonSetup::shared()->getUInt64("general.shared_memory_size_per_buffer"));
     
-	engine::DiskManager::init(1);
-	engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
-	engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
-	samson::ModulesManager::init();
+    LM_D(("engine::DiskManager::init"));
+    engine::DiskManager::init(1);
+
+    LM_D(("engine::ProcessManager::init"));
+    engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
+
+    LM_D(("engine::MemoryManager::init"));
+    engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
+
+    LM_D(("samson::ModulesManager::init"));
+    samson::ModulesManager::init();
+
+    LM_D(("samson::stream::BlockManager::init"));
     samson::stream::BlockManager::init();
 
-	// Instance of network object and initialization
-	// --------------------------------------------------------------------
-	samson::WorkerNetwork*  networkP  = new samson::WorkerNetwork( port , web_port );
-	
-	// Instance of SamsonWorker object (network contains at least the number of wokers)
-	// -----------------------------------------------------------------------------------
-	worker = new samson::SamsonWorker(networkP);
+    // Instance of network object and initialization
+    // --------------------------------------------------------------------
+    samson::WorkerNetwork*  networkP  = new samson::WorkerNetwork( port , web_port );
+    
+    // Instance of SamsonWorker object (network contains at least the number of wokers)
+    // -----------------------------------------------------------------------------------
+    worker = new samson::SamsonWorker(networkP);
 
     LM_M(("Worker Running"));
+    LM_D(("worker at %p", worker));
 
     if (valgrind)
         LM_X(1, ("Valgrind option set - I exit"));
@@ -255,10 +282,10 @@ int main(int argC, const char *argV[])
 
     worker->runConsole();
  
-    LM_M(("Worker Cleanup"));
+    LM_D(("Worker Cleanup"));
     
-	if (worker)
-		delete worker;
+    if (worker)
+        delete worker;
     
     google::protobuf::ShutdownProtobufLibrary();
     
@@ -268,12 +295,12 @@ int main(int argC, const char *argV[])
     
     samson::ModulesManager::destroy();
     
-	engine::ProcessManager::destroy();
-	engine::DiskManager::destroy();
-	engine::MemoryManager::destroy();
+    engine::ProcessManager::destroy();
+    engine::DiskManager::destroy();
+    engine::MemoryManager::destroy();
     engine::Engine::destroy();
     
-	samson::SamsonSetup::destroy();
+    samson::SamsonSetup::destroy();
     
     
     // Check background threads

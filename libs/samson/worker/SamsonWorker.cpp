@@ -571,7 +571,7 @@ static char* toUTF8(char* in, size_t* outLenP)
         else
             au::xml_simple(data, "message", au::str("Error: Unknown path component '%s'\n" , path_components[1].c_str() ) );
 
-        data << "\r\n</samson>\r\n\r\n";
+        data << "\r\n</samson>";
         
         int dataLen = data.str().length();
 

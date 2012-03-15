@@ -6,20 +6,19 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import com.google.protobuf.Descriptors.Descriptor;
-import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-
 import es.tid.bdp.base.mapreduce.BinaryKey;
 import es.tid.bdp.base.mapreduce.CompositeKey;
 import es.tid.bdp.base.mapreduce.SingleKey;
 import es.tid.bdp.kpicalculation.data.KpiCalculationCounter;
-import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
+import es.tid.bdp.kpicalculation.generated.data.KpiCalculationProtocol.WebProfilingLog;
 
 /**
  * This class receives lines of a information of CDR´s files that have passed
@@ -34,7 +33,7 @@ import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
  * -Microsoft-CryptoAPI/6.1 -Microsoft-CryptoAPI/6.1 GET 304"}</li>
  * <li>Output: {key: http 01-12-2010, values: 1}</li>
  * </ol>
- * 
+ *
  * <ol>
  * <li>Config Parameters:
  * kpi.aggregation.fields="protocol,dateView",kpi.aggregation.group="visitorId";
@@ -44,7 +43,7 @@ import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
  * -Microsoft-CryptoAPI/6.1 -Microsoft-CryptoAPI/6.1 GET 304"}</li>
  * <li>Output: {key: http 01-12-2010 16737b1873ef03ad, values: 1}</li>
  * </ol>
- * 
+ *
  * @author javierb@tid.es
  */
 public class KpiGenericMapper extends Mapper<LongWritable,
@@ -61,7 +60,7 @@ public class KpiGenericMapper extends Mapper<LongWritable,
     /**
      * Method that sets the configuration parameters to be used in order to emit
      * a specific set of fields of the input data during the map phase.
-     * 
+     *
      * @param context
      *            contains the context of the job run
      */

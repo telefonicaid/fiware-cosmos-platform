@@ -7,11 +7,11 @@ import org.apache.xerces.util.URI;
 
 import es.tid.bdp.kpicalculation.data.KpiCalculationCounter;
 import es.tid.bdp.kpicalculation.data.KpiCalculationDataException;
-import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
+import es.tid.bdp.kpicalculation.generated.data.KpiCalculationProtocol.WebProfilingLog;
 
 /**
  * Class used to serialize records from text files
- * 
+ *
  * @author javierb
  */
 public class WebProfilingUtil {

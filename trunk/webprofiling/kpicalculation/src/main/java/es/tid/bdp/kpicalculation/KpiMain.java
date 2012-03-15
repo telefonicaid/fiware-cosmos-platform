@@ -2,13 +2,16 @@ package es.tid.bdp.kpicalculation;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.hadoop.mapreduce.LzoTextInputFormat;
+import com.twitter.elephantbird.mapreduce.input.LzoProtobufB64LineInputFormat;
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import com.twitter.elephantbird.mapreduce.output.LzoProtobufB64LineOutputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
@@ -22,21 +25,16 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import com.hadoop.mapreduce.LzoTextInputFormat;
-import com.twitter.elephantbird.mapreduce.input.LzoProtobufB64LineInputFormat;
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import com.twitter.elephantbird.mapreduce.output.LzoProtobufB64LineOutputFormat;
-
 import es.tid.bdp.base.mapreduce.BinaryKey;
 import es.tid.bdp.base.mapreduce.SingleKey;
 import es.tid.bdp.kpicalculation.data.JobDetails;
-import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
+import es.tid.bdp.kpicalculation.generated.data.KpiCalculationProtocol.WebProfilingLog;
 
 /**
  * This class performs the webprofiling processing of the data received from
  * dpis and calculates different kpis of about that data. The process is a chain
  * of map & reduces operations that will generate the final results.
- * 
+ *
  * TODO: At the moment due to problems using the jdbc-hive connector directly,
  * the hive server must be used. This should be reviewed in the future. All the
  * queries are added sequentially and will need to be extracted to a properties
@@ -66,7 +64,7 @@ public class KpiMain extends Configured implements Tool {
                     + "kpicalculation-LocalBuild.jar inputPath outputPath");
             return 1;
         }
-        
+
         Path inputPath = new Path(args[0]);
         Path outputPath = new Path(args[1] + "/aggregates");
         String timeFolder = "data." + Long.toString(new Date().getTime());

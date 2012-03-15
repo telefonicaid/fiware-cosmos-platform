@@ -4,31 +4,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import junit.framework.TestCase;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import static org.apache.hadoop.mrunit.testutil.ExtendedAssert.assertListEquals;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
+import static org.apache.hadoop.mrunit.testutil.ExtendedAssert.assertListEquals;
 import org.apache.hadoop.mrunit.types.Pair;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.bdp.kpicalculation.data.KpiCalculationCounter;
-import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol;
-import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
+import es.tid.bdp.kpicalculation.generated.data.KpiCalculationProtocol;
+import es.tid.bdp.kpicalculation.generated.data.KpiCalculationProtocol.WebProfilingLog;
 
 /**
  * Test case for KpiCleanerMapper
- * 
+ *
  * @author javierb
  */
-public class KpiCleanerMapperTest extends TestCase {
-
+public class KpiCleanerMapperTest {
     private KpiCleanerMapper mapper;
     private MapDriver<LongWritable, Text, NullWritable,
                       ProtobufWritable<WebProfilingLog>> driver;
-
     private ProtobufWritable<WebProfilingLog> outputPage;
     private WebProfilingLog.Builder builder;
 
@@ -36,8 +34,9 @@ public class KpiCleanerMapperTest extends TestCase {
     protected void setUp() {
 
         this.mapper = new KpiCleanerMapper();
-        this.driver = new MapDriver<LongWritable, Text, NullWritable, 
-                ProtobufWritable<KpiCalculationProtocol.WebProfilingLog>>(this.mapper);
+        this.driver = new MapDriver<LongWritable, Text, NullWritable,
+                ProtobufWritable<KpiCalculationProtocol.WebProfilingLog>>(
+                this.mapper);
         this.driver.getConfiguration().addResource("kpi-filtering.xml");
 
         this.builder = WebProfilingLog.newBuilder();
@@ -70,7 +69,7 @@ public class KpiCleanerMapperTest extends TestCase {
 
         out = this.driver.withInput(new LongWritable(0), new Text(input)).run();
 
-        List<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>> expected = 
+        List<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>> expected =
                 new ArrayList<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>>();
         expected.add(new Pair<NullWritable, ProtobufWritable<WebProfilingLog>>(
                 NullWritable.get(), this.outputPage));
@@ -86,7 +85,7 @@ public class KpiCleanerMapperTest extends TestCase {
 
         out = this.driver.withInput(new LongWritable(0), new Text(line)).run();
 
-        List<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>> expected = 
+        List<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>> expected =
                 new ArrayList<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>>();
 
         assertEquals(
@@ -107,7 +106,7 @@ public class KpiCleanerMapperTest extends TestCase {
 
         out = this.driver.withInput(new LongWritable(0), new Text(line)).run();
 
-        List<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>> expected = 
+        List<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>> expected =
                 new ArrayList<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>>();
 
         assertEquals(
@@ -128,7 +127,7 @@ public class KpiCleanerMapperTest extends TestCase {
 
         out = this.driver.withInput(new LongWritable(0), new Text(line)).run();
 
-        List<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>> expected = 
+        List<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>> expected =
                 new ArrayList<Pair<NullWritable, ProtobufWritable<WebProfilingLog>>>();
 
         assertEquals(
@@ -140,5 +139,4 @@ public class KpiCleanerMapperTest extends TestCase {
                         .getValue());
         assertListEquals(expected, out);
     }
-
 }

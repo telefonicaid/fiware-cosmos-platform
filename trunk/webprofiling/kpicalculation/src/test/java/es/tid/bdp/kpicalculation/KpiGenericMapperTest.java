@@ -3,31 +3,27 @@ package es.tid.bdp.kpicalculation;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Mapper;
-import static org.apache.hadoop.mrunit.testutil.ExtendedAssert.assertListEquals;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
+import static org.apache.hadoop.mrunit.testutil.ExtendedAssert.assertListEquals;
 import org.apache.hadoop.mrunit.types.Pair;
-
 import org.junit.Before;
 import org.junit.Test;
-
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
 import es.tid.bdp.base.mapreduce.CompositeKey;
 import es.tid.bdp.base.mapreduce.SingleKey;
-import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
-
-import junit.framework.TestCase;
+import es.tid.bdp.kpicalculation.generated.data.KpiCalculationProtocol.WebProfilingLog;
 
 /**
  * Test case for KpiCleanerMapper
- * 
+ *
  * @author javierb
  */
-public class KpiGenericMapperTest extends TestCase {
+public class KpiGenericMapperTest {
     private Mapper<LongWritable, ProtobufWritable<WebProfilingLog>,
                    CompositeKey, IntWritable> mapper;
     private MapDriver<LongWritable, ProtobufWritable<WebProfilingLog>,
@@ -43,7 +39,6 @@ public class KpiGenericMapperTest extends TestCase {
                                     CompositeKey, IntWritable>(this.mapper);
         this.driver.getConfiguration().setStrings("kpi.aggregation.fields",
                                                   "protocol,device,date");
-
         this.builder = WebProfilingLog.newBuilder();
         this.builder.setVisitorId("16737b1873ef03ad");
         this.builder.setProtocol("http");

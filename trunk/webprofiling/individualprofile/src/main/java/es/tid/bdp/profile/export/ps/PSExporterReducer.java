@@ -11,10 +11,10 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.bdp.profile.data.ProfileProtocol.CategoryCount;
-import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
 import es.tid.bdp.profile.dictionary.Dictionary;
 import es.tid.bdp.profile.dictionary.comscore.DistributedCacheDictionary;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.CategoryCount;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.UserProfile;
 
 /**
  *

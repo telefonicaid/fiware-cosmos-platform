@@ -8,8 +8,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
-import es.tid.bdp.profile.data.ProfileProtocol.UserNavigation;
 import es.tid.bdp.profile.data.UserNavigationUtil;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.UserNavigation;
 
 /**
  * Maps from <line_no, log_line> to <[visitorId, date], user_navigation>

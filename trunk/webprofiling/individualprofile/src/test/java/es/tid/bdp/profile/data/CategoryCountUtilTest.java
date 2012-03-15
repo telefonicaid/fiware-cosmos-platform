@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.bdp.profile.data.ProfileProtocol.CategoryCount;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.CategoryCount;
 
 /**
  * Test case for CategoryCountUtil

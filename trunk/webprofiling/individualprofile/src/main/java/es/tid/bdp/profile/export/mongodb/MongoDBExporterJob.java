@@ -12,11 +12,11 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 
-import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.UserProfile;
 
 /**
  * Export user profiles to mongodb
- * 
+ *
  * @author sortega
  */
 public class MongoDBExporterJob extends Job {
@@ -34,11 +34,11 @@ public class MongoDBExporterJob extends Job {
 
     /**
      * Configure inputs and outputs.
-     * 
+     *
      * @param inputPath HDFS input path
-     * @param outputUrl Mongodb output url, 
+     * @param outputUrl Mongodb output url,
      *                  for instance mongodb://host/db.collection
-     * @throws IOException 
+     * @throws IOException
      */
     public void configure(Path inputPath, String outputUrl) throws IOException {
         this.setInputFormatClass(SequenceFileInputFormat.class);

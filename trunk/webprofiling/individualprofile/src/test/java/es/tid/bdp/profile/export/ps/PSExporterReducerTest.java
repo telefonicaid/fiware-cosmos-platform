@@ -14,7 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static es.tid.bdp.profile.data.CategoryCountUtil.create;
-import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.UserProfile;
 
 /**
  * Use case for ExporterReducer
@@ -33,7 +33,7 @@ public class PSExporterReducerTest {
             @Override
             protected void setupDictionary(Context context) throws IOException {
                 // Avoid loading the real dictionary
-                this.setCategoryNames(
+                PSExporterReducer.setCategoryNames(
                         new String[]{"Sport", "Leisure", "Games", "Lifestyle",
                                      "News", "Search", "Shopping", "Social"});
             }

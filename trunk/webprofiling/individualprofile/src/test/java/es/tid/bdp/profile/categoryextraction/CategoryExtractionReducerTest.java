@@ -27,11 +27,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
-import es.tid.bdp.profile.data.ProfileProtocol.CategoryInformation;
-import es.tid.bdp.profile.data.ProfileProtocol.UserNavigation;
 import es.tid.bdp.profile.data.UserNavigationUtil;
 import es.tid.bdp.profile.dictionary.Categorization;
 import es.tid.bdp.profile.dictionary.CategorizationResult;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.CategoryInformation;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.UserNavigation;
 
 /**
  * Test case for CategoryExtractionReducer

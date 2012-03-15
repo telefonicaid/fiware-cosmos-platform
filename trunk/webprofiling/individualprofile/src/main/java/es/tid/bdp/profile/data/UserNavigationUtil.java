@@ -2,7 +2,8 @@ package es.tid.bdp.profile.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
-import es.tid.bdp.profile.data.ProfileProtocol.UserNavigation;
+import es.tid.bdp.profile.generated.data.ProfileProtocol;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.UserNavigation;
 
 /**
  * Construction utils for UserNavigation class.
@@ -19,7 +20,7 @@ public class UserNavigationUtil {
     private static final int YEAR_INDEX = 8;
     private static final int MONTH_INDEX = 7;
     private static final int DAY_INDEX = 6;
-    
+
     protected UserNavigationUtil() {
     }
 

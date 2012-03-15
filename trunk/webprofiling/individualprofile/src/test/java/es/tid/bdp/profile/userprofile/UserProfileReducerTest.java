@@ -26,8 +26,8 @@ import org.junit.Test;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
 import es.tid.bdp.profile.data.CategoryCountUtil;
-import es.tid.bdp.profile.data.ProfileProtocol.CategoryCount;
-import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.CategoryCount;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.UserProfile;
 
 /**
  * Test case for UserProfileReducer

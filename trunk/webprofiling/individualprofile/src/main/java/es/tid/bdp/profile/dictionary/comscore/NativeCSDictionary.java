@@ -6,7 +6,7 @@ package es.tid.bdp.profile.dictionary.comscore;
  * @author sortega
  */
 public interface NativeCSDictionary {
-    public static final int DEFAULT_MODE = 1;
+    final int DEFAULT_MODE = 1;
 
     /**
      * Applies the dictionary to the given URL, and returns the pattern ID for

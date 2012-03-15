@@ -13,9 +13,9 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
-import es.tid.bdp.profile.data.ProfileProtocol.WebProfilingLog;
 import es.tid.bdp.profile.dictionary.comscore.DistributedCacheDictionary;
 import es.tid.bdp.profile.export.mongodb.MongoDBExporterJob;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.WebProfilingLog;
 
 /**
  *

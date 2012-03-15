@@ -9,8 +9,8 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.bson.BSONObject;
 import org.bson.BasicBSONObject;
 
-import es.tid.bdp.profile.data.ProfileProtocol.CategoryCount;
-import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.CategoryCount;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.UserProfile;
 
 /**
  *

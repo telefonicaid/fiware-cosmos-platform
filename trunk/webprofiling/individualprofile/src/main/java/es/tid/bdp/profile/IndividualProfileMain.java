@@ -1,9 +1,11 @@
 package es.tid.bdp.profile;
 
 import java.io.IOException;
+import java.util.Calendar;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -26,9 +28,10 @@ public class IndividualProfileMain extends Configured implements Tool {
     private static final String INPUT_SERIALIZATION = "input.serialization";
     private static final String PROTOBUF_SERIALIZATION = "protobuf";
 
-    private static final String TMP_DIR = "/tmp/individualprofile";
-    private static final String CATEGORIES_PATH = TMP_DIR + "/categories";
-    private static final String PROFILE_PATH = TMP_DIR + "profile";
+    private static final String DIR_SEPARATOR = "/";
+    private static final String TMP_DIR = "tmp";
+    private static final String CATEGORIES_DIR = "categories";
+    private static final String PROFILE_DIR = "profile";
     
     private static Logger logger = Logger.getLogger(
             IndividualProfileMain.class);
@@ -42,10 +45,22 @@ public class IndividualProfileMain extends Configured implements Tool {
                     + "weblogs_path psoutput_path [mongo_url]\n"
                     + "\tDefault input serialization is protobuf");
         }
-
+        
+        FileSystem fs = FileSystem.get(this.getConf());
+        
+        Path tmpDir = new Path(getTmpDir());
+        fs.create(tmpDir, true);
+        if (!fs.exists(tmpDir)) {
+            logger.fatal("Could not create " + tmpDir);
+        }
+        logger.info("Using " + tmpDir + " as temp directory");
+        if (!fs.deleteOnExit(tmpDir)) {
+            logger.warn("Could not set temp directory for automatic deletion");
+        }
+        
         Path webLogsPath = new Path(args[0]);
-        Path categoriesPath = new Path(CATEGORIES_PATH);
-        Path profilePath = new Path(PROFILE_PATH);
+        Path categoriesPath = new Path(tmpDir + DIR_SEPARATOR + CATEGORIES_DIR);
+        Path profilePath = new Path(tmpDir + DIR_SEPARATOR + PROFILE_DIR);
 
         CategoryExtractionJob ceJob = new CategoryExtractionJob(this.getConf());
         if (this.getConf().get(INPUT_SERIALIZATION, PROTOBUF_SERIALIZATION)
@@ -84,10 +99,19 @@ public class IndividualProfileMain extends Configured implements Tool {
                 return 1;
             }
         }
-
+        
         return 0;
     }
 
+    private static String getTmpDir() {
+        final String path = DIR_SEPARATOR + TMP_DIR + DIR_SEPARATOR +
+                "individualprofile" + "_"
+                + Calendar.YEAR + Calendar.MONDAY + Calendar.DATE
+                + Calendar.HOUR_OF_DAY + Calendar.MINUTE + Calendar.SECOND
+                + Calendar.MILLISECOND;
+        return path;
+    }
+    
     public static void main(String[] args) {
         try {
             int res = ToolRunner.run(new Configuration(),

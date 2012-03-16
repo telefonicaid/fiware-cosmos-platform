@@ -200,6 +200,8 @@ namespace samson {
             
             
             // Sort list of blocks using a simple array 
+            // Fast alternative for sorting if necessary
+            /*
             {
                 Block** tmp_blocks = (Block**) malloc( sizeof(Block*) * blocks.size() );
                 au::list<Block>::iterator it_blocks;
@@ -210,10 +212,10 @@ namespace samson {
                 {
                     au::ExecesiveTimeAlarm alarm("BlockManager::sort2" , 0.05 );
                     qsort(tmp_blocks, blocks.size() , sizeof(Block*), compare_blocks2 );
-                    blocks.sort( compare_blocks );
                 }
                 free( tmp_blocks );
             }
+             */
             
             
             // --------------------------------------------------------------------------------

@@ -118,7 +118,7 @@ class ExtQueueViewer: public QWidget
         
         Plot* plot;
         //Data for the plot
-        au::RRT<unsigned long,50> rateCollection;
+        au::ResizableRRT<unsigned long> rateCollection;
         //Plot controls
         QHBoxLayout* plotControlsLayout;
         QPushButton* plotReset;
@@ -160,6 +160,7 @@ class ExtQueueViewer: public QWidget
         void clearFeed();
         void redrawPlot();
         void onPlotReset();
+        void onPlotNSamplesChanged();
         
 };
 

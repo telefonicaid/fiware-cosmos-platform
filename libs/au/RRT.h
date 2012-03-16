@@ -92,6 +92,75 @@ public:
     
 };   
 
+template <class T>
+class ResizableRRT
+{
+    
+public:
+    
+    std::list<T> elements;
+    int n;
+    
+    ResizableRRT()
+    {
+        n=1;
+        while( (int)elements.size() < n )
+            elements.push_back( 0 );
+    }
+
+    void reset()
+    {
+        elements.clear();
+        while( (int)elements.size() < n )
+            elements.push_back( 0 );
+    }
+
+    void resize(int _n)
+    {
+        n = _n;
+        elements.clear();
+        
+        while( (int)elements.size() < n )
+            elements.push_back( 0 );
+    }
+   
+    void push( T value )
+    {
+        elements.push_back( value );
+        
+        while ((int)elements.size() > n)
+            elements.pop_front();
+    }
+    
+    
+    T get( int p )
+    {
+        
+        int c = 0;
+        typename std::list<T>::iterator it;
+        for ( it = elements.begin() ; it != elements.end() ; it++ )
+        {
+            if( c == p)
+                return *it;
+            c++;
+        }
+        
+        return 0;
+    }
+    
+    T average()
+    {
+        T total;
+        typename std::list<T>::iterator it_elements;
+        for (it_elements = elements.begin() ; it_elements  != elements.end() ; it_elements++)
+            total += *it_elements;
+        
+        return total / elements.size();
+    }
+    
+    
+};   
+
 template <class T,int n, int average_length>
 class RRTAverage
 {

@@ -144,12 +144,14 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     plotControlsLayout->addWidget(plotNSamples);
     plotControlsLayout->addStretch();
     plot->layout->addLayout(plotControlsLayout);
+    rateCollection.resize(50);
     
     connect(connectButton, SIGNAL(clicked()), this, SLOT(onConnectButtonClicked()));
     connect(connectNew, SIGNAL(toggled(bool)), this, SLOT(onConnectNewClicked(bool)));
     connect(connectClear, SIGNAL(toggled(bool)), this, SLOT(onConnectClearClicked(bool)));
     connect(clearFeedButton, SIGNAL(clicked()), this, SLOT(clearFeed()));
     connect(plotReset, SIGNAL(clicked()), this, SLOT(onPlotReset()));
+    connect(plotNSamples, SIGNAL(editingFinished()), this, SLOT(onPlotNSamplesChanged()));
     
     mainLayout->addWidget(name);
     mainLayout->addLayout(generalLayout);
@@ -337,6 +339,13 @@ void ExtQueueViewer::onPlotReset()
 {
    rateCollection.reset();
    redrawPlot();
+}
+
+void ExtQueueViewer::onPlotNSamplesChanged()
+{
+    int value = plotNSamples->text().toInt();
+    rateCollection.resize(value);
+    redrawPlot();
 }
 
 } //namespace

@@ -79,8 +79,8 @@ public class PSExporterReducerTest {
                 this.driver.withInput(this.userId,
                                       asList(wrappedP1,wrappedP2)).run();
         assertEquals(5, results.size());
-        assertEquals("M|PS|unnamed||" + SAMPLE_TIMESTAMP,
-                     results.get(0).getSecond().toString());
+        assertEquals("M|PS|psprofile_BDP_20120315-180025.dat||" +
+                     SAMPLE_TIMESTAMP, results.get(0).getSecond().toString());
         assertEquals("H|kpi|service_user_id|update_date|update_source|Sport|" +
                      "Leisure|Games|Lifestyle|News|Search|Shopping|Social",
                      results.get(1).getSecond().toString());

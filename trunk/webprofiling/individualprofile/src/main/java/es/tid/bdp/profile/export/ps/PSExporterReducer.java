@@ -33,7 +33,7 @@ public class PSExporterReducer extends Reducer<Text,
     public static final String PSEXPORT_SOURCE = "psexport.source";
     public static final String PSEXPORT_TIMESTAMP = "psexport.timestamp";
 
-    private static final String FILENAME_FORMAT = "/psprofile_%s_%s.dat";
+    private static final String FILENAME_FORMAT = "psprofile_%s_%s.dat";
     private static final SimpleDateFormat RECORD_TIMESTAMP_FORMAT =
             new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
     private static final SimpleDateFormat FILENAME_TIMESTAMP_FORMAT =
@@ -61,12 +61,16 @@ public class PSExporterReducer extends Reducer<Text,
         job.getConfiguration().setLong(PSEXPORT_TIMESTAMP, date.getTime());
     }
 
-    public static Path getOutputFileName(Job job) {
+    public static Path getOutputPath(Job job) {
         Path outputPath = FileOutputFormat.getOutputPath(job);
-        Configuration config = job.getConfiguration();
+        return outputPath.suffix(Path.SEPARATOR + getOutputFileName(
+                job.getConfiguration()));
+    }
+
+    private static String getOutputFileName(Configuration config) {
         String timestamp = FILENAME_TIMESTAMP_FORMAT.format(getTimestamp(config));
-        return outputPath.suffix(String.format(FILENAME_FORMAT,
-                config.get(PSEXPORT_SOURCE, DEFAULT_PSEXPORT_SOURCE), timestamp));
+        return String.format(FILENAME_FORMAT, config.get(PSEXPORT_SOURCE,
+                DEFAULT_PSEXPORT_SOURCE), timestamp);
     }
 
     @Override
@@ -163,7 +167,7 @@ public class PSExporterReducer extends Reducer<Text,
         this.builder.append("M|")
                     .append(config.get(PSEXPORT_USER, DEFAULT_PSEXPORT_USER))
                     .append("|")
-                    .append("unnamed") // TODO: USE CSV FILENAME
+                    .append(getOutputFileName(config))
                     .append("||")
                     .append(this.timestamp);
         writeRecord(context);

@@ -5,14 +5,20 @@
 
     <parent>
         <groupId>es.tid.bdp</groupId>
-        <artifactId>webprofiling</artifactId>
+        <artifactId>individualprofile</artifactId>
         <version>0.0.3.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>individualprofile</artifactId>
-    <name>individualprofile</name>
-    <packaging>pom</packaging>
+    <artifactId>individualprofile-api</artifactId>
+    <name>individualprofile-api</name>
+    <packaging>war</packaging>
+
+    <properties>
+        <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jersey-version>1.11</jersey-version>
+    </properties>
 
     <build>
         <pluginManagement>
@@ -33,7 +39,43 @@
                 <configuration>
                     <target>1.6</target>
                     <source>1.6</source>
+                    <compilerArguments>
+                        <endorseddirs>${endorsed.dir}</endorseddirs>
+                    </compilerArguments>
                 </configuration>
+            </plugin>
+           <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.1.1</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.1</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${endorsed.dir}</outputDirectory>
+                            <silent>true</silent>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>javax</groupId>
+                                    <artifactId>javaee-endorsed-api</artifactId>
+                                    <version>6.0</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>com.google.protobuf.tools</groupId>
@@ -216,10 +258,4 @@
             <url>${repoSiteUrl}/${project.groupId}/individualprofile</url>
         </site>
     </distributionManagement>
-
-    <modules>
-        <module>core</module>
-        <module>api</module>
-    </modules>
-
 </project>

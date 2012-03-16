@@ -5,14 +5,13 @@
 
     <parent>
         <groupId>es.tid.bdp</groupId>
-        <artifactId>webprofiling</artifactId>
+        <artifactId>individualprofile</artifactId>
         <version>0.0.3.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>individualprofile</artifactId>
-    <name>individualprofile</name>
-    <packaging>pom</packaging>
+    <artifactId>individualprofile-core</artifactId>
+    <name>individualprofile-core</name>
 
     <build>
         <pluginManagement>
@@ -216,10 +215,4 @@
             <url>${repoSiteUrl}/${project.groupId}/individualprofile</url>
         </site>
     </distributionManagement>
-
-    <modules>
-        <module>core</module>
-        <module>api</module>
-    </modules>
-
 </project>

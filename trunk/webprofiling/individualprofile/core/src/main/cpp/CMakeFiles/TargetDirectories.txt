@@ -1,2 +1,0 @@
-/Users/dmicol/code/BigData/trunk/webprofiling/individualprofile/src/main/cpp/CMakeFiles/comscore.dir
-/Users/dmicol/code/BigData/trunk/webprofiling/individualprofile/src/main/cpp/CMakeFiles/pack_dictionary.dir

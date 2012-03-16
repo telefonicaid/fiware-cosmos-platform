@@ -135,7 +135,9 @@ public class PSExporterReducer extends Reducer<Text,
                     .append("|")
                     .append(userId)
                     .append("_")
-                    .append(profile.getDate())
+                    // TODO: we shouldn't be storing tabbed dates in kpi
+                    //       calculation
+                    .append(profile.getDate().replaceAll("\t", ""))
                     .append("|")
                     .append(this.timestamp)
                     .append("|")

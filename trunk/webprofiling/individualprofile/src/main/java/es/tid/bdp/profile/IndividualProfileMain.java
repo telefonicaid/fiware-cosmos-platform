@@ -48,8 +48,7 @@ public class IndividualProfileMain extends Configured implements Tool {
         FileSystem fs = FileSystem.get(this.getConf());
         
         Path tmpDir = new Path(getTmpDir());
-        fs.create(tmpDir, true);
-        if (!fs.exists(tmpDir)) {
+        if (!fs.mkdirs(tmpDir)) {
             logger.fatal("Could not create " + tmpDir);
         }
         logger.info("Using " + tmpDir + " as temp directory");

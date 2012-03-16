@@ -70,7 +70,7 @@ public class KpiMain extends Configured implements Tool {
         Path inputPath = new Path(args[0]);
         Path outputPath = new Path(args[1] + "/aggregates");
         String timeFolder = "data." + Long.toString(new Date().getTime());
-        Path tmpPath = new Path(args[1] + "/cleaned/" + timeFolder);
+        Path tmpPath = new Path(args[1] + timeFolder + "/cleaned/");
         String mongoUrl = args[2];
 
         Configuration conf = getConf();
@@ -87,8 +87,8 @@ public class KpiMain extends Configured implements Tool {
         config.read(KPI_DEFINITIONS);
 
         for (KpiFeature features : config.getKpiFeatures()) {
-            Path kpiOutputPath = outputPath.suffix("/" + features.getName() + "/"
-                    + timeFolder);
+            Path kpiOutputPath = outputPath.suffix("/" + timeFolder + "/"
+                    + features.getName());
             Job aggregationJob = createAggregationJob(conf, features,
                                                       tmpPath, kpiOutputPath);
             if (!aggregationJob.waitForCompletion(true)) {

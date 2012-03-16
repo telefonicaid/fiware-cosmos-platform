@@ -49,6 +49,12 @@
                     <exclude>**/*.jpg</exclude>
                 </excludes>
             </resource>
+            <resource>
+                <directory>src/main/resources/conf</directory>
+            </resource>
+            <resource>
+                <directory>src/test/resources/conf</directory>
+            </resource>
         </resources>
 
         <pluginManagement>
@@ -125,15 +131,6 @@
                 </executions>
             </plugin>
         </plugins>
-        
-        <resources>
-            <resource>
-                <directory>src/main/resources/conf</directory>
-            </resource>
-            <resource>
-                <directory>src/test/resources/conf</directory>
-            </resource>
-        </resources>
     </build>
 
 </project>

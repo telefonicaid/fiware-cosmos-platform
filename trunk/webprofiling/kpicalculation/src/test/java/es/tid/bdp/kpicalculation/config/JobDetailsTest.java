@@ -10,11 +10,11 @@ import org.junit.Test;
  * @author dmicol, sortega
  */
 public class JobDetailsTest {
-    private JobDetails instance;
+    private KpiFeature instance;
 
     @Before
     public void setUp() {
-        this.instance = new JobDetails("a", new String[] { "b" });
+        this.instance = new KpiFeature("a", new String[] { "b" });
     }
 
     @Test
@@ -28,12 +28,12 @@ public class JobDetailsTest {
     public void testEquality() throws Exception {
         assertFalse(this.instance.equals(null));
         assertFalse(this.instance.equals(new Object()));
-        assertFalse(this.instance.equals(new JobDetails("different",
+        assertFalse(this.instance.equals(new KpiFeature("different",
                 new String[] { "b" })));
-        assertFalse(this.instance.equals(new JobDetails("a", new String[] {
+        assertFalse(this.instance.equals(new KpiFeature("a", new String[] {
             "different" })));
-        assertFalse(this.instance.equals(new JobDetails("a", new String[] {
+        assertFalse(this.instance.equals(new KpiFeature("a", new String[] {
             "b" }, "different")));
-        assertEquals(this.instance, new JobDetails("a", new String[] { "b" }));
+        assertEquals(this.instance, new KpiFeature("a", new String[] { "b" }));
     }
 }

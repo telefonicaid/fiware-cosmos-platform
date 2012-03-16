@@ -70,7 +70,7 @@ public class KpiMain extends Configured implements Tool {
         Path inputPath = new Path(args[0]);
         Path outputPath = new Path(args[1] + "/aggregates");
         String timeFolder = "data." + Long.toString(new Date().getTime());
-        Path tmpPath = new Path(args[1] + "/cleaned/" + timeFolder);
+        Path tmpPath = new Path(args[1] + timeFolder + "/cleaned/");
 
         Configuration conf = getConf();
         conf.set("kpicalculation.temp.path", tmpPath.toString());
@@ -86,8 +86,8 @@ public class KpiMain extends Configured implements Tool {
         config.read(KPI_DEFINITIONS);
 
         for (JobDetails details : config.getKpis()) {
-            Path kpiOutputPath = outputPath.suffix("/" + details.getName() + "/"
-                    + timeFolder);
+            Path kpiOutputPath = outputPath.suffix("/" + timeFolder + "/"
+                    + details.getName());
             Job aggregationJob = new Job(conf, "Aggregation Job ..."
                     + details.getName());
 

@@ -13,6 +13,10 @@
     <packaging>pom</packaging>
     <name>webprofiling</name>
     
+    <properties>
+        <jersey-version>1.11</jersey-version>
+    </properties>
+    
     <build>
         <!-- Resources being filtered -->
         <resources>
@@ -261,6 +265,34 @@
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-hadoop</artifactId>
             <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.9.0</version>
+            <scope>test</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-web-api</artifactId>
+            <version>6.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-server</artifactId>
+            <version>${jersey-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-grizzly2</artifactId>
+            <version>${jersey-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.jersey.contribs</groupId>
+            <artifactId>jersey-spring</artifactId>
+            <version>${jersey-version}</version>
         </dependency>
     </dependencies>
 

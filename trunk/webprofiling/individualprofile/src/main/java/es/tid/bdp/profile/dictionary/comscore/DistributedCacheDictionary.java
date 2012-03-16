@@ -1,6 +1,5 @@
 package es.tid.bdp.profile.dictionary.comscore;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.LinkedList;

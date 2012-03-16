@@ -62,7 +62,7 @@ std::string EngineElement::getDescription()
 {
     if( repeated )
     {
-        return au::str( "[ Engine element '%s' to be executed in %02.2f seconds ( repeat every %d secs , repeated %d times )] " 
+        return au::str( "%s [ Engine element to be executed in %02.2f seconds ( repeat every %d secs , repeated %d times )] "
                        , description.c_str()
                        , getTimeToTrigger()
                        , period

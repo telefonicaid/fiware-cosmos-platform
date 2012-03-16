@@ -36,6 +36,7 @@ typedef enum TraceLevels
 
 	LmtEngine                 = 200, // SamsonEngine
 	LmtEngineNotification,
+	LmtEngineTime,
     
     
 	LmtDisk,                         // disk library	

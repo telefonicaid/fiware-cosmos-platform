@@ -47,7 +47,7 @@ Notification::Notification( const char* _name , Object * _object , std::set<size
 std::string Notification::getDescription()
 {
     std::ostringstream output;
-    output << "[ Notification " << name << " ";
+    output << "Notification_" << name << "[ Notification " << name << " ";
     output << "Targets: (";
     std::set<size_t>::iterator iterator_listener_id; 
     for ( iterator_listener_id = targets.begin() ; iterator_listener_id != targets.end() ; iterator_listener_id++)

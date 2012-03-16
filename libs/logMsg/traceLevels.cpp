@@ -64,7 +64,7 @@ char* traceLevelName(TraceLevels level)
 	case LmtProcessLookup:               return (char*) "Looking up a Process (Supervisor only)";
 	case LmtSpawnerLookup:               return (char*) "Looking up a Spawner (Supervisor only)";
 
-	case LmtIsolated:                    return (char*) "Isolated process";
+
 			
 	case LmtOpen:                        return (char*) "open system calls";
 	case LmtConnect:                     return (char*) "socket connect system calls";
@@ -83,7 +83,7 @@ char* traceLevelName(TraceLevels level)
 	case LmtControllerConnect:           return (char*) "Connection to controller";
 	case LmtPacketReceive:               return (char*) "Packet Receive";
 
-	case LmtNetworkInterface:            return (char*) "Network Interface";
+	case LmtNetworkInterface:            return (char*) "Network_Interface";
 	case LmtDelilah:                     return (char*) "Delilah";
 
 	case LmtLogServer:                   return (char*) "Log Server";
@@ -104,31 +104,42 @@ char* traceLevelName(TraceLevels level)
 	case LmtResult:                      return (char*) "Result";
 	case LmtSource:                      return (char*) "Source";
 	case LmtConnection:                  return (char*) "Connection";
-	case LmtQueueMgr:                    return (char*) "Queue Manager";
-	case LmtSourceMgr:                   return (char*) "Source Manager";
-	case LmtResultMgr:                   return (char*) "Result Manager";
+	case LmtQueueMgr:                    return (char*) "Queue_Manager";
+	case LmtSourceMgr:                   return (char*) "Source_Manager";
+	case LmtResultMgr:                   return (char*) "Result_Manager";
 
-	case LmtMouseEvent:                  return (char*) "Mouse Event";
+	case LmtMouseEvent:                  return (char*) "Mouse_Event";
 	case LmtUser:                        return (char*) "User";
 
-	case LmtSceneItemChain:              return (char*) "Scene Item Chain";
+	case LmtSceneItemChain:              return (char*) "Scene_Item_Chain";
 	case LmtMove:                        return (char*) "Move";
 
-	case LmtModuleManager:				 return (char*) "ModuleManager";
-	case LmtDisk:                        return (char*) "Disk library";
-	case LmtMemory:						 return (char*) "Memory library";
-	case LmtOperations:                  return (char*) "Operations";
-	case LmtWait:                        return (char*) "Wait";
-	case LmtReset:                       return (char*) "Reset";
+    case LmtWait:                        return (char*) "Wait";
+    case LmtReset:                       return (char*) "Reset";
 
-	case LmtEngine:						 return (char*) "Engine";
-			
-	case LmtUser01:                      return (char*) "User 01";
-	case LmtUser02:                      return (char*) "User 02";
-	case LmtUser03:                      return (char*) "User 03";
-	case LmtUser04:                      return (char*) "User 04";
-	case LmtUser05:                      return (char*) "User 05";
-	case LmtUser06:                      return (char*) "User 06";
+    case LmtExcesiveTime:                return (char*) "ExcesiveTime";
+
+    case LmtEngine:                      return (char*) "Engine";
+    case LmtEngineNotification:          return (char*) "Engine_Notification";
+    case LmtEngineTime:                  return (char*) "EngineTime";
+
+    case LmtModuleManager:				 return (char*) "ModuleManager";
+	case LmtDisk:                        return (char*) "Disk_library";
+	case LmtMemory:						 return (char*) "Memory_library";
+	case LmtProcessManager:              return (char*) "Process_Manager";
+	case LmtBlockManager:                return (char*) "Block_Manager";
+
+	case LmtModuleManager:               return (char*) "Module_Manager";
+	case LmtOperations:                  return (char*) "Operations";
+
+	case LmtIsolated:                    return (char*) "Isolated_process";
+
+	case LmtUser01:                      return (char*) "User_01";
+	case LmtUser02:                      return (char*) "User_02";
+	case LmtUser03:                      return (char*) "User_03";
+	case LmtUser04:                      return (char*) "User_04";
+	case LmtUser05:                      return (char*) "User_05";
+	case LmtUser06:                      return (char*) "User_06";
 	}
 
 	return (char*) 0;

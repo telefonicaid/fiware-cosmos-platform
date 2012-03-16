@@ -238,7 +238,7 @@ void Engine::run()
         
         {
             // Execute the item selected as running_element
-            LM_T( LmtEngine, ("[START] Engine executing %s" , running_element->getDescription().c_str() ));
+            LM_T( LmtEngineTime, ("[START] Engine:  executing %s" , running_element->getDescription().c_str() ));
             
             int waiting_time = running_element->getWaitingTime();
             if ( waiting_time > 10 )
@@ -281,7 +281,7 @@ void Engine::run()
                 }
             }
             
-            LM_T( LmtEngine, ("[DONE] Engine executing %s" , running_element->getDescription().c_str()));
+            LM_T( LmtEngineTime, ("[DONE] Engine:  executing %s" , running_element->getDescription().c_str()));
             
             EngineElement * _running_element = running_element;
             running_element = NULL; // Put running element to NULL

@@ -51,9 +51,8 @@ public class KpiMain extends Configured implements Tool {
             int res = ToolRunner.run(new Configuration(), new KpiMain(), args);
             System.exit(res);
         } catch (Exception e) {
-            System.err.println(e.getStackTrace());
-            //LOGGER.setLevel(Level.ALL);
-            //LOGGER.log(Level.SEVERE, "Execution failed: {0}", e.getMessage());
+            LOGGER.setLevel(Level.ALL);
+            LOGGER.log(Level.SEVERE, "Execution failed: {0}", e.getMessage());
             System.exit(1);
         }
     }
@@ -64,7 +63,7 @@ public class KpiMain extends Configured implements Tool {
         if (args.length != 3) {
             LOGGER.setLevel(Level.ALL);
             LOGGER.severe("Wrong Arguments. Example: hadoop jar "
-                    + "kpicalculation-LocalBuild.jar inputPath outputPath mongoURL");
+                    + "kpicalculation.jar inputPath outputPath mongoURL");
             return 1;
         }
 

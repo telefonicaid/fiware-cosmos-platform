@@ -22,18 +22,21 @@ import es.tid.bdp.profile.userprofile.UserProfileJob;
  * @author dmicol, sortega
  */
 public class IndividualProfileMain extends Configured implements Tool {
+    private static final Logger LOG = Logger.getLogger(
+            IndividualProfileMain.class);
     private static final int MIN_ARGS = 2;
     private static final int MAX_ARGS = 3;
 
     private static final String INPUT_SERIALIZATION = "input.serialization";
     private static final String PROTOBUF_SERIALIZATION = "protobuf";
-
     private static final String TMP_DIR = "tmp";
     private static final String CATEGORIES_DIR = "categories";
     private static final String PROFILE_DIR = "profile";
 
-    private static Logger logger = Logger.getLogger(
-            IndividualProfileMain.class);
+    private Path categoriesPath;
+    private Path profilePath;
+    private Path tmpDir;
+    private Path webLogsPath;
 
     @Override
     public int run(String[] args)
@@ -44,46 +47,31 @@ public class IndividualProfileMain extends Configured implements Tool {
                     + "weblogs_path psoutput_path [mongo_url]\n"
                     + "\tDefault input serialization is protobuf");
         }
-
-        FileSystem fs = FileSystem.get(this.getConf());
-
-        Path tmpDir = new Path(getTmpDir());
-        if (!fs.mkdirs(tmpDir)) {
-            logger.fatal("Could not create " + tmpDir);
-        }
-        logger.info("Using " + tmpDir + " as temp directory");
-        if (!fs.deleteOnExit(tmpDir)) {
-            logger.warn("Could not set temp directory for automatic deletion");
-        }
-
-        Path webLogsPath = new Path(args[0]);
-        Path categoriesPath = new Path(
-                tmpDir + Path.SEPARATOR + CATEGORIES_DIR);
-        Path profilePath = new Path(tmpDir + Path.SEPARATOR + PROFILE_DIR);
+        initPaths(args);
 
         CategoryExtractionJob ceJob = new CategoryExtractionJob(this.getConf());
         if (this.getConf().get(INPUT_SERIALIZATION, PROTOBUF_SERIALIZATION)
                 .equals(PROTOBUF_SERIALIZATION)) {
-            logger.info("Protobuf input");
+            LOG.info("Protobuf input");
             ceJob.configureProtobufInput();
         } else {
-            logger.info("Text input");
+            LOG.info("Text input");
             ceJob.configureTextInput();
         }
-        ceJob.configurePaths(webLogsPath, categoriesPath);
+        ceJob.configurePaths(this.webLogsPath, this.categoriesPath);
         if (!ceJob.waitForCompletion(true)) {
             return 1;
         }
 
         UserProfileJob upJob = new UserProfileJob(this.getConf());
-        upJob.configure(categoriesPath, profilePath);
+        upJob.configure(this.categoriesPath, this.profilePath);
         if (!upJob.waitForCompletion(true)) {
             return 1;
         }
 
         String psOutputFile = args[1];
         PSExporterJob exPsJob = new PSExporterJob(this.getConf());
-        exPsJob.configure(profilePath, new Path(psOutputFile));
+        exPsJob.configure(this.profilePath, new Path(psOutputFile));
         if (!exPsJob.waitForCompletion(true)) {
             return 1;
         }
@@ -93,13 +81,29 @@ public class IndividualProfileMain extends Configured implements Tool {
             String mongoUrl = args[2];
             MongoDBExporterJob exMongoJob = new MongoDBExporterJob(
                     this.getConf());
-            exMongoJob.configure(profilePath, mongoUrl);
+            exMongoJob.configure(this.profilePath, mongoUrl);
             if (!exMongoJob.waitForCompletion(true)) {
                 return 1;
             }
         }
 
         return 0;
+    }
+
+    private void initPaths(String[] args) throws IOException {
+        FileSystem fs = FileSystem.get(this.getConf());
+        this.tmpDir = new Path(getTmpDir());
+        if (!fs.mkdirs(this.tmpDir)) {
+            LOG.fatal("Could not create " + this.tmpDir);
+        }
+        LOG.info("Using " + this.tmpDir + " as temp directory");
+        if (!fs.deleteOnExit(this.tmpDir)) {
+            LOG.warn("Could not set temp directory for automatic deletion");
+        }
+        this.webLogsPath = new Path(args[0]);
+        this.categoriesPath = new Path(this.tmpDir + Path.SEPARATOR +
+                                       CATEGORIES_DIR);
+        this.profilePath = new Path(this.tmpDir + Path.SEPARATOR + PROFILE_DIR);
     }
 
     private static String getTmpDir() {

@@ -8,11 +8,13 @@ import java.util.Map;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import es.tid.bdp.profile.dictionary.Dictionary;
 import es.tid.bdp.profile.dictionary.comscore.DistributedCacheDictionary;
@@ -31,8 +33,11 @@ public class PSExporterReducer extends Reducer<Text,
     public static final String PSEXPORT_SOURCE = "psexport.source";
     public static final String PSEXPORT_TIMESTAMP = "psexport.timestamp";
 
-    private static final SimpleDateFormat TIMESTAMP_FORMAT =
+    private static final String FILENAME_FORMAT = "/psprofile_%s_%s.dat";
+    private static final SimpleDateFormat RECORD_TIMESTAMP_FORMAT =
             new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+    private static final SimpleDateFormat FILENAME_TIMESTAMP_FORMAT =
+            new SimpleDateFormat("yyyyMMdd-HHmmss");
     private static final String DEFAULT_PSEXPORT_USER = "PS";
     private static final String DEFAULT_PSEXPORT_SERVICE = "kpi";
     private static final String DEFAULT_PSEXPORT_SOURCE = "BDP";
@@ -53,8 +58,15 @@ public class PSExporterReducer extends Reducer<Text,
      * @param date           Timestamp
      */
     public static void setTimestamp(Job job, Date date) {
-        job.getConfiguration().set(PSEXPORT_TIMESTAMP,
-                                   TIMESTAMP_FORMAT.format(date));
+        job.getConfiguration().setLong(PSEXPORT_TIMESTAMP, date.getTime());
+    }
+
+    public static Path getOutputFileName(Job job) {
+        Path outputPath = FileOutputFormat.getOutputPath(job);
+        Configuration config = job.getConfiguration();
+        String timestamp = FILENAME_TIMESTAMP_FORMAT.format(getTimestamp(config));
+        return outputPath.suffix(String.format(FILENAME_FORMAT,
+                config.get(PSEXPORT_SOURCE, DEFAULT_PSEXPORT_SOURCE), timestamp));
     }
 
     @Override
@@ -65,11 +77,8 @@ public class PSExporterReducer extends Reducer<Text,
         this.record = new Text();
         this.categories = new HashMap<String, CategoryCount>();
         this.recordCounter = context.getCounter(PSExporterCounter.NUM_RECORDS);
-
-        this.timestamp = context.getConfiguration().get(PSEXPORT_TIMESTAMP);
-        if (this.timestamp == null || this.timestamp.isEmpty()) {
-            throw new IllegalStateException("Undefined timestamp");
-        }
+        this.timestamp = RECORD_TIMESTAMP_FORMAT.format(
+                getTimestamp(context.getConfiguration()));
         this.source = context.getConfiguration().get(PSEXPORT_SOURCE,
                                                      DEFAULT_PSEXPORT_SOURCE);
     }
@@ -103,6 +112,16 @@ public class PSExporterReducer extends Reducer<Text,
             }
             writeDataRecord(userId, profile, context);
         }
+    }
+
+    @Override
+    public void cleanup(Context context) throws IOException,
+                                                InterruptedException {
+        newRecord();
+        this.builder.append("F|")
+                .append(this.recordCounter.getValue());
+        this.record.set(this.builder.toString());
+        context.write(NullWritable.get(), this.record);
     }
 
     private void writeDataRecord(Text userId, UserProfile profile,
@@ -173,13 +192,12 @@ public class PSExporterReducer extends Reducer<Text,
         context.write(NullWritable.get(), this.record);
     }
 
-    @Override
-    public void cleanup(Context context) throws IOException,
-                                                InterruptedException {
-        newRecord();
-        this.builder.append("F|")
-                .append(this.recordCounter.getValue());
-        this.record.set(this.builder.toString());
-        context.write(NullWritable.get(), this.record);
+    private static Date getTimestamp(Configuration config) {
+        long timestamp = config.getLong(PSEXPORT_TIMESTAMP, 0);
+        if (timestamp == 0) {
+            throw new IllegalStateException("Undefined timestamp");
+        } else {
+            return new Date(timestamp);
+        }
     }
 }

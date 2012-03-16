@@ -24,7 +24,8 @@ import es.tid.bdp.profile.generated.data.ProfileProtocol.UserProfile;
  * @author dmicol
  */
 public class PSExporterReducerTest {
-    private static final String SAMPLE_TIMESTAMP = "2012-03-15T12:00:00Z";
+    private static final long SAMPLE_EPOCH = 1331830825230L;
+    private static final String SAMPLE_TIMESTAMP = "2012-03-15T18:00:25Z";
     private PSExporterReducer instance;
     private ReduceDriver<Text, ProtobufWritable<UserProfile>, NullWritable,
                          Text> driver;
@@ -43,8 +44,8 @@ public class PSExporterReducerTest {
         };
         this.driver = new ReduceDriver<Text, ProtobufWritable<UserProfile>,
                 NullWritable, Text>(this.instance);
-        this.driver.getConfiguration().set(PSExporterReducer.PSEXPORT_TIMESTAMP,
-                                           SAMPLE_TIMESTAMP);
+        this.driver.getConfiguration().setLong(
+                PSExporterReducer.PSEXPORT_TIMESTAMP, SAMPLE_EPOCH);
         this.userId = new Text("USER00123");
     }
 
@@ -96,8 +97,9 @@ public class PSExporterReducerTest {
     @Test
     public void shouldConfigureTimestamp() throws Exception {
         Job job = new Job();
-        PSExporterReducer.setTimestamp(job, new Date(1331830825230L));
-        assertEquals("2012-03-15T18:00:25Z", job.getConfiguration()
-                .get(PSExporterReducer.PSEXPORT_TIMESTAMP));
+        Date aDate = new Date(SAMPLE_EPOCH);
+        PSExporterReducer.setTimestamp(job, aDate);
+        assertEquals(aDate.getTime(), job.getConfiguration().getLong(
+                PSExporterReducer.PSEXPORT_TIMESTAMP, -1));
     }
 }

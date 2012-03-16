@@ -46,7 +46,7 @@ public class KpiMain extends Configured implements Tool {
             "/kpi.properties");
     private static final Logger LOGGER = Logger.getLogger("KpiMain");
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         try {
             int res = ToolRunner.run(new Configuration(), new KpiMain(), args);
             System.exit(res);

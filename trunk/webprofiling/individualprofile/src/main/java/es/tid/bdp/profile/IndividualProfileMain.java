@@ -47,7 +47,7 @@ public class IndividualProfileMain extends Configured implements Tool {
                     + "weblogs_path psoutput_path [mongo_url]\n"
                     + "\tDefault input serialization is protobuf");
         }
-        initPaths(args);
+        this.initPaths(args);
 
         CategoryExtractionJob ceJob = new CategoryExtractionJob(this.getConf());
         if (this.getConf().get(INPUT_SERIALIZATION, PROTOBUF_SERIALIZATION)

@@ -81,7 +81,9 @@ public class PSExporterReducer extends Reducer<Text,
             }
 
             this.builder.setLength(0);
-            String userIdAndDate = userId + "_" + profile.getDate();
+            // TODO: we shouldn't be storing tabbed dates in kpi calculation
+            String userIdAndDate = userId + "_"
+                                 + profile.getDate().replaceAll("\t", "");
             this.builder.append(userIdAndDate);
             for (String categoryName : sharedCategoryNames) {
                 this.builder.append("|");

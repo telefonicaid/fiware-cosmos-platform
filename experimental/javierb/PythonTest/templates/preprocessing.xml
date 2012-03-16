@@ -1,0 +1,86 @@
+<action name="filtering">
+    <map-reduce>
+        <job-tracker>${jobTracker}</job-tracker>
+        <name-node>${nameNode}</name-node>
+        <configuration>
+        	<property>
+        		<name>mapred.job.queue.name</name>
+        	        <value>${queueName}</value>
+        	</property>
+        	<property>
+        		<name>mapred.mapper.new-api</name>
+        	        <value>true</value>
+        	</property>
+        	<property>
+        	        <name>mapred.reducer.new-api</name>
+        	        <value>true</value>
+        	</property>
+            <property>
+                <name>mapreduce.map.class</name>
+                <value>es.tid.ps.kpicalculation.KpiCleanerMapper</value>
+            </property>
+            <property>
+                <name>mapred.map.tasks</name>
+                <value>100</value>
+            </property>
+            <property>
+            	<name>mapreduce.inputformat.class</name>
+            	<value>com.hadoop.mapreduce.LzoTextInputFormat</value>
+            </property>
+            <property>
+            	<name>mapred.output.key.class</name>
+            	<value>org.apache.hadoop.io.NullWritable</value>
+            </property>
+            <property>
+            	<name>mapred.mapoutput.value.class</name>
+            	<value>com.twitter.elephantbird.mapreduce.io.ProtobufWritable</value>
+            </property>
+            <property>
+            	<name>mapred.mapoutput.key.class</name>
+            	<value>org.apache.hadoop.io.NullWritable</value>
+            </property>
+			<property>
+				<name>mapred.output.value.class</name>
+				<value>com.twitter.elephantbird.mapreduce.io.ProtobufWritable</value>
+			</property>
+			<property>
+				<name>mapreduce.outputformat.class</name>
+				<value>com.twitter.elephantbird.mapreduce.output.LzoProtobufB64LineOutputFormat</value>
+			</property>
+			<property>
+				<name>elephantbird.protobuf.class.for.com.twitter.elephantbird.mapreduce.output.LzoProtobufB64LineOutputFormat</name>
+				<value>es.tid.ps.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog</value>
+			</property>
+			<property>
+                <name>mapred.reduce.tasks</name>
+                <value>0</value>
+            </property>
+            <property>
+            	<name>kpifilters</name>
+                <value> </value>
+            </property>
+            <property>
+        		<name>kpifilters.extension.filter</name>
+        		<value> </value>
+		    </property>
+    		<property>
+        		<name>kpifilters.third.party.filter</name>
+		        <value> </value>
+		    </property>
+    		<property>
+        		<name>kpifilters.personal.info.filter</name>
+        		<value> </value>
+        	</property>
+            <property>
+                <name>mapred.input.dir</name>
+                <value>${inputDir}</value>
+            </property>
+            <property>
+                <name>mapred.output.dir</name>
+                <value> </value>
+            </property>
+        </configuration>
+    </map-reduce>
+    <ok to="aggregation"/>
+    <error to="fail"/>
+</action>

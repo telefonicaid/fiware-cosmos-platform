@@ -1,0 +1,20 @@
+<descriptions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<description>
+		<users>
+			<user user="cdr" isCompressible="true" isReadable="true"
+				isWritable="true">
+				<parser className="es.tid.bdp.utils.parse.ParserCdr"
+					pattern="(^.+)\\|(.*)\\|\\d\\|(\\d{2})/(\\d{2})/(\\d{4})\\|(\\d{2}):(\\d{2}):(\\d{2})\\|.*"
+					attr="userId|cellId|day|month|year|hour|minute|second" />
+			</user>
+			<user user="hdfs" isCompressible="false" isReadable="true"
+				isWritable="true" />
+			<user user="weblog" isCompressible="false" isReadable="true"
+				isWritable="true">
+				<parser className="es.tid.bdp.utils.parse.ParserWebLog"
+					pattern="(^.+)\t(.*)\t(.*)\t(.*)\t(.*)\t(.*)\t(.*)"
+					attr="visitorId|fullUrl|date|httpStatus|mimeType|userAgent|method" />
+			</user>
+		</users>
+	</description>
+</descriptions>

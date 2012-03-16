@@ -1,0 +1,51 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>es.tid.ps</groupId>
+	<artifactId>tid-flume</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>tid-flume</name>
+	<description>Enablers for Flume developers by Tid</description>
+	<dependencies>
+		<dependency>
+			<groupId>com.cloudera</groupId>
+			<artifactId>flume-core</artifactId>
+			<version>${cdh.flume.version}</version>
+		</dependency>
+	</dependencies>
+	<repositories>
+		<repository>
+			<id>cdh-repository</id>
+			<url> https://repository.cloudera.com/content/repositories/releases/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>cdh-ps2</id>
+			<url>http://ps2-ci/nexus/content/groups/public/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>central-repository</id>
+			<url>http://search.maven.org/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+
+
+
+	<properties>
+		<copyright.year>2011</copyright.year>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<cdh.flume.version>0.9.4-cdh3u2</cdh.flume.version>
+		<junit>4.5</junit>
+		<jvm.version>1.6</jvm.version>
+	</properties>
+</project>

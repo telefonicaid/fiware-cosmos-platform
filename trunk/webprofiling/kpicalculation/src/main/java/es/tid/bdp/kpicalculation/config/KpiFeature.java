@@ -5,18 +5,18 @@ import java.util.Arrays;
 /**
  * @author javierb, sortega
  */
-public class JobDetails {
-    private final int HASH_SALT = 79;
-    private final int HASH_SEED = 7;
+public class KpiFeature {
+    private static final int HASH_SALT = 79;
+    private static final int HASH_SEED = 7;
     private final String name;
     private final String[] fields;
     private final String group;
 
-    public JobDetails(String name, String[] fields) {
+    public KpiFeature(String name, String[] fields) {
         this(name, fields, null);
     }
 
-    public JobDetails(String name, String[] fields, String group) {
+    public KpiFeature(String name, String[] fields, String group) {
         this.name = name;
         this.fields = fields.clone();
         this.group = group;
@@ -42,7 +42,7 @@ public class JobDetails {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final JobDetails other = (JobDetails) obj;
+        final KpiFeature other = (KpiFeature) obj;
         if ((this.name == null) ? (other.name != null)
                                 : !this.name.equals(other.name)) {
             return false;

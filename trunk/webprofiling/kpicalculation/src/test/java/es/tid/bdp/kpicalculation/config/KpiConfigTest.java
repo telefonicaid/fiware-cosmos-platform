@@ -20,10 +20,10 @@ public class KpiConfigTest {
     @Test
     public void shouldReadConfigFromURL() throws Exception {
         this.instance.read(getClass().getResource("kpi.properties"));
-        assertThat(this.instance.getKpis(), hasItems(
-                new JobDetails("NAME1", new String[] { "field1" }),
-                new JobDetails("NAME2", new String[] {"field1", "field2"}),
-                new JobDetails("NAME3", new String[] {"field1", "field2"},
+        assertThat(this.instance.getKpiFeatures(), hasItems(
+                new KpiFeature("NAME1", new String[] { "field1" }),
+                new KpiFeature("NAME2", new String[] {"field1", "field2"}),
+                new KpiFeature("NAME3", new String[] {"field1", "field2"},
                                "group")));
     }
 }

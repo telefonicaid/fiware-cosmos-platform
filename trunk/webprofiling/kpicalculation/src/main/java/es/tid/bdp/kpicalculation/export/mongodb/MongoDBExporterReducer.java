@@ -1,12 +1,11 @@
 package es.tid.bdp.kpicalculation.export.mongodb;
 
 import java.io.IOException;
-
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.mongodb.hadoop.io.BSONWritable;
-import java.util.Arrays;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;

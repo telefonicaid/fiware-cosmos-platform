@@ -7,7 +7,7 @@ import org.junit.Test;
 
 /**
  *
- * @author sortega
+ * @author dmicol, sortega
  */
 public class CategoryMapTest {
     private CategoryMap instance;

@@ -1267,21 +1267,24 @@ typedef struct LogLineInfo
                 return;
             }
             
-            std::string worker_command_id = cmd.get_argument(1);
+            std::string canceled_worker_command_id = cmd.get_argument(1);
             
-            // Remove in the worker command manager
-            bool c = samsonWorker->workerCommandManager->cancel( worker_command_id );
-
             // Emit a cancelation notification to cancel as much cas possible
             engine::Notification * notification = new engine::Notification("cancel");
-            notification->environment.set("id", worker_command_id );
+            notification->environment.set("id", canceled_worker_command_id );
 
-            if( c )
+            // This is a stream operation ( not return error ;) )
+            std::string prefix = "stream_";
+            if( canceled_worker_command_id.substr( 0 , prefix.length() ) == prefix )
+                finishWorkerTask();
+            
+            // Remove in the worker command manager
+            if( samsonWorker->workerCommandManager->cancel( canceled_worker_command_id ) )
                 finishWorkerTask();
             else
-                finishWorkerTaskWithError(au::str("Worker command %s not found" , worker_command_id.c_str() ));
+                finishWorkerTaskWithError(au::str("Worker command %s not found" , canceled_worker_command_id.c_str() ));
             
-            
+            return;
         }
         
         if( main_command == "run_stream_operation" )
@@ -1705,12 +1708,10 @@ typedef struct LogLineInfo
     {
         std::string name = NodeIdentifier( DelilahNode , delilah_id ).getCodeName();
         
-        add( record , "id" ,  au::str("%s (%lu)", name.c_str() , delilah_component_id) , "left,different" );
+        add( record , "id" ,  worker_command_id , "left,different" );
 
         if( finished )
             add( record , "status" , "finished" , "left,different" );
-        else if ( num_pending_processes > 0 )
-            add( record , "status" , au::str("Waiting %lu ops", num_pending_processes) , "f=uint64,sum" );
         else
             add( record , "status" , "running" , "left,different" );
 

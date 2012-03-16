@@ -102,10 +102,13 @@ namespace samson {
         {
             if ( notification->isName("cancel") )
             {
+                
                 // Cancel all tasks asociated to this worker_command_id
                 std::string worker_command_id = notification->environment.get("id", "no_id");
                 if( worker_command_id != "no_id" )
+                {
                     cancelForWorkerCommandId( worker_command_id );
+                }
                 return;
             }
             else if ( notification->isName(notification_process_request_response) )

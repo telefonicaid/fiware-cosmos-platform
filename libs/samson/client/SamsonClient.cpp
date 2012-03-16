@@ -232,7 +232,7 @@ namespace samson {
             {
                 if( it_components->second->type == DelilahComponent::push )
                 {
-                    output << it_components->second->getShortDescription() << " ";
+                    output << it_components->second->getId() << " ";
                     num_components++;
                 }
             }

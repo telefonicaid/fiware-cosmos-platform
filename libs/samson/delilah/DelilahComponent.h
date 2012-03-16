@@ -61,21 +61,16 @@ namespace samson {
         // One line description to show in lists
         std::string getStatusDescription();
         std::string getIdAndConcept();
+
         
-        
-        // Short description
-        virtual std::string getShortDescription()
+        size_t getId()
         {
-            std::ostringstream output;
-            output << "[" << id << "]";
-            return output.str();
+            return id;
         }
         
-        std::string getIdStr()
+        std::string getConcept()
         {
-            std::ostringstream output;
-            output << id;
-            return output.str();
+            return concept;
         }
         
     protected:

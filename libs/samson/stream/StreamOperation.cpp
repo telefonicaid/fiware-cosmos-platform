@@ -278,6 +278,9 @@ namespace samson {
             
             // Set the environment property to make sure, it is removed when finished
             task->environment.set("system.stream_operation" , name );
+
+            // Unique name for all of them to be able to cancel
+            task->environment.set("worker_command_id" , au::str("stream_%s" , name.c_str() ) );
             
             // Add the task to the list of running task
             running_tasks.insert( task );

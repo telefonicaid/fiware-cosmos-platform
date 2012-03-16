@@ -1322,7 +1322,8 @@ namespace samson
         if( verbose )
         {
             std::ostringstream o;
-            o << "Local process started: " << component->getIdAndConcept() << "\n";
+            
+            o << "Process started: " << au::code64_str(network->getMynodeIdentifier().id) << "_" <<  component->getId() << " " << component->getConcept() << "\n";
             if( component->error.isActivated() )
                 writeErrorOnConsole(o.str());        
             else
@@ -1338,11 +1339,16 @@ namespace samson
         if( verbose )
         {
             if( !component->error.isActivated() )
-                writeWarningOnConsole( au::str( "Local process finished: %s\n" , component->getIdAndConcept().c_str() ) );
+                writeWarningOnConsole( au::str( "Process finished: %s_%lu %s\n" 
+                                               , au::code64_str(network->getMynodeIdentifier().id).c_str()
+                                               , component->getId()
+                                               , component->getConcept().c_str() ) );
             else
             {
-                writeErrorOnConsole( au::str( "Local process finished with error: %s\nERROR: %s\n" 
-                                             , component->getIdAndConcept().c_str()
+                writeErrorOnConsole( au::str( "Process finished with error: %s_%lu %s\nERROR: %s\n" 
+                                             , au::code64_str(network->getMynodeIdentifier().id).c_str()
+                                             , component->getId()
+                                             , component->getConcept().c_str()
                                              , component->error.getMessage().c_str()
                                              ) 
                                     );

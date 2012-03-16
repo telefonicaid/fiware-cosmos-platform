@@ -461,7 +461,7 @@ namespace samson {
                 continue;
             
             au::StringVector values;
-            values.push_back( component->getIdStr() );
+            values.push_back( au::str("%lu",component->getId() ) );
             values.push_back( component->getTypeName() );
             values.push_back( component->getStatusDescription() );
             

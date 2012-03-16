@@ -25,7 +25,7 @@ import org.apache.hadoop.util.ToolRunner;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
 import es.tid.bdp.base.mapreduce.SingleKey;
-import es.tid.bdp.kpicalculation.config.JobDetails;
+import es.tid.bdp.kpicalculation.config.KpiFeature;
 import es.tid.bdp.kpicalculation.config.KpiConfig;
 import es.tid.bdp.kpicalculation.generated.data.KpiCalculationProtocol
         .WebProfilingLog;
@@ -85,18 +85,18 @@ public class KpiMain extends Configured implements Tool {
         KpiConfig config = new KpiConfig();
         config.read(KPI_DEFINITIONS);
 
-        for (JobDetails details : config.getKpis()) {
-            Path kpiOutputPath = outputPath.suffix("/" + details.getName() + "/"
+        for (KpiFeature features : config.getKpiFeatures()) {
+            Path kpiOutputPath = outputPath.suffix("/" + features.getName() + "/"
                     + timeFolder);
             Job aggregationJob = new Job(conf, "Aggregation Job ..."
-                    + details.getName());
+                    + features.getName());
 
             aggregationJob.getConfiguration().setStrings(
-                    "kpi.aggregation.fields", details.getFields());
+                    "kpi.aggregation.fields", features.getFields());
 
-            if (details.getGroup() != null) {
+            if (features.getGroup() != null) {
                 aggregationJob.getConfiguration().setStrings(
-                        "kpi.aggregation.group", details.getGroup());
+                        "kpi.aggregation.group", features.getGroup());
                 aggregationJob.setMapOutputKeyClass(BinaryKey.class);
                 aggregationJob.setCombinerClass(KpiCounterByCombiner.class);
                 aggregationJob.setReducerClass(KpiCounterByReducer.class);

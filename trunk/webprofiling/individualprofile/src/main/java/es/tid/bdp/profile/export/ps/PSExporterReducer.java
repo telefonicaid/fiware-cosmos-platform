@@ -174,8 +174,7 @@ public class PSExporterReducer extends Reducer<Text,
                                        DEFAULT_PSEXPORT_SERVICE))
                     .append("|service_user_id|update_date|update_source");
         for (String categoryName : sharedCategoryNames) {
-            this.builder.append("|")
-                        .append(categoryName);
+            this.builder.append("|").append(categoryName);
         }
         writeRecord(context);
     }
@@ -185,7 +184,7 @@ public class PSExporterReducer extends Reducer<Text,
     }
 
     private boolean isFirstRecord() {
-        return this.recordCounter.getValue() == 0L;
+        return (this.recordCounter.getValue() == 0L);
     }
 
     private void writeRecord(Context context) throws IOException,

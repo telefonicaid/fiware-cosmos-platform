@@ -28,6 +28,7 @@ namespace samson {
             streamManager = _streamManager;
             
             listen(notification_run_stream_tasks_if_necessary);
+            listen("cancel");
             
             // Periodic notification to check if tasks are ready
             engine::Notification *notification = new engine::Notification(notification_run_stream_tasks_if_necessary);
@@ -65,9 +66,49 @@ namespace samson {
             BlockManager::shared()->review();
         }
 
+        void QueueTaskManager::cancelForWorkerCommandId( std::string worker_command_id )
+        {
+            // Remove all queueTasks and 
+            
+            au::list< QueueTask >::iterator it_queueTasks;                               
+            for( it_queueTasks = queueTasks.begin() ; it_queueTasks != queueTasks.end() ; )
+            {
+                QueueTask * queue_task = *it_queueTasks;
+                if( queue_task->environment.get("worker_command_id", "no_id") == worker_command_id )
+                {
+                    it_queueTasks = queueTasks.erase(it_queueTasks);
+                    delete queue_task;
+                }
+                else
+                    it_queueTasks++;
+            }
+
+            au::list< SystemQueueTask >::iterator it_systemQueueTasks;                               
+            for( it_systemQueueTasks = systemQueueTasks.begin() ; it_systemQueueTasks != systemQueueTasks.end() ; )
+            {
+                SystemQueueTask * system_queue_task = *it_systemQueueTasks;
+                if( system_queue_task->environment.get("worker_command_id", "no_id") == worker_command_id )
+                {
+                    it_systemQueueTasks = systemQueueTasks.erase(it_systemQueueTasks);
+                    delete system_queue_task;
+                }
+                else
+                    it_systemQueueTasks++;
+            }
+
+        }
+        
         void QueueTaskManager::notify( engine::Notification* notification )
         {
-            if ( notification->isName(notification_process_request_response) )
+            if ( notification->isName("cancel") )
+            {
+                // Cancel all tasks asociated to this worker_command_id
+                std::string worker_command_id = notification->environment.get("id", "no_id");
+                if( worker_command_id != "no_id" )
+                    cancelForWorkerCommandId( worker_command_id );
+                return;
+            }
+            else if ( notification->isName(notification_process_request_response) )
             {
                 
                 // Extract the object to not be automatically removed ( this is a queueTask or a systemQueueTask )

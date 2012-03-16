@@ -224,6 +224,10 @@ namespace samson {
             worker_id = BlockManager::shared()->getWorkerId();
             id = BlockManager::shared()->getNextBlockId();
             
+            // Sort parameters
+            creation_time = time(NULL);
+            update_sort_information();
+            
             // Buffer of data
             buffer = _buffer;  
             
@@ -251,6 +255,10 @@ namespace samson {
             worker_id = _worker_id;
             id = _id;
             
+            // Sort parameters
+            creation_time = time(NULL);
+            update_sort_information();
+
             // Buffer of data
             buffer = NULL;  
             
@@ -280,6 +288,24 @@ namespace samson {
                 engine::MemoryManager::shared()->destroyBuffer( buffer );
         }
         
+        void Block::update_sort_information()
+        {
+            // Compute min tasks
+            min_task = (size_t) -1;
+            std::set< BlockList* >::iterator l;
+            for ( l = lists.begin() ; l != lists.end() ; l++ )
+                if( (*l)->task_id < min_task )
+                    min_task= (*l)->task_id;
+            
+            // Compute max priority
+            max_priority = -1000000;
+            
+            for ( l = lists.begin() ; l != lists.end() ; l++ )
+                if( (*l)->priority > max_priority )
+                    max_priority = (*l)->priority;
+        }
+
+        
         
         bool Block::isLockedInMemory()
         {
@@ -292,52 +318,12 @@ namespace samson {
             return false;
         }
 
-        size_t Block::getMinTaskId()
-        {
-            size_t _task_id = (size_t) -1;
-            
-            std::set< BlockList* >::iterator l;
-            for ( l = lists.begin() ; l != lists.end() ; l++ )
-                if( (*l)->task_id < _task_id )
-                    _task_id= (*l)->task_id;
-            
-            return _task_id;
-        }
-        
-        int Block::getMaxPriority()
-        {
-            int _max_priority = -1000000;
-            
-            std::set< BlockList* >::iterator l;
-            for ( l = lists.begin() ; l != lists.end() ; l++ )
-                if( (*l)->priority > _max_priority )
-                    _max_priority= (*l)->priority;
-            
-            return _max_priority;
-        }
-
         
         size_t Block::getLiveTime()
         {
             return last_used.diffTimeInSeconds();
         }
 
-        
-        bool Block::compare( Block *b )
-        {
-            
-            size_t my_task_id   = getMinTaskId();
-            size_t your_task_id = b->getMinTaskId();
-            
-            
-            // If no tasks involved, just decide by time-stamp
-            if( my_task_id == (size_t)-1 )
-                if( your_task_id == (size_t)-1 )
-                    return (last_used.diffTimeInSeconds() < b->last_used.diffTimeInSeconds() );
-            
-            return( my_task_id < your_task_id );
-        }
-        
         ::engine::DiskOperation* Block::getWriteOperation()
         {
             if( !buffer )
@@ -749,15 +735,14 @@ namespace samson {
             samson::add( record , "KVRange" , getKVRange().str() , "left,different" );
 
             // Next task
-            size_t task = getMinTaskId();
-            if( task == (size_t)(-1))
+            if( min_task == (size_t)(-1))
                 samson::add( record , "next task" , "none" , "left,different" );
             else
-                samson::add( record , "next task" , task , "left,different" );
+                samson::add( record , "next task" , min_task , "left,different" );
 
-            samson::add( record , "priority" , getMaxPriority() , "left,different" );
+            samson::add( record , "priority" , max_priority , "left,different" );
             
-            samson::add( record , "created" , au::str_time( last_used.diffTime() ) , "left,different" );
+            samson::add( record , "created" , au::str_time( time(NULL) - creation_time ) , "left,different" );
             
             std::ostringstream output_tasks_str;
             std::ostringstream output_block_lists_str;
@@ -781,10 +766,6 @@ namespace samson {
             if (visualization == NULL)
                 return;
         }
-
-
-
- 
 
         //au::Token token_lookupList;
         //BlockLookupList* lookupList;

@@ -209,6 +209,13 @@ namespace samson
             "           [queues]         : Name of the queues involved in this operation (inputs and outputs)\n"
             "           [-clear_inputs]  : Flag used to remove content from input queues when running this operation\n"
             );
+
+        add( "cancel_stream_operation" , "stream" ,
+            "Cancel a particular operation ( both executed manually with run_stream_operation or automatically througth add_stream_operation",
+            "cancel_stream_operation <op_id>\n"
+            "\n"
+            "           <op_name>        : Identifier of the operation. Usually something like XXXXX_XXX\n"
+            );
         
         
         add( "set_stream_operation_property"    , "stream" ,  

@@ -116,8 +116,16 @@ namespace samson {
             BlockState state;
             
             au::Cronometer last_used; // Cronometer to indicate the last time it was used
+
+        public:
+            
+            // Internal information used in the sort
+            size_t min_task;
+            int max_priority;
+            time_t creation_time;
             
         private:
+            
             // Constructor only visible in a BlockList
             Block( engine::Buffer *buffer  );
             Block( size_t _worker_id , size_t _id , size_t _size , KVHeader* _header );
@@ -126,6 +134,9 @@ namespace samson {
 
             ~Block();
 
+            // Update sort information
+            void update_sort_information();
+            
             // Lookup for a particular queue ( lookupList is created if necessary )
             std::string  lookup(const char* key);
 
@@ -151,8 +162,6 @@ namespace samson {
             // Release memory ( only if saved to disk previously )
             void freeBlock();
 
-            bool compare( Block *b );
-            
             // Get the operations
             ::engine::DiskOperation* getWriteOperation();
             ::engine::DiskOperation* getReadOperation();
@@ -215,8 +224,6 @@ namespace samson {
             }
             
             // Get the minimum task id to get the order of the blocks
-            size_t getMinTaskId();
-            int getMaxPriority();
             size_t getLiveTime();
             
         };

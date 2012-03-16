@@ -28,27 +28,54 @@ namespace samson {
         bool compare_blocks( Block*b1 , Block *b2 )
         {
             
-            size_t min_task_id_1 = b1->getMinTaskId();
-            size_t min_task_id_2 = b2->getMinTaskId();
+            size_t min_task_id_1 = b1->min_task;
+            size_t min_task_id_2 = b2->min_task;
             
             if( min_task_id_1 == min_task_id_2 )
             {
                 // Comapre by priority
-                int p1 = b1->getMaxPriority();
-                int p2 = b2->getMaxPriority();
+                int p1 = b1->max_priority;
+                int p2 = b2->max_priority;
                 
                 if( p1 == p2 )
                 {                
-                    size_t t1 = b1->getLiveTime();
-                    size_t t2 = b2->getLiveTime();
-                    return ( t1 < t2 );
+                    time_t t1 = b1->creation_time;
+                    time_t t2 = b2->creation_time;
+                    return ( t1 > t2 );
                 }
                 else
                     return (p1 > p2);
             }
-            return( min_task_id_1 < min_task_id_2 );
+            else
+                return( min_task_id_1 < min_task_id_2 );
         }        
-        
+
+        int compare_blocks2( const void* p1 , const void* p2 )
+        {
+            Block *b1 = (Block*)p1;
+            Block *b2 = (Block*)p2;
+            
+            size_t min_task_id_1 = b1->min_task;
+            size_t min_task_id_2 = b2->min_task;
+            
+            if( min_task_id_1 == min_task_id_2 )
+            {
+                // Comapre by priority
+                int p1 = b1->max_priority;
+                int p2 = b2->max_priority;
+                
+                if( p1 == p2 )
+                {                
+                    time_t t1 = b1->creation_time;
+                    time_t t2 = b2->creation_time;
+                    return ( t1 - t2 );
+                }
+                else
+                    return (p1 - p2);
+            }
+            else
+                return( min_task_id_2 - min_task_id_1 );
+        }          
         BlockManager *blockManager = NULL;
         
         BlockManager::BlockManager()
@@ -170,6 +197,24 @@ namespace samson {
                 au::ExecesiveTimeAlarm alarm("BlockManager::sort" , 0.05 );
                 blocks.sort( compare_blocks );
             }
+            
+            
+            // Sort list of blocks using a simple array 
+            {
+                Block** tmp_blocks = (Block**) malloc( sizeof(Block*) * blocks.size() );
+                au::list<Block>::iterator it_blocks;
+                
+                int pos = 0;
+                for( it_blocks = blocks.begin() ; it_blocks != blocks.end() ;it_blocks++)
+                    tmp_blocks[pos++] = *it_blocks;
+                {
+                    au::ExecesiveTimeAlarm alarm("BlockManager::sort2" , 0.05 );
+                    qsort(tmp_blocks, blocks.size() , sizeof(Block*), compare_blocks2 );
+                    blocks.sort( compare_blocks );
+                }
+                free( tmp_blocks );
+            }
+            
             
             // --------------------------------------------------------------------------------
             // Remove old blocks not included anywhere

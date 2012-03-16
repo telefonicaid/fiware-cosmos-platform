@@ -46,6 +46,9 @@ namespace samson {
         
         // Add a worker command to this stream manager
         void addWorkerCommand( WorkerCommand *workerCommand );
+
+        // Cancel worker command 
+        bool cancel( std::string worker_command_id );
         
         // Notification system from engine
         void notify( engine::Notification* notification );

@@ -40,6 +40,25 @@ namespace samson {
         workerCommand->run();
     }
     
+    // Cancel worker command 
+    bool WorkerCommandManager::cancel( std::string worker_command_id )
+    {
+        bool found = false;
+        au::map< size_t , WorkerCommand >::iterator it_workerCommands; 
+        for( it_workerCommands = workerCommands.begin() ; it_workerCommands != workerCommands.end() ; it_workerCommands++ )
+        {
+            std::string my_worker_command_id = it_workerCommands->second->enviroment.get("worker_command_id", "no_id");
+            if( my_worker_command_id != "no_id" )
+                if( my_worker_command_id == worker_command_id )
+                {
+                    found = true;
+                    it_workerCommands->second->finishWorkerTaskWithError("Canceled");
+                }
+        }
+        return true;
+    }
+    
+    
     void WorkerCommandManager::notify( engine::Notification* notification )
     {
         

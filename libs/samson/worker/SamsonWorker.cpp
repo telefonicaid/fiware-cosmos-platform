@@ -246,7 +246,10 @@ namespace samson {
             size_t delilah_id = packet->from.id;
             size_t delilah_component_id = packet->message->delilah_component_id();
             
-            WorkerCommand *workerCommand = new WorkerCommand(  delilah_id 
+            std::string worker_command_id = au::str( "%s_%lu" , au::code64_str(delilah_id).c_str() , delilah_component_id );
+            
+            WorkerCommand *workerCommand = new WorkerCommand(  worker_command_id
+                                                             , delilah_id 
                                                              , delilah_component_id 
                                                              , packet->message->worker_command() 
                                                              );

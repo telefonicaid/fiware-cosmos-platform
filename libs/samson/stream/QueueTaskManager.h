@@ -43,6 +43,8 @@ namespace samson {
             void add( QueueTask* task );
             void add( SystemQueueTask* task );
             
+            void cancelForWorkerCommandId( std::string worker_command_id );
+            
             void reviewPendingQueueTasks();
             bool runNextQueueTasksIfNecessary();
             bool runNextSystemQueueTasksIfNecessary();

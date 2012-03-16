@@ -135,6 +135,9 @@ namespace samson {
             // Insert myself in the the list inside the block
             block->lists.insert( this );
             
+            // Update sort criteria
+            block->update_sort_information();
+            
         }
         
         void BlockList::remove( Block* block )
@@ -144,6 +147,10 @@ namespace samson {
 
             // remove this container from the list inside the block
             block->lists.erase( this );
+            
+            // Update sort criteria
+            block->update_sort_information();
+
         }
         
         void BlockList::remove( BlockList* list )

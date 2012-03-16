@@ -152,8 +152,14 @@ namespace samson {
         
     };
     
-    WorkerCommand::WorkerCommand( size_t _delilah_id , size_t _delilah_component_id ,  const network::WorkerCommand& _command )
+    WorkerCommand::WorkerCommand( std::string _worker_command_id
+                                 , size_t _delilah_id 
+                                 , size_t _delilah_component_id 
+                                 ,  const network::WorkerCommand& _command )
     {
+        // Unique identifier of the worker
+        worker_command_id = _worker_command_id;
+        
         samsonWorker = NULL;
         buffer = NULL;
         
@@ -174,28 +180,6 @@ namespace samson {
         command = originalWorkerCommand->command();
         
         // Original value for the flags
-        pending_to_be_executed =  true;
-        finished = false;
-        
-        // No pending process at the moment
-        num_pending_processes = 0;
-        num_pending_disk_operations = 0;
-    }
-    
-    WorkerCommand::WorkerCommand( std::string _command )
-    {
-        samsonWorker = NULL;
-        buffer = NULL;
-        
-        // Not necessary to notify
-        originalWorkerCommand = NULL;
-        notify_finish = false;
-        
-        // Get directly the command to run
-        command = _command;
-        
-        
-        // Original value for the flag
         pending_to_be_executed =  true;
         finished = false;
         
@@ -1266,6 +1250,8 @@ typedef struct LogLineInfo
                 tmp->addListenerId( getEngineId() );
                 num_pending_processes++;
                 
+                tmp->environment.set("worker_command_id", worker_command_id);
+                
                 // Schedule tmp task into QueueTaskManager
                 streamManager->queueTaskManager.add( tmp );       
             }
@@ -1273,6 +1259,30 @@ typedef struct LogLineInfo
             return;
         }
        
+        if( main_command == "cancel_stream_operation" )
+        {
+            if( cmd.get_num_arguments() < 2 )
+            {
+                finishWorkerTaskWithError( au::str("Not enough parameters for command %s\nUsage: cancel_stream_operation operation_id" , main_command.c_str() ) );
+                return;
+            }
+            
+            std::string worker_command_id = cmd.get_argument(1);
+            
+            // Remove in the worker command manager
+            bool c = samsonWorker->workerCommandManager->cancel( worker_command_id );
+
+            // Emit a cancelation notification to cancel as much cas possible
+            engine::Notification * notification = new engine::Notification("cancel");
+            notification->environment.set("id", worker_command_id );
+
+            if( c )
+                finishWorkerTask();
+            else
+                finishWorkerTaskWithError(au::str("Worker command %s not found" , worker_command_id.c_str() ));
+            
+            
+        }
         
         if( main_command == "run_stream_operation" )
         {
@@ -1423,6 +1433,8 @@ typedef struct LogLineInfo
                         // Mark as a new pending operation
                         num_pending_processes++;
                         
+                        tmp->environment.set("worker_command_id", worker_command_id);
+
                         // Schedule tmp task into QueueTaskManager
                         streamManager->queueTaskManager.add( tmp );
                         
@@ -1521,6 +1533,8 @@ typedef struct LogLineInfo
                         tmp->addListenerId( getEngineId() );
                         num_pending_processes++;
                         
+                        tmp->environment.set("worker_command_id", worker_command_id);
+                        
                         // Schedule tmp task into QueueTaskManager
                         streamManager->queueTaskManager.add( tmp );
                         
@@ -1562,6 +1576,11 @@ typedef struct LogLineInfo
         //LM_M(("Setting error message %s" , error_message.c_str() ));
         error.set( error_message );
         finishWorkerTask();
+        
+        // Notify everything so it is automatically canceled
+        engine::Notification * notification = new engine::Notification("cancel");
+        notification->environment.set("id", worker_command_id );
+        engine::Engine::shared()->notify(notification);
     }
     
         

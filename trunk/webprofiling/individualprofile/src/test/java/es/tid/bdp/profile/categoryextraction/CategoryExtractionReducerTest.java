@@ -115,7 +115,7 @@ public class CategoryExtractionReducerTest {
 
         driver.withInput(inKey, asList(one, one, one))
                 .runTest();
-        assertEquals(3l, driver.getCounters().findCounter(
+        assertEquals(3L, driver.getCounters().findCounter(
                 CategoryExtractionCounter.UNKNOWN_VISITS).getValue());
     }
 
@@ -128,7 +128,7 @@ public class CategoryExtractionReducerTest {
 
         driver.withInput(inKey, asList(one))
                 .runTest();
-        assertEquals(1l, driver.getCounters().findCounter(
+        assertEquals(1L, driver.getCounters().findCounter(
                 CategoryExtractionCounter.IRRELEVANT_VISITS).getValue());
     }
 
@@ -141,7 +141,7 @@ public class CategoryExtractionReducerTest {
 
         driver.withInput(inKey, asList(one, one))
                 .runTest();
-        assertEquals(2l, driver.getCounters().findCounter(
+        assertEquals(2L, driver.getCounters().findCounter(
                 CategoryExtractionCounter.UNPROCESSED_VISITS).getValue());
     }
 }

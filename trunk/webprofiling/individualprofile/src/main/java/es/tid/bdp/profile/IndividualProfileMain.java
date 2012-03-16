@@ -24,14 +24,14 @@ import es.tid.bdp.profile.userprofile.UserProfileJob;
 public class IndividualProfileMain extends Configured implements Tool {
     private static final int MIN_ARGS = 2;
     private static final int MAX_ARGS = 3;
-    
+
     private static final String INPUT_SERIALIZATION = "input.serialization";
     private static final String PROTOBUF_SERIALIZATION = "protobuf";
-    
+
     private static final String TMP_DIR = "tmp";
     private static final String CATEGORIES_DIR = "categories";
     private static final String PROFILE_DIR = "profile";
-    
+
     private static Logger logger = Logger.getLogger(
             IndividualProfileMain.class);
 
@@ -44,9 +44,9 @@ public class IndividualProfileMain extends Configured implements Tool {
                     + "weblogs_path psoutput_path [mongo_url]\n"
                     + "\tDefault input serialization is protobuf");
         }
-        
+
         FileSystem fs = FileSystem.get(this.getConf());
-        
+
         Path tmpDir = new Path(getTmpDir());
         if (!fs.mkdirs(tmpDir)) {
             logger.fatal("Could not create " + tmpDir);
@@ -55,7 +55,7 @@ public class IndividualProfileMain extends Configured implements Tool {
         if (!fs.deleteOnExit(tmpDir)) {
             logger.warn("Could not set temp directory for automatic deletion");
         }
-        
+
         Path webLogsPath = new Path(args[0]);
         Path categoriesPath = new Path(
                 tmpDir + Path.SEPARATOR + CATEGORIES_DIR);
@@ -80,14 +80,14 @@ public class IndividualProfileMain extends Configured implements Tool {
         if (!upJob.waitForCompletion(true)) {
             return 1;
         }
-        
+
         String psOutputFile = args[1];
         PSExporterJob exPsJob = new PSExporterJob(this.getConf());
         exPsJob.configure(profilePath, new Path(psOutputFile));
         if (!exPsJob.waitForCompletion(true)) {
             return 1;
         }
-        
+
         // Perform the MongoDB export.
         if (args.length == MAX_ARGS) {
             String mongoUrl = args[2];
@@ -98,19 +98,27 @@ public class IndividualProfileMain extends Configured implements Tool {
                 return 1;
             }
         }
-        
+
         return 0;
     }
 
     private static String getTmpDir() {
-        final String path = Path.SEPARATOR + TMP_DIR + Path.SEPARATOR +
-                "individualprofile" + "_"
-                + Calendar.YEAR + Calendar.MONDAY + Calendar.DATE
-                + Calendar.HOUR_OF_DAY + Calendar.MINUTE + Calendar.SECOND
-                + Calendar.MILLISECOND;
-        return path;
+        Calendar now = Calendar.getInstance();
+        StringBuilder buffer = new StringBuilder();
+        buffer.append(Path.SEPARATOR)
+                .append(TMP_DIR)
+                .append(Path.SEPARATOR)
+                .append("individualprofile_")
+                .append(now.get(Calendar.YEAR))
+                .append(now.get(Calendar.MONTH))
+                .append(now.get(Calendar.DATE))
+                .append(now.get(Calendar.HOUR_OF_DAY))
+                .append(now.get(Calendar.MINUTE))
+                .append(now.get(Calendar.SECOND))
+                .append(now.get(Calendar.MILLISECOND));
+        return buffer.toString();
     }
-    
+
     public static void main(String[] args) {
         try {
             int res = ToolRunner.run(new Configuration(),

@@ -71,7 +71,7 @@ std::string EngineElement::getDescription()
     }
     else
     {
-        return au::str( "[ Engine element '%s' ]" , description.c_str() );
+        return au::str( "%s [ Engine element ]" , description.c_str() );
     }
     //return description;
 }

@@ -45,7 +45,7 @@ public class PSExporterJobTest {
                                 new Path("file:" + outFolder.getRoot()));
         this.instance.getConfiguration().setLong("psexport.timestamp",
                                                  1331830825230L);
-        File partFile = outFolder.newFile("part_r_0000.data");
+        File partFile = outFolder.newFile("part-r-0000.data");
         this.instance.renameOutput();
         assertFalse(partFile.exists());
         File expectedFile = new File(outFolder.getRoot(),

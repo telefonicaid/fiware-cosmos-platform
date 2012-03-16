@@ -26,7 +26,7 @@ import es.tid.bdp.profile.dictionary.comscore.DistributedCacheDictionary;
 public class PSExporterJob extends Job {
     private static final Logger LOG = Logger.getLogger(PSExporterJob.class);
     private static final String JOB_NAME = "PSExporterJob";
-    private static final String OUTPUT_PREFIX = "part_";
+    private static final String OUTPUT_PREFIX = "part-";
 
     public PSExporterJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
@@ -58,12 +58,13 @@ public class PSExporterJob extends Job {
     }
 
     @Override
-    public void submit() throws IOException, InterruptedException,
-                                ClassNotFoundException {
-        super.submit();
-        if (this.isSuccessful()) {
+    public boolean waitForCompletion(boolean verbose) throws IOException,
+            InterruptedException, ClassNotFoundException {
+        boolean success = super.waitForCompletion(verbose);
+        if (success) {
             this.renameOutput();
         }
+        return success;
     }
 
     protected void renameOutput() throws IOException {
@@ -71,7 +72,7 @@ public class PSExporterJob extends Job {
         Path outputPath = TextOutputFormat.getOutputPath(this);
         FileSystem fs = outputPath.getFileSystem(this.getConfiguration());
         Path srcPath = getOutputFile(fs, outputPath);
-        Path destPath = PSExporterReducer.getOutputFileName(this);
+        Path destPath = PSExporterReducer.getOutputPath(this);
         fs.rename(srcPath, destPath);
     }
 

@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
@@ -25,8 +26,10 @@ public class WordCountJob extends Job {
 
         this.setJarByClass(WordCountMain.class);
         this.setInputFormatClass(TextInputFormat.class);
+        this.setMapOutputKeyClass(Text.class);
+        this.setMapOutputValueClass(IntWritable.class);
         this.setOutputKeyClass(Text.class);
-        this.setOutputValueClass(IntWritable.class);
+        this.setOutputValueClass(LongWritable.class);
         this.setOutputFormatClass(TextOutputFormat.class);
         this.setMapperClass(WordCountMapper.class);
         this.setReducerClass(WordCountReducer.class);

@@ -29,7 +29,7 @@ public class MongoDBExporterReducer extends Reducer<LongWritable, Text,
         String[] columns = value.toString().split("\t");
         BSONObject obj = new BasicBSONObject();
         obj.put("word", columns[0]);
-        obj.put("count", Integer.parseInt(columns[1]));
+        obj.put("count", Long.parseLong(columns[1]));
         return new BSONWritable(obj);
     }
 }

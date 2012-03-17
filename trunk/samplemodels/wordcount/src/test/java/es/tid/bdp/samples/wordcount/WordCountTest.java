@@ -22,7 +22,7 @@ public class WordCountTest {
         this.mapper = new WordCountMapper();
         this.reducer = new WordCountReducer();
         this.driver = new MapReduceDriver<LongWritable, Text, Text,
-                IntWritable, Text, IntWritable>();
+                IntWritable, Text, LongWritable>();
     }
 
     @Test
@@ -30,17 +30,17 @@ public class WordCountTest {
         Text aShortText = new Text("a string of text where a word is repeated");
 
         this.driver
-            .withInput(new LongWritable(1), aShortText)
+            .withInput(new LongWritable(1L), aShortText)
             .withMapper(this.mapper)
             .withReducer(this.reducer)
-            .withOutput(new Text("a"), new IntWritable(2))
-            .withOutput(new Text("is"), new IntWritable(1))
-            .withOutput(new Text("of"), new IntWritable(1))
-            .withOutput(new Text("repeated"), new IntWritable(1))
-            .withOutput(new Text("string"), new IntWritable(1))
-            .withOutput(new Text("text"), new IntWritable(1))
-            .withOutput(new Text("where"), new IntWritable(1))
-            .withOutput(new Text("word"), new IntWritable(1))
+            .withOutput(new Text("a"), new LongWritable(2))
+            .withOutput(new Text("is"), new LongWritable(1))
+            .withOutput(new Text("of"), new LongWritable(1))
+            .withOutput(new Text("repeated"), new LongWritable(1))
+            .withOutput(new Text("string"), new LongWritable(1))
+            .withOutput(new Text("text"), new LongWritable(1))
+            .withOutput(new Text("where"), new LongWritable(1))
+            .withOutput(new Text("word"), new LongWritable(1))
             .runTest();
     }
 }

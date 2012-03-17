@@ -5,7 +5,6 @@ import java.io.IOException;
 import com.mongodb.hadoop.MongoOutputFormat;
 import com.mongodb.hadoop.io.BSONWritable;
 import com.mongodb.hadoop.util.MongoConfigUtil;
-import es.tid.bdp.samples.wordcount.WordCountMain;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
@@ -14,6 +13,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+
+import es.tid.bdp.samples.wordcount.WordCountMain;
 
 /**
  * Export user profiles to mongodb

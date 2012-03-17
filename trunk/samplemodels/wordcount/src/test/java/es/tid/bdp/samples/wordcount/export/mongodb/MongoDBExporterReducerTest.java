@@ -37,6 +37,6 @@ public class MongoDBExporterReducerTest {
         assertEquals(1, results.size());
         Pair<NullWritable, BSONWritable> result = results.get(0);
         assertEquals("this", result.getSecond().get("word"));
-        assertEquals(192, result.getSecond().get("count"));
+        assertEquals(192L, result.getSecond().get("count"));
     }
 }

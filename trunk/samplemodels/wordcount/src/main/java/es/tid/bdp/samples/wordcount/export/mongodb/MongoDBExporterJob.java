@@ -18,7 +18,7 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 /**
  * Export user profiles to mongodb
  *
- * @author sortega
+ * @author dmicol, sortega
  */
 public class MongoDBExporterJob extends Job {
     private static final String JOB_NAME = "MongoDBExporterJob";

@@ -16,7 +16,7 @@ import org.junit.Test;
 /**
  * Use case for ExporterReducer
  *
- * @author sortega
+ * @author dmicol, sortega
  */
 public class MongoDBExporterReducerTest {
     private MongoDBExporterReducer instance;

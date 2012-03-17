@@ -12,7 +12,7 @@ import org.bson.BasicBSONObject;
 
 /**
  *
- * @author dmicol, sortega
+ * @author dmicol, dmicol, sortega
  */
 public class MongoDBExporterReducer extends Reducer<LongWritable, Text,
                                                     NullWritable,

@@ -1,0 +1,14 @@
+package kpicalculation;
+
+option java_package = "es.tid.ps.kpicalculation.data";
+option java_outer_classname = "WebLogPB";
+
+message WebLog {
+  required string visitorId = 1;
+  required string fullUrl = 2;
+  required string date = 3;
+  required string httpStatus = 4;
+  required string mimeType = 5;
+  required string userAgent = 6;
+  required string method = 7;
+}

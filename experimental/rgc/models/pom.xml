@@ -1,0 +1,611 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>es.tid.ps</groupId>
+    <artifactId>models</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>models</name>
+    <description>Group of projects in where develop the PS models over Hadoop</description>
+    <organization>
+        <name>Telefónica Investigación y Desarrollo</name>
+        <url>http://www.tid.es</url>
+    </organization>
+    <scm>
+        <connection>scm:svn:https://barricada.hi.inet/repositorio/ps2/trunk/models</connection>
+        <developerConnection>scm:svn:https://barricada.hi.inet/repositorio/ps2/trunk/models</developerConnection>
+        <url>https://barricada.hi.inet/repositorio/ps2/trunk/models</url>
+    </scm>
+    <build>
+        <!-- Resources being filtered -->
+        <resources>
+            <resource>
+                <!-- Only text files are to be filtered -->
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/*.xml</include>
+                    <include>**/*.js</include>
+                    <include>**/*.properties</include>
+                    <include>**/*.sql</include>
+                    <include>**/*.SQL</include>
+                    <include>**/*.sh</include>
+                </includes>
+                <excludes>
+                    <exclude>**/*.xsd</exclude>
+                    <exclude>**/*.ks</exclude>
+                    <exclude>**/*.dat</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>src/main/scripts</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>*install*.sh</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>**/*.jpg</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <plugins>
+            <!-- Applying encoding to filtered resources -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.4.3</version>
+                <configuration>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <!-- WORKAROUND FOR @ -->
+                    <useDefaultDelimiters>false</useDefaultDelimiters>
+                    <delimiters>
+                        <delimiter>${*}</delimiter>
+                    </delimiters>
+                </configuration>
+            </plugin>
+            <!-- Compiler settings -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                    <source>${jvm.version}</source>
+                    <target>${jvm.version}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <debug>${compilerInfoDebug}</debug>
+                    <optimize>${compilerOptimize}</optimize>
+                    <showWarnings>${compilerShowWarnings}</showWarnings>
+                    <showDeprecation>${compilerShowDeprecation}
+                    </showDeprecation>
+                    <verbose>${compilerVerbose}</verbose>
+                </configuration>
+            </plugin>
+            <!-- Proyect jars generation -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true
+                            </addDefaultImplementationEntries>
+                            <packageName>${project.groupId.atifactId}
+                            </packageName>
+                        </manifest>
+                        <manifestEntries>
+                            <Implementation-Version>${project.version}
+                            </Implementation-Version>
+                            <Implementation-Build>${buildNumber}
+                            </Implementation-Build>
+                            <Implementation-Title>${project.name} -
+                                ${project.version}
+                                r$({buildNumber})
+                            </Implementation-Title>
+                            <mode>${env}</mode>
+                            <url>${project.url}</url>
+                            <organization>${project.organization.name}
+                            </organization>
+                            <Built-By>ps team</Built-By>
+                        </manifestEntries>
+                    </archive>
+                    <excludes>
+                        <!-- files will be stored outside the classpath -->
+                        <exclude>log4j.xml</exclude>
+                        <exclude>main.properties</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <!-- Cobertura de los test -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin
+                </artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <check>
+                        <haltOnFailure>false</haltOnFailure>
+                    </check>
+                    <instrumentation>
+                        <excludes>
+                            <exclude>**/main/Bootstrap.class</exclude>
+                        </excludes>
+                    </instrumentation>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>clean</id>
+                        <phase>pre-site</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>instrument</id>
+                        <phase>site</phase>
+                        <goals>
+                            <goal>instrument</goal>
+                            <goal>cobertura</goal>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <repositories>
+        <repository>
+            <id>cdh-repository</id>
+            <url> https://repository.cloudera.com/content/repositories/releases/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>cdh-ps2</id>
+            <url>http://ps2-ci/nexus/content/groups/public/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>central-repository</id>
+            <url>http://search.maven.org/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+    <developers>
+        <developer>
+            <id>dmicol</id>
+            <name>Daniel Micol</name>
+            <email>dmicol@tid.es</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <organization>${project.organization.name}</organization>
+            <organizationUrl>${project.organization.url}
+            </organizationUrl>
+            <timezone>+1</timezone>
+        </developer>
+        <developer>
+            <id>javierb</id>
+            <name>Javier Rodriguez Benito</name>
+            <email>javierb@tid.es</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <organization>${project.organization.name}</organization>
+            <organizationUrl>${project.organization.url}
+            </organizationUrl>
+            <timezone>+1</timezone>
+        </developer>
+        <developer>
+            <id>cesargg</id>
+            <name>Cesar García</name>
+            <email>cesargg@tid.es</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <organization>${project.organization.name}</organization>
+            <organizationUrl>${project.organization.url}
+            </organizationUrl>
+            <timezone>+1</timezone>
+        </developer>
+        <developer>
+            <id>rgc</id>
+            <name>Rubén González Caballero</name>
+            <email>rgc@tid.es</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <organization>${project.organization.name}</organization>
+            <organizationUrl>${project.organization.url}
+            </organizationUrl>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-core</artifactId>
+            <version>${org.apache.hadoop}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mrunit</artifactId>
+            <version>${org.apache.hadoop}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit}</version>
+        </dependency>
+    </dependencies>
+
+    <!-- Pendiente de la maquina de integración -->
+    <distributionManagement>
+        <!-- Repositorio para hacer el deploy de las releases -->
+
+        <repository>
+            <id>${repoMavenId}</id>
+            <name>${repoMavenName}</name>
+            <url>${repoMavenUrl}</url>
+        </repository>
+        <!-- Repositorio de snapshot de Telefónica I+D Barcelona -->
+        <snapshotRepository>
+            <id>${repoMavenSnapshotId}</id>
+            <name>${repoMavenSnapshotName}</name>
+            <url>${repoMavenSnapshotUrl}</url>
+        </snapshotRepository>
+        <!-- Máquina donde se publica el site del proyecto -->
+        <site>
+            <id>${repoSiteId}</id>
+            <name>${repoSiteName}</name>
+            <url>${repoSiteUrl}/${project.groupId}/models </url>
+        </site>
+    </distributionManagement>
+    <profiles>
+        <profile>
+            <id>maven-2</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-site-plugin</artifactId>
+                            <version>2.0.1</version>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-site-plugin</artifactId>
+                        <configuration>
+                            <locales>es</locales>
+                            <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
+                            <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+            <reporting>
+                <plugins>
+                    <!-- plugin para reports de sonar -->
+                    <plugin>
+                        <groupId>org.codehaus.sonar-plugins</groupId>
+                        <artifactId>maven-report</artifactId>
+                        <version>0.1</version>
+                    </plugin>
+                    <!-- Plugin para generar los referencias cruzadas del 
+                        cÃ³digo -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>jxr-maven-plugin</artifactId>
+                        <version>2.0-beta-1</version>
+                    </plugin>
+                    <!-- Plugin para generar los informes de entregas al 
+                        SVN por desarrollador -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>changelog-maven-plugin</artifactId>
+                        <version>2.0-beta-1</version>
+                    </plugin>
+                    <!-- Plugin para generar los reports de calidad de cÃ³digo. 
+                        FaltarÃ­a definir las mÃ©tricas a aplicar -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-pmd-plugin</artifactId>
+                        <version>2.5</version>
+                        <configuration>
+                            <linkXref>true</linkXref>
+                            <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
+                            <minimumTokens>100</minimumTokens>
+                            <targetJdk>${jvm.version}</targetJdk>
+                            <excludes>
+                                <exclude>**/pojos/*.java</exclude>
+                                <exclude>**/generated/*.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>javancss-maven-plugin</artifactId>
+                        <version>2.0-beta-2</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>jdepend-maven-plugin</artifactId>
+                        <version>2.0-beta-2</version>
+                    </plugin>
+
+                    <!-- Plugin para generar los informes del JUNIT -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-report-plugin</artifactId>
+                        <version>2.5</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-project-info-reports-plugin</artifactId>
+                        <version>2.1.2</version>
+                    </plugin>
+                    <!-- Plugin para analizar las tags en el cÃ³digo, por 
+                        ejemplo para generar un informe con todos los TODO -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>taglist-maven-plugin</artifactId>
+                        <version>2.4</version>
+                        <configuration>
+                            <tags>
+                                <tag>TODO</tag>
+                                <tag>FIXME</tag>
+                                <tag>@todo</tag>
+                                <tag>@deprecated</tag>
+                            </tags>
+                        </configuration>
+                    </plugin>
+                    <!-- Plugin para generar el control de cambios -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-changes-plugin</artifactId>
+                        <version>2.3</version>
+                        <reportSets>
+                            <reportSet>
+                                <reports>
+                                    <report>changes-report</report>
+                                </reports>
+                            </reportSet>
+                        </reportSets>
+                    </plugin>
+                    <!-- Plugin para generar informes de calidad del cÃ³digo -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <version>2.5</version>
+                    </plugin>
+                    <!-- Genera los informes de Cobertura de los Test -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>cobertura-maven-plugin</artifactId>
+                        <version>2.4</version>
+                        <configuration>
+                            <formats>
+                                <format>xml</format>
+                                <format>html</format>
+                            </formats>
+                        </configuration>
+                    </plugin>
+                    <!-- Genera una agregaciÃ³n de informes -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>dashboard-maven-plugin</artifactId>
+                        <version>1.0.0-beta-1</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>jdepend-maven-plugin</artifactId>
+                        <version>2.0-beta-2</version>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.7</version>
+                        <configuration>
+                            <!-- Default configuration for all reports -->
+                        </configuration>
+                        <reportSets>
+                            <reportSet>
+                                <id>aggregate</id>
+                                <configuration>
+                                    <!-- Specific configuration for the aggregate 
+                                        report -->
+                                </configuration>
+                                <reports>
+                                    <report>aggregate</report>
+                                </reports>
+                            </reportSet>
+                        </reportSets>
+                    </plugin>
+                </plugins>
+            </reporting>
+        </profile>
+        <profile>
+            <id>maven-3</id>
+            <activation>
+                <file>
+                    <!-- This employs that the basedir expression is only 
+                        recognized by Maven 3.x (see MNG-2363) -->
+                    <exists>${basedir}</exists>
+                </file>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-site-plugin</artifactId>
+                            <version>3.0</version>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-site-plugin</artifactId>
+                        <configuration>
+                            <locales>es</locales>
+                            <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
+                            <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
+
+                            <reportPlugins>
+                                <plugin>
+                                    <groupId>org.apache.maven.plugins</groupId>
+                                    <artifactId>maven-project-info-reports-plugin</artifactId>
+                                    <version>2.2</version>
+                                    <configuration>
+                                        <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
+                                        <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+                                    </configuration>
+                                </plugin>
+                                <plugin>
+                                    <groupId>org.apache.maven.plugins</groupId>
+                                    <artifactId>maven-javadoc-plugin</artifactId>
+                                    <version>2.7</version>
+                                </plugin>
+                                <!-- plugin para reports de sonar -->
+                                <plugin>
+                                    <groupId>org.codehaus.sonar-plugins</groupId>
+                                    <artifactId>maven-report</artifactId>
+                                    <version>0.1</version>
+                                </plugin>
+                                <!-- Plugin para generar los referencias 
+                                    cruzadas del cÃ³digo -->
+                                <plugin>
+                                    <groupId>org.apache.maven.plugins</groupId>
+                                    <artifactId>maven-jxr-plugin</artifactId>
+                                    <version>2.2</version>
+                                </plugin>
+                                <!-- Plugin para generar los informes de 
+                                    entregas al SVN por desarrollador -->
+                                <plugin>
+                                    <groupId>org.apache.maven.plugins</groupId>
+                                    <artifactId>maven-changelog-plugin</artifactId>
+                                    <version>2.2</version>
+                                </plugin>
+                                <!-- Plugin para generar los reports de calidad 
+                                    de cÃ³digo. FaltarÃ­a definir las mÃ©tricas a aplicar -->
+                                <plugin>
+                                    <groupId>org.apache.maven.plugins</groupId>
+                                    <artifactId>maven-pmd-plugin</artifactId>
+                                    <version>2.5</version>
+                                    <configuration>
+                                        <linkXref>true</linkXref>
+                                        <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
+                                        <minimumTokens>100</minimumTokens>
+                                        <targetJdk>${jvm.version}</targetJdk>
+                                        <excludes>
+                                            <exclude>**/pojos/*.java</exclude>
+                                            <exclude>**/generated/*.java</exclude>
+                                        </excludes>
+                                    </configuration>
+                                </plugin>
+                                <plugin>
+                                    <groupId>org.apache.maven.plugins</groupId>
+                                    <artifactId>maven-plugin-plugin</artifactId>
+                                    <version>2.7</version>
+                                </plugin>
+                                <plugin>
+                                    <groupId>org.codehaus.mojo</groupId>
+                                    <artifactId>javancss-maven-plugin</artifactId>
+                                    <version>2.0-beta-2</version>
+                                </plugin>
+                                <plugin>
+                                    <groupId>org.codehaus.mojo</groupId>
+                                    <artifactId>jdepend-maven-plugin</artifactId>
+                                    <version>2.0-beta-2</version>
+                                </plugin>
+                                <!-- Plugin para generar los informes del 
+                                    JUNIT -->
+                                <plugin>
+                                    <groupId>org.apache.maven.plugins</groupId>
+                                    <artifactId>maven-surefire-report-plugin</artifactId>
+                                    <version>2.7.2</version>
+                                </plugin>
+                                <!-- Plugin para analizar las tags en el 
+                                    cÃ³digo, por ejemplo para generar un informe con todos los TODO -->
+                                <plugin>
+                                    <groupId>org.codehaus.mojo</groupId>
+                                    <artifactId>taglist-maven-plugin</artifactId>
+                                    <version>2.4</version>
+                                    <configuration>
+                                        <tags>
+                                            <tag>TODO</tag>
+                                            <tag>FIXME</tag>
+                                            <tag>@todo</tag>
+                                            <tag>@deprecated</tag>
+                                        </tags>
+                                    </configuration>
+                                </plugin>
+                                <!-- Plugin para generar el control de cambios -->
+                                <plugin>
+                                    <groupId>org.apache.maven.plugins</groupId>
+                                    <artifactId>maven-changes-plugin</artifactId>
+                                    <version>2.4</version>
+                                    <reportSets>
+                                        <reportSet>
+                                            <reports>
+                                                <report>changes-report</report>
+                                            </reports>
+                                        </reportSet>
+                                    </reportSets>
+                                </plugin>
+                                <!-- Plugin para generar informes de calidad 
+                                    del cÃ³digo -->
+                                <plugin>
+                                    <groupId>org.apache.maven.plugins</groupId>
+                                    <artifactId>maven-checkstyle-plugin</artifactId>
+                                    <version>2.6</version>
+                                </plugin>
+                                <!-- Genera los informes de Cobertura de 
+                                    los Test -->
+                                <plugin>
+                                    <groupId>org.codehaus.mojo</groupId>
+                                    <artifactId>cobertura-maven-plugin</artifactId>
+                                    <version>2.4</version>
+                                    <configuration>
+                                        <formats>
+                                            <format>xml</format>
+                                            <format>html</format>
+                                        </formats>
+                                    </configuration>
+                                </plugin>
+                            </reportPlugins>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+    <modules>
+        <module>communities</module>
+        <module>mobility</module>
+        <module>mobility2</module>
+    </modules>
+    <properties>
+        <copyright.year>2011</copyright.year>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <org.apache.hadoop>0.20.2-cdh3u2</org.apache.hadoop>
+        <junit>4.5</junit>
+        <jvm.version>1.6</jvm.version>
+    </properties>
+</project>

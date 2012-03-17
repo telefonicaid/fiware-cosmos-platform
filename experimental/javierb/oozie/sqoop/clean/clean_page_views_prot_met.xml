@@ -1,0 +1,27 @@
+<action name="CLEAN_PAGE_VIEWS_PROT_MET">
+	<sqoop xmlns="uri:oozie:sqoop-action:0.2">
+		<job-tracker>${jobTracker}</job-tracker>
+		<name-node>${nameNode}</name-node>
+		<configuration>
+			<property>
+				<name>mapred.job.queue.name</name>
+				<value>${queueName}</value>
+			</property>
+			<property>
+				<name>oozie.use.system.libpath</name>
+				<value>true</value>
+			</property>
+		</configuration>
+		<arg>eval</arg>
+		<arg>--connect</arg>
+		<arg>jdbc:mysql://pshdp01/psdb</arg>
+		<arg>--username</arg>
+		<arg>hadoop</arg>
+		<arg>--password</arg>
+		<arg>hadoop</arg>
+		<arg>-e</arg>
+		<arg>truncate table ag_page_views_method_day_aux</arg>
+	</sqoop>
+	<ok to="EXPORT_PAGE_VIEWS_PROT_MET"/>
+	<error to="fail"/>
+</action>

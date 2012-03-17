@@ -1,0 +1,79 @@
+<!--
+  Copyright (c) 2010 Yahoo! Inc. All rights reserved.
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. See accompanying LICENSE file.
+-->
+<workflow-app xmlns="uri:oozie:workflow:0.1" xmlns:xi="http://www.w3.org/2001/XInclude" name="webprofilingWF">
+    <start to="filtering"/>
+    <!-- This action runs the filtering map process over the raw data -->
+	<xi:include href="./cleaning/filtering.xml"/>
+    
+	<!-- This fork group runs in parallel every map reduce tasks to calculate the kpis -->
+	<fork name="aggregation">
+		<path start="PAGE_VIEWS_PROT_DEV"/>
+		<path start="PAGE_VIEWS_PROT_MET"/>
+		<path start="PAGE_VIEWS_PROT"/>
+		<path start="PAGE_VIEWS_PROT_DOM_PATH"/>
+		<path start="VISITORS_PROT"/>
+		<path start="VISITORS_PROT_DOM_PATH"/>
+		<path start="VISITORS_PROT_UAGENT"/>
+    </fork>
+	
+	<!-- These actions run map reduce operations to calculate kpis of web profiling -->
+	<xi:include href="kpis/page_views_prot_dev.xml"/>
+	<xi:include href="kpis/page_views_prot_met.xml"/>
+	<xi:include href="kpis/page_views_prot.xml"/>
+	<xi:include href="kpis/page_views_dom_path.xml"/>
+	<xi:include href="kpis/visitors_prot.xml"/>
+	<xi:include href="kpis/visitors_prot_dom_path.xml"/>
+	<xi:include href="kpis/visitors_prot_uagent.xml"/>
+	
+	<join name="joining" to="exporttomysql"/>
+	
+	<!-- This fork group runs in parallel the processes to export kpis to mysql -->
+	<fork name="exporttomysql">
+		<path start="CLEAN_PAGE_VIEWS_PROT_DEV"/>
+		<path start="CLEAN_PAGE_VIEWS_PROT_MET"/>
+		<path start="CLEAN_PAGE_VIEWS_PROT"/>
+		<path start="CLEAN_PAGE_VIEWS_PROT_DOM_PATH"/>
+		<path start="CLEAN_VISITORS_PROT"/>
+		<path start="CLEAN_VISITORS_PROT_DOM_PATH"/>
+		<path start="CLEAN_VISITORS_PROT_UAGENT"/>
+    </fork>
+	
+	<!-- These actions run sqoop operations to clean temporal tables in mysql -->
+	<xi:include href="sqoop/clean/clean_page_views_prot_dev.xml"/>
+	<xi:include href="sqoop/clean/clean_page_views_prot_met.xml"/>
+	<xi:include href="sqoop/clean/clean_page_views_prot.xml"/>
+	<xi:include href="sqoop/clean/clean_page_views_prot_dom_path.xml"/>
+	<xi:include href="sqoop/clean/clean_visitors_prot.xml"/>
+	<xi:include href="sqoop/clean/clean_visitors_prot_dom_path.xml"/>
+	<xi:include href="sqoop/clean/clean_visitors_prot_uagent.xml"/>
+	
+	<!-- These actions run sqoop operations to export kpi data to mysql -->
+	<xi:include href="sqoop/export/export_page_views_prot_dev.xml"/>
+	<xi:include href="sqoop/export/export_page_views_prot_met.xml"/>
+	<xi:include href="sqoop/export/export_page_views_prot.xml"/>
+	<xi:include href="sqoop/export/export_page_views_prot_dom_path.xml"/>
+	<xi:include href="sqoop/export/export_visitors_prot.xml"/>
+	<xi:include href="sqoop/export/export_visitors_prot_dom_path.xml"/>
+	<xi:include href="sqoop/export/export_visitors_prot_uagent.xml"/>
+
+	
+	<join name="exportjoining" to="end"/>
+	
+    <kill name="fail">
+        <message>Map/Reduce failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+	
+    <end name="end"/>
+</workflow-app>

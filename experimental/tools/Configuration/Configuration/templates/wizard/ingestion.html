@@ -1,0 +1,102 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div id="content-main">
+	<h1 class="h-title">{{ "BDP Configuration" }}</h1>
+	<a id="a-ingestion">{{ "1. Ingestion" }}</a> &rsaquo;&rsaquo;&rsaquo;
+    <a>{{ "2. Pre-processing" }}</a> &rsaquo;&rsaquo;&rsaquo;
+	<a>{{ "3. Processing and Consumption" }}</a><br/><br/>
+    <form {% if form.form.is_multipart %}enctype="multipart/form-data" {% endif %}method="post" action="" id="{{ opts.module_name }}_form">{% csrf_token %}
+        <div class="submit-row">
+            {% if form.form.errors %}
+            <p class="errornote">
+                {% blocktrans count form.form.errors|length as counter %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}
+            </p>
+            <ul class="errorlist">
+                {% for error in form.form.non_field_errors %}
+                <li>{{ error }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+            
+            {% if step %}
+	            <h2 class="h-label">{{ "Service Setup" }}</h2>
+			    {{ form.non_field_errors }}
+			    <div class="field-div">
+			        {{ form.subject.errors }}
+			        <label class="label-form" for="id_identifier">Configuration Name</label>
+			        {{ form.name }}
+			    </div><br/><br/>
+			{% endif %}
+			    
+		    <div class="field-div-ingestion">
+		    	<div class="pre-div-left-border">
+			        <div class="fieldWrapper">
+				        {{ form.message.errors }}
+				        <label class="label-form-radio" for="id_type">Ingestion Mode</label>
+				        {{ form.mode }}
+				    </div><br/>
+				    <div class="fieldWrapper">
+				        {{ form.message.errors }}
+				        <label class="label-form" for="id_type">Landing Area</label>
+				        {{ form.path }}
+				    </div><br/><br/>
+				    <div class="fieldWrapper">
+				        {{ form.message.errors }}
+				        <label class="label-form" for="id_type">Ingestion Size</label>
+				        {{ form.size }}
+				    </div>		       
+			    </div>
+			    <div class="pre-div-right-border" style="padding-top: 20px">
+			        <div class="fieldWrapper">
+				        {{ form.message.errors }}
+				        <label class="label-form" for="id_type">Initial Date</label>
+				        {{ form.initial_date }}
+				    </div><br/><br/>
+				    <div class="fieldWrapper">
+				        {{ form.message.errors }}
+				        <label class="label-form" for="id_type">End Date</label>
+				        {{ form.end_date }}
+				    </div><br/><br/>
+				    <div class="fieldWrapper">
+				        {{ form.message.errors }}
+				        <label class="label-form" for="id_type">Upload Frequency</label>
+				        {{ form.frequency }}
+				    </div>	
+			    </div>			    
+			  </div><br/><br/>      
+				
+			  <div class="pre-div" style="height: 30px">
+			    <div class="pre-div-left" style="width: 48%">
+			        {{ form.message.errors }}
+			        <label class="label-cons-form" for="id_type">Output Path</label>
+	        	 	{{ form.output }}		       
+			    </div>
+			    <div class="pre-div-right" style="width: 48%">
+			        {{ form.message.errors }}
+			        <label for="id_type">File Name Pattern</label>
+	        	 	{{ form.file_name }}
+			    </div>				    			    
+			   </div><br/>	
+				
+            <input type="hidden" name="{{ step_field }}" value="{{ step0 }}" />
+            {{ previous_fields|safe }}
+
+			{% if step %}
+	            <div id="buttons-div" class="submit-row" align="right">
+	             	<input type="reset" value="Cancel" class="button" name="_cancel"/>
+	             	<input type="button" value="&laquo; Back" class="button" disabled="disabled"/>
+	                <input type="submit" value="{% ifequal step step_count %}Finish{% else %}Next &raquo;{% endifequal %}" class="button" name="_save"/>               
+	            </div>
+			{% else %}
+	            <div id="buttons-div" class="submit-row" align="right">
+	             	<input type="reset" value="Cancel" class="button" name="_cancel"/>
+	                <input type="submit" value="{% ifequal step step_count %}Save{% else %}Next &raquo;{% endifequal %}" class="button" name="_save"/>               
+	            </div>			
+			{%endif%}
+
+            <script type="text/javascript">document.getElementById("{{ form.first_field.auto_id }}").focus();</script>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -3,37 +3,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <properties>
-        <copyright.year>2012</copyright.year>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <org.apache.hadoop>0.20.2</org.apache.hadoop>
-        <org.apache.hadoop.hive>0.7.1</org.apache.hadoop.hive>
-        <jvm.version>1.6</jvm.version>
-        <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
-        <protoc.path>protoc</protoc.path>
-    </properties>
+    <parent>
+        <groupId>es.tid.bdp</groupId>
+        <artifactId>samplemodels</artifactId>
+        <version>0.0.3.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-    <profiles>
-        <profile>
-            <id>jenkins</id>
-        </profile>
-        <profile>
-            <id>local</id>
-            <properties>
-                <env.SVN_REVISION>Build</env.SVN_REVISION>
-                <env.ProductVersion>Local</env.ProductVersion>
-            </properties>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-        </profile>
-    </profiles>
-
-    <groupId>es.tid.bdp.samples</groupId>
     <artifactId>wordcount</artifactId>
-    <version>${env.ProductVersion}${env.SVN_REVISION}</version>
-    <packaging>jar</packaging>
+    <name>wordcount</name>
 
     <dependencies>
         <dependency>

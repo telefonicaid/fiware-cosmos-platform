@@ -25,19 +25,19 @@ public class WordCountJob extends Job {
         super(conf, JOB_NAME);
 
         this.setJarByClass(WordCountMain.class);
-        this.setInputFormatClass(TextInputFormat.class);
         this.setMapOutputKeyClass(Text.class);
         this.setMapOutputValueClass(IntWritable.class);
         this.setOutputKeyClass(Text.class);
         this.setOutputValueClass(LongWritable.class);
-        this.setOutputFormatClass(TextOutputFormat.class);
         this.setMapperClass(WordCountMapper.class);
         this.setReducerClass(WordCountReducer.class);
     }
 
     public void configure(Path textPath, Path outputPath)
             throws IOException {
+        this.setInputFormatClass(TextInputFormat.class);
         FileInputFormat.addInputPath(this, textPath);
+        this.setOutputFormatClass(TextOutputFormat.class);
         FileOutputFormat.setOutputPath(this, outputPath);
     }
 }

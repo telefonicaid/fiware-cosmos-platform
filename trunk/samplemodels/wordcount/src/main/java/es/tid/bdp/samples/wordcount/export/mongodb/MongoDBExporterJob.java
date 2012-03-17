@@ -11,7 +11,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 
 import es.tid.bdp.samples.wordcount.WordCountMain;
@@ -43,7 +42,7 @@ public class MongoDBExporterJob extends Job {
      * @throws IOException
      */
     public void configure(Path inputPath, String outputUrl) throws IOException {
-        this.setInputFormatClass(SequenceFileInputFormat.class);
+        this.setInputFormatClass(TextInputFormat.class);
         TextInputFormat.setInputPaths(this, inputPath);
         this.setOutputFormatClass(MongoOutputFormat.class);
         MongoConfigUtil.setOutputURI(this.conf, outputUrl);

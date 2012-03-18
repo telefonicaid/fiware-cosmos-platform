@@ -2,8 +2,8 @@ package es.tid.bdp.samples.wordcount;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import java.util.List;
 import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -34,8 +34,11 @@ public class WordCountDAO {
     
     public long getCount(String word) {
         BasicDBObject ref = new BasicDBObject(WORD_COLUMN, word);
-        DBCursor results = this.wordCounts.find(ref);
-        if (results.size() == 0) {
+        return this.processResults(this.wordCounts.find(ref).toArray());
+    }
+    
+    protected long processResults(List<DBObject> results) {
+        if (results.isEmpty()) {
             // Word is not in the provided text
             return 0;
         } else if (results.size() > 1) {
@@ -44,6 +47,6 @@ public class WordCountDAO {
         } else {
             DBObject count = results.iterator().next();
             return (Long.parseLong(count.get(COUNT_COLUMN).toString()));
-        } 
+        }
     }
 }

@@ -8,7 +8,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 /**
  *
- * @author dmicol, dmicol, sortega
+ * @author dmicol, sortega
  */
 public class MongoDBExporterReducer extends Reducer<LongWritable, Text,
                                                     Text, LongWritable> {

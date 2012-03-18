@@ -1,5 +1,7 @@
 package es.tid.bdp.profile.api;
 
+import java.util.List;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -39,19 +41,23 @@ public class ProfileDAO {
      * @return CategoryMap or null.
      */
     public CategoryMap getLastCategoryMap(String userId) {
-
-        BasicDBObject ref = new BasicDBObject("id", userId);
-        for (DBObject result : this.profiles.find(ref, CATEGORIES_COL).sort(
-                DATE_COL).limit(1)) {
-
+        for (DBObject result : this.getCategories(userId)) {
             CategoryMap categoryMap = new CategoryMap();
             return toCategoryMap((DBObject) result.get("categories"),
                                  categoryMap);
         }
-
         return new CategoryMap();
     }
 
+    public List<DBObject> getCategories(String userId) {
+        BasicDBObject ref = new BasicDBObject("id", userId);
+        return (this.profiles
+                .find(ref, CATEGORIES_COL)
+                .sort(DATE_COL)
+                .limit(1)
+                .toArray());
+    }
+    
     private CategoryMap toCategoryMap(DBObject resultCategories,
                                       CategoryMap categoryMap) {
         for (String categoryName : resultCategories.keySet()) {

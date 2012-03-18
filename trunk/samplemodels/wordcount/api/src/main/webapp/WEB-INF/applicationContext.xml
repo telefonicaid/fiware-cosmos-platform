@@ -11,9 +11,9 @@
             http://www.springframework.org/schema/util
             http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
-    <util:properties id="config" location="classpath:config.properties"/>
+    <util:properties id="config" location="WEB-INF/config.properties"/>
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="location" value="classpath:config.properties"/>
+        <property name="location" value="WEB-INF/config.properties"/>
     </bean>
 
     <context:component-scan base-package="es.tid.bdp.samples.wordcount"/>

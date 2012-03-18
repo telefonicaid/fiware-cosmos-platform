@@ -1,4 +1,4 @@
-package es.tid.bdp.samples.wordcount.api;
+package es.tid.bdp.samples.wordcount;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 /**
  *
- * @author sortega
+ * @author dmicol, sortega
  */
 @Component
 public class WordCountDAO {

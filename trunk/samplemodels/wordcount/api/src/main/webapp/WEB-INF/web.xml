@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app id="WebApp_ID" version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
-    <display-name>API demo</display-name>
+    <display-name>WordCount API demo</display-name>
 
-    <context-param>
-        <param-name>contextConfigLocation</param-name>
-        <param-value>classpath:application-context.xml</param-value>
-    </context-param>
     <listener>
         <listener-class>
             org.springframework.web.context.ContextLoaderListener

@@ -20,23 +20,23 @@ import org.junit.Test;
  */
 public class MongoDBExporterReducerTest {
     private MongoDBExporterReducer instance;
-    private ReduceDriver<LongWritable, Text, NullWritable, BSONWritable> driver;
+    private ReduceDriver<LongWritable, Text, Text, LongWritable> driver;
 
     @Before
     public void setUp() {
         this.instance = new MongoDBExporterReducer();
-        this.driver = new ReduceDriver<LongWritable, Text, NullWritable,
-                                       BSONWritable>(this.instance);
+        this.driver = new ReduceDriver<LongWritable, Text, Text, LongWritable>(
+                this.instance);
     }
 
     @Test
     public void testReduce() throws Exception {
-        List<Pair<NullWritable, BSONWritable>> results =
+        List<Pair<Text, LongWritable>> results =
                 this.driver.withInput(new LongWritable(2L),
                                       asList(new Text("this\t192"))).run();
         assertEquals(1, results.size());
-        Pair<NullWritable, BSONWritable> result = results.get(0);
-        assertEquals("this", result.getSecond().get("word"));
-        assertEquals(192L, result.getSecond().get("count"));
+        Pair<Text, LongWritable> result = results.get(0);
+        assertEquals("this", result.getFirst());
+        assertEquals(192L, result.getSecond());
     }
 }

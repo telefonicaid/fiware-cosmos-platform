@@ -1,4 +1,4 @@
-package es.tid.samples.wordcount.api;
+package es.tid.bdp.samples.wordcount.api;
 
 import java.util.List;
 
@@ -20,17 +20,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Scope("request")
 public class WordCount {
     @Autowired(required = true)
-    private ProfileDAO profile;
+    private WordCountDAO wordCount;
 
-    public void setDao(ProfileDAO dao) {
-        this.profile = dao;
+    public void setDao(WordCountDAO dao) {
+        this.wordCount = dao;
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List getTop(@PathParam("username") String userName,
-                       @PathParam("word") String word) {
-        // TODO
-        return null;
+    public long getCount(@PathParam("username") String userName,
+                         @PathParam("word") String word) {
+        return this.wordCount.getCount(word);
     }
 }

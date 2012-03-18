@@ -1,4 +1,4 @@
-package es.tid.samples.wordcount.api;
+package es.tid.bdp.samples.wordcount.api;
 
 import com.mongodb.DB;
 import com.mongodb.Mongo;
@@ -37,11 +37,11 @@ public class MongoService {
     }
 
     public DB getDb() {
-        return db;
+        return this.db;
     }
 
     public Mongo getMongo() {
-        return mongo;
+        return this.mongo;
     }
 
     @PreDestroy

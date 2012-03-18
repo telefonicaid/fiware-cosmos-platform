@@ -31,7 +31,7 @@ public class WordCountDAO {
     }
     
     public long getCount(String word) {
-        BasicDBObject ref = new BasicDBObject("id", word);
+        BasicDBObject ref = new BasicDBObject("_id", word);
         DBCursor result = this.wordCounts.find(ref);
         return result.size();
     }

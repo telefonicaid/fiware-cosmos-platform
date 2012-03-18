@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author dmicol, sortega
  */
-@Path("/{username}/wordcount/{n}")
+@Path("/wordcount/{word}")
 @Component
 @Scope("request")
 public class WordCount {
@@ -28,8 +28,7 @@ public class WordCount {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public long getCount(@PathParam("username") String userName,
-                         @PathParam("word") String word) {
+    public long getCount(@PathParam("word") String word) {
         return this.wordCount.getCount(word);
     }
 }

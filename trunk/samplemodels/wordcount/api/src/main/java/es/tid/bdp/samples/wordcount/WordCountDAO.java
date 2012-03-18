@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class WordCountDAO {
     private static final String WORD_COUNT_COLLECTION = "wordcount";
+    private static final String WORD_COLUMN = "_id";
+    private static final String COUNT_COLUMN = "value";
     
     @Autowired(required = true)
     private MongoService mongo;
@@ -31,8 +33,17 @@ public class WordCountDAO {
     }
     
     public long getCount(String word) {
-        BasicDBObject ref = new BasicDBObject("_id", word);
-        DBCursor result = this.wordCounts.find(ref);
-        return result.size();
+        BasicDBObject ref = new BasicDBObject(WORD_COLUMN, word);
+        DBCursor results = this.wordCounts.find(ref);
+        if (results.size() == 0) {
+            // Word is not in the provided text
+            return 0;
+        } else if (results.size() > 1) {
+            // More than one document for the same word. This shouldn't happen
+            throw new IllegalStateException();
+        } else {
+            DBObject count = results.iterator().next();
+            return (Long.parseLong(count.get(COUNT_COLUMN).toString()));
+        } 
     }
 }

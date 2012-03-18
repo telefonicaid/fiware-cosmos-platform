@@ -1,7 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <html>
     <head>
-        <title>WordCount API demo</title>
+        <title>Word Count API Demo</title>
         <style>
             .category {
                 margin-right: 1em;
@@ -14,12 +14,7 @@
                 $.getJSON(
                     'api/wordcount/' + $('#word').val(),
                     function(data) {
-                        $('#count').html("");
-                        $.each(data, function(i, val) {
-                            var div = $("<div/>");
-                            div.append($('<span class="count"/>').text(val))
-                            $('#count').append(div);
-                        })
+                        $('#count').html(data);
                     });
             }
 
@@ -31,12 +26,10 @@
     </head>
 
     <body>
-        <h1>API demo</h1>
+        <h1>Word Count API Demo</h1>
         <label for="word">Word</label>
         <input type="text" name="word" id="word" />
         <input type="submit" id="submit" value="Lookup" />
-
-        <p>Count <span id="count">-</span></p>
+        <p>Count: <span id="count"></span></p>
     </body>
 </html>
-

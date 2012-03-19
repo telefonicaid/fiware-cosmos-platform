@@ -1,15 +1,12 @@
 package es.tid.bdp.profile.categoryextraction;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.bdp.base.mapreduce.BinaryKey;
-import es.tid.bdp.profile.data.UserNavigationUtil;
-import es.tid.bdp.profile.generated.data.ProfileProtocol.UserNavigation;
+import es.tid.bdp.base.mapreduce.TernaryKey;
 
 /**
  * Test case for CategoryExtractionMapper
@@ -18,14 +15,13 @@ import es.tid.bdp.profile.generated.data.ProfileProtocol.UserNavigation;
  */
 public class TextCategoryExtractionMapperTest {
     private TextCategoryExtractionMapper instance;
-    private MapDriver<LongWritable, Text, BinaryKey,
-            ProtobufWritable<UserNavigation>> driver;
+    private MapDriver<LongWritable, Text, TernaryKey, LongWritable> driver;
 
     @Before
     public void setUp() throws Exception {
         instance = new TextCategoryExtractionMapper();
-        driver = new MapDriver<LongWritable, Text, BinaryKey,
-                ProtobufWritable<UserNavigation>> (instance);
+        driver = new MapDriver<LongWritable, Text, TernaryKey, LongWritable>
+                (instance);
     }
 
     @Test
@@ -35,11 +31,13 @@ public class TextCategoryExtractionMapperTest {
                 + "weather.com\t/mobile/android/factoids/delivery/1130.xml\t"
                 + "null\t30\t10\t2010\t0\t0\t-Java0\t-Java0\t-Java0\t-Java0\t"
                 + "GET\t200";
+        final String expectedUrl = "http://xml.weather.com/mobile/android/factoids/delivery";
+        final String expectedUserId = "cfae4f24cb42c12d";
+        final String expectedDate = "2010-10-30";
         driver.withInput(new LongWritable(0), new Text(input))
-                .withOutput(new BinaryKey("cfae4f24cb42c12d", "2010-10-30"),
-                UserNavigationUtil.createAndWrap("cfae4f24cb42c12d",
-                "http://xml.weather.com/mobile/android/factoids/delivery",
-                "2010-10-30"))
+                .withOutput(new TernaryKey(expectedUserId, expectedDate,
+                                         expectedUrl),
+                            new LongWritable(1L))
                 .runTest();
     }
 }

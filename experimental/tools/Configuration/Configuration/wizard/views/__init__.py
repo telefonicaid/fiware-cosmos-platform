@@ -1,1 +1,0 @@
-from Configuration.wizard.views import list_views, detail_views, views, add_views

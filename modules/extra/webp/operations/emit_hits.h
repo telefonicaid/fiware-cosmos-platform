@@ -70,6 +70,14 @@ namespace webp{
 			  }
 
 
+			  // Top url
+              // ------------------------------------------------------------------------------------------
+			  output_key.value = "top_urls";
+			  output_key.value.append(" ");
+			  output_key.value.append( log.url.value );
+			  
+			  writer->emit(0, &output_key , &output_value );
+
 			  // Top users
               // ------------------------------------------------------------------------------------------
 			  output_key.value = "top_users";

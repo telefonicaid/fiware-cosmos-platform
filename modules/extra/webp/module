@@ -113,10 +113,22 @@ script web_profiling
         add_stream_operation      [emit_hits]        webp.emit_hits           [logs]        [hits];
 
 		 # Auxiliar modules;
-        init_stream hit hit.stream_block_simple;
+        init_stream hit_5mins    hit.stream_block_simple;
+        init_stream hit_1hour    hit.stream_block_simple;
+        init_stream hit_24hours  hit.stream_block_simple;
+
+		#Properties
+		set_stream_operation_property hit_5mins.01.reduce_hits time_span 300;
+		set_stream_operation_property hit_5mins.20.reduce_tops time_span 300;
+
+		set_stream_operation_property hit_1hour.01.reduce_hits time_span 3600;
+		set_stream_operation_property hit_1hour.20.reduce_tops time_span 3600;
+
+		set_stream_operation_property hit_24hours.01.reduce_hits time_span 86400;
+		set_stream_operation_property hit_24hours.20.reduce_tops time_span 86400;
 
 		# Connect quuees
-		add_queue_connection      [hits] hit.in_input
+		add_queue_connection      [hits] hit_5mins.in_input  hit_1hour.in_input hit_24hours.in_input
     }
 
     helpLine "Init stream operations"
@@ -126,8 +138,7 @@ script demo
 {
     code
     {
-
-        remove_all_stream;
+        #remove_all_stream;
 
 		# ----------------------------------------------------------------
 		# Input queues
@@ -139,7 +150,8 @@ script demo
 		# ----------------------------------------------------------------
 		# wep profiling stream block
 		# ----------------------------------------------------------------
-        init_stream webp webp.web_profiling;
+        init_stream webp    webp.web_profiling;
+ 
 		add_queue_connection [input]     webp.in_input;
 		add_queue_connection [input_tid] webp.in_input_tid;
 		# ----------------------------------------------------------------

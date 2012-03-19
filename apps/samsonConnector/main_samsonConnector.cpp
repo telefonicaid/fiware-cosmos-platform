@@ -67,7 +67,8 @@ void* review_samson_connector(void*p)
         samson_connector.exit_if_necessary();
         sleep(5);
     }
-   
+
+	return NULL;
 }
 
 int main( int argC , const char *argV[] )

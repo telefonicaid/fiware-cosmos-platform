@@ -70,9 +70,9 @@ namespace au
             double t = cronometer.diffTime();
             
             if( on )
-                on_time = on_time += t;
+                on_time += t;
             else
-                off_time = off_time += t;
+                off_time += t;
             
             // Forgetting factor
             off_time *= pow( f , t ); 

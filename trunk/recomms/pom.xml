@@ -2,18 +2,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>es.tid.bdp</groupId>
+        <artifactId>bigdataplatform</artifactId>
+        <version>0.0.3.0</version>
+           <!--  <version>${env.ProductVersion}.${env.GIT_COMMIT}</version> -->
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-  <parent>
-    <groupId>org.apache.mahout</groupId>
-    <artifactId>mahout</artifactId>
-    <version>0.6-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
 
   <artifactId>mahout-tid</artifactId>
   <name>Mahout for BigData</name>
 
-  <packaging>jar</packaging>
+  <packaging>jar</packaging> 
   
   <description>mahout integration with hadoop for big data platform</description>
   <build>
@@ -57,6 +58,23 @@
           </supplementalModels>
         </configuration>
       </plugin>
+      <plugin>
+          <groupId>com.google.protobuf.tools</groupId>
+          <artifactId>maven-protoc-plugin</artifactId>
+          <version>0.1.10</version>
+          <configuration>
+              <protocExecutable>${protoc.path}</protocExecutable>
+              <checkStaleness>true</checkStaleness>
+          </configuration>
+          <executions>  
+              <execution>
+                  <goals>
+                      <goal>compile</goal>
+                      <goal>testCompile</goal>
+                  </goals>
+              </execution>
+          </executions>
+      </plugin>
 
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
@@ -66,129 +84,11 @@
         <artifactId>maven-source-plugin</artifactId>
       </plugin>
 
-      <plugin>
-        <groupId>org.mortbay.jetty</groupId>
-        <artifactId>maven-jetty-plugin</artifactId>
-        <version>6.1.10</version>
-      </plugin>
     </plugins>
 
   </build>
 
   <dependencies>
-
-    <!-- own modules -->
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>mahout-core</artifactId>
-      <version>0.7-SNAPSHOT</version>
-      <exclusions>
-        <!-- This causes a weird runtime error -->
-        <exclusion>
-          <groupId>org.uncommons.watchmaker</groupId>
-          <artifactId>watchmaker-framework</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>mahout-core</artifactId>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>mahout-math</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>mahout-examples</artifactId>
-      <version>0.6-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>mahout-math</artifactId>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-
-    <!--/ 3r d party-->
-
-    <dependency>
-      <groupId>commons-dbcp</groupId>
-      <artifactId>commons-dbcp</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>commons-pool</groupId>
-      <artifactId>commons-pool</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.solr</groupId>
-      <artifactId>solr-commons-csv</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-core</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.mongodb</groupId>
-      <artifactId>mongo-java-driver</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.mongodb</groupId>
-      <artifactId>bson</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.cassandra</groupId>
-      <artifactId>cassandra-all</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>me.prettyprint</groupId>
-      <artifactId>hector-core</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-jcl</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.easymock</groupId>
-      <artifactId>easymock</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-   <dependency>
-    <groupId>net.sf.json-lib</groupId>
-    <artifactId>json-lib</artifactId>
-    <version>2.2.3</version>
-   <classifier>jdk15</classifier>
-  </dependency>
 
    <dependency>
       <groupId>org.apache.cxf</groupId>
@@ -201,7 +101,6 @@
     <artifactId>wink-server</artifactId>
     <version>1.1.3-incubating</version>
 </dependency>
-
 
 
 <dependency>
@@ -233,6 +132,27 @@
 	<scope>compile</scope>
 </dependency>
 <dependency>
+	<groupId>commons-beanutils</groupId>
+	<artifactId>commons-beanutils</artifactId>
+	<version>20030211.134440</version>
+	<type>jar</type>
+	<scope>compile</scope>
+</dependency>
+<dependency>
+	<groupId>org.apache.directory.studio</groupId>
+	<artifactId>org.apache.commons.lang</artifactId>
+	<version>2.6</version>
+	<type>jar</type>
+	<scope>compile</scope>
+</dependency>
+<dependency>
+	<groupId>org.apache.mahout</groupId>
+	<artifactId>mahout-core</artifactId>
+	<version>0.6</version>
+	<type>jar</type>
+	<scope>compile</scope>
+</dependency>
+<dependency>
 	<groupId>org.apache.mahout</groupId>
 	<artifactId>mahout-integration</artifactId>
 	<version>0.6</version>
@@ -241,10 +161,141 @@
 </dependency>
 <dependency>
 	<groupId>org.apache.mahout</groupId>
-	<artifactId>mahout-core</artifactId>
-	<version>0.7-20120304.235900-23</version>
-	<type>pom</type>
+	<artifactId>mahout-math</artifactId>
+	<version>0.6</version>
+	<type>jar</type>
 	<scope>compile</scope>
 </dependency>
+<dependency>
+	<groupId>org.slf4j</groupId>
+	<artifactId>slf4j-api</artifactId>
+	<version>1.5.8</version>
+	<type>jar</type>
+	<scope>compile</scope>
+</dependency>
+<dependency>
+	<groupId>net.sf.json-lib</groupId>
+	<artifactId>json-lib-ext-spring</artifactId>
+	<version>1.0.2</version>
+	<type>jar</type>
+	<scope>compile</scope>
+</dependency>
+<dependency>
+	<groupId>org.apache.mahout</groupId>
+	<artifactId>mahout-core</artifactId>
+	<version>0.6</version>
+	<type>jar</type>
+	<classifier>tests</classifier>
+	<scope>test</scope>
+</dependency>
+<dependency>
+	<groupId>org.apache.mahout</groupId>
+	<artifactId>mahout-math</artifactId>
+	<version>0.6</version>
+	<type>jar</type>
+	<classifier>tests</classifier>
+	<scope>test</scope>
+</dependency>
+<dependency>
+	<groupId>org.easymock</groupId>
+	<artifactId>easymock</artifactId>
+	<version>3.1</version>
+	<type>jar</type>
+	<scope>test</scope>
+</dependency> 
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-core</artifactId>
+            <version>${org.apache.hadoop}-cdh3u2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hadoop.compression</groupId>
+            <artifactId>hadoop-gpl-compression</artifactId>
+            <version>0.1.0</version>
+        </dependency>
+         <!-- test dependencies -->
+        <dependency>
+            <groupId>org.apache.mrunit</groupId>
+            <artifactId>mrunit</artifactId>
+            <version>0.8.0-incubating</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-all</artifactId>
+            <version>1.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.nutch</groupId>
+            <artifactId>nutch</artifactId>
+            <version>1.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.nutch</groupId>
+            <artifactId>urlnormalizer-basic</artifactId>
+            <version>1.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.nutch</groupId>
+            <artifactId>urlnormalizer-regex</artifactId>
+            <version>1.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>libthrift</artifactId>
+            <version>0.5.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>elephant-bird</artifactId>
+            <version>2.1.7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.thrift</groupId>
+                    <artifactId>libthrift</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>cascading</groupId>
+                    <artifactId>cascading-hadoop</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google</groupId>
+                    <artifactId>protobuf-java</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.hadoop</groupId>
+                    <artifactId>hadoop-lzo</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>yamlbeans</groupId>
+                    <artifactId>yamlbeans</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+
+        <dependency>
+        	<groupId>es.tid.bdp</groupId>
+        	<artifactId>base</artifactId>
+        	<version>0.0.3.0</version>
+        	<scope>compile</scope>
+        </dependency>
   </dependencies>
+
 </project>

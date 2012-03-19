@@ -131,7 +131,7 @@ namespace samson {
                 free(hashInfo);
         }
 
-        std::string BlockLookupList::loopup( const char* key )
+        std::string BlockLookupList::lookup( const char* key )
         {
             int            hashGroup;
             int            keySize;
@@ -791,7 +791,7 @@ namespace samson {
                 }
             }
             
-            return lookupList->loopup( key );
+            return lookupList->lookup( key );
         }
     }
 }

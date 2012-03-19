@@ -126,13 +126,6 @@ void paConfigCleanup(void)
 	PA_M(("Cleaning up"));
 	//printf("Cleaning up parseArgs library\n");
 
-	PA_M(("freeing progName"));
-	if (progName != NULL)
-    {
-		free(progName);
-        progName = NULL;
-    }
-
 	PA_M(("freeing paPrefix"));
 	if (paPrefix)
     {
@@ -140,154 +133,126 @@ void paConfigCleanup(void)
         paPrefix = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paBuiltinPrefix)
     {
 		free(paBuiltinPrefix);
         paBuiltinPrefix = NULL;
     }
 
-	PA_M(("Cleaning up"));
-	if (paProgName != NULL)
-    {
-		free(paProgName);
-        paProgName = NULL;
-    }
-
-	PA_M(("Cleaning up"));
 	if (paRcFileName != NULL)
     {
 		free(paRcFileName);
         paRcFileName = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paRcFileDir)
     {
 		free(paRcFileDir);
         paRcFileDir = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paGenericRcDir)
     {
 		free(paGenericRcDir);
         paGenericRcDir = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paVersionString)
     {
 		free(paVersionString);
         paVersionString = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paExecVersion)
     {
 		free(paExecVersion);
         paExecVersion = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paHelpFile)
     {
 		free(paHelpFile);
         paHelpFile = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paHelpText)
     {
 		free(paHelpText);
         paHelpText = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paTracelevels)
     {
 		free(paTracelevels);
         paTracelevels = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paTraceInfoAtEol != NULL)
     {
         free(paTraceInfoAtEol);
         paTraceInfoAtEol = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paLogFilePath != NULL)
     {
 		free(paLogFilePath);
         paLogFilePath = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paLogFileLineFormat != NULL)
     {
 		free(paLogFileLineFormat);
         paLogFileLineFormat = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paLogFileTimeFormat != NULL)
     {
         free(paLogFileTimeFormat);
         paLogFileTimeFormat = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paLogScreenLineFormat != NULL)
     {
 		free(paLogScreenLineFormat);
         paLogScreenLineFormat = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paLogScreenTimeFormat != NULL)
     {
         free(paLogScreenTimeFormat);
         paLogScreenTimeFormat = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paManSynopsis)
     {
 		free(paManSynopsis);
         paManSynopsis = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paManShortDescription)
     {
 		free(paManShortDescription);
         paManShortDescription = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paManDescription)
     {
 		free(paManDescription);
         paManDescription = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paManExitStatus)
     {
 		free(paManExitStatus);
         paManExitStatus = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paManAuthor)
     {
 		free(paManAuthor);
         paManAuthor = NULL;
     }
 
-	PA_M(("Cleaning up"));
 	if (paManReportingBugs)
     {
 		free(paManReportingBugs);
@@ -318,11 +283,19 @@ void paConfigCleanup(void)
 		PA_M(("freed paiList II"));
 	}
 
-	PA_M(("Clean up DONE"));
-	PA_M(("Clean up DONE"));
-	PA_M(("Clean up DONE"));
+	PA_M(("freeing progName"));
+	if (progName != NULL)
+    {
+		free(progName);
+        progName = NULL;
+    }
 
-	exit(0);
+	PA_M(("freeing paProgName"));
+	if (paProgName != NULL)
+    {
+		free(paProgName);
+        paProgName = NULL;
+    }
 }
 
 
@@ -333,7 +306,6 @@ void paConfigCleanup(void)
 */
 static void paConfigInit(void)
 {
-    atexit(paConfigCleanup);
 	paWarningInit();
 
 	if (paPrefix)

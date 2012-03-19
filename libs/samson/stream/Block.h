@@ -72,7 +72,7 @@ namespace samson {
             BlockLookupList( Block* _block );
             ~BlockLookupList();
             
-            std::string loopup( const char* key );
+            std::string lookup( const char* key );
             
         };
 

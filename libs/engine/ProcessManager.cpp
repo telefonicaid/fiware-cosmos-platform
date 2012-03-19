@@ -40,8 +40,8 @@ void ProcessManager::destroy( )
 {
     LM_V(("ProcessManager destroy"));
     
-    if( !processManager )
-        LM_X(1, ("Destroying process manager without initializing"));
+    if (!processManager)
+        LM_RVE(("attempt to destroy uninitialized process manager"));
 
     // Wait for unfinished threads...
     processManager->quitAndWait();

@@ -11,9 +11,9 @@ Note that since samsonLocal incorporates an instance of samsonWorker, it can hav
 Under some circumstances, samsonLocal or samsonWorker can fail at startup for shared-memory problems.
 This is a quick guide of how to solve this problems.
 
-* First, review the size of shared-memory buffers used by SAMSON in your distribution. This can be done checking the /opt/samson/etc/setup.txt file in a line like:
+* First, review the size of shared-memory buffers used by SAMSON in your distribution. This can be done checking the /var/samson/etc/setup.txt file in a line like:
 
-shm_size_per_buffer 134217728
+general.shared_memory_size_per_buffer     268435456
 
 * Second, review what is the maximum size in your linux box with "sysctl -a | grep shm" where you can see a line like
 

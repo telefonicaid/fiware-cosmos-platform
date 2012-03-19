@@ -42,6 +42,17 @@ LockDebugger::~LockDebugger()
 }
 
 
+void LockDebugger::destroy()
+{
+   if (!lockDebugger)
+      LM_RVE(("Attempt to destroy a non-initialized Lock Debugger"));
+        
+   LM_V(("Destroying ModulesManager"));
+   delete lockDebugger;
+        
+   lockDebugger = NULL;
+}
+
 void LockDebugger::add_lock( void* new_lock )
 {
     // Lock private data

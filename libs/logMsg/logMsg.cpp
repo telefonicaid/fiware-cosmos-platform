@@ -860,7 +860,7 @@ static void asciiToLeft
 
 // Andreu: Clean up function to remove progname
 
-void atExitCleanProgName()
+void lmCleanProgName(void)
 {
 	if (progName)
 		free(progName);
@@ -887,8 +887,6 @@ LmStatus lmInit(void)
 	
 	PROGNAME_CHECK();
 
-    atexit(atExitCleanProgName);
-    
 	secondsAtStart = time(NULL);
 
 	auxOn          = false;
@@ -1798,7 +1796,6 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
 
 		/* exit here, just in case */
 		exit(tLev);
-        
 	}
 	
 	if ((doClear == true) && (logLines >= atLines))

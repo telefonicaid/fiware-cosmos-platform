@@ -412,20 +412,39 @@ static char* toUTF8(char* in, size_t* outLenP)
     //
     // SamsonWorker::getRESTInformation - 
     //
-    std::string SamsonWorker::getRESTInformation( ::std::string in )
+    std::string SamsonWorker::getRESTInformation(::std::string in)
     {
-        std::ostringstream header;
-        std::ostringstream data;
+        unsigned short int  http_state = 200;  // be optimistic and assume all is ok :)
+        std::ostringstream  header;
+        std::ostringstream  data;
+        std::string         format   = "json";
+        char*               inString = (char*) in.c_str();
 
-        unsigned short int http_state = 200;  // be optimistic and assume all is ok :)
+        LM_T(LmtRest, ("Incoming REST request: '%s'", inString));
 
-        LM_T(LmtRest, ("Incoming REST request"));
+        if (strcmp(&inString[strlen(inString) - 5], ".json") == 0)
+        {
+            inString[strlen(inString) - 5] = 0;
+            LM_T(LmtRest, ("JSON format requested for '%s'", inString));
+        }
+        else if (strcmp(&inString[strlen(inString) - 4], ".xml") == 0)
+        {
+            format = "xml";
+            inString[strlen(inString) - 4] = 0;
+            LM_T(LmtRest, ("XML format requested for '%s'", inString));
+        }
         
-        data << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n";
-        data << "<!-- SAMSON Rest interface -->\r\n";
-        
-        data << "<samson>\r\n";
-        
+        if (format == "xml")
+        {
+            data << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n";
+            data << "<!-- SAMSON Rest interface -->\r\n";
+            data << "<samson>\r\n";
+        }
+        else
+        {
+            data << "{";
+        }
+
         // Get the path components
         std::vector<std::string> path_components = au::split( in , '/' );
 
@@ -552,9 +571,14 @@ static char* toUTF8(char* in, size_t* outLenP)
                 au::xml_simple(data, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
                 http_state = 400;
             }
-            else if ((logCommand == "verbose") && (sub != "off") && (sub != "0") && (sub != "1") && (sub != "2") && (sub != "3") && (sub != "4") && (sub != "5"))
+            else if ((logCommand == "verbose") && (sub != "get") && (sub != "set") && (sub != "off"))
             {
                 au::xml_simple(data, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
+                http_state = 400;
+            }
+            else if ((logCommand == "verbose") && (sub == "set") && (arg != "1") && (arg != "2") && (arg != "3") && (arg != "4") && (arg != "5"))
+            {
+                au::xml_simple(data, "message", au::str("bad logging argumrnts for 'trace/set': %s", arg.c_str()));
                 http_state = 400;
             }
             else if ((logCommand == "trace") && (sub != "get") && (sub != "set") && (sub != "add") && (sub != "remove") && (sub != "off"))
@@ -567,7 +591,7 @@ static char* toUTF8(char* in, size_t* outLenP)
                 if (strspn(arg.c_str(), "0123456789-,") != strlen(arg.c_str()))
                 {
                     au::xml_simple(data, "message", au::str("bad logging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
-                    http_state = 400;  // This is not a 400 !!!
+                    http_state = 400;
                 }
             }
         
@@ -595,32 +619,48 @@ static char* toUTF8(char* in, size_t* outLenP)
             }
             else if (logCommand == "verbose")  // /samson/logging/verbose
             {
-                if (sub == "off")
-                    sub = "0";
-            
-                int verboseLevel = sub[0] - '0';
-
-                // Turn all verbose levels OFF
-                lmVerbose  = false;
-                lmVerbose2 = false;
-                lmVerbose3 = false;
-                lmVerbose4 = false;
-                lmVerbose5 = false;
-                
-                // Turn on the desired verbose levels
-                switch (verboseLevel)
+                if (sub == "get")
                 {
-                case 5: lmVerbose5 = true;
-                case 4: lmVerbose4 = true;
-                case 3: lmVerbose3 = true;
-                case 2: lmVerbose2 = true;
-                case 1: lmVerbose  = true;
-                }
+                    int vLevel;
 
-                if (sub == "0")
-                    au::xml_simple(data, "verbose", au::str("verbose levels OFF", sub.c_str()));
+                    if      (lmVerbose5 == true)  vLevel = 5;
+                    else if (lmVerbose4 == true)  vLevel = 4;
+                    else if (lmVerbose3 == true)  vLevel = 3;
+                    else if (lmVerbose2 == true)  vLevel = 2;
+                    else if (lmVerbose  == true)  vLevel = 1;
+                    else                          vLevel = 0;
+
+                    au::xml_simple(data, "debug", au::str("verbosity level: %d", vLevel));
+                }
                 else
-                    au::xml_simple(data, "verbose", au::str("verbose levels upto %s SET", sub.c_str()));
+                {
+                    // Turn all verbose levels OFF
+                    lmVerbose  = false;
+                    lmVerbose2 = false;
+                    lmVerbose3 = false;
+                    lmVerbose4 = false;
+                    lmVerbose5 = false;
+                
+                    if (sub == "off")
+                        arg = "0";
+                
+                    int verboseLevel = arg[0] - '0';
+
+                    // Turn on the desired verbose levels
+                    switch (verboseLevel)
+                    {
+                    case 5: lmVerbose5 = true;
+                    case 4: lmVerbose4 = true;
+                    case 3: lmVerbose3 = true;
+                    case 2: lmVerbose2 = true;
+                    case 1: lmVerbose  = true;
+                    }
+
+                    if (sub == "0")
+                        au::xml_simple(data, "verbose", au::str("verbose levels OFF", sub.c_str()));
+                    else
+                        au::xml_simple(data, "verbose", au::str("verbose levels upto %s SET", sub.c_str()));
+                }
             }
             else if (logCommand == "trace")
             {
@@ -660,7 +700,15 @@ static char* toUTF8(char* in, size_t* outLenP)
 
 afterTreatment:
 
-        data << "\r\n</samson>";
+        if (format == "xml")
+        {
+            data << "\r\n</samson>";
+        }
+        else
+        {
+            data << "}";
+        }
+
         
         int dataLen = data.str().length();
 
@@ -670,14 +718,25 @@ afterTreatment:
             case 200:
                 header << "HTTP/1.1 200 OK\r\n";
                 break;
+
             case 400:
                 header << "HTTP/1.1 400 Bad Request\r\n";
                 break;
+
+            case 404:
+                header << "HTTP/1.1 404 Not Found\r\n";
+                break;
+
             default:
                 header << "HTTP/1.1 Bad Request \r\n"; 
                 break;
         }
-        header << "Content-Type:   \"application/xml; charset=utf-8\"\r\n";
+
+        if (format == "xml")
+            header << "Content-Type:   \"application/xml; charset=utf-8\"\r\n";
+        else
+            header << "Content-Type:   \"application/json; charset=utf-8\"\r\n";
+
         header << "Content-Length: " << dataLen << "\r\n";
         header << "\r\n";
 

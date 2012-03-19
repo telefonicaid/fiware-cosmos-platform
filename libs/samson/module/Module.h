@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <dlfcn.h>
 
 #include <samson/module/Data.h>                /* Data                                     */
 #include <samson/module/Operation.h>           /* Operation                                */
@@ -205,6 +206,12 @@ namespace samson
 			
 			datas.clear();
 			operations.clear();
+
+            if (hndl != NULL)
+            {
+               dlclose(hndl);
+               hndl = NULL;
+            }
 		}
 		
 		

@@ -300,7 +300,7 @@ namespace samson
     void SamsonSetup::destroy()
     {
         if( !samsonSetup )
-            LM_X(1, ("SamsonSetup not initialized at destructor"));
+            LM_RVE(("SamsonSetup not initialized at destructor"));
         
         LM_V(("Destroying SamsonSetup"));
         delete samsonSetup;

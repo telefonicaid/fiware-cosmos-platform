@@ -50,7 +50,8 @@ public:
     void add_lock( void* new_lock );
     void remove_lock(  void* new_lock );
     
-    static LockDebugger* shared();
+    static LockDebugger*  shared();
+    static void           destroy();
     
 private:
     

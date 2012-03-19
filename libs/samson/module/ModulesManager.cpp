@@ -42,16 +42,27 @@ namespace samson
 	
 	ModulesManager::~ModulesManager()
 	{
+        LM_T(LmtModuleManager,("Destroying ModulesManager"));
+
+        // dlclose all open modules ...
+        au::map< std::string  , Module >::iterator m; 
+        for (m = modules.begin(); m != modules.end(); m++)
+        {
+            Module* module = m->second;
+
+            if (module->hndl != NULL)
+                dlclose(module->hndl);
+        }
+
         // Remove the main instances of the modules created while loading from disk
         modules.clearMap();
-        LM_T(LmtModuleManager,("Destroying ModulesManager"));
 	}
     
     
     void ModulesManager::destroy()
     {
-		if(!modulesManager)
-			LM_X(1,("Destroting a non initializedModules Manager"));
+		if (!modulesManager)
+			LM_RVE(("Attempt to destroy a non-initialized Modules Manager"));
         
         LM_V(("Destroying ModulesManager"));
         delete modulesManager;

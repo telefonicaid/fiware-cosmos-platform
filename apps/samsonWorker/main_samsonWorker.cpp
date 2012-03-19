@@ -45,7 +45,7 @@ SAMSON_ARG_VARS;
 
 bool     fg;
 bool     noLog;
-bool     valgrind;
+int      valgrind;
 int      port;
 int      web_port;
 
@@ -62,7 +62,7 @@ PaArgument paArgs[] =
     { "-port",      &port,      "",                         PaInt,  PaOpt, SAMSON_WORKER_PORT,     1,      9999,  "Port to receive new connections"   },
     { "-web_port",  &web_port,  "",                         PaInt,  PaOpt, SAMSON_WORKER_WEB_PORT, 1,      9999,  "Port to receive new connections"   },
     { "-nolog",     &noLog,     "SAMSON_WORKER_NO_LOG",     PaBool, PaOpt, false,                  false,  true,  "no logging"                        },
-    { "-valgrind",  &valgrind,  "SAMSON_WORKER_VALGRIND",   PaBool, PaOpt, false,                  false,  true,  "help valgrind debugging process"   },
+    { "-valgrind",  &valgrind,  "SAMSON_WORKER_VALGRIND",   PaInt,  PaOpt, 0,                      0,        20,  "help valgrind debug process"       },
 
     PA_END_OF_ARGS
 };
@@ -73,8 +73,10 @@ PaArgument paArgs[] =
 *
 * global variables
 */
-int                   logFd             = -1;
-samson::SamsonWorker* worker            = NULL;
+int                           logFd             = -1;
+samson::SamsonWorker*         worker            = NULL;
+au::LockDebugger*             lockDebugger      = NULL;
+engine::SharedMemoryManager*  smManager         = NULL;
 
 
 
@@ -126,6 +128,7 @@ void captureSIGTERM( int s )
 }
 
 
+
 void cleanup(void)
 {
     google::protobuf::ShutdownProtobufLibrary();
@@ -135,24 +138,47 @@ void cleanup(void)
     {
         printf("deleting worker\n");
         delete worker;
+    }
 
-        printf("destroying ModulesManager\n");
-        samson::ModulesManager::destroy();
-    
-        printf("destroying ProcessManager\n");
-        engine::ProcessManager::destroy();
+    printf("Shutting down LockDebugger\n");
+    au::LockDebugger::destroy();
 
-        printf("destroying DiskManager\n");
-        engine::DiskManager::destroy();
+    if (smManager != NULL)
+    {
+        printf("Shutting down Shared Memory Manager\n");
+        delete smManager;
+        smManager = NULL;
+    }
 
-        printf("destroying MemoryManager\n");
-        engine::MemoryManager::destroy();
+    printf("Shutting down SamsonSetup\n");
+    samson::SamsonSetup::destroy();
 
-        printf("destroying Engine\n");
-        engine::Engine::destroy();
+    printf("destroying ProcessManager\n");
+    engine::ProcessManager::destroy();
 
-        printf("Shutting down SamsonSetup\n");
-        samson::SamsonSetup::destroy();
+    printf("destroying DiskManager\n");
+    engine::DiskManager::destroy();
+
+    printf("destroying MemoryManager\n");
+    engine::MemoryManager::destroy();
+
+    printf("destroying Engine\n");
+    engine::Engine::destroy();
+
+    printf("destroying ModulesManager\n");
+    samson::ModulesManager::destroy();
+
+    paConfigCleanup();
+    lmCleanProgName();
+}
+
+
+static void valgrindExit(int v)
+{
+    if (v == valgrind)
+    {
+        LM_M(("Valgrind option is %d - I exit", v));
+        exit(0);
     }
 }
 
@@ -189,6 +215,8 @@ int main(int argC, const char *argV[])
     const char* extra = paIsSetSoGet(argC, (char**) argV, "-port");
     paParse(paArgs, argC, (char**) argV, 1, false, extra);
 
+    valgrindExit(1);
+
     lmAux((char*) "father");
 
     LM_V(("Started with arguments:"));
@@ -207,10 +235,12 @@ int main(int argC, const char *argV[])
     if (signal(SIGTERM, captureSIGTERM) == SIG_ERR)
         LM_W(("SIGTERM cannot be handled"));
 
-    // Init basic setup stuff ( necessary for memory check
-    au::LockDebugger::shared();
-    samson::SamsonSetup::init(samsonHome , samsonWorking );          // Load setup and create default directories
+    // Init basic setup stuff (necessary for memory check)
+    lockDebugger = au::LockDebugger::shared();  // VALGRIND complains ...
+    samson::SamsonSetup::init(samsonHome, samsonWorking);          // Load setup and create default directories
     
+    valgrindExit(2);
+
     // Check to see if the current memory configuration is ok or not
     if (samson::MemoryCheck() == false)
         LM_X(1,("Insufficient memory configured. Check %ssamsonWorkerLog for more information.", paLogFilePath));
@@ -221,58 +251,70 @@ int main(int argC, const char *argV[])
         daemonize();
     }
 
+    valgrindExit(3);
     // ------------------------------------------------------    
-    // Write pid if /var/log/samson/samsond.pid
+    // Write pid in /var/log/samson/samsond.pid
     // ------------------------------------------------------
 
-    std::string pid_file_name = au::str("%s/samsond.pid" , paLogFilePath );
-    FILE *file = fopen( pid_file_name.c_str() , "w" );
-    if( !file )
-        LM_X(1, ("Error opening file '%s' to store pid" , pid_file_name.c_str() ));
-    int pid = (int)getpid();
-    if( fprintf(file , "%d" , pid ) == 0)
-       LM_X(1,("Error writing pid %d to file %s" , pid , pid_file_name.c_str() ));
-    fclose( file );
+    char pid_file_name[256];
+    snprintf(pid_file_name, sizeof(pid_file_name), "%s/samsond.pid", paLogFilePath);
+    FILE *file = fopen(pid_file_name, "w");
+    if (!file)
+        LM_X(1, ("Error opening file '%s' to store pid", pid_file_name));
+    int pid = (int) getpid();
+    if (fprintf(file, "%d" , pid) == 0)
+       LM_X(1,("Error writing pid %d to file %s", pid, pid_file_name));
+    fclose(file);
     // ------------------------------------------------------        
     
     // Make sure this singleton is created just once
     LM_D(("createWorkingDirectories"));
     samson::SamsonSetup::shared()->createWorkingDirectories();      // Create working directories
     
+    valgrindExit(4);
     LM_D(("engine::Engine::init"));
     engine::Engine::init();
 
+    valgrindExit(5);
     LM_D(("engine::SharedMemoryManager::init"));
-    engine::SharedMemoryManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess") , samson::SamsonSetup::shared()->getUInt64("general.shared_memory_size_per_buffer"));
-    
+    engine::SharedMemoryManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess") , samson::SamsonSetup::shared()->getUInt64("general.shared_memory_size_per_buffer")); // VALGRIND complains ...
+    smManager = engine::SharedMemoryManager::shared();
+
+    valgrindExit(6);
     LM_D(("engine::DiskManager::init"));
     engine::DiskManager::init(1);
 
+    valgrindExit(7);
     LM_D(("engine::ProcessManager::init"));
     engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
 
+    valgrindExit(8);
     LM_D(("engine::MemoryManager::init"));
     engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
 
+    valgrindExit(9);
     LM_D(("samson::ModulesManager::init"));
     samson::ModulesManager::init();
 
+    valgrindExit(10);
     LM_D(("samson::stream::BlockManager::init"));
     samson::stream::BlockManager::init();
 
+    valgrindExit(11);
+
     // Instance of network object and initialization
     // --------------------------------------------------------------------
-    samson::WorkerNetwork*  networkP  = new samson::WorkerNetwork( port , web_port );
+    samson::WorkerNetwork*  networkP  = new samson::WorkerNetwork(port, web_port);
     
-    // Instance of SamsonWorker object (network contains at least the number of wokers)
+    valgrindExit(12);
+
+    // Instance of SamsonWorker object (network contains at least the number of workers)
     // -----------------------------------------------------------------------------------
     worker = new samson::SamsonWorker(networkP);
 
     LM_M(("Worker Running"));
     LM_D(("worker at %p", worker));
-
-    if (valgrind)
-        LM_X(1, ("Valgrind option set - I exit"));
+    valgrindExit(13);
 
     if (fg == false)
     {

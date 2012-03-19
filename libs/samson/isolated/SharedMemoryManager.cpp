@@ -81,6 +81,18 @@ NAMESPACE_BEGIN(engine)
         // Remove the shared memory segments
         removeSharedMemorySegments(shm_ids, shared_memory_num_buffers);
         
+        // Removing all shared memory items
+        int smItems = (int) shared_memory_items.size();
+        for (int ix = 0; ix < smItems; ix++)
+        {
+            SharedMemoryItem* smItemP;
+
+            smItemP = shared_memory_items.back();
+            shared_memory_items.pop_back();
+
+            delete smItemP;
+        }
+
         // Remove the file since it will not be necessary
         remove( sharedMemoryIdsFileName.c_str() );  
         
@@ -164,7 +176,6 @@ NAMESPACE_BEGIN(engine)
         // Create the SharedMemoryItem's
         for (int i = 0 ; i < shared_memory_num_buffers ; i++ )
             shared_memory_items.push_back( createSharedMemory(i) );
-        
     }
     
     
@@ -259,6 +270,4 @@ NAMESPACE_BEGIN(engine)
 		SharedMemoryItem* _info = new SharedMemoryItem( i , shm_ids[i] , shared_memory_size_per_buffer );
 		return _info;		
 	}
-
-    
 }

@@ -2,7 +2,6 @@ package es.tid.bdp.profile.categoryextraction;
 
 import java.io.IOException;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -21,7 +20,8 @@ public class TextCategoryExtractionMapper extends Mapper<LongWritable, Text,
         TernaryKey, LongWritable> {
     private static final Logger LOG = Logger.getLogger(
             TextCategoryExtractionMapper.class);
-    private LongWritable ONE = new LongWritable(1L);
+    private static final LongWritable ONE = new LongWritable(1L);
+    
     private TernaryKey outKey;
 
     @Override

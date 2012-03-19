@@ -45,6 +45,7 @@ public class KpiMain extends Configured implements Tool {
     private static final URL KPI_DEFINITIONS = KpiMain.class.getResource(
             "/kpi.properties");
     private static final Logger LOGGER = Logger.getLogger("KpiMain");
+    private static final int NUM_ARGS = 3;
 
     public static void main(String[] args) {
         try {
@@ -60,7 +61,7 @@ public class KpiMain extends Configured implements Tool {
     @Override
     public int run(String[] args) throws IOException, ClassNotFoundException,
                                          InterruptedException {
-        if (args.length != 3) {
+        if (args.length != NUM_ARGS) {
             LOGGER.setLevel(Level.ALL);
             LOGGER.severe("Wrong Arguments. Example: hadoop jar "
                     + "kpicalculation.jar inputPath outputPath mongoURL");

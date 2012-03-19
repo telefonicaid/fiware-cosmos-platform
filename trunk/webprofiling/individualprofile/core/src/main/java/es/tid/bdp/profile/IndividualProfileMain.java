@@ -35,7 +35,6 @@ public class IndividualProfileMain extends Configured implements Tool {
 
     private Path categoriesPath;
     private Path profilePath;
-    private Path tmpDir;
     private Path webLogsPath;
 
     @Override
@@ -47,7 +46,8 @@ public class IndividualProfileMain extends Configured implements Tool {
                     + "weblogs_path psoutput_path [mongo_url]\n"
                     + "\tDefault input serialization is protobuf");
         }
-        this.initPaths(args);
+
+        this.initPaths(args[0]);
 
         CategoryExtractionJob ceJob = new CategoryExtractionJob(this.getConf());
         if (this.getConf().get(INPUT_SERIALIZATION, PROTOBUF_SERIALIZATION)
@@ -90,20 +90,20 @@ public class IndividualProfileMain extends Configured implements Tool {
         return 0;
     }
 
-    private void initPaths(String[] args) throws IOException {
+    private void initPaths(String inputPath) throws IOException {
         FileSystem fs = FileSystem.get(this.getConf());
-        this.tmpDir = new Path(getTmpDir());
-        if (!fs.mkdirs(this.tmpDir)) {
-            LOG.fatal("Could not create " + this.tmpDir);
+        Path tmpDir = new Path(getTmpDir());
+        if (!fs.mkdirs(tmpDir)) {
+            LOG.fatal("Could not create " + tmpDir);
         }
-        LOG.info("Using " + this.tmpDir + " as temp directory");
-        if (!fs.deleteOnExit(this.tmpDir)) {
+        LOG.info("Using " + tmpDir + " as temp directory");
+        if (!fs.deleteOnExit(tmpDir)) {
             LOG.warn("Could not set temp directory for automatic deletion");
         }
-        this.webLogsPath = new Path(args[0]);
-        this.categoriesPath = new Path(this.tmpDir + Path.SEPARATOR +
+        this.webLogsPath = new Path(inputPath);
+        this.categoriesPath = new Path(tmpDir + Path.SEPARATOR +
                                        CATEGORIES_DIR);
-        this.profilePath = new Path(this.tmpDir + Path.SEPARATOR + PROFILE_DIR);
+        this.profilePath = new Path(tmpDir + Path.SEPARATOR + PROFILE_DIR);
     }
 
     private static String getTmpDir() {

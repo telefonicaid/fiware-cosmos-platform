@@ -4,18 +4,17 @@ import java.io.IOException;
 
 import javax.annotation.Resource;
 
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-
 import es.tid.bdp.kpicalculation.cleaning.KpiCalculationFilterChain;
 import es.tid.bdp.kpicalculation.cleaning.KpiCalculationFilterException;
 import es.tid.bdp.kpicalculation.data.KpiCalculationCounter;
 import es.tid.bdp.kpicalculation.data.KpiCalculationDataException;
-import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
+import es.tid.bdp.kpicalculation.generated.data.KpiCalculationProtocol.WebProfilingLog;
 import es.tid.bdp.kpicalculation.utils.WebProfilingUtil;
 
 /**
@@ -34,19 +33,18 @@ import es.tid.bdp.kpicalculation.utils.WebProfilingUtil;
  * -Microsoft-CryptoAPI/6.1 -Microsoft-CryptoAPI/6.1 -Microsoft-CryptoAPI/6.1
  * GET 304"}</li>
  * </ol>
- * 
+ *
  * <ol>
  * <li>Input : {key: 1, values: 16737b1873ef03ad http http://www.tid.es/foto.jpg
  * 1Dec2010000001 304 application/pkix-crl -Microsoft-CryptoAPI/6.1 GET}</li>
  * <li>Output: void</li>
  * </ol>
- * 
- * 
+ *
+ *
  * @author javierb@tid.es
  */
-public class KpiCleanerMapper
-        extends
-        Mapper<LongWritable, Text, NullWritable, ProtobufWritable<WebProfilingLog>> {
+public class KpiCleanerMapper extends Mapper<LongWritable, Text, NullWritable,
+        ProtobufWritable<WebProfilingLog>> {
     @Resource
     private KpiCalculationFilterChain filter;
 
@@ -57,7 +55,7 @@ public class KpiCleanerMapper
      * Method that prepares the filters to be applied. The classes implementing
      * them and the values to be filtered for each of them will be loaded from
      * the kpi-filtering.xml file
-     * 
+     *
      * @param context
      *            contains the context of the job run
      */

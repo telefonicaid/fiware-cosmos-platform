@@ -2,15 +2,15 @@ package es.tid.bdp.profile.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
-import es.tid.bdp.profile.data.ProfileProtocol.WebProfilingLog;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.WebProfilingLog;
 
 /**
  * Construction utils for WebProfilingLog class.
  *
  * @author dmicol
  */
-public abstract class WebProfilingLogUtil {
-    private WebProfilingLogUtil() {
+public class WebProfilingLogUtil {
+    protected WebProfilingLogUtil() {
     }
 
     public static WebProfilingLog create(String visitorId, String protocol,

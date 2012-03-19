@@ -7,19 +7,20 @@ import org.apache.xerces.util.URI;
 
 import es.tid.bdp.kpicalculation.data.KpiCalculationCounter;
 import es.tid.bdp.kpicalculation.data.KpiCalculationDataException;
-import es.tid.bdp.kpicalculation.data.KpiCalculationProtocol.WebProfilingLog;
+import es.tid.bdp.kpicalculation.generated.data.KpiCalculationProtocol.WebProfilingLog;
 
 /**
  * Class used to serialize records from text files
- * 
+ *
  * @author javierb
  */
-public final class WebProfilingUtil {
+public class WebProfilingUtil {
     private static final String DELIMITER = "\t";
 
     private static WebProfilingLog.Builder builder;
+    private static KpiCalculationDateFormatter dateFormatter;
 
-    private WebProfilingUtil() {
+    protected WebProfilingUtil() {
     }
 
     public static WebProfilingLog getInstance(String line) {
@@ -30,8 +31,7 @@ public final class WebProfilingUtil {
     }
 
     private static void init() {
-        KpiCalculationNormalizer.init();
-        KpiCalculationDateFormatter.init(WebProfilingUtil.DELIMITER);
+        dateFormatter = new KpiCalculationDateFormatter(DELIMITER);
         builder = WebProfilingLog.newBuilder();
     }
 
@@ -51,8 +51,7 @@ public final class WebProfilingUtil {
                     .getQueryString() : "null";
             builder.setUrlQuery(urlQuery);
 
-            builder.setDate(KpiCalculationDateFormatter.getValue(stt
-                    .nextToken()));
+            builder.setDate(dateFormatter.getValue(stt.nextToken()));
             builder.setStatus(stt.nextToken());
             builder.setMimeType(stt.nextToken());
 

@@ -6,44 +6,29 @@ package es.tid.bdp.profile.dictionary.comscore;
  *
  * @author dmicol, sortega
  */
-public class CSDictionaryJNIInterface {
-    public static final String COMSCORE_LIB_PROPERTY = "es.tid.comscore-path";
-    public static final String DEFAULT_COMSCORE_LIB =
-            "/opt/hadoop/lib/native/Linux-amd64-64/libcomscore.so";
+public class CSDictionaryJNIInterface implements NativeCSDictionary {
+    public static final String[] DEFAULT_COMSCORE_LIBS = new String[] {
+        "/opt/hadoop/lib/native/Linux-amd64-64/libcsCFD.so.1",
+        "/opt/hadoop/lib/native/Linux-amd64-64/libCategories.so"
+    };
 
-    /**
-     * Loads the comScore dictionary in memory.
-     *
-     * @param dictionaryFilename
-     *            the file name of the dictionary
-     * @return whether the load of the dictionary succeeded
+    /*
+     * {@inheritDoc}
      */
-    public native boolean loadCSDictionary(String dictionaryFilename);
+    @Override
+    public native boolean initFromTermsInDomainFlatFile(int iMode,
+            String szTermsInDomainFlatFileName);
 
-    /**
-     * Find outs the categories associated to an url.
-     *
-     * @param url
-     *          the url to apply the dictionary to
-     * @return the list of category IDs
+    /*
+     * {@inheritDoc}
      */
-    public native int[] lookupCategories(String url);
+    @Override
+    public native boolean loadCSDictionary(int iMode,
+            String szTermsInDomainFlatFileName, String szDictionaryName);
 
-    /**
-     * Provides the name of a category.
-     *
-     * @param categoryId
-     *            category ID provided by #lookupCategories
-     * @return the category name
+    /*
+     * {@inheritDoc}
      */
-    public native String getCategoryName(int categoryId);
-
-    static {
-        String comscorePath = System.getProperty(COMSCORE_LIB_PROPERTY);
-        if (comscorePath != null && !comscorePath.isEmpty()) {
-            System.load(comscorePath);
-        } else {
-            System.loadLibrary("comscore");
-        }
-    }
+    @Override
+    public native long applyDictionaryUsingUrl(String szURL);
 }

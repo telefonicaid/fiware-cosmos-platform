@@ -1,13 +1,6 @@
-/**
- * 
- */
 package es.tid.bdp.kpicalculation.cleaning;
 
-import es.tid.bdp.kpicalculation.cleaning.IKpiCalculationFilter;
-import es.tid.bdp.kpicalculation.cleaning.KpiCalculationFilterException;
-import es.tid.bdp.kpicalculation.cleaning.PersonalInfoFilter;
 import junit.framework.TestCase;
-
 import org.apache.hadoop.conf.Configuration;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,9 +20,9 @@ public class PersonalInfoFilterTest extends TestCase {
      */
     @Before
     public void setUp() throws Exception {
-        conf = new Configuration();
-        conf.addResource("kpi-filtering.xml");
-        filter = new PersonalInfoFilter(conf);
+        this.conf = new Configuration();
+        this.conf.addResource("kpi-filtering.xml");
+        this.filter = new PersonalInfoFilter(this.conf);
     }
 
     /**
@@ -39,10 +32,8 @@ public class PersonalInfoFilterTest extends TestCase {
      */
     @Test
     public void testFilterForbiddenDomain() {
-        String input = "http://pornhub.com/t1/video";
-
         try {
-            filter.filter(input);
+            this.filter.filter("http://pornhub.com/t1/video");
             fail("A forbidden Personal Info domain is passing the filter");
         } catch (KpiCalculationFilterException ex) {
             assertEquals("The URL provided belongs to a personal info domain",
@@ -59,7 +50,6 @@ public class PersonalInfoFilterTest extends TestCase {
      */
     @Test
     public void testFilterAllowedDomain() throws Exception {
-        String input = "http://www.tid.es/music.mp3";
-        filter.filter(input);
+        filter.filter("http://www.tid.es/music.mp3");
     }
 }

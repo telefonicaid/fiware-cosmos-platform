@@ -1,11 +1,5 @@
-/**
- * 
- */
 package es.tid.bdp.kpicalculation.cleaning;
 
-import es.tid.bdp.kpicalculation.cleaning.IKpiCalculationFilter;
-import es.tid.bdp.kpicalculation.cleaning.KpiCalculationFilterException;
-import es.tid.bdp.kpicalculation.cleaning.ThirdPartyFilter;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
@@ -27,9 +21,9 @@ public class ThirdPartyFilterTest extends TestCase {
      */
     @Before
     public void setUp() throws Exception {
-        conf = new Configuration();
-        conf.addResource("kpi-filtering.xml");
-        filter = new ThirdPartyFilter(conf);
+        this.conf = new Configuration();
+        this.conf.addResource("kpi-filtering.xml");
+        this.filter = new ThirdPartyFilter(this.conf);
     }
 
     /**
@@ -39,10 +33,8 @@ public class ThirdPartyFilterTest extends TestCase {
      */
     @Test
     public void testFilterForbiddenDomain() {
-        String input = "http://sexsearch.com/video";
-
         try {
-            filter.filter(input);
+            this.filter.filter("http://sexsearch.com/video");
             fail("A forbidden Third Party domain is passing the filter");
         } catch (KpiCalculationFilterException ex) {
             assertEquals("The URL provided belongs to third party domain",
@@ -59,7 +51,6 @@ public class ThirdPartyFilterTest extends TestCase {
      */
     @Test
     public void testFilterAllowedDomain() throws Exception {
-        String input = "http://www.tid.es/music.mp3";
-        filter.filter(input);
+        filter.filter("http://www.tid.es/music.mp3");
     }
 }

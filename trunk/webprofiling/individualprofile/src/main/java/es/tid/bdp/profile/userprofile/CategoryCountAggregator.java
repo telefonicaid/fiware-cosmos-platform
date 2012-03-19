@@ -2,7 +2,7 @@ package es.tid.bdp.profile.userprofile;
 
 import java.util.*;
 
-import es.tid.bdp.profile.data.ProfileProtocol.CategoryCount;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.CategoryCount;
 
 /**
  * Aggregates and sort CategoryCount objects by decresing count order.

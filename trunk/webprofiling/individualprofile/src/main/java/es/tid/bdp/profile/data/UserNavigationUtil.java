@@ -2,7 +2,8 @@ package es.tid.bdp.profile.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
-import es.tid.bdp.profile.data.ProfileProtocol.UserNavigation;
+import es.tid.bdp.profile.generated.data.ProfileProtocol;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.UserNavigation;
 
 /**
  * Construction utils for UserNavigation class.
@@ -11,10 +12,16 @@ import es.tid.bdp.profile.data.ProfileProtocol.UserNavigation;
  *
  * @author sortega
  */
-public abstract class UserNavigationUtil {
+public class UserNavigationUtil {
     private static final String DELIMITER = "\t";
-    
-    private UserNavigationUtil() {
+
+    private static final int VISITOR_ID_INDEX = 0;
+    private static final int URL_INDEX = 2;
+    private static final int YEAR_INDEX = 8;
+    private static final int MONTH_INDEX = 7;
+    private static final int DAY_INDEX = 6;
+
+    protected UserNavigationUtil() {
     }
 
     public static UserNavigation create(String visitorId, String fullUrl,
@@ -33,7 +40,8 @@ public abstract class UserNavigationUtil {
 
     public static UserNavigation parse(String line) {
         String[] fields = line.split(DELIMITER);
-        return create(fields[0], fields[2],
-                String.format("%s-%s-%s", fields[8], fields[7], fields[6]));
+        return create(fields[VISITOR_ID_INDEX], fields[URL_INDEX],
+                      String.format("%s-%s-%s", fields[YEAR_INDEX],
+                                    fields[MONTH_INDEX], fields[DAY_INDEX]));
     }
 }

@@ -14,14 +14,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static es.tid.bdp.profile.data.CategoryCountUtil.create;
-import es.tid.bdp.profile.data.ProfileProtocol.UserProfile;
+import es.tid.bdp.profile.generated.data.ProfileProtocol.UserProfile;
 
 /**
  * Use case for ExporterReducer
  *
  * @author sortega
  */
-public class ExporterReducerTest {
+public class MongoDBExporterReducerTest {
     private ReduceDriver<Text, ProtobufWritable<UserProfile>, MongoProperty,
             BSONWritable> driver;
     private Text userId;
@@ -29,7 +29,7 @@ public class ExporterReducerTest {
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<Text, ProtobufWritable<UserProfile>,
-                MongoProperty, BSONWritable>(new ExporterReducer());
+                MongoProperty, BSONWritable>(new MongoDBExporterReducer());
         this.userId = new Text("USER00123");
     }
 

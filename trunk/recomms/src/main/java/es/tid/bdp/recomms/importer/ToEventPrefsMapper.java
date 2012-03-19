@@ -23,7 +23,7 @@ public class ToEventPrefsMapper extends
     protected void setup(Context context) {
         Configuration jobConf = context.getConfiguration();
         booleanData = jobConf.getBoolean(RecommenderTIDJob.BOOLEAN_DATA, false);
-        
+
     }
 
     private enum event_types {
@@ -66,7 +66,7 @@ public class ToEventPrefsMapper extends
             }
             type = st[2];
             deviceId = st[1];
-            //date = st[5]; //TODO CONSIDER DATE FROM FILE
+            // date = st[5]; //TODO CONSIDER DATE FROM FILE
         }
 
         event_types etype = Enum.valueOf(ToEventPrefsMapper.event_types.class,
@@ -92,14 +92,13 @@ public class ToEventPrefsMapper extends
             eventType = 1;
             break;
         }
-        
+
         UserPref.Builder uPref = UserPref.newBuilder();
 
-        uPref.setUserID(userID)
-        .setEventType(eventType)
-        .setItemId(itemID)
-        .setEventValue(eventValue).setDeviceID(deviceId).setEventDate(date);
-        
+        uPref.setUserID(userID).setEventType(eventType).setItemId(itemID)
+                .setEventValue(eventValue).setDeviceID(deviceId)
+                .setEventDate(date);
+
         this.userPrefs.set(uPref.build());
         context.write(new LongWritable(userID), this.userPrefs);
     }

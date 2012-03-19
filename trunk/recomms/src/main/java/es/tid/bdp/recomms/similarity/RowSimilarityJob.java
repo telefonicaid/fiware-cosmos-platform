@@ -40,29 +40,34 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RowSimilarityJob extends AbstractJob {
     public static final double NO_THRESHOLD = Double.MIN_VALUE;
 
-    static final String SIMILARITY_CLASSNAME = RowSimilarityJob.class+ ".distributedSimilarityClassname";
-    static final String NUMBER_OF_COLUMNS = RowSimilarityJob.class+ ".numberOfColumns";
-    static final String MAX_SIMILARITIES_PER_ROW = RowSimilarityJob.class+ ".maxSimilaritiesPerRow";
-    static final String EXCLUDE_SELF_SIMILARITY = RowSimilarityJob.class+ ".excludeSelfSimilarity";
+    static final String SIMILARITY_CLASSNAME = RowSimilarityJob.class
+            + ".distributedSimilarityClassname";
+    static final String NUMBER_OF_COLUMNS = RowSimilarityJob.class
+            + ".numberOfColumns";
+    static final String MAX_SIMILARITIES_PER_ROW = RowSimilarityJob.class
+            + ".maxSimilaritiesPerRow";
+    static final String EXCLUDE_SELF_SIMILARITY = RowSimilarityJob.class
+            + ".excludeSelfSimilarity";
 
     static final String THRESHOLD = RowSimilarityJob.class + ".threshold";
     static final String NORMS_PATH = RowSimilarityJob.class + ".normsPath";
-    static final String MAXVALUES_PATH = RowSimilarityJob.class + ".maxWeightsPath";
-    static final String NUM_NON_ZERO_ENTRIES_PATH = RowSimilarityJob.class + ".nonZeroEntriesPath";
-    
+    static final String MAXVALUES_PATH = RowSimilarityJob.class
+            + ".maxWeightsPath";
+    static final String NUM_NON_ZERO_ENTRIES_PATH = RowSimilarityJob.class
+            + ".nonZeroEntriesPath";
+
     private static final int DEFAULT_MAX_SIMILARITIES_PER_ROW = 100;
 
     private static final int NORM_VECTOR_MARKER = Integer.MIN_VALUE;
     private static final int MAXVALUE_VECTOR_MARKER = Integer.MIN_VALUE + 1;
     private static final int NUM_NON_ZERO_ENTRIES_VECTOR_MARKER = Integer.MIN_VALUE + 2;
-   
+
     private static Comparator<Vector.Element> BY_VALUE = new Comparator<Vector.Element>() {
         @Override
         public int compare(Vector.Element elem1, Vector.Element elem2) {
-          return Doubles.compare(elem1.get(), elem2.get());
+            return Doubles.compare(elem1.get(), elem2.get());
         }
-      };
-      
+    };
 
     public static void main(String[] args) throws Exception {
         ToolRunner.run(new RowSimilarityJob(), args);
@@ -133,7 +138,8 @@ public class RowSimilarityJob extends AbstractJob {
             normsAndTransposeConf.set(NUM_NON_ZERO_ENTRIES_PATH,
                     numNonZeroEntriesPath.toString());
             normsAndTransposeConf.set(MAXVALUES_PATH, maxValuesPath.toString());
-            normsAndTransposeConf.set(SIMILARITY_CLASSNAME, similarityClassname);
+            normsAndTransposeConf
+                    .set(SIMILARITY_CLASSNAME, similarityClassname);
             normsAndTranspose.waitForCompletion(true);
         }
 
@@ -171,8 +177,7 @@ public class RowSimilarityJob extends AbstractJob {
         return 0;
     }
 
-    public static class VectorNormMapper
-            extends
+    public static class VectorNormMapper extends
             Mapper<IntWritable, VectorWritable, IntWritable, VectorWritable> {
 
         private VectorSimilarityMeasure similarity;
@@ -195,9 +200,8 @@ public class RowSimilarityJob extends AbstractJob {
         }
 
         @Override
-        protected void map(IntWritable row,
-                VectorWritable vectorWritable, Context ctx)
-                throws IOException, InterruptedException {
+        protected void map(IntWritable row, VectorWritable vectorWritable,
+                Context ctx) throws IOException, InterruptedException {
             Vector rowVector = similarity.normalize(vectorWritable.get());
 
             int numNonZeroEntries = 0;

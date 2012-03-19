@@ -22,7 +22,8 @@ public class GetRecommsJob extends AbstractJob {
         addOutputOption();
         addOption("booleanData", "b", "boolean or Not",
                 Boolean.FALSE.toString());
-        addOption("mongoOutput", "mongoOutput", "mongoOutput", Boolean.FALSE.toString());
+        addOption("mongoOutput", "mongoOutput", "mongoOutput",
+                Boolean.FALSE.toString());
         addOption("numRecos", "numRecoms",
                 "Number of recommendations per users");
 

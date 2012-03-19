@@ -15,6 +15,7 @@ import es.tid.bdp.recomms.data.RecommsProtocol.VectorAndPrefs;
 import es.tid.bdp.recomms.data.RecommsProtocol.Preference;
 import es.tid.bdp.recomms.data.RecommsProtocol.UserId;
 import es.tid.bdp.recomms.data.RecommsProtocol.VectorElement;
+
 /**
  * maps similar items and their preference values per user
  */

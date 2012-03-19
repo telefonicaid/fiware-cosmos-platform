@@ -68,12 +68,14 @@ public final class AggrAndRecomObjReducer
 
     @Override
     protected void setup(Context context) throws IOException {
-        
+
         this.recomms = ProtobufWritable.newInstance(Predictions.class);
         Configuration conf = context.getConfiguration();
-        recommendationsPerUser = conf.getInt(NUM_RECOMMENDATIONS, DEFAULT_NUM_RECOMMENDATIONS);
+        recommendationsPerUser = conf.getInt(NUM_RECOMMENDATIONS,
+                DEFAULT_NUM_RECOMMENDATIONS);
         booleanData = conf.getBoolean(RecommenderTIDJob.BOOLEAN_DATA, false);
-        indexItemIDMap = TIDUtils.readItemIDIndexMap(conf.get(ITEMID_INDEX_PATH), conf);
+        indexItemIDMap = TIDUtils.readItemIDIndexMap(
+                conf.get(ITEMID_INDEX_PATH), conf);
 
         String itemFilePathString = conf.get(ITEMS_FILE);
         if (itemFilePathString != null) {
@@ -243,7 +245,8 @@ public final class AggrAndRecomObjReducer
                 }
             }
         }
-        this.recomms.set(Predictions.newBuilder().addAllPredicts(topKItems.retrieve()).build());
+        this.recomms.set(Predictions.newBuilder()
+                .addAllPredicts(topKItems.retrieve()).build());
         if (this.recomms.get().getPredictsCount() > 0) {
 
             context.write(new Text(userID.toString()), this.recomms);

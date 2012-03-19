@@ -5,7 +5,6 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.mahout.math.VectorWritable;
 import org.apache.mahout.math.hadoop.similarity.cooccurrence.Vectors;
 
-
 import java.io.IOException;
 
 public class ToItemVectorsReducer extends

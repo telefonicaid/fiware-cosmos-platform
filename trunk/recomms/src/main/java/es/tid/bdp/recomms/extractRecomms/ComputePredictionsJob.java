@@ -42,18 +42,14 @@ public class ComputePredictionsJob extends Job {
         this.setInputFormatClass(SequenceFileInputFormat.class);
         SequenceFileInputFormat.setInputPaths(this, inputPath);
 
-        if(ToMongoDB)
-        {
+        if (ToMongoDB) {
             this.setOutputFormatClass(SequenceFileOutputFormat.class);
-            SequenceFileOutputFormat.setOutputPath(this, outputPath);            
-        }
-        else
-        {
+            SequenceFileOutputFormat.setOutputPath(this, outputPath);
+        } else {
             this.setOutputFormatClass(TextOutputFormat.class);
-            TextOutputFormat.setOutputPath(this, outputPath);     
+            TextOutputFormat.setOutputPath(this, outputPath);
         }
 
-        
         this.conf.set(AggrAndRecomObjReducer.ITEMID_INDEX_PATH,
                 PreparePrefMatrixJob.ITEMID_INDEX);
         this.conf

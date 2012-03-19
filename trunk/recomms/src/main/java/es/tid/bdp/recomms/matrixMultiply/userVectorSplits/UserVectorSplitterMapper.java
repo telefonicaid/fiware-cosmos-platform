@@ -35,14 +35,16 @@ public final class UserVectorSplitterMapper
     static final String USERS_FILE = "usersFile";
     public static final String MAX_PREFS_PER_USER_CONSIDERED = "maxPrefsPerUserConsidered";
     static final int DEFAULT_MAX_PREFS_PER_USER_CONSIDERED = 10;
-    
+
     private int maxPrefsPerUserConsidered;
     private FastIDSet usersToRecommendFor;
 
     @Override
     protected void setup(Context context) throws IOException {
         Configuration jobConf = context.getConfiguration();
-        maxPrefsPerUserConsidered = jobConf.getInt(MAX_PREFS_PER_USER_CONSIDERED, DEFAULT_MAX_PREFS_PER_USER_CONSIDERED);        
+        maxPrefsPerUserConsidered = jobConf.getInt(
+                MAX_PREFS_PER_USER_CONSIDERED,
+                DEFAULT_MAX_PREFS_PER_USER_CONSIDERED);
         String usersFilePathString = jobConf.get(USERS_FILE);
         if (usersFilePathString != null) {
             FSDataInputStream in = null;
@@ -84,48 +86,50 @@ public final class UserVectorSplitterMapper
             Vector.Element e = it.next();
             itemIndexWritable.set(e.index());
             vectorOrPref.set(VectorOrPrefs.newBuilder().setUserID(userID)
-                    .setValue((float)e.get()).build());
+                    .setValue((float) e.get()).build());
             context.write(itemIndexWritable, vectorOrPref);
         }
     }
-    
+
     private Vector maybePruneUserVector(Vector userVector) {
         if (userVector.getNumNondefaultElements() <= maxPrefsPerUserConsidered) {
-          return userVector;
+            return userVector;
         }
 
         float smallestLargeValue = findSmallestLargeValue(userVector);
 
-        // "Blank out" small-sized prefs to reduce the amount of partial products
+        // "Blank out" small-sized prefs to reduce the amount of partial
+        // products
         // generated later. They're not zeroed, but NaN-ed, so they come through
         // and can be used to exclude these items from prefs.
         Iterator<Vector.Element> it = userVector.iterateNonZero();
         while (it.hasNext()) {
-          Vector.Element e = it.next();
-          float absValue = Math.abs((float) e.get());
-          if (absValue < smallestLargeValue) {
-            e.set(Float.NaN);
-          }
+            Vector.Element e = it.next();
+            float absValue = Math.abs((float) e.get());
+            if (absValue < smallestLargeValue) {
+                e.set(Float.NaN);
+            }
         }
 
         return userVector;
-      }
+    }
 
-      private float findSmallestLargeValue(Vector userVector) {
+    private float findSmallestLargeValue(Vector userVector) {
 
-        TopK<Float> topPrefValues = new TopK<Float>(maxPrefsPerUserConsidered, new Comparator<Float>() {
-          @Override
-          public int compare(Float one, Float two) {
-            return one.compareTo(two);
-          }
-        });
+        TopK<Float> topPrefValues = new TopK<Float>(maxPrefsPerUserConsidered,
+                new Comparator<Float>() {
+                    @Override
+                    public int compare(Float one, Float two) {
+                        return one.compareTo(two);
+                    }
+                });
 
         Iterator<Vector.Element> it = userVector.iterateNonZero();
         while (it.hasNext()) {
-          float absValue = Math.abs((float) it.next().get());
-          topPrefValues.offer(absValue);
+            float absValue = Math.abs((float) it.next().get());
+            topPrefValues.offer(absValue);
         }
         return topPrefValues.smallestGreat();
-      }    
+    }
 
 }

@@ -41,18 +41,17 @@ public class TIDUtils {
             this.value = value;
         }
     }
-    public static OpenIntLongHashMap readItemIDIndexMap(String itemIDIndexPathStr, Configuration conf) {
+
+    public static OpenIntLongHashMap readItemIDIndexMap(
+            String itemIDIndexPathStr, Configuration conf) {
         OpenIntLongHashMap indexItemIDMap = new OpenIntLongHashMap();
         Path itemIDIndexPath = new Path(itemIDIndexPathStr);
-        for (Pair<IntWritable,LongWritable> record
-             : new SequenceFileDirIterable<IntWritable,LongWritable>(itemIDIndexPath,
-                                                                           PathType.LIST,
-                                                                           PathFilters.partFilter(),
-                                                                           null,
-                                                                           true,
-                                                                           conf)) {
-          indexItemIDMap.put(record.getFirst().get(), record.getSecond().get());
+        for (Pair<IntWritable, LongWritable> record : new SequenceFileDirIterable<IntWritable, LongWritable>(
+                itemIDIndexPath, PathType.LIST, PathFilters.partFilter(), null,
+                true, conf)) {
+            indexItemIDMap.put(record.getFirst().get(), record.getSecond()
+                    .get());
         }
         return indexItemIDMap;
-      }
+    }
 }

@@ -15,8 +15,7 @@ import es.tid.bdp.recomms.prepareMatrix.ToItemVectorsMapper;
 import java.io.IOException;
 import java.util.Iterator;
 
-public class ToItemVectorsMapper
-        extends
+public class ToItemVectorsMapper extends
         Mapper<LongWritable, VectorWritable, IntWritable, VectorWritable> {
     public static final String SAMPLE_SIZE = ToItemVectorsMapper.class
             + ".sampleSize";
@@ -30,26 +29,29 @@ public class ToItemVectorsMapper
     }
 
     @Override
-    protected void map(LongWritable rowIndex, VectorWritable vectorWritable, Context ctx)
-        throws IOException, InterruptedException {
-      Vector userRatings = vectorWritable.get();
+    protected void map(LongWritable rowIndex, VectorWritable vectorWritable,
+            Context ctx) throws IOException, InterruptedException {
+        Vector userRatings = vectorWritable.get();
 
-      int numElementsBeforeSampling = userRatings.getNumNondefaultElements();
-      userRatings = Vectors.maybeSample(userRatings, sampleSize);
-      int numElementsAfterSampling = userRatings.getNumNondefaultElements();
+        int numElementsBeforeSampling = userRatings.getNumNondefaultElements();
+        userRatings = Vectors.maybeSample(userRatings, sampleSize);
+        int numElementsAfterSampling = userRatings.getNumNondefaultElements();
 
-      int column = TasteHadoopUtils.idToIndex(rowIndex.get());
-      VectorWritable itemVector = new VectorWritable(new RandomAccessSparseVector(Integer.MAX_VALUE, 1));
-      itemVector.setWritesLaxPrecision(true);
+        int column = TasteHadoopUtils.idToIndex(rowIndex.get());
+        VectorWritable itemVector = new VectorWritable(
+                new RandomAccessSparseVector(Integer.MAX_VALUE, 1));
+        itemVector.setWritesLaxPrecision(true);
 
-      Iterator<Vector.Element> iterator = userRatings.iterateNonZero();
-      while (iterator.hasNext()) {
-        Vector.Element elem = iterator.next();
-        itemVector.get().setQuick(column, elem.get());
-        ctx.write(new IntWritable(elem.index()), itemVector);
-      }
+        Iterator<Vector.Element> iterator = userRatings.iterateNonZero();
+        while (iterator.hasNext()) {
+            Vector.Element elem = iterator.next();
+            itemVector.get().setQuick(column, elem.get());
+            ctx.write(new IntWritable(elem.index()), itemVector);
+        }
 
-      ctx.getCounter(Elements.USER_RATINGS_USED).increment(numElementsAfterSampling);
-      ctx.getCounter(Elements.USER_RATINGS_NEGLECTED).increment(numElementsBeforeSampling - numElementsAfterSampling);
+        ctx.getCounter(Elements.USER_RATINGS_USED).increment(
+                numElementsAfterSampling);
+        ctx.getCounter(Elements.USER_RATINGS_NEGLECTED).increment(
+                numElementsBeforeSampling - numElementsAfterSampling);
     }
 }

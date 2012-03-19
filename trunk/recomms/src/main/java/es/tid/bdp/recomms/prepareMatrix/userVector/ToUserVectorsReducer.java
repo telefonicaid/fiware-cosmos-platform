@@ -10,7 +10,6 @@ import org.apache.mahout.math.VectorWritable;
 
 import org.apache.hadoop.io.LongWritable;
 
-
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import es.tid.bdp.recomms.data.RecommsProtocol.EntityPref;
 import es.tid.bdp.recomms.importer.ItemIDIndexObjMapper;

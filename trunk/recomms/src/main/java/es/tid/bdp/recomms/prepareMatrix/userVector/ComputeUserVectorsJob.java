@@ -32,9 +32,11 @@ public class ComputeUserVectorsJob extends Job {
         this.setOutputValueClass(VectorWritable.class);
     }
 
-    public void configure(Path inputPath, Path outputPath, int minPrefsPerUser) throws IOException {
+    public void configure(Path inputPath, Path outputPath, int minPrefsPerUser)
+            throws IOException {
 
-        this.getConfiguration().setInt(ToUserVectorsReducer.MIN_PREFERENCES_PER_USER, minPrefsPerUser);
+        this.getConfiguration().setInt(
+                ToUserVectorsReducer.MIN_PREFERENCES_PER_USER, minPrefsPerUser);
         this.setInputFormatClass(SequenceFileInputFormat.class);
         SequenceFileInputFormat.setInputPaths(this, inputPath);
 

@@ -5,8 +5,7 @@
     <parent>
         <groupId>es.tid.bdp</groupId>
         <artifactId>bigdataplatform</artifactId>
-        <version>0.0.3.0</version>
-           <!--  <version>${env.ProductVersion}.${env.GIT_COMMIT}</version> -->
+        <version>${env.ProductVersion}.${env.GIT_COMMIT}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

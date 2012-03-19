@@ -314,9 +314,10 @@ public class RecommenderTIDJobTest extends TasteTestCase {
     /**
      * tests {@link ToUserVectorsReducer} using boolean data
      */
+    @SuppressWarnings("unchecked")
     @Test
     public void testToUserVectorReducerWithBooleanData() throws Exception {
-        @SuppressWarnings("unchecked")
+
         Reducer<LongWritable, ProtobufWritable<EntityPref>, LongWritable, VectorWritable>.Context context = EasyMock
                 .createMock(Reducer.Context.class);
         Counter userCounters = EasyMock.createMock(Counter.class);
@@ -387,6 +388,7 @@ public class RecommenderTIDJobTest extends TasteTestCase {
             @Override
             public boolean matches(Object argument) {
                 if (argument instanceof ProtobufWritable<?>) {
+                    @SuppressWarnings("unchecked")
                     ProtobufWritable<VectorOrPrefs> pref = (ProtobufWritable<VectorOrPrefs>) argument;
                     return pref.get().getUserID() == userID
                             && pref.get().getValue() == prefValue;
@@ -477,6 +479,7 @@ public class RecommenderTIDJobTest extends TasteTestCase {
             @Override
             public boolean matches(Object argument) {
                 if (argument instanceof ProtobufWritable<?>) {
+                    @SuppressWarnings("unchecked")
                     ProtobufWritable<VectorOrPrefs> pref = (ProtobufWritable<VectorOrPrefs>) argument;
                     return pref.get().getUserID() == userID
                             && Float.isNaN(pref.get().getValue());
@@ -494,9 +497,9 @@ public class RecommenderTIDJobTest extends TasteTestCase {
     /**
      * tests {@link ToVectorAndPrefReducer}
      */
+    @SuppressWarnings("unchecked")
     @Test
     public void testToVectorAndPrefReducer() throws Exception {
-        @SuppressWarnings("unchecked")
         Reducer<IntWritable, ProtobufWritable<VectorOrPrefs>, IntWritable, ProtobufWritable<VectorAndPrefs>>.Context context = EasyMock
                 .createMock(Reducer.Context.class);
 
@@ -647,9 +650,9 @@ public class RecommenderTIDJobTest extends TasteTestCase {
         conf.setBoolean("mapred.output.compress", false);
 
         recommenderJob.setConf(conf);
-        
+
         System.out.println(inputFile.getAbsolutePath());
-        
+
         recommenderJob.run(new String[] { "--input",
                 inputFile.getAbsolutePath(), "--output",
                 outputDir.getAbsolutePath(), "--tempDir",
@@ -787,7 +790,7 @@ public class RecommenderTIDJobTest extends TasteTestCase {
         recommendations.put(userID, items);
         return recommendations;
     }
-    
+
     /**
      * test Job Read config
      */
@@ -795,18 +798,27 @@ public class RecommenderTIDJobTest extends TasteTestCase {
     public void testReadConfig() throws Exception {
         File inputFile = getTestTempFile("prefs.txt");
 
-        writeLines(inputFile, "MONGO_HOST=localhost", "MONGO_PORT=27017", "MONGO_DB=recommender",
-                "MONGO_COLLECTION=recommender", "MONGO_EVENTS=recommender", "MONGO_CATALOG=movie_catalog", "MONGO_BL=blacklist",
-                "MONGO_RECOMMS=recommendations", "MAX_RECOMMENDATIONS=10", "TEMPORAL_PATH=/tmp/","OUTPUT_PATH=/tmp/output/","MONGO_MANAGE=true",
-                "MONGO_FINAL_REMOVE=true","MONGO_AUTH=false","MONGO_USER_FIELD=user_id","MONGO_ITEM_FIELD=item_id",
-                "MONGO_PREFERENCE_FIELD=preference","NEIGHBORHOOD=nearest","USER_TH=0.8","NEIGHBORS_NUMBER=10");
-               
+        writeLines(inputFile, "MONGO_HOST=localhost", "MONGO_PORT=27017",
+                "MONGO_DB=recommender", "MONGO_COLLECTION=recommender",
+                "MONGO_EVENTS=recommender", "MONGO_CATALOG=movie_catalog",
+                "MONGO_BL=blacklist", "MONGO_RECOMMS=recommendations",
+                "MAX_RECOMMENDATIONS=10", "TEMPORAL_PATH=/tmp/",
+                "OUTPUT_PATH=/tmp/output/", "MONGO_MANAGE=true",
+                "MONGO_FINAL_REMOVE=true", "MONGO_AUTH=false",
+                "MONGO_USER_FIELD=user_id", "MONGO_ITEM_FIELD=item_id",
+                "MONGO_PREFERENCE_FIELD=preference", "NEIGHBORHOOD=nearest",
+                "USER_TH=0.8", "NEIGHBORS_NUMBER=10");
+
         ReadJobConfig.readProperties(inputFile.getAbsolutePath());
 
-        assertEquals(ReadJobConfig.getMongoBL(),"mongodb://localhost:27017/recommender.blacklist");
-        assertEquals(ReadJobConfig.getMongoCatalog(),"mongodb://localhost:27017/recommender.movie_catalog");
-        assertEquals(ReadJobConfig.getMongoEvents(),"mongodb://localhost:27017/recommender.recommender");
-        assertEquals(ReadJobConfig.getMongoRecomms(),"mongodb://localhost:27017/recommender.recommendations");
+        assertEquals(ReadJobConfig.getMongoBL(),
+                "mongodb://localhost:27017/recommender.blacklist");
+        assertEquals(ReadJobConfig.getMongoCatalog(),
+                "mongodb://localhost:27017/recommender.movie_catalog");
+        assertEquals(ReadJobConfig.getMongoEvents(),
+                "mongodb://localhost:27017/recommender.recommender");
+        assertEquals(ReadJobConfig.getMongoRecomms(),
+                "mongodb://localhost:27017/recommender.recommendations");
     }
 
     /**
@@ -820,7 +832,6 @@ public class RecommenderTIDJobTest extends TasteTestCase {
      */
     static List<RecommendedItem> createRecommendations(long userID,
             String[] items) throws IOException {
-        Map<Long, List<RecommendedItem>> recommendations = Maps.newHashMap();
         List<RecommendedItem> recomms = new LinkedList<RecommendedItem>();
         for (String reco : items) {
             long itemID = Long.parseLong(reco);

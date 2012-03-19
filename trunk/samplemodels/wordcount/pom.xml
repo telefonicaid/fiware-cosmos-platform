@@ -3,37 +3,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <properties>
-        <copyright.year>2012</copyright.year>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <org.apache.hadoop>0.20.2</org.apache.hadoop>
-        <org.apache.hadoop.hive>0.7.1</org.apache.hadoop.hive>
-        <jvm.version>1.6</jvm.version>
-        <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
-        <protoc.path>protoc</protoc.path>
-    </properties>
+    <parent>
+        <groupId>es.tid.bdp</groupId>
+        <artifactId>samplemodels</artifactId>
+        <version>0.0.3.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-    <profiles>
-        <profile>
-            <id>jenkins</id>
-        </profile>
-        <profile>
-            <id>local</id>
-            <properties>
-                <env.SVN_REVISION>Build</env.SVN_REVISION>
-                <env.ProductVersion>Local</env.ProductVersion>
-            </properties>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-        </profile>
-    </profiles>
-
-    <groupId>es.tid.bdp.samples</groupId>
     <artifactId>wordcount</artifactId>
-    <version>${env.ProductVersion}${env.SVN_REVISION}</version>
-    <packaging>jar</packaging>
+    <name>wordcount</name>
+    <packaging>pom</packaging>
 
     <dependencies>
         <dependency>
@@ -47,12 +26,6 @@
             <artifactId>hadoop-gpl-compression</artifactId>
             <version>0.1.0</version>
         </dependency>
-        <dependency>
-            <groupId>es.tid.bdp</groupId>
-            <artifactId>base</artifactId>
-            <version>0.0.2</version>
-        </dependency>
-
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
@@ -139,7 +112,6 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -167,20 +139,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>es.tid.bdp.profile.IndividualProfileMain</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -197,28 +155,6 @@
                             <excludeScope>test</excludeScope>
                             <excludeScope>provided</excludeScope>
                         </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>1.5</version>
-                <configuration>
-                    <transformers>
-                        <transformer
-                            implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>es.tid.bdp.samples.wordcount.WordCountMain</mainClass>
-                        </transformer>
-                    </transformers>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
                     </execution>
                 </executions>
             </plugin>
@@ -265,4 +201,8 @@
         </pluginRepository>
     </pluginRepositories>
 
+    <modules>
+        <module>api</module>
+        <module>core</module>
+    </modules>
 </project>

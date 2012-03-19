@@ -1,0 +1,52 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name='descriptions'>
+		<xs:complexType>
+			<xs:sequence minOccurs="1" maxOccurs="unbounded">
+				<xs:element ref="description" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+
+	<xs:element name='description'>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="users" />
+			</xs:sequence>
+			<xs:attribute name="path" type="xs:string" use="required" />
+		</xs:complexType>
+	</xs:element>
+
+
+
+
+	<xs:element name='users'>
+		<xs:complexType>
+			<xs:sequence minOccurs="1" maxOccurs="unbounded">
+				<xs:element ref="user" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+
+	<xs:element name='user'>
+		<xs:complexType>
+			<xs:sequence minOccurs="0" maxOccurs="1">
+				<xs:element ref="parser" />
+			</xs:sequence>
+			<xs:attribute name="user" type="xs:string" use="required" />
+			<xs:attribute name="isReadable" type="xs:boolean" use="required" />
+			<xs:attribute name="isCompressible" type="xs:boolean"
+				use="required" />
+			<xs:attribute name="isWritable" type="xs:boolean" use="required" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name='parser'>
+		<xs:complexType>
+			<xs:attribute name="className" type="xs:string" use="required" />
+			<xs:attribute name="pattern" type="xs:string" use="required" />
+			<xs:attribute name="attr" type="xs:string" use="required" />
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

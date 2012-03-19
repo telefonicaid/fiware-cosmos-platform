@@ -78,6 +78,14 @@ namespace webp{
 			  
 			  writer->emit(0, &output_key , &output_value );
 
+			  // Top domain
+              // ------------------------------------------------------------------------------------------
+			  output_key.value = "top_domain";
+			  output_key.value.append(" ");
+			  output_key.value.append( domain );
+			  
+			  writer->emit(0, &output_key , &output_value );
+
 			  // Top users
               // ------------------------------------------------------------------------------------------
 			  output_key.value = "top_users";

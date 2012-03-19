@@ -50,6 +50,8 @@ Pool.h
 StringComponents.h
 
 Tokenizer.h
+
+OnOffMonitor.h
 )
 
 SET (SOURCES
@@ -94,6 +96,8 @@ Pool.cpp
 StringComponents.cpp
 
 Tokenizer.cpp
+
+OnOffMonitor.cpp
 )
 
 

@@ -849,21 +849,56 @@ afterTreatment:
 
         // Common type to joint queries ls_workers -group type
         ::samson::add( record , "Type" , "worker" , "different" );
-        
-        ::samson::add( record , "Mem used" , engine::MemoryManager::shared()->getUsedMemory() , "f=uint64,sum" );
-        ::samson::add( record , "Mem total" , engine::MemoryManager::shared()->getMemory() , "f=uint64,sum" );
 
-        ::samson::add( record , "Cores used" , engine::ProcessManager::shared()->getNumUsedCores() , "f=uint64,sum" );
-        ::samson::add( record , "Cores total" , engine::ProcessManager::shared()->getNumCores() , "f=uint64,sum" );
-        
-        ::samson::add( record , "#Disk ops" , engine::DiskManager::shared()->getNumOperations() , "f=uint64,sum" );
+        if( visualization->options == engine )
+        {
+            
+            size_t num_elements= engine::Engine::shared()->getNumElementsInEngineStack();
+            double waiting_time = engine::Engine::shared()->getMaxWaitingTimeInEngineStack();
+            ::samson::add( record , "#elements in engine" , num_elements , "f=uint64,sum" );
+            ::samson::add( record , "Max waiting time" , waiting_time , "f=double,different" );
+            
+        }
+        else if( visualization->options == disk )
+        {
+            // Disk activiry
+            
+            ::samson::add( record , "Disk in B/s" , engine::DiskManager::shared()->get_rate_in() , "f=uint64,sum" );
+            ::samson::add( record , "Disk out B/s" , engine::DiskManager::shared()->get_rate_out() , "f=uint64,sum" );
 
-        ::samson::add( record , "Disk in B/s" , engine::DiskManager::shared()->get_rate_in() , "f=uint64,sum" );
-        ::samson::add( record , "Disk out B/s" , engine::DiskManager::shared()->get_rate_out() , "f=uint64,sum" );
+            double op_in = engine::DiskManager::shared()->get_rate_operations_in();
+            double op_out = engine::DiskManager::shared()->get_rate_operations_out();
+            
+            ::samson::add( record , "Disk in Ops/s" , op_in  , "f=double , sum" );
+            ::samson::add( record , "Disk out Ops/s" , op_out , "f=double,sum" );
+            
 
-        ::samson::add( record , "Net in B/s" , network->get_rate_in() , "f=uint64,sum" );
-        ::samson::add( record , "Net out B/s" , network->get_rate_out() , "f=uint64,sum" );
+            double on_time = engine::DiskManager::shared()->on_off_monitor.get_on_time(); 
+            double off_time = engine::DiskManager::shared()->on_off_monitor.get_off_time(); 
+            ::samson::add( record , "On time" , on_time , "f=double,differet" );
+            ::samson::add( record , "Off time" , off_time , "f=double,differet" );
+            
+            double usage =  engine::DiskManager::shared()->get_on_off_activity();
+            ::samson::add( record , "Disk usage" , au::str_percentage(usage) , "differet" );
+         
+        }
+        else
+        {
         
+            ::samson::add( record , "Mem used" , engine::MemoryManager::shared()->getUsedMemory() , "f=uint64,sum" );
+            ::samson::add( record , "Mem total" , engine::MemoryManager::shared()->getMemory() , "f=uint64,sum" );
+            
+            ::samson::add( record , "Cores used" , engine::ProcessManager::shared()->getNumUsedCores() , "f=uint64,sum" );
+            ::samson::add( record , "Cores total" , engine::ProcessManager::shared()->getNumCores() , "f=uint64,sum" );
+            
+            ::samson::add( record , "#Disk ops" , engine::DiskManager::shared()->getNumOperations() , "f=uint64,sum" );
+            
+            ::samson::add( record , "Disk in B/s" , engine::DiskManager::shared()->get_rate_in() , "f=uint64,sum" );
+            ::samson::add( record , "Disk out B/s" , engine::DiskManager::shared()->get_rate_out() , "f=uint64,sum" );
+            
+            ::samson::add( record , "Net in B/s" , network->get_rate_in() , "f=uint64,sum" );
+            ::samson::add( record , "Net out B/s" , network->get_rate_out() , "f=uint64,sum" );
+        }
         
         if (visualization == NULL)
             return collection;

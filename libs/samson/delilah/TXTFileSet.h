@@ -49,7 +49,7 @@ namespace samson {
         void freeBuffer()
         {
             if( data )
-                delete data;
+                free( data );
             data = NULL;
         }
         

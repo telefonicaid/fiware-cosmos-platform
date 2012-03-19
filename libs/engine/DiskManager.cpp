@@ -198,7 +198,10 @@ DiskOperation * DiskManager::getNextDiskOperation(  )
     au::TokenTaker tt(&token);
     
     if( pending_operations.size() == 0 )
+    {
+        on_off_monitor.set_on( !(running_operations.size() == 0) );
         return NULL;
+    }
     
     // Extract the next operation
     DiskOperation *operation = pending_operations.extractFront();
@@ -206,6 +209,9 @@ DiskOperation * DiskManager::getNextDiskOperation(  )
     // Insert in the running list
     running_operations.insert( operation );
 
+    // We are runnin one, so it is on
+    on_off_monitor.set_on(true);
+    
     return operation;
 }
 
@@ -299,9 +305,31 @@ size_t DiskManager::get_rate_in()
 }
 
 size_t DiskManager::get_rate_out()
-{    // Mutex protection
+{
+    // Mutex protection
     au::TokenTaker tt(&token);
     return rate_out.getRate();
+}
+
+double DiskManager::get_rate_operations_in()
+{
+    // Mutex protection
+    au::TokenTaker tt(&token);
+    return rate_in.getHitRate();
+}
+
+double DiskManager::get_rate_operations_out()
+{
+    // Mutex protection
+    au::TokenTaker tt(&token);
+    return rate_out.getHitRate();
+}
+
+double DiskManager::get_on_off_activity()
+{
+    // Mutex protection
+    au::TokenTaker tt(&token);
+    return on_off_monitor.getActivity();
 }
 
 

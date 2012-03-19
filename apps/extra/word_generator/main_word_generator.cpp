@@ -131,15 +131,15 @@ int main( int argC , const char*argV[] )
             local_num_lines++;
          
             
-            
-            if( (local_num_lines%( num_lines/100)) == 0 )
-            {
-                size_t total_seconds = cronometer.diffTimeInSeconds();
-                LM_V(( "Generated %s %s lines ( %s bytes ) in %s. Rate: %s / %s", 
-                      au::str_percentage( local_num_lines,  num_lines).c_str(), 
-                      au::str(total_num).c_str() , au::str(total_size).c_str(), au::str_time( total_seconds ).c_str() ,
-                      au::str( (double)total_num/(double)total_seconds ,"Lines/s" ).c_str() , au::str( (double)total_size/(double)total_seconds,"Bps").c_str() ));
-            }
+            if( num_lines > 100 )
+                if( (local_num_lines%( num_lines/100)) == 0 )
+                {
+                    size_t total_seconds = cronometer.diffTimeInSeconds();
+                    LM_V(( "Generated %s %s lines ( %s bytes ) in %s. Rate: %s / %s", 
+                          au::str_percentage( local_num_lines,  num_lines).c_str(), 
+                          au::str(total_num).c_str() , au::str(total_size).c_str(), au::str_time( total_seconds ).c_str() ,
+                          au::str( (double)total_num/(double)total_seconds ,"Lines/s" ).c_str() , au::str( (double)total_size/(double)total_seconds,"Bps").c_str() ));
+                }
             
         }
 

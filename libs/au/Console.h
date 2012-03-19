@@ -43,6 +43,7 @@ public:
     ~Console();
     
     void runConsole();
+    void runConsoleInBackground();
     void quitConsole();
     
     /* Methods to write things on screen */

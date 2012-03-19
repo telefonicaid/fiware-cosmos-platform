@@ -148,9 +148,9 @@ namespace samson {
             return node_identifier;
         }
         
-        std::string str_node_name()
+        std::string getHostAndPort()
         {
-            return socket_connection->str_node_name();
+            return socket_connection->getHostAndPort();
         }
         
         std::string str()

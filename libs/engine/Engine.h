@@ -128,7 +128,10 @@ public:
     // Get an object by its registry names
     Object* getObjectByName( const char *name );
     
-
+    // Info functions 
+    int getNumElementsInEngineStack();
+    double getMaxWaitingTimeInEngineStack();
+    
 private:
     
     friend class NotificationElement;

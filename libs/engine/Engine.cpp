@@ -299,6 +299,24 @@ void Engine::run()
     }
 }
 
+int Engine::getNumElementsInEngineStack()
+{
+    au::TokenTaker tt(&token , "Engine::getNextElement");
+    return normal_elements.size();
+}
+
+double Engine::getMaxWaitingTimeInEngineStack()
+{
+    au::TokenTaker tt(&token , "Engine::getNextElement");
+    if( normal_elements.size() == 0 )
+        return 0;
+    
+    EngineElement* last_element =  normal_elements.back();
+ 
+    return last_element->getWaitingTime();
+}
+
+
 
 std::list<EngineElement*>::iterator Engine::_find_pos_in_repeated_elements( EngineElement *e)
 {

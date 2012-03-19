@@ -35,6 +35,8 @@ namespace samson
         running,       // Operations being executed ( stream_operations )
         in,            // total and current rate in ( stream_operations )
         out,           // total and current rate in ( stream_operations )
+        disk,          // Disk activity ( ls_workers )
+        engine,        // Engine activity ( ls_workers )
         verbose,
         verbose2,
         verbose3,

@@ -91,11 +91,14 @@ namespace  samson {
                   , std::string password = "anonymous");
         
         // DelilahLiveDataReceiverInterface
-        void receive_buffer_from_queue(std::string queue , engine::Buffer* buffer);
+        virtual void receive_buffer_from_queue(std::string queue , engine::Buffer* buffer);
         
         // Push content to a particular queue
         size_t push( std::string queue , char *data , size_t length );
-        
+
+        // Push a generic data source 
+        size_t push( std::string queue , DataSource *data_source );
+
         // Get error message
         std::string getErrorMessage();
         

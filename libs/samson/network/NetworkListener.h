@@ -38,6 +38,11 @@ namespace samson {
         // Constructor
         NetworkListener( NetworkListenerInterface * _network_listener_interface );
         
+        // Get port
+        int getPort()
+        {
+            return port;
+        }
         
         // Init and close functions
         Status initNetworkListener( int port );        

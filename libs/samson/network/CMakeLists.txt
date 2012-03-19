@@ -6,6 +6,7 @@ SET (HEADERS
 	NetworkManager.h
 	NetworkConnection.h
 	SocketConnection.h
+	FileDescriptor.h
 	NetworkListener.h
 
 	NetworkInterface.h
@@ -30,6 +31,7 @@ SET (SOURCES
 	NetworkManager.cpp
 	NetworkConnection.cpp
 	SocketConnection.cpp
+	FileDescriptor.cpp 
 	NetworkListener.cpp
 
 	NetworkInterface.cpp

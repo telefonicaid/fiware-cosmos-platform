@@ -27,6 +27,7 @@
 #include "au/ListMap.h"              // au::ListMap
 #include "au/namespace.h"
 #include "au/Rate.h"
+#include "au/OnOffMonitor.h"
 
 #include "engine/Object.h"     // engine::EngineNotification
 #include "engine/MemoryManager.h"          // engine::MemoryManager
@@ -42,6 +43,7 @@ class EngineElement;
 class ProcessItem;
 class DiskOperation;
 class Notification;
+
 
 class DiskManager
 {
@@ -70,6 +72,8 @@ public:
     au::rate::Rate rate_in;
     au::rate::Rate rate_out;
     
+    au::OnOffMonitor on_off_monitor;
+    
     static void init( int _num_disk_operations );
     static void destroy( );
     static DiskManager* shared();
@@ -96,7 +100,10 @@ public:
     
     size_t get_rate_in();
     size_t get_rate_out();
-    
+    double get_rate_operations_in();
+    double get_rate_operations_out();
+    double get_on_off_activity();
+
 private:
     
     // Notification that a disk operation has finished

@@ -16,6 +16,7 @@ ADD_SUBDIRECTORY(samsonModuleCat)
 ADD_SUBDIRECTORY(passiveLocationPush)
 ADD_SUBDIRECTORY(samsonPush)
 ADD_SUBDIRECTORY(samsonPop)
+ADD_SUBDIRECTORY(samsonConnector)
 ADD_SUBDIRECTORY(samsonMemCheck)
 
 if (HAVE_GTEST)

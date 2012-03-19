@@ -323,6 +323,20 @@ std::string getSequenceDescription( std::string sequece )
     return output.str();
 }
 
+void* run_console(void* p)
+{
+    Console* console = (Console*)p;
+    console->runConsole();
+    return NULL;
+}
+
+void Console::runConsoleInBackground()
+{
+    pthread_t t;
+    pthread_create(&t, NULL, run_console, this);
+}
+
+
 void Console::runConsole()
 {
     // Init console

@@ -214,6 +214,14 @@ namespace samson
             autoCompleteQueues( info );
         }
 
+        // Options for ls_workers
+        if (info->completingSecondWord("ls_workers") )
+        {
+            info->add("-engine");
+            info->add("-disk");
+        }
+        
+        
         if (info->completingSecondWord("rm_queue") )
         {
             autoCompleteQueues( info );

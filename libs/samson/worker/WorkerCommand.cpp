@@ -511,7 +511,12 @@ namespace samson {
             Status s = streamManager->set_stream_operation_property( name , property, value );
             
             if( s!= OK )
-                error->set( au::str("Error in set_stream_operation_property %s" , status(s)  ));
+                error->set( au::str("Error (%s) setting property '%s' with value '%s' for stream operation %s" 
+                                    , status(s)
+                                    , property.c_str()
+                                    , value.c_str()
+                                    , name.c_str()
+                                    ));
             
             return;
         } 
@@ -660,6 +665,8 @@ typedef struct LogLineInfo
         cmd.set_flag_boolean("rates");
         cmd.set_flag_boolean("blocks");
         cmd.set_flag_boolean("running");
+        cmd.set_flag_boolean("disk");
+        cmd.set_flag_boolean("engine");
         cmd.set_flag_int("lines", 20);
         
         // Flags used in delilah side...
@@ -696,6 +703,10 @@ typedef struct LogLineInfo
             visualitzation_options = blocks;
         if( cmd.get_flag_bool("running") )
             visualitzation_options = running;
+        if( cmd.get_flag_bool("disk") )
+            visualitzation_options = disk;
+        if( cmd.get_flag_bool("engine") )
+            visualitzation_options = engine;
         
         if( cmd.get_num_arguments() == 0 )
         {

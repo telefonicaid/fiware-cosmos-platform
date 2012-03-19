@@ -33,6 +33,8 @@ namespace hit{
 	   // Current time-stamp shared by all key-values processed here
 	   time_t current_time;
 
+	   size_t time_span;
+
 	public:
 
 
@@ -52,6 +54,9 @@ namespace hit{
 		{
 		   // Get a common time stamp for all the key-values processed here
 		   current_time = time(NULL);
+
+           // Get time span for environment variables
+		   time_span = environment->getSizeT( "time_span" ,  300 ); // By default 5 minuts average
 		}
 
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
@@ -62,7 +67,7 @@ namespace hit{
 		   {
 			  concept.parse( inputs[1].kvs[0]->key );
 			  hit.parse( inputs[1].kvs[0]->value );
-			  hit.setTime( current_time ); // Update state to current time
+			  hit.setTime( current_time , time_span ); // Update state to current time
 		   }
 		   else
 		   {			  

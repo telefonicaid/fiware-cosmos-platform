@@ -27,10 +27,12 @@ namespace hit{
 	  samson::hit::Hit** top_hits;
 
 	  time_t reference_time_stamp;
+	  size_t time_span;
 	  
-	  HitCollectionManager( std::string _concept )
+	  HitCollectionManager( std::string _concept , size_t _time_span )
 	  {
 		 concept = _concept;
+		 time_span = _time_span;
 		 reference_time_stamp = 0; // Init with 0 to make sure it is updated the first time
 		 
 		 top_hits = (samson::hit::Hit**) malloc( sizeof(samson::hit::Hit*) * NUM_TOP_ITEMS );
@@ -51,10 +53,10 @@ namespace hit{
 	   }
 
 
-	   void setTime( time_t new_reference_time_stamp )
+	   void setTime( time_t new_reference_time_stamp  )
 	   {
 		  for( int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
-			 top_hits[i]->setTime( new_reference_time_stamp );
+			 top_hits[i]->setTime( new_reference_time_stamp , time_span );
 
 		  reference_time_stamp = new_reference_time_stamp;
 	   }
@@ -66,7 +68,7 @@ namespace hit{
 		  if ( hit->time.value > reference_time_stamp )
 			 setTime( hit->time.value );
 		  else
-			 hit->setTime( reference_time_stamp );
+			 hit->setTime( reference_time_stamp , time_span );
 
 
 		  if( hit->count.value < top_hits[NUM_TOP_ITEMS-1]->count.value )
@@ -144,12 +146,22 @@ namespace hit{
    {
 
 	  std::vector<HitCollectionManager*> managers;
+	  size_t time_span;
 
    public:
 
-	  void add( samson::hit::Hit *hit  )
+	  MultiHitCollectionManager()
 	  {
+		 time_span = 300; // Default value
+	  }
 
+	  void setTimeSpan( size_t _time_span )
+	  {
+		 time_span = _time_span;
+	  }
+
+	  void add( samson::hit::Hit *hit )
+	  {
 		 std::string category = hit->getCategory();
 		 add( category.c_str() , hit ); 
 	  }
@@ -168,7 +180,7 @@ namespace hit{
 		 }
 
 		 // Create a new one at the end
-		 HitCollectionManager*manager = new HitCollectionManager( concept );
+		 HitCollectionManager*manager = new HitCollectionManager( concept , time_span );
 		 manager->add( hit  );
 		 managers.push_back( manager );
 

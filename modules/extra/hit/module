@@ -64,7 +64,7 @@ script init_stream_operations
 	alias [tops_out_txt]   31.output_tops_txt;
 
 	# Operations;
-	alias [reduce_words]    01.reduce_words;
+	alias [reduce_words]    01.reduce_hits;
 	alias [reduce_tops]	    20.reduce_tops;
 	alias [export_tops]     30.export_tops;
 
@@ -95,7 +95,7 @@ script stream_block_simple
     alias [tops]           s_info;
 
     # Operations;
-    alias [reduce_words]    01.reduce_words;
+    alias [reduce_words]    01.reduce_hits;
     alias [reduce_tops]     20.reduce_tops;
 
     # Definitions;

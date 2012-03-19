@@ -24,6 +24,7 @@ namespace hit{
 	{
 
 	   samson::system::String concept;
+	   size_t time_span;
 
 	public:
 
@@ -49,6 +50,8 @@ namespace hit{
 
 		void init( samson::KVWriter *writer )
 		{
+		   // Get time span for environment variables
+           time_span = environment->getSizeT( "time_span" ,  300 ); // By default 5 minuts average
 		}
 
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
@@ -64,7 +67,7 @@ namespace hit{
 			  concept.parse( inputs[1].kvs[0]->key );
 			  hit_collection.parse( inputs[1].kvs[0]->value );
 
-			  manager = new HitCollectionManager( concept.value );
+			  manager = new HitCollectionManager( concept.value , time_span );
 
 			  for (int i = 0 ; i < hit_collection.hits_length ; i++ )
 				 manager->add( &hit_collection.hits[i] );
@@ -74,7 +77,7 @@ namespace hit{
 		   {
 			  // take the concept from the first input
 			  concept.parse( inputs[0].kvs[0]->key );
-			  manager = new HitCollectionManager( concept.value );
+			  manager = new HitCollectionManager( concept.value , time_span );
 		   }
 
 

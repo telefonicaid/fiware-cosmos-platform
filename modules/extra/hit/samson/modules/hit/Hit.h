@@ -33,7 +33,7 @@ namespace hit{
 		  count.value = 0;
 		  time.value = ts;
 	   }
-
+/*
 	   void setTime( time_t current_ts )
 	   {
 		  if( current_ts < time.value )
@@ -41,6 +41,20 @@ namespace hit{
 
           ::time_t diff =  current_ts - time.value;
           count.value = (( (double) count.value ) * pow( 0.99666666  , (double) diff ));
+		  time.value = current_ts;
+	   }
+*/
+
+
+	   void setTime( time_t current_ts , size_t time_span )
+	   {
+		  if( current_ts < time.value )
+			 return;
+
+          ::time_t diff =  current_ts - time.value;
+		  double f = ((double)(time_span - 1)) / ((double) time_span); 
+
+          count.value = (( (double) count.value ) * pow( f  , (double) diff ));
 		  time.value = current_ts;
 	   }
 

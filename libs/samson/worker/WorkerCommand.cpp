@@ -1233,38 +1233,33 @@ typedef struct LogLineInfo
             
             while( true )
             {
-                stream::BlockList tmp_list("defrag_block_list");
-                tmp_list.extractFromForDefrag( &init_list , input_operation_size );
-                
-                if( tmp_list.isEmpty() )
-                    break;
-
-                LM_W(("New operation for defrag..."));
-                std::list<stream::Block*>::iterator b;
-                for ( b = tmp_list.blocks.begin() ; b != tmp_list.blocks.end() ; b++ )
                 {
-                    stream::Block* block = *b;
-                    LM_W((">>Block to defrag %s" , block->str().c_str() ));
+                    stream::BlockList tmp_list("defrag_block_list");
+                    tmp_list.extractFromForDefrag( &init_list , input_operation_size );
+                
+                    if( tmp_list.isEmpty() )
+                        break;
+
+                    
+                    // Create an operation to process this set of blocks
+                    size_t new_id = streamManager->queueTaskManager.getNewId();
+                    stream::BlockBreakQueueTask *tmp = new stream::BlockBreakQueueTask( new_id , queue_to , output_operation_size ); 
+                    
+                    // Fill necessary blocks
+                    tmp->getBlockList( au::str("input" ) )->copyFrom( &tmp_list );
+                    
+                    // Set the working size to get statistics at ProcessManager
+                    tmp->setWorkingSize();
+                    
+                    // Add me as listener and increase the number of operations to run
+                    tmp->addListenerId( getEngineId() );
+                    num_pending_processes++;
+                    
+                    tmp->environment.set("worker_command_id", worker_command_id);
+                    
+                    // Schedule tmp task into QueueTaskManager
+                    streamManager->queueTaskManager.add( tmp );       
                 }
-                
-                // Create an operation to process this set of blocks
-                size_t new_id = streamManager->queueTaskManager.getNewId();
-                stream::BlockBreakQueueTask *tmp = new stream::BlockBreakQueueTask( new_id , queue_to , output_operation_size ); 
-                
-                // Fill necessary blocks
-                tmp->getBlockList( au::str("input" ) )->copyFrom( &tmp_list );
-                
-                // Set the working size to get statistics at ProcessManager
-                tmp->setWorkingSize();
-                
-                // Add me as listener and increase the number of operations to run
-                tmp->addListenerId( getEngineId() );
-                num_pending_processes++;
-                
-                tmp->environment.set("worker_command_id", worker_command_id);
-                
-                // Schedule tmp task into QueueTaskManager
-                streamManager->queueTaskManager.add( tmp );       
             }
 
             return;

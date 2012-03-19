@@ -66,7 +66,7 @@ namespace samson {
             int from_hg = 0;  
             int to_hg = 0;
             
-            while( to_hg < ( KVFILE_NUM_HASHGROUPS - 1 ) )
+            while( to_hg < KVFILE_NUM_HASHGROUPS )
             {
                 if( (to_hg > from_hg) && (( accumulated_size + info[to_hg].size ) > output_operation_size ))
                 {
@@ -92,6 +92,7 @@ namespace samson {
         
         void BlockBreakQueueTask::createBlock( int hg_begin , int hg_end )
         {
+            
 
             // Compute size of the generated buffer
             KVInfo info;
@@ -115,6 +116,9 @@ namespace samson {
             
             // Copy header from the first block
             memcpy( header , files[0]->getKVHeader() ,  sizeof( KVHeader ) );
+            
+            // Change the size to the real one
+            header->setInfo(info);
             
             // Temporal vector of KVInfo's
             KVInfo* info_vector = new KVInfo[ KVFILE_NUM_HASHGROUPS ];

@@ -108,7 +108,7 @@ do
 	fi
 done
 
-echo OK, rsynching /opt/samson to ${cluster[$clusterIx]}
+echo OK, rsynching $SAMSON_HOME to ${cluster[$clusterIx]}
 
 
 for node in ${cluster[$clusterIx]}
@@ -116,8 +116,8 @@ do
 	if [ "$node" != "$localMachine" ]
 	then
 		echo Installing samson in $node
-		rsync -r /opt/samson/modules         samson@$node:/opt/samson
-		rsync -r /opt/samson/bin	         samson@$node:/opt/samson
+		rsync -r $SAMSON_HOME/modules         node:$SAMSON_HOME
+		rsync -r $SAMSON_HOME/bin	         node:$SAMSON_HOME
 	fi
 done
 

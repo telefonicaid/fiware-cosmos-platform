@@ -3,9 +3,9 @@ What is this document?
 ======================
 This document frames the goals and scope for the current Cosmos release. Documentation for each feature should be placed in a README file on that feature's folder.
 
-===============
+====================================
 Curry release (internal alpha) goals
-===============
+====================================
 **Due Date**: 30/03/2012
 
 **One line goal**: Create a web front-end to let users launch Hadoop jobs on the cluster and view the results of the job.

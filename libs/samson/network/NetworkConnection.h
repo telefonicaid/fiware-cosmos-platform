@@ -179,6 +179,8 @@ namespace samson {
         {
             return rate_out.getRate();
         }
+        
+        
     };
     
 }

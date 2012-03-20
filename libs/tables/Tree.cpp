@@ -214,7 +214,7 @@ TreeCollection* TreeItem::selectTrees( SelectTreeInformation* select )
     
     for ( size_t i = 0 ; i < items.size() ; i++ )
     {
-        if( compare_strings( items[i]->value , select->name ) )
+        if( compare_strings( select->name , items[i]->value ) )
         {
             if( select->check( items[i] ) )
                 tree_collection->add(  new TreeItem( items[i] ) );

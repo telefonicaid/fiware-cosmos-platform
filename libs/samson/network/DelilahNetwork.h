@@ -35,11 +35,10 @@ public:
 
         // Check all workers connected...
         std::vector<size_t> workers = cluster_information.getWorkerIds();
-
         for ( size_t i = 0 ; i < workers.size() ; i++ )
         {            
             std::string name = NodeIdentifier( WorkerNode , workers[i] ).getCodeName();
-            if( !connections.findInMap( name ) )
+            if( ! NetworkManager::isConnected( name ) )
                 return false;
         }
         return true;

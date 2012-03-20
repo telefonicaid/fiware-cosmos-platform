@@ -83,6 +83,7 @@ namespace samson
         
         writeWarningOnConsole(au::str("Random delilah id generated [%s]" , au::code64_str(node_identifier.id).c_str()));
         
+        simple_output = false;
         
     }
     
@@ -143,8 +144,8 @@ namespace samson
         
         for ( size_t r = 0 ; r <  table->getNumRows() ; r++ )
         {
-            if( table->getValue(r, "key") == key_format )
-                if( table->getValue(r, "value") == value_format )
+            if( table->getValue(r, "format/key_format") == key_format )
+                if( table->getValue(r, "format/value_format") == value_format )
                     info->add(  table->getValue(r, "name") );
         }
         

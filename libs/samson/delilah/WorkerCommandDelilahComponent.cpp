@@ -234,16 +234,17 @@ namespace samson {
                     general_error = true;
                 }
             }
+
+            // Print the result in a table if necessary
+            au::map<std::string, network::Collection >::iterator it;
+            for( it = collections.begin() ; it != collections.end() ; it++ )
+                print_content( it->second );
             
             if( general_error )
                 setComponentFinishedWithError( general_error_message );
             else
                 setComponentFinished();
             
-            // Print the result in a table if necessary
-            au::map<std::string, network::Collection >::iterator it;
-            for( it = collections.begin() ; it != collections.end() ; it++ )
-                print_content( it->second );
         }
  	}
 	

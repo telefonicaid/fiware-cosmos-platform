@@ -47,7 +47,7 @@ namespace samson {
     {
         // Check previous connection....
         std::string connection_name = MAIN_DELILAH_CONNECTION_NAME;
-        if( connections.findInMap(connection_name) != NULL )
+        if( NetworkManager::isConnected(connection_name) )
             return Error;
 
         // Check not already connected to a cluster
@@ -72,13 +72,8 @@ namespace samson {
         // Create network connection with this socket
         NetworkConnection * network_connection = new NetworkConnection( connection_name , socket_connection , this );
         
-        // Insert in the map of connections
-        connections.insertInMap( connection_name , network_connection );
-        
-        // Start the read and write threads for this connection
-        network_connection->initReadWriteThreads();
-     
-        return OK;
+        // Add this network connection
+        return NetworkManager::add( network_connection );
     }
 
     // Add a new connection agains an additional worker to be added to the cluster
@@ -86,13 +81,12 @@ namespace samson {
     {
         std::string name = SECONDARY_DELILAH_CONNECTION_NAME;
 
-        NetworkConnection* previous_network_connection = connections.findInMap(name);
-        if( previous_network_connection != NULL )
+        if( NetworkManager::isConnected(name) )
         {
             return au::str( "Not adding node %s:%d since still processing node %s"
-                            , host.c_str()
-                            , port 
-                            , previous_network_connection->str().c_str()
+                           , host.c_str()
+                           , port 
+                           , name.c_str()
                            );
         }
         
@@ -112,21 +106,15 @@ namespace samson {
         
         // Create network connection with this socket
         NetworkConnection * network_connection = new NetworkConnection( name , socket_connection , this );
-        
-        // Insert in the map of connections
-        connections.insertInMap( name , network_connection );
-        
-        // Start the read and write threads for this connection
-        network_connection->initReadWriteThreads();
+
+        // Add network connection
+        NetworkManager::add( network_connection );
         
         return  au::str("Sent message to %s:%d to add this node to the cluster\n" 
                         , host.c_str() 
                         , port 
                         );
     }    
-    
-
-
     
     void DelilahNetwork::processHello( NetworkConnection* connection, Packet* packet )
     {
@@ -181,7 +169,7 @@ namespace samson {
 
                 // Recolocation of connection ( it is alwasy worker_0 )
                 connection->setNodeIdentifier( NodeIdentifier(WorkerNode,0) );
-                move_connection( MAIN_DELILAH_CONNECTION_NAME , "worker_0" );
+                NetworkManager::move_connection( MAIN_DELILAH_CONNECTION_NAME , "worker_0" );
                 
                 // Notify delilah about the new connection
                 report_worker_connected(0);
@@ -210,7 +198,7 @@ namespace samson {
 
                 // Relocation of this connection to the rigth place
                 connection->setNodeIdentifier( new_node_identifier );
-                move_connection( MAIN_DELILAH_CONNECTION_NAME , connection->getNodeIdentifier().getCodeName() );
+                NetworkManager::move_connection( MAIN_DELILAH_CONNECTION_NAME , connection->getNodeIdentifier().getCodeName() );
                 
                 report_worker_connected( new_node_identifier.id );
                 
@@ -265,7 +253,7 @@ namespace samson {
 
             // Recolocation of connection 
             connection->setNodeIdentifier(  NodeIdentifier(WorkerNode,assigned_id) );
-            move_connection( SECONDARY_DELILAH_CONNECTION_NAME , connection->getNodeIdentifier().getCodeName() );
+            NetworkManager::move_connection( SECONDARY_DELILAH_CONNECTION_NAME , connection->getNodeIdentifier().getCodeName() );
             
             report_worker_connected( assigned_id );
             return;
@@ -332,7 +320,7 @@ namespace samson {
 
         if ( main_command == "connections" )
         {
-            au::tables::Table * table = getConnectionsTable();
+            au::tables::Table * table = NetworkManager::getConnectionsTable();
             std::string res = table->str();
             delete table;
             return res;
@@ -340,7 +328,7 @@ namespace samson {
 
         if ( main_command == "pending" )
         {
-            au::tables::Table * table = getPendingPacketsTable();
+            au::tables::Table * table = NetworkManager::getPendingPacketsTable();
             std::string res = table->str();
             delete table;
             return res;
@@ -372,7 +360,7 @@ namespace samson {
             if( cmdLine.get_num_arguments() > 3 )
                 port = atoi( cmdLine.get_argument(3).c_str() );
             
-            resetNetworkManager();
+            NetworkManager::reset();
             cluster_information.clearClusterInformation();
             
             std::string user = cmdLine.get_flag_string("user");
@@ -435,21 +423,25 @@ namespace samson {
             std::ostringstream output;
             
             // Close connection with this node informing to reset the cluster information
-            std::string connection_name = NodeIdentifier( WorkerNode , id ).getCodeName();
-            NetworkConnection* connection = connections.findInMap( connection_name );
-            if ( connection )
+            NodeIdentifier _node_identifier = NodeIdentifier( WorkerNode , id );
+            std::string connection_name = _node_identifier.getCodeName();
+            
+            if ( NetworkManager::isConnected(connection_name) )
             {
-                Packet* packet = helloMessage( connection );
+                Packet* packet = helloMessage( NULL );
                 packet->message->mutable_hello()->set_reset_cluster_information(true);
+                packet->to = node_identifier;
                 
-                connection->push(packet);
+                NetworkManager::send(packet);
             }
             else
-                // Do not close here... it will be closed from the other end
+            {
                 output << au::str("Not possible to notify worker %lu (%s), since we are not connected to it.\n" 
                                   , id 
                                   , connection_name.c_str() 
                                   );
+            }
+            
             
             // Update all workers
             std::vector<size_t> ids = getWorkerIds();

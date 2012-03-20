@@ -90,6 +90,8 @@ namespace samson {
         // Only mark as finished once
         if( component_finished )
             return;
+
+        //LM_M(("Set component finish (%s)" , concept.c_str() ));
         
         component_finished = true;
         cronometer.stop();

@@ -80,7 +80,7 @@ namespace samson {
             NetworkConnection* network_connection = new NetworkConnection( name , socket_connection , this );
             
             // Add this connection in the NetworkManager
-            add( network_connection );
+            NetworkManager::add( network_connection );
             
             // Send Hello packet
             network_connection->push( helloMessage( network_connection ) );
@@ -143,7 +143,7 @@ namespace samson {
             return;
         }
         
-        // Information included in the hello message
+        // Recover information included in the hello message
         ClusterInformation new_cluster_information( packet->message->hello().cluster_information() );
         NodeIdentifier new_node_identifier( packet->message->hello().node_identifier() );
 
@@ -217,7 +217,7 @@ namespace samson {
                     cluster_information.remove_file();
                     
                     // Close all connections
-                    resetNetworkManager();
+                    NetworkManager::reset();
                 }
         
         // -----------------------------------------------------------------------------------------------
@@ -243,20 +243,24 @@ namespace samson {
                 
                 // Check there is not another delilah with the same id... 
                 std::string future_conection_name = connection->getNodeIdentifier().getCodeName();
-                if( connections.findInMap( future_conection_name ) != NULL )
+                if( NetworkManager::isConnected(future_conection_name) )
                 {
+                    LM_W(("It seems there is another delilah with the same id (%s) already connected [ Moving from %s to %s ]" 
+                          , future_conection_name.c_str()
+                          , connection_name.c_str() 
+                          , future_conection_name.c_str() ));
                     connection->close();
                     return;
                 }
                 
                 
                 // Move the connection to the rigth place
-                move_connection( connection_name ,  future_conection_name );
+                NetworkManager::move_connection( connection_name ,  future_conection_name );
             }
             else if ( new_node_identifier.node_type == WorkerNode )
             {
                 std::string future_connection_name = new_node_identifier.getCodeName();
-                if ( connections.findInMap( future_connection_name ) != NULL )
+                if ( NetworkManager::isConnected(future_connection_name) )
                 {
                     LM_W(("[%s] Rejecting an incomming hello since we are already connected to this worker"
                           , connection->str().c_str() 
@@ -267,7 +271,7 @@ namespace samson {
                     return;
                 }
                 connection->setNodeIdentifier( new_node_identifier );
-                move_connection( connection_name , future_connection_name );
+                NetworkManager::move_connection( connection_name , future_connection_name );
             }
             else
             {
@@ -338,7 +342,7 @@ namespace samson {
         
         if ( main_command == "connections" )
         {
-            au::tables::Table * table = getConnectionsTable();
+            au::tables::Table * table = NetworkManager::getConnectionsTable();
             std::string res = table->str();
             delete table;
             return res;
@@ -346,7 +350,7 @@ namespace samson {
 
         if ( main_command == "pending" )
         {
-            au::tables::Table * table = getPendingPacketsTable();
+            au::tables::Table * table = NetworkManager::getPendingPacketsTable();
             std::string res = table->str();
             delete table;
             return res;

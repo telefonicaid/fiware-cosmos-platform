@@ -117,6 +117,7 @@ int main(int argC, const char *argV[])
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
 	paConfig("screen line format",            (void*) "TYPE: TEXT");
 	paConfig("log to file",                   (void*) true);
+    paConfig("log to stderr",         (void*) true);
 
     paConfig("man synopsis",                  (void*) manSynopsis);
     paConfig("man shortdescription",          (void*) manShortDescription);
@@ -128,7 +129,10 @@ int main(int argC, const char *argV[])
     paConfig("man version",                   (void*) manVersion);
 
     // Random initialization
-    srand( time(NULL) );
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    int rand_seq = tp.tv_sec*1000 + tp.tv_usec%1000;
+    srand( rand_seq );
 
     // Random code for delilah
     delilah_random_code = au::code64_rand();
@@ -142,11 +146,9 @@ int main(int argC, const char *argV[])
     {
         if (gethostname(target_host, sizeof(target_host)) != 0)
             LM_X(1, ("gethostname: %s", strerror(errno)));
-        LM_M(("Translated 'localhost' to %s", target_host));
+        //LM_M(("Translated 'localhost' to %s", target_host));
     }
 
-    // Log random identifier for this delilah
-    LM_M(("Delilah random code %s" , au::code64_str( delilah_random_code ).c_str() ));
 
     // Make sure this singleton is created just once
     au::LockDebugger::shared();
@@ -172,7 +174,7 @@ int main(int argC, const char *argV[])
 	samson::DelilahNetwork * networkP  = new samson::DelilahNetwork( "console" , delilah_random_code );
     
 	// Create a DelilahControler once network is ready
-	samson::DelilahConsole* delilahConsole = new samson::DelilahConsole( networkP);
+	samson::DelilahConsole* delilahConsole = new samson::DelilahConsole( networkP );
 
     // Add main delilah connection with specified worker
     samson::Status s = networkP->addMainDelilahConnection( target_host , target_port , user , password );        
@@ -206,50 +208,46 @@ int main(int argC, const char *argV[])
     
     if ( strcmp( command , "" ) != 0 )
     {
-        // Running a single command
-        lmFdUnregister(1); // no more traces to stdout
-
-
-        // TODO... spetial wait in delilah to make sure I got all monitor information
-        // Wait until it is ready to get some queries
-        //while ( !delilahConsole->allWorkersUpdatedOnce() ) 
-        //    usleep(1000);
+        {
+            au::Cronometer cronometer;
+            while ( !networkP->ready() ) 
+            {
+                usleep(100000);
+                if( cronometer.diffTime() > 1 )
+                {
+                    LM_M(("Waiting delilah to connect to all workers"));
+                    cronometer.reset();
+                }
+            }
+        }
         
+        delilahConsole->setSimpleOutput();
         size_t id = delilahConsole->runAsyncCommand( command );
-        std::cerr << au::str("Processing: '%s' [ id generated %lu ]\n", command , id);
-        
+
         if( id != 0)
         {
-            //LM_M(("Waiting until delilah-component %ul finish", id ));
             // Wait until this operation is finished
             while (delilahConsole->isActive( id ) )
             {
-                delilahConsole->flush();
+                // Wait until command is finished
                 usleep(1000);
             }
             
             
             if( delilahConsole->hasError( id ) )
             {
-                std::cerr << "Error: " << delilahConsole->errorMessage( id ) << "\n";
-                std::cerr << "Error running '" << command << "'\n";
-                std::cerr << "Exiting...";
-                
                 LM_E(("Error running '%s' \n", command ));
                 LM_E(("Error: %s",  delilahConsole->errorMessage( id ).c_str()));
-
             }
             
         }
         
-        std::cerr << au::str("Flushing output: '%s'\n", command );
-        delilahConsole->flush();
-        
-        // Last return to be pulish...
-        std::cout << std::endl;
-        
         exit(0);
     }
+    
+    LM_M(("Delilah random code %s" , au::code64_str( delilah_random_code ).c_str() ));
+    LM_M(("Running delilah console..."));
+    lmFdUnregister(2); // no more traces to stdout
     
     // ----------------------------------------------------------------
     // Special mode for file-based commands
@@ -257,8 +255,22 @@ int main(int argC, const char *argV[])
 
 	if ( strcmp( commandFileName,"") != 0 )
 	{
-        if( !delilahConsole )
-            LM_X(1, ("It is not valid to run monitoring with a commands file"));
+        
+        // Set timple output
+        delilahConsole->setSimpleOutput();
+        
+        {
+            au::Cronometer cronometer;
+            while ( !networkP->ready() ) 
+            {
+                usleep(100000);
+                if( cronometer.diffTime() > 1 )
+                {
+                    LM_M(("Waiting delilah to connect to all workers"));
+                    cronometer.reset();
+                }
+            }
+        }
         
 		FILE *f = fopen( commandFileName , "r" );
 		if( !f )
@@ -271,7 +283,7 @@ int main(int argC, const char *argV[])
 		char line[1024];
         
 		LM_M(("Processing commands file %s", commandFileName ));
-        lmFdUnregister(1); // no more traces to stdout
+
 		while( fgets(line, sizeof(line), f) )
 		{
 			// Remove the last return of a string
@@ -285,8 +297,8 @@ int main(int argC, const char *argV[])
             {
                 
                 size_t id = delilahConsole->runAsyncCommand( line );
-                std::cerr << au::str("Processing: '%s' [ id generated %lu ]\n", line , id);
-                LM_M(("Processing: '%s' [ id generated %lu ]\n", line , id));
+
+                LM_M(("Processing: '%s' [ id generated %lu ]", line , id));
                 
                 if( id != 0)
                 {
@@ -297,11 +309,7 @@ int main(int argC, const char *argV[])
                     
                     if( delilahConsole->hasError( id ) )
                     {
-                        std::cerr << "Error: " << delilahConsole->errorMessage( id ) << "\n";
-                        std::cerr << "Error running '" << line <<  "' at line " << num_line << "\n";
-                        std::cerr << "Exiting...";
-                        
-                        LM_E(("Error running '%s' at line %d\n", line, num_line));
+                        LM_E(("Error running '%s' at line %d", line, num_line));
                         LM_E(("Error: %s",  delilahConsole->errorMessage( id ).c_str()));
                     }
                     
@@ -310,17 +318,14 @@ int main(int argC, const char *argV[])
 		}
 		
 		fclose(f);
-		
-		LM_M(("samsonLocal exit correctly"));
-		
-        // Last return to be pulish...
-        std::cout << std::endl;
-        
+
+        // Flush content of console
+        delilahConsole->flush();
+		LM_M(("delilah exit correctly"));
 		exit(0);
 	}
 
-    LM_M(("Running delilah console..."));
-    lmFdUnregister(1); // no more traces to stdout
+    // Run console
     delilahConsole->run();
 
     // ------------------------------------------------------------------------

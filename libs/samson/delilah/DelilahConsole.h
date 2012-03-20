@@ -56,6 +56,9 @@ namespace samson {
         bool show_alerts;
         bool verbose;
         
+        // Flag to just visualize content on screen ( delilah -command  or -f XX )
+        bool simple_output;
+        
 	public:
 		
         
@@ -69,6 +72,11 @@ namespace samson {
         void setCommandfileName( std::string _commandFileName)
         {
             commandFileName = _commandFileName;
+        }
+        
+        void setSimpleOutput()
+        {
+            simple_output = true;
         }
                 
 		// Eval a command from the command line
@@ -126,15 +134,33 @@ namespace samson {
 		// Show a message on screen
 		void showMessage( std::string message)
 		{
+            if( simple_output )
+            {
+                std::cout << message;
+                return;
+            }
+            
 			writeOnConsole( au::strToConsole( message ) );
 		}
 		void showWarningMessage( std::string message)
         {
+            if( simple_output )
+            {
+                std::cout << message;
+                return;
+            }
+            
 			writeWarningOnConsole( au::strToConsole( message ) );
         }
         
 		void showErrorMessage( std::string message)
         {
+            if( simple_output )
+            {
+                std::cout << message;
+                return;
+            }
+            
 			writeErrorOnConsole( au::strToConsole( message ) );
         };
 
@@ -153,6 +179,7 @@ namespace samson {
         }
 
 	};
+
 
 }
 

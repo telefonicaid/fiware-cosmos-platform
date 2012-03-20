@@ -15,7 +15,7 @@
 namespace samson {
     
     
-    class WorkerNetwork : public CommonNetwork
+    class WorkerNetwork : public CommonNetwork , public NetworkListenerInterface
     {
         
         // Counter to asign new names

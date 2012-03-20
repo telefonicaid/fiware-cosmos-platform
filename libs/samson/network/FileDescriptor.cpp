@@ -59,6 +59,10 @@ namespace samson {
             timeVal.tv_sec  = tv_sec;
             timeVal.tv_usec = tv_usec;
             
+            // Connection previously closed by someone
+            if( fd == -1 )
+                return ConnectionClosed;
+            
             FD_ZERO(&wFds);
             FD_SET(fd, &wFds);
             
@@ -71,7 +75,7 @@ namespace samson {
                 return OK;
             
             if( fds == -1 )
-                LM_RE(Error, ("Select: %s", strerror(errno)));
+                LM_RE(Error, ("Select over fd %d: %s", fd , strerror(errno)));
             
             if( tryh > 3 )
                 if( tryh%10 == 0 )
@@ -91,7 +95,7 @@ namespace samson {
         while (tot < dataLen)
         {
             if ((s = okToSend(retries, tv_sec, tv_usec)) != OK )
-                LM_RE(s, ("Cannot write to '%s' after %d tries (fd %d) (returning -2 as if it was a 'connection closed' ...)", name.c_str(), fd, retries));
+                LM_RE(s, ("Cannot write to '%s' after %d tries ( waiting %f seconds ) (fd %d)", name.c_str(), retries , (double) tv_sec + ((double)tv_usec/1000000.0)  , fd ));
             
             nb = ::write(fd, &data[tot], dataLen - tot);
             if (nb == -1)

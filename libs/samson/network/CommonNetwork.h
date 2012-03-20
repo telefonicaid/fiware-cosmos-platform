@@ -18,10 +18,8 @@
 namespace samson {
     
     
-    class CommonNetwork : public NetworkManager , public NetworkInterface , public engine::Object
+    class CommonNetwork : public NetworkManager ,  public NetworkInterface , public engine::Object
     {
-        
-        size_t tmp_canceled_counter;
         
     protected:
         
@@ -35,16 +33,15 @@ namespace samson {
         std::string user;
         std::string password;
         std::string connection_type;
-        
+
+        // List of packets for me ( accumulated when receiver is still not set )
         std::list<Packet*> pending_packets_for_me;
 
+        
     public:
         
         CommonNetwork()
         {
-            
-            // Init 
-            tmp_canceled_counter = 0;
             
             // Listen notifications for network manager
             listen("network_manager_review");
@@ -57,7 +54,7 @@ namespace samson {
         // ----------------------------------------------------------------
         void notify( engine::Notification* notification );
 
-        //NetworkManager
+        // NetworkManager
         // ----------------------------------------------------------------
         void receive( NetworkConnection* connection, Packet* packet );
         virtual void processHello(NetworkConnection* connection , Packet* packet)
@@ -74,7 +71,7 @@ namespace samson {
         std::vector<size_t> getDelilahIds();
         std::vector<size_t> getConnectedWorkerIds();
         void getInfo( ::std::ostringstream& output , std::string command );
-        virtual network::Collection* getConnectionsCollection( Visualization* visualization );
+        network::Collection* getConnectionsCollection( Visualization* visualization );
         size_t get_rate_in();
         size_t get_rate_out();
         NodeIdentifier getMynodeIdentifier();
@@ -94,9 +91,6 @@ namespace samson {
         
         // Hello message for this connection
         Packet* helloMessage( NetworkConnection * target ); 
-
-        // Remove all current connections
-        void resetNetworkManager();
       
         void report_worker_connected( size_t id );
         void report_worker_disconnected( size_t id );

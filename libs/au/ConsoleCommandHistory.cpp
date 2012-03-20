@@ -93,6 +93,15 @@ void ConsoleCommandHistory::new_command()
     if ( pos != (commands.size()-1) )
         commands[commands.size()-1]->setCommand( commands[pos]->getCommand() );    
     
+
+    // If we are repeting previous command, do not add again
+    if( commands.size() > 1 )
+        if( commands[pos]->getCommand() == commands[commands.size()-2]->getCommand() )
+        {
+            commands[commands.size()-1]->setCommand("");
+            pos = commands.size()-1;
+            return;
+        }
     
     if ( commands[commands.size()-1]->getCommand() != "" )
     {

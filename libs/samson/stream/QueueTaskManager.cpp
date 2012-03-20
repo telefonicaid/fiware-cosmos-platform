@@ -218,36 +218,36 @@ namespace samson {
             // Trying to search for the first task ready, instead of stopping at the front
             for ( au::list<QueueTask>::iterator t = queueTasks.begin() ; t != queueTasks.end() ; t++ )
             {
-
-
-            //QueueTask * task = queueTasks.front();  // Take the front task
+                
+                
+                //QueueTask * task = queueTasks.front();  // Take the front task
             	QueueTask * task = *t;  // Take the front task
-            
-            if( task->ready() )
-            {
-                // Extract the task from the queue of pending tasks
-                //QueueTask * _task = queueTasks.extractFront();
-            	QueueTask * _task = queueTasks.extractFromList(task);
                 
-                // Stupid check ;)
-                if( task != _task )
-                    LM_X(1, ("Internal error. Forbidden concurrent access to Queue Tasks"));
-                
-                // Insert in the running vector
-                size_t task_id = _task->getId();
-                runningTasks.insertInMap( task_id , _task ); 
-                
-                _task->setQueueTaskState("Scheduled");
-                
-                LM_T(LmtBlockManager, ("Scheduled task %lu " , task_id));
-
-                // Add this process item ( note that a notification will be used to notify when finished )
-                engine::ProcessManager::shared()->add( _task , getEngineId() );
-                
-                return true;
-            }
-            //else
-            //    return false; // The next task is not ready
+                if( task->ready() )
+                {
+                    // Extract the task from the queue of pending tasks
+                    //QueueTask * _task = queueTasks.extractFront();
+                    QueueTask * _task = queueTasks.extractFromList(task);
+                    
+                    // Stupid check ;)
+                    if( task != _task )
+                        LM_X(1, ("Internal error. Forbidden concurrent access to Queue Tasks"));
+                    
+                    // Insert in the running vector
+                    size_t task_id = _task->getId();
+                    runningTasks.insertInMap( task_id , _task ); 
+                    
+                    _task->setQueueTaskState("Scheduled");
+                    
+                    LM_T(LmtBlockManager, ("Scheduled task %lu " , task_id));
+                    
+                    // Add this process item ( note that a notification will be used to notify when finished )
+                    engine::ProcessManager::shared()->add( _task , getEngineId() );
+                    
+                    return true;
+                }
+                //else
+                //    return false; // The next task is not ready
             }
             return false;
             

@@ -162,11 +162,6 @@ public:
 #ifdef LINUX
         if( main_command == "auto_configure" )
         {
-            std::stringstream sharedmem_str;
-            std::stringstream memory_str;
-            std::stringstream cpucount_str;
-            std::stringstream message1, message2, message3, message4;
-
             long int kernel_shmmax = 0;
             const char *KERNEL_SHMMAX = "/proc/sys/kernel/shmmax";
 
@@ -177,24 +172,16 @@ public:
             // Fetch the current max shared memory segment size
             samson::sysctl_value((char *)KERNEL_SHMMAX, &kernel_shmmax);
 
-            memory_str << physical_ram;
-            sharedmem_str << kernel_shmmax;
-            cpucount_str << no_cpus;
-
             samson::SamsonSetup::shared()->resetToDefaultValues();
-            samson::SamsonSetup::shared()->setValueForParameter( "general.memory" , memory_str.str() );
-            samson::SamsonSetup::shared()->setValueForParameter( "general.num_processess" , cpucount_str.str() );
-            samson::SamsonSetup::shared()->setValueForParameter( "general.shared_memory_size_per_buffer" , sharedmem_str.str() );
-            samson::SamsonSetup::shared()->setValueForParameter( "stream.max_operation_input_size" , sharedmem_str.str() );
+            samson::SamsonSetup::shared()->setValueForParameter( "general.memory" , au::str("%lld", physical_ram) );
+            samson::SamsonSetup::shared()->setValueForParameter( "general.num_processess" , au::str("%d", no_cpus) );
+            samson::SamsonSetup::shared()->setValueForParameter( "general.shared_memory_size_per_buffer" , au::str("%ld", kernel_shmmax) );
+            samson::SamsonSetup::shared()->setValueForParameter( "stream.max_operation_input_size" , au::str("%ld", kernel_shmmax) );
 
-            message1 << "" << "Properties general.memory                        = " << memory_str.str();
-            writeWarningOnConsole(message1.str());
-            message2 << "" << "Properties general.num_processess                = " << cpucount_str.str();
-            writeWarningOnConsole(message2.str());
-            message3 << "" << "Properties general.shared_memory_size_per_buffer = " << sharedmem_str.str();
-            writeWarningOnConsole(message3.str());
-            message4 << "" << "Properties stream.max_operation_input_size       = " << sharedmem_str.str();
-            writeWarningOnConsole(message4.str());
+            writeWarningOnConsole(au::str("Properties general.memory                        = %lld", physical_ram));
+            writeWarningOnConsole(au::str("Properties general.num_processess                = %d", no_cpus));
+            writeWarningOnConsole(au::str("Properties general.shared_memory_size_per_buffer = %ld", kernel_shmmax));
+            writeWarningOnConsole(au::str("Properties stream.max_operation_input_size       = %ld", kernel_shmmax));
 
             modified = true;
 

@@ -1,4 +1,0 @@
-['Mastermind','Solitary','Sims Bowling','Pedrosa GP 2007','Bubbles','Medal of Honor Airborne','Pang Returns',
-'Ice Age 2: The Meltdown','Tomb Raider Legend','Star Wars: The Battle for the Republic']
-
-[99564,89635, 86900,82502,82448,76914,66504,63746,57004,56433]

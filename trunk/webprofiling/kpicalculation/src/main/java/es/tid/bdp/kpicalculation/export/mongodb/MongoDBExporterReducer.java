@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mongodb.hadoop.io.BSONWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -29,13 +28,12 @@ public class MongoDBExporterReducer extends Reducer<LongWritable, Text,
             columns.addAll(Arrays.asList(value.toString().split("\t")));
             List<String> attributes = columns.subList(0, columns.size() - 1);
             int count = Integer.parseInt(columns.get(columns.size() - 1));
-            context.write(NullWritable.get(),
-                          toBSON((String[]) attributes.toArray(),
-                                 new IntWritable(count)));
+            context.write(NullWritable.get(), this.toBSON(
+                    attributes.toArray(new String[attributes.size()]), count));
         }
     }
 
-    private BSONWritable toBSON(String[] attributes, IntWritable count) {
+    private BSONWritable toBSON(String[] attributes, long count) {
         BSONObject obj = new BasicBSONObject();
         obj.put("attributes", attributes);
         obj.put("count", count);

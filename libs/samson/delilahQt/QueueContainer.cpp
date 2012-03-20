@@ -16,15 +16,17 @@
 
 namespace samson{
 
-QueueContainer::QueueContainer(QWidget* parent): QWidget(parent)
+QueueContainer::QueueContainer(QWidget* parent): QScrollArea(parent)
 {
     setAttribute( Qt::WA_DeleteOnClose );
-
-    mainLayout = new QVBoxLayout(this);
+    
+    mainContainer = new QFrame(this);
+    
+    mainLayout = new QVBoxLayout(mainContainer);
     
     filterLayout = new QHBoxLayout;
     filterLabel =  new QLabel("Filter:");
-    filterValue =  new QLineEdit(this);
+    filterValue =  new QLineEdit(mainContainer);
 
     mainLayout->addLayout(filterLayout);
     filterLayout->addWidget(filterLabel);
@@ -32,9 +34,9 @@ QueueContainer::QueueContainer(QWidget* parent): QWidget(parent)
     filterLayout->addStretch();
     
     //Initialise groupboxes
-    inputBox = new QGroupBox("Input Queues", this);
-    outputBox = new QGroupBox("Output Queues", this);
-    totalBox = new QGroupBox("Totals", this);
+    inputBox = new QGroupBox("Input Queues", mainContainer);
+    outputBox = new QGroupBox("Output Queues", mainContainer);
+    totalBox = new QGroupBox("Totals", mainContainer);
 
     mainLayout->addWidget(inputBox);
     mainLayout->addWidget(outputBox);
@@ -64,6 +66,9 @@ QueueContainer::QueueContainer(QWidget* parent): QWidget(parent)
     totalOutputQueues->setLayout(totalLayout, 2);
     totalBox->setLayout(totalLayout);
     
+    this->setWidget(mainContainer);
+    this->setWidgetResizable(true);
+
     connect(filterValue, SIGNAL(editingFinished()), this, SLOT(onFilterEdited()));
 
 }

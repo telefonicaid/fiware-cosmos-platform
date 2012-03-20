@@ -36,7 +36,7 @@ bool QueueData::operator==(const QueueData &other) const
     return true;
 }
 
-ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(parent)
+ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QScrollArea(parent)
 {
     //QVBoxLayout* layout;
     
@@ -44,7 +44,8 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     data.name = _title;
     connectQueueParameters.queueName = _title;
     
-    mainLayout = new QVBoxLayout(this);
+    mainContainer = new QFrame(this);
+    mainLayout = new QVBoxLayout(mainContainer);
     
     generalLayout = new QHBoxLayout();
     sizeLayout = new QHBoxLayout();
@@ -53,10 +54,10 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     blocksLayout = new QHBoxLayout();
     connectButtonLayout = new QHBoxLayout();
 
-    sizeBox = new QGroupBox("Size", this);
-    formatBox = new QGroupBox("Format", this);
-    rateBox = new QGroupBox("Rate", this);
-    blocksBox = new QGroupBox("Blocks", this);
+    sizeBox = new QGroupBox("Size", mainContainer);
+    formatBox = new QGroupBox("Format", mainContainer);
+    rateBox = new QGroupBox("Rate", mainContainer);
+    blocksBox = new QGroupBox("Blocks", mainContainer);
 
     QFont bigFont;
     QFont boldFont;
@@ -113,23 +114,23 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
 
 
     //Feed connection
-    connectButton = new QPushButton("Connect to this queue", this);
+    connectButton = new QPushButton("Connect to this queue", mainContainer);
     connectButton->setCheckable(true);
-    queueHeader = new QTextEdit(this);
+    queueHeader = new QTextEdit(mainContainer);
     queueHeader->setReadOnly(true);
-    queueFeed = new QTextEdit(this);
+    queueFeed = new QTextEdit(mainContainer);
     queueFeed->setReadOnly(true);
-    connectGroup = new QButtonGroup(this);
+    connectGroup = new QButtonGroup(mainContainer);
     connectGroup->setExclusive(false);
-    connectNew = new QCheckBox("Only new data", this);
-    connectClear = new QCheckBox("Remove popped data", this);
-    clearFeedButton = new QPushButton("Clear", this);
+    connectNew = new QCheckBox("Only new data", mainContainer);
+    connectClear = new QCheckBox("Remove popped data", mainContainer);
+    clearFeedButton = new QPushButton("Clear", mainContainer);
     connectGroup->addButton(connectNew);
     connectGroup->addButton(connectClear);
     
     //Rate graph
-    plot = new DataViewPlugin(this);//, "", "Rate (B/s)");
-    plot->setMinimumSize(200,200);
+    plot = new DataViewPlugin(mainContainer);//, "", "Rate (B/s)");
+    plot->setMinimumSize(200,300);
 
     connect(connectButton, SIGNAL(clicked()), this, SLOT(onConnectButtonClicked()));
     connect(connectNew, SIGNAL(toggled(bool)), this, SLOT(onConnectNewClicked(bool)));
@@ -203,6 +204,13 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     blocksLayout->addStretch();
     blocksBox->setLayout(blocksLayout);
     
+    this->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+   // scrollArea = new QScrollArea(this);
+    //scrollArea->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+    this->setWidget(mainContainer);
+    this->setWidgetResizable(true);
+//    scrollArea->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+
 }
 
 ExtQueueViewer::~ExtQueueViewer()

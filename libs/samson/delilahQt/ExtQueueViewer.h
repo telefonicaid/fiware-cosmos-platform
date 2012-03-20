@@ -58,7 +58,7 @@ class ConnectQueueParameters
         }
 };
 
-class ExtQueueViewer: public QWidget
+class ExtQueueViewer: public QScrollArea
 {
         Q_OBJECT
     public:
@@ -137,6 +137,9 @@ class ExtQueueViewer: public QWidget
         QGroupBox* formatBox;
         QGroupBox* rateBox;
         QGroupBox* blocksBox;
+        
+        //QScrollArea* scrollArea;
+        QFrame* mainContainer; //needed to contain everything and put it into the QScrollArea
         
         QVBoxLayout* mainLayout;
         QHBoxLayout* connectButtonLayout;

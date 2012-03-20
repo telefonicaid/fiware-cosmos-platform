@@ -17,7 +17,7 @@
 
 namespace samson {
         
-class QueueContainer: public QWidget
+class QueueContainer: public QScrollArea
 {
         Q_OBJECT
         
@@ -42,6 +42,8 @@ class QueueContainer: public QWidget
         QGroupBox* inputBox;
         QGroupBox* outputBox;
         QGroupBox* totalBox;
+        
+        QFrame* mainContainer; //QScrollArea requires everything in a single widget container
                 
     public:
         

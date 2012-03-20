@@ -62,6 +62,9 @@ std::string getHelpMessage()
     output << " use_desktop_values       Set typical values for desktop (2GB RAM & 2 cores)\n";
     output << " use_default_values       Set default values for a server (10GB RAM & 16 cores)\n";
     output << " shared_memory_check      Check the current kernel shared memory configuration is OK\n";
+#ifdef LINUX
+    output << " auto_configure           Generate a working setup.txt configuration based on the current system setup\n";
+#endif // LINUX
     output << " quit                     Quit samsonSetup tool\n";
 
     return output.str();
@@ -88,6 +91,10 @@ public:
             info->add("use_desktop_values");
             info->add("use_default_values");
             info->add("shared_memory_check");
+#ifdef LINUX
+            info->add("auto_configure");
+#endif // LINUX
+
         }
         
         // Options for ls_queues
@@ -151,6 +158,49 @@ public:
             return;
 
         }
+
+#ifdef LINUX
+        if( main_command == "auto_configure" )
+        {
+            std::stringstream sharedmem_str;
+            std::stringstream memory_str;
+            std::stringstream cpucount_str;
+            std::stringstream message1, message2, message3, message4;
+
+            long int kernel_shmmax = 0;
+            const char *KERNEL_SHMMAX = "/proc/sys/kernel/shmmax";
+
+            // Determine how much memory we have access to
+            long long int physical_ram = sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE);
+            // Determine how many CPUs we have
+            short int no_cpus = sysconf(_SC_NPROCESSORS_ONLN);
+            // Fetch the current max shared memory segment size
+            samson::sysctl_value((char *)KERNEL_SHMMAX, &kernel_shmmax);
+
+            memory_str << physical_ram;
+            sharedmem_str << kernel_shmmax;
+            cpucount_str << no_cpus;
+
+            samson::SamsonSetup::shared()->resetToDefaultValues();
+            samson::SamsonSetup::shared()->setValueForParameter( "general.memory" , memory_str.str() );
+            samson::SamsonSetup::shared()->setValueForParameter( "general.num_processess" , cpucount_str.str() );
+            samson::SamsonSetup::shared()->setValueForParameter( "general.shared_memory_size_per_buffer" , sharedmem_str.str() );
+            samson::SamsonSetup::shared()->setValueForParameter( "stream.max_operation_input_size" , sharedmem_str.str() );
+
+            message1 << "" << "Properties general.memory                        = " << memory_str.str();
+            writeWarningOnConsole(message1.str());
+            message2 << "" << "Properties general.num_processess                = " << cpucount_str.str();
+            writeWarningOnConsole(message2.str());
+            message3 << "" << "Properties general.shared_memory_size_per_buffer = " << sharedmem_str.str();
+            writeWarningOnConsole(message3.str());
+            message4 << "" << "Properties stream.max_operation_input_size       = " << sharedmem_str.str();
+            writeWarningOnConsole(message4.str());
+
+            modified = true;
+
+            return;
+        }
+#endif // LINUX
 
         if( main_command == "use_desktop_values" )
         {

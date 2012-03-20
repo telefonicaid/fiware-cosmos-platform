@@ -19,7 +19,8 @@ public class ProtobufCategoryExtractionMapper extends Mapper<LongWritable,
         ProtobufWritable<WebProfilingLog>, TernaryKey, LongWritable> {
     private static final Logger LOG = Logger.getLogger(
             ProtobufCategoryExtractionMapper.class);
-    private LongWritable ONE = new LongWritable(1L);
+    private static final LongWritable ONE = new LongWritable(1L);
+
     private TernaryKey outKey;
 
     @Override

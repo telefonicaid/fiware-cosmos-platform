@@ -1,10 +1,10 @@
 ======================
 What is this document?
 ======================
-This document frames the goals and scope for the current Cosmos sprint. Documentation for each feature should be placed in a README file on that feature's folder.
+This document frames the goals and scope for the current Cosmos release. Documentation for each feature should be placed in a README file on that feature's folder.
 
 ===============
-Sprint 3 goals
+Curry release (internal alpha) goals
 ===============
 **Due Date**: 30/03/2012
 
@@ -51,8 +51,8 @@ Rules:
 - JARs MUST contain a manifest that describes the main class.
 - The main class MUST implement Hadoop's Tool interface.
 - The JAR MUST NOT take any configuration parameters.
-- The InputFormat used by the JAR MUST use a file as an input (e.g. it cannot be a database connection).
-- The output data written by the JAR MUST be serializable to a MongoDB instance (e.g. primitives, BSON objects).
+- The InputFormat used by the JAR MUST use an HDFS file as an input (e.g. it cannot be a database connection).
+- The output data MUST be written to a MongoDB instance (e.g. primitives, BSON objects).
 
 Other non-goals for Sprint 3
 ----------------------------
@@ -66,4 +66,4 @@ Open Issues (this section must be empty prior to signoff!)
     - VDC or cluster in Barcelona?
     - Machine roles
 - How many jobs can a user have simultaneously?
-- What is the naming convention for the MongoDB table?
+- What is the naming convention for the MongoDB table/collection?

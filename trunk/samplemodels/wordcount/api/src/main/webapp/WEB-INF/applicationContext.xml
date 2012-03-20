@@ -16,5 +16,5 @@
         <property name="location" value="WEB-INF/config.properties"/>
     </bean>
 
-    <context:component-scan base-package="es.tid.bdp.samples.wordcount"/>
+    <context:component-scan base-package="es.tid.bdp.samples.wordcount.api"/>
 </beans>

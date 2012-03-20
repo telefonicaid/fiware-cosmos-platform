@@ -1,4 +1,4 @@
-package es.tid.bdp.samples.wordcount;
+package es.tid.bdp.samples.wordcount.api;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +8,8 @@ import com.mongodb.DBObject;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
+
+import es.tid.bdp.samples.wordcount.api.WordCountDAO;
 
 /**
  *

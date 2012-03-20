@@ -25,10 +25,10 @@ import org.apache.hadoop.util.ToolRunner;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
 import es.tid.bdp.base.mapreduce.SingleKey;
-import es.tid.bdp.kpicalculation.config.JobDetails;
+import es.tid.bdp.kpicalculation.config.KpiFeature;
 import es.tid.bdp.kpicalculation.config.KpiConfig;
-import es.tid.bdp.kpicalculation.generated.data.KpiCalculationProtocol
-        .WebProfilingLog;
+import es.tid.bdp.kpicalculation.export.mongodb.MongoDBExporterJob;
+import es.tid.bdp.kpicalculation.generated.data.KpiCalculationProtocol.WebProfilingLog;
 
 /**
  * This class performs the webprofiling processing of the data received from
@@ -42,9 +42,10 @@ import es.tid.bdp.kpicalculation.generated.data.KpiCalculationProtocol
  * project
  */
 public class KpiMain extends Configured implements Tool {
-    private final URL KPI_DEFINITIONS = KpiMain.class.getResource(
-            "/conf/kpi.properties");
+    private static final URL KPI_DEFINITIONS = KpiMain.class.getResource(
+            "/kpi.properties");
     private static final Logger LOGGER = Logger.getLogger("KpiMain");
+    private static final int NUM_ARGS = 3;
 
     public static void main(String[] args) {
         try {
@@ -59,18 +60,19 @@ public class KpiMain extends Configured implements Tool {
 
     @Override
     public int run(String[] args) throws IOException, ClassNotFoundException,
-            InterruptedException {
-        if (args.length != 2) {
+                                         InterruptedException {
+        if (args.length != NUM_ARGS) {
             LOGGER.setLevel(Level.ALL);
             LOGGER.severe("Wrong Arguments. Example: hadoop jar "
-                    + "kpicalculation-LocalBuild.jar inputPath outputPath");
+                    + "kpicalculation.jar inputPath outputPath mongoURL");
             return 1;
         }
 
         Path inputPath = new Path(args[0]);
         Path outputPath = new Path(args[1] + "/aggregates");
         String timeFolder = "data." + Long.toString(new Date().getTime());
-        Path tmpPath = new Path(args[1] + "/cleaned/" + timeFolder);
+        Path tmpPath = new Path(args[1] + timeFolder + "/cleaned/");
+        String mongoUrl = args[2];
 
         Configuration conf = getConf();
         conf.set("kpicalculation.temp.path", tmpPath.toString());
@@ -85,51 +87,23 @@ public class KpiMain extends Configured implements Tool {
         KpiConfig config = new KpiConfig();
         config.read(KPI_DEFINITIONS);
 
-        for (JobDetails details : config.getKpis()) {
-            Path kpiOutputPath = outputPath.suffix("/" + details.getName() + "/"
-                    + timeFolder);
-            Job aggregationJob = new Job(conf, "Aggregation Job ..."
-                    + details.getName());
-
-            aggregationJob.getConfiguration().setStrings(
-                    "kpi.aggregation.fields", details.getFields());
-
-            if (details.getGroup() != null) {
-                aggregationJob.getConfiguration().setStrings(
-                        "kpi.aggregation.group", details.getGroup());
-                aggregationJob.setMapOutputKeyClass(BinaryKey.class);
-                aggregationJob.setCombinerClass(KpiCounterByCombiner.class);
-                aggregationJob.setReducerClass(KpiCounterByReducer.class);
-                aggregationJob.setSortComparatorClass(
-                        PageViewKpiCounterGroupedComparator.class);
-                aggregationJob.setGroupingComparatorClass(
-                        PageViewKpiCounterGroupedComparator.class);
-            } else {
-                aggregationJob.setMapOutputKeyClass(SingleKey.class);
-                aggregationJob.setCombinerClass(KpiCounterCombiner.class);
-                aggregationJob.setReducerClass(KpiCounterReducer.class);
-                aggregationJob.setSortComparatorClass(
-                        PageViewKpiCounterComparator.class);
-                aggregationJob.setGroupingComparatorClass(
-                        PageViewKpiCounterComparator.class);
+        for (KpiFeature features : config.getKpiFeatures()) {
+            Path kpiOutputPath = outputPath.suffix("/" + timeFolder + "/"
+                    + features.getName());
+            Job aggregationJob = createAggregationJob(conf, features,
+                                                      tmpPath, kpiOutputPath);
+            if (!aggregationJob.waitForCompletion(true)) {
+                return 1;
             }
 
-            aggregationJob.setJarByClass(KpiMain.class);
-            aggregationJob.setMapperClass(KpiGenericMapper.class);
-            aggregationJob.setPartitionerClass(KpiPartitioner.class);
-            aggregationJob.setInputFormatClass(LzoProtobufB64LineInputFormat
-                    .getInputFormatClass(WebProfilingLog.class,
-                            aggregationJob.getConfiguration()));
-            aggregationJob.setMapOutputValueClass(IntWritable.class);
-            aggregationJob.setOutputKeyClass(Text.class);
-            aggregationJob.setOutputValueClass(IntWritable.class);
-            aggregationJob.setOutputFormatClass(TextOutputFormat.class);
-
-            // Input and Output configuration
-            FileInputFormat.addInputPath(aggregationJob, tmpPath);
-            FileOutputFormat.setOutputPath(aggregationJob, kpiOutputPath);
-
-            if (!aggregationJob.waitForCompletion(true)) {
+            String mongoCollectionUrl = mongoUrl;
+            if (!mongoCollectionUrl.endsWith("/")) {
+                mongoCollectionUrl += "/";
+            }
+            mongoCollectionUrl += features.getName();
+            MongoDBExporterJob exporterJob = new MongoDBExporterJob(conf);
+            exporterJob.configure(kpiOutputPath, mongoCollectionUrl);
+            if (!exporterJob.waitForCompletion(true)) {
                 return 1;
             }
         }
@@ -138,8 +112,8 @@ public class KpiMain extends Configured implements Tool {
     }
 
     private Job cleanWebNavigationLogs(Configuration conf, Path input,
-            Path output) throws IOException, InterruptedException,
-            ClassNotFoundException {
+                                       Path output)
+            throws IOException, InterruptedException, ClassNotFoundException {
         Job wpCleanerJob = new Job(conf, "Web Profiling ...");
         wpCleanerJob.setNumReduceTasks(0);
         wpCleanerJob.setJarByClass(KpiMain.class);
@@ -149,13 +123,62 @@ public class KpiMain extends Configured implements Tool {
         wpCleanerJob.setOutputValueClass(ProtobufWritable.class);
         wpCleanerJob.setMapOutputKeyClass(NullWritable.class);
         wpCleanerJob.setMapOutputValueClass(ProtobufWritable.class);
-        wpCleanerJob.setOutputFormatClass(LzoProtobufB64LineOutputFormat
-                .getOutputFormatClass(WebProfilingLog.class,
+        wpCleanerJob.setOutputFormatClass(
+                LzoProtobufB64LineOutputFormat.getOutputFormatClass(
+                        WebProfilingLog.class,
                         wpCleanerJob.getConfiguration()));
 
         FileInputFormat.addInputPath(wpCleanerJob, input);
         FileOutputFormat.setOutputPath(wpCleanerJob, output);
 
         return wpCleanerJob;
+    }
+
+    private Job createAggregationJob(Configuration conf, KpiFeature features,
+                                     Path inputPath, Path outputPath)
+                                     throws IOException {
+        Job aggregationJob = new Job(conf, "Aggregation Job ..."
+                + features.getName());
+
+        aggregationJob.getConfiguration().setStrings(
+                "kpi.aggregation.fields", features.getFields());
+
+        if (features.getGroup() != null) {
+            aggregationJob.getConfiguration().setStrings(
+                    "kpi.aggregation.group", features.getGroup());
+            aggregationJob.setMapOutputKeyClass(BinaryKey.class);
+            aggregationJob.setCombinerClass(KpiCounterByCombiner.class);
+            aggregationJob.setReducerClass(KpiCounterByReducer.class);
+            aggregationJob.setSortComparatorClass(
+                    PageViewKpiCounterGroupedComparator.class);
+            aggregationJob.setGroupingComparatorClass(
+                    PageViewKpiCounterGroupedComparator.class);
+        } else {
+            aggregationJob.setMapOutputKeyClass(SingleKey.class);
+            aggregationJob.setCombinerClass(KpiCounterCombiner.class);
+            aggregationJob.setReducerClass(KpiCounterReducer.class);
+            aggregationJob.setSortComparatorClass(
+                    PageViewKpiCounterComparator.class);
+            aggregationJob.setGroupingComparatorClass(
+                    PageViewKpiCounterComparator.class);
+        }
+
+        aggregationJob.setJarByClass(KpiMain.class);
+        aggregationJob.setMapperClass(KpiGenericMapper.class);
+        aggregationJob.setPartitionerClass(KpiPartitioner.class);
+        aggregationJob.setInputFormatClass(
+                LzoProtobufB64LineInputFormat.getInputFormatClass(
+                        WebProfilingLog.class,
+                        aggregationJob.getConfiguration()));
+        aggregationJob.setMapOutputValueClass(IntWritable.class);
+        aggregationJob.setOutputKeyClass(Text.class);
+        aggregationJob.setOutputValueClass(IntWritable.class);
+        aggregationJob.setOutputFormatClass(TextOutputFormat.class);
+
+        // Input and Output configuration
+        FileInputFormat.addInputPath(aggregationJob, inputPath);
+        FileOutputFormat.setOutputPath(aggregationJob, outputPath);
+        
+        return aggregationJob;
     }
 }

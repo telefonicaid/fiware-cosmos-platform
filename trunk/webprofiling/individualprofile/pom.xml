@@ -12,6 +12,7 @@
 
     <artifactId>individualprofile</artifactId>
     <name>individualprofile</name>
+    <packaging>pom</packaging>
 
     <build>
         <pluginManagement>
@@ -63,28 +64,6 @@
                         </manifest>
                     </archive>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>1.5</version>
-                <configuration>
-                    <transformers>
-                        <transformer
-                            implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>es.tid.bdp.profile.IndividualProfileMain</mainClass>
-                        </transformer>
-                    </transformers>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
 
             <plugin>
@@ -215,4 +194,10 @@
             <url>${repoSiteUrl}/${project.groupId}/individualprofile</url>
         </site>
     </distributionManagement>
+
+    <modules>
+        <module>api</module>
+        <module>core</module>
+    </modules>
+
 </project>

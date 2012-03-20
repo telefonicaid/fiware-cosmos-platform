@@ -16,10 +16,10 @@ public class KpiConfig {
     private static final String FIELD_SEPARATOR = ",";
     private static final int FIELDS_PART = 0;
     private static final int GROUP_PART = 1;
-    private final List<JobDetails> kpis;
+    private final List<KpiFeature> kpis;
 
     public KpiConfig() {
-        this.kpis = new ArrayList<JobDetails>();
+        this.kpis = new ArrayList<KpiFeature>();
     }
 
     public void read(URL resource) throws IOException {
@@ -32,11 +32,11 @@ public class KpiConfig {
             String[] fields = parts[FIELDS_PART].split(FIELD_SEPARATOR);
             String group = (parts.length > GROUP_PART) ? parts[GROUP_PART]
                                                        : null;
-            this.kpis.add(new JobDetails(name, fields, group));
+            this.kpis.add(new KpiFeature(name, fields, group));
         }
     }
 
-    public List<JobDetails> getKpis() {
+    public List<KpiFeature> getKpiFeatures() {
         return this.kpis;
     }
 }

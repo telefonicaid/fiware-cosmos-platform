@@ -112,8 +112,6 @@ namespace samson
         add("rm_local", "local",
             "Remove a local directory and all its contents"); 
         
-        add( "ls_engines"  , "stream",
-            "Show a status information of the engine (lower level system in SAMSON) in all workers ");
         
         // DATA MANIPULATION
         // ------------------------------------------------------------------
@@ -244,7 +242,10 @@ namespace samson
         
         
         add( "ls_workers" , "stream" ,
-            "Get a list of current workers with current memory/ disk / process status"
+            "Get a list of current workers with current memory/ disk / process status",
+            "ls_workers [-disk] [-engine]\n"
+            "           [-disk]   Show more information about disk activity in each worker "
+            "           [-engine] Show more information about engine activity in each worker "
             );
         
         add( "init_stream" , "stream" ,

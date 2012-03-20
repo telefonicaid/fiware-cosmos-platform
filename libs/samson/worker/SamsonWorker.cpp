@@ -417,7 +417,7 @@ static char* toUTF8(char* in, size_t* outLenP)
         unsigned short int  http_state = 200;  // be optimistic and assume all is ok :)
         std::ostringstream  header;
         std::ostringstream  data;
-        std::string         format   = "json";
+        std::string         format   = "xml"; // Default value
         char*               inString = (char*) in.c_str();
 
         LM_T(LmtRest, ("Incoming REST request: '%s'", inString));

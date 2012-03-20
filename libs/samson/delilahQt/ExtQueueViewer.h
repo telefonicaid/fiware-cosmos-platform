@@ -9,7 +9,7 @@
 *
 */
 
-#include "Plot.h"
+#include "DataViewPlugin.h"
 
 #include "au/RRT.h"             // au::ValueCollection 
 
@@ -116,9 +116,9 @@ class ExtQueueViewer: public QWidget
         QLabel* time_toLabel;
         QLabel* time_to;
         
-        Plot* plot;
+        DataViewPlugin* plot;
         //Data for the plot
-        au::ResizableRRT<unsigned long> rateCollection;
+        //au::ResizableRRT<unsigned long> rateCollection;
         //Plot controls
         QHBoxLayout* plotControlsLayout;
         QPushButton* plotReset;
@@ -138,8 +138,6 @@ class ExtQueueViewer: public QWidget
         QGroupBox* rateBox;
         QGroupBox* blocksBox;
         
-        QGroupBox* ratePlotBox;
-        
         QVBoxLayout* mainLayout;
         QHBoxLayout* connectButtonLayout;
         QHBoxLayout* generalLayout;
@@ -158,9 +156,6 @@ class ExtQueueViewer: public QWidget
         void onConnectClearClicked(bool checked);
         void disconnect();
         void clearFeed();
-        void redrawPlot();
-        void onPlotReset();
-        void onPlotNSamplesChanged();
         
 };
 

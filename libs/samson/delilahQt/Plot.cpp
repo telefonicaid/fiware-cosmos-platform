@@ -9,10 +9,10 @@
 #include <KDChartPosition>
 #include <KDChartLegend>
 
-Plot::Plot( QGroupBox *_box , const char* x_title ,  const char* y_title )
+Plot::Plot( QFrame *_widget , const char* x_title ,  const char* y_title )
 {
    // Keep a pointer to the group ( change the title in the future )
-	box = _box;
+	widget = _widget;
 	
     diagram = new KDChart::LineDiagram;
     diagram->setModel(&m_model);
@@ -64,8 +64,9 @@ Plot::Plot( QGroupBox *_box , const char* x_title ,  const char* y_title )
 	//set_legend( "Main title" , "line 1" , "line 2" );
 
     
-	// Add the plot in the box
-    layout = new QVBoxLayout( box );
+	// Add the plot in the widget
+    layout = new QVBoxLayout( widget );
+    widget->setLayout(layout);
     layout->addWidget(&m_chart);
     m_chart.setGlobalLeadingTop( 10 );
 	//KDChart::setLayout(l);

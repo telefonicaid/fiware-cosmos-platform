@@ -57,8 +57,6 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     formatBox = new QGroupBox("Format", this);
     rateBox = new QGroupBox("Rate", this);
     blocksBox = new QGroupBox("Blocks", this);
-    ratePlotBox = new QGroupBox("Rate gr", this);
-    ratePlotBox->setMinimumSize(200,200);
 
     QFont bigFont;
     QFont boldFont;
@@ -130,28 +128,15 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     connectGroup->addButton(connectClear);
     
     //Rate graph
-    plot = new Plot(ratePlotBox, "", "Rate (B/s)");
-    //Plot controls
-    plotControlsLayout = new QHBoxLayout();
-    plotReset = new QPushButton("Reset", ratePlotBox);
-    plotStop = new QPushButton("Pause", ratePlotBox);
-    plotStop->setCheckable(true);
-    plotNSamplesLabel = new QLabel("Num. of Samples:",ratePlotBox);
-    plotNSamples = new QLineEdit(ratePlotBox);
-    plotControlsLayout->addWidget(plotReset);
-    plotControlsLayout->addWidget(plotStop);
-    plotControlsLayout->addWidget(plotNSamplesLabel);
-    plotControlsLayout->addWidget(plotNSamples);
-    plotControlsLayout->addStretch();
-    plot->layout->addLayout(plotControlsLayout);
-    rateCollection.resize(50);
-    
+    plot = new DataViewPlugin(this);//, "", "Rate (B/s)");
+    plot->setMinimumSize(200,200);
+
     connect(connectButton, SIGNAL(clicked()), this, SLOT(onConnectButtonClicked()));
     connect(connectNew, SIGNAL(toggled(bool)), this, SLOT(onConnectNewClicked(bool)));
     connect(connectClear, SIGNAL(toggled(bool)), this, SLOT(onConnectClearClicked(bool)));
     connect(clearFeedButton, SIGNAL(clicked()), this, SLOT(clearFeed()));
-    connect(plotReset, SIGNAL(clicked()), this, SLOT(onPlotReset()));
-    connect(plotNSamples, SIGNAL(editingFinished()), this, SLOT(onPlotNSamplesChanged()));
+    //connect(plotReset, SIGNAL(clicked()), this, SLOT(onPlotReset()));
+    //connect(plotNSamples, SIGNAL(editingFinished()), this, SLOT(onPlotNSamplesChanged()));
     
     mainLayout->addWidget(name);
     mainLayout->addLayout(generalLayout);
@@ -163,7 +148,7 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QWidget(par
     //queueHeader->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
     //queueFeed->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     mainLayout->addWidget(queueFeed);
-    mainLayout->addWidget(ratePlotBox);
+    mainLayout->addWidget(plot);
     mainLayout->addStretch();
     
     connectButtonLayout->addWidget(connectButton);
@@ -245,10 +230,7 @@ void ExtQueueViewer::setData(QueueData* newData)
         locked->setText(QString(au::str(strtoul(data.locked.c_str(), NULL, 0)).c_str()));
         time_from->setText(QString(au::str_time(strtoul(data.time_from.c_str(), NULL, 0)).c_str()));
         time_to->setText(QString(au::str_time(strtoul(data.time_to.c_str(), NULL, 0)).c_str()));
-        rateCollection.push(atof(data.bytes_s.c_str()));
-        //rateCollection.takeSample();
-        
-        if(!plotStop->isChecked()) redrawPlot();
+        plot->setData(data.bytes_s);
         
 }
 
@@ -312,40 +294,5 @@ void ExtQueueViewer::disconnect()
     emit updateConnection(connectQueueParameters);
 }
 
-void ExtQueueViewer::redrawPlot()
-{
-   // Update the model for the plot....
-    std::vector<std::string> labels;
-    plot->clear();
-    int row = 0;
-    //int desiredSamples = 50;
-    //int increment = rateCollection.getNumSamples()/DesiredSamples;
-    
-    for ( unsigned int i = 0 ; i < rateCollection.elements.size() ; i++)
-    {
-        plot->set( i , 0 , rateCollection.get(i));//;Sample(i) );
-        //plot->set( i , row , rand()%10 );
-        row++;
-    }
-        
-    //labels.push_back( it_value_collections->first );
-        
-    
-    //plot->set_legend( "Levels..", labels );
-
-}
-
-void ExtQueueViewer::onPlotReset()
-{
-   rateCollection.reset();
-   redrawPlot();
-}
-
-void ExtQueueViewer::onPlotNSamplesChanged()
-{
-    int value = plotNSamples->text().toInt();
-    rateCollection.resize(value);
-    redrawPlot();
-}
 
 } //namespace

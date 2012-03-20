@@ -19,9 +19,8 @@ class Plot
     // Model for this plot
     QStandardItemModel m_model;
     
-    // Group Box used to put the graph in
-    // We can change the title of this group
-    QGroupBox *box;
+    // QFrame used to put the graph in
+    QFrame *widget;
     
     
 private:
@@ -31,7 +30,7 @@ private:
     
 public:
     
-    Plot( QGroupBox *_box , const char* x_title ,  const char* y_title );
+    Plot( QFrame *_widget , const char* x_title ,  const char* y_title );
 	~Plot();
     
     QVBoxLayout* layout;

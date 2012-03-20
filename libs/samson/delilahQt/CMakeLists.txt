@@ -7,6 +7,7 @@ SET (HEADERS
 	ExtQueueViewer.h
 	WorkerViewer.h
 	WorkerContainer.h
+	DataViewPlugin.h
 	Plot.h
 )
 
@@ -19,6 +20,7 @@ SET (SOURCES
 	ExtQueueViewer.cpp
 	WorkerViewer.cpp
 	WorkerContainer.cpp
+	DataViewPlugin.cpp
 	Plot.cpp
 )
 
@@ -31,6 +33,7 @@ SET (HEADERS_FOR_MOC
 	ExtQueueViewer.h
 	WorkerViewer.h
 	WorkerContainer.h
+	DataViewPlugin.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)

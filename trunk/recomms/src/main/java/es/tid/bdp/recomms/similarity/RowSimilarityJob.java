@@ -236,7 +236,9 @@ public class RowSimilarityJob extends AbstractJob {
         protected void cleanup(Context ctx) throws IOException,
                 InterruptedException {
             super.cleanup(ctx);
-            // dirty trick
+            // Trick to write
+            // NORM_VECTOR_MARKER-NUM_NON_ZERO_ENTRIES_VECTOR_MARKER-MAXVALUE_VECTOR_MARKER
+            // to the next context
             ctx.write(new IntWritable(NORM_VECTOR_MARKER), new VectorWritable(
                     norms));
             ctx.write(new IntWritable(NUM_NON_ZERO_ENTRIES_VECTOR_MARKER),

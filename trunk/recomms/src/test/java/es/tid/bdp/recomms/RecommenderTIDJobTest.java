@@ -135,7 +135,6 @@ public class RecommenderTIDJobTest extends TasteTestCase {
         Mapper<Object, Object, LongWritable, ProtobufWritable<UserPref>>.Context context = EasyMock
                 .createMock(Mapper.Context.class);
 
-        // EasyMock.anyObject();
         BasicDBObject event = new BasicDBObject();
 
         event.put("user_id", "12");
@@ -231,7 +230,7 @@ public class RecommenderTIDJobTest extends TasteTestCase {
         event2.setConverter(UserPref.class);
 
         event.set(UserPref.newBuilder().setUserID(1).setItemId(1)
-                .setEventValue(1.0f).build());
+                .setEventValue(1.0f).setEventType(0).build());
 
         context.write(new LongWritable(12L), new LongWritable(1));
 
@@ -745,9 +744,6 @@ public class RecommenderTIDJobTest extends TasteTestCase {
         assertEquals(3L, item1.getItemID());
         assertEquals(1L, item2.getItemID());
 
-        // predicted pref must be the sum of similarities:
-        // item1: coocc(burger, hotdog) + coocc(burger, icecream) = 3
-        // item2: coocc(berries, hotdog) + coocc(berries, icecream) = 2
         assertEquals(1, item1.getValue(), 0.05);
         assertEquals(1, item2.getValue(), 0.05);
     }

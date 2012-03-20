@@ -97,11 +97,8 @@ public class VectorSimilarityMeasuresTest extends MahoutTestCase {
         double similarity = distributedSimilarity(new double[] { 0, 2, 0, 0, 8,
                 3, 0, 6, 0, 1, 1, 2, 1 }, new double[] { 3, 0, 0, 0, 7, 0, 2,
                 2, 1, 3, 2, 4, 3 }, PearsonCorrelationSimilarity.class);
-
-        // System.out.println(EPSILON);
-        // System.out.println(similarity);
+        
         assertEquals(0.5303300858899108, similarity, EPSILON);
-        // assertEquals(0.7483314773547882, similarity, EPSILON);
     }
 
     @Test

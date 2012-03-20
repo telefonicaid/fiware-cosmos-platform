@@ -21,6 +21,7 @@
         <org.apache.hadoop.hive>0.7.1</org.apache.hadoop.hive>
         <jvm.version>1.6</jvm.version>
         <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
+        <sonar.exclusions>**/*Main.java, **/*Job.java</sonar.exclusions>
     </properties>
 
     <build>

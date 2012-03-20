@@ -6,7 +6,7 @@ import java.util.Iterator;
  *
  * @author sortega
  */
-public class StringUtil {
+public final class StringUtil {
     private StringUtil() {
     }
 

@@ -41,9 +41,12 @@ namespace samson {
         }
         else // json ...
         {
-            output << "    \"id\"   : \"" << id   << "\"\r\n";
-            output << "    \"host\" : \"" << host << "\"\r\n";
-            output << "    \"port\" : \"" << port << "\"\r\n";
+            output << "    \"cluster_node\":\r\n";
+            output << "    {\r\n";
+            output << "      \"id\"   : \"" << id   << "\",\r\n";
+            output << "      \"host\" : \"" << host << "\",\r\n";
+            output << "      \"port\" : \"" << port << "\"\r\n";
+            output << "    }";
         }
     }
     
@@ -398,14 +401,23 @@ namespace samson {
         }
         else
         {
-            output << "  \"id\"      : " << id << "\"\r\n";
-            output << "  \"version\" : " << version << "\"\r\n";
+            output << "  \"cluster_information\":\r\n";
             output << "  {\r\n";
+            output << "    \"id\"      : " << id << "\",\r\n";
+            output << "    \"version\" : " << version << "\",\r\n";
         }
 
         for ( size_t i = 0 ; i < nodes.size() ; i++ )
+        {
             nodes[i]->getInfo(output, format);
-        
+            if (format == "json")
+            {
+                if (i != (nodes.size() - 1))
+                    output << ",";
+                output << "\r\n";
+            }
+        }
+
         if (format == "xml")
             au::xml_close(output, "cluster_information");
         else

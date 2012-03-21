@@ -97,8 +97,8 @@ public class KpiMain extends Configured implements Tool {
             }
 
             String mongoCollectionUrl = mongoUrl;
-            if (!mongoCollectionUrl.endsWith("/")) {
-                mongoCollectionUrl += "/";
+            if (!mongoCollectionUrl.endsWith(".")) {
+                mongoCollectionUrl += ".";
             }
             mongoCollectionUrl += features.getName();
             MongoDBExporterJob exporterJob = new MongoDBExporterJob(conf);

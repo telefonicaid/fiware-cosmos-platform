@@ -18,7 +18,7 @@ import org.bson.BasicBSONObject;
  * @author dmicol, sortega
  */
 public class MongoDBExporterReducer extends Reducer<LongWritable, Text,
-        NullWritable, BSONWritable> {
+        LongWritable, BSONWritable> {
     @Override
     public void reduce(LongWritable key, Iterable<Text> values,
                        Context context) throws IOException,
@@ -28,7 +28,7 @@ public class MongoDBExporterReducer extends Reducer<LongWritable, Text,
             columns.addAll(Arrays.asList(value.toString().split("\t")));
             List<String> attributes = columns.subList(0, columns.size() - 1);
             int count = Integer.parseInt(columns.get(columns.size() - 1));
-            context.write(NullWritable.get(), this.toBSON(
+            context.write(key, this.toBSON(
                     attributes.toArray(new String[attributes.size()]), count));
         }
     }

@@ -5,7 +5,7 @@
 
     <parent>
         <groupId>es.tid.bdp</groupId>
-        <artifactId>samplemodels</artifactId>
+        <artifactId>samples</artifactId>
         <version>0.3.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>

@@ -7,7 +7,6 @@ import java.util.List;
 
 import com.mongodb.hadoop.io.BSONWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.bson.BSONObject;
@@ -27,7 +26,7 @@ public class MongoDBExporterReducer extends Reducer<LongWritable, Text,
             List<String> columns = new ArrayList<String>();
             columns.addAll(Arrays.asList(value.toString().split("\t")));
             List<String> attributes = columns.subList(0, columns.size() - 1);
-            int count = Integer.parseInt(columns.get(columns.size() - 1));
+            long count = Long.parseLong(columns.get(columns.size() - 1));
             context.write(key, this.toBSON(
                     attributes.toArray(new String[attributes.size()]), count));
         }

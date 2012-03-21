@@ -8,7 +8,8 @@
 * AUTHOR                Ken Zangelin
 *
 */
-#include "baStd.h"        /* bool */
+#include "baStd.h"        /* bool      */
+#include "paConfig.h"     /* paConfig  */
 
 
 
@@ -252,7 +253,7 @@ extern int paParse
 *
 * paConfig - 
 */
-extern int paConfig(const char* item, const void* value);
+// extern int paConfig(const char* item, const void* value, const void* value2 = NULL);
 
 
 

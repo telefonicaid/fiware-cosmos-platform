@@ -20,6 +20,7 @@
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */
 #include "paBuiltin.h"          /* paBuiltinRemove                           */
 #include "paLog.h"              /* log macros to debug paConfig              */
+#include "paParse.h"            /* paTypeName                                */
 #include "parseArgs/paConfig.h" /* Own interface                             */
 
 
@@ -396,7 +397,7 @@ static void paConfigInit(void)
 *
 * paConfig - 
 */
-int paConfig(const char* item, const void* value)
+int paConfig(const char* item, const void* value, const void* value2)
 {
 	static int firstTime = 0;
 	long        val       = (long) value;
@@ -546,7 +547,55 @@ int paConfig(const char* item, const void* value)
 	}
 	else if (strcmp(item, "log dir") == 0)
 	{
-	    strcpy(paLogDir, (char *)value);
+	    strcpy(paLogDir, (char*) value);
+	}
+	else if (strcmp(item, "default value") == 0)
+	{
+        PaiArgument*  argP;
+        char*         option = (char*) value;
+        char*         val    = (char*) value2;
+
+        argP = paBuiltinLookup(option);
+        if (argP== NULL)
+        {
+            printf("Sorry, builtin '%s' not found - cannot change default value ...\n", option);
+            exit(1);
+        }
+
+        if (argP->type == PaString)
+        {
+            strcpy((char*) argP->varP, val);
+            argP->def = (long long) argP->varP;
+        }
+        else if (argP->type == PaInt)
+        {
+            argP->def = (long long) val;
+        }
+        else if (argP->type == PaBool)
+        {
+            if (strcmp((char*) val, "true") == 0)
+                argP->def = 1;
+            else if (strcmp((char*) val, "TRUE") == 0)
+                argP->def = 1;
+            else if (strcmp((char*) val, "false") == 0)
+                argP->def = 0;
+            else if (strcmp((char*) val, "FALSE") == 0)
+                argP->def = 0;
+            else if ((long long) val == 0)
+                argP->def = 0;
+            else if ((long long) val == 1)
+                argP->def = 1;
+            else
+            {
+                printf("Sorry, bad default value for boolean option '%s'\n", argP->option);
+                exit(1);
+            }
+        }
+        else
+        {
+            printf("Sorry, not allowed to set default value for builtin of type '%s'", paTypeName(argP->type));
+            exit(1);
+        }
 	}
 	else if (strcmp(item, "log file line format") == 0)
 	{

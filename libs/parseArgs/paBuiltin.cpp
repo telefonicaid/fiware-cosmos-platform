@@ -187,3 +187,23 @@ int paBuiltinRemove(char* name)
 
 	return 0;
 }
+
+
+
+/* ****************************************************************************
+*
+* paBuiltinLookup - 
+*/
+PaiArgument* paBuiltinLookup(char* option)
+{
+	PaiArgument* aP;
+
+	paIterateInit();
+	while ((aP = paIterateNext(NULL)) != NULL)
+    {
+        if (strcmp(aP->option, option) == 0)
+            return aP;
+    }
+
+    return NULL;
+}

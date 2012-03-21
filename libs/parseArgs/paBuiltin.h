@@ -63,6 +63,14 @@ extern int paBuiltinNoOf(void);
 
 /* ****************************************************************************
 *
+* paBuiltinLookup - 
+*/
+extern PaiArgument* paBuiltinLookup(char* option);
+
+
+
+/* ****************************************************************************
+*
 * paBuiltinRemove
 */
 extern int paBuiltinRemove(char* name);

@@ -29,7 +29,7 @@
 #include "parseArgs/paLog.h"              /* PA_XXX                          */
 #include "parseArgs/paConfig.h"           /* paConfigActions                 */
 #include "parseArgs/paFullName.h"         /* paFullName                      */
-#include "parseArgs/paBuiltin.h"          /* paBuiltin, paBuiltinNoOf        */
+#include "parseArgs/paBuiltin.h"          /* paBuiltin                       */
 #include "parseArgs/paEnvVals.h"          /* paEnvVals                       */
 #include "parseArgs/paRcFile.h"           /* paRcFileParse                   */
 #include "parseArgs/paWarning.h"          /* paWaringInit, paWarningAdd      */
@@ -516,4 +516,34 @@ int paParse
 	}
 
 	return 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* paTypeName - 
+*/
+const char* paTypeName(PaType type)
+{
+    switch (type)
+    {
+    case PaBoolean:       return "Boolean";
+    case PaString:        return "String";
+    case PaShort:         return "Short";
+    case PaShortU:        return "UShort";
+    case PaChar:          return "Char";
+    case PaUChar:         return "UChar";
+    case PaInt:           return "Int";
+    case PaUInt:          return "UInt";
+    case PaLong:          return "Long";
+    case PaULong:         return "ULong";
+    case PaFloat:         return "Float";
+    case PaDouble:        return "Double";
+    case PaIList:         return "IList";
+    case PaSList:         return "SList";
+    case PaLastArg:       return "Not A Type";
+    }
+
+    return "Unknown Type";
 }

@@ -98,6 +98,9 @@ int main(int argC, char* argV[])
     paConfig("log to screen", "only errors");
     paConfig("screen line format", "TYPE:FUNC: TEXT");
 
+    paConfig("default value", "-logDir", "/tmp/");
+    paConfig("default value", "-lmkl", (void*) 19);
+    paConfig("default value", "-vvv", "true");
 #if 0
     paConfig("log clearing", (void*) FALSE);
     paConfig("remove builtin", "-v");

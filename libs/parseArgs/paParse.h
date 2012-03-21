@@ -9,5 +9,6 @@
 *
 */
 extern char          progNameV[512];
+extern const char*   paTypeName(PaType type);
 
 #endif

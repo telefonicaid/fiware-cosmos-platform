@@ -84,7 +84,7 @@ extern char       paPid[16];
 *
 * paConfig - 
 */
-extern int paConfig(const char* item, const void* value);
+extern int paConfig(const char* item, const void* value, const void* value2 = (const void*) 0);
 
 
 

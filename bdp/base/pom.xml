@@ -12,7 +12,7 @@
 
     <artifactId>base</artifactId>
     <name>base</name>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <build>
         <pluginManagement>

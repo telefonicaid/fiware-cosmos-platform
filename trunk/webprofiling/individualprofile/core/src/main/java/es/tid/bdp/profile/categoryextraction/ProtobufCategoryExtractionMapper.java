@@ -37,7 +37,7 @@ public class ProtobufCategoryExtractionMapper extends Mapper<LongWritable,
             this.outKey.setPrimaryKey(webLog.getVisitorId());
             this.outKey.setSecondaryKey(webLog.getDate());
             this.outKey.setTertiaryKey(webLog.getFullUrl());
-            context.write(this.outKey, this.ONE);
+            context.write(this.outKey, ONE);
         } catch (Exception ex) {
             context.getCounter(CategoryExtractionCounter.WRONG_FILTERING_FIELDS)
                     .increment(1L);

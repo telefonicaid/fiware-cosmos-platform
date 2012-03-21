@@ -37,7 +37,7 @@ public class TextCategoryExtractionMapper extends Mapper<LongWritable, Text,
             this.outKey.setPrimaryKey(webLog.getUserId());
             this.outKey.setSecondaryKey(webLog.getDate());
             this.outKey.setTertiaryKey(webLog.getUrl());
-            context.write(this.outKey, this.ONE);
+            context.write(this.outKey, ONE);
         } catch (Exception ex) {
             context.getCounter(CategoryExtractionCounter.WRONG_FILTERING_FIELDS)
                     .increment(1L);

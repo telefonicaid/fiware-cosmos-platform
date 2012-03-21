@@ -11,7 +11,7 @@ namespace samson
         connection_input,
         connection_output
     } ConnectionType;
-    
+
     
     struct ServerConnection
     {

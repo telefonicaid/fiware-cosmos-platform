@@ -77,7 +77,7 @@ namespace samson {
                 // Release the block
                 {
                     au::TokenTaker tt(&token);
-                    LM_V(("Releasing block after sending to stdout "));
+                    //LM_V(("Releasing block after sending to stdout "));
                     current_block->release();
                     current_block = NULL;
                 }
@@ -99,7 +99,7 @@ namespace samson {
             //Get a buffer
             engine::Buffer * buffer = engine::MemoryManager::shared()->newBuffer("stdin", "connector", buffer_size );
             
-            LM_V(("%s: Reading buffer up to %s" , file_descriptor->getName().c_str() , au::str(buffer_size).c_str() ));
+            //LM_V(("%s: Reading buffer up to %s" , file_descriptor->getName().c_str() , au::str(buffer_size).c_str() ));
             
             // Read the entire buffer
             size_t read_size;
@@ -112,10 +112,11 @@ namespace samson {
             if( read_size > 0 )
                 input_rate.push( read_size );
             
-            LM_V(("%s: Readed buffer %s (max %s)" , file_descriptor->getName().c_str() 
+/*
+ LM_V(("%s: Readed buffer %s (max %s)" , file_descriptor->getName().c_str() 
                   , au::str(read_size).c_str()
                   , au::str(buffer_size).c_str() ));
-
+*/
             
             // If we have read something...
             if( read_size > 0 )
@@ -178,11 +179,11 @@ namespace samson {
 
         if( type == connection_input )
         {
-            LM_V(("Not pushing since we are an input connection"));
+            //LM_V(("Not pushing since we are an input connection"));
             return; // Just ignoring
         }
          
-        LM_V(("Block scheduled in %s" , file_descriptor->getName().c_str() ));
+        //LM_V(("Block scheduled in %s" , file_descriptor->getName().c_str() ));
         
         // Retain the block
         block->retain();

@@ -47,7 +47,7 @@ void MemoryManager::destroy( )
 
 void MemoryManager::init( size_t _memory )
 {
-    LM_V(("MemoryManager init with %s" , au::str( _memory ).c_str() ));
+    LM_VV(("MemoryManager init with %s" , au::str( _memory ).c_str() ));
     if ( memoryManager )
         LM_E(("Please, init Memory manager only once"));
     

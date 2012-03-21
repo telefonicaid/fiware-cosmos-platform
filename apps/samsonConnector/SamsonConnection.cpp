@@ -18,7 +18,7 @@ namespace samson {
         queue = _queue;
         
         samson_client = new SamsonClient( "connector" );
-        samson_client->init( host , port );
+        connected = samson_client->initConnection( host , port );
         
         if( type == connection_input )
             samson_client->connect_to_queue(queue, false, false);
@@ -34,11 +34,28 @@ namespace samson {
     
     std::string SamsonConnection::str()
     {
-        return au::str("%s:%d" , host.c_str() , port );
+        const char* type_name = (type==connection_input)?"Input ":"Output";
+        const char* connection_name = (connected)?"[CONNECTED]":"[NOT CONNECTED]";
+
+        return au::str("%s [ %s %s %s %s ] %s SAMSON %s:%d" 
+                       , type_name
+                       , au::str( samson_client->pop_rate.getTotalSize() ,"B" ).c_str()
+                       , au::str( samson_client->pop_rate.getRate() ,"B/s").c_str()
+                       , au::str( samson_client->push_rate.getTotalSize() ,"B").c_str()
+                       , au::str( samson_client->push_rate.getRate() ,"B/s").c_str()
+                       , connection_name
+                       , host.c_str() 
+                       , port );
     }
     
     void SamsonConnection::push( Block* block )
     {
+        if( !connected )
+            connected = samson_client->initConnection( host , port );
+
+        if( !connected )
+            return;
+        
         if( type == connection_input )
             return; // Nothing to do if we are input
         

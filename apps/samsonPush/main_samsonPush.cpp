@@ -155,17 +155,16 @@ int main( int argC , const char *argV[] )
 	   LM_X(1,("Please, specify a queue to push data to"));
     
     // Create samson client
-    samson_client = new samson::SamsonClient("push");
-    
-    // Set 1G RAM for uploading content
     size_t total_memory = push_memory*1024*1024;
     LM_V(("Setting memory for samson client %s" , au::str(total_memory,"B").c_str() ));
-    samson_client->setMemory( total_memory );
+    samson::SamsonClient::general_init( total_memory );
+    samson_client = new samson::SamsonClient("push");
+    
     
     LM_V(("Connecting to %s ..." , controller));
     
     // Init connection
-    if( !samson_client->init( controller , SAMSON_WORKER_PORT , user , password ) )
+    if( !samson_client->initConnection( controller , SAMSON_WORKER_PORT , user , password ) )
     {
         fprintf(stderr, "Error connecting with samson cluster: %s\n" , samson_client->getErrorMessage().c_str() );
         exit(0);
@@ -306,7 +305,7 @@ int main( int argC , const char *argV[] )
     LM_V(("--------------------------------------------------------------------------------"));
     LM_V(("Stdin info:        %s", rate_stdin.str().c_str())); 
     LM_V(("PushBuffer info:   %s", pushBuffer->rate.str().c_str())); 
-    LM_V(("SamsonClient info: %s", samson_client->rate.str().c_str())); 
+    LM_V(("SamsonClient info: %s", samson_client->push_rate.str().c_str())); 
     LM_V(("--------------------------------------------------------------------------------"));
     
     

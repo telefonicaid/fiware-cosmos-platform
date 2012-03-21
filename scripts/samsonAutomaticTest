@@ -69,7 +69,7 @@ function test
 
 
 
-if [ $1 == "clean" ]; then
+if [ "$1" == "clean" ]; then
    echo "Clean " $PWD
    rm -Rf run;
    for file in *

@@ -73,7 +73,7 @@ Engine* Engine::shared()
 
 void Engine::init()
 {
-    LM_V(("Engine init"));
+    LM_VV(("Engine init"));
     
     if ( engine )
     {

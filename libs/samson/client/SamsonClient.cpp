@@ -49,31 +49,21 @@ namespace samson {
     
     SamsonClient::SamsonClient( std::string _connection_type )
     {
-        memory = 1024*1024*1024;
-        load_buffer_size =  64*1024*1024;
         connection_type = _connection_type;
         
         delilah = NULL;
         networkP = NULL;
     }
  
-    void SamsonClient::setMemory ( size_t _memory )
-    {
-        memory = _memory;
-    }
     
-    bool SamsonClient::init( std::string worker_host , int port  , std::string user , std::string password )
+    void SamsonClient::general_init( size_t memory , size_t load_buffer_size )
     {
-                
-        // Init the setup system 
-        LM_TODO(("Add the possibility to set particular directories for this..."));
-        
         std::string samson_home =  SAMSON_HOME_DEFAULT;
         std::string samson_working = SAMSON_WORKING_DEFAULT;
-
+        
         char *env_samson_working = getenv("SAMSON_WORKING");
         char *env_samson_home = getenv("SAMSON_HOME");
-
+        
         if( env_samson_working )
         {
             samson_working = env_samson_working;
@@ -84,7 +74,7 @@ namespace samson {
         }
         
         samson::SamsonSetup::init( samson_home , samson_working );    
-
+        
         // Change the values for this parameters
         samson::SamsonSetup::shared()->setValueForParameter("general.memory", au::str("%lu",memory) );
         samson::SamsonSetup::shared()->setValueForParameter("load.buffer_size",  au::str("%lu",load_buffer_size) );
@@ -95,6 +85,15 @@ namespace samson {
         engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
         
         samson::ModulesManager::init();         // Init the modules manager
+        
+    }
+    
+    bool SamsonClient::initConnection( std::string worker_host , int port  , std::string user , std::string password )
+    {
+                
+        // Init the setup system 
+        LM_TODO(("Add the possibility to set particular directories for this..."));
+        
         
         // Initialize the network element for delilah
         networkP  = new samson::DelilahNetwork( connection_type , au::code64_rand() );
@@ -109,16 +108,24 @@ namespace samson {
         Status s = networkP->addMainDelilahConnection( worker_host , port , user , password );
         
         if( s != OK )
-            LM_X(1, ("Not possible to open connection with %s:%d (%s)" , worker_host.c_str() , port , status(s) ));
+        {
+            delete delilah;
+            delilah = NULL;
+            delete networkP;
+            networkP = NULL;
+            
+            LM_W(("Not possible to open connection with %s:%d (%s)" , worker_host.c_str() , port , status(s) ));
+            return false;
+        }
         
         // Set me as the receiver for live data packets
         delilah->data_receiver_interface = this;
         
         // What until the network is ready
-        LM_V(("Waiting network connections to the all nodes in SAMSON cluster..."));
+        LM_VV(("Waiting network connections to the all nodes in SAMSON cluster..."));
         while ( !networkP->ready() )
             usleep(1000);
-        LM_V(("Connected to all workers"));
+        LM_VV(("Connected to all workers"));
         
         return true;
         
@@ -132,11 +139,11 @@ namespace samson {
     size_t SamsonClient::push( std::string queue , char *data , size_t length )
     {
         // Statistics
-        rate.push( length );
+        push_rate.push( length );
         
         // Show some info if -v option is selected
-        LM_V(("Pushing %s to queue %s" , au::str(length,"B").c_str() , queue.c_str() ));
-        LM_V(("SamsonClient info: %s"  , rate.str().c_str() ));
+        LM_VV(("Pushing %s to queue %s" , au::str(length,"B").c_str() , queue.c_str() ));
+        LM_VV(("SamsonClient info: %s"  , push_rate.str().c_str() ));
         
         // Block this call if memory is not enougth
         double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
@@ -168,11 +175,11 @@ namespace samson {
     size_t SamsonClient::push( std::string queue , DataSource *ds )
     {
         // Statistics
-        //rate.push( length );
+        push_rate.push( ds->getTotalSize() );
         
         // Show some info if -v option is selected
-        LM_V(("Pushing a data source to queue %s" ,  queue.c_str() ));
-        LM_V(("SamsonClient info: %s"  , rate.str().c_str() ));
+        LM_VV(("Pushing a data source to queue %s" ,  queue.c_str() ));
+        LM_VV(("SamsonClient info: %s"  , push_rate.str().c_str() ));
                 
         std::vector<std::string>queues;
         queues.push_back( queue );
@@ -261,7 +268,7 @@ namespace samson {
         }
         
         if( print_verbose && ( num_components > 0 ) )
-            LM_V(( "Push components %s" , output.str().c_str() ));
+            LM_VV(( "Push components %s" , output.str().c_str() ));
         
         return output.str();
         

@@ -279,7 +279,17 @@ namespace samson{
                     
                     
                 }
-                
+
+				// Emit last word
+				if( pos < line.length() )
+				{
+				   std::string word = line.substr(pos);
+				   key.set_string(word);
+				   
+				   // Run next filter
+				   if( next )
+					  next->run( next_kv );
+                }
                 
             }
             
@@ -668,8 +678,10 @@ namespace samson{
                     
                     if( !filter )
                     {
-                        tmp_filters.clearVector();
-                        return; // Error in the filter creation...
+					   if( !error->isActivated() )
+						  error->set( au::str("Error building  component from command '%s'", command.c_str() ) );
+					   tmp_filters.clearVector();
+                       return; // Error in the filter creation...
                     }
                     else
                         tmp_filters.push_back(filter);

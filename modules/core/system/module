@@ -148,3 +148,8 @@ reduce update_state
 	helpLine "Update state operations like last_10 , last_1 , ..."
 
 }
+
+splitter lines
+{
+	helpLine "Parse input keeping lines toguether"
+}

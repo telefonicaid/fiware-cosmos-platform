@@ -2,6 +2,7 @@
 #define _H_SAMSON_CONNECTOR_BLOCK_PROCESSOR
 
 #include "engine/Buffer.h"
+#include "samson/Module/Operation.h"
 
 namespace samson 
 {
@@ -13,13 +14,24 @@ namespace samson
     {
         
         SamsonConnector * stream_connector;
+        Splitter * splitter;
+        
+        char *buffer;
+        size_t max_size;
+        size_t size;
         
     public:
         
         BufferProcessor( SamsonConnector * _stream_connector );
+        ~BufferProcessor();
         
         void push( engine::Buffer * bufer );
-        void flush();
+        void flush( );
+        
+    private:
+    
+        void process_intenal_buffer( bool finish );
+        
         
         
     };

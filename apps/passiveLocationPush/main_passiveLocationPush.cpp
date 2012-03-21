@@ -893,7 +893,7 @@ int main(int argC, const char* argV[])
     uint64_t mem = 1024 * 1024 * 1024;
 
     mem *= 4;
-    client.setMemory(mem);
+    samson::SamsonClient::general_init( mem );
 
 
     LM_V(("Connecting to '%s'", controller));
@@ -907,7 +907,7 @@ int main(int argC, const char* argV[])
         pushBuffer = NULL;
     else
     {
-        if( !client.init( controller , SAMSON_WORKER_PORT , user , password ) )
+        if( !client.initConnection( controller , SAMSON_WORKER_PORT , user , password ) )
         {
             fprintf(stderr, "Error connecting with samson cluster: %s\n" , client.getErrorMessage().c_str() );
             exit(0);
@@ -939,7 +939,7 @@ int main(int argC, const char* argV[])
 
     LM_V(("--------------------------------------------------------------------------------"));
     LM_V(("PushBuffer info:   %s", pushBuffer->rate.str().c_str()));
-    LM_V(("SamsonClient info: %s", client.rate.str().c_str()));
+    LM_V(("SamsonClient info: %s", client.push_rate.str().c_str()));
     LM_V(("--------------------------------------------------------------------------------"));
 
 

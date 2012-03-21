@@ -526,14 +526,20 @@ namespace samson {
             }
            
             
+            int total_hgs =  range.hg_end - range.hg_begin;
+            int processed_hds = 0;
             
             for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)
             {
                 
-                
                 // Check if this is inside the range we are interested in processing
                 if( ( hg >= range.hg_begin ) && (hg < range.hg_end) )
                 {
+
+                    // Report progress to show in the lists
+                    processed_hds++;
+                    reportProgress( (double)processed_hds / (double)total_hgs );
+                    
                     // Prepare the blockReaderCollection for thi hash-group
                     size_t num_kvs = blockreaderCollection.prepare( hg );
                     

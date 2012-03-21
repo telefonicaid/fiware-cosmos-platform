@@ -84,7 +84,7 @@ namespace samson {
         {
             int total = 0;
             for( size_t i = 0 ; i < server_connections.size() ; i++)
-                if( server_connections[i].type == 0 )
+                if( server_connections[i].type == connection_input )
                     total++;
             return total;
         }
@@ -93,11 +93,31 @@ namespace samson {
         {
             int total = 0;
             for( size_t i = 0 ; i < server_connections.size() ; i++)
-                if( server_connections[i].type == 1 )
+                if( server_connections[i].type == connection_output )
                     total++;
             return total;
         }
 
+        int getNumInputSamsonConnections()
+        {
+            int total = 0;
+            for( size_t i = 0 ; i < samson_connections.size() ; i++)
+                if( samson_connections[i]->getType() == connection_input )
+                    total++;
+            return total;
+            
+        }
+        
+        int getNumOutputSamsonConnections()
+        {
+            int total = 0;
+            for( size_t i = 0 ; i < samson_connections.size() ; i++)
+                if( samson_connections[i]->getType() == connection_output )
+                    total++;
+            return total;
+        }
+
+        
         // au::Console interface
         std::string getPrompt();
         void evalCommand( std::string command );

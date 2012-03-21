@@ -45,6 +45,13 @@ namespace system{
 		{
             // Setup the process chain...
             command =  environment->get( "command" ,  "" );
+
+			if( command == "" )
+			{
+			   tracer->setUserError( "Environment variable command not specified. Please specify with env:command XXX" );
+			   return;
+			}
+
             au::ErrorManager error;
             filters_collection.addFilters( command , writer , NULL, &error );
 

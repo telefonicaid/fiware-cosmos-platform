@@ -70,6 +70,7 @@ namespace samson
         
         // Cool stuff
         addEspaceSequence( "samson" );
+        addEspaceSequence( "q" );  // ls_queues
         addEspaceSequence( "d" );  // Data base mode...
         
         // By default no save traces

@@ -59,11 +59,7 @@ namespace  samson {
     
     class SamsonClient : public DelilahLiveDataReceiverInterface
     {
-            
-        size_t memory;                          // Memory used internally for load / download operations
-        
-        size_t load_buffer_size;                // Size of the load buffer
-        
+                    
         std::string error_message;              // Error message if a particular operation fails
         
         std::vector<size_t> delilah_ids;        // Delilah operation to wait for...
@@ -76,16 +72,16 @@ namespace  samson {
         
 	public:
 
-        au::rate::Rate rate;                    // Statistics about rate
+        au::rate::Rate push_rate;                    // Statistics about rate
+        au::rate::Rate pop_rate;                    // Statistics about rate
         
         // Default constructor
         SamsonClient( std::string connection_type );
-
-        // Set memory ( only useful before init )
-        void setMemory ( size_t _memory );
+        
+        static void general_init( size_t memory = 1000000000 , size_t load_buffer_size = 64000000 );
         
         // Init the connection with a SAMSON cluster
-        bool init( std::string samson_node 
+        bool initConnection( std::string samson_node 
                   , int port = SAMSON_WORKER_PORT 
                   , std::string user = "anonymous" 
                   , std::string password = "anonymous");
@@ -115,7 +111,7 @@ namespace  samson {
       
         std::string getStatisticsString()
         {
-            return au::str("Pushed %s in %d blocs", au::str(rate.getTotalSize(),"B").c_str() , rate.getTotalNumberOfHits() );
+            return au::str("Pushed %s in %d blocs", au::str(push_rate.getTotalSize(),"B").c_str() , push_rate.getTotalNumberOfHits() );
         }
         
     };

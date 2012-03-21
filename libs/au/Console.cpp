@@ -530,6 +530,12 @@ void Console::refresh()
     print_command();
 }
 
+void Console::appendToCommand( std::string txt )
+{
+    command_history->current()->add( txt );
+    print_command();
+}
+
 
 void handle_winch(int sig)
 {

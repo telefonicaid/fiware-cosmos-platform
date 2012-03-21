@@ -103,7 +103,7 @@ namespace au {
         
         ThreadInfo* thread_info = (ThreadInfo*) p;
 
-        LM_V(("Running thread %s" , thread_info->name.c_str() ));
+        LM_VV(("Running thread %s" , thread_info->name.c_str() ));
         
         // Execute the real function
         void* ans = thread_info->f( thread_info->p );
@@ -111,7 +111,7 @@ namespace au {
         //Notify my ThreadRunner
         thread_info->thread_manager->notify_finish_thread( thread_info );
 
-        LM_V(("Finished thread %s" , thread_info->name.c_str() ));
+        LM_VV(("Finished thread %s" , thread_info->name.c_str() ));
         
         // Delete this structure
         delete thread_info;

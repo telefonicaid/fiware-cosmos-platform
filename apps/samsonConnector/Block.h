@@ -29,7 +29,6 @@ namespace samson {
         {
             buffer = _buffer;
             retain_counter = 1;
-            LM_V(("Created a block %s" , au::str(buffer->getSize()).c_str() ));
             
             if( !buffer )
                 LM_X(1, ("Internall error creating block with a NULL buffer"));
@@ -39,7 +38,6 @@ namespace samson {
         
         ~Block()
         {
-            LM_V(("Destroying a block %s" , au::str(buffer->getSize()).c_str() ));
             engine::MemoryManager::shared()->destroyBuffer(buffer);
         }
         
@@ -48,13 +46,11 @@ namespace samson {
         void retain()
         {
             retain_counter++;
-            LM_V(("Retain (%d) a block %s" , retain_counter , au::str(buffer->getSize()).c_str() ));
         }
         
         void release()
         {
             retain_counter--;
-            LM_V(("Release (%d) a block %s" , retain_counter , au::str(buffer->getSize()).c_str() ));
             
             if( retain_counter == 0 )
                 delete this;

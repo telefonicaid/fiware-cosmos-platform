@@ -316,7 +316,7 @@ namespace samson
             return;
         }
 
-        LM_V(("Init SamsonSetup"));
+        LM_VV(("Init SamsonSetup"));
         
 		samsonSetup = new SamsonSetup( samson_home , samson_working );
 	}

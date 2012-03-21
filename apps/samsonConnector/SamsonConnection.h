@@ -18,6 +18,7 @@ namespace samson {
         ConnectionType type;
         
         SamsonClient *samson_client;
+        bool connected;
 
         au::Token token;
         

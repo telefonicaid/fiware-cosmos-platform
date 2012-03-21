@@ -65,7 +65,6 @@ namespace samson {
     
     void SamsonConnector::push( engine::Buffer * buffer )
     {
-        LM_V(("Pushing a block %s" , au::str(buffer->getSize()).c_str() ));
         
         // Create a block
         Block* block = new Block( buffer );
@@ -84,10 +83,8 @@ namespace samson {
             samson_connections[i]->push( block );
         
         
-        LM_V(("Pushed block to %d outputs" , num_output));
         
         // Release block
-        LM_V(("Releasing block after pushing to all available outputs"));
         block->release();
         
     }
@@ -131,6 +128,7 @@ namespace samson {
         if( 
            ( getNumInputConnections() == 0 ) 
            && (input_listeners.size() == 0)  
+           && (getNumInputSamsonConnections() == 0) 
            && (getNumInputServerConnections() == 0)
            && ( getTotalOutputBufferSize() == 0 )
            )
@@ -144,6 +142,7 @@ namespace samson {
         if( 
            ( getNumOutputConnections() == 0 ) 
            && (output_listeners.size() == 0) 
+           && (getNumOutputSamsonConnections() == 0) 
            && (getNumOutputServerConnections() == 0) 
            )
             LM_X(0, ("No more output to push data to"));
@@ -153,7 +152,6 @@ namespace samson {
     
     void SamsonConnector::review()
     {
-        LM_V(("Review SamsonConnector"));
         
         // Mutex protection
         au::TokenTaker tt(&token);
@@ -196,6 +194,35 @@ namespace samson {
             if ( connection->isFinished() )
                 connections.erase( it_connections );
         }
+        
+        
+        double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
+        size_t memory_total = engine::MemoryManager::shared()->getMemory();
+        
+        LM_V(("Memory used %s of %s" , au::str_percentage( memory_usage ).c_str() , au::str( memory_total , "B" ).c_str()  ));
+
+        if ( ( connections.size() == 0 ) && (samson_connections.size() == 0 ) )
+            LM_V(("No input / output connection"));
+        
+        for( it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
+        {
+            SamsonConnectorConnection * connection = *it_connections;
+            LM_V(("%s" , connection->str().c_str() ));
+        }
+
+        for ( size_t i = 0 ; i < samson_connections.size() ; i++ )
+            LM_V(("%s" , samson_connections[i]->str().c_str() ));
+        
+        LM_V(("============================================================================="));
+        
+        /*
+        if ( memory_usage > 1.0 )
+        {
+            au::tables::Table table  = engine::MemoryManager::shared()->getTableOfBuffers();    
+            std::cerr << table.str("Memory buffers");
+        }
+         */
+        
     }
     
     size_t SamsonConnector::getNumConnections()

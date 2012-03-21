@@ -67,6 +67,9 @@ public:
     /* ask about Console quit status */
     bool isQuitting();
 
+    // Append to current command
+    void appendToCommand( std::string txt );
+    
 private:
     
     void print_command();

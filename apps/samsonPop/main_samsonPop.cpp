@@ -122,16 +122,16 @@ int main( int argC , const char *argV[] )
     // Random initialization
     srand( time(NULL) );
 
+    // Set 1G RAM for uploading content
+    samson::SamsonClient::general_init(  1024*1024*1024 );
+    
     // Instance of the client to connect to SAMSON system
     samson::SamsonClient client("pop");
-    
-    // Set 1G RAM for uploading content
-    client.setMemory( 1024*1024*1024 );
     
     LM_V(("Connecting to %s ..." , controller));
     
     // Init connection
-    if( !client.init( controller , SAMSON_WORKER_PORT , user , password ) )
+    if( !client.initConnection( controller , SAMSON_WORKER_PORT , user , password ) )
     {
         fprintf(stderr, "Error connecting with samson cluster: %s\n" , client.getErrorMessage().c_str() );
         exit(0);

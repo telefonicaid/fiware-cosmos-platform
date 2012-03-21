@@ -20,6 +20,7 @@ namespace samson{
     // Function to run the background thread
     void* run_SamsonConnectorConnection( void* p);
     
+    
     class SamsonConnectorConnection
     {
         
@@ -73,10 +74,16 @@ namespace samson{
         // Debug string
         std::string str()
         {
-            if ( type == connection_input )
-                return au::str("Input:  %s"  , file_descriptor->getName().c_str() );
-            else
-                return au::str("Output: %s"  , file_descriptor->getName().c_str() );
+            const char* type_name = (type==connection_input)?"Input ":"Output";
+            
+            return au::str("%s [ %s %s %s %s ] : %s "  
+                           , type_name 
+                           , au::str(input_rate.getTotalSize() ,"B").c_str()
+                           , au::str(input_rate.getRate(),"B/s").c_str()
+                           , au::str(output_rate.getTotalSize(),"B").c_str()
+                           , au::str(output_rate.getRate(),"B/s").c_str()
+                           , file_descriptor->getName().c_str() 
+                           );
         }
 
         // Push a block to be emitted ( only output )

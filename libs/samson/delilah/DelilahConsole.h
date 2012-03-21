@@ -98,6 +98,11 @@ namespace samson {
                 writeWarningOnConsole("SAMSON's cool ;)");
             }
 
+            if( sequence == "q" )
+            {
+                appendToCommand("ls_queues");
+            }
+            
             if( sequence == "d" )
             {
                 database_mode = !database_mode;

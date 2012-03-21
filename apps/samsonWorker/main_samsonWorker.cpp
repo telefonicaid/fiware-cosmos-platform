@@ -203,6 +203,7 @@ int main(int argC, const char *argV[])
     paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
     paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT");
     paConfig("log to file",                   (void*) true);
+    paConfig("log dir",                       (void*) "/var/log/samson/");
 
     paConfig("man synopsis",                  (void*) manSynopsis);
     paConfig("man shortdescription",          (void*) manShortDescription);

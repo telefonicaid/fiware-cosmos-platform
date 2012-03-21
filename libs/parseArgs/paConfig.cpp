@@ -359,6 +359,11 @@ static void paConfigInit(void)
 	else
 		paLogFilePath         = strdup("/var/log/samson/");
 
+	if (paLogDir[0] == '\0')
+	{
+	    strcpy(paLogDir, "/var/log/samson/");
+	}
+
 
 	if (paLogFileLineFormat)
 		paLogFileLineFormat   = strdup(paLogFileLineFormat);
@@ -538,6 +543,10 @@ int paConfig(const char* item, const void* value)
 		if (paLogFilePath != NULL)
 			free(paLogFilePath);
 		paLogFilePath = strdup((char*) value);
+	}
+	else if (strcmp(item, "log dir") == 0)
+	{
+	    strcpy(paLogDir, (char *)value);
 	}
 	else if (strcmp(item, "log file line format") == 0)
 	{

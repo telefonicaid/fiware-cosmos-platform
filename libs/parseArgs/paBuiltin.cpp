@@ -42,7 +42,7 @@ char        paShell[128];
 char        paTerm[128];
 char        paSystem[128];
 char        paVisual[128];
-char        paLogDir[256];
+char        paLogDir[256] = "";
 
 
 
@@ -77,7 +77,7 @@ PaiArgument paBuiltin[] =
  { "--help",    &paHelpVar,      NULL,              PaBool, PaOpt,      F,     T,     F,  "show help",                   PAI_REST },
  { "--version", &paVersion,      NULL,              PaBool, PaOpt,      F,     T,     F,  "show version",                PAI_REST_IN_USAGE },
  { "-version",  &paVersion,      NULL,              PaBool, PaOpt,      F,     T,     F,  "show version",                PAI_REST },
- { "-logDir",   &paLogDir,       "LOG_DIR",         PaStr,  PaOpt,      0,  PaNL,  PaNL,  "log file directory",          PAI_REST_IN_USAGE },
+ { "-logDir",   &paLogDir,       "LOG_DIR",         PaStr,  PaOpt,      -19,  PaNL,  PaNL,  "log file directory",          PAI_REST_IN_USAGE }, // No default value, to avoid removing the one set in paConfig
  { "",          paUserName,      "!USER",           PaStr,  PaHid,      0,  PaNL,  PaNL,  "user name",                   PAI_REST },
  { "",          paPwd,           "!PWD",            PaStr,  PaHid,      0,  PaNL,  PaNL,  "current dir",                 PAI_REST },
  { "",          paColumns,       "!COLUMNS",        PaStr,  PaHid,      0,  PaNL,  PaNL,  "columns",                     PAI_REST },

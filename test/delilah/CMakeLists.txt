@@ -1,1 +1,0 @@
-ADD_SUBDIRECTORY(test_0)

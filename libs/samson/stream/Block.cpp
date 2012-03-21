@@ -318,12 +318,6 @@ namespace samson {
             return false;
         }
 
-        
-        size_t Block::getLiveTime()
-        {
-            return last_used.diffTimeInSeconds();
-        }
-
         ::engine::DiskOperation* Block::getWriteOperation()
         {
             if( !buffer )
@@ -380,6 +374,7 @@ namespace samson {
             
             engine::DiskOperation *diskOperation = getWriteOperation();
             diskOperation->environment.set(destroy_buffer_after_write, "no" );
+            diskOperation->environment.set("operation_size", getSize() );
 
             engine::DiskManager::shared()->add( diskOperation );
         }
@@ -408,7 +403,9 @@ namespace samson {
             state = reading;
 
             // Schedule the read operation
-            engine::DiskManager::shared()->add( getReadOperation() );
+            engine::DiskOperation *diskOperation = getReadOperation();
+            diskOperation->environment.set("operation_size", getSize() );
+            engine::DiskManager::shared()->add( diskOperation );
             
         }
                 

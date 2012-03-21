@@ -88,9 +88,11 @@ namespace samson {
             friend class StreamOutQueueTask;
             friend class BlockLookupList;
             
+            // Identifiers of this block
             size_t worker_id;               // Identifier of the worker in the cluster
             size_t id;                      // Identifier of the block ( in this node )
             
+            // Buffer ( if it is on memory )
             engine::Buffer *buffer;         // Buffer of data if content of this block is on memory
             
             KVHeader* header;               // Always on memory copy of the header
@@ -98,7 +100,6 @@ namespace samson {
             size_t size;                    // Size of the buffer ( Not that buffer is NULL if content is not on memory )
 
             std::set< BlockList* > lists;   // List where this block is contained
-            
             
             // Lock up table to quick access to key-values from REST interface
             au::Token token_lookupList;
@@ -113,10 +114,8 @@ namespace samson {
                 reading         // Reading from disk to recover at memory
             } BlockState;
 
-            BlockState state;
+            BlockState state;         // State disk-memory
             
-            au::Cronometer last_used; // Cronometer to indicate the last time it was used
-
         public:
             
             // Internal information used in the sort
@@ -218,17 +217,8 @@ namespace samson {
                 return *header;
             }
             
-            void touch()
-            {
-                last_used.reset();
-            }
-            
-            // Get the minimum task id to get the order of the blocks
-            size_t getLiveTime();
-            
         };
             
-        
         // Auxiliar functions
         size_t getSize( std::set<Block*> &blocks );
         

@@ -371,6 +371,10 @@ namespace samson
         add("delilah.automatic_update_period" , "2" , "Period for the automatic update of information from the samson cluster" , SetupItem_uint64);      
         
         // Stream processing
+        add("stream.max_scheduled_write_size" , "120000000" , "Maximum size scheduled for writing in the BlockManager", SetupItem_uint64);
+        add("stream.max_scheduled_read_size" , "120000000" , "Maximum size scheduled for writing in the BlockManager", SetupItem_uint64);
+
+        
         add("stream.max_operation_input_size" , "400000000" , "Maximum input data ( in bytes ) to run an automatic stream processing task", SetupItem_uint64);
      
         // load setup file

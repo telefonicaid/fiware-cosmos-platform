@@ -878,9 +878,12 @@ afterTreatment:
             ::samson::add( record , "On time" , on_time , "f=double,differet" );
             ::samson::add( record , "Off time" , off_time , "f=double,differet" );
             
+            ::samson::add( record , "BM writing" ,  stream::BlockManager::shared()-> get_scheduled_write_size() , "f=uint64,sum" );
+            ::samson::add( record , "BM reading" ,  stream::BlockManager::shared()->get_scheduled_read_size() , "f=uint64,sum" );
+
             double usage =  engine::DiskManager::shared()->get_on_off_activity();
             ::samson::add( record , "Disk usage" , au::str_percentage(usage) , "differet" );
-         
+            
         }
         else
         {

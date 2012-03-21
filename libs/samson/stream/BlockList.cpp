@@ -442,13 +442,6 @@ namespace samson {
             
         }
         
-        void BlockList::touch()
-        {
-            std::list<Block*>::iterator b;
-            for ( b = blocks.begin() ; b != blocks.end() ; b++ )
-                (*b)->touch();
-        }
-        
         bool BlockList::isContained( KVRange range )
         {
             std::list<Block*>::iterator b;

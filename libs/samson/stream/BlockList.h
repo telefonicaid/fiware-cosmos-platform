@@ -169,7 +169,6 @@ namespace samson {
             
             // Modify prioriyt of the queue
             void setPriority(int p );
-           void touch();
         };
         
         

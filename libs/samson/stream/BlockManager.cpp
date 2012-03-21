@@ -14,10 +14,13 @@
 #include "BlockList.h"          // BlockList
 #include "BlockManager.h"       // Own interface
 
+/*
 
+ Note: The idea is now schedule all read and write operations until max size
+       and wait for scheduled read and write goes down to 0
+ 
+*/
 
-#define BLOCK_MANAGEMENT_MAX_WRITE_OPERATIONS   3
-#define BLOCK_MANAGEMENT_MAX_READ_OPERATIONS    3
 
 #define notification_review_block_manager "notification_review_block_manager"
 
@@ -83,9 +86,9 @@ namespace samson {
             id = 1;                       // Start blocks by 1
             worker_id = 0;                // When a different if is assigned from cluster, this should be updated with setWorkerId()
  
-            num_writing_operations=0;     // Number of writing operations ( low priority blocks )
-            num_reading_operations=0;     // Number of reading operations ( high priority blocks )
-        
+            scheduled_write_size = 0;
+            scheduled_read_size = 0;
+
             memory = 0;
             
             max_memory = (double)SamsonSetup::shared()->getUInt64("general.memory")*0.8;  // 60% of memory for block manager
@@ -147,32 +150,31 @@ namespace samson {
             if ( notification->isName( notification_review_block_manager ) )
             {
                 review();
-            } else if ( notification->isName( notification_disk_operation_request_response ) )
+            } 
+            else if ( notification->isName( notification_disk_operation_request_response ) )
             {
                 
-                std::string type = notification->environment.get("type", "-");
+                std::string type      = notification->environment.get("type", "-");
+                size_t operation_size = notification->environment.getSizeT("operation_size", 0 );
                 
-                LM_T(LmtBlockManager,("Received a disk notification with type %s" , type.c_str() ));
+                LM_T(LmtBlockManager,("Received a disk notification with type %s and size %s" 
+                                      , type.c_str() 
+                                      , au::str( operation_size ).c_str() ));
                 
                 if(  type == "write" )
                 {
-                    num_writing_operations--;
-                    LM_T(LmtBlockManager,("Received a disk notification with type %s, num_writing_operations decremented to %d" , type.c_str(), num_writing_operations ));
+                    scheduled_write_size -= operation_size;
                     review();
                 }
-                if( type == "read" )
+                else if( type == "read" )
                 {
-                    num_reading_operations--;
-                    LM_T(LmtBlockManager,("Received a disk notification with type %s, num_reading_operations decremented to %d" , type.c_str(), num_reading_operations ));
+                    scheduled_read_size -= operation_size;
                     review();
                 }
-                
-                if( type == "remove" )
+                else if( type == "remove" )
                 {
                     // Nothing to do... an old block file has been removed
                 }
-
-                
             }
             else 
             {
@@ -183,10 +185,15 @@ namespace samson {
         
         void BlockManager::review()
         {
-            // Do not review if max read/write operations are scheduled
-            if( num_reading_operations >= BLOCK_MANAGEMENT_MAX_READ_OPERATIONS )
-                if( num_writing_operations >= BLOCK_MANAGEMENT_MAX_WRITE_OPERATIONS )
-                    return;
+            size_t max_scheduled_write_size = SamsonSetup::shared()->getUInt64("stream.max_scheduled_write_size");
+            size_t max_scheduled_read_size = SamsonSetup::shared()->getUInt64("stream.max_scheduled_read_size");
+            
+            
+            // No schedule new operations until all the previous one have finished
+            if( scheduled_read_size > 0 )
+                return;
+            if( scheduled_write_size > 0 )
+                return;
             
             LM_T( LmtBlockManager , ("Reviewing block manager"));
             
@@ -314,7 +321,7 @@ namespace samson {
             // Schedule write operations
             // --------------------------------------------------------------------------------
             
-            if( num_writing_operations < BLOCK_MANAGEMENT_MAX_WRITE_OPERATIONS )
+            if( scheduled_write_size < max_scheduled_write_size )
             {
                 // Lock for new write operations...
                 std::list<Block*>::reverse_iterator b;
@@ -328,11 +335,16 @@ namespace samson {
                         
                         // Schedule write
                         block->write();
-                        num_writing_operations++;  
-                        LM_T(LmtBlockManager,("Write block num_writing_operations incremented to %d" , num_writing_operations ));
+                        
+                        // Get size
+                        size_t operation_size = block->getSize();
+                        
+                        scheduled_write_size += operation_size;
+                        
+                        LM_T(LmtBlockManager,("Write block of size %s" , au::str( operation_size ).c_str() ));
 
                         // No continue for more writes
-                        if( num_writing_operations >= BLOCK_MANAGEMENT_MAX_WRITE_OPERATIONS )
+                        if ( scheduled_write_size >= max_scheduled_write_size )
                             break;
                     }
                 }
@@ -343,7 +355,7 @@ namespace samson {
             // --------------------------------------------------------------------------------
             
             // Schedule new reads operations ( high priority elements ) if available memory
-            if( num_reading_operations < BLOCK_MANAGEMENT_MAX_READ_OPERATIONS )
+            if( scheduled_read_size < max_scheduled_read_size )
             {
                 // Lock for new write operations...
                 std::list<Block*>::iterator b;
@@ -375,11 +387,14 @@ namespace samson {
                         memory += block->size;
                         LM_T(LmtBlockManager,("With memory(%lu); max_memory(%lu), read block:'%s'", memory, max_memory, block->str().c_str()));
 
-                        num_reading_operations++;  
-                        LM_T(LmtBlockManager,("Read block num_reading_operations incremented to %d" , num_reading_operations ));
+                        // Get size
+                        size_t operation_size = block->getSize();
+                        
+                        scheduled_read_size += operation_size;
+                        LM_T(LmtBlockManager,("Read block with size %s" , au::str(operation_size).c_str() ));
                         
                         // No continue for more writes
-                        if( num_reading_operations >= BLOCK_MANAGEMENT_MAX_READ_OPERATIONS )
+                        if( scheduled_read_size > max_scheduled_read_size )
                             break;
                     }
                     
@@ -399,8 +414,6 @@ namespace samson {
             {
                 Block *block_to_be_free = *b;
 
-
-             
                 if( block_to_be_free == block )
                     continue;     // There are no more blocks with lower priority
                 
@@ -426,8 +439,8 @@ namespace samson {
         {
             output << "<block_manager>\n";
 
-            au::xml_simple( output , "num_writing_operations" , num_writing_operations );
-            au::xml_simple( output , "num_reading_operations" , num_reading_operations );
+            au::xml_simple( output , "scheduled_write_size" , scheduled_write_size );
+            au::xml_simple( output , "scheduled_read_size"  , scheduled_read_size );
 
             au::xml_simple( output , "memory" , memory );
             au::xml_simple( output , "max_memory" , max_memory );
@@ -472,7 +485,6 @@ namespace samson {
         {
             for (std::list<Block*>::iterator i = blocks.begin() ; i != blocks.end() ; i++ )
                 (*i)->update( block_info );
-            
         }
         
         network::Collection* BlockManager::getCollectionOfBlocks( Visualization* visualization )
@@ -491,10 +503,7 @@ namespace samson {
             }            
             
             return collection;            
-            
-
         }
-
         
     }
 }

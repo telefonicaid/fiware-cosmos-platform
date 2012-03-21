@@ -36,8 +36,8 @@ namespace samson {
             size_t worker_id;               // Identifier of the worker in the cluster
             size_t id;                      // Next id to give to a block
 
-            int num_writing_operations;     // Number of writing operations ( low priority blocks )
-            int num_reading_operations;     // Number of reading operations ( high priority blocks )
+            size_t scheduled_write_size;
+            size_t scheduled_read_size;
             
             size_t memory;                  // Total amount of memory used by all blocks
             size_t max_memory;              // Maximum amount of memory to always kept
@@ -98,6 +98,19 @@ namespace samson {
             void getInfo( std::ostringstream& output);
             
             network::Collection* getCollectionOfBlocks( Visualization* visualization );
+            
+            size_t get_scheduled_write_size()
+            {
+                return scheduled_write_size;
+            }
+            
+            size_t get_scheduled_read_size()
+            {
+                return scheduled_read_size;
+            }
+
+            
+            
             
         };
     }

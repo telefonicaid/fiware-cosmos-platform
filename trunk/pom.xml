@@ -487,6 +487,7 @@
 
     <modules>
         <module>base</module>
+        <module>recomms</module>
         <module>samplemodels</module>
         <module>webprofiling</module>
     </modules>

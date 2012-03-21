@@ -88,7 +88,6 @@ public:
             reserved_words.insert(arr_reserved_words[i]);
         }
 
-        std::cerr << "Starts checks for " << name << std::endl;
         if (reserved_words.find(name) != reserved_words.end())
         {
             std::cerr << "samsonModuleParser: Error in data-type: '" << name << "'. It is a c++ reserved word. Please chose a different name\n";

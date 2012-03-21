@@ -186,10 +186,10 @@ namespace samson
             std::map<std::string, Data*>::iterator d;
             
             for ( o = m->operations.begin() ; o != m->operations.end() ; o++ )
-                operations.insert( std::pair<std::string, Operation*> ( o->first , new Operation( o->second )  )  );
+                operations.insert( std::pair<std::string, Operation*> ( o->first , o->second->getDuplicate() ) );
 
             for ( d = m->datas.begin() ; d != m->datas.end() ; d++ )
-                datas.insert( std::pair<std::string, Data*> ( d->first , new Data( d->second )  )  );
+                datas.insert( std::pair<std::string, Data*> ( d->first , d->second->getDuplicate()  )  );
 			
 		}
 		

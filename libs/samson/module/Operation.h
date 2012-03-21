@@ -20,10 +20,6 @@ namespace samson {
     
 #define TRACE_CHANNEL -1   // Handy definition to emit traces at the output
     
-    // Function used to "sort" when data type is used as key ( only in reduce operations )
-    typedef int(* OperationInputCompareFunction)(KV *kv1 , KV*kv2);     
-    
-    
     /**
      
      \class samson::Operation
@@ -59,25 +55,6 @@ namespace samson {
                 outputData[i].destroy();
         }
 
-        /** 
-         Optional method that can be implemented by user
-         */
-        
-        //virtual void setup( std::string command ) {}       
-        
-        /**
-         Optional method that can be implemented by custom operation. It is supposed to be called once at the begin of the operation.\n
-         Perfect place to alloc memory space if necessary
-         */
-        
-        //virtual void init() {};        // Called once before running any operation
-        
-        /**
-         Optional method that can be implemented by custom operation. It is supposed to be called once at the end of the operation.\n
-         Perfect place to release memory space if necessary
-         */
-        
-        //virtual void finish() {};  // Called once after all operations are executed
 
     };
     
@@ -106,10 +83,6 @@ namespace samson {
         std::string      _name;                 //!< Name of the operation
         Type             _type;                 //!< Identifier of the operation
 
-        CreationFunction _creationFunction;     //!< Function to create new instances
-
-        OperationInputCompareFunction _inputCompareFunction;            //!< Function used to sort inputs ( only reduce )
-        OperationInputCompareFunction _inputCompareByKeyFunction;       //!< Function used to sort only by key ( to identify groups of key-values with the same key)
         
         std::vector<KVFormat> inputFormats;     //!< Formats of the key-value at the inputs
         std::vector<KVFormat> outputFormats;    //!< Format of the key-value at the outputs
@@ -122,78 +95,50 @@ namespace samson {
         std::string _helpMessage;               //!< Help message shown on screen
         std::string _helpLine;                  //!< Help in a line
         
-        bool top;                               //!< MACRO legacy parameter
-        bool dynamic_input_formats;             //!< MACRO legacy parameter
-        
-
-        /**
-         Inform about the type of operation it is
-         */
-        
-        Operation(std::string name, Type type, CreationFunction creationFunction, OperationInputCompareFunction inputCompareFunction , OperationInputCompareFunction inputCompareByKeyFunction)
-        {
-            _type             = type;
-            _creationFunction = creationFunction;
-            _inputCompareFunction = inputCompareFunction;
-            _inputCompareByKeyFunction = inputCompareByKeyFunction;
-
-            top               = false;
-            _name             = name;
-            _helpLine         = "";
-            _helpMessage      = "Help coming soon\n";
-        }
-
-        Operation(std::string name, Type type, CreationFunction creationFunction )
-        {
-            _type             = type;
-            _creationFunction = creationFunction;
-            _inputCompareFunction = NULL;
-            _inputCompareByKeyFunction = NULL;
-            
-            top               = false;
-            _name             = name;
-            _helpLine         = "";
-            _helpMessage      = "Help coming soon\n";
-        }
-        
-        
+       
         Operation( std::string name , Type type )
         {
             _type = type;
-            _creationFunction = NULL;
-            
-            top = false;
+
             _name = name;
+            
             _helpLine = "";
             _helpMessage = "Help coming soon\n";
-        }
-        
-        Operation( Operation *op )
-        {
-            _type                           = op->_type;
-            _creationFunction               = op->_creationFunction;
-            _inputCompareFunction           = op->_inputCompareFunction;
-            _inputCompareByKeyFunction      = op->_inputCompareByKeyFunction;
-            
-            top               = op->top;
-            dynamic_input_formats= op->dynamic_input_formats;
-            
-            _name             = op->_name;
-            _helpLine         = op->_helpLine;
-            _helpMessage      = op->_helpMessage;
-            
-            // Copy the input formats
-            inputFormats.insert( inputFormats.begin() , op->inputFormats.begin() , op->inputFormats.end() );
-            outputFormats.insert( outputFormats.begin() , op->outputFormats.begin() , op->outputFormats.end() );
-            
-            // copy the code
-            code.insert( code.begin() , op->code.begin() , op->code.end() );
         }
         
         virtual ~Operation()
         {
         }
+
         
+        // Virtual method to duplicate this operation
+        virtual Operation* getDuplicate()
+        {
+            Operation * op = new Operation( _name , _type );
+            
+            // Copy all stuff
+            for ( size_t i = 0 ; i < inputFormats.size() ; i++ )
+                op->inputFormats.push_back( inputFormats[i] );
+            for ( size_t i = 0 ; i < outputFormats.size() ; i++ )
+                op->outputFormats.push_back( outputFormats[i] );
+            for ( size_t i = 0 ; i < code.size() ; i++ )
+                op->code.push_back( code[i] );
+
+            op->_helpMessage = _helpMessage;
+            op->_helpLine = _helpLine;
+            
+            return op;
+        }
+
+        // Get instance of this operation
+        virtual OperationInstance* getInstance( )
+        {
+            // Note pure virtual since scripts do not generate instances
+            return NULL;
+        }
+
+        
+        // XML formated informatio
         void getInfo( std::ostringstream& output)
         {
             output << "<operation>\n";
@@ -244,11 +189,6 @@ namespace samson {
             return _name;
         }
                
-        void * getInstance(  )
-        {
-            return _creationFunction( );
-        }
-        
         
         int getNumInputs()
         {
@@ -355,20 +295,45 @@ namespace samson {
             return outputFormats[i];
         }
         
-        OperationInputCompareFunction getInputCompareFunction()
-        {
-            return _inputCompareFunction;
-        }
-
-        OperationInputCompareFunction getInputCompareByKeyFunction()
-        {
-            return _inputCompareByKeyFunction;
-        }
-        
     };
     
+    
+    template <class OI>
+    class OperationImpl : public Operation
+    {
+        public:
+        
+        OperationImpl( std::string name , Type type ) : Operation( name , type )
+        {
+            
+        }
+        
+        // Virtual method to duplicate this operation
+        Operation* getDuplicate()
+        {
+            Operation * op = new OperationImpl<OI>( _name , _type );
 
-
+            // Copy all stuff
+            for ( size_t i = 0 ; i < inputFormats.size() ; i++ )
+                op->inputFormats.push_back( inputFormats[i] );
+            for ( size_t i = 0 ; i < outputFormats.size() ; i++ )
+                op->outputFormats.push_back( outputFormats[i] );
+            for ( size_t i = 0 ; i < code.size() ; i++ )
+                op->code.push_back( code[i] );
+            
+            op->_helpMessage = _helpMessage;
+            op->_helpLine = _helpLine;
+            
+            return op;
+        }
+        
+        // Get instance of this operation
+        virtual OperationInstance* getInstance( )
+        {
+            return new OI();
+        }
+    
+    };
 
     /**
      

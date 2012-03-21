@@ -32,17 +32,15 @@ namespace samson
 	{
 		
     public:
-		
-		DataSizeFunction keySize;                   // Function to get the size of a particular value of the key ( common to all inputs )
-		DataSizeFunction *valueSize;                // Function to get the size of a partiuclar value of the value ( different for each input )
-		OperationInputCompareFunction compare;      // Unique funciton to compare key-values ( for any input in this operation )
-		OperationInputCompareFunction compareKey;   // Function used to compare keys ( across multiple inputs )
+
+		DataInstance * keyDataInstance;                   // Instances to be used when adding key-values
+        std::vector<DataInstance *> valueDataInstances;
         
 		int num_inputs;                             // Number of input channels ( 1 in maps and parseOut , N in reduce operations )
         
         KVSetStruct* inputStructs;                  // Structure used to process key-values contained in this input vector in reduce operations
-        size_t pos_begin,pos_end;                   // State variables used across calls to init and getNext
         
+        size_t pos_begin,pos_end;                   // State variables used across calls to init and getNext
         
         // Constructors & destructors
 		KVInputVector( Operation* operation );

@@ -40,32 +40,19 @@ namespace samson {
 		std::string _name;									// Name of this data ( inside the module defined )
 		std::string _helpMessage;							// Help message shown on screen
 
-		DataCreationFunction _creationFunction;				// Function used to create new instances
-		DataSizeFunction _sizeFunction;						// Function used to get the size
-		
 	public:
 		
 		/**
 		 Inform about the type of operation it is
 		 */
 		
-		Data( std::string name , DataCreationFunction creationFunction , DataSizeFunction sizeFunction )
+		Data( std::string name , std::string help_message = "Help coming soon" )
 		{
 			_name = name;
-			_creationFunction = creationFunction;
-			_sizeFunction = sizeFunction;
-			
-			_helpMessage = "Help coming soon";
+			_helpMessage = help_message;
 		}
 
-		Data( Data *d )
-		{
-			_name = d->_name;
-			_creationFunction = d->_creationFunction;
-			_sizeFunction = d->_sizeFunction;
-			
-			_helpMessage = d->_helpMessage;
-		}
+        virtual ~Data(){};
 		
         void getInfo( std::ostringstream& output)
         {
@@ -79,25 +66,43 @@ namespace samson {
 		{
 			return _name;
 		}
-		
-		void * getInstance()
-		{
-			return _creationFunction();
-		}
+
+		// Virtual function to create an instance of data
+		virtual DataInstance* getInstance()=0;
+
+        // Virtual function to duplicate this Data
+		virtual Data* getDuplicate()=0;
 		
 		std::string help()
 		{
 			return _helpMessage;
 		};									
-	
-		DataSizeFunction getSizeFunction()
-		{
-			 return _sizeFunction;
-		}
-		
 		
 	};
 		
+    
+    template< class DI>
+    class DataImpl : public Data
+    {
+        
+    public:
+        
+        DataImpl(  std::string name , std::string help_message = "Help coming soon"  ) : Data(  name , help_message )
+        {
+            
+        }
+
+		DataInstance* getInstance()
+        {
+            return new DI();
+        }
+        
+		virtual Data* getDuplicate()
+        {
+            return new DataImpl<DI>( _name ,_helpMessage );
+        }
+        
+    };
 	
 	
 	

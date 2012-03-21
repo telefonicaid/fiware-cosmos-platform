@@ -22,6 +22,11 @@ namespace samson
 		char*   key;		// Pointer to key data
 		char*   value;		// Pointer to value data
 		int input;			// Index of the input ( Used internally in the platform for reduce operations )
+        int key_size;       // Size of the key in bytes
+        int value_size;     // Size of the value in bytes 
+        
+        int pos;  // Debuggin sort algorithm
+        
 	} KV;
 }
 

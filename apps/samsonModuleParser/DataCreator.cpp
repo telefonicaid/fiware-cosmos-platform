@@ -314,21 +314,7 @@ namespace samson {
 		
 		output << "namespace samson{\n";
 		output << "namespace "<< module.name <<"{\n";
-
 		
-		output << "\n\n";
-		output << "// Comparison function for reduce operations\n";
-		
-		for ( vector <OperationContainer>::iterator iter = operations.begin() ; iter < operations.end() ; iter++)
-		{
-			OperationContainer op = *iter;
-			if( ( op.type == "reduce") || ( op.type == "parserOutReduce") )
-			{
-				output << op.getCompareFunction();
-				output << op.getCompareByKeyFunction();
-			}
-		}
-			
 		output << "\n\n";
 		
 		output << "\t" << module.getClassName() << "::" << module.getClassName() << "()";
@@ -339,9 +325,7 @@ namespace samson {
 		output << "\t\t//Add datas\n";
 		for ( vector <DataContainer>::iterator iter = datas.begin() ; iter < datas.end() ; iter++)
 		{
-			output << "\t\tadd( new Data(\""<< iter->module << "." << iter->name <<"\" ,";
-			output << "au::factory<"<< iter->mainClassName()<<">, ";
-			output << iter->mainClassName() << "::size )";
+			output << "\t\tadd( new DataImpl<" << iter->name << ">(\""<< iter->module << "." << iter->name <<"\" )";
 			output << ");\n";
 		}
 
@@ -359,16 +343,12 @@ namespace samson {
 
 			output << "\t\t{\n";
 			
-			if( op.type == "script")
-				output << "\t\t\tsamson::Operation * operation = new samson::Operation( \"" << op.module << "." << op.name << "\" , samson::Operation::"<< op.type <<");"<<std::endl;
-			else if( ( op.type == "reduce") || ( op.type == "parserOutReduce" ) )
-				output << "\t\t\tsamson::Operation * operation = new samson::Operation( \"" << op.module << "." << op.name << "\" , samson::Operation::"<< op.type <<" , au::factory<"<< op.name <<">, " << op.getCompareFunctionName() <<  ", " << op.getCompareByKeyFunctionName() <<  " );"<<std::endl;
-			else if ( op.type == "simpleParser")
-			    output << "\t\t\tsamson::Operation * operation = new samson::Operation( \"" << op.module << "." << op.name << "\" , samson::Operation::"<< "parser" <<" , au::factory<"<< op.name <<"> );"<<std::endl;
-			else
-				output << "\t\t\tsamson::Operation * operation = new samson::Operation( \"" << op.module << "." << op.name << "\" , samson::Operation::"<< op.type <<" , au::factory<"<< op.name <<"> );"<<std::endl;
+            if( op.type == "script")
+                output << "\t\t\tsamson::Operation * operation = new samson::Operation( \"" << op.module << "." << op.name << "\" , samson::Operation::"<< op.type <<");"<<std::endl;
+            else
+                output << "\t\t\tsamson::Operation * operation = new samson::OperationImpl<" << op.name << ">( \"" << op.module << "." << op.name << "\" , samson::Operation::"<< op.type <<");"<<std::endl;
 
-			// Automatic adding input and output of the parser and parserOut
+			// Adding input and output of the parser and parserOut
 			
 			if(( op.type == "parser") || (op.type == "simpleParser"))
 				output << "\t\t\toperation->inputFormats.push_back( samson::KVFormat::format(\"txt\" ,\"txt\") );"<<std::endl;

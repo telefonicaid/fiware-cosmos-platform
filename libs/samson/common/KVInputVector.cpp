@@ -45,37 +45,40 @@ namespace samson
 		
 		max_num_kvs = 0;// Maximum number of kvs to be processes
 		num_kvs = 0;// Current numner of key-values pairs
-		
-		valueSize = (DataSizeFunction *) malloc( sizeof( DataSizeFunction) * num_inputs );
-        
+		        
         std::vector<KVFormat> inputFormats = operation->getInputFormats();
+        
+        if( inputFormats.size() == 0 )
+        {
+            LM_W(("Operation %s has no inputs" , operation->_name.c_str() ));
+            return;
+        }
+
+        Data *keyData	= ModulesManager::shared()->getData( inputFormats[0].keyFormat );
+        if( !keyData )
+            LM_X(1,("Internal error:"));
+
+        keyDataInstance = (DataInstance*)keyData->getInstance();
+        if( !keyDataInstance )
+            LM_X(1,("Internal error:"));
         
 		// Get the rigth functions to process input key-values
 		for (int i = 0 ; i < (int)inputFormats.size() ;i++)
 		{
-			Data *keyData	= ModulesManager::shared()->getData( inputFormats[i].keyFormat );
 			Data *valueData	= ModulesManager::shared()->getData( inputFormats[i].valueFormat );
-			
-			if( !keyData )
-				LM_X(1,("Internal error:"));
-            
 			if( !valueData )
 				LM_X(1,("Internal error:"));
-            
-			
-			keySize = keyData->getSizeFunction();		// Common to all inputs
-			valueSize[i] = valueData->getSizeFunction();	
+
+            DataInstance* valueDataInstance = (DataInstance*)valueData->getInstance();
+            if( !valueDataInstance )
+                LM_X(1,("Internal error:"));
+
+            valueDataInstances.push_back(valueDataInstance);
 		}			
-		
-		compare = operation->getInputCompareFunction();
-        
-        compareKey = operation->getInputCompareByKeyFunction();
 
-        
+        // Alloc necessary space for KVSetStruct ( used in 3rd party interface )
         inputStructs = (KVSetStruct*) malloc( sizeof(KVSetStruct) * num_inputs );
-        
     }
-
     
 	KVInputVector::KVInputVector( int _num_inputs )
 	{
@@ -84,11 +87,9 @@ namespace samson
 		_kv = NULL;
 		kv  = NULL;
 		
-		max_num_kvs = 0;// Maximum number of kvs to be processes
-		num_kvs = 0;// Current number of key-values pairs
+		max_num_kvs = 0;  // Maximum number of kvs to be processes
+		num_kvs = 0;      // Current number of key-values pairs
 		
-		valueSize = (DataSizeFunction *) malloc( sizeof( DataSizeFunction) * num_inputs );
-        
         inputStructs = NULL;
 	}
 	
@@ -102,17 +103,19 @@ namespace samson
         if( inputStructs )
             free( inputStructs );
         
-        free( valueSize );
 	}
 	
-
-	
-
 	
     void KVInputVector::addKVs(int input , KVInfo info , char *data )
     {
-		// Get the right size function
-		DataSizeFunction _valueSize = valueSize[input];
+        if( input >= (int)valueDataInstances.size() )
+        {
+            LM_W(("Error adding key-values to a KVInputVector. Ignoring..."));
+            return;
+        }
+        
+		// Get the right data instance
+		DataInstance* valueDataInstance = valueDataInstances[input];
 		
 		// Local offset
 		size_t offset = 0;
@@ -122,14 +125,18 @@ namespace samson
 		{
 			kv[ num_kvs ].key = data + offset;
 			
-			offset += keySize( data + offset );
-			
+			kv[ num_kvs ].key_size = keyDataInstance->parse( data + offset );
+			offset += kv[ num_kvs ].key_size;
+            
 			kv[ num_kvs ].value = data + offset;
 			
-			offset += _valueSize( data + offset );
+			kv[ num_kvs ].value_size = valueDataInstance->parse( data + offset );
+            offset += kv[ num_kvs ].value_size;
 			
 			kv[num_kvs].input = input;
 			
+            kv[num_kvs].pos = num_kvs;
+            
 			num_kvs++;
 		}
 		
@@ -140,13 +147,46 @@ namespace samson
 		}
     }
     
+    bool equalKV( KV* kv1 , KV* kv2 )
+    {
+        if( kv1->key_size != kv2->key_size )
+            return false;
+        for (int i = 0 ; i < kv1->key_size ; i++ )
+            if( kv1->key[i] != kv2->key[i] )
+                return false;
+        
+        return true;
+    }
+    
+    bool compareKV( KV* kv1 , KV* kv2 )
+    {
+        // Only grouping by key
+        if( kv1->key_size < kv2->key_size )
+            return true;
+        
+        if( kv1->key_size > kv2->key_size )
+            return false;
+        
+        for (int i = 0 ; i < kv1->key_size ; i++ )
+        {
+            
+            if( kv1->key[i] < kv2->key[i] )
+                return true;
+
+            if( kv1->key[i] > kv2->key[i] )
+                return false;
+        }
+
+        // If they are the same....
+        return false;
+    }
     
 	// global sort function key - input - value used in reduce operations
 	
 	void KVInputVector::sort()
 	{
 		if( num_kvs > 0 )
-			std::sort( _kv , _kv + num_kvs , compare );
+			std::sort( _kv , _kv + num_kvs , compareKV );
 	}
     
     void KVInputVector::sortAndMerge( size_t middle_pos )
@@ -155,10 +195,10 @@ namespace samson
             LM_X(1,("Internal error"));
 
         // Sort the first part of the vector
-        std::sort( _kv , _kv + middle_pos , compare );
+        std::sort( _kv , _kv + middle_pos , compareKV );
         
         // Merge with the second part of the vector( supposed to be sorted )
-        std::inplace_merge(_kv, _kv+middle_pos, _kv+num_kvs , compare);
+        std::inplace_merge(_kv, _kv+middle_pos, _kv+num_kvs , compareKV);
         
     }
 
@@ -177,7 +217,7 @@ namespace samson
             return NULL;
         
         // Identify the number of key-values with the same key
-        while( ( pos_end < num_kvs ) && ( compareKey( _kv[pos_begin] , _kv[pos_end] ) == 0) )
+        while( ( pos_end < num_kvs ) && equalKV( _kv[pos_begin] , _kv[pos_end] ) )
             pos_end++;
         
         // Create the necessary elements for the output KVSetStruct structure

@@ -140,6 +140,7 @@ namespace samson
 		clearModule();  		// Clear this module itself (operations and datas)
         
         // Close handlers for all open modules
+        /*
 		LM_T(LmtModuleManager,("Closing previous modules ( if any )"));
         au::map< std::string  , Module >::iterator m; 
         for ( m =  modules.begin(); m != modules.end() ; m++)
@@ -151,26 +152,11 @@ namespace samson
         }
 
 		LM_T(LmtModuleManager,("Remove list of previous modules"));
-        modules.clearMap();     // Remove all modules stored here
+         */
+        modules.clearMap();     // Remove all modules previously stored here
 		
 		// Add modules again
 		addModules();
-		
-        // Add the select operation
-        //add( new SelectOperation() );
-        
-		/*
-		 Spetial operation to be moved to a proper file
-		 */
-		
-		Operation *compact = new Operation( "samson.compact" , Operation::system );
-		compact->inputFormats.push_back( samson::KVFormat::format("*" ,"*") );
-		add( compact );
-
-        Operation *splitter = new Operation( "samson.splitter" , Operation::splitter );
-        splitter->inputFormats.push_back( samson::KVFormat::format("*" ,"*") );
-        add( splitter );
-        
 		
 	}
 	
@@ -221,7 +207,9 @@ namespace samson
 	{
         LM_T(LmtModuleManager,("Adding module at path %s", path.c_str() ));
 		
+        // Dynamic link open
 		void *hndl = dlopen(path.c_str(), RTLD_NOW);
+        
 		if(hndl == NULL)
         {
             LM_W(("Not possible to dlopen for file '%s' with dlerror():'%s'", path.c_str(), dlerror() ));
@@ -253,12 +241,13 @@ namespace samson
         if ( !module )
         {
             LM_E(( "Not possible to load module at path %s (not container found)" , path.c_str()));
-            dlclose(hndl);
             return;
         }
         
-        module->file_name = path; // Save the full path of this module
-        
+        // Save the full path of this module
+        module->file_name = path; 
+
+        // Check platform version
         if( platform_version == SAMSON_VERSION )
         {
 

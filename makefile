@@ -175,10 +175,13 @@ debug_all: prepare_debug_all
 # Testing
 # ------------------------------------------------
 
-test: ctest itest
+test: ctest
 
 ctest: debug
-	make test -C BUILD_DEBUG
+	killall samsonWorker || true
+	BUILD_DEBUG/apps/samsonWorker/samsonWorker
+	make test -C BUILD_DEBUG ARGS="--output-on-failure"
+	killall samsonWorker || true
 
 test_local_processes:
 	./scripts/test_local_processes

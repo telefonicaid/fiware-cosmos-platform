@@ -1,0 +1,8 @@
+--NAME--
+samsonWorker: worker start
+--INIT--
+killall samsonWorker
+--SHELL--
+BUILD_DEBUG/apps/samsonWorker/samsonWorker
+--EXPECT--
+OK. samsonWorker is now working in background.

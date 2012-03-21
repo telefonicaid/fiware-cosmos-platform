@@ -25,7 +25,7 @@ SS_WORKER_LOG_DIR=$SAMSON_ROOT/logs
 #Delilah/samsonPush/Pop... log directory
 LOG_DIR=$SS_WORKER_LOG_DIR
 
-PATH=${SAMSON_HOME}/bin:${PATH}
+PATH=${SAMSON_HOME}/bin:${PWD}/scripts:${PATH}
 
 OS=$(uname -s)
 

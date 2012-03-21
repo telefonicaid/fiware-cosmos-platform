@@ -1,0 +1,2 @@
+ADD_SUBDIRECTORY(samsonWorker)
+ADD_SUBDIRECTORY(delilah)

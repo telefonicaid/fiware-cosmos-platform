@@ -1151,24 +1151,26 @@ namespace samson {
             }
         }
         
-        std::string StreamManager::getState(std::string queue_name, const char* key, char* redirect, int redirectSize)
+        std::string StreamManager::getState(std::string queue_name, const char* key, char* redirect, int redirectSize, bool* okP)
         {
             LM_T(LmtRest, ("looking up key '%s' in queue '%s'", key, queue_name.c_str()));
 
+            *okP = false;
+
             Queue* queue = queues.findInMap(queue_name);
             if (!queue)
-                return au::xml_simple( "error" , au::str("Queue '%s' not found" , queue_name.c_str() ));
+                return au::str("Queue '%s' not found", queue_name.c_str());
             
-            // Data instances
             KVFormat format = queue->getFormat();
             if (format.isGenericKVFormat())
-                return au::xml_simple( "error" , au::str("Queue '%s' is of generic format '%s'" , queue_name.c_str() , format.str().c_str() ));
+                return au::str("Queue '%s' is of generic format '%s'" , queue_name.c_str() , format.str().c_str());
             
-            Data* key_data   = ModulesManager::shared()->getData( format.keyFormat );
-            Data* value_data = ModulesManager::shared()->getData( format.valueFormat );
+            // Data instances
+            Data* key_data   = ModulesManager::shared()->getData( format.keyFormat);
+            Data* value_data = ModulesManager::shared()->getData( format.valueFormat);
 
-            if( !key_data || !value_data )
-                return au::xml_simple( "error" , au::str("Queue '%s' has wrong format" , queue_name.c_str() ));
+            if (!key_data || !value_data )
+                return au::str("Queue '%s' has wrong format" , queue_name.c_str());
                 
             DataInstance* reference_key_data_instance  = (DataInstance*)key_data->getInstance();
 
@@ -1193,25 +1195,23 @@ namespace samson {
                 std::string     host = worker->network->getHostForWorker( worker_id );
                 unsigned short  port = worker->network->getPortForWorker( worker_id );
 
-                LM_T(LmtRest, ("Redirect to the right server (%s)", host.c_str()));
-                // Careful with 'state' / 'queue' here ...
-                snprintf(redirect, redirectSize, "%s:%d", host.c_str(), port);
+                LM_T(LmtRest, ("Redirect to the right server (%s:%d)", host.c_str(), port));
 
-                return au::xml_simple(  "error" 
-                                      , au::str("Redirect to %s/samson/state/%s/%s" , host.c_str() , queue_name.c_str() , key )
-                                      );
+                *okP = true; // redirect treated as OK ...
+                snprintf(redirect, redirectSize, "%s:%d", host.c_str(), port);
+                return au::xml_simple("redirect", au::str("Redirect to %s:%d", host.c_str(), port)); // This is not used ...
             }
 
 
             if ( queue->list->blocks.size() == 0 )
-                return au::xml_simple(  "error" , au::str("No data in queue %s" , queue_name.c_str() ));
+                return au::str("No data in queue %s" , queue_name.c_str());
 
             // Look up this key
             BlockList list;
             list.copyFirstBlockFrom(queue->list, hg);
 
             if (list.blocks.size() == 0)
-                return au::xml_simple(  "error" , au::str("No data in queue %s" , queue_name.c_str() ));
+                return au::str("No data in queue %s" , queue_name.c_str());
 
             Block* block = *list.blocks.begin();
             LM_T(LmtRest, ("Any faster way to get the block ?"));
@@ -1222,13 +1222,14 @@ namespace samson {
                 delete reference_key_data_instance;
                 delete key_data_instance;
                 delete value_data_instance;
-                return au::xml_simple(  "error" , au::str("Block not in memory for queue %s" , queue_name.c_str() ) );
+                return au::str("Block not in memory for queue %s" , queue_name.c_str());
             }
             
             delete reference_key_data_instance;
             delete key_data_instance;
             delete value_data_instance;
                 
+            *okP = true;
             return block->lookup(key);
         }
     }

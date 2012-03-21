@@ -263,7 +263,7 @@ void Engine::run()
                     LM_M(("ENGINE NORMAL ELEMENT: %s",element->getDescription().c_str()));
                 }
                 
-                LM_X(1,("Engine is running an element has been waiting %d seconds", waiting_time ));
+                LM_W(("Engine is running an element has been waiting %d seconds", waiting_time ));
             }
             
             {

@@ -1,50 +1,50 @@
 #include <iconv.h>
-#include <iostream>                     // std::cout ...
-
-#include "logMsg/logMsg.h"                     // lmInit, LM_*
-#include "logMsg/traceLevels.h"                // Trace Levels
+#include <iostream>                               // std::cout ...
 #include <dlfcn.h>
 #include <sys/types.h>
 #include <dirent.h>
 
-#include "au/CommandLine.h"                // CommandLine
-#include "au/string.h"						// au::Format
-#include "au/time.h"                        // au::todayString
+#include "logMsg/logMsg.h"                        // lmInit, LM_*
+#include "logMsg/traceLevels.h"                   // Trace Levels
+
+#include "au/CommandLine.h"                       // CommandLine
+#include "au/string.h"                            // au::Format
+#include "au/time.h"                              // au::todayString
 #include "au/ThreadManager.h"
 
-#include "engine/Notification.h"            // engine::Notification
+#include "engine/Notification.h"                  // engine::Notification
 
-#include "samson/common/SamsonSetup.h"                  // samson::SamsonSetup
-#include "samson/common/Macros.h"                     // EXIT, ...
-#include "samson/common/SamsonSetup.h"				// samson::SamsonSetup
+#include "samson/common/SamsonSetup.h"            // samson::SamsonSetup
+#include "samson/common/Macros.h"                 // EXIT, ...
+#include "samson/common/SamsonSetup.h"            // samson::SamsonSetup
 #include "samson/common/MessagesOperations.h"
 
-#include "samson/module/samsonVersion.h"  // SAMSON_VERSION
+#include "samson/module/samsonVersion.h"          // SAMSON_VERSION
 
-#include "samson/network/Message.h"                    // Message
-#include "samson/network/Packet.h"                     // samson::Packet
-#include "samson/network/NetworkInterface.h"                    // NetworkInterface
-#include "samson/worker/SamsonWorker.h"               // Own interfce
+#include "samson/network/Message.h"               // Message
+#include "samson/network/Packet.h"                // samson::Packet
+#include "samson/network/NetworkInterface.h"      // NetworkInterface
 
-#include "engine/MemoryManager.h"				// samson::SharedMemory
+#include "engine/MemoryManager.h"                 // samson::SharedMemory
 
-#include "engine/Engine.h"						// engine::Engine
-#include "engine/DiskOperation.h"				// samson::DiskOperation
-#include "engine/DiskManager.h"                // Notifications
-#include "engine/ProcessManager.h"             // engine::ProcessManager
-#include "samson/isolated/SharedMemoryManager.h"        // engine::SharedMemoryManager
+#include "engine/Engine.h"                        // engine::Engine
+#include "engine/DiskOperation.h"                 // samson::DiskOperation
+#include "engine/DiskManager.h"                   // Notifications
+#include "engine/ProcessManager.h"                // engine::ProcessManager
+#include "samson/isolated/SharedMemoryManager.h"  // engine::SharedMemoryManager
 
-#include "samson/common/MemoryTags.h"                 // MemoryInput , MemoryOutputNetwork ,...
+#include "samson/common/MemoryTags.h"             // MemoryInput , MemoryOutputNetwork ,...
 
-#include "samson/stream/Block.h"            // samson::stream::Block
-#include "samson/stream/BlockList.h"            // samson::stream::BlockList
-#include "samson/stream/BlockManager.h"     // samson::stream::BlockManager
+#include "samson/stream/Block.h"                  // samson::stream::Block
+#include "samson/stream/BlockList.h"              // samson::stream::BlockList
+#include "samson/stream/BlockManager.h"           // samson::stream::BlockManager
 
-#include "samson/module/ModulesManager.h"   // samson::ModulesManager
+#include "samson/module/ModulesManager.h"         // samson::ModulesManager
 
-#include "samson/network/NetworkInterface.h"    // samson::NetworkInterface
+#include "samson/network/NetworkInterface.h"      // samson::NetworkInterface
 
-#include "samson/worker/WorkerCommand.h"           // samson::stream::WorkerCommand
+#include "samson/worker/WorkerCommand.h"          // samson::stream::WorkerCommand
+#include "samson/worker/SamsonWorker.h"           // Own interfce
 
 namespace samson {
     
@@ -409,85 +409,140 @@ static char* toUTF8(char* in, size_t* outLenP)
 
 
 
-    //
-    // SamsonWorker::getRESTInformation - 
-    //
-    std::string SamsonWorker::getRESTInformation(::std::string in)
+//
+// SamsonWorker::getRESTInformation - 
+//
+std::string SamsonWorker::getRESTInformation(::std::string in)
+{
+    unsigned short int  http_state = 200;  // be optimistic and assume all is ok :)
+    std::ostringstream  header;
+    std::ostringstream  data;
+    std::string         jsonSuffix = ".json";
+    std::string         xmlSuffix  = ".xml";
+    std::string         format     = "xml"; // Default value
+
+
+    LM_T(LmtRest, ("Incoming REST request: '%s'", in.c_str()));
+
+    if (in.substr(in.length() - jsonSuffix.length()) == jsonSuffix)
     {
-        unsigned short int  http_state = 200;  // be optimistic and assume all is ok :)
-        std::ostringstream  header;
-        std::ostringstream  data;
-        std::string         format   = "xml"; // Default value
-        char*               inString = (char*) in.c_str();
+        format = "json";
+        in     = in.substr(0, in.length() - jsonSuffix.length());
+    }
+    else if (in.substr(in.length() - xmlSuffix.length()) == xmlSuffix)
+    {
+        format = "xml";
+        in     = in.substr(0, in.length() - xmlSuffix.length());
+    }
+    
+    if (format == "xml")
+    {
+        data << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n";
+        data << "<!-- SAMSON Rest interface -->\r\n";
+        data << "<samson>\r\n";
+    }
+    else
+    {
+        data << "{\r\n";
+    }
+    
 
-        LM_T(LmtRest, ("Incoming REST request: '%s'", inString));
+    // Get the path components
+    std::vector<std::string> path_components = au::split( in , '/' );
+    
+    if ((path_components.size() < 2) || (path_components[0] != "samson"))
+    {
+        http_state = 400;
 
-        if (strcmp(&inString[strlen(inString) - 5], ".json") == 0)
-        {
-            inString[strlen(inString) - 5] = 0;
-            LM_T(LmtRest, ("JSON format requested for '%s'", inString));
-        }
-        else if (strcmp(&inString[strlen(inString) - 4], ".xml") == 0)
-        {
-            format = "xml";
-            inString[strlen(inString) - 4] = 0;
-            LM_T(LmtRest, ("XML format requested for '%s'", inString));
-        }
+        if (format == "xml")
+            au::xml_simple(data, "message", "Error. Only /samson/path requests are valid");
+        else
+            data << "  \"error\" : \"Only /samson/path requests are valid\"";
+    }
+    else if (path_components[1] == "version")
+    {
+        if (format == "xml")
+            au::xml_simple(data, "version", au::str("SAMSON v %s" , SAMSON_VERSION ) );
+        else
+            data << "  \"version\" : \"" << "SAMSON v " << SAMSON_VERSION << "\"\r\n";
+    }
+    else if (path_components[1] == "die")
+    {
+        LM_X(1, ("Got a DIE request over REST interface ... I die!"));
+    }
+    else if (path_components[1] == "utftest")
+    {
+        char  test[32];
+        int   ix = 0;
+
+        memset(test, 0, 32);
+        test[ix++] = '-';
+        test[ix++] = 0xA2;
+        test[ix++] = 0xA3;
+        test[ix++] = 0xA4;
+        test[ix++] = '-';
+        test[ix++] = 0;
         
         if (format == "xml")
+            au::xml_simple(data, "utf8", au::str(test));
+        else
+            data << "  \"utf8\" : \"" << test << "\"";
+    }
+    else if( path_components[1] == "state" )  /* /samson/state/queue/key */
+    {
+        char redirect[512];
+        
+        redirect[0] = 0;
+        if( path_components.size() < 4 )
         {
-            data << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n";
-            data << "<!-- SAMSON Rest interface -->\r\n";
-            data << "<samson>\r\n";
+            http_state = 400;
+
+            if (format == "xml")
+                au::xml_simple(data, "message", au::str("Error: format /samson/state/queue/key" ) );
+            else
+                data << "  \"message\" : \"Error: format /samson/state/queue/key\"";
         }
         else
+            data << streamManager->getState( path_components[2] , path_components[3].c_str(), redirect, sizeof(redirect));
+        
+        if (redirect[0] != 0)
         {
-            data << "{";
+            LM_T(LmtRest, ("redirecting to '%s'", redirect));
+            
+            header << "HTTP/1.1 302 Found\r\n";
+            header << "Location:   " << redirect << "\r\n";
+            header << "Content-Type:   application/txt; charset=utf-8\r\n";
+            header << "Content-Length: " << 0 << "\r\n";
+            header << "\r\n";
+            header << "\r\n";
+            
+            std::ostringstream output;
+            output << header.str();
+            return output.str();
         }
-
-        // Get the path components
-        std::vector<std::string> path_components = au::split( in , '/' );
-
-        if ((path_components.size() < 2) || (path_components[0] != "samson"))
-        {
-            au::xml_simple(data, "message", "Error. Only /samson/path requests are valid" );
-            http_state = 400;
-        }
-        else if (path_components[1] == "version")
-            au::xml_simple(data, "version", au::str("SAMSON v %s" , SAMSON_VERSION ) );
-        else if (path_components[1] == "utftest")
-        {
-            char     in[32];
-
-            int ix = 0;
-
-            memset(in, 0, 32);
-            in[ix++] = '-';
-            in[ix++] = 0xA2;
-            in[ix++] = 0xA3;
-            in[ix++] = 0xA4;
-            in[ix++] = '-';
-            in[ix++] = 0;
-
-            au::xml_simple(data, "utf8", au::str(in));
-        }
-        else if( path_components[1] == "state" )  /* /samson/state/queue/key */
+    }
+    else if( path_components[1] == "queue" ) 
+    {
+        if ( path_components[3] == "key" )  /* /samson/queue/queue_name/key */
         {
             char redirect[512];
-
+            
             redirect[0] = 0;
-            if( path_components.size() < 4 )
+            if (path_components.size() < 4)
             {
-                au::xml_simple(data, "message", au::str("Error: format /samson/state/queue/key" ) );
+                if (format == "xml")
+                    au::xml_simple(data, "message", au::str("Error: format /samson/queue/<queue_name>/<key>" ) );
+                else
+                    data << "  \"format error\" : \"correct format: /samson/queue/<queue_name>/<key>\"\r\n";
                 http_state = 400;
             }
             else
-                data << streamManager->getState( path_components[2] , path_components[3].c_str(), redirect, sizeof(redirect));
-
+                data << streamManager->getState(path_components[2] , path_components[3].c_str(), redirect, sizeof(redirect));
+            
             if (redirect[0] != 0)
             {
                 LM_T(LmtRest, ("redirecting to '%s'", redirect));
-            
+                    
                 header << "HTTP/1.1 302 Found\r\n";
                 header << "Location:   " << redirect << "\r\n";
                 header << "Content-Type:   application/txt; charset=utf-8\r\n";
@@ -500,262 +555,310 @@ static char* toUTF8(char* in, size_t* outLenP)
                 return output.str();
             }
         }
-        else if( path_components[1] == "queue" ) 
+    }
+    else if (path_components[1] == "cluster" ) /* /samson/logging */
+        network->getInfo(data, "cluster");
+    else if (path_components[1] == "logging" )  
+    {
+        std::string logCommand = "";
+        std::string sub        = "";
+        std::string arg        = "";
+        
+        if (path_components.size() > 2)
+            logCommand = path_components[2];
+        if (path_components.size() > 3)
+            sub = path_components[3];
+        if (path_components.size() > 4)
+            arg = path_components[4];
+        
+        
+        //
+        // Treat all possible errors
+        //
+        if (logCommand == "")
         {
-            if ( path_components[3] == "key" )  /* /samson/queue/queue_name/key */
+            au::xml_simple(data, "message", au::str("logging command missing"));
+            http_state = 400;
+        }
+        else if (sub == "")
+        {
+            au::xml_simple(data, "message", au::str("logging subcommand for '%s' missing", logCommand.c_str()));
+            http_state = 400;
+        }
+        else if ((logCommand != "reads") && (logCommand != "writes") && (logCommand != "trace") && (logCommand != "verbose") && (logCommand != "debug"))
+        {
+            au::xml_simple(data, "message", au::str("bad logging command"));
+            http_state = 400;
+        }
+        else if (((logCommand == "reads") || (logCommand == "writes") || (logCommand == "debug")) && (sub != "on") && (sub != "off"))
+        {
+            au::xml_simple(data, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
+            http_state = 400;
+        }
+        else if ((logCommand == "verbose") && (sub != "get") && (sub != "set") && (sub != "off"))
+        {
+            au::xml_simple(data, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
+            http_state = 400;
+        }
+        else if ((logCommand == "verbose") && (sub == "set") && (arg != "1") && (arg != "2") && (arg != "3") && (arg != "4") && (arg != "5"))
+        {
+            au::xml_simple(data, "message", au::str("bad logging argumrnts for 'trace/set': %s", arg.c_str()));
+            http_state = 400;
+        }
+        else if ((logCommand == "trace") && (sub != "get") && (sub != "set") && (sub != "add") && (sub != "remove") && (sub != "off"))
+        {
+            au::xml_simple(data, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
+            http_state = 400;
+        }
+        else if ((logCommand == "trace") && ((sub != "set") || (sub != "add") || (sub != "remove")))
+        {
+            if (strspn(arg.c_str(), "0123456789-,") != strlen(arg.c_str()))
             {
-                char redirect[512];
-            
-                redirect[0] = 0;
-                if( path_components.size() < 4 )
-                {
-                    au::xml_simple(data, "message", au::str("Error: format /samson/queue/<queue_name>/<key>" ) );
-                    http_state = 400;
-                }
-                else
-                    data << streamManager->getState( path_components[2] , path_components[3].c_str(), redirect, sizeof(redirect));
-
-                if (redirect[0] != 0)
-                {
-                    LM_T(LmtRest, ("redirecting to '%s'", redirect));
-
-                    header << "HTTP/1.1 302 Found\r\n";
-                    header << "Location:   " << redirect << "\r\n";
-                    header << "Content-Type:   application/txt; charset=utf-8\r\n";
-                    header << "Content-Length: " << 0 << "\r\n";
-                    header << "\r\n";
-                    header << "\r\n";
-
-                    std::ostringstream output;
-                    output << header.str();
-                    return output.str();
-                }
+                au::xml_simple(data, "message", au::str("bad logging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
+                http_state = 400;
             }
         }
-        else if( path_components[1] == "cluster" ) /* /samson/logging */
-            network->getInfo( data , "cluster" );
-        else if (path_components[1] == "logging" )  
+        
+        if (http_state != 200)
+            goto afterTreatment;
+        
+
+        //
+        // Treat the request
+        //
+        if (logCommand == "reads")
         {
-            std::string logCommand = "";
-            std::string sub        = "";
-            std::string arg        = "";
-            
-            if (path_components.size() > 2)
-                logCommand = path_components[2];
-            if (path_components.size() > 3)
-                sub = path_components[3];
-            if (path_components.size() > 4)
-                arg = path_components[4];
+            if (sub == "on")
+            {
+                lmReads  = true;
 
-
-            //
-            // Treat all possible errors
-            //
-            if (logCommand == "")
-            {
-                au::xml_simple(data, "message", au::str("logging command missing"));
-                http_state = 400;
-            }
-            else if (sub == "")
-            {
-                au::xml_simple(data, "message", au::str("logging subcommand for '%s' missing", logCommand.c_str()));
-                http_state = 400;
-            }
-            else if ((logCommand != "reads") && (logCommand != "writes") && (logCommand != "trace") && (logCommand != "verbose") && (logCommand != "debug"))
-            {
-                au::xml_simple(data, "message", au::str("bad logging command"));
-                http_state = 400;
-            }
-            else if (((logCommand == "reads") || (logCommand == "writes") || (logCommand == "debug")) && (sub != "on") && (sub != "off"))
-            {
-                au::xml_simple(data, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
-                http_state = 400;
-            }
-            else if ((logCommand == "verbose") && (sub != "get") && (sub != "set") && (sub != "off"))
-            {
-                au::xml_simple(data, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
-                http_state = 400;
-            }
-            else if ((logCommand == "verbose") && (sub == "set") && (arg != "1") && (arg != "2") && (arg != "3") && (arg != "4") && (arg != "5"))
-            {
-                au::xml_simple(data, "message", au::str("bad logging argumrnts for 'trace/set': %s", arg.c_str()));
-                http_state = 400;
-            }
-            else if ((logCommand == "trace") && (sub != "get") && (sub != "set") && (sub != "add") && (sub != "remove") && (sub != "off"))
-            {
-                au::xml_simple(data, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
-                http_state = 400;
-            }
-            else if ((logCommand == "trace") && ((sub != "set") || (sub != "add") || (sub != "remove")))
-            {
-                if (strspn(arg.c_str(), "0123456789-,") != strlen(arg.c_str()))
-                {
-                    au::xml_simple(data, "message", au::str("bad logging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
-                    http_state = 400;
-                }
-            }
-        
-            if (http_state != 200)
-                goto afterTreatment;
-        
-
-            //
-            // Treat the request
-            //
-            if (logCommand == "reads")
-            {
-                if      (sub == "on")    { au::xml_simple(data, "reads", au::str("reads turned ON"));    lmReads  = true;  }
-                else if (sub == "off")   { au::xml_simple(data, "reads", au::str("reads turned OFF"));   lmReads  = false; }
-            }
-            else if (logCommand == "writes")
-            {
-                if      (sub == "on")    { au::xml_simple(data, "writes", au::str("writes turned ON"));  lmWrites = true;  }
-                else if (sub == "off")   { au::xml_simple(data, "writes", au::str("writes turned OFF")); lmWrites = false; }
-            }
-            else if (logCommand == "debug")
-            {
-                if      (sub == "on")    { au::xml_simple(data, "debug", au::str("debug turned ON"));    lmDebug  = true;  }
-                else if (sub == "off")   { au::xml_simple(data, "debug", au::str("debug turned OFF"));   lmDebug  = false; }
-            }
-            else if (logCommand == "verbose")  // /samson/logging/verbose
-            {
-                if (sub == "get")
-                {
-                    int vLevel;
-
-                    if      (lmVerbose5 == true)  vLevel = 5;
-                    else if (lmVerbose4 == true)  vLevel = 4;
-                    else if (lmVerbose3 == true)  vLevel = 3;
-                    else if (lmVerbose2 == true)  vLevel = 2;
-                    else if (lmVerbose  == true)  vLevel = 1;
-                    else                          vLevel = 0;
-
-                    au::xml_simple(data, "debug", au::str("verbosity level: %d", vLevel));
-                }
+                if (format == "xml")
+                    au::xml_simple(data, "reads", au::str("reads turned ON"));
                 else
+                    data << "  \"reads\" : \"reads turned ON\"\r\n";
+            }
+            else if (sub == "off")
+            {
+                lmReads  = false;
+                if (format == "xml")
+                    au::xml_simple(data, "reads", au::str("reads turned OFF"));
+                else
+                    data << "  \"reads\" : \"reads turned OFF\"\r\n";
+            }
+        }
+        else if (logCommand == "writes")
+        {
+            if (sub == "on")
+            {
+                lmWrites  = true;
+
+                if (format == "xml")
+                    au::xml_simple(data, "writes", au::str("writes turned ON"));
+                else
+                    data << "  \"writes\" : \"writes turned ON\"\r\n";
+            }
+            else if (sub == "off")
+            {
+                lmWrites  = false;
+                if (format == "xml")
+                    au::xml_simple(data, "writes", au::str("writes turned OFF"));
+                else
+                    data << "  \"writes\" : \"writes turned OFF\"\r\n";
+            }
+        }
+        else if (logCommand == "debug")
+        {
+            if (sub == "on")
+            {
+                lmDebug  = true;
+
+                if (format == "xml")
+                    au::xml_simple(data, "debug", au::str("debug turned ON"));
+                else
+                    data << "  \"debug\" : \"debug turned ON\"\r\n";
+            }
+            else if (sub == "off")
+            {
+                lmDebug  = false;
+                if (format == "xml")
+                    au::xml_simple(data, "debug", au::str("debug turned OFF"));
+                else
+                    data << "  \"debug\" : \"debug turned OFF\"\r\n";
+            }
+        }
+        else if (logCommand == "verbose")  // /samson/logging/verbose
+        {
+            if (sub == "get")
+            {
+                int vLevel;
+                
+                if      (lmVerbose5 == true)  vLevel = 5;
+                else if (lmVerbose4 == true)  vLevel = 4;
+                else if (lmVerbose3 == true)  vLevel = 3;
+                else if (lmVerbose2 == true)  vLevel = 2;
+                else if (lmVerbose  == true)  vLevel = 1;
+                else                          vLevel = 0;
+                
+                if (format == "xml")
+                    au::xml_simple(data, "verbose", au::str("verbosity level: %d", vLevel));
+                else
+                    data << "  \"verbose\" : \"verbosity level: " << vLevel << "\"\r\n";
+            }
+            else
+            {
+                // Turn all verbose levels OFF
+                lmVerbose  = false;
+                lmVerbose2 = false;
+                lmVerbose3 = false;
+                lmVerbose4 = false;
+                lmVerbose5 = false;
+                
+                if (sub == "off")
+                    arg = "0";
+                
+                int verboseLevel = arg[0] - '0';
+                
+                // Turn on the desired verbose levels
+                switch (verboseLevel)
                 {
-                    // Turn all verbose levels OFF
-                    lmVerbose  = false;
-                    lmVerbose2 = false;
-                    lmVerbose3 = false;
-                    lmVerbose4 = false;
-                    lmVerbose5 = false;
-                
-                    if (sub == "off")
-                        arg = "0";
-                
-                    int verboseLevel = arg[0] - '0';
+                case 5: lmVerbose5 = true;
+                case 4: lmVerbose4 = true;
+                case 3: lmVerbose3 = true;
+                case 2: lmVerbose2 = true;
+                case 1: lmVerbose  = true;
+                }
 
-                    // Turn on the desired verbose levels
-                    switch (verboseLevel)
-                    {
-                    case 5: lmVerbose5 = true;
-                    case 4: lmVerbose4 = true;
-                    case 3: lmVerbose3 = true;
-                    case 2: lmVerbose2 = true;
-                    case 1: lmVerbose  = true;
-                    }
-
+                if (format == "xml")
+                {
                     if (sub == "0")
                         au::xml_simple(data, "verbose", au::str("verbose levels OFF", sub.c_str()));
                     else
                         au::xml_simple(data, "verbose", au::str("verbose levels upto %s SET", sub.c_str()));
                 }
-            }
-            else if (logCommand == "trace")
-            {
-                if (sub == "set")
+                else
                 {
-                    lmTraceSet((char*) arg.c_str());
-                    au::xml_simple(data, "traceLevels", au::str(arg.c_str()));
-                }
-                else if ( sub == "get" )    // /samson/logging/trace/get
-                {
-                    char traceLevels[1024];
-                    lmTraceGet(traceLevels);
-                    au::xml_simple(data, "message", au::str("Tracelevels: '%s'", traceLevels));
-                }
-                else if (sub == "off")    // /samson/logging/trace/off
-                {
-                    lmTraceSet(NULL);
-                    au::xml_simple(data, "traceLevels", au::str("all trace levels turned off"));
-                }
-                else if (sub == "add")    // /samson/logging/trace/add
-                {
-                    lmTraceAdd((char*) arg.c_str());
-                    au::xml_simple(data, "traceLevels", au::str("added level(s) %s",  arg.c_str()));
-                }
-                else if (sub == "remove")     // /samson/logging/trace/remove
-                {
-                    lmTraceSub((char*) arg.c_str());
-                    au::xml_simple(data, "traceLevels", au::str("removed level(s) %s",  arg.c_str()));
+                    if (arg == "0")
+                        data << "  \"verbose\" : \"verbose levels OFF\"\r\n";
+                    else
+                        data << "  \"verbose\" : \"verbose levels upto " << arg.c_str() << " SET\"\r\n";
                 }
             }
         }
-        else
+        else if (logCommand == "trace")
         {
-            au::xml_simple(data, "message", au::str("Error: Unknown path component '%s'\n" , path_components[1].c_str() ) );
-            http_state = 404;
+            if (sub == "set")
+            {
+                lmTraceSet((char*) arg.c_str());
+
+                if (format == "xml")
+                    au::xml_simple(data, "traceLevels", au::str(arg.c_str()));
+                else
+                    data << "  \"traceLevels\" : \"" << arg.c_str() << "\"\r\n";
+            }
+            else if (sub == "get")    // /samson/logging/trace/get
+            {
+                char traceLevels[1024];
+                lmTraceGet(traceLevels);
+
+                if (format == "xml")
+                    au::xml_simple(data, "message", au::str("Tracelevels: '%s'", traceLevels));
+                else
+                    data << "  \"traceLevels\" : \"" << traceLevels << "\"\r\n";
+            }
+            else if (sub == "off")    // /samson/logging/trace/off
+            {
+                lmTraceSet(NULL);
+
+                if (format == "xml")
+                    au::xml_simple(data, "traceLevels", au::str("all trace levels turned off"));
+                else
+                    data << "  \"traceLevels\" : \"all trace levels turned off\"\r\n";
+            }
+            else if (sub == "add")    // /samson/logging/trace/add
+            {
+                lmTraceAdd((char*) arg.c_str());
+
+                if (format == "xml")
+                    au::xml_simple(data, "traceLevels", au::str("added level(s) %s",  arg.c_str()));
+                else
+                    data << "  \"traceLevels\" : \"added level(s) " << arg.c_str() << "\"\r\n";
+            }
+            else if (sub == "remove")     // /samson/logging/trace/remove
+            {
+                lmTraceSub((char*) arg.c_str());
+
+                if (format == "xml")
+                    au::xml_simple(data, "traceLevels", au::str("removed level(s) %s",  arg.c_str()));
+                else
+                    data << "  \"traceLevels\" : \"removed level(s) " << arg.c_str() << "\"\r\n";
+            }
         }
+    }
+    else
+    {
+        au::xml_simple(data, "message", au::str("Error: Unknown path component '%s'\n" , path_components[1].c_str() ) );
+        http_state = 404;
+    }
 
 afterTreatment:
 
-        if (format == "xml")
-        {
-            data << "\r\n</samson>";
-        }
-        else
-        {
-            data << "}";
-        }
-
-        
-        int dataLen = data.str().length();
-
-        // Send the correct HTTP status code
-        switch (http_state)
-        {
-            case 200:
-                header << "HTTP/1.1 200 OK\r\n";
-                break;
-
-            case 400:
-                header << "HTTP/1.1 400 Bad Request\r\n";
-                break;
-
-            case 404:
-                header << "HTTP/1.1 404 Not Found\r\n";
-                break;
-
-            default:
-                header << "HTTP/1.1 Bad Request \r\n"; 
-                break;
-        }
-
-        if (format == "xml")
-            header << "Content-Type:   \"application/xml; charset=utf-8\"\r\n";
-        else
-            header << "Content-Type:   \"application/json; charset=utf-8\"\r\n";
-
-        header << "Content-Length: " << dataLen << "\r\n";
-        header << "\r\n";
-
-        std::ostringstream output;
-
-        char* out = toUTF8((char*) data.str().c_str(), NULL);
-        if (out == NULL)
-        {
-            out = strdup("error converting data to UTF8"); // free later ...
-            LM_E((out));
-        }
-
-        output << header.str() << out;
-        free(out);
-
-        return output.str();
+    if (format == "xml")
+    {
+        data << "\r\n</samson>\r\n";
+    }
+    else
+    {
+        data << "}\r\n";
     }
     
+        
+    int dataLen = data.str().length();
+
+    // Send the correct HTTP status code
+    switch (http_state)
+    {
+    case 200:
+        header << "HTTP/1.1 200 OK\r\n";
+        break;
+        
+    case 400:
+        header << "HTTP/1.1 400 Bad Request\r\n";
+        break;
+        
+    case 404:
+        header << "HTTP/1.1 404 Not Found\r\n";
+        break;
+        
+    default:
+        header << "HTTP/1.1 Bad Request \r\n"; 
+        break;
+    }
     
+    if (format == "xml")
+        header << "Content-Type:   \"application/xml; charset=utf-8\"\r\n";
+    else
+        header << "Content-Type:   \"application/json; charset=utf-8\"\r\n";
+
+    header << "Content-Length: " << dataLen << "\r\n";
+    header << "\r\n";
+
+    std::ostringstream output;
+
+    char* out = toUTF8((char*) data.str().c_str(), NULL);
+    if (out == NULL)
+    {
+        out = strdup("error converting data to UTF8"); // free later ...
+        LM_E((out));
+    }
+
+    output << header.str() << out;
+    free(out);
+
+    return output.str();
+}
+    
+    
+
     // Get information for monitoring
     void SamsonWorker::getInfo( std::ostringstream& output)
     {

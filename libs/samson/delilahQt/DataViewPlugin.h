@@ -26,28 +26,15 @@ class DataViewPlugin: public QFrame
     public:
         
         DataViewPlugin(QWidget* parent = 0);
-        ~DataViewPlugin();
+        //~DataViewPlugin();
 
     private:
         
-        Plot* plot;
-        //Data for the plot
-        au::ResizableRRT<unsigned long> rateCollection;
-        //Plot controls
-        QHBoxLayout* plotControlsLayout;
-        QPushButton* plotReset;
-        QPushButton* plotStop;
-        QLabel* plotNSamplesLabel;
-        QLineEdit* plotNSamples;
-        
-        //QGroupBox* ratePlotBox;
-        
-
     public slots:
-        void setData(std::string data);
-        void redrawPlot();
-        void onPlotReset();
-        void onPlotNSamplesChanged();
+        virtual void setData(std::string data) = 0;
+        virtual void redrawPlot() = 0;
+        virtual void onPlotReset() = 0;
+        virtual void onPlotNSamplesChanged() = 0;
         
 };
 

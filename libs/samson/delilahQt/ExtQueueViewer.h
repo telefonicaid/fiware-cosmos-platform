@@ -9,7 +9,7 @@
 *
 */
 
-#include "DataViewPlugin.h"
+#include "LineViewPlugin.h"
 
 #include "au/RRT.h"             // au::ValueCollection 
 
@@ -116,15 +116,15 @@ class ExtQueueViewer: public QScrollArea
         QLabel* time_toLabel;
         QLabel* time_to;
         
-        DataViewPlugin* plot;
+        LineViewPlugin* rateGraph;
         //Data for the plot
         //au::ResizableRRT<unsigned long> rateCollection;
         //Plot controls
         QHBoxLayout* plotControlsLayout;
         QPushButton* plotReset;
         QPushButton* plotStop;
-        QLabel* plotNSamplesLabel;
-        QLineEdit* plotNSamples;
+        //QLabel* plotNSamplesLabel;
+        //QLineEdit* plotNSamples;
         
         //QPushButton* connectButton;
         //QTextEdit* queueFeed;

@@ -24,7 +24,6 @@ namespace samson
     void DelilahQt::updateData()
     {
         //au::tables::Table* table2 = database.getTable("workers");
-        //if( table2 ) std::cout << "Engines read" << std::endl;
         QString str;
         std::vector<QueueData*> queuesData;
         std::vector<WorkerData*> workersData;
@@ -36,7 +35,6 @@ namespace samson
             {
                 QueueData* data = new QueueData;
                 data->name = table->getValue(i, "name");
-     //std::cout << "Name: " << data.name << std::endl;
                 data->kvs  = table->getValue(i, "#kvs");
                 data->size = table->getValue(i, "size");
                 data->key = table->getValue(i, "key");
@@ -79,7 +77,6 @@ namespace samson
             }
         }
         mainWindow->updateData(queuesData, workersData);
-    //std::cout << "DelilahQt::updateData()- queues: " << queuesData.size() << std::endl;
    }
 
     DelilahQt::DelilahQt( NetworkInterface *network ) : Delilah( network )
@@ -116,7 +113,6 @@ namespace samson
     {
         size_t size = buffer->getSize();
         LM_M(("Received buffer with size %s from queue %s" , au::str(size,"B").c_str() , queue.c_str() )  );
-   //std::cout << "Received buffer with size " << au::str(size,"B") << " from queue " << queue << std::endl;
         if(connectedQueues.find(queue) != connectedQueues.end())
         {
             time_t rawtime;

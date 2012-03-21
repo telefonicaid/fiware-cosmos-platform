@@ -22,7 +22,6 @@ WorkerContainer::WorkerContainer(QWidget* parent): QWidget(parent)
 
 void WorkerContainer::setData(std::vector<WorkerData*>& workersData)
 {
-  //std::cout << "WorkerContainer::setData()" << std::endl;
     for (unsigned int i = 0; i<workersData.size(); i++)
     {
         WorkerViewer* workerTmp = findWorker(workersData[i]->worker_id);

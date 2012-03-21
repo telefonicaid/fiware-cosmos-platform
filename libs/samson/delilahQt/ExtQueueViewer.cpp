@@ -129,8 +129,9 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QScrollArea
     connectGroup->addButton(connectClear);
     
     //Rate graph
-    plot = new DataViewPlugin(mainContainer);//, "", "Rate (B/s)");
-    plot->setMinimumSize(200,300);
+    rateGraph = new LineViewPlugin(mainContainer);//, "", "Rate (B/s)");
+    rateGraph->setMinimumSize(200,300);
+    rateGraph->redrawPlot();
 
     connect(connectButton, SIGNAL(clicked()), this, SLOT(onConnectButtonClicked()));
     connect(connectNew, SIGNAL(toggled(bool)), this, SLOT(onConnectNewClicked(bool)));
@@ -149,7 +150,7 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QScrollArea
     //queueHeader->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
     //queueFeed->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     mainLayout->addWidget(queueFeed);
-    mainLayout->addWidget(plot);
+    mainLayout->addWidget(rateGraph);
     mainLayout->addStretch();
     
     connectButtonLayout->addWidget(connectButton);
@@ -238,7 +239,7 @@ void ExtQueueViewer::setData(QueueData* newData)
         locked->setText(QString(au::str(strtoul(data.locked.c_str(), NULL, 0)).c_str()));
         time_from->setText(QString(au::str_time(strtoul(data.time_from.c_str(), NULL, 0)).c_str()));
         time_to->setText(QString(au::str_time(strtoul(data.time_to.c_str(), NULL, 0)).c_str()));
-        plot->setData(data.bytes_s);
+        rateGraph->setData(data.bytes_s);
         
 }
 

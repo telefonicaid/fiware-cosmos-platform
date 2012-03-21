@@ -8,7 +8,10 @@ SET (HEADERS
 	WorkerViewer.h
 	WorkerContainer.h
 	DataViewPlugin.h
+	LineViewPlugin.h
 	Plot.h
+	BarPlot.h
+	LinePlot.h
 )
 
 SET (SOURCES
@@ -21,7 +24,9 @@ SET (SOURCES
 	WorkerViewer.cpp
 	WorkerContainer.cpp
 	DataViewPlugin.cpp
-	Plot.cpp
+	LineViewPlugin.cpp
+	BarPlot.cpp
+	LinePlot.cpp
 )
 
 SET (HEADERS_FOR_MOC
@@ -34,6 +39,9 @@ SET (HEADERS_FOR_MOC
 	WorkerViewer.h
 	WorkerContainer.h
 	DataViewPlugin.h
+	LineViewPlugin.h
+	BarPlot.h
+	LinePlot.h
 )
 
 FIND_PACKAGE(Qt4 REQUIRED)

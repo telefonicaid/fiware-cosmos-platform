@@ -31,7 +31,6 @@ public class CategoryExtractionJob extends Job {
         this.setJarByClass(MongoDBExporterJob.class);
         this.setMapOutputKeyClass(TernaryKey.class);
         this.setMapOutputValueClass(LongWritable.class);
-
         this.setReducerClass(CategoryExtractionReducer.class);
         this.setOutputKeyClass(BinaryKey.class);
         this.setOutputValueClass(ProtobufWritable.class);

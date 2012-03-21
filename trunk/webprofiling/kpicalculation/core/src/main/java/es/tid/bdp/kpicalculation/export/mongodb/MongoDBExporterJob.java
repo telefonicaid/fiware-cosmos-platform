@@ -8,7 +8,6 @@ import com.mongodb.hadoop.util.MongoConfigUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
@@ -29,7 +28,7 @@ public class MongoDBExporterJob extends Job {
         this.setMapOutputKeyClass(LongWritable.class);
         this.setMapOutputValueClass(Text.class);
         this.setReducerClass(MongoDBExporterReducer.class);
-        this.setOutputKeyClass(NullWritable.class);
+        this.setOutputKeyClass(LongWritable.class);
         this.setOutputValueClass(BSONWritable.class);
     }
 

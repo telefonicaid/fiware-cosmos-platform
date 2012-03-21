@@ -22,7 +22,6 @@ import es.tid.bdp.profile.generated.data.ProfileProtocol.CategoryInformation;
  */
 public class CategoryExtractionReducer extends Reducer<TernaryKey,
         LongWritable, BinaryKey, ProtobufWritable<CategoryInformation>> {
-
     private static Dictionary sharedDictionary = null;
     private ProtobufWritable<CategoryInformation> catWrapper;
     private BinaryKey outKey;
@@ -64,7 +63,7 @@ public class CategoryExtractionReducer extends Reducer<TernaryKey,
                         .build());
                 this.outKey.setPrimaryKey(inKey.getPrimaryKey());
                 this.outKey.setSecondaryKey(inKey.getSecondaryKey());
-                context.write(outKey, this.catWrapper);
+                context.write(this.outKey, this.catWrapper);
                 break;
 
             case IRRELEVANT_URL:

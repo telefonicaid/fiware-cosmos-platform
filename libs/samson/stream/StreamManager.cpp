@@ -1190,11 +1190,12 @@ namespace samson {
 
             if (worker_ids[server] != my_worker_id)
             {
-                std::string host = worker->network->getHostForWorker( worker_id );
+                std::string     host = worker->network->getHostForWorker( worker_id );
+                unsigned short  port = worker->network->getPortForWorker( worker_id );
 
                 LM_T(LmtRest, ("Redirect to the right server (%s)", host.c_str()));
                 // Careful with 'state' / 'queue' here ...
-                snprintf(redirect, redirectSize, "%s:9898/samson/state/%s/%s", host.c_str() , queue_name.c_str() , key);
+                snprintf(redirect, redirectSize, "%s:%d", host.c_str(), port);
 
                 return au::xml_simple(  "error" 
                                       , au::str("Redirect to %s/samson/state/%s/%s" , host.c_str() , queue_name.c_str() , key )

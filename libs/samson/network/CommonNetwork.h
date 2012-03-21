@@ -74,8 +74,9 @@ namespace samson {
         network::Collection* getConnectionsCollection( Visualization* visualization );
         size_t get_rate_in();
         size_t get_rate_out();
-        NodeIdentifier getMynodeIdentifier();
-        std::string getHostForWorker(size_t worker_id);
+        NodeIdentifier  getMynodeIdentifier();
+        std::string     getHostForWorker(size_t worker_id);
+        unsigned short  getPortForWorker(size_t worker_id);
         
         // Add output worker connections
         // ----------------------------------------------------------------

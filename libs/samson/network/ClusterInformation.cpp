@@ -402,4 +402,16 @@ namespace samson {
         return "unknown_host";
     }
 
+    unsigned short ClusterInformation::portForWorker( size_t worker_id)
+    {
+        au::TokenTaker tt(&token);
+
+        for (size_t i = 0; i < nodes.size(); i ++)
+        {
+            if (nodes[i]->id == worker_id)
+                return nodes[i]->port;
+        }
+
+        return 0xFFFF;
+    }
 }

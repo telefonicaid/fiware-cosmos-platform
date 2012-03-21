@@ -175,6 +175,12 @@ namespace samson {
             return "";
         }
 
+        virtual unsigned short getPortForWorker(size_t worker_id)
+        {
+			if (worker_id == 0) {}
+            LM_X(1, ("NetworkInterface method not implemented"));
+            return 0xFFFF;
+        }
         
     };
     

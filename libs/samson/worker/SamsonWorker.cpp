@@ -510,7 +510,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             LM_T(LmtRest, ("redirecting to '%s'", redirect));
             
             header << "HTTP/1.1 302 Found\r\n";
-            header << "Location:   " << redirect << "\r\n";
+            header << "Location:   " << redirect << "/samson/state/" << path_components[2] << "/" << path_components[3].c_str() << "\r\n";
             header << "Content-Type:   application/txt; charset=utf-8\r\n";
             header << "Content-Length: " << 0 << "\r\n";
             header << "\r\n";
@@ -544,7 +544,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 LM_T(LmtRest, ("redirecting to '%s'", redirect));
                     
                 header << "HTTP/1.1 302 Found\r\n";
-                header << "Location:   " << redirect << "\r\n";
+                header << "Location:   " << redirect << "/samson/queue/" << path_components[2] << "/" << path_components[3].c_str() << "\r\n";
                 header << "Content-Type:   application/txt; charset=utf-8\r\n";
                 header << "Content-Length: " << 0 << "\r\n";
                 header << "\r\n";

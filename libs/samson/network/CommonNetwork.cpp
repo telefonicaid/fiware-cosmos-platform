@@ -312,6 +312,11 @@ namespace samson {
         return cluster_information.hostForWorker( worker_id );
     }
     
+    unsigned short CommonNetwork::getPortForWorker(size_t worker_id)
+    {
+        return cluster_information.portForWorker( worker_id );
+    }
+    
     au::tables::Table* CommonNetwork::getClusterConnectionsTable()
     {
         au::tables::Table* table = new au::tables::Table( au::StringVector( "Worker" , "Host" , "Status"  ) );

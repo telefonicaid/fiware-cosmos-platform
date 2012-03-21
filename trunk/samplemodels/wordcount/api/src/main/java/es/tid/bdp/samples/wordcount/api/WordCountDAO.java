@@ -1,4 +1,4 @@
-package es.tid.bdp.samples.wordcount;
+package es.tid.bdp.samples.wordcount.api;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;

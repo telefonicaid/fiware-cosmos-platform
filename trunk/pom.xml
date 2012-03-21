@@ -4,7 +4,7 @@
 
     <groupId>es.tid.bdp</groupId>
     <artifactId>bigdataplatform</artifactId>
-    <version>0.0.3.0</version>
+    <version>0.3.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>bigdataplatform</name>
     <description>Big Data Platform</description>
@@ -487,6 +487,7 @@
 
     <modules>
         <module>base</module>
+        <module>recomms</module>
         <module>samplemodels</module>
         <module>webprofiling</module>
     </modules>

@@ -5,14 +5,13 @@ import java.io.IOException;
 import com.mongodb.hadoop.MongoOutputFormat;
 import com.mongodb.hadoop.io.BSONWritable;
 import com.mongodb.hadoop.util.MongoConfigUtil;
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-
-import es.tid.bdp.profile.generated.data.ProfileProtocol.UserProfile;
 
 /**
  * Export user profiles to mongodb
@@ -26,7 +25,7 @@ public class MongoDBExporterJob extends Job {
         super(conf, JOB_NAME);
         this.setJarByClass(MongoDBExporterJob.class);
         this.setMapOutputKeyClass(Text.class);
-        this.setMapOutputValueClass(UserProfile.class);
+        this.setMapOutputValueClass(ProtobufWritable.class);
         this.setReducerClass(MongoDBExporterReducer.class);
         this.setOutputKeyClass(MongoProperty.class);
         this.setOutputValueClass(BSONWritable.class);

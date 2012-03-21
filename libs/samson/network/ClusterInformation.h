@@ -48,8 +48,8 @@ namespace samson {
         // Fukk Google Protool Buffer information
         void fill( network::ClusterNode* pb_cluster_node );
         
-        // Get xml information for monitori
-        void getInfo( ::std::ostringstream& output );
+        // Get xml information for monitoring
+        void getInfo( ::std::ostringstream& output , ::std::string format = "xml");
 
         // String monitorization
         std::string str();
@@ -94,7 +94,7 @@ namespace samson {
         
         void fill( network::ClusterInformation* pb_cluster_information );
         void parse( network::ClusterInformation* pb_cluster_information );
-        void getInfo( ::std::ostringstream& output );
+        void getInfo( ::std::ostringstream& output , ::std::string format = "xml" );
         std::string str();
         
         // ----------------------------------------------------

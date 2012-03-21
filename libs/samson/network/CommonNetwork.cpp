@@ -258,16 +258,21 @@ namespace samson {
     }
 
     
-    void CommonNetwork::getInfo( ::std::ostringstream& output , std::string command )
+    void CommonNetwork::getInfo( ::std::ostringstream& output , std::string command , std::string format)
     {
         if( command == "main" )
         {
             // Do something
         }        
         if( command == "cluster" )
-            cluster_information.getInfo( output );
+           cluster_information.getInfo( output , format);
         else
-            output << "<error>Unkown network element " << command << "</error>\n";
+        {
+            if (format == "xml")
+                output << "<error>Unknown network element " << command << "</error>\n";
+            else
+                output << "  \"error\" : \"unknown network element: " << command << "\"\r\n";
+        }
     }
     
     

@@ -579,7 +579,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
     }
     else if (path_components[1] == "cluster" ) /* /samson/logging */
     {
-        network->getInfo(data, "cluster");
+        network->getInfo(data, "cluster", format);
     }
     else if (path_components[1] == "logging" )  
     {
@@ -607,23 +607,14 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             else
                 data << "  \"error\" : \"" << au::str("no logging subcommand") << "\"\r\n";
         }
-        else if (sub == "")
-        {
-            http_state = 400;
-
-            if (format == "xml")
-                au::xml_simple(data, "message", au::str("logging subcommand for '%s' missing", logCommand.c_str()));
-            else
-                data << "  \"error\" : \"" << au::str("logging subcommand for '%s' missing", logCommand.c_str()) << "\"\r\n";
-        }
         else if ((logCommand != "reads") && (logCommand != "writes") && (logCommand != "trace") && (logCommand != "verbose") && (logCommand != "debug"))
         {
             http_state = 400;
 
             if (format == "xml")
-                au::xml_simple(data, "message", au::str("bad logging command"));
+                au::xml_simple(data, "message", au::str("bad logging command: '%s'", logCommand.c_str()));
             else
-                data << "  \"error\" : \"" << au::str("bad logging command") << "\"\r\n";
+                data << "  \"error\" : \"" << au::str("bad logging command: '%s'", logCommand.c_str()) << "\"\r\n";
         }
         else if (((logCommand == "reads") || (logCommand == "writes") || (logCommand == "debug")) && (sub != "on") && (sub != "off"))
         {
@@ -660,6 +651,15 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 au::xml_simple(data, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
             else
                 data << "  \"error\" : \"" << au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()) << "\"\r\n";
+        }
+        else if (sub == "")
+        {
+            http_state = 400;
+
+            if (format == "xml")
+                au::xml_simple(data, "message", au::str("logging subcommand for '%s' missing", logCommand.c_str()));
+            else
+                data << "  \"error\" : \"" << au::str("logging subcommand for '%s' missing", logCommand.c_str()) << "\"\r\n";
         }
         else if ((logCommand == "trace") && ((sub != "set") || (sub != "add") || (sub != "remove")))
         {

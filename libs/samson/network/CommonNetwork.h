@@ -70,7 +70,7 @@ namespace samson {
         std::vector<size_t> getWorkerIds();
         std::vector<size_t> getDelilahIds();
         std::vector<size_t> getConnectedWorkerIds();
-        void getInfo( ::std::ostringstream& output , std::string command );
+        void getInfo( ::std::ostringstream& output , std::string command ,  std::string format = "xml");
         network::Collection* getConnectionsCollection( Visualization* visualization );
         size_t get_rate_in();
         size_t get_rate_out();

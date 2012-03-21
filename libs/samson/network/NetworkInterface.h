@@ -107,7 +107,7 @@ namespace samson {
         }
         
         // Get information about network state
-        virtual void getInfo( ::std::ostringstream& output , std::string command )
+        virtual void getInfo( ::std::ostringstream& output , std::string command , std::string format = "xml")
         {
 			if (output != output)
 				LM_W(("NADA!"));

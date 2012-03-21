@@ -27,16 +27,24 @@ namespace samson {
         pb_cluster_node->set_id(id);
     }
     
-    void ClusterNode::getInfo( ::std::ostringstream& output )
+    void ClusterNode::getInfo( ::std::ostringstream& output , ::std::string format)
     {
-        au::xml_open(output, "cluster_node");
+        if (format == "xml")
+        {
+            au::xml_open(output, "cluster_node");
         
-        au::xml_simple(output, "id", id);
-        au::xml_simple(output, "host", host);
-        au::xml_simple(output, "port", port);
-        
-        au::xml_close(output, "cluster_node");
-        
+            au::xml_simple(output, "id", id);
+            au::xml_simple(output, "host", host);
+            au::xml_simple(output, "port", port);
+            
+            au::xml_close(output, "cluster_node");
+        }
+        else // json ...
+        {
+            output << "    \"id\"   : \"" << id   << "\"\r\n";
+            output << "    \"host\" : \"" << host << "\"\r\n";
+            output << "    \"port\" : \"" << port << "\"\r\n";
+        }
     }
     
     std::string ClusterNode::str()
@@ -379,18 +387,29 @@ namespace samson {
     }
     
     
-    void ClusterInformation::getInfo( ::std::ostringstream& output )
+    void ClusterInformation::getInfo( ::std::ostringstream& output , ::std::string format)
     {
-        au::xml_open(output, "cluster_information");
+        if (format == "xml")
+        {
+            au::xml_open(output, "cluster_information");
         
-        au::xml_simple(output, "id", id);
-        au::xml_simple(output, "version", version);
-        
+            au::xml_simple(output, "id", id);
+            au::xml_simple(output, "version", version);
+        }
+        else
+        {
+            output << "  \"id\"      : " << id << "\"\r\n";
+            output << "  \"version\" : " << version << "\"\r\n";
+            output << "  {\r\n";
+        }
+
         for ( size_t i = 0 ; i < nodes.size() ; i++ )
-            nodes[i]->getInfo( output );
+            nodes[i]->getInfo(output, format);
         
-        au::xml_close(output, "cluster_information");
-        
+        if (format == "xml")
+            au::xml_close(output, "cluster_information");
+        else
+            output << "  }\r\n";
     }
     
     std::string ClusterInformation::hostForWorker( size_t worker_id)

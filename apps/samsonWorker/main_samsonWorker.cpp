@@ -119,7 +119,7 @@ void captureSIGTERM( int s )
     LM_M(("Captured SIGTERM"));
 
     LM_M(("Cleaning up"));
-    std::string pid_file_name = au::str("%s/samsond.pid" , paLogFilePath );
+    std::string pid_file_name = au::str("%s/samsond.pid" , paLogDir );
     if ( remove (pid_file_name.c_str()) != 0)
     {
         LM_W(("Error deleting the pid file %s", pid_file_name.c_str() ));
@@ -243,7 +243,7 @@ int main(int argC, const char *argV[])
 
     // Check to see if the current memory configuration is ok or not
     if (samson::MemoryCheck() == false)
-        LM_X(1,("Insufficient memory configured. Check %ssamsonWorkerLog for more information.", paLogFilePath));
+        LM_X(1,("Insufficient memory configured. Check %ssamsonWorkerLog for more information.", paLogDir));
     
     if (fg == false)
     {
@@ -257,7 +257,7 @@ int main(int argC, const char *argV[])
     // ------------------------------------------------------
 
     char pid_file_name[256];
-    snprintf(pid_file_name, sizeof(pid_file_name), "%s/samsond.pid", paLogFilePath);
+    snprintf(pid_file_name, sizeof(pid_file_name), "%s/samsond.pid", paLogDir);
     FILE *file = fopen(pid_file_name, "w");
     if (!file)
         LM_X(1, ("Error opening file '%s' to store pid", pid_file_name));

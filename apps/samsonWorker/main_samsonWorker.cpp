@@ -8,6 +8,7 @@
 *
 */
 #include "parseArgs/parseArgs.h"
+#include "parseArgs/paBuiltin.h"
 #include "parseArgs/paIsSet.h"
 #include "logMsg/logMsg.h"
 #include "parseArgs/paConfig.h"

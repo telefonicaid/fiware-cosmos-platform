@@ -12,6 +12,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import com.twitter.elephantbird.mapreduce.output.LzoProtobufB64LineOutputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -46,6 +47,7 @@ public class KpiMain extends Configured implements Tool {
             "/kpi.properties");
     private static final Logger LOGGER = Logger.getLogger("KpiMain");
     private static final int NUM_ARGS = 3;
+    private static final String MONGO_COLLECTION_NAMESPACE_DELIMITER = ".";
 
     public static void main(String[] args) {
         try {
@@ -68,10 +70,25 @@ public class KpiMain extends Configured implements Tool {
             return 1;
         }
 
+        FileSystem fs = FileSystem.get(this.getConf());
+
         Path inputPath = new Path(args[0]);
         Path outputPath = new Path(args[1] + "/aggregates");
+        if (!fs.mkdirs(outputPath)) {
+            LOGGER.log(Level.SEVERE, "Could not create {0}", outputPath);
+            return 1;
+        }
         String timeFolder = "data." + Long.toString(new Date().getTime());
         Path tmpPath = new Path(args[1] + timeFolder + "/cleaned/");
+        if (!fs.mkdirs(tmpPath)) {
+            LOGGER.log(Level.SEVERE, "Could not create {0}", tmpPath);
+            return 1;
+        }
+        LOGGER.log(Level.INFO, "Using {0} as temp directory", tmpPath);
+        if (!fs.deleteOnExit(tmpPath)) {
+            LOGGER.log(Level.INFO,
+                       "Could not set temp directory for automatic deletion");
+        }
         String mongoUrl = args[2];
 
         Configuration conf = getConf();
@@ -97,8 +114,9 @@ public class KpiMain extends Configured implements Tool {
             }
 
             String mongoCollectionUrl = mongoUrl;
-            if (!mongoCollectionUrl.endsWith("/")) {
-                mongoCollectionUrl += "/";
+            if (!mongoCollectionUrl.endsWith(
+                    MONGO_COLLECTION_NAMESPACE_DELIMITER)) {
+                mongoCollectionUrl += MONGO_COLLECTION_NAMESPACE_DELIMITER;
             }
             mongoCollectionUrl += features.getName();
             MongoDBExporterJob exporterJob = new MongoDBExporterJob(conf);

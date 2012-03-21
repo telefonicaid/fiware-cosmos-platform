@@ -551,7 +551,7 @@ namespace samson {
     {
     public:
 
-        virtual int split( char * inData, size_t inLength, char ** outData, size_t *outLength, char ** nextData)=0;
+        virtual int split( char * inData, size_t inLength, char ** outData, size_t *outLength, char ** nextData, bool finished)=0;
     };
 
 }

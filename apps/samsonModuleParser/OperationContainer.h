@@ -423,7 +423,7 @@ public:
             }
             if( type == "splitter" )
             {
-                file << "\t\tint split( char * inData, size_t inLength, char ** outData, size_t *outLength, char ** nextData)\n\t\t{\n\t\t\treturn 0;\n\t\t}\n\n";
+                file << "\t\tint split( char * inData, size_t inLength, char ** outData, size_t *outLength, char ** nextData, bool finished)\n\t\t{\n\t\t\treturn 0;\n\t\t}\n\n";
             }
 
         }

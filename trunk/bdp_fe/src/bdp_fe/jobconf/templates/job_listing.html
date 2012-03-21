@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+	<title>Job listing</title>
+    </head>
+
+    <body>
+	<h1>Job listing</h1>
+
+	{% if jobs %}
+	<table>
+	    {% for job in jobs %}
+	    <tr>
+		<td>{{ job.name }}</td>
+	    </tr>
+	    {% endfor %}
+	</table>
+	{% else %}
+	<p>No jobs</p>
+	{% endif %}
+
+	<ul>
+	    <li><a href="{% url jobconf.views.new_job %}">Create new job</a></li>
+	    <li><a href="{% url django.contrib.auth.views.logout %}">Logout</a></li>
+	</ul>
+    </body>
+</html>
+{# vim:set syntax=htmldjango: #}

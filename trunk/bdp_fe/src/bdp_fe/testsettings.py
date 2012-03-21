@@ -6,15 +6,21 @@ tests of the installed applications.
 
 """
 
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
+
 from settings import *
 
 DATABASE_ENGINE = 'sqlite3'
 DATABASE_NAME = '/tmp/bdp_fe.db'
-INSTALLED_APPS = ['bdp_fe.jobconf']
-ROOT_URLCONF = ['bdp_fe.urls']
+
+MEDIA_ROOT = ''
+MEDIA_URL = ''
+STATIC_ROOT = ''
+STATIC_URL = '/static/'
+ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 ADMINS = (
     ('Test admin', 'cosmos@tid.es'),
 )
-
 MANAGERS = ADMINS

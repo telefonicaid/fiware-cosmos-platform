@@ -180,7 +180,7 @@ test: ctest
 ctest: debug
 	killall samsonWorker || true
 	BUILD_DEBUG/apps/samsonWorker/samsonWorker
-	make test -C BUILD_DEBUG ARGS="--output-on-failure"
+	make test -C BUILD_DEBUG ARGS="-D ExperimentalTest"
 	killall samsonWorker || true
 
 test_local_processes:

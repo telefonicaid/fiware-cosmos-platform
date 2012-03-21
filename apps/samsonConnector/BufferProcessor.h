@@ -2,7 +2,7 @@
 #define _H_SAMSON_CONNECTOR_BLOCK_PROCESSOR
 
 #include "engine/Buffer.h"
-#include "samson/Module/Operation.h"
+#include "samson/module/Operation.h"
 
 namespace samson 
 {

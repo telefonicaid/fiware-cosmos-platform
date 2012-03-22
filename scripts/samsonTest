@@ -1,0 +1,124 @@
+#!/bin/bash +x
+
+function setup_test_vars
+{
+    HAVE_INIT=0
+    HAVE_COMMAND=0
+    HAVE_SCRIPT=0
+    HAVE_SHELL=0
+
+    TEST_BASENAME=$(echo $TEST_FILE | sed 's/\.test//')
+    TEST_NAME=$(sed -n '/--NAME--/,/^--/p' $TEST_FILE  | grep -v "^--")
+
+    #Extract the init script
+    if [ $(grep "\-\-INIT\-\-" $TEST_FILE | wc -l) -eq 1 ]; then
+        TEST_INIT_SCRIPT=${TEST_BASENAME}.init
+        sed -n '/--INIT--/,/^--/p' $TEST_FILE  | grep -v "^--" > $TEST_INIT_SCRIPT
+        HAVE_INIT=1
+    fi
+
+    #Extract the test script
+    if [ $(grep "\-\-COMMAND\-\-" $TEST_FILE | wc -l) -eq 1 ]; then
+        TEST_COMMAND=$(sed -n '/--COMMAND--/,/^--/p' $TEST_FILE  | grep -v "^--")
+        HAVE_COMMAND=1
+    fi
+
+    #Extract the shell script
+    if [ $(grep "\-\-SHELL\-\-" $TEST_FILE | wc -l) -eq 1 ]; then
+        TEST_SHELL_SCRIPT=${TEST_BASENAME}.sh
+        sed -n '/--SHELL--/,/^--/p' $TEST_FILE  | grep -v "^--" > $TEST_SHELL_SCRIPT
+        HAVE_SHELL=1
+    fi
+
+    #Generate the canon file
+    if [ $(grep "\-\-EXPECT\-\-" $TEST_FILE | wc -l) -eq 1 ]; then
+        TEST_EXPECT=${TEST_BASENAME}.expect
+        sed -n '/--EXPECT--/,/^--/p' $TEST_FILE  | grep -v "^--" > $TEST_EXPECT
+        TEST_DIFF=${TEST_BASENAME}.diff
+        TEST_OUTPUT=${TEST_BASENAME}.out
+    else
+        echo "ERROR: $TEST_FILE is missing an --EXPECT-- section"
+        exit 1
+    fi
+
+    if [ $HAVE_COMMAND -eq 0 -a $HAVE_SHELL -eq 0 -a $HAVE_SCRIPT -eq 0 ]; then
+        echo "ERROR: $TEST_FILE is missing a test"
+        exit 1
+    fi
+
+}
+
+function execute_test
+{
+
+	# ------------------------------------------------ 
+	# Initialize the test
+	# ------------------------------------------------ 
+	if [ -f delilah_commands ]; then
+	   echo "Initializing the test" 
+	   delilah -f $TEST_INIT_SCRIPT 2>$TEST_INIT_SCRIPT.stderr >$TEST_INIT_SCRIPT.stdout
+	fi		  
+    
+    # ------------------------------------------------
+    # Execute script
+    # ------------------------------------------------
+    delilah -command  $TEST_COMMAND > $TEST_OUTPUT 2>/dev/null
+
+    # Check to see if the output is what we expect
+    diff -u $TEST_EXPECT $TEST_OUTPUT > $TEST_DIFF
+    if [ $? -ne 0 ]; then
+        echo "ERROR: $TEST_NAME"
+        echo "Diffs"
+        cat $TEST_DIFF
+    else
+        # Clean up files for succesfull test runs
+        rm $TEST_EXPECT $TEST_OUTPUT $TEST_SCRIPT $TEST_INIT_SCRIPT $TEST_SHELL_SCRIPT ${TEST_BASENAME}.diff $TEST_INIT_SCRIPT.stderr $TEST_INIT_SCRIPT.stdout
+        echo "SUCCESS: $TEST_NAME"
+    fi
+
+}
+
+function usage
+{
+    echo "Usage: $0 [test_file|test_directory]"
+    exit 1
+}
+
+if [ -z $1 ]
+then
+    usage
+fi
+
+# If we have a directory we'll run a suite of tests
+if [ -d $1 ];
+then
+    TEST_DIR=$1
+fi
+
+# Execute an individual test
+if [ -f $1 ];
+then
+    TEST_DIR=$(dirname $1)
+    TEST_FILE=$(basename $1)
+fi
+
+if [ -z "${TEST_DIR}" ]
+then
+    echo "ERROR: $1 does not exist"
+    exit 1
+fi
+
+pushd $TEST_DIR
+if [ -z ${TEST_FILE} ];
+then
+    for test in *.test
+    do
+        TEST_FILE=$test
+        execute_test
+    done
+else
+    setup_test_vars
+    execute_test
+fi
+popd
+exit 0

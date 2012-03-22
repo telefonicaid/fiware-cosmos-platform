@@ -1,11 +1,9 @@
 --NAME--
 ls_queues - fetch the current queue list
 --INIT--
-cluster add localhost
 remove_all_stream
 push input.txt input
-ls_queues
---SCRIPT--
+--COMMAND--
 ls_queues
 --EXPECT--
 +-----------+-------+-------+-------+-----+-------+

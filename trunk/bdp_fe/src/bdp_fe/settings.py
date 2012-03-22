@@ -82,12 +82,7 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-        'fileup': {
-            'handlers': ['console', 'mail_admins'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-        'config': {
+        'bdp_fe': {
             'handlers': ['console', 'mail_admins'],
             'level': 'DEBUG',
             'propagate': True,

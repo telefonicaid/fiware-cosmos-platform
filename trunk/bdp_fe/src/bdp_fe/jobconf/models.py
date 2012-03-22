@@ -24,7 +24,7 @@ class Job(models.Model):
 
     name = models.CharField(max_length=40)
     user = models.ForeignKey(User)
-    date = models.DateTimeField('date created')
+    date = models.DateTimeField(auto_now=True)
     status = models.IntegerField(choices=JOBSTATUS_CHOICES)
     execution_id = models.CharField(max_length=256, null=True, blank=True)
 

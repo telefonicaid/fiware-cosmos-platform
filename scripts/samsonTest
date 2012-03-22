@@ -34,12 +34,12 @@ function setup_test_vars
     if [ $(grep "\-\-EXPECT\-\-" $TEST_FILE | wc -l) -eq 1 ]; then
         TEST_EXPECT=${TEST_BASENAME}.expect
         sed -n '/--EXPECT--/,/^--/p' $TEST_FILE  | grep -v "^--" > $TEST_EXPECT
-        TEST_DIFF=${TEST_BASENAME}.diff
-        TEST_OUTPUT=${TEST_BASENAME}.out
     else
         echo "ERROR: $TEST_FILE is missing an --EXPECT-- section"
         exit 1
     fi
+    TEST_DIFF=${TEST_BASENAME}.diff
+    TEST_OUTPUT=${TEST_BASENAME}.out
 
     if [ $HAVE_COMMAND -eq 0 -a $HAVE_SHELL -eq 0 -a $HAVE_SCRIPT -eq 0 ]; then
         echo "ERROR: $TEST_FILE is missing a test"
@@ -51,18 +51,18 @@ function setup_test_vars
 function execute_test
 {
 
-	# ------------------------------------------------ 
-	# Initialize the test
-	# ------------------------------------------------ 
-	if [ -f delilah_commands ]; then
-	   echo "Initializing the test" 
-	   delilah -f $TEST_INIT_SCRIPT 2>$TEST_INIT_SCRIPT.stderr >$TEST_INIT_SCRIPT.stdout
-	fi		  
-    
+    # ------------------------------------------------ 
+    # Initialize the test
+    # ------------------------------------------------ 
+    if [ -f delilah_commands ]; then
+       echo "Initializing the test" 
+       delilah ${SAMSON_TEST_HOST} -f $TEST_INIT_SCRIPT 2>$TEST_INIT_SCRIPT.stderr >$TEST_INIT_SCRIPT.stdout
+    fi		  
+
     # ------------------------------------------------
     # Execute script
     # ------------------------------------------------
-    delilah -command  $TEST_COMMAND > $TEST_OUTPUT 2>/dev/null
+    delilah ${SAMSON_TEST_HOST} -command  $TEST_COMMAND > $TEST_OUTPUT 2>/dev/null
 
     # Check to see if the output is what we expect
     diff -u $TEST_EXPECT $TEST_OUTPUT > $TEST_DIFF
@@ -72,7 +72,7 @@ function execute_test
         cat $TEST_DIFF
     else
         # Clean up files for succesfull test runs
-        rm $TEST_EXPECT $TEST_OUTPUT $TEST_SCRIPT $TEST_INIT_SCRIPT $TEST_SHELL_SCRIPT ${TEST_BASENAME}.diff $TEST_INIT_SCRIPT.stderr $TEST_INIT_SCRIPT.stdout
+        rm -f $TEST_EXPECT $TEST_OUTPUT $TEST_SCRIPT $TEST_INIT_SCRIPT $TEST_SHELL_SCRIPT ${TEST_BASENAME}.diff $TEST_INIT_SCRIPT.stderr $TEST_INIT_SCRIPT.stdout
         echo "SUCCESS: $TEST_NAME"
     fi
 
@@ -108,17 +108,18 @@ then
     exit 1
 fi
 
-pushd $TEST_DIR
+pushd $TEST_DIR > /dev/null
 if [ -z ${TEST_FILE} ];
 then
-    for test in *.test
+    for test in  `find . -name *.test`
     do
         TEST_FILE=$test
+        setup_test_vars
         execute_test
     done
 else
     setup_test_vars
     execute_test
 fi
-popd
+popd > /dev/null
 exit 0

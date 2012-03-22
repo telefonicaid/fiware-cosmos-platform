@@ -67,14 +67,18 @@ public class CosmosWebUITester implements JobLauncher
             // Go to the main page
             _frontend.goHome();
 
-            // Get task table
+            taskCompleted = (_frontend.getTaskStatus(taskId)
+                                == TaskStatus.Completed);
 
-            // Get status of task with id==taskId
-            
-            // Check if task completed
+            if(!taskCompleted) {
+                try {
+                    Thread.sleep(30000); // Sleep 30 seconds
+                } catch (InterruptedException ex) {
+                    throw new TestException("[InterruptedException] "
+                            + ex.getMessage());
+                }
+            }
         }
-        
-        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     public Map<String,String[]> getResults(String taskId) throws TestException {
@@ -82,6 +86,6 @@ public class CosmosWebUITester implements JobLauncher
     }
 
     public TaskStatus getTaskStatus(String taskId) throws TestException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return _frontend.getTaskStatus(taskId);
     }
 }

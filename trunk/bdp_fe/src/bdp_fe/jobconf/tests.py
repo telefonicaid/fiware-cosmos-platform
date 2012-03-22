@@ -3,20 +3,55 @@ Module bdp_fe.jobconf.tests
 
 This module holds the unittests for the bdp_fe.jobconf app
 """
-from django.test import TestCase
+from os import path
+import tempfile
+import shutil
+
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import unittest
+import django.test as djangotest
 from django.test.client import Client
 from pymongo import Connection
 
-class AlwaysTrue(TestCase):
-    """
-    AlwaysTrue is a dummy test case that always passes. This is just to prove
-    that the testing framework is working.
-    """
-    def test_framework(self):
-        '''This test case should always pass'''
-        self.assert_(True)
+from bdp_fe.jobconf import upload_util
 
-class RetrieveFromMongo(TestCase):
+class FileUtilTest(unittest.TestCase):
+
+    def setUp(self):
+        self.tmpdir = tempfile.mkdtemp()
+
+    def test_ensure_dir(self):
+        test_dir = path.join(self.tmpdir, 'test/dir/')
+        self.assertFalse(path.isdir(test_dir))
+
+        # Create dir when necessary
+        upload_util.ensure_dir(test_dir)
+        self.assertTrue(path.isdir(test_dir))
+
+        # OK if the dir already exists
+        upload_util.ensure_dir(test_dir)
+        self.assertTrue(path.isdir(test_dir))
+
+    def test_save(self):
+        upload = SimpleUploadedFile.from_dict({
+            'filename': 'upload',
+            'content-type': 'application/json',
+            'content' : '1',
+        })
+        target_dir = path.join(self.tmpdir, 'target')
+        target_name = 'filename'
+
+        upload_util.save(upload, target_dir, target_name)
+
+        target_file = path.join(target_dir, target_name)
+        self.assertTrue(path.isfile(target_file))
+        with open(target_file) as f:
+            self.assertEquals('1', f.read())
+
+    def tearDown(self):
+        shutil.rmtree(self.tmpdir)
+
+class RetrieveFromMongo(djangotest.TestCase):
     """
     RetrieveFromMongo is a test where some records are written to a test
     collection, and then read back into the view_results view.
@@ -24,7 +59,7 @@ class RetrieveFromMongo(TestCase):
     Note: mongodb server MUST be running for this test case to pass.
     """
     fixtures = ['test.fixture.json']
-    
+
 
     def setUp(self):
         self.job_id = 666
@@ -48,13 +83,12 @@ class RetrieveFromMongo(TestCase):
                        {"job_id" : job_id,
                         "word" : "world",
                         "count" :  1
-                       }] 
+                       }]
         self.job_results.insert(new_results)
 
     def test_results_retrieved(self):
-        c = Client()
-        success = c.login(username=self.test_user, password=self.test_pass)
-        response = c.get('/job/%s/results/' % self.job_id)
+        success = self.client.login(username=self.test_user,
+                                    password=self.test_pass)
+        response = self.client.get('/job/%s/results/' % self.job_id)
         self.assertEquals(response.status_code, 200)
         self.assertEquals(len(response.context['job_results']), 2)
-

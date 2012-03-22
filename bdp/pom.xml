@@ -489,6 +489,5 @@
         <module>base</module>
         <module>models</module>
         <module>platform</module>
-        <module>tests</module>
     </modules>
 </project>

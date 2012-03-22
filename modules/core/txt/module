@@ -36,6 +36,12 @@ parser parser_words
 	helpLine "Parse a txt files emiting words at the output (value is always one)"
 }
 
+simpleParser parser_words_alpha
+{
+	out system.String system.UInt
+	helpLine "Parse text generating all words separated by any non-alphanumeric character"
+}
+
 map filter_words_with_numbers_and_letters
 {
 	in system.String system.UInt

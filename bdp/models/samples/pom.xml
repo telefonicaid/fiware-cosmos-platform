@@ -1,23 +1,19 @@
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>es.tid.bdp</groupId>
-        <artifactId>bigdataplatform</artifactId>
+        <artifactId>models</artifactId>
         <version>0.3.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>webprofiling</artifactId>
+    <artifactId>samples</artifactId>
+    <name>samples</name>
     <packaging>pom</packaging>
-    <name>webprofiling</name>
-    
-    <properties>
-        <jersey-version>1.11</jersey-version>
-    </properties>
     
     <build>
+
         <plugins>
             <!-- Applying encoding to filtered resources -->
             <plugin>
@@ -231,34 +227,6 @@
             <artifactId>mongo-hadoop</artifactId>
             <version>1.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.9.0</version>
-            <scope>test</scope>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-web-api</artifactId>
-            <version>6.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-server</artifactId>
-            <version>${jersey-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-grizzly2</artifactId>
-            <version>${jersey-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey.contribs</groupId>
-            <artifactId>jersey-spring</artifactId>
-            <version>${jersey-version}</version>
-        </dependency>
     </dependencies>
 
     <distributionManagement>
@@ -280,8 +248,6 @@
     </distributionManagement>
 
     <modules>
-        <module>individualprofile</module>
-        <module>kpicalculation</module>
+        <module>wordcount</module>
     </modules>
-
 </project>

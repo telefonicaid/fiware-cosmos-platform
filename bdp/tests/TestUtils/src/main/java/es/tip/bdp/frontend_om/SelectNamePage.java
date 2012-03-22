@@ -6,17 +6,17 @@ import org.openqa.selenium.WebElement;
 import org.testng.Assert;
 
 public class SelectNamePage {
-    private static final String NAME_ID = "SomeFakeId0";
-    private static final String SELECT_NAME_URL = "";
+    public static final String NAME_ID = "job-name";
+    private final String _selectNameUrl;
     private WebDriver _driver;
     
     private void assertCorrectUrl() {
-        Assert.assertEquals(_driver.getCurrentUrl(), SELECT_NAME_URL);
+        Assert.assertEquals(_driver.getCurrentUrl(), _selectNameUrl);
     }
     
     public SelectNamePage(WebDriver driver) {
         _driver = driver;
-        assertCorrectUrl();
+        _selectNameUrl = driver.getCurrentUrl();
     }
     
     public void setName(String taskName) {

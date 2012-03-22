@@ -11,16 +11,18 @@ import org.testng.Assert;
  */
 public class SelectJarPage {
     private WebDriver _driver;
-    private static final String SELECT_JAR_URL = "";
-    private static final String INPUT_JAR_HTML_ID = "SomeFakeId";
+    private final String _selectJarUrl;
+    public static final String INPUT_JAR_HTML_ID = "jar-file";
+    public static final String JAR_RESTRICTIONS_ID = "jar-restrictions";
+    public static final String SAMPLE_JAR_LINK_ID = "sample-jar-link";
     
     private void assertCorrectUrl() {
-        Assert.assertEquals(_driver.getCurrentUrl(), SELECT_JAR_URL);
+        Assert.assertEquals(_driver.getCurrentUrl(), _selectJarUrl);
     }
     
     public SelectJarPage(WebDriver driver) {
         _driver = driver;
-        assertCorrectUrl();
+        _selectJarUrl = driver.getCurrentUrl();
     }
     
     public void setInputJar(String filePath) {

@@ -11,16 +11,16 @@ import org.testng.Assert;
  */
 public class SelectInputPage {
     private WebDriver _driver;
-    private static final String SELECT_INPUT_URL = "";
-    private static final String INPUT_FILE_HTML_ID = "SomeFakeId";
+    private final String _selectInputUrl;
+    public static final String INPUT_FILE_HTML_ID = "input-file";
     
     private void assertCorrectUrl() {
-        Assert.assertEquals(_driver.getCurrentUrl(), SELECT_INPUT_URL);
+        Assert.assertEquals(_driver.getCurrentUrl(), _selectInputUrl);
     }
     
     public SelectInputPage(WebDriver driver) {
         _driver = driver;
-        assertCorrectUrl();
+        _selectInputUrl = driver.getCurrentUrl();
     }
     
     public void setInputFile(String filePath) {

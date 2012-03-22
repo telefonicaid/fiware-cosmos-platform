@@ -143,8 +143,8 @@ public class WebUITest {
         
         SelectJarPage jarPage = namePage.submitNameForm();
                 
-        final String sampleJarLinkId = "FakeId";
-        driver.findElement(By.id(sampleJarLinkId));  // Just verifying it exists
+        // Just verifying it exists
+        driver.findElement(By.id(SelectJarPage.SAMPLE_JAR_LINK_ID));
         verifyLinks();
     }
     
@@ -154,10 +154,9 @@ public class WebUITest {
         SelectNamePage namePage = _frontend.goToCreateNewJob();
         namePage.setName(UUID.randomUUID().toString());
         SelectJarPage jarPage = namePage.submitNameForm();
-                
-        final String jarRestrictionsId = "FakeId";
-        String restrictions = driver.findElement(By.id(jarRestrictionsId))
-                                   .getText();
+               
+        String restrictions = driver.findElement(
+                       By.id(SelectJarPage.JAR_RESTRICTIONS_ID)).getText();
         
         Assert.assertTrue(
                 "Verifying restrictions mention HDFS",

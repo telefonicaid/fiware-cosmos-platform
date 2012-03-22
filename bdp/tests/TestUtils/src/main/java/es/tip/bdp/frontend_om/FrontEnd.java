@@ -14,8 +14,11 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
  */
 public class FrontEnd {
     public static final String HOME_URL = "http://pstools/dev/bdp/";
-    private static final String CREATE_JOB_ID = "SomeFakeId0";
-    private static final String TASK_STATUS_TABLE_ID = "SomeFakeId0";
+    public static final String CREATE_JOB_ID = "create-job";
+    public static final String TASK_STATUS_TABLE_ID = "results-table";
+    public static final String RESULT_LINK_NAME = "result-link";
+    public static final String RESULT_NAME_NAME = "result-name";
+    public static final String RESULT_STATUS_NAME = "result-status";
     
     private WebDriver _driver;
     
@@ -39,7 +42,7 @@ public class FrontEnd {
         WebElement row = getTaskRow(taskId);
         
         URL baseUrl = new URL(HOME_URL);
-        String verbatimUrl = row.findElement(By.name("link"))
+        String verbatimUrl = row.findElement(By.name(RESULT_LINK_NAME))
                                     .getAttribute("href");
         return new URL(baseUrl, verbatimUrl).toString();
     }

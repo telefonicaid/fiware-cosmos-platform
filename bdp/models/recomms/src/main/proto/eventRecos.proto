@@ -1,0 +1,59 @@
+package recomms;
+
+option java_package = "es.tid.bdp.recomms.data";
+option java_outer_classname = "RecommsProtocol";
+
+message UserPref {
+    required int64 userID = 1;
+    optional string deviceID = 2;
+    required int32 eventType = 3;
+    required int64 itemId = 4;
+    required float eventValue = 5;
+    optional string eventDate = 6;
+}
+
+message ItemID {
+    required string itemID = 1; 
+}
+
+message VectorElement {
+    required double value = 1;
+    required int32 index = 2;	 
+}
+	 
+message Preference {
+    required float pref = 1;
+}
+
+message UserId {
+    required int64 Id = 1;
+}
+
+message VectorAndPrefs {
+    repeated UserId userIds = 1;
+    repeated Preference prefs = 2;
+    repeated VectorElement vector = 3;
+}
+
+message VectorOrPrefs {
+    optional int64 userID = 1;
+    optional float value = 2;  
+    repeated VectorElement vector = 3;
+}
+
+message Predictions {
+    message Pred {
+        required int64 itemID = 1;
+        required float value = 2; 
+    }
+    repeated Pred predicts = 1;
+}
+message PrefandSimil {
+    required float prefvalue = 1;
+    repeated VectorElement vector  = 2;
+}
+
+message EntityPref {
+    required int64 itemID = 1;
+    required float value = 2; 
+}

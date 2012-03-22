@@ -18,8 +18,9 @@ def handle_upload(job, upload):
     Accepts the upload file and moves it to the cluster.
 
     """
-    ensure_dir(settings.LANDING_ROOT)
-    target_file = path.join(settings.LANDING_ROOT, "job_%d.jar" % job.id)
+    target_dir = path.join(settings.LANDING_ROOT, job.user.username)
+    ensure_dir(target_dir)
+    target_file = path.join(target_dir, "job_%d.jar" % job.id)
     with open(target_file, 'w') as dest:
         for chunk in upload.chunks():
             dest.write(chunk)

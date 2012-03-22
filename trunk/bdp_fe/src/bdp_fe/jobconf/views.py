@@ -15,6 +15,7 @@ from django.template import RequestContext
 from pymongo import Connection
 
 import custom_model
+import data
 from models import Job, JobModel
 from views_util import safe_int_param
 
@@ -107,10 +108,26 @@ def config_job(request, job_id):
         form = UploadJarForm()
     return render_to_response('upload_jar.html', {
         'title': 'Configure custom job',
-        'job_id' : job.id,
+        'job': job,
         'form': form,
     }, context_instance=RequestContext(request))
 
+class UploadDataForm(forms.Form):
+    file = forms.FileField()
+
 @login_required
 def upload_data(request, job_id):
-    return HttpResponseNotFound()
+    job = get_object_or_404(Job, pk=job_id, user=request.user)
+    if request.method == 'POST':
+        form = UploadDataForm(request.POST, request.FILES)
+        if form.is_valid() and data.handle_upload(job, request.FILES['file']):
+            return redirect(reverse('list_jobs'))
+        else:
+            messages.info(request, 'Data file upload failed')
+    else:
+        form = UploadDataForm()
+    return render_to_response('upload_data.html', {
+        'title': 'Upload job %s data' % job.name,
+        'job': job,
+        'form': form,
+    }, context_instance=RequestContext(request))

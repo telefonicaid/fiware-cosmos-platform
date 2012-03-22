@@ -45,7 +45,7 @@ MEM_BYTES=`cat /proc/meminfo | grep MemTotal | awk '{printf "%d",$2*1024}'`
 sed -i "s/^general.memory/general.memory   $MEM_BYTES/"  ${SETUP_TXT}
 
 # Determine if the server has enough shared memory defined. If not configure shmmax for our needs
-shmmax_needed=`grep "^general.shared_memory_size_per_buffer" /var/samson/etc/setup.txt | awk -v no_procs=$NO_PROCS '{ printf "%d",$2*no_procs }'`
+shmmax_needed=`grep "^general.shared_memory_size_per_buffer"  ${SETUP_TXT} | awk -v no_procs=$NO_PROCS '{ printf "%d",$2*no_procs }'`
 shmmax_have=`sysctl -n kernel.shmmax`
 if [ "$shmmax_needed" -gt "$shmmax_have" ]; then
     echo "Updating kernel.shmmax"

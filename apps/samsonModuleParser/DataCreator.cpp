@@ -343,7 +343,9 @@ namespace samson {
 
 			output << "\t\t{\n";
 			
-            if( op.type == "script")
+            if( (op.type == "simpleParser") )
+                output << "\t\t\tsamson::Operation * operation = new samson::OperationImpl<" << op.name << ">( \"" << op.module << "." << op.name << "\" , samson::Operation::parser);"<<std::endl;
+            else if( op.type == "script")
                 output << "\t\t\tsamson::Operation * operation = new samson::Operation( \"" << op.module << "." << op.name << "\" , samson::Operation::"<< op.type <<");"<<std::endl;
             else
                 output << "\t\t\tsamson::Operation * operation = new samson::OperationImpl<" << op.name << ">( \"" << op.module << "." << op.name << "\" , samson::Operation::"<< op.type <<");"<<std::endl;

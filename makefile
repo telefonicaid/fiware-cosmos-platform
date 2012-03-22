@@ -271,7 +271,7 @@ valgrind: di
 
 
 clear_ipcs:
-	for mem in `sudo ipcs -m  | awk '{ if ($6 == 0) print $2;}'`; do ipcrm -m $mem; done
+	for mem in `sudo ipcs -m  | awk '{ if ($$6 == 0) print $$2;}'`; do ipcrm -m $$mem; done
 
 set_ssm_linux:
 	sudo sysctl -w kernel.shmmax=64000000

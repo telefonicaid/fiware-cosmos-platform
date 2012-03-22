@@ -1,7 +1,7 @@
 --NAME--
 samsonWorker: worker start
 --SHELL-INIT--
-killall samsonWorker
+killall samsonWorker || true
 --SHELL--
 samsonWorker
 --EXPECT--

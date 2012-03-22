@@ -1,19 +1,38 @@
 {% extends "base.html" %}
+{% load url from future %}
 {% block content %}
 {% if jobs %}
     <table>
-	{% for job in jobs %}
-	<tr>
-	    <td>{{ job.name }}</td>
-	</tr>
-	{% endfor %}
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in jobs %}
+            <tr>
+                <td>{{ job.name }}</td>
+                <td>{{ job.get_status_display }}</td>
+                <td>
+                    {% if job.status == 0 %}
+                    <a href="{% url 'jobconf.views.list_jobs' %}?run_job={{ job.id }}">Run</a>
+                    {% endif %}
+                    {% if job.status > 1 %}
+                    <a href="{% url 'jobconf.views.results' job.id %}">View results</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
     {% else %}
     <p>No jobs</p>
     {% endif %}
 
     <ul>
-	<li><a href="{% url jobconf.views.new_job %}">Create new job</a></li>
+	<li><a href="{% url 'jobconf.views.new_job' %}">Create new job</a></li>
     </ul>
 {% endblock %}
 {# vim:set syntax=htmldjango: #}

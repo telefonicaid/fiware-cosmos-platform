@@ -403,8 +403,8 @@ namespace samson {
         {
             output << "  \"cluster_information\":\r\n";
             output << "  {\r\n";
-            output << "    \"id\"      : " << id << "\",\r\n";
-            output << "    \"version\" : " << version << "\",\r\n";
+            output << "    \"id\"      : " << id << ",\r\n";
+            output << "    \"version\" : " << version << ",\r\n";
         }
 
         for ( size_t i = 0 ; i < nodes.size() ; i++ )

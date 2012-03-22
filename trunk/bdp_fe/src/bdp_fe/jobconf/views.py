@@ -43,7 +43,7 @@ def retrieve_results(job_id):
 
 @login_required
 def view_results(request, job_id):
-    job_id = int(job_id) ## Django URL regexp enforces this
+    job_id = int(job_id)
     results = retrieve_results(job_id)
     return render_to_response('job_results.html',
                               { 'title' : 'Results of job %s' % job_id,

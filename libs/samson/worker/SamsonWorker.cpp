@@ -856,7 +856,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
         if (format == "xml")
             au::xml_simple(data, "error", au::str("unknown path component '%s'\n" , path_components[1].c_str() ) );
         else
-            data << "  \"error\" : \"" << au::str("unknown path component '%s'\n" , path_components[1].c_str());
+            data << "  \"error\" : \"" << au::str("unknown path component '%s'\"\n" , path_components[1].c_str());
     }
 
 afterTreatment:

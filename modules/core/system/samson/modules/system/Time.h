@@ -39,6 +39,38 @@ namespace system{
 			return o.str();
 		}
 		
+		void setFromStr_24H(const char *strTime)
+		{
+#define Char_to_int(x) ((x)-48)
+		    hour.value    = Char_to_int(strTime[0])*10 + Char_to_int(strTime[1]);
+		    minute.value  = Char_to_int(strTime[3])*10 + Char_to_int(strTime[4]);
+		    seconds.value = Char_to_int(strTime[6])*10 + Char_to_int(strTime[7]);
+
+
+#undef Char_to_int
+
+		}
+
+
+		void setFromStr_12H_AMPM(const char * strTime)
+		{
+
+#define Char_to_int(x) ((x)-48)
+            hour.value    = Char_to_int(strTime[0])*10 + Char_to_int(strTime[1]);
+            minute.value  = Char_to_int(strTime[3])*10 + Char_to_int(strTime[4]);
+            seconds.value = Char_to_int(strTime[6])*10 + Char_to_int(strTime[7]);
+
+            //change hour from AM/PM to 24H
+            const char *am_pm = &(strTime[16]);
+              if(strncmp(am_pm, "pm", strlen("pm")) == 0)
+              {
+                hour.value += 12;
+            }
+
+#undef Char_to_int
+
+		}
+
 		
 	};
 

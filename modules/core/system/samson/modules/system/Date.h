@@ -224,6 +224,99 @@ public:
 		return _monthDays;
 	}
 
+	void setFromStr(const char *strDate)
+	{
+
+#define Char_to_int(x) ((x)-48)
+        if (strchr(strDate, '/') != NULL)
+        {
+            // DD/MM/YY
+            year.value = 100 + Char_to_int( strDate[8] )*10 + Char_to_int( strDate[9] );
+            month.value = Char_to_int( strDate[3] )*10 + Char_to_int( strDate[4] ) - 1;
+            day.value = Char_to_int( strDate[0] )*10 + Char_to_int( strDate[1] );
+        }
+        else
+        {
+            // YYMMDD
+            year.value = 100 + Char_to_int( strDate[2] )*10 + Char_to_int( strDate[3] );
+            month.value = Char_to_int( strDate[4] )*10 + Char_to_int( strDate[5] ) - 1;
+            day.value = Char_to_int( strDate[6] )*10 + Char_to_int( strDate[7] );
+        }
+#undef Char_to_int
+	}
+
+
+    void setFromStr_month_letters(const char *strDate)
+    {
+        const char *p_month;
+
+#define Char_to_int(x) ((x)-48)
+        if (strchr(strDate, '/') != NULL)
+        {
+            // DD/MMM/YYYY
+            year.value = 100 + Char_to_int( strDate[9] )*10 + Char_to_int( strDate[10] );
+            p_month = &(strDate[3]);
+          day.value = Char_to_int( strDate[0] )*10 + Char_to_int( strDate[1] );
+        }
+        else
+        {
+            // YYYYMMMDD
+            year.value = 100 + Char_to_int( strDate[2] )*10 + Char_to_int( strDate[3] );
+            p_month = &(strDate[4]);
+            day.value = Char_to_int( strDate[7] )*10 + Char_to_int( strDate[8] );
+        }
+
+        if (strncmp(p_month, "JAN", strlen("JAN")) == 0)
+        {
+            month.value = 1;
+        }
+        else if (strncmp(p_month, "FEB", strlen("FEB")) == 0)
+        {
+            month.value = 2;
+        }
+        else if (strncmp(p_month, "MAR", strlen("MAR")) == 0)
+        {
+            month.value = 3;
+        }
+        else if (strncmp(p_month, "APR", strlen("APR")) == 0)
+        {
+            month.value = 4;
+        }
+        else if (strncmp(p_month, "MAY", strlen("MAY")) == 0)
+        {
+            month.value = 5;
+        }
+        else if (strncmp(p_month, "JUN", strlen("JUN")) == 0)
+        {
+            month.value = 6;
+        }
+        else if (strncmp(p_month, "JUL", strlen("JUL")) == 0)
+        {
+            month.value = 7;
+        }
+        else if (strncmp(p_month, "AUG", strlen("AUG")) == 0)
+        {
+            month.value = 8;
+        }
+        else if (strncmp(p_month, "SEP", strlen("SEP")) == 0)
+        {
+            month.value = 9;
+        }
+        else if (strncmp(p_month, "OCT", strlen("OCT")) == 0)
+        {
+            month.value = 10;
+        }
+        else if (strncmp(p_month, "NOV", strlen("NOV")) == 0)
+        {
+            month.value = 11;
+        }
+        else if (strncmp(p_month, "DEC", strlen("DEC")) == 0)
+        {
+            month.value = 12;
+        }
+
+#undef Char_to_int
+    }
 
 };
 

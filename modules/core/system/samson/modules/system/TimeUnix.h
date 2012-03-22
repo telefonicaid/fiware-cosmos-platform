@@ -557,6 +557,121 @@ public:
         time->seconds.value = timeCalendar.tm_sec;
     }
 
+    void setFromStrTimeDate (const char *strDate, const char *strTime)
+    {
+        struct tm tm;
+
+#define Char_to_int(x) ((x)-48)
+
+        if (strchr(strDate, '/') != NULL)
+        {
+            // DD/MM/YYYY
+            tm.tm_year = 100 + Char_to_int( strDate[8] )*10 + Char_to_int( strDate[9] );
+            tm.tm_mon = Char_to_int( strDate[3] )*10 + Char_to_int( strDate[4] ) - 1;
+            tm.tm_mday = Char_to_int( strDate[0] )*10 + Char_to_int( strDate[1] );
+        }
+        else
+        {
+            // YYYYMMDD
+            tm.tm_year = 100 + Char_to_int( strDate[2] )*10 + Char_to_int( strDate[3] );
+            tm.tm_mon = Char_to_int( strDate[4] )*10 + Char_to_int( strDate[5] ) - 1;
+            tm.tm_mday = Char_to_int( strDate[6] )*10 + Char_to_int( strDate[7] );
+        }
+        tm.tm_hour = Char_to_int( strTime[0] )*10 + Char_to_int( strTime[1] );
+        tm.tm_min = Char_to_int( strTime[3] )*10 + Char_to_int( strTime[4] );
+        tm.tm_sec = Char_to_int( strTime[6] )*10 + Char_to_int( strTime[7] );
+
+#undef Char_to_int
+        getTimeUTCFromCalendar(&tm);
+    }
+
+    void setFromStrTimeDate_dd_lett_YY_12H_AMPM (const char *strTimeDate)
+    {
+        struct tm tm;
+        const char *p_month;
+
+#define Char_to_int(x) ((x)-48)
+
+        if (strchr(strTimeDate, '/') != NULL)
+        {
+            // DD/MMM/YYYY
+            tm.tm_year = 100 + Char_to_int( strTimeDate[8] )*10 + Char_to_int( strTimeDate[9] );
+            p_month = &(strTimeDate[3]);
+            tm.tm_mday = Char_to_int( strTimeDate[0] )*10 + Char_to_int( strTimeDate[1] );
+        }
+        else
+        {
+            // YYYYMMMDD
+            tm.tm_year = 100 + Char_to_int( strTimeDate[2] )*10 + Char_to_int( strTimeDate[3] );
+            p_month = &(strTimeDate[3]);
+            tm.tm_mday = Char_to_int( strTimeDate[6] )*10 + Char_to_int( strTimeDate[7] );
+        }
+        if (strncmp(p_month, "JAN", strlen("JAN")) == 0)
+        {
+            tm.tm_mon = 1;
+        }
+        else if (strncmp(p_month, "FEB", strlen("FEB")) == 0)
+        {
+            tm.tm_mon = 2;
+        }
+        else if (strncmp(p_month, "MAR", strlen("MAR")) == 0)
+        {
+            tm.tm_mon = 3;
+        }
+        else if (strncmp(p_month, "APR", strlen("APR")) == 0)
+        {
+            tm.tm_mon = 4;
+        }
+        else if (strncmp(p_month, "MAY", strlen("MAY")) == 0)
+        {
+            tm.tm_mon = 5;
+        }
+        else if (strncmp(p_month, "JUN", strlen("JUN")) == 0)
+        {
+            tm.tm_mon = 6;
+        }
+        else if (strncmp(p_month, "JUL", strlen("JUL")) == 0)
+        {
+            tm.tm_mon = 7;
+        }
+        else if (strncmp(p_month, "AUG", strlen("AUG")) == 0)
+        {
+            tm.tm_mon = 8;
+        }
+        else if (strncmp(p_month, "SEP", strlen("SEP")) == 0)
+        {
+            tm.tm_mon = 9;
+        }
+        else if (strncmp(p_month, "OCT", strlen("OCT")) == 0)
+        {
+            tm.tm_mon = 10;
+        }
+        else if (strncmp(p_month, "NOV", strlen("NOV")) == 0)
+        {
+            tm.tm_mon = 11;
+        }
+        else if (strncmp(p_month, "DEC", strlen("DEC")) == 0)
+        {
+            tm.tm_mon = 12;
+        }
+
+
+        tm.tm_hour = Char_to_int(strTimeDate[10])*10 + Char_to_int(strTimeDate[11]);
+        tm.tm_min = Char_to_int(strTimeDate[13])*10 + Char_to_int(strTimeDate[14]);
+        tm.tm_sec = Char_to_int(strTimeDate[16])*10 + Char_to_int(strTimeDate[17]);
+
+        //change hour from AM/PM to 24H
+        const char *am_pm = &(strTimeDate[26]);
+          if((strncmp(am_pm, "pm", strlen("pm")) == 0) || (strncmp(am_pm, "PM", strlen("PM")) == 0))
+          {
+            tm.tm_hour += 12;
+        }
+
+#undef Char_to_int
+        getTimeUTCFromCalendar(&tm);
+    }
+
+
 };
 
 

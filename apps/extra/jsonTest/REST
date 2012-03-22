@@ -1,0 +1,162 @@
+#
+# Start samsonWorker
+#
+
+#
+# delilah -f ... (get quijote)
+#
+
+
+
+# Errors:
+curl localhost:9898/simpson.json                       > json/error_no_family.json
+curl localhost:9898/simpson/version.json               > json/error_bad_family.json
+curl localhost:9898/samson/simpson.json                > json/error_bad_command.json
+curl localhost:9898/simpson/version/34.json            > json/error_version_34.json
+curl localhost:9898/samson/state/qnotfound/k.json      > json/error_state_not_found.json
+curl localhost:9898/samson/state/qnotfound.json        > json/error_state_no_key.json
+curl localhost:9898/samson/queue/qnotfound/k.json      > json/error_queue_not_found.json
+curl localhost:9898/samson/queue/qnotfound.json        > json/error_queue_no_key.json
+curl localhost:9898/samson/state/quijote/XXXXYZ.json   > json/state_quijote_XXXXYZ.json
+curl localhost:9898/samson/queue/quijote/XXXYZ.json    > json/queue_quijote_XXXXYZ.json
+curl localhost:9898/samson/logging.json                > json/error_logging.json
+curl localhost:9898/samson/logging/xxx.json            > json/error_logging_xxx.json
+curl localhost:9898/samson/logging/debug.json          > json/error_logging_debug.json
+curl localhost:9898/samson/logging/debug/onf.json      > json/error_logging_debug_onf.json
+curl localhost:9898/samson/logging/reads.json          > json/error_logging_reads.json
+curl localhost:9898/samson/logging/reads/onf.json      > json/error_logging_reads_onf.json
+curl localhost:9898/samson/logging/writes.json         > json/error_logging_writes.json
+curl localhost:9898/samson/logging/writes/onf.json     > json/error_logging_writes_onf.json
+curl localhost:9898/samson/logging/trace.json          > json/error_logging_trace.json
+curl localhost:9898/samson/logging/trace/onf.json      > json/error_logging_trace_onf.json
+curl localhost:9898/samson/logging/trace/set/f.json    > json/error_logging_trace_set_f.json
+curl localhost:9898/samson/logging/trace/set.json      > json/error_logging_trace_set.json
+curl localhost:9898/samson/logging/trace/get/f.json    > json/error_logging_trace_get_f.json
+curl localhost:9898/samson/logging/trace/add/f.json    > json/error_logging_trace_add_f.json
+curl localhost:9898/samson/logging/trace/add.json      > json/error_logging_trace_add.json
+curl localhost:9898/samson/logging/trace/remove/f.json > json/error_logging_trace_remove_f.json
+curl localhost:9898/samson/logging/trace/remove.json   > json/error_logging_trace_remove.json
+curl localhost:9898/samson/logging/verbose/set.json    > json/error_logging_verbose_set.json
+curl localhost:9898/samson/logging/verbose/add.json    > json/error_logging_verbose_set.json
+curl localhost:9898/samson/logging/verbose/set/6.json  > json/error_logging_verbose_set_6.json
+
+# OK
+curl localhost:9898/samson/version.json                > json/version.json
+curl localhost:9898/samson/cluster.json                > json/cluster.json
+curl localhost:9898/samson/utftest.json                > json/utftest.json
+curl localhost:9898/samson/state/quijote/Sancho.json   > json/state_quijote_Sancho.json
+curl localhost:9898/samson/queue/quijote/Panza.json    > json/queue_quijote_Panza.json
+curl localhost:9898/samson/logging/reads/on.json       > json/logging_reads_on.json
+curl localhost:9898/samson/logging/reads/off.json      > json/logging_reads_off.json
+curl localhost:9898/samson/logging/writes/on.json      > json/logging_writes_on.json
+curl localhost:9898/samson/logging/writes/off.json     > json/logging_writes_off.json
+curl localhost:9898/samson/logging/debug/on.json       > json/logging_debug_on.json
+curl localhost:9898/samson/logging/debug/off.json      > json/logging_debug_off.json
+
+curl localhost:9898/samson/logging/verbose/set/3.json  > json/logging_verbose_set_3.json
+curl localhost:9898/samson/logging/verbose/get.json    > json/logging_verbose_get.json
+curl localhost:9898/samson/logging/verbose/off.json    > json/logging_verbose_off.json
+curl localhost:9898/samson/logging/verbose/get.json    > json/logging_verbose_get2.json
+
+curl localhost:9898/samson/logging/trace/set/0-5,10-15.json > json/logging_trace_set_0-5,10-15.json
+curl localhost:9898/samson/logging/trace/get.json           > json/logging_trace_get.json
+curl localhost:9898/samson/logging/trace/add/25.json        > json/logging_trace_add_25.json
+curl localhost:9898/samson/logging/trace/get.json           > json/logging_trace_get2.json
+curl localhost:9898/samson/logging/trace/remove/3.json      > json/logging_trace_remove_3.json
+
+curl localhost:9898/samson/die.json > json/die.json # empty, as worker dies ...
+
+errors="error_bad_command.json \
+error_bad_family.json \
+error_logging.json \
+error_logging_debug.json \
+error_logging_debug_onf.json \
+error_logging_reads.json \
+error_logging_reads_onf.json \
+error_logging_trace.json \
+error_logging_trace_add.json \
+error_logging_trace_add_f.json \
+error_logging_trace_get_f.json \
+error_logging_trace_onf.json \
+error_logging_trace_remove.json \
+error_logging_trace_remove_f.json \
+error_logging_trace_set.json \
+error_logging_trace_set_f.json \
+error_logging_verbose_set.json \
+error_logging_verbose_set_6.json \
+error_logging_writes.json \
+error_logging_writes_onf.json \
+error_logging_xxx.json \
+error_no_family.json \
+error_queue_no_key.json \
+error_queue_not_found.json \
+error_state_no_key.json \
+error_state_not_found.json \
+error_version_34.json"
+
+oks="cluster.json \
+die.json \
+logging_debug_off.json \
+logging_debug_on.json \
+logging_reads_off.json \
+logging_reads_on.json \
+logging_trace_add_25.json \
+logging_trace_get.json \
+logging_trace_get2.json \
+logging_trace_remove_3.json \
+logging_trace_set_0-5,10-15.json \
+logging_verbose_get.json \
+logging_verbose_get2.json \
+logging_verbose_off.json \
+logging_verbose_set_3.json \
+logging_writes_off.json \
+logging_writes_on.json \
+queue_quijote_Panza.json \
+queue_quijote_XXXXYZ.json \
+state_quijote_Sancho.json \
+state_quijote_XXXXYZ.json \
+utftest.json \
+version.json"
+
+
+
+#
+# Moving down to json
+#
+cd json
+
+
+
+#
+# Temporarily just using cluster.json ...
+#
+oks2="cluster.json"
+
+
+# echo "error files:" $errors
+
+
+# for js in $errors
+# do
+#     echo calling json_parser json/$js
+#     json_parser json/$js > /dev/null 2> /dev/null
+#     if ($? != 0)
+#     then
+#         echo "Failure to parse " $js
+#         exit 1
+#     fi
+# done
+
+
+
+echo "ok files" $oks2
+for js in $oks2
+do
+    echo calling json_parser json/$js
+    ../json_parser $js > /dev/null 2>&1
+    if ($? != 0)
+    then
+        echo "Failure to parse " $js
+        exit 1
+    fi
+done

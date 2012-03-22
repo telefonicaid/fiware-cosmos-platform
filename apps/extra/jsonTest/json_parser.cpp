@@ -168,6 +168,7 @@ int main(int argC, char* argV[])
                              \"author-details\": { \"admin\": false, \"name\" : \"Joys of Programming\", \"Number of Posts\" : 10 } \
                            }";
 
+    printf("argV[1] == '%s'\n", argV[1]);
     if (access(argV[1], R_OK) == 0)
     {
         printf("opening file %s\n", argV[1]);

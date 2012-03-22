@@ -177,11 +177,13 @@ debug_all: prepare_debug_all
 
 test: ctest
 
-ctest: debug
-	killall samsonWorker || true
-	BUILD_DEBUG/apps/samsonWorker/samsonWorker
+ctest: install_debug
 	make test -C BUILD_DEBUG ARGS="-D ExperimentalTest"
-	killall samsonWorker || true
+
+test_samsonWorker: install_debug
+	scripts/samsonTest test/samsonWorker
+test_delilah: install_debug
+	scripts/samsonTest test/delilah
 
 test_local_processes:
 	./scripts/test_local_processes

@@ -69,11 +69,21 @@ function execute_test
     # Initialize the test
     # ------------------------------------------------ 
     if [ $HAVE_DELILAH_INIT -eq 1 ]; then
-         delilah ${SAMSON_TEST_HOST} -f $TEST_DELILAH_INIT 2>$TEST_INIT_SCRIPT.stderr >$TEST_INIT_SCRIPT.stdout
+        pushd  `dirname $TEST_DELILAH_INIT` > /dev/null
+        delilah ${SAMSON_TEST_HOST} -f `basename $TEST_DELILAH_INIT` 2>$TEST_INIT_SCRIPT.stderr >$TEST_INIT_SCRIPT.stdout
+        if [ $? -ne 0 ]; then
+            echo "ERROR: unable to initialize the test, bailing out"
+            exit 1
+        fi
+        popd > /dev/null
     fi
 
     if [ $HAVE_SHELL_INIT -eq 1 ]; then
-         bash -x $TEST_SHELL_INIT 2>$TEST_SHELL_INIT.stderr >$TEST_SHELL_INIT.stdout
+        bash -x $TEST_SHELL_INIT 2>$TEST_SHELL_INIT.stderr >$TEST_SHELL_INIT.stdout
+        if [ $? -ne 0 ]; then
+            echo "ERROR: unable to initialize the test, bailing out"
+            exit 1
+        fi
     fi
 
     # ------------------------------------------------
@@ -94,7 +104,7 @@ function execute_test
     # Execute shell script
     # ------------------------------------------------
     if [ $HAVE_SHELL -eq 1 ]; then
-         bash $TEST_SHELL_SCRIPT > $TEST_OUTPUT 2>/dev/null
+        bash $TEST_SHELL_SCRIPT > $TEST_OUTPUT 2>/dev/null
     fi
 
     # Check to see if the output is what we expect

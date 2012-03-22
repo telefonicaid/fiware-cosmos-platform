@@ -23,13 +23,22 @@ class RetrieveFromMongo(TestCase):
 
     Note: mongodb server MUST be running for this test case to pass.
     """
-    job_id = 666
     fixtures = ['test.fixture.json']
-    test_user = 'logc'
-    test_pass = 'logc'
+    
 
     def setUp(self):
+        self.job_id = 666
+        self.mongo_host = 'localhost'
+        self.mongo_port = 27017
+        self.test_user = 'test'
+        self.test_pass = 'test'
+        self.connection = Connection(self.mongo_host, self.mongo_port)
+        self.db = self.connection.test_database
+        self.job_results = self.db.test_collection
         self.fake_results(self.job_id)
+
+    def tearDown(self):
+        self.job_results.remove()
 
     def fake_results(self, job_id):
         new_results = [{"job_id" : job_id,
@@ -40,14 +49,12 @@ class RetrieveFromMongo(TestCase):
                         "word" : "world",
                         "count" :  1
                        }] 
-        connection = Connection('localhost', 27017)
-        db = connection.test_database
-        job_results = db.test_collection
-        ignore = job_results.insert(new_results)
+        self.job_results.insert(new_results)
 
     def test_results_retrieved(self):
         c = Client()
         success = c.login(username=self.test_user, password=self.test_pass)
         response = c.get('/job/%s/results/' % self.job_id)
-        self.assert_(response.status_code == 200)
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(len(response.context['job_results']), 2)
 

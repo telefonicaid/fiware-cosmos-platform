@@ -16,9 +16,9 @@ public class FrontEnd {
     public static final String HOME_URL = "http://pstools/dev/bdp/";
     public static final String CREATE_JOB_ID = "create-job";
     public static final String TASK_STATUS_TABLE_ID = "results-table";
-    public static final String RESULT_LINK_NAME = "result-link";
-    public static final String RESULT_NAME_NAME = "result-name";
-    public static final String RESULT_STATUS_NAME = "result-status";
+    public static final String RESULT_LINK_CLASS = "result-link";
+    public static final String RESULT_NAME_CLASS = "job-name";
+    public static final String RESULT_STATUS_CLASS = "job-status";
     
     private WebDriver _driver;
     
@@ -42,7 +42,7 @@ public class FrontEnd {
         WebElement row = getTaskRow(taskId);
         
         URL baseUrl = new URL(HOME_URL);
-        String verbatimUrl = row.findElement(By.name(RESULT_LINK_NAME))
+        String verbatimUrl = row.findElement(By.name(RESULT_LINK_CLASS))
                                     .getAttribute("href");
         return new URL(baseUrl, verbatimUrl).toString();
     }

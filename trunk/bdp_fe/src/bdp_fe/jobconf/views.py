@@ -31,23 +31,8 @@ def list_jobs(request):
         'jobs': Job.objects.all(),
     }, context_instance=RequestContext(request))
 
-def fake_results(job_id):
-    new_results = [{"job_id" : job_id,
-                    "word" : "Hello",
-                    "count" :  1
-                   },
-                   {"job_id" : job_id,
-                    "word" : "world",
-                    "count" :  1
-                   }] 
-    connection = Connection('localhost', 27017)
-    db = connection.test_database
-    job_results = db.test_collection
-    ignore = job_results.insert(new_results)
-
 def retrieve_results(job_id):
     ans = []
-    fake_results(job_id)
     connection = Connection('localhost', 27017)
     db = connection.test_database
     job_results = db.test_collection

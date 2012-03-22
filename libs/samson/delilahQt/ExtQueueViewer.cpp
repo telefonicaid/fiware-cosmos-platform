@@ -116,10 +116,21 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QScrollArea
     //Feed connection
     connectButton = new QPushButton("Connect to this queue", mainContainer);
     connectButton->setCheckable(true);
-    queueHeader = new QTextEdit(mainContainer);
+    feedSplitter =  new QSplitter(mainContainer);
+    feedSplitter->setMinimumSize(200,200);
+    queueHeader = new QTextEdit;
     queueHeader->setReadOnly(true);
-    queueFeed = new QTextEdit(mainContainer);
+    queueHeader->setMinimumHeight(20);
+    queueFeed = new QTextEdit;
     queueFeed->setReadOnly(true);
+    feedSplitter->addWidget(queueHeader);
+    feedSplitter->addWidget(queueFeed);
+    feedSplitter->setStretchFactor(0,0);
+    feedSplitter->setStretchFactor(1,3);
+    feedSplitter->setOrientation(Qt::Vertical);
+    //feedSplitter->setCollapsible(0,true);
+    feedSplitter->setCollapsible(1,true);
+    
     connectGroup = new QButtonGroup(mainContainer);
     connectGroup->setExclusive(false);
     connectNew = new QCheckBox("Only new data", mainContainer);
@@ -140,17 +151,16 @@ ExtQueueViewer::ExtQueueViewer(std::string _title, QWidget* parent): QScrollArea
     //connect(plotReset, SIGNAL(clicked()), this, SLOT(onPlotReset()));
     //connect(plotNSamples, SIGNAL(editingFinished()), this, SLOT(onPlotNSamplesChanged()));
     
-    mainLayout->addWidget(name);
-    mainLayout->addLayout(generalLayout);
-    mainLayout->addWidget(rateBox);
-    mainLayout->addWidget(sizeBox);
-    mainLayout->addWidget(blocksBox);
-    mainLayout->addLayout(connectButtonLayout);
-    mainLayout->addWidget(queueHeader);
+    mainLayout->addWidget(name, 1);
+    mainLayout->addLayout(generalLayout, 1);
+    mainLayout->addWidget(rateBox, 1);
+    mainLayout->addWidget(sizeBox, 1);
+    mainLayout->addWidget(blocksBox, 1);
+    mainLayout->addLayout(connectButtonLayout, 1);
+    mainLayout->addWidget(feedSplitter, 2);
     //queueHeader->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum));
     //queueFeed->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-    mainLayout->addWidget(queueFeed);
-    mainLayout->addWidget(rateGraph);
+    mainLayout->addWidget(rateGraph, 1);
     mainLayout->addStretch();
     
     connectButtonLayout->addWidget(connectButton);

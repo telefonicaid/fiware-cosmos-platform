@@ -80,8 +80,6 @@ class ExtQueueViewer: public QScrollArea
 
         //we make this button public to be able to connect to it from DelilahMainWindow
         QPushButton* connectButton;
-        QTextEdit* queueHeader;
-        QTextEdit* queueFeed;
 
     private:
         QLabel* name;
@@ -132,6 +130,10 @@ class ExtQueueViewer: public QScrollArea
         QCheckBox* connectNew;
         QCheckBox* connectClear;
         QPushButton* clearFeedButton;
+        
+        QSplitter* feedSplitter;
+        QTextEdit* queueHeader;
+        QTextEdit* queueFeed;
         
         QGroupBox* sizeBox;
         QGroupBox* formatBox;

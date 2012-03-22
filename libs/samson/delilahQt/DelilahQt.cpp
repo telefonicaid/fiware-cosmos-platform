@@ -94,6 +94,7 @@ namespace samson
         timer->start(1000);
             
         mainWindow = new DelilahMainWindow;
+        mainWindow->setWindowTitle("Delilah Graph");
         
         //updateData();
         //mainWindow->tableViewer->setData(names, values);

@@ -24,3 +24,5 @@ ADMINS = (
     ('Test admin', 'cosmos@tid.es'),
 )
 MANAGERS = ADMINS
+
+LANDING_ROOT = '/tmp/landing/'

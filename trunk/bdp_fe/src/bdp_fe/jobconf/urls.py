@@ -9,4 +9,5 @@ urlpatterns = patterns('',
     url(r'new/$', views.new_job, name="new_job"),
     url(r'job/(\d+)/results/$', views.view_results, name="view_results"),
     url(r'job/(\d+)/config/$', views.config_job, name="config_job"),
+    url(r'job/(\d+)/data/$', views.upload_data, name="upload_data"),
 )

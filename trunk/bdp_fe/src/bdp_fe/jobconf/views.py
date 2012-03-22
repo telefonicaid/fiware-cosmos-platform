@@ -9,21 +9,20 @@ from django import forms
 from django.contrib import auth, messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseNotFound, HttpResponseRedirect
-from django.shortcuts import redirect, render_to_response
+from django.http import HttpResponseNotFound
+from django.shortcuts import get_object_or_404, redirect, render_to_response
 from django.template import RequestContext
 from pymongo import Connection
 
+import custom_model
 from models import Job, JobModel
+from views_util import safe_int_param
 
 LOGGER = logging.getLogger(__name__)
 
 @login_required
 def list_jobs(request):
-    try:
-        job_id = int(request.GET.get('run_job', ''))
-    except ValueError:
-        job_id = None
+    job_id = safe_int_param(request.GET, 'run_job')
     if job_id:
         run_job(request, job_id)
 
@@ -95,7 +94,7 @@ def new_job(request):
                       user=request.user,
                       status=Job.CREATED)
             job.save()
-            return HttpResponseRedirect(reverse('config_job', args=[job.id]))
+            return redirect(reverse('config_job', args=[job.id]))
     else:
         form = NewJobForm()
 
@@ -104,11 +103,27 @@ def new_job(request):
         'form': form,
     }, context_instance=RequestContext(request))
 
-@login_required
-def config_job(request, job_id):
-    # TODO: check the user owns the job
-    return HttpResponseNotFound()
+class UploadJarForm(forms.Form):
+    file = forms.FileField()
 
 @login_required
-def results(request, job_id):
+def config_job(request, job_id):
+    job = get_object_or_404(Job, pk=job_id, user=request.user)
+    if request.method == 'POST':
+        form = UploadJarForm(request.POST, request.FILES)
+        if form.is_valid() and custom_model.handle_upload(job,
+                request.FILES['file']):
+            return redirect(reverse('upload_data', args=[job.id]))
+        else:
+            messages.info(request, 'JAR file upload failed')
+    else:
+        form = UploadJarForm()
+    return render_to_response('upload_jar.html', {
+        'title': 'Configure custom job',
+        'job_id' : job.id,
+        'form': form,
+    }, context_instance=RequestContext(request))
+
+@login_required
+def upload_data(request, job_id):
     return HttpResponseNotFound()

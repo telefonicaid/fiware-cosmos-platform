@@ -33,6 +33,7 @@ def list_jobs(request):
 
 def retrieve_results(job_id):
     ans = []
+    ## TODO: make configurable
     connection = Connection('localhost', 27017)
     db = connection.test_database
     job_results = db.test_collection
@@ -42,6 +43,7 @@ def retrieve_results(job_id):
 
 @login_required
 def view_results(request, job_id):
+    job_id = int(job_id) ## Django URL regexp enforces this
     results = retrieve_results(job_id)
     return render_to_response('job_results.html',
                               { 'title' : 'Results of job %s' % job_id,

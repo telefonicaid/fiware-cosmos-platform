@@ -64,4 +64,5 @@ TARGET_LINK_LIBRARIES(unitTest ${STATIC_LIBS} )
 #INSTALL(TARGETS               unitTest
 #        RUNTIME DESTINATION   bin)
 
-ADD_TEST (unitTests ${PROJECT_BINARY_DIR}/apps/unitTest/unitTest)
+ADD_TEST (unitTests ${PROJECT_BINARY_DIR}/apps/unitTest/unitTest --gtest_output=xml:${PROJECT_BINARY_DIR}/samson_test.xml
+)

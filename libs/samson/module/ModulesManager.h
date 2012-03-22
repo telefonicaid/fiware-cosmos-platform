@@ -27,14 +27,17 @@ namespace samson {
 	class DataInstance;
 	class Operation;
 	
-	class ModulesManager : public Module
+	class ModulesManager 
 	{
-		
-		au::Token token;			//!< General lock for modules access
+        
+		au::Token token;			               //!< General lock for modules access
 
         au::map< std::string  , Module > modules;  // Individual modules ( just for listing )
         
-		ModulesManager();		//!< Private constructor to implement singleton
+
+        std::vector<void*> handlers;               // Open handlers
+		
+        ModulesManager();		                   //!< Private constructor to implement singleton
         
 	public:
 
@@ -44,13 +47,6 @@ namespace samson {
 		static void destroy();
 		static ModulesManager* shared();
 		        
-	private:
-		
-		// Add Modules funcitons
-		void addModulesFromDirectory( std::string dir_name );
-		void addModule( std::string path );
-		void addModule(  Module *container );
-		void addModules();
 
     public:
         
@@ -70,6 +66,23 @@ namespace samson {
         samson::network::Collection* getModulesCollection(VisualitzationOptions options ,  std::string pattern );
         samson::network::Collection* getDatasCollection(VisualitzationOptions options ,  std::string pattern );
         samson::network::Collection* getOperationsCollection(VisualitzationOptions options ,  std::string pattern );
+        
+
+        // Get Data &* Operation
+        Data* getData( std::string name );
+        Operation* getOperation( std::string name );
+
+        
+    private:
+        
+        void closeHandlers();
+        void clearModulesManager();
+		
+		// Add Modules funcitons
+		void addModulesFromDirectory( std::string dir_name );
+		void addModule( std::string path );
+		void addModules();
+        
         
 	};
 	

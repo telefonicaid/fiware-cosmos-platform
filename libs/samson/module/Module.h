@@ -25,13 +25,10 @@ namespace samson
 		
 		friend class ModulesManager;
 			
-		void *hndl;	// Pointer for the dlOpen
-
         std::string file_name;
         
 		Module()
 		{
-			hndl    = NULL;
 		}
 		
 		Module(std::string _name, std::string _version, std::string _author)
@@ -39,7 +36,6 @@ namespace samson
 			name    = _name;
 			version = _version;
 			author  = _author;
-			hndl    = NULL;
 		}
 		
 		~Module()
@@ -176,28 +172,9 @@ namespace samson
 			
 		}		
         
-        /*
-         Mode operation between modulues
-         */
-        
-		void copyFrom( Module *m )
-		{
-            std::map<std::string, Operation*>::iterator o;
-            std::map<std::string, Data*>::iterator d;
-            
-            for ( o = m->operations.begin() ; o != m->operations.end() ; o++ )
-                operations.insert( std::pair<std::string, Operation*> ( o->first , o->second->getDuplicate() ) );
-
-            for ( d = m->datas.begin() ; d != m->datas.end() ; d++ )
-                datas.insert( std::pair<std::string, Data*> ( d->first , d->second->getDuplicate()  )  );
-			
-		}
-		
 		void clearModule()
 		{
-			
 			// Remove all operations and datas
-			
 			for ( std::map<std::string, Operation*>::iterator o = operations.begin() ; o != operations.end() ; o++)
 				delete o->second;
 			
@@ -206,12 +183,6 @@ namespace samson
 			
 			datas.clear();
 			operations.clear();
-
-            if (hndl != NULL)
-            {
-               dlclose(hndl);
-               hndl = NULL;
-            }
 		}
 		
 		

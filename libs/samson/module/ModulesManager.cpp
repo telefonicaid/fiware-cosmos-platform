@@ -43,20 +43,25 @@ namespace samson
 	ModulesManager::~ModulesManager()
 	{
         LM_T(LmtModuleManager,("Destroying ModulesManager"));
-
-        // dlclose all open modules ...
-        au::map< std::string  , Module >::iterator m; 
-        for (m = modules.begin(); m != modules.end(); m++)
-        {
-            Module* module = m->second;
-
-            if (module->hndl != NULL)
-                dlclose(module->hndl);
-        }
-
+        clearModulesManager();
+	}
+    
+    void ModulesManager::clearModulesManager()
+    {
         // Remove the main instances of the modules created while loading from disk
         modules.clearMap();
-	}
+        
+        // Close handlers
+        closeHandlers();
+    }
+    
+    void ModulesManager::closeHandlers()
+    {
+        for ( size_t i = 0 ; i < handlers.size() ; i++ )
+            dlclose( handlers[i] );
+        handlers.clear();
+
+    }
     
     
     void ModulesManager::destroy()
@@ -87,12 +92,37 @@ namespace samson
 		return modulesManager;
 	}
 	
-	void ModulesManager::addModules()
+
+
+    std::string ModulesManager::getModuleFileName( std::string module_name )
+    {
+        au::TokenTaker tt( &token , "ModulesManager::reloadModules");
+        Module* module = modules.findInMap(module_name);
+        if( !module )
+            return "";
+        
+        return module->file_name;
+    }
+
+	
+	void ModulesManager::reloadModules()
 	{
-		// Load modules from "~/.samson/modules" && "/etc/samson/modules"
+        au::TokenTaker tt( &token , "ModulesManager::reloadModules");
+
+		LM_T(LmtModuleManager,("Reloading modules"));
+        
+        // Clear all previous modules
+        clearModulesManager();
+		
+		// Add modules again
+		addModules();
+	}
+	
+    void ModulesManager::addModules()
+	{
 		addModulesFromDirectory( SamsonSetup::shared()->modulesDirectory() );
 	}
-
+    
 	void ModulesManager::addModulesFromDirectory( std::string dir_name )
 	{	
         LM_T(LmtModuleManager,("Adding modules from directory %s", dir_name.c_str() ));
@@ -118,89 +148,11 @@ namespace samson
 		closedir(dp);
 		
 	}
-
-    std::string ModulesManager::getModuleFileName( std::string module_name )
-    {
-        au::TokenTaker tt( &token , "ModulesManager::reloadModules");
-        Module* module = modules.findInMap(module_name);
-        if( !module )
-            return "";
-        
-        return module->file_name;
-    }
-
-	
-	void ModulesManager::reloadModules()
-	{
-        au::TokenTaker tt( &token , "ModulesManager::reloadModules");
-        
-		LM_T(LmtModuleManager,("Reloading modules"));
-		
-		LM_T(LmtModuleManager,("Clear previous operations and data-types"));
-		clearModule();  		// Clear this module itself (operations and datas)
-        
-        // Close handlers for all open modules
-        /*
-		LM_T(LmtModuleManager,("Closing previous modules ( if any )"));
-        au::map< std::string  , Module >::iterator m; 
-        for ( m =  modules.begin(); m != modules.end() ; m++)
-        {
-            Module *module = m->second;
-            int res = dlclose( module->hndl);
-            if( res != 0)
-                LM_W(("Error while closing module %s", module->name.c_str() )); 
-        }
-
-		LM_T(LmtModuleManager,("Remove list of previous modules"));
-         */
-        modules.clearMap();     // Remove all modules previously stored here
-		
-		// Add modules again
-		addModules();
-		
-	}
-	
+    
+    
 	typedef Module*(*moduleFactory)();
 	typedef std::string(*getVersionFunction)();
 
-    
-    Status ModulesManager::loadModule( std::string path , Module** module , std::string* version_string )
-	{
-        LM_T(LmtModuleManager,("Adding module at path %s", path.c_str() ));
-		
-		void *hndl = dlopen(path.c_str(), RTLD_NOW);
-		if(hndl == NULL)
-        {
-            LM_W(("Not possible to dlopen for file '%s' with dlerror():'%s'", path.c_str(), dlerror() ));
-			return Error;
-		}
-        
-		void *mkr = dlsym(hndl, "moduleCreator");		
-		if(mkr == NULL)
-        {
-            LM_W(("Not possible to dlsym for file '%s' with dlerror():'%s'", path.c_str(), dlerror() ));
-			dlclose(hndl);
-			return Error;
-		}
-        
-		void *getVersionPointer = dlsym(hndl, "getSamsonVersion");
-		if(getVersionPointer == NULL)
-        {
-            LM_W(("Not possible to dlsym for file '%s' with dlerror():'%s'", path.c_str(), dlerror() ));
-			dlclose(hndl);
-			return Error;
-		}
-		
-        moduleFactory f = (moduleFactory)mkr;
-        getVersionFunction fv = (getVersionFunction)getVersionPointer;
-
-        // Get module and get version
-        *module = f();
-        *version_string = fv();
-
-        return OK;
-	}
-    
     
     
 	void ModulesManager::addModule( std::string path )
@@ -240,6 +192,7 @@ namespace samson
         
         if ( !module )
         {
+            dlclose(hndl);
             LM_E(( "Not possible to load module at path %s (not container found)" , path.c_str()));
             return;
         }
@@ -250,7 +203,16 @@ namespace samson
         // Check platform version
         if( platform_version == SAMSON_VERSION )
         {
+            Module * previous_module = modules.findInMap( module->name );
 
+            if( previous_module != NULL )
+            {
+                LM_W(("Error loading module from file %s since it is already loaded" , module->file_name.c_str() ));
+                delete module;
+                dlclose(hndl);
+                
+            }
+            
             LM_T(LmtModuleManager,("Module %s compiled for version %s ... OK!" , module->name.c_str() , platform_version.c_str()  ));
             LM_T(LmtModuleManager,("Adding module %s (%s) %d ops & %d data-types" , 
                         module->name.c_str() , 
@@ -259,12 +221,12 @@ namespace samson
                         (int)module->datas.size()
                                    ));
             
-            module->hndl = hndl;
-            addModule( module );
+            // Insert in the modules map
+            modules.insertInMap(module->name, module);
             
-            // Insert in the map of modules for listing
-            //LM_M(("Adding module %s version %s from %s with %d operations and %d data-types" , module->name.c_str() , module->version.c_str(), path.c_str() , module->operations.size() ,  module->datas.size() ));
-            modules.insertInMap(path, module);
+            // Keep handler in a vector to close latter
+            handlers.push_back(hndl);
+            
         }
         else
         {
@@ -276,13 +238,44 @@ namespace samson
         }
 		
 	}
-
-	void ModulesManager::addModule(  Module *container )
+    
+    Status ModulesManager::loadModule( std::string path , Module** module , std::string* version_string )
 	{
-		// Copy all the opertion to this top-level module
-		copyFrom( container	);
+        LM_T(LmtModuleManager,("Adding module at path %s", path.c_str() ));
+		
+		void *hndl = dlopen(path.c_str(), RTLD_NOW);
+		if(hndl == NULL)
+        {
+            LM_W(("Not possible to dlopen for file '%s' with dlerror():'%s'", path.c_str(), dlerror() ));
+			return Error;
+		}
+        
+		void *mkr = dlsym(hndl, "moduleCreator");		
+		if(mkr == NULL)
+        {
+            LM_W(("Not possible to dlsym for file '%s' with dlerror():'%s'", path.c_str(), dlerror() ));
+			dlclose(hndl);
+			return Error;
+		}
+        
+		void *getVersionPointer = dlsym(hndl, "getSamsonVersion");
+		if(getVersionPointer == NULL)
+        {
+            LM_W(("Not possible to dlsym for file '%s' with dlerror():'%s'", path.c_str(), dlerror() ));
+			dlclose(hndl);
+			return Error;
+		}
+		
+        moduleFactory f = (moduleFactory)mkr;
+        getVersionFunction fv = (getVersionFunction)getVersionPointer;
+        
+        // Get module and get version
+        *module = f();
+        *version_string = fv();
+        
+        return OK;
 	}
-	
+
     
     void ModulesManager::getInfo( std::ostringstream& output)
     {
@@ -403,6 +396,33 @@ namespace samson
             }
         }
         return collection;        
+    }
+
+    
+    Data* ModulesManager::getData( std::string name )
+    {
+        // Searhc in all modules ( inefficient but generic )
+        au::map< std::string  , Module >::iterator it_modules;
+        for( it_modules = modules.begin() ; it_modules != modules.end() ; it_modules++ )
+        {
+            Data* data = it_modules->second->getData(name);
+            if( data )
+                return data;
+        }
+        return NULL;
+    }
+    
+    Operation* ModulesManager::getOperation( std::string name )
+    {
+        // Searhc in all modules ( inefficient but generic )
+        au::map< std::string  , Module >::iterator it_modules;
+        for( it_modules = modules.begin() ; it_modules != modules.end() ; it_modules++ )
+        {
+            Operation* operation = it_modules->second->getOperation(name);
+            if( operation )
+                return operation;
+        }
+        return NULL;        
     }
 
 	

@@ -110,26 +110,6 @@ namespace samson {
         {
         }
 
-        
-        // Virtual method to duplicate this operation
-        virtual Operation* getDuplicate()
-        {
-            Operation * op = new Operation( _name , _type );
-            
-            // Copy all stuff
-            for ( size_t i = 0 ; i < inputFormats.size() ; i++ )
-                op->inputFormats.push_back( inputFormats[i] );
-            for ( size_t i = 0 ; i < outputFormats.size() ; i++ )
-                op->outputFormats.push_back( outputFormats[i] );
-            for ( size_t i = 0 ; i < code.size() ; i++ )
-                op->code.push_back( code[i] );
-
-            op->_helpMessage = _helpMessage;
-            op->_helpLine = _helpLine;
-            
-            return op;
-        }
-
         // Get instance of this operation
         virtual OperationInstance* getInstance( )
         {
@@ -307,26 +287,7 @@ namespace samson {
         {
             
         }
-        
-        // Virtual method to duplicate this operation
-        Operation* getDuplicate()
-        {
-            Operation * op = new OperationImpl<OI>( _name , _type );
 
-            // Copy all stuff
-            for ( size_t i = 0 ; i < inputFormats.size() ; i++ )
-                op->inputFormats.push_back( inputFormats[i] );
-            for ( size_t i = 0 ; i < outputFormats.size() ; i++ )
-                op->outputFormats.push_back( outputFormats[i] );
-            for ( size_t i = 0 ; i < code.size() ; i++ )
-                op->code.push_back( code[i] );
-            
-            op->_helpMessage = _helpMessage;
-            op->_helpLine = _helpLine;
-            
-            return op;
-        }
-        
         // Get instance of this operation
         virtual OperationInstance* getInstance( )
         {

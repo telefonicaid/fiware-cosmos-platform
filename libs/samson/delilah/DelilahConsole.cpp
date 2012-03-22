@@ -86,7 +86,23 @@ namespace samson
         
         simple_output = false;
         
+        // Aliases
+        add_alias( "ls" , "ls_queues -group name" );
+        
     }
+
+    void DelilahConsole::add_alias( std::string key , std::string value )
+    {
+        aliases.insertInMap( key ,  value );
+    }
+    
+    void DelilahConsole::remove_alias( std::string key)
+    {
+        if( aliases.isInMap(key) )
+            aliases.extractFromMap(key);
+    }
+                                                          
+    
     
     DelilahConsole::~DelilahConsole()
     {
@@ -494,6 +510,10 @@ namespace samson
     size_t DelilahConsole::runAsyncCommand( std::string command )
 	{
 		
+        // Change if command is in alias
+        if( aliases.isInMap(command) )
+            command = aliases.findInMap(command);
+        
 		au::CommandLine commandLine;
 		commandLine.set_flag_string("name", "null");
 		commandLine.set_flag_string("begin", "null");           

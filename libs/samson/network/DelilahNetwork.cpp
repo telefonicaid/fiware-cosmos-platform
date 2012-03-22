@@ -221,12 +221,27 @@ namespace samson {
             {
                 // Not possible to add this connections
                 connection->close();
-                message( 
-                        au::str("Not possible to add node %s:%d since it belongs to another cluster"
-                                , host.c_str()
-                                , port
-                                 ) 
-                        );
+                
+                // Different message if it is connected to this cluster or another
+                if( new_cluster_information.getId() == cluster_information.getId() )
+                {
+                    message( 
+                            au::str("Not possible to add node %s:%d since it is already included in this cluster %lu"
+                                    , host.c_str()
+                                    , port
+                                    , new_cluster_information.getId()
+                                    ) 
+                            );
+                }
+                else
+                {
+                    message( 
+                            au::str("Not possible to add node %s:%d since it belongs to another cluster"
+                                    , host.c_str()
+                                    , port
+                                    ) 
+                            );
+                }
                 return;
             }
             

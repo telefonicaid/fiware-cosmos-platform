@@ -69,9 +69,6 @@ namespace samson {
 
 		// Virtual function to create an instance of data
 		virtual DataInstance* getInstance()=0;
-
-        // Virtual function to duplicate this Data
-		virtual Data* getDuplicate()=0;
 		
 		std::string help()
 		{
@@ -96,12 +93,6 @@ namespace samson {
         {
             return new DI();
         }
-        
-		virtual Data* getDuplicate()
-        {
-            return new DataImpl<DI>( _name ,_helpMessage );
-        }
-        
     };
 	
 	

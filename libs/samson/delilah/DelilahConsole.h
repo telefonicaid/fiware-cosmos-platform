@@ -59,6 +59,8 @@ namespace samson {
         // Flag to just visualize content on screen ( delilah -command  or -f XX )
         bool simple_output;
         
+        au::simple_map< std::string , std::string > aliases;
+        
 	public:
 		
         
@@ -182,6 +184,10 @@ namespace samson {
             LM_TODO(("Check what type of messages...."));
             runAsyncCommand(command);
         }
+        
+        void add_alias( std::string key , std::string value );
+        void remove_alias( std::string key );
+
 
 	};
 

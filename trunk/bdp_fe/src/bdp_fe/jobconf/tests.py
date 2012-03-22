@@ -15,6 +15,14 @@ from pymongo import Connection
 
 from bdp_fe.jobconf import upload_util
 
+
+class LoginTestCase(djangotest.TestCase):
+
+    def test_login_redirect(self):
+        response = self.client.get('/')
+        self.assertRedirects(response, '/accounts/login/?next=/')
+
+
 class FileUtilTest(unittest.TestCase):
 
     def setUp(self):
@@ -51,6 +59,7 @@ class FileUtilTest(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
+
 class RetrieveFromMongo(djangotest.TestCase):
     """
     RetrieveFromMongo is a test where some records are written to a test
@@ -59,7 +68,6 @@ class RetrieveFromMongo(djangotest.TestCase):
     Note: mongodb server MUST be running for this test case to pass.
     """
     fixtures = ['test.fixture.json']
-
 
     def setUp(self):
         self.job_id = 666

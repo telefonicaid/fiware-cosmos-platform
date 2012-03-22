@@ -8,6 +8,7 @@ import logging
 from django import forms
 from django.contrib import auth, messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render_to_response
@@ -46,9 +47,20 @@ def retrieve_results(job_id):
 def view_results(request, job_id):
     job_id = int(job_id)
     results = retrieve_results(job_id)
+    paginator = Paginator(results, 100)
+    page = request.GET.get('page')
+    if not page:
+        page = 1
+    try:
+        paginated_results = paginator.page(page)
+    except PageNotAnInteger:
+        paginated_results = paginator.page(1)
+    except EmptyPage:
+        paginated_results = paginator.page(paginator.num_pages)
+
     return render_to_response('job_results.html',
                               { 'title' : 'Results of job %s' % job_id,
-                                'job_results' : results },
+                                'job_results' : paginated_results },
                               context_instance=RequestContext(request))
 
 def run_job(request, job_id):

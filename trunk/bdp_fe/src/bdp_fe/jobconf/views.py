@@ -13,7 +13,7 @@ from django.shortcuts import redirect, render_to_response
 
 from models import Job, JobModel
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 @login_required
 def list_jobs(request):

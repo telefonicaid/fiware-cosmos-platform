@@ -2,7 +2,7 @@
 {% load url from future %}
 {% block content %}
 {% if jobs %}
-    <table>
+    <table id="jobs-table">
         <thead>
             <tr>
                 <th>Name</th>
@@ -13,14 +13,15 @@
         <tbody>
             {% for job in jobs %}
             <tr>
-                <td>{{ job.name }}</td>
-                <td>{{ job.get_status_display }}</td>
+                <td class="result-name">{{ job.name }}</td>
+                <td class="result-status">{{ job.get_status_display }}</td>
                 <td>
                     {% if job.status == 0 %}
                     <a href="{% url 'jobconf.views.list_jobs' %}?run_job={{ job.id }}">Run</a>
                     {% endif %}
                     {% if job.status > 1 %}
-                    <a href="{% url 'jobconf.views.results' job.id %}">View results</a>
+                    <a href="{% url 'jobconf.views.results' job.id %}"
+                       class="result-link">View results</a>
                     {% endif %}
                 </td>
             </tr>
@@ -32,7 +33,8 @@
     {% endif %}
 
     <ul>
-	<li><a href="{% url 'jobconf.views.new_job' %}">Create new job</a></li>
+        <li><a href="{% url 'jobconf.views.new_job' %}"
+               id="create-job">Create new job</a></li>
     </ul>
 {% endblock %}
 {# vim:set syntax=htmldjango: #}

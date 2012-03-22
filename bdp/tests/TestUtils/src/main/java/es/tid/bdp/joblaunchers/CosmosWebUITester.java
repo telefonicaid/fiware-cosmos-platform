@@ -1,20 +1,25 @@
 package es.tid.bdp.joblaunchers;
 
+import java.io.File;
+import java.util.Map;
+import java.util.UUID;
+
+import org.testng.Assert;
+
 import es.tip.bdp.frontend_om.FrontEnd;
 import es.tip.bdp.frontend_om.SelectInputPage;
 import es.tip.bdp.frontend_om.SelectJarPage;
 import es.tip.bdp.frontend_om.SelectNamePage;
-import java.io.File;
-import java.util.Map;
-import java.util.UUID;
-import org.testng.Assert;
 
-public class CosmosWebUITester implements JobLauncher
-{
-    private FrontEnd _frontend;
+/**
+ *
+ * @author ximo
+ */
+public class CosmosWebUITester implements JobLauncher {
+    private FrontEnd frontend;
     
     public CosmosWebUITester() {
-        _frontend = new FrontEnd();
+        this.frontend = new FrontEnd();
     }
     
     public String createNewTask(String inputFilePath, String jarPath)
@@ -29,20 +34,22 @@ public class CosmosWebUITester implements JobLauncher
         // Verify input params
         if(!new File(inputFilePath).exists()) {
             throw new TestException("Input path does not exist");
-        }
-        
+        }        
         if(!new File(jarPath).exists()) {
             throw new TestException("JAR path does not exist.");
         }
-        SelectNamePage namePage = _frontend.goToCreateNewJob();
+        
+        // Set name
+        SelectNamePage namePage = this.frontend.goToCreateNewJob();
         final String taskId = UUID.randomUUID().toString();
         namePage.setName(taskId);
         
-        SelectJarPage jarPage = namePage.submitNameForm();
-        
+        // Set snd submit JAR
+        SelectJarPage jarPage = namePage.submitNameForm();        
         jarPage.setInputJar(jarPath);
         SelectInputPage inputPage = jarPage.submitJarFileForm();
         
+        // Set and submit input file
         inputPage.setInputFile(inputFilePath);
         inputPage.submitInputFileForm();        
               
@@ -57,7 +64,7 @@ public class CosmosWebUITester implements JobLauncher
         Assert.assertEquals(getTaskStatus(taskId),
                             TaskStatus.Created,
                             "Verifying task is in Created state");
-        _frontend.launchJob(taskId);
+        this.frontend.launchJob(taskId);
     }
 
     public void waitForTaskCompletion(String taskId) throws TestException {
@@ -65,11 +72,9 @@ public class CosmosWebUITester implements JobLauncher
         
         while(!taskCompleted) {
             // Go to the main page
-            _frontend.goHome();
-
-            taskCompleted = (_frontend.getTaskStatus(taskId)
+            this.frontend.goHome();
+            taskCompleted = (this.frontend.getTaskStatus(taskId)
                                 == TaskStatus.Completed);
-
             if(!taskCompleted) {
                 try {
                     Thread.sleep(30000); // Sleep 30 seconds
@@ -86,6 +91,6 @@ public class CosmosWebUITester implements JobLauncher
     }
 
     public TaskStatus getTaskStatus(String taskId) throws TestException {
-        return _frontend.getTaskStatus(taskId);
+        return this.frontend.getTaskStatus(taskId);
     }
 }

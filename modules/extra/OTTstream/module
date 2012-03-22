@@ -1,0 +1,71 @@
+Module OTTstream
+{
+
+	title	"OTTstream  module"
+	author 	"Gregorio Escalada (jges@tid.es)"
+	version "0.1"
+	
+}
+
+# ---------------------------------------------------------------------------
+# datas
+# ---------------------------------------------------------------------------
+
+data ServiceHit
+{
+     system.UInt serviceId;
+     system.TimeUnix timestamp;
+}
+
+data UserHit
+{
+     system.UInt userId;
+     system.TimeUnix time;
+}
+
+data ServiceActivityTimeSpan
+{
+     system.UInt serviceId;
+     system.UInt countHits;
+}
+
+data UserActivityTimeSpan
+{
+     system.UInt userId;
+     system.UInt countHits;
+}
+
+data ActivityTimeSpan
+{
+	vector OTTstream.ServiceActivityTimeSpan servActivity;
+}
+
+data LastHistory
+{
+	system.TimeUnix newest;
+	system.TimeUnix latest;
+	vector OTTstream.ActivityTimeSpan activity;
+}
+
+
+# -------------------------------------------------
+# Operations with data
+# -------------------------------------------------
+
+simpleParser parse_logs
+{
+	out system.UInt OTTstream.ServiceHit
+	
+	helpLine "parse input logs from http or dns, and emit service use with userId as key"
+}
+
+reduce red_update_last_user_profile
+{
+	in system.UInt OTTstream.ServiceHit
+	in system.UInt OTTstream.LastHistory
+	out system.String system.Int32
+	out system.UInt OTTstream.LastHistory
+	
+	helpLine "Update the latest user profile" 
+}
+

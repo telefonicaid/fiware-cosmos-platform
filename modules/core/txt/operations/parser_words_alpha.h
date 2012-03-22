@@ -52,7 +52,7 @@ namespace txt{
 				 {
 					// New word
 					key.value ="";
-					key.value.append( line[pos] ,i-pos );					
+					key.value.append( &line[pos] ,i-pos );					
 					writer->emit( 0 , &key , &value );
 				 }
 

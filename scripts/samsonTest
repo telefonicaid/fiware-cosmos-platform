@@ -1,8 +1,9 @@
-#!/bin/bash +x
+#!/bin/bash
 
 function setup_test_vars
 {
-    HAVE_INIT=0
+    HAVE_DELILAH_INIT=0
+    HAVE_SHELL_INIT=0
     HAVE_COMMAND=0
     HAVE_SCRIPT=0
     HAVE_SHELL=0
@@ -10,17 +11,30 @@ function setup_test_vars
     TEST_BASENAME=$(echo $TEST_FILE | sed 's/\.test//')
     TEST_NAME=$(sed -n '/--NAME--/,/^--/p' $TEST_FILE  | grep -v "^--")
 
-    #Extract the init script
-    if [ $(grep "\-\-INIT\-\-" $TEST_FILE | wc -l) -eq 1 ]; then
-        TEST_INIT_SCRIPT=${TEST_BASENAME}.init
-        sed -n '/--INIT--/,/^--/p' $TEST_FILE  | grep -v "^--" > $TEST_INIT_SCRIPT
-        HAVE_INIT=1
+    #Extract the delilah init script
+    if [ $(grep "\-\-DELILAH\-INIT\-\-" $TEST_FILE | wc -l) -eq 1 ]; then
+        TEST_DELILAH_INIT=${TEST_BASENAME}.init
+        sed -n '/--DELILAH-INIT--/,/^--/p' $TEST_FILE  | grep -v "^--" > $TEST_DELILAH_INIT
+        HAVE_DELILAH_INIT=1
     fi
 
-    #Extract the test script
+    #Extract the shell init script
+    if [ $(grep "\-\-SHELL\-INIT\-\-" $TEST_FILE | wc -l) -eq 1 ]; then
+        TEST_SHELL_INIT=${TEST_BASENAME}.init
+        sed -n '/--SHELL-INIT--/,/^--/p' $TEST_FILE  | grep -v "^--" > $TEST_SHELL_INIT
+        HAVE_SHELL_INIT=1
+    fi
+
+    #Extract the delilah test command
     if [ $(grep "\-\-COMMAND\-\-" $TEST_FILE | wc -l) -eq 1 ]; then
         TEST_COMMAND=$(sed -n '/--COMMAND--/,/^--/p' $TEST_FILE  | grep -v "^--")
         HAVE_COMMAND=1
+    fi
+
+    #Extract the delilah test script
+    if [ $(grep "\-\-SCRIPT\-\-" $TEST_FILE | wc -l) -eq 1 ]; then
+        TEST_SCRIPT=$(sed -n '/--SCRIPT--/,/^--/p' $TEST_FILE  | grep -v "^--")
+        HAVE_SCRIPT=1
     fi
 
     #Extract the shell script
@@ -54,15 +68,34 @@ function execute_test
     # ------------------------------------------------ 
     # Initialize the test
     # ------------------------------------------------ 
-    if [ -f delilah_commands ]; then
-       echo "Initializing the test" 
-       delilah ${SAMSON_TEST_HOST} -f $TEST_INIT_SCRIPT 2>$TEST_INIT_SCRIPT.stderr >$TEST_INIT_SCRIPT.stdout
-    fi		  
+    if [ $HAVE_DELILAH_INIT -eq 1 ]; then
+         delilah ${SAMSON_TEST_HOST} -f $TEST_DELILAH_INIT 2>$TEST_INIT_SCRIPT.stderr >$TEST_INIT_SCRIPT.stdout
+    fi
+
+    if [ $HAVE_SHELL_INIT -eq 1 ]; then
+         bash -x $TEST_SHELL_INIT 2>$TEST_SHELL_INIT.stderr >$TEST_SHELL_INIT.stdout
+    fi
 
     # ------------------------------------------------
-    # Execute script
+    # Execute a single delilah command
     # ------------------------------------------------
-    delilah ${SAMSON_TEST_HOST} -command  $TEST_COMMAND > $TEST_OUTPUT 2>/dev/null
+    if [ $HAVE_COMMAND -eq 1 ]; then
+        delilah ${SAMSON_TEST_HOST} -command  $TEST_COMMAND > $TEST_OUTPUT 2>/dev/null
+    fi
+
+    # ------------------------------------------------
+    # Execute delilah script
+    # ------------------------------------------------
+    if [ $HAVE_SCRIPT -eq 1 ]; then
+        delilah ${SAMSON_TEST_HOST} -command  $TEST_SCRIPT > $TEST_OUTPUT 2>/dev/null
+    fi
+
+    # ------------------------------------------------
+    # Execute shell script
+    # ------------------------------------------------
+    if [ $HAVE_SHELL -eq 1 ]; then
+         bash $TEST_SHELL_SCRIPT > $TEST_OUTPUT 2>/dev/null
+    fi
 
     # Check to see if the output is what we expect
     diff -u $TEST_EXPECT $TEST_OUTPUT > $TEST_DIFF

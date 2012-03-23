@@ -81,8 +81,7 @@ function execute_test
     if [ $HAVE_SHELL_INIT -eq 1 ]; then
         bash -x $TEST_SHELL_INIT 2>$TEST_SHELL_INIT.stderr >$TEST_SHELL_INIT.stdout
         if [ $? -ne 0 ]; then
-            echo "ERROR: unable to initialize the test, bailing out"
-            exit 1
+            INIT_ERROR=1
         fi
     fi
 
@@ -110,11 +109,19 @@ function execute_test
     # Check to see if the output is what we expect
     diff -u $TEST_EXPECT $TEST_OUTPUT > $TEST_DIFF
     if [ $? -ne 0 ]; then
-        echo "ERROR: $TEST_NAME"
+        echo "----------------------------------------------------------------"
+        echo "ERROR: executing $TEST_FILE"
         echo "Expected"
         cat $TEST_EXPECT
         echo "Got"
         cat $TEST_OUTPUT
+        if [ $INIT_ERROR -ne 0 ]; then
+        echo "Errors were seen during the initialization phase"
+        echo "STDOUT:"
+        cat $TEST_DELILAH_INIT.stdout
+        echo "STDERROR:"
+        cat $TEST_DELILAH_INIT.stderr
+        echo "----------------------------------------------------------------"
     else
         # Clean up files for succesfull test runs
         rm -f $TEST_EXPECT $TEST_OUTPUT $TEST_SCRIPT $TEST_INIT_SCRIPT $TEST_SHELL_SCRIPT ${TEST_BASENAME}.diff $TEST_INIT_SCRIPT.stderr $TEST_INIT_SCRIPT.stdout

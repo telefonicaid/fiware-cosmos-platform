@@ -498,9 +498,9 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             http_state = 400;
 
             if (format == "xml")
-                au::xml_simple(data, "format error", au::str("correct format: /samson/state/queue/key" ) );
+                au::xml_simple(data, "format_error", au::str("correct format: /samson/state/queue/key"));
             else
-                data << "  \"format error\" : \"correct format: /samson/state/queue/key\"";
+                data << "  \"format_error\" : \"correct format: /samson/state/queue/key\"";
         }
         else
         {
@@ -543,9 +543,9 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             http_state = 400;
 
             if (format == "xml")
-                au::xml_simple(data, "format error", au::str("correct format: /samson/queue/<queue_name>/<key>" ) );
+                au::xml_simple(data, "format_error", au::str("correct format: /samson/queue/<queue_name>/<key>" ) );
             else
-                data << "  \"format error\" : \"correct format: /samson/queue/<queue_name>/<key>\"\r\n";
+                data << "  \"format_error\" : \"correct format: /samson/queue/<queue_name>/<key>\"\r\n";
         }
         else
         {

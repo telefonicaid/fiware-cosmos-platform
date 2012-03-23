@@ -15,10 +15,10 @@ from django.shortcuts import get_object_or_404, redirect, render_to_response
 from django.template import RequestContext
 from pymongo import Connection
 
-import custom_model
-import data
-from models import Job, JobModel
-from views_util import safe_int_param
+from bdp_fe.jobconf import custom_model
+from bdp_fe.jobconf import data
+from bdp_fe.jobconf.models import Job, JobModel
+from bdp_fe.jobconf.views_util import safe_int_param
 
 LOGGER = logging.getLogger(__name__)
 
@@ -83,7 +83,7 @@ def run_job(request, job_id):
         LOGGER.warning("Job %d not found" % job_id)
 
 class NewJobForm(forms.Form):
-    name = forms.CharField(max_length=40)
+    name = forms.CharField(max_length=Job.NAME_MAX_LENGTH)
 
 @login_required
 def new_job(request):

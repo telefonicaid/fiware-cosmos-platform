@@ -132,7 +132,6 @@ void captureSIGTERM( int s )
 
 void cleanup(void)
 {
-
     printf("Shutting down worker components (worker at %p)\n", worker);
     if (worker)
     {
@@ -180,10 +179,11 @@ void cleanup(void)
     else
         LM_M(("Finished correctly with 0 background processes"));
     
+    printf("Calling paConfigCleanup\n");
     paConfigCleanup();
+    printf("Calling lmCleanProgName\n");
     lmCleanProgName();
-
-    
+    printf("Cleanup DONE\n");
 }
 
 
@@ -204,10 +204,6 @@ static void valgrindExit(int v)
 */
 int main(int argC, const char *argV[])
 {
-    // Only add in foreground to avoid warning / error messages at the stdout
-    if( fg )
-        atexit(cleanup);
-
     paConfig("builtin prefix",                (void*) "SS_WORKER_");
     paConfig("usage and exit on any warning", (void*) true);
 
@@ -231,6 +227,10 @@ int main(int argC, const char *argV[])
 
     const char* extra = paIsSetSoGet(argC, (char**) argV, "-port");
     paParse(paArgs, argC, (char**) argV, 1, false, extra);
+
+    // Only add in foreground to avoid warning / error messages at the stdout
+    if (fg)
+        atexit(cleanup);
 
     valgrindExit(1);
 
@@ -340,8 +340,6 @@ int main(int argC, const char *argV[])
     }
 
     worker->runConsole();
- 
-
 
     return 0;
 }

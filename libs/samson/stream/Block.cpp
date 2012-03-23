@@ -131,7 +131,7 @@ namespace samson {
                 free(hashInfo);
         }
 
-        std::string BlockLookupList::lookup( const char* key )
+        std::string BlockLookupList::lookup( const char* key, std::string outputFormat)
         {
             int            hashGroup;
             int            keySize;
@@ -166,18 +166,26 @@ namespace samson {
                     
                     valueDataInstance->parse(valueP);
                     
-                    return keyDataInstance->strXMLInternal("key") + valueDataInstance->strXMLInternal("value");
+                    if (outputFormat == "xml")
+                        return keyDataInstance->strXMLInternal("key") + valueDataInstance->strXMLInternal("value");
+                    else
+                        return std::string("    \"key\" : ") + keyDataInstance->str() + ", \"value\" : \"" + valueDataInstance->str() + "\"\r\n";
                 }
                 
                 if (compare < 0) // keyName < testKey => Go to the left - to 'smaller' key names
-                    endIx = testIx - 1;
+                   endIx = testIx - 1;
+                else
+                   startIx = testIx + 1;
+                        
+                testIx = (endIx - startIx) / 2 + startIx;
+                        
+                if (startIx > endIx) // Not found
+                {
+                    if (outputFormat == "xml")
+                        return au::xml_simple("error", au::str("Key %s not found" , key));
                     else
-                        startIx = testIx + 1;
-                        
-                        testIx = (endIx - startIx) / 2 + startIx;
-                        
-                        if (startIx > endIx) // Not found
-                            return au::xml_simple("error", au::str("Key %s not found" , key));
+                        return std::string("  \"error\" : \"") + au::str("Key %s not found\"\r\n" , key);
+                }
             }
         }
         
@@ -757,7 +765,7 @@ namespace samson {
                     output_tasks_str << block_list->task_id << " ";
             }
             
-            samson::add( record , "tasks" , output_tasks_str.str() , "left,different" );
+            samson::add( record , "tasks" , output_tasks_str.str() ,       "left,different" );
             samson::add( record , "lists" , output_block_lists_str.str() , "left,different" );
             
             if (visualization == NULL)
@@ -767,7 +775,7 @@ namespace samson {
         //au::Token token_lookupList;
         //BlockLookupList* lookupList;
 
-        std::string Block::lookup(const char* key)
+        std::string Block::lookup(const char* key, std::string outputFormat)
         {
             // Mutex preotection
             au::TokenTaker tt( &token_lookupList );
@@ -788,7 +796,7 @@ namespace samson {
                 }
             }
             
-            return lookupList->lookup( key );
+            return lookupList->lookup(key, outputFormat);
         }
     }
 }

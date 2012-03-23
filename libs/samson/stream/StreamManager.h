@@ -179,7 +179,7 @@ namespace samson {
             Queue* getQueue( std::string name );
             
             // Get value for a particular state
-            std::string getState(std::string queue_name, const char* key, char* redirect, int redirectSize, bool* okP);
+            std::string getState(std::string queue_name, const char* key, char* redirect, int redirectSize, bool* okP, std::string outputFormat);
             
         private:
             

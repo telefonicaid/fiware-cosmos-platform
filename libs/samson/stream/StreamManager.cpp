@@ -1151,7 +1151,7 @@ namespace samson {
             }
         }
         
-        std::string StreamManager::getState(std::string queue_name, const char* key, char* redirect, int redirectSize, bool* okP)
+        std::string StreamManager::getState(std::string queue_name, const char* key, char* redirect, int redirectSize, bool* okP, std::string outputFormat)
         {
             LM_T(LmtRest, ("looking up key '%s' in queue '%s'", key, queue_name.c_str()));
 
@@ -1230,7 +1230,7 @@ namespace samson {
             delete value_data_instance;
                 
             *okP = true;
-            return block->lookup(key);
+            return block->lookup(key, outputFormat);
         }
     }
 }

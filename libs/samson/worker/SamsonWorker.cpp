@@ -505,7 +505,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
         else
         {
             bool         ok     = true;
-            std::string  result = streamManager->getState(path_components[2], path_components[3].c_str(), redirect, sizeof(redirect), &ok);
+            std::string  result = streamManager->getState(path_components[2], path_components[3].c_str(), redirect, sizeof(redirect), &ok, format);
 
             if (ok == false)
             {
@@ -513,6 +513,13 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                     au::xml_simple(data, "error", result);
                 else
                     data << "  \"error\" : \"" << result << "\"\r\n";
+            }
+            else
+            {
+               if (format == "xml")
+                  au::xml_simple(data, "message", result);
+               else
+                  data << result;
             }
         }
         
@@ -550,7 +557,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
         else
         {
             bool         ok     = true;
-            std::string  result = streamManager->getState(path_components[2] , path_components[3].c_str(), redirect, sizeof(redirect), &ok);
+            std::string  result = streamManager->getState(path_components[2] , path_components[3].c_str(), redirect, sizeof(redirect), &ok, format);
 
             if (ok == false)
             {
@@ -558,6 +565,13 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                     au::xml_simple(data, "message", result);
                 else
                     data << "  \"error\" : \"" << result << "\"\r\n";
+            }
+            else
+            {
+               if (format == "xml")
+                  au::xml_simple(data, "message", result);
+               else
+                  data << result;
             }
         }
 

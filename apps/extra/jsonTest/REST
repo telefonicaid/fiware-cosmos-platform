@@ -5,6 +5,11 @@
 #
 # delilah -f ... (get quijote)
 #
+# shell> cat trunk/modules/core/txt/testing/quijote.txt | samsonPush quijote
+# delilah> run_stream_operation txt.parser_words quijote quijote.words
+# delilah> run_stream_operation txt.word_count quijote.words quijote.count
+
+
 
 #
 # Is the worker alive?
@@ -29,8 +34,8 @@ curl localhost:9898/samson/state/qnotfound/k.json           > json/error_state_n
 curl localhost:9898/samson/state/qnotfound.json             > json/error_state_no_key.json  2> /dev/null
 curl localhost:9898/samson/queue/qnotfound/k.json           > json/error_queue_not_found.json  2> /dev/null
 curl localhost:9898/samson/queue/qnotfound.json             > json/error_queue_no_key.json  2> /dev/null
-curl localhost:9898/samson/state/quijote/XXXXYZ.json        > json/state_quijote_XXXXYZ.json  2> /dev/null
-curl localhost:9898/samson/queue/quijote/XXXYZ.json         > json/queue_quijote_XXXXYZ.json  2> /dev/null
+curl localhost:9898/samson/state/quijote.count/XXXXYZ.json  > json/state_quijote_XXXXYZ.json  2> /dev/null
+curl localhost:9898/samson/queue/quijote.count/XXXYZ.json   > json/queue_quijote_XXXXYZ.json  2> /dev/null
 curl localhost:9898/samson/logging.json                     > json/error_logging.json  2> /dev/null
 curl localhost:9898/samson/logging/xxx.json                 > json/error_logging_xxx.json  2> /dev/null
 curl localhost:9898/samson/logging/debug.json               > json/error_logging_debug.json  2> /dev/null
@@ -56,8 +61,8 @@ curl localhost:9898/samson/logging/verbose/set/6.json       > json/error_logging
 # JSON OK
 curl localhost:9898/samson/version.json                     > json/version.json  2> /dev/null
 curl localhost:9898/samson/cluster.json                     > json/cluster.json  2> /dev/null
-curl localhost:9898/samson/state/quijote/Sancho.json        > json/state_quijote_Sancho.json  2> /dev/null
-curl localhost:9898/samson/queue/quijote/Panza.json         > json/queue_quijote_Panza.json  2> /dev/null
+curl localhost:9898/samson/state/quijote.count/Sancho.json  > json/state_quijote_Sancho.json  2> /dev/null
+curl localhost:9898/samson/queue/quijote.count/Panza.json   > json/queue_quijote_Panza.json  2> /dev/null
 curl localhost:9898/samson/logging/reads/on.json            > json/logging_reads_on.json  2> /dev/null
 curl localhost:9898/samson/logging/reads/off.json           > json/logging_reads_off.json  2> /dev/null
 curl localhost:9898/samson/logging/writes/on.json           > json/logging_writes_on.json  2> /dev/null
@@ -84,8 +89,8 @@ curl localhost:9898/samson/state/qnotfound/k.xml            > xml/error_state_no
 curl localhost:9898/samson/state/qnotfound.xml              > xml/error_state_no_key.xml  2> /dev/null
 curl localhost:9898/samson/queue/qnotfound/k.xml            > xml/error_queue_not_found.xml  2> /dev/null
 curl localhost:9898/samson/queue/qnotfound.xml              > xml/error_queue_no_key.xml  2> /dev/null
-curl localhost:9898/samson/state/quijote/XXXXYZ.xml         > xml/state_quijote_XXXXYZ.xml  2> /dev/null
-curl localhost:9898/samson/queue/quijote/XXXYZ.xml          > xml/queue_quijote_XXXXYZ.xml  2> /dev/null
+curl localhost:9898/samson/state/quijote.count/XXXXYZ.xml   > xml/state_quijote_XXXXYZ.xml  2> /dev/null
+curl localhost:9898/samson/queue/quijote.count/XXXYZ.xml    > xml/queue_quijote_XXXXYZ.xml  2> /dev/null
 curl localhost:9898/samson/logging.xml                      > xml/error_logging.xml  2> /dev/null
 curl localhost:9898/samson/logging/xxx.xml                  > xml/error_logging_xxx.xml  2> /dev/null
 curl localhost:9898/samson/logging/debug.xml                > xml/error_logging_debug.xml  2> /dev/null
@@ -112,8 +117,8 @@ curl localhost:9898/samson/logging/verbose/set/6.xml        > xml/error_logging_
 # XML OK
 curl localhost:9898/samson/version.xml                      > xml/version.xml  2> /dev/null
 curl localhost:9898/samson/cluster.xml                      > xml/cluster.xml  2> /dev/null
-curl localhost:9898/samson/state/quijote/Sancho.xml         > xml/state_quijote_Sancho.xml  2> /dev/null
-curl localhost:9898/samson/queue/quijote/Panza.xml          > xml/queue_quijote_Panza.xml  2> /dev/null
+curl localhost:9898/samson/state/quijote.count/Sancho.xml   > xml/state_quijote_Sancho.xml  2> /dev/null
+curl localhost:9898/samson/queue/quijote.count/Panza.xml    > xml/queue_quijote_Panza.xml  2> /dev/null
 curl localhost:9898/samson/logging/reads/on.xml             > xml/logging_reads_on.xml  2> /dev/null
 curl localhost:9898/samson/logging/reads/off.xml            > xml/logging_reads_off.xml  2> /dev/null
 curl localhost:9898/samson/logging/writes/on.xml            > xml/logging_writes_on.xml  2> /dev/null

@@ -1,9 +1,9 @@
-package es.tip.bdp.frontend_om;
+package es.tip.bdp.frontend.om;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.testng.Assert;
+import static org.testng.Assert.assertEquals;
 
 /**
  *
@@ -16,7 +16,7 @@ public class SelectInputPage {
     private final String selectInputUrl;    
     
     private void assertCorrectUrl() {
-        Assert.assertEquals(this.driver.getCurrentUrl(), this.selectInputUrl);
+        assertEquals(this.driver.getCurrentUrl(), this.selectInputUrl);
     }
     
     public SelectInputPage(WebDriver driver) {
@@ -27,14 +27,14 @@ public class SelectInputPage {
     public void setInputFile(String filePath) {
         assertCorrectUrl();
         WebElement inputElement = this.driver.findElement(
-                                        By.id(INPUT_FILE_HTML_ID));
+                By.id(INPUT_FILE_HTML_ID));
         inputElement.sendKeys(filePath);
     }
     
     public void submitInputFileForm() {
         assertCorrectUrl();
         WebElement inputElement = this.driver.findElement(
-                                        By.id(INPUT_FILE_HTML_ID));
+                By.id(INPUT_FILE_HTML_ID));
         inputElement.submit();
     }
 }

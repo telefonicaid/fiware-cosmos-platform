@@ -1,9 +1,9 @@
-package es.tip.bdp.frontend_om;
+package es.tip.bdp.frontend.om;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.testng.Assert;
+import static org.testng.Assert.assertEquals;
 
 public class SelectNamePage {
     public static final String NAME_ID = "job-name";
@@ -12,7 +12,7 @@ public class SelectNamePage {
     private WebDriver driver;
     
     private void assertCorrectUrl() {
-        Assert.assertEquals(this.driver.getCurrentUrl(), this.selectNameUrl);
+        assertEquals(this.driver.getCurrentUrl(), this.selectNameUrl);
     }
     
     public SelectNamePage(WebDriver driver) {

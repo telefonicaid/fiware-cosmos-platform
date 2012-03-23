@@ -4,26 +4,27 @@ import java.io.File;
 import java.util.Map;
 import java.util.UUID;
 
-import org.testng.Assert;
+import static org.testng.Assert.assertEquals;
 
-import es.tip.bdp.frontend_om.FrontEnd;
-import es.tip.bdp.frontend_om.SelectInputPage;
-import es.tip.bdp.frontend_om.SelectJarPage;
-import es.tip.bdp.frontend_om.SelectNamePage;
+import es.tip.bdp.frontend.om.FrontEnd;
+import es.tip.bdp.frontend.om.SelectInputPage;
+import es.tip.bdp.frontend.om.SelectJarPage;
+import es.tip.bdp.frontend.om.SelectNamePage;
 
 /**
  *
  * @author ximo
  */
-public class CosmosWebUITester implements JobLauncher {
-    private static final int THIRTY_SECONDS_IN_MILLISECONDS = 30000;
+public class FrontendLauncher implements JobLauncher {
+    private static final int SLEEP_TIME = 30000; // 30 seconds
     
     private FrontEnd frontend;
     
-    public CosmosWebUITester() {
+    public FrontendLauncher() {
         this.frontend = new FrontEnd();
     }
     
+    @Override
     public String createNewTask(String inputFilePath, String jarPath)
             throws TestException {        
         return this.createNewTask(inputFilePath, jarPath, true);
@@ -63,34 +64,37 @@ public class CosmosWebUITester implements JobLauncher {
     }
     
     public void launchTask(String taskId) throws TestException {
-        Assert.assertEquals(getTaskStatus(taskId),
-                            TaskStatus.Created,
-                            "Verifying task is in Created state");
+        assertEquals(getTaskStatus(taskId),
+                     TaskStatus.Created,
+                     "Verifying task is in Created state");
         this.frontend.launchJob(taskId);
     }
 
-    public void waitForTaskCompletion(String taskId) throws TestException {
-        boolean taskCompleted = false;        
-        while (!taskCompleted) {
+    @Override
+    public void waitForTaskCompletion(String taskId) throws TestException {       
+        while (true) {
             // Go to the main page
             this.frontend.goHome();
-            taskCompleted = (this.frontend.getTaskStatus(taskId)
-                                == TaskStatus.Completed);
-            if (!taskCompleted) {
-                try {
-                    Thread.sleep(THIRTY_SECONDS_IN_MILLISECONDS);
-                } catch (InterruptedException ex) {
-                    throw new TestException("[InterruptedException] "
-                            + ex.getMessage());
-                }
+            boolean taskCompleted = (this.frontend.getTaskStatus(taskId)
+                    == TaskStatus.Completed);
+            if (taskCompleted) {
+                break;
+            }
+            try {
+                Thread.sleep(SLEEP_TIME);
+            } catch (InterruptedException ex) {
+                throw new TestException("[InterruptedException] "
+                        + ex.getMessage());
             }
         }
     }
     
+    @Override
     public Map<String,String[]> getResults(String taskId) throws TestException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
     public TaskStatus getTaskStatus(String taskId) throws TestException {
         return this.frontend.getTaskStatus(taskId);
     }

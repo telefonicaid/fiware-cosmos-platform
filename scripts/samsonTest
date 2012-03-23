@@ -70,7 +70,7 @@ function execute_test
     # ------------------------------------------------ 
     if [ $HAVE_DELILAH_INIT -eq 1 ]; then
         pushd  `dirname $TEST_DELILAH_INIT` > /dev/null
-        delilah ${SAMSON_TEST_HOST} -f `basename $TEST_DELILAH_INIT` 2>$TEST_INIT_SCRIPT.stderr >$TEST_INIT_SCRIPT.stdout
+        delilah ${SAMSON_TEST_HOST} -f `basename $TEST_DELILAH_INIT` 2> `basename $TEST_DELILAH_INIT`.stderr > `basename $TEST_DELILAH_INIT`.stdout
         if [ $? -ne 0 ]; then
             echo "ERROR: unable to initialize the test, bailing out"
             exit 1
@@ -111,8 +111,10 @@ function execute_test
     diff -u $TEST_EXPECT $TEST_OUTPUT > $TEST_DIFF
     if [ $? -ne 0 ]; then
         echo "ERROR: $TEST_NAME"
-        echo "Diffs"
-        cat $TEST_DIFF
+        echo "Expected"
+        cat $TEST_EXPECT
+        echo "Got"
+        cat $TEST_OUTPUT
     else
         # Clean up files for succesfull test runs
         rm -f $TEST_EXPECT $TEST_OUTPUT $TEST_SCRIPT $TEST_INIT_SCRIPT $TEST_SHELL_SCRIPT ${TEST_BASENAME}.diff $TEST_INIT_SCRIPT.stderr $TEST_INIT_SCRIPT.stdout

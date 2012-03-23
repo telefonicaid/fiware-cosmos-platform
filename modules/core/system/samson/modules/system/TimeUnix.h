@@ -606,6 +606,7 @@ public:
             p_month = &(strTimeDate[3]);
             tm.tm_mday = Char_to_int( strTimeDate[6] )*10 + Char_to_int( strTimeDate[7] );
         }
+        tm_mon = 0;
         if (strncmp(p_month, "JAN", strlen("JAN")) == 0)
         {
             tm.tm_mon = 1;

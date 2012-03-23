@@ -1,3 +1,4 @@
+MODULE=$(lastword $(subst /, ,$(CURDIR)))
 ifndef SAMSON_HOME
 SAMSON_HOME=/opt/samson
 endif
@@ -38,6 +39,9 @@ reset:
 	rm -f Module.*
 	rm -Rf xcodeProj
 	rm -f samson/modules/*/*_base.h
+	rm -Rf $(SAMSON_HOME)/include/samson/$(MODULE)
+	rm -f $(SAMSON_HOME)/modules/lib$(MODULE).so
+
 
 clean: clean_release
 clean_release:

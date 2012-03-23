@@ -96,6 +96,9 @@ int main( int argC , const char *argV[])
     
     if( ( res_stat1 == 0) && ( res_stat2 == 0) )
     {
+/* Disabling timestamp checking, since makefile is more clever and if it has called samsonModuleParser,
+   it has some work to do (for example, the samsonModuleParser itself may have changed).
+
 #ifdef __gnu_linux__
 		if (tsCompare(stat_module.st_mtime, stat_output1.st_mtime) < 0)
 			if(tsCompare(stat_module.st_mtime, stat_output2.st_mtime) < 0)
@@ -111,6 +114,7 @@ int main( int argC , const char *argV[])
                 return 0;
             }
 #endif
+*/
     }
     else
     {

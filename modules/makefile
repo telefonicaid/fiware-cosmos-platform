@@ -11,7 +11,8 @@ EXTRA_MODULES= webp \
 		gg \
 		mobility \
 		simple_mobility \
-		passive_location 
+		passive_location \
+		OTTstream
 
 all: core_modules extra_modules
 all_debug: core_modules_debug extra_modules_debug

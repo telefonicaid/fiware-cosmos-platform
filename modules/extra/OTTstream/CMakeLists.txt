@@ -53,6 +53,7 @@ ELSE (NOT SVN_BUILD)
 ENDIF (SVN_BUILD)
 
 SET (SOURCES
+	OTTService.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
 )
 

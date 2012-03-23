@@ -12,7 +12,7 @@
 #include <samson/modules/system/UInt.h>
 #include <samson/modules/system/SimpleParser.h>
 
-#include "Service.h"
+#include "OTTService.h"
 
 
 namespace samson{
@@ -27,7 +27,7 @@ class parse_logs : public samson::system::SimpleParser
     std::vector<char*> fields;
     char sep;
 
-    std::vector<Service> services;
+    std::vector<OTTService*> services;
 
     samson::system::UInt userId;
     samson::system::UInt serviceId;
@@ -73,25 +73,25 @@ public:
     }
 
 
-    uint64_t classify_http(char *url)
+    uint64_t classify_http(const char *url)
     {
         for (unsigned int i = 0; (i < services.size()); i++)
         {
-            if (services[i].checkHTTP(url))
+            if (services[i]->checkHTTP(url))
             {
-                return services[i].serviceId;
+                return services[i]->serviceId;
             }
         }
         return 0;
     }
 
-    uint64_t classify_dns(char *url)
+    uint64_t classify_dns(const char *url)
     {
         for (unsigned int i = 0; (i < services.size()); i++)
         {
-            if (services[i].checkDNS(url))
+            if (services[i]->checkDNS(url))
             {
-                return services[i].serviceId;
+                return services[i]->serviceId;
             }
         }
         return 0;
@@ -203,100 +203,100 @@ public:
         sep = '\t';
 
         {
-            Service newService("Skype", 10);
-            newService.addHTTPPattern("http://ui.skype.com/%/getlatestversion?%");
-            newService.addHTTPPattern("http://apps.skype.com/countrycode");
-            newService.addHTTPPattern("http://conn.skype.com");
+            OTTService *newService = new OTTService("Skype", 10);
+            newService->addHTTPPattern("http://ui.skype.com/%/getlatestversion?%");
+            newService->addHTTPPattern("http://apps.skype.com/countrycode");
+            newService->addHTTPPattern("http://conn.skype.com");
             services.push_back(newService);
         }
         {
-            Service newService("Viber", 20);
-            newService.addHTTPPattern("http://www.cdn.viber.com/ok.txt");
-            newService.addHTTPPattern("http://www.cdn.viber.com/android_version.txt");
+            OTTService *newService = new OTTService("Viber", 20);
+            newService->addHTTPPattern("http://www.cdn.viber.com/ok.txt");
+            newService->addHTTPPattern("http://www.cdn.viber.com/android_version.txt");
             services.push_back(newService);
         }
         {
-            Service newService("Tango", 80);
-            newService.addDNSPattern("%.cm.tango.me");
+            OTTService *newService = new OTTService("Tango", 80);
+            newService->addDNSPattern("%.cm.tango.me");
             services.push_back(newService);
         }
         {
-            Service newService("GTalk", 40);
-            newService.addHTTPPattern("talkgadget.google.com");
-            newService.addHTTPPattern("talkgadget.google");
-            newService.addHTTPPattern("hostedtalkgadget.google.com");
-            newService.addHTTPPattern("dl.google.com");
-            newService.addHTTPPattern("tc.v%.cache%.c.pack.google.com");
-            newService.addDNSPattern("talkgadget.google.com");
-            newService.addDNSPattern("talkgadget.l.google.com");
-            newService.addDNSPattern("hostedtalkgadget.google.com");
-            newService.addDNSPattern("%.talkgadget.google.com");
-            newService.addDNSPattern("mtalk.google.com");
-            newService.addDNSPattern("talk.google.com");
-            newService.addDNSPattern("mtalk.google.com.%");
-            newService.addDNSPattern("talk.google.com.%");
-            newService.addDNSPattern("talk.%.google.com");
+            OTTService *newService = new OTTService("GTalk", 40);
+            newService->addHTTPPattern("talkgadget.google.com");
+            newService->addHTTPPattern("talkgadget.google");
+            newService->addHTTPPattern("hostedtalkgadget.google.com");
+            newService->addHTTPPattern("dl.google.com");
+            newService->addHTTPPattern("tc.v%.cache%.c.pack.google.com");
+            newService->addDNSPattern("talkgadget.google.com");
+            newService->addDNSPattern("talkgadget.l.google.com");
+            newService->addDNSPattern("hostedtalkgadget.google.com");
+            newService->addDNSPattern("%.talkgadget.google.com");
+            newService->addDNSPattern("mtalk.google.com");
+            newService->addDNSPattern("talk.google.com");
+            newService->addDNSPattern("mtalk.google.com.%");
+            newService->addDNSPattern("talk.google.com.%");
+            newService->addDNSPattern("talk.%.google.com");
             services.push_back(newService);
         }
         {
-            Service newService("WhattsApp", 50);
-            newService.addDNSPattern("sro.whatsapp.net");
-            newService.addDNSPattern("bin-short.whatsapp.net");
-            newService.addDNSPattern("bin-nokia.whatsapp.net");
-            newService.addDNSPattern("mms.whatsapp.net");
-            newService.addDNSPattern("mms40%.whatsapp.net");
-            newService.addDNSPattern("mms30%.whatsapp.net");
-            newService.addDNSPattern("mms20%.whatsapp.net");
+            OTTService *newService = new OTTService("WhattsApp", 50);
+            newService->addDNSPattern("sro.whatsapp.net");
+            newService->addDNSPattern("bin-short.whatsapp.net");
+            newService->addDNSPattern("bin-nokia.whatsapp.net");
+            newService->addDNSPattern("mms.whatsapp.net");
+            newService->addDNSPattern("mms40%.whatsapp.net");
+            newService->addDNSPattern("mms30%.whatsapp.net");
+            newService->addDNSPattern("mms20%.whatsapp.net");
             services.push_back(newService);
         }
         {
-            Service newService("faceTime", 60);
+            OTTService *newService = new OTTService("faceTime", 60);
             services.push_back(newService);
         }
         {
-            Service newService("iphoneMessage", 70);
+            OTTService *newService = new OTTService("iphoneMessage", 70);
             services.push_back(newService);
         }
         {
-            Service newService("Facebook", 30);
-            newService.addHTTPPattern("http://www.facebook.com/ajax/messaging/typ.php?__a=1");
-            newService.addHTTPPattern("http://apps.facebook.com/ajax/messaging/typ.php?__a=1");
-            newService.addHTTPPattern("http://es-es.facebook.com/ajax/messaging/typ.php?__a=1");
-            newService.addHTTPPattern("http://www.facebook.com/ajax/messaging/async.php?__a=1");
-            newService.addHTTPPattern("http://apps.facebook.com/ajax/messaging/async.php?__a=1");
-            newService.addHTTPPattern("http://es-es.facebook.com/ajax/messaging/async.php?__a=1");
-            newService.addHTTPPattern("http://www.facebook.com/ajax/messaging/send.php?__a=1");
-            newService.addHTTPPattern("http://apps.facebook.com/ajax/chat/send.php?__a=1");
-            newService.addHTTPPattern("http://es-es.facebook.com/ajax/chat/send.php?__a=1");
-            newService.addHTTPPattern("http://www.facebook.com/ajax/chat/buddy_list.php?__a=1");
-            newService.addHTTPPattern("http://apps.facebook.com/ajax/chat/buddy_list.php?__a=1");
-            newService.addHTTPPattern("http://es-es.facebook.com/ajax/chat/buddy_list.php?__a=1");
-            newService.addHTTPPattern("http://www.facebook.com/ajax/chat/tabs.php?__a=1");
-            newService.addHTTPPattern("http://apps.facebook.com/ajax/chat/tabs.php?__a=1");
-            newService.addHTTPPattern("http://touch.facebook.com/touch/chathistory.php");
-            newService.addHTTPPattern("http://iphone.facebook.com/touch/chathistory.php");
-            newService.addHTTPPattern("http://www.facebook.com/ajax/presence/update.php");
-            newService.addHTTPPattern("http://%.channel.facebook.com");
+            OTTService *newService = new OTTService("Facebook", 30);
+            newService->addHTTPPattern("http://www.facebook.com/ajax/messaging/typ.php?__a=1");
+            newService->addHTTPPattern("http://apps.facebook.com/ajax/messaging/typ.php?__a=1");
+            newService->addHTTPPattern("http://es-es.facebook.com/ajax/messaging/typ.php?__a=1");
+            newService->addHTTPPattern("http://www.facebook.com/ajax/messaging/async.php?__a=1");
+            newService->addHTTPPattern("http://apps.facebook.com/ajax/messaging/async.php?__a=1");
+            newService->addHTTPPattern("http://es-es.facebook.com/ajax/messaging/async.php?__a=1");
+            newService->addHTTPPattern("http://www.facebook.com/ajax/messaging/send.php?__a=1");
+            newService->addHTTPPattern("http://apps.facebook.com/ajax/chat/send.php?__a=1");
+            newService->addHTTPPattern("http://es-es.facebook.com/ajax/chat/send.php?__a=1");
+            newService->addHTTPPattern("http://www.facebook.com/ajax/chat/buddy_list.php?__a=1");
+            newService->addHTTPPattern("http://apps.facebook.com/ajax/chat/buddy_list.php?__a=1");
+            newService->addHTTPPattern("http://es-es.facebook.com/ajax/chat/buddy_list.php?__a=1");
+            newService->addHTTPPattern("http://www.facebook.com/ajax/chat/tabs.php?__a=1");
+            newService->addHTTPPattern("http://apps.facebook.com/ajax/chat/tabs.php?__a=1");
+            newService->addHTTPPattern("http://touch.facebook.com/touch/chathistory.php");
+            newService->addHTTPPattern("http://iphone.facebook.com/touch/chathistory.php");
+            newService->addHTTPPattern("http://www.facebook.com/ajax/presence/update.php");
+            newService->addHTTPPattern("http://%.channel.facebook.com");
             services.push_back(newService);
         }
         {
-            Service newService("Tuenti", 90);
-            newService.addHTTPPattern("m.tuenti.com");
-            newService.addHTTPPattern("xmpp%.tuenti.com");
-            newService.addHTTPPattern("api.tuenti.com");
-            newService.addHTTPPattern("fotos.api.tuenti.com");
-            newService.addHTTPPattern("api.pl.tuenti.com");
+            OTTService *newService = new OTTService("Tuenti", 90);
+            newService->addHTTPPattern("m.tuenti.com");
+            newService->addHTTPPattern("xmpp%.tuenti.com");
+            newService->addHTTPPattern("api.tuenti.com");
+            newService->addHTTPPattern("fotos.api.tuenti.com");
+            newService->addHTTPPattern("api.pl.tuenti.com");
             services.push_back(newService);
         }
         {
-            Service newService("Google+", 100);
+            OTTService *newService = new OTTService("Google+", 100);
             services.push_back(newService);
         }
         {
-            Service newService("TEST", 200);
-            newService.addHTTPPattern("www.c%n.v%ber.com");
-            newService.addDNSPattern("www.applesfera.com");
-            newService.addDNSPattern("www.applesfera.com");
+            OTTService *newService = new OTTService("TEST", 200);
+            newService->addHTTPPattern("www.c%n.v%ber.com");
+            newService->addDNSPattern("www.applesfera.com");
+            newService->addDNSPattern("www.applesfera.com");
             services.push_back(newService);
         }
 

@@ -2,7 +2,7 @@
 #include <vector>
 
 
-class Service
+class OTTService
 {
 
     std::vector <std::string> httpPatterns;
@@ -13,12 +13,25 @@ public:
     std::string name;
     int serviceId;
     
-    Service( std::string _name, int _serviceId )
+    OTTService( std::string _name, int _serviceId )
     {
         name = _name;
         serviceId = _serviceId;
     }
     
+    ~OTTService()
+    {
+        while (httpPatterns.size() > 0)
+        {
+            httpPatterns.pop_back();
+        }
+
+        while (dnsPatterns.size() > 0)
+        {
+            dnsPatterns.pop_back();
+        }
+    }
+
     void addHTTPPattern(std::string _httpPattern)
     {
         httpPatterns.push_back(_httpPattern);
@@ -29,9 +42,9 @@ public:
         dnsPatterns.push_back(_dnsPattern);
     }
     
-    bool checkHTTP(std::string url);
+    bool checkHTTP(const char *url);
 
-    bool checkDNS(std::string dns);
+    bool checkDNS(const char *dns);
     
     
 };

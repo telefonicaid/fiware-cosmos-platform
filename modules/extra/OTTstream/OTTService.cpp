@@ -1,10 +1,8 @@
-#include <string>
+#include <string.h>
 #include <vector>
-#include <Service.h>
+#include "OTTService.h"
 
 
-class Service
-{
 
 
     static char *strnstr_limitpattern(const char *text, const char *pattern, size_t max_length)
@@ -21,7 +19,7 @@ class Service
                 {
                     if ((len-- < max_length) || (ctxt = *text++) == '\0')
                     {
-                        return (NULL);
+                        return ((char *)NULL);
                     }
                 } while (ctxt != cpat);
             } while (strncmp(text, pattern, max_length-1) != 0);
@@ -86,13 +84,12 @@ class Service
     }
 
 
-    bool checkHTTP(std::string url)
+    bool OTTService::checkHTTP(const char *url)
     {
         char wildcard = '%';
-        const char *p_url = url.c_str();
         for (unsigned int i = 0; i < httpPatterns.size(); i++)
         {
-            if (matchPatterns(p_url, httpPatterns[i].c_str(), wildcard))
+            if (matchPatterns(url, httpPatterns[i].c_str(), wildcard))
             {
                 return true;
 
@@ -101,13 +98,12 @@ class Service
         return false;
     }
 
-    bool checkDNS(std::string dns)
+    bool OTTService::checkDNS(const char *dns)
     {
         char wildcard = '%';
-        const char *p_dns = dns.c_str();
         for (unsigned int i = 0; i < dnsPatterns.size(); i++)
         {
-            if (matchPatterns(p_dns, dnsPatterns[i].c_str(), wildcard))
+            if (matchPatterns(dns, dnsPatterns[i].c_str(), wildcard))
             {
                 return true;
 
@@ -118,5 +114,5 @@ class Service
 
 
 
-};
+
 

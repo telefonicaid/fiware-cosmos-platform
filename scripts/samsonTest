@@ -15,14 +15,14 @@ function setup_test_vars
 
     #Extract the delilah init script
     if [ $(grep "\-\-DELILAH\-INIT\-\-" $TEST_FILE | wc -l) -eq 1 ]; then
-        TEST_DELILAH_INIT=${TEST_BASENAME}.init
+        TEST_DELILAH_INIT=${TEST_BASENAME}.delilah_init
         sed -n '/--DELILAH-INIT--/,/^--/p' $TEST_FILE  | grep -v "^--" > $TEST_DELILAH_INIT
         HAVE_DELILAH_INIT=1
     fi
 
     #Extract the shell init script
     if [ $(grep "\-\-SHELL\-INIT\-\-" $TEST_FILE | wc -l) -eq 1 ]; then
-        TEST_SHELL_INIT=${TEST_BASENAME}.init
+        TEST_SHELL_INIT=${TEST_BASENAME}.sh_init
         sed -n '/--SHELL-INIT--/,/^--/p' $TEST_FILE  | grep -v "^--" > $TEST_SHELL_INIT
         HAVE_SHELL_INIT=1
     fi
@@ -136,8 +136,18 @@ function execute_test
         fi
         echo "----------------------------------------------------------------"
     else
-        # Clean up files for succesfull test runs
-        rm -f $TEST_EXPECT $TEST_OUTPUT $TEST_SCRIPT $TEST_INIT_SCRIPT $TEST_SHELL_SCRIPT ${TEST_BASENAME}.diff $TEST_INIT_SCRIPT.stderr $TEST_INIT_SCRIPT.stdout
+        # Clean up files for succesful test runs
+        rm -f $TEST_EXPECT \
+                $TEST_OUTPUT \
+                $TEST_SCRIPT \
+                $TEST_SHELL_SCRIPT \
+                $TEST_BASENAME.diff
+        if [ ! -z $TEST_DELILAH_INIT ]; then
+            rm -f  $TEST_DELILAH_INIT $TEST_DELILAH_INIT.stderr $TEST_DELILAH_INIT.stdout
+        fi
+        if [ ! -z $TEST_SHELL_INIT ]; then
+            rm -f  $TEST_SHELL_INIT $TEST_SHELL_INIT.stderr $TEST_SHELL_INIT.stdout
+        fi
         echo "SUCCESS: $TEST_NAME"
     fi
 

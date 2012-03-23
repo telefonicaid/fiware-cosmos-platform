@@ -52,8 +52,8 @@ prepare_debug:
 	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
 
 prepare_coverage:
-	mkdir BUILD_COVERAGE || true
-	cd BUILD_COVERAGE; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCOVERAGE=True -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
+	mkdir BUILD_DEBUG || true
+	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCOVERAGE=True -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
 
 prepare_release_all:
 	mkdir BUILD_RELEASE || true
@@ -146,8 +146,8 @@ debug: prepare_debug
 # ------------------------------------------------
 
 coverage: prepare_coverage
-	make -C BUILD_COVERAGE -j $(CPU_COUNT)
-	lcov -d BUILD_COVERAGE -z	
+	make -C BUILD_DEBUG -j $(CPU_COUNT)
+	lcov -d BUILD_DEBUG -z	
 	BUILD_COVERAGE/apps/unitTest/unitTest  --gtest_output=xml:samson_test.xml
 	mkdir -p coverage
 	lcov -d BUILD_COVERAGE --capture --output-file coverage/samson.info
@@ -177,8 +177,9 @@ debug_all: prepare_debug_all
 
 test: ctest
 
-ctest: install_debug
+ctest: prepare_coverage install_debug
 	make test -C BUILD_DEBUG ARGS="-D ExperimentalTest"
+	BUILD_DEBUG/apps/unitTest/unitTest --gtest_output=xml:BUILD_DEBUG/samson_test.xml
 
 test_samsonWorker: install_debug
 	scripts/samsonTest test/samsonWorker

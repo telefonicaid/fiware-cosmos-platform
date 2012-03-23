@@ -60,8 +60,8 @@ class FakeServer(TServer.TSimpleServer):
                     self.processor.process(iprot, oprot)
             except TTransport.TTransportException, tx:
                 pass
-            except Exception, x:
-                logging.exception(x)
+            except Exception:
+                break
 
         itrans.close()
         otrans.close()

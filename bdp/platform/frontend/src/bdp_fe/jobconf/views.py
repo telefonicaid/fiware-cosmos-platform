@@ -60,7 +60,8 @@ def view_results(request, job_id):
 
     return render_to_response('job_results.html',
                               { 'title' : 'Results of job %s' % job_id,
-                                'job_results' : paginated_results },
+                                'job_results' : paginated_results,
+                                'hidden_keys': ['_id', 'job_id']},
                               context_instance=RequestContext(request))
 
 def run_job(request, job_id):

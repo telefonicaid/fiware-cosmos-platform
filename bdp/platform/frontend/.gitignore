@@ -1,0 +1,9 @@
+*.pyc
+.installed.cfg
+bin/
+develop-eggs/
+downloads/
+eggs/
+parts/
+src/bdp_fe.egg-info/
+var/

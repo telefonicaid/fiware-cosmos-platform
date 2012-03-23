@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2> These are your results </h2>
+    {% if job_results %}
+        <table id="job-results-table">
+            {% for job_result in job_results.object_list %}
+            <tr>
+                <td class="job-result-key">{{ job_result.word }}</td>
+                <td class="job-result-value">{{ job_result.count }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        There were no results
+    {% endif %}
+    <div class="pagination">
+        <span class="step-links">
+            {% if job_results.has_previous %}
+                <a href="?page={{ job_results.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ job_results.number }} of {{ job_results.paginator.num_pages }}.
+            </span>
+
+            {% if job_results.has_next %}
+                <a href="?page={{ job_results.next_page_number }}">next</a>
+            {% endif %}
+        </span>
+    </div>
+{% endblock %}
+
+{# vim:set syntax=htmldjango: #}

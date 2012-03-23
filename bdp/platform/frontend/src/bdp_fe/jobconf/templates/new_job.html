@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load url from future %}
+{% block content %}
+    <form action="{% url 'new_job' %}" method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Create job" />
+    </form>
+{% endblock %}
+{# vim:set syntax=htmldjango: #}

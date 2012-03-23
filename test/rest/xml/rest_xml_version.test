@@ -1,0 +1,12 @@
+--NAME--
+REST XML version
+--SHELL_INIT--
+samsonWorker
+--SHELL--
+curl http://localhost:9898/samson/version
+--EXPECT--
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SAMSON Rest interface -->
+<samson>
+<version><![CDATA[SAMSON v 0.6.1]]></version>
+</samson>

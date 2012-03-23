@@ -395,8 +395,11 @@ int paOptionsParse(PaiArgument* paList, char* argV[], int argC)
 		}
 		else if (aP->varP == (void*) &paLogDir)
 		{
-            strcpy(paLogDir, strdup(valueP));
-            printf("log directory: '%s'\n", paLogDir);
+            if (valueP != NULL)
+            {
+                strcpy(paLogDir, strdup(valueP));
+                printf("log directory: '%s'\n", paLogDir);
+            }
 		}
 		else if (aP->varP == (void*) &paEUsageVar)
 			extendedUsage = true;

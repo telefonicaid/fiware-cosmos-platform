@@ -132,41 +132,41 @@ void captureSIGTERM( int s )
 
 void cleanup(void)
 {
-    printf("Shutting down worker components (worker at %p)\n", worker);
+   // printf("Shutting down worker components (worker at %p)\n", worker);
     if (worker)
     {
-        printf("deleting worker\n");
+        // printf("deleting worker\n");
         delete worker;
     }
 
     google::protobuf::ShutdownProtobufLibrary();
 
-    printf("Shutting down LockDebugger\n");
+    // printf("Shutting down LockDebugger\n");
     au::LockDebugger::destroy();
 
     if (smManager != NULL)
     {
-        printf("Shutting down Shared Memory Manager\n");
+        // printf("Shutting down Shared Memory Manager\n");
         delete smManager;
         smManager = NULL;
     }
     
-    printf("destroying ModulesManager\n");
+    // printf("destroying ModulesManager\n");
     samson::ModulesManager::destroy();
 
-    printf("destroying ProcessManager\n");
+    // printf("destroying ProcessManager\n");
     engine::ProcessManager::destroy();
 
-    printf("destroying DiskManager\n");
+    // printf("destroying DiskManager\n");
     engine::DiskManager::destroy();
 
-    printf("destroying MemoryManager\n");
+    // printf("destroying MemoryManager\n");
     engine::MemoryManager::destroy();
 
-    printf("destroying Engine\n");
+    // printf("destroying Engine\n");
     engine::Engine::destroy();
 
-    printf("Shutting down SamsonSetup\n");
+    // printf("Shutting down SamsonSetup\n");
     samson::SamsonSetup::destroy();
 
     // Check background threads
@@ -179,11 +179,11 @@ void cleanup(void)
     else
         LM_M(("Finished correctly with 0 background processes"));
     
-    printf("Calling paConfigCleanup\n");
+    // printf("Calling paConfigCleanup\n");
     paConfigCleanup();
-    printf("Calling lmCleanProgName\n");
+    // printf("Calling lmCleanProgName\n");
     lmCleanProgName();
-    printf("Cleanup DONE\n");
+    // printf("Cleanup DONE\n");
 }
 
 

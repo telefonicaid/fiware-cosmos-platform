@@ -537,7 +537,6 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             bool         ok     = true;
             std::string  result = streamManager->getState(path_components[2], path_components[3].c_str(), redirect, sizeof(redirect), &ok, format);
 
-            printf("getState returned '%s'\n", result.c_str());
             if (ok == false)
             {
                 if (format == "xml")

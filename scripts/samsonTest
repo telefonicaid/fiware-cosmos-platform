@@ -7,7 +7,8 @@ function setup_test_vars
     HAVE_COMMAND=0
     HAVE_SCRIPT=0
     HAVE_SHELL=0
-    INIT_ERROR=0
+    INIT_DELILAH_ERROR=0
+    INIT_SHELL_ERROR=0
 
     TEST_BASENAME=$(echo $TEST_FILE | sed 's/\.test//')
     TEST_NAME=$(sed -n '/--NAME--/,/^--/p' $TEST_FILE  | grep -v "^--")
@@ -73,16 +74,19 @@ function execute_test
         pushd  `dirname $TEST_DELILAH_INIT` > /dev/null
         delilah ${SAMSON_TEST_HOST} -f `basename $TEST_DELILAH_INIT` 2> `basename $TEST_DELILAH_INIT`.stderr > `basename $TEST_DELILAH_INIT`.stdout
         if [ $? -ne 0 ]; then
-            echo "ERROR: unable to initialize the test, bailing out"
-            exit 1
+            INIT_DELILAH_ERROR=1
         fi
         popd > /dev/null
     fi
 
     if [ $HAVE_SHELL_INIT -eq 1 ]; then
-        bash -x $TEST_SHELL_INIT 2>$TEST_SHELL_INIT.stderr >$TEST_SHELL_INIT.stdout
-        if [ $? -ne 0 ]; then
-            INIT_ERROR=1
+        if [ ! -z ${SAMSON_TEST_HOST} ]; then
+            "echo Remote shell initialization is currently not supported"
+        else
+            bash -x $TEST_SHELL_INIT 2> $TEST_SHELL_INIT.stderr > $TEST_SHELL_INIT.stdout
+            if [ $? -ne 0 ]; then
+                INIT_SHELL_ERROR=1
+            fi
         fi
     fi
 
@@ -116,14 +120,21 @@ function execute_test
         cat $TEST_EXPECT
         echo "Got"
         cat $TEST_OUTPUT
-        if [ $INIT_ERROR -ne 0 ]; then
-            echo "Errors were seen during the initialization phase"
+        if [ $INIT_DELILAH_ERROR -ne 0 ]; then
+            echo "Errors were seen initializing delilah"
             echo "STDOUT:"
             cat $TEST_DELILAH_INIT.stdout
             echo "STDERROR:"
             cat $TEST_DELILAH_INIT.stderr
-            echo "----------------------------------------------------------------"
         fi
+        if [ $INIT_SHELL_ERROR -ne 0 ]; then
+            echo "Errors were seen with the shell initialization script"
+            echo "STDOUT:"
+            cat $TEST_SHELL_INIT.stdout
+            echo "STDERROR:"
+            cat $TEST_SHELL_INIT.stderr
+        fi
+        echo "----------------------------------------------------------------"
     else
         # Clean up files for succesfull test runs
         rm -f $TEST_EXPECT $TEST_OUTPUT $TEST_SCRIPT $TEST_INIT_SCRIPT $TEST_SHELL_SCRIPT ${TEST_BASENAME}.diff $TEST_INIT_SCRIPT.stderr $TEST_INIT_SCRIPT.stdout

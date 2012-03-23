@@ -16,6 +16,8 @@ import es.tip.bdp.frontend_om.SelectNamePage;
  * @author ximo
  */
 public class CosmosWebUITester implements JobLauncher {
+    private static final int THIRTY_SECONDS_IN_MILLISECONDS = 30000;
+    
     private FrontEnd frontend;
     
     public CosmosWebUITester() {
@@ -24,18 +26,18 @@ public class CosmosWebUITester implements JobLauncher {
     
     public String createNewTask(String inputFilePath, String jarPath)
             throws TestException {        
-        return createNewTask(inputFilePath, jarPath);
+        return this.createNewTask(inputFilePath, jarPath, true);
     }
     
     public String createNewTask(String inputFilePath,
                                 String jarPath,
-                                boolean launch)
+                                boolean shouldLaunch)
             throws TestException {        
         // Verify input params
-        if(!new File(inputFilePath).exists()) {
+        if(!(new File(inputFilePath).exists())) {
             throw new TestException("Input path does not exist");
         }        
-        if(!new File(jarPath).exists()) {
+        if(!(new File(jarPath).exists())) {
             throw new TestException("JAR path does not exist.");
         }
         
@@ -53,8 +55,8 @@ public class CosmosWebUITester implements JobLauncher {
         inputPage.setInputFile(inputFilePath);
         inputPage.submitInputFileForm();        
               
-        if(launch) {
-            launchTask(taskId);
+        if (shouldLaunch) {
+            this.launchTask(taskId);
         }
         
         return taskId;
@@ -68,16 +70,15 @@ public class CosmosWebUITester implements JobLauncher {
     }
 
     public void waitForTaskCompletion(String taskId) throws TestException {
-        boolean taskCompleted = false;
-        
-        while(!taskCompleted) {
+        boolean taskCompleted = false;        
+        while (!taskCompleted) {
             // Go to the main page
             this.frontend.goHome();
             taskCompleted = (this.frontend.getTaskStatus(taskId)
                                 == TaskStatus.Completed);
-            if(!taskCompleted) {
+            if (!taskCompleted) {
                 try {
-                    Thread.sleep(30000); // Sleep 30 seconds
+                    Thread.sleep(THIRTY_SECONDS_IN_MILLISECONDS);
                 } catch (InterruptedException ex) {
                     throw new TestException("[InterruptedException] "
                             + ex.getMessage());

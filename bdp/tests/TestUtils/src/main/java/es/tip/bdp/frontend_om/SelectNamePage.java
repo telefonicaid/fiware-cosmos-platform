@@ -7,28 +7,29 @@ import org.testng.Assert;
 
 public class SelectNamePage {
     public static final String NAME_ID = "job-name";
-    private final String _selectNameUrl;
-    private WebDriver _driver;
+    
+    private final String selectNameUrl;
+    private WebDriver driver;
     
     private void assertCorrectUrl() {
-        Assert.assertEquals(_driver.getCurrentUrl(), _selectNameUrl);
+        Assert.assertEquals(this.driver.getCurrentUrl(), this.selectNameUrl);
     }
     
     public SelectNamePage(WebDriver driver) {
-        _driver = driver;
-        _selectNameUrl = driver.getCurrentUrl();
+        this.driver = driver;
+        this.selectNameUrl = driver.getCurrentUrl();
     }
     
     public void setName(String taskName) {
         assertCorrectUrl();
-        WebElement nameElement = _driver.findElement(By.id(NAME_ID));
+        WebElement nameElement = this.driver.findElement(By.id(NAME_ID));
         nameElement.sendKeys(taskName);
     }
     
     public SelectJarPage submitNameForm() {
         assertCorrectUrl();
-        WebElement nameElement = _driver.findElement(By.id(NAME_ID));
+        WebElement nameElement = this.driver.findElement(By.id(NAME_ID));
         nameElement.submit();
-        return new SelectJarPage(_driver);
+        return new SelectJarPage(this.driver);
     }
 }

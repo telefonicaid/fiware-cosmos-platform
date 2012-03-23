@@ -30,14 +30,14 @@ import es.tip.bdp.frontend_om.SelectNamePage;
  */
 public class WebUITest {
     private FrontEnd frontend;
-    private String WORDCOUNT_JAR_PATH;
+    private String wordcountJarPath;
     
     @BeforeClass
     public void setUp() {
         File wordCountJarFile = new File("wordcount.jar");
-        WORDCOUNT_JAR_PATH = wordCountJarFile.getAbsolutePath();
+        this.wordcountJarPath = wordCountJarFile.getAbsolutePath();
         Assert.assertTrue("Veryfing Wordcount Jar is present: "
-                + WORDCOUNT_JAR_PATH, wordCountJarFile.exists());
+                + this.wordcountJarPath, wordCountJarFile.exists());
     }
     
     public WebUITest() {
@@ -124,7 +124,7 @@ public class WebUITest {
         namePage.setName(UUID.randomUUID().toString());
         
         SelectJarPage jarPage = namePage.submitNameForm();
-        jarPage.setInputJar(WORDCOUNT_JAR_PATH);        
+        jarPage.setInputJar(this.wordcountJarPath);        
         
         SelectInputPage inputPage = jarPage.submitJarFileForm();        
         String currentUrl = driver.getCurrentUrl();
@@ -190,7 +190,7 @@ public class WebUITest {
         }        
         CosmosWebUITester testDriver = new CosmosWebUITester();
         String taskId = testDriver.createNewTask(inputFilePath,
-                                                 WORDCOUNT_JAR_PATH);
+                                                 this.wordcountJarPath);
         testDriver.waitForTaskCompletion(taskId);
         testDriver.getResults(taskId); // Just verifying results can be accessed
     }
@@ -217,7 +217,7 @@ public class WebUITest {
         String[] taskIds = new String[taskCount];
         for(int i = 0; i < taskCount; ++i) {
             taskIds[i] = testDriver.createNewTask(inputFilePath,
-                                                 WORDCOUNT_JAR_PATH,
+                                                 this.wordcountJarPath,
                                                  false);
         }        
         for(int i = 0; i < taskCount; ++i) {

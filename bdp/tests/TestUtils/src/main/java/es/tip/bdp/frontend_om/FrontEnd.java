@@ -1,18 +1,21 @@
 package es.tip.bdp.frontend_om;
 
-import es.tid.bdp.joblaunchers.TaskStatus;
 import java.net.MalformedURLException;
 import java.net.URL;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+
+import es.tid.bdp.joblaunchers.TaskStatus;
 
 /**
  *
  * @author ximo
  */
 public class FrontEnd {
+    // TODO: Change Home URL to a config parameter in future iterations
     public static final String HOME_URL = "http://pstools/dev/bdp/";
     public static final String CREATE_JOB_ID = "create-job";
     public static final String TASK_STATUS_TABLE_ID = "results-table";
@@ -20,14 +23,14 @@ public class FrontEnd {
     public static final String RESULT_NAME_CLASS = "job-name";
     public static final String RESULT_STATUS_CLASS = "job-status";
     
-    private WebDriver _driver;
+    private WebDriver driver;
     
     public FrontEnd() {
-        _driver = new HtmlUnitDriver(); 
+        this.driver = new HtmlUnitDriver(); 
     }
     
     public void goHome() {
-        _driver.get(HOME_URL);
+        this.driver.get(HOME_URL);
     }
     
     public TaskStatus getTaskStatus(String taskId) {
@@ -48,7 +51,7 @@ public class FrontEnd {
     }
     
     private WebElement getTaskRow(String taskId) {
-        WebElement table = _driver.findElement(By.id(TASK_STATUS_TABLE_ID));
+        WebElement table = this.driver.findElement(By.id(TASK_STATUS_TABLE_ID));
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
@@ -58,13 +61,13 @@ public class FrontEnd {
     
     public SelectNamePage goToCreateNewJob() {
         goHome();
-        WebElement createJobElement = _driver.findElement(By.id(CREATE_JOB_ID));
+        WebElement createJobElement = this.driver.findElement(By.id(CREATE_JOB_ID));
         createJobElement.click();
-        return new SelectNamePage(_driver);
+        return new SelectNamePage(this.driver);
     }
     
     public WebDriver getDriver() {
-        return _driver;
+        return this.driver;
     }
     
 }

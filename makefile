@@ -178,8 +178,8 @@ debug_all: prepare_debug_all
 test: ctest
 
 ctest: prepare_coverage install_debug
-	make test -C BUILD_DEBUG ARGS="-D ExperimentalTest"
-	BUILD_DEBUG/apps/unitTest/unitTest --gtest_output=xml:BUILD_DEBUG/samson_test.xml
+	make test -C BUILD_DEBUG ARGS="-D ExperimentalTest" || true
+	BUILD_DEBUG/apps/unitTest/unitTest --gtest_output=xml:BUILD_DEBUG/samson_test.xml || true
 
 test_samsonWorker: install_debug
 	scripts/samsonTest test/samsonWorker

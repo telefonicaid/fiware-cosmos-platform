@@ -14,6 +14,7 @@ from django.test.client import Client
 from pymongo import Connection
 
 from bdp_fe.jobconf import upload_util
+from bdp_fe.jobconf.cluster import fakeserver, remote
 
 
 class LoginTestCase(djangotest.TestCase):
@@ -34,11 +35,11 @@ class FileUtilTest(unittest.TestCase):
 
         # Create dir when necessary
         upload_util.ensure_dir(test_dir)
-        self.assertTrue(path.isdir(test_dir))
+        self.assertTrue(os.path.isdir(test_dir))
 
         # OK if the dir already exists
         upload_util.ensure_dir(test_dir)
-        self.assertTrue(path.isdir(test_dir))
+        self.assertTrue(os.path.isdir(test_dir))
 
     def test_save(self):
         upload = SimpleUploadedFile.from_dict({
@@ -46,13 +47,13 @@ class FileUtilTest(unittest.TestCase):
             'content-type': 'application/json',
             'content' : '1',
         })
-        target_dir = path.join(self.tmpdir, 'target')
+        target_dir = os.path.join(self.tmpdir, 'target')
         target_name = 'filename'
 
         upload_util.save(upload, target_dir, target_name)
 
-        target_file = path.join(target_dir, target_name)
-        self.assertTrue(path.isfile(target_file))
+        target_file = os.path.join(target_dir, target_name)
+        self.assertTrue(os.path.isfile(target_file))
         with open(target_file) as f:
             self.assertEquals('1', f.read())
 
@@ -106,3 +107,19 @@ class RetrieveFromMongo(djangotest.TestCase):
             if job_result['word'] == 'world':
                 self.assertEquals(job_result['count'], 1)
         c.logout()
+
+class RemoteClusterTest(unittest.TestCase):
+
+    def setUp(self):
+        self.host = "localhost"
+        self.port = 8282
+        self.server = fakeserver.BackgroundFakeServer(self.host, self.port)
+        self.server.start()
+
+    def test_copyToHdfs(self):
+        cluster = remote.Cluster(self.host, self.port)
+        cluster.copyToHdfs('/local/path', '/remote/path')
+        # TODO: assertion
+
+    def tearDown(self):
+        self.server.stop()

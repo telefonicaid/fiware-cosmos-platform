@@ -9,7 +9,7 @@
             <tr>
                 {% for key, value in job_result.items %}
 
-		    {% if key != '_id' and key != 'job_id' %}
+		    {% if key not in hidden_keys %}
 		    <td class="job-result-key"><b>{{ key }}</b></td>
 		        {% if value|get_type != 'dict' and value|get_type != 'list' %}
 		            <td class="job-result-value">{{ value }}</td>

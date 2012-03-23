@@ -21,7 +21,7 @@ STATIC_URL = '/static/'
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 ADMINS = (
-    ('Test admin', 'cosmos@tid.es'),
+    ('admin', 'cosmos@tid.es'),
 )
 MANAGERS = ADMINS
 

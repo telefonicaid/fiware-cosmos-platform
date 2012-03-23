@@ -3,7 +3,7 @@ Module bdp_fe.jobconf.tests
 
 This module holds the unittests for the bdp_fe.jobconf app
 """
-from os import path
+import os.path
 import tempfile
 import shutil
 
@@ -29,8 +29,8 @@ class FileUtilTest(unittest.TestCase):
         self.tmpdir = tempfile.mkdtemp()
 
     def test_ensure_dir(self):
-        test_dir = path.join(self.tmpdir, 'test/dir/')
-        self.assertFalse(path.isdir(test_dir))
+        test_dir = os.path.join(self.tmpdir, 'test/dir/')
+        self.assertFalse(os.path.isdir(test_dir))
 
         # Create dir when necessary
         upload_util.ensure_dir(test_dir)

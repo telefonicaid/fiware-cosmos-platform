@@ -5,7 +5,7 @@ Consists on a user-provided jar to be deployed on the cluster.
 """
 
 import logging
-from os import path
+import os.path
 
 from django.conf import settings
 
@@ -19,7 +19,7 @@ def handle_upload(job, upload):
     Accepts the upload file and moves it to the cluster.
 
     """
-    target_dir = path.join(settings.LANDING_ROOT, job.user.username)
+    target_dir = os.path.join(settings.LANDING_ROOT, job.user.username)
     target_name = "job_%d.jar" % job.id
     upload_util.save(upload, target_dir, target_name)
     LOGGER.info("Custom JAR saved as %s" % target_name)

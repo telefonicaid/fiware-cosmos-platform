@@ -408,33 +408,54 @@ static char* toUTF8(char* in, size_t* outLenP)
 }
 
 
+static bool sanityCheck(const char* s)
+{
+    if ((s == NULL) || (s[0] == 0))
+        return false;
+
+    if (s[0] != '/')
+        return false;
+
+    if (strlen(s) < strlen("/samson/X"))
+        return false;
+
+    return true;
+}
+
+
 
 //
 // SamsonWorker::getRESTInformation - 
 //
 std::string SamsonWorker::getRESTInformation(::std::string in)
 {
-    unsigned short int  http_state = 200;  // be optimistic and assume all is ok :)
-    std::ostringstream  header;
-    std::ostringstream  data;
-    std::string         jsonSuffix = ".json";
-    std::string         xmlSuffix  = ".xml";
-    std::string         format     = "xml"; // Default value
+    unsigned short int        http_state = 200;  // be optimistic and assume all is ok :)
+    std::ostringstream        header;
+    std::ostringstream        data;
+    std::string               jsonSuffix = ".json";
+    std::string               xmlSuffix  = ".xml";
+    std::string               format     = "xml"; // Default value
+    bool                      saneInput;
+    std::vector<std::string>  path_components;
 
 
     LM_T(LmtRest, ("Incoming REST request: '%s'", in.c_str()));
 
-    if (in.substr(in.length() - jsonSuffix.length()) == jsonSuffix)
+    saneInput = sanityCheck(in.c_str());
+    if (saneInput == true)
     {
-        format = "json";
-        in     = in.substr(0, in.length() - jsonSuffix.length());
+        if ((in.length() >= jsonSuffix.length()) && (in.substr(in.length() - jsonSuffix.length()) == jsonSuffix))
+        {
+            format = "json";
+            in     = in.substr(0, in.length() - jsonSuffix.length());
+        }
+        else if ((in.length() >= xmlSuffix.length()) && (in.substr(in.length() - xmlSuffix.length()) == xmlSuffix))
+        {
+            format = "xml";
+            in     = in.substr(0, in.length() - xmlSuffix.length());
+        }
     }
-    else if (in.substr(in.length() - xmlSuffix.length()) == xmlSuffix)
-    {
-        format = "xml";
-        in     = in.substr(0, in.length() - xmlSuffix.length());
-    }
-    
+
     if (format == "xml")
     {
         data << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n";
@@ -445,11 +466,20 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
     {
         data << "{\r\n";
     }
-    
+
+    if (saneInput == false)
+    {
+        if (format == "xml")
+            data << "  <error>Bad REST Request '" << in << "'</error>";
+        else
+            data << "  \"error\" : \"Bad REST Request '" << in << "'\"\r\n";
+
+        goto afterTreatment;
+    }
 
     // Get the path components
-    std::vector<std::string> path_components = au::split( in , '/' );
-    
+    path_components = au::split( in , '/' );
+
     if ((path_components.size() < 2) || (path_components[0] != "samson"))
     {
         http_state = 400;
@@ -457,7 +487,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
         if (format == "xml")
             au::xml_simple(data, "message", "Error. Only /samson/path requests are valid");
         else
-            data << "  \"error\" : \"Only /samson/path requests are valid\"";
+            data << "  \"error\" : \"Only /samson/path requests are valid\"\r\n";
     }
     else if (path_components[1] == "version")
     {

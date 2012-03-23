@@ -7,6 +7,7 @@ function setup_test_vars
     HAVE_COMMAND=0
     HAVE_SCRIPT=0
     HAVE_SHELL=0
+    INIT_ERROR=0
 
     TEST_BASENAME=$(echo $TEST_FILE | sed 's/\.test//')
     TEST_NAME=$(sed -n '/--NAME--/,/^--/p' $TEST_FILE  | grep -v "^--")
@@ -116,13 +117,13 @@ function execute_test
         echo "Got"
         cat $TEST_OUTPUT
         if [ $INIT_ERROR -ne 0 ]; then
-        echo "Errors were seen during the initialization phase"
-        echo "STDOUT:"
-        cat $TEST_DELILAH_INIT.stdout
-        echo "STDERROR:"
-        cat $TEST_DELILAH_INIT.stderr
-        echo "----------------------------------------------------------------"
-    fi
+            echo "Errors were seen during the initialization phase"
+            echo "STDOUT:"
+            cat $TEST_DELILAH_INIT.stdout
+            echo "STDERROR:"
+            cat $TEST_DELILAH_INIT.stderr
+            echo "----------------------------------------------------------------"
+        fi
     else
         # Clean up files for succesfull test runs
         rm -f $TEST_EXPECT $TEST_OUTPUT $TEST_SCRIPT $TEST_INIT_SCRIPT $TEST_SHELL_SCRIPT ${TEST_BASENAME}.diff $TEST_INIT_SCRIPT.stderr $TEST_INIT_SCRIPT.stdout

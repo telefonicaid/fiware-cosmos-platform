@@ -2,6 +2,7 @@ package es.tip.bdp.frontend.om;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -9,7 +10,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
 import es.tid.bdp.joblaunchers.TaskStatus;
-import java.util.List;
 
 /**
  *
@@ -53,13 +53,8 @@ public class FrontEnd {
         }
     }
 
-    public String getTaskLink(String taskId) throws MalformedURLException {
-        this.goHome();
-        WebElement row = this.getTaskRow(taskId);
-
-        URL baseUrl = new URL(HOME_URL);
-        String verbatimUrl = row.findElement(By.name(RESULT_LINK_CLASS)).getAttribute("href");
-        return new URL(baseUrl, verbatimUrl).toString();
+    private WebElement getTaskLink(String taskId) {
+        return this.getTaskRow(taskId).findElement(By.name(RESULT_LINK_CLASS));
     }
 
     /**
@@ -67,7 +62,8 @@ public class FrontEnd {
      */
     private WebElement getTaskRow(String taskId) {
         WebElement table = this.driver.findElement(By.id(TASK_STATUS_TABLE_ID));
-        List<WebElement> rows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"));
+        List<WebElement> rows = table.findElement(By.tagName("tbody"))
+                .findElements(By.tagName("tr"));
         for (WebElement row : rows) {
             WebElement nameElement = row.findElement(
                     By.className(RESULT_NAME_CLASS));
@@ -80,19 +76,35 @@ public class FrontEnd {
                 + taskId);
     }
 
-    public void launchJob(String taskId) throws MalformedURLException {
+    public void launchJob(String taskId) {
+        this.goHome();
         if (TaskStatus.Created != this.getTaskStatus(taskId)) {
             throw new IllegalArgumentException(
                     "Task is not in the created state. taskId: " + taskId);
         }
+        this.getTaskLink(taskId).click();
+    }
+    
+    public ResultsPage goToResultsPage(String taskId)
+            throws MalformedURLException {
+        this.goHome();
+        TaskStatus status = this.getTaskStatus(taskId);
+        if (TaskStatus.Created == status
+                || TaskStatus.Running == status) {
+            throw new IllegalArgumentException(
+                    "Task does not have a result yet.\n"
+                    + "taskId: " + taskId + "\n"
+                    + "status: " + status + "\n");
+        }
 
-        String runLink = this.getTaskLink(taskId);
-        this.driver.get(runLink);
+        this.getTaskLink(taskId).click();
+        return new ResultsPage(this.driver);
     }
 
     public SelectNamePage goToCreateNewJob() {
         this.goHome();
-        WebElement createJobElement = this.driver.findElement(By.id(CREATE_JOB_ID));
+        WebElement createJobElement = this.driver
+                .findElement(By.id(CREATE_JOB_ID));
         createJobElement.click();
         return new SelectNamePage(this.driver);
     }

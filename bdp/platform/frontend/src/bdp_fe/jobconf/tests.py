@@ -34,11 +34,11 @@ class FileUtilTest(unittest.TestCase):
 
         # Create dir when necessary
         upload_util.ensure_dir(test_dir)
-        self.assertTrue(path.isdir(test_dir))
+        self.assertTrue(os.path.isdir(test_dir))
 
         # OK if the dir already exists
         upload_util.ensure_dir(test_dir)
-        self.assertTrue(path.isdir(test_dir))
+        self.assertTrue(os.path.isdir(test_dir))
 
     def test_save(self):
         upload = SimpleUploadedFile.from_dict({
@@ -46,13 +46,13 @@ class FileUtilTest(unittest.TestCase):
             'content-type': 'application/json',
             'content' : '1',
         })
-        target_dir = path.join(self.tmpdir, 'target')
+        target_dir = os.path.join(self.tmpdir, 'target')
         target_name = 'filename'
 
         upload_util.save(upload, target_dir, target_name)
 
-        target_file = path.join(target_dir, target_name)
-        self.assertTrue(path.isfile(target_file))
+        target_file = os.path.join(target_dir, target_name)
+        self.assertTrue(os.path.isfile(target_file))
         with open(target_file) as f:
             self.assertEquals('1', f.read())
 
@@ -99,10 +99,11 @@ class RetrieveFromMongo(djangotest.TestCase):
                                     password=self.test_pass)
         response = self.client.get('/job/%s/results/' % self.job_id)
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(len(response.context['job_results']), 2)
-        for job_result in response.context['job_results']:
+        job_results = response.context['job_results'].object_list
+        self.assertEquals(len(job_results), 2)
+        for job_result in job_results:
             if job_result['word'] == 'Hello':
                 self.assertEquals(job_result['count'], 1)
             if job_result['word'] == 'world':
                 self.assertEquals(job_result['count'], 1)
-        c.logout()
+        self.client.logout()

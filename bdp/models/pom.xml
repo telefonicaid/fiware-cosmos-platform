@@ -14,7 +14,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>recomms</module>
         <module>samples</module>
         <module>webprofiling</module>
     </modules>

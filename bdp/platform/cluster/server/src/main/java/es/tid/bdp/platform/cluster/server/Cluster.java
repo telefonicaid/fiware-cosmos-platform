@@ -33,9 +33,9 @@ public class Cluster {
 
     public void copyToHdfs(String srcPath, String destPath) throws TransferException, org.apache.thrift.TException;
 
-    public int runJob(String jarPath, String inputPath, String outputPath, String mongoUrl) throws org.apache.thrift.TException;
+    public String runJob(String jarPath, String inputPath, String outputPath, String mongoUrl) throws org.apache.thrift.TException;
 
-    public ClusterJobStatus getJobStatus(int jobId) throws org.apache.thrift.TException;
+    public ClusterJobStatus getJobStatus(String jobId) throws org.apache.thrift.TException;
 
   }
 
@@ -45,7 +45,7 @@ public class Cluster {
 
     public void runJob(String jarPath, String inputPath, String outputPath, String mongoUrl, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.runJob_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void getJobStatus(int jobId, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getJobStatus_call> resultHandler) throws org.apache.thrift.TException;
+    public void getJobStatus(String jobId, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getJobStatus_call> resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -93,7 +93,7 @@ public class Cluster {
       return;
     }
 
-    public int runJob(String jarPath, String inputPath, String outputPath, String mongoUrl) throws org.apache.thrift.TException
+    public String runJob(String jarPath, String inputPath, String outputPath, String mongoUrl) throws org.apache.thrift.TException
     {
       send_runJob(jarPath, inputPath, outputPath, mongoUrl);
       return recv_runJob();
@@ -109,7 +109,7 @@ public class Cluster {
       sendBase("runJob", args);
     }
 
-    public int recv_runJob() throws org.apache.thrift.TException
+    public String recv_runJob() throws org.apache.thrift.TException
     {
       runJob_result result = new runJob_result();
       receiveBase(result, "runJob");
@@ -119,13 +119,13 @@ public class Cluster {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "runJob failed: unknown result");
     }
 
-    public ClusterJobStatus getJobStatus(int jobId) throws org.apache.thrift.TException
+    public ClusterJobStatus getJobStatus(String jobId) throws org.apache.thrift.TException
     {
       send_getJobStatus(jobId);
       return recv_getJobStatus();
     }
 
-    public void send_getJobStatus(int jobId) throws org.apache.thrift.TException
+    public void send_getJobStatus(String jobId) throws org.apache.thrift.TException
     {
       getJobStatus_args args = new getJobStatus_args();
       args.setJobId(jobId);
@@ -226,7 +226,7 @@ public class Cluster {
         prot.writeMessageEnd();
       }
 
-      public int getResult() throws org.apache.thrift.TException {
+      public String getResult() throws org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -236,7 +236,7 @@ public class Cluster {
       }
     }
 
-    public void getJobStatus(int jobId, org.apache.thrift.async.AsyncMethodCallback<getJobStatus_call> resultHandler) throws org.apache.thrift.TException {
+    public void getJobStatus(String jobId, org.apache.thrift.async.AsyncMethodCallback<getJobStatus_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       getJobStatus_call method_call = new getJobStatus_call(jobId, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
@@ -244,8 +244,8 @@ public class Cluster {
     }
 
     public static class getJobStatus_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private int jobId;
-      public getJobStatus_call(int jobId, org.apache.thrift.async.AsyncMethodCallback<getJobStatus_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private String jobId;
+      public getJobStatus_call(String jobId, org.apache.thrift.async.AsyncMethodCallback<getJobStatus_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.jobId = jobId;
       }
@@ -319,7 +319,6 @@ public class Cluster {
       protected runJob_result getResult(I iface, runJob_args args) throws org.apache.thrift.TException {
         runJob_result result = new runJob_result();
         result.success = iface.runJob(args.jarPath, args.inputPath, args.outputPath, args.mongoUrl);
-        result.setSuccessIsSet(true);
         return result;
       }
     }
@@ -1806,7 +1805,7 @@ public class Cluster {
   public static class runJob_result implements org.apache.thrift.TBase<runJob_result, runJob_result._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("runJob_result");
 
-    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.I32, (short)0);
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRING, (short)0);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -1814,7 +1813,7 @@ public class Cluster {
       schemes.put(TupleScheme.class, new runJob_resultTupleSchemeFactory());
     }
 
-    public int success; // required
+    public String success; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -1875,13 +1874,11 @@ public class Cluster {
     }
 
     // isset id assignments
-    private static final int __SUCCESS_ISSET_ID = 0;
-    private BitSet __isset_bit_vector = new BitSet(1);
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(runJob_result.class, metaDataMap);
     }
@@ -1890,20 +1887,19 @@ public class Cluster {
     }
 
     public runJob_result(
-      int success)
+      String success)
     {
       this();
       this.success = success;
-      setSuccessIsSet(true);
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public runJob_result(runJob_result other) {
-      __isset_bit_vector.clear();
-      __isset_bit_vector.or(other.__isset_bit_vector);
-      this.success = other.success;
+      if (other.isSetSuccess()) {
+        this.success = other.success;
+      }
     }
 
     public runJob_result deepCopy() {
@@ -1912,31 +1908,31 @@ public class Cluster {
 
     @Override
     public void clear() {
-      setSuccessIsSet(false);
-      this.success = 0;
+      this.success = null;
     }
 
-    public int getSuccess() {
+    public String getSuccess() {
       return this.success;
     }
 
-    public runJob_result setSuccess(int success) {
+    public runJob_result setSuccess(String success) {
       this.success = success;
-      setSuccessIsSet(true);
       return this;
     }
 
     public void unsetSuccess() {
-      __isset_bit_vector.clear(__SUCCESS_ISSET_ID);
+      this.success = null;
     }
 
     /** Returns true if field success is set (has been assigned a value) and false otherwise */
     public boolean isSetSuccess() {
-      return __isset_bit_vector.get(__SUCCESS_ISSET_ID);
+      return this.success != null;
     }
 
     public void setSuccessIsSet(boolean value) {
-      __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
+      if (!value) {
+        this.success = null;
+      }
     }
 
     public void setFieldValue(_Fields field, Object value) {
@@ -1945,7 +1941,7 @@ public class Cluster {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((Integer)value);
+          setSuccess((String)value);
         }
         break;
 
@@ -1955,7 +1951,7 @@ public class Cluster {
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
-        return Integer.valueOf(getSuccess());
+        return getSuccess();
 
       }
       throw new IllegalStateException();
@@ -1987,12 +1983,12 @@ public class Cluster {
       if (that == null)
         return false;
 
-      boolean this_present_success = true;
-      boolean that_present_success = true;
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
       if (this_present_success || that_present_success) {
         if (!(this_present_success && that_present_success))
           return false;
-        if (this.success != that.success)
+        if (!this.success.equals(that.success))
           return false;
       }
 
@@ -2043,7 +2039,11 @@ public class Cluster {
       boolean first = true;
 
       sb.append("success:");
-      sb.append(this.success);
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
       first = false;
       sb.append(")");
       return sb.toString();
@@ -2063,8 +2063,6 @@ public class Cluster {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -2090,8 +2088,8 @@ public class Cluster {
           }
           switch (schemeField.id) {
             case 0: // SUCCESS
-              if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-                struct.success = iprot.readI32();
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.success = iprot.readString();
                 struct.setSuccessIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -2112,9 +2110,11 @@ public class Cluster {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-        oprot.writeI32(struct.success);
-        oprot.writeFieldEnd();
+        if (struct.success != null) {
+          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+          oprot.writeString(struct.success);
+          oprot.writeFieldEnd();
+        }
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -2138,7 +2138,7 @@ public class Cluster {
         }
         oprot.writeBitSet(optionals, 1);
         if (struct.isSetSuccess()) {
-          oprot.writeI32(struct.success);
+          oprot.writeString(struct.success);
         }
       }
 
@@ -2147,7 +2147,7 @@ public class Cluster {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
-          struct.success = iprot.readI32();
+          struct.success = iprot.readString();
           struct.setSuccessIsSet(true);
         }
       }
@@ -2158,7 +2158,7 @@ public class Cluster {
   public static class getJobStatus_args implements org.apache.thrift.TBase<getJobStatus_args, getJobStatus_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getJobStatus_args");
 
-    private static final org.apache.thrift.protocol.TField JOB_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("jobId", org.apache.thrift.protocol.TType.I32, (short)1);
+    private static final org.apache.thrift.protocol.TField JOB_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("jobId", org.apache.thrift.protocol.TType.STRING, (short)1);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -2166,7 +2166,7 @@ public class Cluster {
       schemes.put(TupleScheme.class, new getJobStatus_argsTupleSchemeFactory());
     }
 
-    public int jobId; // required
+    public String jobId; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -2227,13 +2227,11 @@ public class Cluster {
     }
 
     // isset id assignments
-    private static final int __JOBID_ISSET_ID = 0;
-    private BitSet __isset_bit_vector = new BitSet(1);
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.JOB_ID, new org.apache.thrift.meta_data.FieldMetaData("jobId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getJobStatus_args.class, metaDataMap);
     }
@@ -2242,20 +2240,19 @@ public class Cluster {
     }
 
     public getJobStatus_args(
-      int jobId)
+      String jobId)
     {
       this();
       this.jobId = jobId;
-      setJobIdIsSet(true);
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public getJobStatus_args(getJobStatus_args other) {
-      __isset_bit_vector.clear();
-      __isset_bit_vector.or(other.__isset_bit_vector);
-      this.jobId = other.jobId;
+      if (other.isSetJobId()) {
+        this.jobId = other.jobId;
+      }
     }
 
     public getJobStatus_args deepCopy() {
@@ -2264,31 +2261,31 @@ public class Cluster {
 
     @Override
     public void clear() {
-      setJobIdIsSet(false);
-      this.jobId = 0;
+      this.jobId = null;
     }
 
-    public int getJobId() {
+    public String getJobId() {
       return this.jobId;
     }
 
-    public getJobStatus_args setJobId(int jobId) {
+    public getJobStatus_args setJobId(String jobId) {
       this.jobId = jobId;
-      setJobIdIsSet(true);
       return this;
     }
 
     public void unsetJobId() {
-      __isset_bit_vector.clear(__JOBID_ISSET_ID);
+      this.jobId = null;
     }
 
     /** Returns true if field jobId is set (has been assigned a value) and false otherwise */
     public boolean isSetJobId() {
-      return __isset_bit_vector.get(__JOBID_ISSET_ID);
+      return this.jobId != null;
     }
 
     public void setJobIdIsSet(boolean value) {
-      __isset_bit_vector.set(__JOBID_ISSET_ID, value);
+      if (!value) {
+        this.jobId = null;
+      }
     }
 
     public void setFieldValue(_Fields field, Object value) {
@@ -2297,7 +2294,7 @@ public class Cluster {
         if (value == null) {
           unsetJobId();
         } else {
-          setJobId((Integer)value);
+          setJobId((String)value);
         }
         break;
 
@@ -2307,7 +2304,7 @@ public class Cluster {
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case JOB_ID:
-        return Integer.valueOf(getJobId());
+        return getJobId();
 
       }
       throw new IllegalStateException();
@@ -2339,12 +2336,12 @@ public class Cluster {
       if (that == null)
         return false;
 
-      boolean this_present_jobId = true;
-      boolean that_present_jobId = true;
+      boolean this_present_jobId = true && this.isSetJobId();
+      boolean that_present_jobId = true && that.isSetJobId();
       if (this_present_jobId || that_present_jobId) {
         if (!(this_present_jobId && that_present_jobId))
           return false;
-        if (this.jobId != that.jobId)
+        if (!this.jobId.equals(that.jobId))
           return false;
       }
 
@@ -2395,7 +2392,11 @@ public class Cluster {
       boolean first = true;
 
       sb.append("jobId:");
-      sb.append(this.jobId);
+      if (this.jobId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.jobId);
+      }
       first = false;
       sb.append(")");
       return sb.toString();
@@ -2415,8 +2416,6 @@ public class Cluster {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -2442,8 +2441,8 @@ public class Cluster {
           }
           switch (schemeField.id) {
             case 1: // JOB_ID
-              if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-                struct.jobId = iprot.readI32();
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.jobId = iprot.readString();
                 struct.setJobIdIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -2464,9 +2463,11 @@ public class Cluster {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        oprot.writeFieldBegin(JOB_ID_FIELD_DESC);
-        oprot.writeI32(struct.jobId);
-        oprot.writeFieldEnd();
+        if (struct.jobId != null) {
+          oprot.writeFieldBegin(JOB_ID_FIELD_DESC);
+          oprot.writeString(struct.jobId);
+          oprot.writeFieldEnd();
+        }
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -2490,7 +2491,7 @@ public class Cluster {
         }
         oprot.writeBitSet(optionals, 1);
         if (struct.isSetJobId()) {
-          oprot.writeI32(struct.jobId);
+          oprot.writeString(struct.jobId);
         }
       }
 
@@ -2499,7 +2500,7 @@ public class Cluster {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
-          struct.jobId = iprot.readI32();
+          struct.jobId = iprot.readString();
           struct.setJobIdIsSet(true);
         }
       }

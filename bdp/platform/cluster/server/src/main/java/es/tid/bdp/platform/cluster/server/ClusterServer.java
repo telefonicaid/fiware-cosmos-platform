@@ -30,6 +30,7 @@ public class ClusterServer implements Cluster.Iface {
     private Configuration conf;
     // TODO: put this in a configuration file
     private static final String HDFS_URL = "hdfs://pshdp01:8011";
+    private static final String JOBTRACKER_URL = "pshdp01:8012";
 
     public static void main(String args[]) {
         try {
@@ -44,6 +45,7 @@ public class ClusterServer implements Cluster.Iface {
         this.conf = new Configuration();
         // TODO: this might not be necessary
         this.conf.set("fs.default.name", HDFS_URL);
+        this.conf.set("mapred.job.tracker", JOBTRACKER_URL);
     }
 
     private void start() throws Throwable {
@@ -92,8 +94,8 @@ public class ClusterServer implements Cluster.Iface {
     }
 
     @Override
-    public int runJob(String jarPath, String inputPath, String outputPath,
-                      String mongoUrl) throws TException {
+    public String runJob(String jarPath, String inputPath, String outputPath,
+                         String mongoUrl) throws TException {
         Path input = new Path(inputPath);
         Path output = new Path(outputPath);
         
@@ -109,7 +111,7 @@ public class ClusterServer implements Cluster.Iface {
             FileOutputFormat.setOutputPath(jobConf, output);
             JobClient client = new JobClient(jobConf);
             RunningJob runInfo = client.submitJob(jobConf);
-            return runInfo.getID().getId();
+            return runInfo.getID().getJtIdentifier();
         } catch (Throwable ex) {
             this.sendNotificationEmail(ex.getMessage(), ex.toString());
             throw new TException(ex);
@@ -117,11 +119,17 @@ public class ClusterServer implements Cluster.Iface {
     }
 
     @Override
-    public ClusterJobStatus getJobStatus(int jobId) throws TException {
+    public ClusterJobStatus getJobStatus(String jobId) throws TException {
         try {
-            JobClient client = new JobClient();
-            RunningJob runInfo = client.getJob(new JobID(null, jobId));
-            return ClusterJobStatus.findByValue(runInfo.getJobState());
+            JobClient client = new JobClient(new JobConf(this.conf));
+            for (org.apache.hadoop.mapred.JobStatus jobStatus
+                    : client.getAllJobs()) {
+                if (jobId.equals(jobStatus.getJobID().getJtIdentifier())) {
+                    return ClusterJobStatus.findByValue(
+                            jobStatus.getRunState());
+                }
+            }
+            throw new IllegalArgumentException("Invalid job ID");
         } catch (Throwable ex) {
             this.sendNotificationEmail(ex.getMessage(), ex.toString());
             throw new TException(ex);

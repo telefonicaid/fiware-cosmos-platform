@@ -100,13 +100,14 @@ class RetrieveFromMongo(djangotest.TestCase):
                                     password=self.test_pass)
         response = self.client.get('/job/%s/results/' % self.job_id)
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(len(response.context['job_results']), 2)
-        for job_result in response.context['job_results']:
+        job_results = response.context['job_results'].object_list
+        self.assertEquals(len(job_results), 2)
+        for job_result in job_results:
             if job_result['word'] == 'Hello':
                 self.assertEquals(job_result['count'], 1)
             if job_result['word'] == 'world':
                 self.assertEquals(job_result['count'], 1)
-        c.logout()
+        self.client.logout()
 
 class RemoteClusterTest(unittest.TestCase):
 

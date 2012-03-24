@@ -75,7 +75,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>es.tid.bdp.platform.cluster.server.File</mainClass>
+                            <mainClass>es.tid.bdp.platform.cluster.server.ClusterServer</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -88,7 +88,7 @@
                     <transformers>
                         <transformer
                             implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>es.tid.bdp.platform.cluster.server.File</mainClass>
+                            <mainClass>es.tid.bdp.platform.cluster.server.ClusterServer</mainClass>
                         </transformer>
                     </transformers>
                 </configuration>

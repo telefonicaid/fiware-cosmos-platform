@@ -1,8 +1,6 @@
 package es.tid.bdp.platform.cluster.server;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
 
 import javax.mail.Message;
@@ -13,10 +11,7 @@ import javax.mail.internet.MimeMessage;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapred.JobClient;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.JobStatus;
-import org.apache.hadoop.util.RunJar;
+import org.apache.hadoop.mapred.*;
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
@@ -98,12 +93,16 @@ public class ClusterServer implements Cluster.Iface {
     }
 
     @Override
-    public void runJob(String jarPath, String inputPath, String outputPath,
-                       String mongoUrl) throws TException {
+    public int runJob(String jarPath, String inputPath, String outputPath,
+                      String mongoUrl) throws TException {
         try {
-            // TODO: this should be done using Jobs, to get tracking info
-            RunJar.main(new String[] { jarPath, inputPath,
-                                       outputPath, mongoUrl });
+            JobConf jobConf = new JobConf(this.conf);
+            jobConf.setJar(jarPath);
+            FileInputFormat.setInputPaths(jobConf, new Path(inputPath));
+            FileOutputFormat.setOutputPath(jobConf, new Path(outputPath));
+            JobClient client = new JobClient(jobConf);
+            RunningJob runInfo = client.submitJob(jobConf);
+            return runInfo.getID().getId();
         } catch (Throwable ex) {
             this.sendNotificationEmail(ex.getMessage(), ex.toString());
             throw new TException(ex);
@@ -111,49 +110,14 @@ public class ClusterServer implements Cluster.Iface {
     }
 
     @Override
-    public List<ClusterJobStatus> getAllJobs(String user)
-            throws TransferException, TException {
+    public ClusterJobStatus getJobStatus(int jobId) throws TException {
         try {
-            return this.getJobs(user, JobsList.ALL);
+            JobClient client = new JobClient();
+            RunningJob runInfo = client.getJob(new JobID(null, jobId));
+            return ClusterJobStatus.findByValue(runInfo.getJobState());
         } catch (Throwable ex) {
             this.sendNotificationEmail(ex.getMessage(), ex.toString());
             throw new TException(ex);
         }
-    }
-    
-    @Override
-    public List<ClusterJobStatus> getRunningJobs(String user)
-            throws TransferException, TException {
-        try {
-            return this.getJobs(user, JobsList.RUNNING);
-        } catch (Throwable ex) {
-            this.sendNotificationEmail(ex.getMessage(), ex.toString());
-            throw new TException(ex);
-        }
-    }
-
-    private List<ClusterJobStatus> getJobs(String user, JobsList jobsToFetch)
-            throws IOException {
-        JobClient client = new JobClient(new JobConf(this.conf));
-        JobStatus[] jobs;
-        switch (jobsToFetch) {
-            case ALL:
-                jobs = client.getAllJobs();
-                break;
-            case RUNNING:
-                jobs = client.jobsToComplete();
-                break;
-            default:
-                throw new IllegalStateException("Invalid setting");
-        }
-
-        List<ClusterJobStatus> statuses =
-                new LinkedList<ClusterJobStatus>();
-        for (JobStatus job : jobs) {
-            ClusterJobStatus status = new ClusterJobStatus();
-            status.setId(job.getJobID().getId());
-            status.setUsername(job.getUsername());
-        }
-        return statuses;
     }
 }

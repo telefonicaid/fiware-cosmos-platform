@@ -26,3 +26,9 @@ ADMINS = (
 MANAGERS = ADMINS
 
 LANDING_ROOT = '/tmp/landing/'
+
+CLUSTER_CONF = {
+    'host': 'pshdp01',
+    'port': 9888,
+    'mongobase': 'mongodb://pshdp04',
+}

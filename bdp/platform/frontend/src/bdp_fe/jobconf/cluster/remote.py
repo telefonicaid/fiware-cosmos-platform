@@ -15,6 +15,22 @@ from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 
 
+class ConnException(Exception):
+    pass
+
+
+def wrap_exceptions(fn):
+
+    def wrapped_call(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except TTransport.TTransportException, ex:
+            trace = sys.exc_info()[2]
+            raise ConnException("Connection problem"), None, trace
+
+    return wrapped_call
+
+
 class Cluster:
 
     def __init__(self, host, port):
@@ -23,15 +39,22 @@ class Cluster:
         protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
         self.cluster = Client(protocol)
 
+    @wrap_exceptions
     def copyToHdfs(self, src_path, dest_path):
         self.transport.open()
         self.cluster.copyToHdfs(src_path, dest_path)
         self.transport.close()
 
+    @wrap_exceptions
     def runJob(self, jarPath, inputPath, outputPath, mongoUrl):
         self.transport.open()
-        self.cluster.runJob(jarPath, inputPath, outputPath, mongoUrl)
+        execution_id = self.cluster.runJob(jarPath, inputPath, outputPath, mongoUrl)
         self.transport.close()
+        return execution_id
 
-    def close(self):
+    @wrap_exceptions
+    def getJobStatus(self, jobId):
+        self.transport.open()
+        status = self.cluster.getJobStatus(jobId)
         self.transport.close()
+        return status

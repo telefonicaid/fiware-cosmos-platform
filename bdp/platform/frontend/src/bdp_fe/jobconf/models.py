@@ -30,27 +30,30 @@ class Job(models.Model):
 
     CREATED = 0
     RUNNING = 1
-    SUCESSFUL = 2
+    SUCCESSFUL = 2
     FAILED = 3
     JOBSTATUS_CHOICES = (
         (CREATED, 'Created'),
         (RUNNING, 'Running'),
-        (SUCESSFUL, 'Successful'),
+        (SUCCESSFUL, 'Successful'),
         (FAILED, 'Failed'),
     )
     status = models.IntegerField(choices=JOBSTATUS_CHOICES)
-
-    EXECUTION_ID_MAX_LENGTH = 256
+	
+    EXECUTION_ID_MAX_LENGTH=256
     execution_id = models.CharField(null=True, blank=True,
-        max_length=EXECUTION_ID_MAX_LENGTH)
+	max_length=EXECUTION_ID_MAX_LENGTH)
 
     def start(self, cluster):
+	"""Returns true on success."""
         model = CustomJobModel.objects.get(job=self) # FIXME: non polymorfic
-        success = model.start(cluster)
-        if success:
-            job.status = Job.RUNNING
-            job.save()
-        return success
+        execution_id = model.start(cluster)
+        if execution_id is not None:
+            LOGGER.info("Execution id is %s" % execution_id)
+            self.execution_id = execution_id
+            self.status = Job.RUNNING
+            self.save()
+        return execution_id != None
 
     def data_upload(self, upload, cluster):
         """
@@ -91,8 +94,9 @@ class JobModel(models.Model):
     job = models.OneToOneField(Job)
 
     def start(self, cluster):
+	"""Returns an integer execution id or None"""
         LOGGER.error("Should not invoke JobModel#start")
-        return False
+        return None
 
 
 class CustomJobModel(JobModel):
@@ -125,14 +129,13 @@ class CustomJobModel(JobModel):
 
     def start(self, cluster):
         try:
-            cluster.runJob(self.jar_path(),
-                           self.job.hdfs_data_path(),
-                           self.job.hdfs_output_path(),
-                           self.mongo_url())
-            return True
+            return cluster.runJob(self.jar_path(),
+                                  self.job.hdfs_data_path(),
+                                  self.job.hdfs_output_path(),
+                                  self.mongo_url())
         except Exception, ex:
             LOGGER.exception(ex)
-            return False
+            return None
 
     def mongo_url(self):
         return "%s/%s.%s" % (settings.CLUSTER_CONF.get('mongobase'),

@@ -6,10 +6,10 @@ import java.util.UUID;
 
 import static org.testng.Assert.assertEquals;
 
-import es.tip.bdp.frontend.om.FrontEnd;
-import es.tip.bdp.frontend.om.SelectInputPage;
-import es.tip.bdp.frontend.om.SelectJarPage;
-import es.tip.bdp.frontend.om.SelectNamePage;
+import es.tid.bdp.frontend.om.FrontEnd;
+import es.tid.bdp.frontend.om.SelectInputPage;
+import es.tid.bdp.frontend.om.SelectJarPage;
+import es.tid.bdp.frontend.om.SelectNamePage;
 
 /**
  *

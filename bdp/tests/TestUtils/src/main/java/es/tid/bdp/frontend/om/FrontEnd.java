@@ -1,7 +1,6 @@
-package es.tip.bdp.frontend.om;
+package es.tid.bdp.frontend.om;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 
 import org.openqa.selenium.By;

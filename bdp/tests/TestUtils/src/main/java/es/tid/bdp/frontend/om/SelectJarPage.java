@@ -1,4 +1,4 @@
-package es.tip.bdp.frontend.om;
+package es.tid.bdp.frontend.om;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;

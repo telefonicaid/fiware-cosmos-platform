@@ -75,6 +75,7 @@ def run_job(request, job_id):
 
 class NewJobForm(forms.Form):
     name = forms.CharField(max_length=Job.NAME_MAX_LENGTH)
+    results_primary_key = forms.CharField(max_length=Job.RESULTS_PK_MAX_LENGTH)
 
 @login_required
 def new_job(request):
@@ -83,6 +84,7 @@ def new_job(request):
         if form.is_valid():
             job = Job(name=form.cleaned_data['name'],
                       user=request.user,
+                      results_primary_key=request.user,
                       status=Job.CREATED)
             job.save()
             return redirect(reverse('config_job', args=[job.id]))

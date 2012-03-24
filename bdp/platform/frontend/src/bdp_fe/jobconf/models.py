@@ -4,7 +4,7 @@ Data models.
 """
 
 import logging
-import os.path
+from os import path
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -44,6 +44,9 @@ class Job(models.Model):
     execution_id = models.CharField(null=True, blank=True,
         max_length=EXECUTION_ID_MAX_LENGTH)
 
+    def hdfs_base(self):
+        return "/bdp/user/%s/job_%d" % (self.user.username, self.id)
+
 class JobModel(models.Model):
     """
     Job model represents the calculation to be performed.
@@ -53,6 +56,10 @@ class JobModel(models.Model):
 
     def start(self, cluster):
         pass
+
+    def hdfs_input_path (self):
+        return "%s/data/input/part-r0000.data" % self.job.hdfs_base()
+
     
 class CustomJobModel(JobModel):
     """
@@ -61,21 +68,26 @@ class CustomJobModel(JobModel):
     """
     jar_name = models.CharField(max_length=256, null=True, blank=True)
 
-    def jar_upload(self, upload):
+    def jar_upload(self, upload, cluster):
         """
         Accepts the upload file and moves it to the cluster.
         Returns true on success.
 
         """
-        target_dir = os.path.join(settings.LANDING_ROOT,
-                                  self.job.user.username)
+        target_dir = path.join(settings.LANDING_ROOT,
+                               self.job.user.username)
         target_name = "job_%d.jar" % self.job.id
         upload_util.save(upload, target_dir, target_name)
-        LOGGER.info("Custom JAR saved as %s" % target_name)
+        LOGGER.info("Custom JAR saved locally as %s" % target_name)
 
         # TODO: check the upload is a valid JAR
-        # TODO: upload to the server
+        cluster.copyToHdfs(path.join(target_dir, target_name),
+                           self.hdfs_jar_path())
+        LOGGER.info("Custom JAR uploaded to the cluster")
         return True
 
     def start(self, cluster):
         pass
+
+    def hdfs_jar_path (self):
+        return "%s/custom.jar" % self.job.hdfs_base()

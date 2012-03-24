@@ -17,6 +17,7 @@ from pymongo import Connection
 
 from bdp_fe.jobconf import custom_model
 from bdp_fe.jobconf import data
+from bdp_fe.jobconf.cluster import remote
 from bdp_fe.jobconf.models import CustomJobModel, Job, JobModel
 from bdp_fe.jobconf.views_util import safe_int_param
 
@@ -115,7 +116,8 @@ def config_job(request, job_id):
     model = JobModel.objects.get(job=job).customjobmodel
     if request.method == 'POST':
         form = UploadJarForm(request.POST, request.FILES)
-        if form.is_valid() and model.jar_upload(request.FILES['file']):
+        if form.is_valid() and model.jar_upload(request.FILES['file'],
+                                                remote.Cluster("pshdp01", 9888)):
             return redirect(reverse('upload_data', args=[job.id]))
         else:
             messages.info(request, 'JAR file upload failed')

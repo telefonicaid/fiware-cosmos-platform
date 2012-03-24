@@ -2,7 +2,13 @@ package es.tid.bdp.platform.cluster.server;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
+import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -33,7 +39,7 @@ public class ClusterServer implements Cluster.Iface {
             System.exit(1);
         }
     }
-    
+
     public ClusterServer() {
         this.conf = new Configuration();
         // TODO: this might not be necessary
@@ -50,12 +56,37 @@ public class ClusterServer implements Cluster.Iface {
         server.serve();
     }
 
+    private void sendNotificationEmail(String errorText, String errorStack) {
+        String text = "Cosmos failed in production :(\n\n"
+                + "The error message was: " + errorText + "\n"
+                + "and the call stack:" + errorStack + "\n\n"
+                + "Please fix me!\n";
+        
+        Properties props = new Properties();
+        props.put("mail.smtp.starttls.enable", "false");
+        props.put("mail.smtp.host", "mailhost.hi.inet");
+        props.put("mail.smtp.port", "25");
+        Session session = Session.getInstance(props, null);
+        try {
+            Message msg = new MimeMessage(session);
+            msg.setFrom(new InternetAddress("cosmos@tid.es"));
+            msg.addRecipient(Message.RecipientType.TO,
+                             new InternetAddress("cosmos@tid.es"));
+            msg.setSubject("Cosmos Failure");
+            msg.setText(text);
+            Transport.send(msg);
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+        }
+    }
+
     @Override
     public void copyToHdfs(String src, String dest) throws TException {
         try {
             FileSystem fs = FileSystem.get(this.conf);
             fs.moveFromLocalFile(new Path(src), new Path(dest));
         } catch (Exception ex) {
+            this.sendNotificationEmail(ex.getMessage(), ex.toString());
             throw new TException(ex);
         }
     }
@@ -68,6 +99,7 @@ public class ClusterServer implements Cluster.Iface {
             RunJar.main(new String[] { jarPath, inputPath,
                                        outputPath, mongoUrl });
         } catch (Throwable ex) {
+            this.sendNotificationEmail(ex.getMessage(), ex.toString());
             throw new TException(ex);
         }
     }
@@ -78,7 +110,7 @@ public class ClusterServer implements Cluster.Iface {
         try {
             JobClient client = new JobClient(new JobConf(this.conf));
             JobStatus[] jobs = client.getAllJobs();
-            
+
             List<ClusterJobStatus> statuses =
                     new LinkedList<ClusterJobStatus>();
             for (JobStatus job : jobs) {
@@ -88,6 +120,7 @@ public class ClusterServer implements Cluster.Iface {
             }
             return statuses;
         } catch (Throwable ex) {
+            this.sendNotificationEmail(ex.getMessage(), ex.toString());
             throw new TException(ex);
         }
     }

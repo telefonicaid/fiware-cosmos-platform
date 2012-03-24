@@ -36,7 +36,10 @@ def list_jobs(request):
 @login_required
 def view_results(request, job_id):
     job_id = int(job_id)
-    results = retrieve_results(job_id)
+    job = Job.objects.get(id=job_id)
+    primary_key = job.results_primary_key
+    results = retrieve_results(job_id, 'word')
+    prototype_result = results[0]
     paginator = Paginator(results, 100)
     page = request.GET.get('page')
     if not page:
@@ -49,9 +52,12 @@ def view_results(request, job_id):
         paginated_results = paginator.page(paginator.num_pages)
 
     return render_to_response('job_results.html',
-                              { 'title' : 'Results of job %s' % job_id,
-                                'job_results' : paginated_results,
-                                'hidden_keys': ['_id', 'job_id']},
+                              {'title' : 'Results of job %s' % job_id,
+                               'job_results' : paginated_results,
+                               'prototype_result': prototype_result,
+                               'hidden_keys': ['_id', 'job_id'],
+                               'expand_types': ['dict', 'list'],
+                               'primary_key': primary_key},
                               context_instance=RequestContext(request))
 
 def run_job(request, job_id):

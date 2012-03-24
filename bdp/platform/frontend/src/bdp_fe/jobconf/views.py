@@ -13,12 +13,11 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render_to_response
 from django.template import RequestContext
-from pymongo import Connection
 
 from bdp_fe.jobconf import custom_model
 from bdp_fe.jobconf import data
 from bdp_fe.jobconf.models import Job, JobModel
-from bdp_fe.jobconf.views_util import safe_int_param
+from bdp_fe.jobconf.views_util import safe_int_param, retrieve_results
 
 LOGGER = logging.getLogger(__name__)
 
@@ -33,15 +32,6 @@ def list_jobs(request):
         'jobs': Job.objects.all(),
     }, context_instance=RequestContext(request))
 
-def retrieve_results(job_id):
-    ans = []
-    ## TODO: make configurable
-    connection = Connection('localhost', 27017)
-    db = connection.test_database
-    job_results = db.test_collection
-    for job_result in job_results.find({"job_id" : job_id}):
-        ans.append(job_result)
-    return ans
 
 @login_required
 def view_results(request, job_id):

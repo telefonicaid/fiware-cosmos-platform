@@ -19,25 +19,22 @@ public class ClusterServer implements Cluster.Iface {
     private static final String HDFS_URL = "hdfs://pshdp01:8011";
 
     public static void main(String args[]) {
-        ClusterServer server = new ClusterServer();
-        int res = server.start();
-        System.exit(res);
+        try {
+            ClusterServer server = new ClusterServer();
+            server.start();
+        } catch (Throwable ex) {
+            System.exit(1);
+        }
     }
 
-    private int start() {
-        try {
-            ClusterServer cluster = new ClusterServer();
-            TServerSocket serverTransport = new TServerSocket(9888);
-            Cluster.Processor processor = new Cluster.Processor(cluster);
-            Args args = new Args(serverTransport);
-            args.processor(processor);
-            TServer server = new TThreadPoolServer(args);
-            server.serve();
-            return 0;
-        } catch (Throwable ex) {
-            System.err.println(ex.getMessage());
-            return 1;
-        }
+    private void start() throws Throwable {
+        ClusterServer cluster = new ClusterServer();
+        TServerSocket serverTransport = new TServerSocket(9888);
+        Cluster.Processor processor = new Cluster.Processor(cluster);
+        Args args = new Args(serverTransport);
+        args.processor(processor);
+        TServer server = new TThreadPoolServer(args);
+        server.serve();
     }
 
     @Override

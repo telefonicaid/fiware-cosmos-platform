@@ -34,6 +34,9 @@ class Job(models.Model):
     execution_id = models.CharField(null=True, blank=True,
         max_length=EXECUTION_ID_MAX_LENGTH)
 
+    RESULTS_PK_MAX_LENGTH = 40
+    results_primary_key = models.CharField(max_length=RESULTS_PK_MAX_LENGTH)
+
     def __unicode__(self):
         return self.name
 

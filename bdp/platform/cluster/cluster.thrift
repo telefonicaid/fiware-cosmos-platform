@@ -18,6 +18,9 @@ service Cluster {
     void runJob(1:string jarPath, 2:string inputPath, 3:string outputPath,
                 4:string mongoUrl),
 
+    list<ClusterJobStatus> getAllJobs(1:string user)
+            throws (1: TransferException ex),
+
     list<ClusterJobStatus> getRunningJobs(1:string user)
             throws (1: TransferException ex),
 }

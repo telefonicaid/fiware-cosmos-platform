@@ -1,5 +1,6 @@
 package es.tid.bdp.platform.cluster.server;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -27,6 +28,11 @@ import org.apache.thrift.transport.TServerSocket;
  * @author dmicol
  */
 public class ClusterServer implements Cluster.Iface {
+    private enum JobsList {
+        ALL,
+        RUNNING
+    }
+    
     private Configuration conf;
     // TODO: put this in a configuration file
     private static final String HDFS_URL = "hdfs://pshdp01:8011";
@@ -105,23 +111,49 @@ public class ClusterServer implements Cluster.Iface {
     }
 
     @Override
-    public List<ClusterJobStatus> getRunningJobs(String user)
+    public List<ClusterJobStatus> getAllJobs(String user)
             throws TransferException, TException {
         try {
-            JobClient client = new JobClient(new JobConf(this.conf));
-            JobStatus[] jobs = client.getAllJobs();
-
-            List<ClusterJobStatus> statuses =
-                    new LinkedList<ClusterJobStatus>();
-            for (JobStatus job : jobs) {
-                ClusterJobStatus status = new ClusterJobStatus();
-                status.setId(job.getJobID().getId());
-                status.setUsername(job.getUsername());
-            }
-            return statuses;
+            return this.getJobs(user, JobsList.ALL);
         } catch (Throwable ex) {
             this.sendNotificationEmail(ex.getMessage(), ex.toString());
             throw new TException(ex);
         }
+    }
+    
+    @Override
+    public List<ClusterJobStatus> getRunningJobs(String user)
+            throws TransferException, TException {
+        try {
+            return this.getJobs(user, JobsList.RUNNING);
+        } catch (Throwable ex) {
+            this.sendNotificationEmail(ex.getMessage(), ex.toString());
+            throw new TException(ex);
+        }
+    }
+
+    private List<ClusterJobStatus> getJobs(String user, JobsList jobsToFetch)
+            throws IOException {
+        JobClient client = new JobClient(new JobConf(this.conf));
+        JobStatus[] jobs;
+        switch (jobsToFetch) {
+            case ALL:
+                jobs = client.getAllJobs();
+                break;
+            case RUNNING:
+                jobs = client.jobsToComplete();
+                break;
+            default:
+                throw new IllegalStateException("Invalid setting");
+        }
+
+        List<ClusterJobStatus> statuses =
+                new LinkedList<ClusterJobStatus>();
+        for (JobStatus job : jobs) {
+            ClusterJobStatus status = new ClusterJobStatus();
+            status.setId(job.getJobID().getId());
+            status.setUsername(job.getUsername());
+        }
+        return statuses;
     }
 }

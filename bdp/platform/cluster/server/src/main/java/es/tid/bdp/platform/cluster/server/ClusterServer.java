@@ -1,6 +1,5 @@
 package es.tid.bdp.platform.cluster.server;
 
-import java.io.IOException;
 import java.util.Properties;
 
 import javax.mail.Message;
@@ -95,11 +94,19 @@ public class ClusterServer implements Cluster.Iface {
     @Override
     public int runJob(String jarPath, String inputPath, String outputPath,
                       String mongoUrl) throws TException {
+        Path input = new Path(inputPath);
+        Path output = new Path(outputPath);
+        
         try {
+            FileSystem fs = FileSystem.get(this.conf);
+            if (fs.exists(output)) {
+                fs.delete(output, true);
+            }
+            
             JobConf jobConf = new JobConf(this.conf);
             jobConf.setJar(jarPath);
-            FileInputFormat.setInputPaths(jobConf, new Path(inputPath));
-            FileOutputFormat.setOutputPath(jobConf, new Path(outputPath));
+            FileInputFormat.setInputPaths(jobConf, input);
+            FileOutputFormat.setOutputPath(jobConf, output);
             JobClient client = new JobClient(jobConf);
             RunningJob runInfo = client.submitJob(jobConf);
             return runInfo.getID().getId();

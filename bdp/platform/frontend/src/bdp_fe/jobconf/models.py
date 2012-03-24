@@ -34,6 +34,9 @@ class Job(models.Model):
     execution_id = models.CharField(null=True, blank=True,
         max_length=EXECUTION_ID_MAX_LENGTH)
 
+    def __unicode__(self):
+        return self.name
+
 # TODO: expand to a hierarchy of models
 class JobModel(models.Model):
     """
@@ -42,3 +45,5 @@ class JobModel(models.Model):
     job = models.OneToOneField(Job)
     jar_name = models.CharField(max_length=256, null=True, blank=True)
     
+    def __unicode__(self):
+        return self.jar_name

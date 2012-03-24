@@ -17,7 +17,7 @@ from pymongo import Connection
 
 from bdp_fe.jobconf import custom_model
 from bdp_fe.jobconf import data
-from bdp_fe.jobconf.models import Job, JobModel
+from bdp_fe.jobconf.models import CustomJobModel, Job, JobModel
 from bdp_fe.jobconf.views_util import safe_int_param
 
 LOGGER = logging.getLogger(__name__)
@@ -95,6 +95,8 @@ def new_job(request):
                       user=request.user,
                       status=Job.CREATED)
             job.save()
+            model = CustomJobModel(job=job) # The only option for the moment
+            model.save()
             return redirect(reverse('config_job', args=[job.id]))
     else:
         form = NewJobForm()
@@ -110,10 +112,10 @@ class UploadJarForm(forms.Form):
 @login_required
 def config_job(request, job_id):
     job = get_object_or_404(Job, pk=job_id, user=request.user)
+    model = JobModel.objects.get(job=job).customjobmodel
     if request.method == 'POST':
         form = UploadJarForm(request.POST, request.FILES)
-        if form.is_valid() and custom_model.handle_upload(job,
-                request.FILES['file']):
+        if form.is_valid() and model.jar_upload(request.FILES['file']):
             return redirect(reverse('upload_data', args=[job.id]))
         else:
             messages.info(request, 'JAR file upload failed')

@@ -30,5 +30,5 @@ public interface JobLauncher {
      * Given a taskId that represents a task in the Completed state, this
      * function returns a representation of the MongoDB output of that task
      */
-    Map<String,String[]> getResults(String taskId) throws TestException;
+    String[][] getResults(String taskId) throws TestException;
 }

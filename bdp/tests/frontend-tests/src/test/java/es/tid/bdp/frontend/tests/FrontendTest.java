@@ -16,38 +16,45 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.fail;
 
 import es.tid.bdp.joblaunchers.FrontendLauncher;
 import es.tid.bdp.joblaunchers.TaskStatus;
 import es.tid.bdp.joblaunchers.TestException;
-import es.tip.bdp.frontend.om.FrontEnd;
-import es.tip.bdp.frontend.om.SelectInputPage;
-import es.tip.bdp.frontend.om.SelectJarPage;
-import es.tip.bdp.frontend.om.SelectNamePage;
+import es.tid.bdp.frontend.om.FrontEnd;
+import es.tid.bdp.frontend.om.SelectInputPage;
+import es.tid.bdp.frontend.om.SelectJarPage;
+import es.tid.bdp.frontend.om.SelectNamePage;
 
 /**
  *
  * @author ximo
  */
+@Test(singleThreaded=true)
 public class FrontendTest {
     private FrontEnd frontend;
     private String wordcountJarPath;
+    private String emptyJarPath;
     
     @BeforeClass
-    public void setUp() {
+    public void setUp() throws IOException {
         File wordCountJarFile = new File("wordcount.jar");
         this.wordcountJarPath = wordCountJarFile.getAbsolutePath();
         assertTrue(wordCountJarFile.exists(),
                    "Veryfing Wordcount Jar is present: "
                 + this.wordcountJarPath);
+        
+        File tmpFile = File.createTempFile("empty", ".jar");
+        tmpFile.deleteOnExit();
+        this.emptyJarPath = tmpFile.getAbsolutePath();
     }
     
     public FrontendTest() {
         this.frontend = new FrontEnd();
     }
        
-    public static boolean isLive(String link) { 
+    private static boolean isLive(String link) { 
         HttpURLConnection urlConnection = null; 
         try { 
             URL url = new URL(link); 
@@ -80,17 +87,15 @@ public class FrontendTest {
             URL baseUrl = new URL(FrontEnd.HOME_URL);
             String verbatimUrl = link.getAttribute("href");
             String linkUrl = new URL(baseUrl, verbatimUrl).toString();
-            assertTrue(isLive(linkUrl), "Broken link: " + linkUrl);
+            assertTrue(FrontendTest.isLive(linkUrl), "Broken link: " + linkUrl);
         }
     }
     
-    @Test
     public void testMainPage() throws MalformedURLException {
         this.frontend.goHome();
         verifyLinks();
     }
     
-    @Test
     public void testNoNameFile() throws MalformedURLException {
         WebDriver driver = this.frontend.getDriver();
         SelectNamePage namePage = this.frontend.goToCreateNewJob();        
@@ -101,14 +106,18 @@ public class FrontendTest {
         
         // We should be in the same page, and the form should be complaining
         assertEquals(currentUrl, driver.getCurrentUrl());
-        fail(); // TODO: Need to verify that some error text has appeared
+        driver.findElement(By.className("errorlist"));
+        assertFalse(this.frontend.taskExists(""),
+                    "Verify task hasn't been created");
+        assertFalse(this.frontend.taskExists("null"),
+                    "Verify task hasn't been created");
     }
     
-    @Test
     public void testNoJarFile() throws MalformedURLException {
         WebDriver driver = this.frontend.getDriver();
-        SelectNamePage namePage = this.frontend.goToCreateNewJob();        
-        namePage.setName(UUID.randomUUID().toString());
+        SelectNamePage namePage = this.frontend.goToCreateNewJob();  
+        final String taskId = UUID.randomUUID().toString();
+        namePage.setName(taskId);
         SelectJarPage jarPage = namePage.submitNameForm();
         
         String currentUrl = driver.getCurrentUrl();
@@ -117,17 +126,19 @@ public class FrontendTest {
         
         // We should be in the same page, and the form should be complaining
         assertEquals(currentUrl, driver.getCurrentUrl());
-        fail(); // TODO: Need to verify that some error text has appeared
+        driver.findElement(By.className("errorlist"));
+        assertFalse(this.frontend.taskExists(taskId),
+                    "Verify task hasn't been created");
     }
     
-    @Test
     public void testNoInputFile() throws IOException {
         WebDriver driver = this.frontend.getDriver();
-        SelectNamePage namePage = this.frontend.goToCreateNewJob();        
-        namePage.setName(UUID.randomUUID().toString());
+        SelectNamePage namePage = this.frontend.goToCreateNewJob();
+        final String taskId = UUID.randomUUID().toString();
+        namePage.setName(taskId);
         
         SelectJarPage jarPage = namePage.submitNameForm();
-        jarPage.setInputJar(this.wordcountJarPath);        
+        jarPage.setInputJar(this.emptyJarPath);        
         
         SelectInputPage inputPage = jarPage.submitJarFileForm();        
         String currentUrl = driver.getCurrentUrl();
@@ -136,10 +147,11 @@ public class FrontendTest {
         
         // We should be in the same page, and the form should be complaining
         assertEquals(currentUrl, driver.getCurrentUrl());
-        fail(); // TODO: Need to verify that some error text has appeared
+        driver.findElement(By.className("errorlist"));
+        assertFalse(this.frontend.taskExists(taskId),
+                    "Verify task hasn't been created");
     }
     
-    @Test
     public void verifySampleJarFile() throws IOException {
         WebDriver driver = this.frontend.getDriver();
         SelectNamePage namePage = this.frontend.goToCreateNewJob();
@@ -151,7 +163,6 @@ public class FrontendTest {
         verifyLinks();
     }
     
-    @Test
     public void verifyJarRestrictions() throws IOException {
         WebDriver driver = this.frontend.getDriver();
         SelectNamePage namePage = this.frontend.goToCreateNewJob();
@@ -174,7 +185,6 @@ public class FrontendTest {
                 "Verifying restrictions mention the Tool interface");
     }
     
-    @Test
     public void testSimpleTask() throws IOException, TestException {
         final String inputFilePath;        
         {
@@ -198,7 +208,6 @@ public class FrontendTest {
         testDriver.getResults(taskId); // Just verifying results can be accessed
     }
     
-    @Test
     public void testParallelTasks() throws IOException, TestException {
         final String inputFilePath;
         final int taskCount = 4;        

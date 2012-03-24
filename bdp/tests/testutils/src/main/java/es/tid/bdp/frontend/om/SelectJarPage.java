@@ -10,7 +10,7 @@ import static org.testng.Assert.assertEquals;
  * @author ximo
  */
 public class SelectJarPage {
-    public static final String INPUT_JAR_HTML_ID = "jar-file";
+    public static final String INPUT_JAR_HTML_ID = "id_file";
     public static final String JAR_RESTRICTIONS_ID = "jar-restrictions";
     public static final String SAMPLE_JAR_LINK_ID = "sample-jar-link";
     

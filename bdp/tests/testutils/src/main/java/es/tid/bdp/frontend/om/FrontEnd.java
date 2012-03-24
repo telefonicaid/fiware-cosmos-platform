@@ -16,12 +16,15 @@ import es.tid.bdp.joblaunchers.TaskStatus;
  */
 public class FrontEnd {
     // TODO: Change Home URL to a config parameter in future iterations
-    public static final String HOME_URL = "http://pstools/dev/bdp/";
+    public static final String HOME_URL = "http://pshdp01:8000/";
     public static final String CREATE_JOB_ID = "create-job";
     public static final String TASK_STATUS_TABLE_ID = "results-table";
     public static final String RESULT_LINK_CLASS = "result-link";
     public static final String RESULT_NAME_CLASS = "job-name";
     public static final String RESULT_STATUS_CLASS = "job-status";
+    public static final String USERNAME_INPUT_ID = "id_username";
+    public static final String PASSWORD_INPUT_ID = "id_password";
+    
     private WebDriver driver;
 
     public FrontEnd() {
@@ -30,6 +33,24 @@ public class FrontEnd {
 
     public void goHome() {
         this.driver.get(HOME_URL);
+        if(this.driver.getCurrentUrl().contains("login")) {
+            this.login("admin", "admin");
+        }
+    }
+    
+    private void login(String user, String pass) {
+        WebElement userElement = this.driver
+                .findElement(By.id(USERNAME_INPUT_ID));
+        userElement.sendKeys(user);
+        this.driver.findElement(By.id(PASSWORD_INPUT_ID)).sendKeys(pass);
+        
+        userElement.submit();
+    }
+    
+    public boolean taskExists(String taskId) {
+        this.goHome();
+        return this.getTaskRow(taskId) != null;
+        
     }
 
     public TaskStatus getTaskStatus(String taskId) {
@@ -71,8 +92,7 @@ public class FrontEnd {
             }
         }
 
-        throw new IllegalArgumentException("No row found with provided taskId: "
-                + taskId);
+        return null;
     }
 
     public void launchJob(String taskId) {

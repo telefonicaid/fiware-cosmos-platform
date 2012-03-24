@@ -90,7 +90,7 @@ public class FrontendLauncher implements JobLauncher {
     }
     
     @Override
-    public Map<String,String[]> getResults(String taskId) throws TestException {
+    public String[][] getResults(String taskId) throws TestException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

@@ -6,7 +6,7 @@ import org.openqa.selenium.WebElement;
 import static org.testng.Assert.assertEquals;
 
 public class SelectNamePage {
-    public static final String NAME_ID = "job-name";
+    public static final String NAME_ID = "id_name";
     
     private final String selectNameUrl;
     private WebDriver driver;

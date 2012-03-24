@@ -6,18 +6,18 @@ exception TransferException {
     2: string errorMsg
 }
 
-struct ClusterJobStatus {
-    1: i32 id
-    2: string username
+enum ClusterJobStatus {
+    RUNNING = 1,
+    SUCCESSFUL = 2,
+    FAILED = 3
 }
 
 service Cluster {
     void copyToHdfs(1:string srcPath, 2:string destPath) 
             throws (1: TransferException ex),
 
-    void runJob(1:string jarPath, 2:string inputPath, 3:string outputPath,
-                4:string mongoUrl),
+    string runJob(1:string jarPath, 2:string inputPath, 3:string outputPath,
+                  4:string mongoUrl),
 
-    list<ClusterJobStatus> getRunningJobs(1:string user)
-            throws (1: TransferException ex),
+    ClusterJobStatus getJobStatus(1:string jobId)
 }

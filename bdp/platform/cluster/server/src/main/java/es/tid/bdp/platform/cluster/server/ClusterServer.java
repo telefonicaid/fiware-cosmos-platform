@@ -96,19 +96,11 @@ public class ClusterServer implements Cluster.Iface {
     @Override
     public String runJob(String jarPath, String inputPath, String outputPath,
                          String mongoUrl) throws TransferException {
-        Path input = new Path(inputPath);
-        Path output = new Path(outputPath);
-        
         try {
-            FileSystem fs = FileSystem.get(this.conf);
-            if (fs.exists(output)) {
-                fs.delete(output, true);
-            }
-            
             JobConf jobConf = new JobConf(this.conf);
             jobConf.setJar(jarPath);
-            FileInputFormat.setInputPaths(jobConf, input);
-            FileOutputFormat.setOutputPath(jobConf, output);
+            FileInputFormat.setInputPaths(jobConf, new Path(inputPath));
+            FileOutputFormat.setOutputPath(jobConf, new Path(outputPath));
             MongoConfigUtil.setOutputURI(this.conf, mongoUrl);
             JobClient client = new JobClient(jobConf);
             RunningJob runInfo = client.submitJob(jobConf);

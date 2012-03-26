@@ -161,6 +161,9 @@ namespace samson {
                     LM_W(("Unknown disk notifiction in stream manafer %s" , notification->getDescription().c_str() ));
                 }
                 
+                engine::DiskOperation *operation = (engine::DiskOperation*) notification->extractObject();
+                if( operation )
+                    delete operation;
                 return;
             }
             

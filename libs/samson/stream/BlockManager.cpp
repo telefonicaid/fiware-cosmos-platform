@@ -173,7 +173,10 @@ namespace samson {
                 }
                 else if( type == "remove" )
                 {
-                    // Nothing to do... an old block file has been removed
+                    // operation has to be removed since we are the only one in the notifier list
+                    engine::DiskOperation *operation = (engine::DiskOperation*) notification->extractObject();
+                    if( operation )
+                        delete operation;
                 }
             }
             else 

@@ -149,6 +149,10 @@ namespace samson
     {
         if( notification->isName(notification_disk_operation_request_response) )
         {
+            // Delete operation
+            engine::DiskOperation *operation = (engine::DiskOperation*) notification->extractObject();
+            delete operation;
+
             num_write_operations--;
             check();
         }

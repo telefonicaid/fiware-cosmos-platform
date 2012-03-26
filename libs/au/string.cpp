@@ -466,14 +466,14 @@ std::string strWithMaxLineLength( std::string& txt , int max_line_length )
     while( input_stream.getline( line, 1023 ) )
     {
 
-        int line_length = (int)strlen(line);
+        int line_length = (int) strlen( line );
 
         if( line_length > max_line_length )
         {
-            line[max_line_length-1] = '\0';
-            line[max_line_length-2] = '.';
-            line[max_line_length-3] = '.';
             line[max_line_length-4] = '.';
+            line[max_line_length-3] = '.';
+            line[max_line_length-2] = '.';
+            line[max_line_length-1] = 0;
 
             //LM_M(("Exesive line %d / %d ", line_length , max_line_length )); 
         }
@@ -593,85 +593,6 @@ std::string substring_without_prefix_and_posfix( std::string& str , std::string 
 }
 
 
-size_t strlenUTF8(const char *cad_utf)
-{
-    char *p_utf;
-    char byte_1_orig ;
-    char byte_2_orig ;
-    char byte_3_orig ;
-    size_t lengthUTF8 = 0;
-
-    char UTF8_2_ISO_8859_1_len[] =
-    {
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /* erroneous */
-            2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 5, 6
-    };
-
-    static char UTF8_2_ISO_8859_1_mask[] = {0x3F, 0x7F, 0x1F, 0x0F, 0x07,
-            0x03, 0x01};
-
-    if (cad_utf == NULL)
-    {
-        return(lengthUTF8);
-    }
-    p_utf = (char *) cad_utf;
-
-    while (*p_utf != '\0')
-    {
-        int           len = UTF8_2_ISO_8859_1_len[(*p_utf >> 2) & 0x3F];
-        unsigned long u   = *p_utf & UTF8_2_ISO_8859_1_mask[len];
-
-
-        if (len == 0)
-            len = 5;
-
-        if (len == 3)
-        {
-            byte_1_orig = *p_utf;
-            byte_2_orig = *(p_utf+1);
-            byte_3_orig = *(p_utf+2);
-        }
-
-
-        if ((len == 3) && (byte_1_orig == '\342') && (byte_2_orig == '\200') && (byte_3_orig == '\234'))
-        {
-            lengthUTF8++;
-            p_utf+=3;
-        }
-        else if ((len == 3) && (byte_1_orig == '\342') && (byte_2_orig == '\200') && (byte_3_orig == '\235'))
-        {
-            lengthUTF8++;
-            p_utf+=3;
-        }
-        else if ((len == 3) && (byte_1_orig == '\342') && (byte_2_orig == '\200') && (byte_3_orig == '\231'))
-        {
-            lengthUTF8++;
-            p_utf+=3;
-        }
-        else if ((len == 3) && (byte_1_orig == '\342') && (byte_2_orig == '\202') && (byte_3_orig == '\254'))
-        {
-            lengthUTF8++;
-            p_utf+=3;
-        }
-        else
-        {
-
-            for (++p_utf; --len > 0 && (*p_utf != '\0'); ++p_utf)
-            {
-
-                if ((*p_utf & 0xC0) != 0x80)
-                    break;
-
-
-                u = (u << 6) | (*p_utf & 0x3F);
-            }
-            lengthUTF8++;
-        }
-    }
-    return(lengthUTF8);
-}
 
 
 NAMESPACE_END

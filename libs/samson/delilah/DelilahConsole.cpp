@@ -299,7 +299,7 @@ namespace samson
                 info->add( categories[i] );
         }
         
-        if (info->completingSecondWord("run_stream_operation") )
+        if (info->completingSecondWord("run") )
         {
             // Add operations
             autoCompleteOperations( info );
@@ -308,7 +308,7 @@ namespace samson
         
         
         // Suggest name of queues....
-        if( info->firstWord() == "run_stream_operation" )
+        if( info->firstWord() == "run" )
         {
             // Suggest queues... ( no format at the moment )
             autoCompleteQueueForOperation( info , info->secondWord() , info->completingWord() - 2 );
@@ -566,6 +566,16 @@ namespace samson
             // Run data base command
             std::string result = runDatabaseCommand(command);
             writeOnConsole( au::strToConsole(result) );
+            return 0;
+        }
+        
+        if( mainCommand == "history" )
+        {
+            int limit = 0;
+            
+            if( commandLine.get_num_arguments() > 1 )
+                limit = ::atoi( commandLine.get_argument(1).c_str() );
+            showMessage( str_history(limit) );
             return 0;
         }
         

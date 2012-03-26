@@ -75,7 +75,7 @@ namespace samson {
             {
             }
             
-            // Only used when running run_stream_operation
+            // Only used when running with "run" command
             StreamOperationBase( std::string _operation , DistributionInformation _distribution_information )
             {
                 name = "manual";

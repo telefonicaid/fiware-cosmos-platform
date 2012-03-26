@@ -160,7 +160,8 @@ namespace samson
     
     bool compareKV( KV* kv1 , KV* kv2 )
     {
-        // Only grouping by key
+        // Only grouping by key and also grouping by value
+        
         if( kv1->key_size < kv2->key_size )
             return true;
         
@@ -177,6 +178,31 @@ namespace samson
                 return false;
         }
 
+        // Compare by input
+        if( kv1->input != kv2->input )
+            return kv1->input < kv2->input;
+        
+        // Same key!
+        
+        if( kv1->value_size < kv2->value_size )
+            return true;
+        
+        if( kv1->value_size > kv2->value_size )
+            return false;
+        
+        for (int i = 0 ; i < kv1->value_size ; i++ )
+        {
+            
+            if( kv1->value[i] < kv2->value[i] )
+                return true;
+            
+            if( kv1->value[i] > kv2->value[i] )
+                return false;
+        }
+
+        
+        // Same key and value!
+        
         // If they are the same....
         return false;
     }

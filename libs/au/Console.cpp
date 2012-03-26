@@ -266,7 +266,7 @@ void Console::internal_process_escape_sequence( std::string sequence )
         printf("---------------------------------------------\n");
         printf(" HISTORY\n");
         printf("---------------------------------------------\n");
-        printf("%s", command_history->history_string().c_str() );
+        printf("%s", command_history->str_history(10).c_str() );
         printf("---------------------------------------------\n");
 
         // Print command again
@@ -482,6 +482,65 @@ void Console::writeErrorOnConsole( std::string message )
 
 void Console::writeOnConsole( std::string message )
 {
+    // Print per lines if necessary
+    // --------------------------------------------------------------------------------------------
+    
+    if( pthread_self() == t_running )
+    {
+        clear_line();
+
+        
+        std::istringstream input( message );
+        char line[1024];
+        int x,y;
+        au::get_term_size (1, &x, &y);
+        input.getline(line, 1024 );
+        int counter = 0;
+        bool continue_flag = false;
+        while( !input.eof() )
+        {
+            if( strlen(line) > 0 )
+            {
+                
+                printf("%s\n", line );
+                counter++;
+
+                if( !continue_flag )
+                    if( y > 0 ) 
+                        if ( counter >= ( y - 3 ) )
+                        {
+                            printf("--------------------------------------------------------------------\n");
+                            printf("Press space to continue , c to continue until the end, q for quit... ");
+                            fflush( stdout );
+                            char c;
+                            scanf("%c", &c);
+                            
+                            if( c == 'q' )
+                                return;
+                            
+                            if( c == 'c' )
+                                continue_flag = true;
+                            
+                            counter = 0;
+                        }
+            }
+            
+            // Read next line...
+            input.getline(line, 1024 );
+        }
+        
+        print_command();
+        fflush( stdout );
+        
+    }
+    
+    // --------------------------------------------------------------------------------------------
+    
+
+    
+    
+    
+    
     write( message );
 }
 
@@ -496,7 +555,8 @@ void Console::write( std::string message )
     }
     
     clear_line();
-    printf("%s", message.c_str() );
+    printf("%s", message.c_str());
+    
     print_command();
     fflush( stdout );
 }
@@ -534,6 +594,12 @@ void Console::appendToCommand( std::string txt )
 {
     command_history->current()->add( txt );
     print_command();
+}
+
+
+std::string Console::str_history( int limit )
+{
+    return command_history->str_history( limit  );
 }
 
 

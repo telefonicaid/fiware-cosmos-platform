@@ -3,13 +3,15 @@ SET( MODULE_NAME system )
 SET (AUX_HEADERS
 	system_common.h
     samson/modules/system/Value.h
-	operations/parse_to_value.h
-	operations/export_to_txt.h
-	operations/map_value_to_value.h	
-	operations/map_value_to_2_value.h	
-	operations/map_value_to_3_value.h	
-	operations/reduce_value_to_value.h
-	operations/update_state.h 
+
+	operations/parse.h
+	operations/map.h
+	operations/map2.h
+	operations/map3.h
+	operations/reduce.h
+	operations/update.h
+	operations/str.h
+
 	operations/KeyValue.h
     operations/KeyValue.cpp
 	operations/Filter.h
@@ -20,6 +22,10 @@ SET (AUX_HEADERS
 	operations/SourceFunction.cpp
 	smaz.h
 	smaz.cpp
+
+	operations/ValueReduce.h
+	operations/ValueReduce.cpp
+
 )			  
 
 SET( SOURCES_TEST

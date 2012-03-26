@@ -216,6 +216,15 @@ namespace au {
             
         }
         
+        std::string TokenVector::getNextTokenContent()
+        {
+            Token* token = getNextToken();
+            if( !token )
+                return "<empty>";
+            else
+                return token->content;
+        }
+        
         Token* TokenVector::getNextToken()
         {
             if ( position >= size() )

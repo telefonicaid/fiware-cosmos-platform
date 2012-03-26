@@ -70,6 +70,9 @@ public:
     // Append to current command
     void appendToCommand( std::string txt );
     
+    // Get the history string
+    std::string str_history( int limit );
+    
 private:
     
     void print_command();

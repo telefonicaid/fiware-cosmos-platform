@@ -6,6 +6,7 @@
 #include "au/vector.h"
 #include "au/StringComponents.h"
 #include "au/Tokenizer.h"
+#include "au/charset.h"
 
 #include <samson/module/samson.h>
 #include <samson/modules/system/Value.h>
@@ -32,6 +33,10 @@ namespace samson{
             Filter( )
             {
                 next = NULL;
+            }
+            
+            virtual ~Filter()
+            {
             }
             
             virtual void run( KeyValue kv )=0;
@@ -70,7 +75,7 @@ namespace samson{
         };
 
         // --------------------------------------------------------
-        // FilterEmit
+        // FilterEmitTxt
         // --------------------------------------------------------
         
         class FilterEmitTxt : public Filter
@@ -78,7 +83,7 @@ namespace samson{
             samson::TXTWriter *writer;
             
         public:
-            
+               
             FilterEmitTxt( samson::TXTWriter *_writer )
             {
                 writer = _writer;
@@ -96,7 +101,62 @@ namespace samson{
             }
             
         };        
+
+        // --------------------------------------------------------
+        // FilterEmitTxt
+        // --------------------------------------------------------
         
+        class FilterEmitKeyTxt : public Filter
+        {
+            samson::TXTWriter *writer;
+            
+        public:
+            
+            FilterEmitKeyTxt( samson::TXTWriter *_writer )
+            {
+                writer = _writer;
+            }
+            
+            virtual void run( KeyValue kv )
+            {
+                std::string output = au::str("%s\n" , kv.key->str().c_str() );
+                writer->emit(output.c_str() , output.length() );
+            }
+            
+            std::string str()
+            {
+                return "Emit key";
+            }
+            
+        };
+        
+        // --------------------------------------------------------
+        // FilterEmitTxt
+        // --------------------------------------------------------
+        
+        class FilterEmitValueTxt : public Filter
+        {
+            samson::TXTWriter *writer;
+            
+        public:
+            
+            FilterEmitValueTxt( samson::TXTWriter *_writer )
+            {
+                writer = _writer;
+            }
+            
+            virtual void run( KeyValue kv )
+            {
+                std::string output = au::str("%s\n" , kv.value->str().c_str() );
+                writer->emit(output.c_str() , output.length() );
+            }
+            
+            std::string str()
+            {
+                return "Emit value";
+            }
+            
+        };
         // --------------------------------------------------------
         // parse -  parse line
         // --------------------------------------------------------
@@ -258,7 +318,7 @@ namespace samson{
                 size_t len = line.length();
                 for ( size_t i = 0 ; i < len ; i++ )
                 {
-                    if( !isalpha( line[i] ) )
+                    if( ! au::iso_8859_is_letter( line[i] ) )
                     {
                         if( pos < i )
                         {
@@ -346,97 +406,31 @@ namespace samson{
             
         };
         
-                
         // ----------------------------------------------------
         // FilterCondition
         // ----------------------------------------------------
-        
-        typedef enum
-        {
-            equal,                      // ==
-            greater_than,               // >
-            less_than,                  // <
-            greater_or_equal_than,      // >=
-            less_or_equal_than,         // <=
-            different_than,             // !=
-            unknown
-        } Comparisson;
-        
-        const char* str_Comparisson( Comparisson c );
-        Comparisson comparition_from_string( std::string c );
            
         class FilterCondition : public Filter
         {
             
-            Comparisson c;            // Type of comparisson
-            Source* select_source;    // Left Source 
-            Source* select_value;     // Rigth source
-            
-            double value_reference;
+            Source* eval_source; 
             
         public:
             
             // filter key:2 = 4.56
-            FilterCondition( Source* _select_source , Comparisson _c , Source* _select_value  )
+            FilterCondition( Source* _eval_source  )
             {
-                select_source = _select_source;
-                c = _c;
-                select_value = _select_value;
+                eval_source = _eval_source;
             }
             
             bool test( KeyValue kv )
             {
-                Value * v1 = select_source->get(kv);
-                Value * v2 = select_value->get(kv);
+                samson::system::Value * v = eval_source->get(kv);
                 
-                if( !v1 || !v2 )
-                    return  false; // Not possible to get one of the values
+                if( !v )
+                    return false;
 
-                if( v1->isNumber() )
-                {
-                    
-                    double v1_value = v1->getDouble();
-                    double v2_value = v2->getDouble();
-                    
-                    //printf("Comparing %f - %f\n" , tmp_value , value_reference );
-                    
-                    switch (c) 
-                    {
-                        case equal:                 return ( v1_value == v2_value );
-                        case greater_than:          return ( v1_value >  v2_value );
-                        case less_than:             return ( v1_value <  v2_value );
-                        case greater_or_equal_than: return ( v1_value >= v2_value );
-                        case less_or_equal_than:    return ( v1_value <= v2_value );
-                        case different_than:        return ( v1_value != v2_value );
-                        case unknown: return false;
-                    }
-                }
-                else if ( v1->isString() )
-                {
-                    
-                    std::string v1_value = v1->get_string();
-                    std::string v2_value = v2->get_string();
-                    
-                    //printf("Comparing %f - %f\n" , tmp_value , value_reference );
-                    
-                    switch (c) 
-                    {
-                        case equal:                 return ( v1_value == v2_value );
-                        case greater_than:          return ( v1_value >  v2_value );
-                        case less_than:             return ( v1_value <  v2_value );
-                        case greater_or_equal_than: return ( v1_value >= v2_value );
-                        case less_or_equal_than:    return ( v1_value <= v2_value );
-                        case different_than:        return ( v1_value != v2_value );
-                        case unknown: return false;
-                    }
-                }
-                else
-                    return false; // No comparisio for vector of map
-    
-                
-                LM_X(1, ("Internal error"));
-                return  false;
-                
+                return ( v->getDouble() != 0 );
             }
             
             void run( KeyValue kv )
@@ -448,10 +442,14 @@ namespace samson{
             
             std::string str()
             {
-                return au::str("FilterCondition %s %s %s"  , select_source->str().c_str() , str_Comparisson(c) , select_value->str().c_str() );
+                return au::str("FilterCondition %s"  , eval_source->str().c_str() );
             }
             
         };
+        
+        // ----------------------------------------------------
+        // FilterSelect
+        // ----------------------------------------------------
         
         class FilterSelect : public Filter
         {
@@ -487,24 +485,22 @@ namespace samson{
             
             void run( KeyValue kv )
             {
-                samson::system::Value* source_key = source_for_key->get(kv);
-                samson::system::Value* source_value = source_for_value->get(kv);
+                samson::system::Value* value_for_key   = source_for_key->get(kv);
+                samson::system::Value* value_for_value = source_for_value->get(kv);
                 
-                if( source_key )
-                    key.copyFrom( source_key );
+                if( value_for_key )
+                    key.copyFrom( value_for_key );
                 else
                     key.set_as_void();
 
-                if( source_value )
-                    value.copyFrom( source_value );
+                if( value_for_value )
+                    value.copyFrom( value_for_value );
                 else
                     value.set_as_void();
-                
+
+                // Run next element
                 if( next )
-                {
-                    KeyValue kv2( &key , &value );
-                    next->run(kv2);
-                }
+                    next->run( KeyValue( &key , &value ) );
             }
         };
 
@@ -549,6 +545,7 @@ namespace samson{
             {
                 
                 au::CommandLine cmdLine;
+                cmdLine.set_flag_boolean("only_key");
                 cmdLine.parse( command );
                 
                 // Get the main command
@@ -560,13 +557,22 @@ namespace samson{
                     // Rest of the command after select
                     size_t pos = command.find("select");
                     std::string rest_command = command.substr( pos + 6 );
-                    
+
+                    // Get the token vector with all tokens
                     SamsonTokenVector token_vector;
                     token_vector.parse( rest_command );
                     
                     Source* key_source = getSource(&token_vector, error);
                     if( error->isActivated() )
                         return NULL; 
+
+                    // Expect a ","
+                    if( !token_vector.popNextTokenIfItIs(",") )
+                    {
+                        error->set( au::str("Expected ',' to separate key and value in a select statment. Found '%s'" 
+                                            , token_vector.getNextTokenContent().c_str() ));
+                        return NULL;
+                    }
                     
                     Source* value_source = NULL;
                     if( !token_vector.eof() )
@@ -611,6 +617,29 @@ namespace samson{
                     }
                     
                 }
+                else if( main_command == "emit_key" )
+                {
+                    
+                    if ( !txt_writer )
+                    {
+                        error->set( "emit_key is only valid in parseOut operations like system.str ");
+                        return NULL;
+                    }
+                    
+                    return new FilterEmitKeyTxt( txt_writer );                        
+                    
+                }
+                else if( main_command == "emit_value" )
+                {
+                    if ( !txt_writer )
+                    {
+                        error->set( "emit_value is only valid in parseOut operations like system.str ");
+                        return NULL;
+                    }
+                    
+                    return new FilterEmitValueTxt( txt_writer );                        
+                }
+                
                 else if ( main_command == "filter" )
                 {
                     // Rest of the command after select
@@ -620,41 +649,17 @@ namespace samson{
                     SamsonTokenVector token_vector;
                     token_vector.parse( rest_command );
                     
-                    Source* left_source = getSource(&token_vector, error );
+                    Source* eval_source = getSource(&token_vector, error );
                     if( error->isActivated() )
                         return NULL;
-                    if( !left_source )
+                    if( !eval_source )
                     {
-                        error->set("Not valid left selector for filter command");
-                        return NULL;
-                    }
-                    if( token_vector.eof() )
-                    {
-                        error->set("Unfinished filter command");
+                        error->set("Not valid condition statment in filter command");
                         return NULL;
                     }
                     
-                    // Get the symbol
-                    std::string s = token_vector.popToken()->content;
-                    Comparisson c = comparition_from_string(s);
+                    return new FilterCondition( eval_source );
                     
-                    if( c == unknown )
-                    {
-                        error->set("filter clause with unknown comparison selector");
-                        delete left_source;
-                        return NULL;
-                    }
-
-                    // Get the left side
-                    Source* rigth_source = getSource(&token_vector, error );
-                    if( error->isActivated() )
-                        return NULL; 
-                    if( !rigth_source )
-                    {
-                        error->set("Not valid left selector for filter command");
-                        return NULL;
-                    }
-                    return new FilterCondition( left_source , c , rigth_source );
                 }
                 return NULL;
                 

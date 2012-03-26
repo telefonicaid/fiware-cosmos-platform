@@ -3,6 +3,50 @@
 
 #include "Table.h" // Own interterface
 
+/*
+#define AU_TABLE_H        "-"
+#define AU_TABLE_V        "|"
+#define AU_TABLE_CORNER_LT "+"  // Left top
+#define AU_TABLE_CORNER_RT "+"  // Rigth top
+#define AU_TABLE_CORNER_LB "+"  // Left bottom
+#define AU_TABLE_CORNER_RB "+"  // Rigth bottom
+#define AU_TABLE_X_HD      "+" // Horizontal down
+#define AU_TABLE_X_HU      "+" // Horizontal down
+#define AU_TABLE_X_VR      "+" // Vertial rigth
+#define AU_TABLE_X_VL      "+" // Vertical left
+#define AU_TABLE_X         "+" // Full cross
+*/
+
+#define AU_TABLE_H         "-"
+#define AU_TABLE_V         "|"
+#define AU_TABLE_CORNER_LT "/"  // Left top
+#define AU_TABLE_CORNER_RT "\\"  // Rigth top
+#define AU_TABLE_CORNER_LB "\\"  // Left bottom
+#define AU_TABLE_CORNER_RB "/"  // Rigth bottom
+#define AU_TABLE_X_HD      "-" // Horizontal down
+#define AU_TABLE_X_HU      "-" // Horizontal down
+#define AU_TABLE_X_VR      "|" // Vertial rigth
+#define AU_TABLE_X_VL      "|" // Vertical left
+#define AU_TABLE_X         "+" // Full cross
+
+
+/*
+#define AU_TABLE_H         "━"
+#define AU_TABLE_V         "┃"
+#define AU_TABLE_CORNER_LT "┏"  // Left top
+#define AU_TABLE_CORNER_RT "┓"  // Rigth top
+#define AU_TABLE_CORNER_LB "┗"  // Left bottom
+#define AU_TABLE_CORNER_RB "┛"  // Rigth bottom
+#define AU_TABLE_X_HD      "┳" // Horizontal down
+#define AU_TABLE_X_HU      "┻" // Horizontal down
+#define AU_TABLE_X_VR      "┣" // Vertial rigth
+#define AU_TABLE_X_VL      "┫" // Vertical left
+#define AU_TABLE_X         "╋" // Full cross
+*/
+
+
+
+
 
 NAMESPACE_BEGIN(au)
 NAMESPACE_BEGIN(tables)
@@ -285,7 +329,9 @@ std::string Table::str( SelectTableInformation *select )
     std::vector<size_t> column_width;
     for( size_t c = 0 ; c < select->columns.size() ; c++)
     {
-        size_t _column_width = std::max( table->getMaxWidthForColumn( c ) , select->columns[c].getTitle().length() );
+        size_t _column_width = std::max(  table->getMaxWidthForColumn( c ) 
+                                        , select->columns[c].getTitle().length() 
+                                        );
         column_width.push_back( _column_width );
         title_length += _column_width;
     }
@@ -306,24 +352,27 @@ std::string Table::str( SelectTableInformation *select )
     std::ostringstream output;
 
     // Separation line
-    output << line( column_width );
+    output << top_line( column_width );
     
     // Main title...
     if( select->title != "" )
     {
-        output << "| ";
+        output << AU_TABLE_V << " ";
         output << string_length( select->title , title_length, true);
-        output << " |";
+        output << " " << AU_TABLE_V;
         output << "\n";
     }
     
     // Separation line
-    output << line( column_width );
+    output << top_line2( column_width );
     
     // TITLES
-    output << "| ";
+    output << AU_TABLE_V << " ";
     for ( size_t c = 0 ; c < select->columns.size() ; c++)
-        output << string_length( select->columns[c].getTitle() , column_width[c] , select->columns[c].getLeft() ) << " | ";
+    {
+        output << string_length( select->columns[c].getTitle() , column_width[c] , select->columns[c].getLeft() );
+        output << " " << AU_TABLE_V << " ";
+    }
     output << "\n";
         
     
@@ -337,12 +386,13 @@ std::string Table::str( SelectTableInformation *select )
         if( ( select->limit > 0 ) && ( r >= select->limit ) )
             continue;
         
-        output << "| ";
+        output << AU_TABLE_V << " ";
         for( size_t c = 0 ; c < select->columns.size() ; c++ )
         {
             std::string column = select->columns[c].getName();
             // Get the formatted output
-            output << string_length( table->rows[r]->get(column) , column_width[c] , select->columns[c].getLeft() ) << " | ";
+            output << string_length( table->rows[r]->get(column) , column_width[c] , select->columns[c].getLeft() );
+            output << " " << AU_TABLE_V << " ";
         }
         output << "\n";
         
@@ -355,7 +405,7 @@ std::string Table::str( SelectTableInformation *select )
     }
     
     // Separation line
-    output << line( column_width );
+    output << bottom_line( column_width );
     
     if( select->limit > table->rows.size() )
         output << au::str("%lu rows not displayed ( limit %lu )\n" , table->rows.size() - select->limit , select->limit );
@@ -409,22 +459,86 @@ Table* Table::getColumnDescriptionTable()
     return tmp;
 }
 
-std::string Table::line( std::vector<size_t> &length )
+std::string Table::top_line( std::vector<size_t> &length  )
 {
     std::ostringstream output;
     
-    output << "+-";
+    output << AU_TABLE_CORNER_LT << AU_TABLE_H;
     // Separation line
     for ( size_t c = 0 ; c < length.size() ; c++)
     {
         for( size_t i = 0 ; i < length[c] ; i++ )
-            output << "-";
+            output << AU_TABLE_H;
         
         // Get the formatted output
         if( c != ( length.size()-1) )
-            output << "-+-";
+            output << AU_TABLE_H << AU_TABLE_H << AU_TABLE_H;
     }
-    output << "-+";
+    output << AU_TABLE_H << AU_TABLE_CORNER_RT;
+    output << "\n";
+    
+    return output.str();
+}
+
+std::string Table::top_line2( std::vector<size_t> &length  )
+{
+    std::ostringstream output;
+    
+    output << AU_TABLE_X_VR << AU_TABLE_H;
+    // Separation line
+    for ( size_t c = 0 ; c < length.size() ; c++)
+    {
+        for( size_t i = 0 ; i < length[c] ; i++ )
+            output << AU_TABLE_H;
+        
+        // Get the formatted output
+        if( c != ( length.size()-1) )
+            output<< AU_TABLE_H << AU_TABLE_X_HD<< AU_TABLE_H;
+    }
+    output << AU_TABLE_H << AU_TABLE_X_VL;
+    output << "\n";
+    
+    return output.str();
+}
+
+std::string Table::bottom_line( std::vector<size_t> &length  )
+{
+    std::ostringstream output;
+    
+    output << AU_TABLE_CORNER_LB << AU_TABLE_H;
+    // Separation line
+    for ( size_t c = 0 ; c < length.size() ; c++)
+    {
+        for( size_t i = 0 ; i < length[c] ; i++ )
+            output << AU_TABLE_H;
+        
+        // Get the formatted output
+        if( c != ( length.size()-1) )
+            output << AU_TABLE_H << AU_TABLE_X_HU << AU_TABLE_H;
+    }
+    output << AU_TABLE_H << AU_TABLE_CORNER_RB;
+    output << "\n";
+    
+    return output.str();
+}
+
+
+std::string Table::line( std::vector<size_t> &length  )
+{
+    std::ostringstream output;
+    
+    output << AU_TABLE_X_VR << AU_TABLE_H;
+    // Separation line
+    for ( size_t c = 0 ; c < length.size() ; c++)
+    {
+        for( size_t i = 0 ; i < length[c] ; i++ )
+            output << AU_TABLE_H;
+        
+        // Get the formatted output
+        if( c != ( length.size()-1) )
+            output << AU_TABLE_H << AU_TABLE_X << AU_TABLE_H;
+    }
+    output << AU_TABLE_H << AU_TABLE_X_VL;
     output << "\n";
     
     return output.str();
@@ -432,16 +546,33 @@ std::string Table::line( std::vector<size_t> &length )
 
 std::string Table::string_length( std::string value , int width , bool left )
 {
+    int len = value.length();
+    
+    // Adjust for excessive values...
     std::string _value;
-    if( (int)value.length() <= width )
+    if( len <= width )
         _value = value;
     else
+    {
         _value = value.substr( 0 , width-3 ) + "...";
-    
+        len = width;
+    }
+
+    std::ostringstream output;
     if( left )
-        return au::str( au::str("%%-%ds",width).c_str() , _value.c_str() );
+    {
+        output << _value;
+        for( int i = 0 ; i < (width-len) ; i++ )
+            output << " ";
+    }
     else
-        return au::str( au::str("%%%ds",width).c_str() , _value.c_str() );
+    {
+        for( int i = 0 ; i < (width-len) ; i++ )
+            output << " ";
+        output << _value;
+    }
+    
+    return output.str();
 }
 
 StringVector Table::getValuesFromColumn( std::string name )

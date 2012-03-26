@@ -1293,7 +1293,7 @@ typedef struct LogLineInfo
             return;
         }
         
-        if( main_command == "run_stream_operation" )
+        if( main_command == "run" )
         {
             // Flag used in automatic update operation to lock input blocks and remove after operation
             bool clear_inputs =  cmd.get_flag_bool("clear_inputs"); 
@@ -1364,7 +1364,6 @@ typedef struct LogLineInfo
                     }
                 }
             }
-            
             
             switch (op->getType()) 
             {
@@ -1561,7 +1560,7 @@ typedef struct LogLineInfo
                     
                 default:
                 {
-                    finishWorkerTaskWithError( au::str("run_stream_operation OK but it is still not implemented"  ) ); 
+                    finishWorkerTaskWithError( au::str("'run' command OK, but it is still not implemented"  ) ); 
                 }
                     break;
             }
@@ -1643,7 +1642,7 @@ typedef struct LogLineInfo
         au::CommandLine cmd;
         cmd.parse(command);
         
-        int pos_argument = 1;   // We skip the "run_stream_operation" parameter
+        int pos_argument = 1;   // We skip the "run" parameter
         
         std::string operation_name = cmd.get_argument(pos_argument++);
         

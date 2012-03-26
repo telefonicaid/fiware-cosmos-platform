@@ -6,27 +6,16 @@
 namespace samson {
     namespace system
     {
+        
+        // Manager to instanciate all possible operations
+        SourceFunctionManager source_function_manager;
+        
 
-        SourceFunction* SourceFunction::getSourceForFunction( std::string function_name , au::vector<Source>& _input_sources , au::ErrorManager * error )
+        SourceFunction* SourceFunction::getSourceForFunction( std::string name 
+                                                             , au::vector<Source>& input_sources 
+                                                             , au::ErrorManager * error )
         {
-            SourceFunction* source_function = NULL;
-            
-            if( function_name == "strlen" )
-                source_function = new SourceFunctionStrlen();
-            else if( function_name == "str" )
-                source_function = new SourceFunctionStr();
-            else if (function_name == "isAlpha")
-                source_function = new SourceFunctionisAlpha();
-            
-            if ( source_function )
-            {
-                source_function->setInputSource( _input_sources );
-                return source_function;
-            }
-            
-            error->set(au::str("Unkown function %s" , function_name.c_str() ));
-            return NULL;
-            
+            return source_function_manager.getInstance(name, input_sources, error );
         }
         
     }

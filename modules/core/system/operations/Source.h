@@ -59,6 +59,270 @@ namespace samson{
             
             
         };
+
+        // ---------------------------------------------------
+        // SourceCompare
+        // ---------------------------------------------------
+        
+        class SourceCompareSelector : public Source
+        {
+            Source * condition;
+            Source* value1;
+            Source* value2;
+            
+        public:
+            
+            SourceCompareSelector( Source * _condition , Source* _value1 , Source* _value2 )
+            {
+                condition = _condition;
+                value1 = _value1;
+                value2 = _value2;
+            }
+            
+            samson::system::Value* get( KeyValue kv )
+            {
+                
+                Value* value_condition = condition->get(kv);
+                
+                if( !value_condition )
+                    return NULL;
+                
+                if( value_condition->getDouble() != 0 )
+                    return value1->get(kv);
+                else
+                    return value2->get(kv);
+            }
+
+            std::string str()
+            {
+                return au::str("%s?%s:%s" , condition->str().c_str()  , value1->str().c_str() , value2->str().c_str() );
+            }
+            
+        };
+        
+        
+        // ---------------------------------------------------
+        // SourceCompare
+        // ---------------------------------------------------
+        
+        class SourceCompare : public Source
+        {
+        public:
+            
+            typedef enum
+            {
+                equal,                      // ==
+                greater_than,               // >
+                less_than,                  // <
+                greater_or_equal_than,      // >=
+                less_or_equal_than,         // <=
+                different_than,             // !=
+                unknown
+            } Comparisson;
+
+        private:
+            
+            Source *left;
+            Source *rigth;
+            Comparisson comparisson;
+            
+            Value value;
+            
+        public:
+            
+            static Comparisson comparition_from_string( std::string s )
+            {
+                Comparisson c = unknown;
+                
+                if( s == "==" )
+                    c = equal;
+                else if( s == "<" )
+                    c = less_than;
+                else if( s == ">" )
+                    c = greater_than;
+                else if( s == ">=" )
+                    c = greater_or_equal_than;
+                else if( s == "<=" )
+                    c = less_or_equal_than;
+                else if( s == "!=" )
+                    c = different_than;
+                
+                return c;
+            }
+
+            static const char* str_Comparisson( Comparisson c )
+            {
+                switch (c) {
+                    case equal:                  return "==";
+                    case greater_than:           return ">";
+                    case less_than:              return "<";
+                    case greater_or_equal_than:  return ">=";
+                    case less_or_equal_than:     return "<=";
+                    case different_than:         return "!=";
+                    case unknown:                return "?";
+                }
+                
+                LM_X(1, ("Internal error"));
+                return "Unknown";
+            }
+
+            
+            SourceCompare( Source* _left , Source * _rigth  , Comparisson _comparison )
+            {
+                rigth = _rigth;
+                left = _left;
+                
+                comparisson = _comparison;
+            }
+            
+            bool eval( KeyValue kv )
+            {
+                
+                system::Value *v1 = left->get(kv);
+                system::Value *v2 = rigth->get(kv);
+                
+                // If not possible to get one of them
+                if( !v1 || !v2 )
+                    return false;
+                
+                switch (comparisson) 
+                {
+                    case equal:                 return ( *v1 == *v2 );
+                    case greater_than:          return ( *v1 >  *v2 );
+                    case less_than:             return ( *v1 <  *v2 );
+                    case greater_or_equal_than: return ( *v1 >= *v2 );
+                    case less_or_equal_than:    return ( *v1 <= *v2 );
+                    case different_than:        return ( *v1 != *v2 );
+                    case unknown: return false;
+                }
+            
+                // Never here
+                return false;
+            }
+            
+            samson::system::Value* get( KeyValue kv )
+            {
+
+                // Eval an assign 1 for true, 0 for false
+                if( eval(kv) )
+                    value = 1;
+                else
+                    value = (double)0;
+                
+                return &value;
+            }
+            
+            std::string str()
+            {
+                return au::str("%s %s %s" , left->str().c_str()  , str_Comparisson(comparisson) , rigth->str().c_str() );
+            }
+            
+        };        
+
+        // ---------------------------------------------------
+        // SourceCompare
+        // ---------------------------------------------------
+        
+        class SourceOperation : public Source
+        {
+        public:
+            
+            typedef enum
+            {
+                sum,                     // +
+                minus,                   // -
+                multiply,                // *
+                divide,                  // /
+                unknown
+            } Operation;
+            
+        private:
+            
+            Source *left;
+            Source *rigth;
+            Operation operation;
+            
+            Value value;
+            
+        public:
+            
+            static Operation operation_from_string( std::string s )
+            {
+                Operation c = unknown;
+                
+                if( s == "+" )
+                    c = sum;
+                else if( s == "-" )
+                    c = minus;
+                else if( s == "*" )
+                    c = multiply;
+                else if( s == "/" )
+                    c = divide;
+                
+                return c;
+            }
+            
+            static const char* str_Operation( Operation c )
+            {
+                switch (c) 
+                {
+                    case sum:             return "+";
+                    case minus:           return "-";
+                    case multiply:        return "*";
+                    case divide:          return "/";
+                    case unknown:         return "<Unknown>";
+                }
+                
+                LM_X(1, ("Internal error"));
+                return "Unknown";
+            }
+            
+            
+            SourceOperation( Source* _left , Source * _rigth  , Operation _operation )
+            {
+                rigth = _rigth;
+                left = _left;
+                
+                operation = _operation;
+            }
+            
+            
+            samson::system::Value* get( KeyValue kv )
+            {
+                system::Value *v1 = left->get(kv);
+                system::Value *v2 = rigth->get(kv);
+                
+                // If not possible to get one of them
+                if( !v1 || !v2 )
+                    return NULL;
+                
+                switch (operation) 
+                {
+                    case sum:       value = *v1 + *v2 ;
+                        break;
+                    case minus:     value = *v1 - *v2 ;
+                        break;
+                    case multiply:  value = *v1 * *v2 ;
+                        break;
+                    case divide:    value = *v1 / *v2 ;
+                        break;
+                    case unknown: return NULL;
+                        break;
+                }
+                
+                return &value;
+            }
+            
+            std::string str()
+            {
+                return au::str("%s %s %s" , left->str().c_str()  , str_Operation(operation) , rigth->str().c_str() );
+            }
+            
+        };         
+        
+        // ---------------------------------------------------
+        // SourceStringConstant
+        // ---------------------------------------------------
         
         class SourceStringConstant : public Source
         {
@@ -265,18 +529,20 @@ namespace samson{
             }
             
             virtual samson::system::Value* get( KeyValue kv )
-            {
-                value.set_as_vector();
+            {                
+                value.set_as_map();
                 for ( size_t i = 0 ; i < source_keys.size() ; i++ )
                 {
                     samson::system::Value* tmp_key   = source_keys[i]->get(kv);
                     samson::system::Value* tmp_value = source_values[i]->get(kv);
-                    if( !tmp_value || !tmp_value )
+                    
+                    if( !tmp_key || !tmp_value )
                         return NULL;
                     
                     // Prepare the value
                     value.add_value_to_map( tmp_key->get_string() )->copyFrom( tmp_value );
                 }
+                
                 return &value;
             }
             

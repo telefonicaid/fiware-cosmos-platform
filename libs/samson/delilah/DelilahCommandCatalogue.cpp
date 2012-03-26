@@ -111,6 +111,10 @@ namespace samson
         
         add("rm_local", "local",
             "Remove a local directory and all its contents"); 
+
+        add("history", "local",
+            "Show the history of the last commands",
+            "history [num_items]   Optional paremter to limit the number of history items to show "); 
         
         
         // DATA MANIPULATION
@@ -199,9 +203,9 @@ namespace samson
             "rm_stream_operation name <-f>"
             "      -f      Option avoids complaints when the operation does not exist");
         
-        add( "run_stream_operation" , "stream" ,
+        add( "run" , "stream" ,
             "Run a particular operation over queues manually",
-            "run_stream_operation <op_name> [queues...] [-clear_inputs]\n"
+            "run <op_name> [queues...] [-clear_inputs]\n"
             "\n"
             "           <op_name>        : Name of the operation. See 'help ls_operations' for more info\n"
             "           [queues]         : Name of the queues involved in this operation (inputs and outputs)\n"
@@ -209,7 +213,7 @@ namespace samson
             );
 
         add( "cancel_stream_operation" , "stream" ,
-            "Cancel a particular operation ( both executed manually with run_stream_operation or automatically througth add_stream_operation",
+            "Cancel a particular operation ( both executed manually with run or automatically througth add_stream_operation",
             "cancel_stream_operation <op_id>\n"
             "\n"
             "           <op_name>        : Identifier of the operation. Usually something like XXXXX_XXX\n"

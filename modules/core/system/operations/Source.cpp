@@ -6,9 +6,29 @@
 
 namespace samson {
     namespace system {
-
-        Source *getSource( au::token::TokenVector* token_vector , au::ErrorManager* error )
+        
+        Source *getSingleSource( au::token::TokenVector* token_vector , au::ErrorManager* error )
         {
+            
+            // ----------------------------------------------------------------
+            // Braquets to group operations 
+            // ----------------------------------------------------------------
+            
+            if( token_vector->popNextTokenIfItIs("(") )
+            {
+
+                Source* source = getSource(token_vector, error);
+                if( !source || error->isActivated() )
+                    return NULL;
+                
+                if( !token_vector->popNextTokenIfItIs(")") )
+                {
+                    error->set("Parentheses not closed");
+                }
+
+                return source;
+            }
+            
             // ----------------------------------------------------------------
             // Vector 
             // ----------------------------------------------------------------
@@ -67,7 +87,7 @@ namespace samson {
                     }
                     else if( token->is("}") )
                     {
-                        // end of vector
+                        // end of map
                         token_vector->popToken();
                         return new SourceMap( source_keys , source_values );
                     }
@@ -122,6 +142,9 @@ namespace samson {
                 token_vector->popToken(); // Skip "("
                 
                 au::vector<Source> source_components;
+                
+                
+                
                 while( true )
                 {
                     au::token::Token* token = token_vector->getNextToken();
@@ -134,18 +157,37 @@ namespace samson {
                     else if( token->is(")") )
                     {
                         // end of vector
-                        token_vector->popToken();
+                        token_vector->popToken(); // skip ")"
                         return SourceFunction::getSourceForFunction(token_function_name->content , source_components , error);
-                    }
-                    
-                    Source* tmp = getSource(token_vector, error);
-                    if( error->isActivated() )
+                    } 
+                    else if ( (source_components.size()==0) || (token->is(",") ) )
                     {
-                        source_components.clearVector();
-                        return NULL;
+                        if( (source_components.size()==0) && token->is(",") )
+                        {
+                            error->set("Non valid first parameter for function call");
+                            source_components.clearVector();
+                            return NULL;
+                        }
+                        
+                        if ( token->is(",") )
+                            token_vector->popToken(); // Skip ","
+                        
+                        // Another component
+                        Source* tmp = getSource(token_vector, error);
+                        if( error->isActivated() )
+                        {
+                            source_components.clearVector();
+                            return NULL;
+                        }
+                        else
+                            source_components.push_back(tmp);
                     }
                     else
-                        source_components.push_back(tmp);
+                    {
+                        error->set(au::str("Non valid function call. Found %s when expecting ) or ," , token->content.c_str()));
+                        return NULL;
+                    }
+                    
                 }                    
                 
             }            
@@ -164,9 +206,6 @@ namespace samson {
             // Literal Constant
             if( token->isLiteral() )
                 return new SourceStringConstant( token->content );
-            
-            
-            
             
             // Key-word
             Source * main = NULL;
@@ -198,7 +237,9 @@ namespace samson {
                         if( !token_vector->popNextTokenIfItIs("]") )
                         {
                             delete main;
-                            error->set("Wrong index for vector");
+                            
+                            std::string token_content = token_vector->getNextTokenContent();
+                            error->set(au::str("Wrong index for vector. Expeted ] and found %s" , token_content.c_str() ));
                             return NULL;
                         }
                         
@@ -218,7 +259,7 @@ namespace samson {
                         if( !token_vector->popNextTokenIfItIs("]") )
                         {
                             delete main;
-                            error->set("Wrong index for vector");
+                            error->set("Wrong index for map");
                             return NULL;
                         }
                         
@@ -233,6 +274,29 @@ namespace samson {
                     
                 }
             }
+
+            // Negative numbers
+            
+            if( token->is("-") )
+            {
+                // Get next token that has to be a number
+                au::token::Token *next_token = token_vector->popToken();
+                if( !next_token )
+                {
+                    error->set( au::str("Extected a number after sign '-' but found nothing" ));
+                    return  NULL;
+                }
+                
+                if( !token->isNumber() )
+                {
+                    error->set( au::str("Extected a number after sign '-' but found %s" , token->content.c_str() ) );
+                    return NULL;
+                }
+                
+                
+                return new SourceNumberConstant( - atof( next_token->content.c_str() ) );
+                
+            }
             
             
             // ---------------------------------------------------------
@@ -243,5 +307,109 @@ namespace samson {
             else
                 return new SourceStringConstant( token->content );
         }
+            
+        Source *getSource( au::token::TokenVector* token_vector , au::ErrorManager* error )
+        {
+            
+            Source * source = NULL;
+            
+            while( true )
+            {
+                if( !source )
+                {
+                    source = getSingleSource( token_vector , error );
+                    if( !source || error->isActivated() )
+                        return NULL;
+                }
+                
+                // Check if there is something to continue "< > <= >= != + - * /
+                au::token::Token* token = token_vector->getNextToken();
+                if( !token )
+                    return source; // No more tokens
+                
+                
+                if( token->isComparator() )
+                {
+                    // Skip the comparator
+                    std::string comparator = token->content;
+                    token_vector->popToken();
+                    
+                    Source * _source = getSingleSource(token_vector, error);
+                    if( !_source || error->isActivated() )
+                    {
+                        delete source;
+                        return NULL;
+                    }
+                    
+                    // Source Comparision
+                    SourceCompare::Comparisson c = SourceCompare::comparition_from_string( comparator );
+                    source = new SourceCompare( source , _source , c );
+                    
+                    // Search for more operations...
+                    continue;
+                }
+
+                if( token->isOperation() )
+                {
+                    // Skip the comparator
+                    std::string operation_string = token->content;
+                    token_vector->popToken();
+                    
+                    Source * _source = getSingleSource(token_vector, error);
+                    if( !_source || error->isActivated() )
+                    {
+                        delete source;
+                        return NULL;
+                    }
+                    
+                    // Source Comparision
+                    SourceOperation::Operation o = SourceOperation::operation_from_string( operation_string );
+                    source = new SourceOperation( source , _source , o );
+                    
+                    // Search for more operations...
+                    continue;
+                }
+                
+                
+                if( token_vector->popNextTokenIfItIs("?") )
+                {
+                    
+                    Source * first_source = getSingleSource(token_vector, error);
+                    if( !first_source || error->isActivated() )
+                    {
+                        delete source;
+                        return NULL;
+                    }
+
+                    
+                    if( !token_vector->popNextTokenIfItIs(":") )
+                    {
+                        delete source;
+                        delete first_source;
+                        error->set( au::str("Statement '?' without ':'. Expected ':' but found %s" 
+                                            , token_vector->getNextTokenContent().c_str() ) );
+                        return NULL;
+                    }
+                    
+                    Source * second_source = getSingleSource(token_vector, error);
+                    if( !second_source || error->isActivated() )
+                    {
+                        delete source;
+                        return NULL;
+                    }
+
+                    // Create a source X ? X : X
+                    source = new SourceCompareSelector(source, first_source, second_source );
+                    
+                }
+                
+                
+                return source;
+                
+            }
+            
+        }
+            
+            
     }
 }

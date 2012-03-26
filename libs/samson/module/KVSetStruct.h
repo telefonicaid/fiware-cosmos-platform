@@ -22,6 +22,18 @@ namespace samson
 		KV**    kvs;			// Vector containing Key-values (pointers to row data and hash code)
 		size_t  num_kvs;		// Number of key-values	
 		
+        size_t kvs_with_equal_value( size_t pos )
+        {
+            if( pos >= num_kvs )
+                return 0;
+            
+            for ( size_t i = pos ; i < num_kvs ; i++ )
+                if( !kvs[i]->equal_value( kvs[pos] ) )
+                    return i - pos;
+            
+            return num_kvs - pos;
+        }
+        
 	} KVSetStruct;
 	
 	

@@ -26,6 +26,19 @@ namespace samson
         int value_size;     // Size of the value in bytes 
         
         int pos;  // Debuggin sort algorithm
+ 
+        
+        bool equal_value( KV* kv )
+        {
+            if( kv->value_size != value_size )
+                return false;
+            
+            for ( int i = 0 ; i < value_size ; i++ )
+                if( value[i] != kv->value[i] )
+                    return false;
+            
+            return true;
+        }
         
 	} KV;
 }

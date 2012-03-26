@@ -76,6 +76,37 @@ namespace au
             {
                 return (type == normal);
             }
+            
+            bool isOperation()
+            {
+                if( content == "+" )
+                    return true;
+                if( content == "-" )
+                    return true;
+                if( content == "*" )
+                    return true;
+                if( content == "/" )
+                    return true;
+                return false;
+            }
+            
+            bool isComparator()
+            {
+                if( content == "==" )
+                    return true;
+                if( content == "!=" )
+                    return true;
+                if( content == "<=" )
+                    return true;
+                if( content == ">=" )
+                    return true;
+                if( content == "<" )
+                    return true;
+                if( content == ">" )
+                    return true;
+                
+                return false;
+            }
 
             
         };
@@ -104,6 +135,9 @@ namespace au
             Token* getNextToken();
             Token* popToken();
                         
+            // Simple function to recover text ( to show error )
+            std::string getNextTokenContent();
+            
             bool popNextTokenIfItIs( std::string content );
             bool checkNextTokenIs( std::string content );
             bool checkNextNextTokenIs( std::string content );

@@ -17,6 +17,7 @@ namespace samson{
         
         class Value : public samson::DataInstance 
         {
+        public:
             
             // How data is serialized
             typedef enum 
@@ -80,6 +81,7 @@ namespace samson{
                 
             } SerialitzationCode;
             
+        private:
             
             // Value types ( on memory )
             typedef enum 
@@ -932,7 +934,125 @@ namespace samson{
             // Compare
             // ------------------------------------------------------------
 
-            inline int compare( const Value& other )
+            bool operator==(const Value &other) const 
+            {
+                return compare(other) == 0;
+            }
+            
+            bool operator!=(const Value &other) const 
+            {
+                return compare(other) != 0;
+            }
+
+            bool operator<=(const Value &other) const 
+            {
+                return compare(other) <= 0;
+            }
+            
+            bool operator>=(const Value &other) const 
+            {
+                return compare(other) >= 0;
+            }
+
+            bool operator<(const Value &other) const 
+            {
+                return compare(other) < 0;
+            }
+            
+            bool operator>(const Value &other) const 
+            {
+                return compare(other) > 0;
+            }
+            
+            const Value operator+(const Value &other) const 
+            {
+                Value result = *this;       // Make a copy of myself. 
+
+                
+                switch (value_type) 
+                {
+                    case value_number:
+                        result.set_double( getDouble() + other.getDouble() );
+                        break;
+                        
+                    case value_string:
+                        result.set_string( get_string() + other.get_string() );
+                        break;
+                        
+                    case value_void:
+                    case value_vector:
+                    case value_map:
+                        result.set_as_void();
+                        break;
+                }
+                return result;              // All done!
+            }
+
+            const Value operator-(const Value &other) const 
+            {
+                Value result = *this;       // Make a copy of myself. 
+                
+                switch (value_type) 
+                {
+                    case value_number:
+                        result.set_double( getDouble() - other.getDouble() );
+                        break;
+                        
+                    case value_string:
+                    case value_void:
+                    case value_vector:
+                    case value_map:
+                        result.set_as_void();
+                        break;
+                }
+                
+                return result;              // All done!
+            }
+
+            const Value operator*(const Value &other) const 
+            {
+                Value result = *this;       // Make a copy of myself. 
+                
+                switch (value_type) 
+                {
+                    case value_number:
+                        result.set_double( getDouble() * other.getDouble() );
+                        break;
+                        
+                    case value_string:
+                    case value_void:
+                    case value_vector:
+                    case value_map:
+                        result.set_as_void();
+                        break;
+                }
+                
+                return result;              // All done!
+            }
+
+            const Value operator/(const Value &other) const 
+            {
+                Value result = *this;       // Make a copy of myself. 
+                
+                switch (value_type) 
+                {
+                    case value_number:
+                        result.set_double( getDouble() / other.getDouble() );
+                        break;
+                        
+                    case value_string:
+                    case value_void:
+                    case value_vector:
+                    case value_map:
+                        result.set_as_void();
+                        break;
+                }
+                
+                return result;              // All done!
+            }
+
+            
+            inline int compare( const Value& other ) const
             {
                 
                 if( value_type != other.value_type )
@@ -1122,7 +1242,12 @@ namespace samson{
                     }
                         
                     case value_map:
-                        LM_X(1, ("Unimplemented"));
+                    {
+                        set_as_map();
+                        au::map<std::string,Value>::iterator it;
+                        for( it = other->_value_map.begin() ; it != other->_value_map.end() ; it++ )
+                            add_value_to_map(it->first)->copyFrom( it->second );
+                    }
                         break;
 
                 }
@@ -1132,8 +1257,8 @@ namespace samson{
             // ------------------------------------------------------------
             // STR Function 
             // ------------------------------------------------------------
-            
-            std::string str()
+
+            std::string str() 
             {
                 switch (value_type) 
                 {
@@ -1143,29 +1268,40 @@ namespace samson{
                     case value_number:
                     {
                         std::ostringstream output;
-                        output << "N:" << _value_double;
+                        output << _value_double;
                         return output.str();
                     }
                         
                     case value_string:
-                        return "S:\"" + _value_string + "\"";
+                        return "\"" + _value_string + "\"";
                         
                     case value_vector:
                     {
                         std::ostringstream output;
-                        output << "ValueVector [" << _value_vector.size() << "][ ";
+                        output << "[ ";
                         for( size_t i = 0 ; i < _value_vector.size() ; i++ )
                         {
                             output << _value_vector[i]->str();
-                            if( i < ( _value_vector.size()-1 ) )
-                                output << " , ";
+                            output << " ";
                         }
-                        output << " ]";
+                        output << "]";
                         return output.str();
                     }
                         
                     case value_map:
-                        LM_X(1, ("Unimplemented"));
+                    {
+                        std::ostringstream output;
+                        output << "{ ";
+                        au::map<std::string,Value>::iterator it;
+                        for( it = _value_map.begin() ; it != _value_map.end() ; it++ )
+                        {
+                            output << it->first << ":";
+                            output << it->second->str();
+                            output << " ";
+                        }
+                        output << "}";
+                        return output.str();
+                    }
 
                         
                 }
@@ -1177,10 +1313,62 @@ namespace samson{
             // ------------------------------------------------------------
             // JSON & XML Functions
             // ------------------------------------------------------------
-            
+
             std::string strJSON(std::string _varNameInternal)
             {
-                return "TO BE DEFINED";
+                return strJSON();
+            }
+            
+            std::string strJSON()
+            {
+                std::ostringstream output;
+                _strJSON( output );
+                return output.str();
+                
+            }
+            
+            void _strJSON( std::ostream &output )
+            {
+                switch (value_type) 
+                {
+                    case value_number:
+                        output << _value_double;
+                        break;
+                    case value_string:
+                        output << "\"" <<  _value_string << "\"";
+                        break;
+                    case value_vector:
+                        output << "[";
+                        for ( size_t i = 0 ; i < _value_vector.size() ; )
+                        {
+                            _value_vector[i]->_strJSON(output);
+                            i++;
+                            if ( i != _value_vector.size() )
+                                output << ",";
+                        }
+                        output << "]";
+                        break;
+                    case value_map:
+                    {
+                        output << "{";
+                        au::map<std::string,Value>::iterator it;
+                        for( it = _value_map.begin() ; it != _value_map.end() ; it++ )
+                        {
+                            if ( it != _value_map.begin() )
+                                output << ",";
+                            
+                            output << it->first << ":";
+                            it->second->_strJSON(output);
+
+                        }
+                        output << "}";
+                        break;
+                    }
+                    case value_void:
+                        output << "null";
+                        break;
+                }
+                
             }
             
             std::string strJSONInternal(std::string _varNameInternal, bool vectorMember)
@@ -1211,6 +1399,11 @@ namespace samson{
             // ----------------------------------------------------------------------------------------
             // Vector functions
             // ----------------------------------------------------------------------------------------
+            
+            bool isVector()
+            {
+                return value_type == value_vector;
+            }
             
             void clear_vector()
             {
@@ -1263,10 +1456,20 @@ namespace samson{
                     return _value_vector[pos];
             }
             
+            size_t get_vector_size()
+            {
+                return _value_vector.size();
+            }
+            
             // ----------------------------------------------------------------------------------------
             // Map functions
             // ----------------------------------------------------------------------------------------
             
+            bool isMap()
+            {
+                return value_type == value_vector;
+            }
+
             void clear_map()
             {
                 au::map<std::string,Value>::iterator it;
@@ -1302,6 +1505,12 @@ namespace samson{
             Value* get_value_from_map( std::string& key )
             {
                 return _value_map.findInMap(key);
+            }
+            
+            
+            std::vector<std::string> get_keys_from_map()
+            {
+                return _value_map.getKeysVector();
             }
             
             // ----------------------------------------------------------------------------------------
@@ -1487,17 +1696,17 @@ namespace samson{
             }
             
             
-            bool isNumber()
+            bool isNumber() const
             {
                 return ( value_type ==  value_number );
             }
 
-            bool isString()
+            bool isString() const
             {
                 return ( value_type ==  value_string );
             }
                         
-            double getDouble()
+            double getDouble() const
             {
                 switch ( value_type )
                 {
@@ -1507,7 +1716,7 @@ namespace samson{
                         return _value_double;
                         
                     case value_string:
-                        return 0;
+                        return atof(_value_string.c_str());
                         
                     case value_vector:
                     {
@@ -1525,7 +1734,7 @@ namespace samson{
                 return 0;
             }
             
-            std::string get_string()
+            std::string get_string() const
             {
                 switch ( value_type )
                 {
@@ -1559,6 +1768,77 @@ namespace samson{
                 // Convert this to string
                 convert_to_string();
                 _value_string.append( value->get_string() );
+            }
+        
+            
+            static const char * strSerialitzationCode( SerialitzationCode code )
+            {
+                switch (code) 
+                {
+                    case ser_void: return "ser_void";
+                        
+                    case ser_int_positive: return "ser_int_positive";
+                    case ser_int_negative: return "ser_int_negative";
+                    case ser_int_value_0: return "ser_int_value_0";
+                    case ser_int_value_1: return "ser_int_value_1";
+                    case ser_int_value_2: return "ser_int_value_2";
+                    case ser_int_value_3: return "ser_int_value_3";
+                    case ser_int_value_4: return "ser_int_value_4";
+                    case ser_int_value_5: return "ser_int_value_5";
+                    case ser_int_value_6: return "ser_int_value_6";
+                    case ser_int_value_7: return "ser_int_value_7";
+                    case ser_int_value_8: return "ser_int_value_8";
+                    case ser_int_value_9: return "ser_int_value_9";
+                    case ser_int_value_10: return"ser_int_value_10";
+                    case ser_int_value_minus_1: return "ser_int_value_minus_1";
+                        
+                    case ser_double_positive_1_decimal: return "ser_double_positive_1_decimal";
+                    case ser_double_positive_2_decimal: return "ser_double_positive_2_decimal";     
+                    case ser_double_positive_3_decimal: return "ser_double_positive_3_decimal";     
+                    case ser_double_positive_4_decimal: return "ser_double_positive_4_decimal";     
+                    case ser_double_positive_5_decimal: return "ser_double_positive_5_decimal";     
+                        
+                    case ser_double_negative_1_decimal: return "ser_double_negative_1_decimal";     
+                    case ser_double_negative_2_decimal: return "ser_double_negative_2_decimal";      
+                    case ser_double_negative_3_decimal: return "ser_double_negative_3_decimal";      
+                    case ser_double_negative_4_decimal: return "ser_double_negative_4_decimal";      
+                    case ser_double_negative_5_decimal: return "ser_double_negative_5_decimal";      
+                        
+                    case ser_double: return "ser_double";     
+                        
+                    case ser_string: return "string";
+                    case ser_string_smaz: return "string_smaz";
+                        
+                    case ser_vector: return "vector";
+                    case ser_vector_len_2: return "ser_vector_len_2";
+                    case ser_vector_len_3: return "ser_vector_len_3";
+                    case ser_vector_len_4: return "ser_vector_len_4";
+                    case ser_vector_len_5: return "ser_vector_len_5";
+                        
+                    case ser_map: return "ser_map";
+                    case ser_map_len_1: return "ser_map_len_1";
+                    case ser_map_len_2: return "ser_map_len_2";
+                    case ser_map_len_3: return "ser_map_len_3";
+                    case ser_map_len_4: return "ser_map_len_4";
+                    case ser_map_len_5: return "ser_map_len_5";
+                }
+                
+                return "Unknown";
+                
+            }
+            
+            
+            const char* strType()
+            {
+                switch (value_type) 
+                {
+                    case value_void: return "void";
+                    case value_string: return "string";
+                    case value_number: return "number";
+                    case value_vector: return "vector";
+                    case value_map: return "map";
+                }
+                return "Unknown";
             }
             
         };

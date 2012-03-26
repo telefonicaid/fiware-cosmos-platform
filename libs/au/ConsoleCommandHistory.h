@@ -33,13 +33,15 @@ public:
     void new_command();
   
     
-    std::string history_string()
+    std::string str_history( size_t limit )
     {
         std::ostringstream output;
 
         size_t pos = 0;
-        if ( commands.size() > 10 )
-            pos = commands.size() - 10;
+        
+        if( limit > 0 )
+            if ( commands.size() > limit )
+                pos = commands.size() - limit;
 
         for ( ; pos < commands.size() ; pos++)
             output << commands[pos]->getCommand() << "\n";

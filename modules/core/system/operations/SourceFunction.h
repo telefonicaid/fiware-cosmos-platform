@@ -6,6 +6,7 @@
 #include "au/vector.h"
 #include "au/StringComponents.h"
 #include "au/Tokenizer.h"
+#include "au/charset.h"
 
 #include <samson/module/samson.h>
 #include <samson/modules/system/Value.h>
@@ -22,19 +23,35 @@ namespace samson{
         {
             
             std::string name;
+            int min_num_arguments;
+            int max_num_arguments;
+            
         protected:
             
             au::vector<Source> input_sources;
-            samson::system::Value value; // output
             
         public:
+
+            // Static function to get an instance of SourceFunction
+            static SourceFunction* getSourceForFunction( std::string function_name 
+                                                        , au::vector<Source>& _input_sources 
+                                                        , au::ErrorManager * error );
             
-            static SourceFunction* getSourceForFunction( std::string function_name , au::vector<Source>& _input_sources ,au::ErrorManager * error );
             
-            
-            SourceFunction( std::string _name )
+            SourceFunction( std::string _name , int _min_num_arguments = 1 , int _max_num_arguments = 1000 )
             {
                 name = _name;
+                min_num_arguments = _min_num_arguments;
+                max_num_arguments = _max_num_arguments;
+            }
+
+            int getNumMinArguments()
+            {
+                return min_num_arguments;
+            }
+            int getNumMaxArguments()
+            {
+                return max_num_arguments;
             }
             
             void setInputSource( au::vector<Source>& _input_sources   )
@@ -55,12 +72,194 @@ namespace samson{
             
         };
         
-        class SourceFunctionisAlpha : public SourceFunction
+        // Functions to transform one value into one value
+        // Now accepts vector and maps ( all fields are processed )
+        
+        class OneToOne_SourceFunction : public SourceFunction
         {
+
+            // output for vector/map based outputs
+            samson::system::Value one_to_one_value; 
+
+        public:
+            
+            OneToOne_SourceFunction( std::string name ) : SourceFunction( name , 1 , 1 )
+            {
+                
+            }
+            
+            // Method to transform simple parameters
+            virtual samson::system::Value* individual_get( samson::system::Value* input )=0;
+            
+            
+            samson::system::Value* get( KeyValue kv )
+            {
+                // If no provided input, nothing can be done
+                if( input_sources.size() == 0 )
+                    return NULL;
+
+                // Take the first ( only one considered )
+                samson::system::Value *source_value = input_sources[0]->get(kv);
+                
+                if( !source_value )
+                    return NULL;
+
+                if( source_value->isVector() )
+                {
+                    // Create a vector transforming individual component
+                    one_to_one_value.set_as_vector();
+                    for( size_t i = 0 ; i < source_value->get_vector_size() ; i++ )
+                    {
+                        // value component
+                        samson::system::Value* input_component_value = source_value->get_value_from_vector(i);
+                        samson::system::Value *output_component_value = individual_get( input_component_value );
+                        
+                        if( !output_component_value )
+                            return  NULL; // If one of the components can not be transformed, not return anything
+ 
+                        one_to_one_value.add_value_to_vector()->copyFrom( output_component_value );
+                    }
+                    return &one_to_one_value;
+                }
+                else if( source_value->isMap() )
+                {
+                    // Create a map transforming individual component
+                    
+                    one_to_one_value.set_as_map();
+                    std::vector<std::string> keys = source_value->get_keys_from_map();
+                    for( size_t i = 0 ; i < keys.size() ; i++ )
+                    {
+                        // value component
+                        samson::system::Value* input_component_value = source_value->get_value_from_map( keys[i] ); 
+                        samson::system::Value *output_component_value = individual_get( input_component_value );
+                        
+                        if( !output_component_value )
+                            return  NULL; // If one of the components can not be transformed, not return anything
+                        
+                        one_to_one_value.add_value_to_map( keys[i] )->copyFrom( output_component_value );
+                    }
+                    return &one_to_one_value;
+                    return NULL;
+                }
+                else
+                {
+                    // Transform individual component
+                    return individual_get(source_value);
+                }
+            } 
+        };
+        
+        
+    
+        class String_OneToOne_SourceFunction : public OneToOne_SourceFunction
+        {
+            
+            std::string line;
             
         public:
             
-            SourceFunctionisAlpha() : SourceFunction( "isAlpha" )
+            String_OneToOne_SourceFunction( std::string name ) : OneToOne_SourceFunction( name )
+            {
+                
+            }
+            
+            samson::system::Value* individual_get( samson::system::Value* input )
+            {
+                if( !input->isString() )
+                    return  NULL;
+                
+                // Get the line to transform
+                line = input->get_string();
+                
+                // Transform to get an output
+                return get_from_string( line );
+            }
+            
+            // Unique method to implement for single parameter string operations
+            virtual samson::system::Value* get_from_string( std::string& input )=0;
+            
+        };
+        
+        
+        
+        
+        class SourceFunction_getSerialitzation : public SourceFunction
+        {
+            
+            char *buffer;
+            samson::system::Value value; 
+            
+        public:
+            
+            SourceFunction_getSerialitzation() : SourceFunction( "getSerialitzation" , 1 , 1 )
+            {
+                buffer = (char*) malloc( 64*1024*1024 );
+            }
+            
+            ~SourceFunction_getSerialitzation()
+            {
+                free( buffer );
+            }
+            
+            samson::system::Value* get( KeyValue kv )
+            {
+                if( input_sources.size() == 0 )
+                    return NULL;
+                
+                samson::system::Value *source_value = input_sources[0]->get(kv);
+                
+                if( !source_value )
+                    return NULL;
+
+                // Serialize in buffer
+                source_value->serialize( buffer );
+                
+                Value::SerialitzationCode code = (Value::SerialitzationCode) buffer[0];
+
+                value = Value::strSerialitzationCode( code );
+                
+                return &value;
+                
+            }            
+        };        
+
+        class SourceFunction_getType : public SourceFunction
+        {
+            
+            samson::system::Value value; 
+            
+        public:
+            
+            SourceFunction_getType() : SourceFunction( "getType" , 1 , 1 )
+            {
+            }
+            
+            samson::system::Value* get( KeyValue kv )
+            {
+                if( input_sources.size() == 0 )
+                    return NULL;
+                
+                samson::system::Value *source_value = input_sources[0]->get(kv);
+                
+                if( !source_value )
+                    return NULL;
+                
+                // Get the string describing the type
+                value = source_value->strType();
+                
+                return &value;
+                
+            }            
+        };          
+        
+        class SourceFunctionisAlpha : public SourceFunction
+        {
+            
+            samson::system::Value value; 
+            
+        public:
+            
+            SourceFunctionisAlpha() : SourceFunction( "isAlpha" , 1 , 1 )
             {
                 
             }
@@ -93,13 +292,19 @@ namespace samson{
             }            
         };
         
+        // -----------------------------------------------------------------
+        // SourceFunction_str 
+        //
+        //      Transform into a string
+        // -----------------------------------------------------------------
         
-        class SourceFunctionStr : public SourceFunction
+        class SourceFunction_string : public SourceFunction
         {
+            samson::system::Value value; 
             
         public:
             
-            SourceFunctionStr() : SourceFunction( "str" )
+            SourceFunction_string() : SourceFunction( "string" ) // Accepts N parameters concatenating all of them...
             {
                 
             }
@@ -108,7 +313,6 @@ namespace samson{
             {
                 if( input_sources.size() == 0 )
                     return NULL;
-                
                 
                 std::string str;
                 
@@ -123,52 +327,476 @@ namespace samson{
                 return &value;
             }            
         };
+
         
-        class SourceFunctionStrlen : public SourceFunction
+        // -----------------------------------------------------------------
+        // SourceFunction_substr 
+        //
+        //      Substring string, pos , pos
+        // -----------------------------------------------------------------
+        
+        class SourceFunction_substr : public SourceFunction
         {
+            samson::system::Value value; 
             
         public:
             
-            SourceFunctionStrlen() : SourceFunction( "strlen" )
+            SourceFunction_substr() : SourceFunction( "substr" , 2 , 3 )
             {
                 
             }
             
             samson::system::Value* get( KeyValue kv )
             {
-                // Lenght of the string...
                 if( input_sources.size() == 0 )
-                    return  NULL;
-                else if( input_sources.size() == 1 )
+                    return NULL;
+                
+                // Use only the first component
+                samson::system::Value *source_value = input_sources[0]->get(kv);
+                if( !source_value )
+                    return NULL;
+                
+                samson::system::Value *pos_value    = input_sources[1]->get(kv);
+                if( !pos_value )
+                    return NULL;
+                
+                samson::system::Value *length_value = NULL;
+                if( input_sources.size() > 2 )
                 {
-                    Value* v = input_sources[0]->get(  kv );
-                    if(!v)
+                    length_value = input_sources[2]->get(kv);
+                    if( !length_value )
                         return NULL;
-                    
-                    // Set the value
-                    value.set_double( v->get_string().length() );
+                }
+                
+                if( !source_value->isString() )
+                    return NULL;
+                if( !pos_value->isNumber() )
+                    return NULL;
+                if( length_value )
+                    if( !length_value->isNumber() )
+                        return NULL;
+                
+                
+                std::string input  = source_value->get_string();
+                size_t pos = pos_value->getDouble();
+                
+                if( length_value == NULL )
+                {
+                    std::string output = input.substr( pos );
+                    value.set_string( output );
+                    return &value;
                 }
                 else
                 {
-                    value.set_as_vector();
-                    for ( size_t i = 0 ; i < input_sources.size() ; i++ )
-                    {
-                        Value* v = input_sources[0]->get(  kv );
-                        if (v) 
-                            value.add_value_to_vector()->set_double( v->get_string().length() );
-                        else
-                            value.add_value_to_vector()->set_double( 0 );
-                    }
-                    
+                    size_t length = length_value->getDouble();
+                    std::string output = input.substr( pos , length );
+                    value.set_string( output );
+                    return &value;
                 }
-                
-                
-                return &value;
+            }            
+        };        
+        
+        
+        class SourceFunction_find : public SourceFunction
+        {
+            samson::system::Value value; 
+            
+        public:
+            
+            SourceFunction_find() : SourceFunction( "find" , 2 , 2 ) // find( string , "sub_string" )
+            {
                 
             }
             
+            samson::system::Value* get( KeyValue kv )
+            {
+                
+                // Use only the first component
+                samson::system::Value *main_value = input_sources[0]->get(kv);
+                samson::system::Value *sub_value = input_sources[1]->get(kv);
+
+                if( !main_value || !sub_value )
+                    return NULL;
+                
+
+                std::string main = main_value->get_string();
+                std::string sub = sub_value->get_string();
+                
+                size_t pos = main.find(sub);
+
+                if( pos == std::string::npos )
+                {
+                    value = -1;
+                    return &value;
+                }
+                else
+                {
+                    value = pos;
+                    return &value;
+                }
+                
+            }            
+        };   
+        
+        // -----------------------------------------------------------------
+        // SourceFunction_number 
+        //
+        //      Transform into a number
+        // -----------------------------------------------------------------
+        
+        class SourceFunction_number : public SourceFunction
+        {
+            samson::system::Value value; 
+            
+        public:
+            
+            SourceFunction_number() : SourceFunction( "number" , 1 , 1 )
+            {
+                
+            }
+            
+            samson::system::Value* get( KeyValue kv )
+            {
+                if( input_sources.size() == 0 )
+                    return NULL;
+                                
+                // Use only the first component
+                samson::system::Value *source_value = input_sources[0]->get(kv);
+
+                if( !source_value )
+                    return NULL;
+
+                value = source_value->getDouble();
+                return &value;
+            }            
         };
 
+        // -----------------------------------------------------------------
+        // SourceFunction_json 
+        //
+        //      Get a JSON string from an value
+        // -----------------------------------------------------------------
+        
+        class SourceFunction_json : public SourceFunction
+        {
+            samson::system::Value value; 
+            
+        public:
+            
+            SourceFunction_json() : SourceFunction( "json" , 1 , 1 )
+            {
+                
+            }
+            
+            samson::system::Value* get( KeyValue kv )
+            {
+                // Use only the first component
+                samson::system::Value *source_value = input_sources[0]->get(kv);
+                
+                if( !source_value )
+                    return NULL;
+                
+                value.set_string( source_value->strJSON() );
+                return &value;
+            }            
+        };
+
+        // -----------------------------------------------------------------
+        // SourceFunction_json 
+        //
+        //      Get a JSON string from an value
+        // -----------------------------------------------------------------
+        
+        class SourceFunction_str : public SourceFunction
+        {
+            samson::system::Value value; 
+            
+        public:
+            
+            SourceFunction_str() : SourceFunction( "str" , 1 , 1 )
+            {
+                
+            }
+            
+            samson::system::Value* get( KeyValue kv )
+            {
+                // Use only the first component
+                samson::system::Value *source_value = input_sources[0]->get(kv);
+                
+                if( !source_value )
+                    return NULL;
+                
+                value.set_string( source_value->str() );
+                return &value;
+            }            
+        };
+
+        // -----------------------------------------------------------------
+        // SourceFunction_time 
+        //
+        //      Get a time(NULL) number 
+        // -----------------------------------------------------------------
+        
+        class SourceFunction_time : public SourceFunction
+        {
+            samson::system::Value value; 
+            
+        public:
+            
+            SourceFunction_time() : SourceFunction( "time" , 0 , 0 )
+            {
+                
+            }
+            
+            samson::system::Value* get( KeyValue kv )
+            {
+                value.set_double( time(NULL) );
+                return &value;
+            }            
+        };        
+        
+        // -----------------------------------------------------------------
+        // SourceFunction_strlen
+        // -----------------------------------------------------------------
+        
+        class SourceFunction_strlen : public String_OneToOne_SourceFunction
+        {
+            samson::system::Value value; 
+        public:
+            
+            SourceFunction_strlen() : String_OneToOne_SourceFunction( "strlen" )
+            {
+            }
+            samson::system::Value* get_from_string( std::string& input )
+            {
+                value.set_double( input.length() );
+                return &value;
+            }
+        };
+
+        // -----------------------------------------------------------------
+        // SourceFunction_to_lower
+        // -----------------------------------------------------------------
+
+        class SourceFunction_to_lower : public SourceFunction
+        {
+            samson::system::Value value; 
+            
+            char *line;
+            int max_line_size;
+            
+        public:
+            
+            SourceFunction_to_lower() : SourceFunction( "to_lower" , 1 , 1 )
+            {
+                max_line_size = 0;
+            }
+            
+            ~SourceFunction_to_lower()
+            {
+                if( line ) 
+                    free( line );
+            }
+            
+            samson::system::Value* get( KeyValue kv )
+            {
+                samson::system::Value *source_value = input_sources[0]->get(kv);
+                
+                if( ( !source_value ) || !source_value->isString() )
+                    return NULL;
+                
+                // Recover the input string
+                std::string _input_line = source_value->get_string();
+                const char * input_line = _input_line.c_str();
+                int input_line_size = _input_line.length();
+                 
+                if( max_line_size < (input_line_size + 1) )
+                {
+                    if( line ) 
+                        free(line);
+                   
+                    // Init value
+                    if( max_line_size == 0 )
+                        max_line_size = 1;
+                    
+                    while( max_line_size < (input_line_size + 1) )
+                        max_line_size *=2;
+                    
+                    line = (char*) malloc( max_line_size );
+                }
+                
+                for ( int i = 0 ; i < input_line_size ; i++ )
+                    line[i] =  au::iso_8859_to_lower( input_line[i] );
+
+                line[input_line_size] = 0;
+                
+                value = line;
+                return &value;
+            }
+        };
+            
+            
+        // -----------------------------------------------------------------
+        // SourceFunction_to_upper
+        // -----------------------------------------------------------------
+        
+        class SourceFunction_to_upper : public SourceFunction
+        {
+            samson::system::Value value; 
+            
+            char *line;
+            int max_line_size;
+            
+        public:
+            
+            SourceFunction_to_upper() : SourceFunction( "to_upper" , 1 , 1 )
+            {
+                max_line_size = 0;
+            }
+            
+            ~SourceFunction_to_upper()
+            {
+                if( line )
+                    free( line );
+            }
+            
+            samson::system::Value* get( KeyValue kv )
+            {
+                samson::system::Value *source_value = input_sources[0]->get(kv);
+                
+                if( ( !source_value ) || !source_value->isString() )
+                    return NULL;
+                
+                // Recover the input string
+                std::string _input_line = source_value->get_string();
+                const char * input_line = _input_line.c_str();
+                int input_line_size = _input_line.length();
+                
+                    if( max_line_size < (input_line_size + 1) )
+                    {
+                        if( line ) 
+                            free(line);
+                        
+                        // Init value
+                        if( max_line_size == 0 )
+                            max_line_size = 1;
+                        
+                        while( max_line_size < (input_line_size + 1) )
+                            max_line_size *=2;
+                        
+                        line = (char*) malloc( max_line_size );
+                    }
+                
+                for ( int i = 0 ; i < input_line_size ; i++ )
+                    line[i] =  au::iso_8859_to_upper( input_line[i] );
+                line[input_line_size] = 0;
+                
+                value = line;
+                return &value;
+            }            
+            
+        };
+        
+        
+        // -----------------------------------------------------------------
+        // SourceFunctionManager 
+        //
+        // Manager for all source functions
+        // -----------------------------------------------------------------
+
+        typedef SourceFunction*(*factory_SourceFunction)();        
+        
+        template<class C>
+        SourceFunction* factory_SourceFunction_impl()
+        {
+            return new C();
+        }
+
+        class SourceFunctionManager
+        {
+            std::map<std::string, factory_SourceFunction> factories;
+            
+        public:
+            
+            SourceFunctionManager()
+            {
+                // String functions
+                add<SourceFunction_strlen>("strlen");
+                add<SourceFunction_substr>("substr");
+                add<SourceFunction_find>("find");
+                add<SourceFunction_to_lower>("to_lower");
+                add<SourceFunction_to_upper>("to_upper");
+
+                // Output strings
+                add<SourceFunction_json>("json");
+                add<SourceFunction_str>( "str" );
+                
+                // Transform into something
+                add<SourceFunction_string>( "string" );
+                add<SourceFunction_number>( "number" );
+                
+                // Check properties
+                add<SourceFunctionisAlpha>( "isAlpha");
+
+                // Get information about type and serialitzation of the value
+                add<SourceFunction_getType>("getType");
+                add<SourceFunction_getSerialitzation>( "getSerialitzation");
+                
+                
+            }
+            
+            template<class C>
+            void add( std::string name )
+            {
+                factories.insert( std::pair<std::string, factory_SourceFunction>(name, factory_SourceFunction_impl<C>));
+            }
+            
+            SourceFunction* getInstance( std::string name, au::vector<Source>& input_sources ,au::ErrorManager * error )
+            {
+                // Find in map
+                std::map<std::string, factory_SourceFunction>::iterator it_factories;
+                it_factories = factories.find(name);
+                
+                if( it_factories == factories.end() )
+                {
+                    error->set( au::str("Function %s not found" , name.c_str() ));
+                    return NULL;
+                }
+                
+                SourceFunction* source_function = it_factories->second();
+                
+                int num_arguments = (int) input_sources.size();
+                int min_num_arguments = source_function->getNumMinArguments();
+                int max_num_arguments = source_function->getNumMaxArguments();
+                
+                if( num_arguments < min_num_arguments )
+                {
+                    delete source_function;
+                    error->set( au::str("Function %s requires at least %d parameters. Only %d provded" 
+                                        , name.c_str() 
+                                        , min_num_arguments
+                                        , num_arguments ));
+                    return NULL;
+                }
+                
+                if( num_arguments > max_num_arguments )
+                {
+                    delete source_function;
+                    error->set( au::str("Function %s cannot accepts more than %d parameters. Provided %d arguments" 
+                                        , name.c_str() 
+                                        , min_num_arguments 
+                                        , num_arguments ));
+                    return NULL;
+                }
+                
+                source_function->setInputSource( input_sources );
+                return source_function;
+            }
+            
+        };
+        
+        
+        
     }
 }
 

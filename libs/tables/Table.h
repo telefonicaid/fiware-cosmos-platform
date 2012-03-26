@@ -102,7 +102,11 @@ public:
     
 private:
     
-    std::string line( std::vector<size_t> &length );
+    std::string top_line( std::vector<size_t> &length );
+    std::string top_line2( std::vector<size_t> &length );
+    std::string bottom_line( std::vector<size_t> &length );
+    std::string line( std::vector<size_t> &length   );
+    
     std::string string_length( std::string value , int width , bool left );
   
     size_t getMaxWidthForColumn( size_t c )

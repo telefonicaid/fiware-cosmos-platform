@@ -22,9 +22,8 @@ class Command(BaseCommand):
         updated = 0
         try:
             for job in Job.objects.all():
-                if job.execution_id is not None:
-                    status = CLUSTER.getJobStatus(job.execution_id)
-                    job.status = status
+                if job.status == Job.RUNNING:
+                    job.status = CLUSTER.getJobStatus(job.execution_id)
                     job.save()
                     updated += 1
             self.stdout.write("%d updates\n" % updated)

@@ -25,28 +25,31 @@ LOGGER = logging.getLogger(__name__)
 class ClusterHandler:
     
     def __init__(self):
-        pass
+        self.copyToHdfsCalls = []
 
     def copyToHdfs(self, src_path, dest_path):
+        self.copyToHdfsCalls.append([src_path, dest_path])
         LOGGER.info("Fake copy from %s to %s" % (src_path, dest_path))
 
-class FakeServer(TServer.TSimpleServer):
+class FakeServer(threading.Thread, TServer.TSimpleServer):
     """
     Fake server whose only purpose is logging API calls.
+    Extends Thread to be able to run in the background.
 
     """
 
     def __init__(self, host, port):
-        socket = TSocket.TServerSocket(host, port)
+        super(FakeServer, self).__init__()
         # Old-style super-constructor invocation
+        self.handler = ClusterHandler()
         TServer.TSimpleServer.__init__(self,
-            Processor(ClusterHandler()),
-            socket,
+            Processor(self.handler),
+            TSocket.TServerSocket(host, port),
             TTransport.TBufferedTransportFactory(),
             TBinaryProtocol.TBinaryProtocolFactory())
         self.stopEvent = threading.Event()
 
-    def serve(self):
+    def run(self):
         self.serverTransport.listen()
         self.serverTransport.handle.settimeout(1000)
         while not self.stopEvent.is_set():
@@ -68,20 +71,4 @@ class FakeServer(TServer.TSimpleServer):
 
     def stop(self):
         self.stopEvent.set()
-
-class BackgroundFakeServer(threading.Thread):
-    """
-    Fake server running in a background thread.
-
-    """
-
-    def __init__(self, host, port):
-        super(BackgroundFakeServer, self).__init__()
-        self.server = FakeServer(host, port)
-
-    def run(self):
-        self.server.serve()
-
-    def stop(self):
-        self.server.stop()
         self.join()

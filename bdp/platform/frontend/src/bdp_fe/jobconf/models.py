@@ -107,8 +107,7 @@ class JobModel(models.Model):
 
     def start(self, cluster):
 	"""Returns an integer execution id or None"""
-        LOGGER.error("Should not invoke JobModel#start")
-        return None
+        raise NotImplementedError("Should not invoke JobModel#start")
 
 
 class CustomJobModel(JobModel):

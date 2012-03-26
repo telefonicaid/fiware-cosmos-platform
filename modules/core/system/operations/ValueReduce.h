@@ -364,7 +364,7 @@ namespace samson{
 
                     if( !value.isVector() )
                         continue;
-                    if( !value.get_vector_size() != 2 )
+                    if( value.get_vector_size() != 2 )
                         continue;
                     
                     int counter = value.get_value_from_vector(1)->getDouble();

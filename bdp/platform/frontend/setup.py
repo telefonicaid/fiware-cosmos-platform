@@ -17,6 +17,7 @@ setup(
     install_requires = [
         'setuptools',
         'pymongo',
+        'thrift',
         #'django',
         ],
     entry_points = {

@@ -14,6 +14,6 @@ class JobAdmin(admin.ModelAdmin):
     inlines = [
         JobModelAdmin,
     ]
-    ordering = ('name',)
+    ordering = ('id', 'name',)
 
 admin.site.register(Job, JobAdmin)

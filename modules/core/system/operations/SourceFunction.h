@@ -589,6 +589,7 @@ namespace samson{
             
             SourceFunction_to_lower() : SourceFunction( "to_lower" , 1 , 1 )
             {
+                line = NULL;
                 max_line_size = 0;
             }
             
@@ -607,6 +608,7 @@ namespace samson{
                 
                 // Recover the input string
                 std::string _input_line = source_value->get_string();
+                
                 const char * input_line = _input_line.c_str();
                 int input_line_size = _input_line.length();
                  
@@ -652,6 +654,7 @@ namespace samson{
             SourceFunction_to_upper() : SourceFunction( "to_upper" , 1 , 1 )
             {
                 max_line_size = 0;
+                line = NULL;
             }
             
             ~SourceFunction_to_upper()

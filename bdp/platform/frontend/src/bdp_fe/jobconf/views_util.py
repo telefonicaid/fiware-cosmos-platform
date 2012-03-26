@@ -2,12 +2,13 @@
 Utility functions for controllers.
 
 """
+from bdp_fe.jobconf.models import Job
+from bdp_fe.middleware403 import Http403
+from django.conf import settings
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404
+from models import CustomJobModel
 from pymongo import Connection
-
-from bdp_fe.middleware403 import Http403
-from bdp_fe.jobconf.models import Job
 
 def safe_int_param(query_dict, param_name, default_value=None):
     """
@@ -19,7 +20,6 @@ def safe_int_param(query_dict, param_name, default_value=None):
         return int(query_dict.get(param_name, ''))
     except ValueError:
         return default_value
-
 
 def get_owned_job_or_40x(request, job_id):
     try:
@@ -55,11 +55,14 @@ class MongoRecord(object):
 
 def retrieve_results(job_id, primary_key):
     ans = []
-    ## TODO: make configurable
-    connection = Connection('localhost', 27017)
-    db = connection.test_database
-    job_results = db.test_collection
-    for job_result in job_results.find({"job_id" : job_id}):
+    jobmodel = CustomJobModel.objects.get(id=job_id)
+    mongo_url = jobmodel.mongo_url()
+    mongo_db = jobmodel.job.user.username
+    mongo_collection = 'job_%s' % jobmodel.job.id
+    connection = Connection(mongo_url)
+    db = connection[mongo_db]
+    job_results = db[mongo_collection]
+    for job_result in job_results.find():
         mongo_result = MongoRecord(job_result, primary_key)
         ans.append(mongo_result)
     return ans

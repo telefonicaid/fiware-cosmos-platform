@@ -33,9 +33,9 @@ public class Cluster {
 
     public void copyToHdfs(String srcPath, String destPath) throws TransferException, org.apache.thrift.TException;
 
-    public String runJob(String jarPath, String inputPath, String outputPath, String mongoUrl) throws org.apache.thrift.TException;
+    public String runJob(String jarPath, String inputPath, String outputPath, String mongoUrl) throws TransferException, org.apache.thrift.TException;
 
-    public ClusterJobStatus getJobStatus(String jobId) throws org.apache.thrift.TException;
+    public ClusterJobStatus getJobStatus(String jobId) throws TransferException, org.apache.thrift.TException;
 
   }
 
@@ -93,7 +93,7 @@ public class Cluster {
       return;
     }
 
-    public String runJob(String jarPath, String inputPath, String outputPath, String mongoUrl) throws org.apache.thrift.TException
+    public String runJob(String jarPath, String inputPath, String outputPath, String mongoUrl) throws TransferException, org.apache.thrift.TException
     {
       send_runJob(jarPath, inputPath, outputPath, mongoUrl);
       return recv_runJob();
@@ -109,17 +109,20 @@ public class Cluster {
       sendBase("runJob", args);
     }
 
-    public String recv_runJob() throws org.apache.thrift.TException
+    public String recv_runJob() throws TransferException, org.apache.thrift.TException
     {
       runJob_result result = new runJob_result();
       receiveBase(result, "runJob");
       if (result.isSetSuccess()) {
         return result.success;
       }
+      if (result.ex != null) {
+        throw result.ex;
+      }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "runJob failed: unknown result");
     }
 
-    public ClusterJobStatus getJobStatus(String jobId) throws org.apache.thrift.TException
+    public ClusterJobStatus getJobStatus(String jobId) throws TransferException, org.apache.thrift.TException
     {
       send_getJobStatus(jobId);
       return recv_getJobStatus();
@@ -132,12 +135,15 @@ public class Cluster {
       sendBase("getJobStatus", args);
     }
 
-    public ClusterJobStatus recv_getJobStatus() throws org.apache.thrift.TException
+    public ClusterJobStatus recv_getJobStatus() throws TransferException, org.apache.thrift.TException
     {
       getJobStatus_result result = new getJobStatus_result();
       receiveBase(result, "getJobStatus");
       if (result.isSetSuccess()) {
         return result.success;
+      }
+      if (result.ex != null) {
+        throw result.ex;
       }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getJobStatus failed: unknown result");
     }
@@ -226,7 +232,7 @@ public class Cluster {
         prot.writeMessageEnd();
       }
 
-      public String getResult() throws org.apache.thrift.TException {
+      public String getResult() throws TransferException, org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -258,7 +264,7 @@ public class Cluster {
         prot.writeMessageEnd();
       }
 
-      public ClusterJobStatus getResult() throws org.apache.thrift.TException {
+      public ClusterJobStatus getResult() throws TransferException, org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
@@ -318,7 +324,11 @@ public class Cluster {
 
       protected runJob_result getResult(I iface, runJob_args args) throws org.apache.thrift.TException {
         runJob_result result = new runJob_result();
-        result.success = iface.runJob(args.jarPath, args.inputPath, args.outputPath, args.mongoUrl);
+        try {
+          result.success = iface.runJob(args.jarPath, args.inputPath, args.outputPath, args.mongoUrl);
+        } catch (TransferException ex) {
+          result.ex = ex;
+        }
         return result;
       }
     }
@@ -334,7 +344,11 @@ public class Cluster {
 
       protected getJobStatus_result getResult(I iface, getJobStatus_args args) throws org.apache.thrift.TException {
         getJobStatus_result result = new getJobStatus_result();
-        result.success = iface.getJobStatus(args.jobId);
+        try {
+          result.success = iface.getJobStatus(args.jobId);
+        } catch (TransferException ex) {
+          result.ex = ex;
+        }
         return result;
       }
     }
@@ -1806,6 +1820,7 @@ public class Cluster {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("runJob_result");
 
     private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRING, (short)0);
+    private static final org.apache.thrift.protocol.TField EX_FIELD_DESC = new org.apache.thrift.protocol.TField("ex", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -1814,10 +1829,12 @@ public class Cluster {
     }
 
     public String success; // required
+    public TransferException ex; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      SUCCESS((short)0, "success");
+      SUCCESS((short)0, "success"),
+      EX((short)1, "ex");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -1834,6 +1851,8 @@ public class Cluster {
         switch(fieldId) {
           case 0: // SUCCESS
             return SUCCESS;
+          case 1: // EX
+            return EX;
           default:
             return null;
         }
@@ -1879,6 +1898,8 @@ public class Cluster {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.EX, new org.apache.thrift.meta_data.FieldMetaData("ex", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(runJob_result.class, metaDataMap);
     }
@@ -1887,10 +1908,12 @@ public class Cluster {
     }
 
     public runJob_result(
-      String success)
+      String success,
+      TransferException ex)
     {
       this();
       this.success = success;
+      this.ex = ex;
     }
 
     /**
@@ -1899,6 +1922,9 @@ public class Cluster {
     public runJob_result(runJob_result other) {
       if (other.isSetSuccess()) {
         this.success = other.success;
+      }
+      if (other.isSetEx()) {
+        this.ex = new TransferException(other.ex);
       }
     }
 
@@ -1909,6 +1935,7 @@ public class Cluster {
     @Override
     public void clear() {
       this.success = null;
+      this.ex = null;
     }
 
     public String getSuccess() {
@@ -1935,6 +1962,30 @@ public class Cluster {
       }
     }
 
+    public TransferException getEx() {
+      return this.ex;
+    }
+
+    public runJob_result setEx(TransferException ex) {
+      this.ex = ex;
+      return this;
+    }
+
+    public void unsetEx() {
+      this.ex = null;
+    }
+
+    /** Returns true if field ex is set (has been assigned a value) and false otherwise */
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setExIsSet(boolean value) {
+      if (!value) {
+        this.ex = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case SUCCESS:
@@ -1945,6 +1996,14 @@ public class Cluster {
         }
         break;
 
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((TransferException)value);
+        }
+        break;
+
       }
     }
 
@@ -1952,6 +2011,9 @@ public class Cluster {
       switch (field) {
       case SUCCESS:
         return getSuccess();
+
+      case EX:
+        return getEx();
 
       }
       throw new IllegalStateException();
@@ -1966,6 +2028,8 @@ public class Cluster {
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
+      case EX:
+        return isSetEx();
       }
       throw new IllegalStateException();
     }
@@ -1989,6 +2053,15 @@ public class Cluster {
         if (!(this_present_success && that_present_success))
           return false;
         if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
+      if (this_present_ex || that_present_ex) {
+        if (!(this_present_ex && that_present_ex))
+          return false;
+        if (!this.ex.equals(that.ex))
           return false;
       }
 
@@ -2018,6 +2091,16 @@ public class Cluster {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEx()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ex, typedOther.ex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -2043,6 +2126,14 @@ public class Cluster {
         sb.append("null");
       } else {
         sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
       }
       first = false;
       sb.append(")");
@@ -2095,6 +2186,15 @@ public class Cluster {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
+            case 1: // EX
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.ex = new TransferException();
+                struct.ex.read(iprot);
+                struct.setExIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -2113,6 +2213,11 @@ public class Cluster {
         if (struct.success != null) {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           oprot.writeString(struct.success);
+          oprot.writeFieldEnd();
+        }
+        if (struct.ex != null) {
+          oprot.writeFieldBegin(EX_FIELD_DESC);
+          struct.ex.write(oprot);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -2136,19 +2241,30 @@ public class Cluster {
         if (struct.isSetSuccess()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetEx()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
         if (struct.isSetSuccess()) {
           oprot.writeString(struct.success);
+        }
+        if (struct.isSetEx()) {
+          struct.ex.write(oprot);
         }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, runJob_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
+        BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           struct.success = iprot.readString();
           struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.ex = new TransferException();
+          struct.ex.read(iprot);
+          struct.setExIsSet(true);
         }
       }
     }
@@ -2512,6 +2628,7 @@ public class Cluster {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getJobStatus_result");
 
     private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.I32, (short)0);
+    private static final org.apache.thrift.protocol.TField EX_FIELD_DESC = new org.apache.thrift.protocol.TField("ex", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -2524,6 +2641,7 @@ public class Cluster {
      * @see ClusterJobStatus
      */
     public ClusterJobStatus success; // required
+    public TransferException ex; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -2531,7 +2649,8 @@ public class Cluster {
        * 
        * @see ClusterJobStatus
        */
-      SUCCESS((short)0, "success");
+      SUCCESS((short)0, "success"),
+      EX((short)1, "ex");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -2548,6 +2667,8 @@ public class Cluster {
         switch(fieldId) {
           case 0: // SUCCESS
             return SUCCESS;
+          case 1: // EX
+            return EX;
           default:
             return null;
         }
@@ -2593,6 +2714,8 @@ public class Cluster {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, ClusterJobStatus.class)));
+      tmpMap.put(_Fields.EX, new org.apache.thrift.meta_data.FieldMetaData("ex", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getJobStatus_result.class, metaDataMap);
     }
@@ -2601,10 +2724,12 @@ public class Cluster {
     }
 
     public getJobStatus_result(
-      ClusterJobStatus success)
+      ClusterJobStatus success,
+      TransferException ex)
     {
       this();
       this.success = success;
+      this.ex = ex;
     }
 
     /**
@@ -2613,6 +2738,9 @@ public class Cluster {
     public getJobStatus_result(getJobStatus_result other) {
       if (other.isSetSuccess()) {
         this.success = other.success;
+      }
+      if (other.isSetEx()) {
+        this.ex = new TransferException(other.ex);
       }
     }
 
@@ -2623,6 +2751,7 @@ public class Cluster {
     @Override
     public void clear() {
       this.success = null;
+      this.ex = null;
     }
 
     /**
@@ -2657,6 +2786,30 @@ public class Cluster {
       }
     }
 
+    public TransferException getEx() {
+      return this.ex;
+    }
+
+    public getJobStatus_result setEx(TransferException ex) {
+      this.ex = ex;
+      return this;
+    }
+
+    public void unsetEx() {
+      this.ex = null;
+    }
+
+    /** Returns true if field ex is set (has been assigned a value) and false otherwise */
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setExIsSet(boolean value) {
+      if (!value) {
+        this.ex = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case SUCCESS:
@@ -2667,6 +2820,14 @@ public class Cluster {
         }
         break;
 
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((TransferException)value);
+        }
+        break;
+
       }
     }
 
@@ -2674,6 +2835,9 @@ public class Cluster {
       switch (field) {
       case SUCCESS:
         return getSuccess();
+
+      case EX:
+        return getEx();
 
       }
       throw new IllegalStateException();
@@ -2688,6 +2852,8 @@ public class Cluster {
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
+      case EX:
+        return isSetEx();
       }
       throw new IllegalStateException();
     }
@@ -2711,6 +2877,15 @@ public class Cluster {
         if (!(this_present_success && that_present_success))
           return false;
         if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
+      if (this_present_ex || that_present_ex) {
+        if (!(this_present_ex && that_present_ex))
+          return false;
+        if (!this.ex.equals(that.ex))
           return false;
       }
 
@@ -2740,6 +2915,16 @@ public class Cluster {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEx()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ex, typedOther.ex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -2765,6 +2950,14 @@ public class Cluster {
         sb.append("null");
       } else {
         sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
       }
       first = false;
       sb.append(")");
@@ -2817,6 +3010,15 @@ public class Cluster {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
+            case 1: // EX
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.ex = new TransferException();
+                struct.ex.read(iprot);
+                struct.setExIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -2835,6 +3037,11 @@ public class Cluster {
         if (struct.success != null) {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           oprot.writeI32(struct.success.getValue());
+          oprot.writeFieldEnd();
+        }
+        if (struct.ex != null) {
+          oprot.writeFieldBegin(EX_FIELD_DESC);
+          struct.ex.write(oprot);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -2858,19 +3065,30 @@ public class Cluster {
         if (struct.isSetSuccess()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetEx()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
         if (struct.isSetSuccess()) {
           oprot.writeI32(struct.success.getValue());
+        }
+        if (struct.isSetEx()) {
+          struct.ex.write(oprot);
         }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, getJobStatus_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
+        BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           struct.success = ClusterJobStatus.findByValue(iprot.readI32());
           struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.ex = new TransferException();
+          struct.ex.read(iprot);
+          struct.setExIsSet(true);
         }
       }
     }

@@ -39,11 +39,19 @@ public class TransferException extends Exception implements org.apache.thrift.TB
     schemes.put(TupleScheme.class, new TransferExceptionTupleSchemeFactory());
   }
 
-  public int errorCode; // required
+  /**
+   * 
+   * @see ClusterErrorCode
+   */
+  public ClusterErrorCode errorCode; // required
   public String errorMsg; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * 
+     * @see ClusterErrorCode
+     */
     ERROR_CODE((short)1, "errorCode"),
     ERROR_MSG((short)2, "errorMsg");
 
@@ -104,13 +112,11 @@ public class TransferException extends Exception implements org.apache.thrift.TB
   }
 
   // isset id assignments
-  private static final int __ERRORCODE_ISSET_ID = 0;
-  private BitSet __isset_bit_vector = new BitSet(1);
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ERROR_CODE, new org.apache.thrift.meta_data.FieldMetaData("errorCode", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, ClusterErrorCode.class)));
     tmpMap.put(_Fields.ERROR_MSG, new org.apache.thrift.meta_data.FieldMetaData("errorMsg", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -121,12 +127,11 @@ public class TransferException extends Exception implements org.apache.thrift.TB
   }
 
   public TransferException(
-    int errorCode,
+    ClusterErrorCode errorCode,
     String errorMsg)
   {
     this();
     this.errorCode = errorCode;
-    setErrorCodeIsSet(true);
     this.errorMsg = errorMsg;
   }
 
@@ -134,9 +139,9 @@ public class TransferException extends Exception implements org.apache.thrift.TB
    * Performs a deep copy on <i>other</i>.
    */
   public TransferException(TransferException other) {
-    __isset_bit_vector.clear();
-    __isset_bit_vector.or(other.__isset_bit_vector);
-    this.errorCode = other.errorCode;
+    if (other.isSetErrorCode()) {
+      this.errorCode = other.errorCode;
+    }
     if (other.isSetErrorMsg()) {
       this.errorMsg = other.errorMsg;
     }
@@ -148,32 +153,40 @@ public class TransferException extends Exception implements org.apache.thrift.TB
 
   @Override
   public void clear() {
-    setErrorCodeIsSet(false);
-    this.errorCode = 0;
+    this.errorCode = null;
     this.errorMsg = null;
   }
 
-  public int getErrorCode() {
+  /**
+   * 
+   * @see ClusterErrorCode
+   */
+  public ClusterErrorCode getErrorCode() {
     return this.errorCode;
   }
 
-  public TransferException setErrorCode(int errorCode) {
+  /**
+   * 
+   * @see ClusterErrorCode
+   */
+  public TransferException setErrorCode(ClusterErrorCode errorCode) {
     this.errorCode = errorCode;
-    setErrorCodeIsSet(true);
     return this;
   }
 
   public void unsetErrorCode() {
-    __isset_bit_vector.clear(__ERRORCODE_ISSET_ID);
+    this.errorCode = null;
   }
 
   /** Returns true if field errorCode is set (has been assigned a value) and false otherwise */
   public boolean isSetErrorCode() {
-    return __isset_bit_vector.get(__ERRORCODE_ISSET_ID);
+    return this.errorCode != null;
   }
 
   public void setErrorCodeIsSet(boolean value) {
-    __isset_bit_vector.set(__ERRORCODE_ISSET_ID, value);
+    if (!value) {
+      this.errorCode = null;
+    }
   }
 
   public String getErrorMsg() {
@@ -206,7 +219,7 @@ public class TransferException extends Exception implements org.apache.thrift.TB
       if (value == null) {
         unsetErrorCode();
       } else {
-        setErrorCode((Integer)value);
+        setErrorCode((ClusterErrorCode)value);
       }
       break;
 
@@ -224,7 +237,7 @@ public class TransferException extends Exception implements org.apache.thrift.TB
   public Object getFieldValue(_Fields field) {
     switch (field) {
     case ERROR_CODE:
-      return Integer.valueOf(getErrorCode());
+      return getErrorCode();
 
     case ERROR_MSG:
       return getErrorMsg();
@@ -261,12 +274,12 @@ public class TransferException extends Exception implements org.apache.thrift.TB
     if (that == null)
       return false;
 
-    boolean this_present_errorCode = true;
-    boolean that_present_errorCode = true;
+    boolean this_present_errorCode = true && this.isSetErrorCode();
+    boolean that_present_errorCode = true && that.isSetErrorCode();
     if (this_present_errorCode || that_present_errorCode) {
       if (!(this_present_errorCode && that_present_errorCode))
         return false;
-      if (this.errorCode != that.errorCode)
+      if (!this.errorCode.equals(that.errorCode))
         return false;
     }
 
@@ -336,7 +349,11 @@ public class TransferException extends Exception implements org.apache.thrift.TB
     boolean first = true;
 
     sb.append("errorCode:");
-    sb.append(this.errorCode);
+    if (this.errorCode == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.errorCode);
+    }
     first = false;
     if (!first) sb.append(", ");
     sb.append("errorMsg:");
@@ -390,7 +407,7 @@ public class TransferException extends Exception implements org.apache.thrift.TB
         switch (schemeField.id) {
           case 1: // ERROR_CODE
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.errorCode = iprot.readI32();
+              struct.errorCode = ClusterErrorCode.findByValue(iprot.readI32());
               struct.setErrorCodeIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -419,9 +436,11 @@ public class TransferException extends Exception implements org.apache.thrift.TB
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldBegin(ERROR_CODE_FIELD_DESC);
-      oprot.writeI32(struct.errorCode);
-      oprot.writeFieldEnd();
+      if (struct.errorCode != null) {
+        oprot.writeFieldBegin(ERROR_CODE_FIELD_DESC);
+        oprot.writeI32(struct.errorCode.getValue());
+        oprot.writeFieldEnd();
+      }
       if (struct.errorMsg != null) {
         oprot.writeFieldBegin(ERROR_MSG_FIELD_DESC);
         oprot.writeString(struct.errorMsg);
@@ -453,7 +472,7 @@ public class TransferException extends Exception implements org.apache.thrift.TB
       }
       oprot.writeBitSet(optionals, 2);
       if (struct.isSetErrorCode()) {
-        oprot.writeI32(struct.errorCode);
+        oprot.writeI32(struct.errorCode.getValue());
       }
       if (struct.isSetErrorMsg()) {
         oprot.writeString(struct.errorMsg);
@@ -465,7 +484,7 @@ public class TransferException extends Exception implements org.apache.thrift.TB
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
-        struct.errorCode = iprot.readI32();
+        struct.errorCode = ClusterErrorCode.findByValue(iprot.readI32());
         struct.setErrorCodeIsSet(true);
       }
       if (incoming.get(1)) {

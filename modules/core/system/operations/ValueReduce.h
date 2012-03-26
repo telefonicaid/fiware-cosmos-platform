@@ -264,10 +264,11 @@ namespace samson{
             void init( std::string command  )
             {
                 au::CommandLine cmdLine;
-                cmdLine.set_flag_int("num", 10 );
                 cmdLine.parse( command );
                 
-                int num = cmdLine.get_flag_int("num");
+                int num = 1;
+                if( cmdLine.get_num_arguments() > 1 )
+                    num = atoi( cmdLine.get_argument(1).c_str() );
                 if( num == 0 )
                     num = 1;
                 
@@ -303,6 +304,81 @@ namespace samson{
                 return;        
             }
         };
+
+        
+        // -----------------------------------------------------------------------------------------------
+        // ValueReduce_top_concept
+        //
+        //       Emit only the most popular value 
+        // -----------------------------------------------------------------------------------------------
+        
+        class ValueReduce_top_concept : public ValueReduce
+        {
+            samson::system::Value key;
+            samson::system::Value value;
+            
+            ValueList * list;
+            
+        public:
+            
+            
+            ValueReduce_top_concept()
+            {
+                list = NULL;
+            }
+            
+            ~ValueReduce_top_concept()
+            {
+                if (list )
+                    delete list;
+            }
+            
+            void init( std::string command  )
+            {
+                au::CommandLine cmdLine;
+                cmdLine.parse( command );
+                
+                int num = 1;
+                if( cmdLine.get_num_arguments() > 1 )
+                    num = atoi( cmdLine.get_argument(1).c_str() );
+                if( num == 0 )
+                    num = 1;
+                
+                list = new ValueList( num );
+            }
+            
+            
+            void run( samson::KVSetStruct* inputs , samson::KVWriter *writer  )
+            {
+                // Init the list
+                list->init();
+                
+                // Parse common key
+                key.parse( inputs[0].kvs[0]->key );
+                
+                // Parse all the values ( grouping by 
+                for ( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
+                {
+                    // Parse the value
+                    value.parse( inputs[0].kvs[i]->value );
+
+                    if( !value.isVector() )
+                        continue;
+                    if( !value.get_vector_size() != 2 )
+                        continue;
+                    
+                    int counter = value.get_value_from_vector(1)->getDouble();
+                    
+                    // Push to the list
+                    list->push( value.get_value_from_vector(0) , counter );
+                }
+                
+                // Prepare and emit output
+                list->set_tops(&value);
+                writer->emit( 0 , &key , &value );
+                return;        
+            }
+        };        
         
         // -----------------------------------------------------------------------------------------------
         // ValueReduce_sum
@@ -492,7 +568,8 @@ namespace samson{
                     add<ValueReduce_unique>("unique");
                     add<ValueReduce_unique_counter>("unique_counter");
                     
-                    add<ValueReduce_top>("top");
+                    add<ValueReduce_top>("top");                    // Expect key - value
+                    add<ValueReduce_top_concept>("top_concept");    // Expect key - [ value counter ]
                     
                     add<ValueReduce_sum>("sum");
                     add<ValueReduce_average>("average");

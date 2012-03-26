@@ -83,19 +83,20 @@ public class ClusterServer implements Cluster.Iface {
     }
 
     @Override
-    public void copyToHdfs(String src, String dest) throws TException {
+    public void copyToHdfs(String src, String dest) throws TransferException {
         try {
             FileSystem fs = FileSystem.get(this.conf);
             fs.moveFromLocalFile(new Path(src), new Path(dest));
         } catch (Exception ex) {
             this.sendNotificationEmail(ex.getMessage(), ex.toString());
-            throw new TException(ex);
+            throw new TransferException(ClusterErrorCode.FILE_COPY_FAILED,
+                                        ex.getMessage());
         }
     }
 
     @Override
     public String runJob(String jarPath, String inputPath, String outputPath,
-                         String mongoUrl) throws TException {
+                         String mongoUrl) throws TransferException {
         Path input = new Path(inputPath);
         Path output = new Path(outputPath);
         
@@ -114,12 +115,14 @@ public class ClusterServer implements Cluster.Iface {
             return runInfo.getID().getJtIdentifier();
         } catch (Throwable ex) {
             this.sendNotificationEmail(ex.getMessage(), ex.toString());
-            throw new TException(ex);
+            throw new TransferException(ClusterErrorCode.RUN_JOB_FAILED,
+                                        ex.getMessage());
         }
     }
 
     @Override
-    public ClusterJobStatus getJobStatus(String jobId) throws TException {
+    public ClusterJobStatus getJobStatus(String jobId)
+            throws TransferException {
         try {
             JobClient client = new JobClient(new JobConf(this.conf));
             for (org.apache.hadoop.mapred.JobStatus jobStatus
@@ -132,7 +135,8 @@ public class ClusterServer implements Cluster.Iface {
             throw new IllegalArgumentException("Invalid job ID");
         } catch (Throwable ex) {
             this.sendNotificationEmail(ex.getMessage(), ex.toString());
-            throw new TException(ex);
+            throw new TransferException(ClusterErrorCode.INVALID_JOB_ID,
+                                        ex.getMessage());
         }
     }
 }

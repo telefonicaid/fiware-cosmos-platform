@@ -67,7 +67,7 @@ Backend
 Goals
 ~~~~~
 - The system MUST support having more than one job in the Running state, even if these jobs are created by the same user, are using the same JAR and even use the same input data.
- - The output results will be stored in a MongoDB database where the DB name will be the username and the collection will match the model name that has been run, together with a jobid to be able to store results from different runs.
+ - The output results MUST be stored in a MongoDB database where the DB name MUST be the username and the collection MUST match the model name that has been run, together with a jobid to be able to store results from different runs. Example: dmicol.profile_32
 
 JAR requirements
 ----------------

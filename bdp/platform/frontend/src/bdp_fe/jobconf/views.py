@@ -11,14 +11,15 @@ from django.contrib import auth, messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseNotFound
+from django.http import Http404, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render_to_response
 from django.template import RequestContext
 
 from bdp_fe.jobconf import data
 from bdp_fe.jobconf.cluster import remote
 from bdp_fe.jobconf.models import CustomJobModel, Job, JobModel
-from bdp_fe.jobconf.views_util import safe_int_param, retrieve_results
+from bdp_fe.jobconf.views_util import (get_owned_job_or_40x, safe_int_param,
+                                       retrieve_results)
 
 LOGGER = logging.getLogger(__name__)
 CLUSTER = remote.Cluster(settings.CLUSTER_CONF.get('host'),
@@ -38,8 +39,9 @@ def list_jobs(request):
 
 @login_required
 def view_results(request, job_id):
-    job_id = int(job_id)
-    job = Job.objects.get(id=job_id)
+    job = get_owned_job_or_40x(request, job_id)
+    if job.status != Job.SUCCESSFUL:
+        raise Http404
     primary_key = job.results_primary_key
     results = retrieve_results(job_id, 'word')
     prototype_result = results[0]
@@ -96,7 +98,7 @@ def new_job(request):
             job = Job(name=form.cleaned_data['name'],
                       user=request.user,
                       results_primary_key=request.user,
-                      status=Job.CREATED)
+                      status=Job.UNCONFIGURED)
             job.save()
             model = CustomJobModel(job=job) # The only option for the moment
             model.save()
@@ -114,11 +116,15 @@ class UploadJarForm(forms.Form):
 
 @login_required
 def config_job(request, job_id):
-    job = get_object_or_404(Job, pk=job_id, user=request.user)
+    job = get_owned_job_or_40x(request, job_id)
+    if job.status != Job.UNCONFIGURED:
+        raise Http404()
     model = JobModel.objects.get(job=job).customjobmodel
     if request.method == 'POST':
         form = UploadJarForm(request.POST, request.FILES)
         if form.is_valid() and model.jar_upload(request.FILES['file']):
+            job.status = Job.CONFIGURED
+            job.save()
             return redirect(reverse('upload_data', args=[job.id]))
         else:
             messages.info(request, 'JAR file upload failed')
@@ -135,11 +141,16 @@ class UploadDataForm(forms.Form):
 
 @login_required
 def upload_data(request, job_id):
-    job = get_object_or_404(Job, pk=job_id, user=request.user)
+    job = get_owned_job_or_40x(request, job_id)
+    if job.status != Job.CONFIGURED:
+        raise Http404()
+
     if request.method == 'POST':
         form = UploadDataForm(request.POST, request.FILES)
         if form.is_valid() and job.data_upload(request.FILES['file'],
                                                CLUSTER):
+            Job.input_data = job.hdfs_data_path()
+            job.save()
             return redirect(reverse('list_jobs'))
         else:
             messages.info(request, 'Data file upload failed')

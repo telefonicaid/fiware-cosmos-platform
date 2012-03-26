@@ -40,6 +40,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'bdp_fe.middleware403.Http403Middleware'
 )
 
 INSTALLED_APPS = (

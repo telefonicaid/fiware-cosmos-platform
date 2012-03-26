@@ -28,21 +28,27 @@ class Job(models.Model):
 
     date = models.DateTimeField(auto_now=True)
 
-    CREATED = 0
+    UNCONFIGURED = -1
+    CONFIGURED = 0
     RUNNING = 1
     SUCCESSFUL = 2
     FAILED = 3
     JOBSTATUS_CHOICES = (
-        (CREATED, 'Created'),
+        (UNCONFIGURED, 'Unconfigured'),
+        (CONFIGURED, 'Configured'),
         (RUNNING, 'Running'),
         (SUCCESSFUL, 'Successful'),
         (FAILED, 'Failed'),
     )
     status = models.IntegerField(choices=JOBSTATUS_CHOICES)
+
+    INPUT_DATA_MAX_LENGTH=256
+    input_data = models.CharField(null=True, blank=True,
+                                  max_length=INPUT_DATA_MAX_LENGTH)
 	
     EXECUTION_ID_MAX_LENGTH=256
     execution_id = models.CharField(null=True, blank=True,
-	max_length=EXECUTION_ID_MAX_LENGTH)
+                                    max_length=EXECUTION_ID_MAX_LENGTH)
 
     RESULTS_PK_MAX_LENGTH = 40
     results_primary_key = models.CharField(max_length=RESULTS_PK_MAX_LENGTH)

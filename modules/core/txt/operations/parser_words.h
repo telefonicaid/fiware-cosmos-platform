@@ -7,6 +7,8 @@
 #define _H_SAMSON_txt_parser_words
 
 
+#include "au/charset.h"
+
 #include <samson/module/samson.h>
 #include <samson/module/samson.h>
 #include <samson/modules/system/SimpleParser.h>
@@ -34,12 +36,8 @@ namespace txt{
 		
 		bool isSeparator( char c )
 		{
-		   if( c == ' ')
-			  return true;
-		   if( c == '\t')
-			  return true;
-
-		   return false;
+           // If it not a letter is a separator
+		   return !au::iso_8859_is_letter( c );
 		}
 
 

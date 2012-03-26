@@ -2,6 +2,7 @@ package es.tid.bdp.platform.cluster.server;
 
 import java.util.Properties;
 
+import com.mongodb.hadoop.util.MongoConfigUtil;
 import javax.mail.Message;
 import javax.mail.Session;
 import javax.mail.Transport;
@@ -11,7 +12,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.*;
-import org.apache.thrift.TException;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.server.TThreadPoolServer.Args;
@@ -49,9 +49,8 @@ public class ClusterServer implements Cluster.Iface {
     }
 
     private void start() throws Throwable {
-        ClusterServer cluster = new ClusterServer();
         TServerSocket serverTransport = new TServerSocket(9888);
-        Cluster.Processor processor = new Cluster.Processor(cluster);
+        Cluster.Processor processor = new Cluster.Processor(this);
         Args args = new Args(serverTransport);
         args.processor(processor);
         TServer server = new TThreadPoolServer(args);
@@ -110,6 +109,7 @@ public class ClusterServer implements Cluster.Iface {
             jobConf.setJar(jarPath);
             FileInputFormat.setInputPaths(jobConf, input);
             FileOutputFormat.setOutputPath(jobConf, output);
+            MongoConfigUtil.setOutputURI(this.conf, mongoUrl);
             JobClient client = new JobClient(jobConf);
             RunningJob runInfo = client.submitJob(jobConf);
             return runInfo.getID().getJtIdentifier();

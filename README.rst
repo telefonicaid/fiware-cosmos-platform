@@ -1,6 +1,6 @@
-=================
-Big Data Platform
-=================
+===================================
+Big Data Platform (Codename Cosmos)
+===================================
 
 Executive summary
 -----------------
@@ -22,9 +22,9 @@ What is this document?
 ----------------------
 This document frames the goals and scope for the current Cosmos release. Documentation for each feature should be placed in a README file on that feature's folder.
 
-====================================
-Curry release (internal alpha) goals
-====================================
+=================================
+Cosmos CTP (internal alpha) goals
+=================================
 **Due Date**: 30/03/2012
 
 **One line goal**: Create a web front-end to let users launch Hadoop jobs on the cluster and view the results of the job.
@@ -67,6 +67,7 @@ Backend
 Goals
 ~~~~~
 - The system MUST support having more than one job in the Running state, even if these jobs are created by the same user, are using the same JAR and even use the same input data.
+ - The output results will be stored in a MongoDB database where the DB name will be the username and the collection will match the model name that has been run, together with a jobid to be able to store results from different runs.
 
 JAR requirements
 ----------------
@@ -82,8 +83,8 @@ Rules:
 - The InputFormat used by the JAR MUST use an HDFS file as an input (e.g. it cannot be a database connection).
 - The output data MUST be written to a MongoDB instance (e.g. primitives, BSON objects).
 
-Other non-goals for Sprint 3
-----------------------------
+Other non-goals
+---------------
 - Submitting input data through SFTP or SCP
 - Use of existing models through the web front-end (unless they support all the restrictions under the "JAR requirements" section)
 
@@ -93,4 +94,3 @@ Open Issues (this section must be empty prior to signoff!)
 - Deployment:
     - VDC or cluster in Barcelona?
     - Machine roles
-- What is the naming convention for the MongoDB table/collection?

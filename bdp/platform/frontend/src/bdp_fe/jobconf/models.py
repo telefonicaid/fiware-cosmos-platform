@@ -149,9 +149,9 @@ class CustomJobModel(JobModel):
             return None
 
     def mongo_url(self):
-        return "%s/%s.%s" % (settings.CLUSTER_CONF.get('mongobase'),
-                             self.job.user.username,
-                             self.job.id)
+        return "%s/%s.job_%s" % (settings.CLUSTER_CONF.get('mongobase'),
+                                 self.job.user.username,
+                                 self.job.id)
     
     def __unicode__(self):
         return self.jar_name

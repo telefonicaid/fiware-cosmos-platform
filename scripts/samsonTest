@@ -9,6 +9,7 @@ function setup_test_vars
     HAVE_SHELL=0
     INIT_DELILAH_ERROR=0
     INIT_SHELL_ERROR=0
+    MULTIPLE_TESTS=0
 
     TEST_BASENAME=$(echo $TEST_FILE | sed 's/\.test//')
     TEST_NAME=$(sed -n '/--NAME--/,/^--/p' $TEST_FILE  | grep -v "^--")
@@ -62,6 +63,25 @@ function setup_test_vars
         exit 1
     fi
 
+    if [ $HAVE_COMMAND -eq 1 ]; then
+        if [ $HAVE_SHELL -eq 1 -o $HAVE_SCRIPT -eq 1 ]; then
+            MULTIPLE_TESTS=1
+        fi
+    fi
+    if [ $HAVE_SHELL -eq 1 ]; then
+        if [ $HAVE_COMMAND -eq 1 -o $HAVE_SCRIPT -eq 1 ]; then
+            MULTIPLE_TESTS=1
+        fi
+    fi
+    if [ $HAVE_SCRIPT -eq 1 ]; then
+        if [ $HAVE_COMMAND -eq 1 -o $HAVE_SHELL -eq 1 ]; then
+            MULTIPLE_TESTS=1
+        fi
+    fi
+    if [ $MULTIPLE_TESTS -eq 1 ]; then
+        echo "Only one test type of --COMMAND--, --SCRIPT-- or --SHELL-- allowed"
+        exit 1
+    fi
 }
 
 function execute_test

@@ -1,15 +1,12 @@
 package es.tid.bdp.joblaunchers;
 
 import java.io.File;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.testng.Assert.assertEquals;
 
-import es.tid.bdp.frontend.om.FrontEnd;
-import es.tid.bdp.frontend.om.SelectInputPage;
-import es.tid.bdp.frontend.om.SelectJarPage;
-import es.tid.bdp.frontend.om.SelectNamePage;
+import es.tid.bdp.frontend.om.*;
+
 
 /**
  *
@@ -91,7 +88,9 @@ public class FrontendLauncher implements JobLauncher {
     
     @Override
     public String[][] getResults(String taskId) throws TestException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ResultsPage resultsPage;
+        resultsPage = this.frontend.goToResultsPage(taskId);
+        return resultsPage.getResults();
     }
 
     @Override

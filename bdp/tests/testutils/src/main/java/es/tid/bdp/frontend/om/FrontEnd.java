@@ -116,8 +116,7 @@ public class FrontEnd {
         this.getTaskLink(taskId).click();
     }
     
-    public ResultsPage goToResultsPage(String taskId)
-            throws MalformedURLException {
+    public ResultsPage goToResultsPage(String taskId) {
         this.goHome();
         TaskStatus status = this.getTaskStatus(taskId);
         if (TaskStatus.Created == status

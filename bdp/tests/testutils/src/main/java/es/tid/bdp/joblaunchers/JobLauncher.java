@@ -1,7 +1,5 @@
 package es.tid.bdp.joblaunchers;
 
-import java.util.Map;
-
 /**
  *
  * @author ximo

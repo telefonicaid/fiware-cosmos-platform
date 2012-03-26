@@ -17,6 +17,7 @@ import org.testng.annotations.Test;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.fail;
 
 import es.tid.bdp.joblaunchers.FrontendLauncher;
 import es.tid.bdp.joblaunchers.TaskStatus;
@@ -76,23 +77,29 @@ public class FrontendTest {
         }
     }
 
-    private void verifyLinks() throws MalformedURLException {
+    private void verifyLinks() {
         List<WebElement> links = this.frontend.getDriver().findElements(
                 By.tagName("a"));
-        for (WebElement link : links) {
-            URL baseUrl = new URL(FrontEnd.HOME_URL);
-            String verbatimUrl = link.getAttribute("href");
-            String linkUrl = new URL(baseUrl, verbatimUrl).toString();
-            assertTrue(FrontendTest.isLive(linkUrl), "Broken link: " + linkUrl);
+        try {
+            for (WebElement link : links) {
+                URL baseUrl = new URL(FrontEnd.HOME_URL);
+                String verbatimUrl = link.getAttribute("href");
+                String linkUrl = new URL(baseUrl, verbatimUrl).toString();
+                assertTrue(FrontendTest.isLive(linkUrl), "Broken link: " + linkUrl);
+            }
+        } catch (MalformedURLException ex) {
+            fail("Malformed URL in page "
+                    + this.frontend.getDriver().getCurrentUrl()
+                    + ". Info: " + ex.toString());
         }
     }
 
-    public void testMainPage() throws MalformedURLException {
+    public void testMainPage() {
         this.frontend.goHome();
         verifyLinks();
     }
 
-    public void testNoNameFile() throws MalformedURLException {
+    public void testNoNameFile() {
         WebDriver driver = this.frontend.getDriver();
         SelectNamePage namePage = this.frontend.goToCreateNewJob();
         String currentUrl = driver.getCurrentUrl();
@@ -109,7 +116,7 @@ public class FrontendTest {
                     "Verify task hasn't been created");
     }
 
-    public void testNoJarFile() throws MalformedURLException {
+    public void testNoJarFile() {
         WebDriver driver = this.frontend.getDriver();
         SelectNamePage namePage = this.frontend.goToCreateNewJob();
         final String taskId = UUID.randomUUID().toString();

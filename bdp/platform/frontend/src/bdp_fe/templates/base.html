@@ -3,7 +3,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
 	<title>{{ title }}</title>
-	<link rel="stylesheet" type="text/css" href="css/base.css" />
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}base.css" />
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}visualize.css" />
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}visualize-dark.css" />
 	{% block extrahead %}{% endblock %}
     </head>
 

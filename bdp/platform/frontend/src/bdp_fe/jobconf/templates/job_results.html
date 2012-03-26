@@ -1,34 +1,55 @@
 {% extends "base.html" %}
 {% load jobs_extras %}
+{% block extrahead %}
+        <script type="text/javascript" src={{ STATIC_URL }}jquery-1.7.2.min.js></script>
+        <script type="text/javascript" src={{ STATIC_URL }}visualize.jQuery.js></script>
+        <script type="text/javascript">
+        $(function(){
+            $('#job-results-table').visualize({type: 'pie', pieMargin: 10});
+            $('#job-results-table').visualize({type: 'bar'});
+        });
+        </script>
+{% endblock %}
 
 {% block content %}
     <h2> These are your results </h2>
     {% if job_results %}
         <table id="job-results-table">
+            <caption>{{ title }}</caption>
+            <thead>
+                <tr>
+                    <td></td>
+                    {% for key, value in prototype_result.get_fields.items %}
+		        {% if key not in hidden_keys %}
+                        <th>{{ key }}</th>
+		        {% endif %}
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
             {% for job_result in job_results.object_list %}
             <tr>
-                {% for key, value in job_result.items %}
-
+                <th>{{ job_result.get_primary_key }}</th>
+                {% for key, value in job_result.get_fields.items %}
 		    {% if key not in hidden_keys %}
-		    <td class="job-result-key"><b>{{ key }}</b></td>
-		        {% if value|get_type != 'dict' and value|get_type != 'list' %}
-		            <td class="job-result-value">{{ value }}</td>
+                        {% if value|get_type not in expand_types %}
+                        <td class="job-result-value">{{ value }}</td>
                         {%endif%}
-			{% if value|get_type == 'list'%}
-			    {% for list_item in value %}
-				<td class="job-result-value">{{ list_item }}</td>
+                        {% if value|get_type == 'list'%}
+                            {% for list_item in value %}
+                                <td class="job-result-value">{{ list_item }}</td>
                             {% endfor %}
-		        {% endif %}
-			{% if  value|get_type == 'dict'%}
-			    {% for dict_val in value.values %}
-				<td class="job-result-value">{{ dict_val }}</td>
-			    {% endfor %}
-		        {% endif %}
-		    {% endif %}
-
+                        {% endif %}
+                        {% if  value|get_type == 'dict'%}
+                            {% for dict_val in value.values %}
+                                <td class="job-result-value">{{ dict_val }}</td>
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
 	        {% endfor %}
             </tr>
             {% endfor %}
+            </tbody>
         </table>
     {% else %}
         There were no results

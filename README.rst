@@ -53,13 +53,20 @@ Goals
    - Jobs MUST appear in the main page in the "Created" state once thay have been created.
 - Job results page:
    - Users MUST be able to see the result of their "Completed" jobs on a paged table.
-
+  
 Non-goals
 ~~~~~~~~~
 - User management: User creation through the web front-end. *Workaround*: users must contact cosmos@tid.es to request an account
 - Data management: users won't be able to delete their JARs, input data or output. *Workaround*: the team will administer the cluster and remove old data whenever disk space runs low.
 - JAR configuration: the uploaded JARs will not be able to receive configuration parameters.
 - JAR validation: Uploaded JAR files have full access to the cluster and are assumed non-malicious.
+
+Backend
+-------
+
+Goals
+~~~~~
+- The system MUST support having more than one job in the Running state, even if these jobs are created by the same user, are using the same JAR and even use the same input data.
 
 JAR requirements
 ----------------
@@ -86,5 +93,4 @@ Open Issues (this section must be empty prior to signoff!)
 - Deployment:
     - VDC or cluster in Barcelona?
     - Machine roles
-- How many jobs can a user have simultaneously?
 - What is the naming convention for the MongoDB table/collection?

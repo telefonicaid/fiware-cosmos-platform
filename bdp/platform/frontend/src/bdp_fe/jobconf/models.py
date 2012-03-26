@@ -44,6 +44,9 @@ class Job(models.Model):
     execution_id = models.CharField(null=True, blank=True,
 	max_length=EXECUTION_ID_MAX_LENGTH)
 
+    RESULTS_PK_MAX_LENGTH = 40
+    results_primary_key = models.CharField(max_length=RESULTS_PK_MAX_LENGTH)
+
     def start(self, cluster):
 	"""Returns true on success."""
         model = CustomJobModel.objects.get(job=self) # FIXME: non polymorfic
@@ -84,6 +87,9 @@ class Job(models.Model):
 
     def hdfs_output_path(self):
         return "%s/data/output/" % self.hdfs_base()
+
+    def __unicode__(self):
+        return self.name
 
 
 class JobModel(models.Model):
@@ -141,3 +147,6 @@ class CustomJobModel(JobModel):
         return "%s/%s.%s" % (settings.CLUSTER_CONF.get('mongobase'),
                              self.job.user.username,
                              self.job.id)
+    
+    def __unicode__(self):
+        return self.jar_name

@@ -14,11 +14,11 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render_to_response
 from django.template import RequestContext
-from pymongo import Connection
 
+from bdp_fe.jobconf import data
 from bdp_fe.jobconf.cluster import remote
 from bdp_fe.jobconf.models import CustomJobModel, Job, JobModel
-from bdp_fe.jobconf.views_util import safe_int_param
+from bdp_fe.jobconf.views_util import safe_int_param, retrieve_results
 
 LOGGER = logging.getLogger(__name__)
 CLUSTER = remote.Cluster(settings.CLUSTER_CONF.get('host'),
@@ -35,20 +35,14 @@ def list_jobs(request):
         'jobs': Job.objects.all(),
     }, context_instance=RequestContext(request))
 
-def retrieve_results(job_id):
-    ans = []
-    ## TODO: make configurable
-    connection = Connection('localhost', 27017)
-    db = connection.test_database
-    job_results = db.test_collection
-    for job_result in job_results.find({"job_id" : job_id}):
-        ans.append(job_result)
-    return ans
 
 @login_required
 def view_results(request, job_id):
     job_id = int(job_id)
-    results = retrieve_results(job_id)
+    job = Job.objects.get(id=job_id)
+    primary_key = job.results_primary_key
+    results = retrieve_results(job_id, 'word')
+    prototype_result = results[0]
     paginator = Paginator(results, 100)
     page = request.GET.get('page')
     if not page:
@@ -61,9 +55,12 @@ def view_results(request, job_id):
         paginated_results = paginator.page(paginator.num_pages)
 
     return render_to_response('job_results.html',
-                              { 'title' : 'Results of job %s' % job_id,
-                                'job_results' : paginated_results,
-                                'hidden_keys': ['_id', 'job_id']},
+                              {'title' : 'Results of job %s' % job_id,
+                               'job_results' : paginated_results,
+                               'prototype_result': prototype_result,
+                               'hidden_keys': ['_id', 'job_id'],
+                               'expand_types': ['dict', 'list'],
+                               'primary_key': primary_key},
                               context_instance=RequestContext(request))
 
 def run_job(request, job_id):
@@ -88,6 +85,7 @@ def run_job(request, job_id):
 
 class NewJobForm(forms.Form):
     name = forms.CharField(max_length=Job.NAME_MAX_LENGTH)
+    results_primary_key = forms.CharField(max_length=Job.RESULTS_PK_MAX_LENGTH)
 
 
 @login_required
@@ -97,6 +95,7 @@ def new_job(request):
         if form.is_valid():
             job = Job(name=form.cleaned_data['name'],
                       user=request.user,
+                      results_primary_key=request.user,
                       status=Job.CREATED)
             job.save()
             model = CustomJobModel(job=job) # The only option for the moment

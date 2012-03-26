@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """Main configuration"""
 
-from os import path
-PROJECT_PATH = path.dirname(__file__)
+import os.path
+PROJECT_PATH = os.path.dirname(__file__)
 
 SITE_ID = 1
 
@@ -10,7 +10,7 @@ ROOT_URLCONF = 'bdp_fe.urls'
 
 TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
-    path.join(PROJECT_PATH, "templates"),
+    os.path.join(PROJECT_PATH, "templates"),
 )
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
@@ -19,13 +19,14 @@ TEMPLATE_LOADERS = (
 )
 
 FIXTURE_DIRS = (
-    path.join(PROJECT_PATH, "fixtures"),
+    os.path.join(PROJECT_PATH, "fixtures"),
 )
 
 STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
+    os.path.join(PROJECT_PATH, "jobconf", "static"),
 )
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',

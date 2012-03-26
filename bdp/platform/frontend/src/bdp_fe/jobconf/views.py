@@ -42,9 +42,13 @@ def view_results(request, job_id):
     job = get_owned_job_or_40x(request, job_id)
     if job.status != Job.SUCCESSFUL:
         raise Http404
-    primary_key = job.results_primary_key
-    results = retrieve_results(job_id, 'word')
+    primary_key = request.GET.get('primary_key')
+    results = retrieve_results(job_id, primary_key)
     prototype_result = results[0]
+    if not primary_key:
+        primary_key = prototype_result.document.keys()[0]
+        for result in results:
+            result.pk = primary_key
     paginator = Paginator(results, 100)
     page = request.GET.get('page')
     if not page:

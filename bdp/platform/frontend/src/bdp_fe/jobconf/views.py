@@ -74,15 +74,16 @@ def run_job(request, job_id):
         return
 
     if job.status != Job.CREATED:
-        msg = "Cannot start job in %s status" % job.get_status_display()
+        msg = "Cannot start job %s while in %s status" % (
+            job.name, job.get_status_display())
         messages.warning(request, msg)
         LOGGER.warning(msg)
         return
 
     if job.start(CLUSTER):
-        messages.info(request, "Job %s was started." % job_id)
+        messages.info(request, "Job %s was started." % job.name)
     else:
-        messages.warning(request, "Cannot start job %s." % job_id)
+        messages.warning(request, "Cannot start job %s." % job.name)
 
 
 class NewJobForm(forms.Form):

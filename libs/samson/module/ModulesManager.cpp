@@ -60,7 +60,6 @@ namespace samson
         for ( size_t i = 0 ; i < handlers.size() ; i++ )
             dlclose( handlers[i] );
         handlers.clear();
-
     }
     
     
@@ -164,14 +163,14 @@ namespace samson
         
 		if(hndl == NULL)
         {
-            LM_W(("Not possible to dlopen for file '%s' with dlerror():'%s'", path.c_str(), dlerror() ));
+            LM_W(("Unable to 'dlopen' file '%s'. dlerror: '%s'", path.c_str(), dlerror() ));
 			return;
 		}
-        
+
 		void *mkr = dlsym(hndl, "moduleCreator");		
 		if(mkr == NULL)
         {
-            LM_W(("Not possible to dlsym for file '%s' with dlerror():'%s'", path.c_str(), dlerror() ));
+            LM_W(("Unable to do 'dlsym' for '%s'. dlerror: '%s'", path.c_str(), dlerror() ));
 			dlclose(hndl);
 			return;
 		}
@@ -192,8 +191,8 @@ namespace samson
         
         if ( !module )
         {
+            LM_E(( "Not possible to load module at path %s (no container found)" , path.c_str()));
             dlclose(hndl);
-            LM_E(( "Not possible to load module at path %s (not container found)" , path.c_str()));
             return;
         }
         
@@ -210,7 +209,6 @@ namespace samson
                 LM_W(("Error loading module from file %s since it is already loaded" , module->file_name.c_str() ));
                 delete module;
                 dlclose(hndl);
-                
             }
             
             LM_T(LmtModuleManager,("Module %s compiled for version %s ... OK!" , module->name.c_str() , platform_version.c_str()  ));
@@ -246,14 +244,14 @@ namespace samson
 		void *hndl = dlopen(path.c_str(), RTLD_NOW);
 		if(hndl == NULL)
         {
-            LM_W(("Not possible to dlopen for file '%s' with dlerror():'%s'", path.c_str(), dlerror() ));
+            LM_W(("Unable to 'dlopen' file '%s'. dlerror: '%s'", path.c_str(), dlerror() ));
 			return Error;
 		}
         
 		void *mkr = dlsym(hndl, "moduleCreator");		
 		if(mkr == NULL)
         {
-            LM_W(("Not possible to dlsym for file '%s' with dlerror():'%s'", path.c_str(), dlerror() ));
+            LM_W(("Unable to do 'dlsym' for file '%s'. dlerror: '%s'", path.c_str(), dlerror() ));
 			dlclose(hndl);
 			return Error;
 		}

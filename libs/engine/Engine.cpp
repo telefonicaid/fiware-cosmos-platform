@@ -243,9 +243,10 @@ void Engine::run()
             int waiting_time = running_element->getWaitingTime();
             if ( waiting_time > 10 )
             {
-                LM_W(("Engine is running an element has been waiting %d seconds", waiting_time ));
+                LM_W(("Engine is running an element that has been waiting %d seconds", waiting_time ));
                 //LM_W(("Engine element to execute now: %s" , running_element->getDescription().c_str() ));
             }
+
             if ( waiting_time > 100 )
             {
                 // Print entire engine items...
@@ -262,8 +263,6 @@ void Engine::run()
                     EngineElement* element = *it_elements;
                     LM_M(("ENGINE NORMAL ELEMENT: %s",element->getDescription().c_str()));
                 }
-                
-                LM_W(("Engine is running an element has been waiting %d seconds", waiting_time ));
             }
             
             {

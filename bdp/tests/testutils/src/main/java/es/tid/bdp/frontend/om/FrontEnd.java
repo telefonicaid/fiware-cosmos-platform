@@ -18,17 +18,28 @@ public class FrontEnd {
     // TODO: Change Home URL to a config parameter in future iterations
     public static final String HOME_URL = "http://pshdp01:8000/";
     public static final String CREATE_JOB_ID = "create-job";
-    public static final String TASK_STATUS_TABLE_ID = "results-table";
+    public static final String TASK_STATUS_TABLE_ID = "jobs-table";
     public static final String RESULT_LINK_CLASS = "result-link";
-    public static final String RESULT_NAME_CLASS = "job-name";
-    public static final String RESULT_STATUS_CLASS = "job-status";
+    public static final String RESULT_NAME_CLASS = "result-name";
+    public static final String RESULT_STATUS_CLASS = "result-status";
     public static final String USERNAME_INPUT_ID = "id_username";
     public static final String PASSWORD_INPUT_ID = "id_password";
     
+    private static final String DEFAULT_USER = "admin";
+    private static final String DEFAULT_PASSWRD = "admin";
+    
     private WebDriver driver;
+    private String username;
+    private String password;
 
     public FrontEnd() {
+        this(DEFAULT_USER, DEFAULT_PASSWRD);
+    }
+    
+    public FrontEnd(String username, String password) {
         this.driver = new HtmlUnitDriver();
+        this.username = username;
+        this.password = password;
     }
 
     public void goHome() {
@@ -74,7 +85,8 @@ public class FrontEnd {
     }
 
     private WebElement getTaskLink(String taskId) {
-        return this.getTaskRow(taskId).findElement(By.name(RESULT_LINK_CLASS));
+        return this.getTaskRow(taskId).findElement(
+                By.className(RESULT_LINK_CLASS));
     }
 
     /**

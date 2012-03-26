@@ -213,5 +213,10 @@
             <artifactId>mail</artifactId>
             <version>1.4.4</version>
         </dependency>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-hadoop</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 </project>

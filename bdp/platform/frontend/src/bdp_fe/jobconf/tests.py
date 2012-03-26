@@ -114,13 +114,14 @@ class RemoteClusterTest(unittest.TestCase):
     def setUp(self):
         self.host = "localhost"
         self.port = 8282
-        self.server = fakeserver.BackgroundFakeServer(self.host, self.port)
+        self.server = fakeserver.FakeServer(self.host, self.port)
         self.server.start()
 
     def test_copyToHdfs(self):
         cluster = remote.Cluster(self.host, self.port)
         cluster.copyToHdfs('/local/path', '/remote/path')
-        # TODO: assertion
+        self.assertEquals([['/local/path', '/remote/path']],
+                          self.server.handler.copyToHdfsCalls)
 
     def tearDown(self):
         self.server.stop()

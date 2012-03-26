@@ -28,21 +28,30 @@ class Job(models.Model):
 
     date = models.DateTimeField(auto_now=True)
 
-    CREATED = 0
+    UNCONFIGURED = -1
+    CONFIGURED = 0
     RUNNING = 1
     SUCCESSFUL = 2
     FAILED = 3
     JOBSTATUS_CHOICES = (
-        (CREATED, 'Created'),
+        (UNCONFIGURED, 'Unconfigured'),
+        (CONFIGURED, 'Configured'),
         (RUNNING, 'Running'),
         (SUCCESSFUL, 'Successful'),
         (FAILED, 'Failed'),
     )
     status = models.IntegerField(choices=JOBSTATUS_CHOICES)
+
+    INPUT_DATA_MAX_LENGTH=256
+    input_data = models.CharField(null=True, blank=True,
+                                  max_length=INPUT_DATA_MAX_LENGTH)
 	
     EXECUTION_ID_MAX_LENGTH=256
     execution_id = models.CharField(null=True, blank=True,
-	max_length=EXECUTION_ID_MAX_LENGTH)
+                                    max_length=EXECUTION_ID_MAX_LENGTH)
+
+    RESULTS_PK_MAX_LENGTH = 40
+    results_primary_key = models.CharField(max_length=RESULTS_PK_MAX_LENGTH)
 
     def start(self, cluster):
 	"""Returns true on success."""
@@ -85,7 +94,6 @@ class Job(models.Model):
     def hdfs_output_path(self):
         return "%s/data/output/" % self.hdfs_base()
 
-
     RESULTS_PK_MAX_LENGTH = 40
     results_primary_key = models.CharField(max_length=RESULTS_PK_MAX_LENGTH)
 
@@ -101,8 +109,7 @@ class JobModel(models.Model):
 
     def start(self, cluster):
 	"""Returns an integer execution id or None"""
-        LOGGER.error("Should not invoke JobModel#start")
-        return None
+        raise NotImplementedError("Should not invoke JobModel#start")
 
 
 class CustomJobModel(JobModel):
@@ -112,9 +119,6 @@ class CustomJobModel(JobModel):
     """
     jar_name = models.CharField(max_length=256, null=True, blank=True)
     
-    def __unicode__(self):
-        return self.job.id
-
     def jar_upload(self, upload):
         """
         Accepts the upload file and moves it to the cluster.
@@ -147,6 +151,9 @@ class CustomJobModel(JobModel):
             return None
 
     def mongo_url(self):
-        return "%s/%s.%s" % (settings.CLUSTER_CONF.get('mongobase'),
-                             self.job.user.username,
-                             self.job.id)
+        return "%s/%s.job_%s" % (settings.CLUSTER_CONF.get('mongobase'),
+                                 self.job.user.username,
+                                 self.job.id)
+    
+    def __unicode__(self):
+        return self.jar_name

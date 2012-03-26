@@ -14,6 +14,7 @@ from django.test.client import Client
 from pymongo import Connection
 
 from bdp_fe.jobconf import upload_util
+from bdp_fe.jobconf.cluster import fakeserver, remote
 
 
 class LoginTestCase(djangotest.TestCase):
@@ -107,3 +108,19 @@ class RetrieveFromMongo(djangotest.TestCase):
             if job_result['word'] == 'world':
                 self.assertEquals(job_result['count'], 1)
         self.client.logout()
+
+class RemoteClusterTest(unittest.TestCase):
+
+    def setUp(self):
+        self.host = "localhost"
+        self.port = 8282
+        self.server = fakeserver.BackgroundFakeServer(self.host, self.port)
+        self.server.start()
+
+    def test_copyToHdfs(self):
+        cluster = remote.Cluster(self.host, self.port)
+        cluster.copyToHdfs('/local/path', '/remote/path')
+        # TODO: assertion
+
+    def tearDown(self):
+        self.server.stop()

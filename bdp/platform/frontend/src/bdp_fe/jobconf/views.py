@@ -6,6 +6,7 @@ Module bdp_fe.jobconf.views
 import logging
 
 from django import forms
+from django.conf import settings
 from django.contrib import auth, messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -14,12 +15,13 @@ from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render_to_response
 from django.template import RequestContext
 
-from bdp_fe.jobconf import custom_model
-from bdp_fe.jobconf import data
-from bdp_fe.jobconf.models import Job, JobModel
+from bdp_fe.jobconf.cluster import remote
+from bdp_fe.jobconf.models import CustomJobModel, Job, JobModel
 from bdp_fe.jobconf.views_util import safe_int_param, retrieve_results
 
 LOGGER = logging.getLogger(__name__)
+CLUSTER = remote.Cluster(settings.CLUSTER_CONF.get('host'),
+                         settings.CLUSTER_CONF.get('port'))
 
 @login_required
 def list_jobs(request):
@@ -63,25 +65,27 @@ def view_results(request, job_id):
 def run_job(request, job_id):
     try:
         job = Job.objects.get(id=job_id)
-        if job.status != Job.CREATED:
-            msg = "Cannot start job in %s status" % job.get_status_display()
-            messages.warning(request, msg)
-            LOGGER.warning(msg)
-            return
-
-        job.status = Job.RUNNING
-        job.save()
-
-        # TODO: Unimplemented behaviour
-        LOGGER.warning("Unimplemented job start")
-        messages.info(request, "Job %s was started." % job_id)
     except Job.DoesNotExist:
         messages.warning(request, "Cannot start job %d: not found" % job_id)
         LOGGER.warning("Job %d not found" % job_id)
+        return
+
+    if job.status != Job.CREATED:
+        msg = "Cannot start job in %s status" % job.get_status_display()
+        messages.warning(request, msg)
+        LOGGER.warning(msg)
+        return
+
+    if job.start(CLUSTER):
+        messages.info(request, "Job %s was started." % job_id)
+    else:
+        messages.warning(request, "Cannot start job %s." % job_id)
+
 
 class NewJobForm(forms.Form):
     name = forms.CharField(max_length=Job.NAME_MAX_LENGTH)
     results_primary_key = forms.CharField(max_length=Job.RESULTS_PK_MAX_LENGTH)
+
 
 @login_required
 def new_job(request):
@@ -93,6 +97,8 @@ def new_job(request):
                       results_primary_key=request.user,
                       status=Job.CREATED)
             job.save()
+            model = CustomJobModel(job=job) # The only option for the moment
+            model.save()
             return redirect(reverse('config_job', args=[job.id]))
     else:
         form = NewJobForm()
@@ -108,10 +114,10 @@ class UploadJarForm(forms.Form):
 @login_required
 def config_job(request, job_id):
     job = get_object_or_404(Job, pk=job_id, user=request.user)
+    model = JobModel.objects.get(job=job).customjobmodel
     if request.method == 'POST':
         form = UploadJarForm(request.POST, request.FILES)
-        if form.is_valid() and custom_model.handle_upload(job,
-                request.FILES['file']):
+        if form.is_valid() and model.jar_upload(request.FILES['file']):
             return redirect(reverse('upload_data', args=[job.id]))
         else:
             messages.info(request, 'JAR file upload failed')
@@ -131,7 +137,8 @@ def upload_data(request, job_id):
     job = get_object_or_404(Job, pk=job_id, user=request.user)
     if request.method == 'POST':
         form = UploadDataForm(request.POST, request.FILES)
-        if form.is_valid() and data.handle_upload(job, request.FILES['file']):
+        if form.is_valid() and job.data_upload(request.FILES['file'],
+                                               CLUSTER):
             return redirect(reverse('list_jobs'))
         else:
             messages.info(request, 'Data file upload failed')

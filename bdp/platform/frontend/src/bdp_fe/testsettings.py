@@ -11,7 +11,7 @@ TEMPLATE_DEBUG = DEBUG
 
 from settings import *
 
-DATABASE_ENGINE = 'sqlite3'
+DATABASE_ENGINE = 'django.db.backends.sqlite3'
 DATABASE_NAME = '/tmp/bdp_fe.db'
 
 MEDIA_ROOT = ''
@@ -26,3 +26,9 @@ ADMINS = (
 MANAGERS = ADMINS
 
 LANDING_ROOT = '/tmp/landing/'
+
+CLUSTER_CONF = {
+    'host': 'pshdp01',
+    'port': 9888,
+    'mongobase': 'mongodb://pshdp04',
+}

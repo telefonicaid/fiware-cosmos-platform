@@ -291,6 +291,12 @@ namespace samson {
             if( lookupList )
                 delete lookupList;
 
+            if (header != NULL)
+            {
+                free(header);
+                header = NULL;
+            }
+
             // Destroy buffer if still in memory
             if( buffer )
                 engine::MemoryManager::shared()->destroyBuffer( buffer );

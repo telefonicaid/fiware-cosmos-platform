@@ -50,21 +50,50 @@ class Job(models.Model):
     execution_id = models.CharField(null=True, blank=True,
                                     max_length=EXECUTION_ID_MAX_LENGTH)
 
+    UNKNOWN = 0
+    FILE_COPY_FAILED = 1
+    RUN_JOB_FAILED = 2
+    INVALID_JOB_ID = 3
+    CLUSTER_ERROR_CHOICES = (
+        (UNKNOWN, 'Unknown error'),
+        (FILE_COPY_FAILED, 'File transfer failed'),
+        (RUN_JOB_FAILED, 'Job execution failed'),
+        (INVALID_JOB_ID, 'Invalid job ID'),
+    )
+    error_code = models.IntegerField(choices=CLUSTER_ERROR_CHOICES,
+                                     null=True, blank=True)
+
+    ERROR_MESSAGE_MAX_LENGTH = 4096
+    error_message = models.CharField(null=True, blank=True,
+                                     max_length=ERROR_MESSAGE_MAX_LENGTH)
 
     def start(self, cluster):
 	"""Returns true on success."""
         model = CustomJobModel.objects.get(job=self) # FIXME: non polymorfic
-        execution_id = model.start(cluster)
-        if execution_id is not None:
+        try:
+            execution_id = model.start(cluster)
             LOGGER.info("Execution id is %s" % execution_id)
             self.execution_id = execution_id
             self.status = Job.RUNNING
-        else:
-            LOGGER.info("Cannot start job %d" % self.id)
-            self.status = Job.FAILED
-        self.save()
+            self.save()
+            return True
 
-        return execution_id != None
+        except ClusterException, ex:
+            LOGGER.info("Cannot start job %d: error %d" % (self.id,
+                                                           ex.error_code))
+            self.status = Job.FAILED
+            self.set_error(ex)
+            self.save()
+            return False
+
+        except Exception, ex:
+            LOGGER.info("Cannot start job %d: %s" % (self.id, ex.message))
+            self.status = Job.FAILED
+            self.error_error = Job.UNKNOWN
+            self.error_message = self.trim_to(ex.message,
+                                              ERROR_MESSAGE_MAX_LENGTH)
+            self.save()
+
 
     def data_upload(self, upload, cluster):
         """
@@ -86,6 +115,17 @@ class Job(models.Model):
         except Exception, ex:
             LOGGER.exception(ex)
             return False
+
+    def set_error(self, cluster_exception):
+        self.error_code = cluster_exception.errorCode
+        self.error_message = self.trim_to(cluster_exception.errorMsg,
+                                          Job.ERROR_MESSAGE_MAX_LENGTH)
+
+    def trim_to(self, text, max_length):
+        if len(text) > max_length:
+            return text[:max_length - 4] + "\n..."
+        else:
+            return text
 
     def hdfs_base(self):
         return "/bdp/user/%s/job_%d" % (self.user.username, self.id)

@@ -2,7 +2,6 @@
 Module bdp_fe.jobconf.views
 
 """
-
 import logging
 
 from django import forms
@@ -42,6 +41,16 @@ def list_jobs(request):
 
 @login_required
 def view_results(request, job_id):
+    job = get_owned_job_or_40x(request, job_id)
+    if job.status == Job.SUCCESSFUL:
+        return view_successful_results(request, job)
+    elif job.status == Job.FAILED:
+        return view_error(request, job)
+    else:
+        raise Http404
+
+
+def view_successful_results(request, job):
     job = util.get_owned_job_or_40x(request, job_id)
     if job.status != Job.SUCCESSFUL:
         raise Http404
@@ -83,6 +92,14 @@ def view_results(request, job_id):
         context = {'reason': 'Database not available'}
         return HttpResponse(loader.render_to_string("503.html", context),
                             status=503)
+
+
+def view_error(request, job):
+    return render_to_response('error_report.html', {
+        'title': 'Error report for %s' % job.name,
+        'job': job,
+    }, context_instance=RequestContext(request))
+
 
 def run_job(request, job_id):
     try:

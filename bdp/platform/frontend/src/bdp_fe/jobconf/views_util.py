@@ -14,7 +14,7 @@ from pymongo.errors import AutoReconnect, ConnectionFailure
 from bdp_fe.jobconf.models import Job
 from bdp_fe.middleware403 import Http403
 
-HIDDEN_KEYS = ['_id', 'job_id']
+HIDDEN_KEYS = []
 
 class NoResultsError(Exception):
     pass

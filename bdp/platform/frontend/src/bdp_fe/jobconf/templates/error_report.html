@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load url from future %}
+
+{% block content %}
+    {% autoescape on %}
+    <h2>Error {{ job.error_code }}: {{ job.get_error_code_display }}</h2>
+    <p class="error-detail">
+    {{ job.error_message }}
+    </p>
+    {% endautoescape %}
+{% endblock %}
+{# vim:set syntax=htmldjango: #}

@@ -11,15 +11,14 @@ from django.contrib import auth, messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
-from django.http import Http404, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.shortcuts import get_object_or_404, redirect, render_to_response
-from django.template import RequestContext
+from django.template import RequestContext, loader
 
 from bdp_fe.jobconf import data
 from bdp_fe.jobconf.cluster import remote
 from bdp_fe.jobconf.models import CustomJobModel, Job, JobModel
-from bdp_fe.jobconf.views_util import (get_owned_job_or_40x, safe_int_param,
-                                       retrieve_results)
+import bdp_fe.jobconf.views_util as util
 
 LOGGER = logging.getLogger(__name__)
 CLUSTER = remote.Cluster(settings.CLUSTER_CONF.get('host'),
@@ -27,55 +26,81 @@ CLUSTER = remote.Cluster(settings.CLUSTER_CONF.get('host'),
 
 @login_required
 def list_jobs(request):
-    job_id = safe_int_param(request.GET, 'run_job')
+    job_id = util.safe_int_param(request.GET, 'run_job')
+    reload_period = max(util.safe_int_param(request.GET, 'reload_period',
+                                            settings.RELOAD_PERIOD),
+                        settings.MIN_RELOAD_PERIOD)
     if job_id:
         run_job(request, job_id)
 
     return render_to_response('job_listing.html', {
         'title': 'Job listing',
-        'jobs': Job.objects.all(),
+        'jobs': Job.objects.filter(user=request.user),
+        'reload_period': reload_period,
     }, context_instance=RequestContext(request))
 
 
 @login_required
 def view_results(request, job_id):
-    job = get_owned_job_or_40x(request, job_id)
+    job = util.get_owned_job_or_40x(request, job_id)
     if job.status != Job.SUCCESSFUL:
         raise Http404
-    primary_key = job.results_primary_key
-    results = retrieve_results(job_id, 'word')
-    prototype_result = results[0]
-    paginator = Paginator(results, 100)
-    page = request.GET.get('page')
-    if not page:
-        page = 1
     try:
-        paginated_results = paginator.page(page)
-    except PageNotAnInteger:
-        paginated_results = paginator.page(1)
-    except EmptyPage:
-        paginated_results = paginator.page(paginator.num_pages)
+        primary_key = request.GET.get('primary_key')
+        results = util.retrieve_results(job_id, primary_key)
+        prototype_result = results[0]
+        if not primary_key:
+            primary_key = prototype_result.pk
+        paginator = Paginator(results, 100)
+        page = request.GET.get('page')
+        if not page:
+            page = 1
+        try:
+            paginated_results = paginator.page(page)
+        except PageNotAnInteger:
+            paginated_results = paginator.page(1)
+        except EmptyPage:
+            paginated_results = paginator.page(paginator.num_pages)
 
-    return render_to_response('job_results.html',
-                              {'title' : 'Results of job %s' % job_id,
-                               'job_results' : paginated_results,
-                               'prototype_result': prototype_result,
-                               'hidden_keys': ['_id', 'job_id'],
-                               'expand_types': ['dict', 'list'],
-                               'primary_key': primary_key},
-                              context_instance=RequestContext(request))
+        context = {'title' : 'Results of job %s' % job_id,
+                   'job_results' : paginated_results,
+                   'prototype_result': prototype_result,
+                   'hidden_keys': util.HIDDEN_KEYS,
+                   'expand_types': ['dict', 'list'],
+                   'primary_key': primary_key}
+        return render_to_response('job_results.html',
+                                  context,
+                                  context_instance=RequestContext(request))
+    except util.NoResultsError:
+        context = {'title' : 'Results of job %s' % job_id,
+                   'job_results' : None,
+                   'hidden_keys': util.HIDDEN_KEYS,
+                   'expand_types': ['dict', 'list']}
+        return render_to_response('job_results.html',
+                                  context,
+                                  context_instance=RequestContext(request))
+    except util.NoConnectionError:
+        context = {'reason': 'Database not available'}
+        return HttpResponse(loader.render_to_string("503.html", context),
+                            status=503)
 
 def run_job(request, job_id):
     try:
-        job = Job.objects.get(id=job_id)
+        job = Job.objects.get(id=job_id, user=request.user)
     except Job.DoesNotExist:
         messages.warning(request, "Cannot start job %d: not found" % job_id)
         LOGGER.warning("Job %d not found" % job_id)
         return
 
-    if job.status != Job.CREATED:
+    if job.status != Job.CONFIGURED:
         msg = "Cannot start job %s while in %s status" % (
             job.name, job.get_status_display())
+        messages.warning(request, msg)
+        LOGGER.warning(msg)
+        return
+
+    if job.input_data is None or len(job.input_data) == 0:
+        msg = "No data for running job %s" % job.name
         messages.warning(request, msg)
         LOGGER.warning(msg)
         return
@@ -88,7 +113,6 @@ def run_job(request, job_id):
 
 class NewJobForm(forms.Form):
     name = forms.CharField(max_length=Job.NAME_MAX_LENGTH)
-    results_primary_key = forms.CharField(max_length=Job.RESULTS_PK_MAX_LENGTH)
 
 
 @login_required
@@ -98,7 +122,6 @@ def new_job(request):
         if form.is_valid():
             job = Job(name=form.cleaned_data['name'],
                       user=request.user,
-                      results_primary_key=request.user,
                       status=Job.UNCONFIGURED)
             job.save()
             model = CustomJobModel(job=job) # The only option for the moment
@@ -117,7 +140,7 @@ class UploadJarForm(forms.Form):
 
 @login_required
 def config_job(request, job_id):
-    job = get_owned_job_or_40x(request, job_id)
+    job = util.get_owned_job_or_40x(request, job_id)
     if job.status != Job.UNCONFIGURED:
         raise Http404()
     model = JobModel.objects.get(job=job).customjobmodel
@@ -142,7 +165,7 @@ class UploadDataForm(forms.Form):
 
 @login_required
 def upload_data(request, job_id):
-    job = get_owned_job_or_40x(request, job_id)
+    job = util.get_owned_job_or_40x(request, job_id)
     if job.status != Job.CONFIGURED:
         raise Http404()
 
@@ -150,7 +173,7 @@ def upload_data(request, job_id):
         form = UploadDataForm(request.POST, request.FILES)
         if form.is_valid() and job.data_upload(request.FILES['file'],
                                                CLUSTER):
-            Job.input_data = job.hdfs_data_path()
+            job.input_data = job.hdfs_data_path()
             job.save()
             return redirect(reverse('list_jobs'))
         else:

@@ -7,8 +7,7 @@ import org.apache.hadoop.util.Tool;
  * @author ximo
  *
  */
-public class MapperFailTool extends Configured implements Tool
-{
+public class MapperFailTool extends Configured implements Tool {
     @Override
     public int run(String[] strings) throws Exception {
         MapperFailJob testJob = new MapperFailJob(this.getConf());

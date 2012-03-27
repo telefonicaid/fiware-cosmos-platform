@@ -22,7 +22,7 @@ public class PrimePrintReducer
         // Ignore KEY_COUNT for now
         if (PrimePrintMapper.KEY_LIST.equals(key)) {
             List<IntWritable> valueList = new ArrayList<IntWritable>();
-            for(IntWritable i : values) {
+            for (IntWritable i : values) {
                 valueList.add(i);            
             }
             ArrayWritable array = new ArrayWritable(

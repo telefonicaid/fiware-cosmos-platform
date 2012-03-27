@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 
@@ -22,8 +21,7 @@ public class MapperFailJob extends Job {
         this.setMapOutputKeyClass(Text.class);
         this.setMapOutputValueClass(IntWritable.class);
         this.setOutputKeyClass(Text.class);
-        this.setOutputValueClass(LongWritable.class);
+        this.setOutputValueClass(IntWritable.class);
         this.setMapperClass(MapperFailMapper.class);
-        this.setReducerClass(MapperFailReducer.class);
     }
 }

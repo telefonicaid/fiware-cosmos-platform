@@ -17,9 +17,9 @@ public class PrimePrintMapper
     public static final Text KEY_LIST = new Text("prime_list");
     private static final IntWritable ONE = new IntWritable(1);
     
-    private boolean isPrime(int num) {
+    private static boolean isPrime(int num) {
         int div = 2;
-        while(div < num && num%div != 0) {
+        while(div < num && num % div != 0) {
             ++div;
         }
         return div == num;
@@ -31,7 +31,7 @@ public class PrimePrintMapper
         String[] tokens = value.toString().split("\\s"); // Split by whitespace
         for (String token : tokens) {
             int num = Integer.parseInt(token);
-            if(isPrime(num)) {
+            if (PrimePrintMapper.isPrime(num)) {
                 context.write(KEY_COUNT, ONE);
                 context.write(KEY_LIST, new IntWritable(num));
             }

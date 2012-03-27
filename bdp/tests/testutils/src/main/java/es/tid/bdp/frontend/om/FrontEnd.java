@@ -44,7 +44,7 @@ public class FrontEnd {
 
     public void goHome() {
         this.driver.get(HOME_URL);
-        if(this.driver.getCurrentUrl().contains("login")) {
+        if (this.driver.getCurrentUrl().contains("login")) {
             this.login("admin", "admin");
         }
     }

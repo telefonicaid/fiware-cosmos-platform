@@ -33,13 +33,15 @@ import es.tid.bdp.frontend.om.SelectNamePage;
  */
 @Test(singleThreaded = true)
 public class FrontendTest {
+    private static final String WORDCOUNT_FILENAME = "wordcount.jar";
     private FrontEnd frontend;
     private String wordcountJarPath;
     private String emptyJarPath;
 
     @BeforeClass
     public void setUp() throws IOException {
-        File wordCountJarFile = new File("wordcount.jar");
+        this.frontend = new FrontEnd();
+        File wordCountJarFile = new File(WORDCOUNT_FILENAME);
         this.wordcountJarPath = wordCountJarFile.getAbsolutePath();
         assertTrue(wordCountJarFile.exists(),
                    "Veryfing Wordcount Jar is present: "
@@ -48,10 +50,6 @@ public class FrontendTest {
         File tmpFile = File.createTempFile("empty", ".jar");
         tmpFile.deleteOnExit();
         this.emptyJarPath = tmpFile.getAbsolutePath();
-    }
-
-    public FrontendTest() {
-        this.frontend = new FrontEnd();
     }
 
     private static boolean isLive(String link) {
@@ -233,35 +231,35 @@ public class FrontendTest {
                                                   this.wordcountJarPath,
                                                   false);
         }
-        for (int i = 0; i < taskCount; ++i) {
+        for (String taskId : taskIds) {
             assertEquals(TaskStatus.Created,
-                         testDriver.getTaskStatus(taskIds[i]),
+                         testDriver.getTaskStatus(taskId),
                          "Veryfing task is in created state. TaskId: "
-                    + taskIds[i]);
+                    + taskId);
         }
-        for (int i = 0; i < taskCount; ++i) {
-            testDriver.launchTask(taskIds[i]);
+        for (String taskId : taskIds) {
+            testDriver.launchTask(taskId);
         }
-        for (int i = 0; i < taskCount; ++i) {
+        for (String taskId : taskIds) {
             TaskStatus jobStatus = testDriver.getTaskStatus(taskIds[i]);
             assertTrue(jobStatus == TaskStatus.Completed
                     || jobStatus == TaskStatus.Running,
                        "Verifying task is in running or completed state."
-                    + " TaskId: " + taskIds[i]);
+                    + " TaskId: " + taskId);
         }
-        for (int i = 0; i < taskCount; ++i) {
-            testDriver.waitForTaskCompletion(taskIds[i]);
+        for (String taskId : taskIds) {
+            testDriver.waitForTaskCompletion(taskId);
         }
-        for (int i = 0; i < taskCount; ++i) {
-            TaskStatus jobStatus = testDriver.getTaskStatus(taskIds[i]);
+        for (String taskId : taskIds) {
+            TaskStatus jobStatus = testDriver.getTaskStatus(taskId);
             assertEquals(jobStatus,
                          TaskStatus.Completed,
                          "Verifying task is in completed state."
-                    + " TaskId: " + taskIds[i]);
+                    + " TaskId: " + taskId);
         }
-        for (int i = 0; i < taskCount; ++i) {
+        for (String taskId : taskIds) {
             // Just verifying results can be accessed
-            testDriver.getResults(taskIds[i]);
+            testDriver.getResults(taskId);
         }
     }
 

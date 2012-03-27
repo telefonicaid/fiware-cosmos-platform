@@ -7,8 +7,7 @@ import org.apache.hadoop.util.Tool;
  * @author ximo
  *
  */
-public class PrimePrintTool extends Configured implements Tool
-{
+public class PrimePrintTool extends Configured implements Tool {
     @Override
     public int run(String[] strings) throws Exception {
         PrimePrintJob testJob = new PrimePrintJob(this.getConf());

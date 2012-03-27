@@ -61,7 +61,11 @@ class Job(models.Model):
             LOGGER.info("Execution id is %s" % execution_id)
             self.execution_id = execution_id
             self.status = Job.RUNNING
-            self.save()
+        else:
+            LOGGER.info("Cannot start job %d" % self.id)
+            self.status = Job.FAILED
+        self.save()
+
         return execution_id != None
 
     def data_upload(self, upload, cluster):

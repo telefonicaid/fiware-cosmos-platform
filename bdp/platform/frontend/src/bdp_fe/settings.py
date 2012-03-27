@@ -95,3 +95,7 @@ LOGGING = {
         }
     }
 }
+
+# UI settings
+MIN_RELOAD_PERIOD = 1
+RELOAD_PERIOD = 30

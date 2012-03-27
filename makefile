@@ -300,7 +300,10 @@ deb:
 	mkdir -p package/deb
 	mv ../samson_$(SAMSON_VERSION).$(SAMSON_RELEASE)* package/deb
 
-publish_deb: deb
+package/deb/samson_$(SAMSON_VERSION).$(SAMSON_RELEASE)_amd64.deb:
+	make deb
+
+publish_deb: package/deb/samson_$(SAMSON_VERSION).$(SAMSON_RELEASE)_amd64.deb
 	# Upload the files. A cron job on the server will include them in the repository
 	scp package/deb/* repo@samson09:/var/repository/ubuntu/incoming/$(DISTRO_CODENAME)
 

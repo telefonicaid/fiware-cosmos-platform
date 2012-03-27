@@ -30,6 +30,8 @@ public class ClusterServer implements Cluster.Iface {
     private static class ExitWithFailureCodeException
             extends SecurityException { }
     
+    private static final String NOTIFICATION_EMAIL = "cosmos-prod@tid.es";
+    
     // TODO: put this in a configuration file
     private static final String HDFS_URL = "hdfs://pshdp01:8011";
     private static final String JOBTRACKER_URL = "pshdp01:8012";
@@ -93,9 +95,9 @@ public class ClusterServer implements Cluster.Iface {
         Session session = Session.getInstance(props, null);
         try {
             Message msg = new MimeMessage(session);
-            msg.setFrom(new InternetAddress("cosmos@tid.es"));
+            msg.setFrom(new InternetAddress(NOTIFICATION_EMAIL));
             msg.addRecipient(Message.RecipientType.TO,
-                             new InternetAddress("cosmos@tid.es"));
+                             new InternetAddress(NOTIFICATION_EMAIL));
             msg.setSubject("Cosmos Failure");
             msg.setText(text);
             Transport.send(msg);

@@ -30,6 +30,8 @@ public class ClusterServer implements Cluster.Iface {
     private static class ExitWithFailureCodeException
             extends SecurityException { }
     
+    private static final String NOTIFICATION_EMAIL = "cosmos-prod@tid.es";
+    
     // TODO: put this in a configuration file
     private static final String HDFS_URL = "hdfs://pshdp01:8011";
     private static final String JOBTRACKER_URL = "pshdp01:8012";
@@ -93,9 +95,9 @@ public class ClusterServer implements Cluster.Iface {
         Session session = Session.getInstance(props, null);
         try {
             Message msg = new MimeMessage(session);
-            msg.setFrom(new InternetAddress("cosmos@tid.es"));
+            msg.setFrom(new InternetAddress(NOTIFICATION_EMAIL));
             msg.addRecipient(Message.RecipientType.TO,
-                             new InternetAddress("cosmos@tid.es"));
+                             new InternetAddress(NOTIFICATION_EMAIL));
             msg.setSubject("Cosmos Failure");
             msg.setText(text);
             Transport.send(msg);
@@ -132,10 +134,10 @@ public class ClusterServer implements Cluster.Iface {
     }
 
     @Override
-    public ClusterJobStatus getJobStatus(String jobId)
+    public ClusterJobResult getJobResult(String jobId)
             throws TransferException {
         try {
-            return this.jobRunner.getStatus(Integer.parseInt(jobId));
+            return this.jobRunner.getResult(Integer.parseInt(jobId));
         } catch (Throwable ex) {
             this.sendNotificationEmail(ex.getMessage(), ex.toString());
             throw new TransferException(ClusterErrorCode.INVALID_JOB_ID,
@@ -148,28 +150,31 @@ public class ClusterServer implements Cluster.Iface {
         
         private ExecutorService threadPool = Executors.newFixedThreadPool(
                 MAX_THREADS);
-        private List<Future<ClusterJobStatus>> jobs =
-                new ArrayList<Future<ClusterJobStatus>>();
+        private List<Future<ClusterJobResult>> results =
+                new ArrayList<Future<ClusterJobResult>>();
 
         public synchronized int startNewThread(String[] args) {
-            Future<ClusterJobStatus> status = this.threadPool.submit(
+            Future<ClusterJobResult> status = this.threadPool.submit(
                     new Job(args));
-            this.jobs.add(status);
-            return (this.jobs.size() - 1);
+            this.results.add(status);
+            return (this.results.size() - 1);
         }
         
-        public ClusterJobStatus getStatus(int id) throws InterruptedException, 
+        public ClusterJobResult getResult(int id) throws InterruptedException, 
                                                          ExecutionException {
-            Future<ClusterJobStatus> jobStatus = this.jobs.get(id);
-            if (jobStatus.isDone()) {
-                return jobStatus.get();
+            ClusterJobResult result;
+            Future<ClusterJobResult> resultFuture = this.results.get(id);
+            if (resultFuture.isDone()) {
+                result = resultFuture.get();
             } else {
-                return ClusterJobStatus.RUNNING;
+                result = new ClusterJobResult();
+                result.setStatus(ClusterJobStatus.RUNNING);
             }
+            return result;
         }
     }
     
-    private class Job implements Callable<ClusterJobStatus> {
+    private class Job implements Callable<ClusterJobResult> {
         private String[] args;
         
         public Job(String[] args) {
@@ -177,17 +182,23 @@ public class ClusterServer implements Cluster.Iface {
         }
 
         @Override
-        public ClusterJobStatus call() throws Exception {
+        public ClusterJobResult call() throws Exception {
+            ClusterJobResult result = new ClusterJobResult();
             try {
                 RunJar.main(this.args);
-                return ClusterJobStatus.SUCCESSFUL;
+                result.setStatus(ClusterJobStatus.SUCCESSFUL);
             } catch (ExitWithSuccessCodeException ex) {
-                return ClusterJobStatus.SUCCESSFUL;
+                result.setStatus(ClusterJobStatus.SUCCESSFUL);
             } catch (ExitWithFailureCodeException ex) {
-                return ClusterJobStatus.FAILED;
+                result.setStatus(ClusterJobStatus.FAILED);
+                result.setReason(new TransferException(
+                        ClusterErrorCode.RUN_JOB_FAILED, "Unknown error"));
             } catch (Throwable ex) {
-                return ClusterJobStatus.FAILED;
+                result.setStatus(ClusterJobStatus.FAILED);
+                result.setReason(new TransferException(
+                        ClusterErrorCode.RUN_JOB_FAILED, ex.getMessage()));
             }
+            return result;
         }
     }
 }

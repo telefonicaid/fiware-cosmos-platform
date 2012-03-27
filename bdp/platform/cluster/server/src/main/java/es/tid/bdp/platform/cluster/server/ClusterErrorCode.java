@@ -11,15 +11,14 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
-public enum ClusterJobStatus implements org.apache.thrift.TEnum {
-  NOT_STARTED(1),
-  RUNNING(2),
-  SUCCESSFUL(3),
-  FAILED(4);
+public enum ClusterErrorCode implements org.apache.thrift.TEnum {
+  FILE_COPY_FAILED(1),
+  RUN_JOB_FAILED(2),
+  INVALID_JOB_ID(3);
 
   private final int value;
 
-  private ClusterJobStatus(int value) {
+  private ClusterErrorCode(int value) {
     this.value = value;
   }
 
@@ -34,16 +33,14 @@ public enum ClusterJobStatus implements org.apache.thrift.TEnum {
    * Find a the enum type by its integer value, as defined in the Thrift IDL.
    * @return null if the value is not found.
    */
-  public static ClusterJobStatus findByValue(int value) { 
+  public static ClusterErrorCode findByValue(int value) { 
     switch (value) {
       case 1:
-        return NOT_STARTED;
+        return FILE_COPY_FAILED;
       case 2:
-        return RUNNING;
+        return RUN_JOB_FAILED;
       case 3:
-        return SUCCESSFUL;
-      case 4:
-        return FAILED;
+        return INVALID_JOB_ID;
       default:
         return null;
     }

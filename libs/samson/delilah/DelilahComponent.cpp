@@ -29,7 +29,7 @@ namespace samson {
         progress = 0;
         
         hidden = false;
-        
+        print_output_at_finish = false;    // By default, foreground process waits for component to finish
 	}
 	
 	void DelilahComponent::setId( Delilah * _delilah ,  size_t _id )
@@ -95,6 +95,10 @@ namespace samson {
         
         component_finished = true;
         cronometer.stop();
+
+        // Show ourput on screen
+        if( print_output_at_finish )
+            delilah->showMessage( output.str() );
         
         delilah->delilahComponentFinishNotification( this );
     }

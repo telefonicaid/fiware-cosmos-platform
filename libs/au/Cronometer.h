@@ -55,6 +55,10 @@ public:
     // Check if time is grater than this and reset if so. Return true if time has been reset.
     bool check( double time );
       
+    
+    std::string strClock();
+
+    
 };
 
 

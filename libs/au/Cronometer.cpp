@@ -84,6 +84,29 @@ std::string Cronometer::str()
    return str_time( diffTimeInSeconds() );
 }
 
+std::string Cronometer::strClock()
+{
+    char c = '-';
+    switch ( (int) ( diffTime() * 3 ) % 4 ) 
+    {
+        case 0:
+            c = '-';
+            break;
+        case 1:
+            c = '\\';
+            break;
+        case 2:
+            c = '|';
+            break;
+        default:
+            c = '/';
+            break;
+    }
+    return au::str("%c %s" , c , str_time(diffTimeInSeconds()).c_str() );
+    
+}
+
+
 #pragma mark CronometerSystem    
 
 CronometerSystem::CronometerSystem()

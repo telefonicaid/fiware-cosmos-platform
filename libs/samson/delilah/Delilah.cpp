@@ -403,7 +403,29 @@ namespace samson {
             showWarningMessage( au::str("Not possible to cancel delilah process %lu." , _id ) );
     }
 
-	
+    std::string Delilah::getOutputForComponent( size_t _id )
+    {
+        au::TokenTaker tk( &token );
+        
+        DelilahComponent* component = components.findInMap( _id );
+        
+        if( !component )
+            return au::str("Delilah component %lu not found" , _id);
+        return component->output.str();
+    }
+    
+    void Delilah::setBackgroundComponent( size_t _id )
+    {
+        au::TokenTaker tk( &token );
+        
+        DelilahComponent* component = components.findInMap( _id );
+        
+        if( component )
+            component->set_print_output_at_finish();
+        else
+            showWarningMessage( au::str("Not possible to set delilah process %lu in background." , _id ) );
+    }
+    
 	void Delilah::clearComponents()
 	{
         au::TokenTaker tk( &token );

@@ -174,7 +174,7 @@ namespace samson {
         // Get next worker_id to send data...
         size_t getNextWorkerId();
         
-	protected:
+	public:
 		
 		void clearComponents();
         void clearAllComponents();  // Force all of them to be removed
@@ -193,6 +193,8 @@ namespace samson {
         
         // Cancel a particuarl delilah_id
         void cancelComponent( size_t id );
+        void setBackgroundComponent( size_t id );
+        std::string getOutputForComponent( size_t id );
         
 	protected:		
 		

@@ -38,9 +38,12 @@ namespace samson {
 		Delilah *delilah;               // Pointer to delilah to notify finish or show messages
         std::string concept;            // Concept of this component to print list of components
 
-        double progress;
-        bool hidden;       // Flag to not show information on screen about this
+        double progress;                // Information about progress of this task
+        bool hidden;                    // Flag to not show information on screen about this
 
+        std::ostringstream output;      // Output to be shown on screen
+        bool print_output_at_finish;    // Flag to determine if we have to show result at the end
+        
         au::ErrorManager error;         // Manager of the error in this operation
         
 		DelilahComponent( DelilaComponentType _type);
@@ -71,6 +74,11 @@ namespace samson {
         std::string getConcept()
         {
             return concept;
+        }
+        
+        void set_print_output_at_finish()
+        {
+            print_output_at_finish = true;
         }
         
     protected:

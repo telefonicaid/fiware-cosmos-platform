@@ -543,6 +543,7 @@ void Console::writeOnConsole( std::string message )
     
     if( pthread_self() == t_running )
     {
+        clear_line();
         
         // Divide input message in lines
         std::istringstream input( message );
@@ -567,6 +568,7 @@ void Console::writeOnConsole( std::string message )
         while( true )
         {
             // Print all of them and return
+            clear_line();
             size_t max_pos = pos + num_lines_on_screen;
             for ( size_t i = pos ; i < std::min( lines.size() , max_pos ) ; i++ )
                 printf("%s\n", lines[i].c_str() );
@@ -576,11 +578,16 @@ void Console::writeOnConsole( std::string message )
             
             if( !continue_flag )
             {
-                printf("%d-%d / %d ------------------------------------------------------------------\n" 
+                
+                double p1 = (double) (pos) / ( double )lines.size();
+                double p2 = (double) (pos+num_lines_on_screen) / ( double )lines.size();
+                
+                printf("Lines %d-%d / %d [ %s ] [ space: next page c: continue q: quit ]" 
                        , (int)(pos+1) 
                        , (int)(pos+num_lines_on_screen) 
-                       , (int)lines.size() );
-                printf("Press c to continue until the end, q for quit or any other key to continue...\n");
+                       , (int)lines.size()
+                       , au::str_double_progress_bar(p1, p2, '.', '*', '.', 15).c_str()
+                       );
                 fflush( stdout );
                 
                 ConsoleEntry entry;

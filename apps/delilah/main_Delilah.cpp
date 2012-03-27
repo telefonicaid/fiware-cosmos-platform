@@ -234,11 +234,15 @@ int main(int argC, const char *argV[])
                 usleep(1000);
             }
             
-            
             if( delilahConsole->hasError( id ) )
             {
                 LM_E(("Error running '%s' \n", command ));
                 LM_E(("Error: %s",  delilahConsole->errorMessage( id ).c_str()));
+            }
+            else
+            {
+                printf("%s" , delilahConsole->getOutputForComponent(id).c_str());
+                fflush(stdout);
             }
             
         }

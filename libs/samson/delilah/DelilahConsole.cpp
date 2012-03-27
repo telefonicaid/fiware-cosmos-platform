@@ -126,13 +126,12 @@ namespace samson
             au::Cronometer cronometer;
             while( true )
             {
-                
                 au::ConsoleEntry entry;
                 std::string message;
                 if( cronometer.diffTimeInSeconds() > 2 )
                 {
-                    message = au::str(" [ %s ] Waiting process %lu : %s ... [ b: background c: cancel ]" 
-                                      , au::str_time( cronometer.diffTimeInSeconds()).c_str()
+                    message = au::str("[ %s ] Waiting process %lu : %s ... [ b: background c: cancel ]" 
+                                      , cronometer.strClock().c_str()
                                       , _delilah_id 
                                       , command.c_str()
                                       );
@@ -142,6 +141,9 @@ namespace samson
                 
                 if( !isActive( _delilah_id ) )
                 {
+                    // Print output
+                    refresh();
+                    writeOnConsole( getOutputForComponent(_delilah_id) );
                     return;
                 }
                 

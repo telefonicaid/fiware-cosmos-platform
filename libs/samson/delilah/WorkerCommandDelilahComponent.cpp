@@ -284,7 +284,7 @@ namespace samson {
         if( !hidden )
         {
             // Print the generated table
-            delilah->showMessage( table->strSortedGroupedAndfiltered(title, group_field, sort_field, filter_field , limit ) );
+            output << table->strSortedGroupedAndfiltered(title, group_field, sort_field, filter_field , limit );
         }
         
         if( save_in_database )

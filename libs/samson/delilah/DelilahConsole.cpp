@@ -292,6 +292,11 @@ namespace samson
             autoCompleteQueues( info );
         }
         
+        if( info->firstWord() == "push_queue" )
+        {
+            autoCompleteQueues( info );
+        }
+        
         if (info->completingSecondWord("ls_stream_operations") )
         {
             info->add("-properties");

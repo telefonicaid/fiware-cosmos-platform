@@ -513,7 +513,10 @@ void Console::writeOnConsole( std::string message )
                             printf("Press space to continue , c to continue until the end, q for quit... ");
                             fflush( stdout );
                             char c;
-                            scanf("%c", &c);
+                            if (scanf("%c", &c) == EOF)
+                            {
+                                //error
+                            }
                             
                             if( c == 'q' )
                                 return;

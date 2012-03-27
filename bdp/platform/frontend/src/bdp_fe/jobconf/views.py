@@ -28,12 +28,16 @@ CLUSTER = remote.Cluster(settings.CLUSTER_CONF.get('host'),
 @login_required
 def list_jobs(request):
     job_id = safe_int_param(request.GET, 'run_job')
+    reload_period = max(safe_int_param(request.GET, 'reload_period',
+                                       settings.RELOAD_PERIOD),
+                        settings.MIN_RELOAD_PERIOD)
     if job_id:
         run_job(request, job_id)
 
     return render_to_response('job_listing.html', {
         'title': 'Job listing',
-        'jobs': Job.objects.all(),
+        'jobs': Job.objects.filter(user=request.user),
+        'reload_period': reload_period,
     }, context_instance=RequestContext(request))
 
 
@@ -69,15 +73,21 @@ def view_results(request, job_id):
 
 def run_job(request, job_id):
     try:
-        job = Job.objects.get(id=job_id)
+        job = Job.objects.get(id=job_id, user=request.user)
     except Job.DoesNotExist:
         messages.warning(request, "Cannot start job %d: not found" % job_id)
         LOGGER.warning("Job %d not found" % job_id)
         return
 
-    if job.status != Job.CREATED:
+    if job.status != Job.CONFIGURED:
         msg = "Cannot start job %s while in %s status" % (
             job.name, job.get_status_display())
+        messages.warning(request, msg)
+        LOGGER.warning(msg)
+        return
+
+    if job.input_data is None or len(job.input_data) == 0:
+        msg = "No data for running job %s" % job.name
         messages.warning(request, msg)
         LOGGER.warning(msg)
         return
@@ -150,7 +160,7 @@ def upload_data(request, job_id):
         form = UploadDataForm(request.POST, request.FILES)
         if form.is_valid() and job.data_upload(request.FILES['file'],
                                                CLUSTER):
-            Job.input_data = job.hdfs_data_path()
+            job.input_data = job.hdfs_data_path()
             job.save()
             return redirect(reverse('list_jobs'))
         else:

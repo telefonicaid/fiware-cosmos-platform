@@ -57,7 +57,7 @@ public class CategoryExtractionJob extends Job {
 
     public void configurePaths(Path webLogsPath, Path categoriesPath)
             throws IOException {
-        FileInputFormat.addInputPath(this, webLogsPath);
+        FileInputFormat.setInputPaths(this, webLogsPath);
         FileOutputFormat.setOutputPath(this, categoriesPath);
         DistributedCacheDictionary.cacheDictionary(this,
                 DistributedCacheDictionary.LATEST_DICTIONARY);

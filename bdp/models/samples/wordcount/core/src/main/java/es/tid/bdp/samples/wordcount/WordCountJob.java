@@ -36,7 +36,7 @@ public class WordCountJob extends Job {
     public void configure(Path textPath, Path outputPath)
             throws IOException {
         this.setInputFormatClass(TextInputFormat.class);
-        FileInputFormat.addInputPath(this, textPath);
+        FileInputFormat.setInputPaths(this, textPath);
         this.setOutputFormatClass(TextOutputFormat.class);
         FileOutputFormat.setOutputPath(this, outputPath);
     }

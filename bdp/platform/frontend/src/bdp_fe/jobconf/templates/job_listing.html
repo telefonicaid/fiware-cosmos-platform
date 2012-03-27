@@ -1,6 +1,32 @@
 {% extends "base.html" %}
 {% load url from future %}
+
+{% block extrahead %}
+    <script type="text/javascript" src={{ STATIC_URL }}jquery-1.7.2.min.js></script>
+    <script type="text/javascript">
+        var reloadTemp;
+        function reloadPage() {
+            window.location = "{% url 'list_jobs' %}?reload_period=" +
+                $('#reload-input')[0].value;
+        }
+        function resetTemp() {
+            clearTimeout(reloadTemp);
+            reloadTemp = setTimeout(reloadPage, $('#reload-input')[0].value * 1000);
+        }
+        $(document).ready(function () {
+            reloadTemp = setTimeout(reloadPage, {{ reload_period }} * 1000);
+            $('#reload-input').change(resetTemp);
+            $('#reload-input').keyup(resetTemp);
+        });
+    </script>
+{% endblock %}
+
 {% block content %}
+<p>Reload every <input id="reload-input" type="number"
+                       value="{{ reload_period}}" maxlength="2"
+                       style="width: 3em"/> seconds.
+   <a href="javascript:reloadPage()">Reload now</a></p>
+
 {% if jobs %}
     <table id="jobs-table">
         <thead>
@@ -17,8 +43,8 @@
                 <td class="result-status">{{ job.get_status_display }}</td>
                 <td>
                     {% if job.status == 0 %}
-		    <a href="{% url 'list_jobs' %}?run_job={{ job.id }}" 
-		       class="result-link">Run</a>
+                    <a href="{% url 'list_jobs' %}?run_job={{ job.id }}"
+                       class="result-link">Run</a>
                     {% endif %}
                     {% if job.status > 1 %}
                     <a href="{% url 'view_results' job.id %}"

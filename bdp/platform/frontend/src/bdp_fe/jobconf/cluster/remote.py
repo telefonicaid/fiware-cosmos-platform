@@ -8,6 +8,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'gen-py'))
 
 from cluster_api.Cluster import Client
 from cluster_api.constants import *
+from cluster_api.ttypes import TransferException
 
 from thrift import Thrift
 from thrift.transport import TSocket
@@ -19,6 +20,13 @@ class ConnException(Exception):
     pass
 
 
+class ClusterException(Exception):
+
+    def __init__(self, error_code, error_message):
+        self.error_code = error_code
+        self.error_message = error_message
+
+
 def wrap_exceptions(fn):
 
     def wrapped_call(*args, **kwargs):
@@ -27,6 +35,9 @@ def wrap_exceptions(fn):
         except TTransport.TTransportException, ex:
             trace = sys.exc_info()[2]
             raise ConnException("Connection problem"), None, trace
+        except TransferException, ex:
+            trace = sys.exc_info()[2]
+            raise ClusterException(ex.errorCode, ex.errorMsg), None, trace
 
     return wrapped_call
 
@@ -53,8 +64,8 @@ class Cluster:
         return execution_id
 
     @wrap_exceptions
-    def getJobStatus(self, jobId):
+    def getJobResult(self, jobId):
         self.transport.open()
-        status = self.cluster.getJobStatus(jobId)
+        result = self.cluster.getJobResult(jobId)
         self.transport.close()
-        return status
+        return result

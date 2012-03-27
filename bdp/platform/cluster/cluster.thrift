@@ -13,10 +13,16 @@ exception TransferException {
 }
 
 enum ClusterJobStatus {
-    RUNNING = 1,
-    SUCCESSFUL = 2,
-    FAILED = 3
+    NOT_STARTED = 1,
+    RUNNING = 2,
+    SUCCESSFUL = 3,
+    FAILED = 4
 }
+
+struct ClusterJobResult {
+    1: ClusterJobStatus status,
+    2: TransferException reason
+} 
 
 service Cluster {
     void copyToHdfs(1:string srcPath, 2:string destPath) 
@@ -25,6 +31,6 @@ service Cluster {
     string runJob(1:string jarPath, 2:string inputPath, 3:string outputPath,
                   4:string mongoUrl) throws (1: TransferException ex),
 
-    ClusterJobStatus getJobStatus(1:string jobId)
+    ClusterJobResult getJobResult(1:string jobId)
             throws (1: TransferException ex),
 }

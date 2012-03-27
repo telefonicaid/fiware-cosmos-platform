@@ -2,7 +2,6 @@
 Module bdp_fe.jobconf.views
 
 """
-
 import logging
 
 from django import forms
@@ -43,11 +42,21 @@ def list_jobs(request):
 @login_required
 def view_results(request, job_id):
     job = util.get_owned_job_or_40x(request, job_id)
+    if job.status == Job.SUCCESSFUL:
+        return view_successful_results(request, job)
+    elif job.status == Job.FAILED:
+        return view_error(request, job)
+    else:
+        raise Http404
+
+
+def view_successful_results(request, job):
+    job = util.get_owned_job_or_40x(request, job.id)
     if job.status != Job.SUCCESSFUL:
         raise Http404
     try:
         primary_key = request.GET.get('primary_key')
-        results = util.retrieve_results(job_id, primary_key)
+        results = util.retrieve_results(job.id, primary_key)
         prototype_result = results[0]
         if not primary_key:
             primary_key = prototype_result.pk
@@ -62,7 +71,7 @@ def view_results(request, job_id):
         except EmptyPage:
             paginated_results = paginator.page(paginator.num_pages)
 
-        context = {'title' : 'Results of job %s' % job_id,
+        context = {'title' : 'Results of job %s' % job.id,
                    'job_results' : paginated_results,
                    'prototype_result': prototype_result,
                    'hidden_keys': util.HIDDEN_KEYS,
@@ -72,7 +81,7 @@ def view_results(request, job_id):
                                   context,
                                   context_instance=RequestContext(request))
     except util.NoResultsError:
-        context = {'title' : 'Results of job %s' % job_id,
+        context = {'title' : 'Results of job %s' % job.id,
                    'job_results' : None,
                    'hidden_keys': util.HIDDEN_KEYS,
                    'expand_types': ['dict', 'list']}
@@ -83,6 +92,14 @@ def view_results(request, job_id):
         context = {'reason': 'Database not available'}
         return HttpResponse(loader.render_to_string("503.html", context),
                             status=503)
+
+
+def view_error(request, job):
+    return render_to_response('error_report.html', {
+        'title': 'Error report for %s' % job.name,
+        'job': job,
+    }, context_instance=RequestContext(request))
+
 
 def run_job(request, job_id):
     try:

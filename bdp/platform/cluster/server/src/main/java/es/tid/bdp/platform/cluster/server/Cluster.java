@@ -35,7 +35,7 @@ public class Cluster {
 
     public String runJob(String jarPath, String inputPath, String outputPath, String mongoUrl) throws TransferException, org.apache.thrift.TException;
 
-    public ClusterJobStatus getJobStatus(String jobId) throws TransferException, org.apache.thrift.TException;
+    public ClusterJobResult getJobResult(String jobId) throws TransferException, org.apache.thrift.TException;
 
   }
 
@@ -45,7 +45,7 @@ public class Cluster {
 
     public void runJob(String jarPath, String inputPath, String outputPath, String mongoUrl, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.runJob_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void getJobStatus(String jobId, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getJobStatus_call> resultHandler) throws org.apache.thrift.TException;
+    public void getJobResult(String jobId, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getJobResult_call> resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -122,30 +122,30 @@ public class Cluster {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "runJob failed: unknown result");
     }
 
-    public ClusterJobStatus getJobStatus(String jobId) throws TransferException, org.apache.thrift.TException
+    public ClusterJobResult getJobResult(String jobId) throws TransferException, org.apache.thrift.TException
     {
-      send_getJobStatus(jobId);
-      return recv_getJobStatus();
+      send_getJobResult(jobId);
+      return recv_getJobResult();
     }
 
-    public void send_getJobStatus(String jobId) throws org.apache.thrift.TException
+    public void send_getJobResult(String jobId) throws org.apache.thrift.TException
     {
-      getJobStatus_args args = new getJobStatus_args();
+      getJobResult_args args = new getJobResult_args();
       args.setJobId(jobId);
-      sendBase("getJobStatus", args);
+      sendBase("getJobResult", args);
     }
 
-    public ClusterJobStatus recv_getJobStatus() throws TransferException, org.apache.thrift.TException
+    public ClusterJobResult recv_getJobResult() throws TransferException, org.apache.thrift.TException
     {
-      getJobStatus_result result = new getJobStatus_result();
-      receiveBase(result, "getJobStatus");
+      getJobResult_result result = new getJobResult_result();
+      receiveBase(result, "getJobResult");
       if (result.isSetSuccess()) {
         return result.success;
       }
       if (result.ex != null) {
         throw result.ex;
       }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getJobStatus failed: unknown result");
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getJobResult failed: unknown result");
     }
 
   }
@@ -242,35 +242,35 @@ public class Cluster {
       }
     }
 
-    public void getJobStatus(String jobId, org.apache.thrift.async.AsyncMethodCallback<getJobStatus_call> resultHandler) throws org.apache.thrift.TException {
+    public void getJobResult(String jobId, org.apache.thrift.async.AsyncMethodCallback<getJobResult_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      getJobStatus_call method_call = new getJobStatus_call(jobId, resultHandler, this, ___protocolFactory, ___transport);
+      getJobResult_call method_call = new getJobResult_call(jobId, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
-    public static class getJobStatus_call extends org.apache.thrift.async.TAsyncMethodCall {
+    public static class getJobResult_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String jobId;
-      public getJobStatus_call(String jobId, org.apache.thrift.async.AsyncMethodCallback<getJobStatus_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public getJobResult_call(String jobId, org.apache.thrift.async.AsyncMethodCallback<getJobResult_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.jobId = jobId;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getJobStatus", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        getJobStatus_args args = new getJobStatus_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getJobResult", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        getJobResult_args args = new getJobResult_args();
         args.setJobId(jobId);
         args.write(prot);
         prot.writeMessageEnd();
       }
 
-      public ClusterJobStatus getResult() throws TransferException, org.apache.thrift.TException {
+      public ClusterJobResult getResult() throws TransferException, org.apache.thrift.TException {
         if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_getJobStatus();
+        return (new Client(prot)).recv_getJobResult();
       }
     }
 
@@ -289,7 +289,7 @@ public class Cluster {
     private static <I extends Iface> Map<String,  org.apache.thrift.ProcessFunction<I, ? extends  org.apache.thrift.TBase>> getProcessMap(Map<String,  org.apache.thrift.ProcessFunction<I, ? extends  org.apache.thrift.TBase>> processMap) {
       processMap.put("copyToHdfs", new copyToHdfs());
       processMap.put("runJob", new runJob());
-      processMap.put("getJobStatus", new getJobStatus());
+      processMap.put("getJobResult", new getJobResult());
       return processMap;
     }
 
@@ -333,19 +333,19 @@ public class Cluster {
       }
     }
 
-    private static class getJobStatus<I extends Iface> extends org.apache.thrift.ProcessFunction<I, getJobStatus_args> {
-      public getJobStatus() {
-        super("getJobStatus");
+    private static class getJobResult<I extends Iface> extends org.apache.thrift.ProcessFunction<I, getJobResult_args> {
+      public getJobResult() {
+        super("getJobResult");
       }
 
-      protected getJobStatus_args getEmptyArgsInstance() {
-        return new getJobStatus_args();
+      protected getJobResult_args getEmptyArgsInstance() {
+        return new getJobResult_args();
       }
 
-      protected getJobStatus_result getResult(I iface, getJobStatus_args args) throws org.apache.thrift.TException {
-        getJobStatus_result result = new getJobStatus_result();
+      protected getJobResult_result getResult(I iface, getJobResult_args args) throws org.apache.thrift.TException {
+        getJobResult_result result = new getJobResult_result();
         try {
-          result.success = iface.getJobStatus(args.jobId);
+          result.success = iface.getJobResult(args.jobId);
         } catch (TransferException ex) {
           result.ex = ex;
         }
@@ -2271,15 +2271,15 @@ public class Cluster {
 
   }
 
-  public static class getJobStatus_args implements org.apache.thrift.TBase<getJobStatus_args, getJobStatus_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getJobStatus_args");
+  public static class getJobResult_args implements org.apache.thrift.TBase<getJobResult_args, getJobResult_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getJobResult_args");
 
     private static final org.apache.thrift.protocol.TField JOB_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("jobId", org.apache.thrift.protocol.TType.STRING, (short)1);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new getJobStatus_argsStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new getJobStatus_argsTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new getJobResult_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new getJobResult_argsTupleSchemeFactory());
     }
 
     public String jobId; // required
@@ -2349,13 +2349,13 @@ public class Cluster {
       tmpMap.put(_Fields.JOB_ID, new org.apache.thrift.meta_data.FieldMetaData("jobId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getJobStatus_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getJobResult_args.class, metaDataMap);
     }
 
-    public getJobStatus_args() {
+    public getJobResult_args() {
     }
 
-    public getJobStatus_args(
+    public getJobResult_args(
       String jobId)
     {
       this();
@@ -2365,14 +2365,14 @@ public class Cluster {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public getJobStatus_args(getJobStatus_args other) {
+    public getJobResult_args(getJobResult_args other) {
       if (other.isSetJobId()) {
         this.jobId = other.jobId;
       }
     }
 
-    public getJobStatus_args deepCopy() {
-      return new getJobStatus_args(this);
+    public getJobResult_args deepCopy() {
+      return new getJobResult_args(this);
     }
 
     @Override
@@ -2384,7 +2384,7 @@ public class Cluster {
       return this.jobId;
     }
 
-    public getJobStatus_args setJobId(String jobId) {
+    public getJobResult_args setJobId(String jobId) {
       this.jobId = jobId;
       return this;
     }
@@ -2443,12 +2443,12 @@ public class Cluster {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof getJobStatus_args)
-        return this.equals((getJobStatus_args)that);
+      if (that instanceof getJobResult_args)
+        return this.equals((getJobResult_args)that);
       return false;
     }
 
-    public boolean equals(getJobStatus_args that) {
+    public boolean equals(getJobResult_args that) {
       if (that == null)
         return false;
 
@@ -2469,13 +2469,13 @@ public class Cluster {
       return 0;
     }
 
-    public int compareTo(getJobStatus_args other) {
+    public int compareTo(getJobResult_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      getJobStatus_args typedOther = (getJobStatus_args)other;
+      getJobResult_args typedOther = (getJobResult_args)other;
 
       lastComparison = Boolean.valueOf(isSetJobId()).compareTo(typedOther.isSetJobId());
       if (lastComparison != 0) {
@@ -2504,7 +2504,7 @@ public class Cluster {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("getJobStatus_args(");
+      StringBuilder sb = new StringBuilder("getJobResult_args(");
       boolean first = true;
 
       sb.append("jobId:");
@@ -2538,15 +2538,15 @@ public class Cluster {
       }
     }
 
-    private static class getJobStatus_argsStandardSchemeFactory implements SchemeFactory {
-      public getJobStatus_argsStandardScheme getScheme() {
-        return new getJobStatus_argsStandardScheme();
+    private static class getJobResult_argsStandardSchemeFactory implements SchemeFactory {
+      public getJobResult_argsStandardScheme getScheme() {
+        return new getJobResult_argsStandardScheme();
       }
     }
 
-    private static class getJobStatus_argsStandardScheme extends StandardScheme<getJobStatus_args> {
+    private static class getJobResult_argsStandardScheme extends StandardScheme<getJobResult_args> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, getJobStatus_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, getJobResult_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -2575,7 +2575,7 @@ public class Cluster {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, getJobStatus_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, getJobResult_args struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
@@ -2590,16 +2590,16 @@ public class Cluster {
 
     }
 
-    private static class getJobStatus_argsTupleSchemeFactory implements SchemeFactory {
-      public getJobStatus_argsTupleScheme getScheme() {
-        return new getJobStatus_argsTupleScheme();
+    private static class getJobResult_argsTupleSchemeFactory implements SchemeFactory {
+      public getJobResult_argsTupleScheme getScheme() {
+        return new getJobResult_argsTupleScheme();
       }
     }
 
-    private static class getJobStatus_argsTupleScheme extends TupleScheme<getJobStatus_args> {
+    private static class getJobResult_argsTupleScheme extends TupleScheme<getJobResult_args> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, getJobStatus_args struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, getJobResult_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
         if (struct.isSetJobId()) {
@@ -2612,7 +2612,7 @@ public class Cluster {
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, getJobStatus_args struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, getJobResult_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
@@ -2624,31 +2624,23 @@ public class Cluster {
 
   }
 
-  public static class getJobStatus_result implements org.apache.thrift.TBase<getJobStatus_result, getJobStatus_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getJobStatus_result");
+  public static class getJobResult_result implements org.apache.thrift.TBase<getJobResult_result, getJobResult_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getJobResult_result");
 
-    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.I32, (short)0);
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRUCT, (short)0);
     private static final org.apache.thrift.protocol.TField EX_FIELD_DESC = new org.apache.thrift.protocol.TField("ex", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
-      schemes.put(StandardScheme.class, new getJobStatus_resultStandardSchemeFactory());
-      schemes.put(TupleScheme.class, new getJobStatus_resultTupleSchemeFactory());
+      schemes.put(StandardScheme.class, new getJobResult_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new getJobResult_resultTupleSchemeFactory());
     }
 
-    /**
-     * 
-     * @see ClusterJobStatus
-     */
-    public ClusterJobStatus success; // required
+    public ClusterJobResult success; // required
     public TransferException ex; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      /**
-       * 
-       * @see ClusterJobStatus
-       */
       SUCCESS((short)0, "success"),
       EX((short)1, "ex");
 
@@ -2713,18 +2705,18 @@ public class Cluster {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, ClusterJobStatus.class)));
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ClusterJobResult.class)));
       tmpMap.put(_Fields.EX, new org.apache.thrift.meta_data.FieldMetaData("ex", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getJobStatus_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getJobResult_result.class, metaDataMap);
     }
 
-    public getJobStatus_result() {
+    public getJobResult_result() {
     }
 
-    public getJobStatus_result(
-      ClusterJobStatus success,
+    public getJobResult_result(
+      ClusterJobResult success,
       TransferException ex)
     {
       this();
@@ -2735,17 +2727,17 @@ public class Cluster {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public getJobStatus_result(getJobStatus_result other) {
+    public getJobResult_result(getJobResult_result other) {
       if (other.isSetSuccess()) {
-        this.success = other.success;
+        this.success = new ClusterJobResult(other.success);
       }
       if (other.isSetEx()) {
         this.ex = new TransferException(other.ex);
       }
     }
 
-    public getJobStatus_result deepCopy() {
-      return new getJobStatus_result(this);
+    public getJobResult_result deepCopy() {
+      return new getJobResult_result(this);
     }
 
     @Override
@@ -2754,19 +2746,11 @@ public class Cluster {
       this.ex = null;
     }
 
-    /**
-     * 
-     * @see ClusterJobStatus
-     */
-    public ClusterJobStatus getSuccess() {
+    public ClusterJobResult getSuccess() {
       return this.success;
     }
 
-    /**
-     * 
-     * @see ClusterJobStatus
-     */
-    public getJobStatus_result setSuccess(ClusterJobStatus success) {
+    public getJobResult_result setSuccess(ClusterJobResult success) {
       this.success = success;
       return this;
     }
@@ -2790,7 +2774,7 @@ public class Cluster {
       return this.ex;
     }
 
-    public getJobStatus_result setEx(TransferException ex) {
+    public getJobResult_result setEx(TransferException ex) {
       this.ex = ex;
       return this;
     }
@@ -2816,7 +2800,7 @@ public class Cluster {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((ClusterJobStatus)value);
+          setSuccess((ClusterJobResult)value);
         }
         break;
 
@@ -2862,12 +2846,12 @@ public class Cluster {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof getJobStatus_result)
-        return this.equals((getJobStatus_result)that);
+      if (that instanceof getJobResult_result)
+        return this.equals((getJobResult_result)that);
       return false;
     }
 
-    public boolean equals(getJobStatus_result that) {
+    public boolean equals(getJobResult_result that) {
       if (that == null)
         return false;
 
@@ -2897,13 +2881,13 @@ public class Cluster {
       return 0;
     }
 
-    public int compareTo(getJobStatus_result other) {
+    public int compareTo(getJobResult_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      getJobStatus_result typedOther = (getJobStatus_result)other;
+      getJobResult_result typedOther = (getJobResult_result)other;
 
       lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
       if (lastComparison != 0) {
@@ -2942,7 +2926,7 @@ public class Cluster {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("getJobStatus_result(");
+      StringBuilder sb = new StringBuilder("getJobResult_result(");
       boolean first = true;
 
       sb.append("success:");
@@ -2984,15 +2968,15 @@ public class Cluster {
       }
     }
 
-    private static class getJobStatus_resultStandardSchemeFactory implements SchemeFactory {
-      public getJobStatus_resultStandardScheme getScheme() {
-        return new getJobStatus_resultStandardScheme();
+    private static class getJobResult_resultStandardSchemeFactory implements SchemeFactory {
+      public getJobResult_resultStandardScheme getScheme() {
+        return new getJobResult_resultStandardScheme();
       }
     }
 
-    private static class getJobStatus_resultStandardScheme extends StandardScheme<getJobStatus_result> {
+    private static class getJobResult_resultStandardScheme extends StandardScheme<getJobResult_result> {
 
-      public void read(org.apache.thrift.protocol.TProtocol iprot, getJobStatus_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol iprot, getJobResult_result struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TField schemeField;
         iprot.readStructBegin();
         while (true)
@@ -3003,8 +2987,9 @@ public class Cluster {
           }
           switch (schemeField.id) {
             case 0: // SUCCESS
-              if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-                struct.success = ClusterJobStatus.findByValue(iprot.readI32());
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.success = new ClusterJobResult();
+                struct.success.read(iprot);
                 struct.setSuccessIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -3030,13 +3015,13 @@ public class Cluster {
         struct.validate();
       }
 
-      public void write(org.apache.thrift.protocol.TProtocol oprot, getJobStatus_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol oprot, getJobResult_result struct) throws org.apache.thrift.TException {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
         if (struct.success != null) {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-          oprot.writeI32(struct.success.getValue());
+          struct.success.write(oprot);
           oprot.writeFieldEnd();
         }
         if (struct.ex != null) {
@@ -3050,16 +3035,16 @@ public class Cluster {
 
     }
 
-    private static class getJobStatus_resultTupleSchemeFactory implements SchemeFactory {
-      public getJobStatus_resultTupleScheme getScheme() {
-        return new getJobStatus_resultTupleScheme();
+    private static class getJobResult_resultTupleSchemeFactory implements SchemeFactory {
+      public getJobResult_resultTupleScheme getScheme() {
+        return new getJobResult_resultTupleScheme();
       }
     }
 
-    private static class getJobStatus_resultTupleScheme extends TupleScheme<getJobStatus_result> {
+    private static class getJobResult_resultTupleScheme extends TupleScheme<getJobResult_result> {
 
       @Override
-      public void write(org.apache.thrift.protocol.TProtocol prot, getJobStatus_result struct) throws org.apache.thrift.TException {
+      public void write(org.apache.thrift.protocol.TProtocol prot, getJobResult_result struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
         if (struct.isSetSuccess()) {
@@ -3070,7 +3055,7 @@ public class Cluster {
         }
         oprot.writeBitSet(optionals, 2);
         if (struct.isSetSuccess()) {
-          oprot.writeI32(struct.success.getValue());
+          struct.success.write(oprot);
         }
         if (struct.isSetEx()) {
           struct.ex.write(oprot);
@@ -3078,11 +3063,12 @@ public class Cluster {
       }
 
       @Override
-      public void read(org.apache.thrift.protocol.TProtocol prot, getJobStatus_result struct) throws org.apache.thrift.TException {
+      public void read(org.apache.thrift.protocol.TProtocol prot, getJobResult_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
-          struct.success = ClusterJobStatus.findByValue(iprot.readI32());
+          struct.success = new ClusterJobResult();
+          struct.success.read(iprot);
           struct.setSuccessIsSet(true);
         }
         if (incoming.get(1)) {

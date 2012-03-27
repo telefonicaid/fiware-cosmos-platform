@@ -82,16 +82,16 @@ class Job(models.Model):
             LOGGER.info("Cannot start job %d: error %d" % (self.id,
                                                            ex.error_code))
             self.status = Job.FAILED
-            self.error_code = ex.error_code
-            self.error_message = ex.error_message
+            self.set_error(ex)
             self.save()
             return False
 
         except Exception, ex:
             LOGGER.info("Cannot start job %d: %s" % (self.id, ex.message))
             self.status = Job.FAILED
-            self.error_code = Job.UNKNOWN
-            self.error_message = ex.message
+            self.error_error = Job.UNKNOWN
+            self.error_message = self.trim_to(ex.message,
+                                              ERROR_MESSAGE_MAX_LENGTH)
             self.save()
 
 
@@ -115,6 +115,17 @@ class Job(models.Model):
         except Exception, ex:
             LOGGER.exception(ex)
             return False
+
+    def set_error(self, cluster_exception):
+        self.error_code = cluster_exception.errorCode
+        self.error_message = self.trim_to(cluster_exception.errorMsg,
+                                          Job.ERROR_MESSAGE_MAX_LENGTH)
+
+    def trim_to(self, text, max_length):
+        if len(text) > max_length:
+            return text[:max_length - 4] + "\n..."
+        else:
+            return text
 
     def hdfs_base(self):
         return "/bdp/user/%s/job_%d" % (self.user.username, self.id)

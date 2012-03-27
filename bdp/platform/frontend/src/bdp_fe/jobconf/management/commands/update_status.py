@@ -35,8 +35,7 @@ class Command(BaseCommand):
                         result = CLUSTER.getJobResult(job.execution_id)
                         job.status = result.status - 1
                         if result.reason is not None:
-                            job.error_code = result.reason.errorCode
-                            job.error_message = result.reason.errorMsg
+                            job.set_error(result.reason)
                         job.save()
                         updated += 1
                     except remote.ClusterException, ex:

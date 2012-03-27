@@ -1,6 +1,7 @@
 package es.tid.bdp.frontend.tests;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
@@ -34,6 +35,9 @@ import es.tid.bdp.frontend.om.SelectNamePage;
 @Test(singleThreaded = true)
 public class FrontendTest {
     private static final String WORDCOUNT_FILENAME = "wordcount.jar";
+    private static final String SIMPLE_TEXT = "Very simple text file";
+    private static final int TASK_COUNT = 4;
+    
     private FrontEnd frontend;
     private String wordcountJarPath;
     private String emptyJarPath;
@@ -185,22 +189,24 @@ public class FrontendTest {
                 restrictions.contains("Tool"),
                 "Verifying restrictions mention the Tool interface");
     }
+    
+    private String createAutoDeleteFile(String text)
+            throws IOException {
+        File tmpFile = File.createTempFile("webui-", ".tmp");
+        tmpFile.deleteOnExit();
+
+        PrintWriter writer = new PrintWriter(tmpFile);
+        try {
+            writer.write(text);
+        } finally {
+            writer.close();
+        }
+
+        return tmpFile.getAbsolutePath();
+    }
 
     public void testSimpleTask() throws IOException, TestException {
-        final String inputFilePath;
-        {
-            File tmpFile = File.createTempFile("webui-wordcount", ".tmp");
-            tmpFile.deleteOnExit();
-
-            PrintWriter writer = new PrintWriter(tmpFile);
-            try {
-                writer.write("Very simple text file");
-            } finally {
-                writer.close();
-            }
-
-            inputFilePath = tmpFile.getAbsolutePath();
-        }
+        final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
         FrontendLauncher testDriver = new FrontendLauncher();
         String taskId = testDriver.createNewTask(inputFilePath,
                                                  this.wordcountJarPath);
@@ -209,24 +215,10 @@ public class FrontendTest {
     }
 
     public void testParallelTasks() throws IOException, TestException {
-        final String inputFilePath;
-        final int taskCount = 4;
-        {
-            File tmpFile = File.createTempFile("webui-wordcount", ".tmp");
-            tmpFile.deleteOnExit();
-
-            PrintWriter writer = new PrintWriter(tmpFile);
-            try {
-                writer.write("Very simple text file");
-            } finally {
-                writer.close();
-            }
-
-            inputFilePath = tmpFile.getAbsolutePath();
-        }
+        final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
         FrontendLauncher testDriver = new FrontendLauncher();
-        String[] taskIds = new String[taskCount];
-        for (int i = 0; i < taskCount; ++i) {
+        String[] taskIds = new String[TASK_COUNT];
+        for (int i = 0; i < TASK_COUNT; ++i) {
             taskIds[i] = testDriver.createNewTask(inputFilePath,
                                                   this.wordcountJarPath,
                                                   false);
@@ -241,7 +233,7 @@ public class FrontendTest {
             testDriver.launchTask(taskId);
         }
         for (String taskId : taskIds) {
-            TaskStatus jobStatus = testDriver.getTaskStatus(taskIds[i]);
+            TaskStatus jobStatus = testDriver.getTaskStatus(taskId);
             assertTrue(jobStatus == TaskStatus.Completed
                     || jobStatus == TaskStatus.Running,
                        "Verifying task is in running or completed state."
@@ -264,20 +256,7 @@ public class FrontendTest {
     }
 
     public void testInvalidJar() throws IOException, TestException {
-        final String inputFilePath;
-        {
-            File tmpFile = File.createTempFile("webui-invalidjar", ".tmp");
-            tmpFile.deleteOnExit();
-
-            PrintWriter writer = new PrintWriter(tmpFile);
-            try {
-                writer.write("Very simple text file");
-            } finally {
-                writer.close();
-            }
-
-            inputFilePath = tmpFile.getAbsolutePath();
-        }
+        final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
         FrontendLauncher testDriver = new FrontendLauncher();
         final String taskId = testDriver.createNewTask(inputFilePath,
                                                        this.emptyJarPath,

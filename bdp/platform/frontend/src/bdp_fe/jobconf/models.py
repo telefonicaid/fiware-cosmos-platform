@@ -50,21 +50,50 @@ class Job(models.Model):
     execution_id = models.CharField(null=True, blank=True,
                                     max_length=EXECUTION_ID_MAX_LENGTH)
 
+    UNKNOWN = 0
+    FILE_COPY_FAILED = 1
+    RUN_JOB_FAILED = 2
+    INVALID_JOB_ID = 3
+    CLUSTER_ERROR_CHOICES = (
+        (UNKNOWN, 'Unknown error'),
+        (FILE_COPY_FAILED, 'File transfer failed'),
+        (RUN_JOB_FAILED, 'Job execution failed'),
+        (INVALID_JOB_ID, 'Invalid job ID'),
+    )
+    error_code = models.IntegerField(choices=CLUSTER_ERROR_CHOICES,
+                                     null=True, blank=True)
+
+    ERROR_MESSAGE_MAX_LENGTH = 4096
+    error_message = models.CharField(null=True, blank=True,
+                                     max_length=ERROR_MESSAGE_MAX_LENGTH)
 
     def start(self, cluster):
 	"""Returns true on success."""
         model = CustomJobModel.objects.get(job=self) # FIXME: non polymorfic
-        execution_id = model.start(cluster)
-        if execution_id is not None:
+        try:
+            execution_id = model.start(cluster)
             LOGGER.info("Execution id is %s" % execution_id)
             self.execution_id = execution_id
             self.status = Job.RUNNING
-        else:
-            LOGGER.info("Cannot start job %d" % self.id)
-            self.status = Job.FAILED
-        self.save()
+            self.save()
+            return True
 
-        return execution_id != None
+        except ClusterException, ex:
+            LOGGER.info("Cannot start job %d: error %d" % (self.id,
+                                                           ex.error_code))
+            self.status = Job.FAILED
+            self.error_code = ex.error_code
+            self.error_message = ex.error_message
+            self.save()
+            return False
+
+        except Exception, ex:
+            LOGGER.info("Cannot start job %d: %s" % (self.id, ex.message))
+            self.status = Job.FAILED
+            self.error_code = Job.UNKNOWN
+            self.error_message = ex.message
+            self.save()
+
 
     def data_upload(self, upload, cluster):
         """

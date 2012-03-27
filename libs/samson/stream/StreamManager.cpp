@@ -499,9 +499,14 @@ namespace samson {
             
             if( currently_saving )
             {
-                LM_W(("Not possible to save stream manager state to disk because it is still writing the previous one"));
+                size_t t = cronometer_save_state_to_disk.diffTimeInSeconds();
+                if( t > 60 )
+                    LM_W(("Not possible to save stream manager state to disk. Last save %s ago" , au::str_time(t).c_str() ));
                 return;
             }
+            
+            // reset cronometer since we are going to save state now...
+            cronometer_save_state_to_disk.reset();
             
             std::string fileName = SamsonSetup::shared()->streamManagerLogFileName();
             

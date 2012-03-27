@@ -321,7 +321,6 @@ namespace samson {
                 network->send( p );
             }
             
-#if 0
             // Some ancient samson-0.6 useful Status information
             // Collect some information and print status...
             int num_processes = engine::ProcessManager::shared()->public_num_proccesses;
@@ -339,7 +338,7 @@ namespace samson {
                   , au::str( disk_read_rate , "Bs" ).c_str()
                   , au::str( disk_write_rate , "Bs" ).c_str()
                   ));
-#endif
+
         }
         else if( notification->isName( notification_samson_worker_send_packet ) )
         {

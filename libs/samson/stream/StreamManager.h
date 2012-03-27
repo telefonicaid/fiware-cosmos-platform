@@ -74,6 +74,9 @@ namespace samson {
             // Map of quuee connections
             au::map <std::string , QueueConnections > queue_connections;
             
+            // Cronometer since the last "save state to disk"
+            au::Cronometer cronometer_save_state_to_disk;
+            
         public:
             
             // Manager of the tasks associated with the queues

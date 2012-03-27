@@ -133,11 +133,11 @@ void captureSIGTERM( int s )
 void cleanup(void)
 {
     LM_T(LmtCleanup, ("Shutting down worker components (worker at %p)", worker));
-    if (worker)
+    if (worker != NULL)
     {
         if (worker->network != NULL)
         {
-            LM_T(LmtCleanup, ("NOT deleting worker's network"));
+            LM_T(LmtCleanup, ("NOT deleting worker's network (don't ask me why)"));
             // delete worker->network;
         }
 
@@ -158,6 +158,9 @@ void cleanup(void)
         smManager = NULL;
     }
     
+    LM_T(LmtCleanup, ("destroying BlockManager"));
+    samson::stream::BlockManager::destroy();
+
     LM_T(LmtCleanup, ("destroying ModulesManager"));
     samson::ModulesManager::destroy();
 

@@ -10,8 +10,19 @@ namespace samson {
     WorkerNetwork::~WorkerNetwork()
     {
         LM_T(LmtCleanup, ("In destructor"));
-        // delete worker_listener;
-        // delete web_listener;
+        if (worker_listener != NULL)
+        {
+            LM_T(LmtCleanup, ("NOT deleting worker_listener (don't ask me why)"));
+            // delete worker_listener;
+            worker_listener = NULL;
+        }
+
+        if (web_listener != NULL)
+        {
+            LM_T(LmtCleanup, ("NOT deleting web_listener (don't ask me why)"));
+            // delete web_listener;
+            web_listener = NULL;
+        }
     }
 
     WorkerNetwork::WorkerNetwork( int port , int web_port )

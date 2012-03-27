@@ -4,9 +4,41 @@
         <script type="text/javascript" src={{ STATIC_URL }}jquery-1.7.2.min.js></script>
         <script type="text/javascript" src={{ STATIC_URL }}visualize.jQuery.js></script>
         <script type="text/javascript">
+        $.extend({
+          getUrlVars: function(){
+            var vars = {}, hash;
+            if (window.location.href.indexOf('?') === -1) {
+                return {};
+            }
+            var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+            for(var i = 0; i < hashes.length; i++)
+            {
+              hash = hashes[i].split('=');
+              vars[hash[0]] = hash[1];
+            }
+            return vars;
+          },
+          getUrlVar: function(name){
+            return $.getUrlVars()[name];
+          }
+        });
         $(function(){
             $('#job-results-table').visualize({type: 'pie', pieMargin: 10});
             $('#job-results-table').visualize({type: 'bar'});
+            $('#select-pk').change(function(){
+                var baseOfUrl = window.location.href.substring(0, window.location.href.indexOf('?'));
+                if (! baseOfUrl) {
+                    baseOfUrl = window.location.href;
+                }
+                var urlVars = $.getUrlVars();
+                urlVars['primary_key'] = $('#select-pk').val();
+                var urlParams = '';
+                for (var key in urlVars) {
+                    urlParams += key + '=' + urlVars[key] + '&';
+                }
+                urlParams = urlParams.substring(0, urlParams.length - 1);
+                window.location.href = baseOfUrl + '?' + urlParams;
+                });
         });
         </script>
 {% endblock %}
@@ -14,6 +46,16 @@
 {% block content %}
     <h2> These are your results </h2>
     {% if job_results %}
+        <select id="select-pk" name="Field to use as primary key">
+            {% for key, value in prototype_result.document.items %}
+                {% if key not in hidden_keys and key != primary_key %}
+                <option value={{ key }}>{{ key }}</option>
+                {% endif %}
+                {% if key == primary_key %}
+                    <option value={{ key }} selected="selected">{{ key }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
         <table id="job-results-table">
             <caption>{{ title }}</caption>
             <thead>
@@ -59,7 +101,7 @@
     <div class="pagination">
         <span class="step-links">
             {% if job_results.has_previous %}
-                <a href="?page={{ job_results.previous_page_number }}">previous</a>
+                <a id="link-prev-results" href="?page={{ job_results.previous_page_number }}">previous</a>
             {% endif %}
 
             <span class="current">
@@ -67,7 +109,7 @@
             </span>
 
             {% if job_results.has_next %}
-                <a href="?page={{ job_results.next_page_number }}">next</a>
+                <a id="link-next-results" href="?page={{ job_results.next_page_number }}">next</a>
             {% endif %}
         </span>
     </div>

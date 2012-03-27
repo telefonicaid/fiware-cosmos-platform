@@ -50,8 +50,6 @@ class Job(models.Model):
     execution_id = models.CharField(null=True, blank=True,
                                     max_length=EXECUTION_ID_MAX_LENGTH)
 
-    RESULTS_PK_MAX_LENGTH = 40
-    results_primary_key = models.CharField(max_length=RESULTS_PK_MAX_LENGTH)
 
     def start(self, cluster):
 	"""Returns true on success."""
@@ -101,7 +99,6 @@ class Job(models.Model):
     def __unicode__(self):
         return self.name
 
-
 class JobModel(models.Model):
     """
     Job model represents the calculation to be performed.
@@ -120,7 +117,7 @@ class CustomJobModel(JobModel):
 
     """
     jar_name = models.CharField(max_length=256, null=True, blank=True)
-
+    
     def jar_upload(self, upload):
         """
         Accepts the upload file and moves it to the cluster.

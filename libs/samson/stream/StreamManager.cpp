@@ -74,6 +74,18 @@ namespace samson {
             // Create a notification for the recover state from disk
             engine::Engine::shared()->notify( new engine::Notification( notification_recoverStateFromDisk ) );
         }
+        
+        StreamManager::~StreamManager()
+        {
+            queues.clearMap();
+            
+            stream_operations.clearMap();
+            
+            // Map of quuee connections
+            queue_connections.clearMap();
+            
+        }
+
 
         
         int get_num_divisions( size_t size )

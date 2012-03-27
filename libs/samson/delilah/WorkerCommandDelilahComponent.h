@@ -79,7 +79,7 @@ namespace samson {
 		void run();
 		
 		std::string getStatus();
-        
+
     private:
     
         void print_content( network::Collection * collection );

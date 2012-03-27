@@ -464,7 +464,30 @@ namespace samson{
             
             samson::system::Value output_value;
             
+            int time_span;
+            bool emit;
+            
+            double factor; // Forgetting facto
+            
         public:
+            
+            void init( std::string command  )
+            {
+                au::CommandLine cmdLine;
+                cmdLine.set_flag_boolean("emit");
+                cmdLine.set_flag_int("time" , 0);
+                cmdLine.parse( command );
+                
+                time_span = cmdLine.get_flag_int("time");
+                emit = cmdLine.get_flag_bool("emit");
+                
+                if ( time_span == 0 )
+                    factor = 1;
+                else
+                    factor = ( (double)time_span - 1 ) / (double)time_span;
+
+            }
+
             
             void run( samson::KVSetStruct* inputs , samson::KVWriter *writer  )
             {
@@ -473,23 +496,50 @@ namespace samson{
                     key.parse( inputs[0].kvs[0]->key );
                 else
                     key.parse( inputs[1].kvs[0]->key );
+
+                // Recover state if any
                 
                 double total = 0;
+                time_t t = time(NULL);
+                
+                if( inputs[1].num_kvs > 0 )
+                {
+                    value.parse( inputs[1].kvs[0]->value );
+                    
+                    if( value.isVector() && (value.get_vector_size() == 2) )
+                    {
+                        // Recover previous 
+                        total = value.get_value_from_vector(0)->getDouble();
+                        
+                        // Forgetting factor 
+                        size_t time_diff = t - value.get_value_from_vector(1)->getDouble();
+                        total = total * pow( factor  , time_diff );
+                    }
+                    
+                    double tmp =  value.getDouble();
+                    total += tmp;
+                }                
+                
                 for( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
                 {
                     value.parse( inputs[0].kvs[i]->value );
                     double tmp =  value.getDouble();
                     total += tmp;
                 }
-                for( size_t i = 0 ; i < inputs[1].num_kvs ; i++ )
-                {
-                    value.parse( inputs[1].kvs[i]->value );
-                    double tmp =  value.getDouble();
-                    total += tmp;
-                }
+
                 
-                value = total;
-                writer->emit( 0 , &key , &value );
+                // Create the output value as a vector [ total time ]
+                value.set_as_vector();
+                value.add_value_to_vector()->set_double(total);
+                value.add_value_to_vector()->set_double(t);
+
+                // Emit to update the state
+                writer->emit( 1 , &key , &value );
+
+                // Emit to output if necessary
+                if( emit )
+                    writer->emit( 0 , &key , &value );
+                
                 return;
             }
         };    
@@ -577,8 +627,8 @@ namespace samson{
                 
                 if( type == "update" )
                 {
-                    add<ValueReduce_update_last>("update_last");        // Keep the last value
-                    add<ValueReduce_update_sum>("update_sum");          // Keep the total sum of seen values
+                    add<ValueReduce_update_last>("last");        // Keep the last value
+                    add<ValueReduce_update_sum>("sum");          // Keep the total sum of seen values
                 }
                 
             }

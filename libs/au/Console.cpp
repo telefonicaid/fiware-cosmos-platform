@@ -336,6 +336,47 @@ void Console::runConsoleInBackground()
     pthread_create(&t, NULL, run_console, this);
 }
 
+void Console::getEntry(ConsoleEntry * entry )
+{
+    char c;
+    if( read( 0 , &c , 1 ) != 1 )
+        LM_X(1, ("reading from stdin failed"));
+    
+    if( c == 27 )
+    {
+        // Escape sequence
+        escape_sequence.init();
+
+        while( true )
+        {
+            if( read( 0 , &c , 1 ) != 1 )
+                LM_X(1, ("reading from stdin failed"));
+            
+            // Add the new character
+            escape_sequence.add( c );
+            
+            // Detect if it is a valid sequence code
+            SequenceDetectionCode sequence_detection_code = escape_sequence.checkSequence();
+            
+            if( sequence_detection_code == sequence_finished )
+            {
+                entry->setEscapeSequence( escape_sequence.getCurrentSequence() );
+                return;
+            }
+            
+            if( sequence_detection_code == sequence_non_compatible )
+            {
+                entry->setUnknownEscapeSequence( escape_sequence.getCurrentSequence() );
+                return;
+            }
+            
+            // Continue reading escape sequence...
+        }
+    }
+    else
+        entry->setChar(c);
+}
+
 
 void Console::runConsole()
 {
@@ -352,9 +393,6 @@ void Console::runConsole()
     // First version with just the promtp
     print_command();
     
-    // Escape sequence... 
-    bool escaping = false;   // Flag to indicate if we are inside a scape sequence...
-    
     quit_console = false;
     while( !quit_console )
     {
@@ -366,37 +404,16 @@ void Console::runConsole()
             usleep(20000);
         }
         
-        char c;
-        if( read( 0 , &c , 1 ) != 1 )
-            LM_X(1, ("reading from stdin failed"));
         
-        if( escaping )
-        {
-            // Add the new character
-            escape_sequence.add( c );
+        // Read an entry or a escape sequence
+        ConsoleEntry entry;
+        getEntry( &entry );
 
-            // Detect if it is a valid sequence code
-            SequenceDetectionCode sequence_detection_code = escape_sequence.checkSequence();
-            
-            if( sequence_detection_code == sequence_finished )
-            {
-                internal_process_escape_sequence( escape_sequence.getCurrentSequence() );
-                escape_sequence.init();
-                escaping = false;
-            }
-            
-            if( sequence_detection_code == sequence_non_compatible )
-            {
-                std::string current_sequence = escape_sequence.getCurrentSequence();
-                writeWarningOnConsole( au::str("Unknown escape sequence (%s)",
-                                               getSequenceDescription (current_sequence).c_str()) );
-                escape_sequence.init();
-                escaping = false;
-            }
-            
-        }
-        else
+        
+        if( entry.isChar() )
         {
+            char c = entry.getChar();
+            
             if ( isNormalChar(c) )
                 process_char(c);
             else if ( c == '\n' )
@@ -408,7 +425,7 @@ void Console::runConsole()
             else if ( c == 11 )
                 internal_command( "del_rest_line" );
             else if ( c == 4 )
-                 Console::quitConsole();
+                Console::quitConsole();
             else if ( c == 1 )
                 internal_command( "move_home" );
             else if ( c == 5 )
@@ -417,18 +434,21 @@ void Console::runConsole()
                 internal_command( "delete_word" );
             else if ( c == 7 ) // bell
                 printf("%c",c);
-            else if ( c == 27 )
-            {
-                escaping = true;  // Start a escape mode
-                escape_sequence.init();
-            }
             else
             {
-                writeWarningOnConsole( au::str( " Ignoring char (%d)" , c ) );                        
+                writeWarningOnConsole( au::str( "Ignoring unkown char (%d)" , c ) );                        
             }
-            
+        } 
+        else if (entry.isEscapeSequence() )
+        {
+            std::string seq =  entry.getEscapeSequece();
+            internal_process_escape_sequence( escape_sequence.getCurrentSequence() );
         }
-        
+        else if( entry.isUnknownEscapeSequence() )
+        {
+            std::string seq =  entry.getEscapeSequece();
+            writeWarningOnConsole( au::str("Unknown escape sequence (%s)", getSequenceDescription (seq).c_str()) );
+        }
         
     }
     
@@ -487,62 +507,87 @@ void Console::writeOnConsole( std::string message )
     
     if( pthread_self() == t_running )
     {
-        clear_line();
-
         
+        // Divide input message in lines
         std::istringstream input( message );
         char line[1024];
-        int x,y;
-        au::get_term_size (1, &x, &y);
         input.getline(line, 1024 );
-        int counter = 0;
-        bool continue_flag = false;
+        std::vector<std::string> lines;
         while( !input.eof() )
         {
             if( strlen(line) > 0 )
-            {
-                
-                printf("%s\n", line );
-                counter++;
-
-                if( !continue_flag )
-                    if( y > 0 ) 
-                        if ( counter >= ( y - 3 ) )
-                        {
-                            printf("--------------------------------------------------------------------\n");
-                            printf("Press space to continue , c to continue until the end, q for quit... ");
-                            fflush( stdout );
-                            char c;
-                            if (scanf("%c", &c) == EOF)
-                            {
-                                //error
-                            }
-                            
-                            if( c == 'q' )
-                                return;
-                            
-                            if( c == 'c' )
-                                continue_flag = true;
-                            
-                            counter = 0;
-                        }
-            }
-            
-            // Read next line...
+                lines.push_back( line );
             input.getline(line, 1024 );
+        }
+
+        // Get terminal size
+        int x,y;
+        au::get_term_size (1, &x, &y);
+
+        int pos = 0; // Line to print
+        size_t num_lines_on_screen = y-3;
+        bool continue_flag = false;
+        
+        while( true )
+        {
+            // Print all of them and return
+            size_t max_pos = pos + num_lines_on_screen;
+            for ( size_t i = pos ; i < std::min( lines.size() , max_pos ) ; i++ )
+                printf("%s\n", lines[i].c_str() );
+            
+            if( pos + num_lines_on_screen >= lines.size() )
+                return;
+            
+            if( !continue_flag )
+            {
+                printf("%d-%d / %d ------------------------------------------------------------------\n" 
+                       , (int)(pos+1) 
+                       , (int)(pos+num_lines_on_screen) 
+                       , (int)lines.size() );
+                printf("Press c to continue until the end, q for quit or any other key to continue...\n");
+                fflush( stdout );
+                
+                ConsoleEntry entry;
+                getEntry(&entry);
+                
+                if( entry.isChar( 'c' ))
+                {
+                    continue_flag = true;
+                    pos += num_lines_on_screen;
+                }
+                else if( entry.isChar('q') )
+                {
+                    // Stop printing lines..
+                    break;
+                }
+                else if( entry.isCursorDown())
+                    pos++;
+                else if( entry.isCursorUp())
+                {
+                    pos--;
+                    if( pos < 0 )
+                        pos = 0;
+                }
+                else 
+                {
+                    // If continue, just skip to the next block of lines
+                    pos += num_lines_on_screen;
+                }
+            }
+            else
+            {
+                // If continue, just skip to the next block of lines
+                pos += num_lines_on_screen;
+            }
         }
         
         print_command();
         fflush( stdout );
+        return;
         
     }
     
     // --------------------------------------------------------------------------------------------
-    
-
-    
-    
-    
     
     write( message );
 }

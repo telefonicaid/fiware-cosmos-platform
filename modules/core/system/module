@@ -143,6 +143,7 @@ reduce update
     in  system.Value system.Value
 
     out system.Value system.Value	
+    out system.Value system.Value
 
 	helpLine "Update state operations like last_10 , last_1 , ..."
 

@@ -36,6 +36,7 @@ namespace system{
 //  input: system.Value system.Value  
 //  input: system.Value system.Value  
 //  output: system.Value system.Value
+//  output: system.Value system.Value
 //  
 // helpLine: Update state operations like last_10 , last_1 , ...
 //  END_INFO_MODULE
@@ -51,7 +52,7 @@ namespace system{
                 return;
 			}
             
-            ValueReduceManager manager("reduce");
+            ValueReduceManager manager("update");
             operation = manager.getInstance( command );
             
             if( !operation )

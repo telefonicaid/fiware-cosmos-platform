@@ -9,6 +9,7 @@ Environment.h
 CommandLine.h
 
 Console.h
+ConsoleEntry.h
 ConsoleCommand.h
 ConsoleCommandHistory.h
 ConsoleEscapeSequence.h
@@ -63,6 +64,7 @@ CommandLine.cpp
 Environment.cpp
 
 Console.cpp
+Consoleentry.cpp
 ConsoleCommand.cpp
 ConsoleCommandHistory.cpp
 ConsoleEscapeSequence.cpp

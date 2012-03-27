@@ -98,7 +98,8 @@ namespace samson {
         public:
             
             StreamManager( ::samson::SamsonWorker* worker );
-
+            ~StreamManager();
+            
             // ------------------------------------------------------------
             // Operations to review how data is redistributed for a queue
             // ------------------------------------------------------------

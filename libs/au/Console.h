@@ -9,6 +9,7 @@
 #include "au/ConsoleCode.h"
 #include "au/Token.h"
 #include "au/namespace.h"
+#include "au/ConsoleEntry.h"
 
 #include "ConsoleEscapeSequence.h"
 
@@ -87,8 +88,10 @@ private:
     void process_background();
     bool isNormalChar( char c );
     
-    
     void write( std::string message );
+
+    // Get the next entry from console
+    void getEntry( ConsoleEntry* entry );
     
 };
 

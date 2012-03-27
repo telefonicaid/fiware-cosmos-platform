@@ -1,10 +1,50 @@
 /* page styles from visualize.jQuery */
-body { font-family: "Segoe UI", Frutiger,Tahoma,Helvetica,"Helvetica Neue", Arial, sans-serif; }
+div#branding {
+  background: #004250;
+}
+
+div#user-tools {
+  color: white;
+  background-color: #004250;
+}
+
+a:link {
+    color: #00C6D7;
+}
+
+a:visited {
+    color: #BB650E;
+}
+
+div#content {
+}
+
+div#footer {
+  background: #004250;
+}
+
+img#logo {
+    width: 200px;
+}
+
+body {
+  font-family: "Segoe UI", Frutiger,Tahoma,Helvetica,"Helvetica Neue", Arial, sans-serif;
+  font-size: 75%;
+  margin-left: 10%;
+  margin-right: 10%;
+}
 table {  border-collapse: collapse; }
 td, th {
-   text-align: center;
-   border: 1px solid #ddd;
-   padding:2px 5px;
+  text-align: center;
+  border: 1px solid #ddd;
+  padding:2px 5px;
    }
-
 caption {margin: 0 0 .5em; font-weight: bold; }
+
+table#jobs-table{
+    align: centered;
+}
+
+h1 {
+    color: #004250;
+}

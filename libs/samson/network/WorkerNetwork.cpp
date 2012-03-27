@@ -7,6 +7,13 @@
 
 namespace samson {
 
+    WorkerNetwork::~WorkerNetwork()
+    {
+        LM_T(LmtCleanup, ("In destructor"));
+        // delete worker_listener;
+        // delete web_listener;
+    }
+
     WorkerNetwork::WorkerNetwork( int port , int web_port )
     {
         // Workers are allways connected as user samson
@@ -31,7 +38,7 @@ namespace samson {
             node_identifier = NodeIdentifier( WorkerNode , -1 );
         
         
-        // Add listsner for incomming connections
+        // Add listener for incoming connections
         // ----------------------------------------------------------------------------
         {
             worker_listener = new NetworkListener( this );
@@ -39,7 +46,7 @@ namespace samson {
             
             if( s != OK )
             {
-                // Not allow to continue without incomming connections...
+                // Not allow to continue without incoming connections...
                 LM_X(1, ("Not possible to open port %d (%s)" , port , status(s) ));
             }
             // Init background thread to receive connections 
@@ -47,7 +54,7 @@ namespace samson {
             
         }
         
-        // Add listsner for incomming web/rest connections
+        // Add listener for incoming web/rest connections
         // ----------------------------------------------------------------------------
         {
             web_listener = new NetworkListener( this );
@@ -55,7 +62,7 @@ namespace samson {
             
             if( s != OK )
             {
-                // Not allow to continue without incomming connections...
+                // Not allow to continue without incoming connections...
                 LM_W(("Not possible to open web interface at port %d (%s)" , port , status(s) ));
             }
             else
@@ -177,7 +184,7 @@ namespace samson {
             }
             else
             {
-                LM_W(("[%s] Rejecting an incomming hello message from a worker since a cluster is not defined"
+                LM_W(("[%s] Rejecting incoming hello message from a worker as no cluster is defined"
                       , connection->str().c_str() 
                       ));
                 connection->close();
@@ -189,7 +196,7 @@ namespace samson {
         {
             if( cluster_information.getId() != new_cluster_information.getId()  )
             {
-                LM_W(("[%s] Rejecting an incomming hello message since it is involved in another cluster (%lu vs %lu)"
+                LM_W(("[%s] Rejecting incoming hello message since it is meant for another cluster (%lu vs %lu)"
                       , connection->str().c_str() 
                       , cluster_information.getId()
                       , new_cluster_information.getId()
@@ -262,7 +269,7 @@ namespace samson {
                 std::string future_connection_name = new_node_identifier.getCodeName();
                 if ( NetworkManager::isConnected(future_connection_name) )
                 {
-                    LM_W(("[%s] Rejecting an incomming hello since we are already connected to this worker"
+                    LM_W(("[%s] Rejecting incoming hello as this worker is already connected"
                           , connection->str().c_str() 
                           , cluster_information.getId()
                           , new_cluster_information.getId()
@@ -275,7 +282,7 @@ namespace samson {
             }
             else
             {
-                LM_W(("[%s] Rejecting an incomming hello message"
+                LM_W(("[%s] Rejecting incoming hello message"
                       , connection->str().c_str() 
                       ));
                 connection->close();

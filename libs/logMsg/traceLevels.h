@@ -33,6 +33,7 @@ typedef enum TraceLevels
 
     LmtHost                   = 30,  // Host & HostManager    
     LmtRest                   = 31,  // REST Interface
+    LmtCleanup                = 32,  // Valgrind ...
 
 	LmtEngine                 = 200, // SamsonEngine
 	LmtEngineNotification,

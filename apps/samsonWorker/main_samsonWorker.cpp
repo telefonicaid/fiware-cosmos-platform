@@ -132,41 +132,48 @@ void captureSIGTERM( int s )
 
 void cleanup(void)
 {
-   // printf("Shutting down worker components (worker at %p)\n", worker);
+    LM_T(LmtCleanup, ("Shutting down worker components (worker at %p)", worker));
     if (worker)
     {
-        // printf("deleting worker\n");
+        if (worker->network != NULL)
+        {
+            LM_T(LmtCleanup, ("NOT deleting worker's network"));
+            // delete worker->network;
+        }
+
+        LM_T(LmtCleanup, ("deleting worker"));
         delete worker;
+        worker = NULL;
     }
 
     google::protobuf::ShutdownProtobufLibrary();
 
-    // printf("Shutting down LockDebugger\n");
+    LM_T(LmtCleanup, ("Shutting down LockDebugger"));
     au::LockDebugger::destroy();
 
     if (smManager != NULL)
     {
-        // printf("Shutting down Shared Memory Manager\n");
+        LM_T(LmtCleanup, ("Shutting down Shared Memory Manager"));
         delete smManager;
         smManager = NULL;
     }
     
-    // printf("destroying ModulesManager\n");
+    LM_T(LmtCleanup, ("destroying ModulesManager"));
     samson::ModulesManager::destroy();
 
-    // printf("destroying ProcessManager\n");
+    LM_T(LmtCleanup, ("destroying ProcessManager"));
     engine::ProcessManager::destroy();
 
-    // printf("destroying DiskManager\n");
+    LM_T(LmtCleanup, ("destroying DiskManager"));
     engine::DiskManager::destroy();
 
-    // printf("destroying MemoryManager\n");
+    LM_T(LmtCleanup, ("destroying MemoryManager"));
     engine::MemoryManager::destroy();
 
-    // printf("destroying Engine\n");
+    LM_T(LmtCleanup, ("destroying Engine"));
     engine::Engine::destroy();
 
-    // printf("Shutting down SamsonSetup\n");
+    LM_T(LmtCleanup, ("Shutting down SamsonSetup"));
     samson::SamsonSetup::destroy();
 
     // Check background threads
@@ -179,11 +186,11 @@ void cleanup(void)
     else
         LM_M(("Finished correctly with 0 background processes"));
     
-    // printf("Calling paConfigCleanup\n");
+    LM_T(LmtCleanup, ("Calling paConfigCleanup"));
     paConfigCleanup();
-    // printf("Calling lmCleanProgName\n");
+    LM_T(LmtCleanup, ("Calling lmCleanProgName"));
     lmCleanProgName();
-    // printf("Cleanup DONE\n");
+    LM_T(LmtCleanup, ("Cleanup DONE"));
 }
 
 

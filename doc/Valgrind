@@ -1,3 +1,12 @@
+Simple test for memory leakage
+  alias to_iso_latin='iconv -t ISO-8859-15 -f UTF-8'
+  alias to_utf8='iconv -f ISO-8859-15 -t UTF-8'
+
+  cat quijote.txt | samsonPush input.txt
+
+  run system.parse input.txt words env:command "parse_words | emit"    
+  run system.reduce words unique_words env:command sum 
+
 USAGE:
   valgrind --tool=$Tool  executable options
 

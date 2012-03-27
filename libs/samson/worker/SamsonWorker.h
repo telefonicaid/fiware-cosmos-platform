@@ -40,14 +40,24 @@ namespace samson {
         public engine::Object,
         public au::Console
 	{
-		
 		// Initial time stamp 
 		struct timeval init_time;
         
 	public: 
 		
 		SamsonWorker( NetworkInterface* network );
-        
+        ~SamsonWorker()
+        {
+            LM_T(LmtCleanup, ("Deleting workerCommandManager: %p", workerCommandManager));
+            delete workerCommandManager;
+
+            LM_T(LmtCleanup, ("Deleting streamManager: %p", streamManager));
+            delete streamManager;
+
+            LM_T(LmtCleanup, ("Deleting network"));
+            delete network;
+        }
+
         friend class StreamManager;                     // Friend to be able to log to dataManager
         
 	public:

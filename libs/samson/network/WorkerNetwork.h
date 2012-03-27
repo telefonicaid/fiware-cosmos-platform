@@ -32,6 +32,7 @@ namespace samson {
         // Constructor
         // ------------------------------------------------------------
         WorkerNetwork( int port , int web_port );        
+        ~WorkerNetwork();
         
         // NetworkManager interface
         // ------------------------------------------------------------

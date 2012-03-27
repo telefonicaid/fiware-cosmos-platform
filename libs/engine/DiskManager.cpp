@@ -76,7 +76,7 @@ void DiskManager::quitAndWait()
     au::Cronometer cronometer;
     size_t secs = 0;
     
-    // Set flag to indicate backgroun process we are quitting...
+    // Set flag to indicate background process we are quitting...
     quitting = true;
     
     while( true )

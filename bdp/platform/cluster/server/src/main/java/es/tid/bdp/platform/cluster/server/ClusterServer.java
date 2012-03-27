@@ -1,5 +1,7 @@
 package es.tid.bdp.platform.cluster.server;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -43,7 +45,7 @@ public class ClusterServer implements Cluster.Iface {
         try {
             ClusterServer server = new ClusterServer();
             server.start();
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             System.exit(1);
         }
     }
@@ -73,7 +75,7 @@ public class ClusterServer implements Cluster.Iface {
     }
 
     
-    private void start() throws Throwable {
+    private void start() throws Exception {
         TServerSocket serverTransport = new TServerSocket(9888);
         Cluster.Processor processor = new Cluster.Processor(this);
         Args args = new Args(serverTransport);
@@ -82,9 +84,13 @@ public class ClusterServer implements Cluster.Iface {
         server.serve();
     }
 
-    private void sendNotificationEmail(String errorText, String errorStack) {
+    private void sendNotificationEmail(Exception exception) {
+        StringWriter writer = new StringWriter();
+        exception.printStackTrace(new PrintWriter(writer));
+        String errorStack = writer.toString();
+        
         String text = "Cosmos failed in production :(\n\n"
-                + "The error message was: " + errorText + "\n"
+                + "The error message was: " + exception.getMessage() + "\n"
                 + "and the call stack:" + errorStack + "\n\n"
                 + "Please fix me!\n";
         
@@ -112,7 +118,7 @@ public class ClusterServer implements Cluster.Iface {
             FileSystem fs = FileSystem.get(this.conf);
             fs.moveFromLocalFile(new Path(src), new Path(dest));
         } catch (Exception ex) {
-            this.sendNotificationEmail(ex.getMessage(), ex.toString());
+            this.sendNotificationEmail(ex);
             throw new TransferException(ClusterErrorCode.FILE_COPY_FAILED,
                                         ex.getMessage());
         }
@@ -126,8 +132,8 @@ public class ClusterServer implements Cluster.Iface {
                     new String[] { jarPath, HDFS_URL + "/" + inputPath,
                                    HDFS_URL + "/" + outputPath, mongoUrl });
             return String.valueOf(jobId);
-        } catch (Throwable ex) {
-            this.sendNotificationEmail(ex.getMessage(), ex.toString());
+        } catch (Exception ex) {
+            this.sendNotificationEmail(ex);
             throw new TransferException(ClusterErrorCode.RUN_JOB_FAILED,
                                         ex.getMessage());
         }
@@ -138,8 +144,8 @@ public class ClusterServer implements Cluster.Iface {
             throws TransferException {
         try {
             return this.jobRunner.getResult(Integer.parseInt(jobId));
-        } catch (Throwable ex) {
-            this.sendNotificationEmail(ex.getMessage(), ex.toString());
+        } catch (Exception ex) {
+            this.sendNotificationEmail(ex);
             throw new TransferException(ClusterErrorCode.INVALID_JOB_ID,
                                         ex.getMessage());
         }
@@ -182,7 +188,7 @@ public class ClusterServer implements Cluster.Iface {
         }
 
         @Override
-        public ClusterJobResult call() throws Exception {
+        public ClusterJobResult call() {
             ClusterJobResult result = new ClusterJobResult();
             try {
                 RunJar.main(this.args);

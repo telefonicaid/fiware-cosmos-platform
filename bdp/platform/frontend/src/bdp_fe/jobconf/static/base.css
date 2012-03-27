@@ -8,3 +8,16 @@ td, th {
    }
 
 caption {margin: 0 0 .5em; font-weight: bold; }
+
+.error-detail {
+    font-family: Courier New, Courier, monospace;
+    font-size: 14px;
+}
+
+ul.messagelist { text-align: center; color: #000;border:1px solid #C8DCC2; margin:0 0; padding:0 0; }
+ul.messagelist li { background: none; padding-left: 5px; padding-top: 8px; padding-bottom: 8px;font-size: 1.2em; }
+ul.messagelist li.debug{ background: #EEFAEA; padding: 0.5em, 0 0.5em 0; list-style: none;}
+ul.messagelist li.info{ background: #EEFAEA; padding: 0.5em, 0 0.5em 0; list-style: none;}
+ul.messagelist li.success{ background: #EEFAEA; padding: 0.5em, 0 0.5em 0; list-style: none;}
+ul.messagelist li.warning{ background: #FF3333; padding: 0.5em, 0 0.5em 0; list-style: none;}
+ul.messagelist li.error{ background: #FF3333; padding: 5px, 0 5px 0; list-style: none;}

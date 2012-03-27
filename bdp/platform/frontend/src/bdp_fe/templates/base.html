@@ -13,7 +13,8 @@
 	{% if not is_popup %}
 	<div id="header">
 	    <div id="branding">
-		{% block branding %}{% endblock %}
+                <img id="logo" src="{{ STATIC_URL }}logo.jpg">
+                {% block branding %}{% endblock %}
 	    </div>
 
 	    {% if user.is_active %}

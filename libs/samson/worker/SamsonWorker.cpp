@@ -332,11 +332,17 @@ namespace samson {
             size_t disk_read_rate = (size_t) engine::DiskManager::shared()->get_rate_in();
             size_t disk_write_rate = (size_t) engine::DiskManager::shared()->get_rate_out();
 
-            LM_M(("Status [ P %s M %s D_in %s D_out %s ]"
+            size_t network_read_rate = (size_t) network->get_rate_in();
+            size_t network_write_rate = (size_t) network->get_rate_out();
+            
+            
+            LM_M(("Status [ P %s M %s D_in %s D_out %s N_in %s N_out %s ]"
                   , au::str_percentage( num_processes, max_processes ).c_str()
                   , au::str_percentage(used_memory, max_memory).c_str()
                   , au::str( disk_read_rate , "Bs" ).c_str()
                   , au::str( disk_write_rate , "Bs" ).c_str()
+                  , au::str( network_read_rate , "Bs" ).c_str()
+                  , au::str( network_write_rate , "Bs" ).c_str()
                   ));
 
         }

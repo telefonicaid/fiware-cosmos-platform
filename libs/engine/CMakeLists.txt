@@ -16,7 +16,6 @@ ReadFile.h
 ReadFileManager.h
 DiskManager.h
 DiskOperation.h
-OperationsContainer.h	
 )
 
 SET (SOURCES
@@ -36,7 +35,6 @@ ReadFile.cpp
 ReadFileManager.cpp
 DiskManager.cpp
 DiskOperation.cpp
-OperationsContainer.cpp
 )
 
 # Inclue directories

@@ -7,7 +7,6 @@ SET (SOURCES
     engine/objectsManager_test.cpp
     #engine/processManager_test.cpp
     engine/processItem_test.cpp
-    engine/operationscontainer_test.cpp
     engine/buffer_test.cpp
     #engine/diskStatistics_test.cpp
     #engine/diskOperation_test.cpp

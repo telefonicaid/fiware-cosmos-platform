@@ -3,6 +3,7 @@ Job status updater
 
 """
 import logging
+from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -16,9 +17,16 @@ CLUSTER = remote.Cluster(settings.CLUSTER_CONF.get('host'),
 
 class Command(BaseCommand):
     args = ''
+    option_list = BaseCommand.option_list + (make_option(
+        '--quiet',
+        action='store_true',
+        dest='quiet',
+        default=False,
+        help="Quiet mode. No output is done unless update process fail."),)
     help = 'Updates all job status by polling the backend'
 
     def handle(self, *args, **options):
+        quiet = options.get('quiet')
         updated = 0
         try:
             for job in Job.objects.all():
@@ -26,6 +34,7 @@ class Command(BaseCommand):
                     job.status = CLUSTER.getJobStatus(job.execution_id)
                     job.save()
                     updated += 1
-            self.stdout.write("%d updates\n" % updated)
+            if not quiet:
+                self.stdout.write("%d updates\n" % updated)
         except remote.ConnException:
             self.stdout.write("Connection problem")

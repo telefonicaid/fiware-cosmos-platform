@@ -62,9 +62,9 @@
                 <tr>
                     <td></td>
                     {% for key, value in prototype_result.get_fields.items %}
-		        {% if key not in hidden_keys %}
-                        <th>{{ key }}</th>
-		        {% endif %}
+                        {% if key not in hidden_keys %}
+                            <th>{{ key }}</th>
+                        {% endif %}
                     {% endfor %}
                 </tr>
             </thead>
@@ -73,7 +73,7 @@
             <tr>
                 <th>{{ job_result.get_primary_key }}</th>
                 {% for key, value in job_result.get_fields.items %}
-		    {% if key not in hidden_keys %}
+                    {% if key not in hidden_keys %}
                         {% if value|get_type not in expand_types %}
                         <td class="job-result-value">{{ value }}</td>
                         {%endif%}
@@ -88,7 +88,7 @@
                             {% endfor %}
                         {% endif %}
                     {% endif %}
-	        {% endfor %}
+                {% endfor %}
             </tr>
             {% endfor %}
             </tbody>

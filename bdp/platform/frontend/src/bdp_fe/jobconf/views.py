@@ -28,12 +28,16 @@ CLUSTER = remote.Cluster(settings.CLUSTER_CONF.get('host'),
 @login_required
 def list_jobs(request):
     job_id = safe_int_param(request.GET, 'run_job')
+    reload_period = max(safe_int_param(request.GET, 'reload_period',
+                                       settings.RELOAD_PERIOD),
+                        settings.MIN_RELOAD_PERIOD)
     if job_id:
         run_job(request, job_id)
 
     return render_to_response('job_listing.html', {
         'title': 'Job listing',
         'jobs': Job.objects.all(),
+        'reload_period': reload_period,
     }, context_instance=RequestContext(request))
 
 

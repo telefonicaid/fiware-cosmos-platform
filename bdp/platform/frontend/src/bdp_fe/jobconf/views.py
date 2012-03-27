@@ -19,7 +19,7 @@ from bdp_fe.jobconf import data
 from bdp_fe.jobconf.cluster import remote
 from bdp_fe.jobconf.models import CustomJobModel, Job, JobModel
 from bdp_fe.jobconf.views_util import (get_owned_job_or_40x, safe_int_param,
-                                       retrieve_results)
+                                       retrieve_results, HIDDEN_KEYS)
 
 LOGGER = logging.getLogger(__name__)
 CLUSTER = remote.Cluster(settings.CLUSTER_CONF.get('host'),
@@ -46,9 +46,7 @@ def view_results(request, job_id):
     results = retrieve_results(job_id, primary_key)
     prototype_result = results[0]
     if not primary_key:
-        primary_key = prototype_result.document.keys()[0]
-        for result in results:
-            result.pk = primary_key
+        primary_key = prototype_result.pk
     paginator = Paginator(results, 100)
     page = request.GET.get('page')
     if not page:
@@ -64,7 +62,7 @@ def view_results(request, job_id):
                               {'title' : 'Results of job %s' % job_id,
                                'job_results' : paginated_results,
                                'prototype_result': prototype_result,
-                               'hidden_keys': ['_id', 'job_id'],
+                               'hidden_keys': HIDDEN_KEYS,
                                'expand_types': ['dict', 'list'],
                                'primary_key': primary_key},
                               context_instance=RequestContext(request))

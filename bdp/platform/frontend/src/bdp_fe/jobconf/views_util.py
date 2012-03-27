@@ -2,13 +2,17 @@
 Utility functions for controllers.
 
 """
-from bdp_fe.jobconf.models import Job
-from bdp_fe.middleware403 import Http403
 from django.conf import settings
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from models import CustomJobModel
 from pymongo import Connection
+from random import choice
+
+from bdp_fe.jobconf.models import Job
+from bdp_fe.middleware403 import Http403
+
+HIDDEN_KEYS = ['_id', 'job_id']
 
 def safe_int_param(query_dict, param_name, default_value=None):
     """
@@ -62,6 +66,10 @@ def retrieve_results(job_id, primary_key):
     connection = Connection(mongo_url)
     db = connection[mongo_db]
     job_results = db[mongo_collection]
+    if not primary_key:
+        some_result = job_results.find_one()
+        primary_key = choice([k for k in some_result.keys()
+                             if k not in HIDDEN_KEYS])
     for job_result in job_results.find():
         mongo_result = MongoRecord(job_result, primary_key)
         ans.append(mongo_result)

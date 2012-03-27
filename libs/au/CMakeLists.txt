@@ -64,7 +64,7 @@ CommandLine.cpp
 Environment.cpp
 
 Console.cpp
-Consoleentry.cpp
+ConsoleEntry.cpp
 ConsoleCommand.cpp
 ConsoleCommandHistory.cpp
 ConsoleEscapeSequence.cpp

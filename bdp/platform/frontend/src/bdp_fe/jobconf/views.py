@@ -36,7 +36,7 @@ def list_jobs(request):
 
     return render_to_response('job_listing.html', {
         'title': 'Job listing',
-        'jobs': Job.objects.all(),
+        'jobs': Job.objects.filter(user=request.user),
         'reload_period': reload_period,
     }, context_instance=RequestContext(request))
 
@@ -71,7 +71,7 @@ def view_results(request, job_id):
 
 def run_job(request, job_id):
     try:
-        job = Job.objects.get(id=job_id)
+        job = Job.objects.get(id=job_id, user=request.user)
     except Job.DoesNotExist:
         messages.warning(request, "Cannot start job %d: not found" % job_id)
         LOGGER.warning("Job %d not found" % job_id)

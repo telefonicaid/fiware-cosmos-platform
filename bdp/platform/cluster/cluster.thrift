@@ -20,7 +20,7 @@ enum ClusterJobStatus {
 }
 
 struct ClusterJobResult {
-    1: ClusterJobStatus status
+    1: ClusterJobStatus status,
     2: TransferException reason
 } 
 

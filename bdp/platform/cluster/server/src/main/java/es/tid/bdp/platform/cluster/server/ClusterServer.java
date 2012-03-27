@@ -1,5 +1,8 @@
 package es.tid.bdp.platform.cluster.server;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -30,11 +33,11 @@ public class ClusterServer implements Cluster.Iface {
     private static class ExitWithFailureCodeException
             extends SecurityException { }
     
-    private static final String NOTIFICATION_EMAIL = "cosmos-prod@tid.es";
+    private static final String CONFIG_FILE = "/cluster_server.properties";
     
-    // TODO: put this in a configuration file
-    private static final String HDFS_URL = "hdfs://pshdp01:8011";
-    private static final String JOBTRACKER_URL = "pshdp01:8012";
+    private final String notificationEmail;
+    private final String hdfsUrl;
+    private final String jobtrackerUrl;
     
     private JobRunner jobRunner;
     private Configuration conf;
@@ -43,22 +46,29 @@ public class ClusterServer implements Cluster.Iface {
         try {
             ClusterServer server = new ClusterServer();
             server.start();
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
+            System.err.println(getFullExceptionInformation(ex));
             System.exit(1);
         }
     }
 
-    public ClusterServer() {
-        this.disallowExitCalls();
+    public ClusterServer() throws IOException {
+        Properties props = new Properties();
+        props.load(ClusterServer.class.getResource(CONFIG_FILE).openStream());
+        this.notificationEmail = props.getProperty("NOTIFICATION_EMAIL");
+        this.hdfsUrl = props.getProperty("HDFS_URL");
+        this.jobtrackerUrl = props.getProperty("JOBTRACKER_URL");
         
         this.jobRunner = new JobRunner();
         this.conf = new Configuration();
         // TODO: this might not be necessary
-        this.conf.set("fs.default.name", HDFS_URL);
-        this.conf.set("mapred.job.tracker", JOBTRACKER_URL);
+        this.conf.set("fs.default.name", this.hdfsUrl);
+        this.conf.set("mapred.job.tracker", this.jobtrackerUrl);
+        
+        disallowExitCalls();
     }
     
-    private void disallowExitCalls() {
+    private static void disallowExitCalls() {
         final SecurityManager securityManager = new SecurityManager() {
             @Override
             public void checkPermission(java.security.Permission permission) {
@@ -71,9 +81,18 @@ public class ClusterServer implements Cluster.Iface {
         };
         System.setSecurityManager(securityManager);
     }
-
     
-    private void start() throws Throwable {
+    private static String getFullExceptionInformation(Throwable exception) {
+        return (exception.toString() + "\n" + getStackTrace(exception));
+    }
+    
+    private static String getStackTrace(Throwable exception) {
+        StringWriter writer = new StringWriter();
+        exception.printStackTrace(new PrintWriter(writer));
+        return writer.toString();
+    }
+    
+    private void start() throws Exception {
         TServerSocket serverTransport = new TServerSocket(9888);
         Cluster.Processor processor = new Cluster.Processor(this);
         Args args = new Args(serverTransport);
@@ -82,10 +101,10 @@ public class ClusterServer implements Cluster.Iface {
         server.serve();
     }
 
-    private void sendNotificationEmail(String errorText, String errorStack) {
+    private void sendNotificationEmail(Exception exception) {        
         String text = "Cosmos failed in production :(\n\n"
-                + "The error message was: " + errorText + "\n"
-                + "and the call stack:" + errorStack + "\n\n"
+                + "The error message was: " + exception.toString() + "\n"
+                + "and the call stack:" + getStackTrace(exception) + "\n\n"
                 + "Please fix me!\n";
         
         Properties props = new Properties();
@@ -95,14 +114,14 @@ public class ClusterServer implements Cluster.Iface {
         Session session = Session.getInstance(props, null);
         try {
             Message msg = new MimeMessage(session);
-            msg.setFrom(new InternetAddress(NOTIFICATION_EMAIL));
+            msg.setFrom(new InternetAddress(notificationEmail));
             msg.addRecipient(Message.RecipientType.TO,
-                             new InternetAddress(NOTIFICATION_EMAIL));
+                             new InternetAddress(notificationEmail));
             msg.setSubject("Cosmos Failure");
             msg.setText(text);
             Transport.send(msg);
         } catch (Exception ex) {
-            System.err.println(ex.getMessage());
+            System.err.println(getFullExceptionInformation(ex));
         }
     }
 
@@ -112,9 +131,9 @@ public class ClusterServer implements Cluster.Iface {
             FileSystem fs = FileSystem.get(this.conf);
             fs.moveFromLocalFile(new Path(src), new Path(dest));
         } catch (Exception ex) {
-            this.sendNotificationEmail(ex.getMessage(), ex.toString());
+            this.sendNotificationEmail(ex);
             throw new TransferException(ClusterErrorCode.FILE_COPY_FAILED,
-                                        ex.getMessage());
+                                        getFullExceptionInformation(ex));
         }
     }
 
@@ -123,13 +142,13 @@ public class ClusterServer implements Cluster.Iface {
                          String mongoUrl) throws TransferException {
         try {
             int jobId = this.jobRunner.startNewThread(
-                    new String[] { jarPath, HDFS_URL + "/" + inputPath,
-                                   HDFS_URL + "/" + outputPath, mongoUrl });
+                    new String[] { jarPath, this.hdfsUrl + "/" + inputPath,
+                                   this.hdfsUrl + "/" + outputPath, mongoUrl });
             return String.valueOf(jobId);
-        } catch (Throwable ex) {
-            this.sendNotificationEmail(ex.getMessage(), ex.toString());
+        } catch (Exception ex) {
+            this.sendNotificationEmail(ex);
             throw new TransferException(ClusterErrorCode.RUN_JOB_FAILED,
-                                        ex.getMessage());
+                                        getFullExceptionInformation(ex));
         }
     }
 
@@ -138,10 +157,10 @@ public class ClusterServer implements Cluster.Iface {
             throws TransferException {
         try {
             return this.jobRunner.getResult(Integer.parseInt(jobId));
-        } catch (Throwable ex) {
-            this.sendNotificationEmail(ex.getMessage(), ex.toString());
+        } catch (Exception ex) {
+            this.sendNotificationEmail(ex);
             throw new TransferException(ClusterErrorCode.INVALID_JOB_ID,
-                                        ex.getMessage());
+                                        getFullExceptionInformation(ex));
         }
     }
     
@@ -182,7 +201,7 @@ public class ClusterServer implements Cluster.Iface {
         }
 
         @Override
-        public ClusterJobResult call() throws Exception {
+        public ClusterJobResult call() {
             ClusterJobResult result = new ClusterJobResult();
             try {
                 RunJar.main(this.args);
@@ -196,7 +215,8 @@ public class ClusterServer implements Cluster.Iface {
             } catch (Throwable ex) {
                 result.setStatus(ClusterJobStatus.FAILED);
                 result.setReason(new TransferException(
-                        ClusterErrorCode.RUN_JOB_FAILED, ex.getMessage()));
+                        ClusterErrorCode.RUN_JOB_FAILED,
+                        getFullExceptionInformation(ex)));
             }
             return result;
         }

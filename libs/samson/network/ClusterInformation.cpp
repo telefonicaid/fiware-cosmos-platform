@@ -79,6 +79,7 @@ namespace samson {
     
     ClusterInformation::~ClusterInformation()
     {
+        LM_T(LmtCleanup, ("In destructor"));
         clearClusterInformation();
     }
     
@@ -87,8 +88,12 @@ namespace samson {
         id = 0;
         version = 0;
         
+        LM_T(LmtCleanup, ("nodes.size == %d", nodes.size()));
         for ( size_t i = 0 ; i < nodes.size() ; i++ )
-            delete nodes[i];
+        {
+           LM_T(LmtCleanup, ("delete node %d", i));
+           delete nodes[i];
+        }
         nodes.clear();
     }
     
@@ -224,7 +229,7 @@ namespace samson {
             
         }
         
-        // Cleat previous information
+        // Clear previous information
         clearClusterInformation();
         
         id = new_cluster_information->id;
@@ -315,11 +320,14 @@ namespace samson {
                     int port = atoi( cmdLine.get_argument(2).c_str() );
                     size_t id = atoll( cmdLine.get_argument(3).c_str() );
                     
+                    LM_M(("Creating node %d", id));
                     nodes.push_back( new ClusterNode( host , port , id ) );
                     
                 }
             }
         }
+
+        fclose(file);
     }
     
     std::vector<size_t> ClusterInformation::getWorkerIds()

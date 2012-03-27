@@ -1,6 +1,8 @@
 
 
 #include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>  // read
 
 #include "samson/module/ModulesManager.h"           // samson::ModulesManager
 
@@ -11,23 +13,30 @@ namespace samson {
     SamsonFile::SamsonFile( std::string _fileName )
     {
         fileName = _fileName;
-        file = fopen( fileName.c_str() , "r" );        
+        int fd = open( fileName.c_str() , O_RDONLY );
         
-        if( !file )
+        if( fd < 0 )
         {
             error.set("Not possible to open file");
             return;
         }
         
         // Read header
-        int nb = fread(&header, 1, sizeof(samson::KVHeader), file);
+        ssize_t nb = read(fd, &header, sizeof(samson::KVHeader));
         
         if (nb != sizeof(samson::KVHeader))
+        {
+        	LM_E(("Getting header: read only %d bytes (wanted to read %ld)\n", nb, (long int) sizeof(samson::KVHeader)));
             error.set(au::str("Getting header: read only %d bytes (wanted to read %ld)\n", nb, (long int) sizeof(samson::KVHeader)));
+            close(fd);
+            return;
+        }
         
         if (!header.check())
         {
+        	LM_E(("Wrong magic number in header"));
             error.set("Wrong magic number in header");
+            close(fd);
             return;
         }
         
@@ -52,10 +61,11 @@ namespace samson {
                 message << " = " << expected_size << "\n";
                 message << "File size: " << filestatus.st_size << " bytes\n";
                 
+                LM_E(("Error: '%s'", message.str().c_str()));
                 error.set( message.str() );
                 
                 std::cout << header.str() << "\n";
-                
+                close(fd);
                 return;
             }
         }
@@ -74,18 +84,22 @@ namespace samson {
                 message << "File size: " << filestatus.st_size << " bytes\n";
                 
                 error.set( message.str() );
+                close(fd);
                 return;
             }
         }
         
         // Get format
         format = header.getKVFormat(); 
+
+        close(fd);
+        return;
     }
     
     SamsonFile::~SamsonFile()
     {
-        if( file )
-            fclose( file );
+        if( fd >= 0 )
+            close( fd );
     }
     
     bool SamsonFile::hasError()
@@ -121,11 +135,12 @@ namespace samson {
             data = (char*) malloc(filestatus.st_size);
             
             nb = fread(data, filestatus.st_size, 1, file);
-            if (nb == 0)      // To avoid warning in 'strict'
-                fclose(file); // To avoid warning in 'strict'
+            if (nb == 0)
+            {
+            	LM_W(("No data read from file:'%s'", fileName.c_str()));
+            }
 
             fclose(file);
-            
         }
         
         SimpleBuffer( size_t size )
@@ -175,6 +190,14 @@ namespace samson {
         {
             // txt content
             char buffer[1025];
+            FILE *file = fopen( fileName.c_str() , "r" );
+
+            if (file == NULL)
+            {
+            	LM_E(("Error opening file:'%s'", fileName.c_str()));
+            	return 0;
+            }
+
             
             while( fgets(buffer, 1024, file) )
             {
@@ -182,9 +205,15 @@ namespace samson {
                 records++;
 
                 if( limit > 0 )
+                {
                     if ( records >= limit )
+                    {
+                    	fclose(file);
                         return records;
+                    }
+                }
             }
+            fclose(file);
             return records;
         }
         

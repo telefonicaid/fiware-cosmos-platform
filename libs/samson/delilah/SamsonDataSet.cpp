@@ -39,7 +39,10 @@ namespace samson {
                         SamsonFile *samsonFile = new SamsonFile( localFileName.str() );
                         
                         if( samsonFile->hasError() )
+                        {
+                        	LM_E(("Error, file %s in directory %s reported error: %s" , pent->d_name , directory.c_str() , samsonFile->getErrorMessage().c_str()));
                             error.set( au::str("File %s in directory %s reported error: %s" , pent->d_name , directory.c_str() , samsonFile->getErrorMessage().c_str() ) );
+                        }
                         
                         std::string name = pent->d_name;
                         files.insertInMap(name, samsonFile);
@@ -67,7 +70,7 @@ namespace samson {
             KVFormat format2 = file->second->format;
             if( !format.isEqual( format2 ) )
             {
-                LM_E(("Different formats found in included files"));
+            	LM_E(("Different formats found in included files, format1:'<%s-%s>' in file:'%s', format2:'<%s-%s>' in file:'%s'", format.keyFormat.c_str(), format.valueFormat.c_str(), files.begin()->first.c_str(), format2.keyFormat.c_str(), format2.valueFormat.c_str(), file->first.c_str()));
                 error.set("Different formats found in included files");
                 return;
             }

@@ -3,7 +3,8 @@
 #define _H_SAMSON_FILE
 
 #include <string>       // std::string
-#include <stdio.h>      // FILE*
+
+
 
 #include "au/ErrorManager.h"            // au::ErrorManager
 
@@ -17,7 +18,7 @@ namespace samson {
         
         std::string fileName;
         au::ErrorManager error;
-        FILE *file;
+        int fd;
         
     public:
         

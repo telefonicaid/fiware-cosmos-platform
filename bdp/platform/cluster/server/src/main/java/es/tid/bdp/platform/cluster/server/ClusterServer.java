@@ -24,7 +24,10 @@ import org.apache.thrift.transport.TServerSocket;
  * @author dmicol
  */
 public class ClusterServer implements Cluster.Iface {
-    private static class ExitTrappedException extends SecurityException { }
+    private static class ExitWithSuccessCodeException
+            extends SecurityException { }
+    private static class ExitWithFailureCodeException
+            extends SecurityException { }
     
     // TODO: put this in a configuration file
     private static final String HDFS_URL = "hdfs://pshdp01:8011";
@@ -54,8 +57,10 @@ public class ClusterServer implements Cluster.Iface {
         final SecurityManager securityManager = new SecurityManager() {
             @Override
             public void checkPermission(java.security.Permission permission) {
-                if (permission.getName().contains("exitVM")) {
-                    throw new ExitTrappedException();
+                if (permission.getName().contains("exitVM.0")) {
+                    throw new ExitWithSuccessCodeException();
+                } else if (permission.getName().contains("exitVM")) {
+                    throw new ExitWithFailureCodeException();
                 }
             }
         };
@@ -156,7 +161,7 @@ public class ClusterServer implements Cluster.Iface {
                 return ClusterJobStatus.RUNNING;
             } else {
                 try {
-                    thread.join();
+                    thread.join(500);
                 } catch (InterruptedException ex) {
                 }
                 return thread.getStatus();
@@ -182,6 +187,10 @@ public class ClusterServer implements Cluster.Iface {
             try {
                 RunJar.main(this.args);
                 this.status = ClusterJobStatus.SUCCESSFUL;
+            } catch (ExitWithSuccessCodeException ex) {
+                this.status = ClusterJobStatus.SUCCESSFUL;
+            } catch (ExitWithFailureCodeException ex) {
+                this.status = ClusterJobStatus.FAILED;
             } catch (Throwable ex) {
                 this.status = ClusterJobStatus.FAILED;
             }

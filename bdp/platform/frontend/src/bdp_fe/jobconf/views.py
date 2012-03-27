@@ -73,9 +73,15 @@ def run_job(request, job_id):
         LOGGER.warning("Job %d not found" % job_id)
         return
 
-    if job.status != Job.CREATED:
+    if job.status != Job.CONFIGURED:
         msg = "Cannot start job %s while in %s status" % (
             job.name, job.get_status_display())
+        messages.warning(request, msg)
+        LOGGER.warning(msg)
+        return
+
+    if job.input_data is None or len(job.input_data) == 0:
+        msg = "No data for running job %s" % job.name
         messages.warning(request, msg)
         LOGGER.warning(msg)
         return
@@ -150,7 +156,7 @@ def upload_data(request, job_id):
         form = UploadDataForm(request.POST, request.FILES)
         if form.is_valid() and job.data_upload(request.FILES['file'],
                                                CLUSTER):
-            Job.input_data = job.hdfs_data_path()
+            job.input_data = job.hdfs_data_path()
             job.save()
             return redirect(reverse('list_jobs'))
         else:

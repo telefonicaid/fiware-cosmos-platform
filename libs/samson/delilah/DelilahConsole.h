@@ -102,7 +102,7 @@ namespace samson {
 
             if( sequence == "q" )
             {
-                appendToCommand("ls_queues");
+                appendToCommand("ls");
             }
             
             if( sequence == "d" )

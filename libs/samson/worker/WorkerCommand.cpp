@@ -348,7 +348,7 @@ namespace samson {
             return;
         }
         
-        if ( cmd.get_argument(0) == "rm_queue" )
+        if ( main_command == "rm" )
         {
             if( cmd.get_num_arguments() < 2 )
                 error->set( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
@@ -758,7 +758,7 @@ typedef struct LogLineInfo
         }        
         
         // Query commands
-        if( main_command == "ls_queues" )
+        if( main_command == "ls" )
         {
             network::Collection * c = streamManager->getCollection( &visualitzation );
             c->set_title( command  );
@@ -860,7 +860,7 @@ typedef struct LogLineInfo
             return;
         }
         
-        if( main_command == "ls_workers_commands" )
+        if( main_command == "ps_workers" )
         {
             network::Collection * c = samsonWorker->workerCommandManager->getCollectionOfWorkerCommands(&visualitzation);
             c->set_title( command  );

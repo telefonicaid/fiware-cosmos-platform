@@ -97,7 +97,6 @@ public:
 
         }
         
-        // Options for ls_queues
         if (info->completingSecondWord("set") )
         {
             std::vector<std::string> names = samson::SamsonSetup::shared()->getItemNames();

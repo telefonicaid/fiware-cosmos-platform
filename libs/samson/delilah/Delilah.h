@@ -128,11 +128,12 @@ namespace samson {
 		size_t sendWorkerCommand( std::string command , engine::Buffer *buffer );
 		
 		
-		// Check a particular if
+		// Check a particular id
 		bool isActive( size_t id );
         bool hasError( size_t id );
         std::string errorMessage( size_t id );
         std::string getDescription( size_t id );
+        
         
 	public:
 				
@@ -188,6 +189,10 @@ namespace samson {
         void getInfo( std::ostringstream& output ); 
 
         bool checkXMLInfoUpdate();
+        
+        
+        // Cancel a particuarl delilah_id
+        void cancelComponent( size_t id );
         
 	protected:		
 		

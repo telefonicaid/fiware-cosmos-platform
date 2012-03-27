@@ -366,10 +366,7 @@ namespace samson
         
         // Upload & Download operations
 		add( "load.buffer_size" , "67108864" , "Size of the data block for load operations" , SetupItem_uint64);                         
-        
-        // Delilah Client
-        add("delilah.automatic_update_period" , "2" , "Period for the automatic update of information from the samson cluster" , SetupItem_uint64);      
-        
+                
         // Stream processing
         add("stream.max_scheduled_write_size" , "120000000" , "Maximum size scheduled for writing in the BlockManager", SetupItem_uint64);
         add("stream.max_scheduled_read_size" , "120000000" , "Maximum size scheduled for writing in the BlockManager", SetupItem_uint64);

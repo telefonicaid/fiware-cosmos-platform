@@ -499,6 +499,42 @@ void Console::writeErrorOnConsole( std::string message )
     write( txt );
 }
 
+int Console::waitWithMessage( std::string message , double sleep_time, ConsoleEntry *entry )
+{
+    // Clear line
+    clear_line();
+    
+    // Print message
+    printf("%s" , message.c_str() );
+    fflush(stdout);
+    
+    size_t total_slept = 0;
+    size_t total_to_sleep = sleep_time * 1000000;
+    
+    while ( total_slept < total_to_sleep )
+    {
+        
+        if( isImputReady() )
+        {
+            getEntry( entry );
+            return 0;
+        }
+        
+        // Message in background
+        process_background();
+        
+        // Review background messages
+        process_background();
+        usleep(20000);
+        total_slept += 20000;
+    }
+    
+    return 1; // Timeout
+    
+    
+    
+}
+
 
 void Console::writeOnConsole( std::string message )
 {

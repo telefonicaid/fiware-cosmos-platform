@@ -70,7 +70,7 @@ namespace samson
         
         // Cool stuff
         addEspaceSequence( "samson" );
-        addEspaceSequence( "q" );  // ls_queues
+        addEspaceSequence( "q" );  // ls
         addEspaceSequence( "d" );  // Data base mode...
         
         // By default no save traces
@@ -87,7 +87,7 @@ namespace samson
         simple_output = false;
         
         // Aliases
-        add_alias( "ls" , "ls_queues -group name" );
+        //add_alias( "aso" , "add_stream_operation" );
         
     }
 
@@ -119,7 +119,53 @@ namespace samson
 	
 	void DelilahConsole::evalCommand(std::string command)
 	{
-		runAsyncCommand(command);
+		size_t _delilah_id = runAsyncCommand(command);
+        
+        if( _delilah_id != 0 )
+        {
+            au::Cronometer cronometer;
+            while( true )
+            {
+                
+                au::ConsoleEntry entry;
+                std::string message;
+                if( cronometer.diffTimeInSeconds() > 2 )
+                {
+                    message = au::str(" [ %s ] Waiting process %lu : %s ... [ b: background c: cancel ]" 
+                                      , au::str_time( cronometer.diffTimeInSeconds()).c_str()
+                                      , _delilah_id 
+                                      , command.c_str()
+                                      );
+                }
+                
+                int s = waitWithMessage( message , 0.2 , &entry );
+                
+                if( !isActive( _delilah_id ) )
+                {
+                    return;
+                }
+                
+                if ( s == 0 ) 
+                {
+                    // To something with the key
+                    
+                    if( entry.isChar( 'c' ) )
+                    {
+                        refresh();
+                        writeWarningOnConsole( au::str("Canceling process %lu : %s" , _delilah_id , command.c_str() ));
+                        cancelComponent( _delilah_id );
+                        return;
+                    }
+                    else if( entry.isChar( 'b' ) )
+                    {
+                        refresh(); // Refresh console
+                        return;
+                    }
+                }
+            }
+            
+        }
+        
 	}
 
     void DelilahConsole::autoCompleteOperations( au::ConsoleAutoComplete* info )
@@ -222,8 +268,8 @@ namespace samson
             return;
         }
 
-        // Options for ls_queues
-        if (info->completingSecondWord("ls_queues") )
+        // Options for ls
+        if (info->completingSecondWord("ls") )
         {
             info->add("-rates");
             info->add("-properties");
@@ -240,7 +286,7 @@ namespace samson
         }
         
         
-        if (info->completingSecondWord("rm_queue") )
+        if (info->completingSecondWord("rm") )
         {
             autoCompleteQueues( info );
         }
@@ -885,7 +931,7 @@ namespace samson
                 {
                     std::ostringstream output;
                     output << "================================================\n";
-                    output << " Process " << id << " ";
+                    output << " Process " << au::code64_str( network->getMynodeIdentifier().id ) << "_" << id << " ";
                     
                     if( component->isComponentFinished() )
                         output << "FINISHED "  << component->cronometer.str();
@@ -1091,10 +1137,10 @@ namespace samson
         
        
         // Some checks for some operations
-        if( main_command == "rm_queue" )
+        if( main_command == "rm" )
             if( commandLine.get_num_arguments() < 2 )
             {
-                writeErrorOnConsole( au::str("Usage: rm_queue queue\n" ) );
+                writeErrorOnConsole( au::str("Usage: rm queue\n" ) );
                 return 0;
             }
         

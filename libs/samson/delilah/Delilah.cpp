@@ -37,7 +37,6 @@
 #include "samson/delilah/Delilah.h"             // Own interfce
 #include "samson/delilah/DelilahConsole.h"      // samson::DelilahConsole
 
-#define notification_delilah_automatic_update "notification_delilah_automatic_update"
 
 namespace samson {
     
@@ -73,14 +72,6 @@ namespace samson {
             engine::Engine::shared()->notify( notification, update_period );
         }        
 
-        // Notification to update local data bases ( queues, operations, etc...) when required
-        listen( notification_delilah_automatic_update );
-        {
-            size_t period = SamsonSetup::shared()->getUInt64("delilah.automatic_update_period");
-            // Notification every second but only used if some flags are tru
-            engine::Notification *notification = new engine::Notification(notification_delilah_automatic_update);
-            engine::Engine::shared()->notify( notification, period );
-        }        
      
         // By default update everything ( canceled in samsonClient )
         automatic_update = true;
@@ -166,16 +157,6 @@ namespace samson {
             return;
         }        
         
-        if ( notification->isName( notification_delilah_automatic_update ) )
-        {
-            // Update local list of queus automatically
-            if( automatic_update )
-            {
-                //sendWorkerCommand("ls_queues -a -hidden -save" , NULL);
-                //sendWorkerCommand("ls_workers -a -hidden -save" , NULL);
-            }
-            return;
-        }
         
         LM_X(1,("Delilah received an unexpected notification %s" , notification->getName() ));
         
@@ -409,6 +390,19 @@ namespace samson {
         
 		return tmp_id;
 	}
+    
+    void Delilah::cancelComponent( size_t _id )
+    {
+        au::TokenTaker tk( &token );
+    
+        DelilahComponent* component = components.findInMap( _id );
+        
+        if( component )
+            component->setComponentFinishedWithError("Canceled by user in delilah console");
+        else
+            showWarningMessage( au::str("Not possible to cancel delilah process %lu." , _id ) );
+    }
+
 	
 	void Delilah::clearComponents()
 	{
@@ -465,7 +459,7 @@ namespace samson {
                 continue;
             
             au::StringVector values;
-            values.push_back( au::str("%lu",component->getId() ) );
+            values.push_back( au::str("%s_%lu", au::code64_str( network->getMynodeIdentifier().id ).c_str() , component->getId() ) );
             values.push_back( component->getTypeName() );
             values.push_back( component->getStatusDescription() );
             

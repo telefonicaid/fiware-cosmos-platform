@@ -120,17 +120,17 @@ namespace samson
         // DATA MANIPULATION
         // ------------------------------------------------------------------
         
-        add( "ls_queues" , "data" , "Show a list of all data queues in the system",
-            "ls_queues [-rates] [-blocks] [-properties] [-group group_field]"
+        add( "ls" , "data" , "Show a list of all data queues in the system",
+            "ls [-rates] [-blocks] [-properties] [-group group_field]"
             "      -rates        Information about total size and current rate\n"
             "      -blocks       Detailes information about blocks\n"
             "      -properties   Get properties assigned to queues\n"
             "      -group X      Group results by a particular field"
             );
         
-        add( "rm_queue" , "data" , 
+        add( "rm" , "data" , 
             "Remove a queue" 
-            "Usage: rm_queue queue"
+            "Usage: rm queue"
             );
                 
         add( "set_queue_property" , "data" ,
@@ -260,9 +260,9 @@ namespace samson
             );
         
         
-        add( "ls_workers_commands"  , "stream" , 
+        add( "ps_workers"  , "stream" , 
             "Show a list of commands being executed in each node of the cluster",
-            "ls_workers_commands <command pattern>\n"
+            "ps_workers <command pattern>\n"
             );
 
         

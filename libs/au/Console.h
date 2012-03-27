@@ -61,6 +61,9 @@ public:
     virtual void process_escape_sequence( std::string sequence ){ sequence = "SEQ"; };
     
     void refresh();
+
+    // Wait showing a message on screen.... ( background message works )
+    int waitWithMessage( std::string message , double sleep_time, ConsoleEntry *entry );
     
     // Make sure all messages are shown
     void flush();

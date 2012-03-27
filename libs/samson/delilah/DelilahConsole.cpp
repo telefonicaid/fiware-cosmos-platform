@@ -287,12 +287,10 @@ namespace samson
             info->add("-disk");
         }
         
-        
-        if (info->completingSecondWord("rm") )
+        if( info->firstWord() == "rm" )
         {
             autoCompleteQueues( info );
         }
-        
         
         if (info->completingSecondWord("ls_stream_operations") )
         {

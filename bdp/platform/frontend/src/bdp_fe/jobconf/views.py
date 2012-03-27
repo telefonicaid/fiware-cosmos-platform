@@ -19,7 +19,7 @@ from bdp_fe.jobconf import data
 from bdp_fe.jobconf.cluster import remote
 from bdp_fe.jobconf.models import CustomJobModel, Job, JobModel
 from bdp_fe.jobconf.views_util import (get_owned_job_or_40x, safe_int_param,
-                                       retrieve_results)
+                                       retrieve_results, HIDDEN_KEYS)
 
 LOGGER = logging.getLogger(__name__)
 CLUSTER = remote.Cluster(settings.CLUSTER_CONF.get('host'),
@@ -46,9 +46,11 @@ def view_results(request, job_id):
     job = get_owned_job_or_40x(request, job_id)
     if job.status != Job.SUCCESSFUL:
         raise Http404
-    primary_key = job.results_primary_key
-    results = retrieve_results(job_id, 'word')
+    primary_key = request.GET.get('primary_key')
+    results = retrieve_results(job_id, primary_key)
     prototype_result = results[0]
+    if not primary_key:
+        primary_key = prototype_result.pk
     paginator = Paginator(results, 100)
     page = request.GET.get('page')
     if not page:
@@ -64,7 +66,7 @@ def view_results(request, job_id):
                               {'title' : 'Results of job %s' % job_id,
                                'job_results' : paginated_results,
                                'prototype_result': prototype_result,
-                               'hidden_keys': ['_id', 'job_id'],
+                               'hidden_keys': HIDDEN_KEYS,
                                'expand_types': ['dict', 'list'],
                                'primary_key': primary_key},
                               context_instance=RequestContext(request))
@@ -98,7 +100,6 @@ def run_job(request, job_id):
 
 class NewJobForm(forms.Form):
     name = forms.CharField(max_length=Job.NAME_MAX_LENGTH)
-    results_primary_key = forms.CharField(max_length=Job.RESULTS_PK_MAX_LENGTH)
 
 
 @login_required
@@ -108,7 +109,6 @@ def new_job(request):
         if form.is_valid():
             job = Job(name=form.cleaned_data['name'],
                       user=request.user,
-                      results_primary_key=request.user,
                       status=Job.UNCONFIGURED)
             job.save()
             model = CustomJobModel(job=job) # The only option for the moment

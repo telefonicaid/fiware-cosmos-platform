@@ -51,7 +51,7 @@ public class ClusterServer implements Cluster.Iface {
     }
 
     public ClusterServer() {
-        this.disallowExitCalls();
+        disallowExitCalls();
         
         this.jobRunner = new JobRunner();
         this.conf = new Configuration();
@@ -60,7 +60,7 @@ public class ClusterServer implements Cluster.Iface {
         this.conf.set("mapred.job.tracker", JOBTRACKER_URL);
     }
     
-    private void disallowExitCalls() {
+    private static void disallowExitCalls() {
         final SecurityManager securityManager = new SecurityManager() {
             @Override
             public void checkPermission(java.security.Permission permission) {
@@ -73,7 +73,12 @@ public class ClusterServer implements Cluster.Iface {
         };
         System.setSecurityManager(securityManager);
     }
-
+    
+    private static String getStackTrace(Exception exception) {
+        StringWriter writer = new StringWriter();
+        exception.printStackTrace(new PrintWriter(writer));
+        return writer.toString();
+    }
     
     private void start() throws Exception {
         TServerSocket serverTransport = new TServerSocket(9888);
@@ -84,14 +89,10 @@ public class ClusterServer implements Cluster.Iface {
         server.serve();
     }
 
-    private void sendNotificationEmail(Exception exception) {
-        StringWriter writer = new StringWriter();
-        exception.printStackTrace(new PrintWriter(writer));
-        String errorStack = writer.toString();
-        
+    private void sendNotificationEmail(Exception exception) {        
         String text = "Cosmos failed in production :(\n\n"
                 + "The error message was: " + exception.toString() + "\n"
-                + "and the call stack:" + errorStack + "\n\n"
+                + "and the call stack:" + getStackTrace(exception) + "\n\n"
                 + "Please fix me!\n";
         
         Properties props = new Properties();
@@ -120,7 +121,8 @@ public class ClusterServer implements Cluster.Iface {
         } catch (Exception ex) {
             this.sendNotificationEmail(ex);
             throw new TransferException(ClusterErrorCode.FILE_COPY_FAILED,
-                                        ex.toString());
+                                        ex.toString() + "\n"
+                                        + getStackTrace(ex));
         }
     }
 
@@ -135,7 +137,8 @@ public class ClusterServer implements Cluster.Iface {
         } catch (Exception ex) {
             this.sendNotificationEmail(ex);
             throw new TransferException(ClusterErrorCode.RUN_JOB_FAILED,
-                                        ex.toString());
+                                        ex.toString() + "\n"
+                                        + getStackTrace(ex));
         }
     }
 
@@ -147,7 +150,8 @@ public class ClusterServer implements Cluster.Iface {
         } catch (Exception ex) {
             this.sendNotificationEmail(ex);
             throw new TransferException(ClusterErrorCode.INVALID_JOB_ID,
-                                        ex.toString());
+                                        ex.toString() + "\n"
+                                        + getStackTrace(ex));
         }
     }
     

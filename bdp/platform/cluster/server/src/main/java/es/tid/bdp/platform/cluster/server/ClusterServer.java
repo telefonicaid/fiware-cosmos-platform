@@ -90,7 +90,7 @@ public class ClusterServer implements Cluster.Iface {
         String errorStack = writer.toString();
         
         String text = "Cosmos failed in production :(\n\n"
-                + "The error message was: " + exception.getMessage() + "\n"
+                + "The error message was: " + exception.toString() + "\n"
                 + "and the call stack:" + errorStack + "\n\n"
                 + "Please fix me!\n";
         
@@ -108,7 +108,7 @@ public class ClusterServer implements Cluster.Iface {
             msg.setText(text);
             Transport.send(msg);
         } catch (Exception ex) {
-            System.err.println(ex.getMessage());
+            System.err.println(ex.toString());
         }
     }
 
@@ -120,7 +120,7 @@ public class ClusterServer implements Cluster.Iface {
         } catch (Exception ex) {
             this.sendNotificationEmail(ex);
             throw new TransferException(ClusterErrorCode.FILE_COPY_FAILED,
-                                        ex.getMessage());
+                                        ex.toString());
         }
     }
 
@@ -135,7 +135,7 @@ public class ClusterServer implements Cluster.Iface {
         } catch (Exception ex) {
             this.sendNotificationEmail(ex);
             throw new TransferException(ClusterErrorCode.RUN_JOB_FAILED,
-                                        ex.getMessage());
+                                        ex.toString());
         }
     }
 
@@ -147,7 +147,7 @@ public class ClusterServer implements Cluster.Iface {
         } catch (Exception ex) {
             this.sendNotificationEmail(ex);
             throw new TransferException(ClusterErrorCode.INVALID_JOB_ID,
-                                        ex.getMessage());
+                                        ex.toString());
         }
     }
     
@@ -202,7 +202,7 @@ public class ClusterServer implements Cluster.Iface {
             } catch (Throwable ex) {
                 result.setStatus(ClusterJobStatus.FAILED);
                 result.setReason(new TransferException(
-                        ClusterErrorCode.RUN_JOB_FAILED, ex.getMessage()));
+                        ClusterErrorCode.RUN_JOB_FAILED, ex.toString()));
             }
             return result;
         }

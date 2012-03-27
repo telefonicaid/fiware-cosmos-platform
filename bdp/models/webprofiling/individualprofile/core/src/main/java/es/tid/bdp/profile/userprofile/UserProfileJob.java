@@ -39,7 +39,7 @@ public class UserProfileJob extends Job {
 
     public void configure(Path categoriesPath, Path profilePath)
             throws IOException {
-        FileInputFormat.addInputPath(this, categoriesPath);
+        FileInputFormat.setInputPaths(this, categoriesPath);
         FileOutputFormat.setOutputPath(this, profilePath);
     }
 }

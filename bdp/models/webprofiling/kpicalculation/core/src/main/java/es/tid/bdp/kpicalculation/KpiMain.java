@@ -146,7 +146,7 @@ public class KpiMain extends Configured implements Tool {
                         WebProfilingLog.class,
                         wpCleanerJob.getConfiguration()));
 
-        FileInputFormat.addInputPath(wpCleanerJob, input);
+        FileInputFormat.setInputPaths(wpCleanerJob, input);
         FileOutputFormat.setOutputPath(wpCleanerJob, output);
 
         return wpCleanerJob;
@@ -194,7 +194,7 @@ public class KpiMain extends Configured implements Tool {
         aggregationJob.setOutputFormatClass(TextOutputFormat.class);
 
         // Input and Output configuration
-        FileInputFormat.addInputPath(aggregationJob, inputPath);
+        FileInputFormat.setInputPaths(aggregationJob, inputPath);
         FileOutputFormat.setOutputPath(aggregationJob, outputPath);
         
         return aggregationJob;

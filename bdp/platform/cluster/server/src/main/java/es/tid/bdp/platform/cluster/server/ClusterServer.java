@@ -74,7 +74,11 @@ public class ClusterServer implements Cluster.Iface {
         System.setSecurityManager(securityManager);
     }
     
-    private static String getStackTrace(Exception exception) {
+    private static String getFullExceptionInformation(Throwable exception) {
+        return (exception.toString() + "\n" + getStackTrace(exception));
+    }
+    
+    private static String getStackTrace(Throwable exception) {
         StringWriter writer = new StringWriter();
         exception.printStackTrace(new PrintWriter(writer));
         return writer.toString();
@@ -109,7 +113,7 @@ public class ClusterServer implements Cluster.Iface {
             msg.setText(text);
             Transport.send(msg);
         } catch (Exception ex) {
-            System.err.println(ex.toString());
+            System.err.println(getFullExceptionInformation(ex));
         }
     }
 
@@ -121,8 +125,7 @@ public class ClusterServer implements Cluster.Iface {
         } catch (Exception ex) {
             this.sendNotificationEmail(ex);
             throw new TransferException(ClusterErrorCode.FILE_COPY_FAILED,
-                                        ex.toString() + "\n"
-                                        + getStackTrace(ex));
+                                        getFullExceptionInformation(ex));
         }
     }
 
@@ -137,8 +140,7 @@ public class ClusterServer implements Cluster.Iface {
         } catch (Exception ex) {
             this.sendNotificationEmail(ex);
             throw new TransferException(ClusterErrorCode.RUN_JOB_FAILED,
-                                        ex.toString() + "\n"
-                                        + getStackTrace(ex));
+                                        getFullExceptionInformation(ex));
         }
     }
 
@@ -150,8 +152,7 @@ public class ClusterServer implements Cluster.Iface {
         } catch (Exception ex) {
             this.sendNotificationEmail(ex);
             throw new TransferException(ClusterErrorCode.INVALID_JOB_ID,
-                                        ex.toString() + "\n"
-                                        + getStackTrace(ex));
+                                        getFullExceptionInformation(ex));
         }
     }
     
@@ -206,7 +207,8 @@ public class ClusterServer implements Cluster.Iface {
             } catch (Throwable ex) {
                 result.setStatus(ClusterJobStatus.FAILED);
                 result.setReason(new TransferException(
-                        ClusterErrorCode.RUN_JOB_FAILED, ex.toString()));
+                        ClusterErrorCode.RUN_JOB_FAILED,
+                        getFullExceptionInformation(ex)));
             }
             return result;
         }

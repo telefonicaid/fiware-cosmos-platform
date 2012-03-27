@@ -26,6 +26,13 @@ namespace samson {
         quit_flag = false;
     }
     
+    NetworkListener::~NetworkListener()
+    {
+        LM_T(LmtCleanup, ("In NetworkListener::~NetworkListener"));
+        // What if pthread_create isn't done, or failed ...
+        pthread_detach(t);
+    }
+
     void NetworkListener::quit()
     {
         quit_flag = true;

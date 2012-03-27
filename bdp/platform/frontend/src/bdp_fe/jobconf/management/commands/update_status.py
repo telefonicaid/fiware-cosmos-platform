@@ -31,10 +31,17 @@ class Command(BaseCommand):
         try:
             for job in Job.objects.all():
                 if job.status == Job.RUNNING:
-                    job.status = CLUSTER.getJobStatus(job.execution_id)
-                    job.save()
-                    updated += 1
+                    try:
+                        result = CLUSTER.getJobResult(job.execution_id)
+                        job.status = result.status - 1
+                        if result.reason is not None:
+                            job.set_error(result.reason)
+                        job.save()
+                        updated += 1
+                    except remote.ClusterException, ex:
+                        self.stdout.write("Error %d: %s\n" % (ex.error_code,
+                                                              ex.error_message))
             if not quiet:
                 self.stdout.write("%d updates\n" % updated)
         except remote.ConnException:
-            self.stdout.write("Connection problem")
+            self.stdout.write("Connection problem\n")

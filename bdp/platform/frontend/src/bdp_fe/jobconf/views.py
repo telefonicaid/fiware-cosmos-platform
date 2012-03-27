@@ -41,7 +41,7 @@ def list_jobs(request):
 
 @login_required
 def view_results(request, job_id):
-    job = get_owned_job_or_40x(request, job_id)
+    job = util.get_owned_job_or_40x(request, job_id)
     if job.status == Job.SUCCESSFUL:
         return view_successful_results(request, job)
     elif job.status == Job.FAILED:
@@ -51,12 +51,12 @@ def view_results(request, job_id):
 
 
 def view_successful_results(request, job):
-    job = util.get_owned_job_or_40x(request, job_id)
+    job = util.get_owned_job_or_40x(request, job.id)
     if job.status != Job.SUCCESSFUL:
         raise Http404
     try:
         primary_key = request.GET.get('primary_key')
-        results = util.retrieve_results(job_id, primary_key)
+        results = util.retrieve_results(job.id, primary_key)
         prototype_result = results[0]
         if not primary_key:
             primary_key = prototype_result.pk
@@ -71,7 +71,7 @@ def view_successful_results(request, job):
         except EmptyPage:
             paginated_results = paginator.page(paginator.num_pages)
 
-        context = {'title' : 'Results of job %s' % job_id,
+        context = {'title' : 'Results of job %s' % job.id,
                    'job_results' : paginated_results,
                    'prototype_result': prototype_result,
                    'hidden_keys': util.HIDDEN_KEYS,
@@ -81,7 +81,7 @@ def view_successful_results(request, job):
                                   context,
                                   context_instance=RequestContext(request))
     except util.NoResultsError:
-        context = {'title' : 'Results of job %s' % job_id,
+        context = {'title' : 'Results of job %s' % job.id,
                    'job_results' : None,
                    'hidden_keys': util.HIDDEN_KEYS,
                    'expand_types': ['dict', 'list']}

@@ -2,12 +2,14 @@
 Utility functions for controllers.
 
 """
+from random import choice
+
 from django.conf import settings
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from models import CustomJobModel
 from pymongo import Connection
-from random import choice
+from pymongo.errors import AutoReconnect, ConnectionFailure
 
 from bdp_fe.jobconf.models import Job
 from bdp_fe.middleware403 import Http403

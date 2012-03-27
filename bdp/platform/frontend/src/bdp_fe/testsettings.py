@@ -11,8 +11,12 @@ TEMPLATE_DEBUG = DEBUG
 
 from settings import *
 
-DATABASE_ENGINE = 'django.db.backends.sqlite3'
-DATABASE_NAME = '/tmp/bdp_fe.db'
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': '/tmp/bdp_fe.db'
+    }
+}
 
 MEDIA_ROOT = ''
 MEDIA_URL = ''

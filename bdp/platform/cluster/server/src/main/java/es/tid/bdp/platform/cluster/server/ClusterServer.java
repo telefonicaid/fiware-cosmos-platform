@@ -3,6 +3,7 @@ package es.tid.bdp.platform.cluster.server;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.*;
 
 import javax.mail.Message;
 import javax.mail.Session;
@@ -33,6 +34,7 @@ public class ClusterServer implements Cluster.Iface {
     private static final String HDFS_URL = "hdfs://pshdp01:8011";
     private static final String JOBTRACKER_URL = "pshdp01:8012";
     
+    private JobRunner jobRunner;
     private Configuration conf;
 
     public static void main(String args[]) {
@@ -47,6 +49,7 @@ public class ClusterServer implements Cluster.Iface {
     public ClusterServer() {
         this.disallowExitCalls();
         
+        this.jobRunner = new JobRunner();
         this.conf = new Configuration();
         // TODO: this might not be necessary
         this.conf.set("fs.default.name", HDFS_URL);
@@ -117,10 +120,9 @@ public class ClusterServer implements Cluster.Iface {
     public String runJob(String jarPath, String inputPath, String outputPath,
                          String mongoUrl) throws TransferException {
         try {
-            int jobId = JobRunnerPool.startNewThread(
+            int jobId = this.jobRunner.startNewThread(
                     new String[] { jarPath, HDFS_URL + "/" + inputPath,
                                    HDFS_URL + "/" + outputPath, mongoUrl });
-            // TODO: Replace the jobId with an integer, not a string
             return String.valueOf(jobId);
         } catch (Throwable ex) {
             this.sendNotificationEmail(ex.getMessage(), ex.toString());
@@ -133,7 +135,7 @@ public class ClusterServer implements Cluster.Iface {
     public ClusterJobStatus getJobStatus(String jobId)
             throws TransferException {
         try {
-            return JobRunnerPool.getStatus(Integer.parseInt(jobId));
+            return this.jobRunner.getStatus(Integer.parseInt(jobId));
         } catch (Throwable ex) {
             this.sendNotificationEmail(ex.getMessage(), ex.toString());
             throw new TransferException(ClusterErrorCode.INVALID_JOB_ID,
@@ -141,58 +143,50 @@ public class ClusterServer implements Cluster.Iface {
         }
     }
     
-    private static class JobRunnerPool {
-        private static List<JobRunnerThread> threads =
-                new ArrayList<JobRunnerThread>();
+    private class JobRunner {
+        private static final int MAX_THREADS = 10;
         
-        private JobRunnerPool() {
+        private ExecutorService threadPool = Executors.newFixedThreadPool(
+                MAX_THREADS);
+        private List<Future<ClusterJobStatus>> jobs =
+                new ArrayList<Future<ClusterJobStatus>>();
+
+        public synchronized int startNewThread(String[] args) {
+            Future<ClusterJobStatus> status = this.threadPool.submit(
+                    new Job(args));
+            this.jobs.add(status);
+            return (this.jobs.size() - 1);
         }
         
-        public static int startNewThread(String[] args) {
-            JobRunnerThread thread = new JobRunnerThread(args);
-            threads.add(thread);
-            thread.start();
-            return threads.indexOf(thread);
-        }
-        
-        public static ClusterJobStatus getStatus(int id) {
-            JobRunnerThread thread = threads.get(id);
-            if (thread.isAlive()) {
-                return ClusterJobStatus.RUNNING;
+        public ClusterJobStatus getStatus(int id) throws InterruptedException, 
+                                                         ExecutionException {
+            Future<ClusterJobStatus> jobStatus = this.jobs.get(id);
+            if (jobStatus.isDone()) {
+                return jobStatus.get();
             } else {
-                try {
-                    thread.join(500);
-                } catch (InterruptedException ex) {
-                }
-                return thread.getStatus();
+                return ClusterJobStatus.RUNNING;
             }
         }
     }
     
-    private static class JobRunnerThread extends Thread {
-        private ClusterJobStatus status;
+    private class Job implements Callable<ClusterJobStatus> {
         private String[] args;
         
-        public JobRunnerThread(String[] args) {
-            this.status = ClusterJobStatus.RUNNING;
+        public Job(String[] args) {
             this.args = args.clone();
         }
- 
-        public ClusterJobStatus getStatus() {
-            return this.status;
-        }
-        
+
         @Override
-        public void run() {
+        public ClusterJobStatus call() throws Exception {
             try {
                 RunJar.main(this.args);
-                this.status = ClusterJobStatus.SUCCESSFUL;
+                return ClusterJobStatus.SUCCESSFUL;
             } catch (ExitWithSuccessCodeException ex) {
-                this.status = ClusterJobStatus.SUCCESSFUL;
+                return ClusterJobStatus.SUCCESSFUL;
             } catch (ExitWithFailureCodeException ex) {
-                this.status = ClusterJobStatus.FAILED;
+                return ClusterJobStatus.FAILED;
             } catch (Throwable ex) {
-                this.status = ClusterJobStatus.FAILED;
+                return ClusterJobStatus.FAILED;
             }
         }
     }

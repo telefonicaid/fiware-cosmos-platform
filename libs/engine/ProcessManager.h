@@ -54,7 +54,6 @@ class ProcessManager  :  engine::Object
     
     au::set<ProcessItem> items;				// List of items to be executed ( all priorities  )
     au::set<ProcessItem> running_items;		// Set of items currently being executed
-    au::set<ProcessItem> halted_items;		// Set of items currently being executed but halted
 
     int num_processes;						// Number of maximum simultaneous process running ( from setup )
 
@@ -99,8 +98,6 @@ public:
     
     // Notification that this ProcessItem has finished
     void finishProcessItem( ProcessItem *item );		
-    // Notification that this ProcessItem is halted ( blocked until output memory is ready ) 
-    void haltProcessItem( ProcessItem *item );			
     
 public:
     
@@ -122,7 +119,6 @@ private:
     ProcessItem* token_getNextProcessItem();
     ProcessItem* token_finishProcessItem( ProcessItem* item );
     ProcessItem* token_cancelProcessItem( ProcessItem* item );
-    void token_haltProcessItem( ProcessItem* item );
     void token_getInfo( std::ostringstream& output);
     size_t token_getNumRunningProcessItem();
     

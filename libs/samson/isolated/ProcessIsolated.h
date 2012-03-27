@@ -97,9 +97,6 @@ namespace samson {
         ProcessIsolated( std::string description,  ProcessBaseType _type );
         virtual ~ProcessIsolated();
 
-        // Function to specify if we are ready to be executed of continued from a halt
-        bool isReady();
-        
         // Get the writers to emit key-values
         ProcessWriter* getWriter();
 
@@ -115,6 +112,7 @@ namespace samson {
 		void runCode( int c );
 
         // Methods overwritted from ProcessItemIsolated ( running on a different process )
+        bool initProcessItemIsolated();
         void runIsolated();
         
         // --------------------------------------------------------------------------

@@ -81,7 +81,6 @@ void ProcessManager::quitAndWait()
     }
         
     items.clearSet();				// List of items to be executed ( all priorities  )
-    halted_items.clearSet();		// Set of items currently being executed but halted
     
 }
 
@@ -136,11 +135,6 @@ void ProcessManager::notify( Notification* notification )
 }
 
 
-void ProcessManager::haltProcessItem( ProcessItem *item )
-{
-    token_haltProcessItem( item );    
-}   
-
 void ProcessManager::add( ProcessItem *item , size_t listenerId  )
 {
     // We mae sure, items always come with a listenerId
@@ -154,7 +148,8 @@ void ProcessManager::add( ProcessItem *item , size_t listenerId  )
     // Add internally
     token_add( item );
     
-    LM_T( LmtProcessManager , ("Engine state for background process: Pending %u Running %u Halted %u", items.size() , running_items.size() , halted_items.size()  ) );
+    LM_T( LmtProcessManager , ("Engine state for background process: Pending %u Running %u "
+                               , items.size() , running_items.size()  ) );
     
     LM_T( LmtProcessManager , ("Finish Adding ProcessItem") );
     
@@ -235,12 +230,7 @@ void ProcessManager::check_background_processes()
                     item->state = ProcessItem::running;
                     item->runInBackground();
                     break;
-                    
-                case ProcessItem::halted:
-                    item->state = ProcessItem::running;
-                    item->unHalt();
-                    break;
-                    
+                                        
                 default:
                     LM_X(1,("Unexpected state running item at Engine"));
                     break;
@@ -248,9 +238,7 @@ void ProcessManager::check_background_processes()
         }
         else
             usleep( 100000 ); // Sleep 0.1 seconds
-        
     }
-    
 }
 
 
@@ -293,14 +281,6 @@ ProcessItem* ProcessManager::token_cancelProcessItem( ProcessItem* item )
     return items.extractFromSet( item );
 }
 
-void ProcessManager::token_haltProcessItem( ProcessItem* item )
-{
-    au::TokenTaker tt( &token );
-    
-    running_items.erase(item);
-    halted_items.insert(item);
-}
-
 
 size_t ProcessManager::token_getNumRunningProcessItem()
 {
@@ -323,19 +303,7 @@ ProcessItem* ProcessManager::token_getNextProcessItem()
         return NULL;
     
     ProcessItem* item = NULL;
-    
-    // Halted process comes first     
-    for (std::set<ProcessItem*>::iterator i = halted_items.begin() ; i != halted_items.end() ; i++ )
-    {
-        if( (*i)->isReady() )
-        {
-            item = *i;
-            halted_items.erase( item );
-            return item;
-        }
-    }
-    
-    // If not process in the halt list is ready,
+        
     // we get the highest priority element in the queue of pending processes    
     for ( std::set<ProcessItem*>::iterator i =  items.begin() ; i!= items.end() ; i++)
     {
@@ -343,15 +311,12 @@ ProcessItem* ProcessManager::token_getNextProcessItem()
         
         //LM_M(("Considering '%s'" , _item->getDescription().c_str() ));
         
-        if( _item->isReady() )   // Let's check if the process is ready to be executed
+        if( !item )
+            item = _item;
+        else
         {
-            if( !item )
-                item = _item;
-            else
-            {
-                if( _item->priority > item->priority )
-                    item = *i;
-            }
+            if( _item->priority > item->priority )
+                item = *i;
         }
     }
     
@@ -390,7 +355,6 @@ void ProcessManager::token_getInfo( std::ostringstream& output)
     
     au::xml_iterate_list(output, "queued", items);
     au::xml_iterate_list(output, "running", running_items);
-    au::xml_iterate_list(output, "halted", halted_items);
         
     // General information
     au::xml_simple( output , "num_processes" ,  num_processes );

@@ -23,6 +23,7 @@ namespace samson
         type = _type;
         
         // By default we have no asignation of shared memory
+        // This is obtained when executing
         shm_id = -1;
         item = NULL;
         
@@ -44,25 +45,6 @@ namespace samson
             delete txtWriter;
     }
     
-    // Function to specify if we are ready to be executed of continued from a halt
-    bool ProcessIsolated::isReady()
-    {
-        if( shm_id == -1 )
-        {
-            // Try to get a shared memory buffer to produce output
-            shm_id = engine::SharedMemoryManager::shared()->retainSharedMemoryArea();
-            if( shm_id != -1 )
-                item = engine::SharedMemoryManager::shared()->getSharedMemoryPlatform( shm_id );
-        }
- 
-        if ( !item )
-        {
-            //LM_M(("ProcessItem not ready since there is not shared memory"));
-            return false;
-        }
-
-        return true;
-    }        
     
     // Get the writers to emit key-values
     ProcessWriter* ProcessIsolated::getWriter()
@@ -122,14 +104,6 @@ namespace samson
     
 	void ProcessIsolated::flushKVBuffer( bool finish )
 	{
-		
-		/*
-		 After flushing we check that available memory is under 100%.
-		 Otherwise we halt notifying this to the ProcessManager
-		 */
-
-        while( !isReady() )
-			halt();
 		
 #pragma mark ---		
 		
@@ -235,16 +209,7 @@ namespace samson
 	void ProcessIsolated::flushTXTBuffer( bool finish )
 	{
         
-		/*
-		 After flushing we check that available memory is under 100%.
-		 Otherwise we halt notifying this to the ProcessManager
-		 */
-		
-        while( !isReady() )
-			halt();
-		
 #pragma mark ---		
-		
 		
 		// Size if the firt thing in the buffer
 		size_t size = *( (size_t*) item->data );
@@ -275,7 +240,23 @@ namespace samson
             processOutputTXTBuffer(buffer, finish);
 		}
 		
-	}	    
+	}	
+    
+    bool ProcessIsolated::initProcessItemIsolated()
+    {
+        shm_id = engine::SharedMemoryManager::shared()->retainSharedMemoryArea();
+        if( shm_id != -1 )
+        {
+            item = engine::SharedMemoryManager::shared()->getSharedMemoryPlatform( shm_id );
+            return true;
+        }
+        else
+        {
+            LM_W(("Error getting shared memory for %s" , operation_name.c_str() ));
+            return false;
+        }
+    }
+
     
     void ProcessIsolated::runIsolated()
     {

@@ -174,8 +174,15 @@ namespace samson
     
 	void ProcessItemIsolated::run()
 	{
-        LM_T( LmtIsolated , ("Isolated process %s: start ******************************************* ",getStatus().c_str()));
+        // Init isolated stuff
+        if( !initProcessItemIsolated() )
+        {
+            error.set( "Not possible to init ProcesItemIsolatd" );
+            LM_W(("ProcessItemIsolated not executed since init return false"));
+            return;
+        }
         
+        LM_T( LmtIsolated , ("Isolated process %s: start ******************************************* ",getStatus().c_str()));
         
         if( isolated_process_as_tread )
             LM_T( LmtIsolated , ("Isolated process %s start in thread mode",getStatus().c_str()));

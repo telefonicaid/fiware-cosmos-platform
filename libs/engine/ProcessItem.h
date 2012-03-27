@@ -71,7 +71,6 @@ public:
     {
         queued,         // In the queue waiting to be executed
         running,        // Running in a background process
-        halted,         // temporary halted, when a slot is ready, read() function is evaluated to see if it can continue
     } ProcessItemStatus;
     
     bool canceled;      // Flag to indicate that this process has been cancelled ( not forced exit )
@@ -114,7 +113,7 @@ public:
     
     // Constructor with priority
     ProcessItem( int _priority );
-    ~ProcessItem();
+    virtual ~ProcessItem();
     
     // Status management
     std::string getStatus();
@@ -124,10 +123,8 @@ public:
     
     // Function to create a new thread and run "run" in background
     void runInBackground();
-    
-    // Function to check if the process if ready to be executed ( usually after calling halt )
-    virtual bool isReady(){ return true; };
-    
+
+    // Get description of this process item
     std::string getDescription();
     
 protected:
@@ -135,9 +132,7 @@ protected:
     void halt();			// command executed inside run() to stop the task until ready returns true
     
 public:
-    
-    void unHalt();			// Method to unhalt the process ( executed from the ProcessManager when ready() returns true )
-    
+        
     void setCanceled();
     bool isProcessItemCanceled();
     

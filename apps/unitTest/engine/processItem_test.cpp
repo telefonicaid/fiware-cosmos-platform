@@ -41,7 +41,6 @@ public:
 
 
 //Test std::string getStatus();
-//Test bool isReady(){ return true; };
 //Test std::string getDescription();
 //Test bool isRunning();
 TEST(processItemTest, getStatusTest) {
@@ -50,7 +49,6 @@ TEST(processItemTest, getStatusTest) {
     ProcessItemExample item;
     
     EXPECT_EQ(item.getStatus(), "Q:5:unknown") << "Error getting status";
-    EXPECT_TRUE(item.isReady()) << "Item should be ready";
     EXPECT_EQ(item.getDescription(), "Process Item 'unknown' Status: Q:5:unknown") << "Error in description";
     EXPECT_TRUE(item.isRunning()==false) << "Process item is not supposed to be running at this point";
 
@@ -88,45 +86,4 @@ TEST(processItemTest, getInfoTest) {
     EXPECT_TRUE(std::string(xMainNode.getChildNode("operation_name").getText()).find("unknown") != std::string::npos ) << "Error writing operation_name tag";
 }
 
-
-//Test bool isRunning();
-TEST(processItemTest, isRunningTest) {
-    engine::Engine::init();
-
-    ProcessItemExample item;;
-    
-    EXPECT_TRUE(!item.isRunning());
-    item.unHalt();
-    EXPECT_TRUE(!item.isRunning());
-    
-}
-
-//Test void runInBackground();
-/*TEST(processItemTest, runInBackgroundTest) {
-    engine::Engine::init();
-    engine::ProcessManager::init(10);
-    engine::MemoryManager::init(1000);
-
-    ProcessItemExample item;;
-    
-    ProcessStats pstats;
-    size_t beforeThreads = pstats.get_nthreads();
-    
-    Todo: causes segmentation fault. Why?
-    item.runInBackground();
-    
-    pstats.refresh();
-    EXPECT_TRUE(pstats.get_nthreads() > beforeThreads );
-    EXPECT_TRUE(item.isRunning());
-    //engine::ProcessManager::shared()->cancel(item);
-} */
-
-   /* 
-    
-    void addListenerId( size_t _listenerId );
-    
-    
-    // Get information for xml monitoring
-
-*/
 

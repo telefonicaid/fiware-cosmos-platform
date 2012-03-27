@@ -45,6 +45,7 @@ namespace samson {
         ~ProcessItemIsolated();
         
 		// Function to be implemented ( running on a different process )
+        virtual bool initProcessItemIsolated()=0;
 		virtual void runIsolated() = 0;
 
 		// Function executed at this process side when a code is sent from the background process

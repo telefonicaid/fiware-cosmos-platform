@@ -68,9 +68,6 @@ void ProcessItem::getInfo( std::ostringstream& output)
         case running:
             output << "running";
             break;
-        case halted:
-            output << "halted";
-            break;
     }
     output << "</state>\n";
     
@@ -100,9 +97,6 @@ std::string ProcessItem::getStatus()
             break;
         case running:
             o << "R";
-            break;
-        case halted:
-            o << "H";
             break;
     }
     
@@ -137,30 +131,6 @@ void ProcessItem::runInBackground()
     pthread_create(&t, NULL, runProcessItem, this);
 
     
-}
-
-void ProcessItem::halt()
-{
-    au::TokenTaker tt( &token );
-    
-    state = halted;
-    
-    // Notify the ProcessManager about this
-    processManager->haltProcessItem(this);
-    
-    // Stop this thread in the stopper loop
-    tt.stop();
-    
-    // come back to the running state
-    state = running;
-}
-
-void ProcessItem::unHalt()
-{
-    au::TokenTaker tt( &token );
-    
-    // Wake up this process
-    tt.wakeUp();
 }
 
 void ProcessItem::setCanceled()

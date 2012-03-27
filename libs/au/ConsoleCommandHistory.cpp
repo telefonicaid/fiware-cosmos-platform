@@ -26,6 +26,15 @@ ConsoleCommandHistory::ConsoleCommandHistory()
 ConsoleCommandHistory::~ConsoleCommandHistory()
 {
     save_history();
+
+    while (1)
+    {
+        if (commands.size() == 0)
+            break;
+
+        delete commands[commands.size() - 1];
+        commands.pop_back();
+    }
 }
 
 ConsoleCommand* ConsoleCommandHistory::current()

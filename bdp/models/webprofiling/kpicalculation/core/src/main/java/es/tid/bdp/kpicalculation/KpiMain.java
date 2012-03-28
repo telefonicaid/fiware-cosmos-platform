@@ -50,14 +50,15 @@ public class KpiMain extends Configured implements Tool {
     private static final String MONGO_COLLECTION_NAMESPACE_DELIMITER = ".";
 
     public static void main(String[] args) {
+        int res = 0;
         try {
-            int res = ToolRunner.run(new Configuration(), new KpiMain(), args);
-            System.exit(res);
+            res = ToolRunner.run(new Configuration(), new KpiMain(), args);
         } catch (Exception e) {
             LOGGER.setLevel(Level.ALL);
             LOGGER.log(Level.SEVERE, "Execution failed: {0}", e.getMessage());
             System.exit(1);
         }
+        System.exit(res);
     }
 
     @Override

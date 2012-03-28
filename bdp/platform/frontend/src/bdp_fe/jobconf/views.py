@@ -34,7 +34,8 @@ def list_jobs(request):
 
     return render_to_response('job_listing.html', {
         'title': 'Job listing',
-        'jobs': Job.objects.filter(user=request.user),
+        'jobs': Job.objects.filter(user=request.user,
+                                   status__gt=Job.UNCONFIGURED),
         'reload_period': reload_period,
     }, context_instance=RequestContext(request))
 

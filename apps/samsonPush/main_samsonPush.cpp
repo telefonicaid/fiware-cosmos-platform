@@ -38,6 +38,7 @@ char user[1024];
 char password[1024];
 char breaker_sequence[1024];
 char controller[1024];
+int port_node;
 char queue_name[1024];
 bool lines;                         // Flag to indicate that input is read line by line
 int push_memory;                    // Global memory used as a bffer
@@ -48,13 +49,14 @@ static const char* manShortDescription =
 "samsonPush is a easy-to-use client to send data to a particular queue in a SAMSON system. Just push data into the standard input\n";
 
 static const char* manSynopsis =
-"[-help] [-node str_samson_node] [-timeout int_t] [-buffer_size int_size] [-breaker_sequence str_pattern] [-lines bool] queue\n";
+"[-help] [-node str_samson_node] [-port_node int_port] [-timeout int_t] [-buffer_size int_size] [-breaker_sequence str_pattern] [-lines bool] queue\n";
 
 int default_buffer_size = 64*1024*1024 - sizeof(samson::KVHeader);
 
 PaArgument paArgs[] =
 {   
-	{ "-node",        controller,            "",    PaString,  PaOpt, _i "localhost"  , PaNL, PaNL,       "SMASON node to connect with "         },
+	{ "-node",        controller,            "",    PaString,  PaOpt, _i "localhost"  , PaNL, PaNL,       "SAMSON node to connect with "         },
+	{ "-port_node",    &port_node,           "",                       PaInt,    PaOpt, SAMSON_WORKER_PORT,  1,    99999, "SAMSON server port"                     },
 	{ "-user",             user,                  "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "User to connect to SAMSON cluster"  },
 	{ "-password",         password,              "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "Password to connect to SAMSON cluster"  },
 	{ "-buffer_size",      &buffer_size,          "",  PaInt,     PaOpt,       default_buffer_size,         1,   default_buffer_size,  "Buffer size in bytes"    },
@@ -164,9 +166,9 @@ int main( int argC , const char *argV[] )
     LM_V(("Connecting to %s ..." , controller));
     
     // Init connection
-    if( !samson_client->initConnection( controller , SAMSON_WORKER_PORT , user , password ) )
+    if( !samson_client->initConnection( controller , port_node , user , password ) )
     {
-        fprintf(stderr, "Error connecting with samson cluster: %s\n" , samson_client->getErrorMessage().c_str() );
+        fprintf(stderr, "Error connecting with samson cluster: %s, port:%d\n" , samson_client->getErrorMessage().c_str(), port_node );
         exit(0);
     }
     LM_V(("Conection to %s OK" , controller));

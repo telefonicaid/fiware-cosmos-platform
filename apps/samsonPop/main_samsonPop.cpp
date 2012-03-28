@@ -29,6 +29,7 @@ size_t buffer_size;
 size_t timeOut;
 
 char controller[1024];
+int port_node;
 char queue_name[1024];
 char format[81];
 char user[1024];
@@ -41,7 +42,8 @@ int limit;
 PaArgument paArgs[] =
 {
 	{ "-node",        controller,      "",    PaString,  PaOpt, _i "localhost"  , PaNL, PaNL,       "SAMSON node to connect with "         },
-    { "-user",             user,                  "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "User to connect to SAMSON cluster"  },
+	{ "-port_node",    &port_node,           "",                       PaInt,    PaOpt, SAMSON_WORKER_PORT,  1,    99999, "SAMSON server port"                     },
+	{ "-user",             user,                  "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "User to connect to SAMSON cluster"  },
 	{ "-password",         password,              "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "Password to connect to SAMSON cluster"  },
 	{ "-header",      &show_header,    "SHOW_HEADER",   PaBool,    PaOpt,  false, false,  true,     "Show only header of blocks"   },
 	{ "-remove",      &flag_remove,    "",              PaBool,    PaOpt,  false, false,  true,     "Remove downloaded stuff"   },
@@ -53,7 +55,7 @@ PaArgument paArgs[] =
 };
 
 static const char* manSynopsis =
-"[-help] [-controller str_controller] [-header bool] [-limit int_n] [-format plain|json|xml] queue\n";
+"[-help] [-node str_samson_node] [-port_node int_port] [-header bool] [-limit int_n] [-format plain|json|xml] queue\n";
 
 static const char* manShortDescription = 
 "samsonPop is an easy-to-use client to receive data from a particular queue in a SAMSON system.\n";
@@ -131,7 +133,7 @@ int main( int argC , const char *argV[] )
     LM_V(("Connecting to %s ..." , controller));
     
     // Init connection
-    if( !client.initConnection( controller , SAMSON_WORKER_PORT , user , password ) )
+    if( !client.initConnection( controller , port_node , user , password ) )
     {
         fprintf(stderr, "Error connecting with samson cluster: %s\n" , client.getErrorMessage().c_str() );
         exit(0);

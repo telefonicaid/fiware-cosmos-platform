@@ -232,9 +232,6 @@ namespace samson {
             worker_id = BlockManager::shared()->getWorkerId();
             id = BlockManager::shared()->getNextBlockId();
             
-            // Sort parameters
-            creation_time = time(NULL);
-            update_sort_information();
             
             // Buffer of data
             buffer = _buffer;  
@@ -255,6 +252,9 @@ namespace samson {
             LM_T(LmtBlockManager, ("Block created from buffer: %s", this->str().c_str()));
             
             lookupList = NULL;
+            
+            // First idea of sort information
+            update_sort_information();
         }
         
         Block::Block( size_t _worker_id , size_t _id , size_t _size , KVHeader* _header ) : token_lookupList("token_lookupList")
@@ -263,10 +263,6 @@ namespace samson {
             worker_id = _worker_id;
             id = _id;
             
-            // Sort parameters
-            creation_time = time(NULL);
-            update_sort_information();
-
             // Buffer of data
             buffer = NULL;  
             
@@ -283,6 +279,9 @@ namespace samson {
             LM_T(LmtBlockManager,("Block created from id: %s", this->str().c_str()));
 
             lookupList = NULL;
+            
+            // First idea of sort information
+            update_sort_information();
         }
         
 
@@ -305,6 +304,7 @@ namespace samson {
         void Block::update_sort_information()
         {
             // Compute min tasks
+            // ---------------------------------------------------
             min_task = (size_t) -1;
             std::set< BlockList* >::iterator l;
             for ( l = lists.begin() ; l != lists.end() ; l++ )
@@ -312,11 +312,28 @@ namespace samson {
                     min_task= (*l)->task_id;
             
             // Compute max priority
+            // ---------------------------------------------------
             max_priority = -1000000;
-            
             for ( l = lists.begin() ; l != lists.end() ; l++ )
                 if( (*l)->priority > max_priority )
                     max_priority = (*l)->priority;
+            
+            
+            // Compute compare_time 
+            // ---------------------------------------------------
+            compare_time = (size_t)-1;
+            order = (size_t)-1;
+            for ( l = lists.begin() ; l != lists.end() ; l++ )
+                if( (*l)->queue ) // Only list that are proper queues affect to this
+                {
+                    size_t tmp_compare_time = (*l)->getOldestBlockTime();
+                    if( tmp_compare_time < compare_time )
+                    {
+                        compare_time = tmp_compare_time;
+                        order = (*l)->getPosition(this);
+                    }
+                }
+            
         }
 
         
@@ -753,7 +770,17 @@ namespace samson {
 
             samson::add( record , "priority" , max_priority , "left,different" );
             
-            samson::add( record , "created" , au::str_time( time(NULL) - creation_time ) , "left,different" );
+            samson::add( record , "created" , cronometer.str() , "left,different" );
+
+            if( compare_time == (size_t)-1 )
+                samson::add( record , "sort_time" , "-" , "left,different" );
+            else
+                samson::add( record , "sort_time" , au::str_time( compare_time ) , "left,different" );
+
+            if( order == (size_t)-1 )
+                samson::add( record , "order in queue" , "-" , "left,different" );
+            else
+                samson::add( record , "order in queue" , order , "left,different" );
             
             std::ostringstream output_tasks_str;
             std::ostringstream output_block_lists_str;

@@ -114,14 +114,17 @@ namespace samson {
                 reading         // Reading from disk to recover at memory
             } BlockState;
 
-            BlockState state;         // State disk-memory
+            BlockState state;              // State disk-memory
+            
+            au::Cronometer cronometer;       // Creation time of this block
             
         public:
             
             // Internal information used in the sort
             size_t min_task;
             int max_priority;
-            time_t creation_time;
+            size_t compare_time;   // Time since last update ( the lower the better )
+            size_t order;             // Order inside the queue ( in case of same compare_time )
             
         private:
             

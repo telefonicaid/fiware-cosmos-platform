@@ -138,9 +138,6 @@ namespace samson {
             // Insert myself in the the list inside the block
             block->lists.insert( this );
             
-            // Update sort criteria
-            block->update_sort_information();
-            
         }
         
         void BlockList::remove( Block* block )
@@ -150,9 +147,6 @@ namespace samson {
 
             // remove this container from the list inside the block
             block->lists.erase( this );
-            
-            // Update sort criteria
-            block->update_sort_information();
 
         }
         
@@ -554,7 +548,38 @@ namespace samson {
             priority = p;
             printf("Priority for list '%s' set to %d\n" , name.c_str() , priority );
         }
+
+        void BlockList::setAsQueueBlockList()
+        {
+            queue = true;
+        }
         
+        size_t BlockList::getOldestBlockTime()
+        {
+            if( !queue )
+                return -1;
+            else if( blocks.size() == 0 )
+                return -1;
+            else
+                return (blocks.front())->cronometer.diffTimeInSeconds();
+            
+        }
+
+        size_t BlockList::getPosition(Block* b)
+        {
+            au::list< Block >::iterator block_it;
+            int pos = 0;
+            for ( block_it = blocks.begin() ; block_it != blocks.end() ; block_it++)
+            {
+                Block*block = (*block_it);
+                if( b == block )
+                    return pos;
+                pos++;
+            }
+            return -1;
+            
+        }
+
         
     }       
 }

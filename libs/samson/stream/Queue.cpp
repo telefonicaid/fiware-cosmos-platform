@@ -91,13 +91,13 @@ namespace samson {
             
             // Create a list for blocks pending to be broken...
             list = new BlockList( "queue_" + name );
+            list->setAsQueueBlockList();
             
             // Pointer to StreamManager
             streamManager = _streamManager;
             
             // Default number of divisions
             num_divisions = 1;
-         
             
         }
         

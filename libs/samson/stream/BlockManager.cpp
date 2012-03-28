@@ -42,9 +42,18 @@ namespace samson {
                 
                 if( p1 == p2 )
                 {                
-                    time_t t1 = b1->creation_time;
-                    time_t t2 = b2->creation_time;
-                    return ( t1 > t2 );
+                    size_t t1 = b1->compare_time;
+                    size_t t2 = b2->compare_time;
+                    
+                    if( t1 == t2 )
+                    {
+                        size_t o1 = b1->order;
+                        size_t o2 = b2->order;
+
+                        return o1 < o2;
+                    }
+                    else
+                        return ( t1 < t2 );
                 }
                 else
                     return (p1 > p2);
@@ -53,32 +62,7 @@ namespace samson {
                 return( min_task_id_1 < min_task_id_2 );
         }        
 
-        int compare_blocks2( const void* p1 , const void* p2 )
-        {
-            Block *b1 = (Block*)p1;
-            Block *b2 = (Block*)p2;
-            
-            size_t min_task_id_1 = b1->min_task;
-            size_t min_task_id_2 = b2->min_task;
-            
-            if( min_task_id_1 == min_task_id_2 )
-            {
-                // Comapre by priority
-                int p1 = b1->max_priority;
-                int p2 = b2->max_priority;
-                
-                if( p1 == p2 )
-                {                
-                    time_t t1 = b1->creation_time;
-                    time_t t2 = b2->creation_time;
-                    return ( t1 - t2 );
-                }
-                else
-                    return (p1 - p2);
-            }
-            else
-                return( min_task_id_2 - min_task_id_1 );
-        }          
+        
         BlockManager *blockManager = NULL;
         
         BlockManager::BlockManager()
@@ -201,10 +185,15 @@ namespace samson {
             LM_T( LmtBlockManager , ("Reviewing block manager"));
             
             //au::ExecesiveTimeAlarm alarm("BlockManager::_review");
-            
-            // Sort list of blocks according to id and min_task involved
             {
                 au::ExecesiveTimeAlarm alarm("BlockManager::sort" , 0.10 );
+                
+                // Update sort information for all blocks
+                std::list<Block*>::iterator b;
+                for ( b = blocks.begin() ; b != blocks.end() ; b++ )
+                    (*b)->update_sort_information();
+                
+                // Sort list of blocks according to id and min_task involved
                 blocks.sort( compare_blocks );
             }
             

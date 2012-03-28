@@ -265,27 +265,9 @@
             <url>http://google-maven-repository.googlecode.com/svn/repository/</url>
         </repository>
         <repository>
-            <id>ps2-nexus</id>
-            <url>http://ps2-ci/nexus/content/groups/public-snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>thirdparty</id>
-            <url>http://ps2-ci/nexus/content/repositories/thirdparty</url>
-        </repository>
-        <repository>
             <id>releases</id>
             <name>Releases</name>
             <url>https://oss.sonatype.org/content/repositories/releases</url>
-        </repository>
-        <repository>
-            <id>ps2-nexus-releases</id>
-            <url>http://ps2-ci/nexus/content/repositories/releases</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
         </repository>
     </repositories>
 
@@ -309,23 +291,11 @@
             <timezone>+1</timezone>
         </developer>
         <developer>
-            <id>jaume</id>
-            <name>Jaume Civit</name>
-            <email>jaume@tid.es</email>
+            <id>ximo</id>
+            <name>Joaquin Guanter</name>
+            <email>ximo</email>
             <roles>
-                <role>developer</role>
-            </roles>
-            <organization>${project.organization.name}</organization>
-            <organizationUrl>${project.organization.url}
-            </organizationUrl>
-            <timezone>+1</timezone>
-        </developer>
-        <developer>
-            <id>javierb</id>
-            <name>Javier Rodriguez Benito</name>
-            <email>javierb@tid.es</email>
-            <roles>
-                <role>developer</role>
+                <role>qa</role>
             </roles>
             <organization>${project.organization.name}</organization>
             <organizationUrl>${project.organization.url}
@@ -348,18 +318,6 @@
             <id>sortega</id>
             <name>Sebastián Ortega</name>
             <email>sortega@tid.es</email>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <organization>${project.organization.name}</organization>
-            <organizationUrl>${project.organization.url}
-            </organizationUrl>
-            <timezone>+1</timezone>
-        </developer>
-        <developer>
-            <id>rgc</id>
-            <name>Rubén González Caballero</name>
-            <email>rgc@tid.es</email>
             <roles>
                 <role>developer</role>
             </roles>

@@ -174,20 +174,6 @@
             <url>https://repository.apache.org/content/repositories/releases</url>
         </repository>
         <repository>
-            <id>ps2-nexus</id>
-            <url>http://ps2-ci/nexus/content/groups/public-snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>ps2-nexus-releases</id>
-            <url>http://ps2-ci/nexus/content/repositories/releases</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
             <id>releases</id>
             <name>Releases</name>
             <url>https://oss.sonatype.org/content/repositories/releases</url>

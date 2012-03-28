@@ -76,7 +76,6 @@ def view_successful_results(request, job):
                    'job_results' : paginated_results,
                    'prototype_result': prototype_result,
                    'hidden_keys': util.HIDDEN_KEYS,
-                   'expand_types': ['dict', 'list'],
                    'primary_key': primary_key}
         return render_to_response('job_results.html',
                                   context,

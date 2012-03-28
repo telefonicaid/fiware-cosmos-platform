@@ -74,19 +74,7 @@
                 <th>{{ job_result.get_primary_key }}</th>
                 {% for key, value in job_result.get_fields.items %}
                     {% if key not in hidden_keys %}
-                        {% if value|get_type not in expand_types %}
                         <td class="job-result-value">{{ value }}</td>
-                        {%endif%}
-                        {% if value|get_type == 'list'%}
-                            {% for list_item in value %}
-                                <td class="job-result-value">{{ list_item }}</td>
-                            {% endfor %}
-                        {% endif %}
-                        {% if  value|get_type == 'dict'%}
-                            {% for dict_val in value.values %}
-                                <td class="job-result-value">{{ dict_val }}</td>
-                            {% endfor %}
-                        {% endif %}
                     {% endif %}
                 {% endfor %}
             </tr>

@@ -54,8 +54,6 @@ namespace samson {
             LM_T(LmtCleanup, ("Deleting streamManager: %p", streamManager));
             delete streamManager;
 
-            LM_T(LmtCleanup, ("Deleting network"));
-            delete network;
         }
 
         friend class StreamManager;                     // Friend to be able to log to dataManager

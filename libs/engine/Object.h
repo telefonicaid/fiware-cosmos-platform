@@ -26,9 +26,7 @@ NAMESPACE_BEGIN(engine)
 class Notification;
 
 /**
- 
  Base class for any element in the engine library to receive notifications
- 
  */
 
 class Object
@@ -56,10 +54,10 @@ public:
     
 protected:
     
-    
     // Start listening a particular notification
     void listen( const char* notification_name );
     
+    // Method to receive a particular notification
     virtual void notify( Notification* notification );
     
     

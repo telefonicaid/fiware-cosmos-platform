@@ -75,6 +75,7 @@ PaArgument paArgs[] =
 * global variables
 */
 int                           logFd             = -1;
+samson::WorkerNetwork*        networkP          = NULL;
 samson::SamsonWorker*         worker            = NULL;
 au::LockDebugger*             lockDebugger      = NULL;
 engine::SharedMemoryManager*  smManager         = NULL;
@@ -132,22 +133,22 @@ void captureSIGTERM( int s )
 
 void cleanup(void)
 {
+
+    google::protobuf::ShutdownProtobufLibrary();
+
+    // Delete worker network
+    LM_T(LmtCleanup, ("Clean up network"));
+    if( networkP ) 
+        delete networkP;
+    
     LM_T(LmtCleanup, ("Shutting down worker components (worker at %p)", worker));
     if (worker != NULL)
     {
-        if (worker->network != NULL)
-        {
-            LM_T(LmtCleanup, ("NOT deleting worker's network (don't ask me why)"));
-            // delete worker->network;
-        }
-
         LM_T(LmtCleanup, ("deleting worker"));
         delete worker;
         worker = NULL;
     }
-
-    google::protobuf::ShutdownProtobufLibrary();
-
+    
     LM_T(LmtCleanup, ("Shutting down LockDebugger"));
     au::LockDebugger::destroy();
 
@@ -188,6 +189,7 @@ void cleanup(void)
     }
     else
         LM_M(("Finished correctly with 0 background processes"));
+    
     
     LM_T(LmtCleanup, ("Calling paConfigCleanup"));
     paConfigCleanup();
@@ -333,7 +335,7 @@ int main(int argC, const char *argV[])
 
     // Instance of network object and initialization
     // --------------------------------------------------------------------
-    samson::WorkerNetwork*  networkP  = new samson::WorkerNetwork(port, web_port);
+    networkP  = new samson::WorkerNetwork(port, web_port);
     
     valgrindExit(12);
 

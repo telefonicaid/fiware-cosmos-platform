@@ -24,13 +24,13 @@ namespace samson {
         port = -1;
         
         quit_flag = false;
+        background_thread_running = false;
     }
     
     NetworkListener::~NetworkListener()
     {
         LM_T(LmtCleanup, ("In NetworkListener::~NetworkListener - detaching from thread"));
         // What if pthread_create isn't done, or failed ...
-        pthread_detach(t);
     }
 
     void NetworkListener::quit()
@@ -88,19 +88,24 @@ namespace samson {
     {
         NetworkListener * network_listener = (NetworkListener*) p;
         network_listener->runNetworkListener();
-        
+        network_listener->background_thread_running = false;
         return NULL;
     }
     
     void NetworkListener::runNetworkListenerInBackground()
     {
+        // Always detach the background thread
+        pthread_detach(pthread_self());
+        
         // Create thread
         LM_T(LmtCleanup, ("Creating a thread"));
+        background_thread_running = true;
         pthread_create(&t, NULL, NetworkListener_run, this);
     }
     
     void NetworkListener::runNetworkListener()
     {
+        
         if( rFd == -1 )
             LM_X(1, ("NetworkListener not initialized"));
         

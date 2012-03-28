@@ -33,6 +33,10 @@ namespace samson {
         // Thread listening connections...
         pthread_t t;
         
+    public: 
+        
+        bool background_thread_running;
+        
     public:
 
         // Constructor

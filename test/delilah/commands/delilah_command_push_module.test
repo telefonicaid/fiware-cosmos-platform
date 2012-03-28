@@ -1,0 +1,15 @@
+--NAME--
+push_module - upload a module
+--SHELL-INIT--
+samsonWorker
+mv $SAMSON_HOME/modules/libweb.so /tmp/libweb.so
+delilah -command reload_modules
+--SHELL--
+delilah -command "push_module /tmp/libweb.so web"
+if [ -f $SAMSON_HOME/modules/libweb.so ]; then
+    echo "Module web has been uploaded"
+else
+    echo "Module web not found in $SAMSON_HOME/modules/libweb.so"
+fi
+--EXPECT--
+Module web has been uploaded

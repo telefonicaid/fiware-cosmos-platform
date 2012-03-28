@@ -42,7 +42,7 @@
                 <td class="result-name">{{ job.name }}</td>
                 <td class="result-status">{{ job.get_status_display }}</td>
                 <td>
-                    {% if job.status == 0 %}
+                    {% if job.is_runnable %}
                     <a href="{% url 'list_jobs' %}?run_job={{ job.id }}"
                        class="result-link">Run</a>
                     {% endif %}

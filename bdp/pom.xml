@@ -269,14 +269,12 @@
             <name>Releases</name>
             <url>https://oss.sonatype.org/content/repositories/releases</url>
         </repository>
+        <repository>
+            <id>nexus</id>
+            <url>http://ci-bd.hi.inet/nexus/content/repositories/releases</url>
+        </repository>
     </repositories>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>dtrott</id>
-            <url>http://maven.davidtrott.com/repository</url>
-        </pluginRepository>
-    </pluginRepositories>
     <developers>
         <developer>
             <id>dmicol</id>

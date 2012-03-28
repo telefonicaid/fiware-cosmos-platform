@@ -1,0 +1,224 @@
+package es.tid.bdp.platform.cluster.server;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.*;
+
+import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.util.RunJar;
+import org.apache.thrift.server.TServer;
+import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.server.TThreadPoolServer.Args;
+import org.apache.thrift.transport.TServerSocket;
+
+/**
+ *
+ * @author dmicol
+ */
+public class ClusterServer implements Cluster.Iface {
+    private static class ExitWithSuccessCodeException
+            extends SecurityException { }
+    private static class ExitWithFailureCodeException
+            extends SecurityException { }
+    
+    private static final String CONFIG_FILE = "/cluster_server.properties";
+    
+    private final String notificationEmail;
+    private final String hdfsUrl;
+    private final String jobtrackerUrl;
+    
+    private JobRunner jobRunner;
+    private Configuration conf;
+
+    public static void main(String args[]) {
+        try {
+            ClusterServer server = new ClusterServer();
+            server.start();
+        } catch (Exception ex) {
+            System.err.println(getFullExceptionInformation(ex));
+            System.exit(1);
+        }
+    }
+
+    public ClusterServer() throws IOException {
+        Properties props = new Properties();
+        props.load(ClusterServer.class.getResource(CONFIG_FILE).openStream());
+        this.notificationEmail = props.getProperty("NOTIFICATION_EMAIL");
+        this.hdfsUrl = props.getProperty("HDFS_URL");
+        this.jobtrackerUrl = props.getProperty("JOBTRACKER_URL");
+        
+        this.jobRunner = new JobRunner();
+        this.conf = new Configuration();
+        // TODO: this might not be necessary
+        this.conf.set("fs.default.name", this.hdfsUrl);
+        this.conf.set("mapred.job.tracker", this.jobtrackerUrl);
+        
+        disallowExitCalls();
+    }
+    
+    private static void disallowExitCalls() {
+        final SecurityManager securityManager = new SecurityManager() {
+            @Override
+            public void checkPermission(java.security.Permission permission) {
+                if (permission.getName().contains("exitVM.0")) {
+                    throw new ExitWithSuccessCodeException();
+                } else if (permission.getName().contains("exitVM")) {
+                    throw new ExitWithFailureCodeException();
+                }
+            }
+        };
+        System.setSecurityManager(securityManager);
+    }
+    
+    private static String getFullExceptionInformation(Throwable exception) {
+        return (exception.toString() + "\n" + getStackTrace(exception));
+    }
+    
+    private static String getStackTrace(Throwable exception) {
+        StringWriter writer = new StringWriter();
+        exception.printStackTrace(new PrintWriter(writer));
+        return writer.toString();
+    }
+    
+    private void start() throws Exception {
+        TServerSocket serverTransport = new TServerSocket(9888);
+        Cluster.Processor processor = new Cluster.Processor(this);
+        Args args = new Args(serverTransport);
+        args.processor(processor);
+        TServer server = new TThreadPoolServer(args);
+        server.serve();
+    }
+
+    private void sendNotificationEmail(Exception exception) {        
+        String text = "Cosmos failed in production :(\n\n"
+                + "The error message was: " + exception.toString() + "\n"
+                + "and the call stack:" + getStackTrace(exception) + "\n\n"
+                + "Please fix me!\n";
+        
+        Properties props = new Properties();
+        props.put("mail.smtp.starttls.enable", "false");
+        props.put("mail.smtp.host", "mailhost.hi.inet");
+        props.put("mail.smtp.port", "25");
+        Session session = Session.getInstance(props, null);
+        try {
+            Message msg = new MimeMessage(session);
+            msg.setFrom(new InternetAddress(notificationEmail));
+            msg.addRecipient(Message.RecipientType.TO,
+                             new InternetAddress(notificationEmail));
+            msg.setSubject("Cosmos Failure");
+            msg.setText(text);
+            Transport.send(msg);
+        } catch (Exception ex) {
+            System.err.println(getFullExceptionInformation(ex));
+        }
+    }
+
+    @Override
+    public void copyToHdfs(String src, String dest) throws TransferException {
+        try {
+            FileSystem fs = FileSystem.get(this.conf);
+            fs.moveFromLocalFile(new Path(src), new Path(dest));
+        } catch (Exception ex) {
+            this.sendNotificationEmail(ex);
+            throw new TransferException(ClusterErrorCode.FILE_COPY_FAILED,
+                                        getFullExceptionInformation(ex));
+        }
+    }
+
+    @Override
+    public String runJob(String jarPath, String inputPath, String outputPath,
+                         String mongoUrl) throws TransferException {
+        try {
+            int jobId = this.jobRunner.startNewThread(
+                    new String[] { jarPath, this.hdfsUrl + "/" + inputPath,
+                                   this.hdfsUrl + "/" + outputPath, mongoUrl });
+            return String.valueOf(jobId);
+        } catch (Exception ex) {
+            this.sendNotificationEmail(ex);
+            throw new TransferException(ClusterErrorCode.RUN_JOB_FAILED,
+                                        getFullExceptionInformation(ex));
+        }
+    }
+
+    @Override
+    public ClusterJobResult getJobResult(String jobId)
+            throws TransferException {
+        try {
+            return this.jobRunner.getResult(Integer.parseInt(jobId));
+        } catch (Exception ex) {
+            this.sendNotificationEmail(ex);
+            throw new TransferException(ClusterErrorCode.INVALID_JOB_ID,
+                                        getFullExceptionInformation(ex));
+        }
+    }
+    
+    private class JobRunner {
+        private static final int MAX_THREADS = 10;
+        
+        private ExecutorService threadPool = Executors.newFixedThreadPool(
+                MAX_THREADS);
+        private List<Future<ClusterJobResult>> results =
+                new ArrayList<Future<ClusterJobResult>>();
+
+        public synchronized int startNewThread(String[] args) {
+            Future<ClusterJobResult> status = this.threadPool.submit(
+                    new Job(args));
+            this.results.add(status);
+            return (this.results.size() - 1);
+        }
+        
+        public ClusterJobResult getResult(int id) throws InterruptedException, 
+                                                         ExecutionException {
+            ClusterJobResult result;
+            Future<ClusterJobResult> resultFuture = this.results.get(id);
+            if (resultFuture.isDone()) {
+                result = resultFuture.get();
+            } else {
+                result = new ClusterJobResult();
+                result.setStatus(ClusterJobStatus.RUNNING);
+            }
+            return result;
+        }
+    }
+    
+    private class Job implements Callable<ClusterJobResult> {
+        private String[] args;
+        
+        public Job(String[] args) {
+            this.args = args.clone();
+        }
+
+        @Override
+        public ClusterJobResult call() {
+            ClusterJobResult result = new ClusterJobResult();
+            try {
+                RunJar.main(this.args);
+                result.setStatus(ClusterJobStatus.SUCCESSFUL);
+            } catch (ExitWithSuccessCodeException ex) {
+                result.setStatus(ClusterJobStatus.SUCCESSFUL);
+            } catch (ExitWithFailureCodeException ex) {
+                result.setStatus(ClusterJobStatus.FAILED);
+                result.setReason(new TransferException(
+                        ClusterErrorCode.RUN_JOB_FAILED, "Unknown error"));
+            } catch (Throwable ex) {
+                result.setStatus(ClusterJobStatus.FAILED);
+                result.setReason(new TransferException(
+                        ClusterErrorCode.RUN_JOB_FAILED,
+                        getFullExceptionInformation(ex)));
+            }
+            return result;
+        }
+    }
+}

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load jobs_extras %}
+{% block extrahead %}
+        <script type="text/javascript" src={{ STATIC_URL }}jquery-1.7.2.min.js></script>
+        <script type="text/javascript" src={{ STATIC_URL }}visualize.jQuery.js></script>
+        <script type="text/javascript">
+        $.extend({
+          getUrlVars: function(){
+            var vars = {}, hash;
+            if (window.location.href.indexOf('?') === -1) {
+                return {};
+            }
+            var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+            for(var i = 0; i < hashes.length; i++)
+            {
+              hash = hashes[i].split('=');
+              vars[hash[0]] = hash[1];
+            }
+            return vars;
+          },
+          getUrlVar: function(name){
+            return $.getUrlVars()[name];
+          }
+        });
+        $(function(){
+            $('#job-results-table').visualize({type: 'pie', pieMargin: 10});
+            $('#job-results-table').visualize({type: 'bar'});
+            $('#select-pk').change(function(){
+                var baseOfUrl = window.location.href.substring(0, window.location.href.indexOf('?'));
+                if (! baseOfUrl) {
+                    baseOfUrl = window.location.href;
+                }
+                var urlVars = $.getUrlVars();
+                urlVars['primary_key'] = $('#select-pk').val();
+                var urlParams = '';
+                for (var key in urlVars) {
+                    urlParams += key + '=' + urlVars[key] + '&';
+                }
+                urlParams = urlParams.substring(0, urlParams.length - 1);
+                window.location.href = baseOfUrl + '?' + urlParams;
+                });
+        });
+        </script>
+{% endblock %}
+
+{% block content %}
+    <h2> These are your results </h2>
+    {% if job_results %}
+        <select id="select-pk" name="Field to use as primary key">
+            {% for key, value in prototype_result.document.items %}
+                {% if key not in hidden_keys and key != primary_key %}
+                <option value={{ key }}>{{ key }}</option>
+                {% endif %}
+                {% if key == primary_key %}
+                    <option value={{ key }} selected="selected">{{ key }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        <table id="job-results-table">
+            <caption>{{ title }}</caption>
+            <thead>
+                <tr>
+                    <td></td>
+                    {% for key, value in prototype_result.get_fields.items %}
+                        {% if key not in hidden_keys %}
+                            <th>{{ key }}</th>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+            {% for job_result in job_results.object_list %}
+            <tr>
+                <th>{{ job_result.get_primary_key }}</th>
+                {% for key, value in job_result.get_fields.items %}
+                    {% if key not in hidden_keys %}
+                        {% if value|get_type not in expand_types %}
+                        <td class="job-result-value">{{ value }}</td>
+                        {%endif%}
+                        {% if value|get_type == 'list'%}
+                            {% for list_item in value %}
+                                <td class="job-result-value">{{ list_item }}</td>
+                            {% endfor %}
+                        {% endif %}
+                        {% if  value|get_type == 'dict'%}
+                            {% for dict_val in value.values %}
+                                <td class="job-result-value">{{ dict_val }}</td>
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        There were no results
+    {% endif %}
+
+    <!-- Pagination -->
+    <div class="pagination">
+        <span class="step-links">
+            {% if job_results.has_previous %}
+                <a id="link-prev-results" href="?page={{ job_results.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ job_results.number }} of {{ job_results.paginator.num_pages }}.
+            </span>
+
+            {% if job_results.has_next %}
+                <a id="link-next-results" href="?page={{ job_results.next_page_number }}">next</a>
+            {% endif %}
+        </span>
+    </div>
+{% endblock %}
+
+{# vim:set syntax=htmldjango: #}

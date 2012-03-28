@@ -1,0 +1,63 @@
+/* page styles from visualize.jQuery */
+div#branding {
+  background: #004250;
+}
+
+div#user-tools {
+  color: white;
+  background-color: #004250;
+}
+
+a:link {
+    color: #00C6D7;
+}
+
+a:visited {
+    color: #BB650E;
+}
+
+div#content {
+}
+
+div#footer {
+  background: #004250;
+}
+
+img#logo {
+    width: 200px;
+}
+
+body {
+  font-family: "Segoe UI", Frutiger,Tahoma,Helvetica,"Helvetica Neue", Arial, sans-serif;
+  font-size: 75%;
+  margin-left: 10%;
+  margin-right: 10%;
+}
+table {  border-collapse: collapse; }
+td, th {
+  text-align: center;
+  border: 1px solid #ddd;
+  padding:2px 5px;
+   }
+caption {margin: 0 0 .5em; font-weight: bold; }
+
+table#jobs-table{
+    align: centered;
+}
+
+h1 {
+    color: #004250;
+}
+
+.error-detail {
+    font-family: Courier New, Courier, monospace;
+    font-size: 14px;
+}
+
+ul.messagelist { text-align: center; color: #000;border:1px solid #C8DCC2; margin:0 0; padding:0 0; }
+ul.messagelist li { background: none; padding-left: 5px; padding-top: 8px; padding-bottom: 8px;font-size: 1.2em; }
+ul.messagelist li.debug{ background: #EEFAEA; padding: 0.5em, 0 0.5em 0; list-style: none;}
+ul.messagelist li.info{ background: #EEFAEA; padding: 0.5em, 0 0.5em 0; list-style: none;}
+ul.messagelist li.success{ background: #EEFAEA; padding: 0.5em, 0 0.5em 0; list-style: none;}
+ul.messagelist li.warning{ background: #FF3333; padding: 0.5em, 0 0.5em 0; list-style: none;}
+ul.messagelist li.error{ background: #FF3333; padding: 5px, 0 5px 0; list-style: none;}

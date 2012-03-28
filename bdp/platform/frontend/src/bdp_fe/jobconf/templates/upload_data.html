@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load url from future %}
+{% block content %}
+    <form action="{% url 'upload_data' job.id  %}" method="POST"
+	    enctype="multipart/form-data"> {% csrf_token %}
+	{{ form.as_p }}
+	<input type="submit" value="Upload data" />
+    </form>
+{% endblock %}
+{# vim:set syntax=htmldjango: #}

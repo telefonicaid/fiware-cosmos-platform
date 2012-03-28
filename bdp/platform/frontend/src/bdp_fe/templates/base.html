@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>{{ title }}</title>
+            <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}base.css" />
+            <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}visualize.css" />
+            <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}visualize-dark.css" />
+        {% block extrahead %}{% endblock %}
+    </head>
+
+    <body>
+        {% if not is_popup %}
+        <div id="header">
+            <div id="branding">
+                <img id="logo" src="{{ STATIC_URL }}logo.jpg">
+                {% block branding %}{% endblock %}
+            </div>
+    
+            {% if user.is_active %}
+                <div id="user-tools">
+                Welcome,
+                <strong>{% filter force_escape %}{% firstof user.first_name user.username %}{% endfilter %}</strong>.
+                {% block userlinks %}
+                    <a href="{% url django.contrib.auth.views.logout %}">Log out</a>
+                {% endblock %}
+                </div>
+            {% endif %}
+            {% block nav-global %}
+                <a href="/">Home</a>
+            {% endblock %}
+        </div>
+        {% endif %}
+    
+        {% if messages %}
+        <ul class="messagelist">{% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}</ul>
+        {% endif %}
+    
+        <div id="content">
+            {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
+            {% block content %}
+            {{ content }}
+            {% endblock %}
+            {% block sidebar %}{% endblock %}
+            <br class="clear" />
+        </div>
+    
+        {% block footer %}<div id="footer"></div>{% endblock %}
+    </body>
+</html>
+{# vim:set syntax=htmldjango: #}

@@ -116,6 +116,10 @@ class Job(models.Model):
             LOGGER.exception(ex)
             return False
 
+    def is_runnable(self):
+        return (self.status == Job.CONFIGURED and self.input_data is not None 
+                and len(self.input_data) > 0)
+
     def set_error(self, cluster_exception):
         self.error_code = cluster_exception.errorCode
         self.error_message = self.trim_to(cluster_exception.errorMsg,

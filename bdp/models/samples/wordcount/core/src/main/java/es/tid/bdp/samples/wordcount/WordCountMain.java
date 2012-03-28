@@ -56,13 +56,14 @@ public class WordCountMain extends Configured implements Tool {
     }
 
     public static void main(String[] args) {
+        int res = 0;
         try {
-            int res = ToolRunner.run(new Configuration(),
-                    new WordCountMain(), args);
-            System.exit(res);
+            res = ToolRunner.run(new Configuration(),
+                                 new WordCountMain(), args);
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
             System.exit(1);
         }
+        System.exit(res);
     }
 }

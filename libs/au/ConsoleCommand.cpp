@@ -64,6 +64,25 @@ void ConsoleCommand::delete_word()
     } while ( (pos>0) && ( command[pos-1] != ' ') );
 }
 
+void ConsoleCommand::toogle()
+{
+    if( command.length() < 2 )
+        return;
+    if( pos < 1 )
+        return;
+    
+    int pos_toogle = pos;
+    if( pos_toogle >= (int)command.length() )
+        pos_toogle = command.length() - 1;
+    
+    char a = command[pos_toogle];
+    command[pos_toogle] = command[pos_toogle-1];
+    command[pos_toogle-1] = a;
+    
+    pos = pos_toogle+1;
+    
+}
+
 
 void ConsoleCommand::delete_rest_line()
 {

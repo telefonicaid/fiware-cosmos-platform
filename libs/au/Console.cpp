@@ -203,6 +203,13 @@ void Console::internal_command( std::string command )
         command_history->current()->delete_word();
         print_command();
     }    
+
+    if ( command == "toogle" )
+    {
+        command_history->current()->toogle();
+        print_command();
+    }    
+    
     
 }
 
@@ -432,6 +439,8 @@ void Console::runConsole()
                 internal_command( "move_end" );
             else if ( c == 23 )  // CTRL-W
                 internal_command( "delete_word" );
+            else if ( c == 20 )  // CTRL-W
+                internal_command( "toogle" );
             else if ( c == 7 ) // bell
                 printf("%c",c);
             else

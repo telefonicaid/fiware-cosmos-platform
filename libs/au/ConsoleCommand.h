@@ -28,6 +28,8 @@ public:
     void delete_word();
     void delete_rest_line();
     
+    void toogle();
+    
     void move_home();
     void move_end();
     void move_cursor( int offset );

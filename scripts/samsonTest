@@ -36,7 +36,8 @@ function setup_test_vars
 
     #Extract the delilah test script
     if [ $(grep "\-\-SCRIPT\-\-" $TEST_FILE | wc -l) -eq 1 ]; then
-        TEST_SCRIPT=$(sed -n '/--SCRIPT--/,/^--/p' $TEST_FILE  | grep -v "^--")
+        TEST_DELILAH_SCRIPT=${TEST_BASENAME}.txt
+        sed -n '/--SCRIPT--/,/^--/p' $TEST_FILE  | grep -v "^--"  > $TEST_DELILAH_SCRIPT
         HAVE_SCRIPT=1
     fi
 
@@ -121,7 +122,7 @@ function execute_test
     # Execute delilah script
     # ------------------------------------------------
     if [ $HAVE_SCRIPT -eq 1 ]; then
-        delilah ${SAMSON_TEST_HOST} -command  $TEST_SCRIPT > $TEST_OUTPUT 2>/dev/null
+        delilah ${SAMSON_TEST_HOST} -f  $TEST_DELILAH_SCRIPT > $TEST_OUTPUT 2>/dev/null
     fi
 
     # ------------------------------------------------
@@ -159,7 +160,7 @@ function execute_test
         # Clean up files for succesful test runs
         rm -f $TEST_EXPECT \
                 $TEST_OUTPUT \
-                $TEST_SCRIPT \
+                $TEST_DELILAH_SCRIPT \
                 $TEST_SHELL_SCRIPT \
                 $TEST_BASENAME.diff
         if [ ! -z $TEST_DELILAH_INIT ]; then

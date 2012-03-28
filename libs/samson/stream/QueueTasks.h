@@ -25,7 +25,7 @@ namespace samson
             
             ParserQueueTask( size_t id  , StreamOperationBase* streamOperation  ) : stream::QueueTask(id , streamOperation )
             {
-                setProcessItemOperationName( "stream:" + streamOperation->operation );
+                setProcessItemOperationName( streamOperation->operation );
             }
             
             ~ParserQueueTask()
@@ -56,7 +56,7 @@ namespace samson
             : stream::QueueTask(id , streamOperation )
             {
                 // Set operation name for debugging
-                setProcessItemOperationName( "stream:" + streamOperation->operation );
+                setProcessItemOperationName( streamOperation->operation );
 
                 // Set the limits
                 range = _range;
@@ -90,7 +90,7 @@ namespace samson
             :stream::QueueTask(id , streamOperation )
             {
                 // Set operation name for debugging
-                setProcessItemOperationName( "stream:" + streamOperation->operation );
+                setProcessItemOperationName( streamOperation->operation );
                 
                 // Set the limits
                 range = _range;

@@ -85,7 +85,11 @@ namespace samson
     
 	void ProcessIsolated::flushBuffer( bool finish )
 	{
-		switch (type) {
+        
+        LM_T(LmtIsolatedOutputs,("Flush buffer starts ( shared memory id %d ) for operation %s " , shm_id ,   operation_name.c_str() ));
+        
+		switch (type) 
+        {
 			case key_value:
 				flushKVBuffer(finish);
 				break;
@@ -93,7 +97,9 @@ namespace samson
 				flushTXTBuffer(finish);
 				break;
 		}
-        		
+
+        LM_T(LmtIsolatedOutputs,("Flush buffer finished ( shared memory id %d ) for operation %s " , shm_id ,   operation_name.c_str() ));
+        
 	}
     
 	void ProcessIsolated::flushKVBuffer( bool finish )
@@ -264,7 +270,8 @@ namespace samson
     void ProcessIsolated::runIsolated()
     {
         
-        switch (type) {
+        switch (type) 
+        {
                 
             case key_value:
                 generateKeyValues( getWriter() );

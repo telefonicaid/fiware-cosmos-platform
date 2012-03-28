@@ -1,5 +1,7 @@
 
 
+#include "logMsg/logMsg.h"
+#include "logMsg/traceLevels.h"
 
 #include "engine/Object.h"                          // engine::Object
 #include "engine/Notification.h"                    // engine::Notification
@@ -24,8 +26,50 @@ namespace samson {
 #pragma mark ParserQueueTask
         
         
+        // Handy class to print traces on screen
+        
+        class OperationTraces
+        {
+            std::string name;
+            au::Cronometer cronometer;
+            size_t input_size;
+
+        public:
+            
+            OperationTraces( std::string _name , size_t _input_size )
+            {
+                name = _name;
+                input_size = _input_size;
+                LM_T( LmtIsolatedOperations , ("%s starts with input %s" , name.c_str() , au::str( input_size ,"B" ).c_str() ));            
+            }
+            
+            ~OperationTraces()
+            {
+                size_t time = cronometer.diffTimeInSeconds();
+                double rate = 0;
+                if( time > 0 )
+                    rate = input_size / time;
+                
+                LM_T( LmtIsolatedOperations , ("%s ( input size %s ) finish atfer %s. Aprox rate %s" 
+                                               , name.c_str() 
+                                               , au::str( input_size ,"B" ).c_str()
+                                               , cronometer.str().c_str()
+                                               , au::str( rate , "B/s" ).c_str()
+                                               ));            
+            }
+            
+            void trace_block( size_t block_size )
+            {
+                LM_T( LmtIsolatedOperations , ("%s running a block of %s. Time since start %s" , name.c_str() , au::str( block_size , "B").c_str() , cronometer.str().c_str() ));
+            }
+            
+        };
+        
+        
         void ParserQueueTask::generateKeyValues( KVWriter *writer )
         {
+            // Handy class to emit traces
+            OperationTraces operation_traces( au::str( "[%lu] Parser %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
             
             // Get the operation
             Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation );
@@ -62,7 +106,8 @@ namespace samson {
                 char *data = b->getData() + sizeof( KVHeader );
                 size_t size = b->getSize() - sizeof( KVHeader );
                 
-                //LM_M(("Stream Parsing a block of size %s", au::str(size).c_str() ));
+                // Trace 
+                operation_traces.trace_block( b->getSize() );
                 
                 parser->run( data , size ,  writer );
                 
@@ -72,7 +117,7 @@ namespace samson {
             
             // Detele the created instance
             delete parser;
-
+            
         }
         
         void ParserQueueTask::finalize( StreamManager* streamManager )
@@ -122,6 +167,8 @@ namespace samson {
         
         void ParserOutQueueTask::generateTXT( TXTWriter *writer )
         {
+            // Handy class to emit traces
+            OperationTraces operation_traces( au::str( "[%lu] Parserout %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
 
             // Get the operation
             Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation );
@@ -210,6 +257,9 @@ namespace samson {
         
         void MapQueueTask::generateKeyValues( KVWriter *writer )
         {
+            // Handy class to emit traces
+            OperationTraces operation_traces( au::str( "[%lu] Map %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
+
             
             // Get the operation
             Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation );
@@ -489,6 +539,8 @@ namespace samson {
         
         void ReduceQueueTask::generateKeyValues( KVWriter *writer )
         {
+            // Handy class to emit traces
+            OperationTraces operation_traces( au::str( "[%lu] reduce %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
             
             BlockInfo block_info;
             update( block_info );

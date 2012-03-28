@@ -36,19 +36,19 @@ typedef enum TraceLevels
     LmtCleanup                = 32,  // Valgrind ...
 
 	LmtEngine                 = 200, // SamsonEngine
-	LmtEngineNotification,
-	LmtEngineTime,
-    
-    
-	LmtDisk,                         // disk library	
-	LmtMemory,                       // memory library	
-	LmtProcessManager,
-	LmtBlockManager,
+	LmtEngineNotification     = 201,
+	LmtEngineTime             = 202,
+	LmtDisk                   = 203, // disk library	
+	LmtMemory                 = 204, // memory library	
+	LmtProcessManager         = 204,
+	LmtBlockManager           = 205,
 
-	LmtModuleManager,                // Module Manager component
-	LmtOperations,                   // Operations organization (map & reduce level)
+	LmtModuleManager          = 210,                // Module Manager component
+
     
-	LmtIsolated,                     // Isolated mechanism
+	LmtIsolated               = 215, // Isolated mechanism
+    LmtIsolatedOperations     = 216, // Traces to see start and stop of executions
+    LmtIsolatedOutputs        = 217, // See processing of operations outputs
     
 	LmtUser01 = 250,
 	LmtUser02 = 251,
@@ -56,6 +56,7 @@ typedef enum TraceLevels
 	LmtUser04 = 253,
 	LmtUser05 = 254,
 	LmtUser06 = 255,
+    
 } TraceLevels;
 
 

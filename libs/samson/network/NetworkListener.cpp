@@ -29,8 +29,7 @@ namespace samson {
     
     NetworkListener::~NetworkListener()
     {
-        LM_T(LmtCleanup, ("In NetworkListener::~NetworkListener - detaching from thread"));
-        // What if pthread_create isn't done, or failed ...
+        LM_T(LmtCleanup, ("In NetworkListener::~NetworkListener"));
     }
 
     void NetworkListener::quit()
@@ -101,6 +100,7 @@ namespace samson {
         LM_T(LmtCleanup, ("Creating a thread"));
         background_thread_running = true;
         pthread_create(&t, NULL, NetworkListener_run, this);
+        pthread_detach(t);
     }
     
     void NetworkListener::runNetworkListener()

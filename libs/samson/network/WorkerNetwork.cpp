@@ -9,7 +9,7 @@ namespace samson {
 
     WorkerNetwork::~WorkerNetwork()
     {
-        LM_T(LmtCleanup, ("In destructor"));
+        LM_T(LmtCleanup, ("In cleanup"));
         if (worker_listener != NULL)
         {
             au::Cronometer cronometer;

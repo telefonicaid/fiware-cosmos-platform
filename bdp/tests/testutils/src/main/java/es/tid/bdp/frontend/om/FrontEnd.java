@@ -1,14 +1,15 @@
 package es.tid.bdp.frontend.om;
 
-import java.net.MalformedURLException;
 import java.util.List;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+import static org.testng.Assert.fail;
 
 import es.tid.bdp.joblaunchers.TaskStatus;
+import es.tid.bdp.joblaunchers.TestException;
 
 /**
  *
@@ -25,8 +26,8 @@ public class FrontEnd {
     public static final String USERNAME_INPUT_ID = "id_username";
     public static final String PASSWORD_INPUT_ID = "id_password";
     
-    private static final String DEFAULT_USER = "admin";
-    private static final String DEFAULT_PASSWRD = "admin";
+    private static final String DEFAULT_USER = "test";
+    private static final String DEFAULT_PASSWRD = "cosmostest";
     
     private WebDriver driver;
     private String username;
@@ -45,17 +46,24 @@ public class FrontEnd {
     public void goHome() {
         this.driver.get(HOME_URL);
         if (this.driver.getCurrentUrl().contains("login")) {
-            this.login("admin", "admin");
+            try {
+                this.login(DEFAULT_USER, DEFAULT_PASSWRD);
+            } catch (TestException ex) {
+                fail("Bad user/password. " +  ex.toString());
+            }
         }
     }
     
-    private void login(String user, String pass) {
+    private void login(String user, String pass) throws TestException {
         WebElement userElement = this.driver
                 .findElement(By.id(USERNAME_INPUT_ID));
         userElement.sendKeys(user);
         this.driver.findElement(By.id(PASSWORD_INPUT_ID)).sendKeys(pass);
         
         userElement.submit();
+        if (this.driver.getCurrentUrl().contains("login")) {
+            throw new TestException("Login was not successful");
+        }
     }
     
     public boolean taskExists(String taskId) {

@@ -1,7 +1,6 @@
 package es.tid.bdp.frontend.tests;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
@@ -13,20 +12,17 @@ import java.util.UUID;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.fail;
 
-import es.tid.bdp.joblaunchers.FrontendLauncher;
-import es.tid.bdp.joblaunchers.TaskStatus;
-import es.tid.bdp.joblaunchers.TestException;
 import es.tid.bdp.frontend.om.FrontEnd;
 import es.tid.bdp.frontend.om.SelectInputPage;
 import es.tid.bdp.frontend.om.SelectJarPage;
 import es.tid.bdp.frontend.om.SelectNamePage;
+import es.tid.bdp.joblaunchers.FrontendLauncher;
+import es.tid.bdp.joblaunchers.TaskStatus;
+import es.tid.bdp.joblaunchers.TestException;
 
 /**
  *
@@ -86,6 +82,9 @@ public class FrontendTest {
             for (WebElement link : links) {
                 URL baseUrl = new URL(FrontEnd.HOME_URL);
                 String verbatimUrl = link.getAttribute("href");
+                if(verbatimUrl.startsWith("javascript")) {
+                    return;
+                }
                 String linkUrl = new URL(baseUrl, verbatimUrl).toString();
                 assertTrue(FrontendTest.isLive(linkUrl), "Broken link: " + linkUrl);
             }

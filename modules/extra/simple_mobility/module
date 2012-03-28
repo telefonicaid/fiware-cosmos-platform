@@ -84,7 +84,7 @@ script init_stream_operations
 
 		# Clear;
 
-		rm_queue [q1] [q2] [q3] [q4] [q5] [q6] [q7] -f;
+		rm [q1] [q2] [q3] [q4] [q5] [q6] [q7] -f;
 		rm_stream_operation [o1] [o2] [o3] [o4] -f;
 
 		# Definitions;

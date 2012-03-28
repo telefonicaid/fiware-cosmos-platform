@@ -9,16 +9,16 @@ add_stream_operation 1_update_state mob2.reduce_user_info userInfo userState ime
 #push emptyState state.txt
 push XMLs xmls.txt
 
-run_stream_operation mob2.reduce_update_last_position xmls userState userState2
-run_stream_operation mob2.reduce_check_imeis_by_user userInfo userState2 imeiAlarm userState3
+run mob2.reduce_update_last_position xmls userState userState2
+run mob2.reduce_check_imeis_by_user userInfo userState2 imeiAlarm userState3
 
-run_stream_operation mob2.reduce_user_info userInfo userState imeiAlarm userState
+run mob2.reduce_user_info userInfo userState imeiAlarm userState
 
 rm -f userState
 mv userState3 userState
 
 remove_all
-rm_queue imeiAlarm imeisPhone phoneImeis state.txt tacsPhone userState xmls xmls.txt userInfo userState2 userState3
+rm imeiAlarm imeisPhone phoneImeis state.txt tacsPhone userState xmls xmls.txt userInfo userState2 userState3
 
 
 #########################################################

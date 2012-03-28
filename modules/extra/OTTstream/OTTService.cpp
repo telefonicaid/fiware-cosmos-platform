@@ -84,15 +84,24 @@
     }
 
 
-    bool OTTService::checkHTTP(const char *url)
+    bool OTTService::checkHTTP(const char *url, const char *domain)
     {
         char wildcard = '%';
+        const char *p_check;
+
+        if (category == true)
+        {
+        	p_check = domain;
+        }
+        else
+        {
+        	p_check = url;
+        }
         for (unsigned int i = 0; i < httpPatterns.size(); i++)
         {
-            if (matchPatterns(url, httpPatterns[i].c_str(), wildcard))
+            if (matchPatterns(p_check, httpPatterns[i].c_str(), wildcard))
             {
                 return true;
-
             }
         }
         return false;

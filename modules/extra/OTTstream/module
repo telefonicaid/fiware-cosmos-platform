@@ -23,10 +23,11 @@ data UserHit
      system.TimeUnix time;
 }
 
-data ServiceActivityTimeSpan
+data ServiceActivity
 {
      system.UInt serviceId;
-     system.UInt countHits;
+     system.TimeUnix timestamp;
+     system.UInt8 inCount;
 }
 
 data UserActivityTimeSpan
@@ -35,9 +36,9 @@ data UserActivityTimeSpan
      system.UInt countHits;
 }
 
-data ActivityTimeSpan
+data Activity
 {
-	vector OTTstream.ServiceActivityTimeSpan servActivity;
+	vector OTTstream.ServiceActivity servActivity;
 }
 
 data LastHistory
@@ -62,10 +63,96 @@ simpleParser parse_logs
 reduce red_update_last_user_profile
 {
 	in system.UInt OTTstream.ServiceHit
-	in system.UInt OTTstream.LastHistory
+	in system.UInt OTTstream.Activity
 	out system.String system.Int32
-	out system.UInt OTTstream.LastHistory
+	out system.UInt OTTstream.Activity
 	
 	helpLine "Update the latest user profile" 
 }
+
+
+script init_stream_operations
+{
+    code
+    {
+        # ----------------------------------------------------------------
+		# Input queues
+		# ----------------------------------------------------------------
+        
+        alias [input_http]           logs_http;
+        alias [input_dns]        	 logs_dns;
+        
+        # ----------------------------------------------------------------
+		# Output queues
+		# ----------------------------------------------------------------
+		alias [commands]			commands;
+        
+		# ----------------------------------------------------------------
+		# Internal queues
+		# ----------------------------------------------------------------
+        
+        alias [hits]              hits;
+        alias [state]            state;
+        
+        # ----------------------------------------------------------------
+		# Operations
+		# ----------------------------------------------------------------
+        
+        alias [parse]       		parse;
+        alias [update]         update;
+ 
+        # ----------------------------------------------------------------
+		# Definitions
+		# ----------------------------------------------------------------
+        
+        add_stream_operation      [parse_http]			OTTstream.parse_logs									[input_http]       [hits];
+        set_stream_operation_property   [parse_http]      OTTstream.source          HTTP;
+        add_stream_operation      [parse_dns]			OTTstream.parse_logs									[input_dns]   		[hits];
+        set_stream_operation_property   [parse_dns]      OTTstream.source          DNS;
+        add_stream_operation      [emit_hits]			OTTstream.red_update_last_user_profile	[hits] [state]		[commands] [state];
+    }
+
+    helpLine "Init stream operations"
+}
+
+script demo
+{
+    code
+    {
+        #remove_all_stream;
+
+		# ----------------------------------------------------------------
+		# Input queues
+		# ----------------------------------------------------------------        
+		alias [input_http]      logs_http;
+        alias [input_dns]      logs_dns;
+		# ----------------------------------------------------------------
+		
+		# ----------------------------------------------------------------
+		# Output queues
+		# ----------------------------------------------------------------
+		
+		# Internal queues
+        alias [commands]              commands;
+		
+		# ----------------------------------------------------------------
+		# OTTstream profiling stream block
+		# ----------------------------------------------------------------
+        init_stream 01.OTTstream    OTTstream.init_stream_operations;
+        
+        # Connect with the level module to keep uptated the number of users active in last timespan, for every service
+        
+		init_stream 02.level level.init_stream_operations;
+ 
+		add_queue_connection [input_http]		01.OTTstream.logs_http;
+		add_queue_connection [input_dns]		01.OTTstream.logs_dns;
+		add_queue_connection 01.OTTstream.commands 	02.level.01.input;
+		
+		# ----------------------------------------------------------------
+
+    }
+
+    helpLine "Demo about web profiling"
+}
+
 

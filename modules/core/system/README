@@ -29,10 +29,10 @@ Each key-value is process individually with the chain/s of operations provided i
 
 The general format is as follows:
 
-run_stream_operation system.parser_to_value       <input> <output> env:command " ...commands... "
-run_stream_operation system.map_value_to_value    <input> <output> env:command " ...commands... "
-run_stream_operation system.map_value_to_2_value  <input> <output> env:command " ...commands... "
-run_stream_operation system.map_value_to_3_value  <input> <output> env:command " ...commands... "
+run system.parser_to_value       <input> <output> env:command " ...commands... "
+run system.map_value_to_value    <input> <output> env:command " ...commands... "
+run system.map_value_to_2_value  <input> <output> env:command " ...commands... "
+run system.map_value_to_3_value  <input> <output> env:command " ...commands... "
 
 Where command is following this pattern
 

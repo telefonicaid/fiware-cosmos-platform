@@ -8,17 +8,17 @@ rm_stream_operation hit.20.reduce_tops -f
 rm_stream_operation hit.21.export_tops -f
 
 
-rm_queue hit.01.in_txt -f
-rm_queue hit.03.input_words_previous -f
-rm_queue hit.04.input_words -f
+rm hit.01.in_txt -f
+rm hit.03.input_words_previous -f
+rm hit.04.input_words -f
 
-rm_queue hit.10.words -f
+rm hit.10.words -f
 
-rm_queue hit.11.words_update -f
+rm hit.11.words_update -f
 
-rm_queue hit.20.hit.tops -f
-rm_queue hit.21.output_tops -f
-rm_queue hit.22.output_tops_txt -f
+rm hit.20.hit.tops -f
+rm hit.21.output_tops -f
+rm hit.22.output_tops_txt -f
 
 
 # Parse input txt files to extract words

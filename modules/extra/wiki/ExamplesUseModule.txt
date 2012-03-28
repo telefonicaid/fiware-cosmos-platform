@@ -9,5 +9,5 @@ set_stream_operation_property 1_update_inv_index max_latency 1
 push enwiki-latest-pages-articles.xml wiki.txt
 
 remove_all
-rm_queue wiki.txt words wordsInfo
+rm wiki.txt words wordsInfo
 

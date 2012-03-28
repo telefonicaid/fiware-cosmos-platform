@@ -12,11 +12,13 @@ public:
     
     std::string name;
     int serviceId;
+    bool category;
     
-    OTTService( std::string _name, int _serviceId )
+    OTTService( std::string _name, int _serviceId, bool _category )
     {
         name = _name;
         serviceId = _serviceId;
+        category = _category;
     }
     
     ~OTTService()
@@ -42,7 +44,7 @@ public:
         dnsPatterns.push_back(_dnsPattern);
     }
     
-    bool checkHTTP(const char *url);
+    bool checkHTTP(const char *url, const char *domain);
 
     bool checkDNS(const char *dns);
     

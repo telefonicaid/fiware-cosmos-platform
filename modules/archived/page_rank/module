@@ -104,7 +104,7 @@ script init_stream_operations
 		alias [update_links]     10.update_links;
 		alias [update_messages]  10.update_messages;
 
-		rm_queue [input] [graph] [nodes] [messages] -f;
+		rm [input] [graph] [nodes] [messages] -f;
 		rm_stream_operation [parser] [update_links] [update_messages] -f;
 	
 		add_stream_operation [parser]           wiki.parse_pages_to_links    [input]             [links];

@@ -276,7 +276,8 @@ int MemoryManager::getNumBuffers()
 
 size_t MemoryManager::getUsedMemory()
 {
-    au::TokenTaker tk( &token );
+    // Goyo. Checking what happens if not protected
+    //au::TokenTaker tk( &token );
     return _getUsedMemory();
     
 }

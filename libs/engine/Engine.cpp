@@ -244,6 +244,7 @@ void Engine::run()
             if ( waiting_time > 10 )
             {
                 LM_W(("Engine is running an element that has been waiting %d seconds", waiting_time ));
+		LM_W(("Engine element to execute now: %s" , running_element->getDescription().c_str() ));
                 //LM_W(("Engine element to execute now: %s" , running_element->getDescription().c_str() ));
             }
 

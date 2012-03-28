@@ -53,6 +53,8 @@ namespace samson {
             	LM_T(LmtBlockManager,("QueueTaskBase %lu blockList %s blocked", id, b->first.c_str()));
                 lockBlockList->copyFrom( b->second );
             }
+            //LM_T(LmtBlockManager, ("Calling BlockManager::shared()->review()"));
+            //BlockManager::shared()->review();
             
             // Set the flag to true
             ready_flag =  true;

@@ -51,7 +51,8 @@ namespace samson {
             reviewPendingQueueTasks();
             
             // Review block manager
-            BlockManager::shared()->review();
+            //LM_T(LmtBlockManager, ("Calling BlockManager::shared()->review()"));
+            //BlockManager::shared()->review();
         }
         
         void QueueTaskManager::add( SystemQueueTask* task )
@@ -63,7 +64,8 @@ namespace samson {
             reviewPendingQueueTasks();
             
             // Review block manager
-            BlockManager::shared()->review();
+            //LM_T(LmtBlockManager, ("Calling BlockManager::shared()->review()"));
+            //BlockManager::shared()->review();
         }
 
         void QueueTaskManager::cancelForWorkerCommandId( std::string worker_command_id )

@@ -421,6 +421,7 @@ namespace samson {
             au::ExecesiveTimeAlarm alarm("StreamManager::reviewStreamOperations");
 
             
+	    LM_T(LmtEngineTime, ("before while"));
             while( true )
             {
                 // Find the most urgent stream operation
@@ -449,10 +450,13 @@ namespace samson {
                     
                     //  Review operation
                     stream_operation->last_review = "Pending revisions...";
+
+		LM_T(LmtEngineTime, ("Before getNextQueueTaskPriorityParameter task, name:%s, operation:%s", stream_operation->name.c_str(), stream_operation->operation.c_str()));
                     
                     // Let's see if we are really the next stream operation to be schedule next task...
                     size_t tmp_max_priority_rank = stream_operation->getNextQueueTaskPriorityParameter();
                     
+		LM_T(LmtEngineTime, ("After getNextQueueTaskPriorityParameter tmp_max_priority_rank:%lu task, name:%s, operation:%s", tmp_max_priority_rank, stream_operation->name.c_str(), stream_operation->operation.c_str()));
                     if( tmp_max_priority_rank > 0 )
                         stream_operation->last_review = au::str( "Pending task ( prioriry %s )" ,  au::str( tmp_max_priority_rank ).c_str() );
                     else
@@ -460,6 +464,7 @@ namespace samson {
                         
                     if ( ( tmp_max_priority_rank > 0 ) && (tmp_max_priority_rank > max_priority_rank ) )
                     {
+		LM_T(LmtEngineTime, ("Update next_stream_operation max_priority_rank:%lu task, name:%s, operation:%s", max_priority_rank, stream_operation->name.c_str(), stream_operation->operation.c_str()));
                         // we found a new stream operation that is more priority than the previous one
                         max_priority_rank = tmp_max_priority_rank;
                         next_stream_operation = stream_operation;
@@ -467,6 +472,7 @@ namespace samson {
                     
                 }
                 
+		LM_T(LmtEngineTime, ("Before checking memory "));
                 double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
                 if ( memory_usage >= 1.0 )
                 {
@@ -480,14 +486,23 @@ namespace samson {
                 
                 
                 // If it has enougth tasks, we do not schedule anything else
+		LM_T(LmtEngineTime, ("Before queueTaskManager.hasEnougthTasks() "));
                 if( queueTaskManager.hasEnougthTasks() )
+		{
+		    LM_T(LmtEngineTime, ("Enough tasks"));
                     return;
+	        }
                 
                 if( !next_stream_operation )
+		{
+		    LM_T(LmtEngineTime, ("No more operations"));
                     return; // No more operations to schedule
+		}
 
                 // Schedule next task ( or tasks in some particular cases... )
+		LM_T(LmtEngineTime, ("Before scheduling next task, name:%s, operation:%s", next_stream_operation->name.c_str(), next_stream_operation->operation.c_str()));
                 next_stream_operation->scheduleNextQueueTasks( );
+		LM_T(LmtEngineTime, ("Next task scheduled"));
                 
             }
             

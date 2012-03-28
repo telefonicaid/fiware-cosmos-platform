@@ -193,18 +193,18 @@ namespace samson {
             
             
             // No schedule new operations until all the previous one have finished
-            if( scheduled_read_size > 0 )
+            if( scheduled_read_size > max_scheduled_read_size/2 )
                 return;
-            if( scheduled_write_size > 0 )
+            if( scheduled_write_size > max_scheduled_write_size/2 )
                 return;
             
             LM_T( LmtBlockManager , ("Reviewing block manager"));
             
-            au::ExecesiveTimeAlarm alarm("BlockManager::_review");
+            //au::ExecesiveTimeAlarm alarm("BlockManager::_review");
             
             // Sort list of blocks according to id and min_task involved
             {
-                au::ExecesiveTimeAlarm alarm("BlockManager::sort" , 0.05 );
+                au::ExecesiveTimeAlarm alarm("BlockManager::sort" , 0.10 );
                 blocks.sort( compare_blocks );
             }
             
@@ -220,7 +220,7 @@ namespace samson {
                 for( it_blocks = blocks.begin() ; it_blocks != blocks.end() ;it_blocks++)
                     tmp_blocks[pos++] = *it_blocks;
                 {
-                    au::ExecesiveTimeAlarm alarm("BlockManager::sort2" , 0.05 );
+                    au::ExecesiveTimeAlarm alarm("BlockManager::sort2" , 0.00 );
                     qsort(tmp_blocks, blocks.size() , sizeof(Block*), compare_blocks2 );
                 }
                 free( tmp_blocks );
@@ -232,6 +232,7 @@ namespace samson {
             // Remove old blocks not included anywhere
             // --------------------------------------------------------------------------------
             
+            LM_T( LmtBlockManager , ("Remove old blocks"));
             {
                 std::list<Block*>::iterator b;
                 for ( b = blocks.begin() ; b != blocks.end() ; )
@@ -261,7 +262,10 @@ namespace samson {
                         delete block;
                     }
                     else
+		    {
+                        //LM_T(LmtBlockManager,("In check, cannot remove block:'%s'", block->str().c_str()));
                         b++;
+		    }
                 }
             }
             
@@ -272,6 +276,7 @@ namespace samson {
             // --------------------------------------------------------------------------------
             // Find the blocks that should be in memory
             // --------------------------------------------------------------------------------
+            LM_T( LmtBlockManager , ("Detect limit_block"));
             size_t accumulated_memory = 0;
             Block * limit_block = *blocks.begin(); // Point to the first one
             std::list<Block*>::iterator b;
@@ -298,6 +303,7 @@ namespace samson {
             // Free memory of blocks that are not suppouse to be on memory
             // --------------------------------------------------------------------------------
             {
+                LM_T(LmtBlockManager,("Free blocks in memory under block_limit"));
                 std::list<Block*>::reverse_iterator b;
                 for ( b = blocks.rbegin() ; b != blocks.rend() ; b++ )
                 {
@@ -326,11 +332,20 @@ namespace samson {
             
             if( scheduled_write_size < max_scheduled_write_size )
             {
+                LM_T( LmtBlockManager , ("Schedule write operations"));
                 // Lock for new write operations...
                 std::list<Block*>::reverse_iterator b;
                 for ( b = blocks.rbegin() ; b != blocks.rend() ; b++ )
                 {
                     Block *block = *b;
+                    //
+                    // Stop when arrive to the limit block ( this should be in memory )
+                    //if( block == limit_block )
+		    //{
+			//LM_T(LmtBlockManager, ("Stops looking for write, because block_limit reached"));
+                        //break;
+		    //}
+                    
                     
                     if( block->isOnMemory() )
                     {
@@ -360,6 +375,7 @@ namespace samson {
             // Schedule new reads operations ( high priority elements ) if available memory
             if( scheduled_read_size < max_scheduled_read_size )
             {
+                LM_T( LmtBlockManager , ("Schedule read operations"));
                 // Lock for new write operations...
                 std::list<Block*>::iterator b;
                 for ( b = blocks.begin() ; b != blocks.end() ; b++ )
@@ -374,7 +390,7 @@ namespace samson {
                         if( (memory + block->size) >= max_memory )
                         {
                         	LM_T(LmtBlockManager,("Trying to free memory for block with memory(%lu); max_memory(%lu), block:'%s'", memory, max_memory, block->str().c_str()));
-                            _freeMemoryWithLowerPriorityBLocks( block );
+                            //_freeMemoryWithLowerPriorityBLocks( block );
                         }
                         
                         if( (memory + block->size) > max_memory )
@@ -403,7 +419,10 @@ namespace samson {
                     
                     
                     if( block == limit_block )
+		    {
+			LM_T(LmtBlockManager, ("Stops looking for read, because block_limit reached"));
                         break; // Not schedule reads on blocks that are not suppose to be on memory
+		    }
                 }
             }
             

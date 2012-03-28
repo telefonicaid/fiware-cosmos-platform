@@ -50,12 +50,15 @@ namespace samson {
             // create a new block
             Block *block  = new Block( buffer );
 
+            LM_T(LmtBlockManager, ("BlockList::createBlock insert block: '%s'", block->str().c_str()));
             // Insert this block in my list
             blocks.push_back( block );
             
+            LM_T(LmtBlockManager, ("BlockList::createBlock insert in lists block: '%s'", block->str().c_str()));
             // Insert myself in the the list inside the block
             block->lists.insert( this );
             
+            LM_T(LmtBlockManager, ("BlockList::createBlock insert in BlockManager block: '%s'", block->str().c_str()));
             // Add automatically to the Block Manager
             BlockManager::shared()->insert( block );   
 

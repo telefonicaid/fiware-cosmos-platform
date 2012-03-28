@@ -114,6 +114,7 @@ namespace samson {
         // Methods overwritted from ProcessItemIsolated ( running on a different process )
         bool initProcessItemIsolated();
         void runIsolated();
+        void finishProcessItemIsolated();
         
         // --------------------------------------------------------------------------
         // Methods implemented by subclases to generate content

@@ -33,18 +33,12 @@ namespace samson
     
     ProcessIsolated::~ProcessIsolated()
     {
-        //LM_M(("Destroying ProcessIsolated"));
-        
-        if( shm_id != -1 )
-            engine::SharedMemoryManager::shared()->releaseSharedMemoryArea( shm_id );
-                
         if( writer )
             delete writer;
         
         if( txtWriter )
             delete txtWriter;
     }
-    
     
     // Get the writers to emit key-values
     ProcessWriter* ProcessIsolated::getWriter()
@@ -257,6 +251,15 @@ namespace samson
         }
     }
 
+    void ProcessIsolated::finishProcessItemIsolated()
+    {
+        if( shm_id != -1 )
+        {
+            engine::SharedMemoryManager::shared()->releaseSharedMemoryArea( shm_id );
+            item = NULL;
+            shm_id = -1;
+        }
+    }
     
     void ProcessIsolated::runIsolated()
     {

@@ -174,13 +174,6 @@ namespace samson
     
 	void ProcessItemIsolated::run()
 	{
-        // Init isolated stuff
-        if( !initProcessItemIsolated() )
-        {
-            error.set( "Not possible to init ProcesItemIsolatd" );
-            LM_W(("ProcessItemIsolated not executed since init return false"));
-            return;
-        }
         
         LM_T( LmtIsolated , ("Isolated process %s: start ******************************************* ",getStatus().c_str()));
         
@@ -209,6 +202,15 @@ namespace samson
 		LM_T(LmtIsolated, ("Isolated process %s: pipes created. pipeFdPair1[0]:%d, pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, pipeFdPair2[1]:%d\n",getStatus().c_str(), pipeFdPair1[0], pipeFdPair1[1], pipeFdPair2[0], pipeFdPair2[1]));
 		LM_T( LmtIsolated , ("Isolated process %s: pipes created ",getStatus().c_str()));
 		
+        
+        // Init isolated stuff
+        if( !initProcessItemIsolated( ) )
+        {
+            error.set( au::str("Not possible to init an isolated item for operation %s", operation_name.c_str() ));
+            LM_W(("ProcessItemIsolated not executed since init return false"));
+            return;
+        }
+        
 		// Create the other process to run the other side
         pid_t pid = 0;
         if( isolated_process_as_tread )
@@ -263,6 +265,9 @@ namespace samson
         }
 		
         LM_T( LmtIsolated , ("Isolated process %s: Finish ******************************************************************************************* ",getStatus().c_str()));
+        
+        // Finish process item
+        finishProcessItemIsolated( );
         
 	}
     

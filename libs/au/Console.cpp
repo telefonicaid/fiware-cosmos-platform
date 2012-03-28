@@ -571,7 +571,14 @@ void Console::writeOnConsole( std::string message )
             clear_line();
             size_t max_pos = pos + num_lines_on_screen;
             for ( size_t i = pos ; i < std::min( lines.size() , max_pos ) ; i++ )
-                printf("%s\n", lines[i].c_str() );
+            {
+                std::string line_to_print;
+                if( lines[i].length() < (size_t)x )
+                    line_to_print = lines[i];
+                else
+                    line_to_print = lines[i].substr( 0 , x - 3 ) + "...";
+                printf("%s\n", line_to_print.c_str() );
+            }
             
             if( pos + num_lines_on_screen >= lines.size() )
                 return;

@@ -128,7 +128,7 @@ namespace samson
             {
                 au::ConsoleEntry entry;
                 std::string message;
-                if( cronometer.diffTimeInSeconds() > 2 )
+                if( cronometer.diffTimeInSeconds() > 1 )
                 {
                     message = au::str("[ %s ] Waiting process %lu : %s ... [ b: background c: cancel ]" 
                                       , cronometer.strClock().c_str()

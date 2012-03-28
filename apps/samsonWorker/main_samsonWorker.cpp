@@ -304,7 +304,9 @@ int main(int argC, const char *argV[])
 
     valgrindExit(5);
     LM_D(("engine::SharedMemoryManager::init"));
-    engine::SharedMemoryManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess") , samson::SamsonSetup::shared()->getUInt64("general.shared_memory_size_per_buffer")); // VALGRIND complains ...
+    engine::SharedMemoryManager::init( samson::SamsonSetup::shared()->getInt("general.num_processess") 
+                                      ,samson::SamsonSetup::shared()->getUInt64("general.shared_memory_size_per_buffer")
+                                      ); // VALGRIND complains ...
     smManager = engine::SharedMemoryManager::shared();
 
     valgrindExit(6);

@@ -203,8 +203,8 @@ NAMESPACE_BEGIN(engine)
 				shared_memory_used_buffers[i] = true;
 				return i;
 			}
-		
-		
+
+		LM_W(("Not possible to retain a shared memory area since all %d are busy" , shared_memory_num_buffers ));
 		return -1;	// There are no available memory buffers, so we will never get this point
 	}
 	

@@ -10,6 +10,7 @@ function setup_test_vars
     INIT_DELILAH_ERROR=0
     INIT_SHELL_ERROR=0
     MULTIPLE_TESTS=0
+    TEST_FAILED=0
 
     TEST_BASENAME=$(echo $TEST_FILE | sed 's/\.test//')
     TEST_NAME=$(sed -n '/--NAME--/,/^--/p' $TEST_FILE  | grep -v "^--")
@@ -135,27 +136,30 @@ function execute_test
     # Check to see if the output is what we expect
     diff -u $TEST_EXPECT $TEST_OUTPUT > $TEST_DIFF
     if [ $? -ne 0 ]; then
-        echo "----------------------------------------------------------------"
-        echo "ERROR: executing $TEST_FILE"
-        echo "Expected"
-        cat $TEST_EXPECT
-        echo "Got"
-        cat $TEST_OUTPUT
-        if [ $INIT_DELILAH_ERROR -ne 0 ]; then
-            echo "Errors were seen initializing delilah"
-            echo "STDOUT:"
-            cat $TEST_DELILAH_INIT.stdout
-            echo "STDERROR:"
-            cat $TEST_DELILAH_INIT.stderr
+        TEST_FAILED=1
+        if [ $TEST_VERBOSE -eq 1 ]; then
+            echo "----------------------------------------------------------------"
+            echo "ERROR: executing $TEST_FILE"
+            echo "Expected"
+            cat $TEST_EXPECT
+            echo "Got"
+            cat $TEST_OUTPUT
+            if [ $INIT_DELILAH_ERROR -ne 0 ]; then
+                echo "Errors were seen initializing delilah"
+                echo "STDOUT:"
+                cat $TEST_DELILAH_INIT.stdout
+                echo "STDERROR:"
+                cat $TEST_DELILAH_INIT.stderr
+            fi
+            if [ $INIT_SHELL_ERROR -ne 0 ]; then
+                echo "Errors were seen with the shell initialization script"
+                echo "STDOUT:"
+                cat $TEST_SHELL_INIT.stdout
+                echo "STDERROR:"
+                cat $TEST_SHELL_INIT.stderr
+            fi
+            echo "----------------------------------------------------------------"
         fi
-        if [ $INIT_SHELL_ERROR -ne 0 ]; then
-            echo "Errors were seen with the shell initialization script"
-            echo "STDOUT:"
-            cat $TEST_SHELL_INIT.stdout
-            echo "STDERROR:"
-            cat $TEST_SHELL_INIT.stderr
-        fi
-        echo "----------------------------------------------------------------"
     else
         # Clean up files for succesful test runs
         rm -f $TEST_EXPECT \
@@ -169,9 +173,20 @@ function execute_test
         if [ ! -z $TEST_SHELL_INIT ]; then
             rm -f  $TEST_SHELL_INIT $TEST_SHELL_INIT.stderr $TEST_SHELL_INIT.stdout
         fi
-        echo "SUCCESS: $TEST_NAME"
     fi
 
+}
+
+function test_header
+{
+    echo "SAMSON functional unit test harness"
+    echo "Machine : $(hostname)"
+    echo -n "OS      : "
+    if [ -f /etc/lsb-release ]; then
+        source /etc/lsb-release 
+        echo $DISTRIB_DESCRIPTION
+    fi
+    echo "Date    : $(date)"
 }
 
 function usage
@@ -183,6 +198,13 @@ function usage
 if [ -z $1 ]
 then
     usage
+else
+    test_header
+fi
+
+# Set TEST_VERBOSE=1 to show the diffs for failed tests
+if [ -z $TEST_VERBOSE ]; then
+    TEST_VERBOSE=0
 fi
 
 # If we have a directory we'll run a suite of tests
@@ -190,6 +212,10 @@ if [ -d $1 ];
 then
     TEST_DIR=$1
 fi
+
+# Init success and failure counters
+TEST_COUNT_SUCCESS=0
+TEST_COUNT_FAIL=0
 
 # Execute an individual test
 if [ -f $1 ];
@@ -207,15 +233,55 @@ fi
 pushd $TEST_DIR > /dev/null
 if [ -z ${TEST_FILE} ];
 then
-    for test in  `find . -name *.test`
+    for test in  `find . -name \*.test`
     do
         TEST_FILE=$test
         setup_test_vars
         execute_test
+        if [ $TEST_FAILED -eq 1 ]; then
+            echo "FAILED : $TEST_NAME ($(basename $TEST_FILE))"
+            TEST_COUNT_FAIL=$(expr $TEST_COUNT_FAIL + 1)
+            if [ -z "$TEST_FAIL_LIST" ]; then
+                TEST_FAIL_LIST=$(echo $TEST_NAME - $(basename $TEST_FILE))
+            else
+                TEST_FAIL_LIST=$(echo $TEST_FAIL_LIST:$TEST_NAME - $(basename $TEST_FILE))
+            fi
+
+        else
+            echo "SUCCESS: $TEST_NAME"
+            TEST_COUNT_SUCCESS=$(expr $TEST_COUNT_SUCCESS + 1)
+        fi
+
     done
+    # Print summary
+    echo "===================================================================="
+    echo "Test Summary"
+    echo "$TEST_COUNT_SUCCESS test(s) passed"
+    echo "$TEST_COUNT_FAIL test(s) failed:"
+    IFS=":"
+    for test in $TEST_FAIL_LIST
+    do
+        echo $test
+    done
+    echo "===================================================================="
 else
+    # Enable verbose output for a single unit-test
+    TEST_VERBOSE=1
     setup_test_vars
     execute_test
+    if [ $TEST_FAILED -eq 1 ]; then
+        echo "FAILED : $TEST_NAME ($(basename $TEST_FILE))"
+        TEST_COUNT_FAIL=$(expr $TEST_COUNT_FAIL + 1)
+        if [ -z "$TEST_FAIL_LIST" ]; then
+            TEST_FAIL_LIST=$(echo $TEST_NAME - $(basename $TEST_FILE))
+        else
+            TEST_FAIL_LIST=$(echo $TEST_FAIL_LIST:$TEST_NAME - $(basename $TEST_FILE))
+        fi
+
+    else
+        echo "SUCCESS: $TEST_NAME"
+        TEST_COUNT_SUCCESS=$(expr $TEST_COUNT_SUCCESS + 1)
+    fi
 fi
 popd > /dev/null
 exit 0

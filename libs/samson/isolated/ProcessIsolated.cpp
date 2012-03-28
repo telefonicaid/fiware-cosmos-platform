@@ -85,7 +85,7 @@ namespace samson
     
 	void ProcessIsolated::flushBuffer( bool finish )
 	{
-        
+        au::Cronometer cronometer;
         LM_T(LmtIsolatedOutputs,("Flush buffer starts ( shared memory id %d ) for operation %s " , shm_id ,   operation_name.c_str() ));
         
 		switch (type) 
@@ -98,7 +98,7 @@ namespace samson
 				break;
 		}
 
-        LM_T(LmtIsolatedOutputs,("Flush buffer finished ( shared memory id %d ) for operation %s " , shm_id ,   operation_name.c_str() ));
+        LM_T(LmtIsolatedOutputs,("Flush buffer finished ( shared memory id %d ) for operation %s atfer %s " , shm_id ,   operation_name.c_str() , cronometer.str().c_str() ));
         
 	}
     

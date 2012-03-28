@@ -2,7 +2,9 @@
 Utility functions for controllers.
 
 """
+import json
 from random import choice
+from types import ListType, DictType
 
 from django.conf import settings
 from django.http import HttpResponseNotFound
@@ -15,6 +17,7 @@ from bdp_fe.jobconf.models import Job
 from bdp_fe.middleware403 import Http403
 
 HIDDEN_KEYS = []
+EXPAND_TYPES = [ListType, DictType]
 
 class NoResultsError(Exception):
     pass
@@ -36,10 +39,13 @@ class MongoRecord(object):
         return self.document[self.pk]
 
     def get_fields(self):
-        """Gets the values of all non-primary keys for this record"""
+        """Gets the values of all non-primary keys for this record. If the
+        field is a dictionary or a list, it is encoded as JSON."""
         ans = {}
         for k, v in self.document.iteritems():
             if k != self.pk:
+                if type(v) in EXPAND_TYPES:
+                    v = json.dumps(v)
                 ans.setdefault(k, v)
         return ans
 

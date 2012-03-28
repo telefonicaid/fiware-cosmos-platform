@@ -30,6 +30,7 @@ TEST(bufferTest, getMaxSizeTest) {
     
     EXPECT_EQ(buffer1->getMaxSize(), 15);
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    engine::MemoryManager::destroy();
 }
     
     
@@ -46,6 +47,7 @@ TEST(bufferTest, getandSetSizeTest) {
     EXPECT_EQ(buffer1->getSize(), 10) << "Error in setSize()";
 
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    engine::MemoryManager::destroy();
 
 }
    
@@ -60,6 +62,7 @@ TEST(bufferTest, strTest) {
 
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
 
+    engine::MemoryManager::destroy();
 }
     
 /**
@@ -85,6 +88,7 @@ TEST(bufferTest, writeTest) {
     
 
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    engine::MemoryManager::destroy();
 }
     
 // Skip some space without writing anything
@@ -102,6 +106,7 @@ TEST(bufferTest, skipWriteTest) {
     EXPECT_EQ(strcmp(readBuffer+1, "0123456789"), 0) << "wrong data after skipWriting";
 
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    engine::MemoryManager::destroy();
 }    
 
 // Write on the buffer the maximum possible ammount of data
@@ -124,6 +129,7 @@ TEST(bufferTest, ifstreamWriteTest) {
     EXPECT_EQ(strcmp(readBuffer, "012345678901234"), 0) << "wrong data after writing from ifstream";
 
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    engine::MemoryManager::destroy();
 }    
 
 // Get available space to write with "write call"
@@ -153,6 +159,7 @@ TEST(bufferTest, skipReadTest) {
     EXPECT_EQ(strcmp(readBuffer, "3456"), 0) << "wrong data after skipRead";
 
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    engine::MemoryManager::destroy();
 }
 
 //Test size_t read( char *output_buffer, size_t output_size);
@@ -167,6 +174,7 @@ TEST(bufferTest, readTest) {
     EXPECT_EQ(strcmp(readBuffer, "0123"), 0) << "Reading error";
 
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    engine::MemoryManager::destroy();
 }
     
 // Get pending bytes to be read
@@ -181,6 +189,7 @@ TEST(bufferTest, getSizePendingReadTest) {
     EXPECT_EQ(buffer1->getSizePendingRead(), 6) << "Wrong pending read size";
 
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    engine::MemoryManager::destroy();
 }
     
 // Get a pointer to the data space
@@ -196,6 +205,7 @@ TEST(bufferTest, getDataTest) {
     EXPECT_EQ(strcmp(readBuffer, "0123"), 0) << "Error accesing buffer data pointer";
     
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    engine::MemoryManager::destroy();
 }    
 // Set used size manually
 //Test void setSize( size_t size );
@@ -214,6 +224,7 @@ TEST(bufferTest, setSizeTest) {
     EXPECT_EQ(strcmp(readBuffer+1, "0123456789"), 0) << "wrong data after manually setting used size";
 
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    engine::MemoryManager::destroy();
 }    
     
 //Test SimpleBuffer getSimpleBuffer();
@@ -232,6 +243,7 @@ TEST(bufferTest, getSimpleBufferTest) {
     EXPECT_EQ(strcmp(readBuffer, "0123"), 0) << "Wrong data in the SimpleBuffer";
     
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    engine::MemoryManager::destroy();
 }    
 
 //Test SimpleBuffer getSimpleBufferAtOffset(size_t offset);
@@ -251,6 +263,7 @@ TEST(bufferTest, getSimpleBufferAtOffsetTest) {
     EXPECT_EQ(strcmp(readBuffer, "2345"), 0) << "Wrong data in the SimpleBuffer";
 
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    engine::MemoryManager::destroy();
 }    
 
 // Remove the last characters of an unfinished line and put them in buffer.
@@ -290,6 +303,7 @@ TEST(bufferTest, removeLastUnfinishedLineTest) {
     }
     
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    engine::MemoryManager::destroy();
 }    
     
 // get xml information
@@ -312,5 +326,6 @@ TEST(bufferTest, getInfoTest) {
     EXPECT_EQ(std::string(xMainNode.getChildNode("name").getClear().lpszValue), "buffer1") << "Error writing name tag";
 
     engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    engine::MemoryManager::destroy();
 }
 

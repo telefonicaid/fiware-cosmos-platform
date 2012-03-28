@@ -31,14 +31,16 @@ TEST(engineTest, instantiationTest) {
     ProcessStats pstats;
     unsigned long beforeThreads = pstats.get_nthreads();
     //access instance without initialise. Should return NULL.
-    //EXPECT_EQ(engine::Engine::shared(), static_cast<engine::Engine*>(NULL)) << "Uninitialized engine should be null"; //using just NULL produces compilation error
+    EXPECT_EQ(engine::Engine::shared(), static_cast<engine::Engine*>(NULL)) << "Uninitialized engine should be null"; //using just NULL produces compilation error
     //call init() and then instance. Should return a valid one.
-    //engine::Engine::init();
+    engine::Engine::init();
     EXPECT_TRUE(engine::Engine::shared() != static_cast<engine::Engine*>(NULL)) << "engine instance should not be null after instantiation"; 
     //get number of threads now. Should be bigger. This tests run()
     pstats.refresh();
     unsigned long afterThreads = pstats.get_nthreads();
+    printf ("%ld > %ld ", afterThreads, beforeThreads);
     EXPECT_TRUE(afterThreads > beforeThreads);
+    engine::Engine::destroy();
 }
 
 //test run()
@@ -46,7 +48,7 @@ TEST(engineTest, instantiationTest) {
 
 //test get_info( std::ostringstream& output)
 TEST(engineTest, getInfoTest) {
-    //engine::Engine::init();
+    engine::Engine::init();
 
     std::ostringstream info;
     std::string tmpString;
@@ -60,25 +62,25 @@ TEST(engineTest, getInfoTest) {
     EXPECT_TRUE(!xMainNode.getChildNode("loops").isEmpty()) << "Error writing loops tag";
     EXPECT_EQ(std::string(xMainNode.getChildNode("running_element").getClear().lpszValue), "No running element") << "Error writing running element tag";
     XMLNode elementNode = xMainNode.getChildNode("elements").getChildNode("engine_element");
-    ASSERT_TRUE(!elementNode.isEmpty());
+    ASSERT_TRUE(elementNode.isEmpty());
     /*
     std::string tmpString = std::string(elementNode.getChildNode("short_description").getClear().lpszValue);
     EXPECT_TRUE( tmpString.find("[ EngineElement in ") != std::string::npos
                  && tmpString.find(" secs ( repetition count:0 delay:10 ) ] Not:[ Not: alive]") != std::string::npos )
         << "Error writing short_description tag";
-        */
     tmpString = std::string(elementNode.getChildNode("description").getClear().lpszValue);
     EXPECT_TRUE( tmpString.find("Notification [ Notification alive Targets: () () ]") != std::string::npos
                  && tmpString.find(" repeat every 10 secs , repeated 0 times") != std::string::npos )
         << "Error writing description tag";
+    */
     //Uptime value is not testable because it varies with time, but we can at least check that it is set
     EXPECT_TRUE(!xMainNode.getChildNode("uptime").isEmpty()) << "Error writing uptime tag";
-    
+    engine::Engine::destroy();
 }
 
 //notify( Notification*  notification )
 TEST(engineTest, notificationTest) {
-    //engine::Engine::init();
+    engine::Engine::init();
     engine::Object* testObject1 = new engine::Object("test_object1");
     engine::Object* testObject2 = new engine::Object("test_object2");
     engine::Notification* notification1 = new engine::Notification("test_notification1", testObject1);
@@ -92,6 +94,7 @@ TEST(engineTest, notificationTest) {
     XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"engine");
     XMLNode element1Node = xMainNode.getChildNode("elements").getChildNode("engine_element",0);
     XMLNode element2Node = xMainNode.getChildNode("elements").getChildNode("engine_element",1);
+    xMainNode.writeToFile("/tmp/samson_notification.xml");
     ASSERT_TRUE(!element1Node.isEmpty() && !element2Node.isEmpty());
     //If the order was not right, swap them
     if(std::string(element1Node.getChildNode("description").getClear().lpszValue).find("test_notification1") == std::string::npos)
@@ -120,6 +123,7 @@ TEST(engineTest, notificationTest) {
     
     //delete notification1;
     //delete notification2;
+    engine::Engine::destroy();
 }
 
 
@@ -139,6 +143,7 @@ TEST(engineTest, addTest) {
     bool found = false;
     int i = 0;
     XMLNode elementNode = xMainNode.getChildNode("elements").getChildNode("engine_element",i);
+    xMainNode.writeToFile("/tmp/samson_addTest.xml");
     while(!elementNode.isEmpty() && !found)
     {
         found = std::string(elementNode.getChildNode("description").getClear().lpszValue).find("Sleep element just to sleep 10 seconds") != std::string::npos;

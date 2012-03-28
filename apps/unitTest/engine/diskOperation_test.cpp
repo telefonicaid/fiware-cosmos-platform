@@ -74,6 +74,7 @@ TEST(diskOperationTest, newWriteOperationTest) {
     EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "0") << "Wrong size in constructor";
     EXPECT_EQ(std::string(xMainNode.getChildNode("offset").getText()), "0") << "Wrong offset in constructor";
     
+    engine::MemoryManager::destroy();
 }
 
 //Test static DiskOperation* newAppendOperation( Buffer* buffer ,  std::string fileName , size_t _listenerId  );
@@ -110,6 +111,8 @@ TEST(diskOperationTest, newRemoveOperationTest) {
     XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
     EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_filename.txt") << "Wrong file_name in constructor";
     EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "0") << "Wrong size in constructor";
+    
+    engine::MemoryManager::destroy();
 }
 
 //Test static DiskOperation * newReadOperation( std::string _fileName , size_t _offset , size_t _size ,  SimpleBuffer simpleBuffer , size_t _listenerId );
@@ -131,6 +134,8 @@ TEST(diskOperationTest, newReadOperation2Test) {
     EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_filename.txt") << "Wrong file_name in constructor";
     EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "6") << "Wrong size in constructor";
     EXPECT_EQ(std::string(xMainNode.getChildNode("offset").getText()), "3") << "Wrong offset in constructor";
+    
+    engine::MemoryManager::destroy();
 }
     
     
@@ -170,6 +175,8 @@ TEST(diskOperationTest, getDescriptionTest) {
     EXPECT_EQ(operation2->getDescription(), "Write to file: 'test_filename.txt' Size:   0 B") << "Description error";
     EXPECT_EQ(operation3->getDescription(), "Append to file: 'test_filename.txt' Size:   0 B") << "Description error";
     EXPECT_EQ(operation4->getDescription(), "Remove file: 'test_filename.txt'") << "Description error";
+    
+    engine::MemoryManager::destroy();
 }
 
 //Test std::string getShortDescription();
@@ -189,6 +196,8 @@ TEST(diskOperationTest, getShortDescriptionTest) {
     EXPECT_EQ(operation2->getShortDescription(), "W:   0 ") << "Description error";
     EXPECT_EQ(operation3->getShortDescription(), "A:   0 ") << "Description error";
     EXPECT_EQ(operation4->getShortDescription(), "X") << "Description error";
+    
+    engine::MemoryManager::destroy();
 } 
   
 //Test DiskOperationType getType()
@@ -209,6 +218,7 @@ TEST(diskOperationTest, getTypeTest) {
     EXPECT_EQ(operation3->getType(), engine::DiskOperation::append) << "Wrong type value";
     EXPECT_EQ(operation4->getType(), engine::DiskOperation::remove) << "Wrong type value";
 
+    engine::MemoryManager::destroy();
 }
 
 //Test size_t getSize()
@@ -224,6 +234,8 @@ TEST(diskOperationTest, getSizeTest) {
 
     EXPECT_EQ(operation1->getSize(), 5) << "Error in getSize()";
     EXPECT_EQ(operation2->getSize(), 0) << "Error in getSize()";
+
+    engine::MemoryManager::destroy();
 }
 
 //Test void destroyBuffer();
@@ -237,6 +249,8 @@ TEST(diskOperationTest, destroyBufferTest) {
     operation->destroyBuffer();
 
     EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 0) << "Buffer was not destroyed";
+
+    engine::MemoryManager::destroy();
 }
 
 //Test bool compare( DiskOperation *operation );
@@ -263,7 +277,8 @@ TEST(diskOperationTest, compareTest) {
     EXPECT_TRUE(operationWrite1->compare(operationWrite2) == false); 
     EXPECT_TRUE(operationWrite1->compare(operationAppend) == false); 
     EXPECT_TRUE(operationAppend->compare(operationWrite1) == false); 
-    
+
+    engine::MemoryManager::destroy();
 }    
 
 //Test void addListener( size_t id )

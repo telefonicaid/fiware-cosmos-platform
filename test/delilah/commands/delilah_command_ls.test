@@ -1,0 +1,17 @@
+--NAME--
+ls_queues - fetch the current queue list
+--SHELL-INIT--
+samsonWorker
+--DELILAH-INIT--
+remove_all_stream
+push input.txt input
+--COMMAND--
+ls
+--EXPECT--
+/-------------------------------------------------\
+| ls                                              |
+|-------------------------------------------------|
+| worker_id | name  |  #kvs |  size | key | value | 
+|-----------+-------+-------+-------+-----+-------|
+|         0 | input |    0  |  100  | txt |   txt | 
+\-------------------------------------------------/

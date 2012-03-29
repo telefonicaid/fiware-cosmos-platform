@@ -20,6 +20,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <org.apache.hadoop>0.20.2</org.apache.hadoop>
         <jvm.version>1.6</jvm.version>
+        <jersey-version>1.11</jersey-version>
+        <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
     </properties>
 
@@ -345,6 +347,11 @@
             <groupId>com.hadoop.compression</groupId>
             <artifactId>hadoop-gpl-compression</artifactId>
             <version>0.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-hadoop</artifactId>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.mrunit</groupId>

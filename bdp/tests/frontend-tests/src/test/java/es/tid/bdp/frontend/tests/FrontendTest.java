@@ -135,7 +135,6 @@ public class FrontendTest {
                     "Verify task hasn't been created");
     }
 
-
     public void testNoJarFile() {
         WebDriver driver = this.frontend.getDriver();
         SelectNamePage namePage = this.frontend.goToCreateNewJob();
@@ -199,8 +198,7 @@ public class FrontendTest {
         // Submit job with sample JAR
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
         FrontendLauncher testDriver = new FrontendLauncher();
-        String taskId = testDriver.createNewTask(inputFilePath,
-                                                 jarName);
+        String taskId = testDriver.createNewTask(inputFilePath, jarName);
         testDriver.waitForTaskCompletion(taskId);
         assertEquals(testDriver.getTaskStatus(taskId),
                      TaskStatus.Completed,

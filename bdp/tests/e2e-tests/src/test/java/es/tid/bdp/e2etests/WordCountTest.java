@@ -19,31 +19,32 @@ import es.tid.bdp.joblaunchers.TestException;
 
 public class WordCountTest {
     public class TestImpl {
+        private static final String WORDCOUNT_FILE = "wordcount.jar";
         private String text;
         private String inputFilePath;
-        private final Map<String,Integer> expectedResult = new
-                HashMap<String, Integer>();
+        private final Map<String,Integer> expectedResult;
         private final JobLauncher jobLauncher;
         private final String jarPath;
         
         public TestImpl(JobLauncher launcher, String text) {
+            this.expectedResult = new HashMap<String, Integer>();
             this.text = text;
             String[] split = this.text.split("\\s+");
             for (String word : split) {
-                int oldCount = 0;
+                int count = 0;
                 if (this.expectedResult.containsKey(word)) {
-                    oldCount = this.expectedResult.get(word);
+                    count = this.expectedResult.get(word);
                 }
                 
-                this.expectedResult.put(word, oldCount + 1);
+                this.expectedResult.put(word, count + 1);
             }
             this.jobLauncher = launcher;
-            this.jarPath = new File("wordcount.jar").getAbsolutePath();
+            this.jarPath = new File(WORDCOUNT_FILE).getAbsolutePath();
         }
         
         @BeforeClass
         public void setup() throws IOException {
-            File inputData = File.createTempFile("wrdcount-", ".tmp");
+            File inputData = File.createTempFile("wordcount-", ".tmp");
             this.inputFilePath = inputData.getAbsolutePath();
             PrintWriter writer = new PrintWriter(inputData);
             try {               
@@ -65,17 +66,16 @@ public class WordCountTest {
         @Test
         public void wordCountTest() throws IOException, TestException {
             String taskId = this.jobLauncher.createNewTask(this.inputFilePath,
-                                                       this.jarPath);
+                                                           this.jarPath);
             this.jobLauncher.waitForTaskCompletion(taskId);
-            List<Map<String, String>> results = this.jobLauncher.getResults(taskId);
-            
+            List<Map<String, String>> results = this.jobLauncher
+                    .getResults(taskId);            
             for (Map<String, String> result : results) {
                 assertEquals(result.size(),
                              2,
                              "Verifying each row has 2 elements");
                 String word = result.get("_id");
-                int count = Integer.parseInt(result.get("value"));
-                
+                int count = Integer.parseInt(result.get("value"));                
                 assertEquals(count,
                              (int) this.expectedResult.get(word),
                              "Verifying count for word "

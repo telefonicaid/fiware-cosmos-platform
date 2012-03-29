@@ -45,19 +45,17 @@ public class ResultsPage {
                 .findElement(By.tagName("thead"))
                 .findElements(By.tagName("th"));
         List<String> keys = new ArrayList<String>(keysHtml.size());
-        for(WebElement keyHtml : keysHtml) {
+        for (WebElement keyHtml : keysHtml) {
             keys.add(keyHtml.getText());
         }
         
         // Get results
         final List<WebElement> resultsHtml = resultTable
                 .findElement(By.tagName("tbody"))
-                .findElements(By.tagName("tr"));
-        
+                .findElements(By.tagName("tr"));        
         List<Map<String,String>> results = new ArrayList<Map<String, String>>(
-                resultsHtml.size());
-        
-        for(WebElement resultHtml : resultsHtml) {
+                resultsHtml.size());        
+        for (WebElement resultHtml : resultsHtml) {
             Map<String,String> result = new HashMap<String, String>();
             
             // Set primary key
@@ -71,14 +69,13 @@ public class ResultsPage {
                          cells.size(),
                          "Verifying the number of cells and keys are equal."
                     + " URL: " + this.driver.getCurrentUrl());
-            for(int index = 0; index < keys.size(); ++index) {
+            for (int index = 0; index < keys.size(); ++index) {
                 result.put(keys.get(index), cells.get(index).getText());
             }
             
             // Add it to the return variable
             results.add(result);
-        }
-        
+        }        
         return results;
     }
 }

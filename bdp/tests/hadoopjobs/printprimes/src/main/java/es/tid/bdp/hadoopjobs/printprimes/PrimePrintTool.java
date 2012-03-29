@@ -1,6 +1,7 @@
 package es.tid.bdp.hadoopjobs.printprimes;
 
 import java.security.InvalidParameterException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
@@ -14,7 +15,7 @@ import org.apache.hadoop.util.ToolRunner;
 public class PrimePrintTool extends Configured implements Tool {
     @Override
     public int run(String[] args) throws Exception {
-        if(args.length != 3) {
+        if (args.length != 3) {
             throw new InvalidParameterException("Expecting 3 arguments."
                     + " Received: " + args.length);
         }
@@ -23,13 +24,16 @@ public class PrimePrintTool extends Configured implements Tool {
         String outputUrl = args[2];
         testJob.configure(inputPath, outputUrl);        
         if (!testJob.waitForCompletion(true)) {
-            throw new Exception("Something bad happened");
+            return 1;
         }
         return 0;
     }
     
     public static void main(String[] args) throws Exception {
-        ToolRunner.run(new Configuration(),
+        int ret = ToolRunner.run(new Configuration(),
                        new PrimePrintTool(), args);
+        if (ret != 0) {
+            throw new Exception("Something bad happened");
+        }
     }
 }

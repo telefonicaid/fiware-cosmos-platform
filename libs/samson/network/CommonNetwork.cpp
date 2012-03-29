@@ -224,6 +224,7 @@ namespace samson {
         if( packet->msgCode == Message::Hello )
         {
             processHello(connection, packet);
+            delete packet;
             return;
         }
         

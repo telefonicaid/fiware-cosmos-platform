@@ -250,6 +250,14 @@ namespace samson
             return packet;
         }
         
+        void freeBuffer()
+        {
+            if( buffer )
+            {
+                engine::MemoryManager::shared()->destroyBuffer(buffer);
+                buffer = NULL;
+            }
+        }
         
 	};
 }

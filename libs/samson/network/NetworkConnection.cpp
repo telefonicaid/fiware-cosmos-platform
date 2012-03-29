@@ -105,6 +105,11 @@ namespace samson {
             
             if( s == OK )
                 network_manager->receive( this , packet );
+            else
+            {
+                packet->freeBuffer();
+                delete packet;
+            }
                 
         }
         
@@ -133,7 +138,7 @@ namespace samson {
                 rate_out.push(total_write);
 
                 if( s == OK )
-                    packet_queue.pop();
+                    packet_queue.pop(); // If not ok, packet is still in the queue
             }
             else
             {

@@ -12,7 +12,7 @@ from setuptools import setup, find_packages
 def find_files(path):
     files = []
     for dirname, subdirnames, filenames in os.walk(path):
-	for subdirname in subdirnames:
+        for subdirname in subdirnames:
             files.extend(find_files(os.path.join(dirname, subdirname)))
         for filename in filenames:
             files.append(os.path.join(dirname, filename))

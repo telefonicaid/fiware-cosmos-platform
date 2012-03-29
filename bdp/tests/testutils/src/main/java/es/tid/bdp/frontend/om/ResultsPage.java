@@ -8,6 +8,7 @@ import java.util.Map;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 import static org.testng.Assert.assertEquals;
 
 /**
@@ -37,8 +38,9 @@ public class ResultsPage {
                 By.id(RESULT_TABLE_ID));
         
         // Get keys
-        final String primaryKey = driver.findElement(
-                By.id(SELECT_PRIMARYKEY_ID)).getValue();
+        final String primaryKey = new Select(driver.findElement(
+                By.id(SELECT_PRIMARYKEY_ID))).getFirstSelectedOption()
+                .getText();
         final List<WebElement> keysHtml = resultTable
                 .findElement(By.tagName("thead"))
                 .findElements(By.tagName("th"));
@@ -67,7 +69,8 @@ public class ResultsPage {
                     By.className(RESULT_CELL_ID));
             assertEquals(keys.size(),
                          cells.size(),
-                         "Verifying the number of cells and keys are equal");
+                         "Verifying the number of cells and keys are equal."
+                    + " URL: " + this.driver.getCurrentUrl());
             for(int index = 0; index < keys.size(); ++index) {
                 result.put(keys.get(index), cells.get(index).getText());
             }

@@ -78,11 +78,11 @@ public class FrontEnd {
 
         String statusText = row.findElement(
                 By.className(RESULT_STATUS_CLASS)).getText();
-        if (statusText.equals("Created")) {
+        if (statusText.equals("Configured")) {
             return TaskStatus.Created;
         } else if (statusText.equals("Running")) {
             return TaskStatus.Running;
-        } else if (statusText.equals("Succeeded")) {
+        } else if (statusText.equals("Successful")) {
             return TaskStatus.Completed;
         } else if (statusText.equals("Failed")) {
             return TaskStatus.Error;

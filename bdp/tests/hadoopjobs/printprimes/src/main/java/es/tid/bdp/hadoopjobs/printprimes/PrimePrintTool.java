@@ -1,7 +1,10 @@
 package es.tid.bdp.hadoopjobs.printprimes;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
 /**
  * @author ximo
@@ -9,11 +12,21 @@ import org.apache.hadoop.util.Tool;
  */
 public class PrimePrintTool extends Configured implements Tool {
     @Override
-    public int run(String[] strings) throws Exception {
+    public int run(String[] args) throws Exception {
         PrimePrintJob testJob = new PrimePrintJob(this.getConf());
+        
+        Path inputPath = new Path(args[0]);
+        String outputUrl = args[2];
+        testJob.configure(inputPath, outputUrl);
+        
         if (!testJob.waitForCompletion(true)) {
-            return 1;
+            throw new Exception("Something bad happened");
         }
         return 0;
+    }
+    
+    public static void main(String[] args) throws Exception {
+        ToolRunner.run(new Configuration(),
+                       new PrimePrintTool(), args);
     }
 }

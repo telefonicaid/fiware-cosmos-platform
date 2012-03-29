@@ -4,31 +4,35 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.io.ArrayWritable;
+import com.mongodb.hadoop.io.BSONWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.bson.BSONObject;
+import org.bson.BasicBSONObject;
 
 /**
  *
  * @author ximo
  */
 public class PrimePrintReducer
-        extends Reducer<Text, IntWritable, Text, ArrayWritable> {
+        extends Reducer<Text, IntWritable, Text, BSONWritable> {
     @Override
     public void reduce(Text key, Iterable<IntWritable> values, Context context) 
             throws IOException, InterruptedException {
         // Ignore KEY_COUNT for now
         if (PrimePrintMapper.KEY_LIST.equals(key)) {
-            List<IntWritable> valueList = new ArrayList<IntWritable>();
+            List<Integer> valueList = new ArrayList<Integer>();
             for (IntWritable i : values) {
-                valueList.add(i);            
+                valueList.add(i.get());
             }
-            ArrayWritable array = new ArrayWritable(
-                    IntWritable.class,
-                    valueList.toArray(new Writable[0]));
-            context.write(key, array);
+            context.write(key, this.toBSON(valueList.toArray(new Integer[0])));
         }
+    }
+    
+    private BSONWritable toBSON(Integer[] primes) {
+        BSONObject obj = new BasicBSONObject();
+        obj.put("primes", primes);
+        return new BSONWritable(obj);
     }
 }

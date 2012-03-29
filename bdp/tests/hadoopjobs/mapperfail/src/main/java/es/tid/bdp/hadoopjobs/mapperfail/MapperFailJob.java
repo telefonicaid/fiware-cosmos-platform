@@ -3,9 +3,14 @@ package es.tid.bdp.hadoopjobs.mapperfail;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 /**
  *
@@ -23,5 +28,13 @@ public class MapperFailJob extends Job {
         this.setOutputKeyClass(Text.class);
         this.setOutputValueClass(IntWritable.class);
         this.setMapperClass(MapperFailMapper.class);
+    }
+    
+    public void configure(Path textPath, Path outputPath)
+            throws IOException {
+        this.setInputFormatClass(TextInputFormat.class);
+        FileInputFormat.setInputPaths(this, textPath);
+        this.setOutputFormatClass(TextOutputFormat.class);
+        FileOutputFormat.setOutputPath(this, outputPath);
     }
 }

@@ -275,35 +275,32 @@ namespace samson {
         }
     }
     
-    
-
-    
     void CommonNetwork::report_worker_connected( size_t id )
     {
         Packet * packet = new Packet( Message::NetworkNotification );
         packet->message->mutable_network_notification()->set_connected_worker_id(id);
-        network_interface_receiver->receive( packet );
+        network_interface_receiver->schedule_receive( packet );
     }
     
     void CommonNetwork::report_worker_disconnected( size_t id )
     {
         Packet * packet = new Packet( Message::NetworkNotification );
         packet->message->mutable_network_notification()->set_disconnected_worker_id(id);
-        network_interface_receiver->receive( packet );
+        network_interface_receiver->schedule_receive( packet );
     }
     
     void CommonNetwork::report_delilah_connected( size_t id )
     {
         Packet * packet = new Packet( Message::NetworkNotification );
         packet->message->mutable_network_notification()->set_connected_delilah_id(id);
-        network_interface_receiver->receive( packet );
+        network_interface_receiver->schedule_receive( packet );
     }
     
     void CommonNetwork::report_delilah_disconnected( size_t id )
     {
         Packet * packet = new Packet( Message::NetworkNotification );
         packet->message->mutable_network_notification()->set_disconnected_delilah_id(id);
-        network_interface_receiver->receive( packet );
+        network_interface_receiver->schedule_receive( packet );
     }
     
     

@@ -26,6 +26,7 @@ SET (AUX_HEADERS
 	operations/ValueReduce.h
 	operations/ValueReduce.cpp
 
+	operations/Value.cpp
 )			  
 
 SET( SOURCES_TEST
@@ -142,5 +143,5 @@ INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 
 
-#ADD_EXECUTABLE(system_test ${AUX_HEADERS} ${SOURCES_TEST} ${SOURCES} ${HEADERS})
-#TARGET_LINK_LIBRARIES(system_test lm au )
+ADD_EXECUTABLE(system_test ${AUX_HEADERS} ${SOURCES_TEST} ${SOURCES} ${HEADERS})
+TARGET_LINK_LIBRARIES(system_test lm au )

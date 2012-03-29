@@ -9,14 +9,19 @@
 
 #include "logMsg/logMsg.h"
 #include "au/Pool.h"
+#include "samson/module/DataInstance.h"
 
 #define VALUE_CODE 1219561887489248771ULL
 
 namespace samson{
     namespace system{
         
+        
         class Value : public samson::DataInstance 
         {
+            // Pool of Vaues for vector and map
+            static au::Pool<Value> pool_values;
+            
         public:
             
             // How data is serialized
@@ -115,14 +120,12 @@ namespace samson{
             // Map
             au::map<std::string,Value> _value_map;
             
-            // Pool of Vaues for vector and map
-            au::Pool<Value> pool_values;
             
         public:
             
             
             Value() : samson::DataInstance()
-            {
+            {    
             }
             
             ~Value() {
@@ -139,7 +142,7 @@ namespace samson{
             
             inline int parse_void( char* data )
             {
-                value_type = value_void;
+                change_value_type( value_void );
                 return 1; // Void is always serialized in 1 byte
             }
                         
@@ -148,7 +151,7 @@ namespace samson{
                 SerialitzationCode code = (SerialitzationCode)data[0];
                 
                 // Common init to value int
-                value_type = value_number;
+                change_value_type( value_number );
                 
                 switch (code) 
                 {
@@ -313,7 +316,7 @@ namespace samson{
                 SerialitzationCode code = (SerialitzationCode)data[0];
                 
                 // Common init to value int
-                value_type = value_string;
+                change_value_type( value_string );
                 
                 switch (code) 
                 {
@@ -1207,7 +1210,7 @@ namespace samson{
             
             void setFromString( const char *_data )
             {
-                value_type = value_string;
+                change_value_type( value_string );
                 _value_string = _data;
             }
             
@@ -1218,7 +1221,7 @@ namespace samson{
             
             void copyFrom( Value *other )
             {
-                value_type = other->value_type;
+                change_value_type( other->value_type );
                 
                 switch (value_type) 
                 {
@@ -1393,7 +1396,7 @@ namespace samson{
             
             void set_as_void()
             {
-                value_type = value_void;
+                change_value_type( value_void );
             }
             
             // ----------------------------------------------------------------------------------------
@@ -1415,11 +1418,7 @@ namespace samson{
             
             void set_as_vector()
             {
-                value_type = value_vector;
-                
-                // Clear mapo and vector to reuse components
-                clear_vector();
-                clear_map();
+                change_value_type( value_vector );
             }
             
             Value* add_value_to_vector()
@@ -1428,15 +1427,12 @@ namespace samson{
                 if( value_type != value_vector )
                     set_as_vector();
                 
-                // Set the new type
-                value_type = value_vector;
-                
                 // Get a new instance of Value and push it to the vector
                 Value* value = pool_values.pop();
                 _value_vector.push_back( value );
 
                 // Alwyas return a void obnject
-                value->value_type = value_void;
+                value->set_as_void();
                 return value;
             }
             
@@ -1480,11 +1476,7 @@ namespace samson{
 
             void set_as_map()
             {
-                value_type = value_map;
-                
-                // Clear vector and map to reuse component
-                clear_vector();
-                clear_map();
+                change_value_type( value_map );
             }
             
             Value* add_value_to_map( std::string key )
@@ -1498,7 +1490,7 @@ namespace samson{
                 _value_map.insertInMap(key, value );
                 
                 // Alwyas return a void object
-                value->value_type = value_void;
+                value->set_as_void();
                 return value;
             }
             
@@ -1635,6 +1627,32 @@ namespace samson{
                     set_string( get_string() );
             }
             
+            
+            void change_value_type( ValueType new_value_type )
+            {
+                // Clear any previous staff
+                switch (value_type) 
+                {
+                    case value_void:
+                    case value_string:
+                    case value_number:
+                        break;
+
+                    case value_vector:
+                        clear_vector();                    
+                        break;
+                        
+                    case value_map:
+                        clear_map();                    
+                        break;
+                }
+
+                // Assign the new value_type
+                value_type = new_value_type;
+            }
+            
+
+            
             // ----------------------------------------------------------------------------------------
             // SET AND GET functions
             // ----------------------------------------------------------------------------------------
@@ -1642,43 +1660,32 @@ namespace samson{
             void operator=( const char* _value ) 
             {
                 // Set as integer
-                value_type = value_string;
+                change_value_type( value_string );
                 _value_string = _value;
             }
             
             
             void set_string( std::string _value )
             {
-                value_type = value_string;
+                change_value_type( value_string );
                 _value_string = _value;
-            }
-            
-            void set_constant( std::string _value )
-            {
-                if ( is_double( _value.c_str() ) )
-                    set_double( atof( _value.c_str() ) );
-                else
-                    set_string( _value );
-                               
             }
             
             void operator=( double _value ) 
             {
-                // Set as integer
-                value_type = value_number;
+                change_value_type( value_number );
                 _value_double = _value;
             }
             
             void set_double( double _value ) 
             {
-                // Set as integer
-                value_type = value_number;
+                change_value_type( value_number );
                 _value_double = _value;
             }
             
             void set_string( const char * _value )
             {
-                value_type = value_string;
+                change_value_type( value_string );
                 _value_string = _value;
             }
             
@@ -1842,6 +1849,7 @@ namespace samson{
             }
             
         };
+
         
         
     } // end of namespace samson

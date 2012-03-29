@@ -1,4 +1,5 @@
 SET (HEADERS
+Object.h
 namespace.h
 charset.h
 utils.h
@@ -56,6 +57,7 @@ OnOffMonitor.h
 )
 
 SET (SOURCES
+Object.cpp
 charset.cpp
 utils.cpp
 
@@ -118,9 +120,9 @@ SET (LIBAU ${PROJECT_BINARY_DIR}/libs/au/libau.a CACHE INTERNAL "")
 
 
 # au_test ( for debuggin )
-ADD_EXECUTABLE(au_test au_test_main.cpp )
-TARGET_LINK_LIBRARIES(au_test ${LIBS} au lm )
-INSTALL(TARGETS               au_test        RUNTIME DESTINATION   bin)
+#ADD_EXECUTABLE(au_test au_test_main.cpp )
+#TARGET_LINK_LIBRARIES(au_test ${LIBS} au lm )
+#INSTALL(TARGETS               au_test        RUNTIME DESTINATION   bin)
 
 # au_sleep_test
 #ADD_EXECUTABLE(au_sleep_test au_sleep_test_main.cpp )

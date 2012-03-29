@@ -170,3 +170,38 @@ SUPPRESSING ERRORS
       This is the form that the GNU C++ compiler uses internally, and the form that must be used in suppression files.
       The equivalent demangled name, QListView::show(), is what you see at the C++ source code level.
 
+
+
+CONFIGURATION FILES
+
+  To run a simple valgrind test with samsonWorker, create the following files in your home directory:
+
+  * ~/.valgrindrc
+  -------------------------------------------------------------------------------------------------------
+  -v
+  --leak-check=full
+  --track-origins=yes
+  --suppressions=/home/XXX/Valgrind/warning-suppression   # Change 'XXX' ...
+  --show-reachable=yes
+  -------------------------------------------------------------------------------------------------------
+  
+  * Valgrind/warning-suppression
+  -------------------------------------------------------------------------------------------------------
+  {
+     <first_dlopen>
+     Memcheck:Leak
+     fun:calloc
+     fun:_dlerror_run
+     fun:dlopen@@GLIBC_2.2.5
+     fun:_ZN6samson14ModulesManager9addModuleESs
+     fun:_ZN6samson14ModulesManager23addModulesFromDirectoryESs
+     fun:_ZN6samson14ModulesManager10addModulesEv
+     fun:_ZN6samson14ModulesManager13reloadModulesEv
+     fun:_ZN6samson14ModulesManagerC1Ev
+     fun:_ZN6samson14ModulesManager4initEv
+     fun:main
+  }
+  -------------------------------------------------------------------------------------------------------
+
+  Now, to run the test:
+  $ valgrind samsonWorker -fg 2> samsonWorker.valgrind01

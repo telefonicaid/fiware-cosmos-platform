@@ -748,6 +748,7 @@ typedef struct LogLineInfo
                                             );
             
             engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation(buffer, file_name, getEngineId() );
+            operation->environment.set("push_module", "yes");
             engine::DiskManager::shared()->add( operation );
             num_pending_disk_operations++;
             
@@ -1680,9 +1681,19 @@ typedef struct LogLineInfo
         
         if( notification->isName( notification_disk_operation_request_response ) )
         {
+            engine::DiskOperation* operation = (engine::DiskOperation*) notification->extractObject();
+            
             num_pending_disk_operations--;
             if( notification->environment.isSet("error") )
                 error.set( notification->environment.get("error" , "no_error") );
+                        
+            // In case of push module, just reload modules
+            if( operation->environment.get("push_module", "no") == "yes" )
+            {
+                ModulesManager::shared()->reloadModules();
+            }
+            
+            delete operation;
             
             checkFinish();
             return;

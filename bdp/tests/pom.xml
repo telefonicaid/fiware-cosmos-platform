@@ -13,8 +13,9 @@
   </parent>
   <name>tests</name>
     <modules>
+        <module>e2e-tests</module>
         <module>frontend-tests</module>
-        <module>testutils</module>
         <module>hadoopjobs</module>
+        <module>testutils</module>
     </modules>
 </project>

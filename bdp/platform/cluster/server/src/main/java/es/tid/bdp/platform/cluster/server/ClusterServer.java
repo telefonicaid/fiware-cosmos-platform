@@ -28,12 +28,13 @@ public class ClusterServer implements Cluster.Iface {
     private JobRunner jobRunner;
     private Configuration conf;
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         try {
             ClusterServer server = new ClusterServer();
             server.start();
         } catch (Exception ex) {
-            System.err.println(ClusterServerUtil.getFullExceptionInformation(ex));
+            System.err.println(ClusterServerUtil.
+                    getFullExceptionInformation(ex));
             System.exit(1);
         }
     }
@@ -57,7 +58,8 @@ public class ClusterServer implements Cluster.Iface {
     private void start() throws Exception {
         TServerSocket serverTransport = new TServerSocket(9888);
         Cluster.Processor processor = new Cluster.Processor(this);
-        TThreadPoolServer.Args args = new TThreadPoolServer.Args(serverTransport);
+        TThreadPoolServer.Args args = new TThreadPoolServer.Args(
+                serverTransport);
         args.processor(processor);
         TServer server = new TThreadPoolServer(args);
         server.serve();

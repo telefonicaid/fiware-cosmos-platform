@@ -193,6 +193,9 @@ namespace samson {
         if( originalWorkerCommand )
             delete originalWorkerCommand;
         
+        // Remove collections created for this command
+        collections.clearVector();
+        
         if( buffer )
         {
             engine::MemoryManager::shared()->destroyBuffer(buffer);
@@ -1624,9 +1627,7 @@ typedef struct LogLineInfo
             
             // Add collections as answers...
             for ( size_t i = 0 ; i < collections.size() ; i++ )
-            {
                 p->message->add_collection()->CopyFrom( *collections[i] );
-            }
             
             // Send the packet
             samsonWorker->network->send( p );

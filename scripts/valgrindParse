@@ -46,7 +46,7 @@ fi
 
 if [ "$reachable" != 0 ]
 then
-    echo $valgrindFile "- still reachable= in " $reachable= " occurences (" $reachableInfo ")"
+    echo $valgrindFile "- still reachable in " $reachable " occurences (" $reachableInfo ")"
     losses="yes"
 fi
 

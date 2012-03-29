@@ -16,6 +16,8 @@
 #include "FakeEndpoint.h"		// samson::EndPoint
 #include "NetworkFake.h"        // NetworkFake
 
+#define DELILAH_ID 724511525
+
 namespace samson {
 	
 	/**
@@ -54,7 +56,7 @@ namespace samson {
 			}
             
             // Delilah client
-            NodeIdentifier delilah_node_identifier( DelilahNode , 0 );
+            NodeIdentifier delilah_node_identifier( DelilahNode , DELILAH_ID );
             delilah_network_interface =  new NetworkFake( delilah_node_identifier , this );
 			
 		}
@@ -91,7 +93,7 @@ namespace samson {
 		{
             if( node_identifier.node_type == DelilahNode )
             {
-                if ( node_identifier.id != 0 )
+                if ( node_identifier.id != DELILAH_ID )
                     LM_X(1,("Error in fake network"));
                 
                 return delilah_network_interface;

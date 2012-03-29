@@ -163,9 +163,6 @@ namespace samson
         
 		engine::Buffer*       buffer;     // Data for key-values
         
-		void*                 dataP;      // Raw data, mostly used for signaling
-		int                   dataLen;    // Length of raw data
-
 		bool                  disposable; // Message to be disposed if connection not OK
 
 
@@ -173,7 +170,6 @@ namespace samson
 		{
 			msgCode    = Message::Unknown;
 			buffer     = NULL;
-			dataP      = NULL;
 			message    = new network::Message();
 			disposable = false;
 		};        
@@ -182,7 +178,6 @@ namespace samson
 		{
 			msgCode    = _msgCode;
 			buffer     = NULL;
-			dataP      = NULL;
 			message    = new network::Message();
 			disposable = false;
 		};
@@ -191,8 +186,6 @@ namespace samson
 		{
 			// Copy the message type
 			msgCode    = p->msgCode;
-			dataLen    = 0;
-			dataP      = NULL;
 			disposable = p->disposable;
 
 			// Copy the buffer (if any)
@@ -244,8 +237,6 @@ namespace samson
             size_t total = 0;
             if ( buffer )
                 total += buffer->getSize();
-            
-            total+= dataLen;
             
             total += message->ByteSize();
             

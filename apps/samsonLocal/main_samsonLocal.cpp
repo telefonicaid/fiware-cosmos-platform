@@ -124,7 +124,6 @@ int main(int argC, const char *argV[])
 	paParse(paArgs, argC, (char**) argV, 1, false);// No more pid in the log file name
 	lmAux((char*) "father");
 	logFd = lmFirstDiskFileDescriptor();
-
     
 	/*
 	LM_D(("Starting samson demo (logFd == %d)", ::logFd));

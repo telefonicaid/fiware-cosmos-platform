@@ -40,7 +40,7 @@ namespace samson {
     {
         std::vector<size_t> ids;
         if ( node_identifier.node_type == WorkerNode )
-            ids.push_back(0); // Only worker has delilahs in the list of elements
+            ids.push_back( DELILAH_ID ); // Only worker has delilahs in the list of elements
         
         return ids;
     }

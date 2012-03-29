@@ -75,8 +75,7 @@ public class FrontendLauncher implements JobLauncher {
             // Go to the main page
             this.frontend.goHome();
             TaskStatus status = this.frontend.getTaskStatus(taskId);
-            boolean taskCompleted = (status != TaskStatus.Running);
-            if (taskCompleted) {
+            if (status != TaskStatus.Running) {
                 break;
             }
             try {

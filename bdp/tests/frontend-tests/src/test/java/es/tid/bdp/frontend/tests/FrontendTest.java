@@ -100,7 +100,7 @@ public class FrontendTest {
             for (WebElement link : links) {
                 URL baseUrl = new URL(FrontEnd.HOME_URL);
                 String verbatimUrl = link.getAttribute("href");
-                if(verbatimUrl.startsWith("javascript")) {
+                if (verbatimUrl.startsWith("javascript")) {
                     return;
                 }
                 String linkUrl = new URL(baseUrl, verbatimUrl).toString();
@@ -191,8 +191,7 @@ public class FrontendTest {
         FileOutputStream fos = new FileOutputStream(jarName);
         try {
             fos.getChannel().transferFrom(rbc, 0, 1 << 24); 
-        }
-        finally {
+        } finally {
             rbc.close();
             fos.close();
         }

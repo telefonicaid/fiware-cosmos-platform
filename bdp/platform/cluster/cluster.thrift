@@ -28,8 +28,9 @@ service Cluster {
     void copyToHdfs(1:string srcPath, 2:string destPath) 
             throws (1: TransferException ex),
 
-    string runJob(1:string jarPath, 2:string inputPath, 3:string outputPath,
-                  4:string mongoUrl) throws (1: TransferException ex),
+    void runJob(1: string id, 2:string jarPath, 3:string inputPath,
+                4:string outputPath, 5:string mongoUrl)
+            throws (1: TransferException ex),
 
     ClusterJobResult getJobResult(1:string jobId)
             throws (1: TransferException ex),

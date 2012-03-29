@@ -1,9 +1,7 @@
 package es.tid.bdp.platform.cluster.server;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.*;
 
 import org.apache.hadoop.conf.Configuration;
@@ -79,13 +77,13 @@ public class ClusterServer implements Cluster.Iface {
     }
 
     @Override
-    public String runJob(String jarPath, String inputPath, String outputPath,
-                         String mongoUrl) throws TransferException {
+    public void runJob(String id, String jarPath, String inputPath,
+                       String outputPath, String mongoUrl)
+            throws TransferException {
         try {
-            int jobId = this.jobRunner.startNewThread(
-                    new String[] { jarPath, this.hdfsUrl + "/" + inputPath,
-                                   this.hdfsUrl + "/" + outputPath, mongoUrl });
-            return String.valueOf(jobId);
+            this.jobRunner.startNewThread(id, new String[] {
+                    jarPath, this.hdfsUrl + "/" + inputPath,
+                    this.hdfsUrl + "/" + outputPath, mongoUrl });
         } catch (Exception ex) {
             ClusterServerUtil.sendNotificationEmail(this.notificationEmail, ex);
             throw new TransferException(
@@ -98,7 +96,7 @@ public class ClusterServer implements Cluster.Iface {
     public ClusterJobResult getJobResult(String jobId)
             throws TransferException {
         try {
-            return this.jobRunner.getResult(Integer.parseInt(jobId));
+            return this.jobRunner.getResult(jobId);
         } catch (Exception ex) {
             ClusterServerUtil.sendNotificationEmail(this.notificationEmail, ex);
             throw new TransferException(
@@ -112,18 +110,18 @@ public class ClusterServer implements Cluster.Iface {
         
         private ExecutorService threadPool = Executors.newFixedThreadPool(
                 MAX_THREADS);
-        private List<Future<ClusterJobResult>> results =
-                new ArrayList<Future<ClusterJobResult>>();
+        private Map<String, Future<ClusterJobResult>> results =
+                new HashMap<String, Future<ClusterJobResult>>();
 
-        public synchronized int startNewThread(String[] args) {
+        public synchronized int startNewThread(String id, String[] args) {
             Future<ClusterJobResult> status = this.threadPool.submit(
                     new Job(args));
-            this.results.add(status);
+            this.results.put(id, status);
             return (this.results.size() - 1);
         }
         
-        public ClusterJobResult getResult(int id) throws InterruptedException, 
-                                                         ExecutionException {
+        public ClusterJobResult getResult(String id)
+                throws InterruptedException, ExecutionException {
             ClusterJobResult result;
             Future<ClusterJobResult> resultFuture = this.results.get(id);
             if (resultFuture.isDone()) {

@@ -39,6 +39,8 @@
 
 #include "samson/common/status.h"
 
+
+
 /* ****************************************************************************
 *
 * Option variables
@@ -101,6 +103,70 @@ static const char* manCopyright     = "Copyright (C) 2011 Telefonica Investigaci
 static const char* manVersion       = SAMSON_VERSION;
 
 
+
+samson::DelilahNetwork* networkP       = NULL;
+samson::DelilahConsole* delilahConsole = NULL;
+
+
+
+void cleanup(void)
+{
+    google::protobuf::ShutdownProtobufLibrary();
+
+    // Delete network
+    LM_T(LmtCleanup, ("Clean up network"));
+    if (networkP) 
+        delete networkP;
+    
+    LM_T(LmtCleanup, ("Shutting down delilah components (delilahConsole at %p)", delilahConsole));
+    if (delilahConsole != NULL)
+    {
+        LM_T(LmtCleanup, ("deleting delilahConsole"));
+        delete delilahConsole;
+        delilahConsole = NULL;
+    }
+    
+    LM_T(LmtCleanup, ("Shutting down LockDebugger"));
+    au::LockDebugger::destroy();
+
+    LM_T(LmtCleanup, ("destroying ModulesManager"));
+    samson::ModulesManager::destroy();
+
+    LM_T(LmtCleanup, ("destroying ProcessManager"));
+    engine::ProcessManager::destroy();
+
+    LM_T(LmtCleanup, ("destroying DiskManager"));
+    engine::DiskManager::destroy();
+
+    LM_T(LmtCleanup, ("destroying MemoryManager"));
+    engine::MemoryManager::destroy();
+
+    LM_T(LmtCleanup, ("destroying Engine"));
+    engine::Engine::destroy();
+
+    LM_T(LmtCleanup, ("Shutting down SamsonSetup"));
+    samson::SamsonSetup::destroy();
+
+    // Check background threads
+    au::StringVector background_threads = au::ThreadManager::shared()->getThreadNames();
+    if( background_threads.size() > 0 )
+    {
+        LM_W(("Still %lu background threads running (%s)" , background_threads.size() , background_threads.str().c_str() ));
+        std::cerr << au::ThreadManager::shared()->str();
+    }
+    else
+        LM_M(("Finished correctly with 0 background processes"));
+    
+    
+    LM_T(LmtCleanup, ("Calling paConfigCleanup"));
+    paConfigCleanup();
+    LM_T(LmtCleanup, ("Calling lmCleanProgName"));
+    lmCleanProgName();
+    LM_T(LmtCleanup, ("Cleanup DONE"));
+}
+
+
+
 // Custom name for the log file
 extern char * paProgName;
 size_t delilah_random_code;
@@ -111,6 +177,8 @@ size_t delilah_random_code;
 */
 int main(int argC, const char *argV[])
 {
+    atexit(cleanup);
+
     paConfig("prefix",                        (void*) "DELILAH_");
     paConfig("builtin prefix",                (void*) "SS_DELILAH_");
     paConfig("usage and exit on any warning", (void*) true);
@@ -158,8 +226,9 @@ int main(int argC, const char *argV[])
     samson::SamsonSetup::init("","");
 
     // Setup parameters from command line 
-    size_t _memory = (size_t) memory_gb * (size_t) (1024*1024*1024);
+    size_t _memory           = (size_t) memory_gb * (size_t) (1024*1024*1024);
     size_t _load_buffer_size = (size_t) load_buffer_size_mb * (size_t) (1024*1024);
+
     samson::SamsonSetup::shared()->setValueForParameter("general.memory", au::str("%lu",_memory));
     samson::SamsonSetup::shared()->setValueForParameter("load.buffer_size",  au::str("%lu",_load_buffer_size) );
 
@@ -172,10 +241,10 @@ int main(int argC, const char *argV[])
     samson::ModulesManager::init();         // Init the modules manager
     
     // Initialize the network element for delilah
-    samson::DelilahNetwork * networkP  = new samson::DelilahNetwork( "console" , delilah_random_code );
+    networkP  = new samson::DelilahNetwork( "console" , delilah_random_code );
     
     // Create a DelilahControler once network is ready
-    samson::DelilahConsole* delilahConsole = new samson::DelilahConsole( networkP );
+    delilahConsole = new samson::DelilahConsole(networkP);
 
     // Add main delilah connection with specified worker
     samson::Status s = networkP->addMainDelilahConnection( target_host , target_port , user , password );        
@@ -353,8 +422,9 @@ int main(int argC, const char *argV[])
     {
         LM_W(("Still %lu background threads running (%s)" , background_threads.size() , background_threads.str().c_str() ));
         std::cerr << au::ThreadManager::shared()->str();
+        return 1;
     }
-    else
-        LM_M(("Finish correctly with 0 background processes"));
-    
+
+    LM_M(("Finish correctly with 0 background processes"));
+    return 0;
 }

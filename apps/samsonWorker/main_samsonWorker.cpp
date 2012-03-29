@@ -133,7 +133,6 @@ void captureSIGTERM( int s )
 
 void cleanup(void)
 {
-
     google::protobuf::ShutdownProtobufLibrary();
 
     // Delete worker network

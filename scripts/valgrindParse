@@ -40,7 +40,7 @@ fi
 
 if [ "$possibly" != 0 ]
 then
-    echo $valgrindFile "- possibly lost in " $possibly " occurences (" $possiblyInfo ")"
+    echo $valgrindFile "- possibly lost in   " $possibly " occurences (" $possiblyInfo ")"
     losses="yes"
 fi
 

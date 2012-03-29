@@ -15,30 +15,6 @@
     <name>kpicalculation</name>
     <packaging>pom</packaging>
 
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-site-plugin</artifactId>
-                    <version>3.0-beta-3</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <target>1.6</target>
-                    <source>1.6</source>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
     <modules>
         <module>core</module>
     </modules>

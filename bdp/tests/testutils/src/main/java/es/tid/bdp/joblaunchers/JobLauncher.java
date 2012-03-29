@@ -1,5 +1,8 @@
 package es.tid.bdp.joblaunchers;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  *
  * @author ximo
@@ -28,5 +31,5 @@ public interface JobLauncher {
      * Given a taskId that represents a task in the Completed state, this
      * function returns a representation of the MongoDB output of that task
      */
-    String[][] getResults(String taskId) throws TestException;
+    List<Map<String,String>> getResults(String taskId) throws TestException;
 }

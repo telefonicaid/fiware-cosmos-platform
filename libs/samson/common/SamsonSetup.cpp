@@ -265,7 +265,7 @@ namespace samson
     {
         
         au::tables::Table table(
-                au::StringVector( "Parameter" , "Current value" , "Default" , "Description" ),
+                au::StringVector( "Parameter" , "Default value" , "Current value" , "Description" ),
                 au::StringVector( "left" , "" , "left" , "left" ) 
                                 );
                                 std::ostringstream output;

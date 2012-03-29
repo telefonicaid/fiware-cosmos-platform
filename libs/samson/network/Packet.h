@@ -227,12 +227,14 @@ namespace samson
 
             // Extra information for worker command
             if( msgCode == Message::WorkerCommand )
-                output << " (" << message->worker_command().command() << ")";
+                output << "(W-Command: " << message->worker_command().command() << ")";
+
+            if( msgCode == Message::WorkerCommandResponse )
+                output << "(W-CommandResponse: " << message->worker_command_response().worker_command().command() << ")";
+            
             
             if ( buffer )
                 output << " [ Buffer " << au::str(  buffer->getSize() ) << "/" << au::str(  buffer->getMaxSize() ) << " ]" ;
-            else
-                output << " [ No buffer ]";
             return output.str();
         }
         

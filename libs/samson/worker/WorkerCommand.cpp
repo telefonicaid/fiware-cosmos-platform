@@ -167,7 +167,7 @@ namespace samson {
         delilah_id = _delilah_id;
         delilah_component_id = _delilah_component_id;
         
-        notify_finish = true;
+        notify_finish = ( _delilah_id != 0 ); // 0 used as a non notify delilah
         
         // Copy the original message
         originalWorkerCommand = new network::WorkerCommand();
@@ -1597,7 +1597,7 @@ typedef struct LogLineInfo
     {
         if( finished )
         {
-            LM_W(("Trying to send a finish message for an already finished workerTask"));
+            // If this worker command is finished, not do anything else again.
             return;
         }
         

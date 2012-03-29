@@ -26,7 +26,6 @@ void daemonize(void)
 {
 	pid_t  pid;
 	pid_t  sid;
-	FILE*  s;
 
 	// already daemon
 	if (getppid() == 1)
@@ -53,8 +52,15 @@ void daemonize(void)
 	if (chdir("/") == -1)
 		LM_X(1, ("chdir: %s", strerror(errno)));
 
-	// Redirect standard files to /dev/null
+}
+
+void deamonize_close_all(void)
+{
+	FILE*  s;
+    
+    // Redirect standard files to /dev/null
 	s = freopen("/dev/null", "r", stdin);
 	s = freopen("/dev/null", "w", stdout);
 	s = freopen("/dev/null", "w", stderr);
+
 }

@@ -46,7 +46,7 @@ const char* status(Status s)
 	case SelectError:          return "Select Error";
 	case SocketError:          return "Socket Error";
 	case GetHostByNameError:   return "Get Host By Name Error";
-	case BindError:            return "Bin dError";
+	case BindError:            return "Bind Error";
 	case ListenError:          return "Listen Error";
 	case ReadError:            return "Read Error";
 	case WriteError:           return "Write Error";

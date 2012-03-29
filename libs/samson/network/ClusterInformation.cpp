@@ -320,7 +320,6 @@ namespace samson {
                     int port = atoi( cmdLine.get_argument(2).c_str() );
                     size_t id = atoll( cmdLine.get_argument(3).c_str() );
                     
-                    LM_M(("Creating node %d", id));
                     nodes.push_back( new ClusterNode( host , port , id ) );
                     
                 }

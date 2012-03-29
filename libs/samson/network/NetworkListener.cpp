@@ -70,14 +70,16 @@ namespace samson {
         {
             ::close(rFd);
             rFd = -1;
-            LM_RP(BindError, ("bind to port %d: %s", port, strerror(errno)));
+            //LM_RP(BindError, ("bind to port %d: %s", port, strerror(errno)));
+            return BindError;
         }
         
         if (listen(rFd, 10) == -1)
         {
             ::close(rFd);
             rFd = -1;
-            LM_RP(ListenError, ("listen to port %d", port));
+            //LM_RP(ListenError, ("listen to port %d", port));
+            return ListenError;
         }
         
         return OK;

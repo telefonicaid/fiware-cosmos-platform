@@ -276,7 +276,6 @@ int main(int argC, const char *argV[])
     
     if (fg == false)
     {
-        std::cout << "OK. samsonWorker is now working in background.\n";
         daemonize();
     }
 
@@ -349,6 +348,9 @@ int main(int argC, const char *argV[])
 
     if (fg == false)
     {
+        std::cout << "OK. samsonWorker is now working in background.\n";
+        deamonize_close_all();
+
         while (true)
             sleep(10);
     }

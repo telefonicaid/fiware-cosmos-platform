@@ -80,7 +80,7 @@ namespace samson {
             if( s != OK )
             {
                 // Not allow to continue without incoming connections...
-                LM_X(1, ("Not possible to open port %d (%s)" , port , status(s) ));
+                LM_X(1, ("Not possible to open main samson port %d (%s). Probably another worker is running..." , port , status(s) ));
             }
             // Init background thread to receive connections 
             worker_listener->runNetworkListenerInBackground();

@@ -73,6 +73,9 @@ public:
     // Constructor with one object and a multiple targets listener
     Notification( const char* _name , Object * _object , std::set<size_t>& _listeners_id );
     
+    // Destructor
+    ~Notification();
+    
     // Get a string for debug
     std::string getDescription();
     std::string getShortDescription();

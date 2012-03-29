@@ -42,6 +42,11 @@ Notification::Notification( const char* _name , Object * _object , std::set<size
     targets.insert( _listeners_id.begin() , _listeners_id.end() );
 }
 
+Notification::~Notification()
+{
+    destroyObjects();
+}
+
 
 
 std::string Notification::getDescription()
@@ -67,6 +72,7 @@ void Notification::destroyObjects()
     
     if( object )
     {
+        LM_W(("Destroyed an abandoned object in a notification"));
         LM_T(LmtEngine, ("Destroying object of a notification [%s]", getDescription().c_str() ));
         delete object;
         object = NULL;

@@ -1,7 +1,6 @@
 --NAME--
 push_module - upload a module
 --SHELL-INIT--
-samsonWorker
 mv $SAMSON_HOME/modules/libweb.so /tmp/libweb.so
 delilah -command reload_modules
 --SHELL--

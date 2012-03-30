@@ -1,7 +1,5 @@
 --NAME--
 ls_queues - fetch the current queue list
---SHELL-INIT--
-samsonWorker
 --DELILAH-INIT--
 remove_all_stream
 push input.txt input

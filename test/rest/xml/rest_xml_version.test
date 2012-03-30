@@ -1,7 +1,5 @@
 --NAME--
 REST XML version
---SHELL_INIT--
-samsonWorker
 --SHELL--
 curl http://localhost:9898/samson/version
 --EXPECT--

@@ -1,7 +1,5 @@
 --NAME--
 REST JSON version
---SHELL_INIT--
-samsonWorker
 --SHELL--
 curl http://localhost:9898/samson/version.json
 --EXPECT--

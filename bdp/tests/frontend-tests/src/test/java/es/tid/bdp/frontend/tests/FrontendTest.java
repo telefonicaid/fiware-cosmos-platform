@@ -1,32 +1,32 @@
 package es.tid.bdp.frontend.tests;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.fail;
 
-import es.tid.bdp.joblaunchers.FrontendLauncher;
-import es.tid.bdp.joblaunchers.TaskStatus;
-import es.tid.bdp.joblaunchers.TestException;
 import es.tid.bdp.frontend.om.FrontEnd;
 import es.tid.bdp.frontend.om.SelectInputPage;
 import es.tid.bdp.frontend.om.SelectJarPage;
 import es.tid.bdp.frontend.om.SelectNamePage;
+import es.tid.bdp.joblaunchers.FrontendLauncher;
+import es.tid.bdp.joblaunchers.TaskStatus;
+import es.tid.bdp.joblaunchers.TestException;
 
 /**
  *
@@ -35,25 +35,39 @@ import es.tid.bdp.frontend.om.SelectNamePage;
 @Test(singleThreaded = true)
 public class FrontendTest {
     private static final String WORDCOUNT_FILENAME = "wordcount.jar";
+    private static final String MAPPERFAIL_FILENAME = "mapperfail.jar";
+    private static final String PRINTPRIMES_FILENAME = "printprimes.jar";
     private static final String SIMPLE_TEXT = "Very simple text file";
     private static final int TASK_COUNT = 4;
     
     private FrontEnd frontend;
     private String wordcountJarPath;
-    private String emptyJarPath;
+    private String mapperFailJarPath;
+    private String printPrimesJarPath;
+    private String invalidJarPath;
 
     @BeforeClass
     public void setUp() throws IOException {
         this.frontend = new FrontEnd();
         File wordCountJarFile = new File(WORDCOUNT_FILENAME);
         this.wordcountJarPath = wordCountJarFile.getAbsolutePath();
-        assertTrue(wordCountJarFile.exists(),
-                   "Veryfing Wordcount Jar is present: "
-                + this.wordcountJarPath);
+        verifyFileExists(wordCountJarFile);
+        
+        File mapperFailJarFile = new File(MAPPERFAIL_FILENAME);
+        this.mapperFailJarPath = mapperFailJarFile.getAbsolutePath();
+        verifyFileExists(mapperFailJarFile);
+        
+        File printPrimesJarFile = new File(PRINTPRIMES_FILENAME);
+        this.printPrimesJarPath = printPrimesJarFile.getAbsolutePath();
+        verifyFileExists(printPrimesJarFile);
 
-        File tmpFile = File.createTempFile("empty", ".jar");
-        tmpFile.deleteOnExit();
-        this.emptyJarPath = tmpFile.getAbsolutePath();
+        this.invalidJarPath = createAutoDeleteFile("Invalid Jar");
+    }
+    
+    private void verifyFileExists(File f) {
+        assertTrue(f.exists(),
+                   "Veryfing file is present: "
+                + f.getAbsolutePath());
     }
 
     private static boolean isLive(String link) {
@@ -86,6 +100,9 @@ public class FrontendTest {
             for (WebElement link : links) {
                 URL baseUrl = new URL(FrontEnd.HOME_URL);
                 String verbatimUrl = link.getAttribute("href");
+                if (verbatimUrl.startsWith("javascript")) {
+                    return;
+                }
                 String linkUrl = new URL(baseUrl, verbatimUrl).toString();
                 assertTrue(FrontendTest.isLive(linkUrl), "Broken link: " + linkUrl);
             }
@@ -133,7 +150,7 @@ public class FrontendTest {
         assertEquals(currentUrl, driver.getCurrentUrl());
         driver.findElement(By.className("errorlist"));
         assertFalse(this.frontend.taskExists(taskId),
-                    "Verify task hasn't been created");
+                    "Verify task hasn't been created. TaskId: " + taskId);
     }
 
     public void testNoInputFile() throws IOException {
@@ -143,7 +160,7 @@ public class FrontendTest {
         namePage.setName(taskId);
 
         SelectJarPage jarPage = namePage.submitNameForm();
-        jarPage.setInputJar(this.emptyJarPath);
+        jarPage.setInputJar(this.invalidJarPath);
 
         SelectInputPage inputPage = jarPage.submitJarFileForm();
         String currentUrl = driver.getCurrentUrl();
@@ -153,38 +170,49 @@ public class FrontendTest {
         // We should be in the same page, and the form should be complaining
         assertEquals(currentUrl, driver.getCurrentUrl());
         driver.findElement(By.className("errorlist"));
-        assertFalse(this.frontend.taskExists(taskId),
-                    "Verify task hasn't been created");
     }
 
-    public void verifySampleJarFile() throws IOException {
+    public void verifySampleJarFile() throws IOException, TestException {
         WebDriver driver = this.frontend.getDriver();
         SelectNamePage namePage = this.frontend.goToCreateNewJob();
-        namePage.setName(UUID.randomUUID().toString());
-
-        SelectJarPage jarPage = namePage.submitNameForm();
-        // Just verifying it exists
-        driver.findElement(By.id(SelectJarPage.SAMPLE_JAR_LINK_ID));
         verifyLinks();
+        
+        // Get JAR link
+        WebElement jarLink = driver.findElement(
+                By.id(SelectNamePage.SAMPLE_JAR_LINK_ID));
+        String verbatimUrl = jarLink.getAttribute("href");
+        URL baseUrl = new URL(FrontEnd.HOME_URL);
+        URL linkUrl = new URL(baseUrl, verbatimUrl);
+        
+        // Download file locally
+        final String jarName = "sample.jar";
+        ReadableByteChannel rbc = Channels.newChannel(linkUrl.openStream());
+        FileOutputStream fos = new FileOutputStream(jarName);
+        try {
+            fos.getChannel().transferFrom(rbc, 0, 1 << 24); 
+        } finally {
+            rbc.close();
+            fos.close();
+        }
+        
+        // Submit job with sample JAR
+        final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
+        FrontendLauncher testDriver = new FrontendLauncher();
+        String taskId = testDriver.createNewTask(inputFilePath, jarName);
+        testDriver.waitForTaskCompletion(taskId);
+        assertEquals(testDriver.getTaskStatus(taskId),
+                     TaskStatus.Completed,
+                     "Verifying task completed successfully. TaskId: " + taskId);
+        testDriver.getResults(taskId); // Just verifying results can be accessed        
     }
 
     public void verifyJarRestrictions() throws IOException {
         WebDriver driver = this.frontend.getDriver();
         SelectNamePage namePage = this.frontend.goToCreateNewJob();
-        namePage.setName(UUID.randomUUID().toString());
-        SelectJarPage jarPage = namePage.submitNameForm();
-
-        String restrictions = driver.findElement(
-                By.id(SelectJarPage.JAR_RESTRICTIONS_ID)).getText();
-        assertTrue(
-                restrictions.contains("HDFS"),
-                "Verifying restrictions mention HDFS");
+        String restrictions = namePage.getJarRestrictions();
         assertTrue(
                 restrictions.contains("Mongo"),
                 "Verifying restrictions mention Mongo");
-        assertTrue(
-                restrictions.contains("manifest"),
-                "Verifying restrictions mention manifests");
         assertTrue(
                 restrictions.contains("Tool"),
                 "Verifying restrictions mention the Tool interface");
@@ -211,6 +239,9 @@ public class FrontendTest {
         String taskId = testDriver.createNewTask(inputFilePath,
                                                  this.wordcountJarPath);
         testDriver.waitForTaskCompletion(taskId);
+        assertEquals(testDriver.getTaskStatus(taskId),
+                     TaskStatus.Completed,
+                     "Verifying task completed successfully. TaskId: " + taskId);
         testDriver.getResults(taskId); // Just verifying results can be accessed
     }
 
@@ -259,7 +290,7 @@ public class FrontendTest {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
         FrontendLauncher testDriver = new FrontendLauncher();
         final String taskId = testDriver.createNewTask(inputFilePath,
-                                                       this.emptyJarPath,
+                                                       this.invalidJarPath,
                                                        false);
         assertEquals(TaskStatus.Created,
                      testDriver.getTaskStatus(taskId),
@@ -275,5 +306,55 @@ public class FrontendTest {
         assertTrue(testDriver.getTaskStatus(taskId) == TaskStatus.Error,
                    "Verifying task is in error state."
                 + " TaskId: " + taskId);
+        verifyLinks();
+    }
+    
+    public void testFailureJar() throws IOException, TestException {
+        final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
+        FrontendLauncher testDriver = new FrontendLauncher();
+        final String taskId = testDriver.createNewTask(inputFilePath,
+                                                       this.mapperFailJarPath,
+                                                       false);
+        assertEquals(TaskStatus.Created,
+                     testDriver.getTaskStatus(taskId),
+                     "Veryfing task is in created state. TaskId: "
+                + taskId);
+        testDriver.launchTask(taskId);
+        TaskStatus jobStatus = testDriver.getTaskStatus(taskId);
+        assertTrue(jobStatus == TaskStatus.Error
+                || jobStatus == TaskStatus.Running,
+                   "Verifying task is in running or error state."
+                + " TaskId: " + taskId);
+        testDriver.waitForTaskCompletion(taskId);
+        assertTrue(testDriver.getTaskStatus(taskId) == TaskStatus.Error,
+                   "Verifying task is in error state."
+                + " TaskId: " + taskId);
+        verifyLinks();
+    }
+    
+    public void testListResultJar() throws IOException, TestException {
+        final String inputFilePath = createAutoDeleteFile(
+                "2 3 4 5 6 7 8 9 123\n19283");
+        FrontendLauncher testDriver = new FrontendLauncher();
+        final String taskId = testDriver.createNewTask(inputFilePath,
+                                                       this.printPrimesJarPath,
+                                                       false);
+        assertEquals(TaskStatus.Created,
+                     testDriver.getTaskStatus(taskId),
+                     "Veryfing task is in created state. TaskId: "
+                + taskId);
+        testDriver.launchTask(taskId);
+        TaskStatus jobStatus = testDriver.getTaskStatus(taskId);
+        assertTrue(jobStatus == TaskStatus.Completed
+                || jobStatus == TaskStatus.Running,
+                   "Verifying task is in running or completed state."
+                + " TaskId: " + taskId);
+        testDriver.waitForTaskCompletion(taskId);
+        assertTrue(testDriver.getTaskStatus(taskId) == TaskStatus.Completed,
+                   "Verifying task is in the completed state."
+                + " TaskId: " + taskId);
+        verifyLinks();
+        List<Map<String, String>> results = testDriver.getResults(taskId);
+        
     }
 }

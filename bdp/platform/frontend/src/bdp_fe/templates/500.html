@@ -3,18 +3,21 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <title>Internal Server Error</title>
-            <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}base.css" />
+	<style>
+	    a:link { color: #00C6D7; }
+	    a:visited { color: #BB650E; }
+	    h1 { color: #004250; }
+	    body {
+		font-family: "Segoe UI", Frutiger, Tahoma,i Helvetica,
+		             "Helvetica Neue", Arial, sans-serif;
+		font-size: 75%;
+		margin-left: 10%;
+		margin-right: 10%;
+	    }
+	</style>
     </head>
 
     <body>
-        <div id="header">
-            <div id="branding">
-                <img id="logo" src="{{ STATIC_URL }}logo.jpg">
-            </div>
-    
-	    <a href="/">Home</a>
-        </div>
-    
         <div id="content">
 	    <h1>Internal server error</h1>
 

@@ -229,6 +229,9 @@
                             <exclude>**/main/Bootstrap.class</exclude>
                         </excludes>
                     </instrumentation>
+                    <formats>
+                        <format>xml</format>
+                    </formats>
                 </configuration>
                 <executions>
                     <execution>

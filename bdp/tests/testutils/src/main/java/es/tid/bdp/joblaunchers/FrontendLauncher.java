@@ -1,6 +1,8 @@
 package es.tid.bdp.joblaunchers;
 
 import java.io.File;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.testng.Assert.assertEquals;
@@ -72,9 +74,8 @@ public class FrontendLauncher implements JobLauncher {
         while (true) {
             // Go to the main page
             this.frontend.goHome();
-            boolean taskCompleted = (this.frontend.getTaskStatus(taskId)
-                    == TaskStatus.Completed);
-            if (taskCompleted) {
+            TaskStatus status = this.frontend.getTaskStatus(taskId);
+            if (status != TaskStatus.Running) {
                 break;
             }
             try {
@@ -87,9 +88,9 @@ public class FrontendLauncher implements JobLauncher {
     }
     
     @Override
-    public String[][] getResults(String taskId) throws TestException {
-        ResultsPage resultsPage;
-        resultsPage = this.frontend.goToResultsPage(taskId);
+    public List<Map<String,String>> getResults(String taskId)
+            throws TestException {
+        ResultsPage resultsPage = this.frontend.goToResultsPage(taskId);
         return resultsPage.getResults();
     }
 

@@ -157,7 +157,7 @@
                                 <minimumTokens>100</minimumTokens>
                                 <targetJdk>${jvm.version}</targetJdk>
                                 <excludes>
-									<exclude>**/generated/*.java</exclude>
+                                    <exclude>**/generated/*.java</exclude>
                                     <exclude>**/generated-sources/*.java</exclude>
                                 </excludes>
                             </configuration>

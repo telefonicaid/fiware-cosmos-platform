@@ -242,7 +242,6 @@
                         <id>instrument</id>
                         <phase>site</phase>
                         <goals>
-                            <goal>instrument</goal>
                             <goal>cobertura</goal>
                             <goal>check</goal>
                         </goals>

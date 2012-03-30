@@ -38,7 +38,7 @@ LANDING_ROOT = '/tmp/landing/'
 CLUSTER_CONF = {
     'host': 'localhost',
     'port': 9888,
-    'mongobase': 'mongodb://pshdp04',
+    'mongobase': 'mongodb://10.173.128.148',
 }
 
 FCGI_OPTIONS = {

@@ -20,9 +20,8 @@
 
 #### SERVER SPECIFIC CONFIGURATION
 PIDFILE="/var/run/bdp_fe/django.pid"
-BUILDOUT_BIN="/home/sortega/cosmos/bdp/platform/frontend/bin/"
-SITES_PATH=/path/to/sites
-RUN_AS=sortega
+BUILDOUT_BIN="/usr/local/cosmos-frontend/bin"
+RUN_AS=bdp
 #### DO NOT CHANGE ANYTHING AFTER THIS LINE!
 
 set -e
@@ -40,12 +39,12 @@ d_start()
     if [ -f $PIDFILE ]; then
         RUNNING=$(ps aux | grep -c `cat $PIDFILE`)
         if [ $RUNNING = '0' ]; then
-            echo -n " already running"
+            echo -n "already running"
         else
-            su $RUN_AS -c django.fcgi
+            su $RUN_AS -c $BUILDOUT_BIN/django.fcgi
         fi
     else
-        su $RUN_AS -c django.fcgi
+        su $RUN_AS -c $BUILDOUT_BIN/django.fcgi
     fi
 }
 
@@ -56,26 +55,26 @@ d_stop() {
     if [ -f $PIDFILE ]; then
         kill `cat -- $PIDFILE`
     else
-        echo -n " not pidfile"
+        echo -n "not pidfile"
     fi
 }
 
 ACTION="$1"
 case "$ACTION" in
     start)
-        echo -n "Starting $DESC: $NAME"
+        echo -n "Starting $DESC: $NAME "
         d_start
         echo "."
         ;;
 
     stop)
-        echo -n "Stopping $DESC: $NAME"
+        echo -n "Stopping $DESC: $NAME "
         d_stop
         echo "."
         ;;
 
     restart|force-reload)
-        echo -n "Restarting $DESC: $NAME"
+        echo -n "Restarting $DESC: $NAME "
         d_stop
         sleep 1
         d_start

@@ -1,0 +1,8 @@
+#!/bin/bash
+export PATH=/usr/local/cosmos-frontend/bin:/bin:/usr/bin
+
+django update_status --quiet
+sleep 20
+django update_status --quiet
+sleep 20
+django update_status --quiet

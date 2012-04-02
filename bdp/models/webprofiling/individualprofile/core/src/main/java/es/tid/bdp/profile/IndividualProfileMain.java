@@ -95,6 +95,7 @@ public class IndividualProfileMain extends Configured implements Tool {
         Path tmpDir = new Path(getTmpDir());
         if (!fs.mkdirs(tmpDir)) {
             LOG.fatal("Could not create " + tmpDir);
+            throw new IOException("Failed to create temp directory");
         }
         LOG.info("Using " + tmpDir + " as temp directory");
         if (!fs.deleteOnExit(tmpDir)) {

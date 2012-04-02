@@ -227,7 +227,7 @@
                     <instrumentation>
                         <excludes>
 							<exclude>**/main/Bootstrap.class</exclude>
-							<exclude>**/generated-sources/**</exclude>
+							<exclude>**/generated/**/*.class</exclude>
                         </excludes>
                     </instrumentation>
                     <formats>

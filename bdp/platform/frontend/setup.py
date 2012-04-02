@@ -36,6 +36,8 @@ setup(
         'setuptools',
         'pymongo',
         'django',
+        'coverage',
+        'django-jenkins',
         'thrift',
         'flup',
         'MySQL-python',

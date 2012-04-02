@@ -23,6 +23,7 @@ class ConnException(Exception):
 class ClusterException(Exception):
 
     def __init__(self, error_code, error_message):
+	self.message = "Cluster %d: %s" % (error_code, error_message)
         self.error_code = error_code
         self.error_message = error_message
 

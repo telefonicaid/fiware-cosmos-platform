@@ -105,7 +105,7 @@ def run_job(request, job_id):
     try:
         job = Job.objects.get(id=job_id, user=request.user)
     except Job.DoesNotExist:
-        messages.warning(request, "Cannot start job %d: not found" % job_id)
+        messages.error(request, "Cannot start job %d: not found" % job_id)
         LOGGER.warning("Job %d not found" % job_id)
         return
 
@@ -168,7 +168,7 @@ def config_job(request, job_id):
             job.save()
             return redirect(reverse('upload_data', args=[job.id]))
         else:
-            messages.info(request, 'JAR file upload failed')
+            messages.error(request, 'JAR file upload failed')
     else:
         form = UploadJarForm()
     return render_to_response('upload_jar.html', {
@@ -194,7 +194,7 @@ def upload_data(request, job_id):
             job.save()
             return redirect(reverse('list_jobs'))
         else:
-            messages.info(request, 'Data file upload failed')
+            messages.error(request, 'Data file upload failed')
     else:
         form = UploadDataForm()
     return render_to_response('upload_data.html', {

@@ -14,8 +14,13 @@ def run():
     """
     projects = PYPROJECTS.split(',')
     for project in projects:
-        pass
-        #testresults = TestRun(project)
+        cmd = shlex.split('bin/django jenkins')
+        proc = subprocess.Popen(cmd, stderr=subprocess.STDOUT)
+        proc.communicate()
+        if proc.returncode != 0:
+            print "Error while testing"
+        else:
+            print "Success in testing"
 
 if __name__ == "__main__":
     run()

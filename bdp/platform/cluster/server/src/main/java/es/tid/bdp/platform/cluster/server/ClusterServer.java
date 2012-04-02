@@ -8,20 +8,23 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.RunJar;
+import org.apache.log4j.Logger;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TTransportException;
 
 /**
  *
  * @author dmicol
  */
 public class ClusterServer implements Cluster.Iface {
+    private static final Logger LOG = Logger.getLogger(ClusterServer.class);
     private static final String CONFIG_FILE = "/cluster_server.properties";
     
     private final String notificationEmail;
     private final String hdfsUrl;
-    private final String jobtrackerUrl;
+    private final int serverSocketPort;
     
     private JobRunner jobRunner;
     private Configuration conf;
@@ -31,8 +34,7 @@ public class ClusterServer implements Cluster.Iface {
             ClusterServer server = new ClusterServer();
             server.start();
         } catch (Exception ex) {
-            System.err.println(ClusterServerUtil.
-                    getFullExceptionInformation(ex));
+            LOG.fatal(ClusterServerUtil.getFullExceptionInformation(ex));
             System.exit(1);
         }
     }
@@ -42,18 +44,21 @@ public class ClusterServer implements Cluster.Iface {
         props.load(ClusterServer.class.getResource(CONFIG_FILE).openStream());
         this.notificationEmail = props.getProperty("NOTIFICATION_EMAIL");
         this.hdfsUrl = props.getProperty("HDFS_URL");
-        this.jobtrackerUrl = props.getProperty("JOBTRACKER_URL");
+        this.serverSocketPort = Integer.parseInt(
+                props.getProperty("SERVER_SOCKET_PORT"));
+        String jobtrackerUrl = props.getProperty("JOBTRACKER_URL");
         
         this.jobRunner = new JobRunner();
         this.conf = new Configuration();
         this.conf.set("fs.default.name", this.hdfsUrl);
-        this.conf.set("mapred.job.tracker", this.jobtrackerUrl);
+        this.conf.set("mapred.job.tracker", jobtrackerUrl);
         
         ClusterServerUtil.disallowExitCalls();
     }
 
-    private void start() throws Exception {
-        TServerSocket serverTransport = new TServerSocket(9888);
+    private void start() throws TTransportException {
+        LOG.info("Initializing cluster server");
+        TServerSocket serverTransport = new TServerSocket(this.serverSocketPort);
         Cluster.Processor processor = new Cluster.Processor(this);
         TThreadPoolServer.Args args = new TThreadPoolServer.Args(
                 serverTransport);
@@ -68,7 +73,7 @@ public class ClusterServer implements Cluster.Iface {
             FileSystem fs = FileSystem.get(this.conf);
             fs.moveFromLocalFile(new Path(src), new Path(dest));
         } catch (Exception ex) {
-            ClusterServerUtil.sendNotificationEmail(this.notificationEmail, ex);
+            ClusterServerUtil.logFatalError(this.notificationEmail, ex);
             throw new TransferException(
                     ClusterErrorCode.FILE_COPY_FAILED,
                     ClusterServerUtil.getFullExceptionInformation(ex));
@@ -84,7 +89,7 @@ public class ClusterServer implements Cluster.Iface {
                     jarPath, this.hdfsUrl + inputPath,
                     this.hdfsUrl + outputPath, mongoUrl });
         } catch (Exception ex) {
-            ClusterServerUtil.sendNotificationEmail(this.notificationEmail, ex);
+            ClusterServerUtil.logFatalError(this.notificationEmail, ex);
             throw new TransferException(
                     ClusterErrorCode.RUN_JOB_FAILED,
                     ClusterServerUtil.getFullExceptionInformation(ex));
@@ -97,7 +102,7 @@ public class ClusterServer implements Cluster.Iface {
         try {
             return this.jobRunner.getResult(jobId);
         } catch (Exception ex) {
-            ClusterServerUtil.sendNotificationEmail(this.notificationEmail, ex);
+            ClusterServerUtil.logFatalError(this.notificationEmail, ex);
             throw new TransferException(
                     ClusterErrorCode.INVALID_JOB_ID,
                     ClusterServerUtil.getFullExceptionInformation(ex));

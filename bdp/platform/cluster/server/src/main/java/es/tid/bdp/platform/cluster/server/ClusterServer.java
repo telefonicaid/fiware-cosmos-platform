@@ -123,6 +123,12 @@ public class ClusterServer implements Cluster.Iface {
                 throws InterruptedException, ExecutionException {
             ClusterJobResult result;
             Future<ClusterJobResult> resultFuture = this.results.get(id);
+            if (resultFuture == null) {
+                throw new TransferException(
+                        ClusterErrorCode.INVALID_JOB_ID,
+                        ClusterServerUtil.getFullExceptionInformation(ex));
+            }
+
             if (resultFuture.isDone()) {
                 result = resultFuture.get();
             } else {

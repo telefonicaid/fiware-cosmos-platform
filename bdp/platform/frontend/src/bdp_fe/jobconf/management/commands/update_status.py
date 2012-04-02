@@ -32,7 +32,7 @@ class Command(BaseCommand):
             for job in Job.objects.all():
                 if job.status == Job.RUNNING:
                     try:
-                        result = CLUSTER.getJobResult(job.execution_id)
+                        result = CLUSTER.getJobResult(str(job.id))
                         job.status = result.status - 1
                         if result.reason is not None:
                             job.set_error(result.reason)

@@ -226,8 +226,8 @@
                     </check>
                     <instrumentation>
                         <excludes>
-							<exclude>**/main/Bootstrap.class</exclude>
-							<exclude>**/generated/**/*.class</exclude>
+                            <exclude>**/main/Bootstrap.class</exclude>
+                            <exclude>**/generated/**/*.class</exclude>
                         </excludes>
                     </instrumentation>
                     <formats>

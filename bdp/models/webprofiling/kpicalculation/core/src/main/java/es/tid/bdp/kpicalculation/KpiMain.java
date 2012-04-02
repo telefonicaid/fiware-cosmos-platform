@@ -121,7 +121,7 @@ public class KpiMain extends Configured implements Tool {
             }
             mongoCollectionUrl += features.getName();
             MongoDBExporterJob exporterJob = new MongoDBExporterJob(conf);
-            exporterJob.configure(kpiOutputPath, mongoCollectionUrl);
+            exporterJob.configure(kpiOutputPath, mongoCollectionUrl, features);
             if (!exporterJob.waitForCompletion(true)) {
                 return 1;
             }

@@ -1,4 +1,5 @@
 
+#include <algorithm>
 #include "Select.h"
 
 #include "Table.h" // Own interterface

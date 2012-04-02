@@ -43,7 +43,7 @@ namespace txt{
 
 		void parseLine( char *data , samson::KVWriter *writer )
 		{
-			
+		   return; 
 		   //OLM_M(("Parsing line '%s'" , data ));
 
 			int pos_begin=0;

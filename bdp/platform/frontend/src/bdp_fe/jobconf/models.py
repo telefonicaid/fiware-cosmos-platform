@@ -81,18 +81,16 @@ class Job(models.Model):
         except ClusterException, ex:
             LOGGER.info("Cannot start job %d: error %d" % (self.id,
                                                            ex.error_code))
-            self.status = Job.FAILED
             self.set_error(ex)
-            self.save()
-            return False
 
         except Exception, ex:
             LOGGER.info("Cannot start job %d: %s" % (self.id, ex.message))
-            self.status = Job.FAILED
             self.error_error = Job.UNKNOWN
             self.error_message = self.trim_to(ex.message,
                                               ERROR_MESSAGE_MAX_LENGTH)
-            self.save()
+        self.status = Job.FAILED
+        self.save()
+        return False
 
 
     def data_upload(self, upload, cluster):
@@ -113,7 +111,7 @@ class Job(models.Model):
             LOGGER.info("Data uploaded to the cluster")
             return True
         except Exception, ex:
-            LOGGER.exception(ex)
+            LOGGER.error("Cannot upload data file: %s" % ex.message)
             return False
 
     def is_runnable(self):
@@ -184,14 +182,10 @@ class CustomJobModel(JobModel):
         return path.join(self.landing_dir(), self.jar_name())
 
     def start(self, cluster):
-        try:
-            return cluster.runJob(self.jar_path(),
-                                  self.job.hdfs_data_path(),
-                                  self.job.hdfs_output_path(),
-                                  self.mongo_url())
-        except Exception, ex:
-            LOGGER.exception(ex)
-            return None
+        return cluster.runJob(self.jar_path(),
+                              self.job.hdfs_data_path(),
+                              self.job.hdfs_output_path(),
+                              self.mongo_url())
 
     def mongo_url(self):
         return "%s/%s.job_%s" % (settings.CLUSTER_CONF.get('mongobase'),

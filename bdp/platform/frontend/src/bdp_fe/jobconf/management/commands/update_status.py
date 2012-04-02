@@ -39,6 +39,11 @@ class Command(BaseCommand):
                         job.save()
                         updated += 1
                     except remote.ClusterException, ex:
+                        if ex.error_code == Job.INVALID_JOB_ID:
+                            job.status = Job.FAILED
+                            job.set_error(ex)
+                            job.save()
+                            updated += 1
                         self.stdout.write("Error %d: %s\n" % (ex.error_code,
                                                               ex.error_message))
             if not quiet:

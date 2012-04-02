@@ -114,9 +114,14 @@ class Job(models.Model):
         return (self.status == Job.CONFIGURED and self.input_data is not None 
                 and len(self.input_data) > 0)
 
-    def set_error(self, cluster_exception):
-        self.error_code = cluster_exception.errorCode
-        self.error_message = self.trim_to(cluster_exception.errorMsg,
+    def set_error(self, exception):
+        try:
+            self.error_code = exception.errorCode
+            self.error_message = exception.errorMsg
+        except AttributeError:
+            self.error_code = exception.error_code
+            self.error_message = exception.error_message
+        self.error_message = self.trim_to(self.error_message,
                                           Job.ERROR_MESSAGE_MAX_LENGTH)
 
     def trim_to(self, text, max_length):

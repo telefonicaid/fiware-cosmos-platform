@@ -85,7 +85,7 @@ class Job(models.Model):
 
         except Exception, ex:
             LOGGER.info("Cannot start job %d: %s" % (self.id, ex.message))
-            self.error_error = Job.UNKNOWN
+            self.error_code = Job.UNKNOWN
             self.error_message = self.trim_to(ex.message,
                                               ERROR_MESSAGE_MAX_LENGTH)
         self.status = Job.FAILED

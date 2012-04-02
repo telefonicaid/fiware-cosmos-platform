@@ -37,6 +37,7 @@ setup(
         'pymongo',
         'django',
         'coverage',
+        'pylint',
         'django-jenkins',
         'thrift',
         'flup',

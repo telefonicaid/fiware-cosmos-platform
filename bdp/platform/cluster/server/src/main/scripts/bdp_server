@@ -1,0 +1,73 @@
+#! /bin/sh
+
+#### SERVER SPECIFIC CONFIGURATION
+PIDFILE="/var/run/bdp_server/server.pid"
+RUN_AS=bdp
+BDP_SERVER_BIN="/usr/local/cosmos-server/cluster-server.jar"
+set -e
+
+DESC="BDP Server"
+NAME=$0
+SCRIPTNAME=/etc/init.d/$NAME
+
+#
+#       Function that starts the daemon/service.
+#
+d_start()
+{
+    if [ -f $PIDFILE ]; then
+        RUNNING=$(ps aux | grep -c `cat $PIDFILE`)
+        if [ $RUNNING = '0' ]; then
+            echo -n "already running"
+        else
+            su $RUN_AS -c `java -jar $BDP_SERVER_BIN` &
+        fi
+    else
+        su $RUN_AS -c `java -jar $BDP_SERVER_BIN` &
+    fi
+    PID="$(ps -A -f | grep $BDP_SERVER_BIN | awk '{ print $2 }' | head -1)"
+    echo $PID > $PIDFILE
+}
+
+#
+#       Function that stops the daemon/service.
+#
+d_stop() {
+    if [ -f $PIDFILE ]; then
+        kill -s 9 `cat -- $PIDFILE`
+        rm $PIDFILE
+    else
+        echo -n "not pidfile"
+    fi
+}
+
+ACTION="$1"
+case "$ACTION" in
+    start)
+        echo -n "Starting $DESC: $NAME "
+        d_start
+        echo "."
+        ;;
+
+    stop)
+        echo -n "Stopping $DESC: $NAME "
+        d_stop
+        echo "."
+        ;;
+
+    restart|force-reload)
+        echo -n "Restarting $DESC: $NAME "
+        d_stop
+        sleep 1
+        d_start
+        echo "."
+        ;;
+
+    *)
+        echo "Usage: $NAME {start|stop|restart|force-reload}" >&2
+        exit 3
+        ;;
+esac
+
+exit 0
+# vim:set et ts=4 sts=4:

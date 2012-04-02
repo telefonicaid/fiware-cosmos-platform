@@ -46,7 +46,6 @@ public class ClusterServer implements Cluster.Iface {
         
         this.jobRunner = new JobRunner();
         this.conf = new Configuration();
-        // TODO: this might not be necessary
         this.conf.set("fs.default.name", this.hdfsUrl);
         this.conf.set("mapred.job.tracker", this.jobtrackerUrl);
         
@@ -82,8 +81,8 @@ public class ClusterServer implements Cluster.Iface {
             throws TransferException {
         try {
             this.jobRunner.startNewThread(id, new String[] {
-                    jarPath, this.hdfsUrl + "/" + inputPath,
-                    this.hdfsUrl + "/" + outputPath, mongoUrl });
+                    jarPath, this.hdfsUrl + inputPath,
+                    this.hdfsUrl + outputPath, mongoUrl });
         } catch (Exception ex) {
             ClusterServerUtil.sendNotificationEmail(this.notificationEmail, ex);
             throw new TransferException(

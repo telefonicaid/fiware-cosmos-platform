@@ -120,13 +120,11 @@ public class ClusterServer implements Cluster.Iface {
         }
         
         public ClusterJobResult getResult(String id)
-                throws InterruptedException, ExecutionException {
+                throws ExecutionException, InterruptedException, TransferException {
             ClusterJobResult result;
             Future<ClusterJobResult> resultFuture = this.results.get(id);
             if (resultFuture == null) {
-                throw new TransferException(
-                        ClusterErrorCode.INVALID_JOB_ID,
-                        ClusterServerUtil.getFullExceptionInformation(ex));
+                throw new TransferException(ClusterErrorCode.INVALID_JOB_ID, null);
             }
 
             if (resultFuture.isDone()) {

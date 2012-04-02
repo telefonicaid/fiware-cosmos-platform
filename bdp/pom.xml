@@ -149,11 +149,6 @@
                         </plugin>
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-changelog-plugin</artifactId>
-                            <version>2.2</version>
-                        </plugin>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-pmd-plugin</artifactId>
                             <version>2.5</version>
                             <configuration>
@@ -162,8 +157,8 @@
                                 <minimumTokens>100</minimumTokens>
                                 <targetJdk>${jvm.version}</targetJdk>
                                 <excludes>
-                                    <exclude>**/pojos/*.java</exclude>
-                                    <exclude>**/generated/*.java</exclude>
+                                    <exclude>**/generated/**/*.java</exclude>
+                                    <exclude>**/generated-sources/**/*.java</exclude>
                                 </excludes>
                             </configuration>
                         </plugin>
@@ -232,8 +227,12 @@
                     <instrumentation>
                         <excludes>
                             <exclude>**/main/Bootstrap.class</exclude>
+                            <exclude>**/generated/**/*.class</exclude>
                         </excludes>
                     </instrumentation>
+                    <formats>
+                        <format>xml</format>
+                    </formats>
                 </configuration>
                 <executions>
                     <execution>
@@ -247,7 +246,6 @@
                         <id>instrument</id>
                         <phase>site</phase>
                         <goals>
-                            <goal>instrument</goal>
                             <goal>cobertura</goal>
                             <goal>check</goal>
                         </goals>

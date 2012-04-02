@@ -9,7 +9,7 @@ Packager:   Samson Development <samson-dev@tid.es>
 URL:        http://wikis.hi.inet/samson
 Source:    http://www.tid.es/samson-SAMSON_VERSION.tar.gz
 BuildRoot: /var/tmp/%{name}-buildroot
-Requires: protobuf, ntp,tid-mongodb, kdchart
+Requires: protobuf, ntp,tid-mongodb
 Requires(pre): shadow-utils
 
 %description
@@ -57,7 +57,17 @@ chmod 755 $RPM_BUILD_ROOT/etc/profile.d/samson.sh
 
 echo "%%defattr(-, samson, samson, - )" > MANIFEST
 (cd %{buildroot}; find . -type f -or -type l | sed -e s/^.// -e /^$/d) >>MANIFEST
+grep -v "samsonTopicMonitor\|delilah_graph\|samsonLocal" MANIFEST >> MANIFEST.samson
+grep "samsonTopicMonitor\|delilah_graph\|samsonLocal" MANIFEST >> MANIFEST.samson-gui
 
-%files -f MANIFEST
+%files -f MANIFEST.samson
 
 %changelog
+
+%package gui
+Summary: GUI tools for the SAMSON Platform
+Group: Applications/Engineering
+Requires: samson = SAMSON_VERSION-SAMSON_RELEASE, kdchart
+%description gui
+
+%files gui -f MANIFEST.samson-gui

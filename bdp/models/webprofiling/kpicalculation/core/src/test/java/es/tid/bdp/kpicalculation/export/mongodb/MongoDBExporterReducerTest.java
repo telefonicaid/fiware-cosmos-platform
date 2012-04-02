@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import java.util.List;
 
 import com.mongodb.hadoop.io.BSONWritable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
@@ -20,24 +21,31 @@ import org.junit.Test;
 public class MongoDBExporterReducerTest {
     private MongoDBExporterReducer instance;
     private ReduceDriver<LongWritable, Text, LongWritable, BSONWritable> driver;
+    private Configuration conf;
 
     @Before
     public void setUp() {
         this.instance = new MongoDBExporterReducer();
         this.driver = new ReduceDriver<LongWritable, Text, LongWritable,
                                        BSONWritable>(this.instance);
+        this.conf = new Configuration();
+        this.conf.set("fields", "user\turl");
     }
 
     @Test
     public void testReduce() throws Exception {
         List<Pair<LongWritable, BSONWritable>> results =
-                this.driver.withInput(new LongWritable(4L),
-                                      asList(new Text("abc\thttp\t9")))
+                this.driver
+                        .withConfiguration(this.conf)
+                        .withInput(new LongWritable(4L),
+                                   asList(new Text("abc\thttp\t9")))
                 .run();
         assertEquals(1, results.size());
         Pair<LongWritable, BSONWritable> result = results.get(0);
-        assertEquals("[abc, http]", 
-                     result.getSecond().get("attributes").toString());
+        assertEquals("abc", 
+                     result.getSecond().get("user").toString());
+        assertEquals("http", 
+                     result.getSecond().get("url").toString());
         assertEquals(9L, result.getSecond().get("count"));
     }
 }

@@ -59,7 +59,7 @@ public:
     
     // Get all values of a particular column
     StringVector getValuesFromColumn( std::string table_name , std::string column_name );
-    StringVector getValuesFromColumn( std::string table_name , std::string column_name , SelectCondition* condition );
+    StringVector getValuesFromColumn( std::string table_name , std::string column_name , TableSelectCondition* condition );
     
     // Replace node in a tree
     void replaceNodeInTree( std::string tree_name , TreeItem* node );

@@ -64,7 +64,7 @@ namespace samson {
 
     std::vector<std::string> DelilahBase::getOperationNames( std::string type  )
     {
-        au::tables::SelectCondition condition( "type" , type );
+        au::tables::TableSelectCondition condition( "type" , type );
         au::StringVector values = database.getValuesFromColumn("operations", "name" , &condition );
         values.unique();
         return values;

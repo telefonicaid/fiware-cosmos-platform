@@ -1,6 +1,10 @@
 SET (SOURCES
+	common.cpp
     main_samsonConnector.cpp
 	SamsonConnector.cpp
+	SamsonConnectorListener.cpp
+	DiskConnection.cpp
+	ServerConnection.cpp
 	SamsonConnectorConnection.cpp
 	SamsonConnection.cpp
 	Block.cpp
@@ -10,6 +14,9 @@ SET (SOURCES
 SET (HEADERS
 	common.h
 	SamsonConnector.h
+	SamsonConnectorListener.h
+	DiskConnection.h
+	ServerConnection.h
 	SamsonConnectorConnection.h
 	SamsonConnection.h
 	Block.h

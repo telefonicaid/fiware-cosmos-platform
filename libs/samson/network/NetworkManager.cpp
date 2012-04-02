@@ -79,7 +79,7 @@ namespace samson {
             
         }
         
-        table->setDefaultTitle("Connections");
+        table->setTitle("Connections");
         
         return table;
     }

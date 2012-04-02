@@ -262,16 +262,25 @@ namespace samson {
 
         std::string table_name = collection->name();
         
-        au::StringVector fields;
-        au::StringVector formats;
-                
+        std::string table_definition;
+        
         for ( int i = 0 ; i < collection->record(0).item_size() ; i ++ )
         {
-            fields.push_back( collection->record(0).item(i).name() );
-            formats.push_back( collection->record(0).item(i).format() );
+            std::string name = collection->record(0).item(i).name();
+            std::string format = collection->record(0).item(i).format();
+            
+            table_definition.append(name); 
+            if( format.length() != 0 )
+            {
+                table_definition.append(",");
+                table_definition.append(format);
+            }
+            
+            if( i != (collection->record(0).item_size()-1) )
+                table_definition.append("|");
         }
         
-        au::tables::Table* table = new au::tables::Table( fields , formats );
+        au::tables::Table* table = new au::tables::Table( table_definition );
         
         for (int r = 0 ; r < collection->record_size() ; r++ )
         {
@@ -283,7 +292,6 @@ namespace samson {
 
         if( !hidden )
         {
-            // Print the generated table
             output << table->strSortedGroupedAndfiltered(title, group_field, sort_field, filter_field , limit );
         }
         
@@ -300,7 +308,7 @@ namespace samson {
 	std::string WorkerCommandDelilahComponent::getStatus()
 	{
         
-        au::tables::Table table( au::StringVector("Worker" , "Status" , "Message" ) , au::StringVector("left" , "left" , "left" ) );
+        au::tables::Table table("Worker,left|Status,left|Message,left" );
         
         std::set<size_t>::iterator it;
         for( it = workers.begin() ; it != workers.end() ; it++ )
@@ -332,7 +340,8 @@ namespace samson {
             table.addRow( values );
         }
         
-		return table.str("Responses from SAMSON workers");
+        table.setTitle("Responses from SAMSON workers");
+		return table.str();
 	}
 	
 }

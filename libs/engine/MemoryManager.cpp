@@ -336,9 +336,7 @@ void MemoryManager::getInfo( std::ostringstream& output)
 
 au::tables::Table MemoryManager::getTableOfBuffers()
 {
-    
-    au::tables::Table table( au::StringVector("Type" , "Name" , "Size" ) 
-                      , au::StringVector("left,different" , "left,different" , "f=uint64,sum" ) );
+    au::tables::Table table( "Type,left,different|Name,left,different|Size,f=uint64,sum" );
     
     au::TokenTaker tt(&token);
     std::set<Buffer*>::iterator it_buffers;

@@ -224,7 +224,7 @@ namespace samson {
                 
             }
             
-            table->setDefaultTitle("Pending packets");
+            table->setTitle("Pending packets");
             
             return table;
             

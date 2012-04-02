@@ -200,6 +200,18 @@ namespace samson {
         return error_message;
     }
     
+    bool SamsonClient::areAllOperationsFinished()
+    {
+        for ( size_t i = 0 ; i < delilah_ids.size() ; i++)
+        {
+            size_t id = delilah_ids[i];
+            
+            if (delilah->isActive( id ) )
+                return false;
+        }
+        return true;
+    }
+    
     void SamsonClient::waitUntilFinish()
     {
         
@@ -291,5 +303,10 @@ namespace samson {
         return output.str();
     }
     
+    bool SamsonClient::connection_ready()
+    {
+        return networkP->ready();
+    }
+
     
 }

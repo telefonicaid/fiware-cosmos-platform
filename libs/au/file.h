@@ -38,9 +38,12 @@ size_t sizeOfFile( std::string fileName );
 
 void removeDirectory( std::string fileName , au::ErrorManager & error ); 
 
+
 bool isDirectory(char path[]);
 bool isRegularFile(char path[]);
 
+
+std::vector<std::string> getRegularFilesFromDirectory( std::string directory );
 
 bool check_string_ends_with( std::string txt , std::string end_txt );
 

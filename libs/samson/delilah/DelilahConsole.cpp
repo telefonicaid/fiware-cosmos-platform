@@ -743,7 +743,8 @@ namespace samson
             {
                 // Only set, we show all the defined parameters
                 au::tables::Table table( au::StringVector("Property" , "Value") );
-
+                table.setTitle("Environent variables");
+                
                 std::map<std::string,std::string>::iterator it_environment;	
                 for( it_environment = environment.environment.begin() 
                     ; it_environment != environment.environment.end() 
@@ -752,7 +753,7 @@ namespace samson
                     table.addRow( au::StringVector( it_environment->first , it_environment->second ) );
                 }
                 
-                writeOnConsole( table.str( "Environent variables") );
+                writeOnConsole( table.str( ) );
                 return 0;
 			}
 			
@@ -1376,14 +1377,15 @@ namespace samson
                 if( show_alerts )
                 {
                     
-                    au::tables::Table table( au::StringVector("Concept" , "Value" ) , au::StringVector("","left") );
+                    au::tables::Table table( "Concept|Value,left" );
+                    table.setTitle("ALERT");
                     
                     table.addRow( au::StringVector( "From" , packet->from.str() ) );
                     table.addRow( au::StringVector( "Type" , _type ) );
                     table.addRow( au::StringVector( "Context" , _context ) );
                     table.addRow( au::StringVector( "Message" , _text ) );
 
-                    std::string trace_message =table.str("ALERT");
+                    std::string trace_message =table.str();
                                             
                     if( _type == "error" )
                         writeErrorOnConsole( trace_message );

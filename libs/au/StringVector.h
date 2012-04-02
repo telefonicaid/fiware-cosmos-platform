@@ -32,6 +32,7 @@ public:
     StringVector( std::string value , std::string value2 , std::string value3 , std::string value4 );
     StringVector( std::string value , std::string value2 , std::string value3 , std::string value4 , std::string value5  );
     StringVector( std::string value , std::string value2 , std::string value3 , std::string value4 , std::string value5 , std::string value6);
+    StringVector( std::string value , std::string value2 , std::string value3 , std::string value4 , std::string value5 , std::string value6 , std::string value7 );
     StringVector( std::set<std::string>& values );
 
     
@@ -44,7 +45,7 @@ public:
     void unique();
     
     std::string str();
-    
+    std::string str_vector();
 };
 
 class Uint64Vector : public std::vector<size_t>

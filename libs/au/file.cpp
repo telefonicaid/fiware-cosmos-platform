@@ -37,6 +37,8 @@ bool isRegularFile( std::string fileName )
     return S_ISREG(buf.st_mode);
 }
 
+
+
 void removeDirectory( std::string fileName , au::ErrorManager & error ) 
 {        
     if( isRegularFile( fileName ) )
@@ -115,6 +117,39 @@ std::string path_remove_last_component( std::string path )
     }
     
 }
+
+std::vector<std::string> getRegularFilesFromDirectory( std::string directory )
+{
+    std::vector<std::string> files;
+    
+    // Add all plain files in this directory
+    DIR *pdir = opendir (directory.c_str()); // "." will refer to the current directory
+    struct dirent *pent = NULL;
+    if (pdir != NULL) // if pdir wasn't initialised correctly
+    {
+        while ((pent = readdir (pdir))) // while there is still something in the directory to list
+            if (pent != NULL)
+            {                    
+                if( strcmp( "." , pent->d_name )==0 )
+                    continue;
+                if( strcmp( ".." , pent->d_name )==0 )
+                    continue;
+                
+                std::ostringstream localFileName;
+                localFileName << directory << "/" << pent->d_name;
+                
+                // Add to the list of files
+                files.push_back( localFileName.str() );
+                
+            }
+        // finally, let's close the directory
+        closedir (pdir);						
+    }
+
+    return files;
+}
+
+
 
 std::string get_directory_from_path( std::string path )
 {

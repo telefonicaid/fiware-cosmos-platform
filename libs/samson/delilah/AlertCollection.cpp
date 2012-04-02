@@ -24,10 +24,7 @@ namespace samson {
     
     std::string AlertCollection::str()
     {
-        au::tables::Table table( 
-                                au::StringVector( "From" , "Type" , "Context" , "Message" ),
-                                au::StringVector( "left" , "" , "" , "left" )
-                                );
+        au::tables::Table table( "From,left|Type|Context|Message,left" );
         
         au::list<Alert>::iterator it_traces;
         for (it_traces = traces.begin() ; it_traces != traces.end() ; it_traces ++ )
@@ -42,8 +39,8 @@ namespace samson {
             table.addRow( values );
         }
         
-        
-        return table.str("Alerts");
+        table.setTitle("Alerts");
+        return table.str();
         
         
         

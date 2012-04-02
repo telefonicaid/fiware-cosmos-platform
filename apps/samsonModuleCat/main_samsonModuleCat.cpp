@@ -133,7 +133,7 @@ int main(int argC, const char *argV[])
     
 
     au::StringVector fields( "File" , "SAMSON" , "Module" , "Version" , "#Operations" , "#Datas" );
-    au::tables::Table * table = new au::tables::Table( fields );
+    au::tables::Table table( fields );
 
     struct ::stat info;
     int error_stat;
@@ -146,14 +146,12 @@ int main(int argC, const char *argV[])
     }
 
     if( S_ISREG(info.st_mode) )
-        consider_file(file_name, table);
+        consider_file(file_name, &table);
     else if ( S_ISDIR(info.st_mode) )
-        consider_directory(file_name, table);
+        consider_directory(file_name, &table);
     
-    std::cout << table->str("Module files");
-    
-    delete table;
-
+    table.setTitle("Module files");
+    std::cout << table.str();
     std::cout << "\n";
 	
 }

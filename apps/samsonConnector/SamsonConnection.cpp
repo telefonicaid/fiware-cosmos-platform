@@ -3,55 +3,38 @@
 
 #include "Block.h"
 
-
+#include "SamsonConnector.h"
 #include "SamsonConnection.h" // Own interface
 
 
 namespace samson {
 
-    SamsonConnection::SamsonConnection( std::string _host , int _port , ConnectionType _type , std::string _queue ) 
-    : token( "SamsonConnection" )
+    SamsonConnection::SamsonConnection( SamsonConnector * samson_connector ,  ConnectionType type , std::string _host , int _port , std::string _queue )
+    : SamsonConnectorItem( samson_connector , type ) , SamsonClient( "connector" ) , token( "SamsonConnection" )
     {
         host = _host;
         port = _port;
-        type = _type;
         queue = _queue;
         
-        samson_client = new SamsonClient( "connector" );
-        connected = samson_client->initConnection( host , port );
+        // Init SamsonClien connection
+        connected = initConnection( host , port );
         
         if( type == connection_input )
-            samson_client->connect_to_queue(queue, false, false);
+            connect_to_queue(queue, false, false); // No possible flags new of clear here
     }
     
     std::string SamsonConnection::getName()
     {
         if( type == connection_input )
-            return au::str("input_%s:%d_%s" , host.c_str() , port , queue.c_str());
+            return au::str("Samson at %s:%d from queue %s" , host.c_str() , port , queue.c_str());
         else
-            return au::str("output_%s:%d_%s" , host.c_str() , port , queue.c_str() );
-    }
-    
-    std::string SamsonConnection::str()
-    {
-        const char* type_name = (type==connection_input)?"Input ":"Output";
-        const char* connection_name = (connected)?"[CONNECTED]":"[NOT CONNECTED]";
-
-        return au::str("%s [ %s %s %s %s ] %s SAMSON %s:%d" 
-                       , type_name
-                       , au::str( samson_client->pop_rate.getTotalSize() ,"B" ).c_str()
-                       , au::str( samson_client->pop_rate.getRate() ,"B/s").c_str()
-                       , au::str( samson_client->push_rate.getTotalSize() ,"B").c_str()
-                       , au::str( samson_client->push_rate.getRate() ,"B/s").c_str()
-                       , connection_name
-                       , host.c_str() 
-                       , port );
+            return au::str("Samson at %s:%d to %s" , host.c_str() , port , queue.c_str() );
     }
     
     void SamsonConnection::push( Block* block )
     {
         if( !connected )
-            connected = samson_client->initConnection( host , port );
+            connected = initConnection( host , port );
 
         if( !connected )
             return;
@@ -59,11 +42,47 @@ namespace samson {
         if( type == connection_input )
             return; // Nothing to do if we are input
         
-        
-        samson_client->push(queue, new BlockDataSource(block) );
-        
+        SamsonClient::push(queue, new BlockDataSource(block) );
         
     }
 
+    size_t SamsonConnection::getOuputBufferSize()
+    {
+        if( areAllOperationsFinished() )
+            return 0;
+        else
+            return 1;
+    }
+
+    
+    void SamsonConnection::receive_buffer_from_queue(std::string queue , engine::Buffer* buffer)
+    {
+        // Transformation of buffer
+        KVHeader *header = (KVHeader*) buffer->getData();
+
+        if( header->isTxt() )
+        {
+            engine::Buffer * new_buffer = engine::MemoryManager::shared()->newBuffer("output_samson_connector", "connector",  header->info.size );
+            memcpy(new_buffer->getData(), buffer->getData() + sizeof(KVHeader), header->info.size);
+            new_buffer->setSize( header->info.size );
+            
+            // Remove previous buffer
+            engine::MemoryManager::shared()->destroyBuffer( buffer );
+            
+            // Push the new buffer
+            pushInputBuffer( new_buffer );
+            
+        }
+        else
+        {
+            std::string message = au::str("Received a binary buffer %s from %s. Still not implemented how to process this" , au::str( buffer->getSize() , "B" ).c_str() , getName().c_str() );
+            samson_connector->show_message( message );
+            engine::MemoryManager::shared()->destroyBuffer( buffer );
+            
+        }
+        
+        
+        
+    }
 
 }

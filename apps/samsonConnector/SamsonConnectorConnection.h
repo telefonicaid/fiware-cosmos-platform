@@ -8,7 +8,6 @@
 #include "samson/client/SamsonClient.h"
 #include "samson/client/SamsonPushBuffer.h"
 
-#include "BufferProcessor.h"
 #include "Block.h"
 
 #include "common.h"
@@ -20,75 +19,68 @@ namespace samson{
     // Function to run the background thread
     void* run_SamsonConnectorConnection( void* p);
     
+    class SamsonConnector;
+    class BufferProcessor;
     
-    class SamsonConnectorConnection
+    class SamsonConnectorConnection : public SamsonConnectorItem
     {
         
     private:
         
-        SamsonConnector* samson_connector;   // General smason connector class
+        std::string name;
         FileDescriptor * file_descriptor;    // File descritor to read or write
-        bool thread_running;                 // Flag to indicate if thread is still running in background
-        
-        ConnectionType type;                 // Type ( input / output )
+        au::Cronometer cronometer;
 
-        BufferProcessor *block_processor;    // Processor for input buffers ( only in input )
-        
-        au::Token token;
-        au::list<Block> pending_blocks;      // List of pending packets ( only in output )
-        Block* current_block;                // Block currently being sent
-        
     public:
-
-        // Rate statistics
-        au::rate::Rate input_rate;
-        au::rate::Rate output_rate;
+        
+        bool thread_running;                 // Flag to indicate if thread is still running in background
         
     public:
     
-        SamsonConnectorConnection( SamsonConnector* _samson_connector, FileDescriptor * _file_descriptor , ConnectionType _type );
+        SamsonConnectorConnection( SamsonConnector* _samson_connector
+                                  , ConnectionType _type 
+                                  , std::string _name 
+                                  , FileDescriptor * _file_descriptor );
+        
         ~SamsonConnectorConnection();
         
         // Main function of the dedicated thread
         void run();
-        
         void run_as_input();
         void run_as_output();
         
-        // Function to check if the thread is running from the manager
-        bool isFinished()
-        {
-            return !thread_running;
-        }
-        
-        ConnectionType getType()
-        {
-            return type;
-        }
-
         std::string getName()
         {
-            return file_descriptor->getName();
+            return name;
         }
         
-        // Debug string
-        std::string str()
+        std::string getStatus()
         {
-            const char* type_name = (type==connection_input)?"Input ":"Output";
-            
-            return au::str("%s [ %s %s %s %s ] : %s "  
-                           , type_name 
-                           , au::str(input_rate.getTotalSize() ,"B").c_str()
-                           , au::str(input_rate.getRate(),"B/s").c_str()
-                           , au::str(output_rate.getTotalSize(),"B").c_str()
-                           , au::str(output_rate.getRate(),"B/s").c_str()
-                           , file_descriptor->getName().c_str() 
-                           );
+            if( thread_running )
+                return au::str( "connected %s" , cronometer.str().c_str() );
+            else
+                return "not connected";
         }
-
-        // Push a block to be emitted ( only output )
-        void push( Block* block );
-        size_t getOutputBufferSize();
+        
+        // Can be removed ( no background threads and so... )
+        bool canBeRemoved()
+        {
+            if( thread_running )
+                return false;
+        
+            // Can be retained some time....
+            return true;
+        }
+        
+        bool isConnected()
+        {
+            return thread_running;
+        }
+        
+        void review()
+        {
+            return; // Nothing to review here
+        }
         
         
     };

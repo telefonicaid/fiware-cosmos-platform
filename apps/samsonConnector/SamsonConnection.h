@@ -5,36 +5,72 @@
 
 #include "common.h"
 
+
 namespace samson {
     
     class Block;
     
-    class SamsonConnection
+    class SamsonConnection : public SamsonConnectorItem , SamsonClient
     {
         std::string queue;
         std::string host;
         int port;
         
-        ConnectionType type;
-        
-        SamsonClient *samson_client;
+        // Internal class for connect to a samson cluster
         bool connected;
 
         au::Token token;
         
     public:
         
-        SamsonConnection( std::string _host , int _port , ConnectionType _type , std::string _queue );
+        SamsonConnection( SamsonConnector * samson_connector ,  ConnectionType _type , std::string _host , int _port , std::string _queue );
         
         std::string getName();
-        std::string str();
-        void push( Block* block );
+
         
-        ConnectionType getType()
+        // Get status of this element
+        std::string getStatus()
         {
-            return type;
+            if( connected )
+            {
+                if( connection_ready() )
+                    return  "connected";
+                else
+                    return "connected but not all workers available";
+            }
+            else
+                return  "connecting...";
         }
         
+        bool canBeRemoved()
+        {
+            return false; // Never remove this can of connections
+        }
+        
+        bool isConnected()
+        {
+            return connected;
+        }
+        
+        // Method called every 5 seconds to re-connect or whatever is necessary here...
+        void review()
+        {
+            if( connected )
+                return;
+            
+            connected = initConnection( host , port );
+        }
+        
+        // Overload method to push blocks using samsonClient
+        void push( Block* block );
+
+        // Overwritten method
+        size_t getOuputBufferSize();
+        
+        
+        // Overwriteen method of SamsonClient
+        void receive_buffer_from_queue(std::string queue , engine::Buffer* buffer);
+
         
     };
     

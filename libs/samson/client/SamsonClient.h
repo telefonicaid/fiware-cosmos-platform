@@ -101,6 +101,11 @@ namespace  samson {
         // Wait until all operations are finished
         void waitUntilFinish();        
         
+        // Check if all operations are finished
+        bool areAllOperationsFinished();
+        
+        bool connection_ready();
+        
         // Live data connection
         void connect_to_queue( std::string queue, bool flag_new , bool flag_remove );
         SamsonClientBlockInterface* getNextBlock( std::string queue );

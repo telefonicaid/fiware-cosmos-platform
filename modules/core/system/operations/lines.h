@@ -30,38 +30,29 @@ namespace system{
 
 	   int split( char * inData, size_t inLength, char ** outData, size_t *outLength, char ** nextData , bool finish )
 		{
+		   // Return all completed lines ( not partial lines )
 
-		   if( finish )
+		   for ( size_t i = 0  ; i < inLength; i++ )
 		   {
-			  if(outData)
-				 *outData = inData;
-			  if(outLength)
-				 *outLength = inLength;
-			  if(nextData)
-				 *nextData = NULL;
-
-			  return 0;
-		   }
-
-		   // Assuming, it is never the end of the buffer
-		   for ( size_t i = inLength-1 ; i > 0 ; i-- )
-		   {
-			  if( inData[i] == '\n' )
+			  if( inData[inLength -1 - i] == '\n' )
 			  {
-				 if(outData)
-					*outData = inData;
-				 if(outLength)
-					*outLength = (i+1);
-				 if(nextData)
-					*nextData = &inData[i+1];				 				 
+				 *outData = inData;
+				 *outLength = 1 + inLength -1 - i;
+				 *nextData = &inData[1+inLength -1 - i ];				 				 
+				 return 0;
 			  }
-
-			return 0;
+			  
 		   }
-
+		   
 		   // Not possible to find a return in the entire buffer, just return error
+		   *outData = NULL;
+		   *outLength = 0;
+		   *nextData = NULL;
+		   
+           // If finish, just ignore the rest of the buffer
+		   if( finish )
+			  return 0;
 		   return 1;
-
 		}
 
 

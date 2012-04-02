@@ -163,7 +163,8 @@ Collection *Collection::getCollection( CollectionItem *filter )
 std::string Collection::str( std::string title )
 {
     Table *table = getTable();
-    std::string output = table->str( title );
+    table->setTitle(title);
+    std::string output = table->str( );
     delete table;
     
     return output;

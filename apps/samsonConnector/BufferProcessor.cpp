@@ -8,15 +8,18 @@
 
 #include "samson/module/ModulesManager.h"
 
+#include "common.h"
+
 extern char input_splitter_name[1024];
 extern size_t buffer_size;
 
 namespace samson {
     
-    BufferProcessor::BufferProcessor( SamsonConnector * _stream_connector )
+    BufferProcessor::BufferProcessor( SamsonConnectorItem* _item , SamsonConnector * _stream_connector )
     {
+        item = _item;
         stream_connector = _stream_connector;
-        std::string splitter_name = input_splitter_name;
+        splitter_name = input_splitter_name;
 
         if( splitter_name == "" )
         {
@@ -57,13 +60,19 @@ namespace samson {
     void BufferProcessor::process_intenal_buffer( bool finish )
     {
         
-        //LM_M(("Process internal buffer %s" , au::str(size,"B").c_str() ));
-        
+        //LM_W(("Process internal buffer %s" , au::str(size,"B").c_str() ));
+
         // Split buffer to know what to push
         char * outData;
         size_t outLength;
         char * nextData;
         int c = splitter->split(buffer, size, &outData, &outLength, &nextData , finish );
+        
+        //LM_W(("Splitter input (%p , %lu)" , buffer , size ));
+        //LM_W(("Splitter answer %d out:%p-%lu  Next %p" , c , outData , outLength , nextData ));
+        
+        if( outLength > size )
+            LM_X(1, ("Error in the splitter implementation. Larger size than the input returned"));
         
         if( c == 0 )
         {
@@ -75,7 +84,7 @@ namespace samson {
                 memcpy( output_buffer->getData(), outData, outLength );
                 
                 // Push at the output
-                stream_connector->push( output_buffer );
+                stream_connector->push( output_buffer , item );
             }
             
             // Data to be skip after process
@@ -112,17 +121,15 @@ namespace samson {
         // If no splitter, no process
         if( !splitter )
         {
-            stream_connector->push( input_buffer );
+            stream_connector->push( input_buffer , item );
             return;
         }
-            
         
         //LM_M(("BufferProcessor: Process buffer %s" , au::str( input_buffer->getSize() ,"B").c_str() ));
         
         size_t pos_in_input_buffer = 0; // Readed so far
         while( pos_in_input_buffer < input_buffer->getSize() )
         {
-            
             size_t copy_size = std::min( max_size - size , input_buffer->getSize() - pos_in_input_buffer );
             
             memcpy(buffer+size, input_buffer->getData() + pos_in_input_buffer , copy_size);
@@ -131,7 +138,6 @@ namespace samson {
             
             // Process internal buffer to push blocks at the output
             process_intenal_buffer( false );
-            
         }
         
         // Destroy input buffer
@@ -141,7 +147,11 @@ namespace samson {
     
     void BufferProcessor::flush()
     {
-        // Nothing at the moment since we are not splitting data
+        // If no splitter is present, we never accumulate nothing here
+        if( !splitter )
+            return;
+            
+        
         process_intenal_buffer( true ); // Process internal buffer with the "finish" flag activated
     }
     

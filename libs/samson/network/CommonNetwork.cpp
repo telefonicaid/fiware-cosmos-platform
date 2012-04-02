@@ -325,7 +325,7 @@ namespace samson {
         au::tables::Table* table = new au::tables::Table( au::StringVector( "Worker" , "Host" , "Status"  ) );
         
         if ( cluster_information.getId() == 0 )
-            table->setDefaultTitle("Not connected to any cluster");
+            table->setTitle("Not connected to any cluster");
         else
         {
             
@@ -353,7 +353,7 @@ namespace samson {
                                         , cluster_information.getId()
                                         , cluster_information.getVersion()
                                         );
-            table->setDefaultTitle( title );
+            table->setTitle( title );
             nodes.clearVector();
         }
         

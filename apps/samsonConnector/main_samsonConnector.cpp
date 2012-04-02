@@ -44,7 +44,6 @@ static const char* manShortDescription =
 " Outputs\n"
 "------------------------------------------------------------------------------------\n"
 "      stdout                    Data is write to stdout\n"
-"      stderr                    Data is write to stderr\n"
 "      port:X                    Opens a port waiting for output connections. Data is pushed to all connections\n"
 "      connection:host:port      We connect to this host and port and write data\n" 
 "      samson:host:queue         We connect to this SAMSON cluster and push data from queue\n" 
@@ -98,11 +97,15 @@ void* review_samson_connector(void*p)
     while( true )
     {
         samson_connector.review();
-        samson_connector.exit_if_necessary();
         sleep(5);
     }
 
 	return NULL;
+}
+
+void captureSIGPIPE(int s )
+{
+    // Nothing
 }
 
 int main( int argC , const char *argV[] )
@@ -110,11 +113,11 @@ int main( int argC , const char *argV[] )
     paConfig("usage and exit on any warning", (void*) true);
     
     paConfig("log to screen",                 (void*) true);
-    paConfig("log to file",                   (void*) false);
+    paConfig("log to file",                   (void*) true);  // In production it will be false
     paConfig("screen line format",            (void*) "TYPE:EXEC: TEXT");
     paConfig("man shortdescription",          (void*) manShortDescription);
-    paConfig("man synopsis",          (void*) manSynopsis);
-    paConfig("log to stderr",         (void*) true);
+    paConfig("man synopsis",                  (void*) manSynopsis);
+    paConfig("log to stderr",                 (void*) true);
     
     // Parse input arguments    
     paParse(paArgs, argC, (char**) argV, 1, false);
@@ -122,6 +125,11 @@ int main( int argC , const char *argV[] )
     
     // Random initialization
     srand( time(NULL) );
+    
+    // Capturing SIGPIPE
+    if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR)
+        LM_W(("SIGPIPE cannot be handled"));
+    
     
     if( buffer_size == 0)
         LM_X(1,("Wrong buffer size %lu", buffer_size ));
@@ -136,140 +144,24 @@ int main( int argC , const char *argV[] )
 	//engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
     
 	samson::ModulesManager::init();         // Init the modules manager
-    
-    
-    LM_V(("============================================================================="));
-    LM_V(("samsonConnector"));
-    LM_V(("============================================================================="));
-    
-    // -------------------------------------------------------
-    // Parsing outputs
-    // -------------------------------------------------------
-    {
-        au::CommandLine cmdLine;
-        cmdLine.parse(output);
-        
-        if( cmdLine.get_num_arguments() == 0 )
-            LM_X(1, ("No output specified"));
-        
-        for ( int i = 0 ; i < cmdLine.get_num_arguments() ; i++ )
-        {
-            std::string input_string = cmdLine.get_argument(i);
-            
-            std::vector<std::string> components = au::split(input_string, ':');
-            
-            if( components[0] == "stdout" )
-            {
-                LM_V(("Output: stdout"));
-                samson_connector.add_stdout();
-            }
-            else if( components[0] == "stderr" )
-            {
-                LM_V(("Output: stderr"));
-                samson_connector.add_stderr();
-            }
-            
-            else if( components[0] == "port" )
-            {
-                if( components.size() < 2 )
-                    LM_X(1, ("Output port without number. Please specifiy port to open (ex port:10000)"));
-                
-                int port = atoi( components[1].c_str() );
-                if( port == 0 )
-                    LM_X(1, ("Wrong input port"));
-                
-                LM_V(("Output: Listening port %d" , port));
-                samson_connector.add_output_port( port );
-            }
-            else if( components[0] == "connection" )
-            {
-                if( components.size() < 3 )
-                    LM_X(1, ("Output connection without host and port. Please specifiy as connection:host:port)"));
 
-                std::string host = components[1];
-                int port = atoi( components[2].c_str() );
-                if( port == 0 )
-                    LM_X(1, ("Wrong connection port for %s" , host.c_str() ));
-                
-                LM_V(("Output: Connection to %s:%d" , host.c_str(), port));
-                samson_connector.add_output_connection(components[1], port );
-                
-            }
-            else if( components[0] == "samson" )
-            {
-                std::string host = components[1];
-                std::string queue = components[2];
-                
-                int port = SAMSON_WORKER_PORT;
-                LM_V(("Output: Connection to SAMSON cluster at %s ( queue %s )" , host.c_str(), queue.c_str()));
-                samson_connector.add_samson_output_connection(host, port, queue );
-            }
-        }
-    }
+    // Ignore verbose mode if interactive is activated
+    if( interactive )
+        lmVerbose = false;
     
-    // -------------------------------------------------------
-    // Parsing inputs
-    // -------------------------------------------------------
-    {
-        au::CommandLine cmdLine;
-        cmdLine.parse(input);
-        
-        
-        if( cmdLine.get_num_arguments() == 0 )
-            LM_X(1, ("No input specified"));
-        
-        for ( int i = 0 ; i < cmdLine.get_num_arguments() ; i++ )
-        {
-            std::string input_string = cmdLine.get_argument(i);
-            
-            std::vector<std::string> components = au::split(input_string, ':');
-            
-            if( components[0] == "stdin" )
-            {
-                LM_V(("Input: stdin"));
-                samson_connector.add_stdin();
-            }
-            else if( components[0] == "port" )
-            {
-                if( components.size() < 2 )
-                    LM_X(1, ("Input port without number. Please specifiy port to open (ex port:10000)"));
-                
-                int port = atoi( components[1].c_str() );
-                if( port == 0 )
-                    LM_X(1, ("Wrong input port"));
-                
-                LM_V(("Input: Listening port %d" , port));
-                samson_connector.add_input_port( port );
-            }
-            else if( components[0] == "connection" )
-            {
-                if( components.size() < 3 )
-                    LM_X(1, ("Input connection without host and port. Please specifiy as connection:host:port)"));
-                
-                std::string host = components[1];
-                int port = atoi( components[2].c_str() );
-                if( port == 0 )
-                    LM_X(1, ("Wrong connection port for %s" , host.c_str() ));
-                
-                LM_V(("Input: Connection to %s:%d" , host.c_str(), port));
-                samson_connector.add_input_connection(components[1], port );
-            }
-            else if( components[0] == "samson" )
-            {
-                std::string host = components[1];
-                std::string queue = components[2];
-
-                int port = SAMSON_WORKER_PORT;
-                LM_V(("Output: Connection to SAMSON cluster at %s ( queue %s )" , host.c_str(), queue.c_str()));
-                samson_connector.add_samson_input_connection(host, port, queue );
-            }
-        }
-    }
+    // Add outputs
+    au::ErrorManager error;
+    samson_connector.add_outputs(output ,&error);
+    if( error.isActivated() )
+        samson_connector.show_error( error.getMessage().c_str()  );
     
-    LM_V(("============================================================================="));
-    
+    // Add inputs
+    samson_connector.add_inputs(input , &error);
+    if( error.isActivated() )
+        samson_connector.show_error( error.getMessage().c_str() );
     
     // Review to create dedicated connections
+    samson_connector.set_setup_complete();
     samson_connector.review();
     
     // Background thread to review connections in samson connector

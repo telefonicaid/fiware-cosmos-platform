@@ -91,7 +91,8 @@ namespace samson {
                 if (tri > retries)
                 {
                     ::close(fd);
-                    LM_RE(ConnectError, ("Cannot connect to %s, port %d (even after %d retries)", host.c_str(), port, retries));
+                    LM_T(LmtSocketConnection,("Cannot connect to %s, port %d (even after %d retries)", host.c_str(), port, retries));
+                    return ConnectError;
                 }
                 
                 ++tri;

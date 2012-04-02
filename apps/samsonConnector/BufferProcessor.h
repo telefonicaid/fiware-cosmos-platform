@@ -8,13 +8,17 @@ namespace samson
 {
 
     class SamsonConnector;
-    
+    class SamsonConnectorItem;
     
     class BufferProcessor
     {
         
+        std::string name;
+
+        SamsonConnectorItem* item;
         SamsonConnector * stream_connector;
         Splitter * splitter;
+        std::string splitter_name;
         
         char *buffer;
         size_t max_size;
@@ -22,7 +26,7 @@ namespace samson
         
     public:
         
-        BufferProcessor( SamsonConnector * _stream_connector );
+        BufferProcessor( SamsonConnectorItem* item , SamsonConnector * _stream_connector );
         ~BufferProcessor();
         
         void push( engine::Buffer * bufer );

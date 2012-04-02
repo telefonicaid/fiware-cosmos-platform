@@ -263,13 +263,10 @@ namespace samson
     
     std::string SetupItemCollection::str()
     {
-        
-        au::tables::Table table(
-                au::StringVector( "Parameter" , "Default value" , "Current value" , "Description" ),
-                au::StringVector( "left" , "" , "left" , "left" ) 
-                                );
-                                std::ostringstream output;
-        
+        au::tables::Table table("Parameter,left|Default value|Current value,left|Description");
+        table.setTitle("Samson setup parameters");
+
+        std::ostringstream output;
         au::map< std::string , SetupItem >::iterator i;
         for (i = items.begin() ; i != items.end() ; i++)
         {
@@ -282,7 +279,7 @@ namespace samson
             
             table.addRow( values );
         }
-        return table.str( "Samson setup parameters");
+        return table.str( );
     }
     
 #pragma mark SamsonSetup

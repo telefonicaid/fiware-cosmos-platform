@@ -4,268 +4,326 @@
 
 #include "Block.h"
 #include "SamsonConnectorConnection.h"
+#include "SamsonConnectorListener.h"
 #include "SamsonConnector.h" // Own interface
 
+extern char input_splitter_name[1024];
+extern bool interactive;
+
 namespace samson {
-
-    void SamsonConnector::add_stdin()
-    {
-        FileDescriptor *file_descriptor = new FileDescriptor("stdin", 0);
-        connections.insert( new SamsonConnectorConnection(this, file_descriptor, connection_input ) );
-    }
     
-    void SamsonConnector::add_stdout()
+    void SamsonConnector::add_outputs ( std::string output_string  , au::ErrorManager* error )
     {
-        FileDescriptor *file_descriptor = new FileDescriptor("stdout", 1);
-        connections.insert( new SamsonConnectorConnection(this, file_descriptor, connection_output ) );
-    }
-
-    void SamsonConnector::add_stderr()
-    {
-        FileDescriptor *file_descriptor = new FileDescriptor("stdout", 2);
-        connections.insert( new SamsonConnectorConnection(this, file_descriptor, connection_output ) );
-    }
+        au::CommandLine cmdLine;
+        cmdLine.parse(output_string);
         
-    void SamsonConnector::add_input_port( int port )
-    {
-        samson::NetworkListener* listener = new samson::NetworkListener( this );
-        input_listeners.insertInMap(port,listener);
-        listener->initNetworkListener( port );    
-        listener->runNetworkListenerInBackground();
-    }
-    
-    void SamsonConnector::add_output_port( int port )
-    {
-        samson::NetworkListener* listener = new samson::NetworkListener( this );
-        output_listeners.insertInMap(port,listener);
-        listener->initNetworkListener( port );    
-        listener->runNetworkListenerInBackground();
-    }
-    
-    void SamsonConnector::add_input_connection( std::string host , int port )
-    {
-        server_connections.push_back( ServerConnection( host , port , connection_input ) );
+        if( cmdLine.get_num_arguments() == 0 )
+        {
+            error->set("No output specified");
+            return;
+        }
         
+        for ( int i = 0 ; i < cmdLine.get_num_arguments() ; i++ )
+        {
+            std::string input_string = cmdLine.get_argument(i);
+            
+            std::vector<std::string> components = au::split(input_string, ':');
+            
+            if( components[0] == "stdout" )
+            {
+                if( !interactive ) // No send to add stdout in interactive mode ;)
+                    add( new SamsonConnectorConnection(this, connection_output , "stdout", new FileDescriptor("stdout", 1) ) );
+                else
+                {
+                    //error->set("Not possible to add stdout in iterative mode");
+                    return;
+                }
+            }
+            else if( components[0] == "port" )
+            {
+                if( components.size() < 2 )
+                {
+                    error->set("Output port without number. Please specifiy port to open (ex port:10000)");
+                    return;
+                }
+                
+                int port = atoi( components[1].c_str() );
+                if( port == 0 )
+                {
+                    error->set("Wrong output port");
+                    return;
+                }
+                
+                SamsonConnectorListener* listener = new SamsonConnectorListener( this , connection_output , port );
+                if( listener->status_init == OK )
+                    add( listener );
+                else
+                {
+                    error->set( au::str("Not possible to add listener at port %d. (%s)" , port , status( listener->status_init ) ) );
+                    delete listener;
+                }
+            }
+            else if( components[0] == "disk" )
+            {
+                if( components.size() < 2 )
+                {
+                    error->set("Usage disk:file_name_or_dir");
+                    return;
+                }
+                add( new DiskConnection( this , connection_output , components[1] ) );
+            }
+            else if( components[0] == "connection" )
+            {
+                if( components.size() < 3 )
+                {
+                    error->set("Output connection without host and port. Please specifiy as connection:host:port)");
+                    return;
+                }
+                
+                std::string host = components[1];
+                int port = atoi( components[2].c_str() );
+                if( port == 0 )
+                {
+                    error->set(au::str("Wrong connection port for %s" , host.c_str() ));
+                    return;
+                }
+                add( new ServerConnection( this , connection_output , host , port ) );
+            }
+            else if( components[0] == "samson" )
+            {
+                std::string host = components[1];
+                std::string queue = components[2];
+                int port = SAMSON_WORKER_PORT;
+                
+                add( new SamsonConnection(this , connection_output, host , port , queue ) );
+            }
+        }
     }
     
-    void SamsonConnector::add_output_connection( std::string host  , int port )
+    void SamsonConnector::add_inputs ( std::string input_string , au::ErrorManager* error )
     {
-        server_connections.push_back( ServerConnection( host , port , connection_output ) );
+        au::CommandLine cmdLine;
+        cmdLine.parse(input_string);
+        
+        if( cmdLine.get_num_arguments() == 0 )
+        {
+            error->set("No input specified");
+            return;
+        }
+        
+        for ( int i = 0 ; i < cmdLine.get_num_arguments() ; i++ )
+        {
+            std::string input_string = cmdLine.get_argument(i);
+            
+            std::vector<std::string> components = au::split(input_string, ':');
+            
+            if( components[0] == "stdin" )
+            {
+                if( !interactive ) // No send to add stdout in interactive mode ;)
+                    add( new SamsonConnectorConnection(this, connection_input , "stdin", new FileDescriptor("stdin", 0) ) );
+                else
+                {
+                    //error->set("Not possible to add stdin in iterative mode");
+                    return;
+                }
+            }
+            else if( components[0] == "port" )
+            {
+                if( components.size() < 2 )
+                {
+                    error->set("Input port without number. Please specifiy port to open (ex port:10000)");
+                    return;
+                }
+                
+                int port = atoi( components[1].c_str() );
+                if( port == 0 )
+                {
+                    error->set("Wrong input port");
+                    return;
+                }
+                
+                SamsonConnectorListener* listener = new SamsonConnectorListener( this , connection_input , port );
+                if( listener->status_init == OK )
+                    add( listener );
+                else
+                {
+                    error->set( au::str("Not possible to add listener at port %d. (%s)" , port , status( listener->status_init ) ) );
+                    delete listener;
+                }
+            }
+            else if( components[0] == "disk" )
+            {
+                if( components.size() < 2 )
+                {
+                    error->set("Usage disk:file_name_or_dir");
+                    return;
+                }
+                add( new DiskConnection( this , connection_input , components[1]  ) );
+            }
+            else if( components[0] == "connection" )
+            {
+                if( components.size() < 3 )
+                {
+                    error->set("Input connection without host and port. Please specifiy as connection:host:port)");
+                    return;
+                }
+                
+                std::string host = components[1];
+                int port = atoi( components[2].c_str() );
+                if( port == 0 )
+                {
+                    error->set(au::str("Wrong connection port for %s" , host.c_str() ));
+                    return;
+                }
+                add( new ServerConnection( this  , connection_input, host , port ) );
+            }
+            else if( components[0] == "samson" )
+            {
+                std::string host = components[1];
+                std::string queue = components[2];
+                int port = SAMSON_WORKER_PORT;
+                
+                add( new SamsonConnection( this , connection_input , host , port  , queue ) );
+            }
+        }
+    }
+
+    // Generic method to add an item
+    void SamsonConnector::add( SamsonConnectorItem * item , int parent_id )
+    {
+        au::TokenTaker tt(&token);
+        
+        if( !item )
+            return;
+        
+        item->samson_connector_id = items_id++;
+        item->parent_samson_connector_id = parent_id;
+        items.insertInMap(item->samson_connector_id, item);
     }
     
-    void SamsonConnector::add_samson_input_connection( std::string host  , int port , std::string queue )
-    {
-        samson_connections.push_back( new SamsonConnection( host , port , connection_input , queue ) );
-    }
     
-    void SamsonConnector::add_samson_output_connection( std::string host  , int port , std::string queue )
-    {
-        samson_connections.push_back( new SamsonConnection( host , port , connection_output , queue ) );
-    }
     
-    void SamsonConnector::push( engine::Buffer * buffer )
+    void SamsonConnector::push( engine::Buffer * buffer , SamsonConnectorItem *item )
     {
+        if( strcmp(input_splitter_name, "") != 0 )
+        {
+            // Only show a message if splitter is working
+            show_message( 
+                         au::str("Generated %s from \"%s\" after splitter %s"
+                                 , au::str( buffer->getSize() ,"Bytes").c_str() 
+                                 , item->getDescription().c_str() 
+                                 , input_splitter_name
+                                 ));
+        }
+        
+        // Mutex protection
+        au::TokenTaker tt(&token);
         
         // Create a block
         Block* block = new Block( buffer );
         
-        // Put in all possible output
-        int num_output = 0;
-        std::set<SamsonConnectorConnection*>::iterator it_connections;
-        for ( it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
+        au::map<int, SamsonConnectorItem>::iterator it_items;
+        for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
         {
-            (*it_connections)->push( block );
-            num_output++;
+            if( it_items->second->getType() == connection_output )
+                if( it_items->second->isConnected() )
+                {
+                    _report_output_block( it_items->second->getSamsonconnectorId() , buffer->getSize() );
+                    it_items->second->push( block );
+                }
         }
-        
-        // Check output samson connections
-        for ( size_t i = 0 ; i < samson_connections.size() ; i++)
-            samson_connections[i]->push( block );
-        
-        
         
         // Release block
         block->release();
         
     }
     
-    void SamsonConnector::newSocketConnection( samson::NetworkListener* listener 
-                                              , samson::SocketConnection * socket_connetion )
+
+    void SamsonConnector::_show_last_messages()
     {
-        // Mutex protection
-        au::TokenTaker tt(&token);
+        int total_id = 0;
+        LM_V(("Total %s" , items.findInMap(total_id)->str_total_statistics().c_str() ));
         
-        // Check input or output
-        int port = listener->getPort();
-        if( input_listeners.findInMap(port) != NULL )
-        {        
-            SamsonConnectorConnection * connection;
-            connection = new SamsonConnectorConnection(this,  socket_connetion , connection_input );
-            connections.insert(connection);
-        }
-        else if( output_listeners.findInMap(port) != NULL )
-        {
-            SamsonConnectorConnection * connection;
-            connection = new SamsonConnectorConnection(this,  socket_connetion , connection_output );
-            connections.insert(connection);
-        }
-        else
-        {
-            LM_W(("Received a connection that is not an input or an output"));
-            socket_connetion->close();
-            delete socket_connetion;
-        }
+    }
+
+    void SamsonConnector::_exit_if_necessary_for_no_outputs()
+    {
+        
+        if( interactive )
+            return; // No exit if interactive is enabled
+
+        // To be implemented
     }
     
-    void SamsonConnector::exit_if_necessary()
+    void SamsonConnector::_exit_if_necessary_for_no_inputs()
     {
-        // Mutex protection
-        au::TokenTaker tt(&token);
-
-        // ------------------------------------------------------------
-        // If no input, exit
-        // ------------------------------------------------------------
-        if( 
-           ( getNumInputConnections() == 0 ) 
-           && (input_listeners.size() == 0)  
-           && (getNumInputSamsonConnections() == 0) 
-           && (getNumInputServerConnections() == 0)
-           && ( getTotalOutputBufferSize() == 0 )
-           )
+        
+        if( interactive )
+            return; // No exit if interactive is enabled
+        
+        au::map<int, SamsonConnectorItem>::iterator it_items;
+        for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
         {
-            LM_X(0, ("No more input to get data from & not more output buffers to be sent"));
+            if( it_items->first == 0 )
+                continue;
+            
+            SamsonConnectorItem *item = it_items->second;
+
+            // There is an input here...
+            if ( item->getType() == connection_input )
+                return;
+            
+            size_t output_size = item->getOuputBufferSize();
+            if(  output_size > 0 )
+                return;
         }
         
-        // ------------------------------------------------------------
-        // If no input, exit
-        // ------------------------------------------------------------
-        if( 
-           ( getNumOutputConnections() == 0 ) 
-           && (output_listeners.size() == 0) 
-           && (getNumOutputSamsonConnections() == 0) 
-           && (getNumOutputServerConnections() == 0) 
-           )
-            LM_X(0, ("No more output to push data to"));
-        
+        _show_last_messages();
+        LM_V(("No more input data... exit."));
+        exit(1);
     }
-
     
     void SamsonConnector::review()
     {
         
         // Mutex protection
         au::TokenTaker tt(&token);
+
+        // ------------------------------------------------------------
+        // Review all items
+        // ------------------------------------------------------------
         
+        au::map<int, SamsonConnectorItem>::iterator it_items;
+        for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
+            it_items->second->review();
+
         // ------------------------------------------------------------
-        // Check individual input connections
+        // Remove items if possible
         // ------------------------------------------------------------
-        for ( size_t i = 0 ; i < server_connections.size() ; i++ )
+        
+        for( it_items = items.begin() ; it_items != items.end() ;  )
         {
-            std::string name = server_connections[i].getName();
-            
-            if( getConnection(name) != NULL )
-                continue;
-            
-            SocketConnection* socket_connection;
-            Status s = SocketConnection::newSocketConnection(server_connections[i].host
-                                                             , server_connections[i].port
-                                                             , &socket_connection);                                  
-            if( s == OK )
+            SamsonConnectorItem* item = it_items->second;
+            if ( item->canBeRemoved() )
             {
-                // Change the name of the socket connection
-                socket_connection->setName( name );
-                                
-                ConnectionType type = server_connections[i].type;
-                SamsonConnectorConnection * connection = new SamsonConnectorConnection(this, socket_connection , type );
-                LM_V(("Established conneciton %s" , connection->str().c_str() ));
-                connections.insert( connection );
+                show_message( au::str("Connection finished: %s [%s]" , item->getDescription().c_str() , item->str_total_statistics().c_str() ) );
+                items.erase( it_items );
             }
-            
+
+            it_items++;
         }
         
         // ------------------------------------------------------------
-        // Close connection is no thread running...
+        // Exit if necessary
         // ------------------------------------------------------------
+
         
-        std::set<SamsonConnectorConnection*>::iterator it_connections;
-        for( it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
+        if( setup_complete )
         {
-            SamsonConnectorConnection* connection = *it_connections;
-            if ( connection->isFinished() )
-                connections.erase( it_connections );
+            _exit_if_necessary_for_no_inputs();
+            _exit_if_necessary_for_no_outputs();        
         }
         
-        
-        double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
-        size_t memory_total = engine::MemoryManager::shared()->getMemory();
-        
-        LM_V(("Memory used %s of %s" , au::str_percentage( memory_usage ).c_str() , au::str( memory_total , "B" ).c_str()  ));
-
-        if ( ( connections.size() == 0 ) && (samson_connections.size() == 0 ) )
-            LM_V(("No input / output connection"));
-        
-        for( it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
-        {
-            SamsonConnectorConnection * connection = *it_connections;
-            LM_V(("%s" , connection->str().c_str() ));
-        }
-
-        for ( size_t i = 0 ; i < samson_connections.size() ; i++ )
-            LM_V(("%s" , samson_connections[i]->str().c_str() ));
-        
-        LM_V(("============================================================================="));
-        
-        /*
-        if ( memory_usage > 1.0 )
-        {
-            au::tables::Table table  = engine::MemoryManager::shared()->getTableOfBuffers();    
-            std::cerr << table.str("Memory buffers");
-        }
-         */
-        
-    }
-    
-    size_t SamsonConnector::getNumConnections()
-    {
-        // Mutex protection
-        au::TokenTaker tt(&token);
-        
-        return connections.size();
-    }
-    
-    
-    int SamsonConnector::getNumInputConnections()
-    {
-        int total = 0;
-        
-        std::set<SamsonConnectorConnection*>::iterator it_connections;
-        for ( it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
-            if( (*it_connections)->getType() == connection_input )
-                total++;
-        
-        return total;
-    }
-    int SamsonConnector::getNumOutputConnections()
-    {
-        int total = 0;
-        
-        std::set<SamsonConnectorConnection*>::iterator it_connections;
-        for ( it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
-            if( (*it_connections)->getType() == connection_output )
-                total++;
-        
-        return total;
-        
-    }
-    
-    SamsonConnectorConnection* SamsonConnector::getConnection( std::string name )
-    {
-        std::set<SamsonConnectorConnection*>::iterator it_connections;
-        for ( it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
-            if( (*it_connections)->getName() == name )
-                return *it_connections;
-
-        return NULL;
     }
     
     std::string SamsonConnector::getPrompt()
@@ -288,143 +346,111 @@ namespace samson {
         {
             std::ostringstream output;
 
-            output << "Available commands for samsonConnector:\n";
-            output << "help        Show this help\n";
-            output << "show        Show current input and output setup\n";
-            output << "input XXX    Add an input ( port , connection or samson)\n";
-            output << "output XXX   Add an output ( port , connection or samson)\n";
+            au::tables::Table table( "Command|Description,left" );
+            
+            table.addRow( au::StringVector("help","Show this help"));
+            table.addRow( au::StringVector("show","Show current input and output setup"));
+            table.addRow( au::StringVector("add_input","add_input [port:8888] [connection:host:port] [samson:host:queue]"));
+            table.addRow( au::StringVector("add_output","add_output [port:8888] [connection:host:port] [samson:host:queue]"));
+            table.setTitle("Available commands for samsonConnector:");
+            output << table.str();
+            
             writeOnConsole( output.str() );
         }
-        else if ( main_command == "show_setup" )
+        else if ( main_command == "add_input" )
         {
-            au::StringVector fields ("Type" , "Method",  "Connection");
-            au::StringVector formats ("left" , "left" , "left");
-
-            au::tables::Table table( fields , formats );
-            
-            au::map<int , samson::NetworkListener>::iterator it_listeners;
-            for( it_listeners = input_listeners.begin() ; it_listeners != input_listeners.end() ; it_listeners++ )
+            if( cmdLine.get_num_arguments() < 2 )
             {
-                au::StringVector values;
-                values.push_back("Input");
-                values.push_back("Listener");
-                values.push_back( au::str("Listening at port %d" , it_listeners->second->getPort() ));
-                table.addRow(values);
+                writeErrorOnConsole("Usage: add_input [port:8888] [connection:host:port] [samson:host:queue]");
+                return;
             }
-            
-            for( it_listeners = output_listeners.begin() ; it_listeners != output_listeners.end() ; it_listeners++ )
+            au::ErrorManager error;
+            add_inputs( cmdLine.get_argument(1) , &error );
+            if( error.isActivated() )
+                writeErrorOnConsole( error.getMessage() );
+            else
+                writeOnConsole("OK\n");
+        }
+        else if ( main_command == "add_output" )
+        {
+            if( cmdLine.get_num_arguments() < 2 )
             {
-                au::StringVector values;
-                values.push_back("Output");
-                values.push_back("Listener");
-                values.push_back( au::str("Listening at port %d" , it_listeners->second->getPort() ));
-                table.addRow(values);
+                writeErrorOnConsole("Usage: add_output [port:8888] [connection:host:port] [samson:host:queue]");
+                return;
             }
-
-            for ( size_t i = 0 ; i < server_connections.size() ; i++ )
-            {
-                au::StringVector values;
-                if( server_connections[i].type == 0 )
-                    values.push_back("Input");
-                else
-                    values.push_back("Output");
-
-                values.push_back("Connection");
-                values.push_back( au::str("Connect to %s:%d" , server_connections[i].host.c_str() , server_connections[i].port ));
-                table.addRow(values);
-                
-            }
-            
-            writeOnConsole( table.str("Setup") );
-            
+            au::ErrorManager error;
+            add_outputs( cmdLine.get_argument(1) , &error );
+            if( error.isActivated() )
+                writeErrorOnConsole( error.getMessage() );
+            else
+                writeOnConsole("OK\n");
         }
         else if ( main_command == "show" )
         {
 
-            au::StringVector fields ("Type" , "Connection" , "Total In Bytes" , "Rate In Bytes/s", "Total Out Bytes" , "Rate Out Bytes/s" );
-            au::StringVector formats ("left" , "left");
-            au::tables::Table table( fields , formats );
-
-            // Current connections
-            std::set<SamsonConnectorConnection*>::iterator it_connections;
-            for ( it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
+            au::tables::Table table( "Id,left|Type,left|Connection,left|Status|In Bytes|In Bytes/s|Out Bytes|Out Bytes/s" );
+            
+            // Inputs             
+            for ( int type = connection_input ; type <= connection_output ; type++ )
             {
-                SamsonConnectorConnection* connection = *it_connections;
-                
-                au::StringVector values;
-                
-                // Input or output
-                if ( connection->getType() == connection_input )
-                    values.push_back("Input");
-                else
-                    values.push_back("Output");
+                au::map<int, SamsonConnectorItem>::iterator it_items;
+                for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
+                {
+                    SamsonConnectorItem* item = it_items->second;
 
-                // name
-                values.push_back( connection->getName() );
-
-                // Statistics
-                values.push_back( au::str( connection->input_rate.getTotalSize() ) );
-                values.push_back( au::str( connection->input_rate.getRate() ) );
-
-                values.push_back( au::str( connection->output_rate.getTotalSize() ) );
-                values.push_back( au::str( connection->output_rate.getRate() ) );
+                    if( item->getSamsonconnectorId() == 0 )
+                        continue;
+                    
+                    if( item->getType() !=  type )
+                        continue;
+                        
+                    au::StringVector values;
+                    values.push_back( au::str("%d" , item->getSamsonconnectorId() ) );
+                    values.push_back( str_ConnectionType( item->getType() ) );
+                    values.push_back( au::str( "[%d/%d]%s", item->getSamsonconnectorId() , item->getParentSamsonconnectorId(), item->getName().c_str() ) );
+                    values.push_back( item->getStatus() );
+                    
+                    values.push_back( au::str( item->get_input_total() ) );
+                    values.push_back( au::str( item->get_input_rate() ) );
+                    values.push_back( au::str( item->get_output_total() ) );
+                    values.push_back( au::str( item->get_output_rate() ) );
+                    
+                    table.addRow(values);
+                }
                 
-                
-                table.addRow( values );
-                
+                table.addSeparator();
             }
             
-            // SAMSON Connection
-            for ( size_t i = 0 ; i < samson_connections.size() ; i++ )
-            {
-                au::StringVector values;
-                
-                SamsonConnection * connection = samson_connections[i];
-                
-                // Input or output
-                if ( connection->getType() == connection_input )
-                    values.push_back("Input");
-                else
-                    values.push_back("Output");
-                
-                // name
-                values.push_back( connection->getName() );
-                
-                // Statistics
-                values.push_back( "?" );
-                values.push_back( "?" );
-                
-                values.push_back( "?" );
-                values.push_back( "?" );
-                
-                table.addRow( values );                
-            }
+            // Total
+            int total_id = 0;
+            SamsonConnectorItem* item = items.findInMap(total_id);
             
- 
-            writeOnConsole( table.str("Current connections") );
+            au::StringVector values;
+            values.push_back( "" );
+            values.push_back( "" );
+            values.push_back( "TOTAL" );
+            values.push_back( "" );
+            values.push_back( au::str( item->get_input_total() ) );
+            values.push_back( au::str( item->get_input_rate() ) );
+            values.push_back( au::str( item->get_output_total() ) );
+            values.push_back( au::str( item->get_output_rate() ) );
+            
+            table.addRow(values);
+            
+            
+            table.setTitle("SamsonConnector");
+            writeOnConsole( table.str() );
             
         }
         else if ( main_command == "quit" )
         {
+            exit(0);
             quitConsole();
         }
         else
             writeErrorOnConsole( au::str("Unknown command %s." , main_command.c_str() ) );
         
     }
-    
-    size_t SamsonConnector::getTotalOutputBufferSize()
-    {
-        size_t total = 0;
-        
-        // Current connections
-        std::set<SamsonConnectorConnection*>::iterator it_connections;
-        for ( it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
-            total += (*it_connections)->getOutputBufferSize();
-        
-        return total;
-    }
-
     
     void SamsonConnector::autoComplete( au::ConsoleAutoComplete* info )
     {
@@ -434,10 +460,57 @@ namespace samson {
             info->add("help");
             info->add("show");
             info->add("show_setup");
-            info->add("input");
-            info->add("output");
+            info->add("add_input");
+            info->add("add_output");
         }
+     
         
+        if( info->completingSecondWord( "add_input"  ) )
+        {
+            info->setHelpMessage( "add_input [port:8888] [connection:host:port] [samson:host:queue]" );
+            info->add("connection:", "connection:", false);
+            info->add("port:", "port:", false);
+            info->add("samson:", "samson:", false);
+        }
+        if( info->completingSecondWord( "add_output"  ) )
+        {
+            info->setHelpMessage( "add_output [port:8888] [connection:host:port] [samson:host:queue]" );
+            info->add("connection:", "connection:", false);
+            info->add("port:", "port:", false);
+            info->add("samson:", "samson:", false);
+        }
+
     }
+    
+    void SamsonConnector::report_input_block( int id , size_t size )
+    {        
+        au::TokenTaker tt(&token);
+        while( id != -1 )
+        {
+            SamsonConnectorItem* item = items.findInMap(id);
+            if( item )
+            {
+                item->report_input_block(size);
+                id = item->parent_samson_connector_id;
+            }
+            else
+                id = -1;
+        }
+    }
+    void SamsonConnector::_report_output_block( int id , size_t size )
+    {
+        while( id != -1 )
+        {
+            SamsonConnectorItem* item = items.findInMap(id);
+            if( item )
+            {
+                item->report_output_block(size);
+                id = item->parent_samson_connector_id;
+            }
+            else
+                id = -1;
+        }
+    }
+
     
 }

@@ -171,21 +171,21 @@ std::string DataBase::runCommand( std::string command )
     {
         Table* table = getTableOfTables();
         _addTable("result",  table );
-        return table->str("Tables");
+        return table->str();
     }
     
     if( mainCommand == "show_trees" )
     {
         Table* table = getTableOfTrees();
         _addTable("result",  table );
-        return table->str("Trees");
+        return table->str();
     }
 
     if( mainCommand == "show_collections" )
     {
         Table* table = getTableOfCollections();
         _addTable("result",  table );
-        return table->str("Collections");
+        return table->str();
     }
     
     if( mainCommand == "show" )
@@ -194,17 +194,17 @@ std::string DataBase::runCommand( std::string command )
         
         
         Table* table_tables = getTableOfTables();
-        output << table_tables->str("Tables");
+        output << table_tables->str();
 
         output << "\n";
         
         Table* table_trees = getTableOfTrees();
-        output << table_trees->str("Trees");
+        output << table_trees->str();
 
         output << "\n";
         
         Table* table_collection = getTableOfCollections();
-        output << table_collection->str("Collections");
+        output << table_collection->str();
         
         return output.str();
     }
@@ -252,14 +252,12 @@ std::string DataBase::runCommand( std::string command )
         SelectTableInformation select;
         if( cmdLine.get_num_arguments() < 3 )
         {
-            select.addColumns( table->columns );
+            select.addColumns( table->getColumnNames() );
         }
         else
         {
-            
-            
             for ( int i = 2 ;  i < cmdLine.get_num_arguments() ; i++ )
-                select.columns.push_back(SelectTableColumn(cmdLine.get_argument(i)));
+                select.columns.push_back( cmdLine.get_argument(i ));
         }
         
         // Set the limit of rows to display...
@@ -283,7 +281,7 @@ std::string DataBase::runCommand( std::string command )
             {
                 std::string name = where_clause_parts[0];
                 std::string value = where_clause_parts[1];
-                select.conditions.push_back( SelectCondition( name , value ) );
+                select.conditions.push_back( TableSelectCondition( name , value ) );
             }
         }
 
@@ -296,7 +294,7 @@ std::string DataBase::runCommand( std::string command )
                 return au::str( au::red , "No records to print");
             
             Table *record_table = _table->rows[0]->getTable();
-            std::string output = record_table->str(title);
+            std::string output = record_table->str();
             delete record_table;
             
             delete _table;
@@ -321,7 +319,7 @@ std::string DataBase::runCommand( std::string command )
         SelectTableInformation select;
         
         for ( int i = 2 ;  i < cmdLine.get_num_arguments() ; i++ )
-            select.columns.push_back(SelectTableColumn(cmdLine.get_argument(i)));
+            select.columns.push_back( cmdLine.get_argument(i) );
         select.title = au::str("Table %s" , table_name.c_str());
         select.group_columns = StringVector::parseFromString( group , ',' );
         
@@ -488,7 +486,7 @@ std::string DataBase::runCommand( std::string command )
     
 }
 
-StringVector DataBase::getValuesFromColumn( std::string table_name , std::string column_name , SelectCondition* condition )
+StringVector DataBase::getValuesFromColumn( std::string table_name , std::string column_name , TableSelectCondition* condition )
 {
     
     Table* table = tables.findInMap(table_name);
@@ -512,7 +510,7 @@ StringVector DataBase::getValuesFromColumn( std::string table_name , std::string
 Table* DataBase::getTableOfTables()
 {
     Table *tmp = new Table( StringVector("name" , "#columns" , "#rows" ) );
-    
+    tmp->setTitle("Tables");
     au::map<std::string, Table>::iterator it_tables;
     for (it_tables=tables.begin();it_tables!=tables.end();it_tables++)
     {
@@ -532,7 +530,7 @@ Table* DataBase::getTableOfTables()
 Table* DataBase::getTableOfTrees()
 {
     Table *tmp = new Table( StringVector("name" , "#nodes" , "depth" ) );
-    
+    tmp->setTitle("Trees");
     au::map<std::string, TreeItem>::iterator it_trees;
     for (it_trees=trees.begin();it_trees!=trees.end();it_trees++)
     {
@@ -552,7 +550,7 @@ Table* DataBase::getTableOfTrees()
 Table* DataBase::getTableOfCollections()
 {
     Table *tmp = new Table( StringVector("name" , "#items" ) );
-    
+    tmp->setTitle("Collections");
     au::map<std::string, Collection>::iterator it_collections;
     for (it_collections=collections.begin();it_collections!=collections.end();it_collections++)
     {

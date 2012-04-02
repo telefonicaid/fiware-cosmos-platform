@@ -221,6 +221,7 @@ namespace samson
         std::ostringstream output;
 
         au::tables::Table table( au::StringVector("Concept" , "Size" , "Percentadge" ) );
+        table.setTitle(concept);
 
         au::StringVector values;
 
@@ -239,7 +240,7 @@ namespace samson
             table.addRow(values);
         }
         
-        output << table.str(concept);                        
+        output << table.str();                        
         return output.str();
     }
     

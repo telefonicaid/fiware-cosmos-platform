@@ -157,8 +157,8 @@
                                 <minimumTokens>100</minimumTokens>
                                 <targetJdk>${jvm.version}</targetJdk>
                                 <excludes>
-                                    <exclude>**/generated/*.java</exclude>
-                                    <exclude>**/generated-sources/*.java</exclude>
+                                    <exclude>**/generated/**/*.java</exclude>
+                                    <exclude>**/generated-sources/**/*.java</exclude>
                                 </excludes>
                             </configuration>
                         </plugin>
@@ -227,8 +227,12 @@
                     <instrumentation>
                         <excludes>
                             <exclude>**/main/Bootstrap.class</exclude>
+                            <exclude>**/generated/**/*.class</exclude>
                         </excludes>
                     </instrumentation>
+                    <formats>
+                        <format>xml</format>
+                    </formats>
                 </configuration>
                 <executions>
                     <execution>

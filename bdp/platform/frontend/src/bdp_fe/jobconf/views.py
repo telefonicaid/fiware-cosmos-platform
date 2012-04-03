@@ -4,7 +4,6 @@ Module bdp_fe.jobconf.views
 """
 import logging
 
-from django import forms
 from django.conf import settings
 from django.contrib import auth, messages
 from django.contrib.auth.decorators import login_required
@@ -16,6 +15,7 @@ from django.template import RequestContext, loader
 
 from bdp_fe.jobconf import data
 from bdp_fe.jobconf.cluster import remote
+from bdp_fe.jobconf.forms import NewJobForm, UploadDataForm, UploadJarForm
 from bdp_fe.jobconf.models import CustomJobModel, Job, JobModel
 import bdp_fe.jobconf.views_util as util
 
@@ -128,10 +128,6 @@ def run_job(request, job_id):
         messages.warning(request, "Cannot start job %s." % job.name)
 
 
-class NewJobForm(forms.Form):
-    name = forms.CharField(max_length=Job.NAME_MAX_LENGTH)
-
-
 @login_required
 def new_job(request):
     if request.method == 'POST':
@@ -152,8 +148,6 @@ def new_job(request):
         'form': form,
     }, context_instance=RequestContext(request))
 
-class UploadJarForm(forms.Form):
-    file = forms.FileField()
 
 @login_required
 def config_job(request, job_id):
@@ -177,8 +171,6 @@ def config_job(request, job_id):
         'form': form,
     }, context_instance=RequestContext(request))
 
-class UploadDataForm(forms.Form):
-    file = forms.FileField()
 
 @login_required
 def upload_data(request, job_id):

@@ -29,7 +29,7 @@ public class MongoDBExporterReducerTest {
         this.driver = new ReduceDriver<LongWritable, Text, LongWritable,
                                        BSONWritable>(this.instance);
         this.conf = new Configuration();
-        this.conf.set("fields", "user\turl");
+        this.conf.setStrings("fields", new String[] { "user", "url"} );
     }
 
     @Test

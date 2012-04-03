@@ -26,7 +26,7 @@ public class MongoDBExporterReducer extends Reducer<LongWritable, Text,
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        this.fields = context.getConfiguration().get("fields").split(DELIMITER);
+        this.fields = context.getConfiguration().getStrings("fields");
         this.columns = new ArrayList<String>();
     }
 

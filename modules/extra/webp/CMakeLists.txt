@@ -1,5 +1,16 @@
 SET( MODULE_NAME webp )
 
+SET (AUX_HEADERS
+operations/demo.h
+operations/emit_hits.h
+operations/joint_comscore_dictionary.h
+operations/map_comscore_lookup.h
+operations/parse_tid_web_logs.h
+operations/parse_web_logs.h
+operations/update_user.h
+operations/web_profiling.h
+)
+
 cmake_minimum_required(VERSION 2.6)
 
 # Install directory
@@ -101,13 +112,13 @@ MESSAGE( "----------------------------------------------------------------------
 MESSAGE( "Creating module ${MODULE_NAME}" )
 MESSAGE( "----------------------------------------------------------------------------")
 
-ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
-
+ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES} ${AUX_HEADERS} )
 
 # Link agains samson_comscore library
 TARGET_LINK_LIBRARIES( ${MODULE_NAME} samson_comscore )
 TARGET_LINK_LIBRARIES( ${MODULE_NAME} au )
 TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm )
+TARGET_LINK_LIBRARIES( ${MODULE_NAME} samson_system )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
@@ -115,3 +126,5 @@ INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 
 #ENABLE_TESTING()
 #ADD_SUBDIRECTORY(testing)     # Test module and ctest stuff
+
+

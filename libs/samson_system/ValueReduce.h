@@ -7,12 +7,15 @@
 
 
 #include <samson/module/samson.h>
-#include <samson/modules/system/Value.h>
+#include <samson_system/Value.h>
 
 
 namespace samson{
     namespace system{
-        
+
+        // ---------------------------------------------
+        // ValueList
+        // ---------------------------------------------
         
         class ValueList
         {
@@ -24,19 +27,7 @@ namespace samson{
             
         public:
             
-            ValueList( int _max_num_elements )
-            {
-                max_num_elements = _max_num_elements;
-                
-                values = (Value**) malloc( max_num_elements * sizeof(Value*) );
-                counters = (int*) malloc( max_num_elements * sizeof(int) );
-                
-                for (int i = 0 ; i < max_num_elements ; i++ )
-                {
-                    values[i] = new Value();
-                    counters[i] = 0; // Init counter to 0
-                }
-            }
+            ValueList( int _max_num_elements );
             
             void init()
             {
@@ -115,7 +106,6 @@ namespace samson{
         public:
             
             virtual void run( samson::KVSetStruct* inputs , samson::KVWriter *writer  )=0;
-            
             virtual void init( std::string command  )
             {
                 // Optional method to receive extra parameters

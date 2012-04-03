@@ -8,9 +8,8 @@
 #include "au/Tokenizer.h"
 
 #include <samson/module/samson.h>
-#include <samson/modules/system/Value.h>
-
-#include "KeyValue.h"
+#include "samson_system/Value.h"
+#include "samson_system/KeyValue.h"
 
 
 namespace samson{

@@ -8,9 +8,9 @@
 
 
 #include <samson/module/samson.h>
-#include <samson/modules/system/Value.h>
 
-#include "Filter.h"
+#include "samson_system/Value.h"
+#include "samson_system/Filter.h"
 
 namespace samson{
 namespace system{

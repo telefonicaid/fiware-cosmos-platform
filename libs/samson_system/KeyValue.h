@@ -8,7 +8,7 @@
 #include "au/Tokenizer.h"
 
 #include <samson/module/samson.h>
-#include <samson/modules/system/Value.h>
+#include "samson_system/Value.h"
 
 
 namespace samson{
@@ -26,11 +26,8 @@ namespace samson{
             samson::system::Value* key;
             samson::system::Value* value;
             
-            KeyValue( samson::system::Value* _key , samson::system::Value* _value )
-            {
-                key = _key;
-                value = _value;
-            }
+            // Constructor
+            KeyValue( samson::system::Value* _key , samson::system::Value* _value );
             
         };
 

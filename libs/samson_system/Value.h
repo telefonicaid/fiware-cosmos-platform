@@ -1,12 +1,10 @@
 
-#ifndef _H_SAMSON_system_Value
-#define _H_SAMSON_system_Value
+#ifndef _H_SAMSON_SYSTEM_VALUE_Value
+#define _H_SAMSON_SYSTEM_VALUE_Value
 
 #include <string.h>
 #include <cctype>
-
 #include "smaz.h"
-
 #include "logMsg/logMsg.h"
 #include "au/Pool.h"
 #include "samson/module/DataInstance.h"
@@ -1463,7 +1461,7 @@ namespace samson{
             
             bool isMap()
             {
-                return value_type == value_vector;
+                return value_type == value_map;
             }
 
             void clear_map()
@@ -1492,6 +1490,12 @@ namespace samson{
                 // Alwyas return a void object
                 value->set_as_void();
                 return value;
+            }
+
+            Value* get_value_from_map( const char* key )
+            {
+                std::string _key = key;
+                return _value_map.findInMap(_key);
             }
             
             Value* get_value_from_map( std::string& key )

@@ -5,8 +5,7 @@
 
 #include <samson/module/DataInstance.h>
 #include <samson/modules/system/Value.h>
-
-#include "operations/Filter.h"
+#include "samson_system/Filter.h"
 
 
 

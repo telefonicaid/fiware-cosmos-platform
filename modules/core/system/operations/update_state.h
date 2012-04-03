@@ -8,10 +8,8 @@
 
 
 #include <samson/module/samson.h>
-#include <samson/modules/system/Value.h>
-#include <samson/modules/system/String.h>
-#include <samson/modules/system/Void.h>
 
+#include "system_value/Value.h"
 
 namespace samson{
    namespace system{

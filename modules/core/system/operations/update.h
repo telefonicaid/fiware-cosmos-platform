@@ -8,10 +8,9 @@
 
 
 #include <samson/module/samson.h>
-#include <samson/modules/system/Value.h>
 
-
-#include "ValueReduce.h" // Operations
+#include <samson_system//Value.h>
+#include "samson_system/ValueReduce.h" // Operations
 
 namespace samson{
 namespace system{

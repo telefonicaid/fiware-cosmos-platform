@@ -71,6 +71,17 @@ map joint_comscore_dictionary
     }
 }			
 
+map map_comscore_lookup
+{
+	in system.Value system.Value
+	out system.Value system.Value
+
+	help
+	{
+     	"Lookup url agains the conscore_dictionary. Input is suppoused to be a map with url property as a string. categories property set at the output"
+    }
+}			
+
 map emit_hits
 {
 	in system.String webp.Log

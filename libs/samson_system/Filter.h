@@ -9,11 +9,11 @@
 #include "au/charset.h"
 
 #include <samson/module/samson.h>
-#include <samson/modules/system/Value.h>
 
-#include "KeyValue.h"
-#include "Source.h"
-#include "SourceFunction.h"
+#include "samson_system/Value.h"
+#include "samson_system/KeyValue.h"
+#include "samson_system/Source.h"
+#include "samson_system/SourceFunction.h"
 
 namespace samson{
     namespace system{

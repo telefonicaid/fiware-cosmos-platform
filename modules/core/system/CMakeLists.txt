@@ -1,32 +1,18 @@
 SET( MODULE_NAME system )
 
 SET (AUX_HEADERS
-	system_common.h
-    samson/modules/system/Value.h
-
-	operations/parse.h
+	operations/lines.h
 	operations/map.h
 	operations/map2.h
 	operations/map3.h
+	operations/parse.h
+	operations/parse_id_id.h
+	operations/parser_uint_void.h
 	operations/reduce.h
-	operations/update.h
 	operations/str.h
+	operations/update.h
+	operations/update_state.h
 
-	operations/KeyValue.h
-    operations/KeyValue.cpp
-	operations/Filter.h
-	operations/Filter.cpp
-	operations/Source.h
-	operations/Source.cpp
-	operations/SourceFunction.h
-	operations/SourceFunction.cpp
-	smaz.h
-	smaz.cpp
-
-	operations/ValueReduce.h
-	operations/ValueReduce.cpp
-
-	operations/Value.cpp
 )			  
 
 SET( SOURCES_TEST
@@ -137,11 +123,11 @@ include_directories( "/opt/samson/include" )
 link_directories( "/opt/samson/lib" )
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES} ${AUX_HEADERS}  )
-TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm au )
+TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm au samson_system )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 
+#ADD_EXECUTABLE(system_test ${AUX_HEADERS} ${SOURCES_TEST} ${SOURCES} ${HEADERS})
+#TARGET_LINK_LIBRARIES(system_test lm au )
 
-ADD_EXECUTABLE(system_test ${AUX_HEADERS} ${SOURCES_TEST} ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(system_test lm au )

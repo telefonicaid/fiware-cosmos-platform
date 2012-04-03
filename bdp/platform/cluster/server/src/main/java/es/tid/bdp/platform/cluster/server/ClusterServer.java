@@ -35,6 +35,7 @@ public class ClusterServer implements Cluster.Iface {
 
     public static void main(String[] args) {
         try {
+            ClusterServerUtil.disallowExitCalls();
             ClusterServer server = new ClusterServer();
             server.start();
         } catch (Exception ex) {
@@ -57,8 +58,6 @@ public class ClusterServer implements Cluster.Iface {
         // TODO: this might not be necessary
         this.conf.set("fs.default.name", this.hdfsURI.toString());
         this.conf.set("mapred.job.tracker", jobtrackerUrl);
-
-        ClusterServerUtil.disallowExitCalls();
     }
 
     private void start() throws TTransportException {

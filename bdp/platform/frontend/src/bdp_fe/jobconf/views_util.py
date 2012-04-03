@@ -13,8 +13,8 @@ from models import CustomJobModel
 from pymongo import Connection
 from pymongo.errors import AutoReconnect, ConnectionFailure
 
+from bdp_fe.http import Http403
 from bdp_fe.jobconf.models import Job
-from bdp_fe.middleware403 import Http403
 
 HIDDEN_KEYS = []
 EXPAND_TYPES = [ListType, DictType]

@@ -1,7 +1,9 @@
 package es.tid.bdp.platform.cluster.server;
 
+import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,6 +13,16 @@ import org.junit.Test;
  */
 public class JobTest {
     private Job instance;
+    
+    @Before
+    public void setUp() {
+        ClusterServerUtil.disallowExitCalls();
+    }
+    
+    @After
+    public void tearDown() {
+        ClusterServerUtil.allowExitCalls();
+    }
     
     @Test
     public void shouldReturnSuccessful() {
@@ -23,7 +35,7 @@ public class JobTest {
         
         ClusterJobResult result = this.instance.call();
         assertEquals(ClusterJobStatus.SUCCESSFUL, result.status);
-        assertEquals(null, result.reason);
+        assertNull(result.reason);
     }
 
     @Test
@@ -52,10 +64,9 @@ public class JobTest {
             }
         };
         
-        ClusterServerUtil.disallowExitCalls();
         ClusterJobResult result = this.instance.call();
         assertEquals(ClusterJobStatus.SUCCESSFUL, result.status);
-        assertEquals(null, result.reason);
+        assertNull(result.reason);
     }
 
     @Test
@@ -68,7 +79,6 @@ public class JobTest {
             }
         };
         
-        ClusterServerUtil.disallowExitCalls();
         ClusterJobResult result = this.instance.call();
         assertEquals(ClusterJobStatus.FAILED, result.status);
         assertEquals(ClusterErrorCode.RUN_JOB_FAILED, result.reason.errorCode);

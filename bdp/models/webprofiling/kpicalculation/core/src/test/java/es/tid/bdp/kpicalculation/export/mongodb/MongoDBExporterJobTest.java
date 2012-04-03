@@ -10,6 +10,8 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.bdp.kpicalculation.config.KpiFeature;
+
 /**
  *
  * @author dmicol
@@ -26,7 +28,10 @@ public class MongoDBExporterJobTest {
     public void testConfigure() throws IOException {
         Path path = new Path("file:/opt/test");
         String url = "mongodb://localhost:27017/";
-        this.instance.configure(path, url);
+        KpiFeature feature = new KpiFeature(
+                "PAGE_VIEWS_PROT_VIS_DEV",
+                new String[] { "visitorId", "protocol", "device", "date" });
+        this.instance.configure(path, url, feature);
         Path[] inputPaths = FileInputFormat.getInputPaths(this.instance);
         assertEquals(1, inputPaths.length);
         assertEquals(path, inputPaths[0]);

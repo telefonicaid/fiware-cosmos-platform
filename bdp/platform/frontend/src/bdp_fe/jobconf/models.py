@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 from bdp_fe.jobconf import upload_util
+from bdp_fe.jobconf.cluster import remote
 
 
 LOGGER = logging.getLogger(__name__)
@@ -46,10 +47,6 @@ class Job(models.Model):
     input_data = models.CharField(null=True, blank=True,
                                   max_length=INPUT_DATA_MAX_LENGTH)
 	
-    EXECUTION_ID_MAX_LENGTH=256
-    execution_id = models.CharField(null=True, blank=True,
-                                    max_length=EXECUTION_ID_MAX_LENGTH)
-
     UNKNOWN = 0
     FILE_COPY_FAILED = 1
     RUN_JOB_FAILED = 2
@@ -71,28 +68,25 @@ class Job(models.Model):
 	"""Returns true on success."""
         model = CustomJobModel.objects.get(job=self) # FIXME: non polymorfic
         try:
-            execution_id = model.start(cluster)
-            LOGGER.info("Execution id is %s" % execution_id)
-            self.execution_id = execution_id
+            model.start(cluster)
+            LOGGER.info("Job %d started" % self.id)
             self.status = Job.RUNNING
             self.save()
             return True
 
-        except ClusterException, ex:
+        except remote.ClusterException, ex:
             LOGGER.info("Cannot start job %d: error %d" % (self.id,
                                                            ex.error_code))
-            self.status = Job.FAILED
             self.set_error(ex)
-            self.save()
-            return False
 
         except Exception, ex:
-            LOGGER.info("Cannot start job %d: %s" % (self.id, ex.message))
-            self.status = Job.FAILED
-            self.error_error = Job.UNKNOWN
-            self.error_message = self.trim_to(ex.message,
-                                              ERROR_MESSAGE_MAX_LENGTH)
-            self.save()
+            LOGGER.info("Cannot start job %d: %s" % (self.id, ex))
+            self.error_code = Job.UNKNOWN
+            self.error_message = self.trim_to(str(ex),
+                                              Job.ERROR_MESSAGE_MAX_LENGTH)
+        self.status = Job.FAILED
+        self.save()
+        return False
 
 
     def data_upload(self, upload, cluster):
@@ -113,16 +107,21 @@ class Job(models.Model):
             LOGGER.info("Data uploaded to the cluster")
             return True
         except Exception, ex:
-            LOGGER.exception(ex)
+            LOGGER.error("Cannot upload data file: %s" % ex)
             return False
 
     def is_runnable(self):
         return (self.status == Job.CONFIGURED and self.input_data is not None 
                 and len(self.input_data) > 0)
 
-    def set_error(self, cluster_exception):
-        self.error_code = cluster_exception.errorCode
-        self.error_message = self.trim_to(cluster_exception.errorMsg,
+    def set_error(self, exception):
+        try:
+            self.error_code = exception.errorCode
+            self.error_message = exception.errorMsg
+        except AttributeError:
+            self.error_code = exception.error_code
+            self.error_message = exception.error_message
+        self.error_message = self.trim_to(self.error_message,
                                           Job.ERROR_MESSAGE_MAX_LENGTH)
 
     def trim_to(self, text, max_length):
@@ -184,14 +183,11 @@ class CustomJobModel(JobModel):
         return path.join(self.landing_dir(), self.jar_name())
 
     def start(self, cluster):
-        try:
-            return cluster.runJob(self.jar_path(),
-                                  self.job.hdfs_data_path(),
-                                  self.job.hdfs_output_path(),
-                                  self.mongo_url())
-        except Exception, ex:
-            LOGGER.exception(ex)
-            return None
+        cluster.runJob(str(self.job.id),
+                       self.jar_path(),
+                       self.job.hdfs_data_path(),
+                       self.job.hdfs_output_path(),
+                       self.mongo_url())
 
     def mongo_url(self):
         return "%s/%s.job_%s" % (settings.CLUSTER_CONF.get('mongobase'),

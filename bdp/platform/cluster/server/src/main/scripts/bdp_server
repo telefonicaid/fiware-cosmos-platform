@@ -20,10 +20,10 @@ d_start()
         if [ $RUNNING = '0' ]; then
             echo -n "already running"
         else
-            su $RUN_AS -c `java -jar $BDP_SERVER_BIN` &
+            su $RUN_AS -c "java -jar $BDP_SERVER_BIN" &
         fi
     else
-        su $RUN_AS -c `java -jar $BDP_SERVER_BIN` &
+        su $RUN_AS -c "java -jar $BDP_SERVER_BIN" &
     fi
     PID="$(ps -A -f | grep $BDP_SERVER_BIN | awk '{ print $2 }' | head -1)"
     echo $PID > $PIDFILE

@@ -3,9 +3,14 @@ HTTP utils.
 
 """
 from django.http import HttpResponseForbidden
-from django.template import RequestContext, loader
+from django.template import loader
 
 class Http403(Exception):
+    """Forbidden access exception
+    
+    Use in conjuntion with Http403Middleware to generate 403 error pages.
+
+    """
     pass
 
 def render_to_403(*args, **kwargs):
@@ -20,5 +25,5 @@ def render_to_403(*args, **kwargs):
     http_response_kwargs = {
         'mimetype': kwargs.pop('mimetype', None)
     }
-    response = HttpResponseForbidden(loader.render_to_string(*args, **kwargs),
-                                     **http_response_kwargs)
+    return HttpResponseForbidden(loader.render_to_string(*args, **kwargs),
+                                 **http_response_kwargs)

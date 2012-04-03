@@ -5,15 +5,14 @@ Module bdp_fe.jobconf.views
 import logging
 
 from django.conf import settings
-from django.contrib import auth, messages
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseNotFound, Http404
-from django.shortcuts import get_object_or_404, redirect, render_to_response
+from django.http import HttpResponse, Http404
+from django.shortcuts import redirect, render_to_response
 from django.template import RequestContext, loader
 
-from bdp_fe.jobconf import data
 from bdp_fe.jobconf.cluster import remote
 from bdp_fe.jobconf.forms import NewJobForm, UploadDataForm, UploadJarForm
 from bdp_fe.jobconf.models import CustomJobModel, Job, JobModel
@@ -25,6 +24,8 @@ CLUSTER = remote.Cluster(settings.CLUSTER_CONF.get('host'),
 
 @login_required
 def list_jobs(request):
+    """List user jobs and allow running jobs
+    """
     job_id = util.safe_int_param(request.GET, 'run_job')
     reload_period = max(util.safe_int_param(request.GET, 'reload_period',
                                             settings.RELOAD_PERIOD),

@@ -2,8 +2,6 @@
 Application forms and validation.
 
 """
-import logging
-
 from django import forms
 
 from bdp_fe.jobconf.models import Job

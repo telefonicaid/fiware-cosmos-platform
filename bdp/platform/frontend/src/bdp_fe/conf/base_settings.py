@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """Main configuration"""
 
-import os.path
-PROJECT_PATH = os.path.dirname(__file__)
+from os import path
+PROJECT_PATH = path.abspath(path.join(path.dirname(__file__), '..'))
 
 SITE_ID = 1
 
@@ -10,7 +10,7 @@ ROOT_URLCONF = 'bdp_fe.urls'
 
 TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(PROJECT_PATH, "templates"),
+    path.join(PROJECT_PATH, "templates"),
 )
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
@@ -27,7 +27,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 FIXTURE_DIRS = (
-    os.path.join(PROJECT_PATH, "fixtures"),
+    path.join(PROJECT_PATH, "fixtures"),
 )
 
 STATICFILES_FINDERS = (

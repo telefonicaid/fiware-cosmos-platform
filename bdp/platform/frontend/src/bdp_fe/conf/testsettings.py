@@ -9,7 +9,7 @@ tests of the installed applications.
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-from settings import *
+from bdp_fe.conf.base_settings import *
 
 DATABASES = {
     'default': {

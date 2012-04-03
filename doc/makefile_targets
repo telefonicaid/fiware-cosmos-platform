@@ -1,23 +1,44 @@
+
+# ------------------------------------------------------------------------
+# Most used combinations
+# ------------------------------------------------------------------------
+
+make                - Compile everything in release mode
+make install        - Install locally
+
+# ------------------------------------------------------------------------
 # Building Samson
-all                 - Build the Samson platform and modules
+# ------------------------------------------------------------------------
+
 release             - Build the Samson platorm in release mode
-release_all         - Same as all
+release_all , all   - Build the Samson platform and modules in release mode
 debug               - Build the Samson platform in debug mode
 debug_all           - Build the Samson platform and modules in debug mode
-coverage            - Generate debug binaries that can be used to determine 
-                      coverage
-strict              - Strict compilation mode
+
 man                 - Generate the man pages
 
+# ------------------------------------------------------------------------
 # Installing
+# ------------------------------------------------------------------------
+
 init_home           - Pre-create the SAMSON_HOME/SAMSON_WORKING directories 
                       assigning the owner as SAMSON_OWNER
+
 install, i          - Install the compiled release binaries
 install_debug, di   - Install the compiled debug binaries
 install_man         - Install the man pages
 distribute, d       - Deploy to the cluster identified by SAMSON_CLUSTER
 distributedebug, dd - Deploy debug images to the cluster identified by 
                       SAMSON_CLUSTER
+
+# ------------------------------------------------------------------------
+# Auxiliar stuff
+# ------------------------------------------------------------------------
+
+coverage            - Generate debug binaries that can be used to determine 
+                      coverage
+strict              - Strict compilation mode
+
 
 # Package generation
 deb                 - Generate Ubuntu deb packages 

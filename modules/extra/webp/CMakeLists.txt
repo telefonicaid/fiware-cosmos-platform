@@ -1,14 +1,14 @@
 SET( MODULE_NAME webp )
 
 SET (AUX_HEADERS
-operations/demo.h
+#operations/demo.h
 operations/emit_hits.h
 operations/joint_comscore_dictionary.h
 operations/map_comscore_lookup.h
 operations/parse_tid_web_logs.h
 operations/parse_web_logs.h
 operations/update_user.h
-operations/web_profiling.h
+#operations/web_profiling.h
 )
 
 cmake_minimum_required(VERSION 2.6)

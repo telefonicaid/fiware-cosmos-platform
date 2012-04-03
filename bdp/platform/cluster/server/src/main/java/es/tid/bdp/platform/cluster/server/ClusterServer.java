@@ -3,15 +3,11 @@ package es.tid.bdp.platform.cluster.server;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.*;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.util.RunJar;
 import org.apache.log4j.Logger;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
@@ -35,7 +31,6 @@ public class ClusterServer implements Cluster.Iface {
 
     public static void main(String[] args) {
         try {
-            ClusterServerUtil.disallowExitCalls();
             ClusterServer server = new ClusterServer();
             server.start();
         } catch (Exception ex) {
@@ -68,6 +63,8 @@ public class ClusterServer implements Cluster.Iface {
                 serverTransport);
         args.processor(processor);
         TServer server = new TThreadPoolServer(args);
+        
+        ClusterServerUtil.disallowExitCalls();
         server.serve();
     }
 

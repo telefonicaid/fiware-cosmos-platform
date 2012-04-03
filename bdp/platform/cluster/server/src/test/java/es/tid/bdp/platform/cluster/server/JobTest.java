@@ -28,7 +28,7 @@ public class JobTest {
     public void shouldReturnSuccessful() {
         this.instance = new Job(new String[] {}) {
             @Override
-            protected void run() throws Throwable {
+            protected void run() {
                 // Do not invoke the Hadoop Jar
             }
         };
@@ -42,9 +42,9 @@ public class JobTest {
     public void shouldReturnFailed() {
         this.instance = new Job(new String[] {}) {
             @Override
-            protected void run() throws Throwable {
+            protected void run() {
                 // Do not invoke the Hadoop Jar
-                throw new Exception("Failed!");
+                throw new RuntimeException("Failed!");
             }
         };
         
@@ -58,7 +58,7 @@ public class JobTest {
     public void shouldCaptureExitWithSuccess() {
         this.instance = new Job(new String[] {}) {
             @Override
-            protected void run() throws Throwable {
+            protected void run() {
                 // Do not invoke the Hadoop Jar
                 System.exit(0);
             }
@@ -73,7 +73,7 @@ public class JobTest {
     public void shouldCaptureExitWithFailure() {
         this.instance = new Job(new String[] {}) {
             @Override
-            protected void run() throws Throwable {
+            protected void run() {
                 // Do not invoke the Hadoop Jar
                 System.exit(1);
             }

@@ -27,7 +27,7 @@ public class Job implements Callable<ClusterJobResult> {
             result.setStatus(ClusterJobStatus.FAILED);
             result.setReason(new TransferException(
                     ClusterErrorCode.RUN_JOB_FAILED, "Unknown error"));
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             result.setStatus(ClusterJobStatus.FAILED);
             result.setReason(new TransferException(
                     ClusterErrorCode.RUN_JOB_FAILED,
@@ -36,7 +36,11 @@ public class Job implements Callable<ClusterJobResult> {
         return result;
     }
 
-    protected void run() throws Throwable {
-        RunJar.main(this.args);
+    protected void run() {
+        try {
+            RunJar.main(this.args);
+        } catch (Throwable ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

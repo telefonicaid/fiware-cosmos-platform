@@ -13,4 +13,7 @@ public class ClusterServerMain {
             System.exit(1);
         }
     }
+    
+    private ClusterServerMain() {
+    }
 }

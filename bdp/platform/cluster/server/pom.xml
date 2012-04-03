@@ -93,11 +93,12 @@
             </plugin>
         </plugins>
     </build>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.thrift</groupId>
             <artifactId>libthrift</artifactId>
-            <version>0.8.0</version>
+            <version>${thrift.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.mail</groupId>

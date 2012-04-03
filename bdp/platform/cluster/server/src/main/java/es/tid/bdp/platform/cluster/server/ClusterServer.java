@@ -1,7 +1,11 @@
 package es.tid.bdp.platform.cluster.server;
 
 import java.io.IOException;
-import java.util.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.*;
 
 import org.apache.hadoop.conf.Configuration;
@@ -21,11 +25,11 @@ import org.apache.thrift.transport.TTransportException;
 public class ClusterServer implements Cluster.Iface {
     private static final Logger LOG = Logger.getLogger(ClusterServer.class);
     private static final String CONFIG_FILE = "/cluster_server.properties";
-    
+
     private final String notificationEmail;
-    private final String hdfsUrl;
+    private final URI hdfsURI;
     private final int serverSocketPort;
-    
+
     private JobRunner jobRunner;
     private Configuration conf;
 
@@ -39,20 +43,21 @@ public class ClusterServer implements Cluster.Iface {
         }
     }
 
-    public ClusterServer() throws IOException {
+    public ClusterServer() throws IOException, URISyntaxException {
         Properties props = new Properties();
         props.load(ClusterServer.class.getResource(CONFIG_FILE).openStream());
         this.notificationEmail = props.getProperty("NOTIFICATION_EMAIL");
-        this.hdfsUrl = props.getProperty("HDFS_URL");
+        this.hdfsURI = new URI(props.getProperty("HDFS_URL"));
         this.serverSocketPort = Integer.parseInt(
                 props.getProperty("SERVER_SOCKET_PORT"));
         String jobtrackerUrl = props.getProperty("JOBTRACKER_URL");
-        
+
         this.jobRunner = new JobRunner();
         this.conf = new Configuration();
-        this.conf.set("fs.default.name", this.hdfsUrl);
+        // TODO: this might not be necessary
+        this.conf.set("fs.default.name", this.hdfsURI.toString());
         this.conf.set("mapred.job.tracker", jobtrackerUrl);
-        
+
         ClusterServerUtil.disallowExitCalls();
     }
 
@@ -66,7 +71,7 @@ public class ClusterServer implements Cluster.Iface {
         TServer server = new TThreadPoolServer(args);
         server.serve();
     }
-    
+
     @Override
     public void copyToHdfs(String src, String dest) throws TransferException {
         try {
@@ -85,15 +90,19 @@ public class ClusterServer implements Cluster.Iface {
                        String outputPath, String mongoUrl)
             throws TransferException {
         try {
-            this.jobRunner.startNewThread(id, new String[] {
-                    jarPath, this.hdfsUrl + inputPath,
-                    this.hdfsUrl + outputPath, mongoUrl });
+            this.jobRunner.startNewThread(id, new String[] { jarPath,
+                    this.absoluteHdfsPath(inputPath),
+                    this.absoluteHdfsPath(outputPath), mongoUrl });
         } catch (Exception ex) {
             ClusterServerUtil.logFatalError(this.notificationEmail, ex);
             throw new TransferException(
                     ClusterErrorCode.RUN_JOB_FAILED,
                     ClusterServerUtil.getFullExceptionInformation(ex));
         }
+    }
+
+    protected String absoluteHdfsPath(String relativePath) {
+        return this.hdfsURI.resolve(relativePath).toString();
     }
 
     @Override
@@ -108,10 +117,10 @@ public class ClusterServer implements Cluster.Iface {
                     ClusterServerUtil.getFullExceptionInformation(ex));
         }
     }
-    
+
     private class JobRunner {
         private static final int MAX_THREADS = 10;
-        
+
         private ExecutorService threadPool = Executors.newFixedThreadPool(
                 MAX_THREADS);
         private Map<String, Future<ClusterJobResult>> results =
@@ -123,7 +132,7 @@ public class ClusterServer implements Cluster.Iface {
             this.results.put(id, status);
             return (this.results.size() - 1);
         }
-        
+
         public ClusterJobResult getResult(String id)
                 throws ExecutionException, InterruptedException, TransferException {
             ClusterJobResult result;
@@ -141,10 +150,10 @@ public class ClusterServer implements Cluster.Iface {
             return result;
         }
     }
-    
+
     private class Job implements Callable<ClusterJobResult> {
         private String[] args;
-        
+
         public Job(String[] args) {
             this.args = args.clone();
         }

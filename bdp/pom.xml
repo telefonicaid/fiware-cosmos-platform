@@ -327,7 +327,7 @@
         </repository>
         <repository>
             <id>nexus</id>
-            <url>http://ci-bd.hi.inet/nexus/content/repositories/releases</url>
+            <url>http://cosmos-ci/nexus/content/repositories/releases</url>
         </repository>
     </repositories>
 

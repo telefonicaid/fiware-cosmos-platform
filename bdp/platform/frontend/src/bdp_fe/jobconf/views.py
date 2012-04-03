@@ -32,7 +32,7 @@ def list_jobs(request):
     if job_id:
         run_job(request, job_id)
 
-    return render_to_response('job_listing.html', {
+    return render_to_response('jobconf/job_list.html', {
         'title': 'Job listing',
         'jobs': Job.objects.filter(user=request.user,
                                    status__gt=Job.UNCONFIGURED),
@@ -77,7 +77,7 @@ def view_successful_results(request, job):
                    'prototype_result': prototype_result,
                    'hidden_keys': util.HIDDEN_KEYS,
                    'primary_key': primary_key}
-        return render_to_response('job_results.html',
+        return render_to_response('jobconf/job_results.html',
                                   context,
                                   context_instance=RequestContext(request))
     except util.NoResultsError:
@@ -85,7 +85,7 @@ def view_successful_results(request, job):
                    'job_results' : None,
                    'hidden_keys': util.HIDDEN_KEYS,
                    'expand_types': ['dict', 'list']}
-        return render_to_response('job_results.html',
+        return render_to_response('jobconf/job_results.html',
                                   context,
                                   context_instance=RequestContext(request))
     except util.NoConnectionError:
@@ -95,7 +95,7 @@ def view_successful_results(request, job):
 
 
 def view_error(request, job):
-    return render_to_response('error_report.html', {
+    return render_to_response('jobconf/job_report_error.html', {
         'title': 'Error report for %s' % job.name,
         'job': job,
     }, context_instance=RequestContext(request))
@@ -147,7 +147,7 @@ def new_job(request):
     else:
         form = NewJobForm()
 
-    return render_to_response('new_job.html', {
+    return render_to_response('jobconf/job_new.html', {
         'title': 'New job',
         'form': form,
     }, context_instance=RequestContext(request))
@@ -171,7 +171,7 @@ def config_job(request, job_id):
             messages.error(request, 'JAR file upload failed')
     else:
         form = UploadJarForm()
-    return render_to_response('upload_jar.html', {
+    return render_to_response('jobconf/customjob_upload.html', {
         'title': 'Configure custom job',
         'job': job,
         'form': form,
@@ -197,7 +197,7 @@ def upload_data(request, job_id):
             messages.error(request, 'Data file upload failed')
     else:
         form = UploadDataForm()
-    return render_to_response('upload_data.html', {
+    return render_to_response('jobconf/job_upload_data.html', {
         'title': 'Upload job %s data' % job.name,
         'job': job,
         'form': form,

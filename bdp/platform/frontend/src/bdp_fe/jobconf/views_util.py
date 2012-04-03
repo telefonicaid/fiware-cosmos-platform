@@ -95,7 +95,5 @@ def retrieve_results(job_id, primary_key):
             mongo_result = MongoRecord(job_result, primary_key)
             ans.append(mongo_result)
         return ans
-    except AutoReconnect:
-        raise NoConnectionError
-    except ConnectionFailure:
+    except (AutoReconnect, ConnectionFailure):
         raise NoConnectionError

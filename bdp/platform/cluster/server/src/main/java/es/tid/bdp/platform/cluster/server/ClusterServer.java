@@ -29,16 +29,6 @@ public class ClusterServer implements Cluster.Iface {
     private JobRunner jobRunner;
     private Configuration conf;
 
-    public static void main(String[] args) {
-        try {
-            ClusterServer server = new ClusterServer();
-            server.start();
-        } catch (Exception ex) {
-            LOG.fatal(ClusterServerUtil.getFullExceptionInformation(ex));
-            System.exit(1);
-        }
-    }
-
     public ClusterServer() throws IOException, URISyntaxException {
         Properties props = new Properties();
         props.load(ClusterServer.class.getResource(CONFIG_FILE).openStream());
@@ -55,7 +45,7 @@ public class ClusterServer implements Cluster.Iface {
         this.conf.set("mapred.job.tracker", jobtrackerUrl);
     }
 
-    private void start() throws TTransportException {
+    public void start() throws TTransportException {
         LOG.info("Initializing cluster server");
         TServerSocket serverTransport = new TServerSocket(this.serverSocketPort);
         Cluster.Processor processor = new Cluster.Processor(this);

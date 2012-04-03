@@ -18,23 +18,41 @@ import org.bson.BasicBSONObject;
  */
 public class MongoDBExporterReducer extends Reducer<LongWritable, Text,
         LongWritable, BSONWritable> {
+    private static final String DELIMITER = "\t";
+    
+    private String[] fields;
+    private List<String> columns;
+    
     @Override
-    public void reduce(LongWritable key, Iterable<Text> values,
-                       Context context) throws IOException,
-                                               InterruptedException {
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        this.fields = context.getConfiguration().getStrings("fields");
+        this.columns = new ArrayList<String>();
+    }
+
+    @Override
+    public void reduce(LongWritable key, Iterable<Text> values, Context context)
+            throws IOException, InterruptedException {
         for (Text value : values) {
-            List<String> columns = new ArrayList<String>();
-            columns.addAll(Arrays.asList(value.toString().split("\t")));
-            List<String> attributes = columns.subList(0, columns.size() - 1);
-            long count = Long.parseLong(columns.get(columns.size() - 1));
-            context.write(key, this.toBSON(
-                    attributes.toArray(new String[attributes.size()]), count));
+            this.columns.clear();
+            this.columns.addAll(Arrays.asList(
+                    value.toString().split(DELIMITER)));
+            List<String> attributes = this.columns.subList(0,
+                    this.columns.size() - 1);
+            long count = Long.parseLong(this.columns.get(
+                    this.columns.size() - 1));
+            context.write(key, this.toBSON(attributes, count));
         }
     }
 
-    private BSONWritable toBSON(String[] attributes, long count) {
+    private BSONWritable toBSON(List<String> attributes, long count) {
+        if (this.fields.length != attributes.size()) {
+            throw new IllegalStateException("Invalid aggregate data.");
+        }
         BSONObject obj = new BasicBSONObject();
-        obj.put("attributes", attributes);
+        for (int i = 0; i < attributes.size(); i++) {
+            obj.put(this.fields[i], attributes.get(i));
+        }
         obj.put("count", count);
         return new BSONWritable(obj);
     }

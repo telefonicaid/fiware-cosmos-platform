@@ -47,14 +47,6 @@ public class MongoDBExporterJob extends Job {
         TextInputFormat.setInputPaths(this, inputPath);
         this.setOutputFormatClass(MongoOutputFormat.class);
         MongoConfigUtil.setOutputURI(this.conf, outputUrl);
-        
-        String fields = "";
-        for (String field : feature.getFields()) {
-            if (!fields.isEmpty()) {
-                fields += "\t";
-            }
-            fields += field;
-        }
-        this.conf.set("fields", fields);
+        this.conf.setStrings("fields", feature.getFields());
     }
 }

@@ -1,4 +1,6 @@
 
+#include "au/ThreadManager.h"
+
 #include "SamsonConnector.h"
 #include "BufferProcessor.h"
 #include "SamsonConnectorConnection.h" // Own interface
@@ -38,7 +40,7 @@ namespace samson {
         // Create the thread
         thread_running = true;
         pthread_t t;
-        pthread_create(&t, NULL, run_SamsonConnectorConnection, this);
+        au::ThreadManager::shared()->addThread("SamsonConnectorConnection",&t, NULL, run_SamsonConnectorConnection, this);
     }
     
     SamsonConnectorConnection::~SamsonConnectorConnection()

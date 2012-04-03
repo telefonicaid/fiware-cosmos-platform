@@ -1,4 +1,5 @@
 
+#include "au/ThreadManager.h"
 
 #include "NetworkCenter.h"	// Own interface
 
@@ -16,7 +17,7 @@ namespace samson
 	void NetworkFakeCenter::runInBackground()
 	{
 		pthread_t t;
-		pthread_create( &t , 0 , runNetworkFakeCenter , this );	
+        au::ThreadManager::shared()->addThread("NetworkFakeCenter::runInBackground", &t , 0 , runNetworkFakeCenter , this );	
 	}
 
 }

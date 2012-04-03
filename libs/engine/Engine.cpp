@@ -92,6 +92,14 @@ void Engine::init()
     au::ThreadManager::shared()->addThread("Engine", &engine->t, 0, runEngineBackground, NULL );
 }
 
+
+void Engine::stop()
+{
+    // Set this flag as true to force main thread to finish
+    if ( engine )
+        engine->quitting = true;
+}
+
 void Engine::destroy()
 {
     LM_V(("Engine destroy"));
@@ -100,18 +108,6 @@ void Engine::destroy()
     {
         LM_W(("Not possible to destroy Engine since it was not initialized"));
         return;
-    }
-
-    // Set this falg as true
-    engine->quitting = true;
-    
-    // Wait for the main thread
-    au::CronometerNotifier cronometer_notifier(2); // Notify every 2 seconds on screen that we are waiting...
-    while( engine->running_thread )
-    {
-        usleep(100000);
-        if( cronometer_notifier.touch() )
-            LM_M(("Waiting engine main thread to finish"));
     }
     
     delete engine;

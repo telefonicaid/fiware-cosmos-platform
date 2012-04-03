@@ -12,39 +12,15 @@ namespace samson {
         LM_T(LmtCleanup, ("In cleanup"));
         if (worker_listener != NULL)
         {
-            au::Cronometer cronometer;
-            worker_listener->quit();
-            while( worker_listener->background_thread_running )
-            {
-                usleep(100000);
-                if( cronometer.diffTimeInSeconds() > 2 )
-                {
-                    LM_W(("Waiting background thread of network listener to finish"));
-                    cronometer.reset();
-                }
-            }
             delete worker_listener;
             worker_listener = NULL;
         }
 
-
         if (web_listener != NULL)
         {
-            au::Cronometer cronometer;
-            web_listener->quit();
-            while( web_listener->background_thread_running )
-            {
-                usleep(100000);
-                if( cronometer.diffTimeInSeconds() > 2 )
-                {
-                    LM_W(("Waiting background thread of network listener to finish"));
-                    cronometer.reset();
-                }
-            }
             delete web_listener;
             web_listener = NULL;
         }
-        
     }
 
     WorkerNetwork::WorkerNetwork( int port , int web_port )

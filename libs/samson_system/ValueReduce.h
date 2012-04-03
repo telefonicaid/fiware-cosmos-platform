@@ -47,7 +47,7 @@ namespace samson{
                         tmp->copyFrom(value);
                         
                         // Move the rest of pointers and counter
-                        for( int j = (max_num_elements-1 ) ; j >= i  ; j-- )
+                        for( int j = (max_num_elements-2 ) ; j >= i  ; j-- )
                         {
                             values[j+1] = values[j];
                             counters[j+1] = counters[j];
@@ -259,7 +259,7 @@ namespace samson{
                 int num = 1;
                 if( cmdLine.get_num_arguments() > 1 )
                     num = atoi( cmdLine.get_argument(1).c_str() );
-                if( num == 0 )
+                if( num <= 0 )
                     num = 1;
                 
                 list = new ValueList( num );

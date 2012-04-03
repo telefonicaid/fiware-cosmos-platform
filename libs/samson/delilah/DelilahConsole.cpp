@@ -1057,7 +1057,7 @@ namespace samson
                         
                         std::ostringstream message;
                         message << "Including regular file " << fileName << " with " <<  au::str( buf.st_size ) <<" Bytes\n";
-                        writeOnConsole( message.str() );
+                        showMessage( message.str() );
                     }
                     
                     fileNames.push_back( fileName );
@@ -1418,9 +1418,9 @@ namespace samson
             
             o << "Process started: " << au::code64_str(network->getMynodeIdentifier().id) << "_" <<  component->getId() << " " << component->getConcept() << "\n";
             if( component->error.isActivated() )
-                writeErrorOnConsole(o.str());        
+                showErrorMessage( o.str() );        
             else
-                writeWarningOnConsole(o.str());        
+                showWarningMessage( o.str() );        
         }
     }
     
@@ -1432,13 +1432,13 @@ namespace samson
         if( verbose )
         {
             if( !component->error.isActivated() )
-                writeWarningOnConsole( au::str( "Process finished: %s_%lu %s\n" 
+                showWarningMessage( au::str( "Process finished: %s_%lu %s\n" 
                                                , au::code64_str(network->getMynodeIdentifier().id).c_str()
                                                , component->getId()
                                                , component->getConcept().c_str() ) );
             else
             {
-                writeErrorOnConsole( au::str( "Process finished with error: %s_%lu %s\nERROR: %s\n" 
+                showErrorMessage( au::str( "Process finished with error: %s_%lu %s\nERROR: %s\n" 
                                              , au::code64_str(network->getMynodeIdentifier().id).c_str()
                                              , component->getId()
                                              , component->getConcept().c_str()

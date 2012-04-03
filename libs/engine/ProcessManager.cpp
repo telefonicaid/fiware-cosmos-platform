@@ -36,56 +36,24 @@ void ProcessManager::init( int _num_processes)
     
 }
 
+void ProcessManager::stop( )
+{
+    LM_V(("ProcessManager stop"));
+    
+    if( processManager )
+        processManager->quitting = true;
+}
+
 void ProcessManager::destroy( )
 {
     LM_V(("ProcessManager destroy"));
     
     if (!processManager)
         LM_RVE(("attempt to destroy uninitialized process manager"));
-
-    // Wait for unfinished threads...
-    processManager->quitAndWait();
     
     delete processManager;
     processManager = NULL;
 }
-
-void ProcessManager::quitAndWait()
-{
-    au::Cronometer cronometer;
-    size_t secs = 0;
-    
-    // Set flag to indicate backgroun process we are quitting...
-    quitting = true;
-    
-    while( true )
-    {
-        size_t num_running_items = token_getNumRunningProcessItem();
-        
-        if( ( !thread_running ) && ( num_running_items == 0 ) )
-            break;
-
-        // Some sleep
-        usleep(100000);
-        
-        // Notify something every second
-        size_t _secs = cronometer.diffTimeInSeconds();
-        if( secs > _secs )
-        {
-            secs = _secs;
-            if ( thread_running )
-                LM_M(("Waiting for the main thread of ProcessManager to finish..."));
-            else
-                LM_M(("Waiting for %lu background processes to finish (ProcessManager) " ,num_running_items ));
-        }
-    }
-        
-    items.clearSet();				// List of items to be executed ( all priorities  )
-    
-}
-
-
-
 
 void* run_check_background_processes(void *p)
 {
@@ -127,6 +95,7 @@ ProcessManager::ProcessManager( int _num_processes ) : token("engine::ProcessMan
 
 ProcessManager::~ProcessManager()
 {
+    items.clearSet();				// List of items to be executed ( all priorities  )
 }
 
 void ProcessManager::notify( Notification* notification )

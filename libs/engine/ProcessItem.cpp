@@ -2,6 +2,7 @@
 #include "au/ErrorManager.h"                  // au::ErrorManager
 #include "au/xml.h"                         // au::xml...
 #include "au/TokenTaker.h"                          // au::TokenTake
+#include "au/ThreadManager.h"
 
 #include "engine/Engine.h"					// engine::Engine
 #include "engine/ProcessManager.h"          // engine::ProcessManager
@@ -125,12 +126,7 @@ std::string ProcessItem::getDescription()
 void ProcessItem::runInBackground()
 {
     au::ExecesiveTimeAlarm alarm("ProcessItem::runInBackground");
-
-    // Create the thread as joinable to make sure we control when threads finish
-    
-    pthread_create(&t, NULL, runProcessItem, this);
-
-    
+    au::ThreadManager::shared()->addThread("ProcessItem::runInBackground", &t, NULL, runProcessItem, this);
 }
 
 void ProcessItem::setCanceled()

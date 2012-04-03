@@ -53,11 +53,12 @@ namespace samson {
         Status initNetworkListener( int port );        
 
         // Function to cancel banground thread accepting connections
-        void quit();
+        void stop( bool wait);
         
         // Non blocking and blocking calls to accept connections
         void runNetworkListenerInBackground();
         void runNetworkListener();
+        
         
     private:
         

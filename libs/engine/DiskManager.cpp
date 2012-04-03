@@ -36,6 +36,13 @@ void DiskManager::init( int _num_disk_operations )
     diskManager = new DiskManager ( _num_disk_operations );
 }
 
+void DiskManager::stop( )
+{
+    if( diskManager )
+        diskManager->quitting = true;
+}
+
+
 void DiskManager::destroy( )
 {
     LM_V(("DiskManager destroy"));
@@ -45,13 +52,8 @@ void DiskManager::destroy( )
         LM_W(("Please init diskManager before destroying it"));
         return;
     }
-
-    
-    diskManager->quitAndWait();
-    
     delete diskManager;
     diskManager = NULL;
-    
 }
 
 
@@ -69,38 +71,6 @@ void* run_disk_manager_worker( void* p )
     DiskManager* dm = (DiskManager*) p;
     dm->run_worker();
     return NULL;
-}
-
-void DiskManager::quitAndWait()
-{
-    au::Cronometer cronometer;
-    size_t secs = 0;
-    
-    // Set flag to indicate background process we are quitting...
-    quitting = true;
-    
-    while( true )
-    {
-        size_t num_running_items = get_num_disk_manager_workers();
-        
-        if( num_running_items == 0 )
-            break;
-        
-        // Some sleep
-        usleep(100000);
-        
-        // Notify something every second
-        size_t _secs = cronometer.diffTimeInSeconds();
-        if( secs > _secs )
-        {
-            secs = _secs;
-            LM_M(("Waiting for %lu background processes to finish (DiskManager) " ,num_running_items ));
-        }
-    }
-
-    // Remove pending elements
-    pending_operations.clearList();
-    
 }
 
 DiskManager::DiskManager( int _num_disk_operations ) : token("engine::DiskManager")
@@ -135,6 +105,8 @@ void DiskManager::createThreads()
 
 DiskManager::~DiskManager()
 {
+    // Remove pending elements
+    pending_operations.clearList();
 }
 
 void DiskManager::add( DiskOperation *operation )
@@ -247,9 +219,9 @@ void DiskManager::run_worker()
         DiskOperation* operation = getNextDiskOperation();
         if (operation)
 		{
-		   LM_M(("START operation %s" , operation->getDescription().c_str() ));
-		   operation->run();
-		   LM_M(("FINISH operation %s" , operation->getDescription().c_str() ));
+            LM_T(LmtDisk,  ("START operation %s" , operation->getDescription().c_str() ));
+            operation->run();
+            LM_T(LmtDisk, ("FINISH operation %s" , operation->getDescription().c_str() ));
 		}
         else
             usleep(100000);

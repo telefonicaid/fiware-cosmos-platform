@@ -76,8 +76,9 @@ public:
     
     ~ProcessManager();
     
-    static void destroy( );
     static void init( int _num_processes );
+    static void stop( );
+    static void destroy( );
     static ProcessManager* shared();
     
     static int getNumCores();
@@ -121,14 +122,6 @@ private:
     ProcessItem* token_cancelProcessItem( ProcessItem* item );
     void token_getInfo( std::ostringstream& output);
     size_t token_getNumRunningProcessItem();
-    
-    
-private:
-    
-    void quitAndWait();
-    
-    
-    
     
 };
 

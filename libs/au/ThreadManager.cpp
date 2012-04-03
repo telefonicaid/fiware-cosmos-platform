@@ -74,12 +74,15 @@ namespace au {
         return names;
     }
 
-    
     std::string ThreadManager::str()
     {
         // Mutex protection
         au::TokenTaker tt( &token );
-        
+        return _str();
+    }
+    
+    std::string ThreadManager::_str()
+    {
         std::ostringstream output;
         output << "Running threads\n";
         output << "------------------------------------\n";
@@ -90,6 +93,46 @@ namespace au {
         return output.str();
     }
     
+    void ThreadManager::wait()
+    {
+        //std::cerr << "Waiting all threads to finish\n";
+        
+        au::Cronometer c;
+        while( true )
+        {
+            {
+                au::TokenTaker tt(&token);
+                
+                if( threads.size() == 0 )
+                {
+                    //std::cerr << "All threads finished\n";
+                    return;
+                }
+                
+                if( threads.size() == 1 )
+                    if( threads.begin()->second->t == pthread_self() )
+                    {
+                        //std::cerr << "All threads finished\n";
+                        return;
+                    }
+                
+                if( c.diffTimeInSeconds() > 2 )
+                {
+                    std::cerr << "Waiting all threads to finish\n";
+                    std::cerr << _str() << "\n";
+                    std::cerr << au::str( "Still running %d threads ...\n" , threads.size() );
+                    
+                    
+                    c.reset();
+                }
+                
+            }
+            
+            usleep(100000);
+            
+        }
+        
+    }
 
     // --------------------------------------------------------------------------------
     // Function to run a thread info

@@ -72,7 +72,7 @@ namespace au {
         
         std::string str()
         {
-            return au::str("%-20s %s"  , name.c_str() , cronometer.str().c_str() );
+            return au::str("%60s %s"  , name.c_str() , cronometer.str().c_str() );
         }
         
     };
@@ -80,6 +80,9 @@ namespace au {
     // Function to run a thread info
     void* run_ThreadInfo( void* p );
     
+    // ------------------------------------------------------------
+    // Manager to controls all running threads
+    // ------------------------------------------------------------
     
     class ThreadManager
     {
@@ -96,6 +99,7 @@ namespace au {
         
         static ThreadManager * shared();
         
+        // Add a thread to the manager
         int addThread( 
                       std::string thread_name , 
                       pthread_t * __restrict t  , 
@@ -103,14 +107,27 @@ namespace au {
                       thread_function f , 
                       void * __restrict p 
                       );
-         
-        void notify_finish_thread( ThreadInfo* thread_info );
+        
+        // Get the number of running threads
         int getNumThreads();
+        
+        // Get name of all running threads
         au::StringVector getThreadNames();
+
+        // Debug string
         std::string str();
         
+        // Wait for all threads to finish ( except the calling thread )
+        void wait();
         
-                       
+        // Internal function used to notify that a particular threads has finished
+        void notify_finish_thread( ThreadInfo* thread_info );
+
+                     
+    private:
+        std::string _str();
+
+        
     };
     
 }

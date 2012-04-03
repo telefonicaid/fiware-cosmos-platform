@@ -12,6 +12,7 @@
 #include "au/ErrorManager.h"
 #include "au/Token.h"
 #include "au/TokenTaker.h"
+#include "au/ThreadManager.h"
 
 #include "engine/MemoryManager.h"			// engine::MemoryManager
 #include "engine/Notification.h"            // engine::Notification
@@ -217,7 +218,8 @@ namespace samson
         {
             ProcessItemIsolated *tmp = (this);
             pthread_t t;
-            pthread_create(&t, NULL, run_ProcessItemIsolated, tmp);
+            au::ThreadManager::shared()->addThread("ProcessItemIsolated::run"
+                                               ,&t, NULL, run_ProcessItemIsolated, tmp);
         }
         else
         {

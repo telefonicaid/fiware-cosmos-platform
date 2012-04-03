@@ -8,6 +8,7 @@
 #include "au/list.h"
 #include "au/Cronometer.h"
 #include "au/utils.h"
+#include "ThreadManager.h"
 
 #include "au/TokenTaker.h"
 
@@ -340,7 +341,7 @@ void* run_console(void* p)
 void Console::runConsoleInBackground()
 {
     pthread_t t;
-    pthread_create(&t, NULL, run_console, this);
+    au::ThreadManager::shared()->addThread("au::Console::runConsoleInBackground" , &t, NULL, run_console, this );
 }
 
 void Console::getEntry(ConsoleEntry * entry )
@@ -464,7 +465,6 @@ void Console::runConsole()
     
     // Clear line to quit nicely...
     clear_line();
-    printf("\n");
     
     // Remove the signal handler...
     signal(SIGWINCH, SIG_IGN);

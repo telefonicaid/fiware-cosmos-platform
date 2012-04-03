@@ -8,6 +8,8 @@
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 
+#include "au/ThreadManager.h"
+
 #include "samson/network/SocketConnection.h"
 #include "samson/network/misc.h"
 #include "samson/network/NetworkManager.h"
@@ -32,9 +34,26 @@ namespace samson {
         LM_T(LmtCleanup, ("In NetworkListener::~NetworkListener"));
     }
 
-    void NetworkListener::quit()
+    void NetworkListener::stop( bool wait )
     {
         quit_flag = true;
+        
+        if( background_thread_running && wait )
+        {
+            au::Cronometer c;
+            while( true )
+            {
+                if( c.diffTimeInSeconds() > 2 )
+                {
+                    c.reset();
+                    std::cerr << "Waiting listener on port " << port << " to finish...\n";
+                }
+                
+                usleep(100000);
+                if( !background_thread_running )
+                    return;
+            }
+        }
     }
     
     Status NetworkListener::initNetworkListener( int _port )
@@ -101,7 +120,9 @@ namespace samson {
         // Create thread
         LM_T(LmtCleanup, ("Creating a thread"));
         background_thread_running = true;
-        pthread_create(&t, NULL, NetworkListener_run, this);
+        
+        au::ThreadManager::shared()->addThread("NetworkListener::runNetworkListenerInBackground"
+                                               ,&t, NULL, NetworkListener_run, this);
         pthread_detach(t);
     }
     

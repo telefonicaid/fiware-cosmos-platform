@@ -6,6 +6,7 @@
 #include <signal.h>                 // signal(.)
 
 #include "au/LockDebugger.h"            // au::LockDebugger
+#include "au/ThreadManager.h"
 
 #include "engine/Engine.h"                 // engine::Engine
 #include "engine/EngineElement.h"          // engine::EngineElement
@@ -195,7 +196,7 @@ int main(int argC, const char *argV[])
     
         // Run delilah console in background
         pthread_t t;
-        pthread_create(&t, 0, run_DelilahConsole, delilahConsole);
+        au::ThreadManager::shared()->addThread( "samsonLocal::delilah" , &t, 0, run_DelilahConsole, delilahConsole );
     }
 
     // Set the command file name

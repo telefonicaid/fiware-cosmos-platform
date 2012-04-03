@@ -11,6 +11,7 @@
 #include "logMsg/logMsg.h"
 
 #include "au/string.h"              // au::str()
+#include "au/ThreadManager.h"
 
 #include "samson/client/SamsonClient.h"         // samson::SamsonClient
 #include "samson/client/SamsonPushBuffer.h"
@@ -166,7 +167,7 @@ int main( int argC , const char *argV[] )
     
     // Background thread to review connections in samson connector
     pthread_t t;
-    pthread_create(&t, NULL, review_samson_connector, NULL);
+    au::ThreadManager::shared()->addThread( "SamsonConector:review" , &t, NULL, review_samson_connector, NULL);
     
     // Run console if interactive mode is activated
     if( interactive )

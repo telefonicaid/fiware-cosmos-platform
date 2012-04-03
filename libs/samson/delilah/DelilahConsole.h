@@ -135,7 +135,7 @@ namespace samson {
 		{
 			std::ostringstream output;
 			output << "Finished local delilah process with : " << id ;
-			writeWarningOnConsole( output.str() );
+			showWarningMessage( output.str() );
 		}
 		
 		// Show a message on screen
@@ -149,11 +149,12 @@ namespace samson {
             
 			writeOnConsole( au::strToConsole( message ) );
 		}
+        
 		void showWarningMessage( std::string message)
         {
             if( simple_output )
             {
-                std::cout << message;
+                std::cout << au::str( au::purple , "%s" , message.c_str() );
                 return;
             }
             
@@ -164,7 +165,7 @@ namespace samson {
         {
             if( simple_output )
             {
-                std::cout << message;
+                std::cout << au::str( au::red , "%s" , message.c_str() );
                 return;
             }
             

@@ -1,4 +1,6 @@
 
+#include "au/ThreadManager.h"
+
 #include "samson/common/MessagesOperations.h"
 
 #include "samson/network/misc.h"
@@ -72,13 +74,15 @@ namespace samson {
         // Create both threads for writing and reading
         if( !running_t_read )
         {
-            pthread_create(&t_read, NULL, NetworkConnection_readerThread, this);
+            au::ThreadManager::shared()->addThread("NetworkConnection::initReadWriteThreads::read"
+                                                   ,&t_read, NULL, NetworkConnection_readerThread, this);
             running_t_read = true;
         }
         
         if( !running_t_write )
         {
-            pthread_create(&t_write, NULL, NetworkConnection_writerThread, this);
+            au::ThreadManager::shared()->addThread("NetworkConnection::initReadWriteThreads::write"
+                                                   ,&t_write, NULL, NetworkConnection_writerThread, this);
             running_t_write = true;
         }
     }

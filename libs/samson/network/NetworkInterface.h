@@ -145,6 +145,12 @@ namespace samson {
             LM_W(("NetworkInterface method not implemented (%s)", command.c_str()));
             return "";
         }
+
+        virtual void stop()
+        {
+            LM_W(("NetworkInterface method not implemented"));
+        }
+        
         
         virtual std::string getLoginInfo()
         {

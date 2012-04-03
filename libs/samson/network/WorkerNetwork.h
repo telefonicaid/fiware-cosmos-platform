@@ -42,7 +42,17 @@ namespace samson {
         // ------------------------------------------------------------
         std::string cluster_command( std::string command );
         
-        
+        void stop()
+        {
+            // Stop listeners
+            worker_listener->stop( true );
+            web_listener->stop(  true );
+
+            
+            // Close all connections
+            NetworkManager::reset();
+        }
+
         // Suspend the network elements implemented behind NetworkInterface
         // Close everything and return the "run" call
         virtual void quit(void)

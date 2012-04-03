@@ -1,6 +1,8 @@
 #include <fcntl.h>
 #include <dirent.h>
 
+#include "au/ThreadManager.h"
+
 #include "SamsonConnectorConnection.h"
 #include "SamsonConnector.h"
 
@@ -76,7 +78,7 @@ namespace samson {
         // Create the background thread
         thread_running = true;
         pthread_t t;
-        pthread_create(&t, NULL, run_DiskConnection, this );
+        au::ThreadManager::shared()->addThread("DiskConnection",&t, NULL, run_DiskConnection, this );
     }
     
     DiskConnection::~DiskConnection()

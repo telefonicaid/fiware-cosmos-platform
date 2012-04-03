@@ -135,6 +135,16 @@ void captureSIGTERM( int s )
 
 void cleanup(void)
 {
+    
+    // Stop all threads to clean up
+    engine::Engine::stop();
+    engine::DiskManager::stop();
+    engine::ProcessManager::stop();
+    networkP->stop();
+    
+    // Wait all threads to finsih
+    au::ThreadManager::shared()->wait();
+    
     google::protobuf::ShutdownProtobufLibrary();
 
     // Delete worker network

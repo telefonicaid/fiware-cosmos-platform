@@ -1,5 +1,7 @@
 
 
+#include "au/ThreadManager.h"
+
 #include "SamsonPushConnectionsManager.h" // Own interface
 #include "samson/client/SamsonClient.h"         // samson::SamsonClient
 
@@ -29,7 +31,7 @@ SamsonPushConnection::SamsonPushConnection( samson::SocketConnection * _socket_c
     
     // Create the thread
     pthread_t t;
-    pthread_create(&t, NULL, run_SamsonPushConnection, this);
+    au::ThreadManager::shared()->addThread("SamsonPushConnection",&t, NULL, run_SamsonPushConnection, this);
 }
 
 SamsonPushConnection::~SamsonPushConnection()

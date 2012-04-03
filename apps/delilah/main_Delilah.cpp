@@ -111,6 +111,16 @@ samson::DelilahConsole* delilahConsole = NULL;
 
 void cleanup(void)
 {
+    // Stop all threads to clean up
+    engine::Engine::stop();
+    engine::DiskManager::stop();
+    engine::ProcessManager::stop();
+    networkP->stop();
+    
+    // Wait all threads to finsih
+    au::ThreadManager::shared()->wait();
+
+    // Clear google protocol buffers library
     google::protobuf::ShutdownProtobufLibrary();
 
     // Delete network
@@ -290,7 +300,7 @@ int main(int argC, const char *argV[])
                 }
             }
         }
-        
+        // Set output to screen
         delilahConsole->setSimpleOutput();
         size_t id = delilahConsole->runAsyncCommand( command );
 
@@ -356,7 +366,7 @@ int main(int argC, const char *argV[])
         int num_line = 0;
         char line[1024];
         
-        LM_M(("Processing commands file %s", commandFileName ));
+        std::cerr << au::str("Processing commands file %s\n", commandFileName );
 
         while( fgets(line, sizeof(line), f) )
         {
@@ -370,9 +380,9 @@ int main(int argC, const char *argV[])
             if( ( line[0] != '#' ) && ( strlen(line) > 0) )
             {
                 
+                std::cerr << au::str("Processing: '%s'\n", line);
                 size_t id = delilahConsole->runAsyncCommand( line );
-
-                LM_M(("Processing: '%s' [ id generated %lu ]", line , id));
+                std::cerr << au::str("Delilah id generated %lu\n" , id);
                 
                 if( id != 0)
                 {
@@ -394,7 +404,7 @@ int main(int argC, const char *argV[])
         fclose(f);
 
         // Flush content of console
-        delilahConsole->flush();
+        //delilahConsole->flush();
         LM_M(("delilah exit correctly"));
         exit(0);
     }
@@ -402,29 +412,5 @@ int main(int argC, const char *argV[])
     // Run console
     delilahConsole->run();
 
-    // ------------------------------------------------------------------------
-    // Close everything
-    // ------------------------------------------------------------------------
-    
-    samson::ModulesManager::destroy();
-    
-    engine::ProcessManager::destroy();
-    engine::DiskManager::destroy();
-    engine::MemoryManager::destroy();
-    engine::Engine::destroy();
-    
-    samson::SamsonSetup::destroy();
-    
-    
-    // Check background threads
-    au::StringVector background_threads = au::ThreadManager::shared()->getThreadNames();
-    if( background_threads.size() > 0 )
-    {
-        LM_W(("Still %lu background threads running (%s)" , background_threads.size() , background_threads.str().c_str() ));
-        std::cerr << au::ThreadManager::shared()->str();
-        return 1;
-    }
-
-    LM_M(("Finish correctly with 0 background processes"));
     return 0;
 }

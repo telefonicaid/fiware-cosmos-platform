@@ -44,6 +44,12 @@ public:
         return true;
     }
     
+    void stop()
+    {
+        // Close all connections
+        NetworkManager::reset();
+    }
+    
     std::string getLoginInfo()
     {
         return au::str("[%s@%s:%d]" , user.c_str() , host.c_str() , port );

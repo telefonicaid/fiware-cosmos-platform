@@ -75,6 +75,7 @@ public:
     au::OnOffMonitor on_off_monitor;
     
     static void init( int _num_disk_operations );
+    static void stop( );
     static void destroy( );
     static DiskManager* shared();
    
@@ -120,12 +121,6 @@ private:
     
     int get_num_disk_manager_workers();
     void createThreads();
-  
-    // Quit all threads and wait them
-    void quitAndWait();
-    
-    
-    
     
 };
 

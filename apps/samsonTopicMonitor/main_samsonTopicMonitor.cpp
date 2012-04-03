@@ -24,6 +24,7 @@
 #include "au/Token.h"
 #include "au/TokenTaker.h"
 #include "au/string.h"                          // au::str()
+#include "au/ThreadManager.h"
 
 #include "samson/client/SamsonClient.h"         // samson::SamsonClient
 
@@ -203,7 +204,8 @@ int main( int argC ,  char *argV[] )
     
     // Run the thread to update incoming blocks
     pthread_t t;
-    pthread_create(&t, NULL, process_income_blocks, NULL);
+    
+    au::ThreadManager::shared()->addThread( "main::SamsonTopicMonitor" ,&t, NULL, process_income_blocks, NULL);
 
 	// Create the app ( QT library )
     app =  new QApplication(argC, argV);

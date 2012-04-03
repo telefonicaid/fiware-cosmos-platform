@@ -70,8 +70,11 @@ namespace samson
         {
             au::ErrorManager error;
             au::removeDirectory( fileName , error );
+
+            /*
             if( error.isActivated() )
-                delilah->showWarningMessage( error.getMessage() );
+                delilah->showWarningMessage( error.getMessage() + "\n" );
+             */
         }
         
         if( mkdir( fileName.c_str() , 0755 ) )

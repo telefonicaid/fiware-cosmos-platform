@@ -87,6 +87,7 @@ public:
     
     static void destroy();
     static void init();
+    static void stop();
     static Engine* shared();
     
 public:
@@ -94,6 +95,7 @@ public:
     // Methods only executed from the thread-creation-functions ( never use directly )
     void run();
     
+
 private:
     
     // Find the position in the list to inser a new element

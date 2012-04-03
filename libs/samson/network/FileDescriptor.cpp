@@ -215,7 +215,10 @@ namespace samson {
         } while ((fds == -1) && (errno == EINTR));
         
         if (fds == -1)
-            LM_RP(SelectError, ("select error awaiting '%s' from '%s", what, name.c_str()));
+        {
+            //LM_RP(SelectError, ("select error awaiting '%s' from '%s", what, name.c_str()));
+            return SelectError;
+        }
         else if (fds == 0)
         {
             //LM_RE(Timeout, ("timeout awaiting '%s' from '%s' (%d.%06d seconds)", what, host.c_str(), secs, usecs));

@@ -1,5 +1,7 @@
 package es.tid.bdp.platform.cluster.server;
 
+import java.lang.reflect.UndeclaredThrowableException;
+
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -44,7 +46,7 @@ public class JobTest {
             @Override
             protected void run() {
                 // Do not invoke the Hadoop Jar
-                throw new RuntimeException("Failed!");
+                throw new UndeclaredThrowableException(null);
             }
         };
         

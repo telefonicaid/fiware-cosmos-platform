@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
  *
  * @author dmicol
  */
-public class ClusterServerMain {
+public final class ClusterServerMain {
     private static final Logger LOG = Logger.getLogger(ClusterServer.class);
     
     public static void main(String[] args) {

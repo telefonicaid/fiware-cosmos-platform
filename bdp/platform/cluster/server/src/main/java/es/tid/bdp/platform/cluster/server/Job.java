@@ -1,5 +1,6 @@
 package es.tid.bdp.platform.cluster.server;
 
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.Callable;
 
 import org.apache.hadoop.util.RunJar;
@@ -40,7 +41,7 @@ public class Job implements Callable<ClusterJobResult> {
         try {
             RunJar.main(this.args);
         } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+            throw new UndeclaredThrowableException(ex);
         }
     }
 }

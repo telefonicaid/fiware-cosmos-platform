@@ -73,7 +73,7 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'django': ['logfile', 'mail_admins'],
+            'handlers': ['logfile', 'mail_admins'],
             'level': 'WARNING',
             'propagate': True,
         },

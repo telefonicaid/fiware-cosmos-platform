@@ -32,13 +32,18 @@ class Command(BaseCommand):
             for job in Job.objects.all():
                 if job.status == Job.RUNNING:
                     try:
-                        result = CLUSTER.getJobResult(job.execution_id)
+                        result = CLUSTER.getJobResult(str(job.id))
                         job.status = result.status - 1
                         if result.reason is not None:
                             job.set_error(result.reason)
                         job.save()
                         updated += 1
                     except remote.ClusterException, ex:
+                        if ex.error_code == Job.INVALID_JOB_ID:
+                            job.status = Job.FAILED
+                            job.set_error(ex)
+                            job.save()
+                            updated += 1
                         self.stdout.write("Error %d: %s\n" % (ex.error_code,
                                                               ex.error_message))
             if not quiet:

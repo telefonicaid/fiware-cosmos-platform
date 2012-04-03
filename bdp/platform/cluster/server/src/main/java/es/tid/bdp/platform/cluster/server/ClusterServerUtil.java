@@ -25,6 +25,10 @@ final class ClusterServerUtil {
     private ClusterServerUtil() {
     }
     
+    static void allowExitCalls() {
+        System.setSecurityManager(null);
+    }
+    
     static void disallowExitCalls() {
         final SecurityManager securityManager = new SecurityManager() {
             @Override

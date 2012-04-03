@@ -12,7 +12,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 
-import es.tid.bdp.kpicalculation.KpiMain;;
+import es.tid.bdp.kpicalculation.KpiMain;
+import es.tid.bdp.kpicalculation.config.KpiFeature;
 
 /**
  * Export user profiles to mongodb
@@ -40,10 +41,12 @@ public class MongoDBExporterJob extends Job {
      *                  for instance mongodb://host/db.collection
      * @throws IOException
      */
-    public void configure(Path inputPath, String outputUrl) throws IOException {
+    public void configure(Path inputPath, String outputUrl, KpiFeature feature)
+            throws IOException {
         this.setInputFormatClass(TextInputFormat.class);
         TextInputFormat.setInputPaths(this, inputPath);
         this.setOutputFormatClass(MongoOutputFormat.class);
         MongoConfigUtil.setOutputURI(this.conf, outputUrl);
+        this.conf.setStrings("fields", feature.getFields());
     }
 }

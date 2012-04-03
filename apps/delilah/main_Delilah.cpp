@@ -115,7 +115,8 @@ void cleanup(void)
     engine::Engine::stop();
     engine::DiskManager::stop();
     engine::ProcessManager::stop();
-    networkP->stop();
+    if( networkP ) 
+        networkP->stop();
     
     // Wait all threads to finsih
     au::ThreadManager::shared()->wait();

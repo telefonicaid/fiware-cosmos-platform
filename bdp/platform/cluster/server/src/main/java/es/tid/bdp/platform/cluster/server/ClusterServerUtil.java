@@ -1,6 +1,5 @@
 package es.tid.bdp.platform.cluster.server;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Properties;
@@ -11,11 +10,15 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.log4j.Logger;
+
 /**
  *
  * @author dmicol
  */
 final class ClusterServerUtil {
+    private static final Logger LOG = Logger.getLogger(ClusterServer.class);
+    
     static class ExitWithSuccessCodeException extends SecurityException { }
     static class ExitWithFailureCodeException extends SecurityException { }
 
@@ -46,7 +49,17 @@ final class ClusterServerUtil {
         return writer.toString();
     }
 
-    static void sendNotificationEmail(String emailAddress, Exception exception) {        
+    static void logFatalError(String emailAddress, Exception exception) {
+        logFatalException(exception);
+        sendNotificationEmail(emailAddress, exception);
+    }
+    
+    private static void logFatalException(Exception exception) {
+        LOG.fatal(getFullExceptionInformation(exception));
+    }
+    
+    private static void sendNotificationEmail(String emailAddress,
+                                              Exception exception) {
         String text = "Cosmos failed in production :(\n\n"
                 + "The error message was: " + exception.toString() + "\n"
                 + "and the call stack:" + getStackTrace(exception) + "\n\n"
@@ -66,7 +79,7 @@ final class ClusterServerUtil {
             msg.setText(text);
             Transport.send(msg);
         } catch (Exception ex) {
-            System.err.println(getFullExceptionInformation(ex));
+            logFatalException(ex);
         }
     }
 }

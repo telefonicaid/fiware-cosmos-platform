@@ -58,11 +58,10 @@ class Cluster:
         self.transport.close()
 
     @wrap_exceptions
-    def runJob(self, jarPath, inputPath, outputPath, mongoUrl):
+    def runJob(self, job_id, jarPath, inputPath, outputPath, mongoUrl):
         self.transport.open()
-        execution_id = self.cluster.runJob(jarPath, inputPath, outputPath, mongoUrl)
+        self.cluster.runJob(job_id, jarPath, inputPath, outputPath, mongoUrl)
         self.transport.close()
-        return execution_id
 
     @wrap_exceptions
     def getJobResult(self, jobId):

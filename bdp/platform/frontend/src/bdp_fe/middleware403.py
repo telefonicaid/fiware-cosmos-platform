@@ -18,13 +18,12 @@ def render_to_403(*args, **kwargs):
     """
     if not isinstance(args, list):
         args = []
-        args.append('403.html')
-
+    args.append('403.html')
     http_response_kwargs = {
         'mimetype': kwargs.pop('mimetype', None)
     }
-    response = HttpResponseForbidden(loader.render_to_string(*args, **kwargs),
-                                     **http_response_kwargs)
+    return HttpResponseForbidden(loader.render_to_string(*args, **kwargs),
+                                 **http_response_kwargs)
 
 class Http403Middleware(object):
 

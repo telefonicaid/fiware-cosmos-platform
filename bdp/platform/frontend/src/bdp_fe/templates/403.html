@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load url from future %}
+
+{% block content %}
+<p>
+    Permission denied. You can go back home 
+    <a href="{% url 'list_jobs' %}">home</a>.
+</p>
+{% endblock %}
+{# vim:set syntax=htmldjango: #}

@@ -18,12 +18,14 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 import es.tid.bdp.frontend.om.FrontEnd;
 import es.tid.bdp.frontend.om.SelectInputPage;
 import es.tid.bdp.frontend.om.SelectJarPage;
 import es.tid.bdp.frontend.om.SelectNamePage;
+import es.tid.bdp.joblaunchers.Environment;
 import es.tid.bdp.joblaunchers.FrontendLauncher;
 import es.tid.bdp.joblaunchers.TaskStatus;
 import es.tid.bdp.joblaunchers.TestException;
@@ -34,9 +36,9 @@ import es.tid.bdp.joblaunchers.TestException;
  */
 @Test(singleThreaded = true)
 public class FrontendTest {
-    private static final String WORDCOUNT_FILENAME = "wordcount.jar";
-    private static final String MAPPERFAIL_FILENAME = "mapperfail.jar";
-    private static final String PRINTPRIMES_FILENAME = "printprimes.jar";
+    private static final String WORDCOUNT_FILENAME = "wordcount-core-0.3.0.0-SNAPSHOT.jar";
+    private static final String MAPPERFAIL_FILENAME = "mapperfail-1.0-SNAPSHOT.jar";
+    private static final String PRINTPRIMES_FILENAME = "printprimes-1.0-SNAPSHOT.jar";
     private static final String SIMPLE_TEXT = "Very simple text file";
     private static final int TASK_COUNT = 4;
     
@@ -46,18 +48,19 @@ public class FrontendTest {
     private String printPrimesJarPath;
     private String invalidJarPath;
 
+    @Parameters({"environment", "jarPath"})
     @BeforeClass
-    public void setUp() throws IOException {
-        this.frontend = new FrontEnd();
-        File wordCountJarFile = new File(WORDCOUNT_FILENAME);
+    public void setUp(String environment, String jarPath) throws IOException {
+        this.frontend = new FrontEnd(Environment.valueOf(environment));
+        File wordCountJarFile = new File(jarPath, WORDCOUNT_FILENAME);
         this.wordcountJarPath = wordCountJarFile.getAbsolutePath();
         verifyFileExists(wordCountJarFile);
         
-        File mapperFailJarFile = new File(MAPPERFAIL_FILENAME);
+        File mapperFailJarFile = new File(jarPath, MAPPERFAIL_FILENAME);
         this.mapperFailJarPath = mapperFailJarFile.getAbsolutePath();
         verifyFileExists(mapperFailJarFile);
         
-        File printPrimesJarFile = new File(PRINTPRIMES_FILENAME);
+        File printPrimesJarFile = new File(jarPath, PRINTPRIMES_FILENAME);
         this.printPrimesJarPath = printPrimesJarFile.getAbsolutePath();
         verifyFileExists(printPrimesJarFile);
 
@@ -94,17 +97,20 @@ public class FrontendTest {
     }
 
     private void verifyLinks() {
-        List<WebElement> links = this.frontend.getDriver().findElements(
-                By.tagName("a"));
+        WebDriver driver = this.frontend.getDriver();
+        List<WebElement> links = driver.findElements(By.tagName("a"));
         try {
             for (WebElement link : links) {
-                URL baseUrl = new URL(FrontEnd.HOME_URL);
                 String verbatimUrl = link.getAttribute("href");
                 if (verbatimUrl.startsWith("javascript")) {
                     return;
                 }
-                String linkUrl = new URL(baseUrl, verbatimUrl).toString();
+                String linkUrl = this.frontend.resolveURL(verbatimUrl).toString();
                 assertTrue(FrontendTest.isLive(linkUrl), "Broken link: " + linkUrl);
+                if(link.getText().equalsIgnoreCase("home")) {
+                    URL homeUrl = new URL(this.frontend.getHomeUrl());
+                    assertEquals(homeUrl, linkUrl);
+                }
             }
         } catch (MalformedURLException ex) {
             fail("Malformed URL in page "
@@ -181,8 +187,7 @@ public class FrontendTest {
         WebElement jarLink = driver.findElement(
                 By.id(SelectNamePage.SAMPLE_JAR_LINK_ID));
         String verbatimUrl = jarLink.getAttribute("href");
-        URL baseUrl = new URL(FrontEnd.HOME_URL);
-        URL linkUrl = new URL(baseUrl, verbatimUrl);
+        URL linkUrl = this.frontend.resolveURL(verbatimUrl);
         
         // Download file locally
         final String jarName = "sample.jar";
@@ -197,7 +202,7 @@ public class FrontendTest {
         
         // Submit job with sample JAR
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
-        FrontendLauncher testDriver = new FrontendLauncher();
+        FrontendLauncher testDriver = new FrontendLauncher(this.frontend.getEnvironment());
         String taskId = testDriver.createNewTask(inputFilePath, jarName);
         testDriver.waitForTaskCompletion(taskId);
         assertEquals(testDriver.getTaskStatus(taskId),
@@ -235,7 +240,7 @@ public class FrontendTest {
 
     public void testSimpleTask() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
-        FrontendLauncher testDriver = new FrontendLauncher();
+        FrontendLauncher testDriver = new FrontendLauncher(this.frontend.getEnvironment());
         String taskId = testDriver.createNewTask(inputFilePath,
                                                  this.wordcountJarPath);
         testDriver.waitForTaskCompletion(taskId);
@@ -247,7 +252,7 @@ public class FrontendTest {
 
     public void testParallelTasks() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
-        FrontendLauncher testDriver = new FrontendLauncher();
+        FrontendLauncher testDriver = new FrontendLauncher(this.frontend.getEnvironment());
         String[] taskIds = new String[TASK_COUNT];
         for (int i = 0; i < TASK_COUNT; ++i) {
             taskIds[i] = testDriver.createNewTask(inputFilePath,
@@ -288,7 +293,7 @@ public class FrontendTest {
 
     public void testInvalidJar() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
-        FrontendLauncher testDriver = new FrontendLauncher();
+        FrontendLauncher testDriver = new FrontendLauncher(this.frontend.getEnvironment());
         final String taskId = testDriver.createNewTask(inputFilePath,
                                                        this.invalidJarPath,
                                                        false);
@@ -311,7 +316,7 @@ public class FrontendTest {
     
     public void testFailureJar() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
-        FrontendLauncher testDriver = new FrontendLauncher();
+        FrontendLauncher testDriver = new FrontendLauncher(this.frontend.getEnvironment());
         final String taskId = testDriver.createNewTask(inputFilePath,
                                                        this.mapperFailJarPath,
                                                        false);
@@ -335,7 +340,7 @@ public class FrontendTest {
     public void testListResultJar() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(
                 "2 3 4 5 6 7 8 9 123\n19283");
-        FrontendLauncher testDriver = new FrontendLauncher();
+        FrontendLauncher testDriver = new FrontendLauncher(this.frontend.getEnvironment());
         final String taskId = testDriver.createNewTask(inputFilePath,
                                                        this.printPrimesJarPath,
                                                        false);

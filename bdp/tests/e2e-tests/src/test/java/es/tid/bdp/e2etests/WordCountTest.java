@@ -8,25 +8,22 @@ import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Factory;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 
+import es.tid.bdp.joblaunchers.Environment;
 import es.tid.bdp.joblaunchers.FrontendLauncher;
 import es.tid.bdp.joblaunchers.JobLauncher;
 import es.tid.bdp.joblaunchers.TestException;
 
 public class WordCountTest {
     public class TestImpl {
-        private static final String WORDCOUNT_FILE = "wordcount.jar";
         private String text;
         private String inputFilePath;
         private final Map<String,Integer> expectedResult;
         private final JobLauncher jobLauncher;
         private final String jarPath;
         
-        public TestImpl(JobLauncher launcher, String text) {
+        public TestImpl(JobLauncher launcher, String text, String wordcountJarPath) {
             this.expectedResult = new HashMap<String, Integer>();
             this.text = text;
             String[] split = this.text.split("\\s+");
@@ -39,7 +36,7 @@ public class WordCountTest {
                 this.expectedResult.put(word, count + 1);
             }
             this.jobLauncher = launcher;
-            this.jarPath = new File(WORDCOUNT_FILE).getAbsolutePath();
+            this.jarPath = wordcountJarPath;
         }
         
         @BeforeClass
@@ -84,6 +81,11 @@ public class WordCountTest {
         }
     }
     
+    private static final String WORDCOUNT_FILE = "wordcount-core-0.3.0.0-SNAPSHOT.jar";
+    
+    private Environment environment;
+    private String wordcountPath;
+    
     public Object[] testCreator(JobLauncher launcher) {
         final String word = "Word ";
         final int repetitions = 1000000;
@@ -93,15 +95,22 @@ public class WordCountTest {
         }
         
         return new Object[] {
-            new TestImpl(launcher, "One"),
-            new TestImpl(launcher, "Two words"),
-            new TestImpl(launcher, "Some text\n\t\nwith\tnon-space whitespace"),
-            new TestImpl(launcher, longStr.toString())
+            new TestImpl(launcher, "One", this.wordcountPath),
+            new TestImpl(launcher, "Two words", this.wordcountPath),
+            new TestImpl(launcher, "Some text\n\t\nwith\tnon-space whitespace", this.wordcountPath),
+            new TestImpl(launcher, longStr.toString(), this.wordcountPath)
         };
+    }
+    
+    @Parameters({"environment", "jarPath"})
+    @BeforeClass
+    public void setup(String environment, String jarPath) {
+        this.environment = Environment.valueOf(environment);
+        this.wordcountPath = new File(jarPath, WORDCOUNT_FILE).getAbsolutePath();
     }
     
     @Factory
     public Object[] testsUI() {
-        return testCreator(new FrontendLauncher());
+        return testCreator(new FrontendLauncher(this.environment));
     }
 }

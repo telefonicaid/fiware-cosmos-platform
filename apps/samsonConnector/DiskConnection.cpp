@@ -147,7 +147,7 @@ namespace samson {
                     }
 
                     // Open a file to write
-                    int _fd = open( current_file_name.c_str() , O_WRONLY | O_CREAT );
+                    int _fd = open( current_file_name.c_str() , O_CREAT | O_WRONLY , 0644 );
                     
                     if( _fd < 0 )
                     {

@@ -6,24 +6,26 @@ import json
 from random import choice
 from types import ListType, DictType
 
-from django.conf import settings
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404
-from models import CustomJobModel
 from pymongo import Connection
 from pymongo.errors import AutoReconnect, ConnectionFailure
 
-from bdp_fe.jobconf.models import Job
-from bdp_fe.middleware403 import Http403
+from bdp_fe.http import Http403
+from bdp_fe.jobconf.models import CustomJobModel, Job
+
 
 HIDDEN_KEYS = []
 EXPAND_TYPES = [ListType, DictType]
 
+
 class NoResultsError(Exception):
     pass
 
+
 class NoConnectionError(Exception):
     pass
+
 
 class MongoRecord(object):
     """
@@ -49,6 +51,7 @@ class MongoRecord(object):
                 ans.setdefault(k, v)
         return ans
 
+
 def safe_int_param(query_dict, param_name, default_value=None):
     """
     Safe conversion of query parameters to int.
@@ -60,6 +63,7 @@ def safe_int_param(query_dict, param_name, default_value=None):
     except ValueError:
         return default_value
 
+
 def get_owned_job_or_40x(request, job_id):
     try:
         job = get_object_or_404(Job, pk=int(job_id))
@@ -69,6 +73,7 @@ def get_owned_job_or_40x(request, job_id):
         return job
     else:
         raise Http403()
+
 
 def retrieve_results(job_id, primary_key):
     ans = []
@@ -90,5 +95,5 @@ def retrieve_results(job_id, primary_key):
             mongo_result = MongoRecord(job_result, primary_key)
             ans.append(mongo_result)
         return ans
-    except AutoReconnect, ConnectionFailure:
+    except (AutoReconnect, ConnectionFailure):
         raise NoConnectionError

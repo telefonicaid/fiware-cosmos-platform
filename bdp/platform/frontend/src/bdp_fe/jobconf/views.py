@@ -4,18 +4,17 @@ Module bdp_fe.jobconf.views
 """
 import logging
 
-from django import forms
 from django.conf import settings
-from django.contrib import auth, messages
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseNotFound, Http404
-from django.shortcuts import get_object_or_404, redirect, render_to_response
+from django.http import HttpResponse, Http404
+from django.shortcuts import redirect, render_to_response
 from django.template import RequestContext, loader
 
-from bdp_fe.jobconf import data
 from bdp_fe.jobconf.cluster import remote
+from bdp_fe.jobconf.forms import NewJobForm, UploadDataForm, UploadJarForm
 from bdp_fe.jobconf.models import CustomJobModel, Job, JobModel
 import bdp_fe.jobconf.views_util as util
 
@@ -25,6 +24,8 @@ CLUSTER = remote.Cluster(settings.CLUSTER_CONF.get('host'),
 
 @login_required
 def list_jobs(request):
+    """List user jobs and allow running jobs
+    """
     job_id = util.safe_int_param(request.GET, 'run_job')
     reload_period = max(util.safe_int_param(request.GET, 'reload_period',
                                             settings.RELOAD_PERIOD),
@@ -32,7 +33,7 @@ def list_jobs(request):
     if job_id:
         run_job(request, job_id)
 
-    return render_to_response('job_listing.html', {
+    return render_to_response('jobconf/job_list.html', {
         'title': 'Job listing',
         'jobs': Job.objects.filter(user=request.user,
                                    status__gt=Job.UNCONFIGURED),
@@ -77,7 +78,7 @@ def view_successful_results(request, job):
                    'prototype_result': prototype_result,
                    'hidden_keys': util.HIDDEN_KEYS,
                    'primary_key': primary_key}
-        return render_to_response('job_results.html',
+        return render_to_response('jobconf/job_results.html',
                                   context,
                                   context_instance=RequestContext(request))
     except util.NoResultsError:
@@ -85,7 +86,7 @@ def view_successful_results(request, job):
                    'job_results' : None,
                    'hidden_keys': util.HIDDEN_KEYS,
                    'expand_types': ['dict', 'list']}
-        return render_to_response('job_results.html',
+        return render_to_response('jobconf/job_results.html',
                                   context,
                                   context_instance=RequestContext(request))
     except util.NoConnectionError:
@@ -95,7 +96,7 @@ def view_successful_results(request, job):
 
 
 def view_error(request, job):
-    return render_to_response('error_report.html', {
+    return render_to_response('jobconf/job_report_error.html', {
         'title': 'Error report for %s' % job.name,
         'job': job,
     }, context_instance=RequestContext(request))
@@ -128,10 +129,6 @@ def run_job(request, job_id):
         messages.warning(request, "Cannot start job %s." % job.name)
 
 
-class NewJobForm(forms.Form):
-    name = forms.CharField(max_length=Job.NAME_MAX_LENGTH)
-
-
 @login_required
 def new_job(request):
     if request.method == 'POST':
@@ -147,13 +144,11 @@ def new_job(request):
     else:
         form = NewJobForm()
 
-    return render_to_response('new_job.html', {
+    return render_to_response('jobconf/job_new.html', {
         'title': 'New job',
         'form': form,
     }, context_instance=RequestContext(request))
 
-class UploadJarForm(forms.Form):
-    file = forms.FileField()
 
 @login_required
 def config_job(request, job_id):
@@ -171,14 +166,12 @@ def config_job(request, job_id):
             messages.error(request, 'JAR file upload failed')
     else:
         form = UploadJarForm()
-    return render_to_response('upload_jar.html', {
+    return render_to_response('jobconf/customjob_upload.html', {
         'title': 'Configure custom job',
         'job': job,
         'form': form,
     }, context_instance=RequestContext(request))
 
-class UploadDataForm(forms.Form):
-    file = forms.FileField()
 
 @login_required
 def upload_data(request, job_id):
@@ -197,7 +190,7 @@ def upload_data(request, job_id):
             messages.error(request, 'Data file upload failed')
     else:
         form = UploadDataForm()
-    return render_to_response('upload_data.html', {
+    return render_to_response('jobconf/job_upload_data.html', {
         'title': 'Upload job %s data' % job.name,
         'job': job,
         'form': form,

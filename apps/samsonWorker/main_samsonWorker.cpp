@@ -45,6 +45,7 @@
 SAMSON_ARG_VARS;
 
 bool     fg;
+bool     monit;
 bool     noLog;
 int      valgrind;
 int      port;
@@ -60,8 +61,9 @@ PaArgument paArgs[] =
 {
     SAMSON_ARGS,
     { "-fg",        &fg,        "SAMSON_WORKER_FOREGROUND", PaBool, PaOpt, false,                  false,  true,  "don't start as daemon"             },
+    { "-monit",     &monit,     "SAMSON_WORKER_MONIT",      PaBool, PaOpt, false,                  false,  true,  "to use with monit"                 },
     { "-port",      &port,      "",                         PaInt,  PaOpt, SAMSON_WORKER_PORT,     1,      9999,  "Port to receive new connections"   },
-    { "-web_port",  &web_port,  "",                         PaInt,  PaOpt, SAMSON_WORKER_WEB_PORT, 1,      9999,  "Port to receive new connections"   },
+    { "-web_port",  &web_port,  "",                         PaInt,  PaOpt, SAMSON_WORKER_WEB_PORT, 1,      9999,  "Port to receive web connections"   },
     { "-nolog",     &noLog,     "SAMSON_WORKER_NO_LOG",     PaBool, PaOpt, false,                  false,  true,  "no logging"                        },
     { "-valgrind",  &valgrind,  "SAMSON_WORKER_VALGRIND",   PaInt,  PaOpt, 0,                      0,        20,  "help valgrind debug process"       },
 
@@ -273,7 +275,7 @@ int main(int argC, const char *argV[])
     if (samson::MemoryCheck() == false)
         LM_X(1,("Insufficient memory configured. Check %ssamsonWorkerLog for more information.", paLogDir));
     
-    if (fg == false)
+    if ((fg == false) && (monit == false))
     {
         daemonize();
     }
@@ -294,6 +296,14 @@ int main(int argC, const char *argV[])
     fclose(file);
     // ------------------------------------------------------        
     
+
+    if (monit)
+    {
+        LM_M(("monit test - I stay here ..."));
+        while (1)
+            sleep(1);
+    }
+
     // Make sure this singleton is created just once
     LM_D(("createWorkingDirectories"));
     samson::SamsonSetup::shared()->createWorkingDirectories();      // Create working directories

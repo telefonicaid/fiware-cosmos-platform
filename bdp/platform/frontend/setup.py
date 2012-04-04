@@ -22,9 +22,9 @@ setup(
     name = "bdp_fe",
     version = "0.1.0",
     description = "Big Data Platform Frontend",
-    long_description = """This package is a web interface for the Big Data Platform.
-Through this frontend, a user can lauch Haddop jobs, read and interpret its
-results.""",
+    long_description = ("This package is a web interface for the Big Data "
+                        "Platform.  Through this frontend, a user can lauch "
+                        "Haddop jobs, read and interpret its results."),
     author = "Telefonica Digital",
     author_email = "cosmos@tid.es",
     package_dir = {'': 'src'},
@@ -36,6 +36,9 @@ results.""",
         'setuptools',
         'pymongo',
         'django',
+        'coverage',
+        'pylint',
+        'django-jenkins',
         'thrift',
         'flup',
         'MySQL-python',

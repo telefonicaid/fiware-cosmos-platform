@@ -1,6 +1,8 @@
 *.pyc
 .installed.cfg
 bin/
+build/
+dist/
 develop-eggs/
 downloads/
 eggs/

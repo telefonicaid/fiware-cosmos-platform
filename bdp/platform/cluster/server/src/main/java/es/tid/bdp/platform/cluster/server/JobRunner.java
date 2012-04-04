@@ -20,9 +20,9 @@ public class JobRunner {
         this.results = new HashMap<String, JobStatus>();
     }
     
-    public synchronized void startNewThread(String id, String[] args) {
-        this.results.put(id, new JobStatus(this.threadPool.submit(
-                new Job(args))));
+    public synchronized void startNewThread(String id, Job job) {
+        JobStatus status = new JobStatus(this.threadPool.submit(job));
+        this.results.put(id, status);
     }
 
     public ClusterJobResult getResult(String id) throws TransferException {

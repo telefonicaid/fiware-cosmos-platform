@@ -21,12 +21,6 @@
             <version>1.0</version>
             <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>bson</artifactId>
-            <version>2.7.3</version>
-            <type>jar</type>
-        </dependency>
     </dependencies>
     <build>
         <pluginManagement>

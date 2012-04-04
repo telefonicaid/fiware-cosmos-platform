@@ -36,22 +36,5 @@
             <artifactId>testutils</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>es.tid.bdp.hadoopjobs</groupId>
-            <artifactId>printprimes</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>es.tid.bdp.hadoopjobs</groupId>
-            <artifactId>mapperfail</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wordcount-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 </project>

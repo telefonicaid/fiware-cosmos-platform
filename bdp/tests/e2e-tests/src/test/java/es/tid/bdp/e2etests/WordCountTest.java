@@ -18,14 +18,15 @@ import es.tid.bdp.joblaunchers.JobLauncher;
 import es.tid.bdp.joblaunchers.TestException;
 
 public class WordCountTest {
-    public class TestImpl {
+    private static final String WORDCOUNT_PATH = HadoopJars.getPath(JarNames.Wordcount);
+    
+    public class TestImpl {        
         private String text;
         private String inputFilePath;
         private final Map<String,Integer> expectedResult;
         private final JobLauncher jobLauncher;
-        private final String jarPath;
         
-        public TestImpl(JobLauncher launcher, String text, String wordcountJarPath) {
+        public TestImpl(JobLauncher launcher, String text) {
             this.expectedResult = new HashMap<String, Integer>();
             this.text = text;
             String[] split = this.text.split("\\s+");
@@ -38,7 +39,6 @@ public class WordCountTest {
                 this.expectedResult.put(word, count + 1);
             }
             this.jobLauncher = launcher;
-            this.jarPath = wordcountJarPath;
         }
         
         @BeforeClass
@@ -65,7 +65,7 @@ public class WordCountTest {
         @Test
         public void wordCountTest() throws IOException, TestException {
             String taskId = this.jobLauncher.createNewTask(this.inputFilePath,
-                                                           this.jarPath);
+                                                           WORDCOUNT_PATH);
             this.jobLauncher.waitForTaskCompletion(taskId);
             List<Map<String, String>> results = this.jobLauncher
                     .getResults(taskId);            
@@ -93,10 +93,10 @@ public class WordCountTest {
         }
         
         return new Object[] {
-            new TestImpl(launcher, "One", wordcountPath),
-            new TestImpl(launcher, "Two words", wordcountPath),
-            new TestImpl(launcher, "Some text\n\t\nwith\tnon-space whitespace", wordcountPath),
-            new TestImpl(launcher, longStr.toString(), wordcountPath)
+            new TestImpl(launcher, "One"),
+            new TestImpl(launcher, "Two words"),
+            new TestImpl(launcher, "Some text\n\t\nwith\tnon-space whitespace"),
+            new TestImpl(launcher, longStr.toString())
         };
     }
        

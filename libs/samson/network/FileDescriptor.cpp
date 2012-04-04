@@ -307,6 +307,9 @@ namespace samson {
             // Wait until OK to read
             do
             {
+                if( fd == -1 )
+                    return ConnectionClosed;
+                
                 s = msgAwait(1, 0, what); // Continous try with 1 second timeout to check max_seconds
                 
                 if( ( s!= OK ) && ( s!= Timeout ) )

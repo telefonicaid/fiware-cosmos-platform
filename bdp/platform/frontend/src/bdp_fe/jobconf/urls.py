@@ -1,8 +1,8 @@
 """Job configuration urls. """
 
-from django.conf.urls.defaults import patterns, include, url
+from django.conf.urls.defaults import patterns, url
 
-import views
+from bdp_fe.jobconf import views
 
 urlpatterns = patterns('',
     url(r'^$', views.list_jobs, name="list_jobs"),

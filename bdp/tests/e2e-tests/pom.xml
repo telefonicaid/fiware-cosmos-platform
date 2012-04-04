@@ -5,13 +5,12 @@
 
     <groupId>es.tid.bdp</groupId>
     <artifactId>e2e-tests</artifactId>
-    <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     
     <parent>
         <groupId>es.tid.bdp</groupId>
         <artifactId>tests</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>0.3.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

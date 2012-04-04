@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """Main configuration"""
 
-import os.path
-PROJECT_PATH = os.path.dirname(__file__)
+from os import path
+PROJECT_PATH = path.abspath(path.join(path.dirname(__file__), '..'))
 
 SITE_ID = 1
 
@@ -10,7 +10,7 @@ ROOT_URLCONF = 'bdp_fe.urls'
 
 TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(PROJECT_PATH, "templates"),
+    path.join(PROJECT_PATH, "templates"),
 )
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
@@ -27,7 +27,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 FIXTURE_DIRS = (
-    os.path.join(PROJECT_PATH, "fixtures"),
+    path.join(PROJECT_PATH, "fixtures"),
 )
 
 STATICFILES_FINDERS = (
@@ -42,7 +42,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'bdp_fe.middleware403.Http403Middleware'
+    'bdp_fe.middleware.Http403Middleware',
 )
 
 INSTALLED_APPS = (
@@ -53,7 +53,20 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
+    'django_jenkins',
     'bdp_fe.jobconf',
+)
+
+JENKINS_TASKS = (
+    'django_jenkins.tasks.run_pylint',
+    'django_jenkins.tasks.with_coverage',
+    'django_jenkins.tasks.django_tests',
+#     'django_jenkins.tasks.run_pep8',
+#     'django_jenkins.tasks.run_pyflakes',
+#     'django_jenkins.tasks.run_jslint',
+#     'django_jenkins.tasks.run_csslint',    
+#     'django_jenkins.tasks.run_sloccount',    
+#     'django_jenkins.tasks.lettuce_tests',
 )
 
 LOGIN_URL = '/accounts/login/'

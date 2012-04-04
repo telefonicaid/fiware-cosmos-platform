@@ -9,7 +9,7 @@ tests of the installed applications.
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-from settings import *
+from bdp_fe.conf.base_settings import *
 
 DATABASES = {
     'default': {
@@ -57,7 +57,7 @@ LOGGING = {
     },
     'formatters': {
         'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
         },
         'simple': {
             'format': '%(levelname)s %(message)s'

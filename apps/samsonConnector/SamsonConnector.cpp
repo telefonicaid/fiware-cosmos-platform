@@ -91,11 +91,27 @@ namespace samson {
             }
             else if( components[0] == "samson" )
             {
-                std::string host = components[1];
-                std::string queue = components[2];
+                std::string host = "localhost";
+                std::string queue = "input";
                 int port = SAMSON_WORKER_PORT;
                 
-                add( new SamsonConnection(this , connection_output, host , port , queue ) );
+                if( components.size() == 2 )
+                {
+                    queue = components[1];
+                }
+                else if( components.size() == 3 )
+                {
+                    host = components[1];
+                    queue = components[2];
+                }
+                else if( components.size() >= 3 )
+                {
+                    host = components[1];
+                    port = atoi( components[2].c_str() );
+                    queue = components[3];
+                }            
+                
+                add( new SamsonConnection( this , connection_output , host , port  , queue ) );
             }
         }
     }
@@ -179,9 +195,25 @@ namespace samson {
             }
             else if( components[0] == "samson" )
             {
-                std::string host = components[1];
-                std::string queue = components[2];
+                std::string host = "localhost";
+                std::string queue = "input";
                 int port = SAMSON_WORKER_PORT;
+                
+                if( components.size() == 2 )
+                {
+                    queue = components[1];
+                }
+                else if( components.size() == 3 )
+                {
+                    host = components[1];
+                    queue = components[2];
+                }
+                else if( components.size() >= 3 )
+                {
+                    host = components[1];
+                    port = atoi( components[2].c_str() );
+                    queue = components[3];
+                }
                 
                 add( new SamsonConnection( this , connection_input , host , port  , queue ) );
             }

@@ -207,6 +207,17 @@ namespace au
             return table;
         }
         
+        std::string TableRow::str()
+        {
+            std::ostringstream output;
+            au::map<std::string,TableCell>::iterator it_cells;
+            for( it_cells = cells.begin() ; it_cells != cells.end() ; it_cells ++ )
+                output << it_cells->first << ":" << it_cells->second->str() << " ";
+            
+            return output.str();
+        }
+        
+        
         // ------------------------------------------------------------
         // TableRow
         // ------------------------------------------------------------
@@ -700,7 +711,7 @@ namespace au
             
             // Group by
             if( select->group_columns.size() > 0 )
-            {
+            {                
                 // Sort by group columns
                 table->sort( select->group_columns );
 
@@ -729,7 +740,7 @@ namespace au
                         
                         for ( size_t r = row_begin ; r < row_end ; r++ )
                         {
-                            TableCell * cell = rows[r]->get( column );
+                            TableCell * cell = table->rows[r]->get( column );
                             if( cell ) 
                                 new_cell->addFrom( cell );
                         }
@@ -749,7 +760,7 @@ namespace au
                 for ( size_t i = 0 ; i < final_rows.size() ; i++ )
                     table->rows.push_back( final_rows[i] );
                 final_rows.clear(); // Not delete instances
-                
+
             }
             
             

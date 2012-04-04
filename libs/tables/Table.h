@@ -209,6 +209,10 @@ namespace au
             
             // get a table with all information
             Table* getTable();
+            
+            // Debug string
+            std::string str();
+            
         };
         
         // ------------------------------------------------------------

@@ -10,6 +10,8 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import org.testng.annotations.*;
 
+import es.tid.bdp.hadoopjars.HadoopJars;
+import es.tid.bdp.hadoopjars.JarNames;
 import es.tid.bdp.joblaunchers.Environment;
 import es.tid.bdp.joblaunchers.FrontendLauncher;
 import es.tid.bdp.joblaunchers.JobLauncher;
@@ -80,13 +82,9 @@ public class WordCountTest {
             }
         }
     }
-    
-    private static final String WORDCOUNT_FILE = "wordcount-core-0.3.0.0-SNAPSHOT.jar";
-    
-    private Environment environment;
-    private String wordcountPath;
-    
+          
     public Object[] testCreator(JobLauncher launcher) {
+        final String wordcountPath = HadoopJars.getPath(JarNames.Wordcount);
         final String word = "Word ";
         final int repetitions = 1000000;
         StringBuilder longStr = new StringBuilder(repetitions * word.length());
@@ -95,22 +93,16 @@ public class WordCountTest {
         }
         
         return new Object[] {
-            new TestImpl(launcher, "One", this.wordcountPath),
-            new TestImpl(launcher, "Two words", this.wordcountPath),
-            new TestImpl(launcher, "Some text\n\t\nwith\tnon-space whitespace", this.wordcountPath),
-            new TestImpl(launcher, longStr.toString(), this.wordcountPath)
+            new TestImpl(launcher, "One", wordcountPath),
+            new TestImpl(launcher, "Two words", wordcountPath),
+            new TestImpl(launcher, "Some text\n\t\nwith\tnon-space whitespace", wordcountPath),
+            new TestImpl(launcher, longStr.toString(), wordcountPath)
         };
     }
-    
-    @Parameters({"environment", "jarPath"})
-    @BeforeClass
-    public void setup(String environment, String jarPath) {
-        this.environment = Environment.valueOf(environment);
-        this.wordcountPath = new File(jarPath, WORDCOUNT_FILE).getAbsolutePath();
-    }
-    
+       
+    @Parameters("environment")
     @Factory
-    public Object[] testsUI() {
-        return testCreator(new FrontendLauncher(this.environment));
+    public Object[] testsUI(String environment) {
+        return testCreator(new FrontendLauncher(Environment.valueOf(environment)));
     }
 }

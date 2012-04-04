@@ -25,6 +25,8 @@ import es.tid.bdp.frontend.om.FrontEnd;
 import es.tid.bdp.frontend.om.SelectInputPage;
 import es.tid.bdp.frontend.om.SelectJarPage;
 import es.tid.bdp.frontend.om.SelectNamePage;
+import es.tid.bdp.hadoopjars.HadoopJars;
+import es.tid.bdp.hadoopjars.JarNames;
 import es.tid.bdp.joblaunchers.Environment;
 import es.tid.bdp.joblaunchers.FrontendLauncher;
 import es.tid.bdp.joblaunchers.TaskStatus;
@@ -36,9 +38,6 @@ import es.tid.bdp.joblaunchers.TestException;
  */
 @Test(singleThreaded = true)
 public class FrontendTest {
-    private static final String WORDCOUNT_FILENAME = "wordcount-core-0.3.0.0-SNAPSHOT.jar";
-    private static final String MAPPERFAIL_FILENAME = "mapperfail-1.0-SNAPSHOT.jar";
-    private static final String PRINTPRIMES_FILENAME = "printprimes-1.0-SNAPSHOT.jar";
     private static final String SIMPLE_TEXT = "Very simple text file";
     private static final int TASK_COUNT = 4;
     
@@ -48,29 +47,15 @@ public class FrontendTest {
     private String printPrimesJarPath;
     private String invalidJarPath;
 
-    @Parameters({"environment", "jarPath"})
+    @Parameters("environment")
     @BeforeClass
-    public void setUp(String environment, String jarPath) throws IOException {
-        this.frontend = new FrontEnd(Environment.valueOf(environment));
-        File wordCountJarFile = new File(jarPath, WORDCOUNT_FILENAME);
-        this.wordcountJarPath = wordCountJarFile.getAbsolutePath();
-        verifyFileExists(wordCountJarFile);
-        
-        File mapperFailJarFile = new File(jarPath, MAPPERFAIL_FILENAME);
-        this.mapperFailJarPath = mapperFailJarFile.getAbsolutePath();
-        verifyFileExists(mapperFailJarFile);
-        
-        File printPrimesJarFile = new File(jarPath, PRINTPRIMES_FILENAME);
-        this.printPrimesJarPath = printPrimesJarFile.getAbsolutePath();
-        verifyFileExists(printPrimesJarFile);
-
+    public void setUp(String environment) throws IOException {
+        this.wordcountJarPath = HadoopJars.getPath(JarNames.Wordcount); 
+        this.mapperFailJarPath = HadoopJars.getPath(JarNames.MapperFail);
+        this.printPrimesJarPath = HadoopJars.getPath(JarNames.PrintPrimes);
         this.invalidJarPath = createAutoDeleteFile("Invalid Jar");
-    }
-    
-    private void verifyFileExists(File f) {
-        assertTrue(f.exists(),
-                   "Veryfing file is present: "
-                + f.getAbsolutePath());
+        
+        this.frontend = new FrontEnd(Environment.valueOf(environment));
     }
 
     private static boolean isLive(String link) {
@@ -108,8 +93,7 @@ public class FrontendTest {
                 String linkUrl = this.frontend.resolveURL(verbatimUrl).toString();
                 assertTrue(FrontendTest.isLive(linkUrl), "Broken link: " + linkUrl);
                 if(link.getText().equalsIgnoreCase("home")) {
-                    URL homeUrl = new URL(this.frontend.getHomeUrl());
-                    assertEquals(homeUrl, linkUrl);
+                    assertEquals(this.frontend.getHomeUrl(), linkUrl.toString());
                 }
             }
         } catch (MalformedURLException ex) {

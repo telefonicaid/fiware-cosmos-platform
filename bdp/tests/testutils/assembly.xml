@@ -11,7 +11,7 @@
             <includes> 
                 <include>es.tid.bdp.hadoopjobs:printprimes</include>
                 <include>es.tid.bdp.hadoopjobs:mapperfail</include> 
-                <include>es.tid.bdp:wordcount-core</include> 
+                <include>es.tid.bdp:wordcount-core</include>
             </includes> 
             <useTransitiveDependencies>false</useTransitiveDependencies>
         </dependencySet> 

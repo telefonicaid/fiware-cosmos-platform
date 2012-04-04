@@ -11,7 +11,7 @@ TEMPLATE_DEBUG = DEBUG
 
 SECRET_KEY = ')qif7^e0_0@sx!o0ca$c6v8%mz+y2$r0liegqd8(2k1^4reihj'
 
-from settings import *
+from bdp_fe.conf.base_settings import *
 
 DATABASES = {
     'default': {

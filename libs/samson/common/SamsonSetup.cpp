@@ -521,8 +521,8 @@ namespace samson
         fprintf(file, "# ----------------------------------------------------------------------------------------\n");
         fprintf(file, "# SAMSON SETUP\n");
         fprintf(file, "# ----------------------------------------------------------------------------------------\n");
-        fprintf(file, "# File auto-generated with samsonConfig tool.\n");
-        fprintf(file, "# You can edit manually or use samsonConfig to regenetare it\n\n\n");
+        fprintf(file, "# File auto-generated using the samsonConfig tool.\n");
+        fprintf(file, "# Edit manually, or use samsonConfig to regenerate.\n\n\n");
         
 
         

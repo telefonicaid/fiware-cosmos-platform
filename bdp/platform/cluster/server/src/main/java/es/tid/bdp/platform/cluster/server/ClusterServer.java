@@ -76,9 +76,11 @@ public class ClusterServer implements Cluster.Iface {
                        String outputPath, String mongoUrl)
             throws TransferException {
         try {
-            this.jobRunner.startNewThread(id, new String[] { jarPath,
-                    this.absoluteHdfsPath(inputPath),
-                    this.absoluteHdfsPath(outputPath), mongoUrl });
+            Job job = new Job(new String[] { jarPath,
+                                             this.absoluteHdfsPath(inputPath),
+                                             this.absoluteHdfsPath(outputPath),
+                                             mongoUrl });
+            this.jobRunner.startNewThread(id, job);
         } catch (Exception ex) {
             ClusterServerUtil.logFatalError(this.notificationEmail, ex);
             throw new TransferException(

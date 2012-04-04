@@ -86,6 +86,7 @@ public:
         if ( info->completingFirstWord() )
         {
             info->add("show");
+            info->add("help");
             info->add("set");
             info->add("save");
             info->add("use_desktop_values");

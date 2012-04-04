@@ -1,20 +1,37 @@
-# Desktop setup 
-# ------------------------------------------------------------------------------------------
-general.memory                          2147483648      # 2Gb of RAM memory
-general.num_processess                  2               # Number of parallel processes working on this maxine    
-general.shared_memory_size_per_buffer   67108864        # Buffer of 64 Mbytes
-                                                        # any operation (reduce / map / etc ... )
-#general.max_open_files_per_device    20                # Currently unused
-isolated.timeout                        600             # Isolated Process timeout (in secs)
+# ----------------------------------------------------------------------------------------
+# SAMSON SETUP
+# ----------------------------------------------------------------------------------------
+# File auto-generated with samsonConfig tool.
+# You can edit manually or use samsonConfig to regenetare it
 
-# Server setup
-# ------------------------------------------------------------------------------------------
-#general.memory                          15000000000     # 15Gb of RAM memory
-#general.max_file_size                   500000000       # 500 Mb
-#general.num_processess                  8               # Number of parallel processes working on this maxine    
-#general.shared_memory_size_per_buffer   256000000       # Buffer of 256 Mbytes
-#general.max_paralell_outputs            4               # Maximum number of outputs for 
-                                                        # any operation ( reduce / map / etc ... )
-#max_open_files_per_device              20              # Currently unused
-#isolated.timeout                        600             # Isolated Process timeout (in secs)
 
+# ------------------------------------------------------------------------ 
+# SECTION: general
+# ------------------------------------------------------------------------ 
+
+general.memory                          	10000000000          # Global available memory 
+general.num_processess                  	16                   # Number of cores
+general.shared_memory_size_per_buffer   	268435456            # Size of the shared memory segments
+general.update_status_period            	2                    # Period for the automatic update from workers to all delilah
+# ------------------------------------------------------------------------ 
+# SECTION: isolated
+# ------------------------------------------------------------------------ 
+
+isolated.timeout                        	300                  # Timeout for all 3rd partty operations
+# ------------------------------------------------------------------------ 
+# SECTION: load
+# ------------------------------------------------------------------------ 
+
+load.buffer_size                        	67108864             # Size of the data block for load operations
+# ------------------------------------------------------------------------ 
+# SECTION: stream
+# ------------------------------------------------------------------------ 
+
+stream.max_operation_input_size         	400000000            # Maximum input data ( in bytes ) to run an automatic stream processing task
+stream.max_scheduled_read_size          	120000000            # Maximum size scheduled for writing in the BlockManager
+stream.max_scheduled_write_size         	120000000            # Maximum size scheduled for writing in the BlockManager
+# ------------------------------------------------------------------------ 
+# SECTION: worker
+# ------------------------------------------------------------------------ 
+
+worker.period_check_finish_tasks        	5                    # Period to review finished tasks in samsonWorker, to be clean from memory

@@ -18,11 +18,14 @@
         <copyright.year>2012</copyright.year>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <org.apache.hadoop>0.20.2</org.apache.hadoop>
-        <jvm.version>1.6</jvm.version>
-        <jersey-version>1.11</jersey-version>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
+
+        <!-- platform-wide dependency versions -->
+        <jersey-version>1.11</jersey-version>
+        <jvm.version>1.6</jvm.version>
+        <org.apache.hadoop>0.20.2</org.apache.hadoop>
+        <thrift.version>0.8.0</thrift.version>
     </properties>
 
     <developers>
@@ -149,11 +152,6 @@
                         </plugin>
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-changelog-plugin</artifactId>
-                            <version>2.2</version>
-                        </plugin>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-pmd-plugin</artifactId>
                             <version>2.5</version>
                             <configuration>
@@ -162,8 +160,8 @@
                                 <minimumTokens>100</minimumTokens>
                                 <targetJdk>${jvm.version}</targetJdk>
                                 <excludes>
-                                    <exclude>**/pojos/*.java</exclude>
-                                    <exclude>**/generated/*.java</exclude>
+                                    <exclude>**/generated/**/*.java</exclude>
+                                    <exclude>**/generated-sources/**/*.java</exclude>
                                 </excludes>
                             </configuration>
                         </plugin>
@@ -232,8 +230,12 @@
                     <instrumentation>
                         <excludes>
                             <exclude>**/main/Bootstrap.class</exclude>
+                            <exclude>**/generated/**/*.class</exclude>
                         </excludes>
                     </instrumentation>
+                    <formats>
+                        <format>xml</format>
+                    </formats>
                 </configuration>
                 <executions>
                     <execution>
@@ -247,7 +249,6 @@
                         <id>instrument</id>
                         <phase>site</phase>
                         <goals>
-                            <goal>instrument</goal>
                             <goal>cobertura</goal>
                             <goal>check</goal>
                         </goals>
@@ -303,7 +304,7 @@
             </plugin>
         </plugins>
     </build>
-  
+
     <repositories>
         <repository>
             <id>cdh-repository</id>
@@ -326,10 +327,10 @@
         </repository>
         <repository>
             <id>nexus</id>
-            <url>http://ci-bd.hi.inet/nexus/content/repositories/releases</url>
+            <url>http://cosmos-ci/nexus/content/repositories/releases</url>
         </repository>
     </repositories>
-  
+
     <pluginRepositories>
         <pluginRepository>
             <id>dtrott</id>
@@ -341,7 +342,7 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
-            <version>${org.apache.hadoop}-cdh3u2</version>
+            <version>${org.apache.hadoop}</version>
         </dependency>
         <dependency>
             <groupId>com.hadoop.compression</groupId>
@@ -375,11 +376,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.6.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>libthrift</artifactId>
-            <version>0.5.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>

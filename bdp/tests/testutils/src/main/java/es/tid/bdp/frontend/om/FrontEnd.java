@@ -1,6 +1,10 @@
 package es.tid.bdp.frontend.om;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
+import java.util.Properties;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -8,6 +12,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import static org.testng.Assert.fail;
 
+import es.tid.bdp.joblaunchers.Environment;
 import es.tid.bdp.joblaunchers.TaskStatus;
 import es.tid.bdp.joblaunchers.TestException;
 
@@ -16,8 +21,8 @@ import es.tid.bdp.joblaunchers.TestException;
  * @author ximo
  */
 public class FrontEnd {
-    // TODO: Change Home URL to a config parameter in future iterations
-    public static final String HOME_URL = "http://pshdp01:8000/";
+    public static final String TEST_CONFIG_FILE = "/test.properties";
+    public static final String PRODUCTION_CONFIG_FILE = "/production.properties";
     public static final String CREATE_JOB_ID = "create-job";
     public static final String TASK_STATUS_TABLE_ID = "jobs-table";
     public static final String RESULT_LINK_CLASS = "result-link";
@@ -30,24 +35,56 @@ public class FrontEnd {
     private static final String DEFAULT_PASSWRD = "cosmostest";
     
     private WebDriver driver;
-    private String username;
-    private String password;
+    private final String username;
+    private final String password;
+    private final String homeUrl;
+    private final Environment environment;
 
-    public FrontEnd() {
-        this(DEFAULT_USER, DEFAULT_PASSWRD);
+    public FrontEnd(Environment env) {
+        this(DEFAULT_USER, DEFAULT_PASSWRD, env);
     }
     
-    public FrontEnd(String username, String password) {
+    public FrontEnd(String username, String password, Environment env) {
         this.driver = new HtmlUnitDriver();
         this.username = username;
         this.password = password;
+        this.environment = env;
+        
+        Properties props = new Properties();
+        try {
+            switch(env) {
+                case Test:
+                    props.load(FrontEnd.class.getResource(TEST_CONFIG_FILE).openStream());
+                    break;
+                case Production:
+                    props.load(FrontEnd.class.getResource(PRODUCTION_CONFIG_FILE).openStream());
+                    break;
+                default:
+                    fail("Unrecognized environment value: " + env.toString());
+            }
+        } catch (IOException ex) {
+            fail("IOException while loading configuration: " + ex.toString());
+        }
+        this.homeUrl = props.getProperty("FRONTEND_URL");
+    }
+    
+    public String getHomeUrl() {
+        return this.homeUrl;
+    }
+    
+    public Environment getEnvironment() {
+        return this.environment;
+    }
+    
+    public URL resolveURL(String verbatimUrl) throws MalformedURLException {
+        return new URL(new URL(this.driver.getCurrentUrl()), verbatimUrl);
     }
 
     public void goHome() {
-        this.driver.get(HOME_URL);
+        this.driver.get(this.homeUrl);
         if (this.driver.getCurrentUrl().contains("login")) {
             try {
-                this.login(DEFAULT_USER, DEFAULT_PASSWRD);
+                this.login(this.username, this.password);
             } catch (TestException ex) {
                 fail("Bad user/password. " +  ex.toString());
             }
@@ -55,8 +92,7 @@ public class FrontEnd {
     }
     
     private void login(String user, String pass) throws TestException {
-        WebElement userElement = this.driver
-                .findElement(By.id(USERNAME_INPUT_ID));
+        WebElement userElement = this.driver.findElement(By.id(USERNAME_INPUT_ID));
         userElement.sendKeys(user);
         this.driver.findElement(By.id(PASSWORD_INPUT_ID)).sendKeys(pass);
         

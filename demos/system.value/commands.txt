@@ -1,0 +1,16 @@
+
+
+# Remove everything
+remove_all_stream
+
+# Push input data
+push input.txt input
+
+# Parse lines as "string number"
+run system.parse input items env:command "parse string number | emit "
+
+# Get how data is serialized
+run system.map items info env:command " select key , [ [ getSerialitzation(key[0]) getSerialitzationLength(key[0]) ] [ getSerialitzation(key[1]) getSerialitzationLength(key[1]) ] ] | emit "
+
+# Pop info
+pop info  result_info -force

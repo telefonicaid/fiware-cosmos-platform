@@ -1,12 +1,9 @@
 
 #include "au/ThreadManager.h"
+#include "au/network/misc.h"
 
 #include "samson/common/MessagesOperations.h"
-
-#include "samson/network/misc.h"
-
 #include "NetworkManager.h"
-
 #include "NetworkConnection.h" // Own interface
 
 
@@ -34,7 +31,9 @@ namespace samson {
         return NULL;
     }
     
-    NetworkConnection::NetworkConnection( std::string _name , SocketConnection* _socket_connection , NetworkManager * _network_manager ) : token("NetworkConnection")
+    NetworkConnection::NetworkConnection( std::string _name 
+                                         , au::SocketConnection* _socket_connection 
+                                         , NetworkManager * _network_manager ) : token("NetworkConnection")
     {
         // Name in NetworkManager
         name = _name;
@@ -104,15 +103,20 @@ namespace samson {
             Packet * packet = new Packet();
 
             size_t total_read = 0;
-            Status s = socket_connection->readPacket( packet , &total_read );
+            
+            // Read packet
+            au::Status s = packet->read( socket_connection , &total_read );
+
+            // Monitor rate
             rate_in.push(total_read);
             
-            if( s == OK )
+            if( s == au::OK )
                 network_manager->receive( this , packet );
             else
             {
                 packet->freeBuffer();
                 delete packet;
+                socket_connection->close(); // Close connection since a packet has not been received correctly
             }
                 
         }
@@ -133,16 +137,27 @@ namespace samson {
             }
             
             // Get the next packet to be sent
-            Packet* packetP = packet_queue.next();
+            Packet* packet = packet_queue.next();
             
-            if ( packetP != NULL )
+            if ( packet != NULL )
             {
                 size_t total_write = 0;
-                Status s = socket_connection->writePacket( packetP , &total_write );
+
+                // Write the packet over this socket
+                au::Status s = packet->write( socket_connection , &total_write );
+                
+                // Monitor rate
                 rate_out.push(total_write);
 
-                if( s == OK )
+                if( s == au::OK )
+                {
+                    // delete packet
+                    packet->freeBuffer();
+                    delete packet;
+                    
                     packet_queue.pop(); // If not ok, packet is still in the queue
+                }
+                    
             }
             else
             {

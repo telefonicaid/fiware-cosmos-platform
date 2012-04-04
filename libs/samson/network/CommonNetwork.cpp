@@ -2,8 +2,8 @@
 #include "samson/common/MessagesOperations.h"
 
 #include "samson/network/NetworkConnection.h"
-#include "samson/network/NetworkListener.h"
-#include "samson/network/SocketConnection.h"
+#include "au/network/NetworkListener.h"
+#include "au/network/SocketConnection.h"
 #include "samson/network/NetworkConnection.h"
 
 #include "CommonNetwork.h" // Own interface
@@ -133,12 +133,12 @@ namespace samson {
             return Error;
         
         // Init connection
-        SocketConnection* socket_connection;
-        Status s = SocketConnection::newSocketConnection(host , port , &socket_connection );        
+        au::SocketConnection* socket_connection;
+        au::Status s = au::SocketConnection::newSocketConnection(host , port , &socket_connection );        
 
         // If there is an error, just return the error
-        if( s != OK )
-            return s;
+        if( s != au::OK )
+            return Error; // Generic error
         
         // Create network connection with this socket
         NetworkConnection* network_connection = new NetworkConnection( name , socket_connection , this );
@@ -150,12 +150,12 @@ namespace samson {
         network_connection->push( helloMessage( network_connection ) );
 
         // Add this new connection
-        s = NetworkManager::add( network_connection );
-        if( s != OK )
+        Status ss = NetworkManager::add( network_connection );
+        if( ss != OK )
         {
             LM_W(("Error adding new connection for worker %s" , name.c_str() ));
             delete network_connection;
-            return s;
+            return ss;
         }
 
         // Notify about this connection

@@ -3,8 +3,8 @@
 
 #include "au/TokenTaker.h"
 
-#include "samson/network/NetworkListener.h"
-#include "samson/network/SocketConnection.h"
+#include "au/network/NetworkListener.h"
+#include "au/network/SocketConnection.h"
 #include "samson/client/SamsonClient.h"
 #include "samson/client/SamsonPushBuffer.h"
 
@@ -28,7 +28,7 @@ namespace samson{
     private:
         
         std::string name;
-        FileDescriptor * file_descriptor;    // File descritor to read or write
+        au::FileDescriptor * file_descriptor;    // File descritor to read or write
         au::Cronometer cronometer;
 
     public:
@@ -40,7 +40,7 @@ namespace samson{
         SamsonConnectorConnection( SamsonConnector* _samson_connector
                                   , ConnectionType _type 
                                   , std::string _name 
-                                  , FileDescriptor * _file_descriptor );
+                                  , au::FileDescriptor * _file_descriptor );
         
         ~SamsonConnectorConnection();
         

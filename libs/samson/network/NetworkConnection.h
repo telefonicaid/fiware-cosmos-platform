@@ -9,10 +9,10 @@
 #include "au/TokenTaker.h"
 #include "au/Rate.h"
 
+#include "au/network/SocketConnection.h"
+
 #include "samson/common/status.h"
 #include "samson/common/Visualitzation.h"
-
-#include "samson/network/SocketConnection.h"
 #include "samson/network/PacketQueue.h"
 #include "samson/network/Packet.h"
 
@@ -31,7 +31,7 @@ namespace samson {
 		std::string connection_type;
         
         // Socket Connection
-        SocketConnection* socket_connection;
+        au::SocketConnection* socket_connection;
         
         // Token to block write thread when more packets have to be sent
         au::Token token;
@@ -58,7 +58,7 @@ namespace samson {
     public:
 
         // Constructor & Destructor
-        NetworkConnection( std::string _name , SocketConnection* socket_connection , NetworkManager * _network_manager );
+        NetworkConnection( std::string _name , au::SocketConnection* socket_connection , NetworkManager * _network_manager );
         ~NetworkConnection();
 
         // Init io threads

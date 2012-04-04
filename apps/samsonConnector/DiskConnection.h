@@ -25,7 +25,7 @@ namespace samson
         au::Token token;                     // Mutex protection
 
         // File descriptor used to write or read
-        FileDescriptor * file_descriptor;
+        au::FileDescriptor * file_descriptor;
 
         au::ErrorManager error;              // Error
         

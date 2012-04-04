@@ -1,16 +1,15 @@
 
 
-#ifndef _H_SAMSON_SOCKET_CONNECTION
-#define _H_SAMSON_SOCKET_CONNECTION
+#ifndef _H_AU_SOCKET_CONNECTION
+#define _H_AU_SOCKET_CONNECTION
 
 #include "au/Token.h"
 #include "au/string.h"
-#include "samson/common/status.h"
-#include "samson/network/Packet.h"
-#include "samson/network/FileDescriptor.h"
+#include "au/Status.h"
+#include "au/network/FileDescriptor.h"
 
-namespace samson {
-    // Class to manage a socket connection
+namespace au 
+{
     
     class SocketConnection : public FileDescriptor
     {
@@ -38,8 +37,6 @@ namespace samson {
         static Status newSocketConnection( std::string host , int port , SocketConnection** socket_connection );
         
     };
-    
-    
     
 }
 

@@ -7,22 +7,6 @@
 
 namespace samson {
 
-    WorkerNetwork::~WorkerNetwork()
-    {
-        LM_T(LmtCleanup, ("In cleanup"));
-        if (worker_listener != NULL)
-        {
-            delete worker_listener;
-            worker_listener = NULL;
-        }
-
-        if (web_listener != NULL)
-        {
-            delete web_listener;
-            web_listener = NULL;
-        }
-    }
-
     WorkerNetwork::WorkerNetwork( int port , int web_port )
     {
         // Workers are allways connected as user samson
@@ -50,10 +34,10 @@ namespace samson {
         // Add listener for incoming connections
         // ----------------------------------------------------------------------------
         {
-            worker_listener = new NetworkListener( this );
-            Status s = worker_listener->initNetworkListener( port );
+            worker_listener = new au::NetworkListener( this );
+            au::Status s = worker_listener->initNetworkListener( port );
             
-            if( s != OK )
+            if( s != au::OK )
             {
                 // Not allow to continue without incoming connections...
                 LM_X(1, ("Not possible to open main samson port %d (%s). Probably another worker is running..." , port , status(s) ));
@@ -66,10 +50,10 @@ namespace samson {
         // Add listener for incoming web/rest connections
         // ----------------------------------------------------------------------------
         {
-            web_listener = new NetworkListener( this );
-            Status s = web_listener->initNetworkListener( web_port );
+            web_listener = new au::NetworkListener( this );
+            au::Status s = web_listener->initNetworkListener( web_port );
             
-            if( s != OK )
+            if( s != au::OK )
             {
                 // Not allow to continue without incoming connections...
                 LM_W(("Not possible to open web interface at port %d (%s)" , port , status(s) ));
@@ -84,7 +68,34 @@ namespace samson {
             
     }
     
-    void WorkerNetwork::newSocketConnection( NetworkListener* listener , SocketConnection * socket_connection )
+    
+    WorkerNetwork::~WorkerNetwork()
+    {
+        LM_T(LmtCleanup, ("In cleanup"));
+        if (worker_listener != NULL)
+        {
+            delete worker_listener;
+            worker_listener = NULL;
+        }
+        
+        if (web_listener != NULL)
+        {
+            delete web_listener;
+            web_listener = NULL;
+        }
+    }
+    
+    void WorkerNetwork::stop()
+    {
+        // Stop listeners
+        worker_listener->stop( true );
+        web_listener->stop(  true );
+        
+        // Close all connections
+        NetworkManager::reset();
+    }
+
+    void WorkerNetwork::newSocketConnection( au::NetworkListener* listener , au::SocketConnection * socket_connection )
     {
         if( listener == worker_listener )
         {
@@ -105,16 +116,16 @@ namespace samson {
         {
             char line[1024];
 
-            Status s = socket_connection->readLine( line , sizeof(line) , 10 );
+            au::Status s = socket_connection->readLine( line , sizeof(line) , 10 );
 
-            if (s == OK)
+            if (s == au::OK)
             {
                 //
                 // Read the rest of the REST Request, but without parsing it ...
                 //
                 char flags[1024];
                 s = socket_connection->readBuffer(flags, sizeof(flags), 1);
-                if (s == OK)
+                if (s == au::OK)
                     LM_T(LmtRest, ("Rest of GET:\n%s", flags));
                 else
                     LM_W(("error reading rest of REST request"));

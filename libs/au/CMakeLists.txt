@@ -1,4 +1,6 @@
 SET (HEADERS
+Status.h
+
 Object.h
 namespace.h
 charset.h
@@ -16,6 +18,11 @@ ConsoleCommandHistory.h
 ConsoleEscapeSequence.h
 ConsoleCode.h
 ConsoleAutoComplete.h
+
+network/misc.h
+network/FileDescriptor.h
+network/NetworkListener.h
+network/SocketConnection.h
 
 ErrorManager.h
 Lock.h
@@ -57,6 +64,8 @@ OnOffMonitor.h
 )
 
 SET (SOURCES
+Status.cpp
+
 Object.cpp
 charset.cpp
 utils.cpp
@@ -71,6 +80,11 @@ ConsoleCommand.cpp
 ConsoleCommandHistory.cpp
 ConsoleEscapeSequence.cpp
 ConsoleCode.cpp
+
+network/misc.cpp
+network/FileDescriptor.cpp
+network/NetworkListener.cpp
+network/SocketConnection.cpp
 
 ConsoleAutoComplete.cpp
 ErrorManager.cpp
@@ -104,12 +118,25 @@ Tokenizer.cpp
 OnOffMonitor.cpp
 )
 
+# Source groups to organize Xcode project
+# -----------------------------------------------------------------
+
+SOURCE_GROUP( network FILES
+   network/misc.h
+   network/FileDescriptor.h
+   network/NetworkListener.h
+   network/SocketConnection.h 
+
+   network/misc.cpp
+   network/FileDescriptor.cpp
+   network/NetworkListener.cpp
+   network/SocketConnection.cpp 
+)
+
 
 # Include directories
 # -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs")
-
-
 
 # Library declaration
 # -----------------------------------------------------------------
@@ -128,6 +155,11 @@ SET (LIBAU ${PROJECT_BINARY_DIR}/libs/au/libau.a CACHE INTERNAL "")
 #ADD_EXECUTABLE(au_sleep_test au_sleep_test_main.cpp )
 #TARGET_LINK_LIBRARIES(au_sleep_test ${LIBS} au lm pa )
 #INSTALL(TARGETS au_sleep_test        RUNTIME DESTINATION   bin)
+
+
+
+
+
 
 
 

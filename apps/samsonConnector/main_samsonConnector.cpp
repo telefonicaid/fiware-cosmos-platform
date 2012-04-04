@@ -18,8 +18,8 @@
 
 #include "samson/common/coding.h"               // KVHeader
 
-#include "samson/network/NetworkListener.h"
-#include "samson/network/SocketConnection.h"
+#include "au/network/NetworkListener.h"
+#include "au/network/SocketConnection.h"
 
 #include "SamsonConnector.h"
 

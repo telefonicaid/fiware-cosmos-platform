@@ -11,7 +11,6 @@
 #include "samson/common/status.h"
 #include "samson/common/Visualitzation.h"
 
-#include "samson/network/SocketConnection.h"
 #include "samson/network/Packet.h"
 
 namespace samson {

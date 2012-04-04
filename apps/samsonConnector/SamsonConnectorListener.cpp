@@ -7,8 +7,8 @@
 
 namespace samson {
 
-    void SamsonConnectorListener::newSocketConnection( samson::NetworkListener* listener 
-                                              , samson::SocketConnection * socket_connetion )
+    void SamsonConnectorListener::newSocketConnection( au::NetworkListener* listener 
+                                              , au::SocketConnection * socket_connetion )
     {
         
         std::string name  = au::str("%s ( connected to localhost:%d )"  , socket_connetion->getHostAndPort().c_str() , port );

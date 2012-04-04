@@ -31,7 +31,10 @@ namespace samson {
     }
 
     
-    SamsonConnectorConnection::SamsonConnectorConnection( SamsonConnector* samson_connector, ConnectionType type , std::string _name , FileDescriptor * _file_descriptor )
+    SamsonConnectorConnection::SamsonConnectorConnection( SamsonConnector* samson_connector
+                                                         , ConnectionType type 
+                                                         , std::string _name 
+                                                         , au::FileDescriptor * _file_descriptor )
     : SamsonConnectorItem( samson_connector , type )
     {
         name = _name;
@@ -57,10 +60,10 @@ namespace samson {
             if( current_block )
             {
                 engine::Buffer* buffer = current_block->buffer;
-                Status s = file_descriptor->partWrite(buffer->getData(), buffer->getSize(), "samsonConnectorConnection");
+                au::Status s = file_descriptor->partWrite(buffer->getData(), buffer->getSize(), "samsonConnectorConnection");
                 
                 
-                if( s != OK )
+                if( s != au::OK )
                     return; // Just quit
                 else
                     popOutputBlock(); // Pop the block we have just sent
@@ -87,7 +90,7 @@ namespace samson {
 
             // Read the entire buffer
             size_t read_size = 0;
-            Status s = file_descriptor->partRead(buffer->getData()
+            au::Status s = file_descriptor->partRead(buffer->getData()
                                                  , buffer_size
                                                  , "read connector connections"
                                                  , 300 
@@ -103,7 +106,7 @@ namespace samson {
             }
             
             // If last read is not ok...
-            if( s != OK )
+            if( s != au::OK )
             {
                 // Deallocated the buffer
                 if( buffer )

@@ -59,13 +59,13 @@ namespace samson {
         user = _user;
         password = _password;
         
-        SocketConnection* socket_connection;
-        Status s = SocketConnection::newSocketConnection(host , port , &socket_connection );        
+        au::SocketConnection* socket_connection;
+        au::Status s = au::SocketConnection::newSocketConnection(host , port , &socket_connection );        
         
-        if( s != OK )
+        if( s != au::OK )
         {
             std::cerr << au::str("Error: Not possible to open connection with %s:%d (%s)\n" , host.c_str() , port , status(s));
-            return s;
+            return Error;
         }
         
         
@@ -91,10 +91,10 @@ namespace samson {
         }
         
         // Init connection
-        SocketConnection* socket_connection;
-        Status s = SocketConnection::newSocketConnection(host , port , &socket_connection );        
+        au::SocketConnection* socket_connection;
+        au::Status s = au::SocketConnection::newSocketConnection(host , port , &socket_connection );        
         
-        if( s != OK )
+        if( s != au::OK )
         {
             return 
                     au::str("Error: Not possible to open connection with %s:%d (%s)\n" 

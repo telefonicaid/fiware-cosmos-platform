@@ -9,14 +9,12 @@
 #include "logMsg/traceLevels.h"
 
 #include "au/ThreadManager.h"
-
-#include "samson/network/SocketConnection.h"
-#include "samson/network/misc.h"
-#include "samson/network/NetworkManager.h"
-
+#include "au/network/SocketConnection.h"
+#include "au/network/misc.h"
 #include "NetworkListener.h" // Own interface
 
-namespace samson {
+namespace au 
+{
 
     NetworkListener::NetworkListener( NetworkListenerInterface * _network_listener_interface  )
     {

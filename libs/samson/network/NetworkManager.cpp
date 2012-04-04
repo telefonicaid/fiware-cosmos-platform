@@ -1,7 +1,7 @@
 
 #include "samson/network/NetworkConnection.h"
-#include "samson/network/NetworkListener.h"
-#include "samson/network/SocketConnection.h"
+#include "au/network/NetworkListener.h"
+#include "au/network/SocketConnection.h"
 #include "samson/network/NetworkConnection.h"
 #include "NetworkManager.h" // Own interface
 
@@ -70,7 +70,7 @@ namespace samson {
             values.push_back( it_connections->first ); // Name of the connection
 
             NetworkConnection* connection = it_connections->second;
-            SocketConnection* socket_connection = connection->socket_connection;
+            au::SocketConnection* socket_connection = connection->socket_connection;
             values.push_back( socket_connection->getHostAndPort() );
             values.push_back( au::str( connection->get_rate_in() , "B/s" ) );
             values.push_back( au::str( connection->get_rate_out() , "B/s" ) );

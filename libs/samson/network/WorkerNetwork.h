@@ -10,22 +10,22 @@
 
 #include "samson/network/NetworkInterface.h"
 #include "samson/network/CommonNetwork.h"
-#include "samson/network/NetworkListener.h"
+#include "au/network/NetworkListener.h"
 
 namespace samson {
     
     
-    class WorkerNetwork : public CommonNetwork , public NetworkListenerInterface
+    class WorkerNetwork : public CommonNetwork , public au::NetworkListenerInterface
     {
         
         // Counter to asign new names
         size_t tmp_counter;
         
         // Worker listtener for new worker / delilah connections
-        NetworkListener * worker_listener;
+        au::NetworkListener * worker_listener;
 
         // Web RESET interface
-        NetworkListener * web_listener;
+        au::NetworkListener * web_listener;
         
     public:
         
@@ -42,26 +42,11 @@ namespace samson {
         // ------------------------------------------------------------
         std::string cluster_command( std::string command );
         
-        void stop()
-        {
-            // Stop listeners
-            worker_listener->stop( true );
-            web_listener->stop(  true );
-
-            
-            // Close all connections
-            NetworkManager::reset();
-        }
-
-        // Suspend the network elements implemented behind NetworkInterface
-        // Close everything and return the "run" call
-        virtual void quit(void)
-        {
-        }
-        
+        // Stop background threads
+        void stop();
         
         // NetworkManager interface
-        void newSocketConnection( NetworkListener* listener , SocketConnection * socket_connetion );
+        void newSocketConnection( au::NetworkListener* listener , au::SocketConnection * socket_connetion );
     
         
     private:

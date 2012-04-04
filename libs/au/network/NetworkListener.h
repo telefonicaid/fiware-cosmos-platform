@@ -1,13 +1,12 @@
 
 
+#ifndef _H_AU_NETWORK_LISTENER
+#define _H_AU_NETWORK_LISTENER
 
-#ifndef _H_SAMSON_NETWORK_LISTENER
-#define _H_SAMSON_NETWORK_LISTENER
+#include "au/Status.h"
 
-
-#include "samson/common/status.h"
-
-namespace samson {
+namespace au 
+{
     
     class SocketConnection;
     class NetworkListener;

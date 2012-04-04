@@ -5,15 +5,11 @@ SET (HEADERS
 	PacketQueue.h
 	NetworkManager.h
 	NetworkConnection.h
-	SocketConnection.h
-	FileDescriptor.h
-	NetworkListener.h
 
 	NetworkInterface.h
 	CommonNetwork.h
 	WorkerNetwork.h
 	DelilahNetwork.h
-	misc.h
 
 	PacketReceivedNotification.h
 	Packet.h
@@ -30,15 +26,11 @@ SET (SOURCES
 	PacketQueue.cpp
 	NetworkManager.cpp
 	NetworkConnection.cpp
-	SocketConnection.cpp
-	FileDescriptor.cpp 
-	NetworkListener.cpp
 
 	NetworkInterface.cpp
 	CommonNetwork.cpp
 	WorkerNetwork.cpp
 	DelilahNetwork.cpp
-	misc.cpp
 
 	PacketReceivedNotification.cpp
 	Packet.cpp

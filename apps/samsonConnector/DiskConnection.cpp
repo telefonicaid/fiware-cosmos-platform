@@ -158,16 +158,16 @@ namespace samson {
                         return;
                     }
                     
-                    file_descriptor = new FileDescriptor( current_file_name , _fd  );
+                    file_descriptor = new au::FileDescriptor( current_file_name , _fd  );
                     break;
                 }
                 
             }
 
             // Write to disk
-            Status s = file_descriptor->partWrite(current_block->buffer->getData(), current_block->buffer->getSize(), "samsonConnectorConnection");
+            au::Status s = file_descriptor->partWrite(current_block->buffer->getData(), current_block->buffer->getSize(), "samsonConnectorConnection");
             
-            if( s != OK )
+            if( s != au::OK )
             {
                 error.set( au::str("Not possible to write buffer with %s to file %s" 
                                    , au::str( current_block->buffer->getSize() ).c_str()
@@ -196,7 +196,7 @@ namespace samson {
 
                 // Read the entire buffer
                 size_t read_size = 0;
-                Status s = file_descriptor->partRead(buffer->getData()
+               au::Status s = file_descriptor->partRead(buffer->getData()
                                                      , buffer_size
                                                      , "read connector connections"
                                                      , 300 
@@ -211,7 +211,7 @@ namespace samson {
                 }
                 
                 // If last read is not ok...
-                if( s != OK )
+                if( s != au::OK )
                 {
                     // Deallocated the buffer
                     if( buffer )
@@ -238,7 +238,7 @@ namespace samson {
                 int _fd = open( current_file_name.c_str() , O_RDONLY );
                 
                 if( _fd > 0 )
-                    file_descriptor = new FileDescriptor( file_name , _fd );
+                    file_descriptor = new au::FileDescriptor( file_name , _fd );
                 else
                 {
                     // Skipping file, show a message?

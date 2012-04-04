@@ -28,8 +28,7 @@
 
 #include "samson/common/coding.h"               // KVHeader
 
-#include "samson/network/NetworkListener.h"
-#include "samson/network/SocketConnection.h"
+#include "au/network/NetworkListener.h"
 
 #include "SamsonPushConnectionsManager.h"
 
@@ -114,7 +113,7 @@ void receive_data_from_port()
     LM_V(("Opening port %d" , port));
     
     SamsonPushConnectionsManager manager;
-    samson::NetworkListener listener( &manager );
+    au::NetworkListener listener( &manager );
     listener.initNetworkListener( port );    
     listener.runNetworkListenerInBackground();
     

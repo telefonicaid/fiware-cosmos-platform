@@ -2,22 +2,26 @@
 #ifndef _H_SAMSON_CONNECTOR_LISTENER
 #define _H_SAMSON_CONNECTOR_LISTENER
 
-#include "samson/network/NetworkListener.h"
+#include "au/network/NetworkListener.h"
 #include "common.h"
 
 namespace samson 
 {
-    class SamsonConnectorListener : public NetworkListener , public samson::NetworkListenerInterface , public SamsonConnectorItem 
+    class SamsonConnectorListener : public au::NetworkListener 
+                                  , public au::NetworkListenerInterface 
+                                  , public SamsonConnectorItem 
     {
         
         int port;
-        Status status_init;
+        au::Status status_init;
         
         friend class SamsonConnector;
         
     public:
       
-        SamsonConnectorListener( SamsonConnector * samson_connector , ConnectionType type , int _port ) : NetworkListener( this ) , SamsonConnectorItem( samson_connector , type )
+        SamsonConnectorListener( SamsonConnector * samson_connector , ConnectionType type , int _port ) : 
+                  au::NetworkListener( this ) 
+                  , SamsonConnectorItem( samson_connector , type )
         {
             // Keep the port
             port = _port;
@@ -25,19 +29,19 @@ namespace samson
             // Init listener and run in background
             status_init = initNetworkListener( port );    
             
-            if ( status_init == OK )
+            if ( status_init == au::OK )
                 runNetworkListenerInBackground();
         }
 
         // samson::NetworkListenerInterface
-        void newSocketConnection( samson::NetworkListener* listener 
-                                 , samson::SocketConnection * socket_connetion );
+        void newSocketConnection( au::NetworkListener* listener 
+                                 , au::SocketConnection * socket_connetion );
 
         
         // Get a name of this element
         std::string getName()
         {
-            if ( status_init == OK )
+            if ( status_init == au::OK )
                 return au::str("Listen %d" , port);
             else
                 return au::str("Error opening port %d ", port );
@@ -46,7 +50,7 @@ namespace samson
         // Get status of this element
         std::string getStatus()
         {
-            if ( status_init == OK )
+            if ( status_init == au::OK )
                 return "Listening";
             else
                 return "NOT Listening";

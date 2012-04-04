@@ -1,6 +1,7 @@
 
 
 #include "au/ThreadManager.h"
+#include "au/network/SocketConnection.h"
 
 #include "SamsonPushConnectionsManager.h" // Own interface
 #include "samson/client/SamsonClient.h"         // samson::SamsonClient
@@ -18,7 +19,7 @@ void* run_SamsonPushConnection( void* p)
 }
 
 
-SamsonPushConnection::SamsonPushConnection( samson::SocketConnection * _socket_connetion )
+SamsonPushConnection::SamsonPushConnection( au::SocketConnection * _socket_connetion )
 {
     socket_connetion = _socket_connetion;
     thread_running = true;
@@ -53,12 +54,12 @@ void SamsonPushConnection::run()
         
         // Read and push...
         size_t read_size;
-        samson::Status s = socket_connetion->partRead(buffer, buffer_size, "SamsonPushConnection", 100 , &read_size );
+        au::Status s = socket_connetion->partRead(buffer, buffer_size, "SamsonPushConnection", 100 , &read_size );
 
         // Pushding this data to SAMSON system
         pushBuffer->push( buffer , read_size , true );
         
-        if( s != samson::OK )
+        if( s != au::OK )
         {
             // Just to make sure we close 
             socket_connetion->close();

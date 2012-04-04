@@ -6,12 +6,13 @@
 
 #include "engine/Object.h"
 
+#include "au/network/NetworkListener.h"
+
 #include "samson/common/status.h"
 #include "samson/common/ports.h"
 
 #include "samson/network/NetworkInterface.h"
 #include "samson/network/NetworkManager.h"
-#include "samson/network/NetworkListener.h"
 #include "samson/network/PacketQueue.h"
 
 

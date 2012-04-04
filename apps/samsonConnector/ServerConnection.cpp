@@ -50,11 +50,11 @@ namespace samson {
                 return;
         }
         
-        SocketConnection* socket_connection;
-        Status s = SocketConnection::newSocketConnection( host
+        au::SocketConnection* socket_connection;
+        au::Status s = au::SocketConnection::newSocketConnection( host
                                                          , port
                                                          , &socket_connection);                                  
-        if( s == OK )
+        if( s == au::OK )
         {
             std::string name = socket_connection->getHostAndPort().c_str();
             connection = new SamsonConnectorConnection( samson_connector , type , name , socket_connection  );

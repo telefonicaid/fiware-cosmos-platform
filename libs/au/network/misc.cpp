@@ -1,6 +1,9 @@
+
+
 #include "misc.h"  // Own interface
 
-namespace samson {
+namespace au 
+{
     
     void ip2string(int ip, char* ipString, int ipStringLen)
     {

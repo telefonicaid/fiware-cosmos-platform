@@ -18,7 +18,7 @@
 #include "logMsg/logMsg.h"             // LM_*
 #include "logMsg/traceLevels.h"        // Trace Levels
 
-#include "samson/network/misc.h"
+#include "au/network/misc.h"
 
 #include "Host.h"               // Host
 #include "HostMgr.h"            // Own interface
@@ -249,7 +249,7 @@ namespace samson
         {
             int ix = 0;
             
-            ip2string(*((int*) heP->h_addr_list[ix]), ipX, sizeof(ipX));
+            au::ip2string(*((int*) heP->h_addr_list[ix]), ipX, sizeof(ipX));
             host->addAlias(ipX);
             host->addAlias(heP->h_name);
 

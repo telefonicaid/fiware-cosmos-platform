@@ -17,14 +17,13 @@
 #include "au/TokenTaker.h"
 
 #include "samson/common/MemoryTags.h"
-
 #include "samson/common/status.h"
 
 #include "samson/network/Packet.h"
 
 #include "FileDescriptor.h" // Own interface
 
-namespace samson {
+namespace au {
     
     // Disconnect
     void FileDescriptor::close()
@@ -110,85 +109,6 @@ namespace samson {
         return OK;
     }
     
-    Status FileDescriptor::writePacket( Packet * packetP , size_t *size )
-    {
-        Status           s;
-        Message::Header  header;
-        
-        *size =0;
-        
-        LM_T(LmtSocketConnection, ("Sending Packet '%s' to %s " , packetP->str().c_str() , name.c_str() ));
-        
-        //
-        // Preparing header
-        //
-        
-        memset(&header, 0, sizeof(header));
-        
-        header.code        = packetP->msgCode;
-        header.gbufLen     = packetP->message->ByteSize();        
-        header.kvDataLen   = packetP->buffer?packetP->buffer->getSize():0;
-        
-        // Set magic number
-        header.setMagicNumber();
-        
-        //
-        // Sending header
-        //
-        s = partWrite( &header, sizeof(header), "header");
-        *size += sizeof(header);
-        
-        if (s != OK)
-        {
-            if (packetP->buffer != NULL)
-                engine::MemoryManager::shared()->destroyBuffer(packetP->buffer);
-            if (packetP != NULL)
-                delete packetP;
-            LM_RE(s, ("partWrite:header(%s): %s", name.c_str(), status(s)));
-        }
-        
-        
-        
-        //
-        // Sending Google Protocol Buffer
-        //
-        if ((packetP != NULL) && (packetP->message != NULL) && (packetP->message->ByteSize() != 0))
-        {
-            char* outputVec;
-            
-            outputVec = (char*) malloc(header.gbufLen + 2);
-            if (outputVec == NULL)
-                LM_XP(1, ("malloc(%d)", header.gbufLen));
-            
-            if (packetP->message->SerializeToArray(outputVec, header.gbufLen) == false)
-                LM_X(1, ("SerializeToArray failed"));
-            
-            size_t size_message = packetP->message->ByteSize();
-            s = partWrite( outputVec, size_message, "Google Protocol Buffer");
-            free(outputVec);
-            if (s != OK)
-                LM_RE(s, ("partWrite:GoogleProtocolBuffer(): %s", status(s)));
-            *size += size_message;
-            
-        }
-        
-        if (packetP && (packetP->buffer != 0))
-        {
-            s = partWrite( packetP->buffer->getData(), packetP->buffer->getSize(), "KV data");
-            if (s != OK)
-                LM_RE(s, ("partWrite returned %d and not the expected %d", s, packetP->buffer->getSize()));
-            *size += packetP->buffer->getSize();
-        }
-        
-        if (packetP != NULL)
-        {
-            if (packetP->buffer != NULL)
-                engine::MemoryManager::shared()->destroyBuffer(packetP->buffer);
-            delete packetP;
-        }
-        
-        return OK;
-    }    
     
     Status FileDescriptor::msgAwait( int secs, int usecs, const char* what )
     {
@@ -316,6 +236,7 @@ namespace samson {
                 {
                     if ( read_size )
                         *read_size = tot;
+
                     return s; // Different error, just report
                 }
                 
@@ -324,6 +245,7 @@ namespace samson {
                 {
                     if ( read_size )
                         *read_size = tot;
+                    
                     return Timeout;
                 }
                 
@@ -359,87 +281,7 @@ namespace samson {
     
     
     
-    Status FileDescriptor::readPacket( Packet * packetP , size_t *size )
-    {
-        Status s;
-        Message::Header  header;
-        
-        LM_T(LmtSocketConnection, ("SocketConnection %s: Reading packet" , str().c_str() ));
-        *size = 0;
-        
-        s = partRead(&header, sizeof(Message::Header), "Header" , 300 );  // Timeout 300 secs for next packet
-        if (s != OK)
-        {
-            close();
-            return s;
-        }
-        *size += sizeof(Message::Header);
-        
-        // Check header
-        if ( !header.check() )
-        {
-            close();
-            return WrongPacketHeader;
-        }
-        
-        packetP->msgCode = header.code;
-        
-        if (header.gbufLen != 0)
-        {
-            char* dataP = (char*) calloc(1, header.gbufLen + 1);
-            
-            s = partRead(dataP, header.gbufLen, "Google Protocol Buffer" , 300);
-            if (s != OK)
-            {
-                close();
-                free(dataP);
-                return s;
-            }
-            *size += header.gbufLen;
-            
-            LM_T(LmtSocketConnection, ("Read %d bytes of GOOGLE DATA from '%s'", header.gbufLen, name.c_str() ));
-            
-            // Decode the google protocol buffer message
-            packetP->message->ParseFromArray(dataP, header.gbufLen);
-            
-            if ( packetP->message->IsInitialized() == false )
-            {
-                LM_E(("Error parsing Google Protocol Buffer of %d bytes because a message %s is not initialized!",
-                      header.gbufLen, samson::Message::messageCode(header.code)));
-                
-                close();
-                return ErrorParsingGoogleProtocolBuffers;
-            }
-            
-            free(dataP);
-        }
-        
-        if (header.kvDataLen != 0)
-        {
-            // Alloc a buffer to read buffer of data
-            std::string buffer_name = au::str("Network Buffer from %s" , name.c_str() );
-            packetP->buffer = engine::MemoryManager::shared()->newBuffer( buffer_name , "network" , header.kvDataLen , 0.9 );
-            
-            char*  kvBuf  = packetP->buffer->getData();
-            s = partRead(kvBuf, header.kvDataLen , "Key-Value Data" , 300);
-            
-            if (s != OK)
-            {
-                // Release buffer
-                engine::MemoryManager::shared()->destroyBuffer( packetP->buffer );
-                packetP->buffer = NULL;                
-                
-                close();
-                return s;
-            }
-            LM_T(LmtSocketConnection, ("Read %d bytes of KV DATA from '%s'", header.kvDataLen, name.c_str()));
-            *size += header.kvDataLen;
-            
-            packetP->buffer->setSize( header.kvDataLen );
-        }
-        
-        return OK;
-    }
+
   
     
 }

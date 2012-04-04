@@ -13,7 +13,7 @@
 
 #include "engine/Buffer.h"
 
-#include "samson/network/NetworkListener.h"
+#include "au/network/NetworkListener.h"
 
 #include "common.h"
 #include "SamsonConnection.h"

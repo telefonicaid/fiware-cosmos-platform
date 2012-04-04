@@ -12,6 +12,8 @@
 #include "logMsg/logMsg.h"               // LM_TODO()
 
 #include "au/utils.h"
+#include "au/network/FileDescriptor.h"
+#include "au/Status.h"
 
 #include "samson/common/samson.pb.h"     // google protocol buffers
 #include "samson/common/EnvironmentOperations.h"        // str( network::Message* )
@@ -258,6 +260,12 @@ namespace samson
                 buffer = NULL;
             }
         }
+        
+        
+        // Read and write functions
+        au::Status read( au::FileDescriptor *fd , size_t *size );
+        au::Status write( au::FileDescriptor *fd , size_t *size );
+
         
 	};
 }

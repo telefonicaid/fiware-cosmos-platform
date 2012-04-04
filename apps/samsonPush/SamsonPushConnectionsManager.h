@@ -5,8 +5,7 @@
 
 #include "au/TokenTaker.h"
 
-#include "samson/network/NetworkListener.h"
-#include "samson/network/SocketConnection.h"
+#include "au/network/NetworkListener.h"
 #include "samson/client/SamsonClient.h"
 #include "samson/client/SamsonPushBuffer.h"
 
@@ -17,13 +16,13 @@ class SamsonPushConnection
 {
     
     samson::SamsonPushBuffer *pushBuffer;
-    samson::SocketConnection * socket_connetion;
+    au::SocketConnection * socket_connetion;
     char *buffer;
     bool thread_running;
     
 public:
     
-    SamsonPushConnection( samson::SocketConnection * _socket_connetion );
+    SamsonPushConnection( au::SocketConnection * _socket_connetion );
     ~SamsonPushConnection();
     
     void run();
@@ -34,7 +33,7 @@ public:
     }
 };
 
-class SamsonPushConnectionsManager : public samson::NetworkListenerInterface
+class SamsonPushConnectionsManager : public au::NetworkListenerInterface
 {
     au::Token token;
     std::set<SamsonPushConnection*> connections;
@@ -46,7 +45,7 @@ public:
         
     }
     
-    virtual void newSocketConnection( samson::NetworkListener* listener , samson::SocketConnection * socket_connetion )
+    virtual void newSocketConnection( au::NetworkListener* listener , au::SocketConnection * socket_connetion )
     {
         listener = NULL;
 

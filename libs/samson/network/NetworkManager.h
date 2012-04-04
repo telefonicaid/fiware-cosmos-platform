@@ -17,7 +17,7 @@
 #include "samson/network/ClusterInformation.h"
 #include "samson/network/Packet.h"
 #include "samson/network/PacketQueue.h"
-#include "samson/network/NetworkListener.h"
+#include "au/network/NetworkListener.h"
 
 
 namespace samson {

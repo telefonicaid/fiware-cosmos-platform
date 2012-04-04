@@ -16,15 +16,10 @@
 
 #include "au/TokenTaker.h"
 
-#include "samson/common/MemoryTags.h"
-
-#include "samson/common/status.h"
-
-#include "samson/network/Packet.h"
-
 #include "SocketConnection.h" // Own interface
 
-namespace samson {
+namespace au 
+{
     
     SocketConnection::SocketConnection( int _fd , std::string _host , int _port ) : 
     FileDescriptor(  (_port==-1)?_host:au::str("%s:%d" , _host.c_str() , _port ) ,  _fd ) 

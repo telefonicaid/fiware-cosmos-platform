@@ -32,7 +32,7 @@ namespace samson {
             if( components[0] == "stdout" )
             {
                 if( !interactive ) // No send to add stdout in interactive mode ;)
-                    add( new SamsonConnectorConnection(this, connection_output , "stdout", new FileDescriptor("stdout", 1) ) );
+                    add( new SamsonConnectorConnection(this, connection_output , "stdout", new au::FileDescriptor("stdout", 1) ) );
                 else
                 {
                     //error->set("Not possible to add stdout in iterative mode");
@@ -55,7 +55,7 @@ namespace samson {
                 }
                 
                 SamsonConnectorListener* listener = new SamsonConnectorListener( this , connection_output , port );
-                if( listener->status_init == OK )
+                if( listener->status_init == au::OK )
                     add( listener );
                 else
                 {
@@ -136,7 +136,7 @@ namespace samson {
             if( components[0] == "stdin" )
             {
                 if( !interactive ) // No send to add stdout in interactive mode ;)
-                    add( new SamsonConnectorConnection(this, connection_input , "stdin", new FileDescriptor("stdin", 0) ) );
+                    add( new SamsonConnectorConnection(this, connection_input , "stdin", new au::FileDescriptor("stdin", 0) ) );
                 else
                 {
                     //error->set("Not possible to add stdin in iterative mode");
@@ -159,7 +159,7 @@ namespace samson {
                 }
                 
                 SamsonConnectorListener* listener = new SamsonConnectorListener( this , connection_input , port );
-                if( listener->status_init == OK )
+                if( listener->status_init == au::OK )
                     add( listener );
                 else
                 {

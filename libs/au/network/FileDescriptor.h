@@ -1,14 +1,13 @@
 
 
-#ifndef _H_SAMSON_FILE_DESCRIPTOR
-#define _H_SAMSON_FILE_DESCRIPTOR
+#ifndef _H_AU_FILE_DESCRIPTOR
+#define _H_AU_FILE_DESCRIPTOR
 
+#include "au/Status.h"
 #include "au/Token.h"
 #include "au/string.h"
-#include "samson/common/status.h"
-#include "samson/network/Packet.h"
 
-namespace samson 
+namespace au 
 {
     // Class to manage a socket connection
     
@@ -46,10 +45,6 @@ namespace samson
         // Connection mnagement
         void close();                 // Disconnect
         bool isDisconnected();        // Check if we are still connected
-        
-        // Read and write packet routines
-        Status readPacket( Packet * packetP , size_t *size);
-        Status writePacket( Packet * packetP , size_t *size );
         
         // Read & Write line 
         Status readLine( char* line, size_t max_size , int max_seconds );

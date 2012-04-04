@@ -49,26 +49,12 @@ public class KpiMain extends Configured implements Tool {
     private static final int NUM_ARGS = 3;
     private static final String MONGO_COLLECTION_NAMESPACE_DELIMITER = ".";
 
-    public static void main(String[] args) {
-        int res = 0;
-        try {
-            res = ToolRunner.run(new Configuration(), new KpiMain(), args);
-        } catch (Exception e) {
-            LOGGER.setLevel(Level.ALL);
-            LOGGER.log(Level.SEVERE, "Execution failed: {0}", e.getMessage());
-            System.exit(1);
-        }
-        System.exit(res);
-    }
-
     @Override
-    public int run(String[] args) throws IOException, ClassNotFoundException,
-                                         InterruptedException {
+    public int run(String[] args) throws Exception {
         if (args.length != NUM_ARGS) {
-            LOGGER.setLevel(Level.ALL);
-            LOGGER.severe("Wrong Arguments. Example: hadoop jar "
-                    + "kpicalculation.jar inputPath outputPath mongoURL");
-            return 1;
+            throw new IllegalArgumentException("Wrong Arguments. Example: "
+                    + "hadoop jar kpicalculation.jar inputPath outputPath "
+                    + "mongoURL");
         }
 
         FileSystem fs = FileSystem.get(this.getConf());
@@ -76,19 +62,17 @@ public class KpiMain extends Configured implements Tool {
         Path inputPath = new Path(args[0]);
         Path outputPath = new Path(args[1] + "/aggregates");
         if (!fs.mkdirs(outputPath)) {
-            LOGGER.log(Level.SEVERE, "Could not create {0}", outputPath);
-            return 1;
+            throw new IOException("Could not create " + outputPath);
         }
         String timeFolder = "data." + Long.toString(new Date().getTime());
         Path tmpPath = new Path(args[1] + timeFolder + "/cleaned/");
         if (!fs.mkdirs(tmpPath)) {
-            LOGGER.log(Level.SEVERE, "Could not create {0}", tmpPath);
-            return 1;
+            throw new IOException("Could not create " + tmpPath);
         }
         LOGGER.log(Level.INFO, "Using {0} as temp directory", tmpPath);
         if (!fs.deleteOnExit(tmpPath)) {
-            LOGGER.log(Level.INFO,
-                       "Could not set temp directory for automatic deletion");
+            throw new IOException(
+                    "Could not set temp directory for automatic deletion");
         }
         String mongoUrl = args[2];
 
@@ -99,7 +83,7 @@ public class KpiMain extends Configured implements Tool {
         // Process that filters and formats input logs
         Job job = cleanWebNavigationLogs(conf, inputPath, tmpPath);
         if (!job.waitForCompletion(true)) {
-            return 1;
+            throw new Exception("Failed to clean navigation logs");
         }
 
         KpiConfig config = new KpiConfig();
@@ -111,7 +95,8 @@ public class KpiMain extends Configured implements Tool {
             Job aggregationJob = createAggregationJob(conf, features,
                                                       tmpPath, kpiOutputPath);
             if (!aggregationJob.waitForCompletion(true)) {
-                return 1;
+                throw new Exception("Failed to aggregate "
+                        + features.getName());
             }
 
             String mongoCollectionUrl = mongoUrl;
@@ -123,7 +108,7 @@ public class KpiMain extends Configured implements Tool {
             MongoDBExporterJob exporterJob = new MongoDBExporterJob(conf);
             exporterJob.configure(kpiOutputPath, mongoCollectionUrl, features);
             if (!exporterJob.waitForCompletion(true)) {
-                return 1;
+                throw new Exception("Failed to export " + features.getName());
             }
         }
 
@@ -199,5 +184,17 @@ public class KpiMain extends Configured implements Tool {
         FileOutputFormat.setOutputPath(aggregationJob, outputPath);
         
         return aggregationJob;
+    }
+
+    public static void main(String[] args) throws Exception {
+        try {
+            int res = ToolRunner.run(new Configuration(), new KpiMain(), args);
+            if (res != 0) {
+                throw new Exception("Uknown error");
+            }
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, ex.getMessage());
+            throw ex;
+        }
     }
 }

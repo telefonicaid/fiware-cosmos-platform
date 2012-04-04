@@ -55,15 +55,11 @@ public class WordCountMain extends Configured implements Tool {
         return 0;
     }
 
-    public static void main(String[] args) {
-        int res = 0;
-        try {
-            res = ToolRunner.run(new Configuration(),
+    public static void main(String[] args) throws Exception {
+        int res = ToolRunner.run(new Configuration(),
                                  new WordCountMain(), args);
-        } catch (Exception ex) {
-            ex.printStackTrace(System.err);
-            System.exit(1);
+        if (res != 0) {
+            throw new Exception("Process failed");
         }
-        System.exit(res);
     }
 }

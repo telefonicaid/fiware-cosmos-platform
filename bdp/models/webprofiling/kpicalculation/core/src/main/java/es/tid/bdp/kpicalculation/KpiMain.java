@@ -49,18 +49,6 @@ public class KpiMain extends Configured implements Tool {
     private static final int NUM_ARGS = 3;
     private static final String MONGO_COLLECTION_NAMESPACE_DELIMITER = ".";
 
-    public static void main(String[] args) {
-        int res = 0;
-        try {
-            res = ToolRunner.run(new Configuration(), new KpiMain(), args);
-        } catch (Exception e) {
-            LOGGER.setLevel(Level.ALL);
-            LOGGER.log(Level.SEVERE, "Execution failed: {0}", e.getMessage());
-            System.exit(1);
-        }
-        System.exit(res);
-    }
-
     @Override
     public int run(String[] args) throws IOException, ClassNotFoundException,
                                          InterruptedException {
@@ -199,5 +187,12 @@ public class KpiMain extends Configured implements Tool {
         FileOutputFormat.setOutputPath(aggregationJob, outputPath);
         
         return aggregationJob;
+    }
+
+    public static void main(String[] args) throws Exception {
+        int res = ToolRunner.run(new Configuration(), new KpiMain(), args);
+        if (res != 0) {
+            throw new Exception("Process failed");
+        }
     }
 }

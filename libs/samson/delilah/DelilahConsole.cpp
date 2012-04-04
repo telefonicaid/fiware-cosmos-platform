@@ -85,6 +85,7 @@ namespace samson
         writeWarningOnConsole(au::str("Random delilah id generated [%s]" , au::code64_str(node_identifier.id).c_str()));
         
         simple_output = false;
+        no_output = false;
         
         // Aliases
         //add_alias( "aso" , "add_stream_operation" );

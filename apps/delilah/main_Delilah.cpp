@@ -157,17 +157,6 @@ void cleanup(void)
 
     LM_T(LmtCleanup, ("Shutting down SamsonSetup"));
     samson::SamsonSetup::destroy();
-
-    // Check background threads
-    au::StringVector background_threads = au::ThreadManager::shared()->getThreadNames();
-    if( background_threads.size() > 0 )
-    {
-        LM_W(("Still %lu background threads running (%s)" , background_threads.size() , background_threads.str().c_str() ));
-        std::cerr << au::ThreadManager::shared()->str();
-    }
-    else
-        LM_M(("Finished correctly with 0 background processes"));
-    
     
     LM_T(LmtCleanup, ("Calling paConfigCleanup"));
     paConfigCleanup();
@@ -263,26 +252,6 @@ int main(int argC, const char *argV[])
     if( s != samson::OK )
         LM_X(1, ("Not possible to open connection with %s:%d (%s)" , target_host , target_port , samson::status(s) ));
     
-    // Only wait if there is a command or file
-    if ( ( strcmp( command , "" ) != 0 ) && ( strcmp( commandFileName,"") != 0 ) )
-    {
-        std::cerr << "\nConnecting to SAMSOM cluster at " << target_host << " ...";
-        std::cerr.flush();
-        
-        //
-        // Wait until the network is ready II
-        //
-        while ( ! networkP->ready() )
-        {
-            LM_M(("Awaiting fully connected...."));
-            usleep(1000);
-        }
-        
-        std::cout << " OK\n";
-        LM_M(("Connected to all workers"));
-        
-    }   
-    
     // ----------------------------------------------------------------
     // Special mode with one command line command
     // ----------------------------------------------------------------
@@ -296,13 +265,13 @@ int main(int argC, const char *argV[])
                 usleep(100000);
                 if( cronometer.diffTime() > 1 )
                 {
-                    LM_M(("Waiting delilah to connect to all workers"));
+                    LM_V(("Waiting delilah to connect to all workers"));
                     cronometer.reset();
                 }
             }
         }
         // Set output to screen
-        delilahConsole->setSimpleOutput();
+        delilahConsole->setNoOutput();
         size_t id = delilahConsole->runAsyncCommand( command );
 
         if( id != 0)

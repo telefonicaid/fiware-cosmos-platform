@@ -191,17 +191,6 @@ void cleanup(void)
 
     LM_T(LmtCleanup, ("Shutting down SamsonSetup"));
     samson::SamsonSetup::destroy();
-
-    // Check background threads
-    au::StringVector background_threads = au::ThreadManager::shared()->getThreadNames();
-    if( background_threads.size() > 0 )
-    {
-        LM_W(("Still %lu background threads running (%s)" , background_threads.size() , background_threads.str().c_str() ));
-        std::cerr << au::ThreadManager::shared()->str();
-    }
-    else
-        LM_M(("Finished correctly with 0 background processes"));
-    
     
     LM_T(LmtCleanup, ("Calling paConfigCleanup"));
     paConfigCleanup();

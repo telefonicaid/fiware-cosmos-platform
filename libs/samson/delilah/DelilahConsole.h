@@ -58,6 +58,8 @@ namespace samson {
         
         // Flag to just visualize content on screen ( delilah -command  or -f XX )
         bool simple_output;
+        // Flag to avoid any message visualization
+        bool no_output;
         
         au::simple_map< std::string , std::string > aliases;
         
@@ -80,7 +82,12 @@ namespace samson {
         {
             simple_output = true;
         }
-                
+
+        void setNoOutput()
+        {
+            no_output = true;
+        }
+        
 		// Eval a command from the command line
         virtual std::string getPrompt();
 		virtual void evalCommand( std::string command );
@@ -141,6 +148,12 @@ namespace samson {
 		// Show a message on screen
 		void showMessage( std::string message)
 		{
+            if( no_output )
+            {
+                LM_V(("%s" , message.c_str() ));
+                return;
+            }
+            
             if( simple_output )
             {
                 std::cout << message;
@@ -152,6 +165,12 @@ namespace samson {
         
 		void showWarningMessage( std::string message)
         {
+            if( no_output )
+            {
+                LM_V(("%s" , au::str( au::purple , "%s" , message.c_str() ).c_str() ));
+                return;
+            }
+            
             if( simple_output )
             {
                 std::cout << au::str( au::purple , "%s" , message.c_str() );
@@ -163,6 +182,12 @@ namespace samson {
         
 		void showErrorMessage( std::string message)
         {
+            if( no_output )
+            {
+                LM_V(("%s" , au::str( au::red , "%s" , message.c_str() ).c_str() ));
+                return;
+            }
+            
             if( simple_output )
             {
                 std::cout << au::str( au::red , "%s" , message.c_str() );

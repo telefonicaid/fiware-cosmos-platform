@@ -8,23 +8,23 @@ import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Factory;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 
+import es.tid.bdp.hadoopjars.HadoopJars;
+import es.tid.bdp.hadoopjars.JarNames;
+import es.tid.bdp.joblaunchers.Environment;
 import es.tid.bdp.joblaunchers.FrontendLauncher;
 import es.tid.bdp.joblaunchers.JobLauncher;
 import es.tid.bdp.joblaunchers.TestException;
 
 public class WordCountTest {
-    public class TestImpl {
-        private static final String WORDCOUNT_FILE = "wordcount.jar";
+    private static final String WORDCOUNT_PATH = HadoopJars.getPath(JarNames.Wordcount);
+    
+    public class TestImpl {        
         private String text;
         private String inputFilePath;
         private final Map<String,Integer> expectedResult;
         private final JobLauncher jobLauncher;
-        private final String jarPath;
         
         public TestImpl(JobLauncher launcher, String text) {
             this.expectedResult = new HashMap<String, Integer>();
@@ -39,7 +39,6 @@ public class WordCountTest {
                 this.expectedResult.put(word, count + 1);
             }
             this.jobLauncher = launcher;
-            this.jarPath = new File(WORDCOUNT_FILE).getAbsolutePath();
         }
         
         @BeforeClass
@@ -66,7 +65,7 @@ public class WordCountTest {
         @Test
         public void wordCountTest() throws IOException, TestException {
             String taskId = this.jobLauncher.createNewTask(this.inputFilePath,
-                                                           this.jarPath);
+                                                           WORDCOUNT_PATH);
             this.jobLauncher.waitForTaskCompletion(taskId);
             List<Map<String, String>> results = this.jobLauncher
                     .getResults(taskId);            
@@ -83,8 +82,9 @@ public class WordCountTest {
             }
         }
     }
-    
+          
     public Object[] testCreator(JobLauncher launcher) {
+        final String wordcountPath = HadoopJars.getPath(JarNames.Wordcount);
         final String word = "Word ";
         final int repetitions = 1000000;
         StringBuilder longStr = new StringBuilder(repetitions * word.length());
@@ -99,9 +99,10 @@ public class WordCountTest {
             new TestImpl(launcher, longStr.toString())
         };
     }
-    
+       
+    @Parameters("environment")
     @Factory
-    public Object[] testsUI() {
-        return testCreator(new FrontendLauncher());
+    public Object[] testsUI(String environment) {
+        return testCreator(new FrontendLauncher(Environment.valueOf(environment)));
     }
 }

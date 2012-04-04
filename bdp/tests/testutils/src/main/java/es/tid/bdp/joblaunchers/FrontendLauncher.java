@@ -19,8 +19,8 @@ public class FrontendLauncher implements JobLauncher {
     
     private FrontEnd frontend;
     
-    public FrontendLauncher() {
-        this.frontend = new FrontEnd();
+    public FrontendLauncher(Environment env) {
+        this.frontend = new FrontEnd(env);
     }
     
     @Override

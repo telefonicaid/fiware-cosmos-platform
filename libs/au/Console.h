@@ -28,7 +28,10 @@ class Console
     pthread_t t_running;
     std::list< std::string > pending_messages;
     au::Token token_pending_messages;
-        
+
+    // Flag to bock background mesages
+    bool block_background_messages;
+    
     // Flag to quit internal loop
     bool quit_console;
 

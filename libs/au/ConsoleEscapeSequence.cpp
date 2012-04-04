@@ -18,6 +18,8 @@ ConsoleEscapeSequence::ConsoleEscapeSequence()
     addSequence( "au" );
     
     addSequence("h"); // History...
+    
+    addSequence("b"); // Block background messages
 }
 
 

@@ -220,7 +220,45 @@ namespace samson{
                 return &value;
                 
             }            
-        };        
+        };  
+        
+        class SourceFunction_getSerialitzationLength : public SourceFunction
+        {
+            
+            char *buffer;
+            samson::system::Value value; 
+            
+        public:
+            
+            SourceFunction_getSerialitzationLength() : SourceFunction( "getSerialitzationLength" , 1 , 1 )
+            {
+                buffer = (char*) malloc( 64*1024*1024 );
+            }
+            
+            ~SourceFunction_getSerialitzationLength()
+            {
+                free( buffer );
+            }
+            
+            samson::system::Value* get( KeyValue kv )
+            {
+                if( input_sources.size() == 0 )
+                    return NULL;
+                
+                samson::system::Value *source_value = input_sources[0]->get(kv);
+                
+                if( !source_value )
+                    return NULL;
+                
+                // Serialize in buffer
+                int l = source_value->serialize( buffer );
+                
+                value.set_double(l);
+                
+                return &value;
+                
+            }            
+        };  
 
         class SourceFunction_getType : public SourceFunction
         {
@@ -743,6 +781,7 @@ namespace samson{
                 // Get information about type and serialitzation of the value
                 add<SourceFunction_getType>("getType");
                 add<SourceFunction_getSerialitzation>( "getSerialitzation");
+                add<SourceFunction_getSerialitzationLength>( "getSerialitzationLength");
                 
                 
             }

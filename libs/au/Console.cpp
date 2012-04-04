@@ -58,6 +58,9 @@ Console::Console() : token_pending_messages("token_pending_messages")
 {
     command_history = new ConsoleCommandHistory();
     counter = 0;
+    
+    // By default, background messages are not blocked ( esc - b )
+    block_background_messages = false;
 }
 
 Console::~Console()
@@ -221,6 +224,27 @@ void Console::addEspaceSequence( std::string sequence )
 
 void Console::internal_process_escape_sequence( std::string sequence )
 {
+    
+    if( sequence == au::str("b") )
+    {
+        // It is theoretically impossible, but just in case
+        if( pthread_self() != t_running )
+            return;
+        
+        block_background_messages = !block_background_messages;
+
+        if( block_background_messages )
+            writeWarningOnConsole("Background messages blocked ( press esc b to show again )\n");
+        else
+            writeWarningOnConsole("Background messages are shown again\n");
+
+        clear_line();
+        flush();
+        print_command();
+        
+        return;
+    }
+    
     if( sequence == au::str("%c",127) )
     {
         // Remove a word
@@ -287,6 +311,9 @@ void Console::internal_process_escape_sequence( std::string sequence )
 
 void Console::process_background()
 {
+    if( block_background_messages ) 
+        return;
+    
     if ( pending_messages.size() != 0 )
     {
         au::TokenTaker tt(&token_pending_messages);
@@ -301,7 +328,7 @@ void Console::process_background()
         }
         
         print_command();
-        fflush(stdout);
+            fflush(stdout);
         
     }
 }

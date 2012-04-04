@@ -14,6 +14,10 @@
 namespace samson{
     namespace system{
         
+        // Constant word serialization
+        int get_constant_word_code( const char * word );
+        const char* get_constant_word( int c );
+
         
         class Value : public samson::DataInstance 
         {
@@ -31,9 +35,9 @@ namespace samson{
 
                 // Serialitzation of numbers
                 // ------------------------------------------------------------
-                ser_int_positive,
-                ser_int_negative,
-                ser_int_value_0,
+                ser_int_positive, // Variable length possitive numbers
+                ser_int_negative, // Variable length negative numbers
+                ser_int_value_0,  // Concrete values
                 ser_int_value_1,
                 ser_int_value_2,
                 ser_int_value_3,
@@ -46,7 +50,7 @@ namespace samson{
                 ser_int_value_10,
                 ser_int_value_minus_1,
                 
-                ser_double_positive_1_decimal,       // Double with a fixed number of decimals
+                ser_double_positive_1_decimal,       // Double possitve or negative with a fixed number of decimals
                 ser_double_positive_2_decimal,      
                 ser_double_positive_3_decimal,      
                 ser_double_positive_4_decimal,      
@@ -58,17 +62,18 @@ namespace samson{
                 ser_double_negative_4_decimal,      
                 ser_double_negative_5_decimal,      
 
-                ser_double,      
+                ser_double,       // Generic double otherwise
 
-                // Serialitzation of double
+                // Serialitzation of string
                 // ------------------------------------------------------------
                 ser_string,
-                ser_string_smaz,  // Compressed using smaz
+                ser_string_constant,   // Constant words frequently used ( user, log, url, ...)
+                ser_string_smaz,       // Compressed using smaz
                   
                 // Serialitzation of vector
                 // ------------------------------------------------------------
                 ser_vector,
-                ser_vector_len_2,
+                ser_vector_len_2, // Vector with a particular length
                 ser_vector_len_3,
                 ser_vector_len_4,
                 ser_vector_len_5,
@@ -76,7 +81,7 @@ namespace samson{
                 // Serialitzation of map
                 // ------------------------------------------------------------
                 ser_map,
-                ser_map_len_1,
+                ser_map_len_1,    // Map with a particular number of elements inside
                 ser_map_len_2,
                 ser_map_len_3,
                 ser_map_len_4,
@@ -118,9 +123,7 @@ namespace samson{
             // Map
             au::map<std::string,Value> _value_map;
             
-            
         public:
-            
             
             Value() : samson::DataInstance()
             {    
@@ -322,6 +325,10 @@ namespace samson{
                         _value_string = &data[1];
                         return  1 + _value_string.length() +1 ; // serializtion code, string, '\0'
 
+                    case ser_string_constant:
+                        _value_string = get_constant_word( ((unsigned char) data[1]) );
+                        return 2; // Always length 2 ( serialization char and word index )
+                        
                     case ser_string_smaz:
                     {
                         char line[8192];
@@ -503,6 +510,7 @@ namespace samson{
                         return parse_number(data);
                         
                     case ser_string:
+                    case ser_string_constant:
                     case ser_string_smaz:
                         return parse_string(data);
 
@@ -700,6 +708,15 @@ namespace samson{
 
             int serialize_string(char *data)
             {
+                // If constant word, prefered method
+                int index = get_constant_word_code( _value_string.c_str() );
+                if( index != -1 )
+                {
+                    data[0] = (char) ser_string_constant;
+                    data[1] = (unsigned char) index;
+                    return 2; // Always 2 length serialization ( serialization code + index word )
+                }
+                
                 if( _value_string.length() < 4096 )
                 {
                     // Try compressed vertion
@@ -1818,6 +1835,7 @@ namespace samson{
                     case ser_double: return "ser_double";     
                         
                     case ser_string: return "string";
+                    case ser_string_constant: return "string_constant";
                     case ser_string_smaz: return "string_smaz";
                         
                     case ser_vector: return "vector";

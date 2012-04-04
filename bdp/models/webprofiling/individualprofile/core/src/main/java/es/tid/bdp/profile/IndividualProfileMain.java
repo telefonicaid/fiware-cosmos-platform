@@ -38,8 +38,7 @@ public class IndividualProfileMain extends Configured implements Tool {
     private Path webLogsPath;
 
     @Override
-    public int run(String[] args)
-            throws IOException, ClassNotFoundException, InterruptedException {
+    public int run(String[] args) throws Exception {
         if (args.length < MIN_ARGS || args.length > MAX_ARGS) {
             throw new IllegalArgumentException("Mandatory parameters: "
                     + "[-D input.serialization=text|protobuf] "
@@ -60,20 +59,20 @@ public class IndividualProfileMain extends Configured implements Tool {
         }
         ceJob.configurePaths(this.webLogsPath, this.categoriesPath);
         if (!ceJob.waitForCompletion(true)) {
-            return 1;
+            throw new Exception("Failed to extract categories");
         }
 
         UserProfileJob upJob = new UserProfileJob(this.getConf());
         upJob.configure(this.categoriesPath, this.profilePath);
         if (!upJob.waitForCompletion(true)) {
-            return 1;
+            throw new Exception("Failed to calculate user profiles");
         }
 
         String psOutputFile = args[1];
         PSExporterJob exPsJob = new PSExporterJob(this.getConf());
         exPsJob.configure(this.profilePath, new Path(psOutputFile));
         if (!exPsJob.waitForCompletion(true)) {
-            return 1;
+            throw new Exception("Failed to export to PS");
         }
 
         // Perform the MongoDB export.
@@ -83,7 +82,7 @@ public class IndividualProfileMain extends Configured implements Tool {
                     this.getConf());
             exMongoJob.configure(this.profilePath, mongoUrl);
             if (!exMongoJob.waitForCompletion(true)) {
-                return 1;
+                throw new Exception("Failed to export to MongoDB");
             }
         }
 
@@ -125,10 +124,15 @@ public class IndividualProfileMain extends Configured implements Tool {
     }
 
     public static void main(String[] args) throws Exception {
-        int res = ToolRunner.run(new Configuration(),
-                                 new IndividualProfileMain(), args);
-        if (res != 0) {
-            throw new Exception("Process failed");
+        try {
+            int res = ToolRunner.run(new Configuration(),
+                                     new IndividualProfileMain(), args);
+            if (res != 0) {
+                throw new Exception("Uknown error");
+            }
+        } catch (Exception ex) {
+            LOG.fatal(ex.getMessage());
+            throw ex;
         }
     }
 }

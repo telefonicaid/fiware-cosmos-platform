@@ -25,8 +25,7 @@ public class WordCountMain extends Configured implements Tool {
     private static final int MAX_ARGS = 3;
 
     @Override
-    public int run(String[] args)
-            throws IOException, ClassNotFoundException, InterruptedException {
+    public int run(String[] args) throws Exception {
         if (args.length < MIN_ARGS || args.length > MAX_ARGS) {
             throw new IllegalArgumentException(
                     "Usage: text_path output_path [mongo_url]");
@@ -38,8 +37,7 @@ public class WordCountMain extends Configured implements Tool {
         WordCountJob wcJob = new WordCountJob(this.getConf());
         wcJob.configure(inputPath, outputPath);
         if (!wcJob.waitForCompletion(true)) {
-            LOGGER.error("Failed to process word counts");
-            return 1;
+            throw new Exception("Failed to process word counts");
         }
 
         if (args.length == MAX_ARGS) {
@@ -47,8 +45,7 @@ public class WordCountMain extends Configured implements Tool {
             MongoDBExporterJob exJob = new MongoDBExporterJob(this.getConf());
             exJob.configure(outputPath, mongoUrl);
             if (!exJob.waitForCompletion(true)) {
-                LOGGER.error("Failed to export to MongoDB");
-                return 1;
+                throw new Exception("Failed to export to MongoDB");
             }
         }
         
@@ -56,10 +53,15 @@ public class WordCountMain extends Configured implements Tool {
     }
 
     public static void main(String[] args) throws Exception {
-        int res = ToolRunner.run(new Configuration(),
-                                 new WordCountMain(), args);
-        if (res != 0) {
-            throw new Exception("Process failed");
+        try {
+            int res = ToolRunner.run(new Configuration(),
+                                     new WordCountMain(), args);
+            if (res != 0) {
+                throw new Exception("Uknown error");
+            }
+        } catch (Exception ex) {
+            LOGGER.fatal(ex.getMessage());
+            throw ex;
         }
     }
 }

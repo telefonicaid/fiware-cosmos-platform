@@ -49,10 +49,10 @@ public class IndividualMobilityDriver extends Configured implements Tool {
                                      new IndividualMobilityDriver(),
                                      args);
             if (res != 0) {
-                throw new Exception("Uknown failure");
+                throw new Exception("Uknown error");
             }
         } catch (Exception ex) {
-            LOG.debug("ERROR ", ex);
+            LOG.fatal(ex);
             throw ex;
         }
     }

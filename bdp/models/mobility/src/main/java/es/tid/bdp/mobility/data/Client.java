@@ -25,6 +25,14 @@ public class Client {
     private List<Poi> pois;
 
     public Client() {
+        this.init();
+    }
+    
+    public void clear() {
+        this.init();
+    }
+    
+    private void init() {
         this.geoLocations = new GeoLocationContainer();
         this.noInfoGeolocations = new ArrayList<Integer>();
         this.represGeoLocations = new ArrayList<Long>();

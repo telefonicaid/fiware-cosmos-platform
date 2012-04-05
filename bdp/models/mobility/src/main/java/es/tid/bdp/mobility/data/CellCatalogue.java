@@ -1,35 +1,14 @@
 package es.tid.bdp.mobility.data;
 
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-/**
- * User: masp20
- * Date: 27-ene-2012
- * Time: 13:18:12
- */
 public class CellCatalogue {
-
-    private static CellCatalogue INSTANCE = null;
     private Map<Long, Cell> catalogue;
 
-    private CellCatalogue() {
+    CellCatalogue() {
         this.catalogue = new HashMap<Long, Cell>();
-    }
-
-    private static synchronized void createInstance() {
-        if (CellCatalogue.INSTANCE == null) {
-            CellCatalogue.INSTANCE = new CellCatalogue();
-        }
-    }
-
-    public static CellCatalogue getInstance() {
-        if (INSTANCE == null) {
-            CellCatalogue.createInstance();
-        }
-        return CellCatalogue.INSTANCE;
     }
 
     public void addCell(final Cell cell) {

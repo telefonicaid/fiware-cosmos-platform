@@ -1,7 +1,6 @@
 package es.tid.bdp.mobility.mapreduce;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
@@ -17,21 +16,28 @@ import org.apache.log4j.Logger;
 
 import es.tid.bdp.mobility.data.Cell;
 import es.tid.bdp.mobility.data.CellCatalogue;
+import es.tid.bdp.mobility.data.CellCatalogueFactory;
 import es.tid.bdp.mobility.data.MobProtocol.Cdr;
 import es.tid.bdp.mobility.data.MobProtocol.GLEvent;
 import es.tid.bdp.mobility.parsing.ParserCdr;
 import es.tid.bdp.mobility.parsing.ParserCell;
 import es.tid.bdp.mobility.parsing.ParserFactory;
 
-public class IndividualMobilityMapper extends Mapper<LongWritable, Text, LongWritable, ProtobufWritable<GLEvent>> {
+public class IndividualMobilityMapper extends Mapper<LongWritable, Text,
+        LongWritable, ProtobufWritable<GLEvent>> {
     private static final Logger LOG = Logger.getLogger(
             IndividualMobilityMapper.class);
+    
+    // TODO: set this via a config file
     public static final String HDFS_CELL_CATALOGUE_PATH = "/data/cell.dat";
+    
     private static final String CELL_PARSER = "DEFAULT";
     private static final String CDRS_PARSER = "DEFAULT";
     
+    // TODO: this should be placed in the distributed cache
+    private static boolean isCatalogLoaded;
+    
     private CellCatalogue cellsCataloge;
-    private static boolean loadCatalogue;
     private LongWritable outputKey = new LongWritable();
     private ProtobufWritable<GLEvent> outputValue;
 
@@ -41,7 +47,8 @@ public class IndividualMobilityMapper extends Mapper<LongWritable, Text, LongWri
     @Override
     protected void setup(final Context context) throws IOException,
                                                        InterruptedException {
-        loadCellCatalogue(context, HDFS_CELL_CATALOGUE_PATH);
+        this.loadCellCatalogue(context.getConfiguration(),
+                               HDFS_CELL_CATALOGUE_PATH);
         this.outputValue = ProtobufWritable.newInstance(GLEvent.class);
     }
 
@@ -68,58 +75,46 @@ public class IndividualMobilityMapper extends Mapper<LongWritable, Text, LongWri
             glEvent.setPlaceId(0);
         }
 
-        outputValue.set(glEvent.build());
+        this.outputValue.set(glEvent.build());
         context.write(this.outputKey, this.outputValue);
     }
 
-    private void loadCellCatalogue(final Context context,
-                                   final String hdfsFileLocation) {
-        loadCellCatalogue(context.getConfiguration(), hdfsFileLocation);
-    }
-
-    private void loadCellCatalogue(final Configuration conf,
-                                   final String hdfsFileLocation) {
-        final FSDataInputStream in;
-        final BufferedReader br;
-
+    private void loadCellCatalogue(Configuration conf,
+                                   String hdfsFileLocation) {
         LOG.debug("Load Cell Catalogue from HDFS");
 
-        this.cellsCataloge = CellCatalogue.getInstance();
-        if (loadCatalogue) {
+        this.cellsCataloge = CellCatalogueFactory.getInstance();
+        if (isCatalogLoaded) {
             return;
         }
 
+        FSDataInputStream in = null;
+        BufferedReader br = null;
         try {
-            final FileSystem fs = FileSystem.get(conf);
-            final Path path = new Path(hdfsFileLocation);
-
+            FileSystem fs = FileSystem.get(conf);
+            Path path = new Path(hdfsFileLocation);
             in = fs.open(path);
             br = new BufferedReader(new InputStreamReader(in));
-        } catch (FileNotFoundException fnfe) {
-            LOG.error("Read from distributed cache: file not found");
-            return;
-        } catch (IOException ioe) {
-            LOG.error("Read from distributed cache: IO exception");
-            return;
-        }
 
-        try {
-            final ParserCell cellParser = new ParserFactory().
-                    createNewCellParser(CELL_PARSER);
-
+            ParserCell cellParser = new ParserFactory().createNewCellParser(
+                    CELL_PARSER);
             String line;
             while ((line = br.readLine()) != null) {
                 final Cell cell = cellParser.parseCellLine(line);
                 this.cellsCataloge.addCell(cell);
             }
-
-            loadCatalogue = true;
-
-            in.close();
-        } catch (IOException ioe) {
+            isCatalogLoaded = true;
+        } catch (IOException ex) {
             LOG.debug("read from distributed cache: read length and instances");
-        } catch (NullPointerException npe) {
+        } catch (NullPointerException ex) {
             LOG.debug("read from distributed cache: read length and instances");
+        } finally {
+            try {
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException ex) {
+            }
         }
     }
 }

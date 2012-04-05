@@ -13,16 +13,12 @@ import es.tid.bdp.mobility.data.MobProtocol.GLEvent;
 
 public class IndividualMobilityReducer extends Reducer<LongWritable,
         ProtobufWritable<GLEvent>, LongWritable, Client> {
-    int cont = 0;
-
     @Override
-    protected void reduce(final LongWritable key,
-                          final Iterable<ProtobufWritable<GLEvent>> values,
-                          final Context context) throws IOException,
-                                                        InterruptedException {
-        // Initialize client object
+    protected void reduce(LongWritable key,
+                          Iterable<ProtobufWritable<GLEvent>> values,
+                          Context context) throws IOException,
+                                                  InterruptedException {
         Client client = new Client();
-
         client.setUserId(key.get());
         List<GLEvent> glEvents = new ArrayList<GLEvent>();
         for (ProtobufWritable<GLEvent> wrapper : values) {

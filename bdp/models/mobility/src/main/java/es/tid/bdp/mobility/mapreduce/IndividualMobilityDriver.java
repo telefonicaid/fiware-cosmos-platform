@@ -19,6 +19,7 @@ public class IndividualMobilityDriver extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(
             IndividualMobilityDriver.class);
 
+    @Override
     public int run(final String[] args) throws IOException,
                                                ClassNotFoundException,
                                                InterruptedException {
@@ -35,18 +36,24 @@ public class IndividualMobilityDriver extends Configured implements Tool {
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
-        return job.waitForCompletion(true) ? 0 : 1;
+        if (!job.waitForCompletion(true)) {
+            return 1;
+        }
+        
+        return 0;
     }
 
-    public static void main(final String[] args) {
+    public static void main(final String[] args) throws Exception {
         try {
             int res = ToolRunner.run(new Configuration(),
                                      new IndividualMobilityDriver(),
                                      args);
-            System.exit(res);
-        } catch (Exception e) {
-            LOG.debug("ERROR ", e);
-            System.exit(1);
+            if (res != 0) {
+                throw new Exception("Uknown failure");
+            }
+        } catch (Exception ex) {
+            LOG.debug("ERROR ", ex);
+            throw ex;
         }
     }
 }

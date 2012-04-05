@@ -1,13 +1,11 @@
 package es.tid.bdp.mobility.mapreduce;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-
-import es.tid.bdp.mobility.data.Cell;
-import es.tid.bdp.mobility.data.CellCatalogue;
-import es.tid.bdp.mobility.parsing.ParserCdr;
-import es.tid.bdp.mobility.parsing.ParserCell;
-import es.tid.bdp.mobility.parsing.ParserFactory;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -17,20 +15,21 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
+import es.tid.bdp.mobility.data.Cell;
+import es.tid.bdp.mobility.data.CellCatalogue;
 import es.tid.bdp.mobility.data.MobProtocol.Cdr;
 import es.tid.bdp.mobility.data.MobProtocol.GLEvent;
+import es.tid.bdp.mobility.parsing.ParserCdr;
+import es.tid.bdp.mobility.parsing.ParserCell;
+import es.tid.bdp.mobility.parsing.ParserFactory;
 
-public class IndividualMobilityMapper extends Mapper<LongWritable, Text,
-        LongWritable, ProtobufWritable<GLEvent>> {
-    private static final Logger LOG = Logger.getLogger(IndividualMobilityMapper.class);
+public class IndividualMobilityMapper extends Mapper<LongWritable, Text, LongWritable, ProtobufWritable<GLEvent>> {
+    private static final Logger LOG = Logger.getLogger(
+            IndividualMobilityMapper.class);
     public static final String HDFS_CELL_CATALOGUE_PATH = "/data/cell.dat";
     private static final String CELL_PARSER = "DEFAULT";
     private static final String CDRS_PARSER = "DEFAULT";
+    
     private CellCatalogue cellsCataloge;
     private static boolean loadCatalogue;
     private LongWritable outputKey = new LongWritable();
@@ -50,7 +49,7 @@ public class IndividualMobilityMapper extends Mapper<LongWritable, Text,
     protected void map(final LongWritable key, final Text value,
                        final Context context) throws IOException,
                                                      InterruptedException {
-        final ParserCdr cdrParser =new ParserFactory().createNewCdrParser(
+        final ParserCdr cdrParser = new ParserFactory().createNewCdrParser(
                 CDRS_PARSER);
         Cdr cdr = cdrParser.parseCdrsLine(value.toString());
 
@@ -61,7 +60,7 @@ public class IndividualMobilityMapper extends Mapper<LongWritable, Text,
         glEvent.setTime(cdr.getTime());
 
         if (this.cellsCataloge != null
-                && this.cellsCataloge.containsCell(cdr.getCellId())) {
+            && this.cellsCataloge.containsCell(cdr.getCellId())) {
             final Cell currentCell = this.cellsCataloge.getCell(
                     cdr.getCellId());
             glEvent.setPlaceId(currentCell.getGeoLocationLevel2());

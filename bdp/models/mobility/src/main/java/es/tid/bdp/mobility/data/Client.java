@@ -1,5 +1,8 @@
 package es.tid.bdp.mobility.data;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
@@ -16,7 +19,6 @@ public class Client {
     private static final int TAMNOINFOGEOLOCATION = 168;
     private static final int TAMNODECOMMVECTOR = 96;
     private static final int TAMPOICOMMVECTOR = 96;
-    
     private long userId;
     private GeoLocationContainer geoLocations;
     private List<Integer> noInfoGeolocations;
@@ -27,11 +29,11 @@ public class Client {
     public Client() {
         this.init();
     }
-    
+
     public void clear() {
         this.init();
     }
-    
+
     private void init() {
         this.geoLocations = new GeoLocationContainer();
         this.noInfoGeolocations = new ArrayList<Integer>();
@@ -41,30 +43,25 @@ public class Client {
     }
 
     public void calculateGeoLocations(final Iterator<GLEvent> iteratorGLEvent) {
-        GLEvent glEvent;
-        int position;
-        int value;
-
         while (iteratorGLEvent.hasNext()) {
-            glEvent = iteratorGLEvent.next();
+            GLEvent glEvent = iteratorGLEvent.next();
             final GeoLocation geoLocation = new GeoLocation();
 
             if (glEvent.getPlaceId() != 0) {
                 geoLocation.setIdPlace(glEvent.getPlaceId());
                 geoLocation.setWeekday((byte) glEvent.getDate().getWeekday());
                 geoLocation.setHour((byte) glEvent.getTime().getHour());
-                geoLocations.incrementGeoLocation(geoLocation);
+                this.geoLocations.incrementGeoLocation(geoLocation);
             } else {
-                position = Utils.getPosListNoInfoGeolocations(
+                int position = Utils.getPosListNoInfoGeolocations(
                         (byte) glEvent.getDate().getWeekday(), (byte) glEvent.
                         getTime().getHour());
                 if (position != -1) {
-                    if (noInfoGeolocations.isEmpty()) {
+                    if (this.noInfoGeolocations.isEmpty()) {
                         initNoInfoGeolocations(TAMNOINFOGEOLOCATION);
                     }
-                    value = noInfoGeolocations.get(position);
-                    value++;
-                    noInfoGeolocations.set(position, value);
+                    this.noInfoGeolocations.set(
+                            position, this.noInfoGeolocations.get(position) + 1);
 
                 }
             }
@@ -120,11 +117,10 @@ public class Client {
     }
 
     public void calculateNodeCommVector() {
-        nodeCommVector = new ArrayList<Double>();
+        this.nodeCommVector = new ArrayList<Double>();
         int comunicationsPos;
         final Iterator<GeoLocation> iterator =
                                     this.geoLocations.getKeysIterator();
-
         if (iterator.hasNext()) {
             for (int i = 0; i < TAMNODECOMMVECTOR; i++) {
                 nodeCommVector.add(0.0);
@@ -133,20 +129,16 @@ public class Client {
 
         while (iterator.hasNext()) {
             final GeoLocation geo = iterator.next();
-
             comunicationsPos = Utils.getPosVectorComunications(
                     geo.getWeekday(), geo.getHour());
-            // LOG.debug("geo.getWeekDay()=" + geo.getWeekDay() +
-            // ", geo.getHour()=" + geo.getHour());
             this.nodeCommVector.set(comunicationsPos,
                                     this.nodeCommVector.get(comunicationsPos)
                                     + this.geoLocations.getGeolocation(geo));
         }
 
-        if (!noInfoGeolocations.isEmpty()) {
+        if (!this.noInfoGeolocations.isEmpty()) {
             // Add info of no InfoGeoLocation
             for (int position = 0; position < TAMNOINFOGEOLOCATION; position++) {
-
                 final int value = this.noInfoGeolocations.get(position);
                 if (value != 0) {
                     comunicationsPos = Utils.getPosAddNoInfoGeolocations(
@@ -158,8 +150,8 @@ public class Client {
             }
         }
 
-        nodeCommVector = Utils.normalizationOfVector(
-                (ArrayList<Double>) nodeCommVector);
+        this.nodeCommVector = Utils.normalizationOfVector(
+                (ArrayList<Double>) this.nodeCommVector);
     }
 
     public void calculatePoiCommVector() {
@@ -213,7 +205,7 @@ public class Client {
     }
 
     public long getUserId() {
-        return userId;
+        return this.userId;
     }
 
     public void setUserId(final long idNode) {
@@ -221,7 +213,7 @@ public class Client {
     }
 
     public GeoLocationContainer getGeoLocations() {
-        return geoLocations;
+        return this.geoLocations;
     }
 
     public void setGeoLocations(final GeoLocationContainer geoLocations) {
@@ -229,7 +221,7 @@ public class Client {
     }
 
     public List<Integer> getNoInfoGeolocations() {
-        return noInfoGeolocations;
+        return this.noInfoGeolocations;
     }
 
     public void setNoInfoGeolocations(final List<Integer> noInfoGeolocations) {
@@ -237,7 +229,7 @@ public class Client {
     }
 
     public List<Long> getRepresGeoLocations() {
-        return represGeoLocations;
+        return this.represGeoLocations;
     }
 
     public void setRepresGeoLocations(final List<Long> represGeoLocations) {
@@ -245,7 +237,7 @@ public class Client {
     }
 
     public List<Double> getNodeCommVector() {
-        return nodeCommVector;
+        return this.nodeCommVector;
     }
 
     public void setNodeCommVector(final List<Double> nodeCommVector) {
@@ -253,7 +245,7 @@ public class Client {
     }
 
     public List<Poi> getPois() {
-        return pois;
+        return this.pois;
     }
 
     public void setPois(final List<Poi> pois) {
@@ -261,19 +253,18 @@ public class Client {
     }
 
     private void initNoInfoGeolocations(final int size) {
-
         for (int position = 0; position < size; position++) {
-            noInfoGeolocations.add(0);
+            this.noInfoGeolocations.add(0);
         }
     }
 
     private int nuemElementsNoInfoGeolocations() {
         int result = 0, value;
-        if (noInfoGeolocations.size() != 0) {
+        if (!this.noInfoGeolocations.isEmpty()) {
             for (int position = 0; position < TAMNOINFOGEOLOCATION; position++) {
-                value = noInfoGeolocations.get(position);
+                value = this.noInfoGeolocations.get(position);
                 if (value != 0) {
-                    result = result + value;
+                    result += value;
                 }
             }
         }

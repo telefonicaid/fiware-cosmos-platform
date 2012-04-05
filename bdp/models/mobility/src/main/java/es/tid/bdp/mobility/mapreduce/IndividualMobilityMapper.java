@@ -35,7 +35,7 @@ public class IndividualMobilityMapper extends Mapper<LongWritable, Text,
     private static final String CDRS_PARSER = "DEFAULT";
     
     // TODO: this should be placed in the distributed cache
-    private static boolean isCatalogLoaded;
+    private static boolean isCatalogueLoaded;
     
     private CellCatalogue cellsCataloge;
     private LongWritable outputKey = new LongWritable();
@@ -60,7 +60,6 @@ public class IndividualMobilityMapper extends Mapper<LongWritable, Text,
                 CDRS_PARSER);
         Cdr cdr = cdrParser.parseCdrsLine(value.toString());
 
-        this.outputKey.set(cdr.getUserId());
         GLEvent.Builder glEvent = GLEvent.newBuilder();
         glEvent.setUserId(cdr.getUserId());
         glEvent.setDate(cdr.getDate());
@@ -75,6 +74,7 @@ public class IndividualMobilityMapper extends Mapper<LongWritable, Text,
             glEvent.setPlaceId(0);
         }
 
+        this.outputKey.set(cdr.getUserId());
         this.outputValue.set(glEvent.build());
         context.write(this.outputKey, this.outputValue);
     }
@@ -84,7 +84,7 @@ public class IndividualMobilityMapper extends Mapper<LongWritable, Text,
         LOG.debug("Load Cell Catalogue from HDFS");
 
         this.cellsCataloge = CellCatalogueFactory.getInstance();
-        if (isCatalogLoaded) {
+        if (isCatalogueLoaded) {
             return;
         }
 
@@ -103,7 +103,7 @@ public class IndividualMobilityMapper extends Mapper<LongWritable, Text,
                 final Cell cell = cellParser.parseCellLine(line);
                 this.cellsCataloge.addCell(cell);
             }
-            isCatalogLoaded = true;
+            isCatalogueLoaded = true;
         } catch (IOException ex) {
             LOG.debug("read from distributed cache: read length and instances");
         } catch (NullPointerException ex) {

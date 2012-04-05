@@ -166,7 +166,6 @@ typedef struct LogData
     int    lineNo;      // Line number in file
     char   traceLevel;  // Tracelevel, in case of 'LM_T'
     char   type;        // type of message 'M', 'E', 'W', ...
-    char strings[];     // series of zero terminated strings
 } LogData;
 
 
@@ -177,8 +176,9 @@ typedef struct LogData
 */
 typedef struct LogMsg
 {
-    LogHeader header;
-    LogData   data;
+    LogHeader header;        // header ...
+    LogData   data;          // Integer part of log message
+    char      strings[];     // series of zero terminated strings
 } LogMsg;
 
 

@@ -3,8 +3,6 @@ package es.tid.bdp.kpicalculation;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.hadoop.mapreduce.LzoTextInputFormat;
 import com.twitter.elephantbird.mapreduce.input.LzoProtobufB64LineInputFormat;
@@ -23,6 +21,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.log4j.Logger;
 
 import es.tid.bdp.base.mapreduce.BinaryKey;
 import es.tid.bdp.base.mapreduce.SingleKey;
@@ -43,9 +42,10 @@ import es.tid.bdp.kpicalculation.generated.data.KpiCalculationProtocol.WebProfil
  * project
  */
 public class KpiMain extends Configured implements Tool {
+    private static final Logger LOG = Logger.getLogger(KpiMain.class);
+    
     private static final URL KPI_DEFINITIONS = KpiMain.class.getResource(
             "/kpi.properties");
-    private static final Logger LOGGER = Logger.getLogger("KpiMain");
     private static final int NUM_ARGS = 3;
     private static final String MONGO_COLLECTION_NAMESPACE_DELIMITER = ".";
 
@@ -69,7 +69,7 @@ public class KpiMain extends Configured implements Tool {
         if (!fs.mkdirs(tmpPath)) {
             throw new IOException("Could not create " + tmpPath);
         }
-        LOGGER.log(Level.INFO, "Using {0} as temp directory", tmpPath);
+        LOG.info("Using " + tmpPath + " as temp directory");
         if (!fs.deleteOnExit(tmpPath)) {
             throw new IOException(
                     "Could not set temp directory for automatic deletion");
@@ -193,7 +193,7 @@ public class KpiMain extends Configured implements Tool {
                 throw new Exception("Uknown error");
             }
         } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, ex.getMessage());
+            LOG.fatal(ex);
             throw ex;
         }
     }

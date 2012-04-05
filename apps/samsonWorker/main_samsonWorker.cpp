@@ -73,8 +73,8 @@ PaArgument paArgs[] =
     { "-web_port",  &web_port,  "",                         PaInt,    PaOpt, SAMSON_WORKER_WEB_PORT, 1,      9999,  "Port to receive web connections"   },
     { "-nolog",     &noLog,     "SAMSON_WORKER_NO_LOG",     PaBool,   PaOpt, false,                  false,  true,  "no logging"                        },
     { "-valgrind",  &valgrind,  "SAMSON_WORKER_VALGRIND",   PaInt,    PaOpt, 0,                      0,        20,  "help valgrind debug process"       },
-    { "-lsHost",    &lsHost,    "SAMSON_WORKER_LS_HOST",    PaString, PaOpt, _i "localhost",         PaNL,   PaNL,  "Host for Log Server"               },
-    { "-lsPort",    &lsPort,    "SAMSON_WORKER_LS_PORT",    PaUShort, PaOpt, 2999,                   1,      9999,  "Port for Log Server"               },
+    { "-lsHost",    &lsHost,    "SAMSON_WORKER_LS_HOST",    PaString, PaOpt, _i "NONE",              PaNL,   PaNL,  "Host for Log Server"               },
+    { "-lsPort",    &lsPort,    "SAMSON_WORKER_LS_PORT",    PaUShort, PaOpt, 0,                      0,      9999,  "Port for Log Server"               },
 
     PA_END_OF_ARGS
 };
@@ -297,6 +297,13 @@ void logToLogServer(void* vP, char* text, char type, time_t secondsNow, int time
     {
         P(("Connecting to LogServer at %s:%d", lsHost, lsPort));
         lsFd = serverConnect(lsHost, lsPort);
+        if (lsFd == -1)
+        {
+            P(("Error connecting to LogServer at %s:%d", lsHost, lsPort));
+            return;
+        }
+
+        P(("Connected to LogServer at %s:%d", lsHost, lsPort));
     }
 
     if (lsFd != -1)
@@ -408,7 +415,13 @@ int main(int argC, const char *argV[])
     const char* extra = paIsSetSoGet(argC, (char**) argV, "-port");
     paParse(paArgs, argC, (char**) argV, 1, false, extra);
 
-    lmOutHookSet(logToLogServer, NULL);
+    if ((lsPort != 0) || (strcmp(lsHost, "NONE") != 0))
+    {
+        LM_W(("Logging to log server"));
+        lmOutHookSet(logToLogServer, NULL);
+        LM_W(("Connecting to log server, so all threads get it ..."));
+    }
+
     // LM_T(19, ("LogServer test"));
     // exit(1);
 

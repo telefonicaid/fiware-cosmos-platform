@@ -144,6 +144,45 @@ typedef char* (*LmTracelevelName)(int level);
 
 
 
+#define LOG_MAGIC (('z' << 24) | ('u' << 16) | ('k' << 8) | 'a')
+/* ****************************************************************************
+*
+* LogHeader - 
+*/
+typedef struct LogHeader
+{
+    int magic;     // LOG_MAGIC: "zuka"
+    int dataLen;   // Length of data part of message
+} LogHeader;
+
+
+
+/* ****************************************************************************
+*
+* LogData - 
+*/
+typedef struct LogData
+{
+    int    lineNo;      // Line number in file
+    char   traceLevel;  // Tracelevel, in case of 'LM_T'
+    char   type;        // type of message 'M', 'E', 'W', ...
+    char strings[];     // series of zero terminated strings
+} LogData;
+
+
+
+/* ****************************************************************************
+*
+* LogMsg - 
+*/
+typedef struct LogMsg
+{
+    LogHeader header;
+    LogData   data;
+} LogMsg;
+
+
+
 /* ****************************************************************************
 *
 * 

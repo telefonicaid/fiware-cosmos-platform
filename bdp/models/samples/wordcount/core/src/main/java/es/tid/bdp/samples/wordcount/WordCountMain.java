@@ -1,7 +1,5 @@
 package es.tid.bdp.samples.wordcount;
 
-import java.io.IOException;
-
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -25,8 +23,7 @@ public class WordCountMain extends Configured implements Tool {
     private static final int MAX_ARGS = 3;
 
     @Override
-    public int run(String[] args)
-            throws IOException, ClassNotFoundException, InterruptedException {
+    public int run(String[] args) throws Exception {
         if (args.length < MIN_ARGS || args.length > MAX_ARGS) {
             throw new IllegalArgumentException(
                     "Usage: text_path output_path [mongo_url]");
@@ -38,8 +35,7 @@ public class WordCountMain extends Configured implements Tool {
         WordCountJob wcJob = new WordCountJob(this.getConf());
         wcJob.configure(inputPath, outputPath);
         if (!wcJob.waitForCompletion(true)) {
-            LOGGER.error("Failed to process word counts");
-            return 1;
+            throw new Exception("Failed to process word counts");
         }
 
         if (args.length == MAX_ARGS) {
@@ -47,23 +43,23 @@ public class WordCountMain extends Configured implements Tool {
             MongoDBExporterJob exJob = new MongoDBExporterJob(this.getConf());
             exJob.configure(outputPath, mongoUrl);
             if (!exJob.waitForCompletion(true)) {
-                LOGGER.error("Failed to export to MongoDB");
-                return 1;
+                throw new Exception("Failed to export to MongoDB");
             }
         }
         
         return 0;
     }
 
-    public static void main(String[] args) {
-        int res = 0;
+    public static void main(String[] args) throws Exception {
         try {
-            res = ToolRunner.run(new Configuration(),
-                                 new WordCountMain(), args);
+            int res = ToolRunner.run(new Configuration(),
+                                     new WordCountMain(), args);
+            if (res != 0) {
+                throw new Exception("Uknown error");
+            }
         } catch (Exception ex) {
-            ex.printStackTrace(System.err);
-            System.exit(1);
+            LOGGER.fatal(ex.getMessage());
+            throw ex;
         }
-        System.exit(res);
     }
 }

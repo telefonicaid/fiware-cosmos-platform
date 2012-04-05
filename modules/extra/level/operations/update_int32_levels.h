@@ -45,19 +45,27 @@ namespace level{
 		   samson::system::Int32 value;
 
 		   if ( inputs[0].num_kvs > 0 )
+		   {
+		     LM_M(("Parsing key from hits"));
 			  key.parse( inputs[0].kvs[0]->key );
+		   }
 		   else
+		   {
+		     LM_M(("Parsing key from state"));
 			  key.parse( inputs[1].kvs[0]->key );
+		   }
 
 		   // Init value
 		   value.value = 0;
 		   
+		   LM_M(("Parsing values from %lu hits", inputs[0].num_kvs));
 		   for ( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
 		   {
 			  tmp.parse( inputs[0].kvs[i]->value );
 			  value.value += tmp.value;
 		   }
 
+		   LM_M(("Parsing values from %lu states", inputs[1].num_kvs));
 		   for ( size_t i = 0 ; i < inputs[1].num_kvs ; i++ )
 		   {
 			  tmp.parse( inputs[1].kvs[i]->value );
@@ -65,6 +73,7 @@ namespace level{
 		   }
 
 
+		   LM_M(("Emit key:%s, value:%d with %lu num_kvs", key.value.c_str(), value.value, inputs[0].num_kvs));
 		   writer->emit( 0 , &key , &value );
 		   writer->emit( 1 , &key , &value );
 

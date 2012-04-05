@@ -14,6 +14,7 @@
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/UInt.h>
 #include <samson/modules/system/TimeUnix.h>
+#include <samson/modules/level/ValTimed.h>
 
 #include <time.h>
 
@@ -30,6 +31,8 @@ class red_update_last_user_profile : public samson::Reduce
 	samson::OTTstream::ServiceHit hit;
 	samson::system::Int32 incOne;
 	samson::system::Int32 decOne;
+	samson::system::Int32 zero;
+	samson::level::ValTimed outVal;
 	samson::system::TimeUnix oldestHit;
 	int timespan;
 
@@ -47,7 +50,7 @@ public:
 	//
 	//  input: system.UInt OTTstream.ServiceHit
 	//  input: system.UInt OTTstream.Activity
-	//  output: system.String system.Int32
+	//  output: system.String level.ValTimed
 	//  output: system.UInt OTTstream.Activity
 	//
 	// helpLine: Update the latest user profile
@@ -62,6 +65,7 @@ public:
 
 		incOne.value = 1;
 		decOne.value = -1;
+		zero.value = 0;
 	}
 
 	void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
@@ -79,7 +83,7 @@ public:
 			userId.parse( inputs[1].kvs[0]->key );
 			if (inputs[1].num_kvs > 1)
 			{
-				LM_M(("Multiple states(%lu) for user:%lu", inputs[1].num_kvs, userId.value));
+				LM_W(("Multiple states(%lu) for user:%lu", inputs[1].num_kvs, userId.value));
 			}
 		}
 
@@ -87,66 +91,85 @@ public:
 		{
 			if (oldestHit.value != INITIAL_FUTURE)
 			{
-				for (int i= 0; (i < activity.servActivity_length); i++)
+				for (int j= 0; (j < activity.servActivity_length); j++)
 				{
-					serviceStr.value = activity.servActivity[i].serviceId.str();
+					serviceStr.value = activity.servActivity[j].serviceId.str();
 
-					//					if ((oldestHit.value > (activity.servActivity[i].timestamp.value + timespan)) && (activity.servActivity[i].inCount.value == 1))
+					//					if ((oldestHit.value > (activity.servActivity[j].timestamp.value + timespan)) && (activity.servActivity[j].inCount.value == 1))
 					//					{
 					//						writer->emit(0, &serviceStr, decOne);
-					//						activity.servActivity[i].inCount.value = 0;
+					//						activity.servActivity[j].inCount.value = 0;
 					//					}
 				}
 				return;
 			}
 		}
 
+		//LM_M(("For user:%lu, detected:%lu hits", userId.value,  inputs[0].num_kvs ));
 		for (uint64_t i = 0 ; i < inputs[0].num_kvs ; i++ )
 		{
 			bool serviceFound = false;
 			hit.parse(inputs[0].kvs[i]->value);
 
-			for (int i= 0; (i < activity.servActivity_length); i++)
+			//LM_M(("Check for userId:%lu serviceId:%lu", userId.value, hit.serviceId.value));
+			for (int j= 0; (j < activity.servActivity_length); j++)
 			{
 
-				serviceStr.value = activity.servActivity[i].serviceId.str();
+				serviceStr.value = activity.servActivity[j].serviceId.str();
 
 				if (hit.timestamp.value < oldestHit.value)
 				{
 					oldestHit.value = hit.timestamp.value;
 				}
 
-				if (hit.serviceId.value == activity.servActivity[i].serviceId.value)
+				if (hit.serviceId.value == activity.servActivity[j].serviceId.value)
 				{
 					serviceFound = true;
-					if (hit.timestamp.value > (activity.servActivity[i].timestamp.value + timespan))
+					if (hit.timestamp.value > (activity.servActivity[j].timestamp.value + timespan))
 					{
-						if (activity.servActivity[i].inCount.value == 0)
+						if (activity.servActivity[j].inCount.value == 0)
 						{
-							writer->emit(0, &serviceStr, &incOne);
-							activity.servActivity[i].inCount.value = 1;
+							outVal.val.value = incOne.value;
+							outVal.t.value = hit.timestamp.value;
+						    writer->emit(0, &serviceStr, &outVal);
+							//writer->emit(0, &serviceStr, &incOne);
+							//LM_M(("Emit serviceId:'%s', count:%d, userId:%lu, ts:%s, prv:%s",serviceStr.value.c_str(), incOne.value, userId.value, hit.timestamp.str().c_str(), activity.servActivity[j].timestamp.str().c_str()));
+							activity.servActivity[j].inCount.value = 1;
 						}
+						activity.servActivity[j].timestamp.value = hit.timestamp.value;
 					}
-					activity.servActivity[i].timestamp.value = hit.timestamp.value;
 				}
 				else
 				{
-					if ((hit.timestamp.value > (activity.servActivity[i].timestamp.value + timespan)) && (activity.servActivity[i].inCount.value == 1))
+					if ((hit.timestamp.value > (activity.servActivity[j].timestamp.value + timespan)) && (activity.servActivity[j].inCount.value == 1))
 					{
-						writer->emit(0, &serviceStr, &decOne);
-						activity.servActivity[i].inCount.value = 0;
+						outVal.val.value = decOne.value;
+						outVal.t.value = hit.timestamp.value;
+					  writer->emit(0, &serviceStr, &outVal);
+						//LM_M(("Emit serviceId:'%s by hit:%lu', count:%d, userId:%lu, ts:%s, prev:%s",serviceStr.value.c_str(), hit.serviceId.value, decOne.value, userId.value,  hit.timestamp.str().c_str(), activity.servActivity[j].timestamp.str().c_str()));
+						//writer->emit(0, &serviceStr, &decOne);
+						activity.servActivity[j].inCount.value = 0;
 					}
 				}
+//				{
+//					writer->emit(0, &serviceStr, &zero);
+//				}
 			}
 
-			if (serviceFound == 0)
+			if ((serviceFound == false) && (hit.serviceId.value != 0))
 			{
 				serviceStr.value = hit.serviceId.str();
-				writer->emit(0, &serviceStr, &incOne);
+				outVal.val.value = incOne.value;
+				outVal.t.value = hit.timestamp.value;
+				writer->emit(0, &serviceStr, &outVal);
+				//LM_M(("Emit first serviceId:'%s', count:%d, userId:%lu",serviceStr.value.c_str(), incOne.value, userId.value ));
+				//writer->emit(0, &serviceStr, &incOne);
 
+				//LM_M(("Create serviceId:%lu, count:%d, userId:%lu, at ts:%s(%lu)",hit.serviceId.value, 1, userId.value,  hit.timestamp.str().c_str(), hit.timestamp.value));
 				activity.addService(hit.serviceId, hit.timestamp, 1);
 			}
 		}
+		//LM_M(("Update user:%lu state with %d services", userId.value, activity.servActivity_length));
 		writer->emit(1, &userId, &activity);
 	}
 

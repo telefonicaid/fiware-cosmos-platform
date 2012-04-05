@@ -7,15 +7,20 @@
 * CREATION DATE            Dec 14 2010
 *
 */
+#include <sys/socket.h>         // socket, bind, listen
+#include <sys/un.h>             // sockaddr_un
+#include <netinet/in.h>         // struct sockaddr_in
+#include <netdb.h>              // gethostbyname
+#include <arpa/inet.h>          // inet_ntoa
+#include <netinet/tcp.h>        // TCP_NODELAY
+#include <signal.h>
+
 #include "parseArgs/parseArgs.h"
 #include "parseArgs/paBuiltin.h"
 #include "parseArgs/paIsSet.h"
-#include "logMsg/logMsg.h"
 #include "parseArgs/paConfig.h"
+#include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
-
-#include <signal.h>
-
 
 #include "au/LockDebugger.h"            // au::LockDebugger
 #include "au/ThreadManager.h"
@@ -44,12 +49,14 @@
 */
 SAMSON_ARG_VARS;
 
-bool     fg;
-bool     monit;
-bool     noLog;
-int      valgrind;
-int      port;
-int      web_port;
+bool            fg;
+bool            monit;
+bool            noLog;
+int             valgrind;
+int             port;
+int             web_port;
+char            lsHost[64];
+unsigned short  lsPort;
 
 
 
@@ -60,12 +67,14 @@ int      web_port;
 PaArgument paArgs[] =
 {
     SAMSON_ARGS,
-    { "-fg",        &fg,        "SAMSON_WORKER_FOREGROUND", PaBool, PaOpt, false,                  false,  true,  "don't start as daemon"             },
-    { "-monit",     &monit,     "SAMSON_WORKER_MONIT",      PaBool, PaOpt, false,                  false,  true,  "to use with monit"                 },
-    { "-port",      &port,      "",                         PaInt,  PaOpt, SAMSON_WORKER_PORT,     1,      9999,  "Port to receive new connections"   },
-    { "-web_port",  &web_port,  "",                         PaInt,  PaOpt, SAMSON_WORKER_WEB_PORT, 1,      9999,  "Port to receive web connections"   },
-    { "-nolog",     &noLog,     "SAMSON_WORKER_NO_LOG",     PaBool, PaOpt, false,                  false,  true,  "no logging"                        },
-    { "-valgrind",  &valgrind,  "SAMSON_WORKER_VALGRIND",   PaInt,  PaOpt, 0,                      0,        20,  "help valgrind debug process"       },
+    { "-fg",        &fg,        "SAMSON_WORKER_FOREGROUND", PaBool,   PaOpt, false,                  false,  true,  "don't start as daemon"             },
+    { "-monit",     &monit,     "SAMSON_WORKER_MONIT",      PaBool,   PaOpt, false,                  false,  true,  "to use with monit"                 },
+    { "-port",      &port,      "",                         PaInt,    PaOpt, SAMSON_WORKER_PORT,     1,      9999,  "Port to receive new connections"   },
+    { "-web_port",  &web_port,  "",                         PaInt,    PaOpt, SAMSON_WORKER_WEB_PORT, 1,      9999,  "Port to receive web connections"   },
+    { "-nolog",     &noLog,     "SAMSON_WORKER_NO_LOG",     PaBool,   PaOpt, false,                  false,  true,  "no logging"                        },
+    { "-valgrind",  &valgrind,  "SAMSON_WORKER_VALGRIND",   PaInt,    PaOpt, 0,                      0,        20,  "help valgrind debug process"       },
+    { "-lsHost",    &lsHost,    "SAMSON_WORKER_LS_HOST",    PaString, PaOpt, _i "localhost",         PaNL,   PaNL,  "Host for Log Server"               },
+    { "-lsPort",    &lsPort,    "SAMSON_WORKER_LS_PORT",    PaUShort, PaOpt, 2999,                   1,      9999,  "Port for Log Server"               },
 
     PA_END_OF_ARGS
 };
@@ -213,6 +222,135 @@ static void valgrindExit(int v)
 
 /* ****************************************************************************
 *
+* serverConnect - 
+*/
+int serverConnect(const char* host, unsigned short port)
+{
+    struct hostent*     hp;
+    struct sockaddr_in  peer;
+    int                 fd;
+
+    if (port == 0)
+        return -1;
+
+    if ((hp = gethostbyname(host)) == NULL)
+        return -1;
+
+    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+        return -1;
+    
+    memset((char*) &peer, 0, sizeof(peer));
+
+    peer.sin_family      = AF_INET;
+    peer.sin_addr.s_addr = ((struct in_addr*) (hp->h_addr))->s_addr;
+    peer.sin_port        = htons(port);
+
+    int retries = 7200;
+    int tri     = 0;
+
+    while (1)
+    {
+        if (connect(fd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
+        {
+            ++tri;
+            usleep(500000);
+            if (tri > retries)
+            {
+                close(fd);
+                return -1;
+            }
+        }
+        else
+            break;
+    }
+
+    return fd;
+}
+
+
+
+/* ****************************************************************************
+*
+* logToLogServer - 
+*/
+int  lsFd = -1;
+
+void logToLogServer(void* vP, char* text, char type, time_t secondsNow, int timezone, int dst, const char* file, int lineNo, const char* fName, int tLev, const char* stre)
+{
+    LogHeader  header;
+    LogData    data;
+    char       strings[1024];
+
+    if (lsFd == -1)
+    {
+        // printf("Connecting to LogServer at %s:%d\n", lsHost, lsPort);
+        lsFd = serverConnect(lsHost, lsPort);
+    }
+
+    if (lsFd != -1)
+    {
+        int sIx = 0;
+
+        strcpy(strings, text);
+        sIx += strlen(text);
+        ++sIx;
+        strings[sIx] = 0;
+        ++sIx;
+
+        strcpy(&strings[sIx], file);
+        sIx += strlen(file);
+        ++sIx;
+        strings[sIx] = 0;
+        ++sIx;
+
+        strcpy(&strings[sIx], fName);
+        sIx += strlen(fName);
+        ++sIx;
+        strings[sIx] = 0;
+        ++sIx;
+
+        strcpy(&strings[sIx], stre);
+        sIx += strlen(stre);
+        ++sIx;
+        strings[sIx] = 0;
+        ++sIx;
+
+        header.magic     = LM_MAGIC;
+        header.dataLen   = sIx + sizeof(data);
+
+        data.lineNo      = lineNo;
+        data.traceLevel  = tLev;
+        data.type        = type;
+        data.unixSeconds = secondsNow;
+        data.timezone    = timezone;
+        data.dst         = dst;
+
+        // ssize_t writev(int fd, const struct iovec *iov, int iovcnt);        
+        // iov[0].iov_base = str0;
+        // iov[0].iov_len = strlen(str0);
+
+        struct iovec iov[3];
+
+        iov[0].iov_base = &header;
+        iov[0].iov_len  = sizeof(header);
+        iov[1].iov_base = &data;
+        iov[1].iov_len  = sizeof(data);
+        iov[2].iov_base = strings;
+        iov[2].iov_len  = sIx;
+        
+        ssize_t nb;
+        ssize_t sz = iov[0].iov_len + iov[1].iov_len + iov[2].iov_len;
+        
+        nb = writev(lsFd, iov, 3);
+        if (nb != sz)
+            printf("Written %ld bytes - not %ld!!!\n", nb, sz);
+    }
+}
+
+
+
+/* ****************************************************************************
+*
 * main - 
 */
 int main(int argC, const char *argV[])
@@ -240,6 +378,7 @@ int main(int argC, const char *argV[])
 
     const char* extra = paIsSetSoGet(argC, (char**) argV, "-port");
     paParse(paArgs, argC, (char**) argV, 1, false, extra);
+    lmOutHookSet(logToLogServer, NULL);
 
     // Only add in foreground to avoid warning / error messages at the stdout
     if (fg)

@@ -1,7 +1,7 @@
-#include "engine/DiskOperation.h"		// Own interface
-#include "logMsg/logMsg.h"                     // LM_T
-#include "logMsg/traceLevels.h"                // LmtDisk
-#include "engine/Engine.h"				// engine::Engine
+#include "engine/DiskOperation.h"       // Own interface
+#include "logMsg/logMsg.h"              // LM_T
+#include "logMsg/traceLevels.h"         // LmtDisk
+#include "engine/Engine.h"              // engine::Engine
 #include "engine/DiskManager.h"         // engine::DiskManager
 #include "engine/ReadFile.h"            // engine::ReadFile
 
@@ -92,7 +92,7 @@ DiskOperation* DiskOperation::newAppendOperation( Buffer* buffer ,  std::string 
     o->environment.set("type","append");
     
     return o;
-}	
+}
 
 DiskOperation* DiskOperation::newRemoveOperation( std::string fileName , size_t _listenerId )
 {
@@ -132,7 +132,7 @@ bool DiskOperation::setDevice( )
     
     if( S_ISREG(info.st_mode) )
     {
-        st_dev = info.st_dev;	// Get the devide of the inode 
+        st_dev = info.st_dev;   // Get the devide of the inode 
         return true;
     }
     
@@ -146,7 +146,7 @@ bool DiskOperation::setDevice( )
     
     if( S_ISDIR(info.st_mode) )
     {
-        st_dev = info.st_dev;	// Get the devide of the inode 
+        st_dev = info.st_dev;   // Get the devide of the inode 
         st_dev = 0;// Force all files to be process as the same inode
         return true;
     }
@@ -176,7 +176,7 @@ std::string DiskOperation::getDescription()
     }
     
     
-    return o.str();		
+    return o.str();
 }
 
 std::string DiskOperation::getShortDescription()
@@ -199,7 +199,7 @@ std::string DiskOperation::getShortDescription()
     }
     
     
-    return o.str();		
+    return o.str();
 }
 
 void DiskOperation::setError( std::string message )
@@ -301,36 +301,39 @@ void DiskOperation::run(  )
             
         }
         
-        /*
-         LM_T( LmtDisk , ("DiskManager: Opening file %s to read", fileName.c_str() ));
+        // When to close rf ?
+        rf->close();
+
+#if 0
+        LM_T( LmtDisk , ("DiskManager: Opening file %s to read", fileName.c_str() ));
          
-         FILE *file = fopen(fileName.c_str() , "r" );
-         if( !file )
-         setError("Error opening file");
-         else
-         {
-         if( fseek(file, offset, SEEK_SET) != 0)
-         setError("Error in fseek operation");
-         else
-         {
-         if(size > 0 )
-         {
-         if ( fread(read_buffer, size, 1, file) == 1 )
-         {
-         gettimeofday(&stop, NULL);
-         LM_TODO(("Fix statistics using Engine"));
-         operation_time = DiskStatistics::timevaldiff( &start , &stop);
-         }
-         else
-         setError("Error while reading data from file");
-         }
-         else
-         operation_time = 0;
-         }
-         
-         fclose(file);
-         }
-         */
+        FILE *file = fopen(fileName.c_str() , "r" );
+        if( !file )
+            setError("Error opening file");
+        else
+        {
+            if( fseek(file, offset, SEEK_SET) != 0)
+                setError("Error in fseek operation");
+            else
+            {
+                if(size > 0 )
+                {
+                    if ( fread(read_buffer, size, 1, file) == 1 )
+                    {
+                        gettimeofday(&stop, NULL);
+                        LM_TODO(("Fix statistics using Engine"));
+                        operation_time = DiskStatistics::timevaldiff( &start , &stop);
+                    }
+                    else
+                        setError("Error while reading data from file");
+                }
+                else
+                    operation_time = 0;
+            }
+            
+            fclose(file);
+        }
+#endif
     }
     
     if( type == DiskOperation::remove)
@@ -352,7 +355,7 @@ void DiskOperation::run(  )
     LM_T( LmtDisk , ("DiskManager: Finished with file %s, ready to finishDiskOperation", fileName.c_str() ));
     // Notify to the engine
     diskManager->finishDiskOperation( this );
-}	
+}
 
 void DiskOperation::destroyBuffer()
 {

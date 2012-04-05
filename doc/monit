@@ -91,7 +91,7 @@ check process samsonWorker with pidfile /var/log/samson/samsond.pid
 #
 # [ Would be nice having it restart the worker in case of a change ... ? ]
 #
-check file setup.txt with path /var/samson/etc/
+check file setup.txt with path /var/samson/etc/setup.txt
   if changed checksum then alert
 
 

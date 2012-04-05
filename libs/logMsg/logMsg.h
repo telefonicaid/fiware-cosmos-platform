@@ -101,7 +101,7 @@ typedef void (*LmWriteFp)(char*);
 *
 * LmOutHook - type for function pointer for lmOut hook
 */
-typedef void (*LmOutHook)(void* vP, char* text, char type, const char* date, const char* file, int lineNo, const char* fName, int tLev, const char* stre);
+typedef void (*LmOutHook)(void* vP, char* text, char type, time_t secondsNow, int timezone, int dst, const char* file, int lineNo, const char* fName, int tLev, const char* stre);
 
 
 
@@ -144,7 +144,7 @@ typedef char* (*LmTracelevelName)(int level);
 
 
 
-#define LOG_MAGIC (('z' << 24) | ('u' << 16) | ('k' << 8) | 'a')
+#define LM_MAGIC (('z' << 24) | ('u' << 16) | ('k' << 8) | 'a')
 /* ****************************************************************************
 *
 * LogHeader - 
@@ -166,6 +166,9 @@ typedef struct LogData
     int    lineNo;      // Line number in file
     char   traceLevel;  // Tracelevel, in case of 'LM_T'
     char   type;        // type of message 'M', 'E', 'W', ...
+    time_t unixSeconds; // Seconds since the 'epoch'
+    int    timezone;    // The timezone
+    int    dst;         // Type of Daylight Saving Time
 } LogData;
 
 

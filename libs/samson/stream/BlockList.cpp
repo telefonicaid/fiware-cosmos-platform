@@ -40,15 +40,19 @@ namespace samson {
         void BlockList::clearBlockList()
         {
             // Remove all the blocks contained in this list
+            LM_T(LmtCleanup2, ("Removing all the blocks"));
             while( blocks.size() > 0 )
-                remove( top() );
-            
+            {
+                LM_T(LmtCleanup2, ("Removing a block: %d left",  blocks.size()));
+                remove(top());
+            }            
         }
         
         Block* BlockList::createBlock( engine::Buffer *buffer )
         {
             // create a new block
             Block *block  = new Block( buffer );
+            LM_T(LmtCleanup2, ("Creating a block"));
 
             LM_T(LmtBlockManager, ("BlockList::createBlock insert block: '%s'", block->str().c_str()));
             // Insert this block in my list
@@ -109,6 +113,7 @@ namespace samson {
             
             // Add block as always
             Block *block = new Block( worker_id , id , fileSize , &header );
+            LM_T(LmtCleanup2, ("Creating a block"));
 
             // Insert this block in my list
             blocks.push_back( block );

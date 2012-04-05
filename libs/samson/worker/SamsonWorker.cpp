@@ -286,6 +286,7 @@ namespace samson {
             // Send this message to all delilahs
             for ( size_t i = 0 ; i < delilahs.size() ; i++ )
             {
+
                 Packet* p  = new Packet( Message::StatusReport );
                 
                 // This message is not critical - to be thrown away if worker not connected
@@ -444,6 +445,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
     std::string               xmlSuffix  = ".xml";
     std::string               format     = "xml"; // Default value
     bool                      saneInput;
+    bool                      doDie      = false;
     std::vector<std::string>  path_components;
 
 
@@ -506,7 +508,12 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
     }
     else if (path_components[1] == "die")
     {
-        LM_X(1, ("Got a DIE request over REST interface ... I die!"));
+        doDie = true;
+
+        if (format == "xml")
+            au::xml_simple(data, "die", "OK, I die");
+        else
+            data << "  \"die\" : \"" << "OK, I die" << "\"\r\n";
     }
     else if (path_components[1] == "utftest")
     {
@@ -964,6 +971,9 @@ afterTreatment:
 
     output << header.str() << out;
     free(out);
+
+    if (doDie == true)
+        LM_X(1, ("Got a DIE request over REST interface ... I die!"));
 
     return output.str();
 }

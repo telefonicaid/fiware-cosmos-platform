@@ -151,7 +151,7 @@ typedef char* (*LmTracelevelName)(int level);
 */
 typedef struct LogHeader
 {
-    int magic;     // LOG_MAGIC: "zuka"
+    int magic;     // LOG_MAGIC: "zuka" (akuz in little-endian ...)
     int dataLen;   // Length of data part of message
 } LogHeader;
 

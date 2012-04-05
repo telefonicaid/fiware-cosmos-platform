@@ -275,6 +275,18 @@ int serverConnect(const char* host, unsigned short port)
 */
 int  lsFd = -1;
 
+#if 0
+#define P(s)        \
+do                  \
+{                   \
+    printf s;       \
+    printf("\n");   \
+} while (0)
+#else
+#define P(s)
+#endif
+
+
 void logToLogServer(void* vP, char* text, char type, time_t secondsNow, int timezone, int dst, const char* file, int lineNo, const char* fName, int tLev, const char* stre)
 {
     LogHeader  header;
@@ -283,7 +295,7 @@ void logToLogServer(void* vP, char* text, char type, time_t secondsNow, int time
 
     if (lsFd == -1)
     {
-        // printf("Connecting to LogServer at %s:%d\n", lsHost, lsPort);
+        P(("Connecting to LogServer at %s:%d", lsHost, lsPort));
         lsFd = serverConnect(lsHost, lsPort);
     }
 
@@ -291,33 +303,45 @@ void logToLogServer(void* vP, char* text, char type, time_t secondsNow, int time
     {
         int sIx = 0;
 
-        strcpy(strings, text);
-        sIx += strlen(text);
-        ++sIx;
+        P(("progName:    '%s' to strings[%d]", progName, sIx));
+        strcpy(&strings[sIx], progName);
+        sIx += strlen(progName);
         strings[sIx] = 0;
         ++sIx;
 
+        P(("text:        '%s' to strings[%d]", text, sIx));
+        strcpy(&strings[sIx], text);
+        sIx += strlen(text);
+        strings[sIx] = 0;
+        ++sIx;
+
+        P(("file:        '%s' to strings[%d]", file, sIx));
         strcpy(&strings[sIx], file);
         sIx += strlen(file);
-        ++sIx;
         strings[sIx] = 0;
         ++sIx;
 
+        P(("fName:       '%s' to strings[%d]", fName, sIx));
         strcpy(&strings[sIx], fName);
         sIx += strlen(fName);
-        ++sIx;
         strings[sIx] = 0;
         ++sIx;
 
-        strcpy(&strings[sIx], stre);
-        sIx += strlen(stre);
-        ++sIx;
-        strings[sIx] = 0;
-        ++sIx;
+        if (stre != NULL)
+        {
+            P(("stre:        '%s' to strings[%d]", stre, sIx));
+            strcpy(&strings[sIx], stre);
+            sIx += strlen(stre);
+            strings[sIx] = 0;
+            ++sIx;
+        }
 
+        P(("------------------------------------------"));
         header.magic     = LM_MAGIC;
         header.dataLen   = sIx + sizeof(data);
-
+        P(("magic:       %d", header.magic));
+        P(("dataLen:     %d", header.dataLen));
+        P(("------------------------------------------"));
         data.lineNo      = lineNo;
         data.traceLevel  = tLev;
         data.type        = type;
@@ -325,9 +349,13 @@ void logToLogServer(void* vP, char* text, char type, time_t secondsNow, int time
         data.timezone    = timezone;
         data.dst         = dst;
 
-        // ssize_t writev(int fd, const struct iovec *iov, int iovcnt);        
-        // iov[0].iov_base = str0;
-        // iov[0].iov_len = strlen(str0);
+        P(("lineNo:      %d",  data.lineNo));
+        P(("traceLevel:  %d",  data.traceLevel));
+        P(("type:        %d",  data.type));
+        P(("unixSeconds: %ld", data.unixSeconds));
+        P(("timezone:    %d",  data.timezone));
+        P(("dst:         %d",  data.dst));
+        P(("------------------------------------------"));
 
         struct iovec iov[3];
 
@@ -340,10 +368,11 @@ void logToLogServer(void* vP, char* text, char type, time_t secondsNow, int time
         
         ssize_t nb;
         ssize_t sz = iov[0].iov_len + iov[1].iov_len + iov[2].iov_len;
-        
+
+        P(("Writing a LogMsg of %ld bytes (dataLen: %d)", sz, header.dataLen));
         nb = writev(lsFd, iov, 3);
         if (nb != sz)
-            printf("Written %ld bytes - not %ld!!!\n", nb, sz);
+            P(("Written %ld bytes - not %ld!!!", nb, sz));
     }
 }
 
@@ -378,7 +407,10 @@ int main(int argC, const char *argV[])
 
     const char* extra = paIsSetSoGet(argC, (char**) argV, "-port");
     paParse(paArgs, argC, (char**) argV, 1, false, extra);
+
     lmOutHookSet(logToLogServer, NULL);
+    // LM_T(19, ("LogServer test"));
+    // exit(1);
 
     // Only add in foreground to avoid warning / error messages at the stdout
     if (fg)

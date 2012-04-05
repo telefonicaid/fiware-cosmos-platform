@@ -71,6 +71,8 @@ namespace samson {
         //LM_W(("Splitter input (%p , %lu)" , buffer , size ));
         //LM_W(("Splitter answer %d out:%p-%lu  Next %p" , c , outData , outLength , nextData ));
         
+        LM_READS("client", "input", buffer, size, LmfByte);
+
         if( outLength > size )
             LM_X(1, ("Error in the splitter implementation. Larger size than the input returned"));
         

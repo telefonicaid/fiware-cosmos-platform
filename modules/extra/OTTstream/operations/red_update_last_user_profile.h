@@ -8,7 +8,7 @@
 
 
 #include <samson/module/samson.h>
-#include <samson/modules/OTTstream/LastHistory.h>
+#include <samson/modules/OTTstream/Activity.h>
 #include <samson/modules/OTTstream/ServiceHit.h>
 #include <samson/modules/system/Int32.h>
 #include <samson/modules/system/String.h>

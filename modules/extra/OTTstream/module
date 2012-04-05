@@ -41,14 +41,6 @@ data Activity
 	vector OTTstream.ServiceActivity servActivity;
 }
 
-data LastHistory
-{
-	system.TimeUnix newest;
-	system.TimeUnix latest;
-	vector OTTstream.ActivityTimeSpan activity;
-}
-
-
 # -------------------------------------------------
 # Operations with data
 # -------------------------------------------------

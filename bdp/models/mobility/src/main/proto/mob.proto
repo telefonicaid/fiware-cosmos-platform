@@ -2,7 +2,7 @@ package mob;
 
 import "base.proto";
 
-option java_package = "es.tid.ps.mobility.data";
+option java_package = "es.tid.bdp.mobility.data";
 option java_outer_classname = "MobProtocol";
 
 message Cdr {

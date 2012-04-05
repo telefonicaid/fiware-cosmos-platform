@@ -1,6 +1,6 @@
 package base;
 
-option java_package = "es.tid.ps.mobility.data";
+option java_package = "es.tid.bdp.mobility.data";
 option java_outer_classname = "BaseProtocol";
 
 message Date {

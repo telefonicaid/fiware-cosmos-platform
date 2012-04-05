@@ -17,8 +17,8 @@ public class WebProfilingLogUtilTest {
         ProtobufWritable<WebProfilingLog> logWrapper = WebProfilingLogUtil.
                 createAndWrap("cfae4f24cb42c12d", "http",
                               "http://xml.weather.com/mobile/android",
-                               "weather.com", "/mobile/android/1130.xml", "",
-                               "30/10/2010", "", "", "", "", "GET", "200", "");
+                              "weather.com", "/mobile/android/1130.xml", "",
+                              "30/10/2010", "", "", "", "", "GET", "200", "");
         WebProfilingLog log = logWrapper.get();
         assertEquals("cfae4f24cb42c12d", log.getVisitorId());
         assertEquals("http://xml.weather.com/mobile/android", log.getFullUrl());

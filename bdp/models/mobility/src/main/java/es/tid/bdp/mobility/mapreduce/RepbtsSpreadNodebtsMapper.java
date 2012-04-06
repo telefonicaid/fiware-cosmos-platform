@@ -6,6 +6,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
+import es.tid.bdp.mobility.data.MobProtocol.BtsCounter;
 import es.tid.bdp.mobility.data.MobProtocol.NodeBtsDay;
 import es.tid.bdp.mobility.data.MobProtocol.NodeMxCounter;
 import es.tid.bdp.mobility.data.NodeBtsDayUtil;
@@ -21,13 +22,10 @@ public class RepbtsSpreadNodebtsMapper extends Mapper<IntWritable,
     public void map(IntWritable key, ProtobufWritable<NodeMxCounter> value,
             Context context) throws IOException, InterruptedException {
         final NodeMxCounter counter = value.get();
-        for (int i = 0; i < counter.getBtsLength(); i++) {
+        for (BtsCounter bts : counter.getBtsList()) {
             ProtobufWritable<NodeBtsDay> nodeWrapper = NodeBtsDayUtil.
-                    createAndWrap(key.get(),
-                                  counter.getBts(i).getPlaceId(),
-                                  0, 0);
-            context.write(nodeWrapper, new IntWritable(
-                    counter.getBts(i).getCount()));
+                    createAndWrap(key.get(), bts.getPlaceId(), 0, 0);
+            context.write(nodeWrapper, new IntWritable(bts.getCount()));
         }
     }
 }

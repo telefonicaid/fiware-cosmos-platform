@@ -14,14 +14,6 @@
     <name>mobility</name>
     <packaging>jar</packaging>
 
-    <dependencies>
-        <dependency>
-            <groupId>es.tid.bdp</groupId>
-            <artifactId>base</artifactId>
-            <version>0.3.0.0-SNAPSHOT</version>
-        </dependency>
-    </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -62,8 +54,6 @@
 
     <distributionManagement>
         <site>
-            <id>${repoSiteId}</id>
-            <name>${repoSiteName}</name>
             <url>${repoSiteUrl}/${project.groupId}/mobility</url>
         </site>
     </distributionManagement>

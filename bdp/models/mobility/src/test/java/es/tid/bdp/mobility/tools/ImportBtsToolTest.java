@@ -1,4 +1,4 @@
-package es.tid.bdp.mobility.voronoi;
+package es.tid.bdp.mobility.tools;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -13,6 +13,7 @@ import org.junit.Test;
 import es.tid.bdp.mobility.data.BtsUtil;
 import es.tid.bdp.mobility.data.MobProtocol.Bts;
 import es.tid.bdp.mobility.data.MobProtocol.Bts.Builder;
+import es.tid.bdp.mobility.voronoi.ImportBtsTool;
 
 /**
  *

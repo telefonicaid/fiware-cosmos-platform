@@ -1,4 +1,4 @@
-package es.tid.bdp.mobility.voronoi;
+package es.tid.bdp.mobility.tools;
 
 import java.io.*;
 import java.util.Map;

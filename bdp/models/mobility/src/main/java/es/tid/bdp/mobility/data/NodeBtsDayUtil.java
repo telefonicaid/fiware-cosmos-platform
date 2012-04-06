@@ -9,7 +9,8 @@ import es.tid.bdp.mobility.data.MobProtocol.NodeBtsDay;
  * @author sortega
  */
 public abstract class NodeBtsDayUtil implements ProtobufUtil {
-    public static NodeBtsDay create(long userId, long placeId, int workday, int count) {
+    public static NodeBtsDay create(long userId, long placeId,
+                                    int workday, int count) {
         return NodeBtsDay.newBuilder()
                 .setUserId(userId)
                 .setPlaceId(placeId)

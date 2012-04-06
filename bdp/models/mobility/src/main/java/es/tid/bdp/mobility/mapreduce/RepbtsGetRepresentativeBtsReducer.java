@@ -30,7 +30,8 @@ public class RepbtsGetRepresentativeBtsReducer extends Reducer<IntWritable,
             if (counter.getCount() >= MOB_CONF_MIN_PERC_REP_BTS
                     && counter.getRange() >= MOB_CONF_MIN_NUMBER_CALLS_BTS) {
                 ProtobufWritable<TwoInt> nodeBtsWrapper =
-                        TwoIntUtil.createAndWrap(key.get(), counter.getPlaceId());
+                        TwoIntUtil.createAndWrap(key.get(),
+                                                 counter.getPlaceId());
                 ProtobufWritable<BtsCounter> output =
                         BtsCounterUtil.createAndWrap(counter.getPlaceId(), 0, 0,
                                                      counter.getCount());

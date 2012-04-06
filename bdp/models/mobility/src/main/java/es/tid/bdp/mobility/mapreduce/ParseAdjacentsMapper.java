@@ -1,14 +1,15 @@
 package es.tid.bdp.mobility.mapreduce;
 
+import java.io.IOException;
+
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.bdp.mobility.data.MobProtocol.TwoInt;
 import es.tid.bdp.mobility.parsing.AdjacentParser;
-import java.io.IOException;
-import org.apache.hadoop.io.NullWritable;
 
 /**
  *

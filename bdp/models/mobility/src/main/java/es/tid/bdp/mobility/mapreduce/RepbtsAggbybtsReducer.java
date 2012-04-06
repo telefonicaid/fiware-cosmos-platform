@@ -18,12 +18,12 @@ import es.tid.bdp.mobility.data.NodeBtsDayUtil;
 public class RepbtsAggbybtsReducer extends
         Reducer<ProtobufWritable<NodeBtsDay>, IntWritable, LongWritable,
         ProtobufWritable<NodeBtsDay>> {
-    private LongWritable outKey;
+    private LongWritable userId;
 
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        this.outKey = new LongWritable();
+        this.userId = new LongWritable();
     }
 
     @Override
@@ -32,7 +32,7 @@ public class RepbtsAggbybtsReducer extends
             throws IOException, InterruptedException {
         inKey.setConverter(NodeBtsDay.class);
         final NodeBtsDay byDay = inKey.get();
-        this.outKey.set(byDay.getUserId());
+        this.userId.set(byDay.getUserId());
 
 	int totalCallCount = 0;
         for (IntWritable callCount : callCounts) {
@@ -44,6 +44,6 @@ public class RepbtsAggbybtsReducer extends
                 byDay.getPlaceId(),
                 byDay.getWorkday(),
                 totalCallCount);
-        context.write(this.outKey, nodeBtsDay);
+        context.write(this.userId, nodeBtsDay);
     }
 }

@@ -15,14 +15,22 @@ import es.tid.bdp.mobility.data.MobProtocol.Cdr;
  */
 public class GetSample10000Mapper extends Mapper<IntWritable,
         ProtobufWritable<Cdr>, LongWritable, ProtobufWritable<Cdr>> {
+    private LongWritable key;
+    
+    @Override
+    protected void setup(final Context context) {
+        this.key = new LongWritable();
+    }
+    
     @Override
     public void map(IntWritable key, ProtobufWritable<Cdr> value,
-            Context context) throws IOException, InterruptedException {
+                    Context context) throws IOException, InterruptedException {
         final Cdr cdr = value.get();
         // TODO: do not use hard-coded numbers.
         int nod = (key.get() % 100000) / 1000;
         if (nod == 92) {
-            context.write(new LongWritable(cdr.getUserId()), value);
+            this.key.set(cdr.getUserId());
+            context.write(this.key, value);
         }
     }
 }

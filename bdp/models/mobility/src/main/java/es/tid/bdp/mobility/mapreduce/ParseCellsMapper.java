@@ -18,13 +18,20 @@ import es.tid.bdp.mobility.parsing.CellParser;
  */
 public class ParseCellsMapper extends Mapper<IntWritable, Text, LongWritable,
         ProtobufWritable<Cdr>> {
-
+    private LongWritable cellId;
+    
+    @Override
+    protected void setup(Context context) {
+        this.cellId = new LongWritable();
+    }
+    
     @Override
     protected void map(IntWritable lineno, Text line, Context context)
             throws IOException, InterruptedException {
         final Cell cell = new CellParser(line.toString()).parse();
         ProtobufWritable wrappedCdr = ProtobufWritable.newInstance(Cell.class);
         wrappedCdr.set(cell);
-        context.write(new LongWritable(cell.getCellId()), wrappedCdr);
+        this.cellId.set(cell.getCellId());
+        context.write(this.cellId, wrappedCdr);
     }
 }

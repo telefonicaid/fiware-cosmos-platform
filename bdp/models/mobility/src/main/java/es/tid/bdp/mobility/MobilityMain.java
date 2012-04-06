@@ -1,6 +1,5 @@
 package es.tid.bdp.mobility;
 
-import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
@@ -18,7 +17,7 @@ import es.tid.bdp.mobility.mapreduce.FilterCellnoinfoMapper;
  * @author dmicol
  */
 public class MobilityMain extends Configured implements Tool {
-    // TODO: don't use hard-coded paths.
+    // TODO: don't use hard-coded paths. Use properties file instead
     private static final String WORKING_DIRECTORY = "/home/hdfs/mobility";
     private static final String CDRS_MOB_PATH =
             WORKING_DIRECTORY + "/cdrs_mob";
@@ -32,52 +31,43 @@ public class MobilityMain extends Configured implements Tool {
             WORKING_DIRECTORY + "/cdrs_no_info_smp";
     
     @Override
-    public int run(String[] args)
-            throws IOException, ClassNotFoundException, InterruptedException {
+    public int run(String[] args) throws Exception {
         if (args.length != 2) {
             throw new IllegalArgumentException("Mandatory parameters: "
-                    + "cdrs_path cells_path");
+                                               + "cdrs_path cells_path");
         }
 
         Path cdrsPath = new Path(args[0]);
         Path cellsPath = new Path(args[1]);
         
-        if (!this.runParsingJobs(cdrsPath, cellsPath)) {
-            return 1;
-        }
-        
-        if (!this.runGetVectorsToClusterJobs()) {
-            return 1;
-        }
+        this.runParsingJobs(cdrsPath, cellsPath);
+        this.runGetVectorsToClusterJobs();
 
         return 0;
     }
     
-    private boolean runParsingJobs(Path cdrsPath, Path cellsPath)
-            throws IOException, ClassNotFoundException, InterruptedException {
+    private void runParsingJobs(Path cdrsPath, Path cellsPath)
+            throws Exception {
         ParseCdrsJob parseCdrsJob = new ParseCdrsJob(this.getConf());
         parseCdrsJob.configure(cdrsPath, new Path(CDRS_MOB_PATH));
         if (!parseCdrsJob.waitForCompletion(true)) {
-            return false;
+            throw new Exception("Failed to parse CDRs");
         }
         
         ParseCellsJob parseCellsJob = new ParseCellsJob(this.getConf());
         parseCellsJob.configure(cellsPath, new Path(CELLS_MOB_PATH));
         if (!parseCellsJob.waitForCompletion(true)) {
-            return false;
+            throw new Exception("Failed to parse cells");
         }
-        
-        return true;
     }
     
-    private boolean runGetVectorsToClusterJobs()
-            throws IOException, ClassNotFoundException, InterruptedException {
+    private void runGetVectorsToClusterJobs() throws Exception {
         GetSample10000Job getSample10000Job = new GetSample10000Job(
                 this.getConf());
         getSample10000Job.configure(new Path(CDRS_MOB_PATH),
                                     new Path(CDRS_SAMPLE_PATH));
         if (!getSample10000Job.waitForCompletion(true)) {
-            return false;
+            throw new Exception("Failed to get samples");
         }
         
         // TODO: verify that the keys map to the output files correctly.
@@ -88,7 +78,7 @@ public class MobilityMain extends Configured implements Tool {
         filterCellnoinfoJob.configure(new Path(CDRS_SAMPLE_PATH),
                                       new Path(CDRS_INFO_SMP_PATH));
         if (!filterCellnoinfoJob.waitForCompletion(true)) {
-            return false;
+            throw new Exception("Failed to filter cells with no info for cells");
         }
 
         // TODO: verify that the keys map to the output files correctly.
@@ -98,20 +88,20 @@ public class MobilityMain extends Configured implements Tool {
         filterCellnoinfoJob.configure(new Path(CDRS_SAMPLE_PATH),
                                       new Path(CDRS_NO_INFO_SMP_PATH));
         if (!filterCellnoinfoJob.waitForCompletion(true)) {
-            return false;
+            throw new Exception("Failed to filter cells with no info for nodes");
         }
-        
-        return true;
     }
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         try {
-            int res = ToolRunner.run(
-                    new Configuration(), new MobilityMain(), args);
-            System.exit(res);
+            int res = ToolRunner.run(new Configuration(),
+                                     new MobilityMain(), args);
+            if (res != 0) {
+                throw new Exception("Unknown error");
+            }
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
-            System.exit(1);
+            throw ex;
         }
     }
 }

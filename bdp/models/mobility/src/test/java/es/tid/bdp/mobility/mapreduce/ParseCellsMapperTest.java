@@ -19,26 +19,24 @@ import es.tid.bdp.mobility.data.MobProtocol.Cdr;
  *
  * @author dmicol
  */
-public class ParseCdrsMapperTest {
+public class ParseCellsMapperTest {
     private MapDriver<IntWritable, Text, LongWritable, ProtobufWritable<Cdr>>
             driver;
     
     @Before
     public void setUp() {
         this.driver = new MapDriver<IntWritable, Text, LongWritable,
-                ProtobufWritable<Cdr>>(new ParseCdrsMapper());
+                ProtobufWritable<Cdr>>(new ParseCellsMapper());
     }
 
     @Test
     public void test() throws IOException {
         List<Pair<LongWritable, ProtobufWritable<Cdr>>> results = this.driver
                 .withInput(new IntWritable(1),
-                           new Text("33F430521676F4|2221436242|"
-                                    + "33F430521676F4|0442224173253|2|"
-                                    + "01/01/2010|02:00:01|2891|RMITERR"))
+                           new Text("33F43052|2221436242|12|34|56|78"))
                 .run();
         assertEquals(1, results.size());
-        assertEquals(new LongWritable(2221436242L), results.get(0).getFirst());
+        assertEquals(new LongWritable(871641170L), results.get(0).getFirst());
         ProtobufWritable<Cdr> wrappedCdr = results.get(0).getSecond();
         wrappedCdr.setConverter(Cdr.class);
         assertNotNull(wrappedCdr.get());

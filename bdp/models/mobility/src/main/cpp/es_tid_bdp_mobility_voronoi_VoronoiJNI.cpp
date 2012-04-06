@@ -18,9 +18,9 @@
 #include "VoronoiDiagramGenerator.h"
 
 JNIEXPORT jboolean JNICALL Java_es_tid_bdp_mobility_voronoi_VoronoiJNI_generateVoronoi(
-  JNIEnv* env, jobject obj, jdoubleArray xValues, jdoubleArray yValues,
-  jint numPoints, jdouble minX, jdouble maxX, jdouble minY, jdouble maxY,
-  jdouble minDist) {
+    JNIEnv* env, jobject obj, jdoubleArray xValues, jdoubleArray yValues,
+    jint numPoints, jdouble minX, jdouble maxX, jdouble minY, jdouble maxY,
+    jdouble minDist) {
   jdouble* xValuesPtr = env->GetDoubleArrayElements(xValues, 0);
   jdouble* yValuesPtr = env->GetDoubleArrayElements(yValues, 0);
 

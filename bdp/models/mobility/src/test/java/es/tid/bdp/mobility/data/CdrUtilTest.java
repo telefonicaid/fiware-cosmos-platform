@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package es.tid.bdp.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;

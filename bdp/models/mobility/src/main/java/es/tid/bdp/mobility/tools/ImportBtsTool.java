@@ -4,6 +4,8 @@ import java.io.*;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.log4j.Logger;
+
 import es.tid.bdp.mobility.data.MobProtocol.Bts;
 import es.tid.bdp.mobility.data.MobProtocol.Bts.Builder;
 
@@ -14,15 +16,16 @@ import es.tid.bdp.mobility.data.MobProtocol.Bts.Builder;
  * @author sortega
  */
 public class ImportBtsTool {
+    private static final Logger LOG = Logger.getLogger(ImportBtsTool.class);
+    
     private static final String SEPARATOR = "\\|";
     private final OutputStream output;
     private final Map<Long, Bts.Builder> btss;
 
-    public static void main(String argv[]) {
+    public static void main(String argv[]) throws Exception {
         if (argv.length != 4) {
-            System.err.println("Usage: command cell_catalogue adjacent_bts "
-                    + "areas out_file");
-            System.exit(1);
+            throw new IllegalArgumentException("Usage: command cell_catalogue "
+                                               + "adjacent_bts areas out_file");
         }
 
         OutputStream output = null;
@@ -34,8 +37,8 @@ public class ImportBtsTool {
             new ImportBtsTool(cellCatalogue, adjacentBts, areas, output).run();
             System.exit(0);
         } catch (IOException ex) {
-            System.err.println("I/O problem: " + ex.getMessage());
-            System.exit(1);
+            LOG.fatal("I/O problem: " + ex.getMessage());
+            throw ex;
         } finally {
             try {
                 output.close();
@@ -45,15 +48,16 @@ public class ImportBtsTool {
         }
     }
 
-    public static Reader openReader(String filename) {
+    public static Reader openReader(String filename)
+            throws FileNotFoundException {
         try {
             return new FileReader(filename);
-        } catch (FileNotFoundException fnfe) {
-            System.err.println("File not found: " + filename);
-            System.exit(1);
-            return null;
+        } catch (FileNotFoundException ex) {
+            LOG.fatal(ex);
+            throw ex;
         }
     }
+    
     private final Reader cellCatalogue;
     private final Reader adjacentBts;
     private final Reader areas;

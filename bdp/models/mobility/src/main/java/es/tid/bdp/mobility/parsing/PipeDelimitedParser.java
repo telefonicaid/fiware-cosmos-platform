@@ -31,7 +31,7 @@ public abstract class PipeDelimitedParser extends StringTokenizer {
         return Long.parseLong(nextToken(), 10);
     }
 
-    protected long parseCellId() throws NumberFormatException {
+    protected long parseCellId() {
         String str = nextToken();
         if (str.length() > MAX_CELL_DIGITS) {
             // Take the least significant hex digits

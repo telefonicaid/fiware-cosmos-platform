@@ -46,7 +46,8 @@ public class FilterCellnoinfoMapper extends Mapper<LongWritable,
                     this.outputKey.set(key.get());
                     break;
                 default:
-                    throw new RuntimeException("Output key type is not valid.");
+                    throw new IllegalStateException(
+                            "Output key type is not valid.");
             }
         }
         context.write(key, value);

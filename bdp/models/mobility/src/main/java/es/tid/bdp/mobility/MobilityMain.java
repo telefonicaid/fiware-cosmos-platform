@@ -5,6 +5,7 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.log4j.Logger;
 
 import es.tid.bdp.mobility.jobs.FilterCellnoinfoJob;
 import es.tid.bdp.mobility.jobs.GetSample10000Job;
@@ -17,6 +18,8 @@ import es.tid.bdp.mobility.mapreduce.FilterCellnoinfoMapper;
  * @author dmicol
  */
 public class MobilityMain extends Configured implements Tool {
+    private static final Logger LOG = Logger.getLogger(MobilityMain.class);
+    
     // TODO: don't use hard-coded paths. Use properties file instead
     private static final String WORKING_DIRECTORY = "/home/hdfs/mobility";
     private static final String CDRS_MOB_PATH =
@@ -100,7 +103,7 @@ public class MobilityMain extends Configured implements Tool {
                 throw new Exception("Unknown error");
             }
         } catch (Exception ex) {
-            ex.printStackTrace(System.err);
+            LOG.fatal(ex);
             throw ex;
         }
     }

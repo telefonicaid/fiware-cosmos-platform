@@ -18,7 +18,7 @@ public class GetSample10000Mapper extends Mapper<IntWritable,
     private LongWritable key;
     
     @Override
-    protected void setup(final Context context) {
+    public void setup(final Context context) {
         this.key = new LongWritable();
     }
     

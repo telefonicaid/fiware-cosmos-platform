@@ -11,7 +11,7 @@ import es.tid.bdp.mobility.data.MobProtocol.Cell;
 public class GetMobFromCellsMapper extends Mapper<IntWritable, GstCell,
         IntWritable, Cell> {
     @Override
-    protected void map(IntWritable cell, GstCell gstCell, Context context)
+    public void map(IntWritable cell, GstCell gstCell, Context context)
             throws IOException, InterruptedException {
         context.write(cell, Cell.newBuilder()
                 .setCellId(gstCell.getCellId())

@@ -20,7 +20,7 @@ public class VectorSumGroupcommsReducer extends
         Reducer<ProtobufWritable<NodeBts>, IntWritable,
         ProtobufWritable<TwoInt>, ProtobufWritable<BtsCounter>> {
     @Override
-    protected void reduce(ProtobufWritable<NodeBts> key,
+    public void reduce(ProtobufWritable<NodeBts> key,
             Iterable<IntWritable> values, Context context) throws IOException,
             InterruptedException {
         int numberOfCommunications = 0;

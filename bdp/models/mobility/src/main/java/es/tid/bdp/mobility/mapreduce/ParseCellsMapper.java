@@ -21,16 +21,17 @@ public class ParseCellsMapper extends Mapper<IntWritable, Text, LongWritable,
     private LongWritable cellId;
     
     @Override
-    protected void setup(Context context) {
+    public void setup(Context context) {
         this.cellId = new LongWritable();
     }
     
     @Override
-    protected void map(IntWritable lineno, Text line, Context context)
+    public void map(IntWritable lineno, Text line, Context context)
             throws IOException, InterruptedException {
         final Cell cell = new CellParser(line.toString()).parse();
         ProtobufWritable wrappedCdr = ProtobufWritable.newInstance(Cell.class);
         wrappedCdr.set(cell);
+
         this.cellId.set(cell.getCellId());
         context.write(this.cellId, wrappedCdr);
     }

@@ -17,7 +17,7 @@ import org.apache.hadoop.io.NullWritable;
 public class ParseAdjacentsMapper extends Mapper<IntWritable, Text,
         ProtobufWritable<TwoInt>, NullWritable> {
     @Override
-    protected void map(IntWritable lineno, Text line, Context context)
+    public void map(IntWritable lineno, Text line, Context context)
             throws IOException, InterruptedException {
         final TwoInt adjacent = new AdjacentParser(line.toString()).parse();
         ProtobufWritable wrappedAdjacent = ProtobufWritable.newInstance(

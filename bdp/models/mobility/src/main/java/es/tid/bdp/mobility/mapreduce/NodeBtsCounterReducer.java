@@ -20,18 +20,17 @@ public class NodeBtsCounterReducer
     private ProtobufWritable<BtsCounter> btsCounter;
 
     @Override
-    protected void setup(Context context) throws IOException,
-                                                 InterruptedException {
+    public void setup(Context context) throws IOException,
+                                              InterruptedException {
         this.userId = new LongWritable();
         this.btsCounter = new ProtobufWritable<BtsCounter>();
         this.btsCounter.setConverter(BtsCounter.class);
     }
 
     @Override
-    protected void reduce(ProtobufWritable<NodeBts> nodeBts,
-                          Iterable<NullWritable> values,
-                          Context context) throws IOException,
-                                                  InterruptedException {
+    public void reduce(ProtobufWritable<NodeBts> nodeBts,
+                       Iterable<NullWritable> values, Context context)
+            throws IOException, InterruptedException {
         int count = 0;
         for (NullWritable unused : values) {
             count++;

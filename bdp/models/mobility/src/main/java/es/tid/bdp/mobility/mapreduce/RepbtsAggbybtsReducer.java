@@ -21,13 +21,13 @@ public class RepbtsAggbybtsReducer extends
     private LongWritable userId;
 
     @Override
-    protected void setup(Context context) throws IOException,
-                                                 InterruptedException {
+    public void setup(Context context) throws IOException,
+                                              InterruptedException {
         this.userId = new LongWritable();
     }
 
     @Override
-    protected void reduce(ProtobufWritable<NodeBtsDay> inKey,
+    public void reduce(ProtobufWritable<NodeBtsDay> inKey,
             Iterable<IntWritable> callCounts, Context context)
             throws IOException, InterruptedException {
         inKey.setConverter(NodeBtsDay.class);

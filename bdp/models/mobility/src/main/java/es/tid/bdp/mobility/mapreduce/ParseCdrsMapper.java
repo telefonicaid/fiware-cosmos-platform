@@ -17,13 +17,21 @@ import es.tid.bdp.mobility.parsing.CdrParser;
  */
 public class ParseCdrsMapper extends Mapper<IntWritable, Text, LongWritable,
         ProtobufWritable<Cdr>> {
-
+    private LongWritable userId;
+    
     @Override
-    protected void map(IntWritable lineno, Text line, Context context)
+    public void setup(Context context) {
+        this.userId = new LongWritable();
+    }
+    
+    @Override
+    public void map(IntWritable key, Text line, Context context)
             throws IOException, InterruptedException {
         final Cdr cdr = new CdrParser(line.toString()).parse();
         ProtobufWritable wrappedCdr = ProtobufWritable.newInstance(Cdr.class);
         wrappedCdr.set(cdr);
-        context.write(new LongWritable(cdr.getUserId()), wrappedCdr);
+
+        this.userId.set(cdr.getUserId());
+        context.write(this.userId, wrappedCdr);
     }
 }

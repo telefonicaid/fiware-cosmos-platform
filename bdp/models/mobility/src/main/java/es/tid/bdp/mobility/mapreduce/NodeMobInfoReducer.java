@@ -17,7 +17,7 @@ public class NodeMobInfoReducer extends Reducer<IntWritable,
         ProtobufWritable<BtsCounter>, IntWritable,
         ProtobufWritable<NodeMxCounter>> {
     @Override
-    protected void reduce(IntWritable key,
+    public void reduce(IntWritable key,
             Iterable<ProtobufWritable<BtsCounter>> values, Context context)
             throws IOException, InterruptedException {
         NodeMxCounter.Builder nodeMxCounterBuilder = NodeMxCounter.newBuilder();

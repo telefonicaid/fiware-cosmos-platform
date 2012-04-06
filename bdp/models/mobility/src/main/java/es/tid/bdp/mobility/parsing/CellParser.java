@@ -7,7 +7,6 @@ import es.tid.bdp.mobility.data.MobProtocol.Cell;
  * @author sortega
  */
 public class CellParser extends PipeDelimitedParser {
-
     public CellParser(String line) {
         super(line);
     }

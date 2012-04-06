@@ -13,7 +13,6 @@ public class AdjacentParser extends PipeDelimitedParser {
     
     @Override
     public TwoInt parse() {
-        this.skipField();
         return TwoInt.newBuilder()
                 .setNum1(this.parseInt())
                 .setNum2(this.parseInt())

@@ -71,8 +71,7 @@ public abstract class PipeDelimitedParser extends StringTokenizer {
     }
 
     private static int dayOfWeek(int day, int month, int year) {
-        year += 100; // real year + 2000 - 1900
-        int ix = ((year - 21) % 28) + monthOffset(month) + ((month > 2) ? 1 : 0);
+        int ix = ((year + 100 - 21) % 28) + monthOffset(month) + ((month > 2) ? 1 : 0);
         int tx = (ix + (ix / 4)) % 7 + day;
         return (tx + 1) % 7;
     }

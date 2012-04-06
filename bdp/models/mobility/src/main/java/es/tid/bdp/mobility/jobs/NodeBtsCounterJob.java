@@ -1,4 +1,4 @@
-package es.tid.bdp.mobility.jobs.mapreduce;
+package es.tid.bdp.mobility.jobs;
 
 import java.io.IOException;
 

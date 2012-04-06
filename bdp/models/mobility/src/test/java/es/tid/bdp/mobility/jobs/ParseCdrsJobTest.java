@@ -1,4 +1,4 @@
-package es.tid.bdp.mobility.jobs.parsing;
+package es.tid.bdp.mobility.jobs;
 
 import java.io.IOException;
 

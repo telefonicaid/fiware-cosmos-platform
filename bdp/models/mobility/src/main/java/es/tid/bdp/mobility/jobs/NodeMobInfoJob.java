@@ -1,4 +1,4 @@
-package es.tid.bdp.mobility.jobs.mapreduce;
+package es.tid.bdp.mobility.jobs;
 
 import java.io.IOException;
 
@@ -6,35 +6,33 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.bdp.mobility.MobilityMain;
-import es.tid.bdp.mobility.mapreduce.ParseCellsMapper;
+import es.tid.bdp.mobility.mapreduce.NodeMobInfoReducer;
 
 /**
  *
  * @author dmicol
  */
-public class ParseCellsJob extends Job {
-    private static final String JOB_NAME = "ParseCells";
+public class NodeMobInfoJob extends Job {
+    private static final String JOB_NAME = "NodeMobInfo";
 
-    public ParseCellsJob(Configuration conf) throws IOException {
+    public NodeMobInfoJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
-        this.setInputFormatClass(TextInputFormat.class);
+        this.setInputFormatClass(SequenceFileInputFormat.class);
         this.setMapOutputKeyClass(IntWritable.class);
-        this.setMapOutputValueClass(Text.class);
-        this.setOutputKeyClass(LongWritable.class);
+        this.setMapOutputValueClass(ProtobufWritable.class);
+        this.setOutputKeyClass(IntWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setMapperClass(ParseCellsMapper.class);
+        this.setReducerClass(NodeMobInfoReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

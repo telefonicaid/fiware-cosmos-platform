@@ -39,7 +39,7 @@ public class ParseCellsJob extends Job {
 
     public void configure(Path inputCellsPath, Path parsedCellsPath)
             throws IOException {
-        FileInputFormat.addInputPath(this, inputCellsPath);
+        FileInputFormat.setInputPaths(this, inputCellsPath);
         FileOutputFormat.setOutputPath(this, parsedCellsPath);
     }
 }

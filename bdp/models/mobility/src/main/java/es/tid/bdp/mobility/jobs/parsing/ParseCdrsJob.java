@@ -22,7 +22,7 @@ import es.tid.bdp.mobility.mapreduce.ParseCdrsMapper;
  * @author dmicol
  */
 public class ParseCdrsJob extends Job {
-    private static final String JOB_NAME = "ParseData";
+    private static final String JOB_NAME = "ParseCDRs";
 
     public ParseCdrsJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
@@ -39,7 +39,7 @@ public class ParseCdrsJob extends Job {
 
     public void configure(Path inputCdrsPath, Path parsedCrdsPath)
             throws IOException {
-        FileInputFormat.addInputPath(this, inputCdrsPath);
+        FileInputFormat.setInputPaths(this, inputCdrsPath);
         FileOutputFormat.setOutputPath(this, parsedCrdsPath);
     }
 }

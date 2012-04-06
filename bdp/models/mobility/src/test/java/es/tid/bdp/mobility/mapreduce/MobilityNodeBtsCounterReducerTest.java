@@ -43,6 +43,5 @@ public class MobilityNodeBtsCounterReducerTest {
                            asList(NullWritable.get(), NullWritable.get()))
                 .withOutput(new LongWritable(phone), expectedBtsCounter)
                 .runTest();
-
     }
 }

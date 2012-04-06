@@ -1,4 +1,4 @@
-package es.tid.bdp.mobility.jobs.parsing;
+package es.tid.bdp.mobility.jobs.mapreduce;
 
 import java.io.IOException;
 
@@ -37,9 +37,8 @@ public class ParseCellsJob extends Job {
         this.setMapperClass(ParseCellsMapper.class);
     }
 
-    public void configure(Path inputCellsPath, Path parsedCellsPath)
-            throws IOException {
-        FileInputFormat.setInputPaths(this, inputCellsPath);
-        FileOutputFormat.setOutputPath(this, parsedCellsPath);
+    public void configure(Path input, Path output) throws IOException {
+        FileInputFormat.setInputPaths(this, input);
+        FileOutputFormat.setOutputPath(this, output);
     }
 }

@@ -8,8 +8,8 @@ import org.apache.hadoop.util.ToolRunner;
 
 import es.tid.bdp.mobility.jobs.mapreduce.FilterCellnoinfoJob;
 import es.tid.bdp.mobility.jobs.mapreduce.GetSample10000Job;
-import es.tid.bdp.mobility.jobs.parsing.ParseCdrsJob;
-import es.tid.bdp.mobility.jobs.parsing.ParseCellsJob;
+import es.tid.bdp.mobility.jobs.mapreduce.ParseCdrsJob;
+import es.tid.bdp.mobility.jobs.mapreduce.ParseCellsJob;
 import es.tid.bdp.mobility.mapreduce.FilterCellnoinfoMapper;
 
 /**

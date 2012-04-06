@@ -35,9 +35,8 @@ public class FilterCellnoinfoJob extends Job {
         this.setMapperClass(FilterCellnoinfoMapper.class);
     }
 
-    public void configure(Path cdrsSamplePath, Path cdrsSmpPath)
-            throws IOException {
-        FileInputFormat.addInputPath(this, cdrsSamplePath);
-        FileOutputFormat.setOutputPath(this, cdrsSmpPath);
+    public void configure(Path input, Path output) throws IOException {
+        FileInputFormat.setInputPaths(this, input);
+        FileOutputFormat.setOutputPath(this, output);
     }
 }

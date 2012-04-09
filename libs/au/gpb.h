@@ -29,7 +29,7 @@
 
 #include <assert.h>
 
-#include "au/status.h"  // au::Status
+#include "au/Status.h"  // au::Status
 
 #include "au/namespace.h"
 

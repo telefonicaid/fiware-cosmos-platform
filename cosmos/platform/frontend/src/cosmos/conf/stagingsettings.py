@@ -1,7 +1,7 @@
 """
 Module testsettings
 
-These settings allow Django unittests to setup a temporary databse and run the
+These settings allow Django unittests to setup a temporary database and run the
 tests of the installed applications.
 
 """
@@ -14,7 +14,7 @@ from bdp_fe.conf.base_settings import *
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': '/tmp/bdp_fe.db'
+        'NAME': '/tmp/cosmos.db'
     }
 }
 

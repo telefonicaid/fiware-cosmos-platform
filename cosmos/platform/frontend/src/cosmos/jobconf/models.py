@@ -16,7 +16,7 @@ from cosmos.jobconf.cluster import remote
 LOGGER = logging.getLogger(__name__)
 
 
-def trim_to(self, text, max_length):
+def trim_to(text, max_length):
     """Limits to max_length characters
 
     An ellipsis is added at the end of the trimmed text

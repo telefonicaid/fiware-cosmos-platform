@@ -1,7 +1,7 @@
 package es.tid.cosmos.profile.data;
 
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import static org.junit.Assert.assertEquals;
-import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.profile.generated.data.ProfileProtocol.CategoryCount;
@@ -12,17 +12,15 @@ import es.tid.cosmos.profile.generated.data.ProfileProtocol.CategoryCount;
  * @author dmicol
  */
 public class CategoryCountUtilTest {
-    private CategoryCountUtil instance;
-
-    @Before
-    public void setUp() {
-        this.instance = new CategoryCountUtil();
-    }
-
     @Test
     public void testCreate() {
-        CategoryCount count = CategoryCountUtil.create("Sports", 5L);
-        assertEquals("Sports", count.getName());
-        assertEquals(5L, count.getCount());
+        final String name = "Sports";
+        final long count = 5L;
+
+        ProtobufWritable<CategoryCount> catCountWrapper = CategoryCountUtil.
+                createAndWrap(name, count);
+        CategoryCount catCount = catCountWrapper.get();
+        assertEquals(name, catCount.getName());
+        assertEquals(count, catCount.getCount());
     }
 }

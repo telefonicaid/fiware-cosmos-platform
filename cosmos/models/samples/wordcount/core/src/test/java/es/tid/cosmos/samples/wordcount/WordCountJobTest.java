@@ -1,4 +1,4 @@
-package es.tid.bdp.samples.wordcount;
+package es.tid.cosmos.samples.wordcount;
 
 import java.io.IOException;
 

@@ -1,4 +1,4 @@
-package es.tid.bdp.samples.wordcount.api;
+package es.tid.cosmos.samples.wordcount.api;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

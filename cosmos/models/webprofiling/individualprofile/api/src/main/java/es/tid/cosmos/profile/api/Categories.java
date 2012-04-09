@@ -1,4 +1,4 @@
-package es.tid.bdp.profile.api;
+package es.tid.cosmos.profile.api;
 
 import java.util.HashMap;
 import java.util.LinkedList;

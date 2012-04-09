@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Path("/wordcount/{word}")
 @Component
 @Scope("request")
-public class WordCountRest {
+public class WordCountResource {
     @Autowired(required = true)
     private WordCountDAO wordCount;
 

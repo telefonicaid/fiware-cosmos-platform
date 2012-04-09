@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Path("/{username}/all/{n}")
 @Component
 @Scope("request")
-public class AllCategoriesRest {
+public class AllCategoriesResource {
     @Autowired(required = true)
     private ProfileDAO profile;
 

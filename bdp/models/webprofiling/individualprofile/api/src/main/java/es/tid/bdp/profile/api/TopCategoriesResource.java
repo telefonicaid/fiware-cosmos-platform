@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Path("/{username}/top/{n}")
 @Component
 @Scope("request")
-public class TopCategoriesRest {
+public class TopCategoriesResource {
     @Autowired(required = true)
     private ProfileDAO profile;
 

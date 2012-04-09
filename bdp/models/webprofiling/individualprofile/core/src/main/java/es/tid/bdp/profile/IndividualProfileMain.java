@@ -93,7 +93,6 @@ public class IndividualProfileMain extends Configured implements Tool {
         FileSystem fs = FileSystem.get(this.getConf());
         Path tmpDir = new Path(getTmpDir());
         if (!fs.mkdirs(tmpDir)) {
-            LOG.fatal("Could not create " + tmpDir);
             throw new IOException("Failed to create temp directory");
         }
         LOG.info("Using " + tmpDir + " as temp directory");
@@ -131,7 +130,7 @@ public class IndividualProfileMain extends Configured implements Tool {
                 throw new Exception("Uknown error");
             }
         } catch (Exception ex) {
-            LOG.fatal(ex.getMessage());
+            LOG.fatal(ex);
             throw ex;
         }
     }

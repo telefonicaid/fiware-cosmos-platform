@@ -58,7 +58,7 @@ public class WordCountMain extends Configured implements Tool {
                 throw new Exception("Uknown error");
             }
         } catch (Exception ex) {
-            LOGGER.fatal(ex.getMessage());
+            LOGGER.fatal(ex);
             throw ex;
         }
     }

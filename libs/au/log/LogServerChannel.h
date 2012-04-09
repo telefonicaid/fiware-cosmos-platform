@@ -194,7 +194,7 @@ namespace au
             size_t log_counter = 0;
             while( true )
             {
-                LogFile* log_file;
+                LogFile* log_file = NULL;
                 std::string file_name = getFileNameForLogFile( tmp_file_counter );
                 Status s = LogFile::read( file_name , &log_file );
                 

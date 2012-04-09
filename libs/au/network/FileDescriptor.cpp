@@ -11,9 +11,6 @@
 #include <fcntl.h>              // fcntl, F_SETFD
 #include <errno.h>
 
-#include "logMsg/logMsg.h"          // LM_X
-#include "logMsg/traceLevels.h"
-
 #include "au/TokenTaker.h"
 
 #include "samson/common/MemoryTags.h"
@@ -74,11 +71,15 @@ namespace au {
                 return OK;
             
             if( fds == -1 )
-                LM_RE(Error, ("Select over fd %d: %s", fd , strerror(errno)));
+                return SelectError;
+            //LM_RE(Error, ("Select over fd %d: %s", fd , strerror(errno)));
             
             if( tryh > 3 )
                 if( tryh%10 == 0 )
-                    LM_W(("Problems to send to %s (%d/%d secs)", name.c_str() , tryh, tries ));
+                {
+                    // Traces canceled since it is used to send traces to a server
+                    LM_LW(("Problems to send to %s (%d/%d secs)", name.c_str() , tryh, tries ));
+                }
         }
         
         return Timeout;
@@ -93,19 +94,31 @@ namespace au {
         
         while (tot < dataLen)
         {
-            if ((s = okToSend(retries, tv_sec, tv_usec)) != OK )
-                LM_RE(s, ("Cannot write to '%s' after %d tries ( waiting %f seconds ) (fd %d)", name.c_str(), retries , (double) tv_sec + ((double)tv_usec/1000000.0)  , fd ));
+            s = okToSend(retries, tv_sec, tv_usec);
+            if ( s != OK )
+            {
+                return s;
+                // Traces removed since this class is used to send traces to log server
+                //LM_RE(s, ("Cannot write to '%s' after %d tries ( waiting %f seconds ) (fd %d)", name.c_str(), retries , (double) tv_sec + ((double)tv_usec/1000000.0)  , fd ));
+            }
             
             nb = ::write(fd, &data[tot], dataLen - tot);
             if (nb == -1)
-                LM_RE(WriteError, ("error writing to '%s' (fd: %d): %s", name.c_str(), fd, strerror(errno)));
+            {
+                //LM_RE(WriteError, ("error writing to '%s' (fd: %d): %s", name.c_str(), fd, strerror(errno)));
+                return WriteError;
+            }
             else if (nb == 0)
-                LM_RE(WriteError, ("part-write written ZERO bytes to '%s' (total: %d)", name.c_str(), tot));
-            
+            {
+                //LM_RE(WriteError, ("part-write written ZERO bytes to '%s' (total: %d)", name.c_str(), tot));
+                return WriteError;
+            }
+
+            // Add bytes to the count
+            rate_out.push(nb);
             tot += nb;
         }
         
-        LM_WRITES("Someone", what, data, tot, LmfByte);
         return OK;
     }
     
@@ -145,7 +158,10 @@ namespace au {
             return Timeout;
         }
         else if ((fds > 0) && (!FD_ISSET(fd, &rFds)))
-            LM_RE(Error, ("some other fd has a read pending - this is impossible ! (awaiting '%s' from '%s')", what, name.c_str()));
+        {
+            return Error;
+            //LM_RE(Error, ("some other fd has a read pending - this is impossible ! (awaiting '%s' from '%s')", what, name.c_str()));
+        }
         else if ((fds > 0) && (FD_ISSET(fd, &rFds)))
             return OK;
         
@@ -156,11 +172,14 @@ namespace au {
     
     Status FileDescriptor::writeLine( const char* line, int retries, int tv_sec, int tv_usec)
     {
-        Status s = partWrite(line, strlen(line), "write line", retries, tv_sec, tv_usec);
+        size_t nb = strlen(line);
+        Status s = partWrite(line, nb, "write line", retries, tv_sec, tv_usec);
         
         if (s!= OK)
             close();
-        
+
+        rate_out.push(nb);
+
         return s;
     }
     
@@ -170,7 +189,11 @@ namespace au {
         nb = read(fd, line, max_size);
         
         if (nb > 0)
+        {
+            // Add bytes to the count
+            rate_in.push(nb);
             return OK;
+        }
         return ReadError;
     }
     
@@ -191,10 +214,12 @@ namespace au {
                 return s;
             }
             
+            // Add 1 char to the count
+            rate_in.push(1);
             
-            if ( ( line[tot] == '\n' ) || ( line[tot] == '\r' ) )
+            if ( line[tot] == '\n' )
             {
-                line[tot] = '\0';
+                line[tot+1] = '\0'; // Keep the \n at the end of the line
                 LM_READS("REST Interface", "Web Line", line, tot, LmfByte);
                 return OK;
             }
@@ -202,7 +227,7 @@ namespace au {
             // A new letter has been read
             tot++;
             
-            // Check excesive line
+            // Check excesive line length
             if( tot >= ( max_size - 2 ) )
                 return Error;
         }
@@ -269,6 +294,9 @@ namespace au {
                     *read_size = tot;
                 return ConnectionClosed;
             }
+            
+            // Add readed bytes to the count
+            rate_in.push(nb);
             
             tot += nb;
         }

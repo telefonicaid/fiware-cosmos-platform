@@ -9,7 +9,7 @@
 #include "au/string.h"              // au::xml_...
 #include "au/ErrorManager.h"                /* Lock                            */
 #include "au/CommandLine.h"			/* AUCommandLine                            */
-#include "au/map.h"                 // au::map
+#include "au/containers/map.h"                 // au::map
 
 #include "samson/common/samson.pb.h"			// samson::network::...
 #include "samson/common/coding.h"				// ss:KVInfo

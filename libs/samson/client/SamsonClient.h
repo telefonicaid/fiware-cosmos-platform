@@ -31,8 +31,8 @@
 #include "au/Cronometer.h"          // au::Cro
 #include "au/Token.h"               // au::Token
 #include "au/TokenTaker.h"          // au::TokenTaker
-#include "au/list.h"               // au::list
-#include "au/map.h"               // au::map
+#include "au/containers/list.h"               // au::list
+#include "au/containers/map.h"               // au::map
 #include "au/Rate.h"               // au::rate::Rate
 
 #include "engine/Object.h"          // engine::Object

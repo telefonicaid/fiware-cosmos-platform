@@ -16,7 +16,6 @@ SET( STATIC_LIBS
      samsonNetwork
      samsonCommon
      au
-	 tables
      lm
      pa
      protobuf

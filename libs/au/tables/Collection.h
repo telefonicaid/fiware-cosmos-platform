@@ -2,7 +2,7 @@
 #ifndef _H_AU_TABLE_COLLECTION
 #define _H_AU_TABLE_COLLECTION
 
-#include "au/simple_map.h"
+#include "au/containers/simple_map.h"
 #include "au/namespace.h"
 
 NAMESPACE_BEGIN(au)

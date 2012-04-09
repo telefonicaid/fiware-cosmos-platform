@@ -2,7 +2,7 @@
 #define _H_BLOCK_MANAGER
 
 #include "Block.h"                      // samson::stream::Block
-#include "au/list.h"
+#include "au/containers/list.h"
 
 #include "samson/common/Visualitzation.h"
 #include "samson/common/samson.pb.h"

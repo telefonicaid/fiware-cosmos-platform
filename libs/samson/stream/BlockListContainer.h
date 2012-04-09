@@ -15,7 +15,7 @@
 #include <sstream>
 #include <string>
 
-#include "au/map.h"                         // au::map
+#include "au/containers/map.h"                         // au::map
 
 #include "BlockInfo.h"                              // struct BlockInfo
 

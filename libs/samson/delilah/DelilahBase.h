@@ -13,17 +13,17 @@
 #include <string>                       // std::string
 #include <vector>                       // std::vector
 
-#include "au/map.h"                   
+#include "au/containers/map.h"                   
 #include "au/Token.h"                   // au::Token
 #include "au/Cronometer.h"              // au::Cronometer
-#include "au/ConsoleAutoComplete.h"
+#include "au/console/ConsoleAutoComplete.h"
 
-#include "tables/DataBase.h"
+#include "au/tables/DataBase.h"
 
 #include "samson/network/NetworkInterface.h"
 
 
-#include "tables/pugi.h"                  // pugi::... node_to_string_function
+#include "au/tables/pugi.h"                  // pugi::... node_to_string_function
 
 namespace samson {
     

@@ -10,12 +10,12 @@
 
 #include "au/StringVector.h"
 #include "au/CommandLine.h"
-#include "au/simple_map.h"
+#include "au/containers/simple_map.h"
 #include "au/ErrorManager.h"        // au::ErrorManager
-#include "au/map.h"                 // au::map
-#include "au/vector.h"
+#include "au/containers/map.h"                 // au::map
+#include "au/containers/vector.h"
 #include "au/string.h"              // au::str(...)
-#include "au/ConsoleAutoComplete.h"
+#include "au/console/ConsoleAutoComplete.h"
 
 namespace au 
 {

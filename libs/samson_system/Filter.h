@@ -3,7 +3,7 @@
 #define _H_SAMSON_SYSTEM_FILTER
 
 #include "au/string.h"
-#include "au/vector.h"
+#include "au/containers/vector.h"
 #include "au/StringComponents.h"
 #include "au/Tokenizer.h"
 #include "au/charset.h"

@@ -1,7 +1,7 @@
 
 
 
-#include "au/ConsoleCommand.h" // Own interface
+#include "au/console/ConsoleCommand.h" // Own interface
 
 NAMESPACE_BEGIN(au)
 

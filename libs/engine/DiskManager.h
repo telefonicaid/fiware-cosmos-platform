@@ -22,9 +22,9 @@
 #include <iostream>                 // std::cout
 #include <set>                      // std::set
 
-#include "au/list.h"                 // au::list
+#include "au/containers/list.h"                 // au::list
 #include "au/Token.h"                 // au::Token
-#include "au/ListMap.h"              // au::ListMap
+#include "au/containers/ListMap.h"              // au::ListMap
 #include "au/namespace.h"
 #include "au/Rate.h"
 #include "au/OnOffMonitor.h"

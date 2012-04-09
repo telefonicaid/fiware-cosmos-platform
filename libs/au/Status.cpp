@@ -13,6 +13,8 @@ namespace au
                 
             case NotImplemented:            return "Not implemented";
                 
+            case OpenError:                 return "Open error";
+
             case SelectError:               return "Error in select call";
             case Timeout:                   return "Timeout";
                 

@@ -25,7 +25,7 @@
 
 #include "logMsg/logMsg.h"
 
-#include "au/vector.h"
+#include "au/containers/vector.h"
 #include "au/string.h"
 
 namespace au 

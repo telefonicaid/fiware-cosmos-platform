@@ -5,7 +5,7 @@
 #include "Collection.h"
 #include "Select.h"
 
-#include "tables/pugi.h"
+#include "au/tables/pugi.h"
 #include "au/xml.h"
 
 #include "Tree.h"    // Own interface

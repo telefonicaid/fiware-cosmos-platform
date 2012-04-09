@@ -12,7 +12,7 @@
  *
  */
 
-#include "au/map.h"
+#include "au/containers/map.h"
 
 #include "samson/common/samson.pb.h"
 #include "samson/common/Visualitzation.h"

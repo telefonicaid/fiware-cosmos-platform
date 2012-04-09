@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include "au/string.h"
-#include "au/ConsoleCode.h"
+#include "au/console/ConsoleCode.h"
 
 #include "au/namespace.h"
 

@@ -19,8 +19,8 @@
 
 #include <string>       // size_t
 
-#include "au/map.h"     // au::map
-#include "au/simple_map.h"     // au::simple_map
+#include "au/containers/map.h"     // au::map
+#include "au/containers/simple_map.h"     // au::simple_map
 #include "au/Token.h"     // au::Token
 #include "au/namespace.h"
 

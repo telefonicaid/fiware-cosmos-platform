@@ -9,7 +9,7 @@
 #include "logMsg/traceLevels.h"
 
 #include "au/CommandLine.h"                     // au::CommandLine
-#include "au/Console.h"                         // au::Console
+#include "au/console/Console.h"                         // au::Console
 
 #include "samson/common/SamsonSetup.h"			// samson::SamsonSetup
 #include "samson/common/ports.h"

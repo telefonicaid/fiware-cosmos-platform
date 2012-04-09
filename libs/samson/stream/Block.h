@@ -14,7 +14,7 @@
 #include "au/Token.h"
 #include "au/TokenTaker.h"
 
-#include "au/simple_map.h"                         // au::simple_map
+#include "au/containers/simple_map.h"                         // au::simple_map
 
 #include "engine/MemoryManager.h"
 

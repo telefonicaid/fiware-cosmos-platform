@@ -30,6 +30,11 @@ size_t code64_rand();
 bool code64_is_valid( size_t v );
 std::string code64_str( size_t );
 
+
+// Remove '\n's at the end of the line
+void remove_return_chars( char* line );
+
+
 NAMESPACE_END
 
 #endif

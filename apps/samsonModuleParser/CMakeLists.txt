@@ -21,7 +21,6 @@ samsonCommon
 protobuf
 pthread
 dl
-tables
 au
 lm
 pa

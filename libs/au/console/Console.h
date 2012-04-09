@@ -6,10 +6,10 @@
 #include <list>
 #include <termios.h>                // termios
 
-#include "au/ConsoleCode.h"
+#include "au/console/ConsoleCode.h"
 #include "au/Token.h"
 #include "au/namespace.h"
-#include "au/ConsoleEntry.h"
+#include "au/console/ConsoleEntry.h"
 
 #include "ConsoleEscapeSequence.h"
 

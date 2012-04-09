@@ -21,11 +21,11 @@
 #include "logMsg/logMsg.h"				
 
 #include "au/TokenTaker.h"                  // au::TokenTake
-#include "au/Console.h"                     // au::Console
-#include "au/ConsoleAutoComplete.h"
+#include "au/console/Console.h"                     // au::Console
+#include "au/console/ConsoleAutoComplete.h"
 
-#include "tables/Select.h"
-#include "tables/Table.h"
+#include "au/tables/Select.h"
+#include "au/tables/Table.h"
 
 #include "samson/delilah/Delilah.h"			// samson::Delilah
 #include "samson/delilah/DelilahCommandCatalogue.h"

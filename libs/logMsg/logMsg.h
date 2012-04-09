@@ -18,7 +18,7 @@
 #include <string.h>             /* strerror                                  */
 #include <stdarg.h>             /* ellipses                                  */
 #include <stdlib.h>				/* free()									 */
-
+#include <time.h>
 
 /******************************************************************************
 *
@@ -144,7 +144,7 @@ typedef char* (*LmTracelevelName)(int level);
 
 
 
-#define LM_MAGIC (('z' << 24) | ('u' << 16) | ('k' << 8) | 'a')
+#define _LM_MAGIC (('z' << 24) | ('u' << 16) | ('k' << 8) | 'a')
 /* ****************************************************************************
 *
 * LogHeader - 
@@ -153,6 +153,17 @@ typedef struct LogHeader
 {
     int magic;     // LOG_MAGIC: "zuka" (akuz in little-endian ...)
     int dataLen;   // Length of data part of message
+    
+    bool checkMagicNumber()
+    {
+        return magic == _LM_MAGIC;
+    }
+    
+    void setMagicNumber()
+    {
+        magic = _LM_MAGIC;
+    }
+
 } LogHeader;
 
 
@@ -166,12 +177,12 @@ typedef struct LogData
     int    lineNo;      // Line number in file
     char   traceLevel;  // Tracelevel, in case of 'LM_T'
     char   type;        // type of message 'M', 'E', 'W', ...
-    time_t unixSeconds; // Seconds since the 'epoch'
+    struct timeval tv;  // time since 1970
     int    timezone;    // The timezone
     int    dst;         // Type of Daylight Saving Time
+    pid_t  pid;         // pid of the process
+    pid_t  tid;         // Identifier of the thread
 } LogData;
-
-
 
 /* ****************************************************************************
 *
@@ -181,7 +192,7 @@ typedef struct LogMsg
 {
     LogHeader header;        // header ...
     LogData   data;          // Integer part of log message
-    char      strings[];     // series of zero terminated strings
+    
 } LogMsg;
 
 
@@ -211,6 +222,7 @@ typedef struct LogMsg
 #define LM_V3(s)
 #define LM_V4(s)
 #define LM_V5(s)
+#define LM_LV(s)
 #else
 /* ****************************************************************************
 *
@@ -289,11 +301,59 @@ do {                                                                          \
    }                                                                          \
 } while (0)
 
+#define LM_LV(s)                                                              \
+do {                                                                          \
+char* text;                                                                   \
+                                                                              \
+if (lmOk('V', 0) == LmsOk)                                                    \
+{                                                                             \
+if ((text = lmTextGet s) != NULL)                                             \
+{                                                                             \
+lmOut(text, 'V', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL,false);    \
+::free(text);                                                                 \
+}                                                                             \
+}                                                                             \
+} while (0)
+
+
 #define LM_VV     LM_V2
 #define LM_VVV    LM_V3
 #define LM_VVVV   LM_V4
 #define LM_VVVVV  LM_V5
 #endif
+
+/* ****************************************************************************
+ *
+ * LM_LM - log message ( only local ) // Not hoock function
+ */
+
+#define LM_LM(s)                                                             \
+do {                                                                         \
+char* text;                                                                  \
+                                                                             \
+if ((text = lmTextGet s) != NULL)                                            \
+{                                                                            \
+lmOut(text, 'M', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL , false); \
+::free(text);                                                                \
+}                                                                            \
+} while (0)
+
+/* ****************************************************************************
+ *
+ * LM_LW - log warning message ( only local ) // Not hoock function
+ */
+
+#define LM_LW(s)                                                            \
+do {                                                                        \
+char* text;                                                                 \
+                                                                            \
+if ((text = lmTextGet s) != NULL)                                           \
+{                                                                           \
+lmOut(text, 'W', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL,false);  \
+::free(text);                                                               \
+}                                                                           \
+} while (0)
+
 
 
 #ifdef LM_NO_M
@@ -1270,7 +1330,8 @@ extern LmStatus lmOut
    int          lineNo,
    const char*  fName,
    int          tLev,
-   const char*  stre
+   const char*  stre,
+   bool use_hoock = true
 );
 
 

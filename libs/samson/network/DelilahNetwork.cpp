@@ -1,7 +1,7 @@
 
 #include "au/StringVector.h"
 #include "au/utils.h"
-#include "tables/Table.h"
+#include "au/tables/Table.h"
 
 #include "samson/common/ports.h"
 #include "samson/network/NetworkConnection.h"

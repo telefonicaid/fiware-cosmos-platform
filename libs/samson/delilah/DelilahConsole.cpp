@@ -18,14 +18,14 @@
 #include "au/ThreadManager.h"
 #include "au/StringVector.h"
 
-#include "tables/Tree.h"                    // au::tables::TreeItem
-#include "tables/Table.h"
+#include "au/tables/Tree.h"                    // au::tables::TreeItem
+#include "au/tables/Table.h"
 
 #include "engine/MemoryManager.h"                   // samson::MemoryManager
 #include "engine/Notification.h"                   // samson::Notification
 
-#include "tables/pugi.h"                  // pugi::Pugi
-#include "tables/pugixml.hpp"             // pugi:...
+#include "au/tables/pugi.h"                  // pugi::Pugi
+#include "au/tables/pugixml.hpp"             // pugi:...
 
 #include "samson/common/EnvironmentOperations.h"	// Environment operations (CopyFrom)
 #include "samson/common/NotificationMessages.h"

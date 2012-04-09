@@ -33,6 +33,8 @@ typedef enum Status
     
     Timeout,
     
+    OpenError, // Error in the open call
+    
 	ConnectError,
 	AcceptError,
 	SelectError,

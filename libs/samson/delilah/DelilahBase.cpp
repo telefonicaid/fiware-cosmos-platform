@@ -11,7 +11,7 @@
 #include "au/xml.h"             // au::xml...
 #include "au/StringVector.h"
 
-#include "tables/Select.h"
+#include "au/tables/Select.h"
 
 #include "samson/common/coding.h"
 

@@ -10,7 +10,7 @@
 #include "au/Cronometer.h"      // au::Cronometer
 #include "au/TokenTaker.h"                          // au::TokenTake
 
-#include "tables/Table.h"
+#include "au/tables/Table.h"
 
 #include "engine/Buffer.h"      // engine::Buffer
 #include "engine/Notification.h"    // engine::Notificaiton

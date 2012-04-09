@@ -15,13 +15,13 @@
 
 #include "au/Token.h"				// au::Token
 #include "au/TokenTaker.h"			// au::TokenTaker
-#include "au/map.h"				// au::map
+#include "au/containers/map.h"				// au::map
 #include "au/CommandLine.h"				// au::CommandLine
 #include "au/Cronometer.h"      // au::Cronometer
 #include "au/string.h"          // au::Table
 #include "au/CounterCollection.h"           // au::CounterCollection
 
-#include "tables/pugi.h"          // pugi::...
+#include "au/tables/pugi.h"          // pugi::...
 
 #include "engine/Buffer.h"
 #include "engine/MemoryManager.h"

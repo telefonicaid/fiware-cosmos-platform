@@ -24,6 +24,8 @@
 
 #include "au/LockDebugger.h"            // au::LockDebugger
 #include "au/ThreadManager.h"
+#include "au/log/LogToServer.h"
+#include "au/log/Log.h"
 
 #include "engine/MemoryManager.h"
 #include "engine/Engine.h"
@@ -59,6 +61,7 @@ char            lsHost[64];
 unsigned short  lsPort;
 
 
+#define LOG_PORT LOG_SERVER_DEFAULT_CHANNEL_PORT
 
 /* ****************************************************************************
 *
@@ -73,8 +76,8 @@ PaArgument paArgs[] =
     { "-web_port",  &web_port,  "",                         PaInt,    PaOpt, SAMSON_WORKER_WEB_PORT, 1,      9999,  "Port to receive web connections"   },
     { "-nolog",     &noLog,     "SAMSON_WORKER_NO_LOG",     PaBool,   PaOpt, false,                  false,  true,  "no logging"                        },
     { "-valgrind",  &valgrind,  "SAMSON_WORKER_VALGRIND",   PaInt,    PaOpt, 0,                      0,        20,  "help valgrind debug process"       },
-    { "-lsHost",    &lsHost,    "SAMSON_WORKER_LS_HOST",    PaString, PaOpt, _i "NONE",              PaNL,   PaNL,  "Host for Log Server"               },
-    { "-lsPort",    &lsPort,    "SAMSON_WORKER_LS_PORT",    PaUShort, PaOpt, 0,                      0,      9999,  "Port for Log Server"               },
+    { "-lsHost",    &lsHost,    "SAMSON_WORKER_LS_HOST",    PaString, PaOpt, _i "localhost",         PaNL,   PaNL,  "Host for Log Server"               },
+    { "-lsPort",    &lsPort,    "SAMSON_WORKER_LS_PORT",    PaUShort, PaOpt, LOG_PORT,               0,      9999,  "Port for Log Server"               },
 
     PA_END_OF_ARGS
 };
@@ -114,28 +117,31 @@ static const char* manCopyright     = "Copyright (C) 2011 Telefonica Investigaci
 static const char* manVersion       = SAMSON_VERSION;
 
 
+// Andreu: All logs in signal handlers should be local.
+
 void captureSIGINT( int s )
 {
     s = 3;
-    LM_X(1, ("Signal SIGINT"));
+    LM_LM(("Signal SIGINT"));
+    exit(1);
 }
 
 void captureSIGPIPE( int s )
 {
     s = 3;
-    LM_M(("Captured SIGPIPE"));
+    LM_LM(("Captured SIGPIPE"));
 }
 
 void captureSIGTERM( int s )
 {
     s = 3;
-    LM_M(("Captured SIGTERM"));
+    LM_LM(("Captured SIGTERM"));
 
-    LM_M(("Cleaning up"));
+    LM_LM(("Cleaning up"));
     std::string pid_file_name = au::str("%s/samsond.pid" , paLogDir );
     if ( remove (pid_file_name.c_str()) != 0)
     {
-        LM_W(("Error deleting the pid file %s", pid_file_name.c_str() ));
+        LM_LW(("Error deleting the pid file %s", pid_file_name.c_str() ));
     }
     exit(1);
 }
@@ -220,170 +226,6 @@ static void valgrindExit(int v)
 
 
 
-/* ****************************************************************************
-*
-* serverConnect - 
-*/
-int serverConnect(const char* host, unsigned short port)
-{
-    struct hostent*     hp;
-    struct sockaddr_in  peer;
-    int                 fd;
-
-    if (port == 0)
-        return -1;
-
-    if ((hp = gethostbyname(host)) == NULL)
-        return -1;
-
-    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-        return -1;
-    
-    memset((char*) &peer, 0, sizeof(peer));
-
-    peer.sin_family      = AF_INET;
-    peer.sin_addr.s_addr = ((struct in_addr*) (hp->h_addr))->s_addr;
-    peer.sin_port        = htons(port);
-
-    int retries = 7200;
-    int tri     = 0;
-
-    while (1)
-    {
-        if (connect(fd, (struct sockaddr*) &peer, sizeof(peer)) == -1)
-        {
-            ++tri;
-            usleep(500000);
-            if (tri > retries)
-            {
-                close(fd);
-                return -1;
-            }
-        }
-        else
-            break;
-    }
-
-    return fd;
-}
-
-
-
-/* ****************************************************************************
-*
-* logToLogServer - 
-*/
-int  lsFd = -1;
-
-#if 0
-#define P(s)        \
-do                  \
-{                   \
-    printf s;       \
-    printf("\n");   \
-} while (0)
-#else
-#define P(s)
-#endif
-
-
-void logToLogServer(void* vP, char* text, char type, time_t secondsNow, int timezone, int dst, const char* file, int lineNo, const char* fName, int tLev, const char* stre)
-{
-    LogHeader  header;
-    LogData    data;
-    char       strings[1024];
-
-    if (lsFd == -1)
-    {
-        P(("Connecting to LogServer at %s:%d", lsHost, lsPort));
-        lsFd = serverConnect(lsHost, lsPort);
-        if (lsFd == -1)
-        {
-            P(("Error connecting to LogServer at %s:%d", lsHost, lsPort));
-            return;
-        }
-
-        P(("Connected to LogServer at %s:%d", lsHost, lsPort));
-    }
-
-    if (lsFd != -1)
-    {
-        int sIx = 0;
-
-        P(("progName:    '%s' to strings[%d]", progName, sIx));
-        strcpy(&strings[sIx], progName);
-        sIx += strlen(progName);
-        strings[sIx] = 0;
-        ++sIx;
-
-        P(("text:        '%s' to strings[%d]", text, sIx));
-        strcpy(&strings[sIx], text);
-        sIx += strlen(text);
-        strings[sIx] = 0;
-        ++sIx;
-
-        P(("file:        '%s' to strings[%d]", file, sIx));
-        strcpy(&strings[sIx], file);
-        sIx += strlen(file);
-        strings[sIx] = 0;
-        ++sIx;
-
-        P(("fName:       '%s' to strings[%d]", fName, sIx));
-        strcpy(&strings[sIx], fName);
-        sIx += strlen(fName);
-        strings[sIx] = 0;
-        ++sIx;
-
-        if (stre != NULL)
-        {
-            P(("stre:        '%s' to strings[%d]", stre, sIx));
-            strcpy(&strings[sIx], stre);
-            sIx += strlen(stre);
-            strings[sIx] = 0;
-            ++sIx;
-        }
-
-        P(("------------------------------------------"));
-        header.magic     = LM_MAGIC;
-        header.dataLen   = sIx + sizeof(data);
-        P(("magic:       %d", header.magic));
-        P(("dataLen:     %d", header.dataLen));
-        P(("------------------------------------------"));
-        data.lineNo      = lineNo;
-        data.traceLevel  = tLev;
-        data.type        = type;
-        data.unixSeconds = secondsNow;
-        data.timezone    = timezone;
-        data.dst         = dst;
-
-        P(("lineNo:      %d",  data.lineNo));
-        P(("traceLevel:  %d",  data.traceLevel));
-        P(("type:        %d",  data.type));
-        P(("unixSeconds: %ld", data.unixSeconds));
-        P(("timezone:    %d",  data.timezone));
-        P(("dst:         %d",  data.dst));
-        P(("------------------------------------------"));
-
-        struct iovec iov[3];
-
-        iov[0].iov_base = &header;
-        iov[0].iov_len  = sizeof(header);
-        iov[1].iov_base = &data;
-        iov[1].iov_len  = sizeof(data);
-        iov[2].iov_base = strings;
-        iov[2].iov_len  = sIx;
-        
-        ssize_t nb;
-        ssize_t sz = iov[0].iov_len + iov[1].iov_len + iov[2].iov_len;
-
-        P(("Writing a LogMsg of %ld bytes (dataLen: %d)", sz, header.dataLen));
-        nb = writev(lsFd, iov, 3);
-        if (nb != sz)
-            P(("Written %ld bytes - not %ld!!!", nb, sz));
-    }
-}
-
-
 
 /* ****************************************************************************
 *
@@ -415,15 +257,9 @@ int main(int argC, const char *argV[])
     const char* extra = paIsSetSoGet(argC, (char**) argV, "-port");
     paParse(paArgs, argC, (char**) argV, 1, false, extra);
 
+    // Start log to server
     if ((lsPort != 0) || (strcmp(lsHost, "NONE") != 0))
-    {
-        LM_W(("Logging to log server"));
-        lmOutHookSet(logToLogServer, NULL);
-        LM_W(("Connecting to log server, so all threads get it ..."));
-    }
-
-    // LM_T(19, ("LogServer test"));
-    // exit(1);
+        au::start_log_to_server();
 
     // Only add in foreground to avoid warning / error messages at the stdout
     if (fg)

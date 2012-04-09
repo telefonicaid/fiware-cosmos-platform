@@ -16,12 +16,12 @@
 #include "parseArgs/parseArgs.h"          // parseArgs
 #include "parseArgs/paUsage.h"            // paUsage
 
-#include "au/Console.h"
-#include "au/ConsoleAutoComplete.h"
+#include "au/console/Console.h"
+#include "au/console/ConsoleAutoComplete.h"
 
 #include "au/StringVector.h"
-#include "tables/Table.h"
-#include "tables/Select.h"
+#include "au/tables/Table.h"
+#include "au/tables/Select.h"
 
 #include <samson/module/samsonVersion.h>   /* SAMSON_VERSION                             */
 #include <samson/module/Data.h>            /* DataInstance                               */

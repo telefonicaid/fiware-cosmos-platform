@@ -12,7 +12,7 @@
 
 #include "au/CommandLine.h"                         // au::CommandLine
 
-#include "tables/Table.h"
+#include "au/tables/Table.h"
 
 #include "logMsg/logMsg.h"             // LM_*
 #include "logMsg/traceLevels.h"        // Trace Levels

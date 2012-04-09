@@ -18,7 +18,6 @@ SET (STATIC_LIBS
      dl
      engine
      au
-	 tables
      samsonCommon	
      ${COMMON_SAMSON_LIBS}
 )

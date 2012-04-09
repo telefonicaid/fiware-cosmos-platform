@@ -25,10 +25,10 @@
 #include <sstream>              // std::ostringstream
 #include "logMsg/logMsg.h"             // LM_W
 
-#include "au/simple_map.h"
+#include "au/containers/simple_map.h"
 #include "au/CommandLine.h"
 #include "au/ErrorManager.h"        // au::ErrorManager
-#include "au/map.h"                 // au::map
+#include "au/containers/map.h"                 // au::map
 #include "au/string.h"              // au::str(...)
 
 #include "au/namespace.h"

@@ -19,6 +19,8 @@ ADD_SUBDIRECTORY(samsonPop)
 ADD_SUBDIRECTORY(samsonConnector)
 ADD_SUBDIRECTORY(samsonMemCheck)
 
+ADD_SUBDIRECTORY(logServer)
+
 if (HAVE_GTEST)
    ADD_SUBDIRECTORY(unitTest)
 endif (HAVE_GTEST)

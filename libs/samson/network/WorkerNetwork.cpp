@@ -118,8 +118,12 @@ namespace samson {
 
             au::Status s = socket_connection->readLine( line , sizeof(line) , 10 );
 
+            
             if (s == au::OK)
             {
+                // Remove last "\n" "\r" characters.
+                au::remove_return_chars( line );
+                
                 //
                 // Read the rest of the REST Request, but without parsing it ...
                 //

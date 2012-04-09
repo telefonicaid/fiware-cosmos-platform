@@ -18,7 +18,7 @@
 #include "au/string.h"
 #include "au/xml.h"
 #include "au/Token.h"     
-#include "au/vector.h"     
+#include "au/containers/vector.h"     
 #include "au/TokenTaker.h"
 #include "au/ErrorManager.h"
 

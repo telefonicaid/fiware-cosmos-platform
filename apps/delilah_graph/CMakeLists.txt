@@ -18,7 +18,6 @@ SET (STATIC_LIBS
      samsonModule
      dl
      engine
-	 tables
      au
      samsonCommon	
      QtCore

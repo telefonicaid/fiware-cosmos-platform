@@ -11,9 +11,6 @@
 #include <fcntl.h>              // fcntl, F_SETFD
 #include <errno.h>
 
-#include "logMsg/logMsg.h"          // LM_X
-#include "logMsg/traceLevels.h"
-
 #include "au/TokenTaker.h"
 
 #include "SocketConnection.h" // Own interface
@@ -61,10 +58,16 @@ namespace au
         struct sockaddr_in  peer;
         
         if ((hp = gethostbyname( host.c_str() )) == NULL )
-            LM_RE(GetHostByNameError, ("gethostbyname(%s): %s", host.c_str() , strerror(errno)));
+        {
+            return GetHostByNameError;
+            //LM_RE(GetHostByNameError, ("gethostbyname(%s): %s", host.c_str() , strerror(errno)));
+        }
         
         if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-            LM_RE(SocketError, ("socket: %s", strerror(errno)));
+        {
+            return SocketError;
+            //LM_RE(SocketError, ("socket: %s", strerror(errno)));
+        }
         
         memset((char*) &peer, 0, sizeof(peer));
         
@@ -72,7 +75,8 @@ namespace au
         peer.sin_addr.s_addr = ((struct in_addr*) (hp->h_addr))->s_addr;
         peer.sin_port        = htons(port);
         
-        LM_T(LmtSocketConnection, ("Connecting to worker at %s:%d", host.c_str(), port));
+        // Traces canceled since we are using this to connect to log server
+        //LM_T(LmtSocketConnection, ("Connecting to worker at %s:%d", host.c_str(), port));
 
         // Try several times....
         int retries = 10;
@@ -86,7 +90,8 @@ namespace au
                 if (tri > retries)
                 {
                     ::close(fd);
-                    LM_T(LmtSocketConnection,("Cannot connect to %s, port %d (even after %d retries)", host.c_str(), port, retries));
+                    // Traces canceled since we are using this to connect to log server
+                    //LM_T(LmtSocketConnection,("Cannot connect to %s, port %d (even after %d retries)", host.c_str(), port, retries));
                     return ConnectError;
                 }
                 

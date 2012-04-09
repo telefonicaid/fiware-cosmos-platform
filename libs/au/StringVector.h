@@ -10,11 +10,11 @@
 #include "logMsg/logMsg.h"             // LM_W
 
 #include "au/CommandLine.h"
-#include "au/simple_map.h"
+#include "au/containers/simple_map.h"
 #include "au/ErrorManager.h"        // au::ErrorManager
-#include "au/map.h"                 // au::map
+#include "au/containers/map.h"                 // au::map
 #include "au/string.h"              // au::str(...)
-#include "au/ConsoleAutoComplete.h"
+#include "au/console/ConsoleAutoComplete.h"
 
 #include "au/namespace.h"
 
@@ -43,6 +43,18 @@ public:
     std::string get(size_t pos);
     
     void unique();
+    
+    // Add different values
+    
+    void push( size_t v )
+    {
+        push_back( au::str("%lu",v ) );
+    }
+
+    void push( char v )
+    {
+        push_back( au::str("%c",v ) );
+    }
     
     std::string str();
     std::string str_vector();

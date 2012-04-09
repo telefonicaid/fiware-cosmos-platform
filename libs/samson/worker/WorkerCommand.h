@@ -14,8 +14,8 @@
 #include <sstream>
 #include <string>
 
-#include "au/map.h"                         // au::map
-#include "au/vector.h"
+#include "au/containers/map.h"                         // au::map
+#include "au/containers/vector.h"
 #include "au/string.h"                      // au::Format
 #include "au/CommandLine.h"                 // au::CommandLine
 

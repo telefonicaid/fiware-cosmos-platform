@@ -9,7 +9,7 @@
 
 #include "logMsg/logMsg.h"
 
-#include "au/map.h"         // au::map
+#include "au/containers/map.h"         // au::map
 #include "au/StringVector.h"
 #include "au/Environment.h" // au::Environment
 

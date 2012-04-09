@@ -13,7 +13,7 @@
 
 #include "logMsg/logMsg.h"				        // 
 
-#include "au/Console.h"
+#include "au/console/Console.h"
 
 #include "engine/EngineElement.h"               // samson::EngineElement
 

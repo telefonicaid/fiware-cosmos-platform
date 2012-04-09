@@ -9,17 +9,17 @@
 
 #include "au/CommandLine.h"
 #include "au/ErrorManager.h"        // au::ErrorManager
-#include "au/map.h"                 // au::map
+#include "au/containers/map.h"                 // au::map
 #include "au/Token.h"
 #include "au/string.h"              // au::str(...)
-#include "au/ConsoleAutoComplete.h"
+#include "au/console/ConsoleAutoComplete.h"
 
 #include "au/namespace.h"
 
 
-#include "tables/Table.h"
-#include "tables/Tree.h"
-#include "tables/Collection.h"
+#include "au/tables/Table.h"
+#include "au/tables/Tree.h"
+#include "au/tables/Collection.h"
 
 NAMESPACE_BEGIN(au)
 NAMESPACE_BEGIN(tables)

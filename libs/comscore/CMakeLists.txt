@@ -23,7 +23,6 @@ INSTALL(TARGETS samson_comscore ARCHIVE DESTINATION lib)
 INSTALL(FILES ${HEADERS} DESTINATION include/comscore)
 
 SET( STATIC_LIBS
-     tables
      samson_comscore
      au
      lm

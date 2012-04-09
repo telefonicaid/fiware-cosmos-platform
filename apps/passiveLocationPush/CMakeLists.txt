@@ -15,7 +15,6 @@ SET( STATIC_LIBS
      samsonIsolated
      samsonNetwork
      samsonCommon
-     tables
      au
      lm
      pa

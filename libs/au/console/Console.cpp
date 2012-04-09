@@ -5,21 +5,21 @@
 #include <stdio.h>
 #include <signal.h>
 #include "au/string.h"
-#include "au/list.h"
+#include "au/containers/list.h"
 #include "au/Cronometer.h"
 #include "au/utils.h"
-#include "ThreadManager.h"
+#include "au/ThreadManager.h"
 
 #include "au/TokenTaker.h"
 
-#include "au/ConsoleAutoComplete.h"
-#include "au/ConsoleCommand.h"
-#include "au/ConsoleCommandHistory.h"
-#include "au/ConsoleCode.h"
-#include "au/ConsoleEscapeSequence.h"
+#include "au/console/ConsoleAutoComplete.h"
+#include "au/console/ConsoleCommand.h"
+#include "au/console/ConsoleCommandHistory.h"
+#include "au/console/ConsoleCode.h"
+#include "au/console/ConsoleEscapeSequence.h"
 
 
-#include "au/Console.h"  // Own interface
+#include "au/console/Console.h"  // Own interface
 
 
 struct termios old_tio, new_tio;

@@ -7,8 +7,8 @@
 #include "au/Token.h"
 #include "au/TokenTaker.h"
 
-#include "au/map.h"
-#include "tables/Table.h"
+#include "au/containers/map.h"
+#include "au/tables/Table.h"
 
 #include "engine/Engine.h"
 #include "engine/Notification.h"

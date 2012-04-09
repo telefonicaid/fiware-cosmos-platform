@@ -4,7 +4,7 @@
 
 #include <string>                           // std::string
 
-#include "au/map.h"                         // au::map
+#include "au/containers/map.h"                         // au::map
 
 #include "samson/common/FullKVInfo.h"
 

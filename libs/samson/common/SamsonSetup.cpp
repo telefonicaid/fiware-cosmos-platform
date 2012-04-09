@@ -11,7 +11,7 @@
 #include "au/ErrorManager.h"           // au::ErrorManager
 
 #include "au/StringVector.h"
-#include "tables/Table.h"
+#include "au/tables/Table.h"
 
 #include "status.h"                         // Status codes
 

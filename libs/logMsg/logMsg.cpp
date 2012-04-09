@@ -1675,7 +1675,7 @@ LmStatus lmPathRegister(const char* path, const char* format, const char* timeFo
 * lmOut - 
 */
 LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* fName,
-               int tLev, const char* stre)
+               int tLev, const char* stre , bool use_hook )
 {
     int   i;
     char  line[LINE_MAX];
@@ -1705,7 +1705,8 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
     if ((type != 'H') && lmOutHook && lmOutHookActive == true)
     {
         time_t secondsNow = time(NULL);
-        lmOutHook(lmOutHookParam, text, type, secondsNow, 0, 0, file, lineNo, fName, tLev, stre);
+        if( use_hook )
+            lmOutHook(lmOutHookParam, text, type, secondsNow, 0, 0, file, lineNo, fName, tLev, stre);
     }
 
     for (i = 0; i < FDS_MAX; i++)

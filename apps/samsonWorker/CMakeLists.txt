@@ -24,7 +24,6 @@ SET (LIBS
     samsonCommon
     engine
     au
-    tables
     ${ICONV_LIB}
     pa
     lm

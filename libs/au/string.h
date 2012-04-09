@@ -28,7 +28,7 @@
 
 #include "au/CommandLine.h"
 #include "au/ErrorManager.h"        // au::ErrorManager
-#include "au/map.h"                 // au::map
+#include "au/containers/map.h"                 // au::map
 
 #include "au/namespace.h"
 

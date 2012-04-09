@@ -3,6 +3,7 @@
 #ifndef _H_AU_FILE_DESCRIPTOR
 #define _H_AU_FILE_DESCRIPTOR
 
+#include "au/Rate.h"
 #include "au/Status.h"
 #include "au/Token.h"
 #include "au/string.h"
@@ -13,10 +14,16 @@ namespace au
     
     class FileDescriptor
     {
+        // Andreu note: Use only LM_LM or LM_LW in this class since it is used in hoock function
         
         int fd;               // If id is -1 it means it was closed for some reason
         std::string name;     // name for debuging
         au::Token token;      // Token to protect multiple closes agains the same fd
+        
+    public:
+        
+        au::rate::Rate rate_in;    // Statistics about input output rate
+        au::rate::Rate rate_out;
         
     public:
         

@@ -22,8 +22,8 @@
 #include <iostream>                 // std::cout
 #include <set>                      // std::set
 
-#include "au/map.h"                 // au::list
-#include "au/set.h"                 // au::set
+#include "au/containers/map.h"                 // au::list
+#include "au/containers/set.h"                 // au::set
 #include "au/Token.h"               // au::Token
 #include "au/namespace.h"
 

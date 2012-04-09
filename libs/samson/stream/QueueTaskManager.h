@@ -2,8 +2,8 @@
 #ifndef _H_SAMSON_QUEUE_TASK_MANAGER
 #define _H_SAMSON_QUEUE_TASK_MANAGER
 
-#include "au/list.h"        // au::list
-#include "au/map.h"         // au::map
+#include "au/containers/list.h"        // au::list
+#include "au/containers/map.h"         // au::map
 
 #include "engine/Object.h"  // engine::Object
 

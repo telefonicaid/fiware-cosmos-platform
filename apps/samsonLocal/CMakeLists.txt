@@ -41,7 +41,6 @@ SET( STATIC_LIBS
     samsonNetwork
     samsonCommon
     au
-    tables
     lm
     ${ICONV_LIB}
     pa

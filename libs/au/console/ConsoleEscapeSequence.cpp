@@ -1,5 +1,5 @@
 
-#include "au/ConsoleEscapeSequence.h" // Own interface
+#include "au/console/ConsoleEscapeSequence.h" // Own interface
 #include "au/string.h"
 
 NAMESPACE_BEGIN(au)

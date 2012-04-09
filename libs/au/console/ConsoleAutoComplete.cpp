@@ -8,7 +8,7 @@
 #include "au/utils.h"
 #include "au/file.h"
 
-#include "au/ConsoleAutoComplete.h" // Own interface
+#include "au/console/ConsoleAutoComplete.h" // Own interface
 
 
 NAMESPACE_BEGIN(au)

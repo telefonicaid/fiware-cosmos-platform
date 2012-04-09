@@ -6,7 +6,7 @@ PROJECT_PATH = path.abspath(path.join(path.dirname(__file__), '..'))
 
 SITE_ID = 1
 
-ROOT_URLCONF = 'bdp_fe.urls'
+ROOT_URLCONF = 'cosmos.urls'
 
 TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
@@ -42,7 +42,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'bdp_fe.middleware.Http403Middleware',
+    'cosmos.middleware.Http403Middleware',
 )
 
 INSTALLED_APPS = (
@@ -54,7 +54,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'django_jenkins',
-    'bdp_fe.jobconf',
+    'cosmos.jobconf',
 )
 
 JENKINS_TASKS = (

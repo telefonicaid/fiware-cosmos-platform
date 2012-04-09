@@ -4,7 +4,7 @@ Application forms and validation.
 """
 from django import forms
 
-from bdp_fe.jobconf.models import Job
+from cosmos.jobconf.models import Job
 
 
 class NewJobForm(forms.Form):

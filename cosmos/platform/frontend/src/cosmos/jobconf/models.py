@@ -9,8 +9,8 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 
-from bdp_fe.jobconf import upload_util
-from bdp_fe.jobconf.cluster import remote
+from cosmos.jobconf import upload_util
+from cosmos.jobconf.cluster import remote
 
 
 LOGGER = logging.getLogger(__name__)

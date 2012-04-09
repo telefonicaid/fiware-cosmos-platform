@@ -1,7 +1,5 @@
 package es.tid.cosmos.profile.api;
 
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 
 import com.sun.jersey.api.NotFoundException;
@@ -21,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Path("/{username}/top/{n}")
 @Component
 @Scope("request")
-public class TopCategories {
+public class TopCategoriesResource {
     @Autowired(required = true)
     private ProfileDAO profile;
 
@@ -33,18 +31,10 @@ public class TopCategories {
     @Produces(MediaType.APPLICATION_JSON)
     public List getTop(@PathParam("username") String userName,
                        @PathParam("n") int n) {
-        if (n < 1) {
-            throw new NotFoundException();
+        try {
+            return Categories.getTop(this.profile, userName, n);
+        } catch (IllegalArgumentException ex) {
+            throw new NotFoundException(ex.getMessage());
         }
-        final CategoryMap categoryMap =
-                this.profile.getLastCategoryMap(userName);
-        List topN = new LinkedList();
-        for (final String category: categoryMap.getTop(n)) {
-            topN.add(new HashMap() {{
-                put("category", category);
-                put("count", categoryMap.get(category));
-            }});
-        }
-        return topN;
     }
 }

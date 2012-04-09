@@ -2,7 +2,7 @@
 
 from django.conf.urls.defaults import patterns, url
 
-from bdp_fe.jobconf import views
+from cosmos.jobconf import views
 
 urlpatterns = patterns('',
     url(r'^$', views.list_jobs, name="list_jobs"),

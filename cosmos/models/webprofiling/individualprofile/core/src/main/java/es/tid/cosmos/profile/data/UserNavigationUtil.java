@@ -12,7 +12,7 @@ import es.tid.cosmos.profile.generated.data.ProfileProtocol.UserNavigation;
  *
  * @author sortega
  */
-public class UserNavigationUtil {
+public final class UserNavigationUtil {
     private static final String DELIMITER = "\t";
 
     private static final int VISITOR_ID_INDEX = 0;
@@ -21,7 +21,7 @@ public class UserNavigationUtil {
     private static final int MONTH_INDEX = 7;
     private static final int DAY_INDEX = 6;
 
-    protected UserNavigationUtil() {
+    private UserNavigationUtil() {
     }
 
     public static UserNavigation create(String visitorId, String fullUrl,

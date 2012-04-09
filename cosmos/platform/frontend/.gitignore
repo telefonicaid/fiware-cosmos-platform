@@ -1,13 +1,13 @@
+*.egg-info/
 *.pyc
 .installed.cfg
 bin/
 build/
-dist/
+build/
 develop-eggs/
+dist/
+dist/
 downloads/
 eggs/
 parts/
-src/bdp_fe.egg-info/
 var/
-dist/
-build/

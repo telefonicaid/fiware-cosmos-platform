@@ -11,8 +11,8 @@ from django.shortcuts import get_object_or_404
 from pymongo import Connection
 from pymongo.errors import AutoReconnect, ConnectionFailure
 
-from bdp_fe.http import Http403
-from bdp_fe.jobconf.models import CustomJobModel, Job
+from cosmos.http import Http403
+from cosmos.jobconf.models import CustomJobModel, Job
 
 
 HIDDEN_KEYS = []

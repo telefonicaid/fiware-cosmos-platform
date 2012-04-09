@@ -11,7 +11,7 @@ TEMPLATE_DEBUG = DEBUG
 
 SECRET_KEY = ')qif7^e0_0@sx!o0ca$c6v8%mz+y2$r0liegqd8(2k1^4reihj'
 
-from bdp_fe.conf.base_settings import *
+from cosmos.conf.base_settings import *
 
 DATABASES = {
     'default': {
@@ -47,7 +47,7 @@ FCGI_OPTIONS = {
     'host': '127.0.0.1',
     'method': 'threaded',
     'port': '9000',
-    'pidfile': '/var/run/bdp_fe/django.pid',
+    'pidfile': '/var/run/cosmos/django.pid',
 }
 
 LOGGING = {
@@ -62,7 +62,7 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'formatter': 'detailed',
-            'filename': '/var/log/cosmos/bdp_fe.log',
+            'filename': '/var/log/cosmos/cosmos-frontend.log',
         },
     },
     'formatters': {
@@ -77,7 +77,7 @@ LOGGING = {
             'level': 'WARNING',
             'propagate': True,
         },
-        'bdp_fe': {
+        'cosmos': {
             'handlers': ['logfile', 'mail_admins'],
             'level': 'DEBUG',
             'propagate': True,

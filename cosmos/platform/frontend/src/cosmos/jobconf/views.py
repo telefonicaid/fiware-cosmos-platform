@@ -1,5 +1,5 @@
 """
-Module bdp_fe.jobconf.views
+Module cosmos.jobconf.views
 
 """
 import logging
@@ -13,10 +13,10 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import redirect, render_to_response
 from django.template import RequestContext, loader
 
-from bdp_fe.jobconf.cluster import remote
-from bdp_fe.jobconf.forms import NewJobForm, UploadDataForm, UploadJarForm
-from bdp_fe.jobconf.models import CustomJobModel, Job, JobModel
-import bdp_fe.jobconf.views_util as util
+from cosmos.jobconf.cluster import remote
+from cosmos.jobconf.forms import NewJobForm, UploadDataForm, UploadJarForm
+from cosmos.jobconf.models import CustomJobModel, Job, JobModel
+import cosmos.jobconf.views_util as util
 
 LOGGER = logging.getLogger(__name__)
 CLUSTER = remote.Cluster(settings.CLUSTER_CONF.get('host'),

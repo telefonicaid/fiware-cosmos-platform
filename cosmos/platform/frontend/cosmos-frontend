@@ -19,7 +19,7 @@
 #
 
 #### SERVER SPECIFIC CONFIGURATION
-PIDFILE="/var/run/bdp_fe/django.pid"
+PIDFILE="/var/run/cosmos/django.pid"
 BUILDOUT_BIN="/usr/local/cosmos-frontend/bin"
 RUN_AS=bdp
 #### DO NOT CHANGE ANYTHING AFTER THIS LINE!
@@ -27,7 +27,7 @@ RUN_AS=bdp
 set -e
 
 PATH=$BUILDOUT_BIN:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DESC="BDP Web Frontend"
+DESC="Cosmos Web Frontend"
 NAME=$0
 SCRIPTNAME=/etc/init.d/$NAME
 

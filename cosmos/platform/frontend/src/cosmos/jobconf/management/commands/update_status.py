@@ -8,8 +8,8 @@ from optparse import make_option
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-from bdp_fe.jobconf.models import Job
-from bdp_fe.jobconf.cluster import remote
+from cosmos.jobconf.models import Job
+from cosmos.jobconf.cluster import remote
 
 
 LOGGER = logging.getLogger(__name__)

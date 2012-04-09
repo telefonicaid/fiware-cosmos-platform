@@ -9,12 +9,12 @@ tests of the installed applications.
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-from bdp_fe.conf.base_settings import *
+from cosmos.conf.base_settings import *
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': '/tmp/bdp_fe.db'
+        'NAME': '/tmp/cosmos.db'
     }
 }
 
@@ -69,7 +69,7 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-        'bdp_fe': {
+        'cosmos': {
             'handlers': ['console', 'mail_admins'],
             'level': 'DEBUG',
             'propagate': True,

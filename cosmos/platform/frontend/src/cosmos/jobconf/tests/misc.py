@@ -1,7 +1,7 @@
 """
-Module bdp_fe.jobconf.tests
+Module cosmos.jobconf.tests
 
-This module holds the unittests for the bdp_fe.jobconf app
+This module holds the unittests for the cosmos.jobconf app
 """
 import os.path
 import tempfile
@@ -11,8 +11,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import unittest
 from django.test.client import Client
 
-from bdp_fe.jobconf import upload_util
-from bdp_fe.jobconf.cluster import fakeserver, remote
+from cosmos.jobconf import upload_util
+from cosmos.jobconf.cluster import fakeserver, remote
 
 
 class FileUtilTest(unittest.TestCase):

@@ -19,19 +19,19 @@ def find_files(path):
     return files
 
 setup(
-    name = "bdp_fe",
+    name = "cosmos",
     version = "0.1.0",
-    description = "Big Data Platform Frontend",
+    description = "Cosmos Frontend",
     long_description = ("This package is a web interface for the Big Data "
                         "Platform.  Through this frontend, a user can lauch "
-                        "Haddop jobs, read and interpret its results."),
+                        "Hadoop jobs, read and interpret its results."),
     author = "Telefonica Digital",
     author_email = "cosmos@tid.es",
     package_dir = {'': 'src'},
     packages = find_packages('src'),
     package_data = {'': ['templates/*']},
-    data_files = [('share/bdp_fe/static', 
-                   find_files('src/bdp_fe/jobconf/static/'))],
+    data_files = [('share/cosmos/static', 
+                   find_files('src/cosmos/jobconf/static/'))],
     install_requires = [
         'setuptools',
         'pymongo',

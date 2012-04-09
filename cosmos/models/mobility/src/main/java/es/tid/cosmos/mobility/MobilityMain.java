@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility;
 
+import java.io.IOException;
+import es.tid.cosmos.mobility.jobs.*;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
@@ -7,10 +9,6 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import es.tid.cosmos.mobility.jobs.FilterCellnoinfoJob;
-import es.tid.cosmos.mobility.jobs.GetSample10000Job;
-import es.tid.cosmos.mobility.jobs.ParseCdrsJob;
-import es.tid.cosmos.mobility.jobs.ParseCellsJob;
 import es.tid.cosmos.mobility.mapreduce.FilterCellnoinfoMapper;
 
 /**
@@ -47,6 +45,57 @@ public class MobilityMain extends Configured implements Tool {
         this.runGetVectorsToClusterJobs();
 
         return 0;
+    }
+    
+    private void extractPointsOfInterest() throws Exception {
+        {
+            NodeBtsCounterJob job = new NodeBtsCounterJob(this.getConf());
+            job.configure(null, null);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run NodeBtsCounterJob");
+            }
+        }
+        
+        {
+            NodeMobInfoJob job = new NodeMobInfoJob(this.getConf());
+            job.configure(null, null);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run NodeMobInfoJob");
+            }
+        }
+        
+        {
+            RepbtsSpreadNodebtsJob job = new RepbtsSpreadNodebtsJob(
+                    this.getConf());
+            job.configure(null, null);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run RepbtsSpreadNodebtsJob");
+            }
+        }
+        
+        {
+            RepbtsAggbybtsJob job = new RepbtsAggbybtsJob(this.getConf());
+            job.configure(null, null);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run RepbtsAggbybtsJob");
+            }
+        }
+
+        {
+        }
+
+        {
+        }
+
+        {
+            RepbtsGetRepresentativeBtsJob job =
+                    new RepbtsGetRepresentativeBtsJob(this.getConf());
+            job.configure(null, null);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception(
+                        "Failed to run RepbtsGetRepresentativeBtsJob");
+            }
+        }
     }
     
     private void runParsingJobs(Path cdrsPath, Path cellsPath)

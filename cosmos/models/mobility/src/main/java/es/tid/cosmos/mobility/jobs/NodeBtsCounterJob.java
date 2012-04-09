@@ -14,6 +14,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.cosmos.mobility.MobilityMain;
+import es.tid.cosmos.mobility.mapreduce.NodeBtsCounterMapper;
 import es.tid.cosmos.mobility.mapreduce.NodeBtsCounterReducer;
 
 /**
@@ -33,6 +34,7 @@ public class NodeBtsCounterJob extends Job {
         this.setOutputKeyClass(LongWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
+        this.setMapperClass(NodeBtsCounterMapper.class);
         this.setReducerClass(NodeBtsCounterReducer.class);
     }
 

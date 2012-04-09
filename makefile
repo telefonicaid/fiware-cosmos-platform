@@ -20,6 +20,11 @@ ifndef SAMSON_OWNER
 SAMSON_OWNER=samson
 endif
 
+# Repository Server
+ifndef REPO_SERVER
+REPO_SERVER=samson09.hi.inet
+endif
+
 DISTRO=$(shell lsb_release -is)
 DISTRO_CODENAME=$(shell lsb_release -cs)
 
@@ -287,10 +292,10 @@ rpm: clean cleansvn
 $(HOME)/rpmbuild/RPMS/x86_64/samson-$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm:
 	make rpm
     
-publish_rpm: $(HOME)/rpmbuild/RPMS/x86_64/samson-$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm
+publish_rpm: $(HOME)/rpmbuild/RPMS/x86_64/samson-$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm rpm/samson.spec
 	rpm/rpm-sign.exp ~/rpmbuild/RPMS/x86_64/samson-*$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm
-	rsync  -v  ~/rpmbuild/RPMS/x86_64/samson-*$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm repo@samson09.hi.inet:/var/repository/redhat/6/x86_64
-	ssh repo@samson09.hi.inet createrepo -q -d /var/repository/redhat/6/x86_64
+	rsync  -v  ~/rpmbuild/RPMS/x86_64/samson-*$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm repo@$(REPO_SERVER):/var/repository/redhat/6/x86_64
+	ssh repo@$(REPO_SERVER).hi.inet createrepo -q -d /var/repository/redhat/6/x86_64
 
 # currently the deb scripts require Samson be installed before 
 # the package can be generated. Using SAMSON_HOME we can override
@@ -308,7 +313,7 @@ package/deb/samson_$(SAMSON_VERSION).$(SAMSON_RELEASE)_amd64.deb:
 
 publish_deb: package/deb/samson_$(SAMSON_VERSION).$(SAMSON_RELEASE)_amd64.deb
 	# Upload the files. A cron job on the server will include them in the repository
-	scp package/deb/* repo@samson09:/var/repository/ubuntu/incoming/$(DISTRO_CODENAME)
+	scp package/deb/* repo@$(REPO_SERVER):/var/repository/ubuntu/incoming/$(DISTRO_CODENAME)
 
 man:
 	if [ ! -d BUILD_RELEASE ]; then \

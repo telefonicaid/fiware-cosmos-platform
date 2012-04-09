@@ -57,8 +57,6 @@ def retrieve_results(job_id, primary_key):
     ans = []
     job = Job.objects.get(id=job_id)
     jobmodel = CustomJobModel.objects.get(job=job)
-#     import pdb; pdb.set_trace()
-#     jobmodel = JobModel.objects.get(job_id=job_id).customjobmodel
     mongo_url = jobmodel.mongo_url()
     mongo_db = jobmodel.job.user.username
     mongo_collection = 'job_%s' % jobmodel.job.id

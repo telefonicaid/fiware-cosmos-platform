@@ -43,8 +43,8 @@ class RetrieveFromMongo(djangotest.TestCase):
     def __create_job(self):
         user = User.objects.get(username=self.test_user)
         myjob = Job(name=self.job_name,
-                  user=user,
-                  status=Job.SUCCESSFUL)
+                    user=user,
+                    status=Job.SUCCESSFUL)
         myjob.save()
         mymodel = CustomJobModel(job=myjob)
         mymodel.jar_name = 'non-existant'

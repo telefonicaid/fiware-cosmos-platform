@@ -3,9 +3,7 @@
 .installed.cfg
 bin/
 build/
-build/
 develop-eggs/
-dist/
 dist/
 downloads/
 eggs/

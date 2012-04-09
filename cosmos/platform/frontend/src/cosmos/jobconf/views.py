@@ -17,6 +17,7 @@ from cosmos.jobconf.cluster import remote
 from cosmos.jobconf.forms import NewJobForm, UploadDataForm, UploadJarForm
 from cosmos.jobconf.models import CustomJobModel, Job, JobModel
 import cosmos.jobconf.views_util as util
+import bdp_fe.jobconf.mongo as mongo
 
 LOGGER = logging.getLogger(__name__)
 CLUSTER = remote.Cluster(settings.CLUSTER_CONF.get('host'),
@@ -40,7 +41,6 @@ def list_jobs(request):
         'reload_period': reload_period,
     }, context_instance=RequestContext(request))
 
-
 @login_required
 def view_results(request, job_id):
     job = util.get_owned_job_or_40x(request, job_id)
@@ -51,14 +51,13 @@ def view_results(request, job_id):
     else:
         raise Http404
 
-
 def view_successful_results(request, job):
     job = util.get_owned_job_or_40x(request, job.id)
     if job.status != Job.SUCCESSFUL:
         raise Http404
     try:
         primary_key = request.GET.get('primary_key')
-        results = util.retrieve_results(job.id, primary_key)
+        results = mongo.retrieve_results(job.id, primary_key)
         prototype_result = results[0]
         if not primary_key:
             primary_key = prototype_result.pk
@@ -76,31 +75,29 @@ def view_successful_results(request, job):
         context = {'title' : 'Results of job %s' % job.id,
                    'job_results' : paginated_results,
                    'prototype_result': prototype_result,
-                   'hidden_keys': util.HIDDEN_KEYS,
+                   'hidden_keys': mongo.HIDDEN_KEYS,
                    'primary_key': primary_key}
         return render_to_response('jobconf/job_results.html',
                                   context,
                                   context_instance=RequestContext(request))
-    except util.NoResultsError:
+    except mongo.NoResultsError:
         context = {'title' : 'Results of job %s' % job.id,
                    'job_results' : None,
-                   'hidden_keys': util.HIDDEN_KEYS,
+                   'hidden_keys': mongo.HIDDEN_KEYS,
                    'expand_types': ['dict', 'list']}
         return render_to_response('jobconf/job_results.html',
                                   context,
                                   context_instance=RequestContext(request))
-    except util.NoConnectionError:
+    except mongo.NoConnectionError:
         context = {'reason': 'Database not available'}
         return HttpResponse(loader.render_to_string("503.html", context),
                             status=503)
-
 
 def view_error(request, job):
     return render_to_response('jobconf/job_report_error.html', {
         'title': 'Error report for %s' % job.name,
         'job': job,
     }, context_instance=RequestContext(request))
-
 
 def run_job(request, job_id):
     try:
@@ -128,7 +125,6 @@ def run_job(request, job_id):
     else:
         messages.warning(request, "Cannot start job %s." % job.name)
 
-
 @login_required
 def new_job(request):
     if request.method == 'POST':
@@ -148,7 +144,6 @@ def new_job(request):
         'title': 'New job',
         'form': form,
     }, context_instance=RequestContext(request))
-
 
 @login_required
 def config_job(request, job_id):
@@ -171,7 +166,6 @@ def config_job(request, job_id):
         'job': job,
         'form': form,
     }, context_instance=RequestContext(request))
-
 
 @login_required
 def upload_data(request, job_id):

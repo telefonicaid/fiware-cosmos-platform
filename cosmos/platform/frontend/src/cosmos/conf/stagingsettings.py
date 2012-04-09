@@ -1,7 +1,7 @@
 """
 Module testsettings
 
-These settings allow Django unittests to setup a temporary databse and run the
+These settings allow Django unittests to setup a temporary database and run the
 tests of the installed applications.
 
 """
@@ -9,7 +9,7 @@ tests of the installed applications.
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-from cosmos.conf.base_settings import *
+from bdp_fe.conf.base_settings import *
 
 DATABASES = {
     'default': {
@@ -33,8 +33,8 @@ LANDING_ROOT = '/tmp/landing/'
 
 CLUSTER_CONF = {
     'host': 'localhost',
-    'port': 27017,
-    'mongobase': 'mongodb://localhost',
+    'port': 9888,
+    'mongobase': 'mongodb://pshdp04',
 }
 
 LOGGING = {
@@ -69,7 +69,7 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-        'cosmos': {
+        'bdp_fe': {
             'handlers': ['console', 'mail_admins'],
             'level': 'DEBUG',
             'propagate': True,

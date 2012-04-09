@@ -9,7 +9,7 @@ Packager:   Samson Development <samson-dev@tid.es>
 URL:        http://wikis.hi.inet/samson
 Source:    http://www.tid.es/samson-SAMSON_VERSION.tar.gz
 BuildRoot: /var/tmp/%{name}-buildroot
-Requires: protobuf, ntp,tid-mongodb, protobuf-devel, gcc, gcc-c++, make, ncurses-devel, boost-devel, tid-mongodb-devel
+Requires: protobuf, ntp,tid-mongodb
 Requires(pre): shadow-utils
 
 %description

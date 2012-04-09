@@ -204,7 +204,7 @@ class CustomJobModel(JobModel):
         return "%s" % settings.CLUSTER_CONF.get('mongobase')
 
     def mongo_db(self):
-        return "%s"% (self.job.user.username)
+        return "%s"% self.job.user.username
 
     def mongo_collection(self):
         return "job_%s" % self.job.id

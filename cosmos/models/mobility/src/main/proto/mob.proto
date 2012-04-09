@@ -1,0 +1,69 @@
+package mob;
+
+import "base.proto";
+
+option java_package = "es.tid.cosmos.mobility.data";
+option java_outer_classname = "MobProtocol";
+
+message Cdr {
+    optional uint64 userId = 1;
+    optional uint64 cellId = 2;
+    optional base.Date date = 3;
+    optional base.Time time = 4;
+}
+
+message Cell {
+    optional uint64 cellId = 1;
+    optional uint64 placeId = 2;
+    optional uint32 geoloc1 = 3;
+    optional uint32 geoloc2 = 4;
+    optional double posx = 5;
+    optional double posy = 6;
+}
+
+message Bts {
+    optional uint64 placeId = 1;
+    optional double posx = 2;
+    optional double posy = 3;
+    optional double area = 4;
+    repeated uint64 adj_bts = 5;
+}
+
+message NodeBts {
+    optional uint64 userId = 1;
+    optional uint32 placeId = 2;
+    optional uint32 weekday = 3;
+    optional uint32 range = 4;
+}
+
+message BtsCounter {
+    optional uint64 placeId = 1;
+    optional uint32 weekday = 2;
+    optional uint32 range = 3;
+    optional uint32 count = 4;
+}
+
+message NodeBtsDay {
+    optional uint64 userId = 1;
+    optional uint64 placeId = 2;
+    optional uint32 workday = 3;
+    optional uint32 count = 4;
+}
+
+message NodeMxCounter {
+    repeated BtsCounter bts = 1;
+    optional uint32 btsLength = 2;
+    optional uint32 btsMaxLength = 3;
+}
+
+message TwoInt {
+    optional uint64 num1 = 1;
+    optional uint64 num2 = 2;
+}
+
+message GLEvent {
+    optional uint64 userId = 1;
+    optional uint64 placeId = 2;
+    optional base.Date date = 3;
+    optional base.Time time = 4;
+}

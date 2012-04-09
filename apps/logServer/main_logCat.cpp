@@ -65,7 +65,7 @@ int main(int argC, const char *argV[])
     au::LogFormatter log_formatter(format);
     
     // Open teh log file    
-    au::LogFile *logFile;
+    au::LogFile *logFile=NULL;
     au::Status s = au::LogFile::read( target_file , &logFile);
     
     if( s == au::OK )

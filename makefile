@@ -295,7 +295,7 @@ $(HOME)/rpmbuild/RPMS/x86_64/samson-$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.r
 publish_rpm: $(HOME)/rpmbuild/RPMS/x86_64/samson-$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm rpm/samson.spec
 	rpm/rpm-sign.exp ~/rpmbuild/RPMS/x86_64/samson-*$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm
 	rsync  -v  ~/rpmbuild/RPMS/x86_64/samson-*$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm repo@$(REPO_SERVER):/var/repository/redhat/6/x86_64
-	ssh repo@$(REPO_SERVER).hi.inet createrepo -q -d /var/repository/redhat/6/x86_64
+	ssh repo@$(REPO_SERVER) createrepo -q -d /var/repository/redhat/6/x86_64
 
 # currently the deb scripts require Samson be installed before 
 # the package can be generated. Using SAMSON_HOME we can override

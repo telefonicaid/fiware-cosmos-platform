@@ -5,7 +5,6 @@ Object.h
 namespace.h
 charset.h
 utils.h
-status.h
 Descriptors.h
 gpb.h
 Environment.h

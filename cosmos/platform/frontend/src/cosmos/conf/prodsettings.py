@@ -1,9 +1,6 @@
 """
 Module prodsettings
 
-These settings allow Django unittests to setup a temporary databse and run the
-tests of the installed applications.
-
 """
 
 DEBUG = False

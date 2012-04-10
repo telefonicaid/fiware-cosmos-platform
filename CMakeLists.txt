@@ -127,7 +127,7 @@ else ( HAVE_QT )
 endif (HAVE_QT)
 
 # Google Test - http://code.google.com/p/googletest/downloads/list
-FIND_LIBRARY ( HAVE_GTEST gtest PATHS /usr/lib64 /usr/local/lib64 )
+FIND_LIBRARY ( HAVE_GTEST gtest PATHS /usr/lib /usr/lib64 /usr/local/lib64 )
 if ( HAVE_GTEST )
     MESSAGE("Using ${HAVE_GTEST} for Google Test")
 else ( HAVE_GTEST )

@@ -1,4 +1,4 @@
-
+#include <stdlib.h>
 #include "TemporalBuffer.h" // Own interface
 
 namespace au 

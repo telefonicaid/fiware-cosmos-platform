@@ -18,6 +18,7 @@ from cosmos.jobconf.forms import NewJobForm, UploadDataForm, UploadJarForm
 from cosmos.jobconf.models import CustomJobModel, Job, JobModel
 from cosmos.jobconf.views_util import cluster_connection
 import cosmos.jobconf.views_util as util
+import cosmos.jobconf.mongo as mongo
 
 LOGGER = logging.getLogger(__name__)
 
@@ -58,7 +59,7 @@ def view_successful_results(request, job):
         raise Http404
     try:
         primary_key = request.GET.get('primary_key')
-        results = util.retrieve_results(job.id, primary_key)
+        results = mongo.retrieve_results(job.id, primary_key)
         prototype_result = results[0]
         if not primary_key:
             primary_key = prototype_result.pk
@@ -76,20 +77,20 @@ def view_successful_results(request, job):
         context = {'title' : 'Results of job %s' % job.id,
                    'job_results' : paginated_results,
                    'prototype_result': prototype_result,
-                   'hidden_keys': util.HIDDEN_KEYS,
+                   'hidden_keys': mongo.HIDDEN_KEYS,
                    'primary_key': primary_key}
         return render_to_response('jobconf/job_results.html',
                                   context,
                                   context_instance=RequestContext(request))
-    except util.NoResultsError:
+    except mongo.NoResultsError:
         context = {'title' : 'Results of job %s' % job.id,
                    'job_results' : None,
-                   'hidden_keys': util.HIDDEN_KEYS,
+                   'hidden_keys': mongo.HIDDEN_KEYS,
                    'expand_types': ['dict', 'list']}
         return render_to_response('jobconf/job_results.html',
                                   context,
                                   context_instance=RequestContext(request))
-    except util.NoConnectionError:
+    except mongo.NoConnectionError:
         context = {'reason': 'Database not available'}
         return HttpResponse(loader.render_to_string("503.html", context),
                             status=503)

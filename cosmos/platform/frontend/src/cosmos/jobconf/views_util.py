@@ -9,48 +9,9 @@ from types import ListType, DictType
 from django.conf import settings
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404
-from pymongo import Connection
-from pymongo.errors import AutoReconnect, ConnectionFailure
 
 from cosmos.http import Http403
-from cosmos.jobconf.models import CustomJobModel, Job
-
-
-HIDDEN_KEYS = []
-EXPAND_TYPES = [ListType, DictType]
-
-
-class NoResultsError(Exception):
-    pass
-
-
-class NoConnectionError(Exception):
-    pass
-
-
-class MongoRecord(object):
-    """
-    A MongoRecord is a document from a Mongo database, but with additional
-    methods to allow for easier display.
-    """
-    def __init__(self, raw_mongo_document, primary_key):
-        self.document = raw_mongo_document
-        self.pk = primary_key
-
-    def get_primary_key(self):
-        """Gets the value of the primary key for this record"""
-        return self.document[self.pk]
-
-    def get_fields(self):
-        """Gets the values of all non-primary keys for this record. If the
-        field is a dictionary or a list, it is encoded as JSON."""
-        ans = {}
-        for k, v in self.document.iteritems():
-            if k != self.pk:
-                if type(v) in EXPAND_TYPES:
-                    v = json.dumps(v)
-                ans.setdefault(k, v)
-        return ans
+from cosmos.jobconf.models import Job
 
 
 def safe_int_param(query_dict, param_name, default_value=None):
@@ -81,7 +42,7 @@ def retrieve_results(job_id, primary_key):
     jobmodel = CustomJobModel.objects.get(id=job_id)
     mongo_url = jobmodel.mongo_url()
     mongo_db = jobmodel.job.user.username
-    mongo_collection = 'job_%s' % jobmodel.job.id
+    mongo_collection = jobmodel.job.mongo_collection()
     try:
         connection = Connection(mongo_url)
         db = connection[mongo_db]

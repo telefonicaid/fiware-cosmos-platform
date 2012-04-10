@@ -1,7 +1,7 @@
 package es.tid.cosmos.mobility;
 
 import java.io.IOException;
-import es.tid.cosmos.mobility.jobs.*;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
@@ -9,7 +9,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import es.tid.cosmos.mobility.mapreduce.FilterCellnoinfoMapper;
+import es.tid.cosmos.mobility.jobs.*;
 
 /**
  *
@@ -24,12 +24,6 @@ public class MobilityMain extends Configured implements Tool {
             WORKING_DIRECTORY + "/cdrs_mob";
     private static final String CELLS_MOB_PATH =
             WORKING_DIRECTORY + "/cells_mob";
-    private static final String CDRS_SAMPLE_PATH =
-            WORKING_DIRECTORY + "/cdrs_sample";
-    private static final String CDRS_INFO_SMP_PATH =
-            WORKING_DIRECTORY + "/cdrs_info_smp";
-    private static final String CDRS_NO_INFO_SMP_PATH =
-            WORKING_DIRECTORY + "/cdrs_no_info_smp";
     
     @Override
     public int run(String[] args) throws Exception {
@@ -42,55 +36,67 @@ public class MobilityMain extends Configured implements Tool {
         Path cellsPath = new Path(args[1]);
         
         this.runParsingJobs(cdrsPath, cellsPath);
-        this.runGetVectorsToClusterJobs();
-
+        
         return 0;
     }
     
-    private void extractPointsOfInterest() throws Exception {
+    private void extractPointsOfInterest(Path input, Path output, Path tmpDir)
+            throws Exception {
+        Path nodeBtsCounter = tmpDir.suffix("node_bts_counter");
         {
             NodeBtsCounterJob job = new NodeBtsCounterJob(this.getConf());
-            job.configure(null, null);
+            job.configure(input, nodeBtsCounter);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run NodeBtsCounterJob");
             }
         }
         
+        Path nodeMobInfo = tmpDir.suffix("node_mob_info");
         {
             NodeMobInfoJob job = new NodeMobInfoJob(this.getConf());
-            job.configure(null, null);
+            job.configure(nodeBtsCounter, nodeMobInfo);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run NodeMobInfoJob");
             }
         }
         
+        Path repbtsSpreadNodebts = tmpDir.suffix("repbts_spread_nodebts");
         {
             RepbtsSpreadNodebtsJob job = new RepbtsSpreadNodebtsJob(
                     this.getConf());
-            job.configure(null, null);
+            job.configure(nodeMobInfo, repbtsSpreadNodebts);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run RepbtsSpreadNodebtsJob");
             }
         }
         
+        Path repbtsAggbybts = tmpDir.suffix("repbts_aggbybts");
         {
             RepbtsAggbybtsJob job = new RepbtsAggbybtsJob(this.getConf());
-            job.configure(null, null);
+            job.configure(repbtsSpreadNodebts, repbtsAggbybts);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run RepbtsAggbybtsJob");
             }
         }
 
+        Path repbtsFilterNumComms = tmpDir.suffix("repbts_filter_num_comms");
         {
+            RepbtsFilterNumCommsJob job = new RepbtsFilterNumCommsJob(
+                    this.getConf());
+            job.configure(null, repbtsFilterNumComms);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run RepbtsFilterNumCommsJob");
+            }
         }
 
         {
+            // TODO: mobmx_repbts_join_dist_comms
         }
 
         {
             RepbtsGetRepresentativeBtsJob job =
                     new RepbtsGetRepresentativeBtsJob(this.getConf());
-            job.configure(null, null);
+            job.configure(null, output);
             if (!job.waitForCompletion(true)) {
                 throw new Exception(
                         "Failed to run RepbtsGetRepresentativeBtsJob");
@@ -110,37 +116,6 @@ public class MobilityMain extends Configured implements Tool {
         parseCellsJob.configure(cellsPath, new Path(CELLS_MOB_PATH));
         if (!parseCellsJob.waitForCompletion(true)) {
             throw new Exception("Failed to parse cells");
-        }
-    }
-    
-    private void runGetVectorsToClusterJobs() throws Exception {
-        GetSample10000Job getSample10000Job = new GetSample10000Job(
-                this.getConf());
-        getSample10000Job.configure(new Path(CDRS_MOB_PATH),
-                                    new Path(CDRS_SAMPLE_PATH));
-        if (!getSample10000Job.waitForCompletion(true)) {
-            throw new Exception("Failed to get samples");
-        }
-        
-        // TODO: verify that the keys map to the output files correctly.
-        this.getConf().setStrings(CDRS_MOB_PATH, "outputKey", 
-                FilterCellnoinfoMapper.OutputKey.CELL.toString());
-        FilterCellnoinfoJob filterCellnoinfoJob = new FilterCellnoinfoJob(
-                this.getConf());
-        filterCellnoinfoJob.configure(new Path(CDRS_SAMPLE_PATH),
-                                      new Path(CDRS_INFO_SMP_PATH));
-        if (!filterCellnoinfoJob.waitForCompletion(true)) {
-            throw new Exception("Failed to filter cells with no info for cells");
-        }
-
-        // TODO: verify that the keys map to the output files correctly.
-        this.getConf().setStrings(CDRS_MOB_PATH, "outputKey", 
-                FilterCellnoinfoMapper.OutputKey.NODE.toString());
-        filterCellnoinfoJob = new FilterCellnoinfoJob(this.getConf());
-        filterCellnoinfoJob.configure(new Path(CDRS_SAMPLE_PATH),
-                                      new Path(CDRS_NO_INFO_SMP_PATH));
-        if (!filterCellnoinfoJob.waitForCompletion(true)) {
-            throw new Exception("Failed to filter cells with no info for nodes");
         }
     }
     

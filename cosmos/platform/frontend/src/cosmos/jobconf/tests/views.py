@@ -2,11 +2,14 @@
 Views tests
 
 """
+from django.conf import settings
 from django.contrib import messages
 from django.utils import unittest
 
 import django.test as djangotest
 from pymongo import Connection
+
+from cosmos.jobconf.cluster import fakeserver
 
 
 class LoginTestCase(djangotest.TestCase):
@@ -69,6 +72,7 @@ class JobStartTestCase(ViewTestCase):
     fixtures = ['sample_jobs']
 
     def setUp(self):
+        settings.CLUSTER_CONF['factory'] = fakeserver.ClusterHandler
         self.client.login(username='user1', password='user1')
 
     def expect_job_failure(self, job_id, expected_level, expected_message):

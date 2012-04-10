@@ -16,11 +16,11 @@ from django.template import RequestContext, loader
 from cosmos.jobconf.cluster import remote
 from cosmos.jobconf.forms import NewJobForm, UploadDataForm, UploadJarForm
 from cosmos.jobconf.models import CustomJobModel, Job, JobModel
+from cosmos.jobconf.views_util import cluster_connection
 import cosmos.jobconf.views_util as util
 
 LOGGER = logging.getLogger(__name__)
-CLUSTER = remote.Cluster(settings.CLUSTER_CONF.get('host'),
-                         settings.CLUSTER_CONF.get('port'))
+
 
 @login_required
 def list_jobs(request):
@@ -123,7 +123,7 @@ def run_job(request, job_id):
         LOGGER.warning(msg)
         return
 
-    if job.start(CLUSTER):
+    if job.start(cluster_connection()):
         messages.info(request, "Job %s was started." % job.name)
     else:
         messages.warning(request, "Cannot start job %s." % job.name)
@@ -182,7 +182,7 @@ def upload_data(request, job_id):
     if request.method == 'POST':
         form = UploadDataForm(request.POST, request.FILES)
         if form.is_valid() and job.data_upload(request.FILES['file'],
-                                               CLUSTER):
+                                               cluster_connection()):
             job.input_data = job.hdfs_data_path()
             job.save()
             return redirect(reverse('list_jobs'))

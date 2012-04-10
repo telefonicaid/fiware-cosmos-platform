@@ -23,13 +23,29 @@ LOGGER = logging.getLogger(__name__)
 
 
 class ClusterHandler:
-    
-    def __init__(self):
+
+    def __init__(self, *args):
         self.copyToHdfsCalls = []
+        self.runJobCalls = []
+        self.job_result = ClusterJobResult(status=ClusterJobStatus.SUCCESSFUL,
+                                           reason=None)
 
     def copyToHdfs(self, src_path, dest_path):
         self.copyToHdfsCalls.append([src_path, dest_path])
         LOGGER.info("Fake copy from %s to %s" % (src_path, dest_path))
+
+    def copyToHdfs(self, src_path, dest_path):
+         self.copyToHdfsCalls.append([src_path, dest_path])
+         LOGGER.info("Fake copy from %s to %s" % (src_path, dest_path))
+
+    def runJob(self, job_id, jarPath, inputPath, outputPath, mongoUrl):
+        self.runJobCalls.append([job_id, jarPath, inputPath, outputPath,
+                                 mongoUrl])
+        LOGGER.info("Fake run job %s" % job_id)
+
+    def getJobResult(self, job_id):
+        return self.job_result
+
 
 class FakeServer(threading.Thread, TServer.TSimpleServer):
     """

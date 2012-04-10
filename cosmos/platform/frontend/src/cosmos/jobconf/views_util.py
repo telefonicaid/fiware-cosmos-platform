@@ -6,6 +6,7 @@ import json
 from random import choice
 from types import ListType, DictType
 
+from django.conf import settings
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from pymongo import Connection
@@ -97,3 +98,8 @@ def retrieve_results(job_id, primary_key):
         return ans
     except (AutoReconnect, ConnectionFailure):
         raise NoConnectionError
+
+
+def cluster_connection():
+    return settings.CLUSTER_CONF['factory'](settings.CLUSTER_CONF['host'],
+                                            settings.CLUSTER_CONF['port'])

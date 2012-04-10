@@ -50,6 +50,13 @@ FCGI_OPTIONS = {
     'pidfile': '/var/run/cosmos/django.pid',
 }
 
+CLUSTER_CONF = {
+    'factory': get_class('cosmos.jobconf.cluster.remote.Cluster'),
+    'host': 'localhost',
+    'port': 9888,
+    'mongobase': 'mongodb://pshdp04',
+}
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -67,7 +74,7 @@ LOGGING = {
     },
     'formatters': {
         'detailed': {
-            'format': '%(levelname)s %(asctime)s %(module)s:%(lineno)d: ' + 
+            'format': '%(levelname)s %(asctime)s %(module)s:%(lineno)d: ' +
                       '%(message)s',
         },
     },

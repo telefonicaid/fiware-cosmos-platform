@@ -33,12 +33,6 @@ MANAGERS = ADMINS
 LANDING_ROOT = '/var/cosmos/landing/'
 STATIC_ROOT = 'static'
 
-CLUSTER_CONF = {
-    'host': '127.0.0.1',
-    'port': 9888,
-    'mongobase': 'mongodb://10.173.128.148',
-}
-
 FCGI_OPTIONS = {
     'protocol': 'fcgi',
     'host': '127.0.0.1',
@@ -49,9 +43,9 @@ FCGI_OPTIONS = {
 
 CLUSTER_CONF = {
     'factory': get_class('cosmos.jobconf.cluster.remote.Cluster'),
-    'host': 'localhost',
+    'host': '127.0.0.1',
     'port': 9888,
-    'mongobase': 'mongodb://pshdp04',
+    'mongobase': 'mongodb://10.173.128.148',
 }
 
 LOGGING = {

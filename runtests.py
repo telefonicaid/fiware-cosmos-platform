@@ -6,7 +6,7 @@ Runs all unittests configured in different buildout projects.
 import os
 import subprocess, shlex
 
-PYPROJECTS = 'platform/frontend'
+PYPROJECTS = 'cosmos/platform/frontend'
 
 def run():
     """

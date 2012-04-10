@@ -9,11 +9,11 @@ from django.utils import unittest
 import django.test as djangotest
 from pymongo import Connection
 
-from cosmos.jobconf.cluster import fakeserver
 from cosmos.jobconf.models import CustomJobModel, Job
 
 
 class LoginTestCase(djangotest.TestCase):
+    fixtures = ['sample_jobs']
 
     def test_login_redirect(self):
         response = self.client.get('/')
@@ -21,8 +21,7 @@ class LoginTestCase(djangotest.TestCase):
 
     def test_successful_login(self):
         response = self.client.post('/accounts/login/?next=/', {
-            'username': 'admin',
-            'password': 'du7rkwhu'})
+            'username': 'user1', 'password': 'user1'})
         self.assertRedirects(response, '/')
 
 
@@ -39,10 +38,12 @@ class ViewTestCase(djangotest.TestCase):
         explanation = "Should have a message of level>=%d" % level
         if submsg is not None:
             explanation = explanation + " and text '%s'" % submsg
-        criteria = lambda m: ((m.level >= level) and
-                              ((submsg is None) or
-                               (m.message.lower().find(submsg.lower()) >= 0)))
-        self.assertTrue(any(filter(criteria, reported)), msg=explanation)
+        matches_assertion = lambda m: (
+            (m.level >= level) and ((submsg is None) or
+                                    (m.message.lower().find(submsg.lower())
+                                     >= 0)))
+        self.assertTrue(any(filter(matches_assertion, reported)),
+                        msg=explanation)
 
 
 class JobListingTestCase(djangotest.TestCase):
@@ -73,7 +74,8 @@ class JobStartTestCase(ViewTestCase):
     fixtures = ['sample_jobs']
 
     def setUp(self):
-        settings.CLUSTER_CONF['factory'] = fakeserver.ClusterHandler
+        settings.CLUSTER_CONF['connection-factory'] = (
+            'cosmos.jobconf.cluster.fakeserver.ClusterHandler')
         self.client.login(username='user1', password='user1')
 
     def expect_job_failure(self, job_id, expected_level, expected_message):

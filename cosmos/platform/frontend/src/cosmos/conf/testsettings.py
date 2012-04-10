@@ -32,7 +32,7 @@ MANAGERS = ADMINS
 LANDING_ROOT = '/tmp/landing/'
 
 CLUSTER_CONF = {
-    'factory': get_class('cosmos.jobconf.cluster.remote.Cluster'),
+    'connection-factory': 'cosmos.jobconf.cluster.remote.Cluster',
     'host': 'localhost',
     'port': 9888,
     'mongobase': 'mongodb://localhost',

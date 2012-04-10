@@ -42,7 +42,7 @@ FCGI_OPTIONS = {
 }
 
 CLUSTER_CONF = {
-    'factory': get_class('cosmos.jobconf.cluster.remote.Cluster'),
+    'connection-factory': 'cosmos.jobconf.cluster.remote.Cluster',
     'host': '127.0.0.1',
     'port': 9888,
     'mongobase': 'mongodb://10.173.128.148',

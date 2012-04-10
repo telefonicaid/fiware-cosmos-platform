@@ -37,30 +37,17 @@ def get_owned_job_or_40x(request, job_id):
         raise Http403()
 
 
-def retrieve_results(job_id, primary_key):
-    ans = []
-    jobmodel = CustomJobModel.objects.get(id=job_id)
-    mongo_url = jobmodel.mongo_url()
-    mongo_db = jobmodel.job.user.username
-    mongo_collection = jobmodel.job.mongo_collection()
-    try:
-        connection = Connection(mongo_url)
-        db = connection[mongo_db]
-        job_results = db[mongo_collection]
-        if not primary_key:
-            some_result = job_results.find_one()
-            if not some_result:
-                raise NoResultsError
-            primary_key = choice([k for k in some_result.keys()
-                                 if k not in HIDDEN_KEYS])
-        for job_result in job_results.find():
-            mongo_result = MongoRecord(job_result, primary_key)
-            ans.append(mongo_result)
-        return ans
-    except (AutoReconnect, ConnectionFailure):
-        raise NoConnectionError
+def get_class( class_name ):
+    """Lookup a class by fully qualified name"""
+    parts = class_name.split('.')
+    module = ".".join(parts[:-1])
+    m = __import__( module )
+    for comp in parts[1:]:
+        m = getattr(m, comp)
+    return m
 
 
 def cluster_connection():
-    return settings.CLUSTER_CONF['factory'](settings.CLUSTER_CONF['host'],
-                                            settings.CLUSTER_CONF['port'])
+    factory = get_class(settings.CLUSTER_CONF['connection-factory'])
+    return factory(settings.CLUSTER_CONF['host'],
+                   settings.CLUSTER_CONF['port'])

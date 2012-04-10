@@ -16,12 +16,12 @@ from django.template import RequestContext, loader
 from cosmos.jobconf.cluster import remote
 from cosmos.jobconf.forms import NewJobForm, UploadDataForm, UploadJarForm
 from cosmos.jobconf.models import CustomJobModel, Job, JobModel
+from cosmos.jobconf.views_util import cluster_connection
 import cosmos.jobconf.views_util as util
-import bdp_fe.jobconf.mongo as mongo
+import cosmos.jobconf.mongo as mongo
 
 LOGGER = logging.getLogger(__name__)
-CLUSTER = remote.Cluster(settings.CLUSTER_CONF.get('host'),
-                         settings.CLUSTER_CONF.get('port'))
+
 
 @login_required
 def list_jobs(request):
@@ -41,6 +41,7 @@ def list_jobs(request):
         'reload_period': reload_period,
     }, context_instance=RequestContext(request))
 
+
 @login_required
 def view_results(request, job_id):
     job = util.get_owned_job_or_40x(request, job_id)
@@ -50,6 +51,7 @@ def view_results(request, job_id):
         return view_error(request, job)
     else:
         raise Http404
+
 
 def view_successful_results(request, job):
     job = util.get_owned_job_or_40x(request, job.id)
@@ -93,11 +95,13 @@ def view_successful_results(request, job):
         return HttpResponse(loader.render_to_string("503.html", context),
                             status=503)
 
+
 def view_error(request, job):
     return render_to_response('jobconf/job_report_error.html', {
         'title': 'Error report for %s' % job.name,
         'job': job,
     }, context_instance=RequestContext(request))
+
 
 def run_job(request, job_id):
     try:
@@ -120,10 +124,11 @@ def run_job(request, job_id):
         LOGGER.warning(msg)
         return
 
-    if job.start(CLUSTER):
+    if job.start(cluster_connection()):
         messages.info(request, "Job %s was started." % job.name)
     else:
         messages.warning(request, "Cannot start job %s." % job.name)
+
 
 @login_required
 def new_job(request):
@@ -144,6 +149,7 @@ def new_job(request):
         'title': 'New job',
         'form': form,
     }, context_instance=RequestContext(request))
+
 
 @login_required
 def config_job(request, job_id):
@@ -167,6 +173,7 @@ def config_job(request, job_id):
         'form': form,
     }, context_instance=RequestContext(request))
 
+
 @login_required
 def upload_data(request, job_id):
     job = util.get_owned_job_or_40x(request, job_id)
@@ -176,7 +183,7 @@ def upload_data(request, job_id):
     if request.method == 'POST':
         form = UploadDataForm(request.POST, request.FILES)
         if form.is_valid() and job.data_upload(request.FILES['file'],
-                                               CLUSTER):
+                                               cluster_connection()):
             job.input_data = job.hdfs_data_path()
             job.save()
             return redirect(reverse('list_jobs'))
